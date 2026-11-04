@@ -406,33 +406,33 @@ own suite, consuming an unmodified shared predicate, and is covered by
 
 ---
 
-### Phase 4: Lifecycle and admission wiring [NOT STARTED]
+### Phase 4: Lifecycle and admission wiring [COMPLETED]
 
 **Goal**: The three lifecycle transitions fire from the three existing call sites, and the
 refusal gate runs once per `/orchestrate` invocation before any dispatch.
 
 **Tasks**:
-- [ ] `skills/skill-orchestrate/SKILL.md`, Setup block: immediately after the existing
+- [x] `skills/skill-orchestrate/SKILL.md`, Setup block: immediately after the existing *(completed)*
       `session-register` call, add the `queue-register` call with the identical
       best-effort/non-blocking posture (`2>/dev/null || true`) and the same `task_numbers` CSV
       expression. Registration must never turn a startable invocation into a failure.
-- [ ] `skills/skill-orchestrate/SKILL.md`, Move 4 termination sentence: add `queue-finish
+- [x] `skills/skill-orchestrate/SKILL.md`, Move 4 termination sentence: add `queue-finish *(completed)*
       "$session_id"` alongside the existing `session-release "$session_id"`, phrased so the
       archive transition is named (not "release the queue").
-- [ ] `scripts/orchestrate-cycle-plan.sh`: directly beside the existing `session-heartbeat`
+- [x] `scripts/orchestrate-cycle-plan.sh`: directly beside the existing `session-heartbeat` *(completed)*
       invocation, add the `queue-heartbeat` call with the same `2>/dev/null || true` posture, and
       a one-line comment stating that the two calls are co-sited deliberately so the queue never
       acquires a second, independently-timed currency mechanism.
-- [ ] `commands/orchestrate.md`: after `batch_session_id` is minted and before the dispatch
+- [x] `commands/orchestrate.md`: after `batch_session_id` is minted and before the dispatch *(completed)*
       section begins (co-located with the Pre-Dispatch Review call, which stays advisory), add the
       blocking `queue-check` invocation, forwarding `ALLOW_SCOPE_COLLISION_FLAG`, and document in
       the surrounding prose that a nonzero exit ABORTS the whole invocation with the conflict
       named, that nothing is queued or retried, and that this is the one blocking
       whole-orchestration admission surface (distinct from Pre-Dispatch Review's advisory Class E
       and from the per-task `acquire` pass).
-- [ ] Update the flags table row for `--allow-scope-collision` in `commands/orchestrate.md` so it
+- [x] Update the flags table row for `--allow-scope-collision` in `commands/orchestrate.md` so it *(completed)*
       names the queue refusal as a second thing the flag bypasses.
-- [ ] Do NOT modify `scripts/command-gate-in.sh` (D6). Record the narrowing of the task's
+- [x] Do NOT modify `scripts/command-gate-in.sh` (D6). Record the narrowing of the task's *(completed)*
       anticipated `file_scope` in the phase notes.
 
 **Timing**: 1.25 hours

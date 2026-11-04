@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Lifecycle and admission wiring",
+  "started_at": "2026-11-04T15:10:00Z",
+  "last_updated": "2026-11-04T15:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "skill-orchestrate SKILL.md Setup: queue-register after session-register", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "skill-orchestrate SKILL.md Move 4: queue-finish alongside session-release", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "orchestrate-cycle-plan.sh: queue-heartbeat co-sited with session-heartbeat", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "commands/orchestrate.md: blocking queue-check before dispatch, forwarding ALLOW_SCOPE_COLLISION_FLAG", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 5, "description": "commands/orchestrate.md: update --allow-scope-collision flags table row", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 6, "description": "Do NOT modify scripts/command-gate-in.sh (D6) -- verified via grep", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verified exactly one call site each for queue-register/queue-heartbeat/queue-finish/queue-check across skills/, scripts/, commands/. Phase 4's Tier Justification suite-selection run (test-orchestrate-cycle-plan.sh plus the resolved --only set) surfaced 5 failures; confirmed via git stash push -- <the 3 edited files> that all 5 fail identically on unmodified master (pre-existing, unrelated to this task). Recorded in the issue log."
+}

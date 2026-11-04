@@ -47,7 +47,7 @@ Implements fire-and-forget state machine: research -> plan -> implement -> compl
 | `--gate` | Advisory-only intermediate verification tier: pass gate_flag=true so the implement-phase dispatch runs the cheap regex layer lint plus the `Books.Meta` import-closure check between `lake build` and the ten-minute fail-closed full gate. ADVISORY ONLY — it never blocks a dispatch, never fails one, and never downgrades status; it adds a tier rather than relaxing an existing one. Composable with `--hard`, `--lit`, `--compare` and the model flags; meaningless for research/plan dispatches, so it never reaches them | false |
 | `--dry-run` | Report-only: run the full admission analysis and print the verdict report; dispatch nothing and mutate nothing. The report also shows any `$2+` focus text this invocation received (a `focus=` column per row), so it can be checked before a live run | false |
 | `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate; deliberate human intent, never a general-purpose weakening | false |
-| `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the CROSS-BATCH `file_scope_collision` gate only (never `in_batch`); deliberate human intent | false |
+| `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the CROSS-BATCH `file_scope_collision` gate only (never `in_batch`) AND of the blocking orchestration-queue `queue-check` refusal (downgrades it to a loud WARN and continues); deliberate human intent | false |
 | `--clean` | Skip automatic memory retrieval | false |
 | `--fast` | Low-effort mode: lighter reasoning, AND skips the default research-first phase for a `not_started` task (planner can still route back via `needs_research`); `--research` still forces research even under `--fast`. See `docs/architecture/orchestrate-state-machine.md`'s "The `needs_research` Fork" | false |
 | `--hard` | High-effort mode: injects hard-mode contracts (churn/three-strikes/burnout counters); ~3-5x cost; composable with `--lit`, `--compare`, `--gate`, model flags, and the phase-forcing flags | false |
@@ -210,6 +210,24 @@ remains the abort-before-dispatch surface for a human who wants the full picture
 
 ```bash
 bash .claude/scripts/orchestrate-predispatch-review.sh --session-id "$batch_session_id" "${validated_tasks[@]}"
+```
+
+**Blocking orchestration-queue admission check** (the one blocking whole-orchestration admission
+surface — distinct from Pre-Dispatch Review's advisory Class E above and from the per-task
+`task-lock.sh acquire` pass each dispatched phase still runs independently). Co-located with
+Pre-Dispatch Review, which stays purely advisory: this check instead ABORTS the ENTIRE invocation
+on a nonzero exit, with the conflicting in-flight orchestration named, before any task is
+dispatched. Nothing is queued and nothing is retried — see
+`context/patterns/task-lock.md`'s Orchestration-Queue CLI section, Refusal Contract subsection:
+
+```bash
+validated_tasks_csv="$(IFS=,; echo "${validated_tasks[*]}")"
+queue_check_args=("$batch_session_id" "$validated_tasks_csv")
+[ "$ALLOW_SCOPE_COLLISION_FLAG" = "true" ] && queue_check_args+=(--allow-scope-collision)
+if ! bash .claude/scripts/task-lock.sh queue-check "${queue_check_args[@]}"; then
+  echo "[orchestrate] ABORTED: this invocation conflicts with an in-flight orchestration's file_scope (see above)." >&2
+  exit 1
+fi
 ```
 
 Build the intra-batch dependency graph (dependencies on tasks also in `validated_tasks` — the

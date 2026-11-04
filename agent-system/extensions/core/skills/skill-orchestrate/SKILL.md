@@ -46,6 +46,17 @@ bash .claude/scripts/task-lock.sh session-register "$session_id" "/orchestrate" 
   "$(IFS=,; echo "${task_numbers[*]}")" 2>/dev/null || true
 ```
 
+Register this orchestration in the per-repo orchestration queue, the same
+best-effort/non-blocking posture as the session-register call immediately above (registration
+must never turn a startable invocation into a failure). The queue record outlives the session
+registry entry (which `session-release` below `rm -f`'s on termination) and is archived, not
+deleted, on finish -- see `context/patterns/task-lock.md`'s Orchestration-Queue CLI section:
+
+```bash
+bash .claude/scripts/task-lock.sh queue-register "$session_id" "/orchestrate" \
+  "$(IFS=,; echo "${task_numbers[*]}")" 2>/dev/null || true
+```
+
 For each task in `task_numbers`, run the entry reconcile ONCE (never per-cycle — a later cycle's
 call for a still-eligible task is fresh, not a repeat):
 
@@ -328,7 +339,10 @@ no-op path).
 Then: emit the consolidated output (read `context/patterns/orchestrate-batch-results-template.md`
 and render exactly, including this stage's `batch_gate` result when present), run the residue
 check (`git status --porcelain -- specs/` — warn only, never commits), release the session
-registry (`task-lock.sh session-release "$session_id"`), remove `.dispatch/` for every task in
+registry (`task-lock.sh session-release "$session_id"`) AND archive this orchestration's queue
+record (`task-lock.sh queue-finish "$session_id"` -- moves the record into
+`specs/.orchestration/archive/` with `state: "archived"`; never a release in the
+session-registry's `rm -f` sense), remove `.dispatch/` for every task in
 `completed_tasks` only, and write `specs/.orchestration/.return-meta-multi-${session_id}.json`
 (creating `specs/.orchestration/` first via `mkdir -p` if it does not already exist) with `status`,
 `session_id`, and `metadata` (`tasks_completed`, `tasks_failed`, the two deferred arrays,

@@ -1280,6 +1280,11 @@ mt_save
 
 if [ "$dry_run" != "true" ]; then
   bash "$SCRIPT_DIR/task-lock.sh" session-heartbeat "$session_id" 2>/dev/null || true
+  # Co-sited deliberately with the session-heartbeat call immediately above, same
+  # best-effort/non-blocking posture, so the orchestration queue never acquires a second,
+  # independently-timed currency mechanism -- see context/patterns/task-lock.md's
+  # Orchestration-Queue CLI section.
+  bash "$SCRIPT_DIR/task-lock.sh" queue-heartbeat "$session_id" 2>/dev/null || true
 fi
 
 # ── (a2) Per-run cycle-budget contract (Decision (a)): `cycle_counts[t]` starts at a value of
