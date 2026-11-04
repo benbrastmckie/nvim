@@ -1,5 +1,5 @@
 ---
-next_project_number: 475
+next_project_number: 476
 ---
 
 # TODO
@@ -17,7 +17,7 @@ next_project_number: 475
 | 4 | 387,391,428,439,444,448,474 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
 | 6 | 313,409,421,435,446 | 328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 7 | 360,420,436,438,454,455,461,472 | 313,328,409,418,428,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 7 | 360,420,436,438,454,455,461,472,475 | 313,328,409,418,428,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 8 | 449,451,452,457 | 360,385,420,435,444,448,455 | core-agent-system, extensions, lean-extension, ... |
 | 9 | 450,462 | 420,435,449,451 | lean-extension, orchestrator |
 
@@ -57,6 +57,7 @@ next_project_number: 475
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory... (see above)
+  └─ 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
 445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
   └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts... (see above)
@@ -98,7 +99,7 @@ next_project_number: 475
 
 ### Orchestrator
 
-275 [RESEARCHED] — Per-repo orchestration queue: registered, live, archived on...
+275 [PLANNING] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
     └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
       └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -126,6 +127,62 @@ next_project_number: 475
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 475. Close the audit-evidence gate internal --argjson hole: a large verdict dies with Argument list too long
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: core-agent-system
+- **Dependencies**: Task 435
+
+**Description**: The audit-evidence gate's own internal jq invocations pass the whole audit verdict as a single --argjson argument, bypassing the transparent spill the same script implements for caller-supplied values. A large verdict therefore kills the write with "Argument list too long", and no task can be created.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/scripts/state-write.sh, never a deployed .claude/** tree (a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Redeploy afterwards via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- THE DEFECT, verified by reading the source store ---
+
+state-write.sh implements a transparent spill for oversized --argjson values. Its own header states the intent as universal: any --argjson value at or under SPILL_THRESHOLD bytes is forwarded to jq exactly as before, and no existing or future --argjson call site has to change.
+
+That spill covers CALLER-SUPPLIED --arg/--argjson passthrough. It does NOT cover the script's own internal jq invocations. The audit-evidence gate makes two, and both pass a potentially very large script-constructed value directly:
+
+- the live branch: jq -c -n --argjson newnums "$AUDIT_NEW_NUMBERS" --slurpfile stagearr "$STAGE_FILE" --argjson verdicts "$AUDIT_VERDICT_JSON" ...
+- the dry-run branch: the same --argjson verdicts "$AUDIT_VERDICT_JSON" pattern
+
+AUDIT_VERDICT_JSON is built earlier by slurping the whole --audit-verdict FILE into a shell variable (jq -c -s normalizing NDJSON to a JSON array), then handed to jq as one argument.
+
+WHY THE CEILING BITES HERE AND NOT AT LAUNCH. MAX_ARG_STRLEN (131,072 bytes) applies to each OS-level execve, as the large-payload test suite already records for the caller-facing case. Passing --audit-verdict FILE is safe at launch because a path is a short argv token. The failure is one level in: the gate's own internal jq is a fresh execve, and the verdict arrives there as a single oversized argument.
+
+OBSERVED, not hypothesized: a meta-builder dispatch hit this with a 150KB verdict file produced by audit-task-proposals.sh over 11 declared file_scope paths. It could only file its task by trimming the verdict to 135 high-signal rows, retaining all discriminating rows and recording the trim in the stored audit_verdict. The perverse incentive is the point: the louder and more thorough the audit evidence, the likelier the write fails. The gate penalizes exactly the thorough audits it exists to require.
+
+--- THE FIX IS ALREADY PRESENT IN THE SAME EXPRESSION ---
+
+That same jq call reads the staged state via --slurpfile stagearr "$STAGE_FILE". The verdict should be read the same way -- from the --audit-verdict file, or from a normalized temp file derived from it, since the script already does the NDJSON normalization -- bound with --slurpfile instead of materialized into a shell variable and passed as --argjson. The filter body currently references $verdicts and would instead read the slurped array's first element, in the same shape $stagearr[0] is already used.
+
+--- SCOPE ---
+
+Fix BOTH call sites. They are the dry-run and live halves of one gate; fixing only the live one leaves --dry-run failing on exactly the inputs the real write now accepts, which is worse than the current symmetric failure.
+
+A sweep for other internal jq invocations in this script passing large script-constructed values as --argjson is in scope. A blind refactor of unrelated call sites is not. The two named above are the confirmed ones.
+
+Do NOT weaken or remove the audit-evidence gate. The gate is correct; only its argument-passing mechanism is wrong. Trimming verdicts to fit is a workaround and should stop being necessary.
+
+--- VERIFICATION ---
+
+Neither existing spill suite covers this path: a grep for audit-verdict in test-state-write-large-payload.sh and test-state-write-spill-names.sh returns zero hits in both. The regression test belongs in the large-payload suite, which already establishes the isolated-temp-root pattern (throwaway TMPROOT, state-write.sh copied byte-for-byte and never told it is under test, no testability hooks in production code).
+
+Construct a verdict file comfortably over the ceiling -- the observed failure was at 150KB against a ~131KB per-argument limit -- and confirm that BOTH a live write and a --dry-run succeed with it, failing before the change and passing after.
+
+--- DEPENDENCY EDGE (serializing only, not a logical prerequisite) ---
+
+dependencies: [435] exists purely to serialize file territory. Task 435
+(reword_dead_lifecycle_command_prose_per_class) is a prose pass whose declared file_scope
+includes agent-system/extensions/core/scripts/, the directory holding BOTH files this task
+edits (state-write.sh and test-state-write-large-payload.sh). The backlog audit classified the
+overlap subset-of-open (mech=subset, both declared paths shared, semantic score 0.32): shared
+territory, unsafe to edit concurrently, but no content dependency. Nothing 435 produces is
+needed by this fix. Once 435 is complete, or its file_scope no longer covers
+core/scripts/, this edge can be dropped safely without re-planning this task.
+
+---
 
 ### 474. Repair the broken relative links in agent-frontmatter-standard.md
 - **Effort**: small
@@ -7318,7 +7375,7 @@ worse than no hook. No task-number references in deliverables outside specs/**.
 ---
 
 ### 275. Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 170, Task 272
