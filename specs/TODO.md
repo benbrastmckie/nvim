@@ -1,5 +1,5 @@
 ---
-next_project_number: 467
+next_project_number: 469
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 467
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,274,328,338,384,398,415,419,458,463 | 22,275,383,397,412,414,429,459 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 22,275,342,383,385,397,408,410,412,414,423,429,437,456,459,464,466,467 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,274,328,338,384,398,415,419,458,463,468 | 22,275,383,397,412,414,429,459,467 | core-agent-system, extensions, lean-extension, ... |
 | 3 | 369,378,399,418,431,445,453,465 | 29,274,328,398,415,419 | core-agent-system, literature, lean-extension, ... |
 | 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
@@ -43,6 +43,8 @@ next_project_number: 467
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
+467 [NOT STARTED] — Restructure the user-facing agent system workflow docs around...
+  └─ 468 [NOT STARTED] — Audit the core docs architecture and reference set for...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
@@ -120,6 +122,145 @@ next_project_number: 467
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 468. Audit the core docs architecture and reference set for correctness and single-authority ownership
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 467
+
+**Description**: Audit the core docs architecture, guide, reference and template set for structural correctness and single-authority topic ownership, following the orchestrate-first restructure of the user-facing workflow docs.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/docs/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.
+
+--- REQUIRED OUTCOMES ---
+
+1. Audit and correct every file in scope for: references to removed command surfaces (/research, /plan and /implement have no definition file anywhere under agent-system/extensions/*/commands/; /orchestrate is the sole lifecycle driver), superseded status transitions, stale routing tables, stale component inventories, and broken relative links.
+
+2. Establish ONE authoritative home per topic, with pointers elsewhere, rather than parallel partial copies. The concrete known instance: command syntax is currently restated in merge-sources/claudemd.md, the per-command commands/*.md files, and docs/guides/user-guide.md. Decide which is the authority and reduce the others to pointers. Concise over exhaustive.
+
+3. Add the agent-system/extensions/README.md link to the four files that say "the extension picker" in prose with no link: docs/guides/adding-domains.md (lines 39, 171-174), docs/guides/creating-extensions.md (11, 636, 679), docs/architecture/extension-system.md (33, 547), docs/reference/standards/extension-slim-standard.md (5, 196). Line numbers are approximate and must be re-derived at implementation time.
+
+--- SCOPE BOUNDARY: THE LOAD-BEARING CONSTRAINT ON THIS TASK ---
+
+Eight non-terminal records each own a specific SUBSTANTIVE change to an individual file in this scope:
+
+- 274 next_admissible_batch_suggestion                     -> architecture/batch-admit-schema.md
+- 378 reviser_agent_handoff_contract_contradiction         -> architecture/handoff-schema.md
+- 387 whole_tree_regeneration_scope_claim                  -> architecture/orchestrate-state-machine.md
+- 420 warn_plan_size_exceeds_cycle_budget                  -> architecture/orchestrate-state-machine.md
+- 428 enforce_planner_agent_terminal_write                 -> architecture/handoff-schema.md
+- 438 dependency_edge_rationale_semantic_check             -> reference/standards/multi-task-creation-standard.md
+- 450 validate_settled_route_before_dispatch               -> architecture/handoff-schema.md, architecture/orchestrate-state-machine.md
+- 431 durable_record_for_gate_enforced_verbatim_fragments   -> reference/standards/agent-frontmatter-standard.md
+
+This task is scoped to STRUCTURAL correctness ONLY: dead command surfaces, stale routing tables and inventories, broken links, and duplication. It is explicitly OUT OF SCOPE for the substantive schema and contract questions those eight records own. Do NOT change what any of those documents ASSERTS about handoff contracts, batch admission, cycle budgets, regeneration scope, dependency-edge rationale, planner terminal writes, route validation, or verbatim-fragment exclusion classes.
+
+reference/standards/agent-frontmatter-standard.md is deliberately EXCLUDED from file_scope entirely, because 431's audit verdict was duplicate-of-open against it.
+
+Declare NO dependency edges on those eight records. The boundary, not serialization, is what keeps them from colliding.
+
+The plan MUST state this boundary explicitly, and MUST flag, per file, any place where a structural fix cannot be made without taking a position on a substantive question one of those records owns -- and DEFER that site rather than deciding it. Expect this boundary to need adjustment at planning time; say so in the plan.
+
+--- RELATIONSHIP TO ADJACENT RECORDS ---
+
+This task precedes 435 (reword_dead_lifecycle_command_prose_per_class), whose claim on agent-system/extensions/core/docs/ has been removed from its file_scope as subsumed by this task and its predecessor.
+
+The territory overlap with task 328 Phase 19 ("Markdown Tranche C -- Commands, Context, Docs and Rules", [NOT STARTED], which names agent-system/extensions/core/docs/ as a dedup target) is a COLLISION ADVISORY ONLY. NO dependency edge on 328 is declared in either direction. Expect file_scope_collision deferrals against 328 in a batched dispatch; that advisory is the intended visibility surface, not an error.
+
+--- SCOPE EXCLUSIONS ---
+
+The 22 per-extension READMEs and agent-system/extensions/core/README.md are NOT in scope; they remain 435's territory. agent-system/extensions/README.md itself is handled by this task's predecessor.
+
+--- CONSTRAINTS ---
+
+scripts/lint/lint-dead-command-recommendations.sh already exists and is live. Its valid-command set is derived by enumerating agent-system/extensions/*/commands/*.md. Every edited doc must pass it.
+
+Apply .claude/context/project/neovim/standards/documentation-policy.md, box-drawing-guide.md and emoji-policy.md.
+
+rules/no-task-references-in-deliverables.md and rules/no-record-versioning-in-deliverables.md both bind: the corrected docs state the CURRENT design only. No "previously", "no longer", "formerly", "used to"; no supersession or draft-lineage framing; no task-number citations in anything landing under agent-system/**. Both are permitted in this description and elsewhere in specs/**.
+
+--- ACCEPTANCE ---
+
+- A relative-link check across the whole core/docs/ tree passes.
+- A grep confirms no surviving references to the removed per-phase commands as user-invocable surfaces anywhere under core/docs/. CRITICAL: phase-name and dispatch-name references ("the implement dispatch", "the research phase") are CORRECT and must be PRESERVED -- this is a per-site judgment, never a blanket substitution.
+- lint-dead-command-recommendations.sh green.
+- Each topic has a single authoritative home; the plan names each authority and each pointer.
+- No substantive assertion owned by the eight records above was altered; the plan's deferral list documents every site where that was close.
+- Redeployed via deploy-headless.sh to a clean verify-deploy.sh.
+
+---
+
+### 467. Restructure the user-facing agent system workflow docs around an orchestrate-first spine
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Restructure the user-facing agent system workflow documentation around an orchestrate-first spine, so that a reader following it can actually execute every command it names.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/docs/ and agent-system/extensions/README.md. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. Never hand-patch a deployed file in place of a redeploy.
+
+--- WHY THIS IS NEEDED (measured 2026-11-03; re-verify line numbers and counts at implementation time) ---
+
+The commands /research, /plan and /implement do not exist. agent-system/extensions/core/commands/ contains errors, fix-it, merge, meta, orchestrate, please, project-overview, refresh, review, revise, spawn, tag, task, todo and zulip (plus README.md), and there is no research.md, plan.md or implement.md anywhere under agent-system/extensions/*/commands/ or .claude/commands/. /orchestrate is the sole lifecycle driver; per-phase work is reached through its --research / --plan / --implement forcing flags.
+
+agent-system/extensions/core/docs/guides/user-guide.md is 687 lines, carries "Last Updated: 2026-05-22", and is built end to end around the cycle /task "Description" -> /research N -> /plan N -> /implement N -> /todo. Stale regions, line numbers approximate: Table of Contents (11-34), Quick Start / "Your First Workflow" (38-77), Status Progression table (78-95), the entire "Core Workflow Commands" section (97-290), the /orchestrate stub (402-431), Command Summary Table (571-595), Status Transitions diagram (597-613), Language Routing table (615-624).
+
+The /orchestrate treatment is a roughly 20-line stub documenting only `/orchestrate N` and a "10 states" state machine. Absent entirely: batch syntax N,N-N; the --research / --plan / --implement forcing flags; --lit, --hard, --clean, --fast; the model flags --haiku / --sonnet / --opus / --fable; cycle budgets; the [HOLD] and [PR READY] statuses; the "batching is the default" rule.
+
+user-guide.md also omits three commands that do exist: /project-overview, /please, /zulip.
+
+Nothing anywhere under agent-system/extensions/core/ links to agent-system/extensions/README.md. user-guide.md mentions extensions only parenthetically ("/convert requires `filetypes` extension"). The load bindings are <leader>ac (Neovim) and <leader>ao (OpenCode).
+
+agent-system/extensions/README.md (151 lines) is itself stale: its "Available Extensions" table omits four extensions that exist as directories -- books, cslib, email, literature.
+
+docs/examples/research-flow-example.md is named for and built on the removed per-phase command surface.
+
+--- REQUIRED OUTCOMES ---
+
+1. Rewrite user-guide.md around the spine /task -> /orchestrate -> /todo. CRITICAL: the stepwise, human-in-the-loop review path that the removed per-phase command sections served is still real and MUST be preserved -- it now reads /orchestrate N --research, then /revise N to adjust the plan, then /orchestrate N --implement. Do not simply delete those sections; retarget them.
+
+2. Give /orchestrate first-class treatment covering every surface listed above: batch syntax, forcing flags, the four effort/context flags, model flags, cycle budgets, resumption behavior, and the [HOLD] / [PR READY] statuses with their non-resumable and type-gated semantics. Reconcile against the authoritative sources below rather than restating the current stub.
+
+3. Add /project-overview, /please and /zulip to the command coverage.
+
+4. Add a top-level Extensions section to user-guide.md linking to agent-system/extensions/README.md for the catalog and the <leader>ac / <leader>ao load-unload mechanism. Add the same link to docs-README.md's "Related Documentation" section.
+
+5. Correct agent-system/extensions/README.md's "Available Extensions" table to include books, cslib, email and literature. Re-enumerate the actual extension directory set at implementation time rather than trusting that list.
+
+6. Decide and act on examples/research-flow-example.md: either retarget it at /orchestrate N --research, or retire it. State the decision and its reason in the plan.
+
+7. user-installation.md must teach the orchestrate-first spine consistently with user-guide.md.
+
+--- AUTHORITATIVE SOURCES TO RECONCILE AGAINST ---
+
+agent-system/extensions/core/commands/orchestrate.md; docs/architecture/orchestrate-state-machine.md; docs/architecture/orchestrate-cycle-postflight.md; docs/architecture/handoff-schema.md; docs/architecture/batch-admit-schema.md; context/patterns/batch-orchestration-guardrails.md ("Batching Is the Default" section); context/patterns/multi-task-operations.md; context/standards/status-markers.md ("Target Arguments vs. Resting States" subsection); agent-system/extensions/core/merge-sources/claudemd.md.
+
+--- CONSTRAINTS ---
+
+scripts/lint/lint-dead-command-recommendations.sh already exists and is live. Its valid-command set is derived by enumerating agent-system/extensions/*/commands/*.md. Any new or rewritten doc must pass it.
+
+Apply .claude/context/project/neovim/standards/documentation-policy.md, box-drawing-guide.md and emoji-policy.md.
+
+rules/no-task-references-in-deliverables.md and rules/no-record-versioning-in-deliverables.md both bind: the rewritten docs state the CURRENT design only. No "previously", "no longer", "formerly", "used to"; no supersession or draft-lineage framing; no task-number citations in anything landing under agent-system/**. Both are permitted in this description and elsewhere in specs/**.
+
+--- CROSS-RECORD AMENDMENTS THIS TASK CARRIES (operator-approved) ---
+
+Record 435 (reword_dead_lifecycle_command_prose_per_class) has been amended to EXCLUDE agent-system/extensions/core/docs/ from its file_scope, as subsumed by this task and its successor. Its remaining territory -- core/context/ (88 files), core/scripts/ (56), core/commands/, core/skills/, core/agents/, core/rules/, core/README.md, and the 21 other extensions -- is untouched by this work.
+
+The territory overlap with task 328 Phase 19 ("Markdown Tranche C -- Commands, Context, Docs and Rules", [NOT STARTED], which names agent-system/extensions/core/docs/ as a dedup target) is recorded as a COLLISION ADVISORY ONLY. NO dependency edge on 328 is declared in either direction -- a 20-phase record must not be gated on a documentation task. Expect file_scope_collision deferrals against 328 in a batched dispatch; that advisory is the intended visibility surface, not an error.
+
+--- ACCEPTANCE ---
+
+- A reader following user-guide.md from its Quick Start can execute every command it names.
+- lint-dead-command-recommendations.sh green.
+- A relative-link check across the five touched docs files passes.
+- agent-system/extensions/README.md's table matches the actual extension directory set.
+- Record 435's file_scope no longer claims core/docs/.
+- Redeployed via deploy-headless.sh to a clean verify-deploy.sh.
+
+---
 
 ### 466. validate-wiring.sh reports Missing context file for context paths present on disk and in index.json
 - **Effort**: 3 hours
@@ -1876,6 +2017,14 @@ Per context/patterns/batch-orchestration-guardrails.md, shared file territory is
 1. The companion lint task -- shares territory and resolves the recommendation-line class first, so this sweep does not re-edit lines the lint is about to gate. Running this first would also leave the lint firing on lines this task had reworded by a different rule.
 2. Task 407 -- the artifact-round claim above.
 UNSERIALIZED OVERLAP WITH THE CORPUS-CONSOLIDATION TASK (operator decision, 2026-10-17): task 328 carries markdown-corpus consolidation phases and its declared file_scope already covers most of the same directory roots this task edits, so rewriting prose in files 328 may merge or delete is rework. The operator decided this sweep should not wait on 328, so NO dependency edge on 328 is declared and the two may run concurrently. The territory overlap is real and unmitigated by gating: before editing any file, check whether 328 has an open markdown phase covering it, and prefer leaving that file to 328 over racing it. Expect file_scope_collision deferrals against 328 in a batched dispatch; that advisory is the intended visibility surface, not an error.
+
+--- SCOPE AMENDMENT: core/docs/ REMOVED (operator decision, 2026-11-03) ---
+
+agent-system/extensions/core/docs/ has been removed from this record's file_scope. Reason: two dedicated documentation records now own that tree -- 467 (orchestrate_first_workflow_docs_restructure) rewrites the user-facing workflow docs around an orchestrate-first spine, and 468 (core_docs_correctness_and_single_authority_audit) audits the architecture, guide, reference and template set for structural correctness and single-authority topic ownership. Both run BEFORE this record. The dead-lifecycle-command prose under core/docs/ (22 files) is resolved there as part of a full restructure, rather than reworded in place here; rewording it here first would be rework, since 467 rewrites user-guide.md end to end.
+
+This record's remaining territory is unchanged and untouched by that work: core/context/ (88 files), core/scripts/ (56), core/commands/, core/skills/, core/agents/, core/rules/, core/templates/, core/hooks/, core/merge-sources/, core/root-files/, core/README.md, core/manifest.json, core/index-entries.json, and the 21 other extensions. The measured distribution quoted above still counts core/docs/ in its "docs 22" figure; subtract that tranche when sizing phases.
+
+No dependency edge on 467 or 468 is declared. The scope exclusion, not serialization, is what separates them.
 
 ---
 
