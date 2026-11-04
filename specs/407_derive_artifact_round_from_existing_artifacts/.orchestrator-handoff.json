@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a 5-phase plan fixing skill_read_artifact_number() in the core source store: replace the `// 1`-defaulted read and count-based fallback with one unconditional max-prefix normalization, max(stored next_artifact_number, highest on-disk MM prefix + 1), feeding the unchanged current/prev mode logic. Scope narrowed explicitly off orchestrate-cycle-plan.sh (zero next_artifact_number logic, three declared territory edges droppable), off orchestrate-build-dispatch.sh (no signature change) and off commands/task.md (no creation-time write needed); two surfaces added (test-skill-base-lifecycle.sh, state-management-schema.md). Plan-time grep also found a second-order defect the research missed: all three next_artifact_number advance sites use `// 1`, so a fallback-only fix would leave a collision one dispatch later -- which is why the normalization is unconditional and self-healing.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/407_derive_artifact_round_from_existing_artifacts/plans/01_derive-artifact-round-max-prefix.md",
+      "summary": "5-phase plan: max-prefix artifact-round normalization in skill-base.sh, integration + unit regression coverage, schema-doc alignment, redeploy to RESULT=landed_verify_clean."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 407; phase 1 edits agent-system/extensions/core/scripts/skill-base.sh only.",
+  "dispatch_seq": 2
+}
