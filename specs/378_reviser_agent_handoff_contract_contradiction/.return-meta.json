@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "dispatch_seq": 24,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/378_reviser_agent_handoff_contract_contradiction/reports/01_reviser-agent-handoff-contract.md",
+      "summary": "Confirms the reviser-agent handoff contract contradiction: a dispatch[] 'plan' row can resolve to reviser-agent (existing-plan admission rule) carrying orchestrator_mode:true, but reviser-agent.md has no handoff-writing section on either call path. Recommends direction (a): add a conditional handoff section to reviser-agent.md mirroring planner-agent.md, add a Handoff Writers table row in handoff-schema.md, and a clarifying note in SKILL.md's Skill-to-Agent Mapping table; no script changes needed."
+    }
+  ],
+  "next_steps": "Run /orchestrate 378 to create implementation plan",
+  "findings_count": 7,
+  "memory_candidates": [
+    {
+      "content": "orchestrate-cycle-plan.sh's resolve_agent() for the 'plan' op uses an artifact-based admission rule (existing plans/*.md -> reviser-agent, else planner-agent), bypassing command-route-agent.sh entirely. Both resolved agents feed the SAME dispatch[] array, and skill-orchestrate/SKILL.md's Move 2 dispatch[] loop is agent-agnostic: every dispatch[] row (regardless of which agent was resolved) gets orchestrator_mode: true and a handoff_path. When a phase's agent-resolution path is artifact-based rather than purely task-type-routed, check that every possible resolved agent actually has a handoff-writing contract in its own agent.md file -- the dispatch mechanism treating it as handoff-expected does not imply the agent file was ever updated to match.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/378_reviser_agent_handoff_contract_contradiction/reports/01_reviser-agent-handoff-contract.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrator_mode", "handoff", "reviser-agent", "resolve_agent", "dispatch-derived", "artifact-based-admission"]
+    },
+    {
+      "content": "docs/architecture/handoff-schema.md's 'Handoff Writers' table is the single declared authority for which agents must write .orchestrator-handoff.json. Its own 'Registering a new writer' note states adding a writer is a table-row-only change (no script-side change needed), because orchestrate-cycle-postflight.sh deliberately uses a dispatch-derived (phase-keyed), not agent-name-keyed, handoff-expectation check (see its own 'D1' design comment) -- so closing a writer gap is an agent-contract + doc-table edit, not a postflight script edit.",
+      "category": "PATTERN",
+      "source_artifact": "specs/378_reviser_agent_handoff_contract_contradiction/reports/01_reviser-agent-handoff-contract.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["handoff-schema", "handoff-writers-table", "D1-design", "postflight", "registering-a-new-writer"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1793802705_e3f98a_378",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  }
+}
