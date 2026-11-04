@@ -1,0 +1,31 @@
+{
+  "phase": 9,
+  "phase_name": "Deploy, acceptance, and full gate sweep",
+  "started_at": "2026-11-03T22:00:00Z",
+  "last_updated": "2026-11-03T22:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy source store to .claude/", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+      "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh"
+    ]},
+    {"id": 2, "description": "End-to-end open-backlog acceptance check via a real surface", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Extended closed-record acceptance check (archive + live completed)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm backstop hook survives deploy", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Complete gate set (scoped run-all.sh per Batch Gate Deferral; unscoped verify-deploy.sh/others)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm no hand-authored .claude/** path", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "First deploy-headless.sh run", "result": "failed", "reason": "surfaced two real task-312-caused findings: (1) a literal 'task 312' string leaked into test-force-phases.sh's --audit-override reason text, violating no-task-references-in-deliverables; (2) test-validate-task-creation-audit.sh's deliberate dirty-fixture command strings tripped lint-state-writer-boundary.sh, needing the same allowlist treatment its sibling test-lint-state-writer-boundary.sh already has. Both fixed; second deploy pass landed with only pre-existing/unrelated findings."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.gate-set",
+      "description": "Run the complete gate set unfiltered, including scripts/tests/run-all.sh",
+      "type": "altered",
+      "reason": "This dispatch's own Batch Gate Deferral section (named in the dispatch file, not the plan) directs discharging the final full-tier phase against a scoped narrowing invocation when this task is one of several co-dispatched implement-phase tasks in one /orchestrate batch. Ran run-all.sh --only against the 8 suites this task's phases actually touched/regressed (all pass) and deferred the full 172-suite run to the batch-level stage. verify-deploy.sh itself (which internally invokes most of the individual lint/validate scripts) WAS run unscoped, via deploy-headless.sh's own internal verify step -- only run-all.sh's slow leg is deferred, and that deferral is verify-deploy.sh's own pre-existing --skip-slow convention, not an additional narrowing this dispatch applied.",
+      "annotation": "*(completed, with the unfiltered run-all.sh leg DEFERRED per this dispatch's own Batch Gate Deferral section ...)*"
+    }
+  ]
+}

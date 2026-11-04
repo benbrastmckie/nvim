@@ -176,6 +176,13 @@ EXCLUDED_FILES=(
     "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh"
     "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"
 
+    # Same reason, for hooks/validate-task-creation-audit.sh's own fixture suite: its negative-
+    # polarity cases deliberately feed the hand-rolled stage-then-mv / direct-overwrite anti-
+    # pattern as a synthetic Bash command string (never executed against a real file -- it is
+    # fed to the HOOK under test as JSON, not run), to assert the hook refuses it. Without this
+    # entry the lint flags its own negative fixtures.
+    "agent-system/extensions/core/scripts/tests/test-validate-task-creation-audit.sh"
+
     # Vault restore: a bare `mv "${vault_path}/archive/state.json" "${vault_path}/state.json"`
     # file relocation, moving a whole state file into place. It is not a jq-staged
     # read-modify-write, so state-write.sh (which transforms content) is not the right tool.
