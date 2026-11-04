@@ -30,29 +30,53 @@
       "category": "PATTERN",
       "source_artifact": "specs/274_next_admissible_batch_suggestion/summaries/01_next-admissible-batch-suggester-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["admission-predicate", "no-forked-logic", "shell-out", "probe-invocation-cap", "orchestrate-batch-admit"]
+      "suggested_keywords": [
+        "admission-predicate",
+        "no-forked-logic",
+        "shell-out",
+        "probe-invocation-cap",
+        "orchestrate-batch-admit"
+      ]
     },
     {
       "content": "In this codebase's shared deploy-root-guard.sh pattern, a script that computes PROJECT_ROOT via common_repo_root(SCRIPT_DIR, 2) BEFORE sourcing deploy-root-guard.sh gets NO benefit from DEPLOY_ROOT_GUARD_SELF_CORRECT=1 when invoked from the source store: self-correct only sets $REPO_ROOT, which the caller must explicitly re-read AFTER sourcing the guard to actually use it. A script following the 'orchestrate-conclusion-aggregate.sh' convention (PROJECT_ROOT computed first, guard sourced after, never opting into self-correct) cannot be live-tested from the source store at all -- test it via a temporary, gitignored copy under .claude/scripts/ instead (remove after testing, never commit).",
       "category": "GOTCHA",
       "source_artifact": "specs/274_next_admissible_batch_suggestion/summaries/01_next-admissible-batch-suggester-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-root-guard", "self-correct", "source-store-testing", "PROJECT_ROOT", "scratch-copy"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "self-correct",
+        "source-store-testing",
+        "PROJECT_ROOT",
+        "scratch-copy"
+      ]
     },
     {
       "content": "update-task-status.sh's map_status() has a CLOSED operation:target_status vocabulary with no combination that resolves to state.json status 'not_started' -- every other status (researching/researched/planning/planned/implementing/partial/blocked/pr_ready/hold) has a resolving no-op token, but a task still in its initial status cannot receive a --depends-on-add (or any other) no-op status call via this script today. Any future caller of --depends-on-add must handle this case explicitly (loud fallback, never a silent drop or a guessed/wrong command) rather than assuming every live status is addressable.",
       "category": "INSIGHT",
       "source_artifact": "specs/274_next_admissible_batch_suggestion/summaries/01_next-admissible-batch-suggester-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["update-task-status", "depends-on-add", "map_status", "not_started", "no-op-status-call"]
+      "suggested_keywords": [
+        "update-task-status",
+        "depends-on-add",
+        "map_status",
+        "not_started",
+        "no-op-status-call"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793802705_e3f98a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

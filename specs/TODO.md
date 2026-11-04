@@ -7483,6 +7483,7 @@ either direction, deliberately -- see 401 for the reasoning.
 - **Dependencies**: Task 165, Task 272, Task 273, Task 275, Task 344
 - **Research**: [274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md]
 - **Plan**: [274_next_admissible_batch_suggestion/plans/01_next-admissible-batch-suggester.md]
+- **Summary**: [274_next_admissible_batch_suggestion/summaries/01_next-admissible-batch-suggester-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
