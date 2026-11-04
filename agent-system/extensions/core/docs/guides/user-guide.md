@@ -413,24 +413,20 @@ to the first 8 with a warning.
 
 #### Options
 
+The most commonly used flags:
+
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--research` | Force a research round, including on a terminal/archived task; composable with `--plan`/`--implement` in canonical order; never regresses status | false |
-| `--plan` | Force a plan round on the same terms as `--research`. Always admitted: dispatches `reviser-agent` when a plan already exists, `planner-agent` otherwise | false |
-| `--implement` | Force an implement round on the same terms as `--research`. Admitted only when a plan artifact exists, else excluded with "no plan artifact; run --plan first" | false |
-| `--lit` | Literature mode: inject paper/spec context for paper- or spec-based tasks | false |
-| `--hard` | High-effort mode: injects hard-mode behavioral contracts (churn/three-strikes/burnout counters); roughly 3-5x cost; composable with the other flags | false |
-| `--clean` | Skip automatic memory retrieval | false |
-| `--fast` | Low-effort mode: lighter reasoning, and skips the default research-first phase for a `not_started` task (the planner can still route back to research via `needs_research`); `--research` still forces research even under `--fast` | false |
-| `--haiku` | Use Haiku model (fastest, lowest cost) for research/plan/implement dispatches | false |
-| `--sonnet` | Use Sonnet model (balanced cost/quality) | false |
-| `--opus` | Use Opus model (highest quality, same as agent default) | false |
-| `--fable` | Use Fable model (claude-fable-5) | false |
-| `--compare` | Advisory-only, lean-implementation-scoped: run the Comparator gate against the implemented solution; never blocks completion | false |
-| `--gate` | Advisory-only: run an intermediate verification tier between the build and the full gate; never blocks or downgrades status | false |
+| `--research` / `--plan` / `--implement` | Force that phase round, composable in this canonical order; `--implement` requires a plan artifact to exist | false |
+| `--hard` | High-effort mode: injects hard-mode behavioral contracts; roughly 3-5x cost | false |
+| `--fast` | Low-effort mode: lighter reasoning, skips the default research-first phase for a `not_started` task | false |
 | `--dry-run` | Report-only: print the admission verdict for every task and dispatch nothing | false |
-| `--allow-self-modifying` | Opt-in, this-invocation-only bypass of the self-modification admission gate | false |
-| `--allow-scope-collision` | Opt-in, this-invocation-only bypass of the cross-batch `file_scope_collision` gate (never the in-batch one) | false |
+
+For the complete, current flag set (model-selection flags, `--lit`, `--clean`, `--compare`,
+`--gate`, and the opt-in admission-gate bypasses) see
+[`/orchestrate`'s own Options section](../../commands/orchestrate.md#options) — the authority for
+this command's full flag/option semantics, since Claude Code loads that file directly as the
+command's own instructions.
 
 **Canonical composition order**: `--research`, `--plan`, `--implement` compose — each named flag
 queues that phase, consumed in that order over however many cycles it takes. A task stops (never

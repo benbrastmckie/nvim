@@ -6,17 +6,12 @@ This guide helps you decide which component type to create when adding new capab
 
 ## Overview: Three-Layer Architecture
 
-The system uses a three-layer architecture where each layer has distinct responsibilities:
-
-```
-Layer 1: Commands         User-facing entry points (/orchestrate, /task, /review, ...)
-    |
-    v
-Layer 2: Skills           Specialized execution logic with input validation
-    |
-    v
-Layer 3: Agents           Full execution agents that do the actual work
-```
+The system uses a three-layer architecture — Commands (user-facing entry points), Skills
+(routing and input validation), and Agents (the execution layer that does the actual work) —
+each with distinct responsibilities. See
+[`architecture/system-overview.md`'s Three-Layer Architecture section](../architecture/system-overview.md#three-layer-architecture)
+for the full explanation; this guide focuses on which component to create, not how the layers
+work.
 
 ### Quick Summary
 

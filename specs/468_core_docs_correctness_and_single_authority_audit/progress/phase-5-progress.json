@@ -1,0 +1,26 @@
+{
+  "phase": 5,
+  "phase_name": "Single-authority consolidation",
+  "started_at": "2026-11-04T07:15:00Z",
+  "last_updated": "2026-11-04T07:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "user-guide.md Options table reduced to pointer", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 2, "description": "component-selection.md architecture preamble reduced to pointer", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/component-selection.md"]},
+    {"id": 3, "description": "Verify no new duplication introduced", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-run resolver and classified grep", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.2",
+      "description": "component-selection.md:~239-244 ('second three-layer rendering') is actually a File Location Reference directory tree, not a duplicate architecture explanation",
+      "type": "altered",
+      "reason": "Re-reading the content at implementation time showed it maps components to their on-disk paths, restating no prose from system-overview.md's Three-Layer Architecture section. Reducing it would delete unique, non-duplicative content rather than remove duplication.",
+      "annotation": "*(deviation: altered — scope narrowed to the ~7-18 preamble only, ~239-244 left untouched as non-duplicative)*"
+    }
+  ]
+}

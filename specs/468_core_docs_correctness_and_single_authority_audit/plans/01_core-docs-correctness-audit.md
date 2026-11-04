@@ -521,24 +521,38 @@ that bullet tests before any edit.
 
 ---
 
-### Phase 5: Single-authority consolidation [NOT STARTED]
+### Phase 5: Single-authority consolidation [COMPLETED]
 
 **Goal**: The two duplicated topics have exactly one authority each, with the duplicate sites
 reduced to pointers.
 
 **Tasks**:
-- [ ] `guides/user-guide.md`'s `/orchestrate` Options table (`~:415-431`) is a near-verbatim
+- [x] `guides/user-guide.md`'s `/orchestrate` Options table (`~:415-431`) is a near-verbatim
       restatement of `commands/orchestrate.md`'s Options table, and has already drifted (it omits
       `--allow-scope-collision`). Replace it with a short "most commonly used flags" subset — or
       drop the table entirely — plus a link to `../../commands/orchestrate.md`'s Options section
-      as the authority for the full, current reference. Concise over exhaustive.
-- [ ] `guides/component-selection.md`'s architecture-explanation preamble (`~:7-18`) and its
+      as the authority for the full, current reference. Concise over exhaustive. *(completed:
+      reduced to a 4-row "most commonly used flags" table plus a resolving link to
+      `../../commands/orchestrate.md#options`. Correction to the plan's own drift claim: at
+      implementation time the full table in `user-guide.md` DID already carry
+      `--allow-scope-collision` — the plan's hypothesis was stale, noted here rather than
+      silently corrected)*
+- [x] `guides/component-selection.md`'s architecture-explanation preamble (`~:7-18`) and its
       second three-layer rendering (`~:239-244`) are reduced to a one-paragraph summary plus a
       link to `../architecture/system-overview.md`'s Three-Layer Architecture section. The file
       keeps its unique value — the "which component do I create" decision tree — intact.
-- [ ] Verify no new duplication was introduced: the pointer text must not restate the
-      authority's content, only name it.
-- [ ] Re-run the resolver (both edits add links) and the classified grep.
+      *(completed with a scope correction: only the `~:7-18` preamble — prose + ASCII diagram —
+      was duplicative explanation and was reduced. The `~239-244` site is a "File Location
+      Reference" directory-tree listing where component files physically live on disk, not a
+      second explanation of layer responsibilities; it restates no content from
+      `system-overview.md`'s Three-Layer Architecture section and was left untouched rather than
+      force-fit into this task)*
+- [x] Verify no new duplication was introduced: the pointer text must not restate the
+      authority's content, only name it. *(completed: both pointers name the authority without
+      restating its content)*
+- [x] Re-run the resolver (both edits add links) and the classified grep. *(completed: both new
+      links resolve; resolver clean apart from the file_scope exclusion; classified grep
+      unchanged from Phase 4)*
 
 **Timing**: 1 hour
 
