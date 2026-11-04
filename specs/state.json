@@ -768,6 +768,11 @@
           "path": "specs/312_backlog_reconciliation_required_at_task_creation/plans/01_backlog-reconciliation-task-creation.md",
           "type": "plan",
           "summary": "9 phases across 5 dependency waves: contract document and file_scope extension, raw-writer migration onto state-write.sh, the shared audit-task-proposals.sh matcher, the regression fixture suite, the state-write.sh audit-evidence gate, Component 4b in the creation standard, the Bash-matcher backstop hook, per-surface wiring, and a final deploy-plus-full-gate phase."
+        },
+        {
+          "path": "specs/312_backlog_reconciliation_required_at_task_creation/summaries/01_backlog-reconciliation-task-creation-summary.md",
+          "type": "summary",
+          "summary": "All 9 plan phases complete: shared audit-task-proposals.sh matcher, state-write.sh's audit-evidence gate, the structural backstop hook, Component 4b, and all seven creation surfaces wired and verified live against the deployed tree."
         }
       ],
       "next_artifact_number": 2,
@@ -798,7 +803,8 @@
         "agent-system/extensions/core/skills/skill-meta/SKILL.md",
         "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
         "specs/state.json"
-      ]
+      ],
+      "completion_summary": "Implemented the two-layer backlog-reconciliation mechanism: scripts/audit-task-proposals.sh (shared matcher, mechanical + semantic passes, open+closed corpus), scripts/state-write.sh's audit-evidence gate (--audit-verdict/--audit-override, exit 5), hooks/validate-task-creation-audit.sh (structural backstop), Component 4b in the Multi-Task Creation Standard, and wiring into all seven creation surfaces (/meta, /task, /fix-it, /spawn, /review, /errors). Verified live against the deployed tree: both the open-backlog and closed-record (archived + live-completed) acceptance cases pass, the backstop hook refuses a raw bypass write post-deploy, and the scoped regression suite (8 suites) is green. Four pre-existing, unrelated findings were observed during the full gate sweep and recorded non-fatally rather than fixed."
     },
     {
       "project_number": 313,

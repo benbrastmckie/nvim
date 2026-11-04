@@ -6604,6 +6604,7 @@ that produces no finding.
 - **Dependencies**: Task 165, Task 282, Task 300, Task 344
 - **Research**: [312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md]
 - **Plan**: [312_backlog_reconciliation_required_at_task_creation/plans/01_backlog-reconciliation-task-creation.md]
+- **Summary**: [312_backlog_reconciliation_required_at_task_creation/summaries/01_backlog-reconciliation-task-creation-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/` (never `.claude/**`, a disposable deploy artifact -- see `rules/source-store-deploy-boundary.md`).
 

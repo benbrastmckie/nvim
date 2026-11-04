@@ -1,10 +1,95 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/312_backlog_reconciliation_required_at_task_creation/summaries/01_backlog-reconciliation-task-creation-summary.md",
+      "summary": "All 9 plan phases complete: shared audit-task-proposals.sh matcher over the open-union-closed backlog corpus, state-write.sh's audit-evidence gate (exit 5), the validate-task-creation-audit.sh structural backstop hook, Component 4b in the creation standard, and all seven creation surfaces wired and verified live against the deployed tree."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the two-layer backlog-reconciliation mechanism: scripts/audit-task-proposals.sh (shared matcher, mechanical + semantic passes, open+closed corpus), scripts/state-write.sh's audit-evidence gate (--audit-verdict/--audit-override, exit 5), hooks/validate-task-creation-audit.sh (structural backstop), Component 4b in the Multi-Task Creation Standard, and wiring into all seven creation surfaces (/meta, /task, /fix-it, /spawn, /review, /errors). Verified live against the deployed tree: both the open-backlog and closed-record (archived + live-completed) acceptance cases pass, the backstop hook refuses a raw bypass write post-deploy, and the scoped regression suite (8 suites) is green. Four pre-existing, unrelated findings were observed during the full gate sweep and recorded non-fatally rather than fixed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/meta-builder-agent.md",
+    "agent-system/extensions/core/commands/errors.md",
+    "agent-system/extensions/core/commands/review.md",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/context/patterns/backlog-reconciliation.md",
+    "agent-system/extensions/core/context/patterns/task-expand-mode.md",
+    "agent-system/extensions/core/context/workflows/meta-interview.md",
+    "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+    "agent-system/extensions/core/hooks/validate-task-creation-audit.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/root-files/settings.json",
+    "agent-system/extensions/core/scripts/audit-task-proposals.sh",
+    "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+    "agent-system/extensions/core/scripts/state-write.sh",
+    "agent-system/extensions/core/scripts/test-state-write-concurrency.sh",
+    "agent-system/extensions/core/scripts/tests/test-audit-task-proposals.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-task-creation-audit.sh",
+    "agent-system/extensions/core/skills/skill-fix-it/SKILL.md",
+    "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+    "agent-system/extensions/core/skills/skill-spawn/SKILL.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a new PreToolUse Bash-matcher guard needs to detect a hazardous literal (e.g. a jq field name like 'active_projects') inside a shell command string, decide per-signal whether to scan the RAW command text or the quote-stripped COMMAND_SCAN text the git-family guards (guard-destructive-git.sh/guard-git-push.sh) already use. COMMAND_SCAN's quote-strip (sed -z 's/\"[^\"]*\"/\"\"/g') exists to avoid false positives from argv-STRUCTURE detectors (e.g. a commit message that happens to quote 'git commit --amend'). But a hazardous field name is almost always INSIDE a quoted jq filter argument (e.g. '.active_projects += [...]'), so scanning only COMMAND_SCAN for it produces a false NEGATIVE that silently defeats the detector's whole purpose. Fix: scan structural signals (redirect targets, mv/sed/tee shapes) against COMMAND_SCAN, but scan content-literal signals (a specific field/string that is expected to live inside quotes) against the RAW command. Verify any new Bash-matcher hook against its primary required case with a literal reproduction before trusting it, not just against synthetic unit fixtures -- a wrong default choice here passes shellcheck and a hand-built fixture suite but silently misses the real case.",
+      "category": "TECHNIQUE",
+      "source_artifact": "agent-system/extensions/core/hooks/validate-task-creation-audit.sh",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "pretooluse-hook",
+        "command-scan",
+        "quote-stripping",
+        "bash-matcher-guard",
+        "false-negative"
+      ]
+    },
+    {
+      "content": "A jq filter like `$newnums | index(.project_number)` inside a `map(...)` pipeline is a classic jq scoping bug: index()'s argument expression `.project_number` evaluates against index()'s OWN input (the array $newnums being piped in), not against the current map() element -- `.` inside `EXPR` of `arr | index(EXPR)` is `arr` itself, not the enclosing pipeline's `.`. This produces 'Cannot index array with string' or silently wrong results depending on shape. Fix: bind the needed scalar from the map element to a named variable BEFORE piping into index() -- `.project_number as $pn | ($newnums | index($pn))`. Separately, `$obj[EXPR]` (object bracket-indexing) raises 'Cannot index object with null' when EXPR evaluates to null (e.g. a missing/absent field read via `.field` with no `// default`) -- always guard with `(.field // \"\")` before using a read field as an object index, even when the field is 'always present' by the data model, since a test fixture or edge case will eventually violate that assumption.",
+      "category": "TECHNIQUE",
+      "source_artifact": "agent-system/extensions/core/scripts/state-write.sh",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "jq",
+        "index-function-scoping",
+        "map-pipeline",
+        "null-indexing",
+        "object-bracket-index"
+      ]
+    },
+    {
+      "content": "When adding a new required-evidence gate to a shared, widely-called writer (e.g. state-write.sh's audit-evidence gate for new active_projects entries), proactively re-run EVERY pre-existing test suite that exercises that writer's creation path, not just the suites for the new feature -- a fixture that creates a record as SETUP for an unrelated test (e.g. a concurrency or payload-size test) will silently start failing once the new gate requires evidence it never provides. The fix is almost always a one-line addition (e.g. --audit-override \"test fixture\") to the fixture's own write call, not a change to the gate. Budget time for this sweep whenever a new gate's trigger condition (not its flag name) matches an existing writer's pre-existing, unrelated callers.",
+      "category": "PATTERN",
+      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/progress/phase-5-progress.json",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "regression-sweep",
+        "shared-writer",
+        "gate-addition",
+        "fixture-setup",
+        "audit-evidence"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793751501_7c2a77",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 9,
+    "phases_total": 9
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
