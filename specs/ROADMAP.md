@@ -71,13 +71,14 @@ ready now** — its research landed and is linked. The chain `275 -> 274 -> 378 
 P3 is optional.
 
 ```
+/orchestrate 282, 312   # OWNER OVERRIDE, runs first: stop the backlog growing duplicates
 /orchestrate 275, 274, 378, 387, 407   # P0 keystone: gates 36 of 59 records, width 1 by construction
 /orchestrate 429, 328   # P0: fix the measurement instrument, then the consolidation it measures
 /orchestrate 414, 415, 419, 418, 445, 444   # P1 verification spine: verify-deploy and shell-script-testing
 /orchestrate 385, 397, 398, 399, 428, 430, 401, 409   # P1 tail plus lean research chain, off core territory
-/orchestrate 282, 22, 29, 369, 391, 390, 402, 338   # loader chain, task siting, conclusion stage
+/orchestrate 22, 29, 369, 391, 390, 402, 338   # loader chain, task siting, conclusion stage
 /orchestrate 435   # whole-corpus reword: alone, per-class and per-site, blanket substitution forbidden
-/orchestrate 446, 448, 360, 313, 431, 312, 459, 458   # the consolidation record's consumers
+/orchestrate 446, 448, 360, 313, 431, 459, 458   # the consolidation record's consumers
 /orchestrate 421, 436, 438, 439, 454, 420, 449, 452   # creation-gate consumers and command surfaces
 /orchestrate 450, 451, 455, 457, 453, 408, 410, 412   # P3 bulk, all edges satisfied above
 /orchestrate 423, 437, 456, 383, 384   # P3 leaves: nothing depends on any of them
@@ -85,10 +86,27 @@ P3 is optional.
 
 Why this order:
 
-- **Call 1 is the keystone chain and width 1 is the point, not a flaw.** Fan-outs 26/21/20/17/13,
-  one territory (orchestrate machinery), pre-existing edges throughout. Run it first even though
-  it is slow.
-- **Call 2 pairs the instrument with its consumer, under an edge.** `script-inventory.sh`
+- **Call 1 is an owner override of the fan-out ranking, and the override is the point.** Both
+  members are P2 by fan-out (3 and 2), so strict ranking buried them at call 8. But fan-out
+  measures what a record *unblocks*, not what the backlog *costs*: 312 is the creation-time gate
+  that compares a proposed task against every existing record before it is written, and until it
+  lands, every call below can add duplicates faster than the calls drain them. The one measurement
+  available says the rate is high — of eight proposals a conclusion stage put to the user,
+  **five already had open records covering them**, caught only by a hand check. 282 leads because
+  312 declares an edge onto it (the bare-registration pattern a blocking hook needs). Nothing else
+  gates 312, so this call is dispatchable immediately.
+- **Its scope now includes closed records** (owner decision): 380 archived plus 35 completed
+  awaiting archival are invisible to an open-only matcher, and the manual convention it replaces
+  already checks the archive — at least three open records carry a hand-written "No active or
+  archived record covers this". Open-only would have been a regression against current practice.
+  Two constraints carried in the records: an open match and a closed match are different verdicts
+  (the first actionable on the task graph, the second on the discharging artifact), and a closed
+  match must never auto-suppress a proposal, because a concern can legitimately recur after the
+  record addressing it closed.
+- **Call 2 is the keystone chain and width 1 is the point, not a flaw.** Fan-outs 26/21/20/17/13,
+  one territory (orchestrate machinery), pre-existing edges throughout. Run it even though it is
+  slow; it unblocks 36 records.
+- **Call 3 pairs the instrument with its consumer, under an edge.** `script-inventory.sh`
   enumerates via `git ls-files`, so an unstaged new file is invisible and the running net-deletion
   figure is biased *favourably* — the one direction a net-deletion criterion cannot tolerate. 328's
   own plan carries a hand workaround for this, which is evidence the defect is live. 14 of 328's
@@ -97,21 +115,23 @@ Why this order:
 - **328 will not finish in one invocation.** 20 phases, 6 terminal, 5-cycle budget. Expect three
   or four invocations; `MAX_CYCLES reached` is not a failure here. It runs with only its
   instrument because its 126 scope entries overlap 32 records (decision 19).
-- **Calls 3-4 are the verification layer.** `414 -> 415 -> 445 -> 444` serializes on
+- **Calls 4-5 are the verification layer.** `414 -> 415 -> 445 -> 444` serializes on
   `verify-deploy.sh` and `tests/run-all.sh`; `419 -> 418` on the state-writer lint and
   `shell-script-testing.md`. 419 needs 275, which call 1 drains. Call 4 adds the lean research
   chain, territory-disjoint from core.
-- **Call 5 is the loader chain.** `22 -> 29 -> 369 -> 391 -> 390` on `init.lua`/`merge.lua` then
+- **Call 6 is the loader chain.** `22 -> 29 -> 369 -> 391 -> 390` on `init.lua`/`merge.lua` then
   `source-store-deploy-boundary-narrative.md`, so the authoring hole closes before mis-sited
   records migrate through it. 402 joins at the tail once 391 lands.
-- **Call 6 runs the reword alone**: 83 scope entries over 1,628 references in 360 files, with a
+- **Call 7 runs the reword alone**: 83 scope entries over 1,628 references in 360 files, with a
   blanket find-and-replace forbidden by the record itself.
-- **Call 8's internal order is load-bearing.** The backlog-reconciliation record leads: it builds
-  `scripts/audit-open-tasks.sh` as the one shared "is this concern already open" matcher, and two
-  members of this call consume it. The ruling left open there — whether consuming it is mandatory
-  for a surface rendering *proposals* rather than attempting a *creation* — is named in both
-  records, not assumed.
-- **Calls 9-10 are leaves.** Nothing depends on them. Reorder or defer freely.
+- **Call 9 consumes call 1's matcher, and that coupling is the thing to get right.** Two of its
+  members (the `/distill --meta` retargeting and the edge-rationale check) depend on the shared
+  matcher call 1 builds, and both now carry the cross-reference. The ruling left open there —
+  whether consuming it is *mandatory* for a surface rendering *proposals* rather than attempting a
+  *creation* — is named in both records, not assumed. The hazard if it is ignored: two
+  concern-matchers with two fixtures, which is the duplicate-mechanism outcome the matcher exists
+  to prevent, reproduced inside the deduplication machinery.
+- **Calls 10-11 are leaves.** Nothing depends on them. Reorder or defer freely.
 
 **Verified mechanically 2026-11-03**: 59 of 60 open records named once each, none over
 `MAX_TASKS`, and every record's open blockers land in an earlier call or its own. The omission is

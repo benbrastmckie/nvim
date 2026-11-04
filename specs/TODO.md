@@ -6,7 +6,7 @@ next_project_number: 461
 
 ## Task Order
 
-*Updated 2026-11-03. Generated from state.json dependency graph.*
+*Updated 2026-11-04. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -1976,6 +1976,30 @@ REQUIRED, three parts:
 CONSUMER, NOT AUTHOR, OF THE MATCHING IMPLEMENTATION -- added 2026-11-03. The "match it against non-terminal entries in specs/state.json" requirement above is NOT this record's to invent. Task 312 (`backlog_reconciliation_required_at_task_creation`) designs exactly that mechanism, and designs it as a SHARED one: its deliverable 2 is "a single shared implementation, `scripts/audit-open-tasks.sh`, that every creation surface calls rather than each re-implementing", returning a fixed verdict vocabulary (genuinely-new; duplicate-of-N; subset-of-N; superset-of-N; overlaps-N-add-edge; narrow-N) and reusing the existing overlap predicate for its mechanical pass rather than forking it. Its deliverable 3 is the semantic/intent pass that catches the hard class this record's Gap 2 is about -- a proposal whose concern is already covered but whose declared paths barely intersect. A dependency edge onto 312 is declared for this reason.
 CONSEQUENCE FOR THIS RECORD'S SCOPE: `/distill --meta` should CALL that implementation and render its verdicts, not build a second heuristic with a second fixture. Taken literally and in isolation, the Gap 2 sentence "state the matching heuristic chosen and pin it with a fixture containing a known-duplicate pair" reads as an instruction to author one here; read it instead as an instruction to state WHICH verdicts this surface renders and how, and to pin THAT with a fixture.
 THE RULING IS DELIBERATELY NOT PRE-MADE, and it is the one thing to settle before planning: whether consuming `audit-open-tasks.sh` is MANDATORY for this surface, or whether a lighter concern-match local to `--meta` is admissible because its input is a proposal set rather than a task-creation attempt. Argue it both ways and record the verdict. Against a local heuristic: two implementations of "is this concern already open" is precisely the duplicate-mechanism outcome 312 exists to prevent, and this record's own consolidation bias and net-deletion posture argue against adding a second one. For a local heuristic: 312's enforcement hook fires at task-CREATION time, and this surface needs the verdict EARLIER, at proposal-RENDER time, which may not be the same call shape. If the verdict is "consume it", say so and let the edge carry the ordering; if it is "a local match is admissible", state what keeps the two from drifting.
+
+SCOPE FOLLOW-ON (owner decision, 2026-11-03): THE MATCHER NOW COVERS CLOSED RECORDS, AND THIS
+SURFACE MUST RENDER THAT CASE. Gap 2 above says "match it against non-terminal entries in
+specs/state.json". That is now too narrow: task 312's shared matcher was widened by owner decision
+to compare a proposal against closed records as well -- 380 in specs/archive/state.json plus the
+completed-status entries still in the live state file, 415 at the time of the decision. Read Gap 2's
+"non-terminal" as superseded by that wider contract.
+WHAT CHANGES FOR THIS RECORD specifically: an open match and a closed match are DIFFERENT
+renderings, and `--meta` owns both. An open match renders as a cross-reference to the live record,
+as Gap 2 already says. A closed match renders as a cross-reference to the DISCHARGING ARTIFACT --
+the report, plan or summary that settled it -- carrying the closed record's project_name, never a
+bare archived task number, because vault operations renumber archived records and a number can rot
+into unrelated work.
+AND A CLOSED MATCH DOES NOT AUTO-SUPPRESS THE PROPOSAL. This matters more here than at the
+creation surface, because this record's whole posture is consolidation-biased and net-deletion, and
+that posture makes silent suppression tempting. A concern can legitimately recur after the record
+addressing it closed: a defect worked around by hand inside a completed phase rather than fixed, a
+contract recorded but never enforced, a fix that landed for one call site and not its siblings.
+Render the match and the artifact; surface the ruling. A proposal suppressed because some closed
+record once touched the same area is unfalsifiable from the proposal side, which is a worse
+failure than the duplication Gap 2 is about.
+ACCEPTANCE, EXTENDED: given a fixture whose issues.jsonl carries a class discharged by a CLOSED
+record, `--meta` renders a cross-reference to that record's project_name and the discharging
+artifact's path, creates nothing, and does NOT drop the proposal silently.
 
 ---
 
@@ -6404,6 +6428,63 @@ A task-creation attempt that duplicates, subsumes or is subsumed by an open task
 Task 421 (`retarget_distill_meta_as_evidence_consumer`) independently requires the same capability and declares an edge onto this record. Its own "GAP 2: NO DEDUP AGAINST ALREADY-OPEN TASKS" section carries the sharpest measurement available on this concern: of eight proposals one orchestration conclusion stage put to the user on 2026-10-15, FIVE already had open tasks covering them, caught only because the orchestrator checked specs/state.json by hand immediately before dispatch.
 WHY THIS MATTERS TO THIS RECORD'S DESIGN, not just its ordering: deliverable 2 above commits to "a single shared implementation ... that every creation surface calls rather than each re-implementing". That commitment is only real if the verdict interface is usable by a surface that is NOT a task-creation attempt. 421 needs verdicts at proposal-RENDER time, over a SET of proposals, before any task exists to create -- whereas deliverable 4's enforcement hook fires at creation time against a single attempt. Design the `audit-open-tasks.sh` interface so both call shapes are served: at minimum it must accept proposals that carry no allocated task number and no task directory, and it must be callable without the enforcement hook in the path.
 If that is judged out of scope here, say so explicitly and state which record owns the proposal-time shape, so the two do not each grow their own matcher by default. A silent divergence here reproduces, inside the deduplication machinery, exactly the failure this record exists to fix.
+
+## Scope widened: closed records count too (owner decision, 2026-11-03)
+
+The reconciliation above was specified against the OPEN backlog only -- this record's own problem
+statement says "Nothing compares a proposed task against the non-terminal tasks already in
+specs/state.json", and deliverable 2 is named `audit-open-tasks.sh` accordingly. That is now too
+narrow by owner decision: a proposal must be compared against CLOSED records as well.
+
+MEASURED REASON. 415 closed records exist and are invisible to the mechanism as originally
+specified: 380 in specs/archive/state.json (completed_projects + archived_projects +
+abandoned_projects) and 35 more still sitting in specs/state.json with status completed, awaiting
+archival. A proposal that re-litigates finished work costs exactly what a proposal duplicating
+open work costs, and is harder for a human to catch because the record is no longer in TODO.md.
+The convention this mechanism replaces ALREADY checks the archive -- at least three open records
+carry a hand-written duplicate check reading "No active or archived record covers this" -- so
+open-only matching would be a REGRESSION against current manual practice, not a first step
+toward it.
+
+SECOND INPUT. specs/archive/state.json, plus the completed-status entries still in
+specs/state.json. Both are reads, not edit targets, so this record's file_scope is unchanged.
+Note the two must be unioned: a record completed-but-not-yet-archived lives in the live file, and
+archival moves it, so a matcher reading only one of the two has a window where recently finished
+work is invisible.
+
+THE VERDICT VOCABULARY MUST DISTINGUISH OPEN FROM CLOSED, not collapse them. The two call for
+different operator actions and a single `duplicate-of-N` cannot carry both:
+- An OPEN match is actionable on the task graph: fold, add an edge, narrow a scope, widen the
+  existing record.
+- A CLOSED match is actionable on EVIDENCE: cite the artifact that discharged it and either drop
+  the proposal or state what is genuinely new relative to what landed.
+Suggested minimum addition: `covered-by-closed-N` carrying the discharging artifact's path.
+
+A CLOSED MATCH IS NOT AUTOMATICALLY A REASON TO DROP THE PROPOSAL, and the mechanism must not
+treat it as one. A concern can recur after the record addressing it closed, and can recur
+legitimately: a defect worked around by hand inside a completed phase rather than fixed; a
+contract recorded but never enforced; a fix that landed for one call site and not its siblings.
+Render the match and the discharging artifact, then let the ruling be made. Silently suppressing a
+proposal because some closed record once named the same area is a worse failure than the
+duplication this record exists to prevent -- it is unfalsifiable from the proposal side.
+
+CITE A DURABLE ANCHOR, NEVER A BARE ARCHIVED NUMBER. Archived task numbers are renumbered by
+vault operations (see rules/state-management.md), so a verdict pointing at "task N" in the archive
+can rot into pointing at unrelated work. A closed-record verdict must carry the record's
+project_name and the discharging artifact's path, with the number as a convenience at most. This
+is the same constraint rules/no-task-references-in-deliverables.md imposes on deliverables, for
+the same underlying reason.
+
+THE DELIVERABLE'S NAME IS NOW WRONG and should be settled during planning rather than inherited:
+`audit-open-tasks.sh` describes the narrower scope. Either rename it for what it does or record
+why the name is kept; do not ship a shared, widely-called script whose name contradicts its
+contract. A rename changes this record's declared file_scope, so decide it before the file is
+created, not after.
+
+ACCEPTANCE, EXTENDED. In addition to the open-backlog fixture above: a proposal whose concern was
+discharged by a CLOSED record yields `covered-by-closed-N` naming that record's project_name and
+the discharging artifact, and does so for a record in the archive AND for a completed record still
+in the live state file.
 
 ---
 
