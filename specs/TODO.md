@@ -1,5 +1,5 @@
 ---
-next_project_number: 472
+next_project_number: 473
 ---
 
 # TODO
@@ -17,7 +17,7 @@ next_project_number: 472
 | 4 | 387,391,428,439,444,448 | 328,369,378,418,431,445 | core-agent-system, orchestrator, agent-system |
 | 5 | 390,401,402,407,430 | 387,391,428 | file-scope-lifecycle, orchestrator, agent-system |
 | 6 | 313,409,421,435,446 | 328,385,401,402,407,430 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 7 | 360,420,436,438,454,455,461 | 313,409,418,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, agent-system |
+| 7 | 360,420,436,438,454,455,461,472 | 313,328,409,418,428,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 8 | 449,451,452,457 | 360,385,420,435,444,448,455 | core-agent-system, extensions, lean-extension, ... |
 | 9 | 450,462 | 420,435,449,451 | lean-extension, orchestrator |
 
@@ -103,6 +103,7 @@ next_project_number: 472
         └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
           └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
       └─ 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
+        └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
@@ -123,6 +124,108 @@ next_project_number: 472
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 472. Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop the defect recorder refusing every consumer-repo attribution
+- **Effort**: 4 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 328, Task 378, Task 428, Task 435
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**, a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+## Goal
+
+A partial-status handoff carrying a non-empty `blockers` array must not crash the handoff validator, must not be reported as a required-field failure it is not, and must not be attributed to the wrong owner. Separately, the system-defect recorder must not refuse every handoff-validation defect raised from a consumer repository.
+
+## Provenance: one dispatch, two coupled defects
+
+Both sub-problems below were observed together in a single dispatch: session sess_1793770123_ca991a, task 761 in the BimodalLogic consumer repo, dispatch_seq 26, agent lean-implementation-agent, phase implement, 2026-11-04. The run recorded defect_class HANDOFF_VALIDATION_FAILED with attributed_path agent-system/extensions/core/skills/skill-orchestrate/SKILL.md and detecting_site skill-orchestrate/SKILL.md:cycle-postflight-handoff-validation. Postflight recovered and persisted `partial` correctly, so no task status was lost.
+
+Sub-problem 2 is what makes sub-problem 1 hard to study after the fact: because the durable append failed, the only record of the firing was this run's in-memory multi-task state, and specs/events.jsonl carries no entry for it. The diagnosis below therefore had to be reconstructed by re-running the validator by hand against the surviving handoff rather than read out of the durable record, and that reconstruction is the only reason the original premise (below) could be corrected at all.
+
+## PREMISE CORRECTION -- read before planning
+
+The change request that produced this record stated that the validator's `partial`-without-continuation WARNING escalated into the postflight ERROR. THAT IS NOT WHAT HAPPENED, and planning against it would send the implementer after a non-defect. Verified by re-running the deployed validator against the surviving handoff at specs/761_ladder_realization_theorem/.orchestrator-handoff.json:
+
+  - validate-handoff.sh exit code was 5, not 0 and not 1.
+  - Its output stops after `[PASS] Blockers array present with 4 entry(s)`. The Validation Summary block never printed, so neither of the script's own `exit 0` / `exit 1` summary paths was ever reached.
+  - The deployed copy at .claude/scripts/validate-handoff.sh is byte-identical to the source-store copy (diff clean), so a stale deploy tree is excluded as a cause.
+  - The warning path is confirmed non-escalating on its own merits: Check 5 calls log_warn, and the summary block maps warnings-only to `exit 0` with `HANDOFF VALIDATION PASSED WITH WARNINGS`.
+
+## Sub-problem 1 (verified root cause): Check 7 aborts under `set -euo pipefail`
+
+The handoff's `blockers` is an array of four PLAIN STRINGS. The schema requires objects. context/schemas/orchestrator-handoff-schema.json defines `blockers.items` as `{"type":"object","required":["phase","target"]}`, and docs/architecture/handoff-schema.md's `blockers` field definition says each entry uses the canonical object shape.
+
+validate-handoff.sh Check 7 iterates the array and evaluates `jq -r ".blockers[$i].phase // \"__MISSING__\""`. Against a string element jq fails with `Cannot index string with string ("phase")` and exits 5. The call suppresses the message with `2>/dev/null` but NOT the exit status, and with `set -euo pipefail` in force (validate-handoff.sh:19) the failed command substitution aborts the whole script with jq's 5. Note the contrast one line earlier: the `blockers_count` assignment is guarded with `|| echo "0"`; the two per-element assignments inside the loop carry no such guard.
+
+Consequences, all three to be addressed:
+
+  (a) A real schema violation is reported as something it is not. orchestrate-cycle-postflight.sh's handoff-validation block treats any nonzero exit as `ERROR: HANDOFF VALIDATION FAILED -- ... fails validate-handoff.sh's required-field checks`. No required-field check failed; every one passed. The block then derives `failing_fields` by grepping the output for `^[FAIL]` lines, finds none, and omits the flag -- so the recorded defect carries no detail naming the actual problem.
+  (b) The defect is attributed to the wrong owner. The postflight attributes to skill-orchestrate/SKILL.md (or, via its local resolver, the dispatched agent's file), when the mechanical fault is validate-handoff.sh's own unguarded indexing.
+  (c) The authoring site never told the agent the shape. agent-system/extensions/lean/agents/lean-implementation-agent.md's handoff block (around line 216) states explicitly that `artifacts[]` entries "MUST use that schema's `{type, path, summary}` object shape, never a bare path string", and for `blockers` says only that it "is a JSON array, and `[]` is normal and expected". An agent writing a NON-EMPTY blockers array is given no element shape at all, which is exactly the hole that produced a string array here. The same gap should be checked in lean-implementation-hard-agent.md and core/agents/general-implementation-agent.md.
+
+Also determine why the write-time gate did not catch it: hooks/validate-handoff-location.sh is documented as rejecting a write whose `blockers` key is absent, but it evidently does not check element shape, so a string-shaped array passes the write-time gate and only detonates in postflight.
+
+Required outcome for sub-problem 1: a string-shaped (or otherwise non-object) blockers element yields a clean, deterministic FAIL naming the offending index and the expected shape, with the summary block reached and the exit code being the validator's own, never jq's. The authoring instruction and the validator must agree on the element shape, and the authoring site must state it at the point of authoring.
+
+INHERITED NON-GOAL, carried forward from the closed record handoff_required_fields_and_dropped_failure and binding here: DO NOT resolve this by relaxing or deleting Check 7 so the failure stops appearing. A string-shaped blockers array is a real schema violation and must be reported as one. The defect is that it aborts instead of reporting, not that it is checked.
+
+REUSE THE EXISTING FIX PATTERN, DO NOT INVENT ONE. The closed record pin_handoff_artifacts_element_shape solved the identical problem one field over: research dispatches were writing `artifacts` as an array of bare path strings, the consumer's indexing raised the same "Cannot index string" class of error, and the remedy was to pin the element shape unambiguously in the agent contracts. That record's scope covered the research agents and the `artifacts[]` field only. It is the direct reason the implementation-agent instruction carries an explicit `artifacts[]` object-shape sentence and no `blockers[]` equivalent: the earlier work pinned one field at the research sites and stopped there. Follow its shape for `blockers[]` at the implementation sites.
+
+Separately, and NOT the cause of this firing: Check 5's `partial`-without-continuation inconsistency. START BY READING WHAT WAS ALREADY RULED, rather than re-opening it blind. The closed record handoff_required_fields_and_dropped_failure explicitly put this in scope -- "Rule on `sorry_inventory` and `continuation_path` in the same pass: either they are genuinely optional and the WARN should go, or they are expected and belong in whichever mechanism (i)/(ii) establishes." The WARN is still present and still non-escalating, which is consistent with a deliberate ruling that the field is optional and the warning stays advisory. Establish which it was. If it was settled, record that the contract is already coherent and close this item without a change; if the ruling never landed, settle it so the validator, the schema document and the authoring instruction state the same thing. Do not treat it as the explanation for the ERROR under any outcome.
+
+## Sub-problem 2 (verified root cause): the recorder refuses in every consumer repo
+
+The postflight printed `Note: system-defect recording failed (non-fatal)` and the durable specs/events.jsonl record was never written. Reproduced directly: invoking system-defect-record.sh from BimodalLogic with exactly the arguments the postflight call site passes exits 3 with
+
+  [SYSTEM-DEFECT RECORDER] REFUSING: Signal B attribution unresolvable (attributed-path='' dispatched-agent='lean-implementation-agent' did not resolve to a path under agent-system/extensions/**). Log only, no record.
+
+The mechanism: system-defect-record.sh resolves `--dispatched-agent` by globbing "$PROJECT_ROOT"/agent-system/extensions/*/agents/NAME.md. That tree exists only in the source-store repo, never in a consumer repo, so the glob cannot match and the path-prefix case refuses. The handoff-validation call site (orchestrate-cycle-postflight.sh around line 795) passes `--dispatched-agent "$agent_name"` and NO `--attributed-path`, so there is nothing else to resolve from. THIS IS STRUCTURAL, NOT INCIDENTAL: from any consumer repository this call site can never produce a durable record.
+
+Compounding it, the refusal is loud by design but silenced in practice. The recorder writes its REFUSING line to stderr, the call site redirects `2>/dev/null`, and only the generic non-fatal note survives. The operator sees that recording failed but never why.
+
+Note the near-miss in the same block: the postflight DOES compute an `hv_agent_path` fallback to `$attributed_path`, using the same glob -- but it computes it AFTER the recorder call, and passes it only to the in-memory append, never to the recorder.
+
+Scope the fix across call sites rather than patching one. orchestrate-cycle-postflight.sh makes 15 system-defect-record.sh invocations; three pass only `--dispatched-agent` with no `--attributed-path` (around lines 552, 795, 1087) and are therefore subject to the same structural refusal, while the remaining sites do pass `--attributed-path`.
+
+Required outcome for sub-problem 2: either the attribution is resolvable from a consumer repo (e.g. hoist the existing fallback above the call and pass `--attributed-path`), or the refusal is surfaced loudly enough that an operator can act on it. A defect-recording path that fails silently-but-non-fatally defeats the durable-record guarantee the System Defects Detected output section promises, namely that the durable record of each firing is already in specs/events.jsonl. Whichever direction is chosen, the `2>/dev/null` that swallows the recorder's own reason must be reconsidered.
+
+## Acceptance
+
+  1. A fixture handoff whose `blockers` is an array of strings produces a reported FAIL (not an abort, not exit 5), reaches the Validation Summary, and names the offending index -- added to scripts/tests/test-validate-handoff.sh.
+  2. A postflight test asserts that a handoff-validation defect raised with only a dispatched-agent name, from a repo with no agent-system/ tree, either records durably or emits a reason the operator can read -- added to scripts/tests/test-orchestrate-cycle-postflight.sh.
+  3. The blockers element shape is stated at the authoring site(s), alongside the existing `artifacts[]` object-shape sentence.
+  4. The Check 5 partial/continuation question has an explicit recorded verdict, and the validator, the schema document and the authoring instruction state the same thing.
+
+## Backlog reconciliation
+
+Audited against the full backlog corpus via audit-task-proposals.sh (11 declared file_scope paths) before creation, and checked by title and description text. The audit is recall-biased by design and returned 182 covered-by-closed, 24 duplicate-of-open, 6 overlaps-open and 37 scope-blind verdicts; the discriminations that actually matter are below.
+
+TWO CLOSED RECORDS IN THE SAME FAMILY, both checked and both rejected as covering this:
+
+  - pin_handoff_artifacts_element_shape (closed; semantic 0.49) -- REJECTED as covering, ACCEPTED as the pattern to follow. It pinned the `artifacts[]` element shape at the RESEARCH agent sites. This record pins the `blockers[]` element shape at the IMPLEMENTATION agent sites, and additionally fixes the validator's abort, which that record did not touch. A legitimate recurrence of one class at a different field and different sites, not re-litigation.
+  - handoff_required_fields_and_dropped_failure (closed; semantic 0.50; shares nearly this record's whole file_scope) -- REJECTED as covering, on two discriminating facts. (1) It addressed a required key being ABSENT; this record addresses a required key being PRESENT with the wrong element type, which is a different failure mode and, unlike absence, aborts the validator rather than failing it. (2) It established the durable-trace requirement that a failed handoff validation leave an events.jsonl row and a detected_defects entry. Sub-problem 2 is that very guarantee not being delivered from a consumer repo -- a shortfall in the mechanism that record built, discovered by exercising it, rather than a new feature request. Any plan here should read that record's (i)/(ii) ruling before touching the validator or the recorder.
+
+Nearest open misses, each checked and rejected as a duplicate:
+
+  - 378 (reviser-agent handoff contract contradiction) -- REJECTED: a different defect class, HANDOFF_STALE_OR_ABSENT, about a writer emitting no handoff at all on a plan dispatch. This record is about a handoff that WAS written and then crashed the validator. Shares docs/architecture/handoff-schema.md, hence the dependency edge.
+  - 428 (planner-agent terminal return-meta write) -- REJECTED on intent: return-meta enforcement, not handoff element shape or defect-recorder attribution. Shares three paths (orchestrate-cycle-postflight.sh, its test, handoff-schema.md), hence the dependency edge.
+  - 410 (lake-build-guard result-sharing replay) and 430/446 (--file-scope-add restriction) -- unrelated; named here only because they were the two candidates the dispatching stage dropped as already covered.
+  - 402 proposes converting the orchestration conclusion stage's channels (b) and (c) from task-creating to evidence-contributing. If that lands first, a record of this shape would arrive as evidence rather than as a task. It does not make this record a duplicate, and this record was created under the contract in force at the time.
+
+Dependency edges are SERIALIZING ONLY, on shared file territory, with no logical dependency in either direction -- nothing here blocks on any of their findings, and an operator who wants this sooner can drop any or all of them:
+
+  - 428 shares three paths (orchestrate-cycle-postflight.sh, its test, handoff-schema.md).
+  - 435 shares ten paths; it is a prose-rewording pass across the agent and script corpus, so concurrent edits to the same files are a live conflict risk even though the intents do not overlap.
+  - 328 shares seven paths and declares scripts/tests/ and docs/ wholesale, matching the precedent set by the other recently filed lint-defect records.
+  - 378 shares handoff-schema.md and is the sibling handoff-contract record.
+
+## Why this is worth fixing despite the clean recovery
+
+Nothing was lost in the observed run, and that is precisely the risk: the failure mode is a correct-outcome run that emits a misattributed defect and then fails to record it. Every future instance costs an operator the same hand reconstruction performed to write this record, and in a consumer repo -- which is where orchestration normally runs -- the durable record will be absent every time.
+
+---
 
 ### 471. Lint the extensions README table against the real extension directory set
 - **Effort**: medium
