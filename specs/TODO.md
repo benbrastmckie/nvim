@@ -11,13 +11,12 @@ next_project_number: 476
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,338,342,378,383,385,397,408,410,412,414,419,423,429,437,456,459,464,466,469,470,473 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,328,384,387,398,415,428,458,463,471 | 22,378,383,397,412,414,429,459,470 | core-agent-system, extensions, lean-extension, ... |
-| 3 | 369,399,401,407,418,430,431,445,453,465 | 29,328,387,398,415,419,428 | core-agent-system, literature, file-scope-lifecycle, ... |
-| 4 | 313,391,409,435,439,444,446,448,474 | 328,369,385,401,407,418,430,431,445 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 5 | 360,390,402,420,436,438,454,455,461,472,475 | 313,328,391,409,418,428,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 6 | 421,449,451,452,457 | 360,385,402,420,435,444,448,455 | core-agent-system, extensions, lean-extension, ... |
-| 7 | 450,462 | 420,435,449,451 | lean-extension, orchestrator |
+| 1 | 22,338,342,383,385,387,397,408,410,412,414,419,423,428,429,437,456,459,464,466,469,470,473 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,328,384,398,401,407,415,430,458,463,471 | 22,383,387,397,412,414,428,429,459,470 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 313,369,399,409,418,431,435,445,446,453,465 | 29,328,385,398,401,407,415,419,430 | core-agent-system, literature, file-scope-lifecycle, ... |
+| 4 | 360,391,420,436,438,439,444,448,472,474,475 | 313,328,369,409,418,428,431,435,445,446,458 | core-agent-system, orchestrator, agent-system |
+| 5 | 390,402,449,451,452,454,455,461 | 360,385,391,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 6 | 421,450,457,462 | 402,420,435,449,451,455 | core-agent-system, extensions, lean-extension, ... |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -97,12 +96,11 @@ next_project_number: 476
 
 ### Orchestrator
 
-378 [IMPLEMENTING] — Resolve the reviser-agent handoff contract contradiction...
-  └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
-    └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
-      └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
-  └─ 428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
-    └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
+387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
+  └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
+    └─ 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
+428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
+  └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
@@ -5892,7 +5890,7 @@ Checked /home/benjamin/.config/nvim/specs/state.json by project_name and by desc
 ---
 
 ### 378. Resolve the reviser-agent handoff contract contradiction between skill-orchestrate and orchestrate-cycle-plan.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 274
