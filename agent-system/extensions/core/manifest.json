@@ -333,6 +333,7 @@
       "tests/test-subagent-postflight-marker.sh",
       "tests/test-sweep-invalidated-claims.sh",
       "tests/test-task-lock-liveness.sh",
+      "tests/test-task-lock-queue.sh",
       "tests/test-task-reference-patterns-lib.sh",
       "tests/test-task-type-detect.sh",
       "tests/test-todo-move-pair-staging.sh",
