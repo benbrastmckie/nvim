@@ -2,7 +2,7 @@
 
 - **Task**: 468 - Core docs architecture, guide, reference and template set audit for structural
   correctness and single-authority topic ownership
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/468_core_docs_correctness_and_single_authority_audit/reports/01_core-docs-correctness-audit.md
@@ -217,31 +217,40 @@ territory is a reason to serialize within one task, not to parallelize.
 
 ---
 
-### Phase 1: Re-derive the defect register and capture baselines [NOT STARTED]
+### Phase 1: Re-derive the defect register and capture baselines [COMPLETED]
 
 **Goal**: Replace every approximate line number with a re-derived one, confirm or correct the
 research report's per-site classification, and capture the two baseline measurements every later
 phase compares against. No file under `agent-system/**` is modified in this phase.
 
 **Tasks**:
-- [ ] Confirm the edit target: read `.extensions.core.source_dir` from
+- [x] Confirm the edit target: read `.extensions.core.source_dir` from
       `/home/benjamin/.config/nvim/.claude-extensions.json` and verify it is
-      `/home/benjamin/.config/nvim/agent-system/extensions/core`.
-- [ ] Write a throwaway relative-link resolver to the scratchpad directory (walk every `*.md`
+      `/home/benjamin/.config/nvim/agent-system/extensions/core`. *(completed: confirmed via jq)*
+- [x] Write a throwaway relative-link resolver to the scratchpad directory (walk every `*.md`
       under `agent-system/extensions/core/docs/`, resolve each `](path)` that is not
       `http`/`#`/`mailto:` against the containing file's own directory, report every target that
       does not exist). Exclude targets whose basename is `CLAUDE.md` as a documented class
       (merge-time-generated; no source-store file exists to point at). Record the baseline defect
-      list and count.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh agent-system/extensions/core/docs/`
-      and record the baseline verdict.
-- [ ] Re-derive every line number in this plan's per-phase site lists by grep, and record the
+      list and count. *(completed: 25 BROKEN raw hits, 9 EXCLUDED CLAUDE.md hits; 21 of the 25
+      match the research report's genuine-defect count once the 3 agent-frontmatter-standard.md
+      self-links — out of scope, see below — and 1 newly discovered user-installation.md defect
+      are reconciled: 25 - 3 = 22, of which 21 were already known and 1 is new)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh agent-system/extensions/core/docs/`
+      and record the baseline verdict. *(completed: green — 29 files checked, 33 candidates, 33
+      exempted, 0 violations)*
+- [x] Re-derive every line number in this plan's per-phase site lists by grep, and record the
       classified register to the scratchpad: for each raw `/research|/plan\b|/implement` match in
       `core/docs/` (excluding `reference/standards/agent-frontmatter-standard.md`), classify as
       `dead-surface` / `phase-name-correct` / `path-literal-correct` / `boundary-deferral`.
-- [ ] Reconcile the register against this plan's Boundary Register. Any newly discovered site
+      *(completed: 67 raw matches classified in scratchpad register)*
+- [x] Reconcile the register against this plan's Boundary Register. Any newly discovered site
       inside one of the eight records' files is added to the deferral list, never silently fixed.
-- [ ] Record an issue-log entry for any register delta against the research report.
+      *(completed: one new boundary-owned site found — handoff-schema.md:705 — added as
+      boundary-deferral-NEW, left untouched)*
+- [x] Record an issue-log entry for any register delta against the research report. *(completed:
+      3 issue-log entries recorded — new user-installation.md link, new boundary-deferral site,
+      and the agent-frontmatter-standard.md file-scope-exclusion class)*
 
 **Timing**: 0.5 hours
 

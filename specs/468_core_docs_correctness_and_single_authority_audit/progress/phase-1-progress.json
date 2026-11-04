@@ -1,0 +1,33 @@
+{
+  "phase": 1,
+  "phase_name": "Re-derive the defect register and capture baselines",
+  "started_at": "2026-11-04T05:30:00Z",
+  "last_updated": "2026-11-04T05:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm edit target source_dir", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write throwaway relative-link resolver to scratchpad", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run lint-dead-command-recommendations.sh baseline", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-derive line numbers / classified register", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Reconcile register against Boundary Register", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record issue-log entry for register deltas", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Resolver baseline includes 3 pre-existing broken links inside the file_scope-excluded reference/standards/agent-frontmatter-standard.md",
+      "type": "deferred",
+      "reason": "File is excluded from file_scope entirely per record 431; adding a second documented exclusion class (excluded SOURCE file, distinct from the CLAUDE.md excluded TARGET class) rather than fixing or silently ignoring.",
+      "annotation": "*(deviation: deferred — file_scope exclusion, record 431)*"
+    },
+    {
+      "task_id": "1.5",
+      "description": "architecture/handoff-schema.md:705 is a newly discovered dead-command-surface site inside boundary-owned territory not named by the plan's Boundary Register",
+      "type": "deferred",
+      "reason": "Site touches the same orchestrator-mode/non-orchestrator-mode channel contract records 378/428/450 reason about; added to the deferral list per Phase 1's reconciliation instruction rather than fixed.",
+      "annotation": "*(deviation: deferred — new boundary-register site, records 378/428/450)*"
+    }
+  ]
+}
