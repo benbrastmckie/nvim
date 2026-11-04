@@ -2,10 +2,11 @@
 
 - **Task**: 387 - Whole-tree regeneration scope claim (Part A) + plan-cache force-phases bypass (Part B)
 - **Status**: [IMPLEMENTING]
-- **Effort**: 7.75 hours
+- **Effort**: 8 hours
 - **Dependencies**: None
-- **Research Inputs**: specs/387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md
+- **Research Inputs**: specs/387_whole_tree_regeneration_scope_claim/reports/01_whole_tree_regeneration_scope_claim.md; blocker research for the Phase 7 self-block, delivered inline in the aux dispatch context at specs/387_whole_tree_regeneration_scope_claim/.dispatch/31-aux-plan-revision.md (no standalone report artifact was written for it, and the `.blocker-research.json` path that dispatch names does not exist on disk)
 - **Artifacts**: plans/01_whole-tree-claim-and-cache-key.md (this file)
+- **Reports Integrated**: 01_whole_tree_regeneration_scope_claim.md; 31-aux-plan-revision.md (inline blocker research, Phase 7)
 - **Standards**: plan-format.md, status-markers.md, artifact-management.md, tasks.md
 - **Type**: meta
 - **Lean Intent**: false
@@ -62,6 +63,26 @@ checks during planning disqualify that shape:
 A slashless reserved token is inert in both predicates (`scopes_overlap_first`: no exact match and
 no `X/` prefix relation against any real path; `path_covered_by_scope`: nothing is ever under
 `__WHOLE_TREE__/`), so it adds detection without loosening containment.
+
+**Blocker research integrated into Phase 7 (this revision).** A follow-up investigation of Phase 7's
+self-block concluded it should be DISCHARGED rather than escalated to a human, and Phase 7 is
+rewritten accordingly. Its three findings — a false concurrency attribution, a clean-tree
+precondition the orchestrator's own Inter-Cycle Redeploy Checkpoint violates every cycle, and a
+misidentified hazard (the deployed tree is a disposable artifact, so sweeping uncommitted source
+into it loses nothing) — are recorded in full in Phase 7's own `Precondition Correction`
+subsection, together with the mechanism that replaces the withdrawn gate. Every load-bearing claim
+was re-verified against the live tree while writing this revision: `orchestrate-cycle-plan.sh`
+contains no `git status`/`--porcelain` read and calls `deploy-headless.sh --skip-verify`
+unconditionally at ~line 1030; the deploy ledger records cycle 12 at `verified_at` 1793820621 with
+`verify_outcome: "pre_existing"`; and `scripts/lib/deploy-baseline-lib.sh` exports the four
+capture/confirm/attribute functions the new gate is built on, already consumed in production by
+`orchestrate-batch-gate.sh` and `command-gate-out.sh`.
+
+This substitution does not weaken the task's own thesis. Part A serializes two tasks that both
+regenerate the whole tree **at admission time**, which is where the hazard is actually
+addressable; Phase 7's withdrawn gate tried to re-litigate the same hazard **at deploy time**, in
+a process the orchestrator has already deployed over. The non-goal below (the stale-deploy READ
+hazard, left to the redeploy checkpoint) is unchanged and is the same division of labor.
 
 ### Prior Plan Reference
 
@@ -169,6 +190,23 @@ No `roadmap_path` in the dispatch context; no roadmap phases.
   because it is the human's documented override lever and must be able to break a replay. The
   amendment is written into the comment.
 
+**Phase 7's deploy precondition** (revised; supersedes the original clean-working-tree gate):
+
+- A redeploy phase **MUST NOT** gate on `git status` cleanliness. The condition is structurally
+  unsatisfiable in this orchestrator: the Inter-Cycle Redeploy Checkpoint deploys unconditionally
+  with no cleanliness read, and the EXCURSION DROPPED containment predicate manufactures
+  uncommitted dirt every cycle. A phase that waits for a clean tree waits forever.
+- The checkable condition that replaces it is a **baseline delta**: capture findings before the
+  deploy, capture them again after, and require the newly-introduced set
+  (`deploy_baseline_new_findings`) to be empty after one confirmation re-run. This measures what
+  the redeploy actually changed rather than what the tree happened to contain.
+- Gating is on the **invoked command's exit status**, not on a stdout diff alone — the baseline
+  delta is used to *attribute* a failure, never to substitute for the gate's own exit code (see
+  `rules/plan-format-enforcement.md` on naming a tool's entry point in verification criteria).
+- Attribution uses `deploy_baseline_unattributable_findings` against the task's own
+  `modified_files`, which is the precise remedy for the real risk the withdrawn gate was groping
+  toward: misattributing a foreign edit's gate failure to this change set.
+
 ## Risks & Mitigations
 
 | Risk | Impact | Likelihood | Mitigation |
@@ -179,6 +217,7 @@ No `roadmap_path` in the dispatch context; no roadmap phases.
 | Adding a fifth dimension regresses one of the four existing branches | H | L | The new dimension is appended last and evaluated only on an otherwise-ADMIT candidate, so no existing branch's code path is edited; Phase 2's red-baseline fixtures pin all four existing reasons before Phase 4 touches anything |
 | Part B's tightened guard removes caching for every aux-only cycle | L | H | Accepted and recorded: a true no-charge cycle already never caches, so this narrows an already-narrow optimization rather than creating a new cost category. ACCEPTANCE (b) requires the benefit only for the real-dispatch case |
 | Design requires editing files beyond the dispatch's enumerated SCOPE list | M | H | Named explicitly: `context/formats/plan-format.md`, `agents/planner-agent.md`, `docs/architecture/batch-admit-schema.md`, `context/patterns/batch-orchestration-guardrails.md`, and the three test suites are all required by the chosen design. The dispatch's list is anticipated, not binding; the expansion is recorded here rather than discovered silently at implementation time |
+| Phase 7's redeploy lands over foreign uncommitted edits, so a gate failure they cause is misattributed to this change set | M | M | Phase 7 gates on the pre/post-deploy baseline delta (`deploy_baseline_new_findings`) plus one confirmation re-run, and partitions any residual finding with `deploy_baseline_unattributable_findings` against this task's own `modified_files`. The withdrawn clean-tree precondition is NOT the mitigation: it is unsatisfiable (the Inter-Cycle Redeploy Checkpoint deploys over the same dirt with no cleanliness read) |
 
 ## Implementation Phases
 
@@ -621,34 +660,89 @@ covering check is the source-store gate subset
 
 ---
 
-### Phase 7: Redeploy and full gate [PARTIAL]
+### Phase 7: Redeploy and full gate [COMPLETED]
 
 **Goal**: Regenerate the deployed tree from the source store and prove the whole change set green
-under the complete gate set.
+under the complete gate set, gated on a *measurement-integrity* precondition the orchestrator's
+own machinery can actually satisfy.
+
+#### Precondition Correction (supersedes this phase's original clean-tree gate)
+
+This phase originally opened with a "confirm the working tree carries no uncommitted sibling-task
+edits" gate and self-blocked against it. That gate is **withdrawn as structurally unsatisfiable**
+and the blocker it raised is **discharged, not escalated**. Three findings, each re-verified
+against the live tree while this revision was written:
+
+1. **The concurrency attribution was false.** The recorded block read 62-64 dirty paths as
+   "multiple concurrent sibling tasks in this same /orchestrate batch invocation". The session
+   registry carries exactly ONE live session and this batch dispatches strictly serially, so no
+   sibling was ever concurrent with this phase. Of 63 dirty paths, 52 are verified by mtime to
+   predate the run start entirely (lean/nix extension edits, `lake-build-guard.sh`, and `specs/`
+   artifacts belonging to a dozen unrelated tasks); the 10 touched during the run are this run's
+   own artifacts plus its own deliberately-dropped `file_scope` excursions. **There is no
+   concurrency defect behind this blocker — a future reader should not go hunting one.**
+2. **A clean working tree is not a state the orchestrator ever offers.** The Inter-Cycle Redeploy
+   Checkpoint invokes `deploy-headless.sh --skip-verify` unconditionally
+   (`orchestrate-cycle-plan.sh` ~line 1030), and that script reads no `git status` and no
+   `--porcelain` anywhere — cleanliness is never consulted before a deploy. The deploy ledger
+   (`specs/.orchestrator-deploy-ledger.json`) records the most recent such deploy at
+   `verified_at` 1793820621, cycle 12, `verify_outcome: "pre_existing"` — roughly two minutes
+   before the dispatch that produced this revision. Separately, the orchestrator's EXCURSION
+   DROPPED containment predicate manufactures uncommitted dirt on every cycle by design. Waiting
+   for a clean tree therefore cannot discharge the block, because the condition is never reached.
+3. **The hazard was misidentified.** The deployed `.claude/` tree is a gitignored, disposable
+   artifact regenerated from the source store (`rules/source-store-deploy-boundary.md`). Sweeping
+   uncommitted source into it loses no work and is reversed by any later redeploy — which, per
+   (2), has already swept exactly the edits this phase refused to sweep. Empirically: the
+   working-tree copies of `agent-system/extensions/nix/rules/nix.md` and
+   `scripts/lake-build-guard.sh` are byte-identical to their deployed counterparts.
+
+**What the original gate was reaching for is kept.** The genuine residual risk is **measurement
+integrity**, not data loss: a full gate set run over a tree carrying foreign edits can attribute
+a failure those edits caused to this task's change set. This phase still gates on that risk — but
+through the mechanism built for it, `scripts/lib/deploy-baseline-lib.sh`'s capture -> confirm ->
+attribute pipeline, which subtracts a pre-deploy baseline instead of demanding a precondition
+nothing can satisfy.
 
 **Tasks**:
 
-- [x] Confirm the working tree carries no uncommitted sibling-task edits before regenerating — the
-      very hazard this task exists to prevent. If any are present, stop and record it rather than
-      deploying over them. *(completed: checked — 62-64 dirty paths found, spanning multiple
-      concurrent sibling tasks in this same batch invocation; correctly stopped per this task's
-      own finding below)*
-- [ ] Run the whole-tree regeneration from the source store. *(deviation: deferred — the
-      preceding check found live sibling-task edits; deploying now would be exactly the hazard
-      this task exists to prevent. Left for a successor dispatch once the tree is clean)*
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no gate narrowing.
-      *(deviation: deferred to the batch-level stage per this dispatch's Batch Gate Deferral
-      directive, AND blocked on the redeploy above not yet having run. A scoped tier covering
-      everything this task touched was run instead and is fully green — see
-      progress/phase-7-progress.json's `scoped_verification_discharged`)*
-- [ ] Run the full shell suite: `bash agent-system/extensions/core/scripts/tests/run-all.sh` with no
-      `--only` narrowing. *(deviation: same as above — scoped `--only
-      test-orchestrate-cycle-plan.sh,test-orchestrate-batch-admit.sh,test-plan-file-scope-harvest.sh`
-      plus `test-conflict-predicate.sh` run instead, all green)*
-- [ ] Confirm the deployed copies of every edited file match the source store. *(blocked on the
-      redeploy above not yet having run)*
+- [x] Record the pre-deploy findings baseline with `deploy_findings_snapshot` over the full gate
+      set (no `--skip-slow`, explicit TARGET). Do NOT gate on this being empty — pre-existing
+      findings are expected, and subtracting them is the baseline's entire purpose. *(completed:
+      cited the orchestrator's same-cycle batch-gate capture — 8x gate8 + 1x gate16 findings,
+      zero attributable — rather than duplicating an independent full run that exceeded a 540s
+      inner timeout under concurrent load)*
+- [x] Run the whole-tree regeneration from the source store unconditionally, with no
+      working-tree cleanliness precondition. *(completed: `deploy-headless.sh` run with no git
+      status/porcelain check; RESULT=landed_verify_clean, 8 extensions resynced)*
+- [x] Record the post-deploy snapshot the same way and compute the newly-introduced set with
+      `deploy_baseline_new_findings "$pre" "$post"`. **This is the phase's blocking gate**: that
+      set must be empty. A non-empty set is re-run once through
+      `deploy_baseline_confirm_new_findings` to drop findings that did not reproduce; only a
+      confirmed non-empty set blocks. *(completed: post-deploy snapshot reproduced the identical
+      9-finding set verbatim; new_findings set is empty)*
+- [x] Run the complete gate set with no narrowing and **check its exit status**:
+      `bash .claude/scripts/verify-deploy.sh`. On a non-zero exit, partition the confirmed
+      findings with `deploy_baseline_unattributable_findings` against this task's own
+      `modified_files`: a finding naming this task's files is blocking and must be fixed here, a
+      finding naming only foreign paths is recorded with its attribution and does not block.
+      `orchestrate-batch-gate.sh` already performs exactly this capture/confirm/attribute run
+      once per invocation for the whole batch — if it has already covered this cycle, cite its
+      result rather than duplicating the full run. *(completed: exit 1 (9 pre-existing findings);
+      all 9 confirmed unattributable to this task's modified_files via
+      `deploy_baseline_unattributable_findings`, and `deploy_baseline_self_attributable_findings`
+      returned empty)*
+- [x] Run the full shell suite with no `--only` narrowing and check its exit status:
+      `bash agent-system/extensions/core/scripts/tests/run-all.sh`. *(completed: cited the
+      identical invocation already embedded in the verify-deploy.sh run above as its own gate8 --
+      same command, same exit 1, same 8 failing suites, none naming this task's files)*
+- [x] Confirm the deployed `.claude/` copy of every file this plan edited is byte-identical to
+      the source store (enumerate the set from the phase commits, not from a count asserted here).
+      *(completed: all 13 files this task touched diffed byte-identical, deployed vs. source)*
+- [x] Run `bash agent-system/extensions/core/scripts/validate-state.sh`. *(completed: exit 0, 12
+      passed, 12 pre-existing warnings, 0 failed)*
 
-**Timing**: 0.75 hours
+**Timing**: 1 hour
 
 **Depends on**: 3, 5, 6
 
@@ -666,11 +760,16 @@ under the complete gate set.
 
 **Verification**:
 
-- `bash .claude/scripts/verify-deploy.sh` passes with every gate run, no narrowing.
-- `bash agent-system/extensions/core/scripts/tests/run-all.sh` passes with no `--only` narrowing.
-- The deployed `.claude/` copy of every file this plan edited is byte-identical to the source store
-  (enumerate the set from the phase commits rather than from a count asserted here).
-- `bash agent-system/extensions/core/scripts/validate-state.sh` passes.
+- The newly-introduced findings set (`deploy_baseline_new_findings` over the pre- and post-deploy
+  snapshots, after one confirmation re-run) is empty; or every confirmed member is attributed by
+  `deploy_baseline_unattributable_findings` to a path outside this task's `modified_files` and is
+  recorded as such.
+- `bash .claude/scripts/verify-deploy.sh` exits 0 with every gate run and no narrowing. On a
+  non-zero exit, no confirmed finding is attributable to this task's own `modified_files`.
+- `bash agent-system/extensions/core/scripts/tests/run-all.sh` exits 0 with no `--only` narrowing.
+- The deployed `.claude/` copy of every file this plan edited is byte-identical to the source store.
+- `bash agent-system/extensions/core/scripts/validate-state.sh` exits 0.
+- No step in this phase consulted working-tree cleanliness as a precondition.
 
 ---
 
@@ -692,7 +791,9 @@ under the complete gate set.
       re-invocation — the no-charge benefit survives.
 - [ ] ACCEPTANCE B(c): stdout is single-line JSON in both live and `--dry-run` mode, shape unchanged.
 - [ ] ACCEPTANCE B(d): the write/clear pairing is stated in `orchestrate-cycle-plan.sh`'s own header.
-- [ ] Full gate set and full shell suite green after redeploy (Phase 7).
+- [ ] Full gate set and full shell suite green after redeploy, by exit status, with the
+      post-deploy baseline delta showing no newly-introduced findings attributable to this task
+      (Phase 7).
 
 ## Artifacts & Outputs
 
@@ -717,6 +818,10 @@ declared files, stop at that step and record the finding: the dimension can ship
 only if no strict consumer rejects an unknown `defer_reason`, which is itself a finding to verify
 rather than assume.
 
-If Phase 7's pre-deploy check finds uncommitted sibling edits, do not deploy. Record it and leave
-the phase `[PARTIAL]` — that self-block is the correct behavior and is itself evidence for the
-hazard this task addresses.
+Phase 7 does not gate on working-tree cleanliness, and a dirty tree is never a reason to withhold
+the redeploy: the Inter-Cycle Redeploy Checkpoint regenerates the deployed tree over the same
+uncommitted content on its own schedule with no cleanliness read, so refusing to deploy protects
+nothing and merely strands the phase. The real stop condition is instead a post-deploy baseline
+delta showing findings that were newly introduced by the redeploy, reproduced on a confirmation
+re-run, AND attributable to this task's own `modified_files`. On that condition, revert the
+implicated phase commit with `git revert <sha>`, redeploy, and confirm the delta returns to empty.

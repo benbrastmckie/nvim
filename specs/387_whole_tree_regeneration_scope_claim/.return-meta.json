@@ -1,73 +1,40 @@
 {
-  "status": "partial",
-  "partial_progress": {
-    "stage": "phase_7_redeploy_self_blocked",
-    "details": "Phases 1-6 of 7 are [COMPLETED] and fully committed/verified. Phase 7 (redeploy and full gate) is [PARTIAL], self-blocked by its own first task: the working tree carries live, uncommitted sibling-task edits from concurrent dispatches in this same /orchestrate batch invocation (git status --porcelain showed 62-64 dirty paths, actively growing). Regenerating the deployed tree now would sweep those sibling edits into .claude/ -- exactly the hazard task 387 exists to close. Per the plan's own Rollback/Contingency section, this self-block is the correct, designed behavior, not a defect. A scoped verification tier covering everything this task touched was run instead (per this dispatch's Batch Gate Deferral directive) and is fully green. See the phase-7 handoff for the exact resume command.",
-    "handoff_path": "specs/387_whole_tree_regeneration_scope_claim/handoffs/phase-7-handoff-20261105T002500Z.md",
-    "phases_completed": 6,
-    "phases_total": 7
-  },
+  "status": "planned",
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/387_whole_tree_regeneration_scope_claim/handoffs/phase-7-handoff-20261105T002500Z.md",
-      "summary": "Final-phase handoff: redeploy self-blocked on live sibling-task edits in the shared working tree; resume command and full six-phase summary for a context-free successor."
-    },
-    {
-      "type": "summary",
-      "path": "specs/387_whole_tree_regeneration_scope_claim/summaries/01_whole-tree-claim-and-cache-key-summary.md",
-      "summary": "6-of-7-phase implementation summary covering Part A (whole_tree_claim admission dimension) and Part B (plan-cache write-guard and force-phases cache key); Phase 7 pending a clean working tree."
+      "type": "plan",
+      "path": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
+      "summary": "Revised plan: Phase 7's unsatisfiable clean-working-tree deploy gate replaced by a verify-deploy baseline-delta gate; false concurrency attribution corrected. Phases 1-6 preserved as [COMPLETED]."
     }
   ],
-  "completion_data": {
-    "completion_summary": "Implemented both parts of the plan across 6 of 7 phases: Part B tightens orchestrate-cycle-plan.sh's plan-cache write guard to real-dispatch-only and folds --force-phases into the cache key; Part A adds a whole_tree_claim admission dimension to orchestrate-batch-admit.sh (relabeling the collision scan's own sentinel-vs-sentinel exact match in place, resolving an implementation-time design finding), a reserved __WHOLE_TREE__ sentinel constant, the producer-side plan-format.md/planner-agent.md obligation, and full mechanism/non-goal documentation. Also fixed a real coverage gap discovered while documenting Phase 4: orchestrate-cycle-plan.sh had no whole_tree_claim case arm and would have silently mis-ledgered every such defer. Phase 7 (redeploy + full gate) self-blocked correctly on live sibling-task edits in this shared batch working tree -- the exact hazard this task exists to prevent -- and is left [PARTIAL] for a successor dispatch once the tree clears."
-  },
-  "modified_files": [
-    "agent-system/extensions/core/agents/planner-agent.md",
-    "agent-system/extensions/core/context/formats/plan-format.md",
-    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
-    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
-    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
-    "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh",
-    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
-    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
-    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh",
-    "agent-system/extensions/core/index-entries.json"
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a new reserved-sentinel admission dimension is added to a predicate whose comparison target already uses generic exact-match overlap detection (e.g. file_scope_collision's scopes_overlap_first), do not assume a 'new dimension evaluated LAST, only on an otherwise-admit candidate, no existing branch edited' design will actually be reachable -- two actors declaring the IDENTICAL sentinel literal already produce an ordinary exact match under the pre-existing predicate, so the existing branch intercepts the case first. The resolution that preserves non-regression is to RELABEL the existing branch's own already-selected match in place (inspect which value it matched on; branch the verdict SHAPE on that, not the selection logic) rather than bolt on a trailing, separately-evaluated stage. This generalizes to any future reserved-token admission dimension layered onto an overlap-style predicate.",
-      "category": "PATTERN",
-      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["admission-gate", "reserved-sentinel", "exact-match-overlap", "relabel-in-place", "design-tension", "whole-tree-claim"]
-    },
-    {
-      "content": "When adding a new defer_reason/error-code/enum value to a producer whose documentation records that EVERY prior addition of the same kind required a matching case arm in a specific downstream consumer (a closed `case ... esac` with a loud default arm warning 'add a matching case arm here'), always grep that consumer for the enum's dispatch site BEFORE closing the implementation phase, even if the consumer script is outside the phase's own declared Files-to-modify list. The producer-side gate can work perfectly while the consumer silently mis-ledgers the new value into an 'unrecognized' bucket with a scary warning -- a correctness gap that is easy to miss because the gate's own tests never exercise the consumer at all.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/plans/01_whole-tree-claim-and-cache-key.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["defer_reason", "closed-case-statement", "consumer-coverage", "default-arm", "orchestrate-cycle-plan"]
-    },
-    {
-      "content": "In a shared concurrent working tree (multiple /orchestrate batch tasks dispatched at once), a generated-bookkeeping file regenerator (e.g. generate-context-line-counts.sh --write) that scans and corrects EVERY stale entry repo-wide will often also fix an unrelated entry caused by a concurrent sibling task's in-progress edit elsewhere. Before committing such a regenerator's output under your own task, diff the specific hunks and revert any that belong to a file your own task never touched -- otherwise you silently misattribute another task's fix to your own commit, and the sibling's own eventual regen run may reintroduce drift your revert should have left alone.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/387_whole_tree_regeneration_scope_claim/progress/phase-5-progress.json",
-      "confidence": 0.75,
-      "suggested_keywords": ["shared-working-tree", "generated-file-drift", "git-commit-scoping", "concurrent-tasks", "line-count-generator"]
-    }
-  ],
+  "next_steps": "Run /orchestrate 387 to execute the revised Phase 7. It no longer waits on a clean working tree: it redeploys unconditionally and gates on the pre/post-deploy baseline delta plus gate exit status.",
   "metadata": {
     "session_id": "sess_1793802705_e3f98a",
-    "agent_type": "general-implementation-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "agent_type": "reviser-agent",
+    "delegation_path": [
+      "orchestrator",
+      "revise",
+      "reviser-agent"
+    ],
+    "task_number": 387,
+    "dispatch_seq": 31,
+    "revision_mode": "plan_revision",
+    "revision_reason": "blocker",
+    "phase_count": 7,
     "phases_completed": 6,
-    "phases_total": 7
-  },
-  "dispatch_seq": 29
+    "phases_revised": [
+      7
+    ],
+    "phases_added": [],
+    "phases_removed": [],
+    "estimated_hours": 8,
+    "reports_integrated": [
+      "01_whole_tree_regeneration_scope_claim.md",
+      "31-aux-plan-revision.md (inline blocker research; the .blocker-research.json path the dispatch names does not exist on disk)"
+    ],
+    "blocker_disposition": "discharged",
+    "plan_revised_sentinel": "/home/benjamin/.config/nvim/specs/387_whole_tree_regeneration_scope_claim/.plan-revised.json",
+    "orchestrator_handoff_written": false,
+    "orchestrator_handoff_reason": "aux_dispatch path carries orchestrator_mode: false and no handoff_path key; dispatch file explicitly directs that no .orchestrator-handoff.json be written"
+  }
 }
