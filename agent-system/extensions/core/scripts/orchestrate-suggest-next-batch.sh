@@ -240,7 +240,7 @@ PROBE_INVOCATION_COUNT=0
 # ── probe_candidate_set(): the ONE shared admission-probe function. Both Mode A and Mode B call
 #    this and only this to establish admissibility — never a local re-derivation. Populates the
 #    caller-visible variable named by $1 with the raw NDJSON verdicts (one line per candidate,
-#    orchestrate-batch-admit-v6 schema) and returns the real script's own exit status, EXCEPT
+#    orchestrate-batch-admit-v7 schema) and returns the real script's own exit status, EXCEPT
 #    when the MAX_PROBE_INVOCATIONS cap above is reached: the real admission script is then not
 #    invoked at all, and this function returns 9 (a reserved, non-admission-script exit code
 #    no caller mistakes for a real verdict stream). ─────────────────────────────────────────────
