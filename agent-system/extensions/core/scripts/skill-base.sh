@@ -594,6 +594,7 @@ skill_read_artifact_number() {
   # artifact_dir ("reports/" | "plans/" | "summaries/") is accepted for call-site signature
   # stability and is not consulted: a round shares one sequence number across reports/, plans/,
   # and summaries/, so the scan below is round-wide rather than scoped to one subdirectory.
+  # shellcheck disable=SC2034 # intentionally unused positional, kept for call-site stability
   local artifact_dir="$4"
   local mode="${5:-prev}"
   local stored max_on_disk derived next_num scan_dir
