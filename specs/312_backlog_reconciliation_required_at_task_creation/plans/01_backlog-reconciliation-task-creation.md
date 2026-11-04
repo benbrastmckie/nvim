@@ -583,29 +583,40 @@ and it covers the whole edit.
 
 ---
 
-### Phase 7: Structural backstop hook and registration [NOT STARTED]
+### Phase 7: Structural backstop hook and registration [COMPLETED]
 
 **Goal**: A surface that bypasses `state-write.sh` to mutate `active_projects` is refused, so
 Phase 5's gate cannot be sidestepped by reverting to a raw `jq` write.
 
 **Tasks**:
-- [ ] Create `hooks/validate-task-creation-audit.sh` following the `Bash`-matcher command-text
+- [x] Create `hooks/validate-task-creation-audit.sh` following the `Bash`-matcher command-text
       family (`guard-destructive-git.sh`, `guard-git-push.sh`), not the `Write|Edit` content-scanner
       family. Its job is narrow and structural: detect a Bash command mutating `specs/state.json`'s
       `active_projects` outside `state-write.sh`, and refuse it with `exit 2` plus a remediation
-      banner naming `state-write.sh` and the audit flags.
-- [ ] Do not re-implement the audit-verdict check in the hook. Phase 5's gate owns it; the hook
-      only forces the write through the place that performs it.
-- [ ] State the hook's own false-negative surface in its header (a variable-indirected or
+      banner naming `state-write.sh` and the audit flags. *(completed: two-part test, write-shape
+      targeting a state.json-named path AND a mention of `active_projects`; the latter is
+      deliberately scanned against the RAW command text, not the quote-stripped `COMMAND_SCAN`
+      the git-family guards use, since the hazardous mention is almost always inside the quoted
+      jq filter argument itself — see progress file deviation/bugfix note)*
+- [x] Do not re-implement the audit-verdict check in the hook. Phase 5's gate owns it; the hook
+      only forces the write through the place that performs it. *(completed — no verdict parsing
+      anywhere in this hook)*
+- [x] State the hook's own false-negative surface in its header (a variable-indirected or
       sufficiently obfuscated `jq` invocation evades command-text matching), and that it is a
-      backstop, never the primary gate.
-- [ ] Register the hook bare on the `Bash` PreToolUse matcher in `root-files/settings.json`,
+      backstop, never the primary gate. *(completed)*
+- [x] Register the hook bare on the `Bash` PreToolUse matcher in `root-files/settings.json`,
       following the `exit 2`-surviving registration pattern (per the dependency on #282) that the
-      two existing `Bash`-family guards already use.
-- [ ] Add the hook to `manifest.json`'s `provides.hooks` array.
-- [ ] Add a test suite asserting: a raw-`jq` `active_projects` write is refused with exit 2; a
+      two existing `Bash`-family guards already use. *(completed; also registered in
+      `merge-sources/settings-hooks.json` — the file this `root-files/settings.json` carries its
+      own header note says propagates to an ALREADY-deployed repo on resync, which is this
+      repo's actual path to Phase 9's deploy; `root-files/settings.json` is install-once and was
+      still updated per the plan's explicit instruction, for a fresh install. `file_scope`
+      widened to add this merge-source path — see progress file deviation)*
+- [x] Add the hook to `manifest.json`'s `provides.hooks` array. *(completed)*
+- [x] Add a test suite asserting: a raw-`jq` `active_projects` write is refused with exit 2; a
       `state-write.sh` call is allowed; a read-only `jq` query against `state.json` is allowed; a
       write to an unrelated file is allowed. Register the suite in `provides.scripts`.
+      *(completed: 9 assertions across 5 cases, all passing)*
 
 **Timing**: 1.5 hours
 
@@ -627,13 +638,18 @@ script-local suite covers.
 
 **Verification**:
 - `jq '.hooks.PreToolUse[] | select(.matcher=="Bash")' root-files/settings.json` shows the new
-  hook registered alongside `guard-destructive-git.sh`
+  hook registered alongside `guard-destructive-git.sh` *(verified, and the same for
+  `merge-sources/settings-hooks.json`)*
 - `bash agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh` passes
+  *(verified: 0 violations, 56 candidates accepted)*
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-task-creation-audit.sh`
-  passes
+  passes *(verified: 1 passed, 0 failed)*
 - `bash agent-system/extensions/core/scripts/validate-wiring.sh` and
-  `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` pass
+  `bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh` pass --
+  `check-runtime-file-tracking.sh` *(verified live, PASS)*; `validate-wiring.sh` **deferred to
+  Phase 9** (same `REPO_ROOT`-override limitation as Phases 3/4's identical deferral)
 - The hook allows a read-only `jq` query against `state.json` (no false positive on reads)
+  *(verified: Case 3 and its `/dev/null` variant, both exit 0)*
 
 ---
 

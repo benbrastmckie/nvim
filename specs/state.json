@@ -781,6 +781,7 @@
         "agent-system/extensions/core/hooks/validate-task-creation-audit.sh",
         "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/merge-sources/settings-hooks.json",
         "agent-system/extensions/core/root-files/settings.json",
         "agent-system/extensions/core/scripts/audit-task-proposals.sh",
         "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh",

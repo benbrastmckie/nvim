@@ -1,0 +1,34 @@
+{
+  "phase": 7,
+  "phase_name": "Structural backstop hook and registration",
+  "started_at": "2026-11-03T20:20:00Z",
+  "last_updated": "2026-11-03T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create hooks/validate-task-creation-audit.sh", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/validate-task-creation-audit.sh"]},
+    {"id": 2, "description": "No re-implementation of audit-verdict check in hook", "status": "done", "files_touched": []},
+    {"id": 3, "description": "False-negative surface stated in header", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Register bare on Bash matcher in root-files/settings.json and merge-sources/settings-hooks.json", "status": "done", "files_touched": [
+      "agent-system/extensions/core/root-files/settings.json",
+      "agent-system/extensions/core/merge-sources/settings-hooks.json"
+    ]},
+    {"id": 5, "description": "Add hook to manifest.json provides.hooks", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 6, "description": "Test suite: 4 required cases + variants, register in provides.scripts", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-validate-task-creation-audit.sh",
+      "agent-system/extensions/core/manifest.json"
+    ]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Scan COMMAND_SCAN (quote-stripped) for the literal 'active_projects' field name", "result": "failed", "reason": "the hazardous mention is almost always INSIDE the quoted jq filter argument (e.g. '.active_projects += [...]'), which COMMAND_SCAN's quote-strip erases by design (built for the git-family guards, where the hazard is argv STRUCTURE, not quoted text) -- this produced a false negative on the primary required case (a raw jq stage-then-mv write). Fixed by scanning the RAW $COMMAND for this one specific check, while keeping COMMAND_SCAN for the structural write-shape detection and the state-write.sh allow-check (where quote-stripping is still the correct, false-positive-avoiding choice)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.4",
+      "description": "Register the hook bare on the Bash PreToolUse matcher in root-files/settings.json",
+      "type": "altered",
+      "reason": "root-files/settings.json's own header comment states it is install-once (never overwritten on an existing repo's resync) and that new hook registrations should go into merge-sources/settings-hooks.json instead, which propagates on every resync -- confirmed live precedent: guard-destructive-git.sh/guard-git-push.sh/validate-bounded-waiter.sh are present in merge-sources but validate-bounded-waiter.sh was MISSING from root-files/settings.json's Bash matcher (a real pre-existing divergence, not something this task introduced). Registered the new hook in BOTH files per the plan's explicit root-files/settings.json instruction (for a fresh install) AND merge-sources/settings-hooks.json (the file that actually reaches THIS already-deployed repo via Phase 9's resync). Widened file_scope to add the merge-source path.",
+      "annotation": "*(completed; also registered in merge-sources/settings-hooks.json)*"
+    }
+  ]
+}
