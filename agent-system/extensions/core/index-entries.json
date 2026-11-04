@@ -1439,7 +1439,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 724,
+      "line_count": 729,
       "keywords": [
         "reference",
         "state",
