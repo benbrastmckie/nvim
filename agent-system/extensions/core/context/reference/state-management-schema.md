@@ -205,13 +205,18 @@ Round 2 (after blocker):
   /implement 309 -> reads 3, uses (3-1)=2, creates 02_summary.md
 ```
 
-**Backward Compatibility**:
-When `next_artifact_number` is missing (legacy tasks), skills fall back to directory scanning:
-```bash
-# Fallback: count existing artifacts to determine next number
-count=$(ls "specs/${padded_num}_${slug}/reports/"*[0-9][0-9]*.md 2>/dev/null | wc -l)
-artifact_number=$((count + 1))
-```
+**Normalization Against Disk**:
+`skill_read_artifact_number()` in `scripts/skill-base.sh` resolves the round unconditionally as
+`max(stored next_artifact_number, highest on-disk MM prefix across reports/, plans/, and
+summaries/ + 1)`, applying the `current`/`prev` mode distinction above to that single normalized
+value. This is a max-prefix scan, not a file count: a gap in the sequence (`01`, `03` present,
+`02` absent) resolves `4`, not `3` (a count would collapse two rounds onto one number). A missing
+`next_artifact_number` resolves purely from disk — a task created with a pre-supplied
+`reports/01_*.md` and no stored counter resolves round `2` for research and round `1` for
+plan/implement, not round `1` for both. A stored counter that has fallen behind what is actually
+on disk self-heals at read time; a counter at or ahead of disk resolves unchanged. `skills/skill-
+reviser/SKILL.md` Stage 3a applies the same max-prefix reconciliation for plan revisions, so the
+two are one concept rather than two independently-maintained scans.
 
 ### Artifact Object Fields
 

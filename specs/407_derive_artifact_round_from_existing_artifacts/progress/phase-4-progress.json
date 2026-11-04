@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Align the state-management schema doc with the implemented derivation",
+  "started_at": "2026-11-04T21:47:00Z",
+  "last_updated": "2026-11-04T21:52:11Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Backward Compatibility subsection to the implemented max-prefix rule", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]},
+    {"id": 2, "description": "Verify gate 3/4 subset introduces no new finding beyond the index-entries.json line_count drift this edit itself caused, and fix that drift", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra",
+      "description": "Fix agent-system/extensions/core/index-entries.json line_count drift for reference/state-management-schema.md (724 -> 729), caused by this phase's own doc edit",
+      "type": "altered",
+      "reason": "Not named in the plan's task list, but required for gate 3 (doc-lint) to report no new finding beyond this phase's own edit -- the same companion-fix pattern prior commits in this repo already follow for other line_count drifts. Committed as its own isolated commit rather than folded into the phase-closing commit, because index-entries.json already carried a SECOND, unrelated uncommitted hunk (context/patterns/task-lock.md line_count, belonging to a concurrent session) in the working tree -- see the issue log entry and this phase's handoff for the git-plumbing isolation procedure used to commit only this task's own hunk without disturbing the foreign one.",
+      "annotation": "n/a (not a plan checklist item; recorded here and in the issue log instead)"
+    }
+  ]
+}

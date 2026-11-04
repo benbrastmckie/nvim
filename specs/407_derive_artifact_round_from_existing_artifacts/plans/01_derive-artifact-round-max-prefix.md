@@ -443,7 +443,7 @@ test-force-phases.sh,test-gate-out-repair-reporting.sh,test-manage-topics-create
 
 ---
 
-### Phase 4: Align the state-management schema doc with the implemented derivation [NOT STARTED]
+### Phase 4: Align the state-management schema doc with the implemented derivation [COMPLETED]
 
 **Goal**: Replace the "Backward Compatibility" subsection's count-based derivation snippet with
 the max-prefix normalization the code implements, so the schema reference stays the source of
@@ -451,21 +451,25 @@ truth.
 
 **Tasks**:
 
-- [ ] Edit the "Backward Compatibility" subsection of
+- [x] Edit the "Backward Compatibility" subsection of
       `context/reference/state-management-schema.md` (the subsection following the round-flow
       example, around lines 208-214) to describe the implemented rule: the resolver takes
       `max(stored next_artifact_number, highest on-disk MM prefix + 1)`, scanning `reports/`,
       `plans/`, and `summaries/` together for `[0-9][0-9]_*.md` names, so a missing counter and a
       counter that has fallen behind the files on disk both resolve correctly, and a gap in the
-      sequence does not collapse two rounds onto one number.
-- [ ] Replace the illustrative `count=$(ls ... | wc -l)` snippet with a snippet matching the
+      sequence does not collapse two rounds onto one number. *(completed: retitled the
+      subsection "Normalization Against Disk")*
+- [x] Replace the illustrative `count=$(ls ... | wc -l)` snippet with a snippet matching the
       implemented derivation, and name `skill_read_artifact_number()` in `scripts/skill-base.sh`
-      as the implementing function so a reader can find it.
-- [ ] Note that `skills/skill-reviser/SKILL.md` Stage 3a applies the same max-prefix
+      as the implementing function so a reader can find it. *(completed)*
+- [x] Note that `skills/skill-reviser/SKILL.md` Stage 3a applies the same max-prefix
       reconciliation for plan revisions, so the two are described as one concept rather than two.
-- [ ] State the current behaviour only — no "previously", "no longer", "superseded", or version
+      *(completed)*
+- [x] State the current behaviour only — no "previously", "no longer", "superseded", or version
       framing (`rules/no-record-versioning-in-deliverables.md`), and no task-number references
-      (`rules/no-task-references-in-deliverables.md`).
+      (`rules/no-task-references-in-deliverables.md`). *(completed: grep clean; also fixed an
+      unrelated index-entries.json line_count drift this edit introduced, as its own isolated
+      commit -- see progress file)*
 
 **Timing**: 20 minutes
 
