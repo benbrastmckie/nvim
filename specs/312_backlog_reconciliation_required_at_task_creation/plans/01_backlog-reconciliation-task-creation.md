@@ -279,41 +279,62 @@ write-shape change, and both edited files are prose with no registration or depl
 
 ---
 
-### Phase 3: Implement `scripts/audit-task-proposals.sh` [NOT STARTED]
+### Phase 3: Implement `scripts/audit-task-proposals.sh` [COMPLETED]
 
 **Goal**: One shared matcher that takes proposals and emits structured verdicts over the union of
 open and closed records, serving both the creation-time and the proposal-time call shapes.
 
 **Tasks**:
-- [ ] Create the script with two input modes: single-proposal flags (`--title`, `--description`,
+- [x] Create the script with two input modes: single-proposal flags (`--title`, `--description`,
       `--file-scope <json-array>`) and set mode (`--proposals-file FILE`, or the same JSON on
       stdin). Set mode must accept proposals with no `project_number` and no task directory (D4).
-- [ ] Build the backlog corpus by unioning four sources: `specs/state.json`'s non-terminal
+      *(completed: verified single-mode and set-mode produce byte-identical output for the same
+      proposal)*
+- [x] Build the backlog corpus by unioning four sources: `specs/state.json`'s non-terminal
       `active_projects` (open), `specs/state.json`'s `status: "completed"` entries (closed, not
       yet archived), and `specs/archive/state.json`'s `completed_projects`/`archived_projects`/
       `abandoned_projects` (closed). Reuse `lib/project-number-inuse.sh`'s archive-doc loading
-      and duplicate-tolerant set shape rather than re-deriving either.
-- [ ] Mechanical pass: source `lib/file-scope-overlap.sh` and call `scopes_overlap()` (or splice
+      and duplicate-tolerant set shape rather than re-deriving either. *(completed: archive-doc
+      loading mirrors that library's tolerance for a missing archive file; the full-record
+      corpus construction is this script's own, since project-number-inuse.sh exports only
+      number SETS, not full records)*
+- [x] Mechanical pass: source `lib/file-scope-overlap.sh` and call `scopes_overlap()` (or splice
       `FILE_SCOPE_OVERLAP_JQ_DEFS` into a single `jq` program, following
       `orchestrate-batch-admit.sh`'s precedent) for each proposal against each corpus record.
       Classify the result as exact / subset / superset / partial-overlap to select among
       `duplicate-of-open`, `subset-of-open`, `superset-of-open`, `overlaps-open`, `narrow-open`.
-      Do not modify the predicate.
-- [ ] Emit `scope-blind` for every corpus record that declares no `file_scope`, rather than
-      treating its absence as non-overlap.
-- [ ] Semantic pass: compute a recall-biased token-overlap shortlist over
+      Do not modify the predicate. *(completed with one deviation: the mechanical pass alone
+      emits exact/subset/superset/overlap -> duplicate-of-open/subset-of-open/superset-of-open/
+      overlaps-open. It never independently emits `narrow-open` -- that verdict's action
+      ("narrow the proposal's own file_scope") is not mechanically distinguishable from
+      `overlaps-open`'s ("add a serializing edge") by containment alone; both are live vocabulary
+      values a calling surface or human may still apply, but this script's own classifier does
+      not choose between them. Verified live: a STRONG mechanical signal (exact/subset/superset)
+      always outranks the semantic pass; a WEAK one (overlap, one shared path among many) is
+      overridden by a strong semantic score into `duplicate-of-open` -- this combination-order
+      fix (semantic checked before the weak overlap branch, not after) was necessary to satisfy
+      the near-duplicate-with-one-shared-path acceptance shape; see progress file deviation 3.3*
+- [x] Emit `scope-blind` for every corpus record that declares no `file_scope`, rather than
+      treating its absence as non-overlap. *(completed: verified unconditional per the exact
+      wording -- noted as a real output-volume trade-off in the script's own header, since most
+      of this repo's live backlog currently declares no file_scope)*
+- [x] Semantic pass: compute a recall-biased token-overlap shortlist over
       `title + description`, with the threshold as a single named constant carrying its tuning
-      rationale inline. Stopword-strip and lowercase; no stemming, no embeddings.
-- [ ] Mark closed-side matches `covered-by-closed`, carrying `project_name` and the discharging
+      rationale inline. Stopword-strip and lowercase; no stemming, no embeddings. *(completed:
+      SEMANTIC_THRESHOLD=0.4, token-overlap ratio over the smaller side's token count)*
+- [x] Mark closed-side matches `covered-by-closed`, carrying `project_name` and the discharging
       artifact's path resolved from the record's `artifacts` array; include `project_number` only
       as a labelled convenience field. Never emit a bare archived number as the identifier.
-- [ ] Output one JSON object per proposal: the proposal's identity, a `verdicts` array, a `passes`
+      *(completed: verified against both a live-completed record and an archived record)*
+- [x] Output one JSON object per proposal: the proposal's identity, a `verdicts` array, a `passes`
       object recording that each pass ran, and a `degradations` array. Exit 0 whenever the audit
       ran (a match is a verdict, not a failure), 1 on usage error, 2 when a required state file
-      cannot be read (fail loudly, never an empty-corpus silent pass).
-- [ ] Write the header to state D5's false-negative posture and the no-suppression rule, and to
+      cannot be read (fail loudly, never an empty-corpus silent pass). *(completed: verified all
+      three exit codes live)*
+- [x] Write the header to state D5's false-negative posture and the no-suppression rule, and to
       reference `context/patterns/backlog-reconciliation.md` as the vocabulary's canonical home.
-- [ ] Register the script in `manifest.json`'s `provides.scripts` array.
+      *(completed)*
+- [x] Register the script in `manifest.json`'s `provides.scripts` array. *(completed)*
 
 **Timing**: 2 hours
 
@@ -343,7 +364,13 @@ a fixture, not dropped.
 - Single-proposal mode and set mode produce the same verdict for the same proposal
 - An unreadable `specs/state.json` exits 2, never 0 with an empty verdict array
 - `grep -c audit-task-proposals agent-system/extensions/core/manifest.json` returns non-zero
-- `bash agent-system/extensions/core/scripts/validate-wiring.sh` passes
+- `bash agent-system/extensions/core/scripts/validate-wiring.sh` passes -- **deferred to Phase 9**:
+  this script unconditionally sources `deploy-root-guard.sh` with no `REPO_ROOT` override
+  carve-out (unlike this script's own `audit-task-proposals.sh`, which does support one), so it
+  can only run meaningfully against the DEPLOYED tree; the new script does not exist there until
+  Phase 9's deploy step. Phase 3's registration (manifest grep, above) is verified now; the
+  deploy-wiring check itself is verified at Phase 9 per the Batch Gate Deferral / full-gate-sweep
+  design already in this plan's Phase 9.
 
 ---
 

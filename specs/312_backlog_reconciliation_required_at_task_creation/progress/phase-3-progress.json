@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Implement scripts/audit-task-proposals.sh",
+  "started_at": "2026-11-03T18:10:00Z",
+  "last_updated": "2026-11-03T18:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Two input modes (single-flag, set/stdin), D4 call shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/audit-task-proposals.sh"]},
+    {"id": 2, "description": "Four-source corpus union", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/audit-task-proposals.sh"]},
+    {"id": 3, "description": "Mechanical pass via spliced FILE_SCOPE_OVERLAP_JQ_DEFS, exact/subset/superset/overlap classification", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/audit-task-proposals.sh"]},
+    {"id": 4, "description": "scope-blind emission for file_scope-absent records", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Semantic token-overlap shortlist, named threshold constant", "status": "done", "files_touched": []},
+    {"id": 6, "description": "covered-by-closed with discharging_artifact + project_name", "status": "done", "files_touched": []},
+    {"id": 7, "description": "NDJSON output shape, exit codes 0/1/2", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Header documentation (D5 posture, no-suppression, canonical doc reference)", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Register in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "First draft left scopes_overlap_first bound via 'as' with no array-wrap, and had two leftover scratch jq invocations from iterative drafting", "result": "failed", "reason": "generator empty-vs-null pitfall and dead code; rewrote the whole file cleanly before testing"},
+    {"approach": "Initial branch order checked mc=='overlap' before the semantic-score check", "result": "failed", "reason": "a weak one-shared-path mechanical overlap incorrectly outranked a strong semantic duplicate score, misclassifying the near-duplicate-with-one-shared-path case as overlaps-open instead of duplicate-of-open; reordered so semantic check precedes the weak overlap branch (strong mechanical classes exact/subset/superset still take precedence over both)"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.3",
+      "description": "Mechanical pass classification: exact/subset/superset/partial-overlap selecting among duplicate-of-open/subset-of-open/superset-of-open/overlaps-open/narrow-open",
+      "type": "altered",
+      "reason": "narrow-open is never emitted by the mechanical classifier itself: its operator action (narrow the proposal's own scope) is not mechanically distinguishable from overlaps-open's action (add a serializing edge) using containment alone -- both describe the same 'partial overlap' mechanical finding with different human responses. narrow-open remains a valid vocabulary value a human/caller may still choose; this script just does not pick between the two partial-overlap actions on its own.",
+      "annotation": "*(completed with one deviation: ... this script's own classifier does not choose between them.)*"
+    }
+  ]
+}
