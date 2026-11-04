@@ -36,7 +36,7 @@ Is this the repository's PRIMARY domain?
 
 ## Extension Approach (Recommended)
 
-For most new domains, create an extension. Extensions live in `agent-system/extensions/{domain}/` and are loaded via the the extension picker.
+For most new domains, create an extension. Extensions live in `agent-system/extensions/{domain}/` and are loaded via the [extension picker](../../../README.md).
 
 ### Directory Structure
 
@@ -168,7 +168,7 @@ Entries appended to the main context index:
 
 ### Load/Unload Mechanism
 
-Extensions are managed via the extension picker:
+Extensions are managed via the [extension picker](../../../README.md):
 
 1. **Loading**: Open the extension picker, select extension, files are copied into core
 2. **Unloading**: Open the extension picker, select loaded extension, copied files are removed

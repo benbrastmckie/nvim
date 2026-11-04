@@ -1,0 +1,23 @@
+{
+  "phase": 6,
+  "phase_name": "Extension-picker links and documentation-map inventory",
+  "started_at": "2026-11-04T07:40:00Z",
+  "last_updated": "2026-11-04T08:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add picker links to adding-domains.md (2 sites) + fix 'the the' typo", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/adding-domains.md"]},
+    {"id": 2, "description": "Add picker links to creating-extensions.md (3 sites)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/guides/creating-extensions.md"]},
+    {"id": 3, "description": "Add picker links to extension-system.md (2 sites)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/architecture/extension-system.md"]},
+    {"id": 4, "description": "Add picker links to extension-slim-standard.md (2 sites)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/reference/standards/extension-slim-standard.md"]},
+    {"id": 5, "description": "Add fork-patterns.md to docs-README.md map + related sections", "status": "done",
+     "files_touched": ["agent-system/extensions/core/docs/docs-README.md"]},
+    {"id": 6, "description": "Re-run resolver to confirm all new links resolve", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

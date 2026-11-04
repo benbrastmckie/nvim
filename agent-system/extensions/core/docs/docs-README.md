@@ -11,6 +11,7 @@ This directory contains the documentation for the `.claude/` agent system. The s
 ```
 .claude/docs/
 ├── README.md                    # This file - documentation hub
+├── fork-patterns.md             # Fork mechanisms, prompt cache sharing, delegation decision criteria
 ├── guides/                      # How-to guides
 │   ├── user-guide.md           # Comprehensive command workflows guide
 │   ├── user-installation.md    # Quick-start for new users
@@ -104,6 +105,7 @@ authoritative account of this trade-off.
 - [Creating Commands](guides/creating-commands.md) - Define new user-invocable operations
 - [Creating Skills](guides/creating-skills.md) - Implement specialized workflow skills using the thin wrapper pattern
 - [Creating Agents](guides/creating-agents.md) - Build execution agents for research and implementation
+- [Fork Patterns Reference](fork-patterns.md) - Fork mechanisms, prompt cache sharing, and delegation decision criteria for skill authors
 
 ### Domain Extensions
 - [Adding Domains](guides/adding-domains.md) - Choose between extension and core approach for new domains

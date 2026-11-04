@@ -30,7 +30,7 @@ Extension Source                           Target Project
 
 **Key Design Principles**:
 1. **File-Copy Based**: Extensions are loaded by copying files into the core structure
-2. **Editor Managed**: Load/unload triggered via the extension picker
+2. **Editor Managed**: Load/unload triggered via the [extension picker](../../../README.md)
 3. **Claude Code Agnostic**: Claude Code sees only standard `.claude/` structure
 4. **State Tracked**: a project-root manifest (`.claude-extensions.json` /
    `.opencode-extensions.json`) tracks what is installed and where -- deliberately outside
@@ -544,7 +544,7 @@ installer, run once per machine, independent of which repositories load the exte
 
 ## Picker Integration
 
-The extension picker provides the user interface:
+The [extension picker](../../../README.md) provides the user interface:
 
 1. Scans `global_extensions_dir` for available extensions
 2. Reads state to identify loaded extensions

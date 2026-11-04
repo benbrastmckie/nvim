@@ -8,7 +8,7 @@ Step-by-step guide for creating a new domain extension for the .claude/ system.
 
 ## Overview
 
-Extensions are self-contained packages that add domain-specific support (agents, skills, rules, context) to the .claude/ system. Extensions can be loaded/unloaded via the extension picker without modifying core files. Extensions can optionally declare dependencies on other extensions for shared resources.
+Extensions are self-contained packages that add domain-specific support (agents, skills, rules, context) to the .claude/ system. Extensions can be loaded/unloaded via the [extension picker](../../../README.md) without modifying core files. Extensions can optionally declare dependencies on other extensions for shared resources.
 
 **When to Create an Extension**:
 - Adding support for a new language/framework (Rust, React, Go)
@@ -633,7 +633,7 @@ Domain knowledge for [Your Domain] development.
 
 ### 1. Load the Extension
 
-Press the extension picker and select your extension from the picker.
+Press the [extension picker](../../../README.md) and select your extension from the picker.
 
 ### 2. Verify Files are Installed
 
@@ -676,7 +676,7 @@ Verify:
 
 ### 4. Test Unload
 
-Press the extension picker and select your extension again to unload.
+Press the [extension picker](../../../README.md) and select your extension again to unload.
 
 Verify:
 - All copied files are removed

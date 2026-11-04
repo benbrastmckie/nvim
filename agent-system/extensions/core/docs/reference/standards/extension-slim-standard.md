@@ -2,7 +2,7 @@
 
 ## Purpose
 
-EXTENSION.md files are injected into CLAUDE.md context when loaded via the extension picker. Large EXTENSION.md files waste context window budget on documentation that agents rarely need during routing. This standard defines maximum size and required content for EXTENSION.md files, and (see "Shape-(a) Merge Sources" below) extends the same discipline to shape-(a) `merge-sources/claudemd.md` sources.
+EXTENSION.md files are injected into CLAUDE.md context when loaded via the [extension picker](../../../../README.md). Large EXTENSION.md files waste context window budget on documentation that agents rarely need during routing. This standard defines maximum size and required content for EXTENSION.md files, and (see "Shape-(a) Merge Sources" below) extends the same discipline to shape-(a) `merge-sources/claudemd.md` sources.
 
 ## Size Limit
 
@@ -193,5 +193,5 @@ After slimming an EXTENSION.md:
 5. [ ] Context pointers reference moved content (max 5 lines)
 6. [ ] Moved content exists in context files
 7. [ ] New context files have index-entries.json entries
-8. [ ] Extension loads without errors via the extension picker
+8. [ ] Extension loads without errors via the [extension picker](../../../../README.md)
 9. [ ] Commands still route correctly after changes

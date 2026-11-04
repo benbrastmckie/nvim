@@ -584,28 +584,33 @@ at implementation time to confirm it is still minimal and still points into
 
 ---
 
-### Phase 6: Extension-picker links and documentation-map inventory [NOT STARTED]
+### Phase 6: Extension-picker links and documentation-map inventory [COMPLETED]
 
 **Goal**: Every bare "the extension picker" prose mention in the four named files carries a link
 to the single authority, and `fork-patterns.md` is discoverable from the documentation hub.
 
 **Tasks**:
-- [ ] Add a link to `agent-system/extensions/README.md` at each bare picker mention, re-deriving
+- [x] Add a link to `agent-system/extensions/README.md` at each bare picker mention, re-deriving
       each line number first. Relative depth by directory: from `docs/guides/*.md` and
       `docs/architecture/*.md` use `../../../README.md`; from `docs/reference/standards/*.md` use
       `../../../../README.md`. Sites: `guides/adding-domains.md` (`~:39`, `~:171-174`),
       `guides/creating-extensions.md` (`~:11`, `~:636`, `~:679`),
       `architecture/extension-system.md` (`~:33`, `~:547`),
       `reference/standards/extension-slim-standard.md` (`~:5`, `~:196`). Add a link, not a
-      rewritten explanation — the authority keeps the explanation.
-- [ ] Fix the incidental duplicated-word typo "the the extension picker" in
-      `guides/adding-domains.md:~39` in the same edit.
-- [ ] Leave `docs-README.md:~140` and `guides/user-guide.md:~769` alone: both already carry the
+      rewritten explanation — the authority keeps the explanation. *(completed: all 9 links added
+      at lines 39, 171 [covering the 171-174 cluster as one site], 11, 636, 679, 33, 547, 5, 196;
+      all confirmed resolving)*
+- [x] Fix the incidental duplicated-word typo "the the extension picker" in
+      `guides/adding-domains.md:~39` in the same edit. *(completed)*
+- [x] Leave `docs-README.md:~140` and `guides/user-guide.md:~769` alone: both already carry the
       Extension Catalog link in the same sentence, and neither is among the four named files.
-- [ ] Add `fork-patterns.md` to `docs-README.md`'s "Documentation Map" tree and to its Guides /
+      *(completed: confirmed untouched)*
+- [x] Add `fork-patterns.md` to `docs-README.md`'s "Documentation Map" tree and to its Guides /
       Related Documentation section, so the file is reachable from the hub as well as from the
-      link Phase 2 corrected in `creating-skills.md`.
-- [ ] Re-run the resolver to confirm all nine new/changed links resolve.
+      link Phase 2 corrected in `creating-skills.md`. *(completed: added as a top-level tree entry
+      and under Guides > Component Development)*
+- [x] Re-run the resolver to confirm all nine new/changed links resolve. *(completed: all 9
+      resolve; resolver otherwise clean apart from the file_scope exclusion)*
 
 **Timing**: 0.75 hours
 
