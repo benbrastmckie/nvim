@@ -644,7 +644,7 @@
     {
       "project_number": 274,
       "project_name": "next_admissible_batch_suggestion",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script",
@@ -657,19 +657,30 @@
         344
       ],
       "file_scope": [
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+        "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md"
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "artifacts": [
         {
           "path": "specs/274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md",
           "type": "report",
           "summary": "Research into the next-admissible-batch suggester: confirms all five dependencies (165, 272, 273, 275, 344) completed; documents orchestrate-batch-admit.sh v6's dependency-edge collision exemption (the mechanism the EDGE-PROPOSING STEP relies on), the --depends-on-add contract, the Move 5 conclusion-stage render point for Mode A, the commands/orchestrate.md queue-check call site for Mode B (and a file_scope gap there), the proposer/validator boundary with task 313, and candidate-pool/phase-map reuse recommendations."
+        },
+        {
+          "path": "specs/274_next_admissible_batch_suggestion/plans/01_next-admissible-batch-suggester.md",
+          "type": "plan",
+          "summary": "5-phase plan (8h) for the two-mode, admission-script-verified next-batch suggester with edge-proposing step, fixture fleet, and both trigger points wired."
         }
       ],
-      "last_updated": "2026-11-04T16:15:14Z",
+      "last_updated": "2026-11-04T16:22:09Z",
       "session_id": "sess_1793802705_e3f98a",
       "next_artifact_number": 2
     },

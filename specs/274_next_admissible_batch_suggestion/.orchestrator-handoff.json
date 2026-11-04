@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 274,
+  "session_id": "sess_1793802705_e3f98a_274",
+  "dispatch_seq": 21,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase, 8-hour plan for the next-admissible-batch suggester: one new script (orchestrate-suggest-next-batch.sh) with --next-batch/--alternatives modes sharing one probe function that shells out to the real orchestrate-batch-admit.sh, a caller-side edge-proposing step, a 7-fixture suite, and wiring into conclusion-stage Step 7 plus commands/orchestrate.md's queue-check refusal. The research-flagged file_scope gap is resolved mechanically: all ten touched files are listed in phase 'Files to modify' blocks, so plan-file-scope-harvest.sh widens file_scope from 4 to 10 entries at plan postflight (verified by running the harvester). Plan validates clean with 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/274_next_admissible_batch_suggestion/plans/01_next-admissible-batch-suggester.md",
+      "summary": "5-phase plan (8h) for the two-mode, admission-script-verified next-batch suggester with edge-proposing step, fixture fleet, and both trigger points wired."
+    }
+  ]
+}

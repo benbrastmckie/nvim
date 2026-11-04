@@ -98,7 +98,7 @@ next_project_number: 476
 
 ### Orchestrator
 
-274 [RESEARCHED] — Next-admissible-batch suggestion and...
+274 [PLANNED] — Next-admissible-batch suggestion and...
   └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
     └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
       └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
@@ -7477,11 +7477,12 @@ either direction, deliberately -- see 401 for the reasoning.
 ---
 
 ### 274. Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 165, Task 272, Task 273, Task 275, Task 344
 - **Research**: [274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md]
+- **Plan**: [274_next_admissible_batch_suggestion/plans/01_next-admissible-batch-suggester.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
