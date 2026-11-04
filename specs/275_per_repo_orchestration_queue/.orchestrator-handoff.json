@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 275,
+  "phase": "plan",
+  "session_id": "sess_1793802705_e3f98a_275",
+  "dispatch_seq": 18,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/275_per_repo_orchestration_queue/plans/01_per-repo-orchestration-queue.md",
+      "summary": "Six-phase plan for the per-repo orchestration queue: identity, live half, archive, blocking refusal, wiring, documentation, full gate."
+    }
+  ],
+  "summary": "Wrote a six-phase, fully sequential implementation plan for the per-repo orchestration queue, built on the research report plus direct reads of task-lock.sh, lib/file-scope-overlap.sh, lib/runtime-file-patterns.sh, reap-session-runtime-files.sh and the three live lifecycle call sites. Seven plan-time decisions (D1-D7) settle identity minting, liveness consumption, archive shape and location, archive trackability, documentation siting, the single admission call site, and the --allow-scope-collision override, so implementation does not re-litigate them. Two research recommendations were deliberately narrowed (orchestration_id is minted inside queue-register and resolved by session_id rather than threaded through dispatch contexts; command-gate-in.sh is dropped from the anticipated file_scope), and session_contention() was found reusable verbatim so no shared multi-consumer library is edited. Both an issue and a win were recorded in the issue log.",
+  "blockers": []
+}

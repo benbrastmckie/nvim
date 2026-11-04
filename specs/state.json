@@ -667,7 +667,7 @@
     {
       "project_number": 275,
       "project_name": "per_repo_orchestration_queue",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission",
@@ -677,22 +677,31 @@
         272
       ],
       "file_scope": [
-        "agent-system/extensions/core/scripts/task-lock.sh",
-        "agent-system/extensions/core/scripts/command-gate-in.sh",
+        "agent-system/extensions/core/commands/orchestrate.md",
         "agent-system/extensions/core/context/patterns/task-lock.md",
         "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
-        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
-        "agent-system/extensions/core/scripts/test-session-registry.sh"
+        "agent-system/extensions/core/scripts/command-gate-in.sh",
+        "agent-system/extensions/core/scripts/lib/common.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/scripts/test-session-registry.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-lock-queue.sh",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
       "artifacts": [
         {
           "path": "specs/275_per_repo_orchestration_queue/reports/01_per-repo-orchestration-queue.md",
           "type": "report",
           "summary": "Research report: 01_per-repo-orchestration-queue.md"
+        },
+        {
+          "path": "specs/275_per_repo_orchestration_queue/plans/01_per-repo-orchestration-queue.md",
+          "type": "plan",
+          "summary": "Six-phase plan for the per-repo orchestration queue: identity, live half, archive, blocking refusal, wiring, documentation, full gate."
         }
       ],
-      "last_updated": "2026-11-04T14:32:30Z",
-      "session_id": "sess_1793802705_e3f98a_275"
+      "last_updated": "2026-11-04T14:42:25Z",
+      "session_id": "sess_1793802705_e3f98a"
     },
     {
       "project_number": 282,

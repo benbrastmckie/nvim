@@ -99,7 +99,7 @@ next_project_number: 476
 
 ### Orchestrator
 
-275 [PLANNING] — Per-repo orchestration queue: registered, live, archived on...
+275 [PLANNED] — Per-repo orchestration queue: registered, live, archived on...
   └─ 274 [NOT STARTED] — Next-admissible-batch suggestion and...
     └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
       └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
@@ -7375,11 +7375,12 @@ worse than no hook. No task-number references in deliverables outside specs/**.
 ---
 
 ### 275. Per-repo orchestration queue: registered, live, archived on finish, and consumed by admission
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 170, Task 272
 - **Research**: [275_per_repo_orchestration_queue/reports/01_per-repo-orchestration-queue.md]
+- **Plan**: [275_per_repo_orchestration_queue/plans/01_per-repo-orchestration-queue.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
 
