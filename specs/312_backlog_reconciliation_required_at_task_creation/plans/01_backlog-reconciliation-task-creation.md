@@ -515,31 +515,39 @@ nothing before claiming 5; if taken, use the next free code and update the heade
 
 ---
 
-### Phase 6: Component 4b in the creation standard [NOT STARTED]
+### Phase 6: Component 4b in the creation standard [COMPLETED]
 
 **Goal**: The standard REQUIRES backlog reconciliation, and its compliance table honestly reports
 each surface's state against the new requirement.
 
 **Tasks**:
-- [ ] Insert `### 4b. Backlog Reconciliation (Required)` after the existing 4a and before
-      Component 5, with no renumbering of later components.
-- [ ] Specify its inputs (the four-source open ∪ closed union), its two passes (mechanical
+- [x] Insert `### 4b. Backlog Reconciliation (Required)` after the existing 4a and before
+      Component 5, with no renumbering of later components. *(completed)*
+- [x] Specify its inputs (the four-source open ∪ closed union), its two passes (mechanical
       footprint via the shared predicate; semantic shortlist), its verdict vocabulary (reference
       `context/patterns/backlog-reconciliation.md` by path — do not restate the table), and its
-      non-silence obligation.
-- [ ] State the non-silence obligation concretely: every verdict other than `genuinely-new` and
+      non-silence obligation. *(completed)*
+- [x] State the non-silence obligation concretely: every verdict other than `genuinely-new` and
       an auto-handled `overlaps-open` edge MUST appear in the Component 7 confirmation summary,
-      and no surface may suppress one.
-- [ ] Extend Component 7's summary table format with a **Backlog Check** column and a worked
+      and no surface may suppress one. *(completed)*
+- [x] Extend Component 7's summary table format with a **Backlog Check** column and a worked
       example row per verdict class, reusing Component 7's existing Foreground Requirement rather
-      than inventing a new interactive gate (per task 300's measured rehome finding).
-- [ ] Add a **Backlog Reconciliation (4b)** column to the Current Compliance Status table, marked
+      than inventing a new interactive gate (per task 300's measured rehome finding). *(completed:
+      6 example rows covering genuinely-new, overlaps-open (auto edge), duplicate-of-open,
+      subset-of-open, and covered-by-closed; scope-blind's compact-display allowance stated in
+      prose since it is unconditional and would otherwise dominate the table)*
+- [x] Add a **Backlog Reconciliation (4b)** column to the Current Compliance Status table, marked
       honestly per surface — including "No" for `/review` and `/errors`, which do not satisfy even
       the existing 4a check, so the new requirement does not silently inherit a false "Yes".
-- [ ] Add the new component to the Implementation Checklist's Required Components list.
-- [ ] Add the closed-record durable-anchor rule: a closed match is cited by `project_name` plus
+      *(completed: all five table rows plus the /spawn and /task prose mentions marked
+      "No (not yet wired)" — honest as of this phase, before Phase 8's wiring lands; Phase 8's
+      own verification updates this table to reflect actual wiring)*
+- [x] Add the new component to the Implementation Checklist's Required Components list.
+      *(completed)*
+- [x] Add the closed-record durable-anchor rule: a closed match is cited by `project_name` plus
       the discharging artifact's path, never a bare archived number, for the same reason
-      `rules/no-task-references-in-deliverables.md` gives.
+      `rules/no-task-references-in-deliverables.md` gives. *(completed, inline in Component 4b's
+      Non-Silence Obligation paragraph)*
 
 **Timing**: 1.5 hours
 
@@ -557,12 +565,21 @@ and it covers the whole edit.
 
 **Verification**:
 - `grep -n '### 4b' docs/reference/standards/multi-task-creation-standard.md` finds the component
-  between 4a and Component 5
+  between 4a and Component 5 *(verified: line 322, between 4a and 5)*
 - The Current Compliance Status table has the new column with a value for every listed surface and
-  no blank cells
+  no blank cells *(verified via awk field check, no blanks)*
 - The document references `context/patterns/backlog-reconciliation.md` rather than restating the
-  verdict table (assert the table appears exactly once across the two files)
-- `bash agent-system/extensions/core/scripts/check-extension-docs.sh` passes
+  verdict table (assert the table appears exactly once across the two files) *(verified: the
+  verdict-table header string appears 0 times in the standard, 1 time in the canonical doc)*
+- `bash agent-system/extensions/core/scripts/check-extension-docs.sh` passes -- **ran, with two
+  pre-existing/expected findings neither attributable to this phase**: (1) `core` extension FAILs
+  on "deployed script content drift" / "never deployed" for the Phase 3-5 scripts
+  (`audit-task-proposals.sh`, `test-audit-task-proposals.sh`) and two incidentally-fixed test
+  files — all expected until Phase 9's actual deploy; this phase's own doc edit
+  (`multi-task-creation-standard.md`) is not named in any `core` finding. (2) the `specs`
+  extension FAILs on a missing `manifest.json`/`README.md` that predates this task entirely (no
+  file under an `extensions/specs/` directory is in this task's `file_scope`, and this task never
+  created or touched one) -- an unrelated, pre-existing gap, not investigated further.
 
 ---
 

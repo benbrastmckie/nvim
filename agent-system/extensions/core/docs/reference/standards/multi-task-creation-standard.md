@@ -319,6 +319,61 @@ remains advisory, not a blocking gate.
 Components 5 (Kahn ordering) and 6 (Visualization) require no change — they consume whatever
 `dependency_map` they are given, now augmented with 4a's auto-added edges, automatically.
 
+### 4b. Backlog Reconciliation (Required)
+
+Runs after 4a and before Component 7's confirmation — every proposed task is compared against
+the full backlog CORPUS (open and closed records) before the user is ever asked to confirm
+creation. 4a's overlap check (above) scopes its comparison to the CURRENT creation batch only;
+4b closes the gap 4a leaves open: a proposal that duplicates, subsumes, or is subsumed by a
+record that already exists OUTSIDE this batch — open or closed — is never silently created.
+This component exists because an incident reproducible as a regression fixture showed exactly
+this gap: three proposed tasks created from a research report with no backlog comparison at all
+yielded one strict subset of an already-open task, one near-total duplicate of another (caught
+only by comparing TITLES, since the two shared almost no file paths), and one genuinely new
+concern — a 2-out-of-3 failure rate for a check that, once run, makes the correct disposition
+obvious.
+
+**Inputs**: the union of four sources — forming the comparison corpus is this component's own
+responsibility, not something each caller re-derives:
+1. `specs/state.json`'s non-terminal `active_projects` entries (OPEN).
+2. `specs/state.json`'s `status: "completed"` entries (CLOSED, not yet archived).
+3. `specs/archive/state.json`'s `completed_projects` array (CLOSED).
+4. `specs/archive/state.json`'s `archived_projects` and `abandoned_projects` arrays (CLOSED).
+
+**The Two Passes**: a mechanical pass (directory-prefix overlap classification via the SAME
+shared predicate 4a already uses, `.claude/context/patterns/file-footprint-overlap.md` — never
+re-derived), and a semantic pass (a recall-biased token-overlap shortlist over
+`title + description`, tuned toward over-inclusion). Full detail, the verdict vocabulary, the
+False-Negative Posture, and the Non-Goals (no suppression, no auto-mutation beyond an
+`overlaps-open` edge, no semantic-embedding comparator) are defined ONCE in
+`.claude/context/patterns/backlog-reconciliation.md` — reference it by path; do not restate the
+vocabulary here.
+
+**Mechanism**: `scripts/audit-task-proposals.sh` (the single shared matcher — every creation
+surface calls this script rather than re-implementing the comparison) is run over the proposed
+task set before Component 7's confirmation, at the SKILL/COMMAND layer (where `AskUserQuestion`
+is reachable — the same Foreground Requirement Component 7 already states, reused rather than a
+new interactive gate invented for this component). `scripts/state-write.sh`'s audit-evidence gate
+additionally refuses, at the one place every creation write is actually observed, a
+`specs/state.json` write that introduces a new `active_projects` entry carrying no recorded
+verdict or explicit override — so this component cannot be silently skipped by a surface that
+forgets to call it.
+
+**The Non-Silence Obligation (concrete)**: every verdict other than `genuinely-new`, and an
+`overlaps-open` edge handled exactly like 4a's own auto-added edges, MUST appear in Component 7's
+confirmation summary (see the **Backlog Check** column added to that component's Summary Table
+Format below) — no surface may suppress one. A closed-record match (`covered-by-closed`) is
+RENDERED, never auto-dropped: the proposal may still be genuinely new relative to what the
+discharging artifact actually landed, and only a human can make that call. A closed match is
+cited by the record's `project_name` plus the discharging artifact's path — never a bare archived
+number, which vault operations renumber out from under any later reader (the same rule
+`.claude/rules/no-task-references-in-deliverables.md` states for deliverables generally).
+
+**Scope note**: this component governs CREATION time. It has no opinion on the admission-time
+scan scope `.claude/context/patterns/batch-orchestration-guardrails.md` already covers (a
+different question, asked at dispatch time rather than creation time, over an already-created
+task set).
+
 ### 5. Task Ordering (Required when dependencies exist)
 
 Apply topological sort (Kahn's algorithm) to ensure foundational tasks receive lower numbers.
@@ -394,20 +449,41 @@ Always show task summary and require explicit confirmation before creating tasks
 ```markdown
 **Tasks to Create** ({N} total):
 
-| # | Title | Task Type | Effort | Dependencies |
-|---|-------|----------|--------|--------------|
-| 37 | Add sorting | meta | 2h | None |
-| 38 | Update insertion | meta | 1h | Task #{N} |
-| 39 | Refactor helper | meta | 1h | Task #{N} (auto: file overlap) |
+| # | Title | Task Type | Effort | Dependencies | Backlog Check |
+|---|-------|----------|--------|--------------|---------------|
+| 37 | Add sorting | meta | 2h | None | genuinely-new |
+| 38 | Update insertion | meta | 1h | Task #{N} | genuinely-new |
+| 39 | Refactor helper | meta | 1h | Task #{N} (auto: file overlap) | overlaps-open #302 (auto: edge added) |
+| 40 | Fix widget race | general | 1h | None | duplicate-of-open #272 — fold into existing record |
+| 41 | Narrow report parser | meta | 1h | None | subset-of-open #302 — narrow #302, order behind |
+| 42 | Add retry backoff | general | 1h | None | covered-by-closed (retry_backoff_race, specs/.../summaries/01-summary.md) — review before creating |
 
-**Total Estimated Effort**: 4 hours
+**Total Estimated Effort**: 6 hours
 ```
+
+**Backlog Check column — worked example per verdict class** (per Component 4b; full vocabulary
+in `.claude/context/patterns/backlog-reconciliation.md`): `genuinely-new` needs no further
+annotation. `overlaps-open #N` is rendered exactly like a Component 4a auto-added edge, with the
+same `(auto: edge added)` suffix — the two mechanisms share one annotation convention since both
+add the same kind of edge for the same reason. Every OTHER verdict —
+`duplicate-of-open`/`subset-of-open`/`superset-of-open`/`narrow-open`/`covered-by-closed`/
+`scope-blind` — is rendered with its target record and the operator action from
+`backlog-reconciliation.md`'s vocabulary table, and is NEVER auto-applied: the row is shown, and
+the user decides (via the existing Custom/Revise path) whether to proceed, fold, narrow, or drop
+the proposal. A `covered-by-closed` row names the discharging artifact's path, never a bare
+archived number (per Component 4b's Non-Silence Obligation). `scope-blind` rows may be rendered
+compactly (a count, e.g. "12 records: no file_scope declared — see audit output") rather than
+expanded one-per-row, since `scope-blind` is emitted unconditionally for every scope-absent
+corpus record and can otherwise dominate the table — collapsing its DISPLAY is a presentation
+choice, never a suppression of the underlying verdict data.
 
 **Auto-Derived Dependency Annotation**: Any dependency edge added automatically by Component 4a
 (file footprint overlap) MUST be annotated inline in the Dependencies cell with
 `(auto: file overlap)`, distinguishing it from user-declared dependencies (Component 4). This
 annotation is never omitted — an auto-added edge is always visible in the confirmation summary
-so the user can override it via the Custom/Revise path before tasks are created.
+so the user can override it via the Custom/Revise path before tasks are created. Component 4b's
+own `overlaps-open` auto-added edge is annotated the same way, in the Backlog Check column
+(above), not duplicated into the Dependencies column.
 
 **Confirmation Pattern**:
 ```json
@@ -485,7 +561,11 @@ For any command/skill/agent that creates multiple tasks:
       agent dispatch) applies
 - [ ] **Discovery**: Clear criteria for identifying potential tasks
 - [ ] **Selection UI**: AskUserQuestion with multiSelect
-- [ ] **Confirmation**: Summary table + explicit "Yes, create tasks" selection
+- [ ] **Backlog Reconciliation (4b)**: Run `scripts/audit-task-proposals.sh` over the proposed
+      set before confirmation; render every non-`genuinely-new` verdict in the Backlog Check
+      column; never suppress a `covered-by-closed` match
+- [ ] **Confirmation**: Summary table (including the Backlog Check column) + explicit "Yes,
+      create tasks" selection
 - [ ] **State Updates**: Update both state.json and TODO.md atomically
 
 ### Optional Components (Recommended for 3+ Tasks)
@@ -524,24 +604,25 @@ See `.claude/agents/meta-builder-agent.md` for complete implementation details.
 
 ## Current Compliance Status
 
-| Command | Task-Count Reasoning (0) | Required | Grouping | Footprint Overlap (4a) | Dependencies | Ordering | Visualization |
-|---------|---------------------------|----------|----------|-------------------------|--------------|----------|---------------|
-| `/meta` | Yes (primary-match criterion) | Yes | **Automatic** | Yes (meta-builder-agent) | Full DAG | Kahn's | Linear/Layered |
-| `/fix-it` | Yes (primary-match criterion) | Yes | Yes | Yes (skill-fix-it) | Internal only | No | No |
-| `/review` | No (not yet wired) | Yes | Yes | No | No | No | No |
-| `/errors` | Yes (non-interactive) | Partial* | No | No | No | No | No |
-| `/task --review` | No (not yet wired) | Yes | No | No | parent_task | No | No |
+| Command | Task-Count Reasoning (0) | Required | Grouping | Footprint Overlap (4a) | Backlog Reconciliation (4b) | Dependencies | Ordering | Visualization |
+|---------|---------------------------|----------|----------|-------------------------|------------------------------|--------------|----------|---------------|
+| `/meta` | Yes (primary-match criterion) | Yes | **Automatic** | Yes (meta-builder-agent) | No (not yet wired) | Full DAG | Kahn's | Linear/Layered |
+| `/fix-it` | Yes (primary-match criterion) | Yes | Yes | Yes (skill-fix-it) | No (not yet wired) | Internal only | No | No |
+| `/review` | No (not yet wired) | Yes | Yes | No | No (not yet wired; does not satisfy 4a either) | No | No | No |
+| `/errors` | Yes (non-interactive) | Partial* | No | No | No (not yet wired; does not satisfy 4a either) | No | No | No |
+| `/task --review` | No (not yet wired) | Yes | No | No | No (not yet wired) | parent_task | No | No |
 
 *`/errors` creates tasks automatically without interactive selection (intentional for error triage workflow).
 
 `/spawn` (single-task-follow-up creator, `spawn-agent` + `skill-spawn`) also implements
 Footprint Overlap (4a) even though it is not a multi-task *creation* command in the strict
 Component-1-8 sense; see `.claude/agents/spawn-agent.md` and `.claude/skills/skill-spawn/SKILL.md`.
+Backlog Reconciliation (4b): **No (not yet wired)**.
 
 `/task` Create Task Mode and Expand Mode (single/few-task creators, not strict Component-1-8
 multi-task creators) also implement Task-Count Reasoning (0): **Yes** for both, applied at the
 point task count is decided (Create Task Mode Step 2.5; Expand Mode Steps 2-3). See
-`.claude/commands/task.md`.
+`.claude/commands/task.md`. Backlog Reconciliation (4b): **No (not yet wired)** for both modes.
 
 **Enhanced `/meta` Features**:
 - **Automatic Task Consolidation** (Stage 3.5): Proactively analyzes user-provided task breakdown and suggests consolidation opportunities
@@ -577,3 +658,11 @@ point task count is decided (Create Task Mode Step 2.5; Expand Mode Steps 2-3). 
 - `.claude/context/patterns/batch-orchestration-guardrails.md` - "Batching Is the Default":
   governs which already-created tasks are run together, complementary to Component 0's
   how-many-to-create decision
+- `.claude/context/patterns/backlog-reconciliation.md` - Component 4b's canonical vocabulary:
+  the two-pass model, the closed verdict vocabulary, the False-Negative Posture, and the
+  Non-Goals (no suppression, no auto-mutation beyond an `overlaps-open` edge)
+- `.claude/scripts/audit-task-proposals.sh` - Component 4b's shared matcher, callable at
+  creation time (single proposal) or proposal-render time (a set, no allocated task number
+  required)
+- `.claude/rules/no-task-references-in-deliverables.md` - the durable-anchor citation rule
+  Component 4b's `covered-by-closed` verdict follows (never a bare archived number)
