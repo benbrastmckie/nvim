@@ -543,7 +543,7 @@ rm -f "$ARCHIVE_STATE_FILE"
 (
   cd "$TMPROOT" || exit 1
   "$SW" '([range(0;20000000)] | length) as $burn | .active_projects += [{project_number: $new_num, project_name: "case10_first"}] | .next_project_number = ($new_num + 1)' \
-    --allocate-into new_num --session-id "sess_case10_first" > "$TMPROOT/case10_first.out" 2>&1
+    --allocate-into new_num --audit-override "test fixture: concurrency case 10" --session-id "sess_case10_first" > "$TMPROOT/case10_first.out" 2>&1
   echo $? > "$TMPROOT/case10_first.exit"
 ) &
 PID_CASE10_FIRST=$!
@@ -551,7 +551,7 @@ PID_CASE10_FIRST=$!
 (
   cd "$TMPROOT" || exit 1
   "$SW" '.active_projects += [{project_number: $new_num, project_name: "case10_second"}] | .next_project_number = ($new_num + 1)' \
-    --allocate-into new_num --session-id "sess_case10_second" > "$TMPROOT/case10_second.out" 2>&1
+    --allocate-into new_num --audit-override "test fixture: concurrency case 10" --session-id "sess_case10_second" > "$TMPROOT/case10_second.out" 2>&1
   echo $? > "$TMPROOT/case10_second.exit"
 ) &
 PID_CASE10_SECOND=$!
@@ -636,7 +636,7 @@ EOF
 (
   cd "$TMPROOT" || exit 1
   "$SW" '.active_projects += [{project_number: $new_num}] | .next_project_number = ($new_num + 1)' \
-    --allocate-into new_num --session-id "sess_case12" > "$TMPROOT/case12.out" 2>&1
+    --allocate-into new_num --audit-override "test fixture: concurrency case 12" --session-id "sess_case12" > "$TMPROOT/case12.out" 2>&1
   echo $? > "$TMPROOT/case12.exit"
 )
 case12_exit=$(cat "$TMPROOT/case12.exit" 2>/dev/null || echo "?")
@@ -777,7 +777,7 @@ rm -f "$ARCHIVE_STATE_FILE"
 (
   cd "$TMPROOT" || exit 1
   "$SW" '.active_projects += [{project_number: $new_num}]' \
-    --allocate-into new_num --session-id "sess_case15a" > "$TMPROOT/case15a.out" 2>&1
+    --allocate-into new_num --audit-override "test fixture: concurrency case 15a" --session-id "sess_case15a" > "$TMPROOT/case15a.out" 2>&1
   echo $? > "$TMPROOT/case15a.exit"
 )
 case15a_exit=$(cat "$TMPROOT/case15a.exit" 2>/dev/null || echo "?")
@@ -810,7 +810,7 @@ EOF
 (
   cd "$TMPROOT" || exit 1
   "$SW" '.active_projects += [{project_number: $new_num}]' \
-    --allocate-into new_num --session-id "sess_case15b" > "$TMPROOT/case15b.out" 2>&1
+    --allocate-into new_num --audit-override "test fixture: concurrency case 15b" --session-id "sess_case15b" > "$TMPROOT/case15b.out" 2>&1
   echo $? > "$TMPROOT/case15b.exit"
 )
 case15b_exit=$(cat "$TMPROOT/case15b.exit" 2>/dev/null || echo "?")

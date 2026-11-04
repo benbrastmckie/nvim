@@ -405,6 +405,7 @@ run_cycle_plan() {
 # exclusion below from an ordinary status-derived dispatch.
 "$WORKDIR/.claude/scripts/state-write.sh" \
   '.active_projects += [{"project_number": 2, "project_name": "fixture_task_fphase", "status": "planned", "task_type": "general", "dependencies": [], "file_scope": [], "next_artifact_number": 1}] | .next_project_number = 3' \
+  --audit-override "test fixture setup (task 312 audit-evidence gate)" \
   --session-id "sess_test_fphase_setup"
 mkdir -p "$WORKDIR/specs/002_fixture_task_fphase/reports"
 
@@ -501,6 +502,7 @@ fi
 # (this fix must never touch ordinary, unforced routing).
 "$WORKDIR/.claude/scripts/state-write.sh" \
   '.active_projects += [{"project_number": 3, "project_name": "fixture_task_unforced", "status": "not_started", "task_type": "general", "dependencies": [], "file_scope": [], "next_artifact_number": 1}] | .next_project_number = 4' \
+  --audit-override "test fixture setup (task 312 audit-evidence gate)" \
   --session-id "sess_test_unforced_setup"
 mkdir -p "$WORKDIR/specs/003_fixture_task_unforced/reports"
 UNFORCED_SESSION="sess_test_unforced"
