@@ -10,8 +10,9 @@ agents never write this file, in any mode. Core's own standalone hard-mode imple
 was deleted along with the rest of core's `-hard` lifecycle skills/agents; core's
 `general`/`meta`/`markdown` task types now resolve hard-mode implement dispatch to the SAME
 base-mode `general-implementation-agent` used by standard mode — which, like every other
-implementation agent and `planner-agent`, writes this file under `orchestrator_mode: true` — see
-"Handoff Writers" below for the full, current writer set.
+implementation agent and the plan phase's own writer (`planner-agent` or `reviser-agent`), writes
+this file under `orchestrator_mode: true` — see "Handoff Writers" below for the full, current
+writer set.
 **Read by**: `skill-orchestrate`'s state machine loop (a single engine now covers both effort
 modes)
 **Machine-checkable schema**: `context/schemas/orchestrator-handoff-schema.json` is the single
@@ -480,15 +481,16 @@ hard/base split, H9 Stage 5) was deleted along with the rest of core's `-hard` l
 skills/agents. Core's `general`/`meta`/`markdown` task types now resolve hard-mode implement
 dispatch to the SAME base-mode `general-implementation-agent` used by standard mode
 (routing_agents_hard for core was removed; resolution falls through to routing_agents) — which,
-like every other implementation agent and `planner-agent`, writes `.orchestrator-handoff.json`
-under `orchestrator_mode: true` regardless of hard/base mode. **Consequence**: core task types
-write `.orchestrator-handoff.json` under `/orchestrate` exactly as every other extension's
-implementation agent does; cslib and lean are not a special case among writers — every
-implementation agent, plus `planner-agent`, is a writer under this one `orchestrator_mode` gate.
+like every other implementation agent and the plan phase's own writer (`planner-agent` or
+`reviser-agent`), writes `.orchestrator-handoff.json` under `orchestrator_mode: true` regardless
+of hard/base mode. **Consequence**: core task types write `.orchestrator-handoff.json` under
+`/orchestrate` exactly as every other extension's implementation agent does; cslib and lean are
+not a special case among writers — every implementation agent, plus the plan phase's resolved
+agent (`planner-agent` or `reviser-agent`), is a writer under this one `orchestrator_mode` gate.
 
 | Writer | Status | Continuation form emitted | Notes |
 |--------|--------|----------------------------|-------|
-| Every `*-implementation-agent`/`*-implement-agent` plus `planner-agent`, across every extension | Active under `orchestrator_mode: true` (any mode, hard or base) | **Flat** `continuation_path` (sole exception: `cslib-implementation-hard-agent.md` writes inline and unconditionally, independent of `orchestrator_mode`, since it is hard-mode-only) | Every writer's handoff-writing section states the `artifacts`-shape spec (`{type, path, summary}` objects) and the `partial`-status conditional (non-empty required for `researched`/`planned`/`implemented`, `[]` legal otherwise), and emits only the flat `continuation_path`, never the deprecated nested `continuation_context` object. See `context/contracts/wrap-up.md`'s canonical schema |
+| Every `*-implementation-agent`/`*-implement-agent` plus the plan phase's resolved agent (`planner-agent` or `reviser-agent`), across every extension | Active under `orchestrator_mode: true` (any mode, hard or base) | **Flat** `continuation_path` (sole exception: `cslib-implementation-hard-agent.md` writes inline and unconditionally, independent of `orchestrator_mode`, since it is hard-mode-only) | Every writer's handoff-writing section states the `artifacts`-shape spec (`{type, path, summary}` objects) and the `partial`-status conditional (non-empty required for `researched`/`planned`/`implemented`, `[]` legal otherwise), and emits only the flat `continuation_path`, never the deprecated nested `continuation_context` object. See `context/contracts/wrap-up.md`'s canonical schema. The plan phase's resolved agent is chosen by `orchestrate-cycle-plan.sh`'s artifact-based admission rule — an existing `plans/*.md` resolves to `reviser-agent`, otherwise `planner-agent` — and either way the resolved agent lands in the same `dispatch[]` array under `orchestrator_mode: true`. This is a different path from `reviser-agent`'s own separate `aux_dispatch[]` "Plan revision (blocker/drift)" rows, which hardcode `orchestrator_mode: false` and carry no `handoff_path`, so they write no handoff — by design, not a gap. |
 | Every `*-research-agent`, across every extension | Never writes a handoff, by design, in any mode | Neither (no handoff written at all) | Research is explicitly prohibited from writing one (the `.orchestrator-handoff.json` — research agents never write one section in the research-agent contracts). This is the decided, expected, `.return-meta.json`-recoverable case — see "Outcome Channels" below — not an unaddressed defect. |
 
 Every agent contract that could nonetheless end up writing this file carries its own "Defensive

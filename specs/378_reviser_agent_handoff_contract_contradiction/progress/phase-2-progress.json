@@ -1,0 +1,31 @@
+{
+  "phase": 2,
+  "phase_name": "Register reviser-agent in the Handoff Writers contract text",
+  "started_at": "2026-11-04T17:45:00Z",
+  "last_updated": "2026-11-04T17:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-grep planner-agent/Handoff Writers hits in handoff-schema.md", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend Handoff Writers table active row + Notes with reviser-agent and admission-rule clarification", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 3, "description": "Update 'plus planner-agent' prose phrasings so they include reviser-agent", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 4, "description": "Leave Registering a new writer as-is", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-grep for other stale writer-set statements and fix or record reason", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Run phase verification exactly as the plan specifies: `verify-deploy.sh --skip-slow --only-gate 3,4 agent-system/extensions/core`",
+      "result": "failed",
+      "reason": "Exits 2 with 'no deploy tree at agent-system/extensions/core/.claude'. verify-deploy.sh's TARGET positional arg must be a REPO ROOT (it checks TARGET/.claude and TARGET/agent-system/extensions to classify source-store vs. deploy-consumer); passing the extension subdirectory itself as TARGET is not a valid invocation shape for this script. Corrected invocation: omit TARGET so it defaults to $(pwd) = repo root, which has both agent-system/extensions and .claude. See deviation entry below."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.verification",
+      "description": "Plan's Phase 2 Verification line specifies `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 agent-system/extensions/core`",
+      "type": "altered",
+      "reason": "That exact invocation exits 2 (no deploy tree at agent-system/extensions/core/.claude) because verify-deploy.sh's TARGET argument must be the repo root, not an extension subdirectory -- gates 3/4 classify source-store-vs-deploy-consumer by checking TARGET/agent-system/extensions and TARGET/.claude, not by TARGET itself being that path. Ran the equivalent invocation with TARGET defaulted to the repo root instead: `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4` from /home/benjamin/.config/nvim. Result: PASS, 3 checks, 0 failures (doc-lint, STRICT_CORE_DEPLOY, task-reference lint all green).",
+      "annotation": "*(deviation: altered -- ran with TARGET defaulted to repo root instead of the plan's literal `agent-system/extensions/core` positional arg, which errors; see progress file approaches_tried)*"
+    }
+  ]
+}

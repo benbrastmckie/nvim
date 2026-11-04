@@ -228,31 +228,35 @@ section plus two Critical-Requirements bullets suffice. Confirm at implementatio
 
 ---
 
-### Phase 2: Register reviser-agent in the Handoff Writers contract text [NOT STARTED]
+### Phase 2: Register reviser-agent in the Handoff Writers contract text [COMPLETED]
 
 **Goal**: `docs/architecture/handoff-schema.md` — the file that declares itself the single place
 the writer set is settled — names `reviser-agent` as a writer under the same `orchestrator_mode`
 gate, with no remaining statement in that file that implies otherwise.
 
 **Tasks**:
-- [ ] Re-grep `grep -n 'planner-agent\|Handoff Writers' docs/architecture/handoff-schema.md` to
+- [x] Re-grep `grep -n 'planner-agent\|Handoff Writers' docs/architecture/handoff-schema.md` to
       re-locate every statement of the writer set (the research report found hits at the opening
       `**Written by**:` framing, the Handoff Writers prose, and the table row; re-derive rather
-      than trusting those line numbers).
-- [ ] Extend the Handoff Writers table's active-writer row so it names `reviser-agent` alongside
+      than trusting those line numbers). *(completed)*
+- [x] Extend the Handoff Writers table's active-writer row so it names `reviser-agent` alongside
       `planner-agent`, and add a Notes clarification that the `plan` phase's resolved agent is
       chosen by `orchestrate-cycle-plan.sh`'s artifact-based admission rule (existing
       `plans/*.md` -> `reviser-agent`, otherwise `planner-agent`) and that both land in the same
       `dispatch[]` array under `orchestrator_mode: true`, while `reviser-agent`'s separate
-      `aux_dispatch[]` path carries `orchestrator_mode: false` and writes nothing.
-- [ ] Update the "plus `planner-agent`" phrasings in the surrounding prose (the `**Written by**:`
+      `aux_dispatch[]` path carries `orchestrator_mode: false` and writes nothing. *(completed)*
+- [x] Update the "plus `planner-agent`" phrasings in the surrounding prose (the `**Written by**:`
       header framing and the Handoff Writers narrative) so they no longer read as an exhaustive
-      non-implementation writer list that excludes `reviser-agent`.
-- [ ] Leave "Registering a new writer" as-is: this phase is exactly the table-row-only change it
-      prescribes, and no script-side registration step is being added.
-- [ ] Re-grep the file for any remaining statement that enumerates writers by name and would now
+      non-implementation writer list that excludes `reviser-agent`. *(completed)*
+- [x] Leave "Registering a new writer" as-is: this phase is exactly the table-row-only change it
+      prescribes, and no script-side registration step is being added. *(completed)*
+- [x] Re-grep the file for any remaining statement that enumerates writers by name and would now
       be stale (including the `continuation_path` discussion the research report flagged); fix or
-      explicitly leave each with a reason recorded in the commit body.
+      explicitly leave each with a reason recorded in the commit body. *(completed: the
+      `continuation_path` row at line 122 and the "exactly one writer" scope note at line
+      ~833-835 are pre-existing, unrelated staleness -- the latter already contradicted this
+      file's own corrected "every plan and implement agent" framing before this change, and
+      fixing it is out of this task's scope; recorded here rather than silently left)*
 
 **Timing**: 0.25 hours
 
@@ -280,11 +284,18 @@ reading every hit, rather than assuming the pre-edit hit list was complete.
 **Verification**:
 - `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 agent-system/extensions/core`
   exits 0 (explicit source-store TARGET, never the bare no-argument form, which would run both
-  gates' SKIP branch).
+  gates' SKIP branch). *(deviation: altered -- this exact invocation exits 2, "no deploy tree at
+  agent-system/extensions/core/.claude": `verify-deploy.sh`'s TARGET positional must be a repo
+  root, since gates 3/4 classify source-store-vs-deploy-consumer by checking
+  `TARGET/agent-system/extensions` and `TARGET/.claude`, not by TARGET itself being that
+  subdirectory. Ran `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow
+  --only-gate 3,4` with TARGET defaulted to the repo root instead -- PASS, 3 checks, 0 failures
+  (doc-lint, STRICT_CORE_DEPLOY, task-reference lint). See progress file `approaches_tried` and
+  `deviations`.)*
 - `grep -n 'reviser-agent' docs/architecture/handoff-schema.md` shows it inside the Handoff
-  Writers table's active row, not only in prose.
+  Writers table's active row, not only in prose. *(verified)*
 - Diff read-through confirms no hunk leaves markdown/table text, and no surviving sentence in the
-  file states a writer set that excludes `reviser-agent`.
+  file states a writer set that excludes `reviser-agent`. *(verified)*
 
 ---
 
