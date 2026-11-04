@@ -644,7 +644,7 @@
     {
       "project_number": 274,
       "project_name": "next_admissible_batch_suggestion",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script",
@@ -680,7 +680,7 @@
           "summary": "5-phase plan (8h) for the two-mode, admission-script-verified next-batch suggester with edge-proposing step, fixture fleet, and both trigger points wired."
         }
       ],
-      "last_updated": "2026-11-04T16:22:09Z",
+      "last_updated": "2026-11-04T16:22:29Z",
       "session_id": "sess_1793802705_e3f98a",
       "next_artifact_number": 2
     },

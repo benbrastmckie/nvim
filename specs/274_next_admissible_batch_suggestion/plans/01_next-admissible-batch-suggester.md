@@ -2,7 +2,7 @@
 
 - **Task**: 274 - Next-admissible-batch suggestion and alternatives-on-conflict, both computed by
   invoking the real admission script
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 165, 272, 273, 275, 344 (all completed; none dropped)
 - **Research Inputs**: `specs/274_next_admissible_batch_suggestion/reports/01_next-admissible-batch-suggestion.md`
@@ -196,23 +196,23 @@ finished script into its callers.
 
 ---
 
-### Phase 1: Script skeleton, CLI contract, and header dispositions [NOT STARTED]
+### Phase 1: Script skeleton, CLI contract, and header dispositions [COMPLETED]
 
 **Goal**: `orchestrate-suggest-next-batch.sh` exists in the source store with strict mode, a
 validated two-mode CLI, a working `--help`, and a header comment that records every disposition
 this plan decided — so no later phase has to re-litigate them.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh` with the
+- [x] Create `agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh` with the
       strict-mode preamble and script-dir/project-root resolution per
       `context/standards/shell-strict-mode.md`, modelled on the sibling
       `orchestrate-conclusion-aggregate.sh` (source-store/deployed dual-path tolerance included).
-- [ ] Implement argument parsing and validation for the two modes: `--next-batch` (Mode A) and
+- [x] Implement argument parsing and validation for the two modes: `--next-batch` (Mode A) and
       `--alternatives` (Mode B), mutually exclusive, exactly one required; plus `--session-id
       <id>`, `--max-tasks <N>` (default 8), `--write-edges` (default off, per Decision 2), and
       `--help`. An unrecognized flag or a missing/duplicate mode is a usage error (exit 2) with a
       loud stderr line, never a silent default.
-- [ ] Write the header comment block recording, each as its own named paragraph: (a) the binding
+- [x] Write the header comment block recording, each as its own named paragraph: (a) the binding
       constraint — admissibility is established ONLY by invoking `orchestrate-batch-admit.sh`,
       with the reason (a second copy would drift, and a suggestion the real script then refuses is
       worse than none); (b) the self-modification-hazard disposition — excluded from
@@ -221,12 +221,12 @@ this plan decided — so no later phase has to re-litigate them.
       edge-direction convention of Decision 1, stated as a deterministic rendering choice and
       explicitly not an inferred truth; (d) the propose-by-default / `--write-edges` split of
       Decision 2; (e) the "admissible when suggested, re-verify at dispatch" limitation.
-- [ ] Add the exit-code contract to the header and implement its skeleton: 0 on a rendered
+- [x] Add the exit-code contract to the header and implement its skeleton: 0 on a rendered
       suggestion, 0 with an explicit "no suggestible batch" line when the pool is empty (never a
       nonzero exit for "found nothing"), 2 for usage errors, and a documented nonzero for an
       unavailable `specs/state.json` or a missing admission script (fail loud, never silently
       suggest nothing).
-- [ ] `chmod +x` the new script.
+- [x] `chmod +x` the new script.
 
 **Timing**: 1 hour
 

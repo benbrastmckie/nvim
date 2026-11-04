@@ -98,7 +98,7 @@ next_project_number: 476
 
 ### Orchestrator
 
-274 [PLANNED] — Next-admissible-batch suggestion and...
+274 [IMPLEMENTING] — Next-admissible-batch suggestion and...
   └─ 378 [NOT STARTED] — Resolve the reviser-agent handoff contract contradiction...
     └─ 387 [NOT STARTED] — Teach the batch admission gate that a whole-tree regeneration...
       └─ 407 [NOT STARTED] — Derive a task's next artifact round from its existing...
@@ -7477,7 +7477,7 @@ either direction, deliberately -- see 401 for the reasoning.
 ---
 
 ### 274. Next-admissible-batch suggestion and alternatives-on-conflict, both computed by invoking the real admission script
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 165, Task 272, Task 273, Task 275, Task 344
