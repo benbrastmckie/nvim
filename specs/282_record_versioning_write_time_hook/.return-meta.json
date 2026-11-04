@@ -1,11 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/282_record_versioning_write_time_hook/summaries/01_write-time-record-version-hook-summary.md",
+      "summary": "Implementation summary: write-time PreToolUse hook for record-versioning language, its fixture test, restored lint/hook scope-agreement case, dual-surface bare registration, manifest wiring, documentation truth-up, and live-confirmed redeploy."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built hooks/validate-no-record-versioning.sh (a PreToolUse Write|Edit hook blocking BLOCKING-tier record-versioning language via exit 2, advisory-silent, payload-only, fail-open), its fixture test, restored the lint/hook scope-agreement case in test-check-record-versioning.sh, registered it bare on both settings surfaces plus manifest.json, truth-ed up the taxonomy's Enforcement section, and redeployed with four live probes all confirming correct behavior."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/hooks/validate-no-record-versioning.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-no-record-versioning.sh",
+    "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/root-files/settings.json",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/context/standards/record-version-exemptions.md",
+    "agent-system/extensions/core/scripts/lib/record-version-patterns.sh",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "check-record-versioning.sh's (and check-task-references.sh's) PATH_SCOPE mode enumerates files via `git ls-files PATH_SCOPE` -- scoping a self-check to a single brand-new, not-yet-git-tracked file silently returns zero rows and reports a false-clean 0 BLOCKING/0 ADVISORY, not a [SKIP] or an error. When self-checking a newly created deliverable against one of this repo's write-time lints before its first commit, either run the lint unscoped (full-repo) or `git add` the file first -- a PATH_SCOPE-scoped pre-commit self-check on an untracked file proves nothing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/282_record_versioning_write_time_hook/summaries/01_write-time-record-version-hook-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-record-versioning.sh", "check-task-references.sh", "PATH_SCOPE", "git ls-files", "false clean", "self-check"]
+    },
+    {
+      "content": "A hook/lint whose header prose documents the forbidden language it detects is itself a deliverable subject to that same rule, and risks tripping on its own documentation once live. Concretely, hooks/validate-no-record-versioning.sh's header originally quoted the literal phrase 'supersedes v1' as a forbidden-category example, which matched its own RV_SUPERSESSION_ERE pattern and would have made the file unblockable-to-edit after deployment -- caught only by a full-repo lint scan after the file was git-tracked, not by an earlier PATH_SCOPE-scoped self-check (see the companion PATH_SCOPE memory). When documenting a detector's own forbidden patterns in its header/docstring, either paraphrase around the literal trigger shape or wrap the example in the detector's own marker-exemption convention.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/282_record_versioning_write_time_hook/summaries/01_write-time-record-version-hook-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["self-hygiene", "write-time hook", "forbidden-example trap", "record-versioning", "header documentation"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793751501_7c2a77",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
