@@ -435,36 +435,54 @@ returning no deliverable-prose hit, read together with the `prose` row's diff re
 
 ---
 
-### Phase 6: Full Gate Set, Acceptance Checks and Redeploy [NOT STARTED]
+### Phase 6: Full Gate Set, Acceptance Checks and Redeploy [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: every acceptance criterion is mechanically confirmed and the source store is redeployed
 to a clean verification.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/lint/lint-dead-command-recommendations.sh --quiet` over the whole
-      corpus and confirm exit 0 with no output.
-- [ ] Run a relative-link check across all five touched files: for each markdown link target that
+- [x] Run `bash .claude/scripts/lint/lint-dead-command-recommendations.sh --quiet` over the whole
+      corpus and confirm exit 0 with no output. *(completed: exit 0, no output)*
+- [x] Run a relative-link check across all five touched files: for each markdown link target that
       is a relative path, resolve it against the containing file's own directory and assert the
-      target exists. Report every failure, not just the first.
-- [ ] Re-run the extension-directory enumeration and confirm
-      `agent-system/extensions/README.md`'s table still matches it.
-- [ ] Verify record 435's `file_scope` does not list `agent-system/extensions/core/docs/`:
+      target exists. Report every failure, not just the first. *(completed with exclusions: 71
+      relative links checked across the five files; 12 failures, all pre-existing nav-bar links
+      unrelated to this task's edits -- see Reasoned Exclusions below. Zero failures among links
+      this task added or modified.)*
+- [x] Re-run the extension-directory enumeration and confirm
+      `agent-system/extensions/README.md`'s table still matches it. *(completed: 21 directories == 21 rows, exact element-for-element match)*
+- [x] Verify record 435's `file_scope` does not list `agent-system/extensions/core/docs/`:
       `jq -r '.active_projects[] | select(.project_number==435) | .file_scope[]' specs/state.json | grep -c 'core/docs'`
-      returns 0. This is a verification only; make no edit to `specs/state.json`.
-- [ ] Walk `user-guide.md`'s Quick Start and both walkthroughs and confirm every command named is
+      returns 0. This is a verification only; make no edit to `specs/state.json`. *(completed: returns 0)*
+- [x] Walk `user-guide.md`'s Quick Start and both walkthroughs and confirm every command named is
       backed by a definition file under `agent-system/extensions/*/commands/`, by extracting the
-      command tokens and testing each against the enumerated definition set.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
+      command tokens and testing each against the enumerated definition set. *(completed: tokens {merge, orchestrate, revise, task, todo}, all present in the 47-command definition set, zero missing)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
       `agent-system/extensions/core/scripts/verify-deploy.sh`), with an explicit source-store
-      `TARGET`, and confirm it is clean.
-- [ ] Redeploy via `deploy-headless.sh` to `RESULT=landed_verify_clean`, following
+      `TARGET`, and confirm it is clean. *(completed with exclusions: this task's own dispatch
+      file carries a Batch Gate Deferral directive -- this dispatch discharged the tier against a
+      scoped invocation instead (`run-all.sh --only test-lint-dead-command-recommendations.sh`
+      plus `verify-deploy.sh --only-gate 3`, both clean). The complete gate set DID run once
+      anyway, inline inside `deploy-headless.sh` below, and reported one unrelated failure -- see
+      Reasoned Exclusions below.)*
+- [x] Redeploy via `deploy-headless.sh` to `RESULT=landed_verify_clean`, following
       `context/patterns/bounded-build-waiter.md`: raise the Bash tool timeout to 600000, wrap the
       invocation in `timeout 540`, capture the PID, poll writer liveness with `kill -0` on the
       captured PID (never `ps | grep` or `pgrep -f`), and run exactly one waiter on the log.
-      Never hand-patch a deployed file in place of a redeploy.
-- [ ] Confirm the deployed tree's copies of the five files match the source store.
-- [ ] Record a follow-up note (not a new lint) that nothing checks
+      Never hand-patch a deployed file in place of a redeploy. *(completed with exclusions:
+      `timeout 540 bash agent-system/extensions/core/scripts/deploy-headless.sh` ran to
+      completion within the Bash tool's own foreground window -- no backgrounding/waiter was
+      needed since the command returned well inside it -- and reported `RESULT=landed_verify_red`,
+      not `_clean`. The deploy itself landed; the one gate failure is the same unrelated,
+      pre-existing defect named below. Not re-run after a fix, since the fix is out of scope.)*
+- [x] Confirm the deployed tree's copies of the five files match the source store. *(completed:
+      4 of 5 files have a deployed counterpart under `.claude/docs/` and all 4 match byte-for-byte
+      via `diff -q`; the 5th file, `agent-system/extensions/README.md`, is a source-store-only
+      extension catalog with no deployed counterpart by design -- confirmed by `find .claude
+      -iname README.md` finding none carrying the "Available Extensions" table)*
+- [x] Record a follow-up note (not a new lint) that nothing checks
       `agent-system/extensions/README.md`'s table against the real extension directory set.
+      *(completed: recorded via `issue-record.sh`, class "follow-up recommendation")*
 
 **Timing**: 1 hour
 
@@ -477,15 +495,34 @@ to a clean verification.
   output, which is not a hand-authored edit
 
 **Verification**:
-- `bash .claude/scripts/lint/lint-dead-command-recommendations.sh --quiet` exits 0.
-- The relative-link check reports zero unresolved targets across all five files.
-- The extension-table-vs-directory reconciliation reports zero differences.
-- The record-435 `file_scope` grep count is 0.
+- `bash .claude/scripts/lint/lint-dead-command-recommendations.sh --quiet` exits 0. **Met.**
+- The relative-link check reports zero unresolved targets across all five files. **Met for every
+  link this task added or modified; 12 pre-existing, out-of-scope failures excluded (see below).**
+- The extension-table-vs-directory reconciliation reports zero differences. **Met.**
+- The record-435 `file_scope` grep count is 0. **Met.**
 - Every command token in `user-guide.md`'s Quick Start and both walkthroughs maps to a definition
-  file under `agent-system/extensions/*/commands/`.
+  file under `agent-system/extensions/*/commands/`. **Met.**
 - The complete gate set runs green: `bash .claude/scripts/verify-deploy.sh` with an explicit
   source-store `TARGET`, all gates reported, none reaching the zero-check-under-filter condition.
-- `deploy-headless.sh` reports `RESULT=landed_verify_clean` within the bounded wait.
+  **Discharged against the Batch Gate Deferral's scoped tier (both sub-checks green); the
+  complete set ran once anyway via `deploy-headless.sh` and reported one unrelated failure, see
+  Reasoned Exclusions.**
+- `deploy-headless.sh` reports `RESULT=landed_verify_clean` within the bounded wait. **Reported
+  `RESULT=landed_verify_red` instead -- the deploy landed, verification is red on one unrelated
+  gate; see Reasoned Exclusions.**
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| 12 pre-existing broken relative links in `user-guide.md` and `user-installation.md` nav bars (`../README.md`, `../../CLAUDE.md`, and one `../../../docs/installation/README.md`) | Predates this task; not named in the dispatch's defect list or the plan's Scope Hypotheses. The plan's own Risk table scopes its relative-link verification to links this task inserts or modifies -- its worked example even cites this exact `../README.md` from `docs/guides/` pattern as the risk to avoid introducing, not an instruction to audit every historical link. `../../CLAUDE.md` resolves correctly in the deployed tree (`.claude/CLAUDE.md` exists there) but not in the source store, since `core/CLAUDE.md` is a deploy-generated merge artifact absent from source by design -- not a simple depth-correction case like the two links Phase 4 did fix. | `python3` link-existence sweep across all 71 relative links in the five files: 12 failures, all pre-existing (confirmed via `git show <phase-2/3/4-commit> -- <file> \| grep '^\+.*(link pattern)'` returning no match for any of the 12); zero failures among links added by this task's own commits. Logged via `issue-record.sh` (class "stale documentation"). |
+| `verify-deploy.sh` gate 18 (`lint-task-lookup-adoption.sh`) failure: 5 violations, all in `agent-system/extensions/core/scripts/test-state-write-concurrency.sh` | Unrelated to this task's five-file documentation scope; a hand-rolled jq task-lookup shape in an unrelated test fixture file. Per this plan's own Rollback/Contingency guidance ("If `verify-deploy.sh` fails on a gate unrelated to this task's edits, report it rather than widening scope to fix it"), not fixed here. | `bash agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh --verbose` output: "Files with violations: 1" naming only `test-state-write-concurrency.sh`; `git log --oneline -3 -- <that file>` shows its most recent touch was an unrelated prior task ("task 312"), predating this dispatch. Logged via `issue-record.sh` (class "unrelated gate failure"). |
+
+Both exclusions satisfy the five-condition admission test: each is a deliberate, tightly-scoped
+decision (not abandonment or stall), carries a stated reason and evidence above, and leaves no
+residual work for a future dispatch of *this* task -- a fix for either, should one be wanted, is
+an independent task against an unrelated file, not a continuation of this documentation
+restructure.
 
 ---
 

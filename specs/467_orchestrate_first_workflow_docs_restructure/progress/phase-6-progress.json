@@ -1,0 +1,36 @@
+{
+  "phase": 6,
+  "phase_name": "Full Gate Set, Acceptance Checks and Redeploy",
+  "started_at": "2026-11-04T07:10:00Z",
+  "last_updated": "2026-11-04T07:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run lint-dead-command-recommendations.sh over whole corpus", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run relative-link check across all five touched files", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run extension-directory enumeration vs table", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Verify record 435 file_scope does not list core/docs", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Walk Quick Start and both walkthroughs for command-token coverage", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run complete gate set (scoped per Batch Gate Deferral)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Confirm deployed tree matches source store", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Record follow-up note on extension-table staleness lint", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "Relative-link check across all five touched files",
+      "type": "altered",
+      "reason": "71 relative links checked; 12 pre-existing failures found, all predating this task's own commits (verified via git show on each phase commit's diff hunks). Zero failures among links this task added or modified. Logged as a follow-up issue rather than fixed, consistent with the plan's Risk table scoping its link-check obligation to inserted/modified links.",
+      "annotation": "see plan Phase 6 Reasoned Exclusions"
+    },
+    {
+      "task_id": "6.6/6.7",
+      "description": "Complete gate set / redeploy to RESULT=landed_verify_clean",
+      "type": "altered",
+      "reason": "deploy-headless.sh's inline verify-deploy.sh reported RESULT=landed_verify_red due to gate 18 (lint-task-lookup-adoption.sh) finding 5 violations entirely in agent-system/extensions/core/scripts/test-state-write-concurrency.sh, last touched by an unrelated prior task (task 312). Per the plan's own Rollback/Contingency guidance, reported rather than fixed.",
+      "annotation": "see plan Phase 6 Reasoned Exclusions"
+    }
+  ]
+}
