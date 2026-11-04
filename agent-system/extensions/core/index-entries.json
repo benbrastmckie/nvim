@@ -3311,7 +3311,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full record-versioning exemption taxonomy, per-category BLOCKING/ADVISORY tiering, and enforcement narrative, companion to the always-eager no-record-versioning-in-deliverables.md rule",
-      "line_count": 182,
+      "line_count": 197,
       "keywords": [
         "record-versioning",
         "version-labels",
