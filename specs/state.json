@@ -706,7 +706,8 @@
         }
       ],
       "last_updated": "2026-11-04T16:01:28Z",
-      "session_id": "sess_1793802705_e3f98a"
+      "session_id": "sess_1793802705_e3f98a",
+      "completion_summary": "Added a per-repo orchestration queue as six additive task-lock.sh subcommands (queue-register/heartbeat/finish/reap/list/check), built on the existing session registry: per-orchestration identity distinct from session_id, lifecycle registered->running->finished->archived, archive-on-finish rather than rm -f, liveness computed via the existing session_liveness() unchanged, and a blocking queue-check admission gate wired into /orchestrate's pre-dispatch stage. Documented in a new Orchestration-Queue CLI section in task-lock.md and two new Class Table rows in orchestrator-runtime-files.md, covered by a 17-case fixture suite, with shellcheck clean and the deployed tree fresh."
     },
     {
       "project_number": 282,
