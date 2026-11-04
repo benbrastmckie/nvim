@@ -155,6 +155,29 @@ depend only on the heading string, not on list-item shape:
 verbatim in a prompt directive or a ported grep, where a mismatch fails silently with no parse
 error — never rename or rephrase this heading without auditing both.
 
+**Whole-tree-claim declaration rule.** A phase whose steps invoke whole-tree regeneration (the
+deploy script, or the extension picker's reload/regenerate entries) MUST additionally declare
+the reserved sentinel `` `__WHOLE_TREE__` `` as its own entry in that phase's `Files to modify`
+block, alongside whatever real files the phase also lists. This is the producer-side half of the
+whole-tree-claim admission dimension `orchestrate-batch-admit.sh` reads
+(`defer_reason: "whole_tree_claim"`): regenerating the entire deployed tree is an implicit scope
+claim over that whole tree, which no real declared path can express, so the plan declares the
+claim honestly via this one reserved token rather than leaving it undeclarable. The token is
+harvested by `scripts/plan-file-scope-harvest.sh` into `active_projects[].file_scope` verbatim,
+with **zero parser change** — that script is already path-shape-agnostic, treating every
+backtick-delimited entry as an opaque string. The sentinel is deliberately **slashless**, which
+makes it structurally **inert** in both consumers of `file_scope` that compare declared paths
+against each other: the Overlap predicate (`scopes_overlap_first` in
+`scripts/lib/file-scope-overlap.sh`) finds no exact match and no directory-prefix relation
+against any real path, and the Containment predicate (`path_covered_by_scope`, consumed by
+`git-snapshot.sh`) never treats any real path as falling under `` `__WHOLE_TREE__`/ ``. Two
+DIFFERENT plans each declaring this same literal token DO produce an ordinary exact match
+against EACH OTHER under `scopes_overlap_first` — that is not a false positive; it is the exact
+detection signal the admission dimension reads to recognize a same-claim pair. See
+`context/patterns/file-footprint-overlap.md`'s reserved-sentinel note and
+`context/patterns/batch-orchestration-guardrails.md`'s whole-tree-claim subsection for the full
+mechanism and hazard rationale.
+
 **Consumers of this heading contract**: the exact `### Phase N: {name} [STATUS]` shape above is
 parsed by three independent mechanisms, so a future change to the format must account for all
 three: `update-phase-status.sh` (mutates a single phase's status in place), `update-plan-status.sh`

@@ -546,6 +546,26 @@ else
   fail "Case 9: expected non-zero exit for a missing argument, got 0"
 fi
 
+# ── Case 22: a backticked slashless reserved token (the whole-tree-claim sentinel) harvests
+# verbatim, alongside a real path in the same block -- this script is already path-shape-agnostic
+# (every backtick-delimited entry is an opaque string to it), so this pins that it stays so
+# rather than exercising any new parsing code. See context/formats/plan-format.md's
+# "Whole-tree-claim declaration rule" subsection and agents/planner-agent.md's Stage 4 step 9 for
+# the producer-side obligation this harvests for. ─────────────────────────────────────────────
+FIXTURE_22="$WORKDIR/case22.md"
+cat > "$FIXTURE_22" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `scripts/deploy-headless.sh` - read and invoked, not edited
+- `__WHOLE_TREE__` - this phase invokes whole-tree regeneration
+
+**Verification**:
+- ok
+EOF
+OUT_22="$(bash "$HARVESTER" "$FIXTURE_22")"
+assert_json_array_eq "$OUT_22" '["scripts/deploy-headless.sh","__WHOLE_TREE__"]' "Case 22 (reserved sentinel harvests verbatim alongside a real path)"
+
 echo ""
 echo "=== Summary ==="
 echo "Passed: $PASSED"

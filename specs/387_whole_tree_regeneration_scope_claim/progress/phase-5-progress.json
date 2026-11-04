@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Producer-side convention -- plan format and planner contract",
+  "started_at": "2026-11-04T22:00:00Z",
+  "last_updated": "2026-11-04T22:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend plan-format.md's Files to modify field definition", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 2, "description": "Add same obligation to planner-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"]},
+    {"id": 3, "description": "Add case to test-plan-file-scope-harvest.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"]},
+    {"id": 4, "description": "Verify no task-number references land under agent-system/**", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Ran generate-context-line-counts.sh --write from the source store directly", "result": "failed", "reason": "the script refuses to run from the source store, requiring invocation from a deployed scripts/ tree"},
+    {"approach": "Ran the DEPLOYED copy (.claude/scripts/generate-context-line-counts.sh --write)", "result": "used", "reason": "resolves its own repo root correctly and writes the corrected line_count back into the SOURCE STORE's index-entries.json (agent-system/extensions/core/index-entries.json), not the deployed copy -- no source-store-boundary violation"}
+  ],
+  "handoff_count": 0,
+  "verification": {
+    "suite_command": "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-plan-file-scope-harvest.sh",
+    "suite_result": "all cases pass, including new Case 22 (reserved sentinel harvests verbatim alongside a real path)",
+    "doc_lint": "bash .claude/scripts/check-extension-docs.sh -- the [core] extension's Rule R finding for formats/plan-format.md's line_count is now resolved (784 -> 807, matching the real file). An UNRELATED pre-existing Rule R finding for patterns/task-lock.md (1720 vs 1727) was deliberately left untouched -- not caused by this phase's edits (see unrelated_drift_note below). The remaining [core] FAILs are all 'deployed script content drift', the expected and documented staleness from Phases 3/4's source-store edits not yet redeployed (Phase 7's job) -- matches this dispatch's own NOTE.",
+    "task_reference_lint": "bash .claude/scripts/check-task-references.sh -- PASS: 0 unexempted task-reference occurrences"
+  },
+  "unrelated_drift_note": "Running generate-context-line-counts.sh --write (needed to fix my own plan-format.md line_count drift) ALSO corrected an unrelated, pre-existing mismatch for patterns/task-lock.md (1720 -> 1727), caused by a concurrent sibling task's edit to that file elsewhere in this shared working tree. That hunk was manually reverted back to 1720 before committing, to avoid attributing a fix outside this task's own scope to this task's commit -- the owning task's own redeploy will correct it when it runs the same generator."
+}

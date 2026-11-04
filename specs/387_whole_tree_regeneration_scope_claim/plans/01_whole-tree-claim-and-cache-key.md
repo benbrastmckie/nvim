@@ -488,28 +488,30 @@ plus `bash -n` on each edited script and a `validate-state.sh` run on a sentinel
 
 ---
 
-### Phase 5: Producer-side convention — plan format and planner contract [NOT STARTED]
+### Phase 5: Producer-side convention — plan format and planner contract [COMPLETED]
 
 **Goal**: Make the sentinel actually get declared. Without this phase, no plan ever emits it and the
 gate dimension is dead code.
 
 **Tasks**:
 
-- [ ] Extend `context/formats/plan-format.md`'s `Files to modify` field definition with the
+- [x] Extend `context/formats/plan-format.md`'s `Files to modify` field definition with the
       whole-tree-claim rule: a phase whose steps invoke whole-tree regeneration (the deploy script,
       or the picker's reload/regenerate entries) MUST additionally declare the reserved sentinel as
       an entry in that phase's `Files to modify` block. State that the token is deliberately
       slashless so it is inert in both the Overlap and Containment predicates, and that it is
-      harvested by the existing pipeline with no parser change.
-- [ ] Add the same obligation to `agents/planner-agent.md`'s phase-construction stage, in the same
+      harvested by the existing pipeline with no parser change. *(completed: new
+      "Whole-tree-claim declaration rule" subsection added)*
+- [x] Add the same obligation to `agents/planner-agent.md`'s phase-construction stage, in the same
       register as its existing per-phase field obligations, so a generated plan carries the
-      declaration by contract rather than by luck.
-- [ ] Add a case to `scripts/tests/test-plan-file-scope-harvest.sh` confirming a backticked
+      declaration by contract rather than by luck. *(completed: new Stage 4 step 9)*
+- [x] Add a case to `scripts/tests/test-plan-file-scope-harvest.sh` confirming a backticked
       slashless reserved token in a `Files to modify` block harvests verbatim into the output array
-      (the script is path-shape-agnostic; this pins that it stays so).
-- [ ] Verify no task-number reference lands in any file under `agent-system/**`: describe the
+      (the script is path-shape-agnostic; this pins that it stays so). *(completed: Case 22)*
+- [x] Verify no task-number reference lands in any file under `agent-system/**`: describe the
       hazard by mechanism (a plan phase that regenerates the whole deployed tree), never by citing
-      the archived task numbers that evidenced it.
+      the archived task numbers that evidenced it. *(completed:
+      bash .claude/scripts/check-task-references.sh reports 0 unexempted occurrences)*
 
 **Timing**: 1 hour
 

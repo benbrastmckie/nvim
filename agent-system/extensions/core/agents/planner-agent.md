@@ -242,6 +242,24 @@ Apply task-breakdown.md guidelines:
      ("to be safe", "cheaper", "faster"). Name the covering check or the blast radius, in the
      one-line shape `context/workflows/task-breakdown.md`'s worked examples demonstrate.
 
+9. **Declare a Whole-Tree-Claim Phase Honestly**
+   - If any phase's steps invoke whole-tree regeneration (the deploy script, or the extension
+     picker's reload/regenerate entries), that phase's `**Files to modify**:` block MUST
+     additionally list the reserved sentinel `` `__WHOLE_TREE__` `` as its own entry, alongside
+     whatever real files the phase also touches. See `context/formats/plan-format.md`'s
+     "Whole-tree-claim declaration rule" subsection for the full mechanism: the token is
+     harvested into `file_scope` by the existing `plan-file-scope-harvest.sh` pipeline with zero
+     parser change, is deliberately slashless so it stays inert against every REAL path under
+     both the Overlap and Containment predicates, and is read by `orchestrate-batch-admit.sh`'s
+     `whole_tree_claim` admission dimension to serialize two otherwise-disjoint-scope tasks that
+     would each regenerate the entire deployed tree.
+   - **MUST NOT**: do not substitute a real wide path (e.g. `agent-system/`) for the sentinel to
+     "achieve the same effect" — a real wide path trips `validate-state.sh` Check 8's
+     coarse-declaration lint and loosens `path_covered_by_scope()`'s containment guard for every
+     consumer of that task's `file_scope`, costs the reserved sentinel does not carry.
+   - A plan with no whole-tree-regeneration phase declares nothing new here; this obligation is
+     additive and changes no other phase's `Files to modify` block.
+
 ### Stage 5: Create Plan File
 
 Create directory if needed:
