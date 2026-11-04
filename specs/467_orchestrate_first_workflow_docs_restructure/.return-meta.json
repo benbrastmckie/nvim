@@ -24,21 +24,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/467_orchestrate_first_workflow_docs_restructure/summaries/01_orchestrate-first-docs-restructure-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["relative-link-check", "plan-scope", "risk-table", "documentation-task", "out-of-scope-defect"]
+      "suggested_keywords": [
+        "relative-link-check",
+        "plan-scope",
+        "risk-table",
+        "documentation-task",
+        "out-of-scope-defect"
+      ]
     },
     {
       "content": "verify-deploy.sh's --only-gate flag is capped at 1-23 even though a gate24 block exists in the source (lint-dead-command-recommendations.sh); use tests/run-all.sh --only <test-basename>.sh instead to scope-discharge a gate above that range under a Batch Gate Deferral directive.",
       "category": "CONFIG",
       "source_artifact": "specs/467_orchestrate_first_workflow_docs_restructure/summaries/01_orchestrate-first-docs-restructure-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy.sh", "only-gate", "run-all.sh", "batch-gate-deferral", "gate24"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "only-gate",
+        "run-all.sh",
+        "batch-gate-deferral",
+        "gate24"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793767553_aea89c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }

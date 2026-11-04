@@ -1,7 +1,7 @@
 # Implementation Plan: Task #467
 
 - **Task**: 467 - Restructure the user-facing agent system workflow documentation around an orchestrate-first spine
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None (task 468 depends on this task, not the reverse)
 - **Research Inputs**: specs/467_orchestrate_first_workflow_docs_restructure/reports/01_orchestrate-first-docs-restructure.md
