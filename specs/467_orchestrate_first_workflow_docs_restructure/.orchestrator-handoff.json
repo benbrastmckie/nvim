@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 467,
+  "session_id": "sess_1793767553_aea89c_467",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase plan restructuring the five source-store documentation files around the /task -> /orchestrate -> /todo spine. Wave 1 runs three independent file edits in parallel (extensions README table, user-guide.md spine rewrite, research-flow-example.md record-versioning strip); Phase 3 then adds the first-class /orchestrate section plus /project-overview, /please, /zulip and an Extensions section; Phase 4 aligns user-installation.md and docs-README.md; Phase 6 runs the full gate set and redeploys via deploy-headless.sh under a bounded wait. Two research-corrected premises are carried into the plan as explicit decisions: research-flow-example.md needs a prose strip rather than a retarget-or-retire choice, and record 435's file_scope amendment is verify-only.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/467_orchestrate_first_workflow_docs_restructure/plans/01_orchestrate-first-docs-restructure.md",
+      "summary": "Six-phase orchestrate-first documentation restructure plan, 6 estimated hours, 4 dependency waves."
+    }
+  ],
+  "next_steps": "Run /orchestrate 467 to execute the plan"
+}
