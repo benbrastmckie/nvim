@@ -157,7 +157,7 @@ reconciliation in this phase's last step and `bash .claude/scripts/lint/lint-dea
 
 ---
 
-### Phase 2: Rewrite the user-guide.md Spine and Status Model [NOT STARTED]
+### Phase 2: Rewrite the user-guide.md Spine and Status Model [COMPLETED]
 
 **Goal**: `user-guide.md`'s navigation, Quick Start, status model, Core Workflow Commands
 section, Command Summary Table, Status Transitions diagram, Language Routing table and
@@ -165,23 +165,23 @@ Troubleshooting entries all describe the `/task` -> `/orchestrate` -> `/todo` sp
 stepwise human-in-the-loop path retargeted rather than deleted.
 
 **Tasks**:
-- [ ] Re-verify the stale line ranges against the live file before editing (the report's numbers
+- [x] Re-verify the stale line ranges against the live file before editing (the report's numbers
       are approximate): Table of Contents, Quick Start / "Your First Workflow", Status
       Progression, the `### /task` through `### /implement` subsections, Command Summary Table,
-      Status Transitions, Language Routing, and the `/implement`-naming Troubleshooting entry.
-- [ ] Rewrite the Quick Start cycle diagram and the numbered "Your First Workflow" walkthrough
-      around `/task "Description"` -> `/orchestrate N` -> `/todo`.
-- [ ] Add a second, explicitly-labelled stepwise walkthrough immediately after it:
+      Status Transitions, Language Routing, and the `/implement`-naming Troubleshooting entry. *(completed: live file was 687 lines matching hypothesis)*
+- [x] Rewrite the Quick Start cycle diagram and the numbered "Your First Workflow" walkthrough
+      around `/task "Description"` -> `/orchestrate N` -> `/todo`. *(completed)*
+- [x] Add a second, explicitly-labelled stepwise walkthrough immediately after it:
       `/task "Description"` -> `/orchestrate N --research` -> review the report and plan ->
       `/revise N` to adjust the plan -> `/orchestrate N --implement` -> `/todo`. This is the
-      retargeted form of the human-in-the-loop path and is non-negotiable.
-- [ ] Retarget, do not delete, the `### /research Command`, `### /plan Command` and
+      retargeted form of the human-in-the-loop path and is non-negotiable. *(deviation: altered — inserted an explicit `/orchestrate N --plan` step between `--research` and `/revise`; executing the literal sequence would fail since `--implement` requires an existing plan artifact and `/revise` on a plan-less task only updates the description. See progress file phase-2-progress.json deviations array.)*
+- [x] Retarget, do not delete, the `### /research Command`, `### /plan Command` and
       `### /implement Command` subsections: fold their explanatory prose about what each phase
       produces (report path, plan structure and its `Verification Tier` field, summary path,
       resume behavior, phase markers) into the `/orchestrate` phase descriptions, each reached by
       its forcing flag. Keep `### /task Command` and `### /revise Command` as standalone
-      subsections — both commands are real.
-- [ ] Rewrite the Status Progression table so its third column names `/orchestrate` (with the
+      subsections — both commands are real. *(completed)*
+- [x] Rewrite the Status Progression table so its third column names `/orchestrate` (with the
       relevant forcing flag where it clarifies) rather than the three removed commands, and add
       explicit rows for `[HOLD]` and `[PR READY]`. Reconcile against
       `context/standards/status-markers.md`'s "Target Arguments vs. Resting States" subsection:
@@ -189,19 +189,19 @@ stepwise human-in-the-loop path retargeted rather than deleted.
       explicit `/orchestrate N --research|--plan|--implement` override, which admits the task for
       one dispatch and preserves the hold afterward, or by an operator-run
       `update-task-status.sh preflight ... unhold`); `[PR READY]` is reachable only for
-      `task_type: pr`.
-- [ ] Rewrite the Command Summary Table: drop the `/research`, `/plan` and `/implement` rows;
-      expand the `/orchestrate` row into the batch and forcing-flag forms.
-- [ ] Rewrite the Status Transitions diagram with `/orchestrate` as the driver and `[HOLD]` /
+      `task_type: pr`. *(completed)*
+- [x] Rewrite the Command Summary Table: drop the `/research`, `/plan` and `/implement` rows;
+      expand the `/orchestrate` row into the batch and forcing-flag forms. *(completed)*
+- [x] Rewrite the Status Transitions diagram with `/orchestrate` as the driver and `[HOLD]` /
       `[PR READY]` present, using the box-drawing and arrow conventions in
-      `context/project/neovim/standards/box-drawing-guide.md`.
-- [ ] Re-audit the Language Routing table against the current core task types (`general`, `meta`,
-      `markdown`) and the extension routing model; correct or trim it to what is true.
-- [ ] Fix the Troubleshooting entry that names `/implement` as the command that fails to begin,
+      `context/project/neovim/standards/box-drawing-guide.md`. *(completed: kept the existing plain-ASCII arrow style since the box-drawing guide defines corner/line/intersection glyphs for boxed diagrams, not flow arrows, and introducing a new arrowhead glyph would be inconsistent with the rest of the file)*
+- [x] Re-audit the Language Routing table against the current core task types (`general`, `meta`,
+      `markdown`) and the extension routing model; correct or trim it to what is true. *(completed: corrected Tools columns against merge-sources/claudemd.md and noted that `markdown` has no automatic keyword-detection path in scripts/lib/task-type-detect.sh)*
+- [x] Fix the Troubleshooting entry that names `/implement` as the command that fails to begin,
       retargeting it at `/orchestrate N --implement` and its "no plan artifact; run --plan first"
-      admission refusal.
-- [ ] Rewrite the Table of Contents to match the resulting heading set.
-- [ ] Update the `**Last Updated**` line to the implementation date.
+      admission refusal. *(completed)*
+- [x] Rewrite the Table of Contents to match the resulting heading set. *(completed)*
+- [x] Update the `**Last Updated**` line to the implementation date. *(completed: 2026-11-04)*
 
 **Timing**: 2 hours
 

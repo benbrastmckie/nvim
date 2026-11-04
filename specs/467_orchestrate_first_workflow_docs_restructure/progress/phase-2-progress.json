@@ -1,0 +1,31 @@
+{
+  "phase": 2,
+  "phase_name": "Rewrite the user-guide.md Spine and Status Model",
+  "started_at": "2026-11-04T05:10:00Z",
+  "last_updated": "2026-11-04T05:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-verify stale line ranges against live file", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite Quick Start cycle diagram and Your First Workflow walkthrough", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 3, "description": "Add second stepwise human-in-the-loop walkthrough", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 4, "description": "Retarget /research, /plan, /implement subsections into /orchestrate forcing-flag content; keep /task and /revise standalone", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 5, "description": "Rewrite Status Progression table with HOLD/PR READY rows", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 6, "description": "Rewrite Command Summary Table", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 7, "description": "Rewrite Status Transitions diagram with HOLD/PR READY", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 8, "description": "Re-audit Language Routing table", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 9, "description": "Fix Troubleshooting /implement entry", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 10, "description": "Rewrite Table of Contents", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]},
+    {"id": 11, "description": "Update Last Updated line", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/user-guide.md"]}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Second stepwise walkthrough: /task -> /orchestrate N --research -> review report and plan -> /revise N -> /orchestrate N --implement -> /todo",
+      "type": "altered",
+      "reason": "Executing the literal three-command sequence would fail: /orchestrate N --implement is admitted only when a plan artifact already exists, and /revise N on a plan-less (researched-only) task only updates the task description (Description Update path), it does not create a plan. An explicit /orchestrate N --plan step is required between the research round and /revise for the walkthrough to actually be executable, per orchestrate.md's Forced Phases admission rules and reviser-agent.md's Stage 2 mode table.",
+      "annotation": "*(deviation: altered — inserted an explicit /orchestrate N --plan step between --research and /revise so the walkthrough is actually executable)*"
+    }
+  ]
+}
