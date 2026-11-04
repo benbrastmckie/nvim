@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 9,
+  "summary": "Wrote a 9-phase, 15-hour implementation plan adopting the research phase's two-layer ruling: verdict acquisition stays per-surface at the skill layer, while enforcement is anchored inside scripts/state-write.sh (new exit 5) rather than a Write|Edit PreToolUse hook, which cannot observe the Bash-mediated state.json writes at all. Settled the two decisions the record deferred to planning: the shared matcher is named scripts/audit-task-proposals.sh (superseding the declared audit-open-tasks.sh path), and the verdict vocabulary is a fixed eight-value enum that keeps open-side and closed-side matches distinct, cites closed records by project_name plus discharging artifact, and emits an explicit scope-blind degradation. Also verified two things research left open: commands/errors.md has no active_projects write site at all, so the state-write.sh migration set is two files, not three.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/312_backlog_reconciliation_required_at_task_creation/plans/01_backlog-reconciliation-task-creation.md",
+      "summary": "9 phases across 5 dependency waves: contract document and file_scope extension, raw-writer migration onto state-write.sh, the shared audit-task-proposals.sh matcher, the regression fixture suite, the state-write.sh audit-evidence gate, Component 4b in the creation standard, the Bash-matcher backstop hook, per-surface wiring, and a final deploy-plus-full-gate phase."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1793751501_7c2a77_312",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}

@@ -1,37 +1,30 @@
 {
-  "status": "researched",
-  "summary": "Ruled on the central design question: option (a) as literally stated (a PreToolUse hook on the Write|Edit tool matcher) cannot see most specs/state.json task-creation writes, since they occur via Bash-invoked scripts/jq, not the Write/Edit tool. Resolved as a two-layer design: per-surface audit invocation at the SKILL layer (not the agent layer, per task 300's AskUserQuestion-rehome precedent) feeding an enforcement gate anchored at scripts/state-write.sh (the already-adopted mutex-guarded writer), backstopped by a Bash-matcher structural hook at hooks/validate-task-creation-audit.sh. All nine dependency tasks named in the dispatch's original cost calculus, plus this task's own four dependencies, are now completed/abandoned, so the decision rests on uniformity-vs-blocking-depth grounds alone. Also grounded deliverable 2's open+closed backlog union, deliverable 3's recall-biased keyword-shortlist design (no similarity utility exists to reuse), and the dual call-shape (task 421) requirement.",
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md",
-      "summary": "Rules on the state-write-boundary-hook vs per-surface-wiring question, finds the Write|Edit hook premise false given the actual heterogeneous state.json write path, proposes a two-layer enforcement design anchored at scripts/state-write.sh, and grounds the closed-records widening and semantic-pass design."
+      "type": "plan",
+      "path": "specs/312_backlog_reconciliation_required_at_task_creation/plans/01_backlog-reconciliation-task-creation.md",
+      "summary": "9-phase plan for backlog reconciliation at task creation: shared audit-task-proposals.sh matcher over the open-union-closed corpus, enforcement inside state-write.sh (exit 5) with a Bash-matcher backstop hook, Component 4b in the creation standard, and per-surface skill-layer wiring."
     }
   ],
-  "dispatch_seq": 4,
+  "next_steps": "Run /orchestrate 312 to execute the plan",
   "memory_candidates": [
     {
-      "content": "In this codebase, specs/state.json's write path is heterogeneous across creation surfaces: some call scripts/state-write.sh (the mutex-guarded writer) via Bash, others (agents/meta-builder-agent.md, skills/skill-fix-it/SKILL.md) mutate it via raw jq/Bash calls that bypass state-write.sh entirely. A Claude-Code PreToolUse hook matched on the Write|Edit tool never sees any of these, because the mutation happens inside a Bash tool invocation, not a Write/Edit tool call. Any future write-time enforcement on specs/state.json must anchor at scripts/state-write.sh itself (extending its transform->validate pipeline) or use a Bash-matcher hook inspecting command text, never a Write|Edit-matcher content scanner.",
-      "category": "PATTERN",
-      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["state-write.sh", "PreToolUse", "hook-matcher", "specs/state.json", "write-boundary"]
-    },
-    {
-      "content": "AskUserQuestion is categorically unreachable from a dispatched subagent in this harness (measured by task 300). The fix pattern is to rehome any interactive gate into the calling skill's own pre-delegation stage (e.g. skill-meta Stage 2.5), never inside the agent. multi-task-creation-standard.md Component 7 documents this as a standing 'Foreground Requirement.' Any new component needing human disposition on an ambiguous verdict should render into an existing foreground confirmation step rather than inventing a new AskUserQuestion call inside a dispatched agent.",
-      "category": "PATTERN",
-      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["AskUserQuestion", "dispatched-subagent", "foreground-requirement", "skill-meta", "rehome"]
-    },
-    {
-      "content": "No title/description similarity (jaccard/cosine/levenshtein/fuzzy) utility exists anywhere in agent-system/extensions/core/scripts/ as of this check. script-inventory.sh's exact-duplicate-block detector is for code refactoring and explicitly disclaims fuzzy near-duplicate matching as future/out-of-scope. A future task needing semantic/title similarity for task dedup starts from nothing and should prefer a cheap, recall-biased keyword/token-overlap shortlist consumed by the LLM-in-the-loop caller, not a fully automated verdict.",
+      "content": "When planning an enforcement gate for a shared data file in this codebase, verify WHERE the file is actually written before choosing the enforcement site. A Claude Code PreToolUse hook on the Write|Edit matcher only observes writes made through the Write/Edit tools; any mutation performed by a Bash-invoked script or raw jq call is invisible to it. specs/state.json is written heterogeneously: most surfaces call scripts/state-write.sh (a Bash-invoked, mutex-guarded jq writer), and a few mutate it with raw jq. The correct enforcement site for such a file is inside the single shared writer itself, extending its existing acquire -> stage -> transform -> validate -> mv -> release pipeline (state-write.sh's --allocate-into recording assertion is the in-repo precedent: diff the pre/post-transform state and refuse with a dedicated exit code). A Bash-matcher PreToolUse hook then serves only as a narrow structural backstop against bypassing the shared writer, never as the primary gate. Generalizes: a content-scanning hook family (validate-no-task-references.sh) and a command-text guard family (guard-destructive-git.sh) are different mechanisms with different visibility, and picking the wrong family yields a registered hook that never fires.",
       "category": "INSIGHT",
-      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/reports/01_backlog-reconciliation-task-creation.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["similarity", "deduplication", "keyword-overlap", "task-creation", "semantic-match"]
+      "source_artifact": "specs/312_backlog_reconciliation_required_at_task_creation/plans/01_backlog-reconciliation-task-creation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["pretooluse-hook", "enforcement-site", "state-write", "hook-matcher-visibility", "shared-writer", "exit-code-gate"]
     }
   ],
-  "next_steps": "Run /orchestrate 312 to create an implementation plan. Planning must settle audit-open-tasks.sh's replacement name before the file is created, sequence the meta-builder-agent/skill-fix-it state-write.sh migration as an early phase, and extend file_scope per this report's Recommendations."
+  "metadata": {
+    "session_id": "sess_1793751501_7c2a77_312",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 9,
+    "estimated_hours": 15,
+    "dependency_waves": 5
+  },
+  "dispatch_seq": 5
 }
