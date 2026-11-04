@@ -222,6 +222,14 @@ only.
 
 **Roadmap**: regenerated (`specs/ROADMAP.md`).
 
+**Suggested next batch**: `/orchestrate {suggested_task_numbers}` — from
+`orchestrate-suggest-next-batch.sh --next-batch` (`context/contracts/conclusion-stage.md`'s
+Step 7). A colliding pair renders as its own ordered-sequence line with the proposed
+`--depends-on-add` command instead of a plain joint list; every suggestion states it was
+admissible when suggested and should be re-verified at actual dispatch time. When the
+suggester finds nothing suggestible, this line is OMITTED WITH AN EXPLICIT REASON (the
+suggester's own "no suggestible batch" line, quoted here) rather than left blank.
+
 ### Next Steps
 - Re-run failed tasks: /orchestrate {failed_task_numbers}
 - **When ZERO DISPATCH fired**: there are no failed tasks to re-run — point at the re-run

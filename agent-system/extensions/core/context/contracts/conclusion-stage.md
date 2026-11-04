@@ -356,10 +356,30 @@ bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
   --message "orchestrate conclusion: roadmap regenerate" -- specs/ROADMAP.md
 ```
 
+### Step 7 — Suggest next batch
+
+(Numbered 7, positioned here between Step 5 and Step 6 rather than after Step 6, because its
+output must exist before Step 6's report renders it — the number is this step's stable
+identity across this contract and its callers, not a claim about textual ordering.)
+
+Invoke the next-batch suggester (Mode A). This step is INFORMATIONAL: it carries no
+`AskUserQuestion` approval gate and derives from `specs/state.json`, never `issues.jsonl` — it
+is therefore NOT a fourth channel, and the Exactly-One-Channel and Hint-Versus-Decision rules
+above do not apply to it.
+
+```bash
+bash .claude/scripts/orchestrate-suggest-next-batch.sh --next-batch --session-id "$session_id"
+```
+
+Its rendered output folds into Step 6's report below (the `**Suggested next batch**:` line in
+the `### Conclusion` block) rather than forming a separate report section — see
+`context/patterns/orchestrate-batch-results-template.md`'s Conclusion block for the exact
+render shape, including the no-suggestible-batch and colliding-pair-sequence cases.
+
 ### Step 6 — Report
 
 Emit the conclusion report: the wins summary, each channel's outcome (approved-and-executed,
-declined, or not-asked-because-empty) with its citations, the unknown-class tally, and the
+declined, or not-asked-because-empty) with its citations, the unknown-class tally, the
 zero-contribution dispatch list (`no_contribution_tasks[]`, cross-referenced with
 `context/contracts/phase-closure.md`'s mandatory-attempt requirement — a listed task either
 genuinely had nothing to record, or skipped the attestation). Render per

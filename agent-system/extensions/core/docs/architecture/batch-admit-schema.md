@@ -19,7 +19,11 @@ call, one schema, never a forked copy; this script absorbed and retired the form
 a report composer in the same relationship to this schema as the dry-run reporter above: it
 re-presents `defer_reason == "self_modifying"` and `defer_reason == "file_scope_collision" &&
 collision_scope == "cross_batch"` verdicts, adding a declaration-coarseness diagnosis and a
-suggested serializing edge respectively, never re-deriving the collision algorithm itself)
+suggested serializing edge respectively, never re-deriving the collision algorithm itself), and
+`scripts/orchestrate-suggest-next-batch.sh` (both its `--next-batch` and `--alternatives` modes
+— re-presents these verdicts to suggest an admissible batch or alternative, never re-derives the
+collision predicate itself; its only write path is a serializing `dependencies[]` edge via
+`update-task-status.sh --depends-on-add`, strictly outside this schema)
 
 **See Also**: `context/patterns/file-footprint-overlap.md` (the canonical overlap predicate this
 script transcribes and never restates), `context/patterns/batch-orchestration-guardrails.md`

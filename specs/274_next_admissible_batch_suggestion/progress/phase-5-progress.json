@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Wire both triggers, document the new consumer, close the self-mod doc gap",
+  "started_at": "2026-11-04T17:50:00Z",
+  "last_updated": "2026-11-04T18:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "conclusion-stage.md Step 7", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]},
+    {"id": 2, "description": "orchestrate-batch-results-template.md Conclusion block line", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 3, "description": "commands/orchestrate.md queue-check Mode B hook", "status": "done", "files_touched": ["agent-system/extensions/core/commands/orchestrate.md"]},
+    {"id": 4, "description": "skill-orchestrate/SKILL.md Move 5 pointer", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 5, "description": "batch-admit-schema.md Read-by consumer line", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 6, "description": "batch-orchestration-guardrails.md Exclusion Table row", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 7, "description": "Task-reference re-read of edited markdown files", "status": "done", "files_touched": []},
+    {"id": 8, "description": "index-entries.json line_count repair (generate-context-line-counts.sh --write)", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.verification",
+      "description": "Full gate set (verify-deploy.sh, no narrowing)",
+      "type": "altered",
+      "reason": "This dispatch carries a Batch Gate Deferral directive: discharge this phase against the narrowing invocation covering files actually touched (gates 3, 4, 6, 7, 11, 19, 22 -- doc-lint, task-reference lint, agent-contracts lint, routing-wiring lint, contract-compliance lint, branch-gated-sections lint, shellcheck) rather than independently running the complete gate set. The full gate set runs once for the whole batch at the end of this invocation per that directive.",
+      "annotation": "*(deviation: altered — scoped-tier gate run per this dispatch's own Batch Gate Deferral directive; the full gate set is deferred to the batch stage, not skipped)*"
+    }
+  ]
+}

@@ -218,7 +218,13 @@ before dispatch; see `task-lock.md`'s Orchestration-Queue CLI Refusal Contract:
 ```bash
 qc_args=("$batch_session_id" "$(IFS=,; echo "${validated_tasks[*]}")")
 [ "$ALLOW_SCOPE_COLLISION_FLAG" = "true" ] && qc_args+=(--allow-scope-collision)
-bash .claude/scripts/task-lock.sh queue-check "${qc_args[@]}" || exit 1
+if ! bash .claude/scripts/task-lock.sh queue-check "${qc_args[@]}"; then
+  # Mode B (alternatives-on-conflict): the refusal still aborts unconditionally -- this
+  # suggestion is additive output on the way out, never a reason to continue, and a failure
+  # of the suggester itself must not mask the refusal's own exit code.
+  bash .claude/scripts/orchestrate-suggest-next-batch.sh --alternatives --session-id "$batch_session_id" || true
+  exit 1
+fi
 ```
 
 Build the intra-batch dependency graph (dependencies on tasks also in `validated_tasks` — the

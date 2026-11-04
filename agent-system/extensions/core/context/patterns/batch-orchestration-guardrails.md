@@ -525,6 +525,7 @@ is nine rows today, not ten.)
 | `scripts/command-gate-in.sh` | `skills/skill-orchestrate/SKILL.md` states explicitly that MT dispatch never sources the single-task gate-in/gate-out scripts — the dispatch path has its own Move 1 initialization instead |
 | `scripts/command-gate-out.sh` | Same explicit statement as above — MT dispatch never sources it |
 | `scripts/orchestrator-postflight.sh` | Zero references anywhere in `skills/skill-orchestrate/SKILL.md` (confirmed by grep at authoring time) — this script belongs to a different command's postflight, not MT dispatch |
+| `scripts/orchestrate-conclusion-aggregate.sh` and `scripts/orchestrate-suggest-next-batch.sh` | Both are Move 5 (Conclusion) scripts: they run strictly AFTER, or entirely independently of, the admission/wave/lock decisions of the invocation they report on, and never feed back into one — the same reachability failure already recorded above for the other Move 5/postflight scripts. `orchestrate-suggest-next-batch.sh` additionally only ever re-presents `orchestrate-batch-admit.sh`'s own verdicts (never re-derives the collision predicate) and writes nothing but a serializing `dependencies[]` edge via `update-task-status.sh --depends-on-add`, strictly outside any admission/wave/lock surface. |
 
 **Reachable but not decision-relevant** (fails decision-relevance — these files are read on the
 MT path but a defect in them fails loudly or is merely cosmetic, not a silent wrong decision):

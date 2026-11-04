@@ -472,7 +472,7 @@ needs — the copy list is a starting hypothesis, not a verified inventory.
 
 ---
 
-### Phase 5: Wire both triggers, document the new consumer, close the self-mod doc gap [NOT STARTED]
+### Phase 5: Wire both triggers, document the new consumer, close the self-mod doc gap [COMPLETED]
 
 **Goal**: Mode A fires from the conclusion stage and renders into the batch-results `###
 Conclusion` block; Mode B fires at the `queue-check` refusal; the new consumer is recorded in the
@@ -480,38 +480,38 @@ admission-schema consumer list without touching the schema; and the Move 5 self-
 disposition is written down for both Move 5 scripts.
 
 **Tasks**:
-- [ ] `context/contracts/conclusion-stage.md`: add **Step 7 — Suggest next batch** to "## The
+- [x] `context/contracts/conclusion-stage.md`: add **Step 7 — Suggest next batch** to "## The
       Executable Stage Body", placed after Step 5 (Roadmap update) with its render folded into
       Step 6 (Report). State explicitly that it is informational, carries no approval gate, is
       derived from `specs/state.json` rather than `issues.jsonl`, and is therefore NOT a fourth
       channel — the Exactly-One-Channel and Hint-Versus-Decision rules do not apply to it. Give
       the copy-pasteable `orchestrate-suggest-next-batch.sh --next-batch --session-id
       "$session_id"` invocation.
-- [ ] `context/patterns/orchestrate-batch-results-template.md`: add a `**Suggested next batch**:
+- [x] `context/patterns/orchestrate-batch-results-template.md`: add a `**Suggested next batch**:
       /orchestrate {suggested_task_numbers}` line to the `### Conclusion` block immediately after
       `**Roadmap**: regenerated (`specs/ROADMAP.md`).`, with the re-verify caveat and the
       colliding-pair sequence rendering, and a note that the line is omitted-with-an-explicit-
       reason rather than left blank when no batch is suggestible.
-- [ ] `commands/orchestrate.md`: replace the bare `|| exit 1` on the blocking `queue-check` call
+- [x] `commands/orchestrate.md`: replace the bare `|| exit 1` on the blocking `queue-check` call
       with a branch that invokes `orchestrate-suggest-next-batch.sh --alternatives --session-id
       "$batch_session_id"` and then exits 1. The refusal must still abort — the suggestion is
       additive output on the way out, never a reason to continue — and a failure of the suggester
       itself must not mask the refusal's own exit code.
-- [ ] `skills/skill-orchestrate/SKILL.md`: add the Move 5 pointer to the new Step 7 so the skill's
+- [x] `skills/skill-orchestrate/SKILL.md`: add the Move 5 pointer to the new Step 7 so the skill's
       own conclusion-stage description and the contract do not diverge. Keep it a pointer, not a
       second copy of the step body.
-- [ ] `docs/architecture/batch-admit-schema.md`: add exactly one row/line to the "Read by"
+- [x] `docs/architecture/batch-admit-schema.md`: add exactly one row/line to the "Read by"
       consumer list naming `orchestrate-suggest-next-batch.sh` and what it does with the verdicts
       (re-presents them to suggest a batch; never re-derives the predicate; writes only a
       serializing `dependencies[]` edge, strictly outside the verdict schema). Make NO change to
       "## Complete JSON Schema", "## Field Definitions", any versioned field, or the Version
       History.
-- [ ] `context/patterns/batch-orchestration-guardrails.md`: add one row to the
+- [x] `context/patterns/batch-orchestration-guardrails.md`: add one row to the
       `orchestrator-critical-paths.json` Exclusion Table covering both Move 5 scripts together
       (`orchestrate-conclusion-aggregate.sh` and `orchestrate-suggest-next-batch.sh`), recording
       the reachability/decision-relevance verdict and why — closing the documentation gap the
       research found for the existing script opportunistically alongside the new one.
-- [ ] Re-read every edited markdown file for task-number references and remove any that would
+- [x] Re-read every edited markdown file for task-number references and remove any that would
       land outside `specs/**` (cite durable anchors — filenames, section headings, decision names
       — instead).
 
@@ -550,19 +550,19 @@ disposition is written down for both Move 5 scripts.
 
 ## Testing & Validation
 
-- [ ] A suggested batch is verified by running the real admission script over it and showing every
+- [x] A suggested batch is verified by running the real admission script over it and showing every
       member admitted (fixture a).
-- [ ] A fixture where two candidates collide on `file_scope` demonstrably does NOT appear as a
+- [x] A fixture where two candidates collide on `file_scope` demonstrably does NOT appear as a
       joint (unordered) suggestion (fixture b, pre-edge assertion).
-- [ ] That same colliding pair DOES appear as an ordered sequence with the `--depends-on-add`
+- [x] That same colliding pair DOES appear as an ordered sequence with the `--depends-on-add`
       command proposed, and flips to `admit` on a real re-probe under `--write-edges` (fixture b,
       post-edge assertion).
-- [ ] No copy of the admission predicate exists anywhere in the new code — grep-provable (fixture
+- [x] No copy of the admission predicate exists anywhere in the new code — grep-provable (fixture
       f).
-- [ ] The alternatives search added no field to the admission verdict schema (fixture f).
-- [ ] shellcheck clean per `context/standards/shell-strict-mode.md` (Gate 22).
-- [ ] No task-number references in any deliverable outside `specs/**` (Gate 4).
-- [ ] Mode A and Mode B both leave `specs/state.json` unchanged in their default form.
+- [x] The alternatives search added no field to the admission verdict schema (fixture f).
+- [x] shellcheck clean per `context/standards/shell-strict-mode.md` (Gate 22).
+- [x] No task-number references in any deliverable outside `specs/**` (Gate 4).
+- [x] Mode A and Mode B both leave `specs/state.json` unchanged in their default form.
 
 ## Artifacts & Outputs
 
