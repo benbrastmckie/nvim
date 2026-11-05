@@ -1287,6 +1287,17 @@ if not os.path.isfile(chunk_file):
     if os.path.isfile(alt_path):
         chunk_file = alt_path
 
+# Converted chunk files actually live under sources/<doc_id>/, the same
+# doc_id == directory-name-under-sources/ assumption load_fidelity_map() above
+# already relies on (see its "sources/<dir>/" derivation). Try this candidate
+# last, only after both existing candidates have missed.
+if not os.path.isfile(chunk_file):
+    chunk_file_basename = os.path.basename(source_path)
+    doc_id = chunk_row.get('doc_id', '')
+    sources_path = os.path.join(db_dir, "sources", doc_id, chunk_file_basename)
+    if os.path.isfile(sources_path):
+        chunk_file = sources_path
+
 content = ''
 if os.path.isfile(chunk_file):
     try:
