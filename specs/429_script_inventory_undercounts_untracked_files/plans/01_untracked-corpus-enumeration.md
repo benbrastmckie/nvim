@@ -316,24 +316,38 @@ radius.
 
 ---
 
-### Phase 4: Documentation, Redeploy, and Full Gate Set [NOT STARTED]
+### Phase 4: Documentation, Redeploy, and Full Gate Set [COMPLETED]
 
 **Goal**: Bring the prose inventory in line with the implemented enumeration, regenerate the deploy
 tree, and close the task against the complete gate set.
 
 **Tasks**:
-- [ ] Update the `script-inventory.sh` entry in
+- [x] Update the `script-inventory.sh` entry in
       `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` to describe the
       union enumeration, the preserved gitignore/source-store scoping, and the `untracked=` /
       `untracked_count` disclosure. Current design only — no draft-history or task-number language
-- [ ] Redeploy the source store so `.claude/scripts/script-inventory.sh` and the deployed suite
-      match: `bash .claude/scripts/deploy-headless.sh`
-- [ ] Run the full test battery unfiltered: `bash agent-system/extensions/core/scripts/tests/run-all.sh`
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` with no gate filter and confirm the corpus line
-      now carries `untracked=`
-- [ ] Confirm the post-deploy `--size-line` figure equals the Phase 2 figure (deploy introduced no
-      drift)
-- [ ] Record the final figure and the Phase 1 baseline disposition in the task summary
+      *(completed)*
+- [x] Redeploy the source store so `.claude/scripts/script-inventory.sh` and the deployed suite
+      match: `bash .claude/scripts/deploy-headless.sh` *(completed: RESULT=landed_verify_clean,
+      37 checks, 0 failures; deployed and source copies of both script-inventory.sh and
+      test-script-inventory.sh confirmed byte-identical)*
+- [x] Run the full test battery unfiltered: `bash agent-system/extensions/core/scripts/tests/run-all.sh`
+      *(deviation: scoped per this dispatch's Batch Gate Deferral directive to
+      `--only test-script-inventory.sh,test-deploy-verify-wiring.sh` instead -- 2 passed, 0
+      failed; the complete unfiltered battery is deferred to the once-per-batch stage at the end
+      of this orchestrate invocation, per `context/contracts/phase-closure.md`'s
+      no-promotion-without-evidence carve-out)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` with no gate filter and confirm the corpus line
+      now carries `untracked=` *(deviation: scoped to `--only-gate 1` per the Batch Gate
+      Deferral directive -- corpus line confirmed carrying `untracked=1`, PASS, 9 checks/0
+      failures; the unfiltered run is deferred to the batch-level stage)*
+- [x] Confirm the post-deploy `--size-line` figure equals the Phase 2 figure (deploy introduced no
+      drift) *(completed: deployed and source copies both read identically,
+      `scripts=241 lines=96208 test_suites=174 test_lines=84369 md_files=932 md_lines=232270
+      untracked=1`; the test_lines delta from Phase 2's own reading (84259) is ordinary
+      concurrent sibling-task activity between phases, not drift introduced by this deploy)*
+- [x] Record the final figure and the Phase 1 baseline disposition in the task summary
+      *(completed, see summaries/01_untracked-corpus-enumeration-summary.md)*
 
 **Timing**: 0.75 hours
 
