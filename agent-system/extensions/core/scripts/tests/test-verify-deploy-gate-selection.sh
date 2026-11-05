@@ -139,7 +139,7 @@ fi
 # Case (c): an invalid gate id exits 2 with a named error, and (under --findings) a FINDING gate0
 # line. No fixture needed -- validation happens before TARGET is resolved.
 # =====================================================================
-invalid_cases=("abc" "0" "24" "1,abc" "1,99")
+invalid_cases=("abc" "0" "27" "1,abc" "1,99")
 case_c_all_ok=true
 for bad in "${invalid_cases[@]}"; do
   bad_out="$(bash "$VERIFY_DEPLOY" --only-gate "$bad" 2>&1)"
@@ -165,17 +165,17 @@ else
 fi
 
 # =====================================================================
-# Case (d): with no --only-gate flag, all 23 gate numbers appear in the output -- the
+# Case (d): with no --only-gate flag, all 26 gate numbers appear in the output -- the
 # "default unchanged" assertion. Uses FIXTURE_CHEAP so this stays fast (gates 3-13/15/17-20 all
 # [SKIP] instantly; only gates 1/2/14/16 do any real, cheap work).
 # =====================================================================
 noflag_out="$(run_vd "$FIXTURE_CHEAP")"
 noflag_missing=()
-for n in $(seq 1 23); do
+for n in $(seq 1 26); do
   printf '%s\n' "$noflag_out" | grep -q "^${n}\. " || noflag_missing+=("$n")
 done
 if [ "${#noflag_missing[@]}" -eq 0 ]; then
-  common_test_pass "case(d): no --only-gate flag -- all 23 gate headers appear (default unchanged)"
+  common_test_pass "case(d): no --only-gate flag -- all 26 gate headers appear (default unchanged)"
 else
   common_test_fail "case(d): missing gate header(s) with no flag: ${noflag_missing[*]}"
 fi

@@ -7356,7 +7356,9 @@
         "agent-system/extensions/core/scripts/gate-registry.data",
         "agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh",
         "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh",
-        "agent-system/extensions/core/scripts/verify-deploy.sh"
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"
       ],
       "effort": "medium",
       "project_number": 471,
