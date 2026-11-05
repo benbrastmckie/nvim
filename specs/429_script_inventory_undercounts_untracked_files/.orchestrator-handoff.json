@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 4-phase implementation plan for the script-inventory.sh untracked-file undercount. Planning established that a partial remedy already exists (a stderr WARNING listing untracked in-corpus scripts, deliberately excluded from the counts) but is inert at the one standing consumer, since verify-deploy.sh invokes the probe with 2>/dev/null; it also found the markdown enumeration carries the same defect and is not covered by that warning at all. The plan therefore chooses the description's first option: union the tracked enumeration with git ls-files --others --exclude-standard at both tracked sites, disclose the untracked contribution via a trailing untracked= field on stdout and untracked_count/untracked_paths in JSON, pin it with a git-fixture regression case, then update docs and redeploy.",
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/429_script_inventory_undercounts_untracked_files/plans/01_untracked-corpus-enumeration.md",
+      "summary": "4-phase plan (3.5h): measure exposure and disposition recorded baselines, union both tracked enumerations with untracked-not-ignored files plus stdout disclosure, add a git-fixture regression case, then docs/redeploy under the full gate set."
+    }
+  ],
+  "dispatch_seq": 16
+}
