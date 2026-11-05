@@ -26,21 +26,37 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/414_enforce_verdict_extraction_contract/summaries/01_lint-verdict-extraction-anchoring-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["round-trip test", "verdict extraction", "fixture suite", "producer-consumer contract", "false positive counting"]
+      "suggested_keywords": [
+        "round-trip test",
+        "verdict extraction",
+        "fixture suite",
+        "producer-consumer contract",
+        "false positive counting"
+      ]
     },
     {
       "content": "git-commit-scoped.sh (and wrappers over it) stage per-file, not per-hunk. When two concurrently-dispatched tasks both declare the same file in file_scope, whichever commits first captures the WHOLE current diff of that file, silently absorbing the other task's still-uncommitted edits under its own unrelated commit message (observed live: a sibling's gate16 WARN-FINDING commit absorbed this task's gate25_run()/--only-gate bound fix with zero mention in its message). Per git-workflow.md, do not amend or rewrite the foreign commit to fix attribution. Instead: re-check git status --short on every shared file immediately before your own phase commit (this already catches the case where the file is clean because a sibling committed it first), commit only the files that remain dirty for your own task, and cite the foreign commit's SHA in your own commit message or handoff for provenance.",
       "category": "INSIGHT",
       "source_artifact": "specs/414_enforce_verdict_extraction_contract/summaries/01_lint-verdict-extraction-anchoring-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["concurrent dispatch", "git-commit-scoped", "whole-file staging", "attribution", "file_scope contention"]
+      "suggested_keywords": [
+        "concurrent dispatch",
+        "git-commit-scoped",
+        "whole-file staging",
+        "attribution",
+        "file_scope contention"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793850684_c30dd8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

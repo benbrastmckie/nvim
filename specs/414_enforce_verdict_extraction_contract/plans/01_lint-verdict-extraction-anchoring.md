@@ -1,7 +1,7 @@
 # Implementation Plan: Task #414
 
 - **Task**: 414 - Enforce the gate verdict-line extraction contract mechanically
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: 413, 411 (per state.json)
 - **Research Inputs**: specs/414_enforce_verdict_extraction_contract/reports/01_lint-verdict-extraction-anchoring-design.md

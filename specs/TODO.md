@@ -11,12 +11,12 @@ next_project_number: 486
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,328,338,342,383,385,397,401,408,410,412,414,419,423,428,435,437,456,459,464,466,469,470,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,313,384,398,409,415,430,431,453,458,463,465,471,472,475 | 22,328,383,397,401,412,414,428,435,459,470 | core-agent-system, extensions, literature, ... |
-| 3 | 369,399,418,436,439,445,446,474 | 29,313,328,385,398,415,419,430,431,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 360,391,420,438,444,448,454,476,484 | 313,328,369,409,418,423,435,439,445,446,458,469 | core-agent-system, file-scope-lifecycle, agent-system |
-| 5 | 390,402,449,451,452,455,461,479 | 360,385,391,420,435,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 6 | 421,450,457,462,480,481 | 390,402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,428,435,437,456,459,464,466,469,470,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,313,384,398,409,418,430,431,445,453,458,463,465,471,472,475 | 22,328,383,397,401,412,415,419,428,435,459,470 | core-agent-system, extensions, literature, ... |
+| 3 | 369,399,420,436,439,444,446,448,474,476 | 29,313,328,385,398,409,418,423,430,431,445,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 360,391,438,451,454,455,461,484 | 313,369,385,420,435,439,446,448,458,469 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 5 | 390,402,449,452,457,462,479 | 360,391,435,444,448,451,455 | core-agent-system, extensions, lean-extension, ... |
+| 6 | 421,450,480,481 | 390,402,420,435,449,479 | core-agent-system, orchestrator, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -116,10 +116,9 @@ next_project_number: 486
 ### Agent System
 
 401 [NOT STARTED] — Two repositories file against one source store with no...
-414 [IMPLEMENTING] — Enforce the gate verdict-line extraction contract mechanically
-  └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
-    └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
-      └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
+415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
+  └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
+    └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit... (see above)
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
@@ -3424,13 +3423,14 @@ test-guard-git-push.sh. Do not attribute these to this work and do not fix them 
 ---
 
 ### 414. Enforce the gate verdict-line extraction contract mechanically
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 413, Task 411
 - **Parent**: Task 411
 - **Research**: [414_enforce_verdict_extraction_contract/reports/01_lint-verdict-extraction-anchoring-design.md]
 - **Plan**: [414_enforce_verdict_extraction_contract/plans/01_lint-verdict-extraction-anchoring.md]
+- **Summary**: [414_enforce_verdict_extraction_contract/summaries/01_lint-verdict-extraction-anchoring-summary.md]
 
 **Description**: Enforce the gate verdict-line extraction contract mechanically, so a future author cannot reintroduce an unanchored or SGR-blind extraction site
 
