@@ -104,7 +104,7 @@ next_project_number: 486
 
 ### Orchestrator
 
-428 [RESEARCHING] — Enforce and detect planner-agent terminal return-meta write
+428 [RESEARCHED] — Enforce and detect planner-agent terminal return-meta write
   └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
@@ -2973,10 +2973,11 @@ EDIT TARGET: the source store under agent-system/extensions/core/ (never .claude
 ---
 
 ### 428. Enforce and detect planner-agent terminal return-meta write
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378
+- **Research**: [428_enforce_planner_agent_terminal_write/reports/01_terminal-write-enforcement.md]
 
 **Description**: A planner-agent dispatch terminated without writing its terminal status: its .return-meta.json was left at status: in_progress, and no .orchestrator-handoff.json was produced at all, so the orchestrator postflight had no handoff to read and fell back to its recovery path. Observed in task 328, entry_id iss_1792162538950_NYX4YD.
 

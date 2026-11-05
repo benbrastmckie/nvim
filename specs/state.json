@@ -2603,7 +2603,7 @@
     {
       "project_number": 428,
       "project_name": "enforce_planner_agent_terminal_write",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Enforce and detect planner-agent terminal return-meta write",
       "description": "A planner-agent dispatch terminated without writing its terminal status: its .return-meta.json was left at status: in_progress, and no .orchestrator-handoff.json was produced at all, so the orchestrator postflight had no handoff to read and fell back to its recovery path. Observed in task 328, entry_id iss_1792162538950_NYX4YD.\n\nWhy this needs fixing rather than being treated as a one-off: a dispatch that ends without a terminal status write leaves the orchestrator unable to distinguish three different outcomes -- \"agent still working\", \"agent crashed\", and \"agent finished but did not report\". The postflight already carries staleness and recovery machinery for the handoff file; the gap is that nothing enforces or detects the non-terminal .return-meta.json write itself.\n\nScope: diagnose where planner-agent's terminal write can be skipped, then close that hole -- in the agent's own contract, in the postflight's detection, or both, whichever the diagnosis supports.\n\nHard constraint: this work MUST NOT weaken the existing handoff-staleness gate, which is working as designed.\n\nRelevant anchors:\n- agent-system/extensions/core/agents/planner-agent.md\n- agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh\n- .claude/docs/architecture/handoff-schema.md\n- .claude/context/formats/return-metadata-file.md\n\nEdit target is the source store (agent-system/extensions/core/**), never the deployed .claude/** tree.",
@@ -2611,7 +2611,13 @@
       "dependencies": [
         378
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/428_enforce_planner_agent_terminal_write/reports/01_terminal-write-enforcement.md",
+          "type": "report",
+          "summary": "Diagnoses the cited planner-agent terminal-write gap (task 328, iss_1792162538950_NYX4YD), finds it was already substantially fixed on the detection side by completed task 426, and identifies the one remaining gap as structural: skill-orchestrate's direct dispatch path never creates a postflight marker, so the existing SubagentStop enforcement hook cannot fire for it; recommends documenting this scope boundary or scoping a separate follow-up task for new SubagentStop-level prevention infrastructure."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/core/agents/planner-agent.md",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
@@ -2619,8 +2625,9 @@
         "agent-system/extensions/core/docs/architecture/handoff-schema.md",
         "agent-system/extensions/core/context/formats/return-metadata-file.md"
       ],
-      "last_updated": "2026-11-05T03:51:57Z",
-      "session_id": "sess_1793850684_c30dd8_428"
+      "last_updated": "2026-11-05T04:04:37Z",
+      "session_id": "sess_1793850684_c30dd8",
+      "next_artifact_number": 2
     },
     {
       "project_number": 429,
