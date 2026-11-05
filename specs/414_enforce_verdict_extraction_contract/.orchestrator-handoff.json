@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 7,
+  "summary": "Created a 5-phase implementation plan for mechanically enforcing the verdict-line extraction contract: a new lint-verdict-extraction-anchoring.sh flagging the unanchored and the naive-line-start-anchored shapes distinctly, a both-polarity mktemp-fixture suite including the producer-side round-trip self-check, gate 25 registration plus the registry-derived --only-gate bound fix (the existing bound already rejects gate 24), a one-sentence prose pointer, and a redeploy plus full source-store-targeted gate run. Two wiring obligations the research report did not name are folded in: core/manifest.json provides.scripts declaration via sync-manifest-scripts.sh, and confirmation that no run-all.sh roster or suite-selection map edit is needed. Territory risk with the sibling task holding verify-deploy.sh is mitigated by confining that edit to one phase and routing the --only-gate assertions into test-gate-registry-resolution.sh instead of the sibling-owned selection suite.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/414_enforce_verdict_extraction_contract/plans/01_lint-verdict-extraction-anchoring.md",
+      "summary": "5-phase plan: new anchoring lint, fixture suite, gate 25 registration and --only-gate bound fix, prose/manifest wiring, redeploy plus full gate set."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": []
+}
