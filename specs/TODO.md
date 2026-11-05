@@ -1,5 +1,5 @@
 ---
-next_project_number: 492
+next_project_number: 493
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 492
 |------|-------|------------|--------|
 | 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475,490,491 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
-| 3 | 360,391,399,420,436,438,439,444,448,474,476,484 | 313,328,369,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 360,391,399,420,436,438,439,444,448,474,476,484,492 | 313,328,369,398,409,418,423,431,445,446,458,491 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 5 | 421,450,457,462,480,481,487 | 390,402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
 
@@ -34,6 +34,7 @@ next_project_number: 492
   └─ 465 [RESEARCHED] — check-record-versioning.sh PATH\_SCOPE mode reports...
   └─ 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
   └─ 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
+    └─ 492 [NOT STARTED] — Key the backlog-audit confirmation prompt to corroboration,...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
@@ -125,6 +126,50 @@ next_project_number: 492
 
 ## Tasks
 
+### 492. Key the backlog-audit confirmation prompt to corroboration, not verdict label
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 491
+
+**Description**: Key the backlog-audit confirmation prompt to corroboration rather than to the verdict label, and define that bar once instead of re-deriving it at each consumer.
+
+--- PRECONDITION: RE-MEASURE BEFORE IMPLEMENTING ---
+
+This task was filed from evidence gathered against the PRE-FIX scorer. Before implementing anything, re-run audit-task-proposals.sh against the corrected scorer and record the new numbers. If the corrected scorer alone drops the verdict volume to the point where the prompt no longer misfires on genuinely-new proposals, then outcomes 1 and 2 below shrink to a documentation change (state the bar explicitly) and the consumer edits may be unnecessary. Do NOT implement the full change on the strength of the measurements quoted here. The dependency on the scorer task exists for exactly this reason.
+
+THE DEFECT, INDEPENDENT OF SCORER CALIBRATION:
+Each consumer filters the audit's verdict set by LABEL alone -- it drops `genuinely-new` and `scope-blind` and prompts if anything at all remains:
+  commands/task.md:181    backlog_verdicts=$(... select(.verdict != "genuinely-new" and .verdict != "scope-blind") ...)
+  commands/review.md:519  the same jq predicate, verbatim
+  commands/errors.md:145  the same rule stated as prose
+Nothing in any of the three keys on whether the verdict carries mechanical corroboration. That contradicts the script's own contract: the audit-task-proposals.sh header states Pass 2 is "a recall-biased, over-inclusive SHORTLIST" and that a verdict emitted purely from Pass 2 with no mechanical corroboration "is not a certified fact". The consumers nonetheless treat such a verdict as prompt-worthy, which is a design mismatch that a better-calibrated scorer does not by itself repair.
+
+It also contradicts the consumers' own stated intent. Each site carries the instruction that when the filtered set is empty the prompt must be skipped entirely, because the check "must never add friction to the common genuinely-new case". With a label-only filter over a deliberately lenient threshold, the filtered set is almost never empty, so the escape hatch never fires.
+
+OBSERVED (pre-fix scorer, 2026-11-05): two proposals that were in fact genuinely new drew 56 and 20 non-genuinely-new, non-scope-blind verdicts respectively. Every one had `shared_paths: null` and `mechanical_class: "none"` -- zero mechanical corroboration. Both prompts were overridden on inspection. A gate that is correct to override on essentially every firing trains the override rather than the check.
+
+NOT IN SCOPE: the hook hooks/validate-task-creation-audit.sh is correct as written and must not change. It enforces only that a task-creating state write RECORDED an audit (--audit-verdict / --audit-override), and deliberately does not parse verdicts. The prompting decision is the command layer's, which is where this task operates.
+
+--- REQUIRED OUTCOMES ---
+
+1. Define the prompt-worthiness bar once, in context/patterns/backlog-reconciliation.md, as a named rule the consumers reference. The bar must distinguish a mechanically corroborated verdict (mechanical_class exact/subset/superset/overlap, or non-null shared_paths) from a Pass-2-only verdict, consistent with the script header's own statement about what each is worth. Decide and record whether a Pass-2-only verdict should prompt at a higher semantic bar, be reported without prompting, or be summarized as a count.
+
+2. Have commands/task.md, commands/review.md, and commands/errors.md reference that single rule instead of each carrying its own copy of the predicate. This mirrors the consolidation already done for topic assignment, where context/patterns/topic-assignment-pattern.md replaced several inline copies; the same duplication is re-forming here across three sites.
+
+3. Preserve the corroborated path's behavior exactly. A verdict with a real file-footprint class must still prompt, and `covered-by-closed` must still name the discharging artifact's path rather than a bare archived task number.
+
+4. Keep the recall-biased posture intact. The point is to change what the CONSUMER does with an over-inclusive shortlist, not to narrow what the audit detects. Do not raise SEMANTIC_THRESHOLD as part of this task; that constant belongs to the scorer task.
+
+5. Reconcile docs/reference/standards/multi-task-creation-standard.md if it restates the label-only filter, so the standard and the pattern doc agree.
+
+STILL UNFILED, deliberately: the size of the audit_verdict blob persisted into state.json (one task's entry added roughly 970 lines / 97 verdict rows pre-fix). It is downstream of the scorer fix in the same way this task is -- measure the post-fix blob before deciding what is worth persisting, and file it then if it still warrants a task.
+
+SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, never in a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md.
+
+---
+
 ### 491. Fix the Pass-2 semantic scorer whose normalization inflates against verbose corpus records
 - **Effort**: small
 - **Status**: [NOT STARTED]
@@ -161,7 +206,11 @@ CONSTRAINT FROM THE EXISTING DESIGN: the SEMANTIC_THRESHOLD comment block states
 
 5. Preserve the mechanically-corroborated path exactly. Verdicts backed by a real file-footprint class (exact/subset/superset/overlap) must keep firing regardless of semantic score; only Pass-2-only verdicts are in scope for this change.
 
-OUT OF SCOPE (deliberately, decided at creation): the consumer-side confirm contract (review.md Section 5.6.3 and the equivalent /meta gate, which prompt on any non-genuinely-new verdict) and the size of the audit_verdict blob persisted into state.json. Both are real and were observed in the same run, but they are separate concerns from the scorer and should be raised as their own tasks if wanted.
+OUT OF SCOPE (deliberately, decided at creation):
+
+1. The consumer-side confirm contract -- the label-only verdict filter in commands/task.md, commands/review.md and commands/errors.md, which prompts on any non-genuinely-new verdict regardless of corroboration. Now filed as its own task (492), which depends on THIS task and carries a precondition to re-measure against the corrected scorer before implementing. If the scorer fix here drops verdict volume enough that the prompt stops misfiring, that task shrinks to a documentation change.
+
+2. The size of the audit_verdict blob persisted into state.json -- one task entry added roughly 970 lines / 97 verdict rows under the current scorer. Still unfiled on purpose: it is downstream of this fix, so measure the post-fix blob before deciding what is worth persisting, and file it then if it still warrants a task.
 
 SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, never in a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md.
 
