@@ -1,20 +1,20 @@
 {
-  "dispatch_seq": 18,
+  "dispatch_seq": 20,
   "status": "partial",
-  "phases_completed": 7,
+  "phases_completed": 8,
   "phases_total": 20,
-  "summary": "Closed Phase 7 (Harness Migration Tranche B): migrated 48 mid-size test suites in agent-system/extensions/core/scripts/tests/ onto lib/common.sh's shared test harness, collapsing pass/fail/info boilerplate on all 48, a REPO_ROOT fallback block on 25, and a WORKDIR/cleanup/trap triplet on 26. NET-TEST -214 lines for the phase; all 49 relevant suites pass with assertion counts and PASS/FAIL case-name lists unchanged. Found and recovered from a commit-pipeline defect in git-commit-phase.sh's containment self-check (a trailing-slash file_scope entry produces a double-slash glob that matches nothing) via an explicit follow-up commit; recorded as an issue rather than fixed (out of this task's file_scope). 12 of 20 plan phases remain, starting with Phase 8.",
+  "summary": "Closed Phase 8 (Harness Migration Tranche C -- Complete the Corpus): migrated all 56 remaining suites in agent-system/extensions/core/scripts/tests/ onto lib/common.sh's shared test harness, including the corpus's two largest suites, closing the core extension's entire test-harness migration with zero reasoned exemptions needed. Also collapsed the REPO_ROOT-fallback and WORKDIR/cleanup/trap boilerplate patterns (not just pass/fail/info), and opportunistically fixed two pre-existing SC2034 shellcheck findings left by an earlier phase. NET-TEST -188 for this phase; cumulative NET-TEST across phases 3-8 is -291 against the Phase 1 baseline. Verification: full repo-wide run-all.sh (167 suites) green except 8 pre-existing, already-triaged failures (2 known-expected, 6 confirmed unrelated to this phase via a standalone pre-edit recheck); every touched suite's own Passed/Failed tally is byte-identical across three before/after captures. Found and recovered from a RECURRING commit-pipeline defect in git-commit-phase.sh's containment self-check (the same trailing-slash file_scope double-slash-glob bug Phase 7 already hit) via an explicit follow-up commit; recorded as an issue with a fix recommendation, not fixed here (outside this task's file_scope). 12 of 20 plan phases remain, starting with Phase 9 (install/uninstall pair deduplication).",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-b-summary.md",
-      "summary": "Phase 7 close: 48 test suites migrated onto the shared test harness, NET-TEST -214, a commit-pipeline defect found and routed around, Phase 8 scoped as the next step."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-c-summary.md",
+      "summary": "Phase 8 close: all 56 remaining suites migrated onto the shared test harness (closing the core extension's harness migration), NET-TEST -188, a recurring commit-pipeline defect routed around, Phase 9 scoped as the next step."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-7-handoff-20261105T011855Z.md",
-      "summary": "Phase 7 close: migration method, NET-TEST figure, the source-detection bug found and fixed mid-phase, and Phase 8's deferred-suite list."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-8-handoff-20261105T025305Z.md",
+      "summary": "Phase 8 close: migration method (mechanical script + 4 hand-migrated exceptions + boilerplate collapse), NET-TEST figure, verification methodology finding, and Phase 9's scope."
     }
   ]
 }

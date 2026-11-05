@@ -1874,9 +1874,9 @@
           "type": "plan"
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-b-summary.md",
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-c-summary.md",
           "type": "summary",
-          "summary": "Phase 7 close: 48 test suites migrated onto the shared test harness, NET-TEST -214, a commit-pipeline defect found and routed around, Phase 8 scoped as the next step."
+          "summary": "Phase 8 close: all 56 remaining suites migrated onto the shared test harness (closing the core extension's harness migration), NET-TEST -188, a recurring commit-pipeline defect routed around, Phase 9 scoped as the next step."
         }
       ],
       "next_artifact_number": 4,

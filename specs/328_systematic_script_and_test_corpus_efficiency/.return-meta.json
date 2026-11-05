@@ -1,12 +1,143 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 20,
+  "partial_progress": {
+    "stage": "phase_complete_more_remain",
+    "details": "Phase 8 (Harness Migration Tranche C -- Complete the Corpus) closed [COMPLETED]: all 56 remaining suites migrated onto lib/common.sh's shared test harness, closing the core extension's test-harness migration entirely (zero reasoned exemptions needed). NET-TEST -188 for this phase (insertions=5365, deletions=5553); cumulative NET-TEST across phases 3-8 is -291 against the Phase 1 baseline. 12 of 20 plan phases remain [NOT STARTED] (Phase 9 next). Clean phase boundary, not a context-exhaustion handoff.",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-8-handoff-20261105T025305Z.md",
+    "phases_completed": 8,
+    "phases_total": 20
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-c-summary.md",
+      "summary": "Phase 8 close: all 56 remaining suites migrated onto the shared test harness (closing the core extension's harness migration), NET-TEST -188, a recurring commit-pipeline defect routed around, Phase 9 scoped as the next step."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-8-handoff-20261105T025305Z.md",
+      "summary": "Phase 8 close: migration method (mechanical script + 4 hand-migrated exceptions + boilerplate collapse), NET-TEST figure, verification methodology finding, and Phase 9's scope."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Migrated the final 56 suites in agent-system/extensions/core/scripts/tests/ onto lib/common.sh's shared test harness, closing the core extension's entire test-harness migration with zero reasoned exemptions. Collapsed the REPO_ROOT-fallback and WORKDIR/cleanup/trap boilerplate patterns in addition to pass/fail/info. NET-TEST -188 for the phase; full repo-wide run-all.sh (167 suites) green except for 8 pre-existing, already-triaged failures unrelated to this phase."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh",
+    "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
+    "agent-system/extensions/core/scripts/tests/test-check-task-references.sh",
+    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+    "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-context-reachability.sh",
+    "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
+    "agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-lock.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+    "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-snapshot.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
+    "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh",
+    "agent-system/extensions/core/scripts/tests/test-issue-record.sh",
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh",
+    "agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+    "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh",
+    "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+    "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh",
+    "agent-system/extensions/core/scripts/tests/test-script-inventory.sh",
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+    "agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh",
+    "agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh",
+    "agent-system/extensions/core/scripts/tests/test-task-lock-queue.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-8-handoff-20261105T025305Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-8-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-c-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When mass-migrating shell test suites onto a shared harness library, a naive diff that counts raw '[FAIL]'-tagged lines per suite output can produce a false-positive regression signal if any suite's own test case legitimately dumps diagnostic output from a live-repo scan (e.g. re-running a real gate/lint against the actual working tree as part of explaining why its own fixture baseline is dirty). That sub-text varies with ambient repo state (deploy-tree freshness, concurrent sibling tasks' untracked files) independent of any change to the suite itself. Use the suite's own authoritative 'Passed: N'/'Failed: N' tally line as ground truth for before/after case-outcome comparison, not a raw tag/line count.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-c-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "shell-test-migration",
+        "before-after-diff",
+        "false-positive",
+        "diagnostic-noise",
+        "tally-line"
+      ]
+    },
+    {
+      "content": "A mechanical shell-boilerplate-collapse migration script that only removes a local pass()/fail()/info() trio and inserts a library source line captures a much smaller net-line-reduction than one that ALSO collapses adjacent boilerplate shapes (a git-aware REPO_ROOT resolution block, a WORKDIR=mktemp+cleanup+trap triplet) onto the same library's helper functions -- the call-site renames themselves change line WIDTH, not line COUNT, so most of a migration's net deletion comes from the structural-block collapses, not the call renames. If a migration's realized net comes in far below a prior tranche's per-suite average, check whether these adjacent patterns were left uncollapsed before accepting the smaller number.",
+      "category": "PATTERN",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-c-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "net-deletion",
+        "boilerplate-collapse",
+        "shell-harness-migration",
+        "mechanical-refactor"
+      ]
+    },
+    {
+      "content": "In this sandboxed Claude Code environment, a foreground Bash call running past roughly 180 seconds gets auto-backgrounded by the harness regardless of the declared 'timeout' tool parameter (observed consistently, diverging from the documented 120s-default/600s-ceiling contract) and regardless of periodic heartbeat output. The working pattern for a long-running detached process (e.g. run-all.sh across dozens of suites, or deploy-headless.sh): launch detached with nohup, capture the PID to a file, then poll with a SEQUENCE of short (sleep 100-170s) single-shot 'kill -0 ' checks that each individually return well under the ~180s threshold, reading the log once liveness ends.",
+      "category": "CONFIG",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-c-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "bounded-wait",
+        "auto-background",
+        "sandbox-timeout",
+        "kill-0-polling",
+        "long-running-command"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793838084_ef69bd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 7,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 8,
     "phases_total": 20
   }
 }
