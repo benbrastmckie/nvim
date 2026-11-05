@@ -2,7 +2,7 @@
 
 *Forward-only: what remains, in what order, and the gates. Finished work is removed, not archived
 here. Task detail lives in `specs/TODO.md`; this file carries ordering, gates and rulings only.
-Figures carry the date measured. Last measured 2026-11-04.*
+Figures carry the date measured. Last measured 2026-11-05.*
 
 ## Goal
 
@@ -12,24 +12,33 @@ is 8, enforced in `commands/orchestrate.md`.
 
 Counts and rosters are generated (`generate-task-order.sh --print`,
 `roadmap-integration.sh --regenerate`, `orchestrate-suggest-next-batch.sh --next-batch`). Never
-transcribe one here. As of 2026-11-04: **72 open (1 held), 44 completed awaiting `/todo`
-archival** — archival is the cheapest action available and nothing waits on it.
+transcribe one here. As of 2026-11-05: **71 open (1 held), 8 completed awaiting `/todo`
+archival**.
 
 ## Gate state
 
-Measured 2026-11-04 unless marked.
+Measured 2026-11-05 unless marked.
 
-- **Gate 8 is red: 7 shell suites**, tracked by record 476. Five were proven to fail identically
-  on unmodified `master` via `git stash push`; two are `EXPECTED`-baselined by `run-all.sh`
-  itself. A standing red Gate 8 destroys the signal value of the full gate for every later task,
-  which is the real cost.
-- **Gate 16 is red**: `routing_hard`/`routing_agents_hard` still declared. Record 444 owns it and
-  corrects the premise — **three** extensions declare the key (books, cslib, lean), and
-  `hard_contracts` exists in no manifest yet.
-- **Gate 20 passes**, with no durable headroom: eager load 65,312 B against baseline 66,800 B, but
-  the per-file margins are 4 B (`commands/orchestrate.md`, 21,496/21,500) and 307 B
-  (`skills/skill-orchestrate/SKILL.md`, 24,693/25,000). Any ordinary addition to either re-fires
-  the gate. Prefer a relocation trim over another ceiling move; both ceilings moved on 2026-11-04.
+- **Gate 8 is red: 8 shell suites**, tracked by record 476 (whose title still says seven). The
+  roster measured on 2026-11-05 by a full batch-level run: `test-gate-cache-equivalence.sh`,
+  `test-gate-lock.sh`, `test-orchestrate-cycle-postflight.sh`,
+  `test-orchestrate-predispatch-review.sh`, `test-orchestrate-unwind-dispatch.sh`,
+  `test-postflight-deploy-gate.sh`, `test-redeploy-checkpoint-promotion.sh`,
+  `test-verify-deploy-context-budget.sh`. Two more (`test-skill-base-lifecycle.sh`,
+  `test-verify-deploy-gate-selection.sh`) and one gate-3 finding did not reproduce on the
+  confirmation re-run, so the roster is not stable run-to-run — re-measure before sizing 476.
+  A standing red Gate 8 destroys the signal value of the full gate for every later task, which is
+  the real cost.
+- **Gate 16 is red** (2026-11-04): `routing_hard`/`routing_agents_hard` still declared. Record 444
+  owns it and corrects the premise — **three** extensions declare the key (books, cslib, lean),
+  and `hard_contracts` exists in no manifest yet.
+- **Gate 20 passes on 80 B.** Eager load 66,720 B against baseline 66,800 B; per-file margins 4 B
+  (`commands/orchestrate.md`, 21,496/21,500) and 307 B (`skills/skill-orchestrate/SKILL.md`,
+  24,693/25,000). The 1,488 B of total headroom recorded on 2026-11-04 is gone: merging one
+  extension's `EXTENSION.md` into `.claude/CLAUDE.md` consumed it, and that merge had to be
+  trimmed from 44 lines to 28 mid-implementation to land under the baseline at all. **Any new
+  extension carrying a CLAUDE.md merge target now re-fires this gate.** Prefer a relocation trim
+  over another ceiling move; both ceilings moved on 2026-11-04.
 - **`validate-state.sh --deep`: 0 failed, 13 warnings.** Every warning is coarse `file_scope` on a
   whole-corpus record (decision 19 — correct output, not a defect). No missing, null, empty or
   glob scopes; no dangling edges or cycles.
@@ -44,20 +53,23 @@ Priority is **fan-out**: how many other open records a record transitively gates
 urgency or effort, it changes with every edge and closure, and it is re-derived, never remembered
 (standing rule 10). Re-derive with `generate-task-order.sh --print`.
 
-Two measured keystones dominate: **328 directly gates 14 open records**, **435 gates 8**. Nothing
-else is close.
+Re-derived 2026-11-05 over the 71 open records. **328 is the one keystone: 24 records
+transitively, 14 directly.** But the old reading that nothing else is close no longer holds —
+transitive fan-out now runs **385 (16), 415 (15), 430 (14), 446 (13), 419 (12), 418 (11), 435
+(10), 401 (8)**. The verification spine (415 -> 418/419) and the file-scope chain (430 -> 446)
+each gate about as much as the whole-corpus reword, so neither can be left to the tail.
 
 ```
-/orchestrate 429, 328   # P0: fix the measurement instrument, then the consolidation it measures
+/orchestrate 328   # P0 keystone: runs alone, no live session, expect 3-4 invocations
 /orchestrate 435   # whole-corpus reword: alone, per-class and per-site, blanket substitution forbidden
-/orchestrate 385, 397, 423, 469, 470   # lean keystone plus narrow core; admission-probed 2026-11-04
+/orchestrate 385, 397, 423   # lean keystone plus narrow core; 385 gates 451 and 462, 423 attacks red Gate 8
 /orchestrate 410, 412, 456, 464, 466, 473   # ready, no inbound edges
-/orchestrate 414, 415, 445, 444, 419, 418   # verification spine: verify-deploy and shell-script-testing
-/orchestrate 428, 430, 401, 409   # orchestrator tail
-/orchestrate 22, 29, 369, 391, 390, 402, 338   # loader chain, task siting, conclusion stage
+/orchestrate 415, 445, 444, 419, 418   # verification spine: verify-deploy and shell-script-testing
+/orchestrate 430, 401, 409   # orchestrator tail
+/orchestrate 29, 369, 391, 390, 402, 338   # loader chain, task siting, conclusion stage
 /orchestrate 446, 448, 360, 313, 431, 459, 458   # the consolidation record's consumers
 /orchestrate 475, 476, 477, 478   # audit-gate hole, red Gate 8, class vocabulary, lint Check J
-/orchestrate 398, 399, 463, 465, 471, 472, 474   # lean research chain tail, plus 328/431/470 consumers
+/orchestrate 398, 399, 463, 465, 472, 474   # lean research chain tail, plus 328/431 consumers
 /orchestrate 421, 436, 438, 439, 454, 420, 449, 452   # creation-gate consumers and command surfaces
 /orchestrate 450, 451, 455, 457, 453, 461, 462, 479   # edges satisfied above
 /orchestrate 480, 481, 408, 437, 383, 384   # leaves and tail: nothing further depends on them
@@ -65,32 +77,32 @@ else is close.
 
 Why this order:
 
-- **Call 1 pairs the instrument with its consumer, under an edge.** `script-inventory.sh`
-  enumerates via `git ls-files`, so an unstaged new file is invisible and the running net-deletion
-  figure is biased *favourably* — the one direction a net-deletion criterion cannot tolerate.
-  Fixing the instrument first is cheap; after is a re-measure. Both declare `script-inventory.sh`,
-  so an edge orders them rather than a comment.
-- **328 will not finish in one invocation.** 20 phases, 6 terminal, 5-cycle budget; expect three
-  or four. `MAX_CYCLES reached` is not a failure here. It runs with only its instrument because
-  its 126 scope entries overlap most of the backlog (decision 19) — every narrow core and lean
-  record probed on 2026-11-04 came back carrying an idle-overlap advisory against it. Anything run
-  before it churns ground it is planned to consolidate.
-- **Call 3 is admission-verified**, not merely authored: 385, 397, 423 and 469 all `admit`; 470
-  defers one cycle behind 469 on the self-modification ordering constraint, which is automatic
-  sequencing, not an exclusion. 385 is the lean keystone (gates 451 and 462); 423 attacks the
-  standing-red Gate 8.
-- **Call 5 is the verification layer.** `414 -> 415 -> 445 -> 444` serializes on
-  `verify-deploy.sh` and `tests/run-all.sh`; `419 -> 418` on the state-writer lint and
-  `shell-script-testing.md`.
-- **Call 7 is the loader chain.** `22 -> 29 -> 369 -> 391 -> 390` on `init.lua`/`merge.lua` then
+- **328 runs alone and will not finish in one invocation.** 20 phases against a 5-cycle budget;
+  expect three or four. `MAX_CYCLES reached` is not a failure here. It runs alone because its 126
+  scope entries overlap most of the backlog (decision 19) — anything run beside it churns ground
+  it is planned to consolidate. Its measurement instrument has landed; record 485 recaptures the
+  corpus baselines under the corrected probe and should follow it, not precede it.
+- **Call 5 is the verification layer.** `415 -> 445 -> 444` serializes on `verify-deploy.sh` and
+  `tests/run-all.sh`; `419 -> 418` on the state-writer lint and `shell-script-testing.md`. At 15
+  transitive dependents, 415 is the second-largest unblocker after 328 and no longer belongs this
+  far down — promote it if 328 stalls.
+- **Call 7 is the loader chain.** `29 -> 369 -> 391 -> 390` on `init.lua`/`merge.lua` then
   `source-store-deploy-boundary-narrative.md`, so the authoring hole closes before mis-sited
-  records migrate through it. 402 joins at the tail once 391 lands.
+  records migrate through it. 402 joins at the tail once 391 lands. 29 is now the head of this
+  chain and `ready`.
 - **Calls 10-13 are downstream or leaves.** Reorder or defer freely within them.
 
-**Not admission-verified**: every call except call 1 and call 3. A `MAX_TASKS` trim or a
-self-modifying defer could reshape any of them — re-derive with `--dry-run` (standing rule 5), or
-let `orchestrate-suggest-next-batch.sh --next-batch` propose a set the real admission script
-actually admits.
+**Admission-probed 2026-11-05**: `/orchestrate 466, 437` — the only co-admissible,
+dependency-ready pair in the whole backlog at that moment (disjoint scopes: `validate-wiring.sh`
+vs. the literature Zotero scripts). Every other ready record either defers against 328 or carries
+an unsatisfied edge. **328 itself admits but fires a cross-session hazard** while any other
+`/orchestrate` session is live — it overlaps on `core/manifest.json`, `gate-registry.data` and
+`verify-deploy.sh`, and both sides regenerate the deploy tree. Start it only with no live session
+registered (`task-lock.sh session-list`).
+
+**Not admission-verified**: every other call. A `MAX_TASKS` trim or a self-modifying defer could
+reshape any of them — re-derive with `--dry-run` (standing rule 5), or let
+`orchestrate-suggest-next-batch.sh --next-batch` propose a set the real admission script admits.
 
 **The held record** (books corpus refactor): every dependency satisfied; the hold is a version
 stamp alone. The consuming repo's `books/book-convention.md` line 4 reads `0.1.0-pre`. Lift when
@@ -100,12 +112,12 @@ it reads `0.1.0` — owner action, never an agent's. Nothing depends on it.
 and `specs/TODO.md`, which every task writes, so it overlaps everything.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 483,485
+/orchestrate 483,485,488
 ```
 
 ## Open work
 
-**Core agent system (32)**
+**Core agent system (31)**
 ```
 328 IN FLIGHT       systematic_script_and_test_corpus_efficiency
 313 blocked:328,401 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
@@ -135,19 +147,17 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 456 ready           tag_version_gate_unpassable_for_private_manifest
 459 ready           Design cross-record traceability; verdict on CHANGE_LOG retirement
 464 ready           Make a plan's per-phase line estimates checkable against a line ceiling the s...
-471 ready           Lint the extensions README table against the real extension directory set
 473 ready           Strip record-versioning language from the boundary-owned architecture docs
 478 ready           Make lint Check J fail on a missing handoff-writer section instead of skippin...
 485 ready           Recapture corpus baselines under the corrected inventory probe
 ```
 
-**Extensions (8)**
+**Extensions (7)**
 ```
 342 HOLD            Refactor the books extension's context corpus against the settled convention:...
-482 IN FLIGHT       create_sapience_extension
-29 blocked:22       Generate .mcp.json from extension manifests, then register obsidian-memory th...
 384 blocked:383     Adjudicate whether a books reconciliation postflight lifecycle hook is warran...
 457 blocked:446,455 Repo-specific content has leaked into the shared agent-system source store
+29 ready            Generate .mcp.json from extension manifests, then register obsidian-memory th...
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 408 ready           Gate the formal extension's mandatory Mathlib-lookup step on an actual Lean t...
 483 ready           Document that an extension lifecycle hook can never fire without a declared t...
@@ -159,16 +169,12 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 437 ready           Repair the Zotero sqlite-reconstruction export path: lost CSL fields and a sh...
 ```
 
-**Neovim (1)**
-```
-22 ready            Freeze .opencode: silence fragment validation spam and record the frozen-mirr...
-```
-
-**File scope lifecycle (4)**
+**File scope lifecycle (5)**
 ```
 446 blocked:328,385,430  Close the plan-to-file_scope reconciliation gap and make a containment d...
 455 blocked:328,435,446,448  Pre-flag the predictable first-run module-invariant failures that wi...
 484 blocked:430,446 Collapse per-path scope excursion issue rows into one record per drop event
+486 blocked:430,446,484  Stop a required extension manifest.json registration being dropped from ...
 430 ready           Feed observed-but-undeclared implement paths back into a task declared file_s...
 ```
 
@@ -184,18 +190,19 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 412 ready           lean_tier_vocabulary_to_build_scope_mapping
 ```
 
-**Orchestrator (7)**
+**Orchestrator (8)**
 ```
 402 blocked:391     Conclusion stage Step 4c allocates no task number and creates no task directo...
 409 blocked:401     Advise at admission when a task's declared file_scope already holds uncommitt...
 449 blocked:328,360,444,445,446,448  Site the Batch Gate Deferral directive where it is read ...
 450 blocked:328,360,420,435,448,449  Require a settled user-decision route to name the obligation...
 472 blocked:328,435 Stop validate-handoff.sh aborting on a string-shaped blockers array, and...
+487 blocked:449     Stop the identical-dispatch convergence guard halting a task whose previous c...
 466 ready           validate-wiring.sh reports Missing context file for context paths present on ...
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 ```
 
-**Agent system (9)**
+**Agent system (10)**
 ```
 390 blocked:391     Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
 391 blocked:369     Close the target_root authoring hole that files agent-system tasks into the w...
@@ -206,11 +213,8 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 401 ready           Two repositories file against one source store with no cross-repo overlap or ...
 415 ready           Record exact-pid process checking as a parallelism-safety suite-authoring sta...
 419 ready           Extend the state-writer boundary lint to the Python JSON re-serialization cha...
+488 ready           Adjudicate where MCP write-tool permission grants belong: repo-scoped extensi...
 ```
-
-Ready now and unblocked, 2026-11-04: **core** 410, 423, 429, 456, 459, 464, 469, 470, 473, 477,
-478; **lean** 385, 397, 412; **orchestrator** 414, 428, 466; **extensions** 383, 408; **literature**
-437; **neovim** 22. Newly unblocked by the 2026-11-04 run: 428 (on 378), 435 (on 407).
 
 ## Checks before and after every call
 
@@ -227,6 +231,11 @@ Ready now and unblocked, 2026-11-04: **core** 410, 423, 429, 456, 459, 464, 469,
   once the source store is fresh.
 - To tell a working dispatch from a stranded one, read artifact mtimes and live child processes.
   Absent `.orchestrator-handoff.json` is NOT a stall signal — research never writes one.
+- **A record batched against an in-flight task's scope burns the rest of the invocation.** It
+  re-defers every cycle and the convergence guard halts the whole batch after 3 zero-dispatch
+  cycles (measured 2026-11-05: one record deferred against 328 for cycles 3-5). The sibling
+  records still complete; the deferred one simply never dispatches. Probe with `--dry-run` or
+  `orchestrate-suggest-next-batch.sh --next-batch` first rather than discovering it mid-run.
 - Edges go through `state-write.sh`, acyclicity confirmed afterwards by `validate-state.sh --deep`.
   `--depends-on-add` cannot reach a `not_started` task, and there is no edge-removal flag at all.
 - If a dead owner holds `specs/.gate-lock`, release it by its own token
@@ -273,28 +282,32 @@ Ready now and unblocked, 2026-11-04: **core** 410, 423, 429, 456, 459, 464, 469,
 
 - **A completed record's cost premise can be contradicted by later measurement.** Record 442
   rejected deploying before implement-phase postflight because "the cost it removes is already
-  small and self-resolving", reasoning from a 2-task batch. A 2026-11-04 run measured the
-  completion-deploy gate refusing 4 times across 3 tasks — roughly one extra cycle per meta task.
-  Re-asking 442's question is duplication; challenging its premise with the frequency data is not.
-  Owner call, unfiled.
+  small and self-resolving", reasoning from a 2-task batch. Measured since: the completion-deploy
+  gate refused 4 times across 3 tasks (2026-11-04), then both implement dispatches in a 3-task
+  batch (2026-11-05), each costing one extra cycle and one `orchestration paused` commit. Two
+  independent runs, roughly one extra cycle per meta task that touches
+  `agent-system/extensions/**`. Re-asking 442's question is duplication; challenging its premise
+  with the frequency data is not. Owner call, unfiled.
 - **`test-orchestrate-cycle-plan.sh`'s budget failure is real and uncharacterized** — reproduced in
   isolation, no `known-failures.txt` row, no record.
-- **328's `status` under-reports**: `planned` while its plan shows 6 of 20 phases terminal. A
-  20-phase plan against a 5-cycle budget is 420's subject.
+- **A 20-phase plan against a 5-cycle budget** is 420's subject; 328 is the live instance.
 - **328 declares `.claude/` in its own `file_scope`** — a disposable deploy artifact standing rule 2
   forbids editing — plus trailing-slash whole-directory roots that `validate-state.sh` Check 8
   flags. Worth cleaning as its first phase.
-- **459's `file_scope` names only its own `specs/` directory**, so it is invisible to overlap
-  detection though its verdict gates two records. Nothing represents "this record's output
-  constrains that record's design" except an edge.
+- **Nothing represents "this record's output constrains that record's design" except an edge.**
+  A record whose `file_scope` names only its own `specs/` directory is invisible to overlap
+  detection however much its verdict gates. Self-correcting once a plan lands —
+  `plan-file-scope-harvest.sh` widens the scope at plan postflight — so the exposure is the
+  window between creation and plan.
 - **A dispatched agent can end its turn with a backgrounded command pending**, leaving no handoff
   and no return metadata; nothing auto-detects "stopped without returns". **Two states look
   alike**: an agent waiting on its own live child still takes tool rounds, so a message recovers
   it; a stranded agent takes none, so recovery is stop, postflight, re-dispatch at the same
   `dispatch_seq`. Check for a live child first. Detector: `dispatch-strand-probe.sh`.
-- **Open records carry a literal-null `title`**, so renderers fall back to `project_name`
-  (including 328, 338, 429, 456). `orchestrate-predispatch-review.sh` Class B has been seen
-  reporting 0 findings against one; re-read its predicate before filing.
+- **Eight open records carry a literal-null `title`**, so renderers fall back to `project_name`
+  (328, 338, 412, 421, 439, 444, 445, 456 as of 2026-11-05).
+  `orchestrate-predispatch-review.sh` Class B has been seen reporting 0 findings against one;
+  re-read its predicate before filing.
 - **Neither `/todo` nor `/review` wires the roadmap generator to its own command.** `--prune` and
   `--regenerate` are still run by hand. Note 436 retires `/review`, so whatever wires
   `--regenerate` should wire it to the survivor.
