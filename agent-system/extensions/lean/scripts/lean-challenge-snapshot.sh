@@ -343,10 +343,10 @@ if $CHECK_MODE; then
 fi
 
 # ---------------------------------------------------------------------------
-# Goal identifiers -- the existing backtick regex, reused VERBATIM (not reinvented), with two
-# narrow repairs:
+# Goal identifiers. Two repairs on the original "any identifier-shaped backtick token anywhere
+# in the Goals range, minus a keyword denylist" approach:
 #
-#   (1) The range start/end anchors now accept the `- **Goals**:` / `- **Non-Goals**:` (etc.)
+#   (1) The range start/end anchors accept the `- **Goals**:` / `- **Non-Goals**:` (etc.)
 #       list-item form in addition to the column-0 `**Goals**:` form -- plan-format.md's own
 #       canonical template (`## Goals & Non-Goals` -> `- **Goals**: ...` / `- **Non-Goals**: ...`)
 #       uses the list-item form, and landed sibling lean4 plans already use it (e.g.
@@ -355,33 +355,79 @@ fi
 #       extracted NOTHING from those plans' Goals block, since `sed` found no line to start the
 #       range on.
 #
-#   (2) A closed Lean 4 reserved-keyword denylist is subtracted from the harvested token set.
-#       A bare identifier-charset backtick regex harvests ANY single-word backticked token in
-#       the Goals range, including a keyword used in prose to describe the mechanism rather than
-#       to name a Goals identifier -- demonstrated in a landed plan,
-#       specs/760_ladder_model_cell_stabilization_lemma/plans/02_land-salvaged-ladder-model.md,
-#       whose Goals prose reads "the four `theorem` declarations ... `sorry`-bodied `abbrev`
-#       context". Excluding exactly Lean's own reserved keywords is safe by construction: Lean's
-#       lexer forbids a reserved keyword from ever being a legal declaration name, so this
-#       subtraction can never remove a real identifier -- only prose/keyword noise.
+#   (2) PREAMBLE EXCLUSION (closes the over-reading defect: a PROSE PARAGRAPH sitting between
+#       the `**Goals**:` label and the first bulleted identifier had every identifier-shaped
+#       backtick token inside it harvested as a Goal, even when the word is not a Lean keyword
+#       and so survives the (pre-existing) keyword denylist below). Confirmed live against a
+#       landed plan, specs/761_ladder_realization_theorem/plans/01_ladder-realization-blocked-
+#       probe.md, whose Goals block originally carried an explanatory parenthetical sentence of
+#       the shape "the block's `abbrev` definitions, including ... `gPast_adm` ..., are context,
+#       not goals" directly after the bare `**Goals**:` label and before the three real
+#       `- \`name\` -- description` bullets -- every backticked word in that sentence
+#       (`abbrev`, a keyword, AND `gPast_adm`, not a keyword) was reported as an undeclared Goal,
+#       forcing the plan's author to de-backtick every non-goal token in the WHOLE block by hand
+#       (the recorded workaround this fix removes the need for). The fix: a line before the
+#       FIRST bulleted (`- ...`) line in the range is a preamble and is never scanned for
+#       identifiers, however many backticks it contains -- this is exactly the shape
+#       plan-format.md documents (a `**Goals**:` label optionally followed by introductory
+#       prose, then the actual `- \`name\`` bullets) and precisely what the reported defect
+#       exploited. Once the first bulleted line is seen, scanning proceeds exactly as before
+#       (unchanged: this preserves the existing, already-tested in-bullet convention of a single
+#       prose bullet embedding both real identifiers and keyword mentions side by side, e.g.
+#       "- Prove `comm` for natural number addition." and the keyword-noise regression fixture
+#       below) -- this fix narrows WHERE scanning starts, never what counts as an identifier
+#       once scanning is active.
 # ---------------------------------------------------------------------------
 extract_goal_names() {
-  # LC_ALL=C pins this sort to byte/code-point order, scoped to this one pipeline only (never
-  # exported) -- it must match Python's sorted() in the R1/R2 extractors below, since
-  # cross_validate_identifiers() compares this list against theirs with `comm`, which requires
-  # both inputs sorted in the SAME collation. An ambient dictionary-collation locale (e.g.
-  # en_US.UTF-8) orders mixed-case identifiers differently from code-point order, which makes
-  # `comm` report false mismatches (or, in the worse direction, silently miss real ones).
-  local lean_keywords
-  lean_keywords='^(theorem|lemma|def|abbrev|instance|structure|class|inductive|axiom|sorry'
-  lean_keywords+='|by|let|fun|do|match|with|where|have|show|suffices|calc|exact|from'
-  lean_keywords+='|if|then|else|end|open|import|namespace|section|universe|variable'
-  lean_keywords+='|variables|mutual|noncomputable|private|protected|partial|unsafe'
-  lean_keywords+='|deriving|extends|attribute|local|scoped|macro|syntax|notation)$'
-  sed -n -E '/^-? ?\*\*Goals\*\*:/,/^-? ?\*\*[^G]/p' "$PLAN_FILE" \
-    | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`' \
-    | grep -vE "$lean_keywords" \
-    | LC_ALL=C sort -u
+  python3 - "$PLAN_FILE" <<'PYEOF'
+import re
+import sys
+
+plan_path = sys.argv[1]
+text = open(plan_path, encoding="utf-8").read()
+lines = text.split("\n")
+
+START_RE = re.compile(r'^-?\s?\*\*Goals\*\*:')
+END_RE = re.compile(r'^-?\s?\*\*[^G]')
+BULLET_RE = re.compile(r'^\s*-\s*')
+TOKEN_RE = re.compile(r"`([a-zA-Z_][a-zA-Z0-9_']*)`")
+
+LEAN_KEYWORDS = {
+    "theorem", "lemma", "def", "abbrev", "instance", "structure", "class", "inductive", "axiom",
+    "sorry", "by", "let", "fun", "do", "match", "with", "where", "have", "show", "suffices",
+    "calc", "exact", "from", "if", "then", "else", "end", "open", "import", "namespace",
+    "section", "universe", "variable", "variables", "mutual", "noncomputable", "private",
+    "protected", "partial", "unsafe", "deriving", "extends", "attribute", "local", "scoped",
+    "macro", "syntax", "notation",
+}
+
+start_idx = None
+for i, line in enumerate(lines):
+    if START_RE.match(line):
+        start_idx = i
+        break
+
+names = []
+if start_idx is not None:
+    end_idx = len(lines)
+    for i in range(start_idx + 1, len(lines)):
+        if END_RE.match(lines[i]):
+            end_idx = i + 1  # inclusive, matching the original sed range's own inclusive end
+            break
+    block = lines[start_idx:end_idx]
+
+    # seen_bullet tracks whether the first bulleted (`- ...`) line in the block has appeared
+    # yet; a line before it is a preamble and is never scanned -- see item (2) above.
+    seen_bullet = False
+    for line in block:
+        if BULLET_RE.match(line):
+            seen_bullet = True
+        if seen_bullet:
+            names.extend(TOKEN_RE.findall(line))
+
+names = sorted(set(n for n in names if n not in LEAN_KEYWORDS))
+sys.stdout.write("\n".join(names) + ("\n" if names else ""))
+PYEOF
 }
 
 # ---------------------------------------------------------------------------
@@ -468,8 +514,8 @@ if matches:
 with open(module_out, "w", encoding="utf-8") as f:
     f.write(module_body)
 with open(names_out, "w", encoding="utf-8") as f:
-    # sorted() is Python's code-point order, already matching the LC_ALL=C-pinned shell-side
-    # sort -u in extract_goal_names() -- no change needed here.
+    # sorted() is Python's code-point order, already matching extract_goal_names()'s own
+    # sorted() call below -- no change needed here.
     f.write("\n".join(sorted(set(declared_names))) + ("\n" if declared_names else ""))
 sys.exit(0)
 PYEOF
@@ -644,8 +690,8 @@ module_body += "\n".join(decl_texts)
 with open(module_out, "w", encoding="utf-8") as f:
     f.write(module_body)
 with open(names_out, "w", encoding="utf-8") as f:
-    # sorted() is Python's code-point order, already matching the LC_ALL=C-pinned shell-side
-    # sort -u in extract_goal_names() -- no change needed here.
+    # sorted() is Python's code-point order, already matching extract_goal_names()'s own
+    # sorted() call below -- no change needed here.
     f.write("\n".join(sorted(names)) + "\n")
 sys.exit(0)
 PYEOF

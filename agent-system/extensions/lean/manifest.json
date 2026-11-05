@@ -36,6 +36,9 @@
     ],
     "scripts": [
       "lean-sorry-census.sh",
+      "tests/fixtures/challenge/plan_keyword_noise.md",
+      "tests/fixtures/challenge/plan_list_item_goals.md",
+      "tests/fixtures/challenge/plan_goals_preamble.md",
       "tests/test-lean-sorry-census.sh",
       "lean-src-roots.sh",
       "tests/test-lean-src-roots.sh",

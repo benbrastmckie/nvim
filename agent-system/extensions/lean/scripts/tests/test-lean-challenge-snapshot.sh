@@ -7,7 +7,10 @@
 # `## Lean Challenge Statements` section is assembled and forced to `sorry` correctly; an
 # identifier-set mismatch between that section and `**Goals**:` is a hard 71 naming the specific
 # offending identifier(s); a name resolvable by neither R1 nor R2 is a hard 71 naming that
-# identifier, with NO partial Challenge emitted.
+# identifier, with NO partial Challenge emitted. Cases R6-R8 cover `extract_goal_names()`'s own
+# Goals-block parsing specifically: the list-item label form (R6), a Lean keyword backticked in
+# prose (R7), and a non-keyword word backticked in a preamble paragraph before the first
+# bulleted identifier (R8).
 #
 # (2) R2 legacy fallback (Case R3): a plan with no `## Lean Challenge Statements` section falls
 # back to extracting an existing sorried declaration from the target project's git tree, and
@@ -263,6 +266,33 @@ if [ "$rc" -eq 0 ] && echo "$out" | grep -q "theorem_names: comm" && ! echo "$ou
   pass "R7: backticked Lean keywords in Goals prose (theorem/sorry/abbrev) are not harvested as identifiers"
 else
   fail "R7: expected exit 0 with theorem_names=comm and no identifier-set mismatch, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R8: a prose PREAMBLE paragraph sitting between the bare `**Goals**:` label and the first
+# bulleted identifier must not be scanned for identifiers at all -- even for a backticked word
+# that is NOT a Lean keyword (so the R7 keyword denylist cannot save it). This reproduces the
+# real regression live in a landed plan (specs/761_ladder_realization_theorem's Goals block
+# originally carried a parenthetical of this exact shape, backticking `abbrev` -- a keyword --
+# AND `gPast_adm` -- not a keyword -- and both were reported as undeclared Goals).
+#
+# Mutation this case kills: reverting extract_goal_names() to scan the WHOLE Goals range
+# unconditionally (i.e. deleting the `seen_bullet` gate so every line, preamble included, is
+# scanned from the start) turns this case RED -- `abbrev` and `gPast_adm` are harvested
+# alongside `comm`/`assoc`, and cross_validate_identifiers() reports a 71 identifier-set
+# mismatch (two names present in **Goals**: but not declared) instead of the clean 0 exit a
+# well-formed plan should produce.
+# ===========================================================================
+repo=$(make_repo "r8" 911 plan_goals_preamble.md)
+out=$(run_tool "$repo" 911 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] \
+  && echo "$out" | grep -q "theorem_names:.*comm" \
+  && echo "$out" | grep -q "theorem_names:.*assoc" \
+  && ! echo "$out" | grep -q "identifier-set mismatch"; then
+  pass "R8: a non-keyword word backticked in a Goals preamble paragraph (before the first bulleted identifier) is not harvested as an identifier"
+else
+  fail "R8: expected exit 0 with theorem_names naming comm and assoc and no identifier-set mismatch, got rc=$rc: $out"
 fi
 
 # ===========================================================================
