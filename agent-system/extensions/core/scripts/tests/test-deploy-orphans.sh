@@ -84,13 +84,43 @@ runtime_ignore_block > "$TARGET/.gitignore"
 git -C "$TARGET" -c user.email="test@test.local" -c user.name="deploy-orphans-test" \
   commit -q --allow-empty -m "scratch init"
 
-common_test_info "Deploying real core manifest into scratch tree $TARGET"
-deploy_output="$(bash "$DEPLOY_SCRIPT" "$TARGET" 2>&1)"
-deploy_status=$?
-if [[ "$deploy_status" -ne 0 ]]; then
-  echo "ERROR: deploy-headless.sh exited $deploy_status (expected 0). Output:" >&2
-  echo "$deploy_output" | sed 's/^/    /' >&2
-  exit 2
+# This suite is a declared consumer of run-all.sh's shared
+# deployed-tree fixture (see run-all.sh's SHARED_FIXTURE_CONSUMERS). When present (lent
+# read-only), overlay its already-deployed content into $TARGET instead of paying for a fresh
+# deploy-headless.sh subprocess again -- this suite only needs "a deployed tree" as scaffolding
+# for orphan detection, never deploy-headless.sh's own behavior, so the shared tree's content is
+# a faithful substitute. Falls back to a real deploy when run standalone (no run-all.sh ancestor,
+# e.g. direct invocation while debugging this one suite).
+#
+# Three top-level artifacts, not just .claude/: manager.find_orphans(project_dir) (see
+# init.lua's manager.find_orphans wrapper) resolves the ACTIVE extension set from
+# project_dir/.claude-extensions.json and the exclusion set from project_dir/.syncprotect --
+# both PROJECT-ROOT siblings of .claude/, not contents of it. A deploy writes all three;
+# omitting either of the two root-level files from the overlay would make every active
+# extension and every excluded path invisible to find_orphans, misclassifying the ENTIRE
+# deployed tree as orphaned (caught by this exact symptom during this migration).
+if [[ -n "${RUN_ALL_SHARED_FIXTURE:-}" ]] && [[ -d "$RUN_ALL_SHARED_FIXTURE/.claude" ]] \
+   && [[ -f "$RUN_ALL_SHARED_FIXTURE/.claude-extensions.json" ]]; then
+  common_test_info "Reusing run-all.sh's shared deployed-tree fixture (built once, lent read-only)"
+  _overlay_ok=true
+  common_test_fixture_overlay "$RUN_ALL_SHARED_FIXTURE/.claude" "$TARGET/.claude" || _overlay_ok=false
+  common_test_fixture_overlay "$RUN_ALL_SHARED_FIXTURE/.claude-extensions.json" "$TARGET/.claude-extensions.json" || _overlay_ok=false
+  if [[ -f "$RUN_ALL_SHARED_FIXTURE/.syncprotect" ]]; then
+    common_test_fixture_overlay "$RUN_ALL_SHARED_FIXTURE/.syncprotect" "$TARGET/.syncprotect" || _overlay_ok=false
+  fi
+  if [[ "$_overlay_ok" != "true" ]]; then
+    exit 2
+  fi
+  unset _overlay_ok
+else
+  common_test_info "Deploying real core manifest into scratch tree $TARGET"
+  deploy_output="$(bash "$DEPLOY_SCRIPT" "$TARGET" 2>&1)"
+  deploy_status=$?
+  if [[ "$deploy_status" -ne 0 ]]; then
+    echo "ERROR: deploy-headless.sh exited $deploy_status (expected 0). Output:" >&2
+    echo "$deploy_output" | sed 's/^/    /' >&2
+    exit 2
+  fi
 fi
 
 # Runs manager.find_orphans(TARGET) via a headless nvim subprocess and prints the SAME tokens

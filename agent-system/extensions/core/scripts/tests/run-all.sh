@@ -447,6 +447,12 @@ run_all_exit_cleanup() {
   fi
   [ -n "${SUITE_OUT:-}" ] && rm -f "$SUITE_OUT" 2>/dev/null || true
   [ -n "${OUT_DIR:-}" ] && rm -rf "$OUT_DIR" 2>/dev/null || true
+  if [ -n "${RUN_ALL_SHARED_FIXTURE:-}" ] && [ -d "$RUN_ALL_SHARED_FIXTURE" ]; then
+    # Reverse the read-only lending chmod first -- `rm -rf` needs write+execute on every
+    # directory to unlink its entries, which the read-only chmod below deliberately removed.
+    chmod -R u+w "$RUN_ALL_SHARED_FIXTURE" 2>/dev/null || true
+    rm -rf "$RUN_ALL_SHARED_FIXTURE" 2>/dev/null || true
+  fi
 }
 trap run_all_exit_cleanup EXIT
 
@@ -472,6 +478,77 @@ else
   else
     echo "WARNING: failed to acquire specs/.gate-lock mutex (session=${GATE_SESSION_STR}); proceeding unserialized (non-blocking, fail-open). Worst case: contention with a sibling session's full gate-set battery persists for this run; verification itself is neither skipped nor altered by this mutex -- its own PASS/FAIL/SKIP verdicts and summary line are unaffected. Mirrors git-commit-scoped.sh's specs/.commit-lock fail-open posture and its explicit refusal to cite an unreproduced result as settled." >&2
   fi
+fi
+
+# ── Shared deployed-tree fixture: built ONCE here, before
+# any suite runs, and lent READ-ONLY (chmod -R a-w) to every suite named in
+# SHARED_FIXTURE_CONSUMERS below -- never reconstructed per suite. A suite that must mutate it
+# calls common_test_fixture_overlay() (lib/common.sh) for a private writable copy instead.
+#
+# Scoped deliberately narrow, not "every integration-class suite": a suite that tests
+# deploy-headless.sh's or verify-deploy.sh's OWN behavior across distinct flags/scenarios (a
+# fresh-vs-resync propagation check, a flag-matrix wiring check, a gate-cache equivalence proof)
+# is NOT a consumer here -- its variance across invocations IS the thing under test, so a single
+# shared tree cannot stand in for it; migrating those would change what they verify, not just how
+# cheaply. See context/standards/shell-script-testing.md's shared-fixture contract for the full
+# discriminator and the evidenced reason the realistic consumer set is far smaller than a bare
+# textual-reference count over suite-classification.data's "integration" rows would suggest.
+SHARED_FIXTURE_CONSUMERS=(
+  test-deploy-orphans.sh
+)
+RUN_ALL_SHARED_FIXTURE=""
+NEEDS_SHARED_FIXTURE=false
+for _sfc_suite in "${SUITES[@]}"; do
+  _sfc_base="$(basename "$_sfc_suite")"
+  for _sfc_consumer in "${SHARED_FIXTURE_CONSUMERS[@]}"; do
+    if [ "$_sfc_base" = "$_sfc_consumer" ]; then
+      NEEDS_SHARED_FIXTURE=true
+      break 2
+    fi
+  done
+done
+unset _sfc_suite _sfc_base _sfc_consumer
+
+if [ "$NEEDS_SHARED_FIXTURE" = "true" ]; then
+  if [ "$MODE" = "deployed" ]; then
+    _SFC_DEPLOY_SCRIPT="$DEPLOY_SCRIPTS_ROOT/deploy-headless.sh"
+  else
+    _SFC_DEPLOY_SCRIPT="$EXTENSIONS_ROOT/core/scripts/deploy-headless.sh"
+  fi
+  if [ -f "$_SFC_DEPLOY_SCRIPT" ]; then
+    _SFC_BUILD="$(mktemp -d)/deployed"
+    mkdir -p "$_SFC_BUILD"
+    _SFC_OK=false
+    if (cd "$_SFC_BUILD" && git init -q) >/dev/null 2>&1 && \
+       git -C "$_SFC_BUILD" -c user.email="test@test.local" -c user.name="run-all-shared-fixture" \
+         commit -q --allow-empty -m "scratch init" >/dev/null 2>&1; then
+      # --skip-verify: this fixture only needs the DEPLOYED CONTENT, never deploy-headless.sh's
+      # own inline verify-deploy.sh pass (which would fail gate 14's runtime-file-tracking check
+      # against a bare scratch repo that never seeded a consumer .gitignore -- a concern specific
+      # to deploy-headless.sh's own self-check, orthogonal to what any consumer suite verifies).
+      # Exit 4 (RESULT=landed_verify_skipped) is --skip-verify's own documented SUCCESS code,
+      # never a failure; exit 0 is also accepted defensively. Mirrors
+      # test-gate-cache-equivalence.sh's identical exit-4-is-success precedent.
+      bash "$_SFC_DEPLOY_SCRIPT" --skip-verify "$_SFC_BUILD" >/dev/null 2>&1
+      _SFC_DEPLOY_RC=$?
+      if [ "$_SFC_DEPLOY_RC" -eq 0 ] || [ "$_SFC_DEPLOY_RC" -eq 4 ]; then
+        _SFC_OK=true
+      fi
+      unset _SFC_DEPLOY_RC
+    fi
+    if [ "$_SFC_OK" = "true" ]; then
+      chmod -R a-w "$_SFC_BUILD" 2>/dev/null || true
+      RUN_ALL_SHARED_FIXTURE="$_SFC_BUILD"
+      export RUN_ALL_SHARED_FIXTURE
+      say "[run-all] Built shared deployed-tree fixture once at $RUN_ALL_SHARED_FIXTURE (read-only, lent to ${#SHARED_FIXTURE_CONSUMERS[@]} consumer suite(s))."
+    else
+      echo "WARNING: run-all.sh: shared deployed-tree fixture build failed; consuming suite(s) fall back to their own per-suite build." >&2
+      chmod -R u+w "$_SFC_BUILD" 2>/dev/null || true
+      rm -rf "$_SFC_BUILD" 2>/dev/null || true
+    fi
+    unset _SFC_OK
+  fi
+  unset _SFC_DEPLOY_SCRIPT _SFC_BUILD
 fi
 
 SUITE_RUN_START_MS="$(date +%s%3N)"

@@ -274,8 +274,59 @@ else
   common_test_fail "common_test_workdir_init: inner_rc=$inner_rc, inner_wd='$inner_wd' (expected created-then-gone)"
 fi
 
+# ── common_test_fixture_overlay: directory copy, read-only source stays read-only, errors ───
+OVERLAY_SRC_DIR="$WORKDIR/overlay-src"
+mkdir -p "$OVERLAY_SRC_DIR/sub"
+echo "original" > "$OVERLAY_SRC_DIR/sub/file.txt"
+chmod -R a-w "$OVERLAY_SRC_DIR"
+
+OVERLAY_DEST_DIR="$WORKDIR/overlay-dest"
+if common_test_fixture_overlay "$OVERLAY_SRC_DIR" "$OVERLAY_DEST_DIR" \
+   && [ -f "$OVERLAY_DEST_DIR/sub/file.txt" ] \
+   && [ "$(cat "$OVERLAY_DEST_DIR/sub/file.txt")" = "original" ]; then
+  common_test_pass "common_test_fixture_overlay: copies a directory's content to the destination"
+else
+  common_test_fail "common_test_fixture_overlay: directory copy did not produce the expected content"
+fi
+
+if echo "mutated" > "$OVERLAY_DEST_DIR/sub/file.txt" 2>/dev/null; then
+  common_test_pass "common_test_fixture_overlay: the copy is independently writable even though its source is read-only"
+else
+  common_test_fail "common_test_fixture_overlay: the copy inherited the source's read-only bit (should be chmod u+w)"
+fi
+
+if [ "$(cat "$OVERLAY_SRC_DIR/sub/file.txt" 2>/dev/null)" = "original" ]; then
+  common_test_pass "common_test_fixture_overlay: mutating the copy left the read-only source untouched (not a hardlink)"
+else
+  common_test_fail "common_test_fixture_overlay: the source was mutated by writing to the copy -- inode sharing (hardlink) hazard"
+fi
+
+chmod -R u+w "$OVERLAY_SRC_DIR" 2>/dev/null || true
+
+OVERLAY_FILE_SRC="$WORKDIR/overlay-file-src.txt"
+echo "a lone file" > "$OVERLAY_FILE_SRC"
+OVERLAY_FILE_DEST="$WORKDIR/overlay-file-dest.txt"
+if common_test_fixture_overlay "$OVERLAY_FILE_SRC" "$OVERLAY_FILE_DEST" \
+   && [ "$(cat "$OVERLAY_FILE_DEST")" = "a lone file" ]; then
+  common_test_pass "common_test_fixture_overlay: also copies a single file (not just a directory)"
+else
+  common_test_fail "common_test_fixture_overlay: single-file copy did not produce the expected content"
+fi
+
+if common_test_fixture_overlay "$WORKDIR/does-not-exist" "$WORKDIR/overlay-missing-dest" 2>/dev/null; then
+  common_test_fail "common_test_fixture_overlay: incorrectly succeeded against a missing source"
+else
+  common_test_pass "common_test_fixture_overlay: refuses (rc != 0) when the source does not exist"
+fi
+
+if common_test_fixture_overlay "$OVERLAY_SRC_DIR" "$OVERLAY_DEST_DIR" 2>/dev/null; then
+  common_test_fail "common_test_fixture_overlay: incorrectly succeeded against an already-existing destination"
+else
+  common_test_pass "common_test_fixture_overlay: refuses (rc != 0) when the destination already exists"
+fi
+
 # ── Single-definition assertion: each new function has exactly one definition ─
-for fn in common_test_repo_root common_test_resolve_candidate common_test_workdir_init; do
+for fn in common_test_repo_root common_test_resolve_candidate common_test_workdir_init common_test_fixture_overlay; do
   hits=$(grep -rc "^${fn}() {" --include="*.sh" "$SCRIPT_DIR/../lib" 2>/dev/null | awk -F: '{sum+=$2} END {print sum+0}')
   if [ "$hits" -eq 1 ]; then
     common_test_pass "$fn has exactly one definition under scripts/lib/"

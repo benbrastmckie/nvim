@@ -328,6 +328,38 @@ common_test_workdir_init() {
   return 0
 }
 
+# common_test_fixture_overlay <src> <dest> -- fast, independently-writable copy of <src> (a file
+# or a directory) at <dest>, for a suite that must plant/mutate content on top of a shared,
+# possibly read-only fixture (see tests/run-all.sh's shared deployed-tree fixture) without paying
+# that fixture's own construction cost again.
+#
+# Uses `cp -a --reflink=auto`: copy-on-write (independent inodes sharing data blocks) on a
+# filesystem that supports it, falling back to a plain deep copy otherwise. Deliberately NEVER
+# hardlinks (`cp -l`/`cp -al`): a hardlink shares the SAME inode as the source, so `chmod` on the
+# copy would also change the source's permission bits -- silently defeating a read-only-lending
+# contract built on `chmod -R a-w`. <dest>'s copy is always `chmod -R u+w` after copying, so the
+# caller can mutate it regardless of <src>'s own permission bits.
+#
+# Returns 2 (never calls exit) if <src> is missing or <dest> already exists.
+common_test_fixture_overlay() {
+  local _cfo_src="$1" _cfo_dest="$2"
+  if [ ! -e "$_cfo_src" ]; then
+    echo "ERROR: common_test_fixture_overlay: source not found: $_cfo_src" >&2
+    return 2
+  fi
+  if [ -e "$_cfo_dest" ]; then
+    echo "ERROR: common_test_fixture_overlay: destination already exists: $_cfo_dest" >&2
+    return 2
+  fi
+  mkdir -p "$(dirname "$_cfo_dest")"
+  if ! cp -a --reflink=auto "$_cfo_src" "$_cfo_dest" 2>/dev/null; then
+    echo "ERROR: common_test_fixture_overlay: copy failed ($_cfo_src -> $_cfo_dest)" >&2
+    return 2
+  fi
+  chmod -R u+w "$_cfo_dest" 2>/dev/null || true
+  return 0
+}
+
 # common_shared_corpus_available -- returns 0 (true) iff a usable master corpus is present in
 # this process's environment: GATE_SHARED_CORPUS_FILE and GATE_SHARED_CORPUS_ROOT are both set
 # and the corpus file is readable. verify-deploy.sh's gate loop is the one producer (via

@@ -398,6 +398,57 @@ without integration value is visible in the run that causes it rather than disco
 later. Reports the literal string `n/a` when no hints file is present or zero assertions are
 found (expected outside the real corpus, e.g. any fixture built under a synthetic `--root`).
 
+## The shared deployed-tree fixture: built once, lent read-only
+
+`run-all.sh` can build ONE real deployed tree before any suite runs and lend it, read-only, to
+every suite declared in its own `SHARED_FIXTURE_CONSUMERS` array -- instead of each consumer
+building (and tearing down) its own copy. A consuming suite finds it at `$RUN_ALL_SHARED_FIXTURE`
+(exported only when at least one declared consumer is present in the discovered/narrowed suite
+set) and, if it needs to plant or mutate anything, copies what it needs with
+`common_test_fixture_overlay <src> <dest>` (`lib/common.sh`) rather than writing into the shared
+tree directly -- the shared tree is `chmod -R a-w` after construction, so a direct write fails
+loudly (a stuck pipeline or a corrupted sibling fixture is the alternative a silent failure
+would risk under `--jobs auto`'s concurrency).
+
+**The discriminator for "is this suite a consumer candidate" is narrower than "textually mentions
+deploy-headless.sh"** -- `suite-classification.data`'s `integration` rows are a deliberately
+conservative, over-counting textual-reference scan (see that file's own header), and most
+"integration" rows never build a real scratch deploy at all. A suite is a genuine consumer only
+if it needs "a deployed tree" purely as inert scaffolding for something ELSE under test. A suite
+is NOT a consumer, however many real `deploy-headless.sh`/`verify-deploy.sh` invocations it
+drives, when the variance across those invocations IS the thing under test: a fresh-vs-resync
+propagation check, a flag-matrix wiring check (`--skip-slow`/`--dry-run`/`--bogus`/`--help`), or
+a gate-cache equivalence proof each need their own distinct invocation(s) and cannot be
+substituted by a single shared tree without changing what they verify. Measured directly against
+the full core suite corpus (2026-10, 38 suites classified `integration`): exactly one suite --
+`test-deploy-orphans.sh` -- fit the consumer pattern; the rest either test a heavyweight tool's
+own behavior directly (excluded by the rule above), already moved onto a cheaper non-deploy
+fixture (the rsync+symlink fixture `test-verify-deploy-context-budget.sh` and
+`test-verify-deploy-gate-selection.sh` use, unrelated to this mechanism), or were a
+textual-reference false positive. Re-derive this set (do not assume it is stable) the same way:
+for each `integration` row, read the suite and confirm whether it drives a REAL, unflagged
+`bash .../deploy-headless.sh "$SOME_SCRATCH_DIR"` subprocess call, not merely a string
+mentioning the tool's name.
+
+**Overlaying more than `.claude/`**: a deploy writes three top-level artifacts into its target,
+not just `.claude/` -- `.claude-extensions.json` and `.syncprotect` are PROJECT-ROOT siblings of
+`.claude/`, and `manager.find_orphans(project_dir)` (and any other manifest-driven Lua check)
+resolves the active-extension set and the syncprotect exclusion set from those two root-level
+files, never from anything inside `.claude/` itself. A consumer that overlays only
+`$RUN_ALL_SHARED_FIXTURE/.claude` and omits the sibling files will see every declared extension
+as absent, misclassifying its ENTIRE deployed tree as undeclared/orphaned -- caught by exactly
+this symptom (743 false orphan findings) while migrating `test-deploy-orphans.sh`. Overlay all
+three artifacts a consumer's own checks actually read, not just the subdirectory that happens to
+hold the bulk of the content.
+
+**Regression coverage**: `tests/test-run-all-shared-fixture.sh` pins (1) the fixture is built
+exactly once when a declared consumer is selected, (2) it is NOT built at all when no declared
+consumer is selected (zero cost when unused), and (3) a write attempt into the lent fixture is
+blocked. `tests/test-common-lib.sh` separately pins `common_test_fixture_overlay`'s own
+contract: the destination is independently writable even though the source is read-only, and
+mutating the destination never mutates the source (the hardlink-sharing hazard
+`cp -a --reflink=auto`, never `cp -al`, is chosen specifically to avoid).
+
 ## Suite runtime: `--jobs`, `--timings`, and gate selection
 
 - `run-all.sh --timings FILE` writes one CSV row per suite (`suite_path,wall_ms,result`) plus a

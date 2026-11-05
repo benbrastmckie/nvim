@@ -1,0 +1,92 @@
+{
+  "phase": 13,
+  "phase_name": "Build the Deployed-Tree Fixture Once and Lend It Read-Only",
+  "started_at": "2026-11-05T19:25:00Z",
+  "last_updated": "2026-11-05T19:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read task 416's live plan headings first",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Build the shared deployed-tree fixture once at run-all.sh startup, expose it read-only, add common_test_fixture_overlay for private writable copies",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/common.sh",
+        "agent-system/extensions/core/scripts/tests/run-all.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Migrate the genuine consumer suite(s) onto the shared fixture; investigate and document why the other integration-class candidates do not fit",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Enforce read-only lending and prove it with a regression suite; classify the new suite in suite-classification.data",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-run-all-shared-fixture.sh",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Pin common_test_fixture_overlay's own contract (copy semantics, no hardlink-sharing hazard, error paths) in test-common-lib.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-common-lib.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Document the shared-fixture contract in shell-script-testing.md; record the phase's NET-PROD/NET-TEST/NET-MD deltas and close via Reasoned Exclusions",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Overlay only the shared fixture's .claude/ subtree into a consuming suite's TARGET",
+      "result": "failed",
+      "reason": "manager.find_orphans(project_dir) resolves the active-extension set from project_dir/.claude-extensions.json and the exclusion set from project_dir/.syncprotect -- both PROJECT-ROOT siblings of .claude/, not contents of it. Omitting them made every declared extension invisible, misclassifying the entire deployed tree as orphaned (743 false findings). Fixed by overlaying all three top-level deploy artifacts."
+    },
+    {
+      "approach": "Build the shared fixture via a plain (unflagged) deploy-headless.sh call",
+      "result": "failed",
+      "reason": "deploy-headless.sh's own inline verify-deploy.sh fast-gate pass failed gate 14 (runtime-file-tracking) against a bare scratch repo that never seeded a consumer .gitignore -- a concern specific to deploy-headless.sh's own self-check, irrelevant to what any consumer suite verifies. Fixed by using --skip-verify and accepting exit 0 or 4 (its own documented landed_verify_skipped success code), matching test-gate-cache-equivalence.sh's existing precedent."
+    },
+    {
+      "approach": "common_test_fixture_overlay implemented via cp -al (hardlinks) then chmod -R u+w the copy",
+      "result": "failed",
+      "reason": "a hardlink shares the SAME inode as the source; chmod on the link also changes the source's permission bits, silently defeating the read-only-lending contract. Never implemented as code (caught during design, not at runtime); used cp -a --reflink=auto instead (independent inodes, copy-on-write where supported)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "13.migrate",
+      "description": "Migrate the integration-class suites identified in Phase 12 onto the shared fixture, deleting their own construction blocks.",
+      "type": "altered",
+      "reason": "Investigated each of the 38 core integration-classified suites directly (not just suite-classification.data's conservative textual-reference reason field): only test-deploy-orphans.sh fits the 'needs a plain deployed tree as inert scaffolding' pattern. test-deploy-propagation.sh, test-gate-cache-equivalence.sh and test-deploy-verify-wiring.sh each deliberately drive multiple/distinct real invocations because the invocation's own variance is what they verify; the remaining rows are textual-reference false positives or (the two named stragglers) already migrated by task 416 Phase 8 onto a non-deploy-headless fixture. Recorded as Reasoned Exclusions, phase closed [COMPLETED WITH EXCLUSIONS].",
+      "annotation": "*(deviation: altered -- only 1 of 38 core integration-class suites is a genuine consumer; see Reasoned Exclusions)*"
+    },
+    {
+      "task_id": "13.net",
+      "description": "Record the phase's NET-TEST delta.",
+      "type": "altered",
+      "reason": "Delta recorded but net-POSITIVE (NET-PROD +109, NET-TEST +267, NET-MD +51), not negative as the phase's verification bullet originally stated. Justified in the phase's own closing note as the cheapest available route to a later negative net (reusable, regression-tested future-growth-prevention infrastructure), mirroring Phase 14's own advance net-positive justification.",
+      "annotation": "*(deviation: altered -- recorded but net-POSITIVE; see the closing note below)*"
+    }
+  ]
+}

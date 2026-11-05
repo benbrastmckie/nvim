@@ -170,6 +170,7 @@ test-routing-resolution.sh	unit	-
 test-run-all-failure-reporting.sh	integration	invokes:run-all.sh
 test-run-all-parallel.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-run-all-selection.sh	integration	invokes:run-all.sh
+test-run-all-shared-fixture.sh	integration	invokes:run-all.sh,deploy-headless.sh
 test-run-task-observers.sh	unit	-
 test-runtime-file-tracking.sh	unit	-
 test-script-inventory.sh	unit	-

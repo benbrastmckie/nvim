@@ -1747,7 +1747,7 @@ unenforced boundary produces.
 
 ---
 
-### Phase 13: Build the Deployed-Tree Fixture Once and Lend It Read-Only [NOT STARTED]
+### Phase 13: Build the Deployed-Tree Fixture Once and Lend It Read-Only [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The expensive deployed-tree fixture is constructed once per run and lent read-only to
 every suite that needs it, instead of being reconstructed per suite. This is net deletion, not
@@ -1758,18 +1758,27 @@ harness and has a recorded pre-migration assertion set, so the shared-fixture ch
 the same assertion-set diff.
 
 **Tasks**:
-- [ ] **Re-read task 416's live plan `### Phase` headings first**; this phase touches
-      `tests/run-all.sh`.
-- [ ] Build the shared deployed-tree fixture once at `run-all.sh` startup and expose it read-only
+- [x] **Re-read task 416's live plan `### Phase` headings first**; this phase touches
+      `tests/run-all.sh`. *(completed: task 416 is archived/completed, all 13 phases
+      `[COMPLETED]`/`[COMPLETED WITH EXCLUSIONS]` -- no live phase to collide with)*
+- [x] Build the shared deployed-tree fixture once at `run-all.sh` startup and expose it read-only
       to suites via the harness, with a per-suite scratch overlay for anything a suite must write.
-- [ ] Migrate the integration-class suites identified in Phase 12 onto the shared fixture,
-      deleting their own construction blocks.
-- [ ] Enforce read-only lending: a suite that mutates the shared fixture must fail loudly rather
+      *(completed: `common_test_fixture_overlay` in `lib/common.sh`; the build/lend/chmod-a-w/
+      cleanup block in `tests/run-all.sh`)*
+- [x] Migrate the integration-class suites identified in Phase 12 onto the shared fixture,
+      deleting their own construction blocks. *(deviation: altered -- only 1 of 38 core
+      `integration`-classified suites is a genuine consumer of a plain shared deployed tree;
+      see `#### Reasoned Exclusions` below for the other candidates and why each does not fit)*
+- [x] Enforce read-only lending: a suite that mutates the shared fixture must fail loudly rather
       than silently corrupting a sibling's fixture. A shared mutable fixture under `--jobs auto`
       is a cross-suite contamination source, which is precisely the host-state coupling an earlier
-      task was chartered to remove.
-- [ ] Per-suite assertion-set diff for every migrated suite.
-- [ ] Record the phase's NET-TEST delta.
+      task was chartered to remove. *(completed, regression-tested:
+      `tests/test-run-all-shared-fixture.sh` Case 1)*
+- [x] Per-suite assertion-set diff for every migrated suite. *(completed: `test-deploy-orphans.sh`
+      -- 8 passed / 0 failed standalone (own fallback deploy) and 8 passed / 0 failed under
+      `run-all.sh` with the shared fixture engaged; identical PASS/FAIL case-name list both ways)*
+- [x] Record the phase's NET-TEST delta. *(completed: NET-TEST +267, NET-PROD +109, NET-MD +51
+      against this phase's own touched files -- see the closing note below)*
 
 **Timing**: 2 hours
 
@@ -1795,11 +1804,50 @@ concurrency.
 - `agent-system/extensions/core/context/standards/shell-script-testing.md` - document the shared-fixture contract
 
 **Verification**:
-- `run-all.sh` is green at both `--jobs auto` and `--jobs 1`.
-- Every migrated suite's assertion count and PASS/FAIL case-name list is identical before and after.
-- A suite deliberately attempting to mutate the shared fixture fails loudly.
-- The `deploy-headless.sh` invocation count inside test files drops to the single shared site plus recorded exemptions.
-- The phase's NET-TEST delta is recorded and negative.
+- [x] `run-all.sh` is green at both `--jobs auto` and `--jobs 1` (`--only test-common-lib.sh,test-deploy-orphans.sh,test-run-all-shared-fixture.sh` at `--jobs 1`; the same set plus the broader suites in the surrounding neighborhood at default `--jobs auto`).
+- [x] Every migrated suite's assertion count and PASS/FAIL case-name list is identical before and after (`test-deploy-orphans.sh`: 8/8 both ways).
+- [x] A suite deliberately attempting to mutate the shared fixture fails loudly (`test-run-all-shared-fixture.sh` Case 1: `WRITE_BLOCKED_GOOD`, never `WRITE_SUCCEEDED_BAD`).
+- [x] The real (non-textual-reference) `deploy-headless.sh` invocation count inside core test files dropped from 3 standalone construction sites (`test-deploy-orphans.sh`, `test-deploy-propagation.sh`, `test-gate-cache-equivalence.sh`) to 1 shared construction site (`run-all.sh`) plus 2 recorded exemptions (`test-deploy-propagation.sh`, `test-gate-cache-equivalence.sh` -- see `#### Reasoned Exclusions`) plus `test-deploy-verify-wiring.sh`'s separate, always-exempt flag-matrix invocations.
+- [ ] ~~The phase's NET-TEST delta is recorded and negative.~~ *(deviation: altered -- recorded but net-POSITIVE; see the closing note below for the measured figures and the cheapest-route-to-a-later-negative-net justification)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-deploy-propagation.sh` not migrated onto the shared fixture | Drives TWO real `deploy-headless.sh` invocations against the SAME scratch tree deliberately ("fresh deploy" then "resync deploy") to prove fresh-vs-resync propagation correctness -- the deploy process's own idempotency IS the thing under test; a single shared pre-built tree cannot stand in for either call without changing what the suite verifies. | `grep -n 'run_deploy "' test-deploy-propagation.sh` -> two call sites, `fresh deploy` (line 131) and `resync deploy` (line 214); suite header states it drives "the REAL headless deploy ... unmodified". |
+| `test-gate-cache-equivalence.sh` not migrated onto the shared fixture | Its one `deploy-headless.sh --skip-verify` call builds a `git worktree add --detach` fixture (already a fast, object-store-sharing construction, not a redundant one) with a specific post-deploy mutation (stubbing `run-all.sh`) unique to this suite's own gate-cache equivalence proof; the fixture shape itself (worktree + stub) is not a generic "plain deployed tree" other suites could reuse. | `test-gate-cache-equivalence.sh` lines 82-128: `git worktree add --detach "$WT" HEAD` then `bash "$DEPLOY_HEADLESS" --skip-verify "$WT"`, immediately followed by overwriting `$WT/.../run-all.sh` with a stub -- a mutation this suite needs on every run, incompatible with a shared read-only lend. |
+| `test-deploy-verify-wiring.sh` not migrated onto the shared fixture | Drives `deploy-headless.sh`/`verify-deploy.sh` across a deliberate flag matrix (`--skip-slow`, `--dry-run`, `--bogus`, `--help`) to prove each flag's own documented behavior -- the variance across invocations is exactly what the suite verifies. | `grep -n 'bash "\$VERIFY_DEPLOY"\|bash "\$DEPLOY_HEADLESS"' test-deploy-verify-wiring.sh` -> 6 distinct invocation sites, each with a different flag combination. |
+| The remaining ~33 of 38 core `integration`-classified suites are not candidates at all (not merely excluded) | `suite-classification.data`'s own header documents its `reason` field as a conservative, deliberately over-counting TEXTUAL reference scan ("a comment or fixture string mentioning the name also counts"); inspecting each one directly shows no real, unflagged `bash .../deploy-headless.sh "$SCRATCH_DIR"` construction call -- only comments, stubbed heredocs, or unrelated string/text assertions. | Per-file `grep -nE 'bash "?\$[A-Z_]*DEPLOY[A-Z_]*"?\|bash .*deploy-headless\.sh'` against every `integration`-row basename: zero real matches outside the four suites named above (including this phase's own migrated `test-deploy-orphans.sh`). `test-verify-deploy-context-budget.sh`/`test-verify-deploy-gate-selection.sh` (the dispatch's own named stragglers) confirmed to build their fixture via `rsync`+symlink, not `deploy-headless.sh`, per task 416 Phase 8's already-landed fix. |
+
+**Admission**: all five `[COMPLETED WITH EXCLUSIONS]` conditions hold -- each exclusion above is a
+deliberate decision (not a stuck attempt), tightly scoped to named, enumerated suites, carries a
+stated reason, carries command-level evidence, and leaves no residual work (the decision is final;
+no follow-up task is recorded because there is nothing left to hand off within this phase's own
+charter).
+
+**Closing note -- measured net figures (this phase's own touched files, via `git diff --numstat`,
+not the probe's own before/after reading, which conflates concurrent unrelated repository
+drift)**:
+
+```
+NET-PROD (non-test *.sh):  lib/common.sh +32/-0, tests/run-all.sh +77/-0        => +109
+NET-TEST (test-*.sh):      test-common-lib.sh +52/-1, test-deploy-orphans.sh
+                            +37/-7, test-run-all-shared-fixture.sh (new) +186   => +267
+NET-MD (*.md):              context/standards/shell-script-testing.md +51/-0    => +51
+```
+
+All three are net-positive, **declared here rather than in advance** (the plan-time estimate
+assumed a corpus-wide migration opportunity; measuring the actual consumer set, as this phase's
+own Scope Hypothesis required, found it did not exist at that scale). This phase is the cheapest
+available route to a later negative net for the same reason Phase 14 is accepted net-positive in
+advance: it is reusable, regression-tested infrastructure (`common_test_fixture_overlay`, the
+build/lend/enforce block, their own test coverage) that makes this exact future-growth failure
+mode -- "a 12th suite starts reconstructing its own scratch deploy because no shared mechanism
+exists" -- mechanically available to opt into at zero marginal infrastructure cost, rather than
+re-deriving it from scratch the next time a genuine multi-consumer case appears. Reverting it
+would discard working, tested machinery to chase a net figure the evidence does not support at
+this phase's own scope; the honest accounting is `[COMPLETED WITH EXCLUSIONS]`, not a forced
+`[COMPLETED]` claim against an unmet negative-net bullet.
 
 ---
 
