@@ -1,5 +1,5 @@
 ---
-next_project_number: 484
+next_project_number: 485
 ---
 
 # TODO
@@ -14,7 +14,7 @@ next_project_number: 484
 | 1 | 22,328,338,342,383,385,397,401,408,410,412,414,419,423,428,435,437,456,459,464,466,469,470,473,477,478,482,483 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,313,384,398,409,415,430,431,453,458,463,465,471,472,475 | 22,328,383,397,401,412,414,428,435,459,470 | core-agent-system, extensions, literature, ... |
 | 3 | 369,399,418,436,439,445,446,474 | 29,313,328,385,398,415,419,430,431,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 360,391,420,438,444,448,454,476 | 313,328,369,409,418,423,435,439,445,446,458 | core-agent-system, agent-system |
+| 4 | 360,391,420,438,444,448,454,476,484 | 313,328,369,409,418,423,435,439,445,446,458,469 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 390,402,449,451,452,455,461,479 | 360,385,391,420,435,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 6 | 421,450,457,462,480,481 | 390,402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
 
@@ -47,8 +47,8 @@ next_project_number: 484
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-469 [NOT STARTED] — Allowlist engine-written infrastructure paths in the...
-470 [NOT STARTED] — Clarify verify-deploy.sh TARGET contract versus its...
+469 [RESEARCHING] — Allowlist engine-written infrastructure paths in the...
+470 [RESEARCHING] — Clarify verify-deploy.sh TARGET contract versus its...
   └─ 471 [NOT STARTED] — Lint the extensions README table against the real extension...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
@@ -88,6 +88,7 @@ next_project_number: 484
 430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
   └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
     └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
+    └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
 
 ### Lean Extension
 
@@ -102,7 +103,7 @@ next_project_number: 484
 
 ### Orchestrator
 
-428 [NOT STARTED] — Enforce and detect planner-agent terminal return-meta write
+428 [RESEARCHING] — Enforce and detect planner-agent terminal return-meta write
   └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
@@ -114,7 +115,7 @@ next_project_number: 484
 ### Agent System
 
 401 [NOT STARTED] — Two repositories file against one source store with no...
-414 [NOT STARTED] — Enforce the gate verdict-line extraction contract mechanically
+414 [RESEARCHING] — Enforce the gate verdict-line extraction contract mechanically
   └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
     └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
       └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
@@ -127,6 +128,59 @@ next_project_number: 484
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 484. Collapse per-path scope excursion issue rows into one record per drop event
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: Task 430, Task 446, Task 469
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation, session sess_1793838084_ef69bd. User-approved at the lead level.
+
+=== THE PROBLEM: THE CLASS DESTROYS ITS OWN AGGREGATE SIGNAL ===
+
+123 entries of class "scope excursion" were aggregated from a single /orchestrate invocation -- by far the largest class in the run, more than five times every other class in that aggregate combined. CITATIONS: {task 429, iss_1793840234975_Bu5d3D}, plus 122 entries on task 328 spanning iss_1792181960729_J5c0JK through iss_1793848445269_5W27NH.
+
+At that volume no operator reads the class, and a genuine excursion is indistinguishable from the noise. That is a defect in the RECORDING mechanism, independent of whether any individual drop was correct.
+
+=== MECHANISM, VERIFIED IN THE SOURCE STORE DURING TASK CREATION (re-derive before editing; line numbers move) ===
+
+The class has exactly TWO emitters, and BOTH call issue-record.sh once PER DROPPED PATH from inside a per-path loop:
+
+  1. scripts/git-commit-phase.sh, around line 286, inside `for f in "${files_touched[@]}"` --
+     one warn + one issue-record.sh call per uncontained path.
+  2. scripts/git-commit-scoped.sh, around line 655, inside the per-pathspec V10 loop --
+     same shape, textually distinct message.
+
+Consequence: ONE drop event over a phase that legitimately touched twenty migrated test suites writes TWENTY near-identical issue rows that differ only in the quoted path. The 122 entries on task 328 are not 122 independent incidents; they are a small number of multi-file drop events, fanned out one row per path. A third site, orchestrate-cycle-postflight.sh's WORK (h)/(i) "EXCURSION DROPPED" filter, prints per-path notices to stderr but does NOT call issue-record.sh -- confirm whether that asymmetry is deliberate before changing it.
+
+=== REQUIRED OUTCOMES ===
+
+1. A single drop event produces a single issue-log record that enumerates the dropped paths, rather than N records each naming one path. Decide the representation (a paths array in the record, a count plus a bounded sample, or grouping at aggregate time) -- research/plan owns the verdict. Do NOT assume the answer, and do NOT suppress information: the full set of dropped paths must remain recoverable from the record, per issue-log.md's no-suppression posture.
+
+2. Decide whether the collapse belongs at the emitter (git-commit-phase.sh and git-commit-scoped.sh each build one record before writing), in issue-record.sh itself (a batch/multi-path call shape), or at read time in issue-grouping.sh / orchestrate-conclusion-aggregate.sh. Note that a read-time-only fix leaves the raw log just as large; an emitter-only fix duplicates the new call shape at two sites. Justify the choice against both.
+
+3. The scope-excursion severity stays `minor` and the posture stays drop-and-warn, never refuse. This task changes how a drop is RECORDED, not whether a drop happens and not what is dropped.
+
+=== EXPLICIT NON-GOALS -- these are owned by existing open tasks, do not re-do or pre-empt them ===
+
+- Whether the containment predicate is too eager, or a task's declared file_scope is too narrow, and the feedback loop that would widen file_scope from observed implement paths: owned by #430 and #446. This task takes NO position on the calibration verdict.
+- Allowlisting engine-written or registry infrastructure paths at the three Containment sites: owned by #469, whose own required outcome 2 already asks which further paths belong on the list. One concrete case observed in this run belongs to that task, not this one: the postflight EXCURSION DROPPED path left agent-system/extensions/core/manifest.json uncommitted as an excursion, when registering a newly added script in its extension manifest is the ordinary, expected consequence of adding one. Carry that observation to #469 as evidence; do not fix it here.
+- Class-vocabulary normalization and the aggregate's malformed repeated-flag call: owned by #477.
+
+=== SERIALIZATION NOTE ===
+
+file_scope here overlaps #430, #446 and #469 on git-commit-phase.sh, git-commit-scoped.sh and their suites. Those tasks edit the containment PREDICATE and its allowlists; this one edits the RECORDING call beside it. The overlap is real and the work should be serialized behind them rather than run concurrently -- landing the calibration fixes first also shrinks the drop volume this task is measured against.
+
+=== VERIFICATION ===
+
+- test-git-commit-phase.sh and test-git-commit-scoped.sh cover the new record shape: a multi-path drop asserts exactly one issue row naming every dropped path.
+- A repo-wide check that no other site emits class "scope excursion" per-path.
+- Existing scope-excursion rows in specs/**/issues.jsonl remain parseable by issue-grouping.sh and orchestrate-conclusion-aggregate.sh after the change; a schema change must not strand the existing corpus.
+
+---
 
 ### 483. Document that an extension lifecycle hook can never fire without a declared task_type
 - **Status**: [NOT STARTED]
@@ -951,7 +1005,7 @@ CONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 also declare ver
 
 ### 470. Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim
 - **Effort**: small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -984,7 +1038,7 @@ CONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 (all not_started
 
 ### 469. Allowlist engine-written infrastructure paths in the file_scope Containment sites
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2881,7 +2935,7 @@ EDIT TARGET: the source store under agent-system/extensions/core/ (never .claude
 ---
 
 ### 428. Enforce and detect planner-agent terminal return-meta write
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378
@@ -3326,7 +3380,7 @@ test-guard-git-push.sh. Do not attribute these to this work and do not fix them 
 ---
 
 ### 414. Enforce the gate verdict-line extraction contract mechanically
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 413, Task 411
