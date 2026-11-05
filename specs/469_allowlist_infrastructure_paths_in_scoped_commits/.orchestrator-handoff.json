@@ -1,15 +1,23 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase implementation plan for consolidating the engine-written-state Containment allowlist. Phase 1 creates one canonical scripts/lib/engine-written-state-paths-lib.sh (four members: specs/TODO.md, specs/state.json, specs/events.jsonl, specs/errors.json) with its own suite; Phases 2-4 migrate Site 3 (git-commit-scoped.sh V10) and Site 1 (orchestrate-cycle-postflight.sh WORK (h)) off their hand-copied literals and add Site 2's net-new splice in git-commit-phase.sh, each with paired admission plus genuine-excursion non-regression fixtures; Phase 5 records the landing in git-staging-scope.md; Phase 6 redeploys and observes a real commit carrying an actual specs/events.jsonl delta. Key design decision added beyond research: every consumer falls back to the existing two-literal pair on a source failure, so library resolution failure is behavior-preserving rather than scope-narrowing.",
+  "summary": "Consolidated the engine-written-state file_scope Containment allowlist into one canonical shared library (scripts/lib/engine-written-state-paths-lib.sh, four members) consumed by all three Containment sites, migrating the two hand-copied literal splices and adding the previously-absent third, each pinned by paired admission/non-regression fixtures and a Decision 2 source-failure fallback. Recorded the landing in git-staging-scope.md, redeployed to RESULT=landed_verify_clean, and observed a real commit (98968cfab9) carrying a genuine specs/events.jsonl delta with no drop warning and no new scope-excursion issue entry.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/summaries/01_allowlist-infrastructure-paths-summary.md",
+      "summary": "Full implementation summary: six-phase shared-library consolidation of the engine-written-state Containment allowlist, with per-site paired fixtures, the git-staging-scope.md landing, and the Phase 6 redeploy-plus-observation evidence."
+    },
+    {
       "type": "plan",
       "path": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/plans/01_allowlist-infrastructure-paths.md",
-      "summary": "Six-phase plan: shared allowlist library, three site migrations with paired fixtures, standard update, redeploy plus end-to-end observation."
+      "summary": "Six-phase plan, all phases [COMPLETED]."
     }
   ],
-  "dispatch_seq": 6
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete. Follow-up (not blocking): commit agent-system/extensions/core/manifest.json and index-entries.json's already-on-disk fixes, deliberately left uncommitted by this task (see summary's Follow-ups section)."
 }
