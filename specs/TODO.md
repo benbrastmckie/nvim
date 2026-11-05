@@ -43,7 +43,7 @@ next_project_number: 488
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory... (see above)
   └─ 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
-459 [RESEARCHING] — Design cross-record traceability; verdict on CHANGE\_LOG...
+459 [RESEARCHED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
@@ -1530,10 +1530,11 @@ DUPLICATE CHECK PERFORMED. Nearest neighbours are 430 and 446, both of which own
 ---
 
 ### 459. Design cross-record traceability; verdict on CHANGE_LOG retirement
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [459_cross_task_traceability_and_changelog_verdict/reports/01_traceability-design-and-changelog-verdict.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Redeploy afterwards via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000), never a hand-patch of a deployed file. No task-number references and no record-versioning language in any file landing under agent-system/** (both are permitted in this description).
 
