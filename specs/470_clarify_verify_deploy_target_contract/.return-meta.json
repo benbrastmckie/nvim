@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1793850684_c30dd8_470",
+  "task_number": 470,
+  "dispatch_seq": 4,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/470_clarify_verify_deploy_target_contract/reports/01_target-contract-clarification.md",
+      "summary": "Confirms the two-axis contract (invocation CWD vs. TARGET-argument shape) mechanically, verifies no test pins gate0's exact stderr text, verifies no other file duplicates the header's TARGET-axis prose, and recommends additive-only edits to the header, usage-line comment, and gate0 stderr plus a one-clause strengthening of regeneration-is-manual-only.md's existing pointer sentence (not a new duplicate section)."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 470 to create implementation plan"
+}
