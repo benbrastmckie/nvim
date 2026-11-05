@@ -1,5 +1,5 @@
 ---
-next_project_number: 491
+next_project_number: 492
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 491
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489,490 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489,490,491 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
 | 3 | 360,391,399,420,436,438,439,444,448,474,476,484 | 313,328,369,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
@@ -51,6 +51,7 @@ next_project_number: 491
 485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
 489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
+491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -123,6 +124,48 @@ next_project_number: 491
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 491. Fix the Pass-2 semantic scorer whose normalization inflates against verbose corpus records
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Fix the Pass-2 semantic scorer in audit-task-proposals.sh, whose normalization inflates scores against verbose corpus records and so fires duplicate-of-open on proposals that share only house boilerplate.
+
+THE DEFECT, VERIFIED (2026-11-05, measured with the script's own tokenizer):
+`token_overlap_score($ta; $tb)` (scripts/audit-task-proposals.sh, in JQ_PROGRAM_BODY) computes `$inter / ([$la, $lb] | min)` -- the overlap coefficient normalized by the SMALLER token set. Because corpus records in this repo carry long, structured descriptions, the smaller side is almost always the incoming proposal, so the score becomes "what fraction of MY tokens appear anywhere in that record". A verbose record therefore matches nearly every proposal.
+
+Measured on one real pair (proposal "make generate-task-order.sh read active_goal" vs record 390 migrate_mis_sited_agent_system_tasks):
+  proposal unique tokens: 195
+  record unique tokens:   933
+  shared tokens:          110
+  score as implemented (/ min):  0.564  -- clears SEMANTIC_THRESHOLD 0.4, emits duplicate-of-open
+  Jaccard (/ union):             0.108  -- far below 0.4
+The 110 shared tokens are house style, not subject matter: agent-system, extensions, core, scripts, state, json, specs, write, and similar. The two tasks have no subject overlap and no shared file_scope.
+
+OBSERVED BLAST RADIUS: that proposal drew 56 non-genuinely-new, non-scope-blind verdicts, every one with `shared_paths: null` and `mechanical_class: "none"` (i.e. zero mechanical corroboration). Top semantic matches included consent_gated_git_push (0.63) and guard_latex_builds_against_vimtex_watcher (0.574), neither related to a Goal-line reader. The proposal was in fact genuinely new.
+
+CONSTRAINT FROM THE EXISTING DESIGN: the SEMANTIC_THRESHOLD comment block states the constant is deliberately lenient per the False-Negative Posture in context/patterns/backlog-reconciliation.md, and that it must be tuned "ONLY after re-measuring both error costs, never to quiet down a noisy run". This task must therefore change the METRIC and re-measure, not merely lower the constant. The recall-biased posture itself is sound and should be preserved: a missed near-duplicate is the expensive error.
+
+--- REQUIRED OUTCOMES ---
+
+1. Replace or correct the normalization so score no longer depends on corpus-record verbosity. Evaluate at least Jaccard (intersection over union) and proposal-side normalization, and state why the chosen metric is right. The asymmetry, not the constant, is the defect.
+
+2. Reduce boilerplate inflation. The current stopword list covers English function words but none of this repo's structural vocabulary. Consider document-frequency weighting across the corpus, or stripping structural scaffolding (section banners such as the REQUIRED OUTCOMES header, path fragments, fenced blocks) before tokenizing. Do not hand-extend the stopword list with repo nouns as the whole fix -- that does not generalize to other deploys.
+
+3. Re-measure SEMANTIC_THRESHOLD against the new metric and record both error costs, per the existing comment block's own instruction. Update the comment block and the False-Negative Posture section of context/patterns/backlog-reconciliation.md (section at :104) so the stated rationale matches the implemented metric.
+
+4. Regression coverage in scripts/tests/test-audit-task-proposals.sh: a proposal paired with a long, unrelated corpus record that shares only structural vocabulary must NOT clear the threshold. Build the fixture from the measured pair above so the test fails against the current scorer.
+
+5. Preserve the mechanically-corroborated path exactly. Verdicts backed by a real file-footprint class (exact/subset/superset/overlap) must keep firing regardless of semantic score; only Pass-2-only verdicts are in scope for this change.
+
+OUT OF SCOPE (deliberately, decided at creation): the consumer-side confirm contract (review.md Section 5.6.3 and the equivalent /meta gate, which prompt on any non-genuinely-new verdict) and the size of the audit_verdict blob persisted into state.json. Both are real and were observed in the same run, but they are separate concerns from the scorer and should be raised as their own tasks if wanted.
+
+SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, never in a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md.
+
+---
 
 ### 490. Make generate-task-order.sh read active_goal so the field stops being a dead write
 - **Effort**: small

@@ -1,6 +1,6 @@
 {
   "version": "1.1.0",
-  "next_project_number": 491,
+  "next_project_number": 492,
   "active_projects": [
     {
       "project_number": 482,
@@ -25262,6 +25262,580 @@
             "project_name": "orchestrate_multitask_phase_forcing_gap",
             "mechanical_class": "scope-blind",
             "semantic_score": 0.13580246913580246
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 433 (revise_plan_for_markdown_corpus_phases) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 432 (reconcile_inverted_gate_cost_dependency_edge) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 248 (revise_typst_viewing_commands) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 240 (restore_verify_deploy_green) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 235 (rebaseline_or_reduce_eager_context_budget) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 222 (add_rust_extension_to_agent_system) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 205 (per_project_lean_lsp_registration) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 134 (tag_branch_reachability_gate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 131 (tag_annotated_and_changelog_preflight) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 101 (fix_tts_only_announces_tab_1) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 62 (restrict_typst_latex_task_types_to_formatting_only) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 47 (clear_failing_gates_and_reconcile_ledgers) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 49 (cut_context_cost_orchestrate_skills_and_eager_rules) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 36 (audit_context_loading_efficiency) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 95 (audit_literature_index_resolver_keying) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 31 (opencode_extensions_sync_mechanism) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 94 (wire_lit_flag_through_team_skills) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 115 (mirror_model_flag_into_hard_orchestrate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 132 (register_ambient_binding_defect_class) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 195 (replace_handoff_writer_allowlist_predicate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 198 (lean_agents_mandate_no_revert_snapshot) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 214 (stop_forced_phase_fallthrough_dispatch) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 216 (per_run_cycle_bound_artifact_admission) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 218 (refresh_lean_cpu_delta_idle_cost_gate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 219 (refresh_idle_lean_tree_notify_prompt) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 220 (guard_machine_readable_build_status) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 225 (please_command_rule_and_docs) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 229 (carry_reason_on_dependency_edges) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 230 (decide_disposition_for_terminal_dependency_edges) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 231 (post_creation_burst_dependency_analysis_pass) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 232 (surface_dependency_graph_health_metrics) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 233 (file_scope_derived_dependency_edge_inference) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 202 (picker_reload_regenerate_clarity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 208 (explain_zotero_path1_pagination_shortfall) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 224 (please_grant_integrity_and_git_guards) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 256 (validate_wiring_skip_missing_tree_root) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 264 (relay_push_consent_through_user_decision) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 267 (suppress_inline_verify_in_deploy_headless) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 187 (unify_commit_attribution_convention) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      }
+    },
+    {
+      "project_number": 491,
+      "project_name": "fix_backlog_audit_semantic_scorer",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Fix the Pass-2 semantic scorer whose normalization inflates against verbose corpus records",
+      "description": "Fix the Pass-2 semantic scorer in audit-task-proposals.sh, whose normalization inflates scores against verbose corpus records and so fires duplicate-of-open on proposals that share only house boilerplate.\n\nTHE DEFECT, VERIFIED (2026-11-05, measured with the script's own tokenizer):\n`token_overlap_score($ta; $tb)` (scripts/audit-task-proposals.sh, in JQ_PROGRAM_BODY) computes `$inter / ([$la, $lb] | min)` -- the overlap coefficient normalized by the SMALLER token set. Because corpus records in this repo carry long, structured descriptions, the smaller side is almost always the incoming proposal, so the score becomes \"what fraction of MY tokens appear anywhere in that record\". A verbose record therefore matches nearly every proposal.\n\nMeasured on one real pair (proposal \"make generate-task-order.sh read active_goal\" vs record 390 migrate_mis_sited_agent_system_tasks):\n  proposal unique tokens: 195\n  record unique tokens:   933\n  shared tokens:          110\n  score as implemented (/ min):  0.564  -- clears SEMANTIC_THRESHOLD 0.4, emits duplicate-of-open\n  Jaccard (/ union):             0.108  -- far below 0.4\nThe 110 shared tokens are house style, not subject matter: agent-system, extensions, core, scripts, state, json, specs, write, and similar. The two tasks have no subject overlap and no shared file_scope.\n\nOBSERVED BLAST RADIUS: that proposal drew 56 non-genuinely-new, non-scope-blind verdicts, every one with `shared_paths: null` and `mechanical_class: \"none\"` (i.e. zero mechanical corroboration). Top semantic matches included consent_gated_git_push (0.63) and guard_latex_builds_against_vimtex_watcher (0.574), neither related to a Goal-line reader. The proposal was in fact genuinely new.\n\nCONSTRAINT FROM THE EXISTING DESIGN: the SEMANTIC_THRESHOLD comment block states the constant is deliberately lenient per the False-Negative Posture in context/patterns/backlog-reconciliation.md, and that it must be tuned \"ONLY after re-measuring both error costs, never to quiet down a noisy run\". This task must therefore change the METRIC and re-measure, not merely lower the constant. The recall-biased posture itself is sound and should be preserved: a missed near-duplicate is the expensive error.\n\n--- REQUIRED OUTCOMES ---\n\n1. Replace or correct the normalization so score no longer depends on corpus-record verbosity. Evaluate at least Jaccard (intersection over union) and proposal-side normalization, and state why the chosen metric is right. The asymmetry, not the constant, is the defect.\n\n2. Reduce boilerplate inflation. The current stopword list covers English function words but none of this repo's structural vocabulary. Consider document-frequency weighting across the corpus, or stripping structural scaffolding (section banners such as the REQUIRED OUTCOMES header, path fragments, fenced blocks) before tokenizing. Do not hand-extend the stopword list with repo nouns as the whole fix -- that does not generalize to other deploys.\n\n3. Re-measure SEMANTIC_THRESHOLD against the new metric and record both error costs, per the existing comment block's own instruction. Update the comment block and the False-Negative Posture section of context/patterns/backlog-reconciliation.md (section at :104) so the stated rationale matches the implemented metric.\n\n4. Regression coverage in scripts/tests/test-audit-task-proposals.sh: a proposal paired with a long, unrelated corpus record that shares only structural vocabulary must NOT clear the threshold. Build the fixture from the measured pair above so the test fails against the current scorer.\n\n5. Preserve the mechanically-corroborated path exactly. Verdicts backed by a real file-footprint class (exact/subset/superset/overlap) must keep firing regardless of semantic score; only Pass-2-only verdicts are in scope for this change.\n\nOUT OF SCOPE (deliberately, decided at creation): the consumer-side confirm contract (review.md Section 5.6.3 and the equivalent /meta gate, which prompt on any non-genuinely-new verdict) and the size of the audit_verdict blob persisted into state.json. Both are real and were observed in the same run, but they are separate concerns from the scorer and should be raised as their own tasks if wanted.\n\nSOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, never in a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md.",
+      "effort": "small",
+      "topic": "core-agent-system",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/audit-task-proposals.sh",
+        "agent-system/extensions/core/scripts/tests/test-audit-task-proposals.sh",
+        "agent-system/extensions/core/context/patterns/backlog-reconciliation.md"
+      ],
+      "created": "2026-11-05T19:27:06Z",
+      "last_updated": "2026-11-05T19:27:06Z",
+      "artifacts": [],
+      "audit_verdict": {
+        "proposal": {
+          "id": "fix_backlog_audit_semantic_scorer",
+          "project_number": null,
+          "title": "Fix the Pass-2 semantic scorer whose normalization inflates against verbose corpus records"
+        },
+        "verdicts": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 360,
+            "project_name": "validate_carried_unverified_names_a_source",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4618181818181818
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 446,
+            "project_name": "close_the_plan_to_file_scope_reconciliation_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4218181818181818
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 450,
+            "project_name": "validate_settled_route_before_dispatch",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41818181818181815
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4218181818181818
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4254545454545455
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 411,
+            "project_name": "refactor_verify_deploy_gate_framework",
+            "discharging_artifact": {
+              "path": "specs/411_refactor_verify_deploy_gate_framework/summaries/01_gate-framework-refactor-summary.md",
+              "type": "summary",
+              "summary": "Complete implementation summary covering all 11 phases of the gate-framework refactor."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4290909090909091
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 170,
+            "project_name": "isolate_shell_suites_from_host_state",
+            "discharging_artifact": {
+              "path": "specs/170_isolate_shell_suites_from_host_state/summaries/01_ambient-host-state-isolation-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary covering all six phases, verification evidence, and the three spawned follow-up tasks."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4509090909090909
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 312,
+            "project_name": "backlog_reconciliation_required_at_task_creation",
+            "discharging_artifact": {
+              "path": "specs/312_backlog_reconciliation_required_at_task_creation/summaries/01_backlog-reconciliation-task-creation-summary.md",
+              "type": "summary",
+              "summary": "All 9 plan phases complete: shared audit-task-proposals.sh matcher, state-write.sh's audit-evidence gate, the structural backstop hook, Component 4b, and all seven creation surfaces wired and verified live against the deployed tree."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4109090909090909
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 379,
+            "project_name": "validate_state_cannot_validate_archive_state",
+            "discharging_artifact": {
+              "path": "specs/379_validate_state_cannot_validate_archive_state/summaries/01_archive-mode-validation-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary: 01_archive-mode-validation-summary.md"
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.40707964601769914
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 433,
+            "project_name": "revise_plan_for_markdown_corpus_phases",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.19140625
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 432,
+            "project_name": "reconcile_inverted_gate_cost_dependency_edge",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.22988505747126436
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 304,
+            "project_name": "out_of_repo_pathspec_aborts_whole_commit",
+            "discharging_artifact": {
+              "path": "specs/304_out_of_repo_pathspec_aborts_whole_commit/summaries/01_out-of-repo-pathspec-containment-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: V9 gate, exit code 6, the caller-side exit-code branch, RULE 3 lint, standards/format doc updates, and the three filed follow-ups."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.44363636363636366
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 345,
+            "project_name": "noop_spin_wait_contract_binding_and_single_writer",
+            "discharging_artifact": {
+              "path": "specs/345_noop_spin_wait_contract_binding_and_single_writer/summaries/01_noop-spin-contract-binding-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary with BEFORE/AFTER measurement method, plan deviations, and follow-up recommendations."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 300,
+            "project_name": "askuserquestion_unreachable_in_subagents",
+            "discharging_artifact": {
+              "path": "specs/300_askuserquestion_unreachable_in_subagents/plans/01_rehome-askuserquestion-gates.md",
+              "type": "plan",
+              "summary": "7 phases, all closed (6 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4254545454545455
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 250,
+            "project_name": "script_corpus_inventory_and_engine_decomposition",
+            "discharging_artifact": {
+              "path": "specs/250_script_corpus_inventory_and_engine_decomposition/summaries/01_inventory-probe-and-decomposition-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed, decisions, plan deviations, verification results, impacts, and follow-ups across all 6 phases."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.41454545454545455
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 263,
+            "project_name": "consent_gated_git_push",
+            "discharging_artifact": {
+              "path": "specs/263_consent_gated_git_push/summaries/01_consent-gated-push-enforcement-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed, 8 design decisions, plan deviations, verification evidence (including the live-fire transcript and test-suite triage), consistency-sweep results, and named residual risks."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5127272727272727
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 348,
+            "project_name": "append_only_evidence_write_time_hook",
+            "discharging_artifact": {
+              "path": "specs/348_append_only_evidence_write_time_hook/summaries/01_append-only-evidence-write-time-hook-summary.md",
+              "type": "summary",
+              "summary": "Books extension's first hook plus fixture suite, manifest/settings-fragment wiring, and a verified live deploy."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.46545454545454545
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 301,
+            "project_name": "reopen_worktree_isolation_verdict",
+            "discharging_artifact": {
+              "path": "specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md",
+              "type": "report",
+              "summary": "Re-opens and re-closes the per-dispatch worktree-isolation removal verdict: audits prior tasks, independently re-verifies this task's own round-1 live-evidence artifact (including a newly-surfaced fourth defect -- postflight failing to land a worktree yet marking the task completed), measures current budget headroom (now near-zero and hard-gated), evaluates CoW/reflink/overlayfs/clone-nothing alternatives against the ext4 host filesystem, and answers all 15 carried research questions. Concludes CONFIRM."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4509090909090909
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 167,
+            "project_name": "guard_latex_builds_against_vimtex_watcher",
+            "discharging_artifact": {
+              "path": "specs/167_guard_latex_builds_against_vimtex_watcher/summaries/01_continuous-build-safety-rule-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary: what changed in all four files, all four decisions, AC1-AC7 disposition, plan deviations (none), impacts, and follow-ups (paper-repo CLAUDE.md pointer suggestion; re-admission trigger for the deferred mechanism tasks)."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.46545454545454545
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 248,
+            "project_name": "revise_typst_viewing_commands",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.10989010989010989
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 240,
+            "project_name": "restore_verify_deploy_green",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2517482517482518
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 235,
+            "project_name": "rebaseline_or_reduce_eager_context_budget",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.24858757062146894
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 222,
+            "project_name": "add_rust_extension_to_agent_system",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.14814814814814814
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 205,
+            "project_name": "per_project_lean_lsp_registration",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.16153846153846155
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 134,
+            "project_name": "tag_branch_reachability_gate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.22181818181818183
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 131,
+            "project_name": "tag_annotated_and_changelog_preflight",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.18382352941176472
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 101,
+            "project_name": "fix_tts_only_announces_tab_1",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2459016393442623
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 62,
+            "project_name": "restrict_typst_latex_task_types_to_formatting_only",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.14754098360655737
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 67,
+            "project_name": "orchestrate_eligibility_not_status_gated",
+            "discharging_artifact": {
+              "path": "specs/067_orchestrate_eligibility_not_status_gated/summaries/01_admission-gates-as-ordering-constraints-summary.md",
+              "type": "summary",
+              "summary": "All 7 phases completed: self-modification tie-breaker and phase-aware gating, wired into both orchestration engines, classifier test-coverage baseline, classifier maps researching/planning to real phase groups, eligibility exclusion removed with all falsified arguments re-derived, lock-aware demotion guard in reconcile-task-status.sh, and the normative guardrails record."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.4072727272727273
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 47,
+            "project_name": "clear_failing_gates_and_reconcile_ledgers",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2379182156133829
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 49,
+            "project_name": "cut_context_cost_orchestrate_skills_and_eager_rules",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.33090909090909093
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 36,
+            "project_name": "audit_context_loading_efficiency",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2553191489361702
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 95,
+            "project_name": "audit_literature_index_resolver_keying",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 31,
+            "project_name": "opencode_extensions_sync_mechanism",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 94,
+            "project_name": "wire_lit_flag_through_team_skills",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 115,
+            "project_name": "mirror_model_flag_into_hard_orchestrate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 132,
+            "project_name": "register_ambient_binding_defect_class",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 195,
+            "project_name": "replace_handoff_writer_allowlist_predicate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 198,
+            "project_name": "lean_agents_mandate_no_revert_snapshot",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 214,
+            "project_name": "stop_forced_phase_fallthrough_dispatch",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 216,
+            "project_name": "per_run_cycle_bound_artifact_admission",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 218,
+            "project_name": "refresh_lean_cpu_delta_idle_cost_gate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 219,
+            "project_name": "refresh_idle_lean_tree_notify_prompt",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 220,
+            "project_name": "guard_machine_readable_build_status",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 225,
+            "project_name": "please_command_rule_and_docs",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 229,
+            "project_name": "carry_reason_on_dependency_edges",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 230,
+            "project_name": "decide_disposition_for_terminal_dependency_edges",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 231,
+            "project_name": "post_creation_burst_dependency_analysis_pass",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 232,
+            "project_name": "surface_dependency_graph_health_metrics",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 233,
+            "project_name": "file_scope_derived_dependency_edge_inference",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 202,
+            "project_name": "picker_reload_regenerate_clarity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 208,
+            "project_name": "explain_zotero_path1_pagination_shortfall",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 224,
+            "project_name": "please_grant_integrity_and_git_guards",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 256,
+            "project_name": "validate_wiring_skip_missing_tree_root",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 264,
+            "project_name": "relay_push_consent_through_user_decision",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 267,
+            "project_name": "suppress_inline_verify_in_deploy_headless",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 187,
+            "project_name": "unify_commit_attribution_convention",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.19047619047619047
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 168,
+            "project_name": "correct_opencode_mcp_scoping_claim",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.24305555555555555
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 138,
+            "project_name": "orchestrate_multitask_phase_forcing_gap",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.16666666666666666
           }
         ],
         "passes": {
