@@ -196,7 +196,11 @@ agent-side status vocabulary. `HANDOFF_STALE_OR_ABSENT`'s own definition above i
 existing class name would make it accurate. None of the fourteen pre-existing instances was
 reworded or reinterpreted to cover this shape; this paragraph is where this document first names
 it. The predecessor absent-handoff site (`META_MISSING`) keeps `HANDOFF_STALE_OR_ABSENT`
-unchanged — see the registry row below for the discriminating detail.
+unchanged — see the registry row below for the discriminating detail. This detection is also the
+*only* enforcement a dispatched agent's terminal `.return-meta.json` write receives on the
+`/orchestrate` direct-dispatch path; `docs/architecture/handoff-schema.md`'s
+"No Preventive Enforcement of the Terminal Write (Direct-Dispatch Path)" subsection states the
+full boundary.
 
 A sixteenth instance, `RETURN_META_SCHEMA_VIOLATION`, was added deliberately, to name a
 producer-side schema gap that caused observed harm. A research agent wrote a bare STRING

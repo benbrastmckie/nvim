@@ -205,33 +205,42 @@ the recorded line range.
 
 ---
 
-### Phase 2: Add the two single-sourced pointers and discharge the complete gate set [NOT STARTED]
+### Phase 2: Add the two single-sourced pointers and discharge the complete gate set [COMPLETED]
 
 **Goal**: Make the Phase 1 statement reachable from the two files a future author reaches for
 first, without copying its reasoning, and close the task against the full gate set.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/skill-lifecycle.md` around its
+- [x] Re-read `agent-system/extensions/core/context/patterns/skill-lifecycle.md` around its
       lifecycle stage table (Stage 3, `Create Postflight Marker`) immediately before editing.
-- [ ] Add **one sentence** there: Stage 3's marker is created only by skills that import the
+- [x] Add **one sentence** there: Stage 3's marker is created only by skills that import the
       shared block, so `skill-orchestrate`'s direct-to-agent dispatch for core task types arms no
       marker and is covered by no `SubagentStop`-level enforcement — citing
       `docs/architecture/handoff-schema.md`'s new subsection by heading name for the full
-      statement. No second copy of the reasoning.
-- [ ] Re-read `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`'s
+      statement. No second copy of the reasoning. *(completed: inserted after the Stage-N table,
+      before "Not part of the per-skill stage list")*
+- [x] Re-read `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`'s
       `RECOVERY_DECLINED` prose paragraph (the "fifteenth instance" paragraph, around lines
       184-199) and its registry row (around line 303) immediately before editing.
-- [ ] Add **one clause or sentence** to the prose paragraph — not the already-overlong registry
+- [x] Add **one clause or sentence** to the prose paragraph — not the already-overlong registry
       row — naming `handoff-schema.md`'s new subsection as the home of the "this detection is the
       only enforcement on that path" statement. Leave the row, the class definition, the
-      discriminating `.reason` set, and the severity unchanged.
-- [ ] Re-read both inserted texts against the task-reference and record-version rules, as in
-      Phase 1.
-- [ ] Confirm single-sourcing: the full four-movement statement appears in exactly one file;
+      discriminating `.reason` set, and the severity unchanged. *(completed: one clause appended
+      to the paragraph's closing sentence)*
+- [x] Re-read both inserted texts against the task-reference and record-version rules, as in
+      Phase 1. *(completed: grep scan clean)*
+- [x] Confirm single-sourcing: the full four-movement statement appears in exactly one file;
       `grep -rn 'No Preventive Enforcement of the Terminal Write' agent-system/` returns the
-      Phase 1 heading plus the two pointers that cite it, and nothing else.
+      Phase 1 heading plus the two pointers that cite it, and nothing else. *(completed: exactly
+      3 hits; required reflowing both pointer sentences so the quoted heading text is not
+      line-wrapped, see deviations)*
 - [ ] Run the complete gate set and compare against the Phase 1 baseline (see Verification).
-- [ ] Commit this phase's two files with an explicit two-file pathspec.
+      *(deviation: altered — deferred to the once-per-invocation batch gate stage per this
+      dispatch's `## Batch Gate Deferral` directive; discharged instead against the scoped
+      invocation `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow
+      --only-gate 3,4 /home/benjamin/.config/nvim`, which exited 0 after also fixing an
+      index-entries.json line_count drift the edits caused — see progress file deviations)*
+- [x] Commit this phase's two files with an explicit two-file pathspec.
 
 **Timing**: 0.75 hours
 

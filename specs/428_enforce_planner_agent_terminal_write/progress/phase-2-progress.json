@@ -1,0 +1,30 @@
+{
+  "phase": 2,
+  "phase_name": "Add the two single-sourced pointers and discharge the complete gate set",
+  "started_at": "2026-11-05T06:40:00Z",
+  "last_updated": "2026-11-05T06:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add pointer sentence to skill-lifecycle.md Stage 3 table", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/skill-lifecycle.md"]},
+    {"id": 2, "description": "Add pointer clause to system-defect-discrimination.md RECOVERY_DECLINED paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 3, "description": "Confirm single-sourcing grep and run scoped gate set per Batch Gate Deferral", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.gate-scope",
+      "description": "This dispatch's dispatch file (.dispatch/10.md) carries a ## Batch Gate Deferral section naming this as the plan's final full-tier phase. Discharged against the scoped tier (verify-deploy.sh --skip-slow --only-gate 3,4 against repo root) covering the files this phase touched, instead of independently running the complete gate set -- the complete set is deferred to the once-per-invocation batch stage per the directive.",
+      "type": "altered",
+      "reason": "Directive explicitly authorizes this narrowing for the final full-tier phase.",
+      "annotation": "*(deviation: altered — full gate set deferred to batch stage per dispatch directive)*"
+    },
+    {
+      "task_id": "2.line-count-drift",
+      "description": "Phase 2's edits to skill-lifecycle.md and system-defect-discrimination.md drifted their index-entries.json line_count declarations (574->578, 345->353), failing doc-lint Rule R.",
+      "type": "altered",
+      "reason": "Ran the DEPLOYED bash .claude/scripts/generate-context-line-counts.sh --write (the source-store copy refuses to run outside a deployed tree). This incidentally also corrected 4 pre-existing, unrelated line_count drifts from sibling tasks already present at dispatch start (plan-format.md, shell-test-standards, batch-gate-stage, task-lock). Only this task's own two entries are staged in this phase's commit; the other four are left uncommitted in the working tree for their owning tasks, per the containment self-check's drop-and-warn rule.",
+      "annotation": "*(deviation: altered — index-entries.json line_count fix required to pass doc-lint, not committed here)*"
+    }
+  ]
+}

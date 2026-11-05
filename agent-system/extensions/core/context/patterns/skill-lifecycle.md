@@ -66,6 +66,14 @@ in how far they split the postflight stages apart (see "Two Postflight Shapes").
 | 10 | Cleanup *or* Return Brief Summary | See "Two Postflight Shapes" below | varies |
 | 11 | Return Brief Summary | Prose: a 3-6 bullet text summary, never JSON | skill body |
 
+**Stage 3's marker is armed only by skills that import this shared block.** `skill-orchestrate`'s
+own direct-to-agent dispatch for core task types (`general`, `meta`, `markdown`) calls
+`command-route-agent.sh` directly, with no intermediate skill to call
+`skill_create_postflight_marker()`, so that path arms no Stage 3 marker and is covered by no
+`SubagentStop`-level enforcement — see `docs/architecture/handoff-schema.md`'s
+"No Preventive Enforcement of the Terminal Write (Direct-Dispatch Path)" subsection for the full
+statement.
+
 **Not part of the per-skill stage list** (used only by `skill-orchestrate` — both effort modes,
 one engine — not by the research/plan/implement skills above):
 `skill_gate_completion_claim()` and `skill_corroborate_phase_counts()` implement the
