@@ -46,7 +46,7 @@ next_project_number: 488
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-471 [RESEARCHED] — Lint the extensions README table against the real extension...
+471 [PLANNED] — Lint the extensions README table against the real extension...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
@@ -1095,11 +1095,12 @@ Nothing was lost in the observed run, and that is precisely the risk: the failur
 
 ### 471. Lint the extensions README table against the real extension directory set
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 470
 - **Research**: [471_lint_extension_readme_table_drift/reports/01_lint-extension-readme-table-drift.md]
+- **Plan**: [471_lint_extension_readme_table_drift/plans/01_lint-extension-readme-table.md]
 
 **Description**: Add lint-extension-readme-table.sh and wire it into verify-deploy.sh's gate set, so the Available Extensions table cannot silently drift from the real extension directory set.
 
