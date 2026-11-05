@@ -39,7 +39,7 @@ next_project_number: 501
   └─ 465 [RESEARCHED] — check-record-versioning.sh PATH\_SCOPE mode reports...
   └─ 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
   └─ 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
-    └─ 492 [NOT STARTED] — Key the backlog-audit confirmation prompt to corroboration,...
+    └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
@@ -655,7 +655,7 @@ The creation-time backlog audit returned mechanical `subset-of-open` overlap on 
 
 ---
 
-### 492. Key the backlog-audit confirmation prompt to corroboration, not verdict label
+### 492. Make backlog-audit corroboration computable and gate the confirm prompt on it
 - **Effort**: small
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -666,7 +666,7 @@ The creation-time backlog audit returned mechanical `subset-of-open` overlap on 
 
 --- PRECONDITION: RE-MEASURE BEFORE IMPLEMENTING ---
 
-This task was filed from evidence gathered against the PRE-FIX scorer. Before implementing anything, re-run audit-task-proposals.sh against the corrected scorer and record the new numbers. If the corrected scorer alone drops the verdict volume to the point where the prompt no longer misfires on genuinely-new proposals, then outcomes 1 and 2 below shrink to a documentation change (state the bar explicitly) and the consumer edits may be unnecessary. Do NOT implement the full change on the strength of the measurements quoted here. The dependency on the scorer task exists for exactly this reason.
+This task was filed from evidence gathered against the PRE-FIX scorer. Before implementing anything, re-run audit-task-proposals.sh against the corrected scorer and record the new numbers. If the corrected scorer alone drops the verdict volume to the point where the prompt no longer misfires on genuinely-new proposals, then outcomes 2 and 3 below shrink to a documentation change (state the bar explicitly) and the consumer edits may be unnecessary. Do NOT implement the full change on the strength of the measurements quoted here. The dependency on the scorer task exists for exactly this reason. Outcome 1 is exempt from this precondition: it is a wiring defect, not a calibration question.
 
 THE DEFECT, INDEPENDENT OF SCORER CALIBRATION:
 Each consumer filters the audit's verdict set by LABEL alone -- it drops `genuinely-new` and `scope-blind` and prompts if anything at all remains:
@@ -679,19 +679,33 @@ It also contradicts the consumers' own stated intent. Each site carries the inst
 
 OBSERVED (pre-fix scorer, 2026-11-05): two proposals that were in fact genuinely new drew 56 and 20 non-genuinely-new, non-scope-blind verdicts respectively. Every one had `shared_paths: null` and `mechanical_class: "none"` -- zero mechanical corroboration. Both prompts were overridden on inspection. A gate that is correct to override on essentially every firing trains the override rather than the check.
 
+COMPANION DEFECT, AND THE REASON THE FILTER FIRES ON EVERYTHING: Pass 1 never runs at any call site.
+audit-task-proposals.sh accepts `--file-scope JSON_ARRAY` (usage at :94, :130; parsed at :158), and the mechanical file-footprint comparison is the pass the design treats as authoritative corroboration. NO CALLER PASSES IT. Every invocation sends only --title/--description/--id:
+  commands/review.md:517
+  commands/task.md:179
+  commands/errors.md
+  skills/skill-fix-it/SKILL.md
+  skills/skill-spawn/SKILL.md
+  context/workflows/meta-interview.md (two invocations)
+With no proposal file_scope supplied, the mechanical pass has nothing to compare, so it can only ever return `mechanical_class: "none"` and `shared_paths: null`. Every verdict the system produces is therefore semantic-only BY CONSTRUCTION, which is also exactly why a corroboration-based filter would currently filter nothing: corroboration is never computed.
+
+Demonstrated: an audit run for a proposal to fix the --depends-on-add not_started gap reported zero corroborated verdicts, even though task 500 (edge_backfill_unreachable_for_not_started) declares precisely scripts/update-task-status.sh and scripts/tests/test-update-task-status.sh -- a dead-on footprint match that Pass 1 would have caught had it been given the proposal's scope. The duplicate was found only by a manual file_scope query. This is the near-duplicate-with-shared-paths failure the script exists to catch, missed because its authoritative pass was never fed.
+
 NOT IN SCOPE: the hook hooks/validate-task-creation-audit.sh is correct as written and must not change. It enforces only that a task-creating state write RECORDED an audit (--audit-verdict / --audit-override), and deliberately does not parse verdicts. The prompting decision is the command layer's, which is where this task operates.
 
 --- REQUIRED OUTCOMES ---
 
-1. Define the prompt-worthiness bar once, in context/patterns/backlog-reconciliation.md, as a named rule the consumers reference. The bar must distinguish a mechanically corroborated verdict (mechanical_class exact/subset/superset/overlap, or non-null shared_paths) from a Pass-2-only verdict, consistent with the script header's own statement about what each is worth. Decide and record whether a Pass-2-only verdict should prompt at a higher semantic bar, be reported without prompting, or be summarized as a count.
+1. Pass the proposal's file_scope to the audit at EVERY call site listed above, so the mechanical pass can actually run. This is a prerequisite for outcomes 2 and 3: a corroboration-based bar is meaningless while corroboration is structurally uncomputable. This outcome is NOT contingent on the re-measurement precondition -- it is a wiring defect that holds regardless of how the semantic scorer is calibrated, and it should be fixed even if every other outcome here is dropped. Where a call site does not yet know the proposal's paths, decide whether to derive them or to record explicitly that the call is semantic-only.
 
-2. Have commands/task.md, commands/review.md, and commands/errors.md reference that single rule instead of each carrying its own copy of the predicate. This mirrors the consolidation already done for topic assignment, where context/patterns/topic-assignment-pattern.md replaced several inline copies; the same duplication is re-forming here across three sites.
+2. Define the prompt-worthiness bar once, in context/patterns/backlog-reconciliation.md, as a named rule the consumers reference. The bar must distinguish a mechanically corroborated verdict (mechanical_class exact/subset/superset/overlap, or non-null shared_paths) from a Pass-2-only verdict, consistent with the script header's own statement about what each is worth. Decide and record whether a Pass-2-only verdict should prompt at a higher semantic bar, be reported without prompting, or be summarized as a count.
 
-3. Preserve the corroborated path's behavior exactly. A verdict with a real file-footprint class must still prompt, and `covered-by-closed` must still name the discharging artifact's path rather than a bare archived task number.
+3. Have commands/task.md, commands/review.md, and commands/errors.md reference that single rule instead of each carrying its own copy of the predicate. This mirrors the consolidation already done for topic assignment, where context/patterns/topic-assignment-pattern.md replaced several inline copies; the same duplication is re-forming here across three sites.
 
-4. Keep the recall-biased posture intact. The point is to change what the CONSUMER does with an over-inclusive shortlist, not to narrow what the audit detects. Do not raise SEMANTIC_THRESHOLD as part of this task; that constant belongs to the scorer task.
+4. Preserve the corroborated path's behavior exactly. A verdict with a real file-footprint class must still prompt, and `covered-by-closed` must still name the discharging artifact's path rather than a bare archived task number.
 
-5. Reconcile docs/reference/standards/multi-task-creation-standard.md if it restates the label-only filter, so the standard and the pattern doc agree.
+5. Keep the recall-biased posture intact. The point is to change what the CONSUMER does with an over-inclusive shortlist, not to narrow what the audit detects. Do not raise SEMANTIC_THRESHOLD as part of this task; that constant belongs to the scorer task.
+
+6. Reconcile docs/reference/standards/multi-task-creation-standard.md if it restates the label-only filter, so the standard and the pattern doc agree.
 
 STILL UNFILED, deliberately: the size of the audit_verdict blob persisted into state.json (one task's entry added roughly 970 lines / 97 verdict rows pre-fix). It is downstream of the scorer fix in the same way this task is -- measure the post-fix blob before deciding what is worth persisting, and file it then if it still warrants a task.
 
