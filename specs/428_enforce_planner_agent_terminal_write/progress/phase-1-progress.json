@@ -1,0 +1,23 @@
+{
+  "phase": 1,
+  "phase_name": "Site the primary scope-boundary statement in handoff-schema.md",
+  "started_at": "2026-11-05T06:15:00Z",
+  "last_updated": "2026-11-05T06:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture pre-edit gate baseline", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert scope-boundary subsection in handoff-schema.md Outcome Channels", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 3, "description": "Re-read against task-ref/record-version rules and verify gates 3,4", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.tier-justification",
+      "description": "Phase's Tier Justification named a literal gate invocation with TARGET=agent-system/extensions/core, which verify-deploy.sh rejects (TARGET must be the repo root containing both .claude/ and agent-system/extensions/; the extensions/core subtree has no deployed .claude tree of its own).",
+      "type": "altered",
+      "reason": "Ran the equivalent scoped check with TARGET=/home/benjamin/.config/nvim instead (bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim), which is the correct form per the script's own TARGET contract; gates 3 and 4 both ran (not SKIP) and passed.",
+      "annotation": "*(deviation: altered — tier-justification TARGET corrected to repo root)*"
+    }
+  ]
+}

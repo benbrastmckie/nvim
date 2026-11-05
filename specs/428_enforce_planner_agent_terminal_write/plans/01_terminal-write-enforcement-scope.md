@@ -1,7 +1,7 @@
 # Implementation Plan: Task #428
 
 - **Task**: 428 - Enforce and detect planner-agent terminal return-meta write
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (task 378 completed; task 426 completed and already discharged this task's contract/detection scope — see Overview)
 - **Research Inputs**: specs/428_enforce_planner_agent_terminal_write/reports/01_terminal-write-enforcement.md
@@ -124,23 +124,27 @@ consulted and is not modified.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Site the primary scope-boundary statement in handoff-schema.md [NOT STARTED]
+### Phase 1: Site the primary scope-boundary statement in handoff-schema.md [COMPLETED]
 
 **Goal**: One authoritative subsection in `## Outcome Channels` stating that the fail-closed
 recovery it already documents is detection-only, and that nothing upstream prevents the missing
 terminal write on the direct-dispatch path.
 
 **Tasks**:
-- [ ] Capture the pre-edit gate baseline for the final phase's comparison, using the **same
+- [x] Capture the pre-edit gate baseline for the final phase's comparison, using the **same
       invocation shape Phase 2 will run** (`--findings`, no `--skip-slow`, same default TARGET) so
       the two runs are comparable rather than differing by gate 8's presence:
       `bash .claude/scripts/verify-deploy.sh --findings` > a scratch file under this session's
       scratchpad; record that path and the run's exit status in `progress-file.md`. A baseline
-      taken with a narrower flag set is not a baseline for a wider run.
-- [ ] Re-read `agent-system/extensions/core/docs/architecture/handoff-schema.md`'s
+      taken with a narrower flag set is not a baseline for a wider run. *(completed: captured at
+      /tmp/claude-1000/-home-benjamin--config-nvim/fcbf2ae8-d69d-4f60-b0d2-b3405211c42d/scratchpad/428-phase1-baseline.txt,
+      exit 1 (FAIL -- 2 of 39 checks: gate5 core doc-content-diff deploy staleness, gate8
+      pre-existing test-suite failures))*
+- [x] Re-read `agent-system/extensions/core/docs/architecture/handoff-schema.md`'s
       `## Outcome Channels` section in full immediately before editing (sibling-concurrency rule),
-      confirming the `---` terminator that currently closes the section.
-- [ ] Insert a new `###` subsection as the last subsection of `## Outcome Channels` (immediately
+      confirming the `---` terminator that currently closes the section. *(completed: section
+      confirmed at lines 584-661, `---` terminator intact as predicted)*
+- [x] Insert a new `###` subsection as the last subsection of `## Outcome Channels` (immediately
       before that `---`), titled so it is citable by name from the other two files — e.g.
       `### No Preventive Enforcement of the Terminal Write (Direct-Dispatch Path)`. It states, in
       four short movements and no more:
@@ -160,11 +164,13 @@ terminal write on the direct-dispatch path.
       never prevented**, and extending `subagent-postflight.sh`'s own check would not change that
       — marker creation would have to be armed in `skill-orchestrate`'s dispatch flow first;
       (iv) this statement describes the return-meta recovery path only and says nothing about,
-      and changes nothing in, the handoff mtime-staleness gate.
-- [ ] Re-read the inserted text against `rules/no-task-references-in-deliverables.md` and
+      and changes nothing in, the handoff mtime-staleness gate. *(completed: subsection inserted
+      at lines 661-680, all four movements present)*
+- [x] Re-read the inserted text against `rules/no-task-references-in-deliverables.md` and
       `rules/no-record-versioning-in-deliverables.md`: no task numbers, no "previously"/"no
-      longer"/"formerly", no supersession framing — durable anchors only.
-- [ ] Commit this phase's single file with an explicit one-file pathspec.
+      longer"/"formerly", no supersession framing — durable anchors only. *(completed: grep scan
+      clean)*
+- [x] Commit this phase's single file with an explicit one-file pathspec. *(completed below)*
 
 **Timing**: 0.75 hours
 

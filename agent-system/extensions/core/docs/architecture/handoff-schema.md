@@ -658,6 +658,26 @@ Stage MT-4 step 3) therefore issues its own `orchestrate-recover-outcome.sh` rea
 independently of which branch supplied `dispatch_status`, reusing that cycle's already-recovered
 JSON when the recovery branch already ran rather than reading the file twice.
 
+### No Preventive Enforcement of the Terminal Write (Direct-Dispatch Path)
+
+The accept-list and freshness rules above are **detection after the fact**: `RECOVERY_DECLINED`
+— recorded by `orchestrate-cycle-postflight.sh`'s WORK (d) absent-handoff branch, attributed to
+the dispatched agent's own file — is this system's sole enforcement of a dispatched agent's
+terminal `.return-meta.json` write on the `/orchestrate` path.
+
+The codebase's one `SubagentStop`-level block (`hooks/subagent-postflight.sh`, keyed on a
+`.postflight-pending` marker written by `skill-base.sh`'s `skill_create_postflight_marker()`)
+cannot fire for that path, because core task types (`general`, `meta`, `markdown`) route directly
+to agents via `command-route-agent.sh`, with no intermediate skill to arm the marker. Verify with
+`grep -rn 'postflight-pending\|skill_create_postflight_marker' <source_dir>/skills/skill-orchestrate/ <source_dir>/scripts/orchestrate-cycle-*.sh`
+(currently zero matches).
+
+Consequently an `in_progress` terminal write on this path is **detected and recorded, never
+prevented**, and extending `subagent-postflight.sh`'s own check would not change that — marker
+creation would have to be armed in `skill-orchestrate`'s dispatch flow first. This statement
+describes the return-meta recovery path only; it says nothing about, and changes nothing in, the
+handoff mtime-staleness gate above.
+
 ---
 
 ## Token Budget Constraints

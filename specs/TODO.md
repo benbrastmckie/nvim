@@ -104,7 +104,7 @@ next_project_number: 486
 
 ### Orchestrator
 
-428 [PLANNED] — Enforce and detect planner-agent terminal return-meta write
+428 [IMPLEMENTING] — Enforce and detect planner-agent terminal return-meta write
   └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
@@ -2976,7 +2976,7 @@ EDIT TARGET: the source store under agent-system/extensions/core/ (never .claude
 ---
 
 ### 428. Enforce and detect planner-agent terminal return-meta write
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378

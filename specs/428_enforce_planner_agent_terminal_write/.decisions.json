@@ -1,0 +1,9 @@
+[
+  {
+    "question": "Research found that both fix locations this task names (planner-agent's terminal-write contract and postflight's detection) are already correct and already closed; the only remaining gap is structural -- nothing on the /orchestrate direct-dispatch path can PREVENT a missing terminal write, because no .postflight-pending marker is ever armed for that path. This plan documents that boundary. Should genuine prevention also be funded as a separate follow-up task?",
+    "answer": "Document the scope boundary only (this plan) -- detection via RECOVERY_DECLINED stays the sole enforcement, no new infrastructure [non-blocking: proceeded on the agent's own recommendation without interrupting the operator]",
+    "cycle": 2,
+    "timestamp": "2026-11-05T04:14:58Z",
+    "description_fingerprint": "eaf1f237b96910c395e6ec418e221bd71d35683b7f871ffa3a31ce299813fe00"
+  }
+]
