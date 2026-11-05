@@ -11,12 +11,11 @@ next_project_number: 488
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,471,473,477,478,483,485 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,313,384,398,409,418,431,445,446,453,458,463,465,472,475 | 22,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
-| 3 | 360,369,399,420,436,438,439,444,448,474,476,484 | 29,313,328,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 391,449,451,452,454,455,461,479,486 | 360,369,385,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 5 | 390,402,450,457,462,480,487 | 391,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
-| 6 | 421,481 | 390,402 | core-agent-system, agent-system |
+| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,471,473,477,478,483,485 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
+| 3 | 360,391,399,420,436,438,439,444,448,474,476,484 | 313,328,369,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 5 | 421,450,457,462,480,481,487 | 390,402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -64,22 +63,18 @@ next_project_number: 488
 
 ### Extensions
 
+29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 342 [HOLD] — Refactor the books extension's context corpus against the...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
 483 [NOT STARTED] — Document that an extension lifecycle hook can never fire...
-29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
 
 437 [NOT STARTED] — Repair the Zotero sqlite-reconstruction export path: lost CSL...
 453 [NOT STARTED] — Carry the degraded-retrieval signal into the zero-result...
-
-### Neovim
-
-22 [IMPLEMENTING] — Freeze .opencode: silence fragment validation spam and record...
 
 ### File Scope Lifecycle
 
@@ -5882,7 +5877,7 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 ---
 
 ### 22. Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
