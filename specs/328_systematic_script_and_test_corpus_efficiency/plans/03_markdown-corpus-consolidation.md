@@ -1547,7 +1547,7 @@ plus both scripts' finding-output diff over a typst fixture tree.
 
 ---
 
-### Phase 11: Collapse literature-search.sh's Self-Internal Repetition [NOT STARTED]
+### Phase 11: Collapse literature-search.sh's Self-Internal Repetition [COMPLETED]
 
 **Goal**: The 172 duplicate blocks *inside* one 1,634-line file collapse into local helpers — a
 different defect class from the cross-file clusters, and the densest single-file duplication the
@@ -1558,16 +1558,37 @@ suite may or may not exist. 172 duplicate blocks in one file is the highest-risk
 plan, so a characterization test is mandatory before any edit if none exists.
 
 **Tasks**:
-- [ ] Re-run `script-inventory.sh` and confirm the duplicate-block count and the `peers=0`
-      self-internal classification before acting.
-- [ ] Write or confirm a characterization test covering the script's search modes and output
-      shapes. Do not edit before it is green on the unmodified script.
-- [ ] Extract the repeated blocks into file-local functions. Keep them file-local: with `peers=0`
+- [x] Re-run `script-inventory.sh` and confirm the duplicate-block count and the `peers=0`
+      self-internal classification before acting. *(completed: re-measured 1,645 lines / 172
+      duplicate blocks / `duplicate_block_peers: []`, confirming the dispatch's 1,634-1,645/172
+      figures within drift)*
+- [x] Write or confirm a characterization test covering the script's search modes and output
+      shapes. Do not edit before it is green on the unmodified script. *(completed: no paired
+      suite existed (`has_test: false`); wrote
+      `agent-system/extensions/literature/scripts/tests/test-literature-search.sh` (49
+      assertions over default search, `--include-unverified`, `--project` filtering including
+      the zero-result unscoped-retry path, `--multi`, `--read` verified/unverified/missing,
+      `--toc`/`--doc`, `--refs`, `--next`/`--prev`, and 6 error paths, against a from-scratch
+      fixture local+global corpus); green (49/49) on the unmodified script before any edit)*
+- [x] Extract the repeated blocks into file-local functions. Keep them file-local: with `peers=0`
       there is no second consumer, so promoting them to a lib would add an import surface for no
-      deduplication gain.
-- [ ] Diff the script's output across every search mode before and after against a fixture
-      literature index.
-- [ ] Record the phase's NET-PROD delta.
+      deduplication gain. *(completed: extracted `load_fidelity_map`, `get_fidelity`,
+      `TIER_RANK`/`ROW_TIER_LABEL`, `ensure_trigram`, `build_sql`, `run_ladder`, `search_db`,
+      and `run_single_search` into a new file-local
+      `agent-system/extensions/literature/scripts/lib/literature_search_pylib.py`, imported by
+      `do_search`/`do_multi_search`/`do_read`/`do_toc`'s own python3 heredocs via
+      `sys.path.insert`; the module is specific to this one script (peers=0), not a
+      cross-extension shared lib. The single largest duplicate block -- `do_search`'s entire
+      ~230-line "re-run the whole search a second time without the project filter" fallback --
+      collapsed into an in-process retry inside `run_single_search()`, eliminating a second
+      python3 heredoc invocation entirely rather than merely deduplicating its helper
+      functions)*
+- [x] Diff the script's output across every search mode before and after against a fixture
+      literature index. *(completed: `test-literature-search.sh` captures every mode's raw
+      stdout+exit code under `$CAPTURE_DIR`; ran once against the unmodified script and once
+      against the refactored script, `diff -r` reported zero differences across all 40
+      captured files)*
+- [x] Record the phase's NET-PROD delta. *(completed: see Verification below)*
 
 **Timing**: 2 hours
 
@@ -1591,8 +1612,19 @@ plus the per-search-mode output diff against a fixture literature index.
 
 **Verification**:
 - The script's output in every search mode is byte-identical before and after against a fixture literature index.
+  *(confirmed: `diff -r` of the full `$CAPTURE_DIR` tree from the before-run against the
+  after-run reported zero differences across all 40 captured stdout/exit files, covering 20
+  distinct modes.)*
 - The characterization test is green both before (on the unmodified script) and after.
-- The phase's NET-PROD delta is recorded and negative.
+  *(confirmed: 49/49 passed on both runs.)*
+- The phase's NET-PROD delta is recorded and negative. *(confirmed, NET-PROD = -363: literature-search.sh
+  1,645 -> 950 lines (+30/-725, net -695 via `git diff --stat`); duplicate_blocks 172 -> 0;
+  new file-local `lib/literature_search_pylib.py` +332 lines (the extracted helpers, net new
+  since there was no prior lib file for this script); `-695 + 332 = -363`. `manifest.json`'s
+  +2-line registration excluded from NET-PROD per the convention Phase 9 established. NET-TEST
+  for this phase is +384 (the new `tests/test-literature-search.sh`, necessary because
+  `has_test` was `false` going in -- not counted toward NET-PROD, and not required negative by
+  this phase's own verification criteria.)*
 
 ---
 
