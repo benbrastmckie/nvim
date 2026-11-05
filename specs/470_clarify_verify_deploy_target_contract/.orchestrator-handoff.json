@@ -1,19 +1,19 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 470,
-  "phase": "plan",
-  "session_id": "sess_1793850684_c30dd8_470",
-  "dispatch_seq": 8,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1793850684_c30dd8",
+  "dispatch_seq": 12,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a four-phase plan separating verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis: a new TARGET_REPO CONTRACT header paragraph plus a usage-line subsection (outcomes 1-2), one added gate0 stderr line (outcome 3), and a companion-docs phase that widens regeneration-is-manual-only.md's existing pointer by one clause rather than duplicating the contract (outcome 4, decided as header-alone authority). Planning established two facts the research report lacked: context/formats/plan-format.md:364 is the actual origin of the cited defect, carrying a verbatim copy-pasteable --only-gate 3,4 <source_dir> invocation that was reproduced failing with exit 2, so correcting it is folded into phase 3; and gate 3 (doc-lint) already FAILS at baseline from pre-existing deploy staleness, so every phase verifies differentially against a captured --findings baseline plus an explicit exit-status check. No behavioral change to any gate's pass/fail semantics (outcome 5).",
+  "summary": "Separated verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis across the script header (new TARGET_REPO CONTRACT paragraph and usage subsection), gate0's stderr (one new convention-naming line), and the one live document that prescribed the broken --only-gate 3,4 <source_dir> invocation (plan-format.md's __FULL_SWEEP__ sub-case (b), now corrected to a working repo-root TARGET shape), plus a one-clause widening of regeneration-is-manual-only.md's existing pointer. Redeployed via the bounded-wait idiom to RESULT=landed_verify_clean and confirmed all three files carry the change in the deployed tree; re-ran the originally cited failing invocation against the deployed script and confirmed the new error line appears. Deferred the plan's unscoped full-battery exit-0 bar to the batch-level stage per the dispatch's own Batch Gate Deferral section, after an independent attempt surfaced a pre-existing, already-tracked gate-8 test-corpus defect (specs/476) plus likely concurrent-sibling-dispatch interference, not a regression; the dispatch-mandated scoped substitute (gates 3,4,6,7,12,22) exits 0 clean.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/470_clarify_verify_deploy_target_contract/plans/01_two-axis-target-contract.md",
-      "summary": "Four-phase plan: verify-deploy.sh header two-axis split, gate0 stderr convention line, companion-doc pointer plus origin-site invocation fix, redeploy and full verification."
+      "type": "summary",
+      "path": "specs/470_clarify_verify_deploy_target_contract/summaries/01_two-axis-target-contract-summary.md",
+      "summary": "Full implementation summary covering all four phases, plan deviations, and verification evidence."
     }
   ],
-  "next_steps": "Run /orchestrate 470 to execute the plan"
+  "next_steps": "Task complete. No follow-up task needed for the gate-8 defect encountered (already tracked by specs/476_isolate_seven_red_gate8_shell_suites/)."
 }

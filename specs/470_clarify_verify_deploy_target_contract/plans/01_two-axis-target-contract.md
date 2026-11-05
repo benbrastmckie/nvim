@@ -357,33 +357,54 @@ before editing; if a second site exists, correct it in this same phase and say s
 
 ---
 
-### Phase 4: Redeploy and Full Verification [NOT STARTED]
+### Phase 4: Redeploy and Full Verification [COMPLETED]
 
 **Goal**: The clarified contract exists in the deployed tree, and the full gate battery confirms
 no regression against the captured baseline.
 
 **Tasks**:
 
-- [ ] Confirm Phases 1-3 are complete and their verification criteria met.
-- [ ] Redeploy with the bounded-wait idiom:
+- [x] Confirm Phases 1-3 are complete and their verification criteria met. *(completed)*
+- [x] Redeploy with the bounded-wait idiom:
       `timeout 540 bash .claude/scripts/deploy-headless.sh` with the Bash tool `timeout` parameter
       raised to 600000 (never its 120000ms default) — see
       `context/patterns/external-process-wait.md` Rule 1. Drive to `RESULT=landed_verify_clean`.
-      Never hand-patch a deployed file as a substitute.
-- [ ] If the redeploy's own inline verification reports failures, determine whether each one is
+      Never hand-patch a deployed file as a substitute. *(completed: landed_verify_clean, 38
+      checks, 0 failures, on the first attempt)*
+- [x] If the redeploy's own inline verification reports failures, determine whether each one is
       pre-existing (present in `470-findings-before.txt`) or newly introduced. Only a NEW finding
-      is this task's regression.
-- [ ] Run the full battery at the repo root:
+      is this task's regression. *(completed: redeploy's own inline verification reported 0
+      failures; no findings to classify)*
+- [x] Run the full battery at the repo root:
       `bash .claude/scripts/verify-deploy.sh --findings --quiet /home/benjamin/.config/nvim 2>/dev/null | grep '^FINDING ' | sort -u > .../470-findings-after.txt`,
-      then `diff 470-findings-before.txt 470-findings-after.txt`.
-- [ ] Confirm the deployed copy carries the change: the `TARGET_REPO CONTRACT` paragraph and the
+      then `diff 470-findings-before.txt 470-findings-after.txt`. *(deviation: altered — the
+      dispatch file's Batch Gate Deferral section, not present when this plan was written,
+      requires this specific dispatch to discharge this phase against a scoped tier and defer the
+      full gate set to the once-per-invocation batch stage. An independent unscoped full-battery
+      run was attempted first and FAILed at gate 8, traced to a pre-existing, already-tracked
+      test-corpus defect (`specs/476_isolate_seven_red_gate8_shell_suites`, itself citing
+      completed task 275's proof that these suites fail identically on unmodified master) plus
+      plausible interference from concurrently-active sibling-task dispatches in this same batch
+      touching shared verify-deploy.sh/gate-selection test fixtures — not a regression introduced
+      by this task. Recorded via `issue-record.sh`. The dispatch-mandated scoped substitute,
+      `verify-deploy.sh --skip-slow --only-gate 3,4,6,7,12,22` at the repo root, exits 0 clean
+      (7/7 PASS, none SKIP) both before and after this check, confirming no regression within
+      this task's own scoped tier; the full-battery exit-0 bar is deferred to the batch-level
+      stage per the dispatch contract.)*
+- [x] Confirm the deployed copy carries the change: the `TARGET_REPO CONTRACT` paragraph and the
       new gate0 line are present in `.claude/scripts/verify-deploy.sh`, and the corrected sub-case
-      (b) shape is present in `.claude/context/formats/plan-format.md`.
-- [ ] Re-run the original failing invocation against the **deployed** script and confirm the new
+      (b) shape is present in `.claude/context/formats/plan-format.md`. *(completed, plus the
+      widened pointer sentence confirmed present in
+      `.claude/context/patterns/regeneration-is-manual-only.md`)*
+- [x] Re-run the original failing invocation against the **deployed** script and confirm the new
       error line appears:
       `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 agent-system/extensions/core`.
-- [ ] Record a `kind: win` or `kind: issue` entry for this phase's outcome via `issue-record.sh`,
-      and attest explicitly in the handoff if nothing arose.
+      *(completed: exit 2 unchanged, new convention-naming line present alongside the original
+      three lines)*
+- [x] Record a `kind: win` or `kind: issue` entry for this phase's outcome via `issue-record.sh`,
+      and attest explicitly in the handoff if nothing arose. *(completed: one win entry for the
+      clean redeploy/deployed-copy confirmation, one issue entry for the full-battery deferral
+      correction)*
 
 **Timing**: 0.75 hours
 
@@ -401,6 +422,13 @@ no regression against the captured baseline.
   automatic `generate-context-line-counts.sh --write` run
 
 **Verification**:
+
+*(Batch Gate Deferral note: this dispatch's own dispatch file carried a `## Batch Gate
+Deferral` section — generated after this plan was written — directing this phase to discharge
+against a scoped tier and defer the unscoped full-battery exit-0 bar below to the
+once-per-invocation batch-level stage. The bullet is kept verbatim as the plan's own standing
+criterion; the Implementation Phases task-list annotation above records what was actually run in
+its place and why.)*
 
 - `deploy-headless.sh` reaches `RESULT=landed_verify_clean`.
 - The complete gate set runs and **exits 0**:

@@ -1,17 +1,43 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/470_clarify_verify_deploy_target_contract/plans/01_two-axis-target-contract.md",
-      "summary": "Four-phase plan separating verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis across the script header, usage line, gate0 stderr, and two companion docs, plus a redeploy-and-verify phase."
+      "type": "summary",
+      "path": "specs/470_clarify_verify_deploy_target_contract/summaries/01_two-axis-target-contract-summary.md",
+      "summary": "Separated verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis across the script header, gate0 stderr, and the one live document that prescribed the broken invocation (plan-format.md), landed via a real redeploy. Encountered and deferred (did not fix) a pre-existing, already-tracked gate-8 test-corpus defect."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a TARGET_REPO CONTRACT header paragraph, a TARGET_REPO placeholder usage subsection, and one gate0 stderr line to verify-deploy.sh; widened regeneration-is-manual-only.md's existing pointer by one clause; corrected plan-format.md's __FULL_SWEEP__ sub-case (b) copy-pasteable invocation from the broken --only-gate 3,4 <source_dir> shape to a working repo-root TARGET shape. Redeployed to landed_verify_clean and confirmed all three files carry the change in the deployed tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+    "agent-system/extensions/core/context/formats/plan-format.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a dispatch file's 'Batch Gate Deferral' section postdates the plan it accompanies, it supersedes a plan phase's own unscoped full-battery-exit-0 verification criterion for THAT dispatch only -- the plan text stays as the standing criterion for future reference, but this dispatch discharges against the scoped substitute instead and records why. Running the unscoped full battery anyway, inside a multi-task /orchestrate batch where sibling implement dispatches are concurrently active and may share declared file_scope (e.g. multiple tasks all declaring verify-deploy.sh and its gate-selection test fixtures), risks a spurious FAIL from either a pre-existing-but-undeclared test-corpus defect or a concurrent-edit race on shared fixtures -- neither of which is this dispatch's regression. Before concluding a full-battery FAIL is a real regression, check for an open tracking task describing the same failing suites as pre-existing (grep specs/ for the suite names), and check whether other agents declared in this session are concurrently touching the same file_scope.",
+      "category": "PATTERN",
+      "source_artifact": "specs/470_clarify_verify_deploy_target_contract/summaries/01_two-axis-target-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["batch-gate-deferral", "concurrent-sibling-dispatch", "gate8-pre-existing-defect", "scoped-verification-substitute", "multi-task-orchestrate"]
+    },
+    {
+      "content": "Editing a source-store file ahead of its redeploy intentionally and predictably produces a transient 'deployed script/doc content drift' gate-3 FINDING for that exact file in any differential --findings comparison run before the redeploy -- this is not a regression, it is the expected mid-task signature of the source-store/deployed-tree split itself. The finding (and any Rule R line_count mismatch from an edited markdown file) clears on its own once the redeploy runs. Do not gate an intermediate phase's verification on a differential-findings diff staying perfectly clean when later phases of the same task still owe a redeploy; gate on it only at the final, post-redeploy comparison.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/470_clarify_verify_deploy_target_contract/summaries/01_two-axis-target-contract-summary.md",
+      "confidence": 0.78,
+      "suggested_keywords": ["content-drift-finding", "source-store-deploy-boundary", "differential-findings", "verify-deploy", "transient-gate3-finding"]
     }
   ],
   "metadata": {
     "session_id": "sess_1793850684_c30dd8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
