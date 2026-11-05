@@ -1897,9 +1897,9 @@
           "type": "plan"
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_shared-deployed-tree-fixture-summary.md",
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_class-tag-cost-class-selection-summary.md",
           "type": "summary",
-          "summary": "Phase 13 close: built and regression-tested the shared deployed-tree fixture mechanism, migrated the one genuine consumer suite, and recorded the broader migration aspiration as Reasoned Exclusions with evidence. NET-PROD +109, NET-TEST +267, NET-MD +51, all net-positive and justified as future-growth-prevention infrastructure."
+          "summary": "Phase 14 close: added --class/--tag/--cost-class selection to run-all.sh, sourced from six new additive suite-selection-lib.sh functions, zero per-suite hand-authoring, 12 new regression cases, both net deltas net-positive and pre-justified."
         }
       ],
       "next_artifact_number": 4,
