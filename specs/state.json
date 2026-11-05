@@ -2071,9 +2071,15 @@
           "path": "specs/022_silence_opencode_fragment_validation_spam/plans/01_silence-opencode-validation-spam.md",
           "type": "plan",
           "summary": "6-phase, 8-hour plan across three independent scopes with disjoint per-phase file sets and four recorded design decisions."
+        },
+        {
+          "path": "specs/022_silence_opencode_fragment_validation_spam/summaries/01_silence-opencode-validation-spam-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 6 phases, decisions, deviations, and verification evidence."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Silenced the opencode-agents.json validation WARN spam (silent by default, returns detail, aggregates to one INFO summary at resync_all), fixed the fake-tool line and recorded the frozen .opencode/ policy, made the Reload All/Regenerate picker entries honest with a shared preview branch, and added a new cross-repo repo_registry.lua module plus a Global Update picker entry that resyncs every registered repo's own loaded-extension set."
     },
     {
       "project_number": 29,

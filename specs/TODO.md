@@ -5888,6 +5888,7 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 - **Dependencies**: None
 - **Research**: [022_silence_opencode_fragment_validation_spam/reports/01_silence-opencode-validation-spam.md]
 - **Plan**: [022_silence_opencode_fragment_validation_spam/plans/01_silence-opencode-validation-spam.md]
+- **Summary**: [022_silence_opencode_fragment_validation_spam/summaries/01_silence-opencode-validation-spam-summary.md]
 
 **Description**: === STATUS REPAIRED 2026-09-22 (eighth-pass phase 0): researching -> not_started. No specs/022_* directory, no artifacts and no dispatch record exist in the live tree or the archive; the status was left by a dispatch that never wrote anything (last touched 2026-09-01). It deferred tasks 29 and 45 in every dry run via merge.lua. Nothing else changed. ===
 
