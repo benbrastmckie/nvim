@@ -20,23 +20,33 @@
 # later phases of the same task) -- at any point in that migration, the overwhelming majority of
 # files sharing a block's text are legitimately NOT YET migrated, and a whole-corpus scan would
 # fire on every one of them from the moment the FIRST file is collapsed. Instead, each registry
-# row names its own `migrated_files` list -- the files already collapsed for that block -- and
-# this lint checks only those files (never the un-migrated remainder) for regression. Growing the
-# migrated set as more files are collapsed is a pure data edit: add the path to the row's
-# migrated_files column. No invocation of this script's own code changes as coverage grows.
+# row names exactly one already-migrated file, and this lint checks only the files actually
+# named in the registry (never the un-migrated remainder) for regression. Growing coverage as
+# more files are collapsed is a pure data edit: append one row (and one block-text file) per
+# newly collapsed file. No invocation of this script's own code changes as coverage grows.
+#
+# ONE ROW PER FILE, NOT PER BLOCK: even files sharing "the same" conceptual block typically carry
+# small per-file variation (a different agent_type string, a different delegation_path, a
+# different task-directory padding convention) baked into the literal text around the shared
+# core -- so the exact byte-for-byte text that must not reappear is usually unique PER FILE, not
+# identical across every file that was collapsed for the same anchor. Registering one row (and
+# one captured block-text file) per collapsed file, rather than trying to share a single
+# block-text file across many files, avoids a false negative from assuming two files' removed
+# text was ever byte-identical when it was not.
 #
 # REGISTRY FORMAT (lint/collapsed-blocks/registry.tsv)
 # -----------------------------------------------------
-# TAB-separated, one row per collapsed block, 4 columns:
+# TAB-separated, one row per collapsed FILE, 4 columns:
 #   anchor_path       Repo-relative path (from the project root) to the file that owns the
 #                      content. Must exist on disk.
 #   anchor_heading     The exact section heading the pointer names, for a human reader to
 #                      cross-check; not itself matched by this lint.
+#   file               Repo-relative path of the already-collapsed file to check for regression.
 #   block_file         Filename, relative to lint/collapsed-blocks/, holding the exact literal
-#                      text of the collapsed block (the text that must not reappear in a migrated
-#                      file). Byte-for-byte, not a regex.
-#   migrated_files     Comma-separated, repo-relative paths of files already collapsed for this
-#                      block. Each is checked for absence of the block text.
+#                      text that was removed from `file` (the text that must not reappear there).
+#                      Byte-for-byte, not a regex. Captured once at collapse time; two files
+#                      collapsed from the same conceptual block commonly need two different
+#                      block_file captures (see note above).
 # Lines starting with `#` and blank lines are skipped. A registry that does not exist, or exists
 # with zero data rows, is not an error -- it means no block has been collapsed yet.
 #
@@ -52,22 +62,21 @@
 #
 #   --registry PATH   Use PATH instead of the default registry (lint/collapsed-blocks/registry.tsv
 #                      next to this script). Primarily for the fixture suite.
-#   --root PATH        Resolve registry anchor_path/migrated_files entries against PATH instead of
-#                      the detected project root. Primarily for the fixture suite.
-#   --verbose          Report every registry row checked, including ones with no migrated files.
+#   --root PATH        Resolve registry anchor_path/file entries against PATH instead of the
+#                      detected project root. Primarily for the fixture suite.
+#   --verbose          Report every registry row checked, including passing ones.
 #   --quiet            Suppress the progress header and the all-clear summary. Violations are
 #                      still printed, and the failing summary is still printed.
 #
 # Exit codes:
-#   0 - No registered block reappeared in any of its own migrated files
+#   0 - No registered file has had its collapsed block text reappear
 #   1 - One or more violations found (each printed as file:anchor)
-#   2 - Script error (missing registry row's anchor/block file, malformed row, bad --registry path)
+#   2 - Script error (missing registry row's anchor/block/target file, malformed row, bad path)
 
 set -uo pipefail
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 NC='\033[0m'
 
 VERBOSE=false
@@ -168,17 +177,16 @@ fi
 
 VIOLATIONS=0
 ROWS_CHECKED=0
-FILES_CHECKED=0
 
-while IFS=$'\t' read -r anchor_path anchor_heading block_file migrated_files; do
+while IFS=$'\t' read -r anchor_path anchor_heading rel_file block_file; do
     # Skip comments and blank lines.
     [[ -z "${anchor_path// }" ]] && continue
     [[ "$anchor_path" == \#* ]] && continue
 
     ((ROWS_CHECKED++)) || true
 
-    if [[ -z "$block_file" ]]; then
-        echo "ERROR: registry row for anchor '$anchor_path' has no block_file column" >&2
+    if [[ -z "$rel_file" || -z "$block_file" ]]; then
+        echo "ERROR: registry row for anchor '$anchor_path' is missing its file or block_file column" >&2
         exit 2
     fi
 
@@ -194,32 +202,18 @@ while IFS=$'\t' read -r anchor_path anchor_heading block_file migrated_files; do
         exit 2
     fi
 
-    if [[ -z "${migrated_files// }" ]]; then
-        $VERBOSE && echo -e "${YELLOW}[INFO]${NC} $anchor_path: no migrated files registered yet"
-        continue
+    abs_file="${PROJECT_ROOT}/${rel_file}"
+    if [[ ! -f "$abs_file" ]]; then
+        echo "ERROR: registered file does not exist: $abs_file (anchor: $anchor_path)" >&2
+        exit 2
     fi
 
-    IFS=',' read -r -a files <<< "$migrated_files"
-    for rel_file in "${files[@]}"; do
-        rel_file="${rel_file# }"
-        rel_file="${rel_file% }"
-        [[ -z "$rel_file" ]] && continue
-
-        ((FILES_CHECKED++)) || true
-        abs_file="${PROJECT_ROOT}/${rel_file}"
-
-        if [[ ! -f "$abs_file" ]]; then
-            echo "ERROR: registered migrated file does not exist: $abs_file (anchor: $anchor_path)" >&2
-            exit 2
-        fi
-
-        if grep -Fqz -- "$(cat "$abs_block_file")" "$abs_file" 2>/dev/null; then
-            echo -e "${RED}[VIOLATION]${NC} $rel_file: collapsed block reappeared verbatim -- see anchor $anchor_path § \"$anchor_heading\" instead of restating it here"
-            ((VIOLATIONS++)) || true
-        else
-            $VERBOSE && echo -e "${GREEN}[OK]${NC} $rel_file: collapsed block absent (pointer intact)"
-        fi
-    done
+    if grep -Fqz -- "$(cat "$abs_block_file")" "$abs_file" 2>/dev/null; then
+        echo -e "${RED}[VIOLATION]${NC} $rel_file: collapsed block reappeared verbatim -- see anchor $anchor_path § \"$anchor_heading\" instead of restating it here"
+        ((VIOLATIONS++)) || true
+    else
+        $VERBOSE && echo -e "${GREEN}[OK]${NC} $rel_file: collapsed block absent (pointer intact)"
+    fi
 done < "$REGISTRY_FILE"
 
 if [[ $VIOLATIONS -eq 0 ]]; then
@@ -229,7 +223,6 @@ if [[ $VIOLATIONS -eq 0 ]]; then
         echo "Anchor-Pointer Collapse Regression Summary"
         echo "================================"
         echo "Registry rows checked: $ROWS_CHECKED"
-        echo "Migrated files checked: $FILES_CHECKED"
         echo "Total violations: 0"
         echo -e "${GREEN}No collapsed block has been reintroduced.${NC}"
     }
@@ -241,7 +234,6 @@ echo "================================"
 echo "Anchor-Pointer Collapse Regression Summary"
 echo "================================"
 echo "Registry rows checked: $ROWS_CHECKED"
-echo "Migrated files checked: $FILES_CHECKED"
 echo "Total violations: $VIOLATIONS"
 echo -e "${RED}Found $VIOLATIONS reintroduced collapsed block(s). See above for details.${NC}"
 echo ""
