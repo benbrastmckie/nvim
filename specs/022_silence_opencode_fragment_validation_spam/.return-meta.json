@@ -1,36 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 3,
+  "status": "planned",
+  "dispatch_seq": 6,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/022_silence_opencode_fragment_validation_spam/reports/01_silence-opencode-validation-spam.md",
-      "summary": "Confirms all three absorbed scopes (opencode spam/frozen-policy/fake-tool-line, picker Reload All/Regenerate honesty, Global Update) are still fully unimplemented, flags that defect-class-2 evidence (lean agent file paths) has drifted stale, and recommends a 3-phase plan split by disjoint file scope."
+      "type": "plan",
+      "path": "specs/022_silence_opencode_fragment_validation_spam/plans/01_silence-opencode-validation-spam.md",
+      "summary": "6-phase, 8-hour plan across three independent scopes (opencode spam/policy, picker entry honesty, Global Update) with disjoint per-phase file sets and four recorded design decisions."
     }
   ],
-  "next_steps": "Run /orchestrate 22 to create implementation plan",
+  "next_steps": "Run /orchestrate 22 to execute the plan",
   "metadata": {
     "session_id": "sess_1793893148_3d43f7_22",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9,
-    "issue_log_contribution": 1
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 8,
+    "dependency_waves": [[1, 2, 3, 4], [5], [6]]
   },
   "memory_candidates": [
     {
-      "content": "In lua/neotex/plugins/ai/shared/extensions/merge.lua, validate_opencode_fragment() sorts agent_name keys before iterating (table.insert + table.sort) specifically to make its accumulated error list deterministic across repeated runs, since Lua's pairs() iteration order is otherwise nondeterministic for string keys. Worth reusing this sort-before-iterate pattern anywhere else in the codebase that builds a reported list from a pairs()-iterated table and needs run-to-run determinism.",
-      "category": "PATTERN",
-      "source_artifact": "specs/022_silence_opencode_fragment_validation_spam/reports/01_silence-opencode-validation-spam.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["lua", "pairs-nondeterminism", "deterministic-iteration", "merge.lua", "validate_opencode_fragment"]
-    },
-    {
-      "content": ".opencode/ in this repo is an independently git-tracked, hand-maintained tree (its own commit history, e.g. 'mirror to .opencode/' commits) that is NOT a deploy artifact of the .claude-extensions.json source-store system -- .claude-extensions.json has no entry or source_dir pointing at it. The source-store/deploy-boundary rule (edit the source store, never hand-author the deployed .claude/** tree) therefore does not apply to .opencode/**; it can be edited directly.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/022_silence_opencode_fragment_validation_spam/reports/01_silence-opencode-validation-spam.md",
-      "confidence": 0.85,
-      "suggested_keywords": [".opencode", "source-store-boundary", "claude-extensions.json", "deploy-artifact", "git-tracked"]
+      "content": "In the nvim extension system (lua/neotex/plugins/ai/shared/extensions/), manager.resync_all loops manager.load(..., {force = true}) once per loaded extension, and manager.load calls merge_mod.generate_opencode_json once per invocation. Any notification emitted inside generate_opencode_json therefore fires once PER EXTENSION during a single <leader>al bulk reload, not once per reload. De-duplicating or summarising such a notification must happen at the resync_all caller level (accumulate across the loop, emit once after it); collapsing to 'one summary per generate_opencode_json invocation' does not reduce the message count at all. The same applies to generate_claudemd, which sits on the identical per-extension path.",
+    "category": "INSIGHT",
+    "source_artifact": "specs/022_silence_opencode_fragment_validation_spam/plans/01_silence-opencode-validation-spam.md",
+    "confidence": 0.85,
+    "suggested_keywords": ["resync_all", "generate_opencode_json", "notification-dedupe", "nvim-extension-system", "per-extension-loop"]
     }
   ]
 }

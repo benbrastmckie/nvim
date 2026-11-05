@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 6,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase implementation plan covering all three absorbed scopes: opencode validation-spam silencing (merge.lua + resync_all aggregation), the .opencode/ fake-tool line fix and frozen-policy write-up, picker [Reload All]/[Regenerate] honesty with a shared special-entry preview branch, and the greenfield repo registry plus Global Update entry. Made the four decisions the task text required (gating location, previewer branch shape, redundancy ruling, Step Through disposition) rather than deferring them. Dependency waves: [1,2,3,4] -> [5] -> [6]; 8 hours estimated; plan validates clean with 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/022_silence_opencode_fragment_validation_spam/plans/01_silence-opencode-validation-spam.md",
+      "summary": "6-phase, 8-hour plan across three independent scopes with disjoint per-phase file sets and four recorded design decisions."
+    }
+  ]
+}

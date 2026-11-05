@@ -43,7 +43,7 @@ next_project_number: 488
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory... (see above)
   └─ 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
-459 [RESEARCHED] — Design cross-record traceability; verdict on CHANGE\_LOG...
+459 [PLANNING] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
@@ -79,7 +79,7 @@ next_project_number: 488
 
 ### Neovim
 
-22 [RESEARCHED] — Freeze .opencode: silence fragment validation spam and record...
+22 [PLANNED] — Freeze .opencode: silence fragment validation spam and record...
 
 ### File Scope Lifecycle
 
@@ -1530,7 +1530,7 @@ DUPLICATE CHECK PERFORMED. Nearest neighbours are 430 and 446, both of which own
 ---
 
 ### 459. Design cross-record traceability; verdict on CHANGE_LOG retirement
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -5881,11 +5881,12 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 ---
 
 ### 22. Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [022_silence_opencode_fragment_validation_spam/reports/01_silence-opencode-validation-spam.md]
+- **Plan**: [022_silence_opencode_fragment_validation_spam/plans/01_silence-opencode-validation-spam.md]
 
 **Description**: === STATUS REPAIRED 2026-09-22 (eighth-pass phase 0): researching -> not_started. No specs/022_* directory, no artifacts and no dispatch record exist in the live tree or the archive; the status was left by a dispatch that never wrote anything (last touched 2026-09-01). It deferred tasks 29 and 45 in every dry run via merge.lua. Nothing else changed. ===
 
