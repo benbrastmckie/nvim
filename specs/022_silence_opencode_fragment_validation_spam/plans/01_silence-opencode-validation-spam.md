@@ -291,7 +291,7 @@ because it SKIPs outside the source store.
 
 ---
 
-### Phase 3: Make `[Reload All]` and `[Regenerate]` honest and self-documenting [NOT STARTED]
+### Phase 3: Make `[Reload All]` and `[Regenerate]` honest and self-documenting [COMPLETED]
 
 **Goal**: Both entries carry accurate one-liners whose first words state destructiveness, both
 render real Command Details content via one shared special-entry preview branch, and
@@ -299,34 +299,35 @@ render real Command Details content via one shared special-entry preview branch,
 `"Step Through"` disposition are recorded in code.
 
 **Tasks**:
-- [ ] Re-read `lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua` (special-entry
+- [x] Re-read `lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua` (special-entry
       block) and `.../display/previewer.lua` (dispatch chain and `preview_help`) before editing.
-- [ ] Replace `[Reload All]`'s one-liner `"Wipe and reload all loaded extensions"` with text whose
+      *(completed)*
+- [x] Replace `[Reload All]`'s one-liner `"Wipe and reload all loaded extensions"` with text whose
       first words state it is non-destructive and that it force-resyncs loaded extensions in
       dependency order. Leave `[Regenerate]`'s accurate one-liner's meaning intact while making
       its destructiveness the first thing it says, so the two lines are distinguishable at a
-      glance.
-- [ ] Add a structured per-entry preview payload to both special entries in `entries.lua` (a
+      glance. *(completed)*
+- [x] Add a structured per-entry preview payload to both special entries in `entries.lua` (a
       `description` string plus a `detail` line list covering: what it does, what it touches,
       whether it is destructive, whether it prompts). Lift the already-correct wording from
       `previewer.lua`'s `preview_help` block rather than drafting new text, so the three
-      renderings cannot disagree.
-- [ ] Add a comment at the entry definitions recording that the one-liner, the `detail` payload,
+      renderings cannot disagree. *(completed)*
+- [x] Add a comment at the entry definitions recording that the one-liner, the `detail` payload,
       and the implementation must be kept in sync, naming the implementation functions
-      (`manager.resync_all`, `manager.wipe`) each describes.
-- [ ] Add one `elseif entry.value.entry_type == "special"` branch to `previewer.lua`'s
+      (`manager.resync_all`, `manager.wipe`) each describes. *(completed)*
+- [x] Add one `elseif entry.value.entry_type == "special"` branch to `previewer.lua`'s
       `define_preview` chain, placed after the existing `is_help` test so
       `[Keyboard Shortcuts]` keeps `preview_help`, that renders the per-entry `description` and
-      `detail` payload (per Decision 2).
-- [ ] Change the terminal `else` from the bare `"Unknown entry type"` line to a message naming the
+      `detail` payload (per Decision 2). *(completed)*
+- [x] Change the terminal `else` from the bare `"Unknown entry type"` line to a message naming the
       offending entry's `entry_type` and `name`, so the next gap is diagnosable rather than
-      anonymous.
-- [ ] Record Decision 3 (keep both entries; destructiveness stated first) as a comment at the
-      special-entry definitions, with its reasoning in one or two lines.
-- [ ] Remove the dead `"Step Through"` choice from the `[Reload All]` submenu in
+      anonymous. *(completed)*
+- [x] Record Decision 3 (keep both entries; destructiveness stated first) as a comment at the
+      special-entry definitions, with its reasoning in one or two lines. *(completed)*
+- [x] Remove the dead `"Step Through"` choice from the `[Reload All]` submenu in
       `lua/neotex/plugins/ai/claude/commands/picker/init.lua` and the no-op branch that handles
       it, leaving `{"Reload All", "Unload All", "Cancel"}`; record Decision 4's reasoning in a
-      comment at the submenu.
+      comment at the submenu. *(completed)*
 
 **Timing**: 2 hours
 

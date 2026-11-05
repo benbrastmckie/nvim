@@ -971,31 +971,73 @@ function M.create_special_entries(config)
     config = config,  -- Thread config for previewer access
   })
 
-  -- [Reload All] appears just above [Keyboard Shortcuts] (inserted after it due to descending sort)
+  -- SYNC OBLIGATION (read before editing any of the three bulk-operation special entries
+  -- below): each entry's one-line `display` text, its `description`/`detail` preview payload
+  -- (rendered by previewer.lua's shared `entry_type == "special"` branch), and the actual
+  -- implementation function it names must all agree. A change to one without the other two is a
+  -- defect -- this is exactly the bug this phase fixed (display/entries.lua:980-982 used to
+  -- describe [Regenerate]'s behavior under [Reload All]'s name). [Reload All] describes
+  -- `manager.resync_all`; [Regenerate] describes `manager.wipe`.
+  --
+  -- REDUNDANCY RULING (Decision 3, recorded here with its reasoning): keep both [Reload All] and
+  -- [Regenerate] as separate entries, with destructiveness stated FIRST in both one-liners,
+  -- rather than collapsing [Regenerate] into the [Reload All] submenu. Collapsing would bury a
+  -- recovery operation two keypresses deep, and a third bulk entry (Global Update) lands in this
+  -- same task, so a flat set of self-describing entries is more discoverable than one entry
+  -- fronting a multi-item submenu. Renaming alone was rejected too: the defect was a false
+  -- description, not an ambiguous name.
+
+  -- [Reload All] appears just above [Keyboard Shortcuts] (inserted after it due to descending
+  -- sort). Non-destructive: force-resyncs every currently loaded extension in dependency order
+  -- via manager.resync_all; never unloads, so there is no destructive intermediate state.
   table.insert(entries, {
     is_reload_all = true,
     name = "~~~reload_all",
+    title = "[Reload All]",
     display = string.format(
       "%-40s %s",
       "[Reload All]",
-      "Wipe and reload all loaded extensions"
+      "Non-destructive: force-resyncs all loaded extensions in dependency order"
     ),
     entry_type = "special",
+    description = "Non-destructive: force-resyncs all loaded extensions in dependency order",
+    detail = {
+      "What it does: force-resyncs every currently loaded extension in dependency order via",
+      "manager.resync_all (manager.load(..., {force = true}) per extension).",
+      "What it touches: the current repo only (vim.fn.getcwd()) -- every extension already",
+      "loaded into it.",
+      "Destructive: no. Never unloads; each extension is re-loaded in place, so there is no",
+      "intermediate \"everything unloaded\" state.",
+      "Prompts: no confirmation dialog.",
+    },
     config = config,
   })
 
   -- [Regenerate] appears just above [Reload All] (inserted after it due to descending sort).
   -- Destructive: wipes base_dir and rebuilds it from the surviving project-root extension
-  -- manifest via manager.wipe (snapshot -> rm -rf -> regenerate -> restore -> clear staging).
+  -- manifest via manager.wipe (snapshot -> rm -rf base_dir -> regenerate -> restore
+  -- settings.local.json and .syncprotect paths -> clear staging).
   table.insert(entries, {
     is_regenerate = true,
     name = "~~~regenerate",
+    title = "[Regenerate]",
     display = string.format(
       "%-40s %s",
       "[Regenerate]",
-      "Wipe and rebuild from the extension manifest"
+      "Destructive (confirmation required): wipe and rebuild from the extension manifest"
     ),
     entry_type = "special",
+    description = "Destructive (confirmation required): wipe and rebuild from the extension manifest",
+    detail = {
+      "What it does: wipes the deployed directory and rebuilds it from the surviving",
+      "project-root extension manifest via manager.wipe (snapshot -> rm -rf -> regenerate ->",
+      "restore settings.local.json and .syncprotect-listed paths -> clear staging).",
+      "What it touches: the current repo only (vim.fn.getcwd()) -- same single-repo scope as",
+      "[Reload All]; it does NOT reload any other repo's extension set.",
+      "Destructive: yes. The deployed directory is deleted and rebuilt from scratch before",
+      "being restored.",
+      "Prompts: yes, confirmation is required before it proceeds.",
+    },
     config = config,
   })
 

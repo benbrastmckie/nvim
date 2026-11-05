@@ -620,6 +620,34 @@ local function preview_root_file(self, entry)
   vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", filetype)
 end
 
+--- Create preview for a special entry (a picker-shipped bulk operation such as [Reload All],
+--- [Regenerate], or [Global Update]) that carries a per-entry `description`/`detail` payload.
+--- This is ONE shared branch for every `entry_type == "special"` entry that is not `is_help`
+--- (the `is_help` entry is intercepted earlier in the dispatch chain and keeps its own
+--- `preview_help` rendering) -- see entries.lua's SYNC OBLIGATION comment at the special-entry
+--- definitions: the `display` one-liner, this preview payload, and the implementation they both
+--- describe must always agree.
+--- @param self table Telescope previewer state
+--- @param entry table Telescope entry
+local function preview_special(self, entry)
+  local value = entry.value
+  local lines = {
+    "# " .. (value.title or value.name or "Special Entry"),
+    "",
+    value.description or "(no description provided)",
+    "",
+  }
+  if value.detail then
+    for _, line in ipairs(value.detail) do
+      table.insert(lines, line)
+    end
+  else
+    table.insert(lines, "(no detail payload provided for this special entry)")
+  end
+  vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
+  vim.api.nvim_buf_set_option(self.state.bufnr, "filetype", "markdown")
+end
+
 --- Create custom previewer for command documentation
 --- @return table Telescope previewer
 function M.create_command_previewer()
@@ -655,8 +683,20 @@ function M.create_command_previewer()
         preview_agent(self, entry)
       elseif entry.value.entry_type == "root_file" then
         preview_root_file(self, entry)
+      elseif entry.value.entry_type == "special" then
+        -- Shared branch for every special entry that is not is_help (intercepted above):
+        -- [Reload All], [Regenerate], and any future bulk-operation entry (e.g. Global Update)
+        -- that carries the same description/detail payload shape. See Decision 2 at this
+        -- dispatch chain's call site and the SYNC OBLIGATION comment in entries.lua.
+        preview_special(self, entry)
       else
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, {"Unknown entry type"})
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, {
+          string.format(
+            "Unknown entry type '%s' for entry '%s' -- no preview branch handles this entry; "
+              .. "add one to define_preview's dispatch chain.",
+            tostring(entry.value.entry_type), tostring(entry.value.name)
+          ),
+        })
       end
     end,
   })

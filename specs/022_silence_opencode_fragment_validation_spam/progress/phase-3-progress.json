@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Make [Reload All] and [Regenerate] honest and self-documenting",
+  "started_at": "2026-11-05T17:02:00Z",
+  "last_updated": "2026-11-05T17:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read entries.lua special-entry block and previewer.lua dispatch chain/preview_help", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace [Reload All] one-liner; keep [Regenerate] accurate but destructiveness-first", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua"]},
+    {"id": 3, "description": "Add structured description/detail preview payload to both special entries", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua"]},
+    {"id": 4, "description": "Add sync-obligation comment naming implementation functions", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua"]},
+    {"id": 5, "description": "Add entry_type==special branch to previewer.lua after is_help", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/display/previewer.lua"]},
+    {"id": 6, "description": "Change terminal else to name offending entry", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/display/previewer.lua"]},
+    {"id": 7, "description": "Record Decision 3 as comment at special-entry definitions", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua"]},
+    {"id": 8, "description": "Remove Step Through choice and its no-op branch; record Decision 4", "status": "done", "files_touched": ["lua/neotex/plugins/ai/claude/commands/picker/init.lua"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

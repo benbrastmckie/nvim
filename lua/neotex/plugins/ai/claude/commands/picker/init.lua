@@ -167,17 +167,16 @@ function M.show_commands_picker(opts, config)
           actions.close(prompt_bufnr)
           vim.schedule(function()
             vim.ui.select(
-              { "Reload All", "Unload All", "Step Through", "Cancel" },
+              -- Decision 4 (recorded with reasoning): "Step Through" was removed rather than
+              -- implemented. It was a silent no-op that only reopened the picker; implementing a
+              -- real stepwise resync is unscoped new feature work, and the submenu already
+              -- offers both real bulk operations ("Reload All", "Unload All"). Removal is the
+              -- honest minimal change -- a future task may reintroduce it as a working stepwise
+              -- resync if that is ever wanted.
+              { "Reload All", "Unload All", "Cancel" },
               { prompt = "Bulk action for " .. #loaded .. " loaded extension(s):" },
               function(choice)
                 if not choice or choice == "Cancel" then
-                  vim.defer_fn(function()
-                    M.show_commands_picker(opts, config)
-                  end, 100)
-                  return
-                end
-
-                if choice == "Step Through" then
                   vim.defer_fn(function()
                     M.show_commands_picker(opts, config)
                   end, 100)
