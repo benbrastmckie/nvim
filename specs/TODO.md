@@ -1,5 +1,5 @@
 ---
-next_project_number: 501
+next_project_number: 502
 ---
 
 # TODO
@@ -16,7 +16,7 @@ next_project_number: 501
 | 3 | 391,399,420,436,439,444,446,448,474,476,492 | 313,328,369,385,398,409,418,423,430,431,445,458,491 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 360,390,402,438,451,454,455,461,484,500 | 313,385,391,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 5 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 6 | 450,480,487 | 420,435,449,479 | core-agent-system, orchestrator |
+| 6 | 450,480,487,501 | 420,435,449,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 7 | 496 | 450,487,488 | extensions |
 | 8 | 498 | 496 | extensions |
 | 9 | 499 | 497,498 | extensions |
@@ -99,6 +99,7 @@ next_project_number: 501
       └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
       └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
         └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
+          └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
 
 ### Lean Extension
 
@@ -138,6 +139,87 @@ next_project_number: 501
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 501. Give the cycle-postflight containment site predicate parity and a guarded recovery route for a dropped path
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: Task 328, Task 430, Task 435, Task 448, Task 461, Task 472, Task 476, Task 484, Task 486
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json (that file carries NO top-level source_dir, only per-extension entries) and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system change request) of an /orchestrate invocation over task 328, session sess_1793904029_00a39c. User-approved at the lead level.
+
+SEVERITY: minor per drop, but the aggregate effect is that a legitimately-discovered path is first silently omitted from a cycle commit and then recovered by a commit that carries NO containment guarantee at all.
+
+=== SCOPE NOTE: THIS RECORD IS THE UNCOVERED REMAINDER, NOT THE GENERAL PROBLEM ===
+
+The originating change request was framed as the general file_scope-staleness problem with two candidate resolutions (a sanctioned in-dispatch file_scope extension path, versus a containment predicate that accepts a newly-created file under an already-declared parent). A duplicate check performed at creation time established that BOTH framings are already owned, and that three of the four issue ids the request cited are already cited by an existing record:
+
+- #430 (feed_undeclared_implement_paths_into_file_scope) owns the general in-dispatch extension channel, including the proposed_file_scope-extended-to-implement option, the auto-merge-versus-operator-confirmation ruling, and the concurrent-territory-contract constraint. It already cites iss_1792191089627_HbXkDD.
+- #486 (stop a required extension manifest.json registration being dropped) owns the extension-manifest half, including the "treat the touched extension's own manifest.json as implicitly in scope" option. It already cites iss_1793841635583_gpNhE6, iss_1793847274112_byw6XR and iss_1793848518784_26KAZz, and it already records the typst-phase recurrence.
+- #446 owns the plan-to-file_scope harvest reconciliation and the unread-warning half; #484 owns the per-path issue-row fan-out that produces the large "scope excursion" counts; #494 owns the own-artifact-directory member at the phase-commit site; completed #469 landed the shared engine-written-state allowlist.
+
+No new record was created for the general problem. What remains genuinely unowned is below: it is specific to the CYCLE-POSTFLIGHT containment site and to the recovery commit, neither of which any record above names.
+
+=== EVIDENCE (this run, cycle 1, dispatch_seq 24) ===
+
+orchestrate-cycle-postflight.sh emitted EXCURSION DROPPED for two paths and reported "2 of 11 reported modified_files entries were dropped from this cycle's commit as file_scope excursions":
+
+    agent-system/extensions/literature/manifest.json
+    agent-system/extensions/literature/scripts/lib/literature_search_pylib.py
+
+Both were real, chartered work: the phase extracted a shared python library and registered it in that extension's manifest. The dispatch recovered them in a separate labeled follow-up commit, ff880f77259fffd64836f373350710e0b5d1d7b0 ("task 328 phase 11: collapse literature-search.sh's self-internal repetition (follow-up commit)"), which carries exactly those two files and 334 insertions.
+
+SCOPING ACCURACY, STATED SO IT IS NOT OVERSTATED LATER: the 127 entries of class "scope excursion" in specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl are CUMULATIVE across that task's whole history, not from this run. In this run only cycle 1 hit the condition; cycles 2 and 3 both reported clean containment. This is a recurring structural gap, not an every-phase failure.
+
+=== MECHANICS VERIFIED IN THE SOURCE STORE AT CREATION TIME (re-derive before editing; line numbers move) ===
+
+FINDING 1 -- THE DROP FIRED AT A SITE NO OPEN RECORD OWNS. context/standards/git-staging-scope.md's "Three Containment sites, not one" section (around line 342) names site 1 as orchestrate-cycle-postflight.sh's WORK (h)/(i) filter, site 2 as git-commit-phase.sh's Phase-Commit Containment Self-Check, and site 3 as V10 inside git-commit-scoped.sh. The EXCURSION DROPPED string exists at exactly one place in the corpus, orchestrate-cycle-postflight.sh (WORK (i), around line 1954), so the observed drop is a SITE 1 event. Every open record listed in the scope note above declares git-commit-phase.sh (site 2) and/or git-commit-scoped.sh (site 3) in its file_scope; NONE declares orchestrate-cycle-postflight.sh. #486's file_scope is exactly four paths -- git-commit-phase.sh, its test, general-implementation-agent.md, git-staging-scope.md -- and its VERIFY section extends only test-git-commit-phase.sh. So whatever manifest-registration rule #486 lands will NOT reach the site where this drop actually happened.
+
+FINDING 2 -- THE TWO SITES DO NOT RUN THE SAME PREDICATE, THOUGH THE STANDARD SAYS THEY DO. git-staging-scope.md calls it "the same Containment predicate ... checked at three independent sites". It is not the same predicate:
+- Site 1 (orchestrate-cycle-postflight.sh, around lines 1689-1690) tests `$p == $f or ($p | startswith($f))`. Bare startswith, with no path-boundary check and no trailing-slash normalization.
+- Site 2 (git-commit-phase.sh's is_contained(), around lines 272-305) normalizes a trailing-slash entry down to a bare directory via a `while [ "${entry%/}" != "$entry" ]` loop and then composes a `"${entry}/*"` glob.
+Two consequences follow, in OPPOSITE directions, and both are live today. Site 1 OVER-matches: a declared entry `agent-system/extensions/core/scripts` admits `agent-system/extensions/core/scripts-archive/x.sh`, because startswith has no `/` boundary. Site 1 also does not share site 2's trailing-slash normalization, so the two sites can disagree about the same path against the same declaration. Task 328's own declaration is the worked example: it holds `agent-system/extensions/literature/scripts/tests/` (trailing slash, matched at site 1 only by accident of startswith) and `agent-system/extensions/literature/scripts/literature-search.sh`, but neither `.../scripts/lib/` nor `.../manifest.json` -- so the two dropped paths are genuine non-members at both sites, while the predicates' agreement on OTHER paths is coincidental rather than guaranteed.
+
+FINDING 3 -- THE RECOVERY ROUTE HAS NO CONTAINMENT GUARANTEE. Site 3 (V10 inside git-commit-scoped.sh) is `--task <N>` opt-in only. Its own header (around lines 461-472) states that `containment_scope_arr` is left EMPTY -- "the single disable switch every downstream V10 check consults, never a second flag" -- on any of: --task omitted; no specs/state.json; the task's entry not found; a missing, empty, null or malformed file_scope; or an internal resolution error. Both recovered paths are absent from task 328's declared file_scope (128 entries, checked at creation time, neither path present), yet both landed in ff880f772. So the follow-up commit reached HEAD past all three sites. Establish WHICH mechanism allowed it -- candidates to TEST, not to assume: --task was omitted on the recovery call, so V10 was disabled outright; or --task was supplied and V10's drop-and-warn posture with exit code 7 ("Observability, not a refusal", per that script's header around line 82) still let the commit stand; or the recovery used a route that does not pass through git-commit-scoped.sh at all. Record the verdict. The structural point survives whichever answer lands: the only route available for recovering a path the containment predicate correctly dropped is a commit that re-asserts no containment.
+
+=== REQUIRED OUTCOMES -- decide and implement ONE coherent rule for each, recording the reasoning ===
+
+1. PREDICATE PARITY AT SITE 1. Site 1 and site 2 test a candidate path by the same rule, with a path-boundary-correct containment test and trailing-slash normalization, so the two sites cannot disagree about the same path against the same declaration. Decide WHERE that rule lives: a shared library function both sites source (the precedent is scripts/lib/engine-written-state-paths-lib.sh, which all three sites already share for the allowlist), or a corrected per-site implementation. Weigh honestly -- the allowlist was consolidated into one library precisely because it had been hand-copied at three sites, and this is the same shape of problem one layer down; but a shared function must preserve each site's own fail-open posture, which differs in detail.
+
+2. SITE 1 INHERITS WHATEVER RULE THE EXTENSION-MANIFEST RECORD LANDS. Once #486 settles its manifest-registration question at site 2, site 1 must reach the same verdict rather than keeping the old behaviour. Decide whether that inheritance is structural (because outcome 1 put the rule in one shared place) or a second explicit edit here. If #486 rules for its own option (3) -- close without a rule, on the grounding that #430's general mechanism subsumes it -- record that site 1 needs nothing on this axis and say so explicitly.
+
+3. A GUARDED RECOVERY ROUTE. Give a dispatch one sanctioned way to land a path the predicate correctly dropped, in which the declaration is extended through the existing mutex-guarded state-write.sh path and the extension is itself recorded, so the recovery commit is checked by the same predicate as the commit that dropped the path. This is the half of the originating change request that #430 does NOT own: #430 decides whether and how a dispatch PROPOSES an addition to its own file_scope; this decides what a dispatch may legitimately COMMIT in the window before that proposal has merged. If the ruling is that the two are inseparable and the recovery route is wholly #430's territory, record that and reduce this record to outcomes 1, 2 and 4 rather than leaving the question open.
+
+4. THE STANDARD STOPS MISDESCRIBING ITSELF. git-staging-scope.md's "Three Containment sites, not one" section no longer claims the three sites run the same predicate when they do not, and records whatever parity outcome 1 lands plus the recovery route outcome 3 lands.
+
+=== HARD CONSTRAINTS ===
+- The containment check exists to stop a concurrently dispatched session's uncommitted edits being swept into the wrong task's commit (git-staging-scope.md's "Concurrency Qualifier: Targeted Staging Is Necessary But Not Sufficient" section, around lines 223-243, records that hazard as observed in production). NO outcome here may weaken it. In particular, fixing site 1's over-matching must TIGHTEN that site, and a guarded recovery route must not become a general bypass.
+- Do NOT make any site fatal. Fail-open on a missing, empty or malformed file_scope is deliberate at all three sites and must stay, as must site 1's detection-only, no-exit-code posture for the WORK (h) advisory itself.
+- Do NOT weaken drop-and-warn for a genuine excursion. An out-of-territory source edit must still be dropped, warned, and recorded, pinned by a test.
+- Do NOT re-introduce or disturb site 2's trailing-slash normalization or the shared engine-written-state allowlist; both are present and working.
+- Do NOT widen a task's declared file_scope by hand as the fix, and do not treat the per-task widening used as a workaround elsewhere as a precedent.
+- Any state.json write goes through the mutex-guarded state-write.sh path, never a second writer.
+
+=== ACCEPTANCE ===
+- A fixture in test-orchestrate-cycle-postflight.sh proves site 1 and site 2 agree on a shared battery of (declaration, candidate path) pairs, including the trailing-slash directory entry, the boundary case where a declared entry is a string prefix of a NON-child sibling path, and a newly created file under a declared parent directory.
+- A fixture proves a genuinely out-of-territory path is still dropped, still warned, and still recorded at site 1.
+- A fixture preserves fail-open for a missing, empty and malformed file_scope at site 1.
+- The verdict on how ff880f772 landed two non-member paths past all three sites is recorded, with whatever follow-on it implies either fixed here or filed.
+- git-staging-scope.md's three-sites section is truthful about the predicates and carries the recovery-route ruling.
+
+=== TERRITORY EDGES -- SEQUENCE, DO NOT PARALLELIZE ===
+Dependency edges are declared rather than racing shared files (context/patterns/batch-orchestration-guardrails.md: shared territory is serialized with an edge, never a bare exclusion).
+- #486 and #430: this record's outcome 2 consumes #486's ruling, which in turn depends on #430's general mechanism. Both must settle first; neither reaches site 1.
+- #461 and #484: both declare git-commit-scoped.sh (#484 also its test), the surface outcome 3 touches. #484 additionally rewrites the per-path issue-record emission that site 1's sibling sites call.
+- #494: the nearest neighbour in SHAPE -- it propagates an own-artifact-directory member that sites 1 and 3 already have to site 2 which never received it. This record is the mirror image, propagating to site 1 what sites 2 and 3 have. Neither subsumes the other and their file_scopes are disjoint, but read it before scoping: its account of the three-site propagation gap is the same account, in the opposite direction.
+- #435 (82-path lifecycle-prose sweep) is a strict SUPERSET of this record's declared scope: every path here is already in its file_scope. #448, #472, #476 and in-flight #328 each declare test-orchestrate-cycle-postflight.sh and/or test-git-commit-scoped.sh.
+
+=== BACKLOG AUDIT PERFORMED AT CREATION TIME (scripts/audit-task-proposals.sh, full corpus) ===
+The matcher's highest-scoring mechanically-overlapping open records were #486 (semantic 0.69), #494 (0.64), #484 (0.57), #430 (0.51) and #446 (0.50) -- precisely the records read and disclaimed in the scope note above. Ruling rendered by the creating surface, not by the script (which never decides duplication): NOT a duplicate. For #486, #494, #430 and #446 the ONLY mechanically shared path is context/standards/git-staging-scope.md, the standard every containment record necessarily amends; none of the four declares orchestrate-cycle-postflight.sh, the site where the cited drop fired. #494 is the closest in shape and is the mirror image rather than the same work: it carries a member sites 1 and 3 already have to site 2, where this record carries to site 1 what sites 2 and 3 have. Every remaining non-trivial verdict was a territory overlap on git-commit-scoped.sh, its suite, or test-orchestrate-cycle-postflight.sh, and is discharged by a dependency edge above rather than a merge. The matcher additionally emitted 41 scope-blind degradations (corpus records declaring no file_scope, emitted unconditionally per that script's documented noise trade-off) and a long tail of semantic-only verdicts in the 0.40-0.53 band against substantively unrelated records; neither class was treated as a duplication signal.
+
+---
 
 ### 500. Dependency-edge backfill is unreachable for a not-started task
 - **Status**: [NOT STARTED]
