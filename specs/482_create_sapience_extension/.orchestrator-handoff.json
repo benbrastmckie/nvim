@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 5,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase plan for the sapience extension at agent-system/extensions/sapience/: phase 1 scaffolds the manifest plus settings-fragment.json carrying the four MCP write-tool grants (gap 1, the blocker), phase 2 writes EXTENSION.md with the postflight sapience_wrapup instruction (gap 2), phase 3 writes five context/project/sapience/ notes including gap 3's documented resolution, phase 4 writes schema-conformant index-entries.json, phase 5 activates, redeploys and runs the full gate set. The plan deliberately drops one dispatch-named deliverable, scripts/sapience-context.sh, after independently re-verifying the research's refutation in skill-base.sh: a task_type-less extension's lifecycle hook is structurally unreachable for every task of every type, so the hook would ship as dead code. Gap 1 was re-derived live during authoring (7 read-only grants in dotfiles, 0 in .claude/settings.local.json) and plan authoring also surfaced two index-schema constraints the research missed (the on_demand:true marker and the forbidden description/tags/tier keys), now concrete phase-4 items.",
+  "summary": "Created and activated the sapience extension at agent-system/extensions/sapience/, closing the task's three named gaps: permission grants for the four MCP write tools (gap 1), a postflight sapience_wrapup instruction merged into CLAUDE.md (gap 2), and five context/project/sapience domain notes documenting the vault model, review-gate boundary, transcript-filter ceiling, and the deliberate, checkable refutation of the gap-3 context-injection-hook approach. Activated via headless manager.load, redeployed, and verified all five merge-target assertions hold with a scoped --only-gate verification set green per the dispatch's Batch Gate Deferral directive. Two real issues surfaced and fixed during phase 5 verification: a literal 'sapience-context.sh' filename mention in README.md that tripped the doc-lint script-reference check, and an EXTENSION.md over the orchestrator eager-load budget (trimmed from 44 to 28 lines, landing 80 B under the gate-20 regression baseline).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/482_create_sapience_extension/plans/01_create-sapience-extension.md",
-      "summary": "Five-phase plan: manifest plus permission grants, EXTENSION.md wrapup instruction, domain notes, index entries, activate/redeploy/verify. 4.25h, waves [[1],[2,3],[4],[5]]."
+      "type": "summary",
+      "path": "specs/482_create_sapience_extension/summaries/01_create-sapience-extension-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, verification, impacts, and follow-ups for the sapience extension."
     }
-  ],
-  "dispatch_seq": 2
+  ]
 }

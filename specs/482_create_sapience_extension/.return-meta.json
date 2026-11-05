@@ -1,10 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/482_create_sapience_extension/summaries/01_create-sapience-extension-summary.md",
+      "summary": "Created the sapience extension (manifest, settings-fragment permission grants, EXTENSION.md postflight instruction, five context/project/sapience domain notes, index entries), activated it, redeployed, and verified the deployed tree against a scoped gate set per the batch gate deferral directive."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created and activated the sapience extension at agent-system/extensions/sapience/: permission grants for the four MCP write tools (gap 1), a postflight sapience_wrapup instruction in EXTENSION.md (gap 2), and five context/project/sapience domain notes documenting the vault model, review-gate boundary, transcript-filter ceiling, and the deliberate absence of a per-dispatch context-injection hook (gap 3). Redeployed the tree and confirmed all five merge-target assertions hold with a scoped verification gate set green."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/settings-fragment.json",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/README.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/context/project/sapience/README.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/subagent-orientation.md",
+    ".claude-extensions.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Merging a new extension's EXTENSION.md into .claude/CLAUDE.md (merge_targets.claudemd) directly counts toward verify-deploy.sh Gate 20's orchestrator eager-load-total regression check (measure-eager-context.sh --check against orchestrator-context-budget.json's eager_load.baseline_bytes), because the predicted assembled CLAUDE.md is part of that eager-load total. A brand-new extension's EXTENSION.md -- even a short, well-scoped one -- can push the total over baseline on its own. Check this gate (bash .claude/scripts/measure-eager-context.sh --check, or verify-deploy.sh --only-gate 20) after writing a new EXTENSION.md and before considering that phase done; if over, relocate duplicated detail to the extension's own non-eager context/ files (which are NOT eager-loaded) and keep only a short pointer in EXTENSION.md, following this codebase's established 'always trim, never bump' precedent rather than moving the baseline.",
+      "category": "PATTERN",
+      "source_artifact": "specs/482_create_sapience_extension/summaries/01_create-sapience-extension-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["eager-load", "gate-20", "measure-eager-context.sh", "EXTENSION.md", "orchestrator-context-budget"]
+    },
+    {
+      "content": "check-extension-docs.sh's script-reference check flags ANY .sh filename literally mentioned in an extension's docs (EXTENSION.md/README.md) that is not also present in that extension's manifest provides.scripts array -- it does not distinguish 'this extension ships X' from 'this extension deliberately does NOT ship X'. When documenting a deliberately-dropped script or hook by name (e.g. explaining why a gap-3 context-injection script was not built), describe the mechanism without writing the literal filename/.sh string anywhere in the extension's own files, or the doc-lint gate fails on a true negative.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/482_create_sapience_extension/summaries/01_create-sapience-extension-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["check-extension-docs.sh", "doc-lint", "provides.scripts", "false-positive", "script-reference-check"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793893148_3d43f7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 5
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
