@@ -1,0 +1,33 @@
+{
+  "phase": 3,
+  "phase_name": "Migrate Site 1 (WORK (h) in orchestrate-cycle-postflight.sh)",
+  "started_at": "2026-11-05T07:14:00Z",
+  "last_updated": "2026-11-05T07:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-cycle-postflight.sh and its test suite, relocate splice by grep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace literal splice with --argjson splice fed by engine_written_state_paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Source library at top alongside derived-artifact-probe-lib.sh; apply Decision 2 fallback at call site", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Rewrite stale WORK (h) comment block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Add engine-written-state-allowlist fixture block (8 assertions) to test suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Verify harness mid-run events.jsonl append behavior; adjust assertion accordingly", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.3",
+      "description": "Source lib/engine-written-state-paths-lib.sh unconditionally at the top (matching derived-artifact-probe-lib.sh's own convention) and implement Decision 2's fallback entirely at the WORK (h) call site via a subshell-captured, 2>/dev/null-guarded function call",
+      "type": "altered",
+      "reason": "An unconditional top-level source cannot itself 'fall back' on a missing file -- it would simply leave the function undefined and continue (no set -e in this script). Decision 2's actual fallback therefore has to live at the call site (engine_written_paths_json=\"$(engine_written_state_paths 2>/dev/null)\" || engine_written_paths_json=\"\"), which also correctly catches the 'function undefined' failure mode, not just an empty/malformed JSON result.",
+      "annotation": "*(deviation: altered — Decision 2 fallback implemented at the WORK (h) call site rather than at the (unconditional, matching-sibling-style) top-level source line itself)*"
+    },
+    {
+      "task_id": "3-suite",
+      "description": "The full test-orchestrate-cycle-postflight.sh suite does not exit 0 (25 pre-existing failures unrelated to this phase)",
+      "type": "deferred",
+      "reason": "Confirmed via byte-identical pre-edit comparison (git show HEAD: of both files run in isolation) that these 25 failures (plus a 'cleanup: command not found' trap error) are pre-existing and unrelated to the engine-written-state allowlist change -- out of task 469's scope to fix. Recorded in the issue log.",
+      "annotation": "*(deviation: deferred — 25 pre-existing, unrelated test failures left as-is; recorded in issue log, not task 469's scope)*"
+    }
+  ]
+}

@@ -47,7 +47,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
          phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
-         derived-artifact-probe-lib.sh \
+         derived-artifact-probe-lib.sh engine-written-state-paths-lib.sh \
          return-meta-status-vocabulary.sh return-meta-artifacts-lib.sh; do
   require_file "$CORE_DIR/lib/$f"
 done
@@ -89,7 +89,7 @@ setup_sandbox() {
   # (the new return-meta schema probe's own collaborator), added for the same reason.
   for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
            phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
-           derived-artifact-probe-lib.sh \
+           derived-artifact-probe-lib.sh engine-written-state-paths-lib.sh \
            return-meta-status-vocabulary.sh runtime-file-patterns.sh return-meta-artifacts-lib.sh; do
     cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
   done
@@ -1562,6 +1562,94 @@ if [ -n "$dirty_707" ]; then
   common_test_pass "invariant: the dropped excursion path remains dirty on disk afterwards (left for manual review, not lost)"
 else
   common_test_fail "invariant: the dropped excursion path is unexpectedly clean on disk — change may have been lost rather than merely left uncommitted"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Engine-written-state allowlist: specs/events.jsonl is neither advised as an excursion nor
+# dropped by WORK (i), while a genuine excursion in the SAME run is still caught exactly as
+# above -- the paired admission/non-regression proof for WORK (h)'s shared-library splice.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Engine-written-state allowlist: specs/events.jsonl admitted, genuine excursion still caught"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/719_candidate/summaries"
+echo x > "$WORKDIR/specs/719_candidate/summaries/01_x-summary.md"
+mkdir -p "$WORKDIR/completely/unrelated"
+echo v1 > "$WORKDIR/completely/unrelated/excursion.sh"
+( cd "$WORKDIR" && git add completely/unrelated/excursion.sh )
+# A tracked, committed baseline specs/events.jsonl -- the engine-written store every dispatch's
+# lifecycle appends to. Declared file_scope deliberately omits it (and never could legitimately
+# include it): admission must come from the shared allowlist alone.
+echo '{"event":"baseline"}' > "$WORKDIR/specs/events.jsonl"
+( cd "$WORKDIR" && git add specs/events.jsonl )
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 719, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #719", "dependencies": [], "file_scope": ["specs/719_candidate/"]}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+echo v2 > "$WORKDIR/completely/unrelated/excursion.sh"
+echo y2 > "$WORKDIR/specs/719_candidate/summaries/01_x-summary.md"
+# Baseline content before the dispatch's own dirtying, captured so the delta assertion below
+# can tell this task's own dirtying apart from any mid-run append the harness's own collaborator
+# scripts might make (skill_postflight_update's events-append.sh call), per the plan's own
+# caution against asserting mere presence when the store is shared/appended-to elsewhere.
+events_before_719="$(cat "$WORKDIR/specs/events.jsonl")"
+echo '{"event":"dirtied-by-dispatch"}' >> "$WORKDIR/specs/events.jsonl"
+events_after_dirty_719="$(cat "$WORKDIR/specs/events.jsonl")"
+cat > "$WORKDIR/specs/719_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+cat > "$WORKDIR/specs/719_candidate/.return-meta.json" <<'EOF'
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/719_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/719_candidate/summaries/01_x-summary.md","specs/events.jsonl","completely/unrelated/excursion.sh"]}
+EOF
+window_start=$(( $(now_ts) - 5 ))
+run_sut specs/719_candidate --session sess_719 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/719_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_start" 719
+
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
+  common_test_pass "events.jsonl admission: exits 0 with verdict=ok, same as the unfiltered excursion-only case"
+else
+  common_test_fail "events.jsonl admission: expected exit 0 verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+fi
+if echo "$LAST_STDERR" | grep -q "ADVISORY.*events\.jsonl"; then
+  common_test_fail "events.jsonl admission: specs/events.jsonl was named in an ADVISORY excursion line (should be silently admitted): $LAST_STDERR"
+else
+  common_test_pass "events.jsonl admission: specs/events.jsonl is NOT named in any ADVISORY excursion line"
+fi
+if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED.*events\.jsonl"; then
+  common_test_fail "events.jsonl admission: specs/events.jsonl was named in an EXCURSION DROPPED line at WORK (i) (should be silently admitted): $LAST_STDERR"
+else
+  common_test_pass "events.jsonl admission: specs/events.jsonl is NOT named in any EXCURSION DROPPED line"
+fi
+if echo "$LAST_STDERR" | grep -q "ADVISORY.*excursion\.sh"; then
+  common_test_pass "events.jsonl admission: the genuine excursion (excursion.sh) is STILL reported as an ADVISORY excursion in the same run"
+else
+  common_test_fail "events.jsonl admission: expected excursion.sh to still be flagged ADVISORY in stderr: $LAST_STDERR"
+fi
+committed_files_719=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
+if echo "$committed_files_719" | grep -qx "specs/events.jsonl"; then
+  common_test_pass "events.jsonl admission: specs/events.jsonl IS present in the resulting commit"
+else
+  common_test_fail "events.jsonl admission: specs/events.jsonl missing from commit contents: $committed_files_719"
+fi
+events_committed_blob_719="$(cd "$WORKDIR" && git show HEAD:specs/events.jsonl 2>/dev/null)"
+if [ "$events_committed_blob_719" = "$events_after_dirty_719" ]; then
+  common_test_pass "events.jsonl admission: the committed blob matches exactly what this dispatch dirtied (no mid-run append from the harness's own collaborators confounding the delta)"
+elif [ "$events_committed_blob_719" != "$events_before_719" ] && echo "$events_committed_blob_719" | grep -qF "dirtied-by-dispatch"; then
+  common_test_pass "events.jsonl admission: the committed blob contains this dispatch's own dirtying line (interleaved with additional lines the harness's own collaborators appended mid-run -- the expected, known consequence of committing a shared append-only store, not a defect)"
+else
+  common_test_fail "events.jsonl admission: committed blob does not contain this dispatch's own dirtying line at all: <<<${events_committed_blob_719}>>>"
+fi
+if echo "$committed_files_719" | grep -qx "completely/unrelated/excursion.sh"; then
+  common_test_fail "events.jsonl admission: the genuine excursion path was committed despite being outside declared file_scope: $committed_files_719"
+else
+  common_test_pass "events.jsonl admission: the genuine excursion path was NOT staged into the commit (dropped, not committed)"
+fi
+dirty_719=$(cd "$WORKDIR" && git status --porcelain -- completely/unrelated/excursion.sh)
+if [ -n "$dirty_719" ]; then
+  common_test_pass "events.jsonl admission: the dropped excursion path remains dirty on disk afterwards"
+else
+  common_test_fail "events.jsonl admission: the dropped excursion path is unexpectedly clean on disk"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

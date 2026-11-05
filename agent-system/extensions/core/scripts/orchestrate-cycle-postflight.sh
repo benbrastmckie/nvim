@@ -279,6 +279,11 @@ source "${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
 # library's own header for the full fail-open contract. Consumed by WORK (h)'s derived-output
 # exemption splice and WORK (f)'s pre-status-write blocking probe call, below.
 source "${SCRIPT_DIR}/lib/derived-artifact-probe-lib.sh"
+# Single canonical engine-written-state path set (engine_written_state_paths) -- see that
+# library's own header for the full admission bar and consumer list. Consumed by WORK (h)'s
+# engine-written-state-file splice, below; a call-site fallback there (not here) implements
+# Decision 2 so a source/resolution failure never narrows today's admitted scope.
+source "${SCRIPT_DIR}/lib/engine-written-state-paths-lib.sh"
 
 # ── Structural output-channel discipline (emit direction) ──────────────────────────────────────
 # Same fd-3 discipline as orchestrate-cycle-plan.sh (see that script's own header for the full
@@ -1657,17 +1662,25 @@ if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
     spliced_derived_fsj=$(echo "$effective_file_scope_json" | jq -c --argjson d "$derived_output_prefixes_json" '. + $d' 2>/dev/null) && effective_file_scope_json="$spliced_derived_fsj"
     echo "${notice_prefix} DERIVED-OUTPUT EXEMPTION: widening task ${task_number}'s file_scope excursion comparison with ${derived_output_prefix_count} repo-declared derived-output prefix(es): $(echo "$derived_output_prefixes_json" | jq -c '.')." >&2
   fi
-  # Engine-written state-file allowlist (site 1 of two non-subsuming containment sites — see
-  # git-staging-scope.md's "Three Containment sites, not one"): specs/TODO.md and
-  # specs/state.json are written by update-task-status.sh and this postflight on behalf of EVERY
-  # task, and are never declarable in any task's own file_scope, so they are never a genuine
-  # excursion no matter which task reports them in modified_files. Mirrors
-  # git-commit-scoped.sh's already-landed V10 allowlist at that sibling, non-subsuming site.
-  # Admission criterion for this splice: engine-written on behalf of every task, not merely
-  # "these two paths" — a future addition must meet that same bar. Deliberately literal, not
-  # derived from $STATE_FILE: if $STATE_FILE is ever relocated, review this splice together with
-  # WORK (i)'s stage_paths seed below.
-  spliced_state_fsj=$(echo "$effective_file_scope_json" | jq -c '. + ["specs/TODO.md", "specs/state.json"]' 2>/dev/null) && effective_file_scope_json="$spliced_state_fsj"
+  # Engine-written state-file allowlist (one of three Containment sites — see
+  # git-staging-scope.md's "Three Containment sites, not one"): the shared source
+  # scripts/lib/engine-written-state-paths-lib.sh defines the fixed set of paths written by the
+  # engine on behalf of EVERY task (currently specs/TODO.md, specs/state.json,
+  # specs/events.jsonl, specs/errors.json), never declarable in any one task's own file_scope,
+  # so none of them is ever a genuine excursion no matter which task reports it in
+  # modified_files. All three Containment sites now consult this same shared source rather than
+  # each hand-copying the list. Decision 2's fallback: a source/resolution failure splices the
+  # hardcoded two-literal pair instead, so a library failure reproduces today's admitted scope
+  # exactly and never narrows it. Deliberately not derived from $STATE_FILE itself: if
+  # $STATE_FILE is ever relocated, review this splice together with WORK (i)'s independent
+  # stage_paths seed below, which this allowlist does not replace.
+  engine_written_paths_json="$(engine_written_state_paths 2>/dev/null)" || engine_written_paths_json=""
+  if [ -n "$engine_written_paths_json" ] \
+     && echo "$engine_written_paths_json" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
+    spliced_state_fsj=$(echo "$effective_file_scope_json" | jq -c --argjson d "$engine_written_paths_json" '. + $d' 2>/dev/null) && effective_file_scope_json="$spliced_state_fsj"
+  else
+    spliced_state_fsj=$(echo "$effective_file_scope_json" | jq -c '. + ["specs/TODO.md", "specs/state.json"]' 2>/dev/null) && effective_file_scope_json="$spliced_state_fsj"
+  fi
   # NOTE: the `any($fs[]; . as $f | ...)` re-binding is load-bearing, not stylistic — piping `$p`
   # into `startswith(.)` directly (`$p | startswith(.)`) rebinds `.` to `$p` itself for the
   # argument's own evaluation (jq evaluates a builtin's argument against ITS OWN input, i.e. the

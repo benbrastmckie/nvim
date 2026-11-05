@@ -274,7 +274,7 @@ goal.
 
 ---
 
-### Phase 3: Migrate Site 1 (WORK (h) in orchestrate-cycle-postflight.sh) [NOT STARTED]
+### Phase 3: Migrate Site 1 (WORK (h) in orchestrate-cycle-postflight.sh) [COMPLETED]
 
 **Goal**: WORK (h)'s `effective_file_scope_json` is widened from the shared library, and the
 postflight suite pins that an engine-written path is neither advised as an excursion nor dropped
@@ -282,23 +282,30 @@ by WORK (i).
 
 **Tasks**:
 
-- [ ] Re-read `scripts/orchestrate-cycle-postflight.sh` and
+- [x] Re-read `scripts/orchestrate-cycle-postflight.sh` and
       `scripts/tests/test-orchestrate-cycle-postflight.sh` immediately before editing — sibling
       #428 declares BOTH files and is live in this same cycle. Relocate the splice by
-      `grep -n 'specs/TODO.md", "specs/state.json"'`.
-- [ ] Replace the literal `jq -c '. + ["specs/TODO.md", "specs/state.json"]'` splice with a
+      `grep -n 'specs/TODO.md", "specs/state.json"'`. *(completed: no foreign collision observed
+      at edit time — this task's own working-tree diff was the only pending change to either
+      file)*
+- [x] Replace the literal `jq -c '. + ["specs/TODO.md", "specs/state.json"]'` splice with a
       `--argjson` splice fed by `engine_written_state_paths`, mirroring the
       `derived_output_prefixes_json` splice immediately above it (same `spliced_*` temp-variable
       and `&& effective_file_scope_json=...` assignment discipline, so a `jq` failure leaves the
-      prior value intact rather than emptying it).
-- [ ] Source the library once near the top of the script alongside the existing
+      prior value intact rather than emptying it). *(completed)*
+- [x] Source the library once near the top of the script alongside the existing
       `derived-artifact-probe-lib.sh` source, not inline inside WORK (h), matching how the
-      sibling library is already resolved; apply Decision 2's two-literal fallback.
-- [ ] Rewrite the WORK (h) comment block: it currently names "specs/TODO.md and specs/state.json"
+      sibling library is already resolved; apply Decision 2's two-literal fallback. *(completed:
+      sourced unconditionally at the top matching the sibling library's own convention; the
+      call-site fallback via `engine_written_paths_json="$(engine_written_state_paths 2>/dev/null)" || engine_written_paths_json=""`
+      is what actually implements Decision 2, since an unconditional top-level source itself
+      cannot "fall back" on failure)*
+- [x] Rewrite the WORK (h) comment block: it currently names "specs/TODO.md and specs/state.json"
       explicitly, calls itself "site 1 of two non-subsuming containment sites", and says
       "Deliberately literal, not derived". All three statements become false. Preserve the
       cross-reference to WORK (i)'s independent `stage_paths` seed, which is unchanged.
-- [ ] Add fixtures to `scripts/tests/test-orchestrate-cycle-postflight.sh`, extending the
+      *(completed)*
+- [x] Add fixtures to `scripts/tests/test-orchestrate-cycle-postflight.sh`, extending the
       existing "excursion never changes exit code or verdict" block (which already provisions
       `completely/unrelated/excursion.sh` as its genuine-excursion fixture):
       - Provision a tracked, committed baseline `specs/events.jsonl` in the fixture repo, then
@@ -309,9 +316,14 @@ by WORK (i).
       - Assert, in the same run, that `completely/unrelated/excursion.sh` is STILL reported as an
         `ADVISORY` excursion, STILL absent from the commit, and STILL dirty on disk afterwards —
         the existing assertions must survive unchanged alongside the new ones.
-- [ ] Verify the fixture's own harness does not itself append to `specs/events.jsonl` mid-run
+      *(completed: new "Engine-written-state allowlist" block added with 8 assertions, all
+      passing)*
+- [x] Verify the fixture's own harness does not itself append to `specs/events.jsonl` mid-run
       (which would make the delta assertion pass for the wrong reason); if it does, assert on the
-      specific committed blob rather than mere presence.
+      specific committed blob rather than mere presence. *(completed: it DOES append mid-run via
+      `skill_postflight_update`'s own `events-append.sh` call — confirmed empirically — so the
+      committed-blob assertion accepts either an exact match or an interleaved match containing
+      this dispatch's own dirtying line, and documents why in its own PASS message)*
 
 **Timing**: 1 hour
 
@@ -348,6 +360,22 @@ before editing — expect exactly two hits (WORK (h)'s splice, WORK (i)'s seed v
   fail-open, carve-out, and all-entries-dropped blocks still passing.
 - `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh <the two files>` exits 0.
 - `bash agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh` exits 0.
+
+**Verification notes (recorded at implementation time)**: the new "Engine-written-state
+allowlist" block's 8 assertions all pass, and shellcheck/`lint-postflight-boundary.sh` both
+exit 0. The suite as a whole does NOT exit 0: 25 pre-existing `[FAIL]` assertions (spread
+across `acceptance`, `fixture`, `regression`, `invariant (fd-3)`, `skeleton follow-up`, and
+`case-9xx` status-transition blocks, plus one assertion inside the named `carve-out` block
+expecting `specs/state.json` in a commit) are present both before and after this phase's edit,
+confirmed by running a byte-identical pre-edit copy (`git show HEAD:` of both files) in
+isolation: identical 25 failures, identical `cleanup: command not found` trap error, 271 passed
+pre-edit vs. 278 passed post-edit — the +7 delta is exactly this phase's own new assertions
+(an 8th was added afterward for the `EXCURSION DROPPED` check, bringing it to 8). These 25
+failures are unrelated to the engine-written-state allowlist and out of task 469's scope to
+fix; recorded in the issue log (class "pre-existing test failure", severity costly) rather than
+silently absorbed. The excursion, fail-open, and all-entries-dropped blocks named above have no
+failing assertions; only the named `carve-out` block carries one, and it is this same
+pre-existing, unrelated defect.
 
 ---
 
