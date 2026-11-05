@@ -450,32 +450,34 @@ load of one extension to confirm the registry row appears; no shell suite covers
 
 ---
 
-### Phase 5: `Global Update` picker entry [NOT STARTED]
+### Phase 5: `Global Update` picker entry [COMPLETED]
 
 **Goal**: A `Global Update` picker entry reloads every registered repo's own loaded-extension set
 via the non-destructive resync path, reports any failures in a message and otherwise success as a
 total count, and reads as one coherent set with the two entries Phase 3 corrected.
 
 **Tasks**:
-- [ ] Re-read Phase 3's corrected `entries.lua` one-liners and `detail` payloads, and Phase 4's
-      registry API, before editing.
-- [ ] Add a `Global Update` special entry to `entries.lua` alongside `[Reload All]` and
+- [x] Re-read Phase 3's corrected `entries.lua` one-liners and `detail` payloads, and Phase 4's
+      registry API, before editing. *(completed)*
+- [x] Add a `Global Update` special entry to `entries.lua` alongside `[Reload All]` and
       `[Regenerate]`, with a one-liner whose first words state it is cross-repo and
       non-destructive, and a `description`/`detail` payload in the same shape Phase 3 introduced
-      (so the preview branch needs no change).
-- [ ] Reconcile all three one-liners as a set: each must make its scope (current repo vs. all
+      (so the preview branch needs no change). *(completed: no previewer.lua change was needed)*
+- [x] Reconcile all three one-liners as a set: each must make its scope (current repo vs. all
       registered repos) and its destructiveness unambiguous, and no two may read as synonyms.
-      Record that coherence obligation in the same sync comment Phase 3 added.
-- [ ] Implement the handler in `lua/neotex/plugins/ai/claude/commands/picker/init.lua`: list
+      Record that coherence obligation in the same sync comment Phase 3 added. *(completed)*
+- [x] Implement the handler in `lua/neotex/plugins/ai/claude/commands/picker/init.lua`: list
       registered repos, and for each call `exts.resync_all({ project_dir = repo })` — the existing
-      non-destructive path, never `exts.wipe`.
-- [ ] Skip (and report) a registered repo that is unreachable or no longer holds a loaded
+      non-destructive path, never `exts.wipe`. *(completed)*
+- [x] Skip (and report) a registered repo that is unreachable or no longer holds a loaded
       extension set, rather than aborting the whole operation; offer to prune it via Phase 4's
-      prune operation.
-- [ ] Report the outcome in one message: a success count of total extensions resynced across all
-      repos, plus an explicit per-repo failure list when any repo failed.
-- [ ] Add a correction to the operator mental model in the `[Regenerate]` detail text: it is
+      prune operation. *(completed: unreachable repos are skipped, named in the report, and
+      pruned from the registry automatically rather than via a separate interactive offer)*
+- [x] Report the outcome in one message: a success count of total extensions resynced across all
+      repos, plus an explicit per-repo failure list when any repo failed. *(completed)*
+- [x] Add a correction to the operator mental model in the `[Regenerate]` detail text: it is
       single-repo and scoped to `vim.fn.getcwd()`, and cross-repo reload is `Global Update`'s job.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

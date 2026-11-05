@@ -294,6 +294,76 @@ function M.show_commands_picker(opts, config)
           return
         end
 
+        -- Global Update special entry: cross-repo, non-destructive resync of every registered
+        -- repo's OWN loaded-extension set (never the host repo's set applied elsewhere -- each
+        -- repo's resync_all call only touches the extensions that repo itself has loaded).
+        -- Never uses exts.wipe -- only the same non-destructive manager.resync_all path
+        -- [Reload All] uses, scoped per repo via repo_registry.lua's registered rows.
+        if selection.value.is_global_update then
+          actions.close(prompt_bufnr)
+          local exts = require(extensions_module)
+          local repo_registry = require("neotex.plugins.ai.shared.extensions.repo_registry")
+          local rows = repo_registry.list()
+
+          if #rows == 0 then
+            helpers.notify(
+              "Global Update: no repos registered yet (a repo is registered the first time "
+                .. "<leader>al loads an extension into it).",
+              "INFO"
+            )
+            return
+          end
+
+          local total_succeeded = 0
+          local per_repo_failures = {}
+          local unreachable = {}
+
+          for _, row in ipairs(rows) do
+            if vim.fn.isdirectory(row.project_dir) ~= 1 then
+              table.insert(unreachable, row.project_dir)
+            else
+              local result = exts.resync_all({ project_dir = row.project_dir })
+              total_succeeded = total_succeeded + #result.succeeded
+              if #result.failed > 0 then
+                local failed_names = {}
+                for _, f in ipairs(result.failed) do
+                  table.insert(failed_names, f.name .. ": " .. (f.error or "unknown"))
+                end
+                table.insert(per_repo_failures,
+                  row.project_dir .. " -- " .. table.concat(failed_names, ", "))
+              end
+            end
+          end
+
+          -- Self-maintaining registry: an unreachable registered repo is pruned automatically
+          -- (per Phase 4's prune_unreachable) rather than aborting the whole operation or
+          -- requiring a separate confirmation -- Global Update stays non-destructive to repo
+          -- contents while still keeping its own registry honest.
+          if #unreachable > 0 then
+            repo_registry.prune_unreachable()
+          end
+
+          local message_parts = {
+            string.format("Global Update: %d extension(s) resynced across %d repo(s)",
+              total_succeeded, #rows - #unreachable),
+          }
+          if #unreachable > 0 then
+            table.insert(message_parts, string.format(
+              "%d unreachable repo(s) pruned from the registry: %s",
+              #unreachable, table.concat(unreachable, ", ")
+            ))
+          end
+          if #per_repo_failures > 0 then
+            table.insert(message_parts, "Failures: " .. table.concat(per_repo_failures, "; "))
+          end
+
+          helpers.notify(
+            table.concat(message_parts, "\n"),
+            (#per_repo_failures > 0) and "WARN" or "INFO"
+          )
+          return
+        end
+
         -- Help section: does nothing
         if selection.value.is_help then
           return
@@ -382,7 +452,7 @@ function M.show_commands_picker(opts, config)
       -- Load artifact locally with Ctrl-l
       map("i", "<C-l>", function()
         local selection = action_state.get_selected_entry()
-        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_heading then
+        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_global_update or selection.value.is_heading then
           return
         end
 
@@ -406,7 +476,7 @@ function M.show_commands_picker(opts, config)
       -- Update from global with Ctrl-u
       map("i", "<C-u>", function()
         local selection = action_state.get_selected_entry()
-        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_heading then
+        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_global_update or selection.value.is_heading then
           return
         end
 
@@ -430,7 +500,7 @@ function M.show_commands_picker(opts, config)
       -- Save to global with Ctrl-s
       map("i", "<C-s>", function()
         local selection = action_state.get_selected_entry()
-        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_heading then
+        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_global_update or selection.value.is_heading then
           return
         end
 
@@ -454,7 +524,7 @@ function M.show_commands_picker(opts, config)
       -- Edit file with Ctrl-e
       map("i", "<C-e>", function()
         local selection = action_state.get_selected_entry()
-        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_heading then
+        if not selection or selection.value.is_help or selection.value.is_reload_all or selection.value.is_regenerate or selection.value.is_global_update or selection.value.is_heading then
           return
         end
 

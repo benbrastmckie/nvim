@@ -977,14 +977,20 @@ function M.create_special_entries(config)
   -- implementation function it names must all agree. A change to one without the other two is a
   -- defect -- this is exactly the bug this phase fixed (display/entries.lua:980-982 used to
   -- describe [Regenerate]'s behavior under [Reload All]'s name). [Reload All] describes
-  -- `manager.resync_all`; [Regenerate] describes `manager.wipe`.
+  -- `manager.resync_all`; [Regenerate] describes `manager.wipe`; [Global Update] describes
+  -- `manager.resync_all` run per registered repo (repo_registry.lua's list()).
+  --
+  -- COHERENCE OBLIGATION across all three one-liners: each must make its SCOPE (current repo
+  -- vs. all registered repos) and its DESTRUCTIVENESS unambiguous as the first thing it says,
+  -- and no two may read as synonyms. [Reload All] and [Regenerate] are both current-repo-only;
+  -- [Global Update] is the only cross-repo entry.
   --
   -- REDUNDANCY RULING (Decision 3, recorded here with its reasoning): keep both [Reload All] and
   -- [Regenerate] as separate entries, with destructiveness stated FIRST in both one-liners,
   -- rather than collapsing [Regenerate] into the [Reload All] submenu. Collapsing would bury a
-  -- recovery operation two keypresses deep, and a third bulk entry (Global Update) lands in this
-  -- same task, so a flat set of self-describing entries is more discoverable than one entry
-  -- fronting a multi-item submenu. Renaming alone was rejected too: the defect was a false
+  -- recovery operation two keypresses deep, and a third bulk entry (Global Update, below) lands
+  -- in this same task, so a flat set of self-describing entries is more discoverable than one
+  -- entry fronting a multi-item submenu. Renaming alone was rejected too: the defect was a false
   -- description, not an ambiguous name.
 
   -- [Reload All] appears just above [Keyboard Shortcuts] (inserted after it due to descending
@@ -997,15 +1003,15 @@ function M.create_special_entries(config)
     display = string.format(
       "%-40s %s",
       "[Reload All]",
-      "Non-destructive: force-resyncs all loaded extensions in dependency order"
+      "Non-destructive, current repo only: force-resyncs all loaded extensions"
     ),
     entry_type = "special",
-    description = "Non-destructive: force-resyncs all loaded extensions in dependency order",
+    description = "Non-destructive, current repo only: force-resyncs all loaded extensions",
     detail = {
       "What it does: force-resyncs every currently loaded extension in dependency order via",
       "manager.resync_all (manager.load(..., {force = true}) per extension).",
       "What it touches: the current repo only (vim.fn.getcwd()) -- every extension already",
-      "loaded into it.",
+      "loaded into it. For every REGISTERED repo's own loaded set, use [Global Update] instead.",
       "Destructive: no. Never unloads; each extension is re-loaded in place, so there is no",
       "intermediate \"everything unloaded\" state.",
       "Prompts: no confirmation dialog.",
@@ -1024,19 +1030,55 @@ function M.create_special_entries(config)
     display = string.format(
       "%-40s %s",
       "[Regenerate]",
-      "Destructive (confirmation required): wipe and rebuild from the extension manifest"
+      "Destructive (confirmation required), current repo only: wipe and rebuild"
     ),
     entry_type = "special",
-    description = "Destructive (confirmation required): wipe and rebuild from the extension manifest",
+    description = "Destructive (confirmation required), current repo only: wipe and rebuild",
     detail = {
       "What it does: wipes the deployed directory and rebuilds it from the surviving",
       "project-root extension manifest via manager.wipe (snapshot -> rm -rf -> regenerate ->",
       "restore settings.local.json and .syncprotect-listed paths -> clear staging).",
       "What it touches: the current repo only (vim.fn.getcwd()) -- same single-repo scope as",
-      "[Reload All]; it does NOT reload any other repo's extension set.",
+      "[Reload All]; it does NOT reload any other repo's extension set, and it is NOT",
+      "\"[Reload All] across every repo\" -- that is [Global Update]'s job, not this entry's.",
       "Destructive: yes. The deployed directory is deleted and rebuilt from scratch before",
       "being restored.",
       "Prompts: yes, confirmation is required before it proceeds.",
+    },
+    config = config,
+  })
+
+  -- [Global Update] appears just above [Regenerate] (inserted after it due to descending sort).
+  -- Non-destructive, cross-repo: for every repo repo_registry.lua has on record, resyncs THAT
+  -- repo's OWN loaded-extension set via the same non-destructive manager.resync_all path
+  -- [Reload All] uses -- never manager.wipe, and never the current repo's extension set applied
+  -- to other repos. A repo is registered the first time <leader>al loads an extension into it
+  -- (see repo_registry.lua); the host repo (this ~/.config/nvim tree) is deliberately excluded
+  -- from registration so this entry cannot recurse into itself.
+  table.insert(entries, {
+    is_global_update = true,
+    name = "~~~global_update",
+    title = "[Global Update]",
+    display = string.format(
+      "%-40s %s",
+      "[Global Update]",
+      "Non-destructive, all registered repos: resyncs each repo's own loaded extensions"
+    ),
+    entry_type = "special",
+    description = "Non-destructive, all registered repos: resyncs each repo's own loaded"
+      .. " extensions",
+    detail = {
+      "What it does: for every repo registered in repo_registry.lua, calls manager.resync_all",
+      "scoped to THAT repo -- each repo gets its own loaded-extension set resynced, never the",
+      "current repo's set applied elsewhere.",
+      "What it touches: every registered repo (any repo <leader>al has previously loaded an",
+      "extension into) except the host repo, which is never registered.",
+      "Destructive: no. Uses the same non-destructive manager.resync_all path as [Reload All];",
+      "never manager.wipe.",
+      "Prompts: no confirmation dialog. An unreachable registered repo is skipped, reported,",
+      "and pruned from the registry automatically rather than aborting the whole operation.",
+      "Reports: one message with the total extension count resynced across all repos, plus an",
+      "explicit per-repo failure list when any repo failed.",
     },
     config = config,
   })

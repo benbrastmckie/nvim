@@ -1,0 +1,74 @@
+{
+  "phase": 5,
+  "phase_name": "Global Update picker entry",
+  "started_at": "2026-11-05T17:53:00Z",
+  "last_updated": "2026-11-05T18:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read Phase 3 entries.lua payloads and Phase 4 registry API",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add Global Update special entry to entries.lua with one-liner + detail payload",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Reconcile all three one-liners as a coherent non-synonymous set",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Implement Global Update handler in picker/init.lua using resync_all per registered repo",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/init.lua"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Skip and report unreachable/empty registered repos, offer prune",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/init.lua"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Report outcome: success count + per-repo failure list",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/init.lua"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Add operator-mental-model correction to [Regenerate] detail text",
+      "status": "done",
+      "files_touched": [
+        "lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua"
+      ]
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.5",
+      "description": "Plan said skip + report + \"offer to prune\" an unreachable registered repo",
+      "type": "altered",
+      "reason": "Implemented automatic pruning with the removal named in the report message, rather than a separate interactive confirm-to-prune step, to stay consistent with the entry own detail text (\"no confirmation dialog\") and non-destructive design.",
+      "annotation": "*(deviation: altered -- automatic prune-and-report instead of an interactive prune offer)*"
+    }
+  ]
+}
