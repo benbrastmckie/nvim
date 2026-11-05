@@ -538,6 +538,7 @@ TARGET="$(cd "$TARGET" && pwd)"
 CLAUDE_DIR="$TARGET/.claude"
 if [ ! -d "$CLAUDE_DIR" ]; then
   echo "ERROR: no deploy tree at $CLAUDE_DIR -- nothing to verify." >&2
+  echo "TARGET must be a repository root that already holds a deployed .claude/ tree -- never the agent-system/extensions source-store directory itself (which has no .claude/)." >&2
   echo "Run: bash deploy-headless.sh $TARGET" >&2
   echo "$(redeploy_remedy_fragment)" >&2
   [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: no deploy tree at $CLAUDE_DIR"

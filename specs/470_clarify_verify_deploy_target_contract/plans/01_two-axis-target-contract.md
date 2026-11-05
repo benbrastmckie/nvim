@@ -199,26 +199,28 @@ covered by `bash -n agent-system/extensions/core/scripts/verify-deploy.sh` plus
 
 ---
 
-### Phase 2: gate0 Error Text Names the Convention [NOT STARTED]
+### Phase 2: gate0 Error Text Names the Convention [COMPLETED]
 
 **Goal**: A reader who passed a source directory learns from the error text that TARGET must be
 the repository root holding the deployed tree (outcome 3).
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh` lines 490-510 immediately
-      before editing.
-- [ ] Insert exactly one new line between the existing `echo "ERROR: no deploy tree at
+- [x] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh` lines 490-510 immediately
+      before editing. *(completed: actual lines shifted to ~520-545 after Phase 1's header
+      insertions; re-read at the shifted location.)*
+- [x] Insert exactly one new line between the existing `echo "ERROR: no deploy tree at
       $CLAUDE_DIR -- nothing to verify." >&2` and `echo "Run: bash deploy-headless.sh $TARGET"
       >&2`, as its own `echo ... >&2` statement, stating that TARGET must be a repository root
       holding a deployed `.claude/` tree and never the `agent-system` source-store directory
-      itself.
-- [ ] Leave untouched, byte-for-byte: the `redeploy_remedy_fragment` call and its surrounding
+      itself. *(completed)*
+- [x] Leave untouched, byte-for-byte: the `redeploy_remedy_fragment` call and its surrounding
       `echo`, the `[ "$FINDINGS" = "true" ]` FINDING line, the `exit 2`, and the
-      `target is not a directory` branch above it.
-- [ ] Re-run the exact reproduction from Phase 1 and diff its output against the captured
-      baseline: the only difference must be the one added line.
-- [ ] **Decision gate — commit scope.** Re-run `git diff -- verify-deploy.sh`. If the foreign
+      `target is not a directory` branch above it. *(completed: confirmed byte-identical)*
+- [x] Re-run the exact reproduction from Phase 1 and diff its output against the captured
+      baseline: the only difference must be the one added line. *(completed: `diff` confirms
+      exactly one added stderr line)*
+- [x] **Decision gate — commit scope.** Re-run `git diff -- verify-deploy.sh`. If the foreign
       `warn_advisory()`/`WARN-FINDING` hunks recorded in Phase 1 are still uncommitted:
       **default branch** — do not commit this file; leave both phases' edits in the working tree,
       record the condition via `issue-record.sh`, and state it explicitly in
@@ -226,7 +228,10 @@ the repository root holding the deployed tree (outcome 3).
       and verified; only the commit is withheld). Commit normally **only** if the foreign hunks
       have since been committed by their owner, leaving this task's edits as the file's sole
       uncommitted diff. Never widen the pathspec, never `git add -A`, and never revert or stash
-      the foreign work to clear the path.
+      the foreign work to clear the path. *(completed: the foreign `warn_advisory()`/
+      `WARN-FINDING` hunks were already committed upstream before this dispatch began (see Phase
+      1's win entry) -- `git diff -- verify-deploy.sh` shows only this task's own hunks, so the
+      **commit-normally** branch applies; no commit-scope deferral needed.)*
 
 **Timing**: 0.4 hours
 
