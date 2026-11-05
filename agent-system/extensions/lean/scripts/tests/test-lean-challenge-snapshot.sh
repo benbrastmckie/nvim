@@ -31,7 +31,11 @@
 # namespace-style token and a lowercase prose word) sitting in TRAILING position in that same
 # bullet are not -- distinct from R7 (which covers reserved keywords, denylist-covered
 # regardless of position) and R8 (which covers preamble position, excluded regardless of
-# keyword status).
+# keyword status). Cases R18-R21 cover the colon-optional START_RE widening: a single-line
+# parenthesised `**Goals** (...):` header (R18); the multi-line precedent shape where the colon
+# sits on a line after `**Goals**` itself (R19); a negative case confirming `**Non-Goals**:`
+# alone never establishes the Goals range (R20); and a regression case confirming the
+# unconditional empty-GOALS_FILE guard still fires loudly after the widening (R21).
 #
 # (2) R2 legacy fallback (Case R3): a plan with no `## Lean Challenge Statements` section falls
 # back to extracting an existing sorried declaration from the target project's git tree, and
@@ -687,6 +691,89 @@ if [ "$rc" -eq 64 ] && echo "$out" | grep -qi -- "--check is read-only"; then
   pass "R17b: --compile combined with --check is a usage error (exit 64)"
 else
   fail "R17b: expected exit 64 naming the --check incompatibility, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R18: a single-line parenthesised Goals header -- `**Goals** (...):` -- establishes the
+# Goals range exactly as the bare `**Goals**:` form does, instead of matching no start line and
+# silently harvesting zero identifiers.
+#
+# Mutation this case kills: reverting START_RE to require the trailing colon immediately after
+# `**Goals**\*\*` (`r'^-?\s?\*\*Goals\*\*:'`) turns this case RED -- no line in the fixture
+# matches, start_idx stays None, extract_goal_names() harvests nothing, and the run hits the
+# unconditional "no identifiers found under **Goals**:" guard (exit 71) instead of the clean 0
+# exit a well-formed plan should produce. Measured directly against the pre-fix script: exit 71;
+# against the fixed script: exit 0 with theorem_names=comm.
+# ===========================================================================
+repo=$(make_repo "r18" 930 plan_r18_paren_goals.md)
+out=$(run_tool "$repo" 930 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q "theorem_names: comm" && echo "$out" | grep -q ":= sorry"; then
+  pass "R18: a single-line parenthesised '**Goals** (...):' header establishes the Goals range"
+else
+  fail "R18: expected exit 0 with theorem_names=comm for a parenthesised Goals header, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R19: the multi-line precedent shape this repository's own landed plans use -- the
+# parenthetical spills onto a second line and the colon sits on THAT line, not on the
+# `**Goals**` line itself (e.g. specs/archive/670_minframeclass_sharpness_prior_uz_z1's
+# `**Goals** (the identifier set this plan commits to proving, matching \`## Lean Challenge
+# Statements\`\nbelow):`). START_RE only needs to match the first line, so this is covered by
+# the same widened regex as R18, but is pinned as its own case because it is the shape that
+# actually broke in production, not merely a synthetic variant.
+#
+# Mutation this case kills: same as R18 -- reverting START_RE's trailing-colon requirement turns
+# this case RED. Measured directly against the pre-fix script: exit 71; against the fixed
+# script: exit 0 with theorem_names=comm.
+# ===========================================================================
+repo=$(make_repo "r19" 931 plan_r19_multiline_paren_goals.md)
+out=$(run_tool "$repo" 931 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q "theorem_names: comm" && echo "$out" | grep -q ":= sorry"; then
+  pass "R19: the multi-line precedent parenthetical Goals header (colon on the following line) establishes the Goals range"
+else
+  fail "R19: expected exit 0 with theorem_names=comm for the multi-line parenthetical Goals header, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R20 (negative): a `**Non-Goals**:` label, with no `**Goals**` label anywhere in the
+# fixture, must never itself establish the Goals range -- the widened START_RE still requires the
+# character immediately after `**` to be `G`, so `**Non-Goals**` cannot match it by construction.
+# This exercises the widening's own negative space: END_RE and START_RE must stay distinguishable
+# even though START_RE no longer requires a trailing colon.
+#
+# Mutation this case kills: a START_RE widened too far (e.g. dropping the `Goals` literal in
+# favor of a bare `\*\*[^*]` prefix check) would wrongly match `**Non-Goals**:` and harvest
+# `shouldNotBeHarvested` as a Goal, producing exit 0 instead of the expected 71.
+# ===========================================================================
+repo=$(make_repo "r20" 932 plan_r20_non_goals_only.md)
+out=$(run_tool "$repo" 932 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 71 ] && echo "$out" | grep -qi "no identifiers found under \*\*Goals\*\*"; then
+  pass "R20: a '**Non-Goals**:' label alone (no '**Goals**' label) never establishes the Goals range"
+else
+  fail "R20: expected exit 71 ('no identifiers found'), got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R21 (regression): a `**Goals**:` block with no conforming bullet -- the unconditional
+# `[ ! -s "$GOALS_FILE" ]` guard, which fires identically on both the R1 and R2 routes strictly
+# before cross_validate_identifiers, must still produce the loud "no identifiers found" exit 71
+# after the START_RE widening, never a silent vacuous pass.
+#
+# Mutation this case kills: removing or narrowing the `[ ! -s "$GOALS_FILE" ]` guard turns this
+# case RED -- the run would instead fall through to cross_validate_identifiers with an empty
+# goals file and either vacuously pass (if the declared set is also empty) or report a confusing
+# mismatch, rather than this guard's own specific, actionable message.
+# ===========================================================================
+repo=$(make_repo "r21" 933 plan_r21_empty_goals.md)
+out=$(run_tool "$repo" 933 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 71 ] && echo "$out" | grep -qi "no identifiers found under \*\*Goals\*\*"; then
+  pass "R21: a '**Goals**:' block with no conforming bullet still hits the unconditional empty-GOALS_FILE guard (exit 71), not a vacuous pass"
+else
+  fail "R21: expected exit 71 ('no identifiers found'), got rc=$rc: $out"
 fi
 
 # ===========================================================================

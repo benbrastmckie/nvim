@@ -421,9 +421,13 @@ fi
 # ---------------------------------------------------------------------------
 # ACCEPTED GOALS SURFACE -- read this before writing a plan's `**Goals**:` block for this tool.
 #
-#   RANGE: the Goals range starts at a line matching the column-0 `**Goals**:` form OR the
-#   `- **Goals**:` list-item form (plan-format.md's own canonical template uses the list-item
-#   form), and ends at the next `**`-labeled line (e.g. `**Non-Goals**:` in either form).
+#   RANGE: the Goals range starts at a line matching the column-0 `**Goals**` form OR the
+#   `- **Goals**` list-item form (plan-format.md's own canonical template uses the list-item
+#   form), with the colon AND any parenthetical before it both optional -- `**Goals**:`,
+#   `**Goals**`, and `**Goals** (parenthetical):` (single-line or with the colon on a later
+#   line) all establish the range identically. It ends at the next `**`-labeled line (e.g.
+#   `**Non-Goals**:` in either form); `**Non-Goals**` itself can never start the range, because
+#   the character immediately after `**` is `N`, not `G`.
 #
 #   PREAMBLE: any line before the range's FIRST bulleted (`- ...`) line is a preamble and is
 #   never scanned for identifiers, however many backticks it contains. This is exactly the
@@ -462,7 +466,7 @@ text = open(plan_path, encoding="utf-8").read()
 lines = text.split("\n")
 
 IDENT = os.environ["LEAN_IDENT_PATTERN"]
-START_RE = re.compile(r'^-?\s?\*\*Goals\*\*:')
+START_RE = re.compile(r'^-?\s?\*\*Goals\*\*')
 END_RE = re.compile(r'^-?\s?\*\*[^G]')
 BULLET_RE = re.compile(r'^\s*-\s*')
 TOKEN_RE = re.compile(r"`(" + IDENT + r")`")
@@ -815,8 +819,10 @@ with open(module_out, "w", encoding="utf-8") as f:
     f.write(module_body)
 with open(names_out, "w", encoding="utf-8") as f:
     # sorted() is Python's code-point order, already matching extract_goal_names()'s own
-    # sorted() call below -- no change needed here.
-    f.write("\n".join(sorted(names)) + "\n")
+    # sorted() call below -- no change needed here. Conditional trailing newline matches
+    # extract_r1()'s own form, so an empty name set produces a true 0-byte file here too,
+    # rather than a 1-byte "\n".
+    f.write("\n".join(sorted(names)) + ("\n" if names else ""))
 sys.exit(0)
 PYEOF
   local r2_status=$?
@@ -906,6 +912,10 @@ else
   ROUTE="git-baseline"
 fi
 
+# This guard fires unconditionally on BOTH the R1 (plan-declared) and R2 (git-baseline) routes
+# above, strictly before cross_validate_identifiers below -- an empty $GOALS_FILE can never
+# reach cross-validation and vacuously pass. Do not re-litigate the "vacuous pass" theory
+# without re-measuring both routes against both --check and snapshot mode first.
 if [ ! -s "$GOALS_FILE" ]; then
   echo "ERROR: no identifiers found under **Goals**: in $PLAN_FILE -- nothing to snapshot." >&2
   exit 71
