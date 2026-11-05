@@ -42,16 +42,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 # Source-store-first / deploy-tree-fallback -- see the header comment above for why this suite
 # deliberately inverts the deploy-tree-first order used elsewhere in this codebase (e.g.
@@ -78,9 +76,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 SANDBOX="$(mktemp -d)"
 cleanup() { [ -n "${SANDBOX:-}" ] && [ -d "$SANDBOX" ] && rm -rf "$SANDBOX"; }
@@ -178,9 +173,9 @@ write_report_artifact
 write_handoff "researched"
 run_reconcile
 if grep -qF "Would promote: researching -> researched" "$STDOUT_FILE"; then
-  pass "case 1 (exact match): permits promotion"
+  common_test_pass "case 1 (exact match): permits promotion"
 else
-  fail "case 1 (exact match): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 1 (exact match): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
 fi
 
 # =====================================================================
@@ -192,9 +187,9 @@ write_report_artifact
 write_handoff "blocked"
 run_reconcile
 if grep -qF "refusing promotion" "$STDOUT_FILE" && ! grep -qF "Would promote" "$STDOUT_FILE"; then
-  pass "case 2 (on-enum mismatch: blocked): refuses promotion"
+  common_test_pass "case 2 (on-enum mismatch: blocked): refuses promotion"
 else
-  fail "case 2 (on-enum mismatch: blocked): expected a refusal, no promotion preview. stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 2 (on-enum mismatch: blocked): expected a refusal, no promotion preview. stdout=$(cat "$STDOUT_FILE")"
 fi
 
 # =====================================================================
@@ -206,9 +201,9 @@ write_report_artifact
 write_handoff "implemented"
 run_reconcile
 if grep -qF "refusing promotion" "$STDOUT_FILE" && ! grep -qF "Would promote" "$STDOUT_FILE"; then
-  pass "case 3 (cross-phase success value: implemented): refuses promotion"
+  common_test_pass "case 3 (cross-phase success value: implemented): refuses promotion"
 else
-  fail "case 3 (cross-phase success value: implemented): expected a refusal. stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 3 (cross-phase success value: implemented): expected a refusal. stdout=$(cat "$STDOUT_FILE")"
 fi
 
 # =====================================================================
@@ -222,14 +217,14 @@ write_handoff "success"
 run_reconcile
 case4_stdout="$(cat "$STDOUT_FILE")"
 if grep -qF "Would promote: researching -> researched" "$STDOUT_FILE"; then
-  pass "case 4 (off-vocabulary: success): permits promotion"
+  common_test_pass "case 4 (off-vocabulary: success): permits promotion"
 else
-  fail "case 4 (off-vocabulary: success): expected a promotion preview. stdout=$case4_stdout"
+  common_test_fail "case 4 (off-vocabulary: success): expected a promotion preview. stdout=$case4_stdout"
 fi
 if grep -qF "success" "$STDERR_FILE" && grep -qF "$SIX_LEGAL_VALUES" "$STDERR_FILE"; then
-  pass "case 4 (off-vocabulary: success): stderr names the offending value and all six legal values"
+  common_test_pass "case 4 (off-vocabulary: success): stderr names the offending value and all six legal values"
 else
-  fail "case 4 (off-vocabulary: success): stderr missing offending value or legal set. stderr=$(cat "$STDERR_FILE")"
+  common_test_fail "case 4 (off-vocabulary: success): stderr missing offending value or legal set. stderr=$(cat "$STDERR_FILE")"
 fi
 
 # =====================================================================
@@ -241,9 +236,9 @@ write_report_artifact
 write_handoff "research_complete"
 run_reconcile
 if grep -qF "Would promote: researching -> researched" "$STDOUT_FILE"; then
-  pass "case 5 (off-vocabulary: research_complete): permits promotion"
+  common_test_pass "case 5 (off-vocabulary: research_complete): permits promotion"
 else
-  fail "case 5 (off-vocabulary: research_complete): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 5 (off-vocabulary: research_complete): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
 fi
 
 # =====================================================================
@@ -256,17 +251,17 @@ write_report_artifact
 write_handoff "in_progress"
 run_reconcile
 if grep -qF "Would promote: researching -> researched" "$STDOUT_FILE"; then
-  pass "case 6 (in_progress): permits promotion"
+  common_test_pass "case 6 (in_progress): permits promotion"
 else
-  fail "case 6 (in_progress): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 6 (in_progress): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
 fi
 if grep -qF "in_progress" "$STDERR_FILE" \
   && grep -qF "recognized non-terminal marker" "$STDERR_FILE" \
   && ! grep -qiF "off-schema" "$STDERR_FILE" \
   && ! grep -qiF "malformed" "$STDERR_FILE"; then
-  pass "case 6 (in_progress): diagnostic is distinct -- no off-schema/malformed framing"
+  common_test_pass "case 6 (in_progress): diagnostic is distinct -- no off-schema/malformed framing"
 else
-  fail "case 6 (in_progress): diagnostic wording incorrect. stderr=$(cat "$STDERR_FILE")"
+  common_test_fail "case 6 (in_progress): diagnostic wording incorrect. stderr=$(cat "$STDERR_FILE")"
 fi
 
 # =====================================================================
@@ -278,9 +273,9 @@ write_report_artifact
 write_handoff "NOKEY"
 run_reconcile
 if grep -qF "Would promote: researching -> researched" "$STDOUT_FILE"; then
-  pass "case 7 (no .status key): permits promotion"
+  common_test_pass "case 7 (no .status key): permits promotion"
 else
-  fail "case 7 (no .status key): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 7 (no .status key): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
 fi
 
 # =====================================================================
@@ -293,9 +288,9 @@ write_handoff "INVALID"
 run_reconcile
 case8_rc=$?
 if [[ "$case8_rc" -eq 0 ]] && grep -qF "Would promote: researching -> researched" "$STDOUT_FILE"; then
-  pass "case 8 (unparseable JSON): permits promotion, no crash"
+  common_test_pass "case 8 (unparseable JSON): permits promotion, no crash"
 else
-  fail "case 8 (unparseable JSON): expected exit 0 + promotion preview, got rc=$case8_rc stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 8 (unparseable JSON): expected exit 0 + promotion preview, got rc=$case8_rc stdout=$(cat "$STDOUT_FILE")"
 fi
 
 # =====================================================================
@@ -309,17 +304,17 @@ write_handoff "NONE"
 run_reconcile
 deleted_handoff_stdout="$(cat "$STDOUT_FILE")"
 if grep -qF "Would promote: researching -> researched" "$STDOUT_FILE"; then
-  pass "case 9 (handoff deleted): permits promotion"
+  common_test_pass "case 9 (handoff deleted): permits promotion"
 else
-  fail "case 9 (handoff deleted): expected a promotion preview. stdout=$deleted_handoff_stdout"
+  common_test_fail "case 9 (handoff deleted): expected a promotion preview. stdout=$deleted_handoff_stdout"
 fi
 
 case4_promote_line="$(grep -F "Would promote:" <<< "$case4_stdout")"
 deleted_promote_line="$(grep -F "Would promote:" <<< "$deleted_handoff_stdout")"
 if [[ -n "$case4_promote_line" && "$case4_promote_line" == "$deleted_promote_line" ]]; then
-  pass "case 9 (parity bar): off-vocabulary (case 4) promotion line matches handoff-deleted promotion line exactly"
+  common_test_pass "case 9 (parity bar): off-vocabulary (case 4) promotion line matches handoff-deleted promotion line exactly"
 else
-  fail "case 9 (parity bar): promotion lines diverge. case4='$case4_promote_line' deleted='$deleted_promote_line'"
+  common_test_fail "case 9 (parity bar): promotion lines diverge. case4='$case4_promote_line' deleted='$deleted_promote_line'"
 fi
 
 # =====================================================================
@@ -332,9 +327,9 @@ write_summary_artifact
 write_handoff "success"
 run_reconcile
 if grep -qF "Would promote: partial -> completed" "$STDOUT_FILE"; then
-  pass "case 10 (partial branch, off-vocabulary): permits promotion"
+  common_test_pass "case 10 (partial branch, off-vocabulary): permits promotion"
 else
-  fail "case 10 (partial branch, off-vocabulary): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 10 (partial branch, off-vocabulary): expected a promotion preview. stdout=$(cat "$STDOUT_FILE")"
 fi
 
 # =====================================================================
@@ -347,9 +342,9 @@ write_summary_artifact
 write_handoff "blocked"
 run_reconcile
 if grep -qF "refusing promotion" "$STDOUT_FILE" && ! grep -qF "Would promote" "$STDOUT_FILE"; then
-  pass "case 11 (partial branch, on-enum mismatch: blocked): refuses AND emits the refusal line"
+  common_test_pass "case 11 (partial branch, on-enum mismatch: blocked): refuses AND emits the refusal line"
 else
-  fail "case 11 (partial branch, on-enum mismatch: blocked): expected a refusal line. stdout=$(cat "$STDOUT_FILE")"
+  common_test_fail "case 11 (partial branch, on-enum mismatch: blocked): expected a refusal line. stdout=$(cat "$STDOUT_FILE")"
 fi
 
 # =====================================================================

@@ -27,6 +27,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 LINT_SRC="$SCRIPT_DIR/../lint/lint-agent-contracts.sh"
 FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/no-task-references-bullet.md"
 ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifacts-template.md"
@@ -36,9 +37,6 @@ BOUNDED_WAIT_FRAGMENT_SRC="$SCRIPT_DIR/../../context/patterns/bounded-build-wait
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 for req in "$LINT_SRC" "$FRAGMENT_SRC" "$ARTIFACTS_FRAGMENT_SRC" "$STATUS_LIB_SRC" \
            "$PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" "$BOUNDED_WAIT_FRAGMENT_SRC"; do
@@ -123,7 +121,7 @@ out="$(run_lint "$ROOT")"
 rc=$?
 check_k_section=$(echo "$out" | sed -n '/--- Check K:/,/^$/p')
 
-info "=== Check K section ==="
+common_test_info "=== Check K section ==="
 echo "$check_k_section"
 
 # NOTE: the overall exit code of this single combined run DOES propagate the violating-agent
@@ -131,38 +129,38 @@ echo "$check_k_section"
 # suite's Case 1, this run deliberately includes a genuine violation.
 
 if echo "$check_k_section" | grep -qF "fixture/agents/clean-agent.md: no unguarded detach-then-await-a-notification pairing found"; then
-  pass "(1) clean agent PASSes Check K"
+  common_test_pass "(1) clean agent PASSes Check K"
 else
-  fail "(1) expected a Check K PASS line for clean-agent.md"
+  common_test_fail "(1) expected a Check K PASS line for clean-agent.md"
 fi
 
 if echo "$check_k_section" | grep -qF "fixture/agents/violating-agent.md: pairs a backgrounding instruction"; then
-  pass "(2) violating agent FAILs Check K"
+  common_test_pass "(2) violating agent FAILs Check K"
 else
-  fail "(2) expected a Check K FAIL line for violating-agent.md"
+  common_test_fail "(2) expected a Check K FAIL line for violating-agent.md"
 fi
 
 if echo "$check_k_section" | grep -qF "lean/agents/lean-implementation-agent.md is a recorded exclusion"; then
-  fail "(3a) lean/agents/lean-implementation-agent.md must no longer be a recorded exclusion -- CHECK_K_EXCLUDED_RELATIVE_PATHS is now empty"
+  common_test_fail "(3a) lean/agents/lean-implementation-agent.md must no longer be a recorded exclusion -- CHECK_K_EXCLUDED_RELATIVE_PATHS is now empty"
 else
-  pass "(3a) formerly-excluded path carries no recorded-exclusion info line"
+  common_test_pass "(3a) formerly-excluded path carries no recorded-exclusion info line"
 fi
 if echo "$check_k_section" | grep -qF "lean/agents/lean-implementation-agent.md: pairs a backgrounding instruction"; then
-  pass "(3b) formerly-excluded path now FAILs Check K on the violating shape"
+  common_test_pass "(3b) formerly-excluded path now FAILs Check K on the violating shape"
 else
-  fail "(3b) expected a Check K FAIL line for lean/agents/lean-implementation-agent.md -- a stale exclusion would mask this violation"
+  common_test_fail "(3b) expected a Check K FAIL line for lean/agents/lean-implementation-agent.md -- a stale exclusion would mask this violation"
 fi
 
 if echo "$check_k_section" | grep -qF "fixture/agents/prohibitive-agent.md: no unguarded detach-then-await-a-notification pairing found"; then
-  pass "(4) prohibitively-quoting agent PASSes Check K"
+  common_test_pass "(4) prohibitively-quoting agent PASSes Check K"
 else
-  fail "(4) expected a Check K PASS line for prohibitive-agent.md"
+  common_test_fail "(4) expected a Check K PASS line for prohibitive-agent.md"
 fi
 
 if [ "$rc" -ne 0 ]; then
-  pass "(5) overall lint exit code is non-zero (the violating-agent FAIL must propagate)"
+  common_test_pass "(5) overall lint exit code is non-zero (the violating-agent FAIL must propagate)"
 else
-  fail "(5) expected non-zero overall exit code given a genuine Check K violation"
+  common_test_fail "(5) expected non-zero overall exit code given a genuine Check K violation"
 fi
 
 rm -rf "$ROOT"

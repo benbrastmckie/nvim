@@ -25,6 +25,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 SRC_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 RED='\033[0;31m'
@@ -35,9 +36,6 @@ NC='\033[0m'
 PASSED=0
 FAILED=0
 
-pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
-fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }
-info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
 
 REQUIRED=(update-phase-status.sh task-lock.sh deploy-root-guard.sh)
 for req in "${REQUIRED[@]}"; do
@@ -112,7 +110,7 @@ session_field() { jq -r --arg f "$2" '.[$f] // empty' "$TMPROOT/specs/.sessions/
 # ═══════════════════════════════════════════════════════════════════════
 # Case 1+2: heartbeat_at advances past acquired_at/started_at on both records
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 1+2: single call advances both heartbeat_at fields ==="
+common_test_info "=== Case 1+2: single call advances both heartbeat_at fields ==="
 reset_fixture
 stdout1=$(bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 1 IN_PROGRESS)
 holder_acquired_1="$(holder_field _ acquired_at)"
@@ -121,84 +119,84 @@ session_started_1="$(session_field _ started_at)"
 session_heartbeat_1="$(session_field _ heartbeat_at)"
 
 if [ "$holder_acquired_1" = "$FIXED_PAST_ISO" ]; then
-  pass "holder.json acquired_at unchanged after one phase transition"
+  common_test_pass "holder.json acquired_at unchanged after one phase transition"
 else
-  fail "holder.json acquired_at changed: expected $FIXED_PAST_ISO, got $holder_acquired_1"
+  common_test_fail "holder.json acquired_at changed: expected $FIXED_PAST_ISO, got $holder_acquired_1"
 fi
 
 if [[ "$holder_heartbeat_1" > "$holder_acquired_1" ]]; then
-  pass "holder.json heartbeat_at strictly greater than acquired_at (criterion 2, task-lock half)"
+  common_test_pass "holder.json heartbeat_at strictly greater than acquired_at (criterion 2, task-lock half)"
 else
-  fail "holder.json heartbeat_at ($holder_heartbeat_1) not greater than acquired_at ($holder_acquired_1)"
+  common_test_fail "holder.json heartbeat_at ($holder_heartbeat_1) not greater than acquired_at ($holder_acquired_1)"
 fi
 
 if [ "$session_started_1" = "$FIXED_PAST_ISO" ]; then
-  pass "session entry started_at unchanged after one phase transition"
+  common_test_pass "session entry started_at unchanged after one phase transition"
 else
-  fail "session entry started_at changed: expected $FIXED_PAST_ISO, got $session_started_1"
+  common_test_fail "session entry started_at changed: expected $FIXED_PAST_ISO, got $session_started_1"
 fi
 
 if [[ "$session_heartbeat_1" > "$session_started_1" ]]; then
-  pass "session entry heartbeat_at strictly greater than started_at (criterion 2, session-registry half)"
+  common_test_pass "session entry heartbeat_at strictly greater than started_at (criterion 2, session-registry half)"
 else
-  fail "session entry heartbeat_at ($session_heartbeat_1) not greater than started_at ($session_started_1)"
+  common_test_fail "session entry heartbeat_at ($session_heartbeat_1) not greater than started_at ($session_started_1)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 3: second call -- heartbeat_at advances again (or is >= due to same-second ticks),
 # and remains > acquired_at. Not flaky at sub-second granularity.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 3: heartbeat_at advances across a second consecutive phase transition ==="
+common_test_info "=== Case 3: heartbeat_at advances across a second consecutive phase transition ==="
 stdout2=$(bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 2 IN_PROGRESS)
 holder_heartbeat_2="$(holder_field _ heartbeat_at)"
 holder_acquired_2="$(holder_field _ acquired_at)"
 
 if [[ "$holder_heartbeat_2" > "$holder_acquired_2" ]]; then
-  pass "holder.json heartbeat_at still greater than acquired_at after second transition"
+  common_test_pass "holder.json heartbeat_at still greater than acquired_at after second transition"
 else
-  fail "holder.json heartbeat_at ($holder_heartbeat_2) not greater than acquired_at ($holder_acquired_2) after second transition"
+  common_test_fail "holder.json heartbeat_at ($holder_heartbeat_2) not greater than acquired_at ($holder_acquired_2) after second transition"
 fi
 
 if [[ "$holder_heartbeat_2" > "$holder_heartbeat_1" || "$holder_heartbeat_2" = "$holder_heartbeat_1" ]]; then
-  pass "holder.json heartbeat_at monotonically non-decreasing across two transitions (criterion 1)"
+  common_test_pass "holder.json heartbeat_at monotonically non-decreasing across two transitions (criterion 1)"
 else
-  fail "holder.json heartbeat_at went backwards: $holder_heartbeat_1 -> $holder_heartbeat_2"
+  common_test_fail "holder.json heartbeat_at went backwards: $holder_heartbeat_1 -> $holder_heartbeat_2"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 4: stdout contract -- byte-identical to the pre-change contract (plan path alone), exit 0
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 4: stdout contract ==="
+common_test_info "=== Case 4: stdout contract ==="
 expected_path="$TMPROOT/specs/001_${PROJECT_NAME}/plans/01_x.md"
 if [ "$stdout1" = "$expected_path" ]; then
-  pass "stdout is the plan file path alone on the first call"
+  common_test_pass "stdout is the plan file path alone on the first call"
 else
-  fail "stdout mismatch on first call: expected [$expected_path], got [$stdout1]"
+  common_test_fail "stdout mismatch on first call: expected [$expected_path], got [$stdout1]"
 fi
 if [ "$stdout2" = "$expected_path" ]; then
-  pass "stdout is the plan file path alone on the second call"
+  common_test_pass "stdout is the plan file path alone on the second call"
 else
-  fail "stdout mismatch on second call: expected [$expected_path], got [$stdout2]"
+  common_test_fail "stdout mismatch on second call: expected [$expected_path], got [$stdout2]"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 5: never-blocking across every no-op class
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 5: never-blocking no-op classes ==="
+common_test_info "=== Case 5: never-blocking no-op classes ==="
 
 # 5a: .lock/ absent entirely
 reset_fixture
 rm -rf "$TMPROOT/specs/001_${PROJECT_NAME}/.lock"
 out=$(bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 1 IN_PROGRESS); rc=$?
 if [ "$rc" -eq 0 ] && [ "$out" = "$expected_path" ]; then
-  pass "5a: .lock/ absent -- exit 0, stdout unchanged"
+  common_test_pass "5a: .lock/ absent -- exit 0, stdout unchanged"
 else
-  fail "5a: .lock/ absent -- exit=$rc stdout=[$out]"
+  common_test_fail "5a: .lock/ absent -- exit=$rc stdout=[$out]"
 fi
 if grep -q "noop:no-holder" "$TRACE_LOG" 2>/dev/null; then
-  pass "5a: noop:no-holder trace line written"
+  common_test_pass "5a: noop:no-holder trace line written"
 else
-  fail "5a: no noop:no-holder trace line found in $TRACE_LOG"
+  common_test_fail "5a: no noop:no-holder trace line found in $TRACE_LOG"
 fi
 
 # 5b: corrupt holder.json
@@ -206,81 +204,81 @@ reset_fixture
 echo "not valid json" > "$TMPROOT/specs/001_${PROJECT_NAME}/.lock/holder.json"
 out=$(bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 1 IN_PROGRESS); rc=$?
 if [ "$rc" -eq 0 ] && [ "$out" = "$expected_path" ]; then
-  pass "5b: corrupt holder.json -- exit 0, stdout unchanged"
+  common_test_pass "5b: corrupt holder.json -- exit 0, stdout unchanged"
 else
-  fail "5b: corrupt holder.json -- exit=$rc stdout=[$out]"
+  common_test_fail "5b: corrupt holder.json -- exit=$rc stdout=[$out]"
 fi
 if grep -q "noop:unparseable-holder" "$TRACE_LOG" 2>/dev/null; then
-  pass "5b: noop:unparseable-holder trace line written"
+  common_test_pass "5b: noop:unparseable-holder trace line written"
 else
-  fail "5b: no noop:unparseable-holder trace line found in $TRACE_LOG"
+  common_test_fail "5b: no noop:unparseable-holder trace line found in $TRACE_LOG"
 fi
 
 # 5c: unresolvable task directory (nonexistent task number/project name)
 reset_fixture
 out=$(bash "$UPS" 999 "nonexistent_project_xyz" 1 IN_PROGRESS 2>/tmp/phase_hb_5c_err.txt); rc=$?
 if [ "$rc" -ne 0 ]; then
-  pass "5c: unresolvable task directory -- script still exits non-zero as before (plan-dir-not-found is a pre-existing validation error, not a heartbeat regression)"
+  common_test_pass "5c: unresolvable task directory -- script still exits non-zero as before (plan-dir-not-found is a pre-existing validation error, not a heartbeat regression)"
 else
-  fail "5c: unresolvable task directory unexpectedly exited 0"
+  common_test_fail "5c: unresolvable task directory unexpectedly exited 0"
 fi
 rm -f /tmp/phase_hb_5c_err.txt
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 6: mismatch trace -- explicit 5th session_id differing from holder's
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 6: 5th-argument session_id mismatch ==="
+common_test_info "=== Case 6: 5th-argument session_id mismatch ==="
 reset_fixture
 pre_heartbeat="$(holder_field _ heartbeat_at)"
 bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 1 IN_PROGRESS "sess_wrong_session" >/dev/null
 post_heartbeat="$(holder_field _ heartbeat_at)"
 if [ "$pre_heartbeat" = "$post_heartbeat" ]; then
-  pass "mismatched 5th-arg session_id does NOT advance heartbeat_at"
+  common_test_pass "mismatched 5th-arg session_id does NOT advance heartbeat_at"
 else
-  fail "mismatched 5th-arg session_id advanced heartbeat_at anyway ($pre_heartbeat -> $post_heartbeat)"
+  common_test_fail "mismatched 5th-arg session_id advanced heartbeat_at anyway ($pre_heartbeat -> $post_heartbeat)"
 fi
 if grep -q "noop:session-mismatch" "$TRACE_LOG" 2>/dev/null; then
-  pass "noop:session-mismatch trace line written"
+  common_test_pass "noop:session-mismatch trace line written"
 else
-  fail "no noop:session-mismatch trace line found in $TRACE_LOG"
+  common_test_fail "no noop:session-mismatch trace line found in $TRACE_LOG"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 7: never_heartbeated fingerprint flips across a real phase-transition heartbeat
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 7: never_heartbeated fingerprint (wired to task-lock.sh check) ==="
+common_test_info "=== Case 7: never_heartbeated fingerprint (wired to task-lock.sh check) ==="
 reset_fixture
 check_out_before=$(bash "$TL" check "$TASK_NUM" 2>&1)
 if [[ "$check_out_before" == *"never_heartbeated=true"* ]]; then
-  pass "fresh never-heartbeated fixture lock reports never_heartbeated=true before any phase transition"
+  common_test_pass "fresh never-heartbeated fixture lock reports never_heartbeated=true before any phase transition"
 else
-  fail "expected never_heartbeated=true before transition, got: $check_out_before"
+  common_test_fail "expected never_heartbeated=true before transition, got: $check_out_before"
 fi
 bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 1 IN_PROGRESS >/dev/null
 check_out_after=$(bash "$TL" check "$TASK_NUM" 2>&1)
 if [[ "$check_out_after" == *"never_heartbeated=false"* ]]; then
-  pass "same lock reports never_heartbeated=false after the mechanized phase-transition heartbeat"
+  common_test_pass "same lock reports never_heartbeated=false after the mechanized phase-transition heartbeat"
 else
-  fail "expected never_heartbeated=false after transition, got: $check_out_after"
+  common_test_fail "expected never_heartbeated=false after transition, got: $check_out_after"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 8: PHASE_HEARTBEAT_DISABLE opt-out
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 8: PHASE_HEARTBEAT_DISABLE opt-out ==="
+common_test_info "=== Case 8: PHASE_HEARTBEAT_DISABLE opt-out ==="
 reset_fixture
 pre_heartbeat="$(holder_field _ heartbeat_at)"
 PHASE_HEARTBEAT_DISABLE=1 bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 1 IN_PROGRESS >/dev/null
 post_heartbeat="$(holder_field _ heartbeat_at)"
 if [ "$pre_heartbeat" = "$post_heartbeat" ]; then
-  pass "PHASE_HEARTBEAT_DISABLE=1 leaves holder.json heartbeat_at untouched"
+  common_test_pass "PHASE_HEARTBEAT_DISABLE=1 leaves holder.json heartbeat_at untouched"
 else
-  fail "PHASE_HEARTBEAT_DISABLE=1 still advanced heartbeat_at ($pre_heartbeat -> $post_heartbeat)"
+  common_test_fail "PHASE_HEARTBEAT_DISABLE=1 still advanced heartbeat_at ($pre_heartbeat -> $post_heartbeat)"
 fi
 if [ ! -f "$TRACE_LOG" ]; then
-  pass "PHASE_HEARTBEAT_DISABLE=1 writes no trace log at all"
+  common_test_pass "PHASE_HEARTBEAT_DISABLE=1 writes no trace log at all"
 else
-  fail "PHASE_HEARTBEAT_DISABLE=1 unexpectedly wrote a trace log: $(cat "$TRACE_LOG")"
+  common_test_fail "PHASE_HEARTBEAT_DISABLE=1 unexpectedly wrote a trace log: $(cat "$TRACE_LOG")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -289,27 +287,27 @@ fi
 # library function is directly callable by a dispatch-boundary caller independent of
 # update-phase-status.sh ever running.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 9: dispatch-boundary pulse writes a trace line with no phase transition ==="
+common_test_info "=== Case 9: dispatch-boundary pulse writes a trace line with no phase transition ==="
 reset_fixture
 # shellcheck disable=SC1091
 . "$TMPROOT/.claude/scripts/lib/phase-heartbeat-lib.sh"
 phase_heartbeat_pulse "$TMPROOT" "$TMPROOT/specs/001_${PROJECT_NAME}" "$TASK_NUM" "dispatch-start" "" >/dev/null
 if [ -f "$TRACE_LOG" ] && grep -q "phase dispatch-start heartbeat: ok" "$TRACE_LOG"; then
-  pass "dispatch-start pulse writes an 'ok' trace line with phase label dispatch-start"
+  common_test_pass "dispatch-start pulse writes an 'ok' trace line with phase label dispatch-start"
 else
-  fail "dispatch-start pulse did not write the expected trace line (log: $(cat "$TRACE_LOG" 2>/dev/null))"
+  common_test_fail "dispatch-start pulse did not write the expected trace line (log: $(cat "$TRACE_LOG" 2>/dev/null))"
 fi
 holder_heartbeat_dispatch="$(holder_field _ heartbeat_at)"
 if [[ "$holder_heartbeat_dispatch" > "$FIXED_PAST_ISO" ]]; then
-  pass "dispatch-start pulse advances holder.json heartbeat_at exactly like a phase-transition pulse"
+  common_test_pass "dispatch-start pulse advances holder.json heartbeat_at exactly like a phase-transition pulse"
 else
-  fail "dispatch-start pulse did not advance holder.json heartbeat_at"
+  common_test_fail "dispatch-start pulse did not advance holder.json heartbeat_at"
 fi
 # The phase label is non-numeric and must stay distinct from real phase numbers in the log.
 if grep -q "task ${TASK_NUM} phase dispatch-start" "$TRACE_LOG" 2>/dev/null; then
-  pass "trace line carries the non-numeric phase label verbatim, separable from real phase numbers"
+  common_test_pass "trace line carries the non-numeric phase label verbatim, separable from real phase numbers"
 else
-  fail "trace line did not carry the dispatch-start phase label"
+  common_test_fail "trace line did not carry the dispatch-start phase label"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -320,7 +318,7 @@ fi
 # the title's first [ to the status's final ], silently rewriting the title and still exiting 0 --
 # these assertions bind to the anchoring and fail loudly if it is ever relaxed.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Bracket-literal titles: status replaced, title preserved ==="
+common_test_info "=== Bracket-literal titles: status replaced, title preserved ==="
 reset_fixture
 cat > "$TMPROOT/specs/001_${PROJECT_NAME}/plans/01_x.md" << 'FIXTURE'
 # Plan
@@ -336,21 +334,21 @@ bash "$UPS" "$TASK_NUM" "$PROJECT_NAME" 2 IN_PROGRESS >/dev/null
 bracket_plan="$TMPROOT/specs/001_${PROJECT_NAME}/plans/01_x.md"
 
 if grep -qF '### Phase 1: Document the `[file-scope]` notice [IN PROGRESS]' "$bracket_plan"; then
-  pass "a mid-title bracket literal is preserved while the trailing status is replaced"
+  common_test_pass "a mid-title bracket literal is preserved while the trailing status is replaced"
 else
-  fail "mid-title bracket literal was not preserved (got: $(grep -F '### Phase 1:' "$bracket_plan"))"
+  common_test_fail "mid-title bracket literal was not preserved (got: $(grep -F '### Phase 1:' "$bracket_plan"))"
 fi
 
 if grep -qF '### Phase 2: Trailing bracket in title [foo] [IN PROGRESS]' "$bracket_plan"; then
-  pass "a title whose own final token is a bracket group keeps it; only the status group changes"
+  common_test_pass "a title whose own final token is a bracket group keeps it; only the status group changes"
 else
-  fail "trailing-bracket title was not preserved (got: $(grep -F '### Phase 2:' "$bracket_plan"))"
+  common_test_fail "trailing-bracket title was not preserved (got: $(grep -F '### Phase 2:' "$bracket_plan"))"
 fi
 
 if [ "$(grep -cF '[IN PROGRESS]' "$bracket_plan")" -eq 2 ]; then
-  pass "exactly one status group per heading after replacement -- no collapsed spans"
+  common_test_pass "exactly one status group per heading after replacement -- no collapsed spans"
 else
-  fail "expected 2 '[IN PROGRESS]' occurrences, got $(grep -cF '[IN PROGRESS]' "$bracket_plan")"
+  common_test_fail "expected 2 '[IN PROGRESS]' occurrences, got $(grep -cF '[IN PROGRESS]' "$bracket_plan")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════

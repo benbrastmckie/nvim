@@ -33,16 +33,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-no-record-versioning.sh"
 LIB_SRC="$SCRIPT_DIR/../lib/record-version-patterns.sh"
 
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 # shellcheck disable=SC2329
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$HOOK_SRC" ]; then
   echo "ERROR: expected validate-no-record-versioning.sh at $HOOK_SRC" >&2
@@ -59,9 +57,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # Mirror the hook's expected sibling layout: hooks/validate-no-record-versioning.sh sources
 # ../scripts/lib/record-version-patterns.sh relative to its OWN directory.
@@ -112,9 +108,9 @@ assert_triggers() {
   code="${result%%|*}"
   stderr_out="${result#*|}"
   if [ "$code" -eq 2 ] && [ -n "$stderr_out" ]; then
-    pass "$label: exits 2 with stderr message"
+    common_test_pass "$label: exits 2 with stderr message"
   else
-    fail "$label: expected exit 2 + stderr, got exit=$code stderr='$stderr_out'"
+    common_test_fail "$label: expected exit 2 + stderr, got exit=$code stderr='$stderr_out'"
   fi
 }
 
@@ -124,9 +120,9 @@ assert_silent() {
   local label="$1" file_path="$2" content="$3" code
   code="$(hook_exit_code "$file_path" "$content")"
   if [ "$code" -eq 0 ]; then
-    pass "$label: exits 0 (allowed)"
+    common_test_pass "$label: exits 0 (allowed)"
   else
-    fail "$label: expected exit 0, got exit=$code"
+    common_test_fail "$label: expected exit 0, got exit=$code"
   fi
 }
 
@@ -139,9 +135,9 @@ assert_truly_silent() {
   code="${result%%|*}"
   stderr_out="${result#*|}"
   if [ "$code" -eq 0 ] && [ -z "$stderr_out" ]; then
-    pass "$label: exits 0 with no stderr output (advisory-silent)"
+    common_test_pass "$label: exits 0 with no stderr output (advisory-silent)"
   else
-    fail "$label: expected exit 0 + empty stderr, got exit=$code stderr='$stderr_out'"
+    common_test_fail "$label: expected exit 0 + empty stderr, got exit=$code stderr='$stderr_out'"
   fi
 }
 
@@ -161,9 +157,9 @@ result="$(run_hook_edit "docs/notes.md" "old heading" "$blocking_edit_new")"
 code="${result%%|*}"
 stderr_out="${result#*|}"
 if [ "$code" -eq 2 ] && [ -n "$stderr_out" ]; then
-  pass "blocking: Edit-shaped payload with blocking new_string exits 2 with stderr"
+  common_test_pass "blocking: Edit-shaped payload with blocking new_string exits 2 with stderr"
 else
-  fail "blocking: Edit-shaped payload expected exit 2 + stderr, got exit=$code stderr='$stderr_out'"
+  common_test_fail "blocking: Edit-shaped payload expected exit 2 + stderr, got exit=$code stderr='$stderr_out'"
 fi
 
 # Rule-naming check: the stderr message must name the rule file, so an author knows which
@@ -171,9 +167,9 @@ fi
 result="$(run_hook "docs/notes.md" "$blocking_heading_fixture")"
 stderr_out="${result#*|}"
 if printf '%s' "$stderr_out" | grep -q "no-record-versioning-in-deliverables.md"; then
-  pass "blocking: stderr message names the rule file"
+  common_test_pass "blocking: stderr message names the rule file"
 else
-  fail "blocking: stderr message does not name the rule file: '$stderr_out'"
+  common_test_fail "blocking: stderr message does not name the rule file: '$stderr_out'"
 fi
 
 # =====================================================================
@@ -217,9 +213,9 @@ nolib_out="$(jq -n --arg fp "docs/notes.md" --arg c "$blocking_heading_fixture" 
 nolib_code=$?
 rm -rf "$NOLIBDIR"
 if [ "$nolib_code" -eq 0 ] && [ -n "$nolib_out" ]; then
-  pass "shared-library-missing: fails open (exit 0) with a warning"
+  common_test_pass "shared-library-missing: fails open (exit 0) with a warning"
 else
-  fail "shared-library-missing: expected exit 0 + warning, got exit=$nolib_code out='$nolib_out'"
+  common_test_fail "shared-library-missing: expected exit 0 + warning, got exit=$nolib_code out='$nolib_out'"
 fi
 
 STALEDIR="$(mktemp -d)"
@@ -243,9 +239,9 @@ stale_out="$(jq -n --arg fp "docs/notes.md" --arg c "$blocking_heading_fixture" 
 stale_code=$?
 rm -rf "$STALEDIR"
 if [ "$stale_code" -eq 0 ] && [ -n "$stale_out" ]; then
-  pass "stale-library (missing rv_grep_blocking): fails open (exit 0) with a warning"
+  common_test_pass "stale-library (missing rv_grep_blocking): fails open (exit 0) with a warning"
 else
-  fail "stale-library: expected exit 0 + warning, got exit=$stale_code out='$stale_out'"
+  common_test_fail "stale-library: expected exit 0 + warning, got exit=$stale_code out='$stale_out'"
 fi
 
 # =====================================================================
@@ -254,16 +250,16 @@ fi
 degenerate_fixture_content="$blocking_heading_fixture"
 degenerate_code="$(hook_exit_code "" "$degenerate_fixture_content")"
 if [ "$degenerate_code" -eq 0 ]; then
-  pass "degenerate: empty file_path exits 0"
+  common_test_pass "degenerate: empty file_path exits 0"
 else
-  fail "degenerate: empty file_path expected exit 0, got exit=$degenerate_code"
+  common_test_fail "degenerate: empty file_path expected exit 0, got exit=$degenerate_code"
 fi
 
 degenerate_code="$(hook_exit_code "docs/notes.md" "")"
 if [ "$degenerate_code" -eq 0 ]; then
-  pass "degenerate: empty content exits 0"
+  common_test_pass "degenerate: empty content exits 0"
 else
-  fail "degenerate: empty content expected exit 0, got exit=$degenerate_code"
+  common_test_fail "degenerate: empty content expected exit 0, got exit=$degenerate_code"
 fi
 
 # =====================================================================

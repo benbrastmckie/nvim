@@ -26,10 +26,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 DEPLOY_SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/deploy-headless.sh"
@@ -63,9 +61,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
@@ -89,7 +84,7 @@ runtime_ignore_block > "$TARGET/.gitignore"
 git -C "$TARGET" -c user.email="test@test.local" -c user.name="deploy-orphans-test" \
   commit -q --allow-empty -m "scratch init"
 
-info "Deploying real core manifest into scratch tree $TARGET"
+common_test_info "Deploying real core manifest into scratch tree $TARGET"
 deploy_output="$(bash "$DEPLOY_SCRIPT" "$TARGET" 2>&1)"
 deploy_status=$?
 if [[ "$deploy_status" -ne 0 ]]; then
@@ -113,18 +108,18 @@ run_find_orphans() {
 # detector itself is miscalibrated against a clean deploy rather than reacting to this harness's
 # own plants.
 # =====================================================================
-info "Assertion E: unmodified scratch regenerate baseline"
+common_test_info "Assertion E: unmodified scratch regenerate baseline"
 baseline_output="$(run_find_orphans)"
 if echo "$baseline_output" | grep -q 'ORPHAN_ERROR'; then
-  fail "Assertion E: find_orphans could not run: $(echo "$baseline_output" | grep 'ORPHAN_ERROR' | head -1)"
+  common_test_fail "Assertion E: find_orphans could not run: $(echo "$baseline_output" | grep 'ORPHAN_ERROR' | head -1)"
 elif ! echo "$baseline_output" | grep -q 'ORPHAN_DONE'; then
-  fail "Assertion E: find_orphans produced no result"
+  common_test_fail "Assertion E: find_orphans produced no result"
 else
   baseline_finding_count=$(echo "$baseline_output" | grep -c 'ORPHAN_FINDING ')
   if [[ "$baseline_finding_count" -eq 0 ]]; then
-    pass "Assertion E: unmodified scratch regenerate reports zero orphans and zero ghost rows"
+    common_test_pass "Assertion E: unmodified scratch regenerate reports zero orphans and zero ghost rows"
   else
-    fail "Assertion E: unmodified scratch regenerate reported $baseline_finding_count finding(s) (expected 0):"
+    common_test_fail "Assertion E: unmodified scratch regenerate reported $baseline_finding_count finding(s) (expected 0):"
     echo "$baseline_output" | grep 'ORPHAN_FINDING ' | sed 's/^/    /'
   fi
 fi
@@ -192,61 +187,61 @@ else
   exit 2
 fi
 
-info "Re-running find_orphans against the planted scratch tree"
+common_test_info "Re-running find_orphans against the planted scratch tree"
 planted_output="$(run_find_orphans)"
 
 if echo "$planted_output" | grep -q 'ORPHAN_ERROR'; then
-  fail "Assertions A/B/C/D/F: find_orphans could not run: $(echo "$planted_output" | grep 'ORPHAN_ERROR' | head -1)"
+  common_test_fail "Assertions A/B/C/D/F: find_orphans could not run: $(echo "$planted_output" | grep 'ORPHAN_ERROR' | head -1)"
 elif ! echo "$planted_output" | grep -q 'ORPHAN_DONE'; then
-  fail "Assertions A/B/C/D/F: find_orphans produced no result"
+  common_test_fail "Assertions A/B/C/D/F: find_orphans produced no result"
 else
   # Assertion A: the planted orphan file IS reported.
   if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: $CANARY_ORPHAN_REL"; then
-    pass "Assertion A: planted orphan '$CANARY_ORPHAN_REL' reported"
+    common_test_pass "Assertion A: planted orphan '$CANARY_ORPHAN_REL' reported"
   else
-    fail "Assertion A: planted orphan '$CANARY_ORPHAN_REL' NOT reported (expected orphan finding)"
+    common_test_fail "Assertion A: planted orphan '$CANARY_ORPHAN_REL' NOT reported (expected orphan finding)"
   fi
 
   # Assertion B: the runtime-artifact path is NOT reported.
   if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: tmp/workflow-active-test-canary"; then
-    fail "Assertion B: runtime artifact 'tmp/workflow-active-test-canary' WAS reported (should be excluded)"
+    common_test_fail "Assertion B: runtime artifact 'tmp/workflow-active-test-canary' WAS reported (should be excluded)"
   else
-    pass "Assertion B: runtime artifact 'tmp/workflow-active-test-canary' correctly excluded"
+    common_test_pass "Assertion B: runtime artifact 'tmp/workflow-active-test-canary' correctly excluded"
   fi
 
   if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: tmp/noop-bash-count-sess_0000000000_canary"; then
-    fail "Assertion G: runtime artifact 'tmp/noop-bash-count-*' WAS reported (should be excluded)"
+    common_test_fail "Assertion G: runtime artifact 'tmp/noop-bash-count-*' WAS reported (should be excluded)"
   else
-    pass "Assertion G: runtime artifact 'tmp/noop-bash-count-*' correctly excluded"
+    common_test_pass "Assertion G: runtime artifact 'tmp/noop-bash-count-*' correctly excluded"
   fi
 
   # Assertion H: the stash-provenance runtime artifacts are NOT reported.
   if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: tmp/stash-pre-sess_0000000000_canary" \
     || echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: tmp/stash-owned-sess_0000000000_canary"; then
-    fail "Assertion H: runtime artifact 'tmp/stash-pre-*'/'tmp/stash-owned-*' WAS reported (should be excluded)"
+    common_test_fail "Assertion H: runtime artifact 'tmp/stash-pre-*'/'tmp/stash-owned-*' WAS reported (should be excluded)"
   else
-    pass "Assertion H: runtime artifact 'tmp/stash-pre-*'/'tmp/stash-owned-*' correctly excluded"
+    common_test_pass "Assertion H: runtime artifact 'tmp/stash-pre-*'/'tmp/stash-owned-*' correctly excluded"
   fi
 
   # Assertion C: the merged/generated artifact context/index.json is NOT reported.
   if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: context/index.json"; then
-    fail "Assertion C: merged/generated artifact 'context/index.json' WAS reported (should be excluded)"
+    common_test_fail "Assertion C: merged/generated artifact 'context/index.json' WAS reported (should be excluded)"
   else
-    pass "Assertion C: merged/generated artifact 'context/index.json' correctly excluded"
+    common_test_pass "Assertion C: merged/generated artifact 'context/index.json' correctly excluded"
   fi
 
   # Assertion D: the planted ghost index row IS reported.
   if echo "$planted_output" | grep -qF "ORPHAN_FINDING ghost index row: $GHOST_PATH"; then
-    pass "Assertion D: planted ghost index row '$GHOST_PATH' reported"
+    common_test_pass "Assertion D: planted ghost index row '$GHOST_PATH' reported"
   else
-    fail "Assertion D: planted ghost index row '$GHOST_PATH' NOT reported (expected ghost-index finding)"
+    common_test_fail "Assertion D: planted ghost index row '$GHOST_PATH' NOT reported (expected ghost-index finding)"
   fi
 
   # Assertion F: the scheduled_tasks.lock runtime artifact is NOT reported.
   if echo "$planted_output" | grep -qF "ORPHAN_FINDING orphan file: scheduled_tasks.lock"; then
-    fail "Assertion F: runtime artifact 'scheduled_tasks.lock' WAS reported (should be excluded)"
+    common_test_fail "Assertion F: runtime artifact 'scheduled_tasks.lock' WAS reported (should be excluded)"
   else
-    pass "Assertion F: runtime artifact 'scheduled_tasks.lock' correctly excluded"
+    common_test_pass "Assertion F: runtime artifact 'scheduled_tasks.lock' correctly excluded"
   fi
 fi
 

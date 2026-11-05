@@ -235,6 +235,11 @@ common_log_info() {
 # caller's shell, not run in a subshell, so incrementing an unprefixed global here reaches the
 # caller directly -- the caller must declare `PASSED=0` / `FAILED=0` before use, matching every
 # existing suite's own convention). common_test_info is diagnostic-only and does not count.
+#
+# common_test_fail's optional $2 is a verbatim diagnostic-detail payload (e.g. a captured diff or
+# command output) echoed on its own line after the [FAIL] line -- folded in during the Harness
+# Migration Tranche B phase to absorb four suites' pre-existing `fail() { ...; [ -n "${2:-}" ] &&
+# echo "$2"; }` local override verbatim, so migrating them loses no diagnostic output.
 common_test_pass() {
   echo "[PASS] $1"
   PASSED=$((${PASSED:-0} + 1))
@@ -244,6 +249,7 @@ common_test_pass() {
 common_test_fail() {
   echo "[FAIL] $1"
   FAILED=$((${FAILED:-0} + 1))
+  [ -n "${2:-}" ] && echo "$2"
   return 0
 }
 

@@ -49,13 +49,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 require_file() {
   if [ ! -f "$1" ]; then
@@ -86,9 +84,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 setup_sandbox() {
   rm -rf "$WORKDIR"
@@ -190,29 +186,29 @@ run_case() {
   got_status="$(jqf '.status')"
   if [ "$expect_accepted" = "true" ]; then
     if [ "$got_status" = "implemented" ]; then
-      pass "${name}: handoff accepted (status=implemented, echoed from the fixture)"
+      common_test_pass "${name}: handoff accepted (status=implemented, echoed from the fixture)"
     else
-      fail "${name}: expected the handoff to be ACCEPTED (status=implemented), got: $LAST_STDOUT ($LAST_STDERR)"
+      common_test_fail "${name}: expected the handoff to be ACCEPTED (status=implemented), got: $LAST_STDOUT ($LAST_STDERR)"
     fi
   else
     if [ "$got_status" != "implemented" ] && [ "$(jqf '.verdict')" = "failed" ]; then
-      pass "${name}: handoff rejected (no recovery source -> verdict=failed, status not echoed from the untrusted fixture)"
+      common_test_pass "${name}: handoff rejected (no recovery source -> verdict=failed, status not echoed from the untrusted fixture)"
     else
-      fail "${name}: expected the handoff to be REJECTED (verdict=failed, status!=implemented), got: $LAST_STDOUT ($LAST_STDERR)"
+      common_test_fail "${name}: expected the handoff to be REJECTED (verdict=failed, status!=implemented), got: $LAST_STDOUT ($LAST_STDERR)"
     fi
   fi
   if [ -n "$expect_grep" ]; then
     if echo "$LAST_STDERR" | grep -qE "$expect_grep"; then
-      pass "${name}: stderr matches expected pattern"
+      common_test_pass "${name}: stderr matches expected pattern"
     else
-      fail "${name}: stderr does not match expected pattern '${expect_grep}': $LAST_STDERR"
+      common_test_fail "${name}: stderr does not match expected pattern '${expect_grep}': $LAST_STDERR"
     fi
   fi
   if [ -n "$expect_attribution" ]; then
     if echo "$LAST_STDERR" | grep -qF "$expect_attribution"; then
-      pass "${name}: stderr attributes to ${expect_attribution}"
+      common_test_pass "${name}: stderr attributes to ${expect_attribution}"
     else
-      fail "${name}: stderr does not attribute to '${expect_attribution}': $LAST_STDERR"
+      common_test_fail "${name}: stderr does not attribute to '${expect_attribution}': $LAST_STDERR"
     fi
   fi
 }
@@ -259,9 +255,9 @@ run_case "case4-absent" 804 "" 5 0 "true" 'WARN: handoff has no dispatch_seq fie
 run_case "case5-newer-than-minted" 805 6 5 0 "false" 'DISPATCH_SEQ MISMATCH' \
   'agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh'
 if echo "$LAST_STDERR" | grep -qF 'skills/skill-orchestrate/SKILL.md'; then
-  fail "case5-newer-than-minted: stderr must NOT attribute to skill-orchestrate/SKILL.md (newer direction): $LAST_STDERR"
+  common_test_fail "case5-newer-than-minted: stderr must NOT attribute to skill-orchestrate/SKILL.md (newer direction): $LAST_STDERR"
 else
-  pass "case5-newer-than-minted: stderr does not attribute to skill-orchestrate/SKILL.md"
+  common_test_pass "case5-newer-than-minted: stderr does not attribute to skill-orchestrate/SKILL.md"
 fi
 
 # =====================================================================

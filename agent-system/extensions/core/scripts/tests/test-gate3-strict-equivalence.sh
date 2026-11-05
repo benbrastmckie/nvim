@@ -49,6 +49,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 CED_SOURCE="$CORE_DIR/check-extension-docs.sh"
 
@@ -60,13 +61,8 @@ command -v jq >/dev/null 2>&1 || { echo "ERROR: jq required and not on PATH" >&2
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # make_fixture_ext NAME SEEDED_SCRIPT_BASENAME_OR_EMPTY -- writes one minimal routing_exempt
 # extension under $1's fixture dir. An empty second arg produces a clean extension declaring no
@@ -138,9 +134,9 @@ check_case() {
   reconstructed="$(reconstruct_strict_hits "$normal_out")"
   oracle_hits=$(printf '%s\n' "$oracle_out" | grep -c 'events-')
   if [ "$reconstructed" -eq "$oracle_hits" ] && [ "$oracle_hits" -ge "$expected_min" ]; then
-    pass "$label: reconstructed=$reconstructed matches live-oracle=$oracle_hits (>= $expected_min expected)"
+    common_test_pass "$label: reconstructed=$reconstructed matches live-oracle=$oracle_hits (>= $expected_min expected)"
   else
-    fail "$label: reconstructed=$reconstructed oracle=$oracle_hits (expected >= $expected_min, and equal to each other)" \
+    common_test_fail "$label: reconstructed=$reconstructed oracle=$oracle_hits (expected >= $expected_min, and equal to each other)" \
          "$(printf 'NORMAL OUTPUT:\n%s\n\nORACLE (STRICT) OUTPUT:\n%s' "$normal_out" "$oracle_out")"
   fi
 }
@@ -156,9 +152,9 @@ check_case "case(a) clean fixture, zero violations" "$FIXTURE_CLEAN" 0
 clean_normal="$(run_normal "$FIXTURE_CLEAN")"
 clean_reconstructed="$(reconstruct_strict_hits "$clean_normal")"
 if [ "$clean_reconstructed" -eq 0 ]; then
-  pass "case(a) exact-zero: reconstructed hit count is exactly 0 on a clean fixture"
+  common_test_pass "case(a) exact-zero: reconstructed hit count is exactly 0 on a clean fixture"
 else
-  fail "case(a) exact-zero: expected exactly 0, got $clean_reconstructed" "$clean_normal"
+  common_test_fail "case(a) exact-zero: expected exactly 0, got $clean_reconstructed" "$clean_normal"
 fi
 
 # =====================================================================
@@ -185,9 +181,9 @@ one_normal="$(run_normal "$FIXTURE_ONE")"
 r1="$(reconstruct_strict_hits "$one_normal")"
 r2="$(reconstruct_strict_hits "$one_normal")"
 if [ "$r1" -eq "$r2" ]; then
-  pass "case(d) reconstruction is deterministic over the same captured output ($r1 == $r2)"
+  common_test_pass "case(d) reconstruction is deterministic over the same captured output ($r1 == $r2)"
 else
-  fail "case(d) reconstruction is non-deterministic over identical input: $r1 vs $r2"
+  common_test_fail "case(d) reconstruction is non-deterministic over identical input: $r1 vs $r2"
 fi
 
 echo

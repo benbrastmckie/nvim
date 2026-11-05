@@ -26,16 +26,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 # ---------------------------------------------------------------------------
 # Resolve the agent-file scan root: source-store layout preferred (matches this task's own
@@ -64,7 +59,7 @@ if [[ ${#AGENT_FILES[@]} -eq 0 ]]; then
   echo "  $DEPLOYED_AGENTS_GLOB" >&2
   exit 2
 fi
-info "Scanning ${#AGENT_FILES[@]} agent files ($SCAN_MODE)"
+common_test_info "Scanning ${#AGENT_FILES[@]} agent files ($SCAN_MODE)"
 
 STANDARD_PATH="$REPO_ROOT/agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"
 TEMPLATE_PATH="$REPO_ROOT/agent-system/extensions/core/docs/templates/agent-template.md"
@@ -140,9 +135,9 @@ for f in "${AGENT_FILES[@]}"; do
 done
 
 if [[ "$SELF_INSTRUCTION_FOUND" -eq 0 ]]; then
-  pass "no agent file instructs itself to call AskUserQuestion"
+  common_test_pass "no agent file instructs itself to call AskUserQuestion"
 else
-  fail "agent file(s) instruct themselves to call AskUserQuestion:"
+  common_test_fail "agent file(s) instruct themselves to call AskUserQuestion:"
   echo "$OFFENDER_LIST" | sed 's/^/       /' >&2
 fi
 
@@ -152,13 +147,13 @@ CSLIB_VET="$REPO_ROOT/agent-system/extensions/cslib/agents/cslib-vet-agent.md"
 if [[ -f "$CSLIB_VET" ]]; then
   cslib_result="$(check_file_for_self_instruction "$CSLIB_VET")"
   if [[ -z "$cslib_result" ]]; then
-    pass "fixture passes against cslib-vet-agent.md unchanged (admitted-form precedent)"
+    common_test_pass "fixture passes against cslib-vet-agent.md unchanged (admitted-form precedent)"
   else
-    fail "fixture incorrectly flags cslib-vet-agent.md's admitted MUST NOT phrasing:"
+    common_test_fail "fixture incorrectly flags cslib-vet-agent.md's admitted MUST NOT phrasing:"
     echo "$cslib_result" | sed 's/^/       /' >&2
   fi
 else
-  info "cslib-vet-agent.md not present in this deployment -- skipping precedent check (not an error; cslib extension may not be loaded)"
+  common_test_info "cslib-vet-agent.md not present in this deployment -- skipping precedent check (not an error; cslib extension may not be loaded)"
 fi
 
 # ===========================================================================
@@ -183,9 +178,9 @@ Use AskUserQuestion with `options` array for EVERY user choice point.
 EOF
 scratch_result="$(check_file_for_self_instruction "$SCRATCH")"
 if [[ -n "$scratch_result" ]]; then
-  pass "deliberate-regression spot check: detector correctly FAILS a reintroduced instructing line"
+  common_test_pass "deliberate-regression spot check: detector correctly FAILS a reintroduced instructing line"
 else
-  fail "deliberate-regression spot check: detector did not flag a known-bad reintroduced line -- Case 1 may be vacuous"
+  common_test_fail "deliberate-regression spot check: detector did not flag a known-bad reintroduced line -- Case 1 may be vacuous"
 fi
 rm -f "$SCRATCH"
 trap - EXIT
@@ -194,9 +189,9 @@ trap - EXIT
 # Case 2: skill-meta/SKILL.md's allowed-tools: line includes AskUserQuestion.
 # ===========================================================================
 if head -10 "$SKILL_META_PATH" | grep -qE '^allowed-tools:.*AskUserQuestion'; then
-  pass "skill-meta/SKILL.md's allowed-tools includes AskUserQuestion"
+  common_test_pass "skill-meta/SKILL.md's allowed-tools includes AskUserQuestion"
 else
-  fail "skill-meta/SKILL.md's allowed-tools does not include AskUserQuestion"
+  common_test_fail "skill-meta/SKILL.md's allowed-tools does not include AskUserQuestion"
 fi
 
 # ===========================================================================
@@ -204,15 +199,15 @@ fi
 # skill-meta/SKILL.md.
 # ===========================================================================
 if [[ -f "$INTERVIEW_PATH" ]]; then
-  pass "core/context/workflows/meta-interview.md exists"
+  common_test_pass "core/context/workflows/meta-interview.md exists"
 else
-  fail "core/context/workflows/meta-interview.md not found at $INTERVIEW_PATH"
+  common_test_fail "core/context/workflows/meta-interview.md not found at $INTERVIEW_PATH"
 fi
 
 if grep -q 'meta-interview.md' "$SKILL_META_PATH" 2>/dev/null; then
-  pass "skill-meta/SKILL.md references meta-interview.md"
+  common_test_pass "skill-meta/SKILL.md references meta-interview.md"
 else
-  fail "skill-meta/SKILL.md does not reference meta-interview.md"
+  common_test_fail "skill-meta/SKILL.md does not reference meta-interview.md"
 fi
 
 # ===========================================================================
@@ -245,9 +240,9 @@ for f in "$STANDARD_PATH" "$TEMPLATE_PATH"; do
   fi
 done
 if [[ "$INHERITANCE_OK" -eq 1 ]]; then
-  pass "every remaining inheritance-claim occurrence is qualified with the measured exception"
+  common_test_pass "every remaining inheritance-claim occurrence is qualified with the measured exception"
 else
-  fail "an inheritance-claim occurrence lacks the measured exception nearby"
+  common_test_fail "an inheritance-claim occurrence lacks the measured exception nearby"
 fi
 
 # ===========================================================================
@@ -256,27 +251,27 @@ fi
 # record is present in the standard.
 # ===========================================================================
 if awk '/^## Supported Fields/,/^## Optional Fields/' "$STANDARD_PATH" | grep -qE '^\| `isolation`'; then
-  fail "agent-frontmatter-standard.md's Supported Fields table still carries an isolation row"
+  common_test_fail "agent-frontmatter-standard.md's Supported Fields table still carries an isolation row"
 else
-  pass "agent-frontmatter-standard.md's Supported Fields table carries no isolation row"
+  common_test_pass "agent-frontmatter-standard.md's Supported Fields table carries no isolation row"
 fi
 
 if grep -q '"isolation"' "$LINT_PATH"; then
-  fail "lint-agent-contracts.sh's SUPPORTED_KEYS still carries [\"isolation\"]=1"
+  common_test_fail "lint-agent-contracts.sh's SUPPORTED_KEYS still carries [\"isolation\"]=1"
 else
-  pass "lint-agent-contracts.sh's SUPPORTED_KEYS no longer carries isolation"
+  common_test_pass "lint-agent-contracts.sh's SUPPORTED_KEYS no longer carries isolation"
 fi
 
 if grep -q 'isolation.*removed' "$STANDARD_PATH"; then
-  pass "agent-frontmatter-standard.md records the isolation removal with its justifying probes"
+  common_test_pass "agent-frontmatter-standard.md records the isolation removal with its justifying probes"
 else
-  fail "agent-frontmatter-standard.md does not record the isolation removal"
+  common_test_fail "agent-frontmatter-standard.md does not record the isolation removal"
 fi
 
 if grep -q '`isolation`' "$TEMPLATE_PATH"; then
-  fail "agent-template.md's field-name pointer list still names isolation"
+  common_test_fail "agent-template.md's field-name pointer list still names isolation"
 else
-  pass "agent-template.md's field-name pointer list no longer names isolation"
+  common_test_pass "agent-template.md's field-name pointer list no longer names isolation"
 fi
 
 # ===========================================================================
@@ -286,9 +281,9 @@ fi
 for f in "$SKILL_SPAWN_PATH" "$SKILL_FIXIT_PATH"; do
   name="$(basename "$(dirname "$f")")"
   if head -10 "$f" | grep -qE '^agent:'; then
-    fail "$name/SKILL.md unexpectedly declares agent: -- it is supposed to stay direct-execution"
+    common_test_fail "$name/SKILL.md unexpectedly declares agent: -- it is supposed to stay direct-execution"
   else
-    pass "$name/SKILL.md declares no agent: field (stays direct-execution)"
+    common_test_pass "$name/SKILL.md declares no agent: field (stays direct-execution)"
   fi
 done
 
@@ -298,10 +293,10 @@ done
 REMOVAL_LAYER_HITS="$(grep -rl --exclude='test-askuserquestion-rehome.sh' \
   'dispatch-worktree.sh\|task_selected_for_worktree_isolation' "$REPO_ROOT/agent-system" 2>/dev/null)"
 if [[ -n "$REMOVAL_LAYER_HITS" ]]; then
-  fail "removal layer (dispatch-worktree.sh / task_selected_for_worktree_isolation) is present again:"
+  common_test_fail "removal layer (dispatch-worktree.sh / task_selected_for_worktree_isolation) is present again:"
   echo "$REMOVAL_LAYER_HITS" | sed 's/^/       /' >&2
 else
-  pass "removal layer (dispatch-worktree.sh / task_selected_for_worktree_isolation) stays absent"
+  common_test_pass "removal layer (dispatch-worktree.sh / task_selected_for_worktree_isolation) stays absent"
 fi
 
 # ===========================================================================

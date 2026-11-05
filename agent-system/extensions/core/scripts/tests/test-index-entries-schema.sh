@@ -26,16 +26,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$SCRIPT_DIR/../check-extension-docs.sh"
@@ -64,13 +62,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 FIXTURE_EXT_DIR="$WORKDIR/extensions"
 FIXTURE="$FIXTURE_EXT_DIR/fixture"
@@ -181,49 +174,49 @@ OUTPUT="${OUTPUT%EXIT:*}"
 
 # Rule T positive cases: one ADVISORY line naming the entry, for each isolated violation.
 if grep -q "Rule T:.*has-description\.md.*forbidden key 'description'" <<< "$OUTPUT"; then
-  pass "Rule T fires on a present 'description' key"
+  common_test_pass "Rule T fires on a present 'description' key"
 else
-  fail "Rule T did not fire on a present 'description' key"
+  common_test_fail "Rule T did not fire on a present 'description' key"
 fi
 
 if grep -q "Rule T:.*has-tags\.md.*forbidden key 'tags'" <<< "$OUTPUT"; then
-  pass "Rule T fires on a present 'tags' key"
+  common_test_pass "Rule T fires on a present 'tags' key"
 else
-  fail "Rule T did not fire on a present 'tags' key"
+  common_test_fail "Rule T did not fire on a present 'tags' key"
 fi
 
 if grep -q "Rule T:.*has-languages\.md.*forbidden load_when key 'languages'" <<< "$OUTPUT"; then
-  pass "Rule T fires on a present load_when.languages key"
+  common_test_pass "Rule T fires on a present load_when.languages key"
 else
-  fail "Rule T did not fire on a present load_when.languages key"
+  common_test_fail "Rule T did not fire on a present load_when.languages key"
 fi
 
 if grep -q "Rule T:.*missing-line-count\.md.*missing the line_count key" <<< "$OUTPUT"; then
-  pass "Rule T fires on a missing line_count key"
+  common_test_pass "Rule T fires on a missing line_count key"
 else
-  fail "Rule T did not fire on a missing line_count key"
+  common_test_fail "Rule T did not fire on a missing line_count key"
 fi
 
 if grep -q "Rule T:.*bad-domain\.md.*domain 'not-a-real-domain' outside the enum" <<< "$OUTPUT"; then
-  pass "Rule T fires on a domain value outside the enum"
+  common_test_pass "Rule T fires on a domain value outside the enum"
 else
-  fail "Rule T did not fire on a domain value outside the enum"
+  common_test_fail "Rule T did not fire on a domain value outside the enum"
 fi
 
 # Rule T negative case: the conformant entry must never be named in a Rule T line.
 if grep -q "Rule T:.*conformant\.md" <<< "$OUTPUT"; then
-  fail "Rule T incorrectly fired on the fully conformant entry"
+  common_test_fail "Rule T incorrectly fired on the fully conformant entry"
 else
-  pass "Rule T stays silent on the fully conformant entry"
+  common_test_pass "Rule T stays silent on the fully conformant entry"
 fi
 
 # Rule U positive case: 61 lines exceeds the limit.
 OUTPUT_61="$(run_check 61 advisory; echo "EXIT:$LAST_EXIT")"
 OUTPUT_61="${OUTPUT_61%EXIT:*}"
 if grep -q "Rule U: EXTENSION.md is 61 lines, exceeding the 60-line limit" <<< "$OUTPUT_61"; then
-  pass "Rule U fires on a 61-line EXTENSION.md"
+  common_test_pass "Rule U fires on a 61-line EXTENSION.md"
 else
-  fail "Rule U did not fire on a 61-line EXTENSION.md"
+  common_test_fail "Rule U did not fire on a 61-line EXTENSION.md"
 fi
 
 # Rule U negative case: exactly 60 lines is the limit, not a violation ("exceeds 60", not
@@ -231,18 +224,18 @@ fi
 OUTPUT_60="$(run_check 60 advisory; echo "EXIT:$LAST_EXIT")"
 OUTPUT_60="${OUTPUT_60%EXIT:*}"
 if grep -q "Rule U:" <<< "$OUTPUT_60"; then
-  fail "Rule U incorrectly fired on a 60-line EXTENSION.md"
+  common_test_fail "Rule U incorrectly fired on a 60-line EXTENSION.md"
 else
-  pass "Rule U stays silent on a 60-line EXTENSION.md"
+  common_test_pass "Rule U stays silent on a 60-line EXTENSION.md"
 fi
 
 # Severity wiring: SCHEMA_CONFORMANCE_GATE_MODE=hard must turn these into a non-zero exit,
 # pinning the severity switch, not just the message text.
 run_check 61 hard
 if [[ "$LAST_EXIT" -ne 0 ]]; then
-  pass "SCHEMA_CONFORMANCE_GATE_MODE=hard yields a non-zero exit on the fixture"
+  common_test_pass "SCHEMA_CONFORMANCE_GATE_MODE=hard yields a non-zero exit on the fixture"
 else
-  fail "SCHEMA_CONFORMANCE_GATE_MODE=hard did not yield a non-zero exit on the fixture"
+  common_test_fail "SCHEMA_CONFORMANCE_GATE_MODE=hard did not yield a non-zero exit on the fixture"
 fi
 
 echo

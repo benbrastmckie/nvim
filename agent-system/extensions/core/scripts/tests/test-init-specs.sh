@@ -22,10 +22,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 # Deploy-tree-first / source-store-fallback resolution, matching test-runtime-file-tracking.sh's
 # own TREE_ROOTS pattern -- both trees keep the same relative layout (scripts/, scripts/lib/,
@@ -52,9 +50,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
@@ -85,41 +80,41 @@ build_fixture_repo() {
 # Case 1: fresh bootstrap -- scratch repo with no specs/ at all.
 # =====================================================================
 REPO1="$(build_fixture_repo repo1)"
-info "Case 1: fresh bootstrap in a scratch repo with no specs/"
+common_test_info "Case 1: fresh bootstrap in a scratch repo with no specs/"
 case1_output="$(cd "$REPO1" && bash .claude/scripts/init-specs.sh 2>&1)"
 case1_exit=$?
 if [[ "$case1_exit" -eq 0 ]]; then
-  pass "Case 1: init-specs.sh exits 0"
+  common_test_pass "Case 1: init-specs.sh exits 0"
 else
-  fail "Case 1: expected exit 0, got $case1_exit:"
+  common_test_fail "Case 1: expected exit 0, got $case1_exit:"
   echo "$case1_output" | sed 's/^/    /'
 fi
 if [[ -f "$REPO1/specs/state.json" ]] && jq -e '.next_project_number == 1 and (.active_projects | length) == 0' "$REPO1/specs/state.json" > /dev/null 2>&1; then
-  pass "Case 1: specs/state.json created with next_project_number=1, empty active_projects"
+  common_test_pass "Case 1: specs/state.json created with next_project_number=1, empty active_projects"
 else
-  fail "Case 1: specs/state.json missing or wrong shape"
+  common_test_fail "Case 1: specs/state.json missing or wrong shape"
 fi
 if [[ -f "$REPO1/specs/archive/state.json" ]] && jq -e 'has("archived_projects") and has("completed_projects")' "$REPO1/specs/archive/state.json" > /dev/null 2>&1; then
-  pass "Case 1: specs/archive/state.json created with archived_projects/completed_projects"
+  common_test_pass "Case 1: specs/archive/state.json created with archived_projects/completed_projects"
 else
-  fail "Case 1: specs/archive/state.json missing or wrong shape"
+  common_test_fail "Case 1: specs/archive/state.json missing or wrong shape"
 fi
 if [[ -f "$REPO1/specs/TODO.md" ]]; then
-  pass "Case 1: specs/TODO.md created"
+  common_test_pass "Case 1: specs/TODO.md created"
 else
-  fail "Case 1: specs/TODO.md missing"
+  common_test_fail "Case 1: specs/TODO.md missing"
 fi
 if [[ -f "$REPO1/specs/.gitignore" ]] && grep -qF '# BEGIN managed block: runtime-file-patterns.sh' "$REPO1/specs/.gitignore"; then
-  pass "Case 1: specs/.gitignore created with managed block sentinels"
+  common_test_pass "Case 1: specs/.gitignore created with managed block sentinels"
 else
-  fail "Case 1: specs/.gitignore missing or lacks managed-block sentinels"
+  common_test_fail "Case 1: specs/.gitignore missing or lacks managed-block sentinels"
 fi
 if [[ -f "$REPO1/.claude/scripts/validate-state.sh" ]]; then
   validate_output="$(cd "$REPO1" && bash .claude/scripts/validate-state.sh specs/state.json 2>&1)"
   if echo "$validate_output" | grep -q 'STATE VALIDATION PASSED'; then
-    pass "Case 1: specs/state.json passes validate-state.sh (schema-valid)"
+    common_test_pass "Case 1: specs/state.json passes validate-state.sh (schema-valid)"
   else
-    fail "Case 1: validate-state.sh did not report STATE VALIDATION PASSED:"
+    common_test_fail "Case 1: validate-state.sh did not report STATE VALIDATION PASSED:"
     echo "$validate_output" | sed 's/^/    /'
   fi
 fi
@@ -127,25 +122,25 @@ fi
 # =====================================================================
 # Case 2: idempotence -- second run makes zero filesystem/staged changes.
 # =====================================================================
-info "Case 2: idempotence -- second run against the already-bootstrapped repo"
+common_test_info "Case 2: idempotence -- second run against the already-bootstrapped repo"
 before_sum="$(cd "$REPO1" && find specs -type f -exec md5sum {} + | sort)"
 case2_output="$(cd "$REPO1" && bash .claude/scripts/init-specs.sh 2>&1)"
 case2_exit=$?
 after_sum="$(cd "$REPO1" && find specs -type f -exec md5sum {} + | sort)"
 if [[ "$case2_exit" -eq 0 ]]; then
-  pass "Case 2: second run exits 0"
+  common_test_pass "Case 2: second run exits 0"
 else
-  fail "Case 2: second run expected exit 0, got $case2_exit"
+  common_test_fail "Case 2: second run expected exit 0, got $case2_exit"
 fi
 if [[ "$before_sum" == "$after_sum" ]]; then
-  pass "Case 2: second run made zero filesystem content changes"
+  common_test_pass "Case 2: second run made zero filesystem content changes"
 else
-  fail "Case 2: second run changed file content (not idempotent)"
+  common_test_fail "Case 2: second run changed file content (not idempotent)"
 fi
 if echo "$case2_output" | grep -q 'SKIP specs/state.json' && echo "$case2_output" | grep -q 'SKIP specs/.gitignore managed block already current'; then
-  pass "Case 2: second run reports SKIP for state.json and the gitignore managed block"
+  common_test_pass "Case 2: second run reports SKIP for state.json and the gitignore managed block"
 else
-  fail "Case 2: second run did not report the expected SKIP lines:"
+  common_test_fail "Case 2: second run did not report the expected SKIP lines:"
   echo "$case2_output" | sed 's/^/    /'
 fi
 
@@ -153,27 +148,27 @@ fi
 # Case 3: managed-block preservation -- a hand-added line outside the sentinels survives a
 # refresh, and the sentinel-delimited region itself is regenerated byte-identically.
 # =====================================================================
-info "Case 3: managed-block preservation across a refresh"
+common_test_info "Case 3: managed-block preservation across a refresh"
 echo "# my-local-custom-rule.txt" >> "$REPO1/specs/.gitignore"
 echo "my-local-custom-rule.txt" >> "$REPO1/specs/.gitignore"
 # Perturb the managed region so a real refresh is exercised (not another no-op).
 sed -i '/^\/tmp\/$/d' "$REPO1/specs/.gitignore"
 case3_output="$(cd "$REPO1" && bash .claude/scripts/init-specs.sh 2>&1)"
 if echo "$case3_output" | grep -q 'REFRESHED specs/.gitignore managed block'; then
-  pass "Case 3: a perturbed managed region is detected and refreshed"
+  common_test_pass "Case 3: a perturbed managed region is detected and refreshed"
 else
-  fail "Case 3: expected a REFRESHED line, got:"
+  common_test_fail "Case 3: expected a REFRESHED line, got:"
   echo "$case3_output" | sed 's/^/    /'
 fi
 if grep -qF 'my-local-custom-rule.txt' "$REPO1/specs/.gitignore"; then
-  pass "Case 3: hand-added line outside the sentinels survives the refresh"
+  common_test_pass "Case 3: hand-added line outside the sentinels survives the refresh"
 else
-  fail "Case 3: hand-added line outside the sentinels was lost"
+  common_test_fail "Case 3: hand-added line outside the sentinels was lost"
 fi
 if grep -qF '/tmp/' "$REPO1/specs/.gitignore"; then
-  pass "Case 3: the deliberately-removed /tmp/ line is restored by the refresh"
+  common_test_pass "Case 3: the deliberately-removed /tmp/ line is restored by the refresh"
 else
-  fail "Case 3: /tmp/ line was not restored -- managed region not regenerated correctly"
+  common_test_fail "Case 3: /tmp/ line was not restored -- managed region not regenerated correctly"
 fi
 
 # =====================================================================
@@ -200,9 +195,9 @@ echo '{}' > "$REPO4/specs/001_x/.return-meta.json"
   specs/001_x/.return-meta.json)
 git_commit "$REPO4" "simulate pre-policy committed runtime files"
 
-info "Case 4: untrack sweep against already-tracked runtime-class files"
+common_test_info "Case 4: untrack sweep against already-tracked runtime-class files"
 if ! (cd "$REPO4" && bash .claude/scripts/init-specs.sh) > "$WORKDIR/case4.out" 2>&1; then
-  fail "Case 4: init-specs.sh exited nonzero:"
+  common_test_fail "Case 4: init-specs.sh exited nonzero:"
   sed 's/^/    /' "$WORKDIR/case4.out"
 fi
 staged="$(cd "$REPO4" && git diff --cached --name-status)"
@@ -218,41 +213,41 @@ all_staged=true
 for p in "${expected_untracked[@]}"; do
   if ! echo "$staged" | grep -qE "^D\s+${p}$"; then
     all_staged=false
-    fail "Case 4: expected a staged D for $p, not found in:"
+    common_test_fail "Case 4: expected a staged D for $p, not found in:"
     echo "$staged" | sed 's/^/    /'
   fi
 done
-[[ "$all_staged" == "true" ]] && pass "Case 4: all six expected runtime-class paths staged as D"
+[[ "$all_staged" == "true" ]] && common_test_pass "Case 4: all six expected runtime-class paths staged as D"
 
 all_on_disk=true
 for p in "${expected_untracked[@]}" "specs/001_x/.orchestrator-handoff.json" "specs/001_x/.return-meta.json"; do
-  [[ -e "$REPO4/$p" ]] || { all_on_disk=false; fail "Case 4: $p missing from disk after untrack sweep"; }
+  [[ -e "$REPO4/$p" ]] || { all_on_disk=false; common_test_fail "Case 4: $p missing from disk after untrack sweep"; }
 done
-[[ "$all_on_disk" == "true" ]] && pass "Case 4: every untracked path (and both durable-provenance files) still exists on disk"
+[[ "$all_on_disk" == "true" ]] && common_test_pass "Case 4: every untracked path (and both durable-provenance files) still exists on disk"
 
 if echo "$staged" | grep -qE '\.orchestrator-handoff\.json$|\.return-meta\.json$'; then
-  fail "Case 4: the staged diff includes a durable-provenance path -- must never be untracked:"
+  common_test_fail "Case 4: the staged diff includes a durable-provenance path -- must never be untracked:"
   echo "$staged" | sed 's/^/    /'
 else
-  pass "Case 4: the staged diff does not include either durable-provenance path"
+  common_test_pass "Case 4: the staged diff does not include either durable-provenance path"
 fi
 
 git_commit "$REPO4" "untrack ephemeral runtime files"
 tree_status="$(cd "$REPO4" && git status --porcelain -- specs/)"
 if [[ -z "$tree_status" ]]; then
-  pass "Case 4: git status --porcelain -- specs/ is empty after the untrack commit"
+  common_test_pass "Case 4: git status --porcelain -- specs/ is empty after the untrack commit"
 else
-  fail "Case 4: git status --porcelain -- specs/ is NOT empty after the untrack commit:"
+  common_test_fail "Case 4: git status --porcelain -- specs/ is NOT empty after the untrack commit:"
   echo "$tree_status" | sed 's/^/    /'
 fi
 
-info "Case 4: second run of the sweep is a true no-op"
+common_test_info "Case 4: second run of the sweep is a true no-op"
 case4b_output="$(cd "$REPO4" && bash .claude/scripts/init-specs.sh 2>&1)"
 case4b_staged="$(cd "$REPO4" && git diff --cached --name-status)"
 if [[ -z "$case4b_staged" ]] && echo "$case4b_output" | grep -q 'SKIP untrack sweep: no already-tracked runtime-class file found'; then
-  pass "Case 4: second sweep stages nothing and reports the no-op SKIP line"
+  common_test_pass "Case 4: second sweep stages nothing and reports the no-op SKIP line"
 else
-  fail "Case 4: second sweep was not a clean no-op:"
+  common_test_fail "Case 4: second sweep was not a clean no-op:"
   echo "$case4b_output" | sed 's/^/    /'
 fi
 
@@ -260,24 +255,24 @@ fi
 # Case 5: provenance preserved -- .orchestrator-handoff.json and .return-meta.json remain
 # tracked (never in the untrack sweep's staged output) after the sweep.
 # =====================================================================
-info "Case 5: durable provenance stays tracked after the sweep"
+common_test_info "Case 5: durable provenance stays tracked after the sweep"
 tracked_after="$(cd "$REPO4" && git ls-files -- specs/)"
 if echo "$tracked_after" | grep -qF 'specs/001_x/.orchestrator-handoff.json' \
   && echo "$tracked_after" | grep -qF 'specs/001_x/.return-meta.json'; then
-  pass "Case 5: .orchestrator-handoff.json and .return-meta.json are still tracked"
+  common_test_pass "Case 5: .orchestrator-handoff.json and .return-meta.json are still tracked"
 else
-  fail "Case 5: durable provenance is missing from git ls-files after the sweep:"
+  common_test_fail "Case 5: durable provenance is missing from git ls-files after the sweep:"
   echo "$tracked_after" | sed 's/^/    /'
 fi
 if (cd "$REPO4" && git check-ignore -q specs/001_x/.orchestrator-handoff.json); then
-  fail "Case 5: .orchestrator-handoff.json is ignored -- must never be"
+  common_test_fail "Case 5: .orchestrator-handoff.json is ignored -- must never be"
 else
-  pass "Case 5: .orchestrator-handoff.json is not ignored"
+  common_test_pass "Case 5: .orchestrator-handoff.json is not ignored"
 fi
 if (cd "$REPO4" && git check-ignore -q specs/001_x/.return-meta.json); then
-  fail "Case 5: .return-meta.json is ignored -- must never be"
+  common_test_fail "Case 5: .return-meta.json is ignored -- must never be"
 else
-  pass "Case 5: .return-meta.json is not ignored"
+  common_test_pass "Case 5: .return-meta.json is not ignored"
 fi
 
 # =====================================================================
@@ -288,17 +283,17 @@ fi
 REPO6="$(build_fixture_repo repo6)"
 (cd "$REPO6" && bash .claude/scripts/init-specs.sh > /dev/null 2>&1)
 if [[ -f "$REPO6/.gitignore" ]]; then
-  fail "Case 6: fixture repo unexpectedly has a root .gitignore -- test setup invalid"
+  common_test_fail "Case 6: fixture repo unexpectedly has a root .gitignore -- test setup invalid"
 else
-  info "Case 6: confirmed no root .gitignore exists in the fixture repo"
+  common_test_info "Case 6: confirmed no root .gitignore exists in the fixture repo"
 fi
 (cd "$REPO6" && git add specs/ && git_commit "$REPO6" "bootstrap")
 case6_output="$(cd "$REPO6" && bash .claude/scripts/check-runtime-file-tracking.sh 2>&1)"
 case6_exit=$?
 if [[ "$case6_exit" -eq 0 ]] && echo "$case6_output" | grep -q 'PASS'; then
-  pass "Case 6: check-runtime-file-tracking.sh exits 0 / PASS using only specs/.gitignore"
+  common_test_pass "Case 6: check-runtime-file-tracking.sh exits 0 / PASS using only specs/.gitignore"
 else
-  fail "Case 6: expected exit 0 / PASS, got exit $case6_exit:"
+  common_test_fail "Case 6: expected exit 0 / PASS, got exit $case6_exit:"
   echo "$case6_output" | sed 's/^/    /'
 fi
 
@@ -315,20 +310,20 @@ echo "lock" > "$REPO7/specs/.errors.lock"
 case7_output="$(cd "$REPO7" && bash .claude/scripts/check-runtime-file-tracking.sh 2>&1)"
 case7_exit=$?
 if [[ "$case7_exit" -eq 1 ]] && echo "$case7_output" | grep -q 'Check B FAILED'; then
-  pass "Case 7: Check B still FAILs on a tracked ephemeral file despite full specs/.gitignore coverage (item (h) regression pin)"
+  common_test_pass "Case 7: Check B still FAILs on a tracked ephemeral file despite full specs/.gitignore coverage (item (h) regression pin)"
 else
-  fail "Case 7: expected exit 1 with 'Check B FAILED', got exit $case7_exit:"
+  common_test_fail "Case 7: expected exit 1 with 'Check B FAILED', got exit $case7_exit:"
   echo "$case7_output" | sed 's/^/    /'
 fi
 
 # =====================================================================
 # Case 8: specs/tmp/claude-tts-notify.log is ignored in the bootstrapped repo.
 # =====================================================================
-info "Case 8: specs/tmp/ ignore coverage in the bootstrapped repo"
+common_test_info "Case 8: specs/tmp/ ignore coverage in the bootstrapped repo"
 if (cd "$REPO1" && git check-ignore -q specs/tmp/claude-tts-notify.log); then
-  pass "Case 8: specs/tmp/claude-tts-notify.log is ignored"
+  common_test_pass "Case 8: specs/tmp/claude-tts-notify.log is ignored"
 else
-  fail "Case 8: specs/tmp/claude-tts-notify.log is NOT ignored"
+  common_test_fail "Case 8: specs/tmp/claude-tts-notify.log is NOT ignored"
 fi
 
 # =====================================================================

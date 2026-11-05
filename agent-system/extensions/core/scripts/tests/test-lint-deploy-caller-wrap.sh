@@ -41,14 +41,12 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 EXTENSIONS_DIR="$(cd "$CORE_DIR/../.." && pwd)"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 # ── (1) Classification ───────────────────────────────────────────────────────────────────────
 # GENUINE_ANCHOR_RE: what may sit immediately before the `bash <path>` / `./ <path>` token, with
@@ -140,9 +138,9 @@ for f in "${candidate_files[@]}"; do
   fi
 done
 
-info "Classification: ${#genuine_files[@]} genuine caller file(s), ${#mention_files[@]} mention-only file(s) out of ${#candidate_files[@]} scanned .sh file(s)."
+common_test_info "Classification: ${#genuine_files[@]} genuine caller file(s), ${#mention_files[@]} mention-only file(s) out of ${#candidate_files[@]} scanned .sh file(s)."
 for f in "${genuine_files[@]}"; do
-  info "  GENUINE: ${f#"$EXTENSIONS_DIR"/} (line(s): ${genuine_lines_by_file[$f]})"
+  common_test_info "  GENUINE: ${f#"$EXTENSIONS_DIR"/} (line(s): ${genuine_lines_by_file[$f]})"
 done
 
 # ── Negative assertion: the two sites this task fixed must be exactly the classified set (today).
@@ -153,9 +151,9 @@ done
 if [ "${#genuine_files[@]}" -eq 2 ] && \
    printf '%s\n' "${genuine_files[@]}" | grep -q 'orchestrate-cycle-plan\.sh$' && \
    printf '%s\n' "${genuine_files[@]}" | grep -q 'command-gate-out\.sh$'; then
-  pass "classification: exactly the two known genuine caller sites (orchestrate-cycle-plan.sh, command-gate-out.sh) were found"
+  common_test_pass "classification: exactly the two known genuine caller sites (orchestrate-cycle-plan.sh, command-gate-out.sh) were found"
 else
-  fail "classification: expected exactly {orchestrate-cycle-plan.sh, command-gate-out.sh}, got: ${genuine_files[*]:-<none>}"
+  common_test_fail "classification: expected exactly {orchestrate-cycle-plan.sh, command-gate-out.sh}, got: ${genuine_files[*]:-<none>}"
 fi
 
 # ── (2) Structural verification ──────────────────────────────────────────────────────────────
@@ -171,7 +169,7 @@ verify_wrap() {
   local -a brace_lines=()
   while IFS= read -r n; do brace_lines+=("$n"); done < <(grep -nx '}' "$file" | cut -d: -f1)
   if [ "${#brace_lines[@]}" -eq 0 ]; then
-    fail "$relf: no lone, unindented closing brace ('}' alone on its own line) found anywhere -- not wrapped"
+    common_test_fail "$relf: no lone, unindented closing brace ('}' alone on its own line) found anywhere -- not wrapped"
     return
   fi
 
@@ -204,23 +202,23 @@ verify_wrap() {
   done
 
   if [ -z "$anchor_line" ]; then
-    fail "$relf: found a lone closing brace but no exact 'blank/comment* then one bare invocation, then EOF' tail after any of them -- not wrapped to true EOF"
+    common_test_fail "$relf: found a lone closing brace but no exact 'blank/comment* then one bare invocation, then EOF' tail after any of them -- not wrapped to true EOF"
     return
   fi
 
   local open_line=""
   open_line=$(grep -nE "^${funcname}\(\) *\{$" "$file" | tail -1 | cut -d: -f1)
   if [ -z "$open_line" ]; then
-    fail "$relf: found closing brace + bare invocation of '$funcname' at/after line $anchor_line, but no matching '${funcname}() {' opening at column 0"
+    common_test_fail "$relf: found closing brace + bare invocation of '$funcname' at/after line $anchor_line, but no matching '${funcname}() {' opening at column 0"
     return
   fi
-  pass "$relf: wrapped in '$funcname' (lines $open_line-$anchor_line), invoked once as the file's last physical statement"
+  common_test_pass "$relf: wrapped in '$funcname' (lines $open_line-$anchor_line), invoked once as the file's last physical statement"
 
   for il in "${inv_lines[@]}"; do
     if [ "$il" -gt "$open_line" ] && [ "$il" -lt "$anchor_line" ]; then
-      pass "$relf: genuine invocation at line $il lies inside '$funcname' (lines $open_line-$anchor_line)"
+      common_test_pass "$relf: genuine invocation at line $il lies inside '$funcname' (lines $open_line-$anchor_line)"
     else
-      fail "$relf: genuine invocation at line $il does NOT lie inside '$funcname' (lines $open_line-$anchor_line) -- self-overwrite hazard is NOT closed"
+      common_test_fail "$relf: genuine invocation at line $il does NOT lie inside '$funcname' (lines $open_line-$anchor_line) -- self-overwrite hazard is NOT closed"
     fi
   done
 }
@@ -239,13 +237,13 @@ DEPLOY_HEADLESS="$CORE_DIR/deploy-headless.sh"
 if [ -f "$DEPLOY_HEADLESS" ]; then
   verify_wrap "$DEPLOY_HEADLESS"
 else
-  fail "deploy-headless.sh not found at $DEPLOY_HEADLESS"
+  common_test_fail "deploy-headless.sh not found at $DEPLOY_HEADLESS"
 fi
 
 # ── Self-test: a deliberately unwrapped copy of a genuine caller must FAIL this same structural
 # check, proving the lint has teeth (a permanently-green lint that could never fail is worthless).
 # Restored immediately after; never touches the real source-store file.
-info "Self-test: unwrapping orchestrate-cycle-plan.sh in a scratch copy must fail verify_wrap"
+common_test_info "Self-test: unwrapping orchestrate-cycle-plan.sh in a scratch copy must fail verify_wrap"
 SELFTEST_DIR="$(mktemp -d)"
 selftest_cleanup() { [ -n "${SELFTEST_DIR:-}" ] && [ -d "$SELFTEST_DIR" ] && rm -rf "$SELFTEST_DIR"; }
 trap selftest_cleanup EXIT
@@ -263,9 +261,9 @@ sed -i "$((selftest_total - 1)),${selftest_total}d" "$selftest_file"
 selftest_output="$(verify_wrap "$selftest_file" 2>&1)"
 echo "$selftest_output" | sed 's/^/  [self-test scratch copy] /'
 if echo "$selftest_output" | grep -q '^\[FAIL\]'; then
-  pass "self-test: the deliberately unwrapped scratch copy correctly FAILS verify_wrap (lint has teeth)"
+  common_test_pass "self-test: the deliberately unwrapped scratch copy correctly FAILS verify_wrap (lint has teeth)"
 else
-  fail "self-test: the deliberately unwrapped scratch copy did NOT fail verify_wrap -- the lint would not have caught the original incident"
+  common_test_fail "self-test: the deliberately unwrapped scratch copy did NOT fail verify_wrap -- the lint would not have caught the original incident"
 fi
 rm -rf "$SELFTEST_DIR"
 trap - EXIT

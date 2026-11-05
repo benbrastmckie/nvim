@@ -28,13 +28,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 LIB_SRC="$SCRIPT_DIR/../lib/task-reference-patterns.sh"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [[ ! -f "$LIB_SRC" ]]; then
   echo "ERROR: expected shared library at $LIB_SRC" >&2
@@ -70,24 +68,24 @@ tail"
 stripped1="$(printf '%s' "$fixture1" | strip_exempt_regions)"
 expected1="$(printf 'before\ntail')"
 if [[ "$stripped1" == "$expected1" ]]; then
-  pass "Case 1 (well-formed pair): strip_exempt_regions removes begin/citation/end, keeps before/tail"
+  common_test_pass "Case 1 (well-formed pair): strip_exempt_regions removes begin/citation/end, keeps before/tail"
 else
-  fail "Case 1 (well-formed pair): strip mismatch, got: $stripped1"
+  common_test_fail "Case 1 (well-formed pair): strip mismatch, got: $stripped1"
 fi
 
 mask1="$(printf '%s' "$fixture1" | exempt_line_mask)"
 expected_mask1="$(printf '0\n1\n1\n1\n1\n0')"
 if [[ "$mask1" == "$expected_mask1" ]]; then
-  pass "Case 1 (well-formed pair): exempt_line_mask reports 0,1,1,1,1,0"
+  common_test_pass "Case 1 (well-formed pair): exempt_line_mask reports 0,1,1,1,1,0"
 else
-  fail "Case 1 (well-formed pair): mask mismatch, got: $mask1"
+  common_test_fail "Case 1 (well-formed pair): mask mismatch, got: $mask1"
 fi
 
 report1="$(printf '%s' "$fixture1" | marker_balance_report)"
 if [[ -z "$report1" ]]; then
-  pass "Case 1 (well-formed pair): marker_balance_report is silent (well-formed)"
+  common_test_pass "Case 1 (well-formed pair): marker_balance_report is silent (well-formed)"
 else
-  fail "Case 1 (well-formed pair): expected silent report, got: $report1"
+  common_test_fail "Case 1 (well-formed pair): expected silent report, got: $report1"
 fi
 
 # =====================================================================
@@ -100,16 +98,16 @@ fixture2="$(printf '%s A\n%s B\n%s\n%s\n%s\n%s\n' \
 mask2="$(printf '%s' "$fixture2" | exempt_line_mask)"
 expected_mask2="$(printf '1\n1\n1\n1\n1\n1')"
 if [[ "$mask2" == "$expected_mask2" ]]; then
-  pass "Case 2 (nested pairs): every line exempt -- inside the inner pair, and between inner-end and outer-end"
+  common_test_pass "Case 2 (nested pairs): every line exempt -- inside the inner pair, and between inner-end and outer-end"
 else
-  fail "Case 2 (nested pairs): mask mismatch, got: $mask2"
+  common_test_fail "Case 2 (nested pairs): mask mismatch, got: $mask2"
 fi
 
 report2="$(printf '%s' "$fixture2" | marker_balance_report)"
 if [[ -z "$report2" ]]; then
-  pass "Case 2 (nested pairs): marker_balance_report is silent (well-formed)"
+  common_test_pass "Case 2 (nested pairs): marker_balance_report is silent (well-formed)"
 else
-  fail "Case 2 (nested pairs): expected silent report, got: $report2"
+  common_test_fail "Case 2 (nested pairs): expected silent report, got: $report2"
 fi
 
 # =====================================================================
@@ -121,16 +119,16 @@ fixture3="$(printf '%s\n%s\n' "$MARK_END" "$cite_a")"
 mask3="$(printf '%s' "$fixture3" | exempt_line_mask)"
 expected_mask3="$(printf '1\n0')"
 if [[ "$mask3" == "$expected_mask3" ]]; then
-  pass "Case 3 (stray end): the stray end line itself is exempt (dropped), the citation after it is not"
+  common_test_pass "Case 3 (stray end): the stray end line itself is exempt (dropped), the citation after it is not"
 else
-  fail "Case 3 (stray end): mask mismatch, got: $mask3"
+  common_test_fail "Case 3 (stray end): mask mismatch, got: $mask3"
 fi
 
 report3="$(printf '%s' "$fixture3" | marker_balance_report)"
 if [[ "$report3" == *"stray=1"* && "$report3" == *"eof_depth=0"* ]]; then
-  pass "Case 3 (stray end): marker_balance_report names stray=1, eof_depth=0"
+  common_test_pass "Case 3 (stray end): marker_balance_report names stray=1, eof_depth=0"
 else
-  fail "Case 3 (stray end): expected stray=1 eof_depth=0, got: $report3"
+  common_test_fail "Case 3 (stray end): expected stray=1 eof_depth=0, got: $report3"
 fi
 
 # =====================================================================
@@ -142,16 +140,16 @@ fixture4="$(printf 'before\n%s reason\n%s\n' "$MARK_BEGIN" "$cite_a")"
 mask4="$(printf '%s' "$fixture4" | exempt_line_mask)"
 expected_mask4="$(printf '0\n0\n0')"
 if [[ "$mask4" == "$expected_mask4" ]]; then
-  pass "Case 4 (unterminated begin): the begin line, and the citation after it, are both NOT exempt"
+  common_test_pass "Case 4 (unterminated begin): the begin line, and the citation after it, are both NOT exempt"
 else
-  fail "Case 4 (unterminated begin): mask mismatch, got: $mask4"
+  common_test_fail "Case 4 (unterminated begin): mask mismatch, got: $mask4"
 fi
 
 report4="$(printf '%s' "$fixture4" | marker_balance_report)"
 if [[ "$report4" == *"eof_depth=1"* && "$report4" == *"first_unclosed=2"* ]]; then
-  pass "Case 4 (unterminated begin): marker_balance_report names eof_depth=1, first_unclosed=2"
+  common_test_pass "Case 4 (unterminated begin): marker_balance_report names eof_depth=1, first_unclosed=2"
 else
-  fail "Case 4 (unterminated begin): expected eof_depth=1 first_unclosed=2, got: $report4"
+  common_test_fail "Case 4 (unterminated begin): expected eof_depth=1 first_unclosed=2, got: $report4"
 fi
 
 # =====================================================================
@@ -164,16 +162,16 @@ fixture5="$(printf '%s r1\n%s\n%s\n%s r2\n%s\n' \
 mask5="$(printf '%s' "$fixture5" | exempt_line_mask)"
 expected_mask5="$(printf '1\n1\n1\n0\n0')"
 if [[ "$mask5" == "$expected_mask5" ]]; then
-  pass "Case 5 (unterminated begin after a well-formed pair): the earlier pair stays exempt; the later unterminated span does not"
+  common_test_pass "Case 5 (unterminated begin after a well-formed pair): the earlier pair stays exempt; the later unterminated span does not"
 else
-  fail "Case 5 (unterminated begin after a well-formed pair): mask mismatch, got: $mask5"
+  common_test_fail "Case 5 (unterminated begin after a well-formed pair): mask mismatch, got: $mask5"
 fi
 
 report5="$(printf '%s' "$fixture5" | marker_balance_report)"
 if [[ "$report5" == *"eof_depth=1"* && "$report5" == *"first_unclosed=4"* ]]; then
-  pass "Case 5 (unterminated begin after a well-formed pair): marker_balance_report names the LATER begin's line (4), not the earlier well-formed one"
+  common_test_pass "Case 5 (unterminated begin after a well-formed pair): marker_balance_report names the LATER begin's line (4), not the earlier well-formed one"
 else
-  fail "Case 5 (unterminated begin after a well-formed pair): expected eof_depth=1 first_unclosed=4, got: $report5"
+  common_test_fail "Case 5 (unterminated begin after a well-formed pair): expected eof_depth=1 first_unclosed=4, got: $report5"
 fi
 
 # =====================================================================
@@ -185,16 +183,16 @@ fixture6="$(printf '%s inline reason: %s\n%s\n' "$_tok" "$cite_a" "$cite_b")"
 mask6="$(printf '%s' "$fixture6" | exempt_line_mask)"
 expected_mask6="$(printf '1\n0')"
 if [[ "$mask6" == "$expected_mask6" ]]; then
-  pass "Case 6 (inline form): the marked line is exempt; it opens no region for the line after it"
+  common_test_pass "Case 6 (inline form): the marked line is exempt; it opens no region for the line after it"
 else
-  fail "Case 6 (inline form): mask mismatch, got: $mask6"
+  common_test_fail "Case 6 (inline form): mask mismatch, got: $mask6"
 fi
 
 report6="$(printf '%s' "$fixture6" | marker_balance_report)"
 if [[ -z "$report6" ]]; then
-  pass "Case 6 (inline form): marker_balance_report is silent (no begin/end at all)"
+  common_test_pass "Case 6 (inline form): marker_balance_report is silent (no begin/end at all)"
 else
-  fail "Case 6 (inline form): expected silent report, got: $report6"
+  common_test_fail "Case 6 (inline form): expected silent report, got: $report6"
 fi
 
 # =====================================================================
@@ -206,16 +204,16 @@ fixture7="$(printf '%s x %s\n%s\n' "$MARK_BEGIN" "$MARK_END" "$cite_a")"
 mask7="$(printf '%s' "$fixture7" | exempt_line_mask)"
 expected_mask7="$(printf '1\n0')"
 if [[ "$mask7" == "$expected_mask7" ]]; then
-  pass "Case 7 (begin+end on one line): the combined-marker line is exempt; the line after it is not"
+  common_test_pass "Case 7 (begin+end on one line): the combined-marker line is exempt; the line after it is not"
 else
-  fail "Case 7 (begin+end on one line): mask mismatch, got: $mask7"
+  common_test_fail "Case 7 (begin+end on one line): mask mismatch, got: $mask7"
 fi
 
 report7="$(printf '%s' "$fixture7" | marker_balance_report)"
 if [[ -z "$report7" ]]; then
-  pass "Case 7 (begin+end on one line): marker_balance_report is silent (well-formed, no stack effect)"
+  common_test_pass "Case 7 (begin+end on one line): marker_balance_report is silent (well-formed, no stack effect)"
 else
-  fail "Case 7 (begin+end on one line): expected silent report, got: $report7"
+  common_test_fail "Case 7 (begin+end on one line): expected silent report, got: $report7"
 fi
 
 # =====================================================================
@@ -226,24 +224,24 @@ fixture8="$(printf 'alpha\nbeta\n%s\n' "$cite_c")"
 
 stripped8="$(printf '%s' "$fixture8" | strip_exempt_regions)"
 if [[ "$stripped8" == "$fixture8" ]]; then
-  pass "Case 8 (no markers): strip_exempt_regions leaves unmarked content untouched"
+  common_test_pass "Case 8 (no markers): strip_exempt_regions leaves unmarked content untouched"
 else
-  fail "Case 8 (no markers): strip mismatch, got: $stripped8"
+  common_test_fail "Case 8 (no markers): strip mismatch, got: $stripped8"
 fi
 
 mask8="$(printf '%s' "$fixture8" | exempt_line_mask)"
 expected_mask8="$(printf '0\n0\n0')"
 if [[ "$mask8" == "$expected_mask8" ]]; then
-  pass "Case 8 (no markers): exempt_line_mask reports 0 for every line"
+  common_test_pass "Case 8 (no markers): exempt_line_mask reports 0 for every line"
 else
-  fail "Case 8 (no markers): mask mismatch, got: $mask8"
+  common_test_fail "Case 8 (no markers): mask mismatch, got: $mask8"
 fi
 
 report8="$(printf '%s' "$fixture8" | marker_balance_report)"
 if [[ -z "$report8" ]]; then
-  pass "Case 8 (no markers): marker_balance_report is silent"
+  common_test_pass "Case 8 (no markers): marker_balance_report is silent"
 else
-  fail "Case 8 (no markers): expected silent report, got: $report8"
+  common_test_fail "Case 8 (no markers): expected silent report, got: $report8"
 fi
 
 # =====================================================================
@@ -257,11 +255,11 @@ for fx in "$fixture1" "$fixture2" "$fixture3" "$fixture4" "$fixture5" "$fixture6
   out_lines=$(printf '%s' "$fx" | exempt_line_mask | wc -l)
   if [[ "$in_lines" -ne "$out_lines" ]]; then
     arity_ok=0
-    fail "Case 9 (mask arity): expected $in_lines mask lines, got $out_lines for fixture: $fx"
+    common_test_fail "Case 9 (mask arity): expected $in_lines mask lines, got $out_lines for fixture: $fx"
   fi
 done
 if [[ "$arity_ok" -eq 1 ]]; then
-  pass "Case 9 (mask arity): exempt_line_mask emits exactly one value per input line, across all 8 fixtures"
+  common_test_pass "Case 9 (mask arity): exempt_line_mask emits exactly one value per input line, across all 8 fixtures"
 fi
 
 echo

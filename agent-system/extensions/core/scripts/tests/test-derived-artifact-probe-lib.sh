@@ -16,13 +16,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution: same dual-depth support as test-deploy-freshness.sh (source-store vs.
 # deployed invocation sites sit at different depths below the repo root) -- resolve via the git
 # worktree root first and only fall back to the fixed-depth guess when not inside a work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 LIB_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/derived-artifact-probe-lib.sh"
@@ -50,15 +48,12 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-info "Using library: $LIB"
+common_test_info "Using library: $LIB"
 
 # write_fixture <dir> <extensions_json_fragment_without_outer_braces_or_absent>
 # $2 omitted entirely (empty string) -> no .claude-extensions.json file at all.
@@ -85,9 +80,9 @@ mkdir -p "$C_ABSENT"
   echo "RESULT entries=<<<${entries}>>> prefixes=<<<${prefixes}>>> rc=${rc}"
 ) > "$WORKDIR/case-absent.out" 2>&1
 if grep -q 'RESULT entries=<<<\[\]>>> prefixes=<<<\[\]>>> rc=0' "$WORKDIR/case-absent.out"; then
-  pass "absent file: entries=[] prefixes=[] rc=0, no probe executed"
+  common_test_pass "absent file: entries=[] prefixes=[] rc=0, no probe executed"
 else
-  fail "absent file: expected entries=[] prefixes=[] rc=0, got <<<$(cat "$WORKDIR/case-absent.out")>>>"
+  common_test_fail "absent file: expected entries=[] prefixes=[] rc=0, got <<<$(cat "$WORKDIR/case-absent.out")>>>"
 fi
 
 # =====================================================================
@@ -102,9 +97,9 @@ write_fixture "$C_NOKEY" '{"version":"1.0.0","extensions":{}}'
   echo "RESULT entries=<<<${entries}>>>"
 ) > "$WORKDIR/case-nokey.out" 2>&1
 if grep -q 'RESULT entries=<<<\[\]>>>' "$WORKDIR/case-nokey.out"; then
-  pass "absent key: entries=[]"
+  common_test_pass "absent key: entries=[]"
 else
-  fail "absent key: expected entries=[], got <<<$(cat "$WORKDIR/case-nokey.out")>>>"
+  common_test_fail "absent key: expected entries=[], got <<<$(cat "$WORKDIR/case-nokey.out")>>>"
 fi
 
 # =====================================================================
@@ -120,9 +115,9 @@ write_fixture "$C_EMPTY" '{"version":"1.0.0","extensions":{},"derived_artifact_p
   echo "RESULT entries=<<<${entries}>>> rc=${rc}"
 ) > "$WORKDIR/case-empty.out" 2>&1
 if grep -q 'RESULT entries=<<<\[\]>>> rc=0' "$WORKDIR/case-empty.out"; then
-  pass "empty array: entries=[] rc=0"
+  common_test_pass "empty array: entries=[] rc=0"
 else
-  fail "empty array: expected entries=[] rc=0, got <<<$(cat "$WORKDIR/case-empty.out")>>>"
+  common_test_fail "empty array: expected entries=[] rc=0, got <<<$(cat "$WORKDIR/case-empty.out")>>>"
 fi
 
 # =====================================================================
@@ -139,9 +134,9 @@ write_fixture "$C_ONE" '{"version":"1.0.0","extensions":{},"derived_artifact_pro
   echo "RESULT count=${count} rc=${rc}"
 ) > "$WORKDIR/case-one.out" 2>&1
 if grep -q 'RESULT count=1 rc=0' "$WORKDIR/case-one.out"; then
-  pass "one entry, passing probe: count=1 rc=0"
+  common_test_pass "one entry, passing probe: count=1 rc=0"
 else
-  fail "one entry, passing probe: expected count=1 rc=0, got <<<$(cat "$WORKDIR/case-one.out")>>>"
+  common_test_fail "one entry, passing probe: expected count=1 rc=0, got <<<$(cat "$WORKDIR/case-one.out")>>>"
 fi
 
 # =====================================================================
@@ -158,9 +153,9 @@ write_fixture "$C_TWO" '{"version":"1.0.0","extensions":{},"derived_artifact_pro
   echo "RESULT count=${count} rc=${rc}"
 ) > "$WORKDIR/case-two.out" 2>&1
 if grep -q 'RESULT count=2 rc=0' "$WORKDIR/case-two.out"; then
-  pass "two entries, both passing: count=2 rc=0"
+  common_test_pass "two entries, both passing: count=2 rc=0"
 else
-  fail "two entries, both passing: expected count=2 rc=0, got <<<$(cat "$WORKDIR/case-two.out")>>>"
+  common_test_fail "two entries, both passing: expected count=2 rc=0, got <<<$(cat "$WORKDIR/case-two.out")>>>"
 fi
 
 # =====================================================================
@@ -177,14 +172,14 @@ write_fixture "$C_MALFORMED" '{"version":"1.0.0","extensions":{},"derived_artifa
   echo "RESULT count=${count} comp=${comp}"
 ) > "$WORKDIR/case-malformed.out" 2>&1
 if grep -q 'RESULT count=1 comp=goodOne' "$WORKDIR/case-malformed.out"; then
-  pass "malformed entry dropped: only the valid entry survives"
+  common_test_pass "malformed entry dropped: only the valid entry survives"
 else
-  fail "malformed entry dropped: expected count=1 comp=goodOne, got <<<$(cat "$WORKDIR/case-malformed.out")>>>"
+  common_test_fail "malformed entry dropped: expected count=1 comp=goodOne, got <<<$(cat "$WORKDIR/case-malformed.out")>>>"
 fi
 if grep -q 'WARNING.*badOne' "$WORKDIR/malformed-stderr.txt" 2>/dev/null; then
-  pass "malformed entry dropped: named WARNING naming the dropped entry emitted on stderr"
+  common_test_pass "malformed entry dropped: named WARNING naming the dropped entry emitted on stderr"
 else
-  fail "malformed entry dropped: expected a named WARNING, got <<<$(cat "$WORKDIR/malformed-stderr.txt" 2>/dev/null)>>>"
+  common_test_fail "malformed entry dropped: expected a named WARNING, got <<<$(cat "$WORKDIR/malformed-stderr.txt" 2>/dev/null)>>>"
 fi
 
 # =====================================================================
@@ -201,9 +196,9 @@ write_fixture "$C_BADDIRS" '{"version":"1.0.0","extensions":{},"derived_artifact
   echo "RESULT count=${count} comp=${comp}"
 ) > "$WORKDIR/case-baddirs.out" 2>&1
 if grep -q 'RESULT count=1 comp=goodOne' "$WORKDIR/case-baddirs.out"; then
-  pass "malformed derived_output_dirs (non-array and non-string member) both dropped"
+  common_test_pass "malformed derived_output_dirs (non-array and non-string member) both dropped"
 else
-  fail "malformed derived_output_dirs: expected count=1 comp=goodOne, got <<<$(cat "$WORKDIR/case-baddirs.out")>>>"
+  common_test_fail "malformed derived_output_dirs: expected count=1 comp=goodOne, got <<<$(cat "$WORKDIR/case-baddirs.out")>>>"
 fi
 
 # =====================================================================
@@ -218,9 +213,9 @@ write_fixture "$C_PREFIX" '{"version":"1.0.0","extensions":{},"derived_artifact_
   echo "RESULT prefixes=<<<${prefixes}>>>"
 ) > "$WORKDIR/case-prefix.out" 2>&1
 if grep -q 'RESULT prefixes=<<<\["components/compA/certs/","components/compB/certs/"\]>>>' "$WORKDIR/case-prefix.out"; then
-  pass "prefix normalization: both members end with exactly one trailing slash"
+  common_test_pass "prefix normalization: both members end with exactly one trailing slash"
 else
-  fail "prefix normalization: expected both members trailing-slash-normalized, got <<<$(cat "$WORKDIR/case-prefix.out")>>>"
+  common_test_fail "prefix normalization: expected both members trailing-slash-normalized, got <<<$(cat "$WORKDIR/case-prefix.out")>>>"
 fi
 
 # =====================================================================
@@ -236,14 +231,14 @@ write_fixture "$C_FAILING" '{"version":"1.0.0","extensions":{},"derived_artifact
   echo "RESULT rc=${rc}"
 ) > "$WORKDIR/case-failing.out" 2>&1
 if grep -q 'RESULT rc=1' "$WORKDIR/case-failing.out"; then
-  pass "failing probe: run_all returns nonzero"
+  common_test_pass "failing probe: run_all returns nonzero"
 else
-  fail "failing probe: expected rc=1, got <<<$(cat "$WORKDIR/case-failing.out")>>>"
+  common_test_fail "failing probe: expected rc=1, got <<<$(cat "$WORKDIR/case-failing.out")>>>"
 fi
 if grep -q "compBad" "$WORKDIR/failing-stderr.txt" 2>/dev/null && ! grep -q "compGood" "$WORKDIR/failing-stderr.txt" 2>/dev/null; then
-  pass "failing probe: named failure line mentions only the failing component"
+  common_test_pass "failing probe: named failure line mentions only the failing component"
 else
-  fail "failing probe: expected a failure line naming only compBad, got <<<$(cat "$WORKDIR/failing-stderr.txt" 2>/dev/null)>>>"
+  common_test_fail "failing probe: expected a failure line naming only compBad, got <<<$(cat "$WORKDIR/failing-stderr.txt" 2>/dev/null)>>>"
 fi
 
 # =====================================================================
@@ -260,14 +255,14 @@ write_fixture "$C_TIMEOUT" '{"version":"1.0.0","extensions":{},"derived_artifact
   echo "RESULT rc=${rc}"
 ) > "$WORKDIR/case-timeout.out" 2>&1
 if grep -q 'RESULT rc=1' "$WORKDIR/case-timeout.out"; then
-  pass "timed-out probe: run_all returns nonzero (treated as a failure, not a hang)"
+  common_test_pass "timed-out probe: run_all returns nonzero (treated as a failure, not a hang)"
 else
-  fail "timed-out probe: expected rc=1, got <<<$(cat "$WORKDIR/case-timeout.out")>>>"
+  common_test_fail "timed-out probe: expected rc=1, got <<<$(cat "$WORKDIR/case-timeout.out")>>>"
 fi
 if grep -q "compSlow" "$WORKDIR/timeout-stderr.txt" 2>/dev/null && grep -q "timed out" "$WORKDIR/timeout-stderr.txt" 2>/dev/null; then
-  pass "timed-out probe: named failure line states the timeout explicitly"
+  common_test_pass "timed-out probe: named failure line states the timeout explicitly"
 else
-  fail "timed-out probe: expected a failure line naming compSlow and 'timed out', got <<<$(cat "$WORKDIR/timeout-stderr.txt" 2>/dev/null)>>>"
+  common_test_fail "timed-out probe: expected a failure line naming compSlow and 'timed out', got <<<$(cat "$WORKDIR/timeout-stderr.txt" 2>/dev/null)>>>"
 fi
 
 echo ""

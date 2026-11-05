@@ -42,13 +42,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 require_file() {
   if [ ! -f "$1" ]; then
@@ -86,9 +84,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in "${SCRIPTS[@]}"; do cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"; done
@@ -181,20 +177,20 @@ plan_stderr="$(cat "$plan_stderr_file")"
 rm -f "$plan_stdout_file" "$plan_stderr_file"
 
 if [ "$plan_rc" -eq 0 ] && echo "$plan_json_clean" | jq -e '.dispatch | length == 3' >/dev/null 2>&1; then
-  pass "live cycle-plan: exit 0, all 3 fixture candidates dispatched"
+  common_test_pass "live cycle-plan: exit 0, all 3 fixture candidates dispatched"
 else
-  fail "live cycle-plan: exit=$plan_rc, dispatch count != 3 (stdout: $plan_json) (stderr: $plan_stderr)"
+  common_test_fail "live cycle-plan: exit=$plan_rc, dispatch count != 3 (stdout: $plan_json) (stderr: $plan_stderr)"
   echo ""
   echo "$FAILED failed -- cannot proceed to per-task measurement without a live plan_json"
   exit 1
 fi
 
 plan_json_bytes=$(printf '%s' "$plan_json" | wc -c | tr -d ' ')
-info "plan_json bytes (one call, 3-task cycle): $plan_json_bytes"
+common_test_info "plan_json bytes (one call, 3-task cycle): $plan_json_bytes"
 
 mt_state_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${SESSION_ID}.json"
 if [ ! -f "$mt_state_file" ]; then
-  fail "mt_state_file not written by live cycle-plan: $mt_state_file"
+  common_test_fail "mt_state_file not written by live cycle-plan: $mt_state_file"
   exit 1
 fi
 
@@ -211,14 +207,14 @@ task_count=0
 for t in 801 802 803; do
   row=$(echo "$plan_json_clean" | jq -c --argjson t "$t" '.dispatch[] | select(.task == $t)')
   if [ -z "$row" ]; then
-    fail "no dispatch row for candidate #$t in plan_json"
+    common_test_fail "no dispatch row for candidate #$t in plan_json"
     continue
   fi
   phase=$(jq -r .phase <<<"$row")
   dispatch_file=$(jq -r .dispatch_file <<<"$row")
   agent=$(jq -r .agent <<<"$row")
   if [ ! -f "$dispatch_file" ]; then
-    fail "candidate #$t: dispatch_file not found on disk: $dispatch_file"
+    common_test_fail "candidate #$t: dispatch_file not found on disk: $dispatch_file"
     continue
   fi
   task_dir_rel=$(jq -r --arg t "$t" '.task_dirs[$t]' "$mt_state_file")
@@ -239,7 +235,7 @@ for t in 801 802 803; do
   context_bytes=$(printf '%s' "$context_obj" | wc -c | tr -d ' ')
   combined=$(( pointer_bytes + context_bytes ))
   total_pointer_context_bytes=$(( total_pointer_context_bytes + combined ))
-  info "candidate #$t ($phase, agent=$agent): pointer=$pointer_bytes B, context=$context_bytes B, combined=$combined B"
+  common_test_info "candidate #$t ($phase, agent=$agent): pointer=$pointer_bytes B, context=$context_bytes B, combined=$combined B"
 
   # ─── (3) Fixture a completed dispatch (fresh handoff + return-meta) and run the REAL
   # orchestrate-cycle-postflight.sh (multi-task mode: no --loop-guard-file), capturing its
@@ -269,10 +265,10 @@ EOF
   if [ "$pf_rc" -eq 0 ] && [ -n "$pf_json" ]; then
     pf_bytes=$(printf '%s' "$pf_json" | wc -c | tr -d ' ')
     total_postflight_bytes=$(( total_postflight_bytes + pf_bytes ))
-    info "candidate #$t postflight JSON: $pf_bytes B (verdict=$(jq -r '.verdict // "?"' <<<"$pf_json"))"
-    pass "candidate #$t: live postflight produced compact JSON"
+    common_test_info "candidate #$t postflight JSON: $pf_bytes B (verdict=$(jq -r '.verdict // "?"' <<<"$pf_json"))"
+    common_test_pass "candidate #$t: live postflight produced compact JSON"
   else
-    fail "candidate #$t: postflight exit=$pf_rc, empty or malformed JSON (stdout: $pf_json) (stderr: $pf_stderr)"
+    common_test_fail "candidate #$t: postflight exit=$pf_rc, empty or malformed JSON (stdout: $pf_json) (stderr: $pf_stderr)"
   fi
 
   task_count=$(( task_count + 1 ))
@@ -303,20 +299,20 @@ echo "PER_TASK_PER_CYCLE_BYTES: $per_task_per_cycle"
 # number comes out).
 REGRESSION_CEILING_BYTES=2048
 if [ "$per_task_per_cycle" -le "$REGRESSION_CEILING_BYTES" ]; then
-  pass "PER_TASK_PER_CYCLE_BYTES ($per_task_per_cycle B) is under the regression ceiling ($REGRESSION_CEILING_BYTES B)"
+  common_test_pass "PER_TASK_PER_CYCLE_BYTES ($per_task_per_cycle B) is under the regression ceiling ($REGRESSION_CEILING_BYTES B)"
 else
-  fail "PER_TASK_PER_CYCLE_BYTES ($per_task_per_cycle B) EXCEEDS the regression ceiling ($REGRESSION_CEILING_BYTES B) -- investigate before adjusting the ceiling"
+  common_test_fail "PER_TASK_PER_CYCLE_BYTES ($per_task_per_cycle B) EXCEEDS the regression ceiling ($REGRESSION_CEILING_BYTES B) -- investigate before adjusting the ceiling"
 fi
 
 # ─── No real orchestrator state touched ────────────────────────────────────────────────────────
 if git -C "$CORE_DIR/../../../.." status --porcelain -- specs/ 2>/dev/null | grep -qE '\.orchestrator-multi-state-sess_growth_probe|801_growth_probe|802_growth_probe|803_growth_probe'; then
-  fail "fixture leaked into the real specs/ tree"
+  common_test_fail "fixture leaked into the real specs/ tree"
 else
-  pass "no real specs/ state was created or mutated by this probe"
+  common_test_pass "no real specs/ state was created or mutated by this probe"
 fi
 if compgen -G "$CORE_DIR/../../../../specs/.orchestration/.orchestrator-multi-state-*.json" > /dev/null 2>&1 \
    || compgen -G "$CORE_DIR/../../../../specs/.orchestrator-multi-state-*.json" > /dev/null 2>&1; then
-  info "note: pre-existing real multi-state files present, at specs/.orchestration/ and/or the legacy specs/ root (unrelated to this probe; not asserted against)"
+  common_test_info "note: pre-existing real multi-state files present, at specs/.orchestration/ and/or the legacy specs/ root (unrelated to this probe; not asserted against)"
 fi
 
 echo ""

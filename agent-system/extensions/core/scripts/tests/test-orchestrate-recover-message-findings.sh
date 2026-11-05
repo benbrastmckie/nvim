@@ -15,13 +15,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 require_file() {
   if [ ! -f "$1" ]; then
@@ -39,9 +37,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 setup_sandbox() {
   rm -rf "$WORKDIR"
@@ -83,7 +79,7 @@ EOF
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Success path: banner + verbatim body present at the naming convention's target path
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Success path: recovered file carries the banner and the verbatim message body"
+common_test_info "Success path: recovered file carries the banner and the verbatim message body"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/930_candidate"
 write_dispatch_file specs/930_candidate 1 01 specs/930_candidate/reports
@@ -92,61 +88,61 @@ run_sut --task-dir specs/930_candidate --dispatch-seq 1 --message-file msg.txt \
   --agent general-research-agent --session sess_930
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "success: SUT exits 0"
+  common_test_pass "success: SUT exits 0"
 else
-  fail "success: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "success: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if [ "$(jqf '.recovered')" = "true" ]; then
-  pass "success: recovered=true"
+  common_test_pass "success: recovered=true"
 else
-  fail "success: expected recovered=true, got: $LAST_STDOUT"
+  common_test_fail "success: expected recovered=true, got: $LAST_STDOUT"
 fi
 written_path="$WORKDIR/$(jqf '.path')"
 if [ -f "$written_path" ]; then
-  pass "success: the reported path actually exists"
+  common_test_pass "success: the reported path actually exists"
 else
-  fail "success: reported path does not exist: $written_path"
+  common_test_fail "success: reported path does not exist: $written_path"
 fi
 if grep -q "NOT a completed research report" "$written_path" 2>/dev/null; then
-  pass "success: the recovered-content banner is present"
+  common_test_pass "success: the recovered-content banner is present"
 else
-  fail "success: banner missing from $written_path"
+  common_test_fail "success: banner missing from $written_path"
 fi
 if grep -q "these are the agent's real findings, verbatim" "$written_path" 2>/dev/null; then
-  pass "success: the verbatim message body is present"
+  common_test_pass "success: the verbatim message body is present"
 else
-  fail "success: verbatim body missing from $written_path"
+  common_test_fail "success: verbatim body missing from $written_path"
 fi
 if grep -q "general-research-agent" "$written_path" 2>/dev/null && grep -q "sess_930" "$written_path" 2>/dev/null; then
-  pass "success: provenance lines (agent, session) are present"
+  common_test_pass "success: provenance lines (agent, session) are present"
 else
-  fail "success: provenance lines missing from $written_path"
+  common_test_fail "success: provenance lines missing from $written_path"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Never-clobber: a second run against the same round creates a -2 suffixed file
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Never-clobber: a second recovery for the same round does not overwrite the first"
+common_test_info "Never-clobber: a second recovery for the same round does not overwrite the first"
 run_sut --task-dir specs/930_candidate --dispatch-seq 1 --message-file msg.txt \
   --agent general-research-agent --session sess_930_second
 
 if [ "$(jqf '.path')" = "specs/930_candidate/reports/01_recovered-agent-message-2.md" ]; then
-  pass "never-clobber: second run created the -2 suffixed file"
+  common_test_pass "never-clobber: second run created the -2 suffixed file"
 else
-  fail "never-clobber: expected the -2 suffixed path, got: $(jqf '.path')"
+  common_test_fail "never-clobber: expected the -2 suffixed path, got: $(jqf '.path')"
 fi
 if [ -f "$WORKDIR/specs/930_candidate/reports/01_recovered-agent-message.md" ] && \
    grep -q "sess_930\b" "$WORKDIR/specs/930_candidate/reports/01_recovered-agent-message.md" && \
    ! grep -q "sess_930_second" "$WORKDIR/specs/930_candidate/reports/01_recovered-agent-message.md"; then
-  pass "never-clobber: the original file is untouched"
+  common_test_pass "never-clobber: the original file is untouched"
 else
-  fail "never-clobber: the original file was modified"
+  common_test_fail "never-clobber: the original file was modified"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Empty message: no file is created, recovered=false, reason=EMPTY_MESSAGE
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Empty message: whitespace-only message writes nothing"
+common_test_info "Empty message: whitespace-only message writes nothing"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/931_candidate"
 write_dispatch_file specs/931_candidate 1 01 specs/931_candidate/reports
@@ -155,37 +151,37 @@ run_sut --task-dir specs/931_candidate --dispatch-seq 1 --message-file whitespac
   --agent general-research-agent --session sess_931
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "empty message: SUT still exits 0 (non-fatal to the caller's loop)"
+  common_test_pass "empty message: SUT still exits 0 (non-fatal to the caller's loop)"
 else
-  fail "empty message: SUT exited $LAST_EXIT"
+  common_test_fail "empty message: SUT exited $LAST_EXIT"
 fi
 if [ "$(jqf '.recovered')" = "false" ] && [ "$(jqf '.reason')" = "EMPTY_MESSAGE" ]; then
-  pass "empty message: recovered=false, reason=EMPTY_MESSAGE"
+  common_test_pass "empty message: recovered=false, reason=EMPTY_MESSAGE"
 else
-  fail "empty message: expected recovered=false/EMPTY_MESSAGE, got: $LAST_STDOUT"
+  common_test_fail "empty message: expected recovered=false/EMPTY_MESSAGE, got: $LAST_STDOUT"
 fi
 if [ -d "$WORKDIR/specs/931_candidate/reports" ] && \
    [ -z "$(ls -A "$WORKDIR/specs/931_candidate/reports" 2>/dev/null)" ]; then
-  pass "empty message: no file was created"
+  common_test_pass "empty message: no file was created"
 elif [ ! -d "$WORKDIR/specs/931_candidate/reports" ]; then
-  pass "empty message: reports/ was never even created"
+  common_test_pass "empty message: reports/ was never even created"
 else
-  fail "empty message: a file was unexpectedly created: $(ls -A "$WORKDIR/specs/931_candidate/reports")"
+  common_test_fail "empty message: a file was unexpectedly created: $(ls -A "$WORKDIR/specs/931_candidate/reports")"
 fi
 
 # Also cover a missing message-file argument entirely (not just whitespace-only content).
 run_sut --task-dir specs/931_candidate --dispatch-seq 1 --message-file /no/such/file.txt \
   --agent general-research-agent --session sess_931b
 if [ "$(jqf '.reason')" = "EMPTY_MESSAGE" ]; then
-  pass "empty message: a nonexistent message-file path is treated identically to an empty one"
+  common_test_pass "empty message: a nonexistent message-file path is treated identically to an empty one"
 else
-  fail "empty message: expected reason=EMPTY_MESSAGE for a missing file, got: $LAST_STDOUT"
+  common_test_fail "empty message: expected reason=EMPTY_MESSAGE for a missing file, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Missing dispatch file: fallback to reports/ and 01, with a named WARN on stderr
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Missing dispatch file: falls back to reports/ and 01 with a named WARN"
+common_test_info "Missing dispatch file: falls back to reports/ and 01 with a named WARN"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/932_candidate"
 echo "findings with no dispatch file to consult" > "$WORKDIR/msg.txt"
@@ -193,25 +189,25 @@ run_sut --task-dir specs/932_candidate --dispatch-seq 7 --message-file msg.txt \
   --agent general-research-agent --session sess_932
 
 if [ "$(jqf '.recovered')" = "true" ]; then
-  pass "missing dispatch file: recovery still succeeds via the fallback"
+  common_test_pass "missing dispatch file: recovery still succeeds via the fallback"
 else
-  fail "missing dispatch file: expected recovered=true, got: $LAST_STDOUT"
+  common_test_fail "missing dispatch file: expected recovered=true, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.path')" = "specs/932_candidate/reports/01_recovered-agent-message.md" ]; then
-  pass "missing dispatch file: fallback path is reports/01_recovered-agent-message.md"
+  common_test_pass "missing dispatch file: fallback path is reports/01_recovered-agent-message.md"
 else
-  fail "missing dispatch file: expected the fallback path, got: $(jqf '.path')"
+  common_test_fail "missing dispatch file: expected the fallback path, got: $(jqf '.path')"
 fi
 if echo "$LAST_STDERR" | grep -q "WARN: could not resolve artifact_padded/output_dir"; then
-  pass "missing dispatch file: named WARN present on stderr"
+  common_test_pass "missing dispatch file: named WARN present on stderr"
 else
-  fail "missing dispatch file: expected a named WARN on stderr, got: $LAST_STDERR"
+  common_test_fail "missing dispatch file: expected a named WARN on stderr, got: $LAST_STDERR"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # --dry-run: no write performed, recovered=false, reason=DRY_RUN, would_write names the target
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "--dry-run: no file is written"
+common_test_info "--dry-run: no file is written"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/933_candidate"
 write_dispatch_file specs/933_candidate 1 01 specs/933_candidate/reports
@@ -220,20 +216,20 @@ run_sut --task-dir specs/933_candidate --dispatch-seq 1 --message-file msg.txt \
   --agent general-research-agent --session sess_933 --dry-run
 
 if [ "$(jqf '.recovered')" = "false" ] && [ "$(jqf '.reason')" = "DRY_RUN" ]; then
-  pass "dry-run: recovered=false, reason=DRY_RUN"
+  common_test_pass "dry-run: recovered=false, reason=DRY_RUN"
 else
-  fail "dry-run: expected recovered=false/DRY_RUN, got: $LAST_STDOUT"
+  common_test_fail "dry-run: expected recovered=false/DRY_RUN, got: $LAST_STDOUT"
 fi
 if [ -n "$(jqf '.would_write')" ]; then
-  pass "dry-run: would_write names the target path"
+  common_test_pass "dry-run: would_write names the target path"
 else
-  fail "dry-run: would_write missing or empty"
+  common_test_fail "dry-run: would_write missing or empty"
 fi
 if [ ! -d "$WORKDIR/specs/933_candidate/reports" ] || \
    [ -z "$(ls -A "$WORKDIR/specs/933_candidate/reports" 2>/dev/null)" ]; then
-  pass "dry-run: no file was actually written"
+  common_test_pass "dry-run: no file was actually written"
 else
-  fail "dry-run: a file was written despite --dry-run: $(ls -A "$WORKDIR/specs/933_candidate/reports")"
+  common_test_fail "dry-run: a file was written despite --dry-run: $(ls -A "$WORKDIR/specs/933_candidate/reports")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -242,7 +238,7 @@ fi
 # helper then recovers the findings. Reuses the postflight sandbox pattern directly (copies its
 # full collaborator set) rather than re-implementing postflight's own logic.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (end-to-end): postflight's report_missing=true feeds this helper, which recovers the findings"
+common_test_info "Acceptance (end-to-end): postflight's report_missing=true feeds this helper, which recovers the findings"
 setup_sandbox
 POSTFLIGHT_SRC="$CORE_DIR/orchestrate-cycle-postflight.sh"
 require_file "$POSTFLIGHT_SRC"
@@ -290,9 +286,9 @@ rm -f "$POSTFLIGHT_STDOUT"
 
 if [ "$(echo "$postflight_json" | jq -r '.report_missing')" = "true" ] && \
    [ "$(echo "$postflight_json" | jq -r '.verdict')" = "failed" ]; then
-  pass "acceptance (e2e): postflight reports report_missing=true, verdict=failed for the double-miss"
+  common_test_pass "acceptance (e2e): postflight reports report_missing=true, verdict=failed for the double-miss"
 else
-  fail "acceptance (e2e): expected report_missing=true/verdict=failed, got: $postflight_json"
+  common_test_fail "acceptance (e2e): expected report_missing=true/verdict=failed, got: $postflight_json"
 fi
 
 # The lead's own Move 3 step: capture the agent's returned message verbatim, then call this
@@ -306,27 +302,27 @@ echo "the agent's actual findings, delivered by message instead of a report file
 recover_exit=$?
 
 if [ "$recover_exit" -eq 0 ]; then
-  pass "acceptance (e2e): the recovery helper exits 0"
+  common_test_pass "acceptance (e2e): the recovery helper exits 0"
 else
-  fail "acceptance (e2e): the recovery helper exited $recover_exit"
+  common_test_fail "acceptance (e2e): the recovery helper exited $recover_exit"
 fi
 if [ -f "$WORKDIR/specs/934_candidate/reports/01_recovered-agent-message.md" ] && \
    grep -q "the agent's actual findings" "$WORKDIR/specs/934_candidate/reports/01_recovered-agent-message.md"; then
-  pass "acceptance (e2e): the findings text landed in reports/"
+  common_test_pass "acceptance (e2e): the findings text landed in reports/"
 else
-  fail "acceptance (e2e): recovered findings file missing or does not contain the expected text"
+  common_test_fail "acceptance (e2e): recovered findings file missing or does not contain the expected text"
 fi
 e2e_status=$(jq -r --argjson n 934 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$e2e_status" = "researching" ]; then
-  pass "acceptance (e2e): state.json status is still not researched"
+  common_test_pass "acceptance (e2e): state.json status is still not researched"
 else
-  fail "acceptance (e2e): expected status=researching, got: $e2e_status"
+  common_test_fail "acceptance (e2e): expected status=researching, got: $e2e_status"
 fi
 e2e_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/934_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$e2e_defect_count" -ge 1 ] 2>/dev/null; then
-  pass "acceptance (e2e): a defect row exists (the double-miss was recorded)"
+  common_test_pass "acceptance (e2e): a defect row exists (the double-miss was recorded)"
 else
-  fail "acceptance (e2e): expected >=1 detected_defects, got $e2e_defect_count"
+  common_test_fail "acceptance (e2e): expected >=1 detected_defects, got $e2e_defect_count"
 fi
 
 echo ""

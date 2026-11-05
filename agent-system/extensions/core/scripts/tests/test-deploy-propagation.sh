@@ -33,6 +33,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this harness supports:
 # the source-store copy (agent-system/extensions/core/scripts/tests/, 5 directories
 # below repo root) and the deployed copy (.claude/scripts/tests/, only 3 directories
@@ -41,10 +42,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # count cannot be correct for both depths at once, so resolve via the git worktree root
 # first (depth-independent) and only fall back to the fixed-depth guess (matching the
 # source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 DEPLOY_SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/deploy-headless.sh"
@@ -79,9 +77,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
@@ -120,11 +115,11 @@ run_deploy() {
   output="$(bash "$DEPLOY_SCRIPT" "$TARGET" 2>&1)"
   local code=$?
   if [[ "$code" -ne 0 ]]; then
-    fail "$label: deploy-headless.sh exited $code (expected 0). Output:"
+    common_test_fail "$label: deploy-headless.sh exited $code (expected 0). Output:"
     echo "$output" | sed 's/^/    /'
     return 1
   fi
-  info "$label: deploy completed ($(echo "$output" | grep -oE '(Resynced|Wiped and regenerated) [0-9]+ extension' || echo 'no count line'))"
+  common_test_info "$label: deploy completed ($(echo "$output" | grep -oE '(Resynced|Wiped and regenerated) [0-9]+ extension' || echo 'no count line'))"
   return 0
 }
 
@@ -132,15 +127,15 @@ run_deploy() {
 # Assertion A (fresh deploy): a manifest-declared scripts/lib/*.sh entry exists in the deployed
 # tree after a from-scratch deploy. Expected RED at authorship time (this is the defect).
 # =====================================================================
-info "Assertion A: fresh deploy against scratch tree $TARGET"
+common_test_info "Assertion A: fresh deploy against scratch tree $TARGET"
 if run_deploy "fresh deploy"; then
   if [[ -f "$TARGET/.claude/$CANARY_REL" ]]; then
-    pass "Assertion A: $CANARY_REL present after fresh deploy"
+    common_test_pass "Assertion A: $CANARY_REL present after fresh deploy"
   else
-    fail "Assertion A: $CANARY_REL MISSING after fresh deploy (subdirectory-declared scripts entry dropped)"
+    common_test_fail "Assertion A: $CANARY_REL MISSING after fresh deploy (subdirectory-declared scripts entry dropped)"
   fi
 else
-  fail "Assertion A: fresh deploy did not complete; cannot check canary"
+  common_test_fail "Assertion A: fresh deploy did not complete; cannot check canary"
 fi
 
 # =====================================================================
@@ -149,17 +144,17 @@ fi
 # guard present in this scratch deploy is still registered bare (criterion 3's bare half), and
 # no (event,matcher,hook-script) triple is duplicated (the fresh-install half of criterion 6).
 # =====================================================================
-info "Assertion E: fresh-deploy settings.json hook-path hygiene"
+common_test_info "Assertion E: fresh-deploy settings.json hook-path hygiene"
 DEPLOYED_SETTINGS="$TARGET/.claude/settings.json"
 if [[ ! -f "$DEPLOYED_SETTINGS" ]]; then
-  fail "Assertion E: $DEPLOYED_SETTINGS missing after fresh deploy -- cannot check hook-path hygiene"
+  common_test_fail "Assertion E: $DEPLOYED_SETTINGS missing after fresh deploy -- cannot check hook-path hygiene"
 else
   stale_count=$(grep -c 'bash \.claude/hooks/' "$DEPLOYED_SETTINGS" 2>/dev/null || true)
   stale_count=${stale_count:-0}
   if [[ "$stale_count" -eq 0 ]]; then
-    pass "Assertion E: zero CWD-relative 'bash .claude/hooks/' paths in deployed settings.json"
+    common_test_pass "Assertion E: zero CWD-relative 'bash .claude/hooks/' paths in deployed settings.json"
   else
-    fail "Assertion E: $stale_count CWD-relative 'bash .claude/hooks/' path(s) remain in deployed settings.json"
+    common_test_fail "Assertion E: $stale_count CWD-relative 'bash .claude/hooks/' path(s) remain in deployed settings.json"
   fi
 
   # Six blocking guards are known to exist in the source store (core + books); a guard absent
@@ -173,7 +168,7 @@ else
         select(type=="object" and has("command")) | select(.command | contains($h))] | .[0].command // "MISSING"
     ' "$DEPLOYED_SETTINGS")
     if [[ "$match" == "MISSING" ]]; then
-      info "Assertion E: $hook not present in this scratch deploy's settings.json (owning extension likely not active here) -- not a failure"
+      common_test_info "Assertion E: $hook not present in this scratch deploy's settings.json (owning extension likely not active here) -- not a failure"
       continue
     elif [[ "$match" == *"|| echo"* ]]; then
       bare_missing=$((bare_missing + 1))
@@ -181,9 +176,9 @@ else
     fi
   done
   if [[ "$bare_missing" -eq 0 ]]; then
-    pass "Assertion E: every present blocking guard is registered bare (no fail-open suffix)"
+    common_test_pass "Assertion E: every present blocking guard is registered bare (no fail-open suffix)"
   else
-    fail "Assertion E: $bare_missing blocking guard(s) incorrectly carrying a fail-open suffix"
+    common_test_fail "Assertion E: $bare_missing blocking guard(s) incorrectly carrying a fail-open suffix"
   fi
 
   dup_triples=$(jq -r '
@@ -193,9 +188,9 @@ else
     ] | group_by(.) | map(select(length > 1)) | length
   ' "$DEPLOYED_SETTINGS")
   if [[ "$dup_triples" -eq 0 ]]; then
-    pass "Assertion E: no duplicate (event,matcher,hook) registrations in deployed settings.json"
+    common_test_pass "Assertion E: no duplicate (event,matcher,hook) registrations in deployed settings.json"
   else
-    fail "Assertion E: $dup_triples duplicate (event,matcher,hook) registration(s) in deployed settings.json"
+    common_test_fail "Assertion E: $dup_triples duplicate (event,matcher,hook) registration(s) in deployed settings.json"
   fi
 fi
 
@@ -215,15 +210,15 @@ fi
 # already-deployed tree. Expected RED at authorship time (manager.load's already-loaded abort /
 # load_all_globally's same allow-list bug on the resync path).
 # =====================================================================
-info "Assertion B: resync deploy against already-deployed tree"
+common_test_info "Assertion B: resync deploy against already-deployed tree"
 if run_deploy "resync deploy"; then
   if [[ -f "$TARGET/.claude/$CANARY_REL" ]]; then
-    pass "Assertion B: $CANARY_REL present after resync deploy"
+    common_test_pass "Assertion B: $CANARY_REL present after resync deploy"
   else
-    fail "Assertion B: $CANARY_REL MISSING after resync deploy"
+    common_test_fail "Assertion B: $CANARY_REL MISSING after resync deploy"
   fi
 else
-  fail "Assertion B: resync deploy did not complete; cannot check canary"
+  common_test_fail "Assertion B: resync deploy did not complete; cannot check canary"
 fi
 
 # =====================================================================
@@ -232,7 +227,7 @@ fi
 # (which does not cover most categories until Phase 7) so this harness has real teeth from
 # authorship.
 # =====================================================================
-info "Assertion C: declared-vs-deployed parity across all provides.* categories"
+common_test_info "Assertion C: declared-vs-deployed parity across all provides.* categories"
 parity_missing=0
 parity_checked=0
 
@@ -302,9 +297,9 @@ while IFS= read -r entry; do
 done < <(jq -r '.provides.context[]? // empty' "$MANIFEST")
 
 if [[ "$parity_missing" -eq 0 ]]; then
-  pass "Assertion C: declared-vs-deployed parity ($parity_checked entries checked, 0 missing)"
+  common_test_pass "Assertion C: declared-vs-deployed parity ($parity_checked entries checked, 0 missing)"
 else
-  fail "Assertion C: declared-vs-deployed parity ($parity_missing of $parity_checked entries missing -- see 'missing:' lines above)"
+  common_test_fail "Assertion C: declared-vs-deployed parity ($parity_missing of $parity_checked entries missing -- see 'missing:' lines above)"
 fi
 
 # =====================================================================
@@ -314,18 +309,18 @@ fi
 # verify.lua the same teeth. If the canary was never deployed (Assertion A/B RED), the file is
 # staled anyway to exercise the diff mechanics, but is noted as synthetic in that case.
 # =====================================================================
-info "Assertion D: deliberately-staled deployed file is detected as differing from source"
+common_test_info "Assertion D: deliberately-staled deployed file is detected as differing from source"
 CANARY_DEPLOYED="$TARGET/.claude/$CANARY_REL"
 if [[ ! -f "$CANARY_DEPLOYED" ]]; then
   mkdir -p "$(dirname "$CANARY_DEPLOYED")"
   cp "$CANARY_SOURCE" "$CANARY_DEPLOYED"
-  info "Assertion D: canary was absent (Assertion A/B red) -- seeded a synthetic copy to exercise diff mechanics"
+  common_test_info "Assertion D: canary was absent (Assertion A/B red) -- seeded a synthetic copy to exercise diff mechanics"
 fi
 echo "# deliberately staled by test-deploy-propagation.sh $(date -u +%FT%TZ)" >> "$CANARY_DEPLOYED"
 if diff -q "$CANARY_SOURCE" "$CANARY_DEPLOYED" >/dev/null 2>&1; then
-  fail "Assertion D: staled deployed file does NOT differ from source (diff mechanics broken)"
+  common_test_fail "Assertion D: staled deployed file does NOT differ from source (diff mechanics broken)"
 else
-  pass "Assertion D: staled deployed file correctly detected as differing from source"
+  common_test_pass "Assertion D: staled deployed file correctly detected as differing from source"
 fi
 
 # =====================================================================

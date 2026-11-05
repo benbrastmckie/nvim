@@ -40,6 +40,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
@@ -75,13 +76,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ── Case 1: Positive (the check still fires) ─────────────────────────────────────────────────
 FIXTURE_POSITIVE="$WORKDIR/fixture-positive.json"
@@ -94,19 +90,19 @@ EOF
 OUT="$(bash "$DEPLOYED_SCRIPT" --index "$FIXTURE_POSITIVE" 2>&1)"
 EXIT_CODE=$?
 if echo "$OUT" | grep -q "Redundant (commands\[\] fully subsumed by agents\[\]): 1 -- VIOLATION"; then
-  pass "Case 1 (positive): redundant count is 1"
+  common_test_pass "Case 1 (positive): redundant count is 1"
 else
-  fail "Case 1 (positive): expected redundant count of 1 in output"
+  common_test_fail "Case 1 (positive): expected redundant count of 1 in output"
 fi
 if echo "$OUT" | grep -qF "fixture/positive.md"; then
-  pass "Case 1 (positive): offending path named in output"
+  common_test_pass "Case 1 (positive): offending path named in output"
 else
-  fail "Case 1 (positive): offending path not named in output"
+  common_test_fail "Case 1 (positive): offending path not named in output"
 fi
 if [[ "$EXIT_CODE" -ne 0 ]]; then
-  pass "Case 1 (positive): exit code is non-zero ($EXIT_CODE)"
+  common_test_pass "Case 1 (positive): exit code is non-zero ($EXIT_CODE)"
 else
-  fail "Case 1 (positive): expected non-zero exit code, got 0"
+  common_test_fail "Case 1 (positive): expected non-zero exit code, got 0"
 fi
 
 # ── Case 2: Discrimination (a direct command does not trip the check) ───────────────────────
@@ -120,14 +116,14 @@ EOF
 OUT="$(bash "$DEPLOYED_SCRIPT" --index "$FIXTURE_DISCRIMINATION" 2>&1)"
 EXIT_CODE=$?
 if echo "$OUT" | grep -q "Redundant (commands\[\] fully subsumed by agents\[\]): 0 -- OK"; then
-  pass "Case 2 (discrimination): redundant count is 0"
+  common_test_pass "Case 2 (discrimination): redundant count is 0"
 else
-  fail "Case 2 (discrimination): expected redundant count of 0 in output"
+  common_test_fail "Case 2 (discrimination): expected redundant count of 0 in output"
 fi
 if [[ "$EXIT_CODE" -eq 0 ]]; then
-  pass "Case 2 (discrimination): exit code is 0 (not affected)"
+  common_test_pass "Case 2 (discrimination): exit code is 0 (not affected)"
 else
-  fail "Case 2 (discrimination): expected exit code 0, got $EXIT_CODE"
+  common_test_fail "Case 2 (discrimination): expected exit code 0, got $EXIT_CODE"
 fi
 
 # ── Case 3: /orchestrate never subsumes an entry's agents[] ─────────────────────────────────
@@ -141,20 +137,20 @@ EOF
 OUT="$(bash "$DEPLOYED_SCRIPT" --index "$FIXTURE_ORCHESTRATE" --verbose 2>&1)"
 EXIT_CODE=$?
 if echo "$OUT" | grep -q "Redundant (commands\[\] fully subsumed by agents\[\]): 0 -- OK"; then
-  pass "Case 3 (orchestrate): redundant count is 0"
+  common_test_pass "Case 3 (orchestrate): redundant count is 0"
 else
-  fail "Case 3 (orchestrate): expected redundant count of 0 in output"
+  common_test_fail "Case 3 (orchestrate): expected redundant count of 0 in output"
 fi
 if echo "$OUT" | grep -q "Legitimately dual-addressed (informational, not a violation): 1" \
   && echo "$OUT" | grep -qF "fixture/orchestrate.md"; then
-  pass "Case 3 (orchestrate): entry lands in legitimate-dual bucket"
+  common_test_pass "Case 3 (orchestrate): entry lands in legitimate-dual bucket"
 else
-  fail "Case 3 (orchestrate): expected entry in legitimate-dual bucket"
+  common_test_fail "Case 3 (orchestrate): expected entry in legitimate-dual bucket"
 fi
 if [[ "$EXIT_CODE" -eq 0 ]]; then
-  pass "Case 3 (orchestrate): exit code is 0 (not affected)"
+  common_test_pass "Case 3 (orchestrate): exit code is 0 (not affected)"
 else
-  fail "Case 3 (orchestrate): expected exit code 0, got $EXIT_CODE"
+  common_test_fail "Case 3 (orchestrate): expected exit code 0, got $EXIT_CODE"
 fi
 
 # ── Case 4: Unclassifiable-command bucket (extension command x extension agent) ─────────────
@@ -169,19 +165,19 @@ OUT="$(bash "$DEPLOYED_SCRIPT" --index "$FIXTURE_UNCLASSIFIABLE" --verbose 2>&1)
 EXIT_CODE=$?
 if echo "$OUT" | grep -q "Unclassifiable-command (informational; route not mechanically derivable, e.g. extension commands): 1" \
   && echo "$OUT" | grep -qF "fixture/unclassifiable.md"; then
-  pass "Case 4 (unclassifiable): entry lands in unclassifiable-command bucket"
+  common_test_pass "Case 4 (unclassifiable): entry lands in unclassifiable-command bucket"
 else
-  fail "Case 4 (unclassifiable): expected entry in unclassifiable-command bucket"
+  common_test_fail "Case 4 (unclassifiable): expected entry in unclassifiable-command bucket"
 fi
 if echo "$OUT" | grep -q "Redundant (commands\[\] fully subsumed by agents\[\]): 0 -- OK"; then
-  pass "Case 4 (unclassifiable): redundant count is 0"
+  common_test_pass "Case 4 (unclassifiable): redundant count is 0"
 else
-  fail "Case 4 (unclassifiable): expected redundant count of 0 in output"
+  common_test_fail "Case 4 (unclassifiable): expected redundant count of 0 in output"
 fi
 if [[ "$EXIT_CODE" -eq 0 ]]; then
-  pass "Case 4 (unclassifiable): exit code is 0 (informational only, not affected)"
+  common_test_pass "Case 4 (unclassifiable): exit code is 0 (informational only, not affected)"
 else
-  fail "Case 4 (unclassifiable): expected exit code 0, got $EXIT_CODE"
+  common_test_fail "Case 4 (unclassifiable): expected exit code 0, got $EXIT_CODE"
 fi
 
 # ── Case 5: Degraded route derivation ─────────────────────────────────────────────────────────
@@ -196,22 +192,22 @@ OUT="$(VALIDATE_BUDGETS_MANIFEST_OVERRIDE="$WORKDIR/does-not-exist-manifest.json
   bash "$DEPLOYED_SCRIPT" --index "$FIXTURE_DEGRADED" --verbose 2>&1)"
 EXIT_CODE=$?
 if echo "$OUT" | grep -q '\[DEGRADED ROUTE DERIVATION\]'; then
-  pass "Case 5 (degraded): [DEGRADED ROUTE DERIVATION] banner appears"
+  common_test_pass "Case 5 (degraded): [DEGRADED ROUTE DERIVATION] banner appears"
 else
-  fail "Case 5 (degraded): expected [DEGRADED ROUTE DERIVATION] banner in output"
+  common_test_fail "Case 5 (degraded): expected [DEGRADED ROUTE DERIVATION] banner in output"
 fi
 if echo "$OUT" | grep -q "Unclassifiable-command (informational; route not mechanically derivable, e.g. extension commands): 1" \
   && echo "$OUT" | grep -qF "fixture/degraded.md"; then
-  pass "Case 5 (degraded): affected command treated as unclassifiable"
+  common_test_pass "Case 5 (degraded): affected command treated as unclassifiable"
 else
-  fail "Case 5 (degraded): expected affected command in unclassifiable-command bucket"
+  common_test_fail "Case 5 (degraded): expected affected command in unclassifiable-command bucket"
 fi
 if echo "$OUT" | grep -q "Redundant (commands\[\] fully subsumed by agents\[\]): 0 -- OK"; then
-  pass "Case 5 (degraded): affected command never silently treated as redundant (vacuous-subset trap)"
+  common_test_pass "Case 5 (degraded): affected command never silently treated as redundant (vacuous-subset trap)"
 else
-  fail "Case 5 (degraded): expected redundant count of 0 -- degraded route must never look vacuously redundant"
+  common_test_fail "Case 5 (degraded): expected redundant count of 0 -- degraded route must never look vacuously redundant"
 fi
-info "Case 5 (degraded) exit code observed: $EXIT_CODE (WARNINGS-only path; degraded derivation is a warning, not a violation)"
+common_test_info "Case 5 (degraded) exit code observed: $EXIT_CODE (WARNINGS-only path; degraded derivation is a warning, not a violation)"
 
 # ── Inversion check: prove cases 1 and 2 are LIVE assertions, not vacuously true ─────────────
 # Copies the deployed script into a fabricated .claude/scripts/ tree inside the workdir (NOT a
@@ -268,7 +264,7 @@ else
 fi
 
 if [[ "$PY_STATUS" -ne 0 ]]; then
-  fail "Inversion check: could not locate/patch the is_redundant predicate in a scratch copy (needle drift -- update this suite's patch target)"
+  common_test_fail "Inversion check: could not locate/patch the is_redundant predicate in a scratch copy (needle drift -- update this suite's patch target)"
 else
   chmod +x "$INVERTED_SCRIPT"
   REAL_MANIFEST="$REPO_ROOT/.claude/extensions/core/manifest.json"
@@ -282,9 +278,9 @@ else
     bash "$INVERTED_SCRIPT" --index "$FIXTURE_POSITIVE" 2>&1)"
   INV_EXIT_1=$?
   if echo "$INV_OUT_1" | grep -q "Redundant (commands\[\] fully subsumed by agents\[\]): 0 -- OK" && [[ "$INV_EXIT_1" -eq 0 ]]; then
-    pass "Inversion check: Case 1 (positive) FAILS to detect redundancy under the inverted predicate, as expected"
+    common_test_pass "Inversion check: Case 1 (positive) FAILS to detect redundancy under the inverted predicate, as expected"
   else
-    fail "Inversion check: Case 1 (positive) still reports redundant under inversion -- the assertion may not be live"
+    common_test_fail "Inversion check: Case 1 (positive) still reports redundant under inversion -- the assertion may not be live"
   fi
 
   INV_OUT_2="$(VALIDATE_BUDGETS_MANIFEST_OVERRIDE="$REAL_MANIFEST" \
@@ -294,9 +290,9 @@ else
     bash "$INVERTED_SCRIPT" --index "$FIXTURE_DISCRIMINATION" 2>&1)"
   INV_EXIT_2=$?
   if echo "$INV_OUT_2" | grep -q "Redundant (commands\[\] fully subsumed by agents\[\]): 1 -- VIOLATION" && [[ "$INV_EXIT_2" -ne 0 ]]; then
-    pass "Inversion check: Case 2 (discrimination) now FALSELY flags a direct command as redundant under inversion, as expected"
+    common_test_pass "Inversion check: Case 2 (discrimination) now FALSELY flags a direct command as redundant under inversion, as expected"
   else
-    fail "Inversion check: Case 2 (discrimination) did not flip under inversion -- the assertion may not be live"
+    common_test_fail "Inversion check: Case 2 (discrimination) did not flip under inversion -- the assertion may not be live"
   fi
 fi
 

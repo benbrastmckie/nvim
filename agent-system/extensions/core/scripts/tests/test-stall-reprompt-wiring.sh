@@ -26,6 +26,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 SKILL_MD_PATH="${SKILL_MD_PATH:-$CORE_DIR/../skills/skill-orchestrate/SKILL.md}"
@@ -34,9 +35,6 @@ POSTFLIGHT_SCRIPT_PATH="${POSTFLIGHT_SCRIPT_PATH:-$CORE_DIR/orchestrate-cycle-po
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 require_file() {
   if [ ! -f "$1" ]; then
@@ -63,106 +61,106 @@ move4_region() { awk '/^### Move 4: Branch/{flag=1} flag' "$SKILL_MD_PATH"; }
 # elsewhere; this suite's job is the ONE field class that escaped every existing test, not a
 # general-purpose schema linter.
 if grep -q "stall_suspected" "$POSTFLIGHT_SCRIPT_PATH"; then
-  pass "producer: orchestrate-cycle-postflight.sh still emits stall_suspected"
+  common_test_pass "producer: orchestrate-cycle-postflight.sh still emits stall_suspected"
 else
-  fail "producer: orchestrate-cycle-postflight.sh no longer emits stall_suspected"
+  common_test_fail "producer: orchestrate-cycle-postflight.sh no longer emits stall_suspected"
 fi
 
 if grep -q "stall_suspected" "$SKILL_MD_PATH"; then
-  pass "consumer: skill-orchestrate/SKILL.md reads stall_suspected (this is the assertion that was previously impossible to write, because it was previously false)"
+  common_test_pass "consumer: skill-orchestrate/SKILL.md reads stall_suspected (this is the assertion that was previously impossible to write, because it was previously false)"
 else
-  fail "consumer: skill-orchestrate/SKILL.md does not read stall_suspected -- the signal is dead again"
+  common_test_fail "consumer: skill-orchestrate/SKILL.md does not read stall_suspected -- the signal is dead again"
 fi
 
 # Same producer/consumer pairing for stranded_suspected, the heartbeat-based strand signal that
 # feeds the SAME relay -- see "The Strand Variant: stranded_suspected" in
 # orchestrate-state-machine.md for the full contract.
 if grep -q "stranded_suspected" "$POSTFLIGHT_SCRIPT_PATH"; then
-  pass "producer: orchestrate-cycle-postflight.sh emits stranded_suspected"
+  common_test_pass "producer: orchestrate-cycle-postflight.sh emits stranded_suspected"
 else
-  fail "producer: orchestrate-cycle-postflight.sh does not emit stranded_suspected"
+  common_test_fail "producer: orchestrate-cycle-postflight.sh does not emit stranded_suspected"
 fi
 
 if grep -q "stranded_suspected" "$SKILL_MD_PATH"; then
-  pass "consumer: skill-orchestrate/SKILL.md reads stranded_suspected"
+  common_test_pass "consumer: skill-orchestrate/SKILL.md reads stranded_suspected"
 else
-  fail "consumer: skill-orchestrate/SKILL.md does not read stranded_suspected -- the signal has no consumer"
+  common_test_fail "consumer: skill-orchestrate/SKILL.md does not read stranded_suspected -- the signal has no consumer"
 fi
 
 # ── Assertion 2: the suppression guard exists ───────────────────────────────────────────────────
 # Move 3's failed_tasks append on a failed verdict must be conditioned on stall_suspected (or on
 # stall_reprompted, for the one-re-prompt-already-spent case) -- not an unconditional append.
 if move3_region | grep -q "stall_suspected" && move3_region | grep -q "stall_reprompted"; then
-  pass "suppression guard: Move 3 region references both stall_suspected and stall_reprompted"
+  common_test_pass "suppression guard: Move 3 region references both stall_suspected and stall_reprompted"
 else
-  fail "suppression guard: Move 3 region is missing a reference to stall_suspected and/or stall_reprompted"
+  common_test_fail "suppression guard: Move 3 region is missing a reference to stall_suspected and/or stall_reprompted"
 fi
 
 if move3_region | grep -qE '\.stall_reprompted\b'; then
-  pass "suppression guard: Move 3 region keys its guard on a stall_reprompted lookup, not stall_suspected alone"
+  common_test_pass "suppression guard: Move 3 region keys its guard on a stall_reprompted lookup, not stall_suspected alone"
 else
-  fail "suppression guard: Move 3 region does not appear to key its guard on stall_reprompted"
+  common_test_fail "suppression guard: Move 3 region does not appear to key its guard on stall_reprompted"
 fi
 
 # The re-prompt predicate itself must reference BOTH signals -- not stall_suspected alone -- so
 # a stranded (zero-commit) dispatch actually reaches the relay.
 if move3_region | grep -q "stranded_suspected"; then
-  pass "suppression guard: Move 3 region references stranded_suspected"
+  common_test_pass "suppression guard: Move 3 region references stranded_suspected"
 else
-  fail "suppression guard: Move 3 region does not reference stranded_suspected -- the new signal is computed but never consumed"
+  common_test_fail "suppression guard: Move 3 region does not reference stranded_suspected -- the new signal is computed but never consumed"
 fi
 
 if move3_region | grep -qE '\$susp\s+or\s+\$strand|susp.*strand|strand.*susp'; then
-  pass "re-prompt predicate: Move 3 region ORs the two signals into one predicate (never a separate, second re-prompt path)"
+  common_test_pass "re-prompt predicate: Move 3 region ORs the two signals into one predicate (never a separate, second re-prompt path)"
 else
-  fail "re-prompt predicate: Move 3 region does not appear to OR stall_suspected and stranded_suspected together"
+  common_test_fail "re-prompt predicate: Move 3 region does not appear to OR stall_suspected and stranded_suspected together"
 fi
 
 # ── Assertion 3: relay siting (writer in Move 3, reader in Move 4, no Agent call in Move 3) ────
 if move3_region | grep -q "pending_stall_reprompt"; then
-  pass "relay siting: Move 3 region writes pending_stall_reprompt"
+  common_test_pass "relay siting: Move 3 region writes pending_stall_reprompt"
 else
-  fail "relay siting: Move 3 region does not write pending_stall_reprompt"
+  common_test_fail "relay siting: Move 3 region does not write pending_stall_reprompt"
 fi
 
 if move4_region | grep -q "pending_stall_reprompt"; then
-  pass "relay siting: Move 4 region reads pending_stall_reprompt"
+  common_test_pass "relay siting: Move 4 region reads pending_stall_reprompt"
 else
-  fail "relay siting: Move 4 region does not read pending_stall_reprompt"
+  common_test_fail "relay siting: Move 4 region does not read pending_stall_reprompt"
 fi
 
 if move3_region | grep -qiE '^\s*#\s*agent tool|agent\(|AskUserQuestion\('; then
-  fail "relay siting: Move 3 region appears to contain an Agent-tool call -- this crosses the Postflight Boundary"
+  common_test_fail "relay siting: Move 3 region appears to contain an Agent-tool call -- this crosses the Postflight Boundary"
 else
-  pass "relay siting: Move 3 region contains no Agent-tool call"
+  common_test_pass "relay siting: Move 3 region contains no Agent-tool call"
 fi
 
 # ── Assertion 4: the three new mt_state_file fields are documented ─────────────────────────────
 for field in pending_stall_reprompt stall_reprompted stall_ledger; do
   if grep -q "$field" "$STATE_MACHINE_DOC_PATH"; then
-    pass "mt_state_file field reference: $field is documented in orchestrate-state-machine.md"
+    common_test_pass "mt_state_file field reference: $field is documented in orchestrate-state-machine.md"
   else
-    fail "mt_state_file field reference: $field is MISSING from orchestrate-state-machine.md"
+    common_test_fail "mt_state_file field reference: $field is MISSING from orchestrate-state-machine.md"
   fi
 done
 
 # ── Assertion 5: stranded_suspected and its ledger-entry signal field are documented ────────────
 if grep -q "stranded_suspected" "$STATE_MACHINE_DOC_PATH"; then
-  pass "state-machine doc: stranded_suspected is documented in orchestrate-state-machine.md"
+  common_test_pass "state-machine doc: stranded_suspected is documented in orchestrate-state-machine.md"
 else
-  fail "state-machine doc: stranded_suspected is MISSING from orchestrate-state-machine.md"
+  common_test_fail "state-machine doc: stranded_suspected is MISSING from orchestrate-state-machine.md"
 fi
 
 if grep -qE '"signal"' "$STATE_MACHINE_DOC_PATH"; then
-  pass "mt_state_file field reference: the ledger entries' own signal field is documented"
+  common_test_pass "mt_state_file field reference: the ledger entries' own signal field is documented"
 else
-  fail "mt_state_file field reference: the ledger entries' signal field is MISSING from orchestrate-state-machine.md"
+  common_test_fail "mt_state_file field reference: the ledger entries' signal field is MISSING from orchestrate-state-machine.md"
 fi
 
 if grep -q "dispatch-strand-probe.sh" "$STATE_MACHINE_DOC_PATH"; then
-  pass "state-machine doc: dispatch-strand-probe.sh is named as the mechanical form of the liveness-probe guidance"
+  common_test_pass "state-machine doc: dispatch-strand-probe.sh is named as the mechanical form of the liveness-probe guidance"
 else
-  fail "state-machine doc: dispatch-strand-probe.sh is not named in orchestrate-state-machine.md"
+  common_test_fail "state-machine doc: dispatch-strand-probe.sh is not named in orchestrate-state-machine.md"
 fi
 
 # ── Assertion 6: end-to-end routing proof -- the lead's OWN jq program, re-extracted from
@@ -173,13 +171,13 @@ fi
 # dispatch_seq, with stall_reprompted[] already carrying that key, DOES charge failed_tasks.
 # A test that only passes once a failure is recorded would have reproduced the current
 # behaviour, not the fix -- this is why both passes are asserted, not just the first.
-info "=== End-to-end routing proof (re-extracted jq program) ==="
+common_test_info "=== End-to-end routing proof (re-extracted jq program) ==="
 
 jq_program="$(sed -n "/^      'def reprompted:/,/^       else \.failed_tasks/p" "$SKILL_MD_PATH" \
   | sed "1s/^      '//" | sed "\$s/ end' \\\\\$/ end/")"
 
 if [ -z "$jq_program" ]; then
-  fail "end-to-end routing proof: could not extract the Move 3 jq program from SKILL.md -- skipping the mechanical proof"
+  common_test_fail "end-to-end routing proof: could not extract the Move 3 jq program from SKILL.md -- skipping the mechanical proof"
 else
   MT_TMP="$(mktemp)"
   trap 'rm -f "$MT_TMP"' EXIT
@@ -197,17 +195,17 @@ else
     in_failed=$(jq -r '.failed_tasks | any(. == 999)' "$MT_TMP")
     signal_val=$(jq -r '.pending_stall_reprompt[] | select(.task == 999) | .signal' "$MT_TMP")
     if [ "$in_pending" = "true" ] && [ "$in_failed" = "false" ]; then
-      pass "end-to-end routing (pass 1): first-occurrence strand lands in pending_stall_reprompt[] and is ABSENT from failed_tasks"
+      common_test_pass "end-to-end routing (pass 1): first-occurrence strand lands in pending_stall_reprompt[] and is ABSENT from failed_tasks"
     else
-      fail "end-to-end routing (pass 1): expected pending=true/failed=false, got pending=$in_pending failed=$in_failed"
+      common_test_fail "end-to-end routing (pass 1): expected pending=true/failed=false, got pending=$in_pending failed=$in_failed"
     fi
     if [ "$signal_val" = "strand" ]; then
-      pass "end-to-end routing (pass 1): ledger entry's signal field correctly reads 'strand' (not 'stall', not collapsed)"
+      common_test_pass "end-to-end routing (pass 1): ledger entry's signal field correctly reads 'strand' (not 'stall', not collapsed)"
     else
-      fail "end-to-end routing (pass 1): expected signal='strand', got '$signal_val'"
+      common_test_fail "end-to-end routing (pass 1): expected signal='strand', got '$signal_val'"
     fi
   else
-    fail "end-to-end routing (pass 1): jq evaluation failed (rc=$jq_rc) -- see ${MT_TMP}.err"
+    common_test_fail "end-to-end routing (pass 1): jq evaluation failed (rc=$jq_rc) -- see ${MT_TMP}.err"
   fi
 
   # Pass 2: a SECOND occurrence at the SAME dispatch_seq, with stall_reprompted[] already
@@ -221,12 +219,12 @@ else
     mv "${MT_TMP}.out" "$MT_TMP"
     in_failed2=$(jq -r '.failed_tasks | any(. == 999)' "$MT_TMP")
     if [ "$in_failed2" = "true" ]; then
-      pass "end-to-end routing (pass 2): a second occurrence at the same dispatch_seq (re-prompt already spent) DOES charge failed_tasks"
+      common_test_pass "end-to-end routing (pass 2): a second occurrence at the same dispatch_seq (re-prompt already spent) DOES charge failed_tasks"
     else
-      fail "end-to-end routing (pass 2): expected failed_tasks to contain 999, got: $(jq -c . "$MT_TMP")"
+      common_test_fail "end-to-end routing (pass 2): expected failed_tasks to contain 999, got: $(jq -c . "$MT_TMP")"
     fi
   else
-    fail "end-to-end routing (pass 2): jq evaluation failed (rc=$jq_rc) -- see ${MT_TMP}.err"
+    common_test_fail "end-to-end routing (pass 2): jq evaluation failed (rc=$jq_rc) -- see ${MT_TMP}.err"
   fi
 
   rm -f "$MT_TMP" "${MT_TMP}.out" "${MT_TMP}.err"

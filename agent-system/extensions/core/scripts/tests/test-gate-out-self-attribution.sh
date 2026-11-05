@@ -33,10 +33,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 resolve_candidate() {
   local desc="$1"; shift
@@ -80,12 +78,8 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 BASELINE_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 
@@ -198,25 +192,25 @@ write_verify_deploy_stub "$CASE1_ROOT" "$RULEQ_LINE" "" 1
 CASE1_OUT="$(cd "$CASE1_ROOT" && bash .claude/scripts/command-gate-out.sh 1 implement sess_case1 2>&1)"
 CASE1_UTAS_CALLS="$(cat "$CASE1_ROOT/.utas_call_count" 2>/dev/null || echo 0)"
 if [ "$CASE1_UTAS_CALLS" = "1" ]; then
-  pass "Case 1 (self-attributed fixture): update-task-status.sh is called exactly ONCE -- the postflight retry is withheld"
+  common_test_pass "Case 1 (self-attributed fixture): update-task-status.sh is called exactly ONCE -- the postflight retry is withheld"
 else
-  fail "Case 1 (self-attributed fixture): expected exactly 1 update-task-status.sh call, got $CASE1_UTAS_CALLS"
+  common_test_fail "Case 1 (self-attributed fixture): expected exactly 1 update-task-status.sh call, got $CASE1_UTAS_CALLS"
 fi
 if grep -qF "Withholding completion for task 1 (self-attributed finding" <<< "$CASE1_OUT"; then  # task-ref-ok literal fixture stderr wording from command-gate-out.sh, fixture task number is 1
-  pass "Case 1 (self-attributed fixture): the withholding notice names the fixture task"
+  common_test_pass "Case 1 (self-attributed fixture): the withholding notice names the fixture task"
 else
-  fail "Case 1 (self-attributed fixture): withholding notice missing. Output:
+  common_test_fail "Case 1 (self-attributed fixture): withholding notice missing. Output:
 $CASE1_OUT"
 fi
 if grep -qF "$RULEQ_LINE" <<< "$CASE1_OUT"; then
-  pass "Case 1 (self-attributed fixture): the attributing finding is printed"
+  common_test_pass "Case 1 (self-attributed fixture): the attributing finding is printed"
 else
-  fail "Case 1 (self-attributed fixture): the attributing finding was not printed"
+  common_test_fail "Case 1 (self-attributed fixture): the attributing finding was not printed"
 fi
 if grep -qF "Re-attempting postflight for task 1" <<< "$CASE1_OUT"; then  # task-ref-ok literal fixture stderr wording, fixture task number is 1
-  fail "Case 1 (self-attributed fixture): the re-attempt line fired despite withholding"
+  common_test_fail "Case 1 (self-attributed fixture): the re-attempt line fired despite withholding"
 else
-  pass "Case 1 (self-attributed fixture): the ordinary re-attempt line does NOT fire"
+  common_test_pass "Case 1 (self-attributed fixture): the ordinary re-attempt line does NOT fire"
 fi
 
 # =====================================================================
@@ -230,25 +224,25 @@ write_verify_deploy_stub "$CASE2_ROOT" "$RULEQ_LINE" "" 1
 CASE2_OUT="$(cd "$CASE2_ROOT" && bash .claude/scripts/command-gate-out.sh 1 implement sess_case2 2>&1)"
 CASE2_UTAS_CALLS="$(cat "$CASE2_ROOT/.utas_call_count" 2>/dev/null || echo 0)"
 if [ "$CASE2_UTAS_CALLS" = "2" ]; then
-  pass "Case 2 (not self-attributed): update-task-status.sh is called twice -- the postflight retry proceeds"
+  common_test_pass "Case 2 (not self-attributed): update-task-status.sh is called twice -- the postflight retry proceeds"
 else
-  fail "Case 2 (not self-attributed): expected exactly 2 update-task-status.sh calls, got $CASE2_UTAS_CALLS"
+  common_test_fail "Case 2 (not self-attributed): expected exactly 2 update-task-status.sh calls, got $CASE2_UTAS_CALLS"
 fi
 if grep -qF "Re-attempting postflight for task 1" <<< "$CASE2_OUT"; then  # task-ref-ok literal fixture stderr wording, fixture task number is 1
-  pass "Case 2 (not self-attributed): the ordinary re-attempt line fires"
+  common_test_pass "Case 2 (not self-attributed): the ordinary re-attempt line fires"
 else
-  fail "Case 2 (not self-attributed): the re-attempt line did not fire. Output:
+  common_test_fail "Case 2 (not self-attributed): the re-attempt line did not fire. Output:
 $CASE2_OUT"
 fi
 if grep -qF "transition succeeded after redeploy" <<< "$CASE2_OUT"; then
-  pass "Case 2 (not self-attributed): the transition-succeeded line fires"
+  common_test_pass "Case 2 (not self-attributed): the transition-succeeded line fires"
 else
-  fail "Case 2 (not self-attributed): the transition-succeeded line did not fire"
+  common_test_fail "Case 2 (not self-attributed): the transition-succeeded line did not fire"
 fi
 if grep -qF "Withholding completion" <<< "$CASE2_OUT"; then
-  fail "Case 2 (not self-attributed): withholding notice fired despite an unrelated modified_files set"
+  common_test_fail "Case 2 (not self-attributed): withholding notice fired despite an unrelated modified_files set"
 else
-  pass "Case 2 (not self-attributed): no withholding notice fires"
+  common_test_pass "Case 2 (not self-attributed): no withholding notice fires"
 fi
 
 # =====================================================================
@@ -263,14 +257,14 @@ write_verify_deploy_stub "$CASE3_ROOT" "$RULEQ_LINE" "" 1
 CASE3_OUT="$(cd "$CASE3_ROOT" && SELF_ATTRIBUTION_GATE_MODE=off bash .claude/scripts/command-gate-out.sh 1 implement sess_case3 2>&1)"
 CASE3_UTAS_CALLS="$(cat "$CASE3_ROOT/.utas_call_count" 2>/dev/null || echo 0)"
 if [ "$CASE3_UTAS_CALLS" = "2" ]; then
-  pass "Case 3 (mode=off): the postflight retry proceeds despite self-attribution"
+  common_test_pass "Case 3 (mode=off): the postflight retry proceeds despite self-attribution"
 else
-  fail "Case 3 (mode=off): expected exactly 2 update-task-status.sh calls, got $CASE3_UTAS_CALLS"
+  common_test_fail "Case 3 (mode=off): expected exactly 2 update-task-status.sh calls, got $CASE3_UTAS_CALLS"
 fi
 if grep -qF "transition succeeded after redeploy" <<< "$CASE3_OUT"; then
-  pass "Case 3 (mode=off): the transition-succeeded line fires"
+  common_test_pass "Case 3 (mode=off): the transition-succeeded line fires"
 else
-  fail "Case 3 (mode=off): the transition-succeeded line did not fire. Output:
+  common_test_fail "Case 3 (mode=off): the transition-succeeded line did not fire. Output:
 $CASE3_OUT"
 fi
 
@@ -279,9 +273,9 @@ fi
 # =====================================================================
 AFTER_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 if [ "$BASELINE_SPECS_STATUS" = "$AFTER_SPECS_STATUS" ]; then
-  pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
+  common_test_pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
 else
-  fail "real specs/ tree status CHANGED during this suite's run -- contamination (before: '$BASELINE_SPECS_STATUS' after: '$AFTER_SPECS_STATUS')"
+  common_test_fail "real specs/ tree status CHANGED during this suite's run -- contamination (before: '$BASELINE_SPECS_STATUS' after: '$AFTER_SPECS_STATUS')"
 fi
 
 echo ""

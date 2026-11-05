@@ -18,16 +18,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 resolve_candidate() {
   local desc="$1"; shift
@@ -52,13 +50,8 @@ LINT_SCRIPT="$(resolve_candidate "lint-postflight-boundary.sh" \
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # A minimal synthetic DELEGATING skill (matches the tightened does_skill_delegate() predicate via
 # `subagent_type:`), with no MUST NOT section of any kind.
@@ -93,25 +86,25 @@ EOF
 # =====================================================================
 # Case 1 (negative polarity): delegating skill WITHOUT the section -> lint must fail (non-zero)
 # =====================================================================
-info "=== negative case: missing section ==="
+common_test_info "=== negative case: missing section ==="
 
 if bash "$LINT_SCRIPT" "$SYNTHETIC_NO_SECTION" >/tmp/lint-neg-out.$$ 2>&1; then
-  fail "lint exited 0 for a delegating skill missing the MUST NOT (Postflight Boundary) section (expected non-zero)"
+  common_test_fail "lint exited 0 for a delegating skill missing the MUST NOT (Postflight Boundary) section (expected non-zero)"
 else
-  pass "lint exited non-zero for a delegating skill missing the section"
+  common_test_pass "lint exited non-zero for a delegating skill missing the section"
 fi
 
 if grep -q "missing '## MUST NOT (Postflight Boundary)' section" /tmp/lint-neg-out.$$; then
-  pass "lint names the specific missing-section violation"
+  common_test_pass "lint names the specific missing-section violation"
 else
-  fail "lint output did not name the missing-section violation"
+  common_test_fail "lint output did not name the missing-section violation"
 fi
 rm -f /tmp/lint-neg-out.$$
 
 # =====================================================================
 # Case 2 (positive polarity): same skill WITH the section -> lint must pass (exit 0)
 # =====================================================================
-info "=== positive case: section present ==="
+common_test_info "=== positive case: section present ==="
 
 SYNTHETIC_WITH_SECTION="$WORKDIR/skill-synthetic-with-section.md"
 cat > "$SYNTHETIC_WITH_SECTION" << 'EOF'
@@ -151,9 +144,9 @@ Returns a brief text summary.
 EOF
 
 if bash "$LINT_SCRIPT" "$SYNTHETIC_WITH_SECTION" >/tmp/lint-pos-out.$$ 2>&1; then
-  pass "lint exited 0 for a delegating skill with the section present"
+  common_test_pass "lint exited 0 for a delegating skill with the section present"
 else
-  fail "lint exited non-zero for a delegating skill WITH the section present (unexpected):
+  common_test_fail "lint exited non-zero for a delegating skill WITH the section present (unexpected):
 $(cat /tmp/lint-pos-out.$$)"
 fi
 rm -f /tmp/lint-pos-out.$$
@@ -162,7 +155,7 @@ rm -f /tmp/lint-pos-out.$$
 # Case 3 (control): a non-delegating synthetic skill without the section must NOT be flagged
 # (the section-presence check is gated behind does_skill_delegate(), like the pattern checks).
 # =====================================================================
-info "=== control case: non-delegating skill, no section, must be skipped ==="
+common_test_info "=== control case: non-delegating skill, no section, must be skipped ==="
 
 SYNTHETIC_NON_DELEGATING="$WORKDIR/skill-synthetic-direct-exec.md"
 cat > "$SYNTHETIC_NON_DELEGATING" << 'EOF'
@@ -183,9 +176,9 @@ No delegation of any kind.
 EOF
 
 if bash "$LINT_SCRIPT" "$SYNTHETIC_NON_DELEGATING" >/tmp/lint-ctrl-out.$$ 2>&1; then
-  pass "lint exited 0 for a non-delegating skill lacking the section (correctly skipped)"
+  common_test_pass "lint exited 0 for a non-delegating skill lacking the section (correctly skipped)"
 else
-  fail "lint exited non-zero for a non-delegating skill (should be skipped, not flagged):
+  common_test_fail "lint exited non-zero for a non-delegating skill (should be skipped, not flagged):
 $(cat /tmp/lint-ctrl-out.$$)"
 fi
 rm -f /tmp/lint-ctrl-out.$$
@@ -201,7 +194,7 @@ rm -f /tmp/lint-ctrl-out.$$
 # proves BOTH halves fire correctly against the real, live file rather than being fooled by the
 # rewrite's new heading shape.
 # =====================================================================
-info "=== real target: skill-orchestrate/SKILL.md is not silently SKIPped ==="
+common_test_info "=== real target: skill-orchestrate/SKILL.md is not silently SKIPped ==="
 
 ORCH_SKILL_CANDIDATES=(
   "$REPO_ROOT/.claude/skills/skill-orchestrate/SKILL.md"
@@ -216,20 +209,20 @@ for candidate in "${ORCH_SKILL_CANDIDATES[@]}"; do
 done
 
 if [[ -z "$ORCH_SKILL" ]]; then
-  fail "skill-orchestrate/SKILL.md not found at any candidate path -- cannot run the real-target case"
+  common_test_fail "skill-orchestrate/SKILL.md not found at any candidate path -- cannot run the real-target case"
 else
   real_out="$(bash "$LINT_SCRIPT" --verbose "$ORCH_SKILL" 2>&1)"
   real_exit=$?
   if [[ "$real_exit" -eq 0 ]]; then
-    pass "lint exits 0 for the real skill-orchestrate/SKILL.md"
+    common_test_pass "lint exits 0 for the real skill-orchestrate/SKILL.md"
   else
-    fail "lint exited non-zero for the real skill-orchestrate/SKILL.md:
+    common_test_fail "lint exited non-zero for the real skill-orchestrate/SKILL.md:
 $real_out"
   fi
   if echo "$real_out" | grep -q '\[SKIP\] No postflight section found'; then
-    fail "skill-orchestrate/SKILL.md is silently SKIPped (No postflight section found) -- the fail-open gap has regressed"
+    common_test_fail "skill-orchestrate/SKILL.md is silently SKIPped (No postflight section found) -- the fail-open gap has regressed"
   else
-    pass "skill-orchestrate/SKILL.md is not reported as SKIPped"
+    common_test_pass "skill-orchestrate/SKILL.md is not reported as SKIPped"
   fi
 fi
 

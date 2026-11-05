@@ -28,6 +28,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 LINT_SRC="$SCRIPT_DIR/../lint/lint-agent-contracts.sh"
 FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/no-task-references-bullet.md"
 ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifacts-template.md"
@@ -37,9 +38,6 @@ BOUNDED_WAIT_FRAGMENT_SRC="$SCRIPT_DIR/../../context/patterns/bounded-build-wait
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 for req in "$LINT_SRC" "$FRAGMENT_SRC" "$ARTIFACTS_FRAGMENT_SRC" "$STATUS_LIB_SRC" \
            "$PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" "$BOUNDED_WAIT_FRAGMENT_SRC"; do
@@ -189,7 +187,7 @@ run_lint() {
   REPO_ROOT="$root" bash "$LINT_SRC" --verbose 2>&1
 }
 
-info "=== Building fixture tree and running real, unmodified lint-agent-contracts.sh ==="
+common_test_info "=== Building fixture tree and running real, unmodified lint-agent-contracts.sh ==="
 ROOT="$(mktemp -d)"
 build_fixture_tree "$ROOT"
 out="$(run_lint "$ROOT")"
@@ -206,29 +204,29 @@ out="$(run_lint "$ROOT")"
 check_j_section="$(echo "$out" | sed -n '/--- Check J:/,/^--- Check \|^========/p' | sed '$d')"
 
 if echo "$check_j_section" | grep -qF "case1-prose-agent.md: handoff-writing section states the artifacts requirement"; then
-  pass "(1) prose-form writer PASSes Check J"
+  common_test_pass "(1) prose-form writer PASSes Check J"
 else
-  fail "(1) expected a Check J PASS for case1-prose-agent.md"
+  common_test_fail "(1) expected a Check J PASS for case1-prose-agent.md"
 fi
 
 if echo "$check_j_section" | grep -qF "case2-json-agent.md: handoff-writing section states the artifacts requirement"; then
-  pass "(2) JSON-form writer PASSes Check J"
+  common_test_pass "(2) JSON-form writer PASSes Check J"
 else
-  fail "(2) expected a Check J PASS for case2-json-agent.md"
+  common_test_fail "(2) expected a Check J PASS for case2-json-agent.md"
 fi
 
 if echo "$check_j_section" | grep -qF "case3-missing-agent.md: handoff-writing section" \
    && echo "$check_j_section" | grep -F "case3-missing-agent.md" | grep -q '\[FAIL\]'; then
-  pass "(3) writer whose handoff section omits artifacts FAILs Check J"
+  common_test_pass "(3) writer whose handoff section omits artifacts FAILs Check J"
 else
-  fail "(3) expected a Check J FAIL for case3-missing-agent.md"
+  common_test_fail "(3) expected a Check J FAIL for case3-missing-agent.md"
 fi
 
 if echo "$check_j_section" | grep -qF "case4-blindspot-agent.md: handoff-writing section" \
    && echo "$check_j_section" | grep -F "case4-blindspot-agent.md" | grep -q '\[FAIL\]'; then
-  pass "(4) correct .return-meta.json section with a broken handoff section still FAILs Check J (Check F blind spot closed)"
+  common_test_pass "(4) correct .return-meta.json section with a broken handoff section still FAILs Check J (Check F blind spot closed)"
 else
-  fail "(4) expected a Check J FAIL for case4-blindspot-agent.md despite its correct Stage 7 section"
+  common_test_fail "(4) expected a Check J FAIL for case4-blindspot-agent.md despite its correct Stage 7 section"
 fi
 
 # Case 5's filename legitimately appears in a "Checking ..." INFO line and in the dedicated
@@ -238,17 +236,17 @@ fi
 case5_lines="$(echo "$check_j_section" | grep -F "case5-researchagent-agent.md")"
 if echo "$case5_lines" | grep -qF "is a 'never write one' non-writer contract -- skipped" \
    && ! echo "$case5_lines" | grep -qE '\[PASS\]|\[FAIL\]'; then
-  pass "(5) 'never write one' research-agent contract is a decided skip -- no Check J PASS/FAIL line names it"
+  common_test_pass "(5) 'never write one' research-agent contract is a decided skip -- no Check J PASS/FAIL line names it"
 else
-  fail "(5) expected case5-researchagent-agent.md to produce only the non-writer skip INFO line, with no [PASS]/[FAIL] line"
+  common_test_fail "(5) expected case5-researchagent-agent.md to produce only the non-writer skip INFO line, with no [PASS]/[FAIL] line"
 fi
 
 if echo "$check_j_section" | grep -qF "case6-headingdrift-agent.md" \
    && echo "$check_j_section" | grep -F "case6-headingdrift-agent.md" | grep -q '\[FAIL\]' \
    && echo "$check_j_section" | grep -F "case6-headingdrift-agent.md" | grep -qF "heading drift"; then
-  pass "(6) writer with an unrecognizable heading FAILs Check J loudly, named as heading drift"
+  common_test_pass "(6) writer with an unrecognizable heading FAILs Check J loudly, named as heading drift"
 else
-  fail "(6) expected a named heading-drift Check J FAIL for case6-headingdrift-agent.md"
+  common_test_fail "(6) expected a named heading-drift Check J FAIL for case6-headingdrift-agent.md"
 fi
 
 rm -rf "$ROOT"

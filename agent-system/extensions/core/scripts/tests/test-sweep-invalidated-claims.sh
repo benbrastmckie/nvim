@@ -28,10 +28,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
@@ -57,11 +55,8 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-info "Under test (source-store-first): $SWEEP_SRC"
+common_test_info "Under test (source-store-first): $SWEEP_SRC"
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${TOP_WORKDIR:-}" && -d "$TOP_WORKDIR" ]] && rm -rf "$TOP_WORKDIR"; }
@@ -118,42 +113,42 @@ run_sweep() {
 # ─── Case 1: primary acceptance criterion -- all five analogs named, exactly ───────────────────
 run_sweep --name NoFiniteWidthModel --self 699 --state-file "$INCIDENT_STATE"
 if [[ "$LAST_EXIT" -eq 0 ]]; then
-  pass "incident replay exits 0"
+  common_test_pass "incident replay exits 0"
 else
-  fail "incident replay exit code: expected 0, got $LAST_EXIT"
+  common_test_fail "incident replay exit code: expected 0, got $LAST_EXIT"
 fi
 
 GOT_NUMBERS="$(echo "$LAST_STDOUT" | jq -c '[.[].task_number] | sort')"
 EXPECTED_NUMBERS='[601,602,603,604,605]'
 if [[ "$GOT_NUMBERS" == "$EXPECTED_NUMBERS" ]]; then
-  pass "incident replay names exactly the five expected analogs: $GOT_NUMBERS"
+  common_test_pass "incident replay names exactly the five expected analogs: $GOT_NUMBERS"
 else
-  fail "incident replay analog set mismatch: expected $EXPECTED_NUMBERS, got $GOT_NUMBERS"
+  common_test_fail "incident replay analog set mismatch: expected $EXPECTED_NUMBERS, got $GOT_NUMBERS"
 fi
 
 BAD_MATCHED_NAMES="$(echo "$LAST_STDOUT" | jq -c '[.[] | select(.matched_name != "NoFiniteWidthModel")]')"
 if [[ "$BAD_MATCHED_NAMES" == "[]" ]]; then
-  pass "every matched row's matched_name is correct"
+  common_test_pass "every matched row's matched_name is correct"
 else
-  fail "a row carried an unexpected matched_name: $BAD_MATCHED_NAMES"
+  common_test_fail "a row carried an unexpected matched_name: $BAD_MATCHED_NAMES"
 fi
 
 # ─── Case 2: negative controls -- unrelated, substring, terminal, and self must all be absent ──
 for excluded in 610 611 612 699; do
   PRESENT="$(echo "$LAST_STDOUT" | jq --argjson n "$excluded" '[.[] | select(.task_number == $n)] | length')"
   if [[ "$PRESENT" == "0" ]]; then
-    pass "analog $excluded correctly excluded"
+    common_test_pass "analog $excluded correctly excluded"
   else
-    fail "analog $excluded was present in output but must be excluded"
+    common_test_fail "analog $excluded was present in output but must be excluded"
   fi
 done
 
 # ─── Case 3: non-mutation -- the fixture state file is byte-identical afterwards ───────────────
 INCIDENT_SUM_AFTER="$(sha256sum "$INCIDENT_STATE" | awk '{print $1}')"
 if [[ "$INCIDENT_SUM_AFTER" == "$INCIDENT_SUM_BEFORE" ]]; then
-  pass "incident fixture state.json is byte-identical after the sweep"
+  common_test_pass "incident fixture state.json is byte-identical after the sweep"
 else
-  fail "incident fixture state.json CHANGED after the sweep -- advisory posture violated"
+  common_test_fail "incident fixture state.json CHANGED after the sweep -- advisory posture violated"
 fi
 
 # ─── Case 4: determinism -- two consecutive runs produce byte-identical stdout ─────────────────
@@ -162,33 +157,33 @@ RUN_A="$LAST_STDOUT"
 run_sweep --name NoFiniteWidthModel --self 699 --state-file "$INCIDENT_STATE"
 RUN_B="$LAST_STDOUT"
 if [[ "$RUN_A" == "$RUN_B" ]]; then
-  pass "two consecutive runs produce byte-identical stdout"
+  common_test_pass "two consecutive runs produce byte-identical stdout"
 else
-  fail "determinism violated: run A != run B"
+  common_test_fail "determinism violated: run A != run B"
 fi
 
 # ─── Case 5: robustness -- exit 0 and [] on every error path ───────────────────────────────────
 run_sweep --name NoFiniteWidthModel --self 699 --state-file "$TOP_WORKDIR/does-not-exist.json"
 if [[ "$LAST_EXIT" -eq 0 && "$LAST_STDOUT" == "[]" ]]; then
-  pass "missing state file: exit 0 and []"
+  common_test_pass "missing state file: exit 0 and []"
 else
-  fail "missing state file: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
+  common_test_fail "missing state file: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
 fi
 
 MALFORMED_STATE="$TOP_WORKDIR/malformed-state.json"
 echo '{not valid json' > "$MALFORMED_STATE"
 run_sweep --name NoFiniteWidthModel --self 699 --state-file "$MALFORMED_STATE"
 if [[ "$LAST_EXIT" -eq 0 && "$LAST_STDOUT" == "[]" ]]; then
-  pass "malformed state file: exit 0 and []"
+  common_test_pass "malformed state file: exit 0 and []"
 else
-  fail "malformed state file: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
+  common_test_fail "malformed state file: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
 fi
 
 run_sweep --state-file "$INCIDENT_STATE"
 if [[ "$LAST_EXIT" -eq 0 && "$LAST_STDOUT" == "[]" ]]; then
-  pass "no --name arguments: exit 0 and []"
+  common_test_pass "no --name arguments: exit 0 and []"
 else
-  fail "no --name arguments: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
+  common_test_fail "no --name arguments: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
 fi
 
 EMPTY_RETURN_META="$TOP_WORKDIR/empty-return-meta.json"
@@ -197,9 +192,9 @@ cat > "$EMPTY_RETURN_META" <<'JSON'
 JSON
 run_sweep --from-return-meta "$EMPTY_RETURN_META" --self 699 --state-file "$INCIDENT_STATE"
 if [[ "$LAST_EXIT" -eq 0 && "$LAST_STDOUT" == "[]" ]]; then
-  pass "absent claim_invalidations: exit 0 and []"
+  common_test_pass "absent claim_invalidations: exit 0 and []"
 else
-  fail "absent claim_invalidations: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
+  common_test_fail "absent claim_invalidations: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
 fi
 
 EMPTY_ARRAY_RETURN_META="$TOP_WORKDIR/empty-array-return-meta.json"
@@ -208,16 +203,16 @@ cat > "$EMPTY_ARRAY_RETURN_META" <<'JSON'
 JSON
 run_sweep --from-return-meta "$EMPTY_ARRAY_RETURN_META" --self 699 --state-file "$INCIDENT_STATE"
 if [[ "$LAST_EXIT" -eq 0 && "$LAST_STDOUT" == "[]" ]]; then
-  pass "empty claim_invalidations array: exit 0 and []"
+  common_test_pass "empty claim_invalidations array: exit 0 and []"
 else
-  fail "empty claim_invalidations array: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
+  common_test_fail "empty claim_invalidations array: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
 fi
 
 run_sweep --name ZzNoSuchDeclarationZz --self 699 --state-file "$INCIDENT_STATE"
 if [[ "$LAST_EXIT" -eq 0 && "$LAST_STDOUT" == "[]" ]]; then
-  pass "a name matching nothing: exit 0 and []"
+  common_test_pass "a name matching nothing: exit 0 and []"
 else
-  fail "a name matching nothing: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
+  common_test_fail "a name matching nothing: expected exit 0 and [], got exit $LAST_EXIT, stdout '$LAST_STDOUT'"
 fi
 
 # ─── Case 6: --from-return-meta end-to-end -- union of two declaration_names, deduplicated ─────
@@ -255,26 +250,26 @@ run_sweep --from-return-meta "$RETURN_META_FIXTURE" --self 699 --state-file "$SE
 GOT_UNION="$(echo "$LAST_STDOUT" | jq -c '[.[] | {task_number, matched_name}] | sort_by(.task_number)')"
 EXPECTED_UNION='[{"task_number":601,"matched_name":"NoFiniteWidthModel"},{"task_number":606,"matched_name":"SecondDecl"}]'
 if [[ "$LAST_EXIT" -eq 0 && "$GOT_UNION" == "$EXPECTED_UNION" ]]; then
-  pass "--from-return-meta mode yields the union of both declaration_names, deduplicated"
+  common_test_pass "--from-return-meta mode yields the union of both declaration_names, deduplicated"
 else
-  fail "--from-return-meta union mismatch: expected $EXPECTED_UNION, got $GOT_UNION (exit $LAST_EXIT)"
+  common_test_fail "--from-return-meta union mismatch: expected $EXPECTED_UNION, got $GOT_UNION (exit $LAST_EXIT)"
 fi
 
 # ─── Case 7: combinable input modes -- --name plus --from-return-meta unions correctly ─────────
 run_sweep --name NoFiniteWidthModel --from-return-meta "$EMPTY_RETURN_META" --self 699 --state-file "$INCIDENT_STATE"
 GOT_COMBINED="$(echo "$LAST_STDOUT" | jq -c '[.[].task_number] | sort')"
 if [[ "$LAST_EXIT" -eq 0 && "$GOT_COMBINED" == "$EXPECTED_NUMBERS" ]]; then
-  pass "--name combined with an empty --from-return-meta still matches via --name"
+  common_test_pass "--name combined with an empty --from-return-meta still matches via --name"
 else
-  fail "combined-mode mismatch: expected $EXPECTED_NUMBERS, got $GOT_COMBINED"
+  common_test_fail "combined-mode mismatch: expected $EXPECTED_NUMBERS, got $GOT_COMBINED"
 fi
 
 # ─── Case 8: --help exits 0 and documents both input modes ─────────────────────────────────────
 run_sweep --help
 if [[ "$LAST_EXIT" -eq 0 ]] && echo "$LAST_STDOUT" | grep -q -- "--from-return-meta" && echo "$LAST_STDOUT" | grep -q -- "--name"; then
-  pass "--help exits 0 and documents both input modes"
+  common_test_pass "--help exits 0 and documents both input modes"
 else
-  fail "--help did not behave as expected (exit $LAST_EXIT)"
+  common_test_fail "--help did not behave as expected (exit $LAST_EXIT)"
 fi
 
 # ─── Summary ─────────────────────────────────────────────────────────────────────────────────

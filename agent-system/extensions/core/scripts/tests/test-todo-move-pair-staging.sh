@@ -54,10 +54,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 resolve_candidate() {
   local label="$1"; shift
@@ -104,13 +102,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # Behavioral half
@@ -175,42 +168,42 @@ run_move_pair_case() {
 
   if [ "$mode" = "paired" ]; then
     if [ "$unstaged_deletions" -eq 0 ]; then
-      pass "$label (paired): no unstaged ' D' entry for $src_rel"
+      common_test_pass "$label (paired): no unstaged ' D' entry for $src_rel"
     else
-      fail "$label (paired): found $unstaged_deletions unstaged ' D' entry/entries for $src_rel"
+      common_test_fail "$label (paired): found $unstaged_deletions unstaged ' D' entry/entries for $src_rel"
     fi
     if [ "$create_count" -gt 0 ] && [ "$delete_count" -eq "$create_count" ]; then
-      pass "$label (paired): delete mode count ($delete_count) matches create mode count ($create_count)"
+      common_test_pass "$label (paired): delete mode count ($delete_count) matches create mode count ($create_count)"
     else
-      fail "$label (paired): delete mode ($delete_count) does not match create mode ($create_count)"
+      common_test_fail "$label (paired): delete mode ($delete_count) does not match create mode ($create_count)"
     fi
     if [ "$phantom_paths" = "0" ]; then
-      pass "$label (paired): phantom_paths == 0"
+      common_test_pass "$label (paired): phantom_paths == 0"
     else
-      fail "$label (paired): phantom_paths != 0 (got: $phantom_paths)"
+      common_test_fail "$label (paired): phantom_paths != 0 (got: $phantom_paths)"
     fi
   else
     # Negative control: the pre-fix dest-only shape must be DETECTED as broken by all three
     # assertions. A pass here means the broken shape was caught, not that it is desirable.
     if [ "$unstaged_deletions" -gt 0 ]; then
-      pass "$label (dest-only, negative control): unstaged ' D' entry for $src_rel correctly detected"
+      common_test_pass "$label (dest-only, negative control): unstaged ' D' entry for $src_rel correctly detected"
     else
-      fail "$label (dest-only, negative control): no unstaged ' D' entry detected -- this case would NOT have caught the live defect"
+      common_test_fail "$label (dest-only, negative control): no unstaged ' D' entry detected -- this case would NOT have caught the live defect"
     fi
     if [ "$create_count" -gt 0 ] && [ "$delete_count" -eq 0 ]; then
-      pass "$label (dest-only, negative control): create mode present with zero delete mode, as expected of the broken shape"
+      common_test_pass "$label (dest-only, negative control): create mode present with zero delete mode, as expected of the broken shape"
     else
-      fail "$label (dest-only, negative control): expected create mode > 0 and delete mode == 0 (got create=$create_count delete=$delete_count)"
+      common_test_fail "$label (dest-only, negative control): expected create mode > 0 and delete mode == 0 (got create=$create_count delete=$delete_count)"
     fi
     if [ "$phantom_paths" != "0" ] && [ "$phantom_paths" != "null" ]; then
-      pass "$label (dest-only, negative control): phantom_paths > 0 correctly detected (got: $phantom_paths)"
+      common_test_pass "$label (dest-only, negative control): phantom_paths > 0 correctly detected (got: $phantom_paths)"
     else
-      fail "$label (dest-only, negative control): phantom_paths not detected as nonzero (got: $phantom_paths) -- this case would NOT have caught the live defect"
+      common_test_fail "$label (dest-only, negative control): phantom_paths not detected as nonzero (got: $phantom_paths) -- this case would NOT have caught the live defect"
     fi
   fi
 }
 
-info "Behavioral half: each site shape below runs a PAIRED case (the fix) and a DEST-ONLY case (the negative control reproducing the live defect)."
+common_test_info "Behavioral half: each site shape below runs a PAIRED case (the fix) and a DEST-ONLY case (the negative control reproducing the live defect)."
 
 run_move_pair_case "Step 5D (archive completed task)" "specs/042_fixture_task" "specs/archive/042_fixture_task" "paired"
 run_move_pair_case "Step 5D (archive completed task)" "specs/042_fixture_task" "specs/archive/042_fixture_task" "dest-only"
@@ -241,7 +234,7 @@ assert_mv_followed_by_pair() {
   local mv_lines
   mv_lines="$(grep -nE "$mv_regex" "$file" | cut -d: -f1)"
   if [ -z "$mv_lines" ]; then
-    fail "$label: no \`mv\` line matched $mv_regex in $file -- scope hypothesis invalidated, report rather than silently absorb"
+    common_test_fail "$label: no \`mv\` line matched $mv_regex in $file -- scope hypothesis invalidated, report rather than silently absorb"
     return
   fi
   local total_lines
@@ -256,7 +249,7 @@ assert_mv_followed_by_pair() {
     local accumulator_line
     accumulator_line="$(printf '%s\n' "$window" | grep -m1 "${accumulator}+=(" || true)"
     if [ -z "$accumulator_line" ]; then
-      fail "$label: mv at line $line in $file has no \`${accumulator}+=\` within the next $lookahead lines"
+      common_test_fail "$label: mv at line $line in $file has no \`${accumulator}+=\` within the next $lookahead lines"
       continue
     fi
     local paren_content
@@ -264,9 +257,9 @@ assert_mv_followed_by_pair() {
     local token_count
     token_count="$(count_paren_tokens "$paren_content")"
     if [ "$token_count" -ge 2 ]; then
-      pass "$label: mv at line $line in $file is paired by \`${accumulator}+=\` naming $token_count tokens"
+      common_test_pass "$label: mv at line $line in $file is paired by \`${accumulator}+=\` naming $token_count tokens"
     else
-      fail "$label: mv at line $line in $file has \`${accumulator}+=\` naming only $token_count token (dest-only shape) -- content: $paren_content"
+      common_test_fail "$label: mv at line $line in $file has \`${accumulator}+=\` naming only $token_count token (dest-only shape) -- content: $paren_content"
     fi
   done <<< "$mv_lines"
 }
@@ -285,15 +278,15 @@ for anchor_pattern in \
 do
   anchor_line="$(grep -n "$anchor_pattern" "$SKILL_MD" | head -1 | cut -d: -f1)"
   if [ -z "$anchor_line" ]; then
-    fail "skill-todo/SKILL.md: anchor step '$anchor_pattern' not found at all"
+    common_test_fail "skill-todo/SKILL.md: anchor step '$anchor_pattern' not found at all"
     continue
   fi
   window_end=$((anchor_line + PROSE_LOOKAHEAD))
   window="$(sed -n "${anchor_line},${window_end}p" "$SKILL_MD")"
   if printf '%s\n' "$window" | grep -q 'moved_paths+='; then
-    pass "skill-todo/SKILL.md: step '$anchor_pattern' (line $anchor_line) instructs appending to moved_paths[] within $PROSE_LOOKAHEAD lines"
+    common_test_pass "skill-todo/SKILL.md: step '$anchor_pattern' (line $anchor_line) instructs appending to moved_paths[] within $PROSE_LOOKAHEAD lines"
   else
-    fail "skill-todo/SKILL.md: step '$anchor_pattern' (line $anchor_line) has no moved_paths+= instruction within $PROSE_LOOKAHEAD lines"
+    common_test_fail "skill-todo/SKILL.md: step '$anchor_pattern' (line $anchor_line) has no moved_paths+= instruction within $PROSE_LOOKAHEAD lines"
   fi
 done
 
@@ -301,31 +294,31 @@ done
 # specs/ token.
 git_add_count="$(grep -cE 'git add specs/' "$SKILL_MD" || true)"
 if [ "$git_add_count" -eq 1 ]; then
-  pass "skill-todo/SKILL.md: exactly one 'git add specs/...' line found"
+  common_test_pass "skill-todo/SKILL.md: exactly one 'git add specs/...' line found"
 else
-  fail "skill-todo/SKILL.md: expected exactly one 'git add specs/...' line, found $git_add_count"
+  common_test_fail "skill-todo/SKILL.md: expected exactly one 'git add specs/...' line, found $git_add_count"
 fi
 stage15_line="$(grep -n 'git add specs/TODO.md specs/state.json' "$SKILL_MD" || true)"
 if [ -n "$stage15_line" ]; then
-  pass "skill-todo/SKILL.md: Stage 15's git add line found and contains the expected literal form"
+  common_test_pass "skill-todo/SKILL.md: Stage 15's git add line found and contains the expected literal form"
   if printf '%s' "$stage15_line" | grep -q '"\${moved_paths\[@\]}"'; then
-    pass "skill-todo/SKILL.md: Stage 15's git add consumes \"\${moved_paths[@]}\""
+    common_test_pass "skill-todo/SKILL.md: Stage 15's git add consumes \"\${moved_paths[@]}\""
   else
-    fail "skill-todo/SKILL.md: Stage 15's git add does not consume \"\${moved_paths[@]}\""
+    common_test_fail "skill-todo/SKILL.md: Stage 15's git add does not consume \"\${moved_paths[@]}\""
   fi
   if printf '%s' "$stage15_line" | grep -q 'specs/archive/'; then
-    fail "skill-todo/SKILL.md: Stage 15's git add still stages a bare specs/archive/ token"
+    common_test_fail "skill-todo/SKILL.md: Stage 15's git add still stages a bare specs/archive/ token"
   else
-    pass "skill-todo/SKILL.md: Stage 15's git add does not stage specs/archive/"
+    common_test_pass "skill-todo/SKILL.md: Stage 15's git add does not stage specs/archive/"
   fi
 else
-  fail "skill-todo/SKILL.md: Stage 15's expected git add literal form not found"
+  common_test_fail "skill-todo/SKILL.md: Stage 15's expected git add literal form not found"
 fi
 
 if grep -q '^## Rename and Directory-Move Staging$' "$STAGING_STD"; then
-  pass "git-staging-scope.md: '## Rename and Directory-Move Staging' section exists"
+  common_test_pass "git-staging-scope.md: '## Rename and Directory-Move Staging' section exists"
 else
-  fail "git-staging-scope.md: '## Rename and Directory-Move Staging' section NOT found"
+  common_test_fail "git-staging-scope.md: '## Rename and Directory-Move Staging' section NOT found"
 fi
 
 echo ""

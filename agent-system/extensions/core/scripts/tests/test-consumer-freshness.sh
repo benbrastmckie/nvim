@@ -21,10 +21,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 CHECKER_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/check-consumer-freshness.sh"
@@ -75,16 +73,13 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
 trap cleanup EXIT
 
-info "Using checker: $CHECKER"
-info "Using library: $LIB"
+common_test_info "Using checker: $CHECKER"
+common_test_info "Using library: $LIB"
 
 # --- Fixture: throwaway source-store stand-in with TWO committed extension subdirectories ---
 # Mirrors the real repo layout (agent-system/extensions/<name>) rather than a flat
@@ -174,39 +169,39 @@ OUT_DEFAULT="$(run_checker 2>&1)"
 RC_DEFAULT=$?
 
 if [[ "$OUT_DEFAULT" == *"$CONSUMER_STALE"*"STALE"* ]]; then
-  pass "default report: stale fixture classified STALE"
+  common_test_pass "default report: stale fixture classified STALE"
 else
-  fail "default report: expected STALE row for $CONSUMER_STALE, got <<<$OUT_DEFAULT>>>"
+  common_test_fail "default report: expected STALE row for $CONSUMER_STALE, got <<<$OUT_DEFAULT>>>"
 fi
 if [[ "$OUT_DEFAULT" == *"$CONSUMER_FRESH"*"FRESH"* ]]; then
-  pass "default report: fresh fixture classified FRESH"
+  common_test_pass "default report: fresh fixture classified FRESH"
 else
-  fail "default report: expected FRESH row for $CONSUMER_FRESH, got <<<$OUT_DEFAULT>>>"
+  common_test_fail "default report: expected FRESH row for $CONSUMER_FRESH, got <<<$OUT_DEFAULT>>>"
 fi
 if [[ "$OUT_DEFAULT" == *"$CONSUMER_CANNOTVERIFY"*"CANNOTVERIFY"* ]]; then
-  pass "default report: missing-source_git_head fixture classified CANNOTVERIFY"
+  common_test_pass "default report: missing-source_git_head fixture classified CANNOTVERIFY"
 else
-  fail "default report: expected CANNOTVERIFY row for $CONSUMER_CANNOTVERIFY, got <<<$OUT_DEFAULT>>>"
+  common_test_fail "default report: expected CANNOTVERIFY row for $CONSUMER_CANNOTVERIFY, got <<<$OUT_DEFAULT>>>"
 fi
 if [[ "$OUT_DEFAULT" == *"$CONSUMER_MISSING"*"MISSING"* ]]; then
-  pass "default report: nonexistent path classified MISSING"
+  common_test_pass "default report: nonexistent path classified MISSING"
 else
-  fail "default report: expected MISSING row for $CONSUMER_MISSING, got <<<$OUT_DEFAULT>>>"
+  common_test_fail "default report: expected MISSING row for $CONSUMER_MISSING, got <<<$OUT_DEFAULT>>>"
 fi
 if [[ "$OUT_DEFAULT" == *"$CONSUMER_NOEXTSTATE"*"NOEXTSTATE"* ]]; then
-  pass "default report: no .claude-extensions.json classified NOEXTSTATE"
+  common_test_pass "default report: no .claude-extensions.json classified NOEXTSTATE"
 else
-  fail "default report: expected NOEXTSTATE row for $CONSUMER_NOEXTSTATE, got <<<$OUT_DEFAULT>>>"
+  common_test_fail "default report: expected NOEXTSTATE row for $CONSUMER_NOEXTSTATE, got <<<$OUT_DEFAULT>>>"
 fi
 if [[ "$OUT_DEFAULT" == *"$SOURCE_REPO"*"(source)"*"FRESH"* ]]; then
-  pass "default report: source_repo row present and marked distinctly"
+  common_test_pass "default report: source_repo row present and marked distinctly"
 else
-  fail "default report: expected source_repo row, got <<<$OUT_DEFAULT>>>"
+  common_test_fail "default report: expected source_repo row, got <<<$OUT_DEFAULT>>>"
 fi
 if [[ "$RC_DEFAULT" -eq 1 ]]; then
-  pass "default report: exit 1 (at least one stale/cannotverify/missing/noextstate)"
+  common_test_pass "default report: exit 1 (at least one stale/cannotverify/missing/noextstate)"
 else
-  fail "default report: expected exit 1, got rc=$RC_DEFAULT"
+  common_test_fail "default report: expected exit 1, got rc=$RC_DEFAULT"
 fi
 
 # =====================================================================
@@ -214,14 +209,14 @@ fi
 # =====================================================================
 OUT_STALEONLY="$(run_checker --stale-only 2>&1)"
 if [[ "$OUT_STALEONLY" != *"$CONSUMER_FRESH"* ]]; then
-  pass "--stale-only: fresh fixture row suppressed"
+  common_test_pass "--stale-only: fresh fixture row suppressed"
 else
-  fail "--stale-only: fresh fixture row should be suppressed, got <<<$OUT_STALEONLY>>>"
+  common_test_fail "--stale-only: fresh fixture row should be suppressed, got <<<$OUT_STALEONLY>>>"
 fi
 if [[ "$OUT_STALEONLY" == *"$CONSUMER_STALE"* ]]; then
-  pass "--stale-only: stale fixture row still present"
+  common_test_pass "--stale-only: stale fixture row still present"
 else
-  fail "--stale-only: expected stale fixture row, got <<<$OUT_STALEONLY>>>"
+  common_test_fail "--stale-only: expected stale fixture row, got <<<$OUT_STALEONLY>>>"
 fi
 
 # =====================================================================
@@ -234,9 +229,9 @@ jq -n --arg src "$SOURCE_REPO" --arg fresh "$CONSUMER_FRESH" \
 OUT_ALLFRESH="$(CONSUMER_FRESHNESS_REGISTRY_PATH="$REGISTRY_ALLFRESH" bash "$WORKDIR/bin/check-consumer-freshness.sh" 2>&1)"
 RC_ALLFRESH=$?
 if [[ "$RC_ALLFRESH" -eq 0 ]]; then
-  pass "all-fresh registry: exit 0"
+  common_test_pass "all-fresh registry: exit 0"
 else
-  fail "all-fresh registry: expected exit 0, got rc=$RC_ALLFRESH output=<<<$OUT_ALLFRESH>>>"
+  common_test_fail "all-fresh registry: expected exit 0, got rc=$RC_ALLFRESH output=<<<$OUT_ALLFRESH>>>"
 fi
 
 # =====================================================================
@@ -245,9 +240,9 @@ fi
 OUT_NOREG="$(CONSUMER_FRESHNESS_REGISTRY_PATH="$WORKDIR/does-not-exist.json" bash "$WORKDIR/bin/check-consumer-freshness.sh" 2>&1)"
 RC_NOREG=$?
 if [[ "$RC_NOREG" -eq 2 ]]; then
-  pass "missing registry: exit 2"
+  common_test_pass "missing registry: exit 2"
 else
-  fail "missing registry: expected exit 2, got rc=$RC_NOREG output=<<<$OUT_NOREG>>>"
+  common_test_fail "missing registry: expected exit 2, got rc=$RC_NOREG output=<<<$OUT_NOREG>>>"
 fi
 
 BAD_REGISTRY="$WORKDIR/bad-registry.json"
@@ -255,9 +250,9 @@ echo "not json" > "$BAD_REGISTRY"
 OUT_BADREG="$(CONSUMER_FRESHNESS_REGISTRY_PATH="$BAD_REGISTRY" bash "$WORKDIR/bin/check-consumer-freshness.sh" 2>&1)"
 RC_BADREG=$?
 if [[ "$RC_BADREG" -eq 2 ]]; then
-  pass "unparseable registry: exit 2"
+  common_test_pass "unparseable registry: exit 2"
 else
-  fail "unparseable registry: expected exit 2, got rc=$RC_BADREG output=<<<$OUT_BADREG>>>"
+  common_test_fail "unparseable registry: expected exit 2, got rc=$RC_BADREG output=<<<$OUT_BADREG>>>"
 fi
 
 # =====================================================================
@@ -273,9 +268,9 @@ jq -n --arg src "$SOURCE_REPO" --arg root "$DISCOVER_ROOT" \
   > "$REGISTRY_DISCOVER"
 OUT_DISCOVER="$(CONSUMER_FRESHNESS_REGISTRY_PATH="$REGISTRY_DISCOVER" bash "$WORKDIR/bin/check-consumer-freshness.sh" --discover 2>&1)"
 if [[ "$OUT_DISCOVER" == *"UNREGISTERED: $UNREG_CONSUMER"* ]]; then
-  pass "--discover: unregistered on-disk consumer reported"
+  common_test_pass "--discover: unregistered on-disk consumer reported"
 else
-  fail "--discover: expected UNREGISTERED line for $UNREG_CONSUMER, got <<<$OUT_DISCOVER>>>"
+  common_test_fail "--discover: expected UNREGISTERED line for $UNREG_CONSUMER, got <<<$OUT_DISCOVER>>>"
 fi
 
 # =====================================================================
@@ -285,9 +280,9 @@ HASH_BEFORE="$(md5sum "$CONSUMER_STALE/.claude-extensions.json" "$REGISTRY" 2>/d
 run_checker --discover >/dev/null 2>&1
 HASH_AFTER="$(md5sum "$CONSUMER_STALE/.claude-extensions.json" "$REGISTRY" 2>/dev/null)"
 if [[ "$HASH_BEFORE" == "$HASH_AFTER" ]]; then
-  pass "no-write invariant: consumer fixture and registry unchanged across a run"
+  common_test_pass "no-write invariant: consumer fixture and registry unchanged across a run"
 else
-  fail "no-write invariant: fixture or registry was modified by the checker"
+  common_test_fail "no-write invariant: fixture or registry was modified by the checker"
 fi
 
 echo ""

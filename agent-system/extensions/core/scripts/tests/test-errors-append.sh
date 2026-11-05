@@ -23,16 +23,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/errors-append.sh"
@@ -94,9 +92,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ] && rm -rf "$TOP_WORKDIR"; }
@@ -127,17 +122,17 @@ run_ea() {
 {
   scratch="$(build_scratch)"
   if [ -f "$scratch/specs/errors.json" ]; then
-    fail "lazy-creation: errors.json unexpectedly pre-exists in fresh scratch"
+    common_test_fail "lazy-creation: errors.json unexpectedly pre-exists in fresh scratch"
   else
     if run_ea "$scratch" append --type build_error --severity high --message "lazy create" >/dev/null 2>&1; then
       if [ -f "$scratch/specs/errors.json" ] \
         && jq -e '.errors | type == "array" and length == 1' "$scratch/specs/errors.json" >/dev/null 2>&1; then
-        pass "lazy-creation: append against a scratch root with no errors.json creates it with a valid shape"
+        common_test_pass "lazy-creation: append against a scratch root with no errors.json creates it with a valid shape"
       else
-        fail "lazy-creation: errors.json missing or malformed after first append"
+        common_test_fail "lazy-creation: errors.json missing or malformed after first append"
       fi
     else
-      fail "lazy-creation: append exited non-zero on a fresh scratch root"
+      common_test_fail "lazy-creation: append exited non-zero on a fresh scratch root"
     fi
   fi
 }
@@ -152,9 +147,9 @@ run_ea() {
   doc="$scratch/specs/errors.json"
   if jq -e 'type == "object" and (has("errors")) and (.errors | type == "array")' "$doc" >/dev/null 2>&1 \
     && jq -e '.errors[0] | [has("id"),has("timestamp"),has("type"),has("severity"),has("message"),has("context"),has("fix_status")] | all' "$doc" >/dev/null 2>&1; then
-    pass "shape-conformance: top level is object-with-array; record carries all 7 required fields"
+    common_test_pass "shape-conformance: top level is object-with-array; record carries all 7 required fields"
   else
-    fail "shape-conformance: document or record shape did not match the schema"
+    common_test_fail "shape-conformance: document or record shape did not match the schema"
   fi
 }
 
@@ -179,12 +174,12 @@ run_ea() {
     count=$(jq '.errors | length' "$doc")
     unique_count=$(jq '[.errors[].id] | unique | length' "$doc")
     if [ "$count" -eq "$N" ] && [ "$unique_count" -eq "$N" ]; then
-      pass "concurrency: $N parallel appends yield exactly $N unique records in a still-parsing document"
+      common_test_pass "concurrency: $N parallel appends yield exactly $N unique records in a still-parsing document"
     else
-      fail "concurrency: expected $N records with $N unique ids, got count=$count unique=$unique_count"
+      common_test_fail "concurrency: expected $N records with $N unique ids, got count=$count unique=$unique_count"
     fi
   else
-    fail "concurrency: one or more append invocations failed, or the document no longer parses"
+    common_test_fail "concurrency: one or more append invocations failed, or the document no longer parses"
   fi
 }
 
@@ -213,9 +208,9 @@ run_ea() {
   count=$(jq '.errors | length' "$doc" 2>/dev/null || echo -1)
   fixed_count=$(jq '[.errors[] | select(.fix_status == "fixed")] | length' "$doc" 2>/dev/null || echo -1)
   if [ "$ok" = "true" ] && [ "$count" -eq "$M" ] && [ "$fixed_count" -eq "$M" ]; then
-    pass "concurrent-update: $M parallel updates on distinct ids all land, record count unchanged"
+    common_test_pass "concurrent-update: $M parallel updates on distinct ids all land, record count unchanged"
   else
-    fail "concurrent-update: expected count=$M fixed=$M, got count=$count fixed=$fixed_count"
+    common_test_fail "concurrent-update: expected count=$M fixed=$M, got count=$count fixed=$fixed_count"
   fi
 }
 
@@ -228,14 +223,14 @@ assert_rejected() {
   local before after
   before=$(md5sum "$doc" 2>/dev/null || echo "ABSENT")
   if run_ea "$scratch" "$@" >/dev/null 2>&1; then
-    fail "$label: expected exit 1, got exit 0"
+    common_test_fail "$label: expected exit 1, got exit 0"
     return
   fi
   after=$(md5sum "$doc" 2>/dev/null || echo "ABSENT")
   if [ "$before" = "$after" ]; then
-    pass "$label: exited 1 and left the target file byte-identical"
+    common_test_pass "$label: exited 1 and left the target file byte-identical"
   else
-    fail "$label: exited 1 but the target file changed"
+    common_test_fail "$label: exited 1 but the target file changed"
   fi
 }
 
@@ -292,11 +287,11 @@ assert_rejected() {
 {
   scratch="$(build_scratch)"
   if run_ea "$scratch" update --id err_nonexistent --fix-status fixed >/dev/null 2>&1; then
-    fail "reject: update against absent errors.json: expected exit 1, got exit 0"
+    common_test_fail "reject: update against absent errors.json: expected exit 1, got exit 0"
   elif [ -f "$scratch/specs/errors.json" ]; then
-    fail "reject: update against absent errors.json: file was created (must never lazily create)"
+    common_test_fail "reject: update against absent errors.json: file was created (must never lazily create)"
   else
-    pass "reject: update against absent errors.json: exited 1 and did not create the file"
+    common_test_pass "reject: update against absent errors.json: exited 1 and did not create the file"
   fi
 }
 
@@ -312,9 +307,9 @@ assert_rejected() {
   rec1_ok=$(jq -e --arg id "$id1" '.errors[] | select(.id == $id) | (.fix_status == "fixed") and (.fix_task == 7) and (.fixed_date != null)' "$doc" >/dev/null 2>&1 && echo yes || echo no)
   rec2_ok=$(jq -e --arg id "$id2" '.errors[] | select(.id == $id) | .fix_status == "unfixed"' "$doc" >/dev/null 2>&1 && echo yes || echo no)
   if [ "$rec1_ok" = "yes" ] && [ "$rec2_ok" = "yes" ]; then
-    pass "update: sets fix_status/fix_task/fixed_date and leaves sibling records untouched"
+    common_test_pass "update: sets fix_status/fix_task/fixed_date and leaves sibling records untouched"
   else
-    fail "update: rec1_ok=$rec1_ok rec2_ok=$rec2_ok"
+    common_test_fail "update: rec1_ok=$rec1_ok rec2_ok=$rec2_ok"
   fi
 }
 

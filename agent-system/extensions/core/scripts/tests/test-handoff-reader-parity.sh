@@ -40,16 +40,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 # Source-store-first (see test-validate-handoff.sh's identical rationale): this suite exercises
 # the SKILL.md files under active development, which live in the source store before a redeploy
@@ -104,13 +102,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ── Shared fixture: ONE handoff satisfying the validator AND both readers ──────────────────────
 # Rich enough to exercise every field either engine reads, including the hard-only extras.
@@ -152,9 +145,9 @@ cat > "$FIXTURE" << 'EOF'
 EOF
 
 if bash "$VALIDATOR" "$FIXTURE" >"$WORKDIR/validator.out" 2>&1; then
-  pass "Shared fixture passes validate-handoff.sh -- one schema satisfies validator and both readers"
+  common_test_pass "Shared fixture passes validate-handoff.sh -- one schema satisfies validator and both readers"
 else
-  fail "Shared fixture failed validate-handoff.sh -- see $WORKDIR/validator.out"
+  common_test_fail "Shared fixture failed validate-handoff.sh -- see $WORKDIR/validator.out"
   cat "$WORKDIR/validator.out"
 fi
 
@@ -191,15 +184,15 @@ declare -A SHARED_FIELD_EXPECTED=(
 for field in "${SHARED_FIELDS[@]}"; do
   filter="$(extract_jq_filter "$SCRIPT_FILE" "$ANCHOR" "$field")"
   if [[ -z "$filter" ]]; then
-    fail "$field: could not extract jq filter from orchestrate-cycle-postflight.sh"
+    common_test_fail "$field: could not extract jq filter from orchestrate-cycle-postflight.sh"
     continue
   fi
   val="$(jq -r "$filter" "$FIXTURE" 2>/dev/null)"
   expected="${SHARED_FIELD_EXPECTED[$field]}"
   if [[ "$val" == "$expected" ]]; then
-    pass "$field: filter ('$filter') present and produces the expected value ('$val') against the shared fixture"
+    common_test_pass "$field: filter ('$filter') present and produces the expected value ('$val') against the shared fixture"
   else
-    fail "$field: filter present but value diverges -- got='$val' expected='$expected'"
+    common_test_fail "$field: filter present but value diverges -- got='$val' expected='$expected'"
   fi
 done
 
@@ -212,16 +205,16 @@ done
 BLOCKERS_ANCHOR="H6/H5 (Decision 3): the churn signature"
 blockers_filter="$(extract_jq_filter "$SCRIPT_FILE" "$BLOCKERS_ANCHOR" "churn_blockers_json")"
 if [[ -z "$blockers_filter" ]]; then
-  fail "blockers: could not extract jq filter from orchestrate-cycle-postflight.sh"
+  common_test_fail "blockers: could not extract jq filter from orchestrate-cycle-postflight.sh"
 else
   blockers_expected='[{"phase":2,"target":"example-target.sh","verbatim_goal":"example verbatim goal text","what_was_tried":"attempted approach","why_it_failed":"reason it failed"}]'
   # blockers is a jq -c array; compare parsed JSON structurally, not as a raw string, so key
   # ordering in the filter's own output can't cause a spurious mismatch.
   blockers_val_c="$(jq -c "$blockers_filter" "$FIXTURE" 2>/dev/null)"
   if [[ "$(jq -c -e --argjson a "$blockers_val_c" --argjson b "$blockers_expected" -n '$a == $b' 2>/dev/null)" == "true" ]]; then
-    pass "blockers: filter ('$blockers_filter') present and produces the expected value against the shared fixture"
+    common_test_pass "blockers: filter ('$blockers_filter') present and produces the expected value against the shared fixture"
   else
-    fail "blockers: filter present but value diverges from expected -- got='$blockers_val_c' expected='$blockers_expected'"
+    common_test_fail "blockers: filter present but value diverges from expected -- got='$blockers_val_c' expected='$blockers_expected'"
   fi
 fi
 
@@ -244,15 +237,15 @@ for sub in path type summary; do
   var="artifact_${sub}"
   filter="$(extract_jq_filter "$SCRIPT_FILE" "$ANCHOR" "$var")"
   if [[ -z "$filter" ]]; then
-    fail "artifacts[0].$sub: could not extract from orchestrate-cycle-postflight.sh"
+    common_test_fail "artifacts[0].$sub: could not extract from orchestrate-cycle-postflight.sh"
     continue
   fi
   val="$(jq -r "$filter" "$FIXTURE" 2>/dev/null)"
   expected="${ARTIFACT_SUB_EXPECTED[$sub]}"
   if [[ "$val" == "$expected" ]]; then
-    pass "artifacts[0].$sub: filter present and produces the expected value ('$val') against the shared fixture"
+    common_test_pass "artifacts[0].$sub: filter present and produces the expected value ('$val') against the shared fixture"
   else
-    fail "artifacts[0].$sub: filter present but value diverges -- got='$val' expected='$expected'"
+    common_test_fail "artifacts[0].$sub: filter present but value diverges -- got='$val' expected='$expected'"
   fi
 done
 
@@ -289,24 +282,24 @@ blocker_target_filter="$(grep -oP "blocker_target=\\\$\(echo \"\\\$blockers_json
 if [[ -n "$blocker_target_filter" ]]; then
   val="$(jq -r ".blockers | ($blocker_target_filter)" "$FIXTURE" 2>/dev/null)"
   if [[ "$val" == "example-target.sh" ]]; then
-    pass "hard_mode-only allowlisted: .blockers[0].target (orchestrate-churn.sh H5/H6 churn detection) extracts 'example-target.sh' from the shared fixture"
+    common_test_pass "hard_mode-only allowlisted: .blockers[0].target (orchestrate-churn.sh H5/H6 churn detection) extracts 'example-target.sh' from the shared fixture"
   else
-    fail "hard_mode-only allowlisted: .blockers[0].target unexpected value '$val'"
+    common_test_fail "hard_mode-only allowlisted: .blockers[0].target unexpected value '$val'"
   fi
 else
-  fail "hard_mode-only allowlisted: could not extract .blockers[0].target filter from orchestrate-churn.sh"
+  common_test_fail "hard_mode-only allowlisted: could not extract .blockers[0].target filter from orchestrate-churn.sh"
 fi
 
 verbatim_goal_filter="$(grep -oP "verbatim_goal=\\\$\(echo \"\\\$blockers_json\" \| jq -r '\K[^']*(?=')" "$SCRIPT_DIR/../orchestrate-churn.sh" | head -1)"
 if [[ -n "$verbatim_goal_filter" ]]; then
   val="$(jq -r ".blockers | ($verbatim_goal_filter)" "$FIXTURE" 2>/dev/null)"
   if [[ "$val" == "example verbatim goal text" ]]; then
-    pass "hard_mode-only allowlisted: .blockers[0].verbatim_goal (orchestrate-churn.sh H5/H6 churn detection) extracts the expected text from the shared fixture"
+    common_test_pass "hard_mode-only allowlisted: .blockers[0].verbatim_goal (orchestrate-churn.sh H5/H6 churn detection) extracts the expected text from the shared fixture"
   else
-    fail "hard_mode-only allowlisted: .blockers[0].verbatim_goal unexpected value '$val'"
+    common_test_fail "hard_mode-only allowlisted: .blockers[0].verbatim_goal unexpected value '$val'"
   fi
 else
-  fail "hard_mode-only allowlisted: could not extract .blockers[0].verbatim_goal filter from orchestrate-churn.sh"
+  common_test_fail "hard_mode-only allowlisted: could not extract .blockers[0].verbatim_goal filter from orchestrate-churn.sh"
 fi
 
 # ── Every extracted field name must appear in the schema's properties (grep-audit lock-in) ─────
@@ -322,7 +315,7 @@ for candidate in "${SCHEMA_CANDIDATES[@]}"; do
   fi
 done
 if [[ -z "$SCHEMA" ]]; then
-  fail "schema file not found at any candidate path -- cannot lock in field-name audit"
+  common_test_fail "schema file not found at any candidate path -- cannot lock in field-name audit"
 else
   schema_props="$(jq -r '.properties | keys[]' "$SCHEMA" 2>/dev/null)"
   # Top-level field names read by either engine (sub-field paths like artifacts[0].path and
@@ -331,12 +324,12 @@ else
   audit_ok=true
   for f in "${AUDITED_FIELDS[@]}"; do
     if ! grep -qx -- "$f" <<< "$schema_props"; then
-      fail "grep-audit: field '$f' is read by a reader but absent from schema properties"
+      common_test_fail "grep-audit: field '$f' is read by a reader but absent from schema properties"
       audit_ok=false
     fi
   done
   if [[ "$audit_ok" == "true" ]]; then
-    pass "grep-audit: all ${#AUDITED_FIELDS[@]} reader-referenced field names appear in schema properties"
+    common_test_pass "grep-audit: all ${#AUDITED_FIELDS[@]} reader-referenced field names appear in schema properties"
   fi
 fi
 
@@ -350,8 +343,8 @@ fi
 # silently-passing no-op.
 
 # ── Summary ──────────────────────────────────────────────────────────────────────────────────
-info "Engine resolved to:    $SKILL_FILE"
-info "Validator resolved to: $VALIDATOR"
+common_test_info "Engine resolved to:    $SKILL_FILE"
+common_test_info "Validator resolved to: $VALIDATOR"
 echo ""
 echo "========================================"
 echo "test-handoff-reader-parity.sh Summary"

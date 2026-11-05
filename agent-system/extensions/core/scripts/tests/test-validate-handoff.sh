@@ -15,16 +15,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 # Source-store-first (not deploy-first, unlike test-corroborate-phase-counts.sh's SKILL_BASE
 # resolution): this suite validates the validator's own logic under active development, which
@@ -52,13 +50,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ─── assert_accept <name> <json-content> ───────────────────────────────────────────────────────
 # Writes the fixture, runs the validator, asserts exit 0.
@@ -67,9 +60,9 @@ assert_accept() {
   local f="$WORKDIR/${name}.json"
   printf '%s' "$content" > "$f"
   if bash "$VALIDATOR" "$f" >"$WORKDIR/${name}.out" 2>&1; then
-    pass "$name: validator exits 0 (accept)"
+    common_test_pass "$name: validator exits 0 (accept)"
   else
-    fail "$name: validator exited non-zero (expected accept) -- see $WORKDIR/${name}.out"
+    common_test_fail "$name: validator exited non-zero (expected accept) -- see $WORKDIR/${name}.out"
   fi
 }
 
@@ -80,9 +73,9 @@ assert_reject() {
   local f="$WORKDIR/${name}.json"
   printf '%s' "$content" > "$f"
   if bash "$VALIDATOR" "$f" >"$WORKDIR/${name}.out" 2>&1; then
-    fail "$name: validator exited 0 (expected reject) -- see $WORKDIR/${name}.out"
+    common_test_fail "$name: validator exited 0 (expected reject) -- see $WORKDIR/${name}.out"
   else
-    pass "$name: validator exits non-zero (reject)"
+    common_test_pass "$name: validator exits non-zero (reject)"
   fi
 }
 
@@ -94,13 +87,13 @@ assert_accept_no_warn() {
   local f="$WORKDIR/${name}.json"
   printf '%s' "$content" > "$f"
   if ! bash "$VALIDATOR" "$f" >"$WORKDIR/${name}.out" 2>&1; then
-    fail "$name: validator exited non-zero (expected accept) -- see $WORKDIR/${name}.out"
+    common_test_fail "$name: validator exited non-zero (expected accept) -- see $WORKDIR/${name}.out"
     return
   fi
   if grep -q -- "$pattern" "$WORKDIR/${name}.out"; then
-    fail "$name: validator accepted but pattern '$pattern' unexpectedly present -- see $WORKDIR/${name}.out"
+    common_test_fail "$name: validator accepted but pattern '$pattern' unexpectedly present -- see $WORKDIR/${name}.out"
   else
-    pass "$name: validator exits 0 (accept) and pattern '$pattern' absent"
+    common_test_pass "$name: validator exits 0 (accept) and pattern '$pattern' absent"
   fi
 }
 
@@ -247,9 +240,9 @@ assert_accept "accept-partial-no-continuation-still-warns" '{
 }'
 if grep -q "continuation_path and continuation_context are both null or absent" \
     "$WORKDIR/accept-partial-no-continuation-still-warns.out" 2>/dev/null; then
-  pass "accept-partial-no-continuation-still-warns: Check 5 continuation WARN still fires"
+  common_test_pass "accept-partial-no-continuation-still-warns: Check 5 continuation WARN still fires"
 else
-  fail "accept-partial-no-continuation-still-warns: Check 5 continuation WARN did not fire -- see $WORKDIR/accept-partial-no-continuation-still-warns.out"
+  common_test_fail "accept-partial-no-continuation-still-warns: Check 5 continuation WARN did not fire -- see $WORKDIR/accept-partial-no-continuation-still-warns.out"
 fi
 
 # =====================================================================
@@ -299,7 +292,7 @@ assert_reject "reject-dispatch-seq-non-integer" '{
 # =====================================================================
 # Summary
 # =====================================================================
-info "Validator resolved to: $VALIDATOR"
+common_test_info "Validator resolved to: $VALIDATOR"
 echo ""
 echo "========================================"
 echo "test-validate-handoff.sh Summary"

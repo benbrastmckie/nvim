@@ -56,6 +56,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LINT_SCRIPT="$CORE_DIR/lint/lint-shellcheck.sh"
 
@@ -67,9 +68,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
@@ -106,7 +104,7 @@ EOF
 # =====================================================================
 # Case 1: dispatch-shape acceptance gate on the fixture (stub shellcheck)
 # =====================================================================
-info "=== dispatch-shape case: worker cap honoured, one-process-per-file, via a stub shellcheck ==="
+common_test_info "=== dispatch-shape case: worker cap honoured, one-process-per-file, via a stub shellcheck ==="
 
 STUB_BIN_DIR="$WORKDIR/stubbin"
 mkdir -p "$STUB_BIN_DIR"
@@ -133,17 +131,17 @@ dispatch_out="$(PATH="$STUB_BIN_DIR:$PATH" SHELLCHECK_JOBS="$DISPATCH_CAP" bash 
 dispatch_rc=$?
 
 if [[ "$dispatch_rc" -eq 0 ]]; then
-  pass "stub-backed dispatch run exits 0 (stub reports no findings on every file)"
+  common_test_pass "stub-backed dispatch run exits 0 (stub reports no findings on every file)"
 else
-  fail "stub-backed dispatch run expected exit 0, got $dispatch_rc:
+  common_test_fail "stub-backed dispatch run expected exit 0, got $dispatch_rc:
 $dispatch_out"
 fi
 
 start_count="$(grep -c '^START' "$STUB_LOG" || true)"
 if [[ "$start_count" -eq "$FIXTURE_N" ]]; then
-  pass "exactly $FIXTURE_N shellcheck invocations observed (one per fixture file)"
+  common_test_pass "exactly $FIXTURE_N shellcheck invocations observed (one per fixture file)"
 else
-  fail "expected $FIXTURE_N shellcheck invocations, observed $start_count"
+  common_test_fail "expected $FIXTURE_N shellcheck invocations, observed $start_count"
 fi
 
 # One-process-per-file: every invocation's argv must name exactly one fixture file -- a future
@@ -156,9 +154,9 @@ while IFS= read -r line; do
   [[ "$file_hits" -ne 1 ]] && batched_count=$((batched_count + 1))
 done < <(grep '^START' "$STUB_LOG")
 if [[ "$batched_count" -eq 0 ]]; then
-  pass "every invocation named exactly one fixture file (no batched multi-file dispatch)"
+  common_test_pass "every invocation named exactly one fixture file (no batched multi-file dispatch)"
 else
-  fail "$batched_count of $FIXTURE_N invocations did not name exactly one fixture file"
+  common_test_fail "$batched_count of $FIXTURE_N invocations did not name exactly one fixture file"
 fi
 
 # Worker cap honoured: peak concurrent invocations must never exceed the forced cap, and -- with
@@ -171,21 +169,21 @@ peak_concurrency="$(
   } | sort -n -k1,1 | awk '{active += $2; if (active > peak) peak = active} END {print peak}'
 )"
 if [[ "$peak_concurrency" -le "$DISPATCH_CAP" ]]; then
-  pass "peak concurrent invocations ($peak_concurrency) never exceeded the forced cap ($DISPATCH_CAP)"
+  common_test_pass "peak concurrent invocations ($peak_concurrency) never exceeded the forced cap ($DISPATCH_CAP)"
 else
-  fail "peak concurrent invocations ($peak_concurrency) EXCEEDED the forced cap ($DISPATCH_CAP) -- the worker cap is not honoured"
+  common_test_fail "peak concurrent invocations ($peak_concurrency) EXCEEDED the forced cap ($DISPATCH_CAP) -- the worker cap is not honoured"
 fi
 if [[ "$peak_concurrency" -eq "$DISPATCH_CAP" ]]; then
-  pass "peak concurrent invocations reached the forced cap ($DISPATCH_CAP), confirming genuine parallel dispatch"
+  common_test_pass "peak concurrent invocations reached the forced cap ($DISPATCH_CAP), confirming genuine parallel dispatch"
 else
-  fail "peak concurrent invocations ($peak_concurrency) never reached the forced cap ($DISPATCH_CAP) with $FIXTURE_N files pending -- dispatch may be serialized"
+  common_test_fail "peak concurrent invocations ($peak_concurrency) never reached the forced cap ($DISPATCH_CAP) with $FIXTURE_N files pending -- dispatch may be serialized"
 fi
 
 # =====================================================================
 # Case 2: finding-set equivalence on the SAME fixture, real shellcheck, SHELLCHECK_JOBS=1 vs a
 # forced worker count > 1
 # =====================================================================
-info "=== fixture finding-set equivalence case: SHELLCHECK_JOBS=1 vs a forced worker count ==="
+common_test_info "=== fixture finding-set equivalence case: SHELLCHECK_JOBS=1 vs a forced worker count ==="
 
 fixture_seq_out="$(SHELLCHECK_JOBS=1 bash "$LINT_SCRIPT" "$FIXTURE_DIR" 2>&1)"
 fixture_seq_rc=$?
@@ -193,15 +191,15 @@ fixture_par_out="$(SHELLCHECK_JOBS=4 bash "$LINT_SCRIPT" "$FIXTURE_DIR" 2>&1)"
 fixture_par_rc=$?
 
 if [[ "$fixture_seq_rc" -ne 0 && "$fixture_par_rc" -ne 0 ]]; then
-  pass "both worker counts exit non-zero on the fixture's seeded violation"
+  common_test_pass "both worker counts exit non-zero on the fixture's seeded violation"
 else
-  fail "expected both worker counts to exit non-zero on the fixture (seq_rc=$fixture_seq_rc par_rc=$fixture_par_rc)"
+  common_test_fail "expected both worker counts to exit non-zero on the fixture (seq_rc=$fixture_seq_rc par_rc=$fixture_par_rc)"
 fi
 
 if [[ "$fixture_seq_out" == "$fixture_par_out" ]]; then
-  pass "fixture finding set byte-identical between SHELLCHECK_JOBS=1 and SHELLCHECK_JOBS=4"
+  common_test_pass "fixture finding set byte-identical between SHELLCHECK_JOBS=1 and SHELLCHECK_JOBS=4"
 else
-  fail "fixture finding set differs between worker counts:
+  common_test_fail "fixture finding set differs between worker counts:
 seq: $fixture_seq_out
 par: $fixture_par_out"
 fi
@@ -209,7 +207,7 @@ fi
 # =====================================================================
 # Case 3: seeded-violation equivalence between SHELLCHECK_JOBS=1 and default (unchanged)
 # =====================================================================
-info "=== seeded-violation case: identical findings, both worker counts ==="
+common_test_info "=== seeded-violation case: identical findings, both worker counts ==="
 
 SEED_DIR="$WORKDIR/seed"
 mkdir -p "$SEED_DIR"
@@ -242,23 +240,23 @@ seed_par_out="$(bash "$LINT_SCRIPT" "$SEED_DIR" 2>&1)"
 seed_par_rc=$?
 
 if [[ "$seed_seq_rc" -ne 0 && "$seed_par_rc" -ne 0 ]]; then
-  pass "both worker counts exit non-zero on the seeded-violation fixture"
+  common_test_pass "both worker counts exit non-zero on the seeded-violation fixture"
 else
-  fail "expected both worker counts to exit non-zero on the seeded-violation fixture (seq_rc=$seed_seq_rc par_rc=$seed_par_rc)"
+  common_test_fail "expected both worker counts to exit non-zero on the seeded-violation fixture (seq_rc=$seed_seq_rc par_rc=$seed_par_rc)"
 fi
 
 if grep -q 'SC2155' <<< "$seed_seq_out" && grep -q 'SC2155' <<< "$seed_par_out"; then
-  pass "both worker counts name SC2155 for the seeded violation"
+  common_test_pass "both worker counts name SC2155 for the seeded violation"
 else
-  fail "SC2155 missing from one or both outputs:
+  common_test_fail "SC2155 missing from one or both outputs:
 seq: $seed_seq_out
 par: $seed_par_out"
 fi
 
 if [[ "$seed_seq_out" == "$seed_par_out" ]]; then
-  pass "seeded-violation output byte-identical between SHELLCHECK_JOBS=1 and default"
+  common_test_pass "seeded-violation output byte-identical between SHELLCHECK_JOBS=1 and default"
 else
-  fail "seeded-violation output differs between worker counts:
+  common_test_fail "seeded-violation output differs between worker counts:
 seq: $seed_seq_out
 par: $seed_par_out"
 fi
@@ -266,7 +264,7 @@ fi
 # =====================================================================
 # Case 4: discovery-order determinism across worker counts 1, 4, 8 (unchanged)
 # =====================================================================
-info "=== determinism case: identical output across SHELLCHECK_JOBS=1,4,8 ==="
+common_test_info "=== determinism case: identical output across SHELLCHECK_JOBS=1,4,8 ==="
 
 DET_DIR="$WORKDIR/det"
 mkdir -p "$DET_DIR"
@@ -285,9 +283,9 @@ det_out_4="$(SHELLCHECK_JOBS=4 bash "$LINT_SCRIPT" "$DET_DIR" 2>&1)"
 det_out_8="$(SHELLCHECK_JOBS=8 bash "$LINT_SCRIPT" "$DET_DIR" 2>&1)"
 
 if [[ "$det_out_1" == "$det_out_4" && "$det_out_4" == "$det_out_8" ]]; then
-  pass "output byte-identical across SHELLCHECK_JOBS=1,4,8 on a 5-file mixed fixture"
+  common_test_pass "output byte-identical across SHELLCHECK_JOBS=1,4,8 on a 5-file mixed fixture"
 else
-  fail "output differs across worker counts:
+  common_test_fail "output differs across worker counts:
 jobs=1: $det_out_1
 jobs=4: $det_out_4
 jobs=8: $det_out_8"
@@ -296,15 +294,15 @@ fi
 # =====================================================================
 # Case 5: SHELLCHECK_JOBS validation (non-integer, zero, negative all refused) (unchanged)
 # =====================================================================
-info "=== SHELLCHECK_JOBS validation case ==="
+common_test_info "=== SHELLCHECK_JOBS validation case ==="
 
 for bad in 0 -1 abc; do
   bad_out="$(SHELLCHECK_JOBS="$bad" bash "$LINT_SCRIPT" "$SEED_DIR" 2>&1)"
   bad_rc=$?
   if [[ "$bad_rc" -eq 2 ]]; then
-    pass "SHELLCHECK_JOBS='$bad' is refused with exit 2"
+    common_test_pass "SHELLCHECK_JOBS='$bad' is refused with exit 2"
   else
-    fail "SHELLCHECK_JOBS='$bad' expected exit 2, got $bad_rc:
+    common_test_fail "SHELLCHECK_JOBS='$bad' expected exit 2, got $bad_rc:
 $bad_out"
   fi
 done
@@ -313,7 +311,7 @@ done
 # Case 6: opt-in real-corpus timing experiment (RUN_REAL_CORPUS_TIMING=1 only)
 # =====================================================================
 if [[ "${RUN_REAL_CORPUS_TIMING:-0}" == "1" ]]; then
-  info "=== opt-in real-corpus case: SHELLCHECK_JOBS=1 vs default (parallel), timed ==="
+  common_test_info "=== opt-in real-corpus case: SHELLCHECK_JOBS=1 vs default (parallel), timed ==="
 
   start_seq="$(now_ms)"
   real_seq_out="$(SHELLCHECK_JOBS=1 bash "$LINT_SCRIPT" --quiet 2>&1)"
@@ -327,13 +325,13 @@ if [[ "${RUN_REAL_CORPUS_TIMING:-0}" == "1" ]]; then
   end_par="$(now_ms)"
   real_par_ms=$((end_par - start_par))
 
-  info "SHELLCHECK_JOBS=1 wall=${real_seq_ms}ms rc=${real_seq_rc} out=${real_seq_out}"
-  info "default (parallel) wall=${real_par_ms}ms rc=${real_par_rc} out=${real_par_out}"
+  common_test_info "SHELLCHECK_JOBS=1 wall=${real_seq_ms}ms rc=${real_seq_rc} out=${real_seq_out}"
+  common_test_info "default (parallel) wall=${real_par_ms}ms rc=${real_par_rc} out=${real_par_out}"
 
   if [[ "$real_seq_rc" -eq "$real_par_rc" && "$real_seq_out" == "$real_par_out" ]]; then
-    pass "real-corpus finding set identical between SHELLCHECK_JOBS=1 and the default parallel path"
+    common_test_pass "real-corpus finding set identical between SHELLCHECK_JOBS=1 and the default parallel path"
   else
-    fail "real-corpus finding set differs between SHELLCHECK_JOBS=1 and default:
+    common_test_fail "real-corpus finding set differs between SHELLCHECK_JOBS=1 and default:
 seq(rc=$real_seq_rc): $real_seq_out
 par(rc=$real_par_rc): $real_par_out"
   fi
@@ -341,15 +339,15 @@ par(rc=$real_par_rc): $real_par_out"
   if [[ "$real_seq_ms" -gt 0 ]]; then
     ceiling_ms=$(( real_seq_ms * 80 / 100 ))
     if [[ "$real_par_ms" -le "$ceiling_ms" ]]; then
-      pass "parallel path (${real_par_ms}ms) is at or below 80% of the forced-single-worker time (${real_seq_ms}ms, ceiling ${ceiling_ms}ms)"
+      common_test_pass "parallel path (${real_par_ms}ms) is at or below 80% of the forced-single-worker time (${real_seq_ms}ms, ceiling ${ceiling_ms}ms)"
     else
-      fail "parallel path (${real_par_ms}ms) did NOT beat 80% of the forced-single-worker time (${real_seq_ms}ms, ceiling ${ceiling_ms}ms) -- the parallel dispatch may have regressed"
+      common_test_fail "parallel path (${real_par_ms}ms) did NOT beat 80% of the forced-single-worker time (${real_seq_ms}ms, ceiling ${ceiling_ms}ms) -- the parallel dispatch may have regressed"
     fi
   else
-    info "forced-single-worker wall time measured as 0ms -- skipping the ratio assertion as unmeasurable on this host"
+    common_test_info "forced-single-worker wall time measured as 0ms -- skipping the ratio assertion as unmeasurable on this host"
   fi
 else
-  info "=== opt-in real-corpus timing experiment skipped (set RUN_REAL_CORPUS_TIMING=1 to run it) ==="
+  common_test_info "=== opt-in real-corpus timing experiment skipped (set RUN_REAL_CORPUS_TIMING=1 to run it) ==="
 fi
 
 # =====================================================================

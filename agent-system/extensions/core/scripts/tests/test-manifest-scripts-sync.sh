@@ -18,10 +18,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SYNC_CANDIDATES=(
   "$SCRIPT_DIR/../sync-manifest-scripts.sh"
@@ -68,13 +66,8 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 FIXTURE_EXT_DIR="$WORKDIR/extensions"
 FIXTURE_REPO="$WORKDIR/repo"
@@ -138,24 +131,24 @@ run_sync() {
 # ── --check: names both missing files, exits nonzero ───────────────────────────────────────────
 run_sync --check
 if [[ "$SYNC_EXIT" -ne 0 ]]; then
-  pass "sync-manifest-scripts.sh --check exits nonzero on an unregistered-script fixture"
+  common_test_pass "sync-manifest-scripts.sh --check exits nonzero on an unregistered-script fixture"
 else
-  fail "sync-manifest-scripts.sh --check exited 0 on an unregistered-script fixture"
+  common_test_fail "sync-manifest-scripts.sh --check exited 0 on an unregistered-script fixture"
 fi
 if grep -q "script file on disk NOT in provides.scripts: scripts/sync.sh" <<< "$SYNC_OUTPUT"; then
-  pass "sync-manifest-scripts.sh --check names scripts/sync.sh"
+  common_test_pass "sync-manifest-scripts.sh --check names scripts/sync.sh"
 else
-  fail "sync-manifest-scripts.sh --check did not name scripts/sync.sh (output: $SYNC_OUTPUT)"
+  common_test_fail "sync-manifest-scripts.sh --check did not name scripts/sync.sh (output: $SYNC_OUTPUT)"
 fi
 if grep -q "script file on disk NOT in provides.scripts: scripts/zzz-last.sh" <<< "$SYNC_OUTPUT"; then
-  pass "sync-manifest-scripts.sh --check names scripts/zzz-last.sh"
+  common_test_pass "sync-manifest-scripts.sh --check names scripts/zzz-last.sh"
 else
-  fail "sync-manifest-scripts.sh --check did not name scripts/zzz-last.sh"
+  common_test_fail "sync-manifest-scripts.sh --check did not name scripts/zzz-last.sh"
 fi
 if grep -q "deprecated/old.sh" <<< "$SYNC_OUTPUT"; then
-  fail "sync-manifest-scripts.sh --check incorrectly flagged deprecated/old.sh"
+  common_test_fail "sync-manifest-scripts.sh --check incorrectly flagged deprecated/old.sh"
 else
-  pass "sync-manifest-scripts.sh --check exempts deprecated/old.sh"
+  common_test_pass "sync-manifest-scripts.sh --check exempts deprecated/old.sh"
 fi
 
 # ── --check on a fully-declared fixture: exits 0 ────────────────────────────────────────────────
@@ -167,9 +160,9 @@ write_manifest '[
     ]'
 run_sync --check
 if [[ "$SYNC_EXIT" -eq 0 ]]; then
-  pass "sync-manifest-scripts.sh --check exits 0 when every tracked script is declared"
+  common_test_pass "sync-manifest-scripts.sh --check exits 0 when every tracked script is declared"
 else
-  fail "sync-manifest-scripts.sh --check exited nonzero on a fully-declared fixture (output: $SYNC_OUTPUT)"
+  common_test_fail "sync-manifest-scripts.sh --check exited nonzero on a fully-declared fixture (output: $SYNC_OUTPUT)"
 fi
 
 # ── --write: adds exactly the missing entries, alphabetical position, full-file diff ───────────
@@ -180,9 +173,9 @@ write_manifest '[
 run_sync --write
 AFTER_WRITE="$(cat "$FIXTURE/manifest.json")"
 if jq -e . <<< "$AFTER_WRITE" > /dev/null 2>&1; then
-  pass "sync-manifest-scripts.sh --write leaves valid JSON"
+  common_test_pass "sync-manifest-scripts.sh --write leaves valid JSON"
 else
-  fail "sync-manifest-scripts.sh --write produced invalid JSON"
+  common_test_fail "sync-manifest-scripts.sh --write produced invalid JSON"
 fi
 EXPECTED_AFTER='{
   "name": "fixture",
@@ -202,9 +195,9 @@ EXPECTED_AFTER='{
   }
 }'
 if [[ "$AFTER_WRITE" == "$EXPECTED_AFTER" ]]; then
-  pass "sync-manifest-scripts.sh --write inserts exactly the two missing entries, alphabetically, and changes nothing else"
+  common_test_pass "sync-manifest-scripts.sh --write inserts exactly the two missing entries, alphabetically, and changes nothing else"
 else
-  fail "sync-manifest-scripts.sh --write produced unexpected content:
+  common_test_fail "sync-manifest-scripts.sh --write produced unexpected content:
 --- expected ---
 $EXPECTED_AFTER
 --- actual ---
@@ -212,9 +205,9 @@ $AFTER_WRITE"
 fi
 run_sync --check
 if [[ "$SYNC_EXIT" -eq 0 ]]; then
-  pass "sync-manifest-scripts.sh --check is clean immediately after --write (idempotent repair)"
+  common_test_pass "sync-manifest-scripts.sh --check is clean immediately after --write (idempotent repair)"
 else
-  fail "sync-manifest-scripts.sh --check still reports a gap after --write"
+  common_test_fail "sync-manifest-scripts.sh --check still reports a gap after --write"
 fi
 
 # ── --write on a non-jq-canonical manifest leaves unrelated formatting intact ───────────────────
@@ -238,14 +231,14 @@ cat > "$FIXTURE/manifest.json" <<'EOF'
 EOF
 run_sync --write
 if grep -q '"hooks": \["a-compact-array.sh", "left-exactly-as-is.sh"\]' "$FIXTURE/manifest.json"; then
-  pass "sync-manifest-scripts.sh --write leaves an unrelated compact array (non-jq-canonical formatting) untouched"
+  common_test_pass "sync-manifest-scripts.sh --write leaves an unrelated compact array (non-jq-canonical formatting) untouched"
 else
-  fail "sync-manifest-scripts.sh --write reformatted an unrelated array it should not have touched"
+  common_test_fail "sync-manifest-scripts.sh --write reformatted an unrelated array it should not have touched"
 fi
 if grep -q '"sync.sh"' "$FIXTURE/manifest.json" && grep -q '"zzz-last.sh"' "$FIXTURE/manifest.json"; then
-  pass "sync-manifest-scripts.sh --write still repaired provides.scripts on the non-canonical manifest"
+  common_test_pass "sync-manifest-scripts.sh --write still repaired provides.scripts on the non-canonical manifest"
 else
-  fail "sync-manifest-scripts.sh --write did not repair provides.scripts on the non-canonical manifest"
+  common_test_fail "sync-manifest-scripts.sh --write did not repair provides.scripts on the non-canonical manifest"
 fi
 
 # ── declared-but-absent: reported, never auto-removed ───────────────────────────────────────────
@@ -258,20 +251,20 @@ write_manifest '[
     ]'
 run_sync --check
 if grep -q "declares 'scripts/ghost-entry.sh' but no such file is tracked on disk" <<< "$SYNC_OUTPUT"; then
-  pass "sync-manifest-scripts.sh --check reports a declared-but-absent entry"
+  common_test_pass "sync-manifest-scripts.sh --check reports a declared-but-absent entry"
 else
-  fail "sync-manifest-scripts.sh --check did not report the declared-but-absent entry (output: $SYNC_OUTPUT)"
+  common_test_fail "sync-manifest-scripts.sh --check did not report the declared-but-absent entry (output: $SYNC_OUTPUT)"
 fi
 if [[ "$SYNC_EXIT" -ne 0 ]]; then
-  pass "sync-manifest-scripts.sh --check exits nonzero on a declared-but-absent gap alone"
+  common_test_pass "sync-manifest-scripts.sh --check exits nonzero on a declared-but-absent gap alone"
 else
-  fail "sync-manifest-scripts.sh --check exited 0 despite a declared-but-absent gap"
+  common_test_fail "sync-manifest-scripts.sh --check exited 0 despite a declared-but-absent gap"
 fi
 run_sync --write
 if grep -q '"ghost-entry.sh"' "$FIXTURE/manifest.json"; then
-  pass "sync-manifest-scripts.sh --write never auto-removes a declared-but-absent entry"
+  common_test_pass "sync-manifest-scripts.sh --write never auto-removes a declared-but-absent entry"
 else
-  fail "sync-manifest-scripts.sh --write incorrectly removed a declared-but-absent entry"
+  common_test_fail "sync-manifest-scripts.sh --write incorrectly removed a declared-but-absent entry"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -284,19 +277,19 @@ write_manifest '[
 RULEQ_OUTPUT="$(cd "$FIXTURE_REPO" && REPO_ROOT="$FIXTURE_REPO" EXT_DIR="$FIXTURE_EXT_DIR" bash "$DOCS_SCRIPT" --quiet 2>&1)"
 RULEQ_EXIT=$?
 if grep -qF "  FAIL: script file on disk NOT in provides.scripts: scripts/sync.sh" <<< "$RULEQ_OUTPUT"; then
-  pass "Rule Q (check-extension-docs.sh) emits the exact FAIL text for an unregistered script"
+  common_test_pass "Rule Q (check-extension-docs.sh) emits the exact FAIL text for an unregistered script"
 else
-  fail "Rule Q did not emit the expected FAIL text (output: $RULEQ_OUTPUT)"
+  common_test_fail "Rule Q did not emit the expected FAIL text (output: $RULEQ_OUTPUT)"
 fi
 if [[ "$RULEQ_EXIT" -ne 0 ]]; then
-  pass "Rule Q exits nonzero on the unregistered-script fixture"
+  common_test_pass "Rule Q exits nonzero on the unregistered-script fixture"
 else
-  fail "Rule Q exited 0 despite the unregistered-script fixture"
+  common_test_fail "Rule Q exited 0 despite the unregistered-script fixture"
 fi
 if grep -qF "repair: bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write" <<< "$RULEQ_OUTPUT"; then
-  pass "Rule Q's repair-pointer line is present alongside its FAIL line"
+  common_test_pass "Rule Q's repair-pointer line is present alongside its FAIL line"
 else
-  fail "Rule Q's repair-pointer line is missing from its output"
+  common_test_fail "Rule Q's repair-pointer line is missing from its output"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -308,21 +301,21 @@ REFUSAL_NEEDLE="must run from a deployed scripts/ tree"
 NOOVERRIDE_SYNC_OUTPUT="$(env -u REPO_ROOT -u EXT_DIR bash "$SYNC_SCRIPT" --check 2>&1)"
 NOOVERRIDE_SYNC_EXIT=$?
 if [[ "$NOOVERRIDE_SYNC_EXIT" -eq 0 ]]; then
-  pass "sync-manifest-scripts.sh --check exits 0 from the source store with no REPO_ROOT override"
+  common_test_pass "sync-manifest-scripts.sh --check exits 0 from the source store with no REPO_ROOT override"
 else
-  fail "sync-manifest-scripts.sh --check exited $NOOVERRIDE_SYNC_EXIT with no override (output: $NOOVERRIDE_SYNC_OUTPUT)"
+  common_test_fail "sync-manifest-scripts.sh --check exited $NOOVERRIDE_SYNC_EXIT with no override (output: $NOOVERRIDE_SYNC_OUTPUT)"
 fi
 if ! grep -qF "$REFUSAL_NEEDLE" <<< "$NOOVERRIDE_SYNC_OUTPUT"; then
-  pass "sync-manifest-scripts.sh emits no deploy-path refusal with no REPO_ROOT override"
+  common_test_pass "sync-manifest-scripts.sh emits no deploy-path refusal with no REPO_ROOT override"
 else
-  fail "sync-manifest-scripts.sh emitted the deploy-path refusal with no override (output: $NOOVERRIDE_SYNC_OUTPUT)"
+  common_test_fail "sync-manifest-scripts.sh emitted the deploy-path refusal with no override (output: $NOOVERRIDE_SYNC_OUTPUT)"
 fi
 
 NOOVERRIDE_DOCS_OUTPUT="$(env -u REPO_ROOT -u EXT_DIR bash "$DOCS_SCRIPT" --quiet 2>&1)"
 if ! grep -qF "$REFUSAL_NEEDLE" <<< "$NOOVERRIDE_DOCS_OUTPUT"; then
-  pass "check-extension-docs.sh emits no deploy-path refusal with no REPO_ROOT override"
+  common_test_pass "check-extension-docs.sh emits no deploy-path refusal with no REPO_ROOT override"
 else
-  fail "check-extension-docs.sh emitted the deploy-path refusal with no override (output: $NOOVERRIDE_DOCS_OUTPUT)"
+  common_test_fail "check-extension-docs.sh emitted the deploy-path refusal with no override (output: $NOOVERRIDE_DOCS_OUTPUT)"
 fi
 
 echo ""

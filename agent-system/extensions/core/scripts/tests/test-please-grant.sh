@@ -12,6 +12,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 PHOOK="$SCRIPT_DIR/../../hooks/please-grant.sh"
 GHOOK="$SCRIPT_DIR/../../hooks/guard-git-push.sh"
 LIB="$SCRIPT_DIR/../../scripts/lib/push-grant-lib.sh"
@@ -19,18 +20,13 @@ LIB="$SCRIPT_DIR/../../scripts/lib/push-grant-lib.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 for f in "$PHOOK" "$GHOOK" "$LIB"; do
   [ -f "$f" ] || { echo "ERROR: expected file at $f" >&2; exit 1; }
 done
 command -v jq >/dev/null 2>&1 || { echo "ERROR: jq required" >&2; exit 1; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 export PUSH_GRANT_KEY_PATH="${WORKDIR}/push-grant.key"
 export PUSH_GRANT_DIR="specs/.push-grant"
@@ -77,8 +73,8 @@ field_in() {
 # =====================================================================
 self_repo="$(make_fixture)"
 [ "$(git -C "$self_repo" rev-parse --abbrev-ref HEAD)" = "feature-x" ] \
-  && pass "fixture self-check: non-default branch confirmed" \
-  || fail "fixture self-check: expected feature-x"
+  && common_test_pass "fixture self-check: non-default branch confirmed" \
+  || common_test_fail "fixture self-check: expected feature-x"
 rm -rf "$self_repo"
 
 # =====================================================================
@@ -89,7 +85,7 @@ for prompt in "/please push origin feature-x" "/please gibberish nonsense" "unre
   ( cd "$repo" && jq -n --arg p "$prompt" '{prompt:$p}' | bash "$PHOOK" ) >/dev/null 2>&1
   code=$?
   rm -rf "$repo"
-  [ "$code" -eq 0 ] && pass "hook exit 0 for prompt: '$prompt'" || fail "hook exit 0 for prompt: '$prompt' -- got $code"
+  [ "$code" -eq 0 ] && common_test_pass "hook exit 0 for prompt: '$prompt'" || common_test_fail "hook exit 0 for prompt: '$prompt' -- got $code"
 done
 
 # =====================================================================
@@ -103,7 +99,7 @@ assert_mint_fields() {
   run_mint_in "$repo" "$prompt" >/dev/null
   n="$(grant_count_in "$repo")"
   if [ "$n" -ne 1 ]; then
-    fail "$label: expected exactly 1 grant, got $n"
+    common_test_fail "$label: expected exactly 1 grant, got $n"
     rm -rf "$repo"
     return
   fi
@@ -114,9 +110,9 @@ assert_mint_fields() {
   force="$(field_in "$grant_file" FORCE)"
   rm -rf "$repo"
   if [ "$action" = "$exp_action" ] && [ "$remote" = "$exp_remote" ] && [ "$ref" = "$exp_ref" ] && [ "$force" = "$exp_force" ]; then
-    pass "$label: minted exactly one grant with action=$action remote=$remote ref=$ref force=$force"
+    common_test_pass "$label: minted exactly one grant with action=$action remote=$remote ref=$ref force=$force"
   else
-    fail "$label: field mismatch -- expected action=$exp_action remote=$exp_remote ref=$exp_ref force=$exp_force, got action=$action remote=$remote ref=$ref force=$force"
+    common_test_fail "$label: field mismatch -- expected action=$exp_action remote=$exp_remote ref=$exp_ref force=$exp_force, got action=$action remote=$remote ref=$ref force=$force"
   fi
 }
 
@@ -133,13 +129,13 @@ out="$(run_mint_in "$repo" "/please do the push thing")"
 n="$(grant_count_in "$repo")"
 rm -rf "$repo"
 if [ "$n" -eq 0 ]; then
-  pass "ambiguous request: no grant minted"
+  common_test_pass "ambiguous request: no grant minted"
 else
-  fail "ambiguous request: expected 0 grants, got $n"
+  common_test_fail "ambiguous request: expected 0 grants, got $n"
 fi
 case "$out" in
-  *"could not parse"*"Accepted"*) pass "ambiguous request: stdout names the accepted grammar" ;;
-  *) fail "ambiguous request: expected a grammar refusal on stdout, got: $out" ;;
+  *"could not parse"*"Accepted"*) common_test_pass "ambiguous request: stdout names the accepted grammar" ;;
+  *) common_test_fail "ambiguous request: expected a grammar refusal on stdout, got: $out" ;;
 esac
 
 # =====================================================================
@@ -149,10 +145,10 @@ repo="$(make_fixture)"
 out="$(run_mint_in "$repo" "/please force push origin master")"
 n="$(grant_count_in "$repo")"
 rm -rf "$repo"
-[ "$n" -eq 0 ] && pass "categorically-excluded request: no grant minted" || fail "categorically-excluded request: expected 0 grants, got $n"
+[ "$n" -eq 0 ] && common_test_pass "categorically-excluded request: no grant minted" || common_test_fail "categorically-excluded request: expected 0 grants, got $n"
 case "$out" in
-  *"refused"*) pass "categorically-excluded request: stdout states the refusal" ;;
-  *) fail "categorically-excluded request: expected a refusal message, got: $out" ;;
+  *"refused"*) common_test_pass "categorically-excluded request: stdout states the refusal" ;;
+  *) common_test_fail "categorically-excluded request: expected a refusal message, got: $out" ;;
 esac
 
 # =====================================================================
@@ -162,8 +158,8 @@ repo="$(make_fixture)"
 out="$(run_mint_in "$repo" "what is git push")"
 n="$(grant_count_in "$repo")"
 rm -rf "$repo"
-[ "$n" -eq 0 ] && pass "unrelated prompt: no grant minted" || fail "unrelated prompt: expected 0 grants, got $n"
-[ "$out" = "{}" ] && pass "unrelated prompt: hook produced no extra stdout" || fail "unrelated prompt: expected bare '{}', got: $out"
+[ "$n" -eq 0 ] && common_test_pass "unrelated prompt: no grant minted" || common_test_fail "unrelated prompt: expected 0 grants, got $n"
+[ "$out" = "{}" ] && common_test_pass "unrelated prompt: hook produced no extra stdout" || common_test_fail "unrelated prompt: expected bare '{}', got: $out"
 
 # =====================================================================
 # Agent-relay wrapper never matches the prefix (regression guard for the Phase 1 finding)
@@ -175,7 +171,7 @@ wrapped='<agent-message from="some-agent">
 out="$(run_mint_in "$repo" "$wrapped")"
 n="$(grant_count_in "$repo")"
 rm -rf "$repo"
-[ "$n" -eq 0 ] && pass "agent-relay-wrapped text: no grant minted (startswith-anchored match holds)" || fail "agent-relay-wrapped text: expected 0 grants, got $n"
+[ "$n" -eq 0 ] && common_test_pass "agent-relay-wrapped text: no grant minted (startswith-anchored match holds)" || common_test_fail "agent-relay-wrapped text: expected 0 grants, got $n"
 
 # =====================================================================
 # Mint-source cases: /merge, /tag, /pr mint from repo state
@@ -189,7 +185,7 @@ run_mint_in "$repo" "/merge" >/dev/null
 grant_file="$(grant_files_in "$repo" | head -n1)"
 mint_source="$(field_in "$grant_file" MINT_SOURCE)"
 rm -rf "$repo"
-[ "$mint_source" = "merge" ] && pass "mint-source: /merge grant's MINT_SOURCE=merge" || fail "mint-source: expected MINT_SOURCE=merge, got $mint_source"
+[ "$mint_source" = "merge" ] && common_test_pass "mint-source: /merge grant's MINT_SOURCE=merge" || common_test_fail "mint-source: expected MINT_SOURCE=merge, got $mint_source"
 
 # =====================================================================
 # At-most-one-live-grant: two mints leave exactly one grant file
@@ -199,7 +195,7 @@ run_mint_in "$repo" "/please push origin feature-x" >/dev/null
 run_mint_in "$repo" "/please push origin feature-x" >/dev/null
 n="$(grant_count_in "$repo")"
 rm -rf "$repo"
-[ "$n" -eq 1 ] && pass "at-most-one-live-grant: two mints leave exactly 1 grant file" || fail "at-most-one-live-grant: expected 1, got $n"
+[ "$n" -eq 1 ] && common_test_pass "at-most-one-live-grant: two mints leave exactly 1 grant file" || common_test_fail "at-most-one-live-grant: expected 1, got $n"
 
 # =====================================================================
 # Audit case: a mint appends exactly one push_grant_issued line with remote/ref/sha/force
@@ -227,9 +223,9 @@ before_specs_status="$(cd "$repo" && git status --porcelain -- specs 2>/dev/null
 ( cd "$repo" && jq -n --arg p "/please push origin feature-x" '{prompt:$p}' | bash .claude/hooks/please-grant.sh ) >/dev/null 2>&1
 after_specs_status="$(cd "$repo" && git status --porcelain -- specs 2>/dev/null)"
 if [ "$before_specs_status" = "$after_specs_status" ]; then
-  pass "audit: mint leaves specs/ git status unchanged (no synchronous events.jsonl dirt)"
+  common_test_pass "audit: mint leaves specs/ git status unchanged (no synchronous events.jsonl dirt)"
 else
-  fail "audit: mint dirtied specs/ -- before=[$before_specs_status] after=[$after_specs_status]"
+  common_test_fail "audit: mint dirtied specs/ -- before=[$before_specs_status] after=[$after_specs_status]"
 fi
 # Drain the buffered record via the fixture's own deployed-shaped library copy (same copy
 # please-grant.sh's deployed-shaped hook sourced above), so pg_audit_flush resolves
@@ -239,9 +235,9 @@ events_line="$(tail -n1 "${repo}/specs/events.jsonl" 2>/dev/null)"
 rm -rf "$repo"
 case "$events_line" in
   *'"push_grant_issued"'*'"remote":"origin"'*'"ref":"feature-x"'*'"sha":"'*'"force":"0"'*)
-    pass "audit: push_grant_issued event carries remote/ref/sha/force" ;;
+    common_test_pass "audit: push_grant_issued event carries remote/ref/sha/force" ;;
   *)
-    fail "audit: expected a push_grant_issued line with remote/ref/sha/force, got: $events_line" ;;
+    common_test_fail "audit: expected a push_grant_issued line with remote/ref/sha/force, got: $events_line" ;;
 esac
 
 # =====================================================================
@@ -273,14 +269,14 @@ events_after="$(cat "${repo}/specs/events.jsonl")"
 buffer_rel="$( ( cd "$repo" && bash -c 'source .claude/scripts/lib/push-grant-lib.sh && pg_audit_buffer_path' ) )"
 buffer_abs="${repo}/${buffer_rel}"
 if [ -z "$porcelain_after" ]; then
-  pass "regression: /tag mint against a committed specs/events.jsonl leaves git status --porcelain empty"
+  common_test_pass "regression: /tag mint against a committed specs/events.jsonl leaves git status --porcelain empty"
 else
-  fail "regression: /tag mint dirtied the tree: $porcelain_after"
+  common_test_fail "regression: /tag mint dirtied the tree: $porcelain_after"
 fi
 if [ "$events_before" = "$events_after" ] && [ -s "$buffer_abs" ]; then
-  pass "regression: buffered record lands in the pending buffer, specs/events.jsonl unchanged until flush"
+  common_test_pass "regression: buffered record lands in the pending buffer, specs/events.jsonl unchanged until flush"
 else
-  fail "regression: expected unchanged events.jsonl and a non-empty buffer, got events_before=[$events_before] events_after=[$events_after] buffer=[$buffer_abs]"
+  common_test_fail "regression: expected unchanged events.jsonl and a non-empty buffer, got events_before=[$events_before] events_after=[$events_after] buffer=[$buffer_abs]"
 fi
 rm -rf "$repo"
 
@@ -312,12 +308,12 @@ rm -rf "$repo"
 if [ "$revoke_remaining" -eq 0 ]; then
   case "$events_line" in
     *'"push_grant_issued"'*)
-      pass "audit guarantee: a minted-then-revoked grant's push_grant_issued record still reaches specs/events.jsonl after flush" ;;
+      common_test_pass "audit guarantee: a minted-then-revoked grant's push_grant_issued record still reaches specs/events.jsonl after flush" ;;
     *)
-      fail "audit guarantee: expected a push_grant_issued line after revoke+flush, got: $events_line" ;;
+      common_test_fail "audit guarantee: expected a push_grant_issued line after revoke+flush, got: $events_line" ;;
   esac
 else
-  fail "audit guarantee: expected the grant token to be gone after revoke, found $revoke_remaining remaining"
+  common_test_fail "audit guarantee: expected the grant token to be gone after revoke, found $revoke_remaining remaining"
 fi
 
 # =====================================================================
@@ -341,7 +337,7 @@ HMAC=0000000000000000000000000000000000000000000000000000000000000000
 EOF
 code="$( ( cd "$repo" && jq -n --arg c "git push origin feature-x" '{tool_name:"Bash", tool_input:{command:$c}}' | bash "$GHOOK" ) >/dev/null 2>/dev/null; echo $? )"
 rm -rf "$repo"
-[ "$code" -eq 2 ] && pass "forged grant: a syntactically perfect file with an invalid HMAC is refused" || fail "forged grant: expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "forged grant: a syntactically perfect file with an invalid HMAC is refused" || common_test_fail "forged grant: expected exit 2, got $code"
 
 # =====================================================================
 # Summary

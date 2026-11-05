@@ -25,10 +25,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 VALIDATOR_CANDIDATES=(
   "$SCRIPT_DIR/../validate-return-meta.sh"
@@ -52,13 +50,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ─── build_fixture_repo: a scratch repo root under $1, the validator + its lib copied in ───────
 # Modeled on test-skill-base-lifecycle.sh's build_fixture_repo() of the same name: a full,
@@ -98,9 +91,9 @@ assert_exit() {
   REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$f" "$@" >"$WORKDIR/${name}.out" 2>&1
   actual=$?
   if [[ "$actual" -eq "$expected" ]]; then
-    pass "$name: validator exits $expected as expected"
+    common_test_pass "$name: validator exits $expected as expected"
   else
-    fail "$name: validator exited $actual (expected $expected) -- see $WORKDIR/${name}.out"
+    common_test_fail "$name: validator exited $actual (expected $expected) -- see $WORKDIR/${name}.out"
   fi
 }
 
@@ -112,9 +105,9 @@ assert_output_contains() {
   local name="$1" substring="$2"
   local out_file="$WORKDIR/${name}.out"
   if grep -qF "$substring" "$out_file" 2>/dev/null; then
-    pass "$name: output contains '$substring'"
+    common_test_pass "$name: output contains '$substring'"
   else
-    fail "$name: output does NOT contain '$substring' -- see $out_file"
+    common_test_fail "$name: output does NOT contain '$substring' -- see $out_file"
   fi
 }
 
@@ -145,9 +138,9 @@ MISSING_FILE="$WORKDIR/does-not-exist.json"
 REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$MISSING_FILE" >"$WORKDIR/missing-file.out" 2>&1
 missing_exit=$?
 if [[ "$missing_exit" -eq 3 ]]; then
-  pass "missing-file: validator exits 3 as expected"
+  common_test_pass "missing-file: validator exits 3 as expected"
 else
-  fail "missing-file: validator exited $missing_exit (expected 3) -- see $WORKDIR/missing-file.out"
+  common_test_fail "missing-file: validator exited $missing_exit (expected 3) -- see $WORKDIR/missing-file.out"
 fi
 
 # =====================================================================
@@ -225,17 +218,17 @@ printf '%s' "{
 REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$FIX_FILE" >"$WORKDIR/fix-before.out" 2>&1
 before_exit=$?
 if [[ "$before_exit" -eq 1 ]]; then
-  pass "fix-roundtrip: pre-fix file correctly FAILS (exit 1)"
+  common_test_pass "fix-roundtrip: pre-fix file correctly FAILS (exit 1)"
 else
-  fail "fix-roundtrip: pre-fix file exited $before_exit (expected 1) -- see $WORKDIR/fix-before.out"
+  common_test_fail "fix-roundtrip: pre-fix file exited $before_exit (expected 1) -- see $WORKDIR/fix-before.out"
 fi
 
 REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$FIX_FILE" --fix >"$WORKDIR/fix-apply.out" 2>&1
 fix_apply_exit=$?
 if [[ "$fix_apply_exit" -eq 0 ]]; then
-  pass "fix-roundtrip: --fix run itself exits 0 (post-repair re-validation passes)"
+  common_test_pass "fix-roundtrip: --fix run itself exits 0 (post-repair re-validation passes)"
 else
-  fail "fix-roundtrip: --fix run exited $fix_apply_exit (expected 0) -- see $WORKDIR/fix-apply.out"
+  common_test_fail "fix-roundtrip: --fix run exited $fix_apply_exit (expected 0) -- see $WORKDIR/fix-apply.out"
 fi
 
 # Independently re-validate the now-repaired file without --fix, to confirm the repair persisted
@@ -243,15 +236,15 @@ fi
 REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$FIX_FILE" >"$WORKDIR/fix-after.out" 2>&1
 after_exit=$?
 if [[ "$after_exit" -eq 0 ]]; then
-  pass "fix-roundtrip: repaired file independently re-validates as PASS (exit 0)"
+  common_test_pass "fix-roundtrip: repaired file independently re-validates as PASS (exit 0)"
 else
-  fail "fix-roundtrip: repaired file exited $after_exit on independent re-validation (expected 0) -- see $WORKDIR/fix-after.out"
+  common_test_fail "fix-roundtrip: repaired file exited $after_exit on independent re-validation (expected 0) -- see $WORKDIR/fix-after.out"
 fi
 
 if ! grep -q '"type"' "$FIX_FILE" || grep -q '\["'"$EXISTING_PATH"'"\]' "$FIX_FILE"; then
-  fail "fix-roundtrip: on-disk file does not show the promoted object shape"
+  common_test_fail "fix-roundtrip: on-disk file does not show the promoted object shape"
 else
-  pass "fix-roundtrip: on-disk file shows the promoted object shape"
+  common_test_pass "fix-roundtrip: on-disk file shows the promoted object shape"
 fi
 
 # =====================================================================
@@ -267,9 +260,9 @@ before_content="$(cat "$NOFIX_FILE")"
 REPO_ROOT="$FIXTURE_REPO" bash "$VALIDATOR" "$NOFIX_FILE" >/dev/null 2>&1
 after_content="$(cat "$NOFIX_FILE")"
 if [[ "$before_content" == "$after_content" ]]; then
-  pass "no-implicit-fix: file is byte-identical after a non---fix validation run"
+  common_test_pass "no-implicit-fix: file is byte-identical after a non---fix validation run"
 else
-  fail "no-implicit-fix: file was modified by a validation run that did not pass --fix"
+  common_test_fail "no-implicit-fix: file was modified by a validation run that did not pass --fix"
 fi
 
 # =====================================================================
@@ -324,7 +317,7 @@ assert_exit "partial-progress-absent" 0 "{
 # =====================================================================
 # Summary
 # =====================================================================
-info "Validator resolved to: $VALIDATOR"
+common_test_info "Validator resolved to: $VALIDATOR"
 echo ""
 echo "========================================"
 echo "test-validate-return-meta.sh Summary"

@@ -33,6 +33,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 SRC_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 RED='\033[0;31m'
@@ -43,9 +44,6 @@ NC='\033[0m'
 PASSED=0
 FAILED=0
 
-pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
-fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }
-info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
 
 if [ ! -f "$SRC_DIR/task-lock.sh" ] || [ ! -f "$SRC_DIR/deploy-root-guard.sh" ] \
     || [ ! -f "$SRC_DIR/lib/common.sh" ] || [ ! -f "$SRC_DIR/lib/task-lookup-lib.sh" ] \
@@ -130,14 +128,14 @@ cat > "$TMPROOT/specs/state.json" << EOF
 }
 EOF
 
-info "Fixture built at $TMPROOT (own pid=$OWN_PID, dead pid probe resolved to $DEAD_PID)"
+common_test_info "Fixture built at $TMPROOT (own pid=$OWN_PID, dead pid probe resolved to $DEAD_PID)"
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 1: stale heartbeat (33 min, > TASK_LOCK_STALE_MIN=30) + registered session with a LIVE
 # pid + fresh-enough registry heartbeat (33 min, < SESSION_REGISTRY_REAP_MIN=240) --
 # session_liveness() must report pid-alive, and cmd_check must report held-live, exit 1.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 1: stale-but-pid-alive -> held-live, exit 1 ==="
+common_test_info "=== Case 1: stale-but-pid-alive -> held-live, exit 1 ==="
 LOCK_DIR_1="$TMPROOT/specs/701_pid_alive_case/.lock"
 write_holder_fixture "$LOCK_DIR_1" 701 "sess_case1" 33
 write_session_fixture "$SESSIONS_DIR" "sess_case1" "$OWN_PID" "[701]" "[]" 33
@@ -145,56 +143,56 @@ write_session_fixture "$SESSIONS_DIR" "sess_case1" "$OWN_PID" "[701]" "[]" 33
 out1=$("$TL" check 701 2>&1); rc1=$?
 
 if [ "$rc1" -eq 1 ]; then
-  pass "(1a) exit code 1 (same code held-fresh already uses: 'a live session may be working')"
+  common_test_pass "(1a) exit code 1 (same code held-fresh already uses: 'a live session may be working')"
 else
-  fail "(1a) exit code was $rc1, expected 1"
+  common_test_fail "(1a) exit code was $rc1, expected 1"
 fi
 if [[ "$out1" == held-live* ]]; then
-  pass "(1b) output line uses the held-live prefix"
+  common_test_pass "(1b) output line uses the held-live prefix"
 else
-  fail "(1b) output did not start with held-live: $out1"
+  common_test_fail "(1b) output did not start with held-live: $out1"
 fi
 if [[ "$out1" == *"liveness_reason=pid-alive"* ]]; then
-  pass "(1c) output carries liveness_reason=pid-alive"
+  common_test_pass "(1c) output carries liveness_reason=pid-alive"
 else
-  fail "(1c) output missing liveness_reason=pid-alive: $out1"
+  common_test_fail "(1c) output missing liveness_reason=pid-alive: $out1"
 fi
 if [[ "$out1" == *"heartbeat_age_min=33"* && "$out1" == *"threshold_min=30"* ]]; then
-  pass "(1d) output preserves heartbeat_age_min/threshold_min fields, matching the pre-existing shape"
+  common_test_pass "(1d) output preserves heartbeat_age_min/threshold_min fields, matching the pre-existing shape"
 else
-  fail "(1d) output missing expected age/threshold fields: $out1"
+  common_test_fail "(1d) output missing expected age/threshold fields: $out1"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 2: stale heartbeat, but NO session-registry entry at all for the holder's session --
 # must fall back to the pre-existing held-stale line, byte-for-byte, exit 2.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 2: missing registry entry -> held-stale (unchanged), exit 2 ==="
+common_test_info "=== Case 2: missing registry entry -> held-stale (unchanged), exit 2 ==="
 LOCK_DIR_2="$TMPROOT/specs/702_no_entry_case/.lock"
 write_holder_fixture "$LOCK_DIR_2" 702 "sess_case2_no_entry" 33
 # Deliberately: no specs/.sessions/sess_case2_no_entry.json written.
 
 out2=$("$TL" check 702 2>&1); rc2=$?
 if [ "$rc2" -eq 2 ] && [[ "$out2" == held-stale* ]] && [[ "$out2" != *"liveness_reason"* ]]; then
-  pass "(2) missing registry entry falls back to held-stale/exit 2, no liveness_reason field"
+  common_test_pass "(2) missing registry entry falls back to held-stale/exit 2, no liveness_reason field"
 else
-  fail "(2) expected held-stale/exit 2 with no liveness_reason, got exit=$rc2 out=[$out2]"
+  common_test_fail "(2) expected held-stale/exit 2 with no liveness_reason, got exit=$rc2 out=[$out2]"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 3: stale heartbeat + a CORRUPT registry entry (unparseable JSON) -- session_liveness()
 # reports "corrupt" first, short-circuiting every other check -- must fall back to held-stale.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 3: corrupt registry entry -> held-stale (unchanged), exit 2 ==="
+common_test_info "=== Case 3: corrupt registry entry -> held-stale (unchanged), exit 2 ==="
 LOCK_DIR_3="$TMPROOT/specs/703_corrupt_entry_case/.lock"
 write_holder_fixture "$LOCK_DIR_3" 703 "sess_case3_corrupt" 33
 echo "not valid json" > "$SESSIONS_DIR/sess_case3_corrupt.json"
 
 out3=$("$TL" check 703 2>&1); rc3=$?
 if [ "$rc3" -eq 2 ] && [[ "$out3" == held-stale* ]] && [[ "$out3" != *"liveness_reason"* ]]; then
-  pass "(3) corrupt registry entry falls back to held-stale/exit 2, no liveness_reason field"
+  common_test_pass "(3) corrupt registry entry falls back to held-stale/exit 2, no liveness_reason field"
 else
-  fail "(3) expected held-stale/exit 2 with no liveness_reason, got exit=$rc3 out=[$out3]"
+  common_test_fail "(3) expected held-stale/exit 2 with no liveness_reason, got exit=$rc3 out=[$out3]"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -202,31 +200,31 @@ fi
 # SESSION_REGISTRY_DEAD_PID_MIN (10 min default) -- session_liveness() reports dead-pid, which
 # is NOT pid-alive -- must fall back to held-stale.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 4: dead-pid registry entry -> held-stale (unchanged), exit 2 ==="
+common_test_info "=== Case 4: dead-pid registry entry -> held-stale (unchanged), exit 2 ==="
 LOCK_DIR_4="$TMPROOT/specs/704_dead_pid_case/.lock"
 write_holder_fixture "$LOCK_DIR_4" 704 "sess_case4_deadpid" 33
 write_session_fixture "$SESSIONS_DIR" "sess_case4_deadpid" "$DEAD_PID" "[704]" "[]" 33
 
 out4=$("$TL" check 704 2>&1); rc4=$?
 if [ "$rc4" -eq 2 ] && [[ "$out4" == held-stale* ]] && [[ "$out4" != *"liveness_reason"* ]]; then
-  pass "(4) dead-pid registry entry falls back to held-stale/exit 2, no liveness_reason field"
+  common_test_pass "(4) dead-pid registry entry falls back to held-stale/exit 2, no liveness_reason field"
 else
-  fail "(4) expected held-stale/exit 2 with no liveness_reason, got exit=$rc4 out=[$out4]"
+  common_test_fail "(4) expected held-stale/exit 2 with no liveness_reason, got exit=$rc4 out=[$out4]"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 5: never_heartbeated fingerprint still works unchanged on a fresh (non-stale) lock --
 # proves the additive held-live branch did not disturb the pre-existing held-fresh path at all.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 5: held-fresh path completely unaffected by the held-live addition ==="
+common_test_info "=== Case 5: held-fresh path completely unaffected by the held-live addition ==="
 LOCK_DIR_5="$TMPROOT/specs/705_fresh_unaffected/.lock"
 mkdir -p "$TMPROOT/specs/705_fresh_unaffected"
 write_holder_fixture "$LOCK_DIR_5" 705 "sess_case5_fresh" 0
 out5=$("$TL" check 705 2>&1); rc5=$?
 if [ "$rc5" -eq 1 ] && [[ "$out5" == held-fresh* ]]; then
-  pass "(5) a fresh lock still reports held-fresh/exit 1, unchanged"
+  common_test_pass "(5) a fresh lock still reports held-fresh/exit 1, unchanged"
 else
-  fail "(5) expected held-fresh/exit 1, got exit=$rc5 out=[$out5]"
+  common_test_fail "(5) expected held-fresh/exit 1, got exit=$rc5 out=[$out5]"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -234,7 +232,7 @@ fi
 # A foreign task's lock is stale, but its REGISTERED session resolves to pid-alive -- acquiring
 # an overlapping task must ABORT (exit 1), never WARN-and-proceed.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 6: two-live-sessions overlap -> ABORT, exit 1 ==="
+common_test_info "=== Case 6: two-live-sessions overlap -> ABORT, exit 1 ==="
 jq '.active_projects += [
   {"project_number": 810, "project_name": "foreign_live_task", "status": "implementing", "task_type": "general", "file_scope": ["specs/shared/a.md"]},
   {"project_number": 811, "project_name": "acquiring_task_live", "status": "implementing", "task_type": "general", "file_scope": ["specs/shared/a.md"]}
@@ -253,31 +251,31 @@ write_session_fixture "$SESSIONS_DIR" "sess_case6_foreign" "$OWN_PID" "[999]" "[
 acquire_out6=$("$TL" acquire 811 implement "sess_case6_acquirer" "/implement 811" 2>&1); rc6=$?
 
 if [ "$rc6" -eq 1 ]; then
-  pass "(6a) cmd_acquire ABORTs (exit 1) on an overlapping stale-but-pid-alive foreign session"
+  common_test_pass "(6a) cmd_acquire ABORTs (exit 1) on an overlapping stale-but-pid-alive foreign session"
 else
-  fail "(6a) expected exit 1 (ABORT), got $rc6: $acquire_out6"
+  common_test_fail "(6a) expected exit 1 (ABORT), got $rc6: $acquire_out6"
 fi
 if [[ "$acquire_out6" == *"ABORT:"* && "$acquire_out6" == *"liveness_reason=pid-alive"* ]]; then
-  pass "(6b) ABORT message names liveness_reason=pid-alive"
+  common_test_pass "(6b) ABORT message names liveness_reason=pid-alive"
 else
-  fail "(6b) expected ABORT message with liveness_reason=pid-alive, got: $acquire_out6"
+  common_test_fail "(6b) expected ABORT message with liveness_reason=pid-alive, got: $acquire_out6"
 fi
 if [ ! -d "$TMPROOT/specs/811_acquiring_task_live/.lock" ]; then
-  pass "(6c) no lock was created for the acquiring task (ABORT, not a silent proceed)"
+  common_test_pass "(6c) no lock was created for the acquiring task (ABORT, not a silent proceed)"
 else
-  fail "(6c) a lock was created for project 811 despite the ABORT"
+  common_test_fail "(6c) a lock was created for project 811 despite the ABORT"
 fi
 if [ -d "$LOCK_DIR_6" ]; then
-  pass "(6d) the foreign lock itself was never mutated or removed"
+  common_test_pass "(6d) the foreign lock itself was never mutated or removed"
 else
-  fail "(6d) the foreign lock at $LOCK_DIR_6 was unexpectedly removed"
+  common_test_fail "(6d) the foreign lock at $LOCK_DIR_6 was unexpectedly removed"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════
 # Case 7: mirror of Case 6 with a DEAD-pid foreign session -- must still WARN-and-proceed
 # (exit 0), proving the escalation is scoped exactly to the pid-alive verdict.
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 7: dead-pid foreign session mirror -> WARN-and-proceed, exit 0 ==="
+common_test_info "=== Case 7: dead-pid foreign session mirror -> WARN-and-proceed, exit 0 ==="
 jq '.active_projects += [
   {"project_number": 812, "project_name": "foreign_dead_task", "status": "implementing", "task_type": "general", "file_scope": ["specs/shared/b.md"]},
   {"project_number": 813, "project_name": "acquiring_task_dead", "status": "implementing", "task_type": "general", "file_scope": ["specs/shared/b.md"]}
@@ -290,19 +288,19 @@ write_session_fixture "$SESSIONS_DIR" "sess_case7_foreign" "$DEAD_PID" "[999]" "
 acquire_out7=$("$TL" acquire 813 implement "sess_case7_acquirer" "/implement 813" 2>&1); rc7=$?
 
 if [ "$rc7" -eq 0 ]; then
-  pass "(7a) cmd_acquire still WARNs-and-proceeds (exit 0) against a dead-pid foreign session"
+  common_test_pass "(7a) cmd_acquire still WARNs-and-proceeds (exit 0) against a dead-pid foreign session"
 else
-  fail "(7a) expected exit 0 (warn-and-proceed), got $rc7: $acquire_out7"
+  common_test_fail "(7a) expected exit 0 (warn-and-proceed), got $rc7: $acquire_out7"
 fi
 if [[ "$acquire_out7" == *"WARN:"* ]] && [[ "$acquire_out7" != *"liveness_reason=pid-alive"* ]]; then
-  pass "(7b) proceed message is the pre-existing WARN text, no liveness_reason=pid-alive"
+  common_test_pass "(7b) proceed message is the pre-existing WARN text, no liveness_reason=pid-alive"
 else
-  fail "(7b) expected plain WARN text without liveness_reason=pid-alive, got: $acquire_out7"
+  common_test_fail "(7b) expected plain WARN text without liveness_reason=pid-alive, got: $acquire_out7"
 fi
 if [ -d "$TMPROOT/specs/813_acquiring_task_dead/.lock" ]; then
-  pass "(7c) the acquiring task's own lock WAS created (proceed, not aborted)"
+  common_test_pass "(7c) the acquiring task's own lock WAS created (proceed, not aborted)"
 else
-  fail "(7c) expected project 813's lock to be created on proceed, but it was not"
+  common_test_fail "(7c) expected project 813's lock to be created on proceed, but it was not"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════

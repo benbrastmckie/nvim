@@ -21,10 +21,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 GUARD_CANDIDATES=(
   "$SCRIPT_DIR/../deploy-root-guard.sh"
@@ -48,12 +46,8 @@ GUARD_SCRIPT="$(cd "$(dirname "$GUARD_SCRIPT")" && pwd)/$(basename "$GUARD_SCRIP
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 REFUSAL_NEEDLE="must run from a deployed scripts/ tree"
 
@@ -67,14 +61,14 @@ cp "$GUARD_SCRIPT" "$DEPLOY_FIXTURE/deploy-root-guard.sh"
 OUT_A="$(bash -c '. "$1/deploy-root-guard.sh" || exit 1; echo "REPO_ROOT=[${REPO_ROOT:-}]"; exit 0' _ "$DEPLOY_FIXTURE" 2>&1)"
 RC_A=$?
 if [[ "$RC_A" -eq 0 ]]; then
-  pass "(a) deploy-tree-shaped directory: guard sources with status 0"
+  common_test_pass "(a) deploy-tree-shaped directory: guard sources with status 0"
 else
-  fail "(a) deploy-tree-shaped directory: expected status 0, got $RC_A (output: $OUT_A)"
+  common_test_fail "(a) deploy-tree-shaped directory: expected status 0, got $RC_A (output: $OUT_A)"
 fi
 if [[ "$OUT_A" == "REPO_ROOT=[]" ]]; then
-  pass "(a) deploy-tree-shaped directory: REPO_ROOT left untouched"
+  common_test_pass "(a) deploy-tree-shaped directory: REPO_ROOT left untouched"
 else
-  fail "(a) deploy-tree-shaped directory: REPO_ROOT was mutated (output: $OUT_A)"
+  common_test_fail "(a) deploy-tree-shaped directory: REPO_ROOT was mutated (output: $OUT_A)"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -87,14 +81,14 @@ cp "$GUARD_SCRIPT" "$NONDEPLOY_FIXTURE/deploy-root-guard.sh"
 OUT_B="$(bash -c 'unset DEPLOY_ROOT_GUARD_SELF_CORRECT; . "$1/deploy-root-guard.sh" || exit 1; echo "should not print"' _ "$NONDEPLOY_FIXTURE" 2>&1)"
 RC_B=$?
 if [[ "$RC_B" -eq 1 ]]; then
-  pass "(b) non-deploy directory, no opt-in: exits 1"
+  common_test_pass "(b) non-deploy directory, no opt-in: exits 1"
 else
-  fail "(b) non-deploy directory, no opt-in: expected exit 1, got $RC_B"
+  common_test_fail "(b) non-deploy directory, no opt-in: expected exit 1, got $RC_B"
 fi
 if grep -qF "$REFUSAL_NEEDLE" <<< "$OUT_B"; then
-  pass "(b) non-deploy directory, no opt-in: emits the deploy-path refusal message"
+  common_test_pass "(b) non-deploy directory, no opt-in: emits the deploy-path refusal message"
 else
-  fail "(b) non-deploy directory, no opt-in: refusal message missing (output: $OUT_B)"
+  common_test_fail "(b) non-deploy directory, no opt-in: refusal message missing (output: $OUT_B)"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -108,15 +102,15 @@ cp "$GUARD_SCRIPT" "$GOODROOT_FIXTURE/scripts/deploy-root-guard.sh"
 OUT_C="$(bash -c 'DEPLOY_ROOT_GUARD_SELF_CORRECT=1; . "$1/scripts/deploy-root-guard.sh" || exit 1; echo "REPO_ROOT=[${REPO_ROOT:-}] OPT_IN=[${DEPLOY_ROOT_GUARD_SELF_CORRECT:-unset}]"; exit 0' _ "$GOODROOT_FIXTURE" 2>&1)"
 RC_C=$?
 if [[ "$RC_C" -eq 0 ]]; then
-  pass "(c) opt-in + valid root: guard sources with status 0"
+  common_test_pass "(c) opt-in + valid root: guard sources with status 0"
 else
-  fail "(c) opt-in + valid root: expected status 0, got $RC_C (output: $OUT_C)"
+  common_test_fail "(c) opt-in + valid root: expected status 0, got $RC_C (output: $OUT_C)"
 fi
 EXPECTED_C="REPO_ROOT=[$(cd "$GOODROOT_FIXTURE" && pwd)] OPT_IN=[unset]"
 if [[ "$OUT_C" == "$EXPECTED_C" ]]; then
-  pass "(c) opt-in + valid root: REPO_ROOT set to the git toplevel and opt-in variable unset"
+  common_test_pass "(c) opt-in + valid root: REPO_ROOT set to the git toplevel and opt-in variable unset"
 else
-  fail "(c) opt-in + valid root: expected '$EXPECTED_C', got '$OUT_C'"
+  common_test_fail "(c) opt-in + valid root: expected '$EXPECTED_C', got '$OUT_C'"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -130,14 +124,14 @@ cp "$GUARD_SCRIPT" "$BADROOT_FIXTURE/scripts/deploy-root-guard.sh"
 OUT_D="$(bash -c 'DEPLOY_ROOT_GUARD_SELF_CORRECT=1; . "$1/scripts/deploy-root-guard.sh" || exit 1; echo "should not print"' _ "$BADROOT_FIXTURE" 2>&1)"
 RC_D=$?
 if [[ "$RC_D" -eq 1 ]]; then
-  pass "(d) opt-in + git root without agent-system/extensions: exits 1"
+  common_test_pass "(d) opt-in + git root without agent-system/extensions: exits 1"
 else
-  fail "(d) opt-in + git root without agent-system/extensions: expected exit 1, got $RC_D"
+  common_test_fail "(d) opt-in + git root without agent-system/extensions: expected exit 1, got $RC_D"
 fi
 if grep -qF "$REFUSAL_NEEDLE" <<< "$OUT_D"; then
-  pass "(d) opt-in + git root without agent-system/extensions: refusal unchanged"
+  common_test_pass "(d) opt-in + git root without agent-system/extensions: refusal unchanged"
 else
-  fail "(d) opt-in + git root without agent-system/extensions: refusal message missing (output: $OUT_D)"
+  common_test_fail "(d) opt-in + git root without agent-system/extensions: refusal message missing (output: $OUT_D)"
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -150,14 +144,14 @@ cp "$GUARD_SCRIPT" "$NONGIT_FIXTURE/deploy-root-guard.sh"
 OUT_E="$(bash -c 'DEPLOY_ROOT_GUARD_SELF_CORRECT=1; . "$1/deploy-root-guard.sh" || exit 1; echo "should not print"' _ "$NONGIT_FIXTURE" 2>&1)"
 RC_E=$?
 if [[ "$RC_E" -eq 1 ]]; then
-  pass "(e) opt-in inside non-git directory: exits 1"
+  common_test_pass "(e) opt-in inside non-git directory: exits 1"
 else
-  fail "(e) opt-in inside non-git directory: expected exit 1, got $RC_E"
+  common_test_fail "(e) opt-in inside non-git directory: expected exit 1, got $RC_E"
 fi
 if grep -qF "$REFUSAL_NEEDLE" <<< "$OUT_E"; then
-  pass "(e) opt-in inside non-git directory: refusal unchanged"
+  common_test_pass "(e) opt-in inside non-git directory: refusal unchanged"
 else
-  fail "(e) opt-in inside non-git directory: refusal message missing (output: $OUT_E)"
+  common_test_fail "(e) opt-in inside non-git directory: refusal message missing (output: $OUT_E)"
 fi
 
 echo ""

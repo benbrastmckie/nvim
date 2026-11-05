@@ -57,6 +57,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="${REPO_ROOT:-}"
 if [ -z "$REPO_ROOT" ]; then
   REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
@@ -74,9 +75,6 @@ ORCH_CYCLE_PLAN="$EXT_ROOT/core/scripts/orchestrate-cycle-plan.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 for f in "$LIB_SRC" "$ROUTE_AGENT_SRC" "$ORCH_SKILL"; do
   if [ ! -f "$f" ]; then
@@ -109,7 +107,7 @@ while IFS= read -r manifest; do
         [ -n "$agent_file" ] && found=true && break
       done < <(find "$EXT_ROOT" -maxdepth 3 -path "*/agents/${agent}.md" -type f 2>/dev/null)
       if [ "$found" != true ]; then
-        fail "Assert 2: $block.$op.$tt = $agent (manifest: ${manifest#"$EXT_ROOT"/}) names no existing agent file"
+        common_test_fail "Assert 2: $block.$op.$tt = $agent (manifest: ${manifest#"$EXT_ROOT"/}) names no existing agent file"
         assert2_failures=$((assert2_failures + 1))
       fi
     done < <(jq -r --arg b "$block" \
@@ -119,7 +117,7 @@ while IFS= read -r manifest; do
 done < <(find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort)
 
 if [ "$assert2_failures" -eq 0 ]; then
-  pass "Assert 2: all $assert2_checked routing_agents/routing_agents_hard declarations name an existing agent file"
+  common_test_pass "Assert 2: all $assert2_checked routing_agents/routing_agents_hard declarations name an existing agent file"
 fi
 
 # =====================================================================
@@ -131,21 +129,21 @@ echo "--- Assert 3: intra-file branch coverage ---"
 
 cycle_plan_calls=$(grep -c 'command-route-agent\.sh' "$ORCH_CYCLE_PLAN" 2>/dev/null || echo 0)
 if [ "$cycle_plan_calls" -ge 1 ]; then
-  pass "Assert 3 (structural): orchestrate-cycle-plan.sh ($cycle_plan_calls) invokes command-route-agent.sh (resolve_agent(), shared across research/plan/implement)"
+  common_test_pass "Assert 3 (structural): orchestrate-cycle-plan.sh ($cycle_plan_calls) invokes command-route-agent.sh (resolve_agent(), shared across research/plan/implement)"
 else
-  fail "Assert 3 (structural): expected >=1 command-route-agent.sh invocation in orchestrate-cycle-plan.sh, got $cycle_plan_calls"
+  common_test_fail "Assert 3 (structural): expected >=1 command-route-agent.sh invocation in orchestrate-cycle-plan.sh, got $cycle_plan_calls"
 fi
 
 if grep -qE 'case "\$TASK_TYPE"|sed .s/\^skill-' "$ORCH_CYCLE_PLAN" 2>/dev/null; then
-  fail "Assert 3 (structural): a case-table or sed-derivation pattern still exists in orchestrate-cycle-plan.sh"
+  common_test_fail "Assert 3 (structural): a case-table or sed-derivation pattern still exists in orchestrate-cycle-plan.sh"
 else
-  pass "Assert 3 (structural): no case-table or sed-derivation pattern remains in orchestrate-cycle-plan.sh"
+  common_test_pass "Assert 3 (structural): no case-table or sed-derivation pattern remains in orchestrate-cycle-plan.sh"
 fi
 
 if grep -qE 'case "\$TASK_TYPE"|sed .s/\^skill-' "$ORCH_SKILL" 2>/dev/null; then
-  fail "Assert 3 (structural): a case-table or sed-derivation pattern still exists in skill-orchestrate/SKILL.md"
+  common_test_fail "Assert 3 (structural): a case-table or sed-derivation pattern still exists in skill-orchestrate/SKILL.md"
 else
-  pass "Assert 3 (structural): no case-table or sed-derivation pattern remains in skill-orchestrate/SKILL.md"
+  common_test_pass "Assert 3 (structural): no case-table or sed-derivation pattern remains in skill-orchestrate/SKILL.md"
 fi
 
 # Branch-aware check (RETARGETED -- the four-move loop rewrite deleted both the single-task
@@ -157,9 +155,9 @@ fi
 # now expressed against a single site rather than two.
 for default_agent in "general-research-agent" "planner-agent" "general-implementation-agent"; do
   if grep -qF "$default_agent" "$ORCH_CYCLE_PLAN"; then
-    pass "Assert 3 (branch-aware): orchestrate-cycle-plan.sh resolve_agent() wires caller default $default_agent"
+    common_test_pass "Assert 3 (branch-aware): orchestrate-cycle-plan.sh resolve_agent() wires caller default $default_agent"
   else
-    fail "Assert 3 (branch-aware): orchestrate-cycle-plan.sh resolve_agent() missing caller default $default_agent"
+    common_test_fail "Assert 3 (branch-aware): orchestrate-cycle-plan.sh resolve_agent() missing caller default $default_agent"
   fi
 done
 
@@ -169,12 +167,12 @@ move3_start=$(grep -nF '### Move 3:' "$ORCH_SKILL" | head -1 | cut -d: -f1)
 if [ -n "${move2_start:-}" ] && [ -n "${move3_start:-}" ] && [ "$move2_start" -lt "$move3_start" ]; then
   move2_body="$(sed -n "${move2_start},$((move3_start - 1))p" "$ORCH_SKILL")"
   if grep -q '\.agent' <<< "$move2_body"; then
-    pass "Assert 3 (branch-aware): SKILL.md's single Move 2 dispatch site dispatches each row's resolved .agent field"
+    common_test_pass "Assert 3 (branch-aware): SKILL.md's single Move 2 dispatch site dispatches each row's resolved .agent field"
   else
-    fail "Assert 3 (branch-aware): SKILL.md's Move 2 dispatch site does NOT reference the row's resolved .agent field"
+    common_test_fail "Assert 3 (branch-aware): SKILL.md's Move 2 dispatch site does NOT reference the row's resolved .agent field"
   fi
 else
-  fail "Assert 3 (branch-aware): could not locate Move 2/Move 3 region boundaries in skill-orchestrate/SKILL.md (move2_start=${move2_start:-MISSING} move3_start=${move3_start:-MISSING})"
+  common_test_fail "Assert 3 (branch-aware): could not locate Move 2/Move 3 region boundaries in skill-orchestrate/SKILL.md (move2_start=${move2_start:-MISSING} move3_start=${move3_start:-MISSING})"
 fi
 
 # Semantic: for task types with NO routing_agents_hard entry anywhere, hard-mode resolution must
@@ -203,9 +201,9 @@ for tt in neovim nix; do
   )
   hard_via=$(echo "$hard_trace" | grep -o 'via=[a-zA-Z-]*' | tail -n 1 | cut -d= -f2)
   if [ "$hard_actual" = "$expected" ] && [ "$hard_via" = "hard-miss-standard-fallback" ]; then
-    pass "Assert 3 (semantic): $tt has no routing_agents_hard entry, hard-mode falls back to the standard block's own agent ($expected, via=hard-miss-standard-fallback), not the caller's generic hard default"
+    common_test_pass "Assert 3 (semantic): $tt has no routing_agents_hard entry, hard-mode falls back to the standard block's own agent ($expected, via=hard-miss-standard-fallback), not the caller's generic hard default"
   else
-    fail "Assert 3 (semantic): $tt hard-mode resolved '$hard_actual' (via=$hard_via), expected standard-fallback to '$expected' (via=hard-miss-standard-fallback)"
+    common_test_fail "Assert 3 (semantic): $tt hard-mode resolved '$hard_actual' (via=$hard_via), expected standard-fallback to '$expected' (via=hard-miss-standard-fallback)"
   fi
 done
 
@@ -216,9 +214,9 @@ _total_miss_actual=$(
     bash -c "source '$ROUTE_AGENT_SRC' 'research' 'zzz-unrouted-test-type' 'general-research-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
 )
 if [ "$_total_miss_actual" = "general-research-agent" ]; then
-  pass "Assert 3 (semantic): a never-declared task_type under hard mode still resolves the caller's default (general-research-agent) -- the true total-miss rung"
+  common_test_pass "Assert 3 (semantic): a never-declared task_type under hard mode still resolves the caller's default (general-research-agent) -- the true total-miss rung"
 else
-  fail "Assert 3 (semantic): never-declared task_type under hard mode resolved '$_total_miss_actual', expected caller default 'general-research-agent'"
+  common_test_fail "Assert 3 (semantic): never-declared task_type under hard mode resolved '$_total_miss_actual', expected caller default 'general-research-agent'"
 fi
 
 # lean4 DOES have a routing_agents_hard entry, and it must differ from the standard entry
@@ -232,9 +230,9 @@ lean_hard=$(
     bash -c "source '$ROUTE_AGENT_SRC' 'research' 'lean4' 'general-research-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
 )
 if [ "$lean_std" = "lean-research-agent" ] && [ "$lean_hard" = "lean-research-hard-agent" ] && [ "$lean_std" != "$lean_hard" ]; then
-  pass "Assert 3 (semantic): lean4 standard ($lean_std) and hard ($lean_hard) resolve to distinct, correctly-declared agents"
+  common_test_pass "Assert 3 (semantic): lean4 standard ($lean_std) and hard ($lean_hard) resolve to distinct, correctly-declared agents"
 else
-  fail "Assert 3 (semantic): lean4 standard='$lean_std' hard='$lean_hard' did not match expected lean-research-agent / lean-research-hard-agent"
+  common_test_fail "Assert 3 (semantic): lean4 standard='$lean_std' hard='$lean_hard' did not match expected lean-research-agent / lean-research-hard-agent"
 fi
 
 # =====================================================================
@@ -277,9 +275,9 @@ fixture_value="${fixture_result%%|*}"
 fixture_via="${fixture_result##*|}"
 
 if [ "$fixture_value" = "noncore-zzztest-agent" ] && [ "$fixture_via" = "noncore-exact" ]; then
-  pass "Assert 4: non-core manifest wins over core manifest for an identical (op, task_type) key (via=$fixture_via)"
+  common_test_pass "Assert 4: non-core manifest wins over core manifest for an identical (op, task_type) key (via=$fixture_via)"
 else
-  fail "Assert 4: expected non-core entry 'noncore-zzztest-agent' (via=noncore-exact) to win, got '$fixture_value' (via=$fixture_via)"
+  common_test_fail "Assert 4: expected non-core entry 'noncore-zzztest-agent' (via=noncore-exact) to win, got '$fixture_value' (via=$fixture_via)"
 fi
 
 # =====================================================================

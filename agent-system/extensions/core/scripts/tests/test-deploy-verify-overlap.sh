@@ -36,10 +36,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 if ! command -v nvim >/dev/null 2>&1; then
   echo "ERROR: nvim not found on PATH; cannot run the Lua module under test." >&2
@@ -49,9 +47,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
@@ -141,7 +136,7 @@ run_lua() {
 # Round 1 (clean baseline): Assertion A (overlap clean), Assertion C's clean half, and
 # Assertion D's clean half, all against the untouched scratch tree set up above.
 # =====================================================================
-info "Round 1: clean baseline (Assertions A, C-clean, D-clean)"
+common_test_info "Round 1: clean baseline (Assertions A, C-clean, D-clean)"
 round1_output="$(run_lua "
 dump('A_CTX_A', verify_mod.verify_manifest_category('context', ext_a.manifest, ext_a.source_dir, TARGET, {}, { ownership = map, extension_name = 'ext-a' }))
 dump('A_CTX_B', verify_mod.verify_manifest_category('context', ext_b.manifest, ext_b.source_dir, TARGET, {}, { ownership = map, extension_name = 'ext-b' }))
@@ -160,23 +155,23 @@ fi
 # hash_mismatch. ext-b sees zero hash_mismatch, zero overridden (it owns everything it declares).
 if echo "$round1_output" | grep -q 'A_CTX_A hash_mismatch=0 overridden=1' \
   && echo "$round1_output" | grep -qF 'A_CTX_A OVERRIDDEN context/overlap.md owner=ext-b'; then
-  pass "Assertion A: ext-a's overlapping declaration of context/overlap.md reports zero hash_mismatch and exactly one overridden entry naming ext-b"
+  common_test_pass "Assertion A: ext-a's overlapping declaration of context/overlap.md reports zero hash_mismatch and exactly one overridden entry naming ext-b"
 else
-  fail "Assertion A: unexpected ext-a context result (expected hash_mismatch=0, one overridden entry naming ext-b):"
+  common_test_fail "Assertion A: unexpected ext-a context result (expected hash_mismatch=0, one overridden entry naming ext-b):"
   echo "$round1_output" | grep 'A_CTX_A' | sed 's/^/    /'
 fi
 if echo "$round1_output" | grep -q 'A_CTX_B hash_mismatch=0 overridden=0'; then
-  pass "Assertion A: ext-b (the resolved owner) reports zero hash_mismatch and zero overridden for context/overlap.md"
+  common_test_pass "Assertion A: ext-b (the resolved owner) reports zero hash_mismatch and zero overridden for context/overlap.md"
 else
-  fail "Assertion A: unexpected ext-b context result (expected hash_mismatch=0, overridden=0):"
+  common_test_fail "Assertion A: unexpected ext-b context result (expected hash_mismatch=0, overridden=0):"
   echo "$round1_output" | grep 'A_CTX_B' | sed 's/^/    /'
 fi
 
 # Assertion C (clean half): single-owner templates/solo.md, matching deploy, zero findings.
 if echo "$round1_output" | grep -q 'C_TPL_A hash_mismatch=0 overridden=0'; then
-  pass "Assertion C (clean): single-owner templates/solo.md with a matching deploy reports zero findings"
+  common_test_pass "Assertion C (clean): single-owner templates/solo.md with a matching deploy reports zero findings"
 else
-  fail "Assertion C (clean): unexpected result (expected hash_mismatch=0, overridden=0):"
+  common_test_fail "Assertion C (clean): unexpected result (expected hash_mismatch=0, overridden=0):"
   echo "$round1_output" | grep 'C_TPL_A' | sed 's/^/    /'
 fi
 
@@ -186,15 +181,15 @@ fi
 if echo "$round1_output" | grep -q 'D_DOCS_A hash_mismatch=0 overridden=1' \
   && echo "$round1_output" | grep -qF 'D_DOCS_A OVERRIDDEN docs/shared-dir/file1.md owner=ext-b' \
   && ! echo "$round1_output" | grep -qF 'D_DOCS_A OVERRIDDEN docs/shared-dir/file2.md'; then
-  pass "Assertion D (clean): ext-a's docs/shared-dir/file2.md (ext-b does not ship it) hash-compares cleanly and is never in overridden; file1.md is overridden naming ext-b"
+  common_test_pass "Assertion D (clean): ext-a's docs/shared-dir/file2.md (ext-b does not ship it) hash-compares cleanly and is never in overridden; file1.md is overridden naming ext-b"
 else
-  fail "Assertion D (clean): unexpected ext-a docs result:"
+  common_test_fail "Assertion D (clean): unexpected ext-a docs result:"
   echo "$round1_output" | grep 'D_DOCS_A' | sed 's/^/    /'
 fi
 if echo "$round1_output" | grep -q 'D_DOCS_B hash_mismatch=0 overridden=0'; then
-  pass "Assertion D (clean): ext-b (owner of docs/shared-dir/file1.md) reports zero findings"
+  common_test_pass "Assertion D (clean): ext-b (owner of docs/shared-dir/file1.md) reports zero findings"
 else
-  fail "Assertion D (clean): unexpected ext-b docs result (expected hash_mismatch=0, overridden=0):"
+  common_test_fail "Assertion D (clean): unexpected ext-b docs result (expected hash_mismatch=0, overridden=0):"
   echo "$round1_output" | grep 'D_DOCS_B' | sed 's/^/    /'
 fi
 
@@ -205,7 +200,7 @@ fi
 # (the source trees, and therefore ownership resolution, are unchanged -- only deployed content is
 # staled).
 # =====================================================================
-info "Round 2: planted drift (Assertion B, C-staled, D-staled)"
+common_test_info "Round 2: planted drift (Assertion B, C-staled, D-staled)"
 printf 'NEITHER declarer content\n' > "$TARGET/context/overlap.md"
 printf 'A solo content\nstaled appended line\n' > "$TARGET/templates/solo.md"
 printf 'A-only file2\nstaled appended line\n' > "$TARGET/docs/shared-dir/file2.md"
@@ -227,16 +222,16 @@ fi
 # duplicated under the non-owner (ext-a).
 if echo "$round2_output" | grep -q 'B_CTX_B hash_mismatch=1 overridden=0' \
   && echo "$round2_output" | grep -qF 'B_CTX_B HASH_MISMATCH context/overlap.md'; then
-  pass "Assertion B: staled context/overlap.md fires exactly one hash_mismatch under ext-b (the owner)"
+  common_test_pass "Assertion B: staled context/overlap.md fires exactly one hash_mismatch under ext-b (the owner)"
 else
-  fail "Assertion B: unexpected ext-b context result (expected one hash_mismatch for context/overlap.md):"
+  common_test_fail "Assertion B: unexpected ext-b context result (expected one hash_mismatch for context/overlap.md):"
   echo "$round2_output" | grep 'B_CTX_B' | sed 's/^/    /'
 fi
 if echo "$round2_output" | grep -q 'B_CTX_A hash_mismatch=0 overridden=1' \
   && echo "$round2_output" | grep -qF 'B_CTX_A OVERRIDDEN context/overlap.md owner=ext-b'; then
-  pass "Assertion B: the same drift is NOT duplicated under ext-a (non-owner) -- it stays an overridden entry, never a hash_mismatch"
+  common_test_pass "Assertion B: the same drift is NOT duplicated under ext-a (non-owner) -- it stays an overridden entry, never a hash_mismatch"
 else
-  fail "Assertion B: unexpected ext-a context result (expected zero hash_mismatch, overlap.md still overridden):"
+  common_test_fail "Assertion B: unexpected ext-a context result (expected zero hash_mismatch, overlap.md still overridden):"
   echo "$round2_output" | grep 'B_CTX_A' | sed 's/^/    /'
 fi
 
@@ -244,9 +239,9 @@ fi
 # with zero overridden entries (no regression in real divergence detection).
 if echo "$round2_output" | grep -q 'C_TPL_A_STALED hash_mismatch=1 overridden=0' \
   && echo "$round2_output" | grep -qF 'C_TPL_A_STALED HASH_MISMATCH templates/solo.md'; then
-  pass "Assertion C (staled): single-owner templates/solo.md fires exactly one hash_mismatch with zero overridden entries"
+  common_test_pass "Assertion C (staled): single-owner templates/solo.md fires exactly one hash_mismatch with zero overridden entries"
 else
-  fail "Assertion C (staled): unexpected result (expected one hash_mismatch for templates/solo.md, zero overridden):"
+  common_test_fail "Assertion C (staled): unexpected result (expected one hash_mismatch for templates/solo.md, zero overridden):"
   echo "$round2_output" | grep 'C_TPL_A_STALED' | sed 's/^/    /'
 fi
 
@@ -257,9 +252,9 @@ if echo "$round2_output" | grep -q 'D_DOCS_A_STALED hash_mismatch=1 overridden=1
   && echo "$round2_output" | grep -qF 'D_DOCS_A_STALED HASH_MISMATCH docs/shared-dir/file2.md' \
   && echo "$round2_output" | grep -qF 'D_DOCS_A_STALED OVERRIDDEN docs/shared-dir/file1.md owner=ext-b' \
   && ! echo "$round2_output" | grep -qF 'D_DOCS_A_STALED OVERRIDDEN docs/shared-dir/file2.md'; then
-  pass "Assertion D (staled): ext-a-only docs/shared-dir/file2.md fires exactly one hash_mismatch and never appears in overridden (per-leaf granularity holds)"
+  common_test_pass "Assertion D (staled): ext-a-only docs/shared-dir/file2.md fires exactly one hash_mismatch and never appears in overridden (per-leaf granularity holds)"
 else
-  fail "Assertion D (staled): unexpected ext-a docs result:"
+  common_test_fail "Assertion D (staled): unexpected ext-a docs result:"
   echo "$round2_output" | grep 'D_DOCS_A_STALED' | sed 's/^/    /'
 fi
 

@@ -30,6 +30,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 LINT_SRC="$SCRIPT_DIR/../lint/lint-agent-contracts.sh"
 FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/no-task-references-bullet.md"
 ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifacts-template.md"
@@ -39,9 +40,6 @@ BOUNDED_WAIT_FRAGMENT_SRC="$SCRIPT_DIR/../../context/patterns/bounded-build-wait
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 for req in "$LINT_SRC" "$FRAGMENT_SRC" "$ARTIFACTS_FRAGMENT_SRC" "$STATUS_LIB_SRC" \
            "$PLAN_STATUS_OWNERSHIP_FRAGMENT_SRC" "$BOUNDED_WAIT_FRAGMENT_SRC"; do
@@ -129,7 +127,7 @@ run_lint() {
 # Case 1: real, unmodified script -- all 13 inventoried offenders WARN, the one migrated
 # agent PASSes, and the overall lint exits 0 (warnings never fail the gate).
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 1: inventoried offenders WARN, lint exits 0 ==="
+common_test_info "=== Case 1: inventoried offenders WARN, lint exits 0 ==="
 ROOT1="$(mktemp -d)"
 build_fixture_tree "$ROOT1"
 out1="$(run_lint "$ROOT1")"
@@ -143,29 +141,29 @@ check_i_section=$(echo "$out1" | sed -n '/--- Check I:/,/^$/p')
 
 warn_count=$(echo "$check_i_section" | grep -c '\[WARN\].*does not invoke update-phase-status.sh')
 if [ "$warn_count" -eq 15 ]; then
-  pass "(1a) exactly 15 WARN lines for the 15 inventoried offenders"
+  common_test_pass "(1a) exactly 15 WARN lines for the 15 inventoried offenders"
 else
-  fail "(1a) expected 15 WARN lines, got $warn_count"
+  common_test_fail "(1a) expected 15 WARN lines, got $warn_count"
 fi
 
 # grep -F cannot be used here: log_pass() wraps "[PASS]" in ANSI color codes, inserting an
 # invisible reset sequence between "[PASS]" and the message text, so the bracketed label and
 # the message are matched as two separate anchors rather than one literal span.
 if echo "$check_i_section" | grep -q '\[PASS\]' && echo "$check_i_section" | grep -qF "core/agents/general-implementation-agent.md: invokes update-phase-status.sh"; then
-  pass "(1b) the one migrated agent explicitly PASSes Check I by name"
+  common_test_pass "(1b) the one migrated agent explicitly PASSes Check I by name"
 else
-  fail "(1b) expected an explicit Check I PASS line for general-implementation-agent.md"
+  common_test_fail "(1b) expected an explicit Check I PASS line for general-implementation-agent.md"
 fi
 
 fail_i_count=$(echo "$check_i_section" | grep -c '\[FAIL\]')
 if [ "$fail_i_count" -eq 0 ]; then
-  pass "(1c) zero Check I FAIL lines against today's real adoption state"
+  common_test_pass "(1c) zero Check I FAIL lines against today's real adoption state"
 else
-  fail "(1c) expected zero Check I FAILs, got $fail_i_count"
+  common_test_fail "(1c) expected zero Check I FAILs, got $fail_i_count"
 fi
 
 if [ "$rc1" -ne 0 ]; then
-  info "(lint exited $rc1 overall -- expected: other checks legitimately FAIL against these minimal fixtures, independent of Check I)"
+  common_test_info "(lint exited $rc1 overall -- expected: other checks legitimately FAIL against these minimal fixtures, independent of Check I)"
 fi
 rm -rf "$ROOT1"
 
@@ -175,7 +173,7 @@ rm -rf "$ROOT1"
 # inventory. Must FAIL Check I by name for exactly that one agent, and the FAIL must propagate
 # to the overall exit code (unlike WARN).
 # ═══════════════════════════════════════════════════════════════════════
-info "=== Case 2: non-inventoried offender FAILs Check I, propagates to exit code ==="
+common_test_info "=== Case 2: non-inventoried offender FAILs Check I, propagates to exit code ==="
 PATCH_DIR="$(mktemp -d)"
 PATCHED_LINT="$PATCH_DIR/lint-agent-contracts-patched.sh"
 cp "$LINT_SRC" "$PATCHED_LINT"
@@ -207,26 +205,26 @@ out2="$(run_lint "$ROOT2" "$PATCHED_LINT")"
 rc2=$?
 
 if [ "$rc2" -ne 0 ]; then
-  pass "(2a) lint exits non-zero once a non-inventoried offender is present"
+  common_test_pass "(2a) lint exits non-zero once a non-inventoried offender is present"
 else
-  fail "(2a) lint exited 0, expected non-zero (a Check I FAIL must gate the exit code)"
+  common_test_fail "(2a) lint exited 0, expected non-zero (a Check I FAIL must gate the exit code)"
 fi
 
 check_i_section2=$(echo "$out2" | sed -n '/--- Check I:/,/^$/p')
 
 if echo "$check_i_section2" | grep -qF "z3/agents/z3-implementation-agent.md: missing update-phase-status.sh invocation and NOT on the recorded migration inventory"; then
-  pass "(2b) z3-implementation-agent.md FAILs Check I by name with the regression-specific message"
+  common_test_pass "(2b) z3-implementation-agent.md FAILs Check I by name with the regression-specific message"
 else
-  fail "(2b) expected a named Check I FAIL for z3-implementation-agent.md, not found in output"
+  common_test_fail "(2b) expected a named Check I FAIL for z3-implementation-agent.md, not found in output"
 fi
 
 # Every other (still-inventoried) offender must still WARN, not FAIL -- proves the patch is
 # scoped to exactly the one removed entry.
 warn_count2=$(echo "$check_i_section2" | grep -c '\[WARN\].*does not invoke update-phase-status.sh')
 if [ "$warn_count2" -eq 14 ]; then
-  pass "(2c) the remaining 14 still-inventoried offenders still WARN (patch scoped to z3 only)"
+  common_test_pass "(2c) the remaining 14 still-inventoried offenders still WARN (patch scoped to z3 only)"
 else
-  fail "(2c) expected 14 WARN lines for the remaining inventoried offenders, got $warn_count2"
+  common_test_fail "(2c) expected 14 WARN lines for the remaining inventoried offenders, got $warn_count2"
 fi
 rm -rf "$ROOT2" "$PATCH_DIR"
 

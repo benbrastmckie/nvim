@@ -30,14 +30,12 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-handoff-location.sh"
 
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$HOOK_SRC" ]; then
   echo "ERROR: expected validate-handoff-location.sh at $HOOK_SRC" >&2
@@ -49,9 +47,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # Mirror the hook's expected sibling layout: hooks/validate-handoff-location.sh resolves
 # SCRIPT_DIR from its OWN directory (used only to locate system-defect-record.sh, which this
@@ -94,9 +90,9 @@ assert_allowed() {
   code="${result%%|*}"
   stderr_out="${result#*|}"
   if [ "$code" -eq 0 ]; then
-    pass "$label: exits 0 (allowed)"
+    common_test_pass "$label: exits 0 (allowed)"
   else
-    fail "$label: expected exit 0, got exit=$code stderr='$stderr_out'"
+    common_test_fail "$label: expected exit 0, got exit=$code stderr='$stderr_out'"
   fi
 }
 
@@ -109,9 +105,9 @@ assert_allowed_no_misplaced_text() {
   code="${result%%|*}"
   stderr_out="${result#*|}"
   if [ "$code" -eq 0 ] && ! printf '%s' "$stderr_out" | grep -q 'MISPLACED'; then
-    pass "$label: exits 0 with no MISPLACED diagnostic on stderr"
+    common_test_pass "$label: exits 0 with no MISPLACED diagnostic on stderr"
   else
-    fail "$label: expected exit 0 + no MISPLACED text, got exit=$code stderr='$stderr_out'"
+    common_test_fail "$label: expected exit 0 + no MISPLACED text, got exit=$code stderr='$stderr_out'"
   fi
 }
 
@@ -123,9 +119,9 @@ assert_misplaced() {
   code="${result%%|*}"
   stderr_out="${result#*|}"
   if [ "$code" -eq 2 ] && printf '%s' "$stderr_out" | grep -q 'MISPLACED'; then
-    pass "$label: exits 2 with MISPLACED diagnostic"
+    common_test_pass "$label: exits 2 with MISPLACED diagnostic"
   else
-    fail "$label: expected exit 2 + MISPLACED text, got exit=$code stderr='$stderr_out'"
+    common_test_fail "$label: expected exit 2 + MISPLACED text, got exit=$code stderr='$stderr_out'"
   fi
 }
 
@@ -153,9 +149,9 @@ assert_allowed_on_disk() {
   code="${result%%|*}"
   stderr_out="${result#*|}"
   if [ "$code" -eq 0 ]; then
-    pass "$label: exits 0 (allowed)"
+    common_test_pass "$label: exits 0 (allowed)"
   else
-    fail "$label: expected exit 0, got exit=$code stderr='$stderr_out'"
+    common_test_fail "$label: expected exit 0, got exit=$code stderr='$stderr_out'"
   fi
 }
 
@@ -168,9 +164,9 @@ assert_field_rejected() {
   code="${result%%|*}"
   stderr_out="${result#*|}"
   if [ "$code" -eq 2 ] && printf '%s' "$stderr_out" | grep -q 'HANDOFF VALIDATION FAILED'; then
-    pass "$label: exits 2 with HANDOFF VALIDATION FAILED diagnostic"
+    common_test_pass "$label: exits 2 with HANDOFF VALIDATION FAILED diagnostic"
   else
-    fail "$label: expected exit 2 + HANDOFF VALIDATION FAILED text, got exit=$code stderr='$stderr_out'"
+    common_test_fail "$label: expected exit 2 + HANDOFF VALIDATION FAILED text, got exit=$code stderr='$stderr_out'"
   fi
 }
 

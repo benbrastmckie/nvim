@@ -23,10 +23,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 resolve_candidate() {
   local desc="$1"; shift
@@ -50,15 +48,8 @@ LINT_SCRIPT="$(resolve_candidate "lint-json-channel-discipline.sh" \
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-# Invoked indirectly via `trap cleanup EXIT` below, not called by name.
-# shellcheck disable=SC2329
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 run_lint() {
   # Usage: run_lint <path...>
@@ -78,7 +69,7 @@ run_lint() {
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # INGEST case 1: known-bad jq pipe (`echo "$x" | jq ...`)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "INGEST case 1: known-bad jq pipe"
+common_test_info "INGEST case 1: known-bad jq pipe"
 cat > "$WORKDIR/bad-ingest-jq-pipe.sh" <<'EOF'
 #!/usr/bin/env bash
 build_output=$(bash some-collaborator.sh --flag 2>&1)
@@ -86,15 +77,15 @@ echo "$build_output" | jq -r '.dispatch_file'
 EOF
 run_lint "$WORKDIR/bad-ingest-jq-pipe.sh"
 if [ "$LAST_EXIT" -ne 0 ] && echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
-  pass "INGEST case 1: jq-pipe shape flagged, non-zero exit"
+  common_test_pass "INGEST case 1: jq-pipe shape flagged, non-zero exit"
 else
-  fail "INGEST case 1: expected a VIOLATION and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "INGEST case 1: expected a VIOLATION and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # INGEST case 2: known-bad jq here-string (`jq ... <<< "$x"`)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "INGEST case 2: known-bad jq here-string"
+common_test_info "INGEST case 2: known-bad jq here-string"
 cat > "$WORKDIR/bad-ingest-jq-herestring.sh" <<'EOF'
 #!/usr/bin/env bash
 verdict_json=$(bash some-collaborator.sh --flag 2>&1)
@@ -102,16 +93,16 @@ result=$(jq -r '.decision' <<< "$verdict_json")
 EOF
 run_lint "$WORKDIR/bad-ingest-jq-herestring.sh"
 if [ "$LAST_EXIT" -ne 0 ] && echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
-  pass "INGEST case 2: jq here-string shape flagged, non-zero exit"
+  common_test_pass "INGEST case 2: jq here-string shape flagged, non-zero exit"
 else
-  fail "INGEST case 2: expected a VIOLATION and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "INGEST case 2: expected a VIOLATION and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # INGEST case 3: known-bad while-read NDJSON loop fed by a direct here-string
 # (`done <<< "$x"`) -- the shape that needed three authoring iterations to catch correctly.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "INGEST case 3: known-bad while-read NDJSON loop (direct here-string)"
+common_test_info "INGEST case 3: known-bad while-read NDJSON loop (direct here-string)"
 cat > "$WORKDIR/bad-ingest-while-read.sh" <<'EOF'
 #!/usr/bin/env bash
 admit_ndjson=$(bash some-collaborator.sh --flag 2>&1)
@@ -122,16 +113,16 @@ done <<< "$admit_ndjson"
 EOF
 run_lint "$WORKDIR/bad-ingest-while-read.sh"
 if [ "$LAST_EXIT" -ne 0 ] && echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
-  pass "INGEST case 3: while-read NDJSON shape flagged, non-zero exit"
+  common_test_pass "INGEST case 3: while-read NDJSON shape flagged, non-zero exit"
 else
-  fail "INGEST case 3: expected a VIOLATION and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "INGEST case 3: expected a VIOLATION and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # INGEST negative control: a while-read loop fed through an intermediate `< <(cmd | grep ...)`
 # process substitution (the verify-deploy.sh `*_lint_output` shape) must NOT be flagged.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "INGEST negative control: filtered process-substitution while-read is not flagged"
+common_test_info "INGEST negative control: filtered process-substitution while-read is not flagged"
 cat > "$WORKDIR/good-ingest-filtered-while-read.sh" <<'EOF'
 #!/usr/bin/env bash
 lint_output=$(bash some-lint.sh --verbose 2>&1)
@@ -141,16 +132,16 @@ done < <(printf '%s\n' "$lint_output" | grep -F '[VIOLATION]')
 EOF
 run_lint "$WORKDIR/good-ingest-filtered-while-read.sh"
 if [ "$LAST_EXIT" -eq 0 ] && ! echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
-  pass "INGEST negative control: filtered process-substitution while-read passes clean"
+  common_test_pass "INGEST negative control: filtered process-substitution while-read passes clean"
 else
-  fail "INGEST negative control: expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "INGEST negative control: expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # EMIT case 1 (STRUCTURAL): a file named orchestrate-cycle-plan.sh missing the entry-point
 # `exec 3>&1 1>&2` redirect must be flagged.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "EMIT case 1 (structural): missing entry-point redirect is flagged"
+common_test_info "EMIT case 1 (structural): missing entry-point redirect is flagged"
 cat > "$WORKDIR/orchestrate-cycle-plan.sh" <<'EOF'
 #!/usr/bin/env bash
 # Output: a single line of compact JSON on stdout.
@@ -159,16 +150,16 @@ echo '{"cycle": 1}'
 EOF
 run_lint "$WORKDIR/orchestrate-cycle-plan.sh"
 if [ "$LAST_EXIT" -ne 0 ] && echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
-  pass "EMIT case 1: missing structural redirect flagged, non-zero exit"
+  common_test_pass "EMIT case 1: missing structural redirect flagged, non-zero exit"
 else
-  fail "EMIT case 1: expected a VIOLATION and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "EMIT case 1: expected a VIOLATION and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # EMIT negative control (STRUCTURAL): the same filename WITH the redirect present passes clean,
 # regardless of how many other bare echo/printf lines the file contains.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "EMIT negative control (structural): redirect present passes clean despite bare echoes"
+common_test_info "EMIT negative control (structural): redirect present passes clean despite bare echoes"
 cat > "$WORKDIR/orchestrate-cycle-postflight.sh" <<'EOF'
 #!/usr/bin/env bash
 # Output: a single line of compact JSON on stdout.
@@ -184,16 +175,16 @@ printf '%s\n' '{"verdict":"ok"}' >&3
 EOF
 run_lint "$WORKDIR/orchestrate-cycle-postflight.sh"
 if [ "$LAST_EXIT" -eq 0 ] && ! echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
-  pass "EMIT negative control (structural): passes clean with the redirect present"
+  common_test_pass "EMIT negative control (structural): passes clean with the redirect present"
 else
-  fail "EMIT negative control (structural): expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "EMIT negative control (structural): expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # EMIT case 2 (PER-LINE): a file named orchestrate-batch-admit.sh with TWO unredirected writes
 # (the contract promises exactly one) must be flagged.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "EMIT case 2 (per-line): two unredirected writes flagged (contract promises exactly one)"
+common_test_info "EMIT case 2 (per-line): two unredirected writes flagged (contract promises exactly one)"
 cat > "$WORKDIR/orchestrate-batch-admit.sh" <<'EOF'
 #!/usr/bin/env bash
 # Output: NDJSON on stdout, one compact JSON object per candidate.
@@ -203,16 +194,16 @@ printf '%s\n' "$verdicts"
 EOF
 run_lint "$WORKDIR/orchestrate-batch-admit.sh"
 if [ "$LAST_EXIT" -ne 0 ] && [ "$(echo "$LAST_STDOUT" | grep -c 'VIOLATION')" -ge 2 ]; then
-  pass "EMIT case 2: both unredirected writes flagged, non-zero exit"
+  common_test_pass "EMIT case 2: both unredirected writes flagged, non-zero exit"
 else
-  fail "EMIT case 2: expected >=2 VIOLATION lines and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "EMIT case 2: expected >=2 VIOLATION lines and non-zero exit; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # EMIT negative control (PER-LINE): exactly one unredirected write is the legitimate final emit,
 # not a violation.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "EMIT negative control (per-line): exactly one unredirected write is the legitimate final emit"
+common_test_info "EMIT negative control (per-line): exactly one unredirected write is the legitimate final emit"
 cat > "$WORKDIR/orchestrate-triage-classify.sh" <<'EOF'
 #!/usr/bin/env bash
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order.
@@ -222,9 +213,9 @@ printf '%s\n' "$verdicts"
 EOF
 run_lint "$WORKDIR/orchestrate-triage-classify.sh"
 if [ "$LAST_EXIT" -eq 0 ] && ! echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
-  pass "EMIT negative control (per-line): exactly one unredirected write passes clean"
+  common_test_pass "EMIT negative control (per-line): exactly one unredirected write passes clean"
 else
-  fail "EMIT negative control (per-line): expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "EMIT negative control (per-line): expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -235,7 +226,7 @@ fi
 # the exact shape that produced a false positive at orchestrate-triage-classify.sh:225 before the
 # check_emit_perline() predicate fix.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "EMIT case 3 (per-line): a > \"\$var\" file redirect is not a stdout write, one legitimate emit remains"
+common_test_info "EMIT case 3 (per-line): a > \"\$var\" file redirect is not a stdout write, one legitimate emit remains"
 cat > "$WORKDIR/orchestrate-triage-classify.sh" <<'EOF'
 #!/usr/bin/env bash
 # Output: NDJSON on stdout, one compact JSON object per candidate, in input order.
@@ -245,31 +236,31 @@ printf '%s\n' "$verdicts"
 EOF
 run_lint "$WORKDIR/orchestrate-triage-classify.sh"
 if [ "$LAST_EXIT" -eq 0 ] && ! echo "$LAST_STDOUT" | grep -q 'VIOLATION'; then
-  pass "EMIT case 3: > \"\$var\" file redirect excluded, remaining single emit passes clean"
+  common_test_pass "EMIT case 3: > \"\$var\" file redirect excluded, remaining single emit passes clean"
 else
-  fail "EMIT case 3: expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
+  common_test_fail "EMIT case 3: expected a clean pass; got exit=$LAST_EXIT stdout=$LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Real corpus: no explicit paths (the lint's own auto-discovery) against the real repo reports
 # it clean, apart from the one documented verify-deploy.sh allowlist entry.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Real corpus: auto-discovery across agent-system/extensions/ reports clean"
+common_test_info "Real corpus: auto-discovery across agent-system/extensions/ reports clean"
 run_lint
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "real corpus: lint exits 0 (clean, apart from the documented allowlist entry)"
+  common_test_pass "real corpus: lint exits 0 (clean, apart from the documented allowlist entry)"
 else
-  fail "real corpus: lint exited $LAST_EXIT -- unexpected finding(s): $LAST_STDOUT"
+  common_test_fail "real corpus: lint exited $LAST_EXIT -- unexpected finding(s): $LAST_STDOUT"
 fi
 if echo "$LAST_STDOUT" | grep -q 'doc_lint_output'; then
-  pass "real corpus: the documented verify-deploy.sh allowlist entry is exercised"
+  common_test_pass "real corpus: the documented verify-deploy.sh allowlist entry is exercised"
 else
-  fail "real corpus: expected the doc_lint_output allowlist entry to be exercised in verbose output"
+  common_test_fail "real corpus: expected the doc_lint_output allowlist entry to be exercised in verbose output"
 fi
 if [ "$(echo "$LAST_STDOUT" | grep -c '\[VIOLATION\]')" -eq 0 ]; then
-  pass "real corpus: zero VIOLATION lines"
+  common_test_pass "real corpus: zero VIOLATION lines"
 else
-  fail "real corpus: unexpected VIOLATION line(s): $(echo "$LAST_STDOUT" | grep '\[VIOLATION\]')"
+  common_test_fail "real corpus: unexpected VIOLATION line(s): $(echo "$LAST_STDOUT" | grep '\[VIOLATION\]')"
 fi
 
 echo ""

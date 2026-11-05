@@ -25,6 +25,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 CED_SOURCE="$CORE_DIR/check-extension-docs.sh"
 
@@ -36,13 +37,8 @@ command -v jq >/dev/null 2>&1 || { echo "ERROR: jq required and not on PATH" >&2
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 FIXTURE="$WORKDIR/fixture"
 mkdir -p "$FIXTURE/.claude/scripts"
@@ -124,9 +120,9 @@ for pair_out in "$out_j2" "$out_j3" "$out_j4" "$out_j8"; do
   fi
 done
 if [ "$all_match" -eq 1 ]; then
-  pass "case(a): CED_JOBS=1,2,3,4,8 all produce byte-identical output"
+  common_test_pass "case(a): CED_JOBS=1,2,3,4,8 all produce byte-identical output"
 else
-  fail "case(a): output diverged across worker counts" \
+  common_test_fail "case(a): output diverged across worker counts" \
        "$(diff <(printf '%s' "$out_j1") <(printf '%s' "$out_j4") || true)"
 fi
 
@@ -134,9 +130,9 @@ fi
 # Case (b): identical exit code across every worker count.
 # =====================================================================
 if [ "$rc_j1" -eq "$rc_j2" ] && [ "$rc_j1" -eq "$rc_j3" ] && [ "$rc_j1" -eq "$rc_j4" ] && [ "$rc_j1" -eq "$rc_j8" ]; then
-  pass "case(b): identical exit code ($rc_j1) across every worker count"
+  common_test_pass "case(b): identical exit code ($rc_j1) across every worker count"
 else
-  fail "case(b): exit codes diverged: j1=$rc_j1 j2=$rc_j2 j3=$rc_j3 j4=$rc_j4 j8=$rc_j8"
+  common_test_fail "case(b): exit codes diverged: j1=$rc_j1 j2=$rc_j2 j3=$rc_j3 j4=$rc_j4 j8=$rc_j8"
 fi
 
 # =====================================================================
@@ -148,9 +144,9 @@ fi
 discovery_order="$(printf '%s\n' "$out_j4" | grep -oE '^\[[a-z_]+\]$' | tr -d '[]')"
 expected_order="$(printf '%s\n' "$FIXTURE"/agent-system/extensions/*/ | xargs -n1 basename)"
 if [ "$discovery_order" = "$expected_order" ]; then
-  pass "case(c): combined output preserves EXT_DIR glob discovery order, not completion order"
+  common_test_pass "case(c): combined output preserves EXT_DIR glob discovery order, not completion order"
 else
-  fail "case(c): discovery order not preserved" \
+  common_test_fail "case(c): discovery order not preserved" \
        "$(printf 'expected:\n%s\n\ngot:\n%s' "$expected_order" "$discovery_order")"
 fi
 
@@ -162,9 +158,9 @@ fi
 # =====================================================================
 fail_count="$(printf '%s\n' "$out_j4" | grep -c '^  FAIL: ')"
 if [ "$fail_count" -eq 4 ]; then
-  pass "case(d): re-derived FAIL count is exactly 4 (1 from ext_a + 2 from ext_e + 1 from ext_f)"
+  common_test_pass "case(d): re-derived FAIL count is exactly 4 (1 from ext_a + 2 from ext_e + 1 from ext_f)"
 else
-  fail "case(d): expected exactly 4 FAIL lines, got $fail_count" "$out_j4"
+  common_test_fail "case(d): expected exactly 4 FAIL lines, got $fail_count" "$out_j4"
 fi
 
 # =====================================================================
@@ -172,9 +168,9 @@ fi
 # =====================================================================
 advisory_count="$(printf '%s\n' "$out_j4" | grep -c '^  ADVISORY: ')"
 if [ "$advisory_count" -eq 1 ]; then
-  pass "case(e): re-derived ADVISORY count is exactly 1 (from ext_f)"
+  common_test_pass "case(e): re-derived ADVISORY count is exactly 1 (from ext_f)"
 else
-  fail "case(e): expected exactly 1 ADVISORY line, got $advisory_count" "$out_j4"
+  common_test_fail "case(e): expected exactly 1 ADVISORY line, got $advisory_count" "$out_j4"
 fi
 
 # =====================================================================
@@ -191,9 +187,9 @@ for ext in ext_b ext_c ext_d; do
   printf '%s\n' "$out_j4" | grep -qE "^${ext}[[:space:]]+PASS\$" || summary_ok=0
 done
 if [ "$summary_ok" -eq 1 ]; then
-  pass "case(f): per-extension Summary verdicts match the seeded FAIL/clean/advisory-only mix"
+  common_test_pass "case(f): per-extension Summary verdicts match the seeded FAIL/clean/advisory-only mix"
 else
-  fail "case(f): Summary table verdicts did not match the expected seeded mix" \
+  common_test_fail "case(f): Summary table verdicts did not match the expected seeded mix" \
        "$(printf '%s\n' "$out_j4" | sed -n '/^Extension/,/^$/p')"
 fi
 
