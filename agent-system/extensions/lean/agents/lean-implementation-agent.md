@@ -376,35 +376,15 @@ This verification happens at the END of implementation, after all phases are com
    if [ -z "$plan_file" ]; then
        compliance_check="skipped"
    else
-       goal_names=$(sed -n '/^\*\*Goals\*\*:/,/^\*\*[^G]/p' "$plan_file" \
-         | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`' | sort -u)
-       if [ -z "$goal_names" ]; then
-           compliance_check="skipped"
-       else
-           compliance_failed=false
-           for name in $goal_names; do
-               if grep -rq "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${name}\b" "${lean_roots[@]}" 2>/dev/null; then
-                   echo "  [OK] $name — found in the resolved source roots"
-               else
-                   echo "  [MISSING] $name — not found in the resolved source roots"
-                   compliance_failed=true
-               fi
-           done
-           replacement_targets=$(grep -oP '(?:replacement for|replaces|bypasses|supersedes)\s+`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' "$plan_file" 2>/dev/null \
-               | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`')
-           for replaced in $replacement_targets; do
-               for new_name in $goal_names; do
-                   new_file=$(grep -rl "^\(noncomputable \)\?\(theorem\|def\|lemma\|instance\) ${new_name}\b" "${lean_roots[@]}" 2>/dev/null | head -1)
-                   if [ -n "$new_file" ] && grep -q "\b${replaced}\b" "$new_file"; then
-                       echo "  [INTEGRITY FAIL] $new_name delegates to $replaced"
-                       compliance_failed=true
-                   fi
-               done
-           done
-           [ "$compliance_failed" = true ] && compliance_check="failed" || compliance_check="passed"
-       fi
+       compliance_output=$(bash .claude/scripts/lean-plan-compliance-check.sh "$plan_file" "${lean_roots[@]}")
+       echo "$compliance_output"
+       compliance_check=$(echo "$compliance_output" | grep -oP '^COMPLIANCE_CHECK: \K\w+' | tail -1)
    fi
    ```
+   The spot-check itself is extracted into `lean-plan-compliance-check.sh` (deploy-boundary note:
+   invoke the deployed mirror at `.claude/scripts/lean-plan-compliance-check.sh`, as above; the
+   script's own behaviour — the Goals-block extraction, the per-name declaration grep, and the
+   `replacement_targets` integrity sweep — is unchanged from its pre-extraction inline form).
    Record: `compliance_check` ("passed", "failed", or "skipped"). If "failed", set `status: "partial"`.
 
 6. **Comparator gate (advisory, opt-in — read `compare_flag` from the delegation context)**:
