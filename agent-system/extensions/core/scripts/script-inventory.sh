@@ -168,17 +168,22 @@
 #                 semantics (report-only, never writes a file).
 #   --size-line   Standing corpus-size probe. Emits EXACTLY ONE line to stdout: non-test script
 #                 count and total lines, test-suite count and total lines, markdown file count and
-#                 total lines, and a trailing untracked=N field (the count of untracked-but-not-
+#                 total lines, a cost_per_assertion_ms=X figure (the hinted sequential wall-clock
+#                 pool in tests/suite-cost-hints.txt divided by a corpus-wide assertion-call count,
+#                 or the literal string "n/a" when the hints file is absent/unreadable or zero
+#                 assertions are found -- see the --size-line fast path's own comment for the full
+#                 derivation), and a trailing untracked=N field (the count of untracked-but-not-
 #                 ignored in-corpus files folded into the figures above), all under this probe's
 #                 own canonical corpus definition (agent-system/extensions/**, same enumeration as
 #                 the default mode's CANDIDATES). Deliberately SKIPS the duplicate-block
 #                 precomputation, the manifest_registered check-extension-docs.sh shell-out, and
 #                 the inbound_callers grep sweep -- none of those are needed for a size line, and
 #                 skipping them is what keeps this mode
-#                 genuinely cheap (~41ms measured at authoring time) so it can run on every
-#                 verify-deploy.sh invocation with no new gate row. Requires neither jq nor
-#                 python3. Composable with --root; not composable with --check. Exits 0 always
-#                 (a size count is never itself a finding).
+#                 genuinely cheap (~41ms measured at authoring time, plus one bounded grep sweep
+#                 for cost_per_assertion_ms) so it can run on every verify-deploy.sh invocation
+#                 with no new gate row. Requires neither jq nor python3. Composable with --root;
+#                 not composable with --check. Exits 0 always (a size count is never itself a
+#                 finding).
 #   -h, --help    Print this usage block and exit 0.
 #
 # Exit codes:
@@ -433,7 +438,35 @@ if [ "$SIZE_LINE_MODE" -eq 1 ]; then
   # assumed. Reuses the already-computed sets; no additional git shell-outs.
   untracked_total=$(( ${#UNTRACKED_CANDIDATES[@]} + ${#UNTRACKED_TEST_SUITES[@]} + ${#UNTRACKED_MD[@]} ))
 
-  echo "script-inventory: scripts=${script_count} lines=${script_lines} test_suites=${test_suite_count} test_lines=${test_suite_lines} md_files=${md_file_count} md_lines=${md_lines} untracked=${untracked_total}"
+  # cost_per_assertion_ms -- an aggregate ratio over the WHOLE discovered test-suite corpus
+  # (TEST_SUITES, already built above): the hinted sequential wall-clock pool
+  # (tests/suite-cost-hints.txt's own "basename,wall_ms" rows, repo-wide by basename, physically
+  # filed once under the core extension -- the one producer run-all.sh's own COST_HINTS_FILE
+  # already reads) divided by a cheap, corpus-wide assertion-call count. The count is a single
+  # grep -c sweep over every discovered suite file for a command-position
+  # pass/fail/common_test_pass/common_test_fail call (the same call-site shape
+  # lint-test-harness-adoption.sh's call_re already recognizes, reused here rather than
+  # reinvented) -- an approximation (it cannot distinguish a real call from a rare quoted-prose
+  # false positive), deliberately bounded exactly like this script's own duplicate-block
+  # detection, and cheap enough to keep this mode's whole-line contract. Emitted as the literal
+  # string "n/a" (never a crash, never a divide-by-zero) when the hints file is absent/unreadable
+  # or zero assertions are found -- both expected outside the real corpus (e.g. every fixture this
+  # script's own test suite builds under a synthetic --root).
+  HINTS_FILE="$ROOT/agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+  cost_per_assertion_ms="n/a"
+  if [ -r "$HINTS_FILE" ]; then
+    pool_ms="$(grep -vE '^[[:space:]]*(#|$)' "$HINTS_FILE" 2>/dev/null | awk -F',' '{sum += $2} END{print sum+0}')"
+    assertion_count=0
+    if [ "$test_suite_count" -gt 0 ]; then
+      assertion_count="$(grep -cE '(^|[;&|(){]|\bthen\b|\bdo\b|\belse\b|\belif\b)[[:space:]]*(common_test_pass|common_test_fail|pass|fail)\b[[:space:]]+["$A-Za-z0-9_-]' \
+        "${TEST_SUITES[@]/#/$ROOT/}" 2>/dev/null | awk -F':' '{sum += $NF} END{print sum+0}')"
+    fi
+    if [ -n "$pool_ms" ] && [ "${assertion_count:-0}" -gt 0 ]; then
+      cost_per_assertion_ms="$(awk -v p="$pool_ms" -v a="$assertion_count" 'BEGIN{printf "%.1f", p/a}')"
+    fi
+  fi
+
+  echo "script-inventory: scripts=${script_count} lines=${script_lines} test_suites=${test_suite_count} test_lines=${test_suite_lines} md_files=${md_file_count} md_lines=${md_lines} cost_per_assertion_ms=${cost_per_assertion_ms} untracked=${untracked_total}"
   exit 0
 fi
 

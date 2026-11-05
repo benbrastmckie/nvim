@@ -1,0 +1,51 @@
+{
+  "phase": 12,
+  "phase_name": "Classify Every Suite and Enforce the Unit/Integration Boundary",
+  "started_at": "2026-11-05T20:00:00Z",
+  "last_updated": "2026-11-05T20:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read task 416's live plan headings first (coordination check for suite-cost-hints.txt and shell-script-testing.md)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Extend the Phase 1 size-probe line with a cost-per-assertion figure, derived from the live hint pool and per-suite assertion counts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/script-inventory.sh",
+        "agent-system/extensions/core/scripts/tests/test-script-inventory.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Classify every suite as unit-class or integration-class in a declarative data file",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Add a lint enforcing a unit-class suite does not invoke deploy-headless.sh/verify-deploy.sh/run-all.sh; ride an existing gate row",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Write the lint's both-polarity fixture suite including a deliberately-violating fixture",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Record the phase's NET-PROD and NET-TEST deltas",
+      "status": "not_started",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

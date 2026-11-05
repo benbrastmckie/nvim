@@ -22,8 +22,12 @@
 #   --size-line      -- a fixture with 2 non-test scripts (known line totals), 2 test suites (one
 #                     tests/-dir, one flat test-*.sh), and 1 markdown file (known line total).
 #                     Asserts the mode emits exactly one line, exits 0, and that line's counts
-#                     match the fixture exactly. Also asserts --size-line composed with --check
-#                     is a usage error (exit 1).
+#                     match the fixture exactly, including cost_per_assertion_ms=n/a when no
+#                     suite-cost-hints.txt is present. Also asserts --size-line composed with
+#                     --check is a usage error (exit 1).
+#   cost_per_assertion_ms -- a fixture carrying a real suite-cost-hints.txt (1500ms pool) and one
+#                     suite with 4 mixed-shape assertion calls proves the figure is a real
+#                     computed ratio (375.0), not a constant fallback.
 #   Untracked        -- a fixture with one tracked non-test script, one UNSTAGED non-test script,
 #     inclusion         one UNSTAGED tests/-dir script, one UNSTAGED markdown file, and one
 #                     UNSTAGED file matched by a fixture .gitignore. Asserts --size-line and the
@@ -308,6 +312,11 @@ if echo "$SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=2 test_lines=6 
 else
   common_test_fail "--size-line: unexpected output: $SIZELINE_OUT"
 fi
+if echo "$SIZELINE_OUT" | grep -q 'cost_per_assertion_ms=n/a'; then
+  common_test_pass "--size-line: cost_per_assertion_ms reports n/a when this fixture has no suite-cost-hints.txt"
+else
+  common_test_fail "--size-line: expected cost_per_assertion_ms=n/a with no hints file; output: $SIZELINE_OUT"
+fi
 
 set +e
 bash "$TOOL" --root "$SIZELINE_DIR" --size-line --check >/dev/null 2>"$WORKDIR/sizeline_both_stderr"
@@ -317,6 +326,46 @@ if [ "$sizeline_both_exit" -eq 1 ]; then
   common_test_pass "--size-line: composed with --check is a usage error (exit 1)"
 else
   common_test_fail "--size-line: --size-line --check exited $sizeline_both_exit (expected 1)"
+fi
+
+# =====================================================================
+# cost_per_assertion_ms: a fixture with a real suite-cost-hints.txt (two rows, 1000ms + 500ms =
+# 1500ms pool) and one test suite carrying four command-position assertion calls (two
+# common_test_pass, one common_test_fail, one bare pass inside a case arm -- deliberately mixed
+# shapes so this pins the same call-site recognition lint-test-harness-adoption.sh's call_re
+# already uses, not just the simplest one-shape case) proves the figure is a real computed ratio
+# (1500 / 4 = 375.0), not a constant fallback.
+# =====================================================================
+COSTLINE_DIR="$WORKDIR/costline"
+mkdir -p "$COSTLINE_DIR/agent-system/extensions/core/scripts/tests"
+cat > "$COSTLINE_DIR/agent-system/extensions/core/scripts/tests/test-cost-fixture.sh" << 'EOF'
+#!/usr/bin/env bash
+PASSED=0
+FAILED=0
+common_test_pass "case one"
+common_test_pass "case two"
+common_test_fail "case three"
+case "$1" in
+  x) pass "case four" ;;
+esac
+EOF
+cat > "$COSTLINE_DIR/agent-system/extensions/core/scripts/tests/suite-cost-hints.txt" << 'EOF'
+# comment line, ignored
+test-cost-fixture.sh,1000
+test-unrelated.sh,500
+EOF
+mk_git_fixture "$COSTLINE_DIR"
+git -C "$COSTLINE_DIR" add agent-system/extensions/core/scripts/tests/test-cost-fixture.sh \
+  agent-system/extensions/core/scripts/tests/suite-cost-hints.txt
+git -C "$COSTLINE_DIR" commit -q -m init
+
+set +e
+COSTLINE_OUT="$(bash "$TOOL" --root "$COSTLINE_DIR" --size-line 2>"$WORKDIR/costline_stderr")"
+set -e 2>/dev/null || true
+if echo "$COSTLINE_OUT" | grep -q 'cost_per_assertion_ms=375.0'; then
+  common_test_pass "--size-line: cost_per_assertion_ms computes the real ratio (1500ms pool / 4 assertions = 375.0) over mixed call-site shapes"
+else
+  common_test_fail "--size-line: expected cost_per_assertion_ms=375.0; output: $COSTLINE_OUT"
 fi
 
 # =====================================================================
@@ -349,7 +398,7 @@ if [ "$untracked_sizeline_exit" -eq 0 ] && [ "$untracked_sizeline_linecount" -eq
 else
   common_test_fail "untracked inclusion: exit=$untracked_sizeline_exit line_count=$untracked_sizeline_linecount output=[$UNTRACKED_SIZELINE_OUT]; stderr: $(cat "$WORKDIR/untracked_sizeline_stderr")"
 fi
-if echo "$UNTRACKED_SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=1 test_lines=2 md_files=1 md_lines=3 untracked=3'; then
+if echo "$UNTRACKED_SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=1 test_lines=2 md_files=1 md_lines=3 cost_per_assertion_ms=n/a untracked=3'; then
   common_test_pass "untracked inclusion: --size-line counts the tracked AND unstaged non-test scripts (2/8), the unstaged test suite (1/2), the unstaged markdown file (1/3), excludes the gitignored script, and reports untracked=3"
 else
   common_test_fail "untracked inclusion: unexpected --size-line output: $UNTRACKED_SIZELINE_OUT"

@@ -1628,7 +1628,7 @@ plus the per-search-mode output diff against a fixture literature index.
 
 ---
 
-### Phase 12: Classify Every Suite and Enforce the Unit/Integration Boundary [NOT STARTED]
+### Phase 12: Classify Every Suite and Enforce the Unit/Integration Boundary [IN PROGRESS]
 
 **Goal**: A unit-class suite mechanically cannot spawn `deploy-headless.sh`, `verify-deploy.sh` or
 `run-all.sh`, and the standing size probe reports cost-per-assertion so a suite drifting into
@@ -1639,9 +1639,11 @@ a fixture that *should* trip the lint, proving the enforcement actually fires ra
 vacuously.
 
 **Tasks**:
-- [ ] **Re-read task 416's live plan `### Phase` headings first.** This phase touches
+- [x] **Re-read task 416's live plan `### Phase` headings first.** This phase touches
       `suite-cost-hints.txt` and `shell-script-testing.md`; stop rather than edit if 416 has
-      advanced into either since Phase 2's check.
+      advanced into either since Phase 2's check. *(completed: task 416 is fully `completed` and
+      archived in specs/CHANGE_LOG.md -- all 13 phases landed, no live advancement to collide
+      with)*
 - [ ] Classify every suite as unit-class or integration-class, recording the classification in a
       declarative data file rather than in prose — adding a suite must be a data edit, not a
       documentation edit.
@@ -1650,8 +1652,12 @@ vacuously.
       this task's own no-new-gate-row constraint.
 - [ ] Write the lint's both-polarity fixture suite, including a deliberately-violating fixture that
       must trip it.
-- [ ] Extend the Phase 1 size-probe line with a cost-per-assertion figure, derived from the live
-      hint pool and per-suite assertion counts. Keep it on the same single line.
+- [x] Extend the Phase 1 size-probe line with a cost-per-assertion figure, derived from the live
+      hint pool and per-suite assertion counts. Keep it on the same single line. *(completed:
+      cost_per_assertion_ms=X appended to script-inventory.sh --size-line, derived from
+      suite-cost-hints.txt's pool / a corpus-wide command-position assertion-call grep sweep;
+      "n/a" when no hints file. 3 new/updated assertions in test-script-inventory.sh, full suite
+      green: 32 passed, 0 failed)*
 - [ ] Record the phase's NET-PROD and NET-TEST deltas.
 
 **Timing**: 2 hours
