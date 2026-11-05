@@ -2,6 +2,24 @@
 
 Task management and agent orchestration system for Neovim configuration development. This system provides structured workflows for research, planning, and implementation across multiple languages and domains.
 
+## Status: Frozen
+
+This `.opencode/` tree is **frozen**:
+
+- **Not maintained**: no ongoing fixes are applied to it. Known issues (e.g. per-extension
+  `opencode-agents.json` fragments whose `{file:}` references point at deploy targets this repo
+  never installed) are tolerated here rather than chased.
+- **Not generated**: unlike `.claude/`, this tree is not regenerated from a source store on
+  `[Reload All]`/`[Regenerate]`. It is hand-maintained, and the
+  source-store/deploy-boundary rule does not apply to it.
+- **Drift-expected**: `{file:}` deploy-path references inside `opencode-agents.json` fragments
+  are per-repo-deploy-dependent by construction and will continue to drift as the set of loaded
+  extensions changes in whichever repo deploys them. This is an expected, tolerated state, not a
+  defect to repair on sight.
+- **Nothing is deleted**: no fragment, agent file, validator function, or other file under this
+  tree is removed as part of the above. The tree is preserved intact for possible future
+  refactoring.
+
 ## Quick Start
 
 For installation instructions, see [INSTALLATION.md](INSTALLATION.md).

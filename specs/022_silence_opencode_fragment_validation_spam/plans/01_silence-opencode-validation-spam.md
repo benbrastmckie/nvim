@@ -228,29 +228,35 @@ each of `neotex.plugins.ai.shared.extensions.merge`,
 
 ---
 
-### Phase 2: Fix the fake-tool line and record the frozen `.opencode/` policy [NOT STARTED]
+### Phase 2: Fix the fake-tool line and record the frozen `.opencode/` policy [COMPLETED]
 
 **Goal**: `.opencode/` no longer teaches a nonexistent tool, and its frozen/unmaintained status is
 written down where the next reader will look.
 
 **Tasks**:
-- [ ] Re-read `.opencode/extensions/web/agents/web-implementation-agent.md` around line 57 before
-      editing.
-- [ ] Replace the `` `browser_verify_text_visible` -- Assert text is visible on page `` bullet
+- [x] Re-read `.opencode/extensions/web/agents/web-implementation-agent.md` around line 57 before
+      editing. *(completed)*
+- [x] Replace the `` `browser_verify_text_visible` -- Assert text is visible on page `` bullet
       with the retraction the source store already carries
       (`agent-system/extensions/web/agents/web-implementation-agent.md` and
       `agent-system/extensions/web/context/project/web/tools/playwright-mcp-guide.md` both state
       there is no such tool and map it to the real ones). Do not delete the surrounding tool list;
       correct the one line so it names a real tool or explicitly retracts the fake one.
-- [ ] Add a frozen-policy section near the top of `.opencode/README.md` stating: this tree is
+      *(completed)*
+- [x] Add a frozen-policy section near the top of `.opencode/README.md` stating: this tree is
       frozen — not maintained, not generated from any source store, not deleted; drift
       (particularly stale `{file:}` deploy-path references in `opencode-agents.json` fragments) is
       expected and tolerated; it is preserved intact for possible future refactoring; nothing in
-      it may be deleted.
-- [ ] Cross-reference the policy from the source store's own docs tree so it is discoverable
+      it may be deleted. *(completed)*
+- [x] Cross-reference the policy from the source store's own docs tree so it is discoverable
       without opening `.opencode/` first (a one-line pointer where sibling systems are indexed).
-- [ ] Verify no task numbers appear in any text added outside `specs/**` — cite durable anchors
-      (file paths, section headings) instead.
+      *(deviation: altered — the plan's target file `agent-system/docs/docs-README.md` does not
+      exist; used `agent-system/extensions/core/docs/docs-README.md` instead, the real docs index
+      deployed as `.claude/docs/docs-README.md`, which already names the OpenCode picker keymap
+      in its Extensions section)*
+- [x] Verify no task numbers appear in any text added outside `specs/**` — cite durable anchors
+      (file paths, section headings) instead. *(completed: verified via grep and
+      `verify-deploy.sh --only-gate 4`)*
 
 **Timing**: 0.75 hours
 

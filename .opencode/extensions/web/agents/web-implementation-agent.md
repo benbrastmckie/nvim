@@ -54,7 +54,9 @@ These tools are available when the corresponding MCP servers are configured in `
   - `browser_click` -- Click an element
   - `browser_type` -- Type text into an input
   - `browser_wait_for` -- Wait for a condition
-  - `browser_verify_text_visible` -- Assert text is visible on page
+  - There is no `browser_verify_text_visible` tool. For text-visibility assertions, use
+    `browser_find` to locate the element, or `browser_wait_for` to assert text becomes visible
+    within a timeout.
 - **Usage conditions**:
   - Only use when the implementation plan includes visual verification steps
   - Always prefer accessibility snapshots over screenshots (lower token cost, more useful)

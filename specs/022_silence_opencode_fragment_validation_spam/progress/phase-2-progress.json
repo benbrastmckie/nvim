@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Fix the fake-tool line and record the frozen .opencode/ policy",
+  "started_at": "2026-11-05T16:48:00Z",
+  "last_updated": "2026-11-05T16:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read web-implementation-agent.md around line 57 before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace browser_verify_text_visible bullet with the source store's retraction", "status": "done", "files_touched": [".opencode/extensions/web/agents/web-implementation-agent.md"]},
+    {"id": 3, "description": "Add frozen-policy section near top of .opencode/README.md", "status": "done", "files_touched": [".opencode/README.md"]},
+    {"id": 4, "description": "Cross-reference the policy from the source store's own docs tree", "status": "done", "files_touched": ["agent-system/extensions/core/docs/docs-README.md"]},
+    {"id": 5, "description": "Verify no task numbers in text added outside specs/**", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.N",
+      "description": "Files to modify listed agent-system/docs/docs-README.md",
+      "type": "altered",
+      "reason": "That path does not exist; the plan itself anticipated this ('adjust to whichever file actually indexes sibling systems'). The real docs index is agent-system/extensions/core/docs/docs-README.md (deployed to .claude/docs/docs-README.md), which already has an Extensions section naming the OpenCode picker keymap -- the natural place for the pointer.",
+      "annotation": "*(deviation: altered -- used agent-system/extensions/core/docs/docs-README.md instead of the nonexistent agent-system/docs/docs-README.md)*"
+    }
+  ]
+}
