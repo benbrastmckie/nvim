@@ -1,30 +1,33 @@
 {
-  "status": "researched",
+  "status": "planned",
   "task_number": 428,
   "session_id": "sess_1793850684_c30dd8_428",
-  "dispatch_seq": 1,
+  "dispatch_seq": 5,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/428_enforce_planner_agent_terminal_write/reports/01_terminal-write-enforcement.md",
-      "summary": "Diagnoses the cited planner-agent terminal-write gap (task 328, iss_1792162538950_NYX4YD), finds it was already substantially fixed on the detection side by completed task 426, and identifies the one remaining gap as structural: skill-orchestrate's direct dispatch path never creates a postflight marker, so the existing SubagentStop enforcement hook cannot fire for it; recommends documenting this scope boundary or scoping a separate follow-up task for new SubagentStop-level prevention infrastructure."
+      "type": "plan",
+      "path": "specs/428_enforce_planner_agent_terminal_write/plans/01_terminal-write-enforcement-scope.md",
+      "summary": "Two-phase, markdown-only plan closing the terminal-write gap by documenting the enforcement scope boundary (detection-only, no SubagentStop prevention on the /orchestrate direct-dispatch path) across three existing source-store files."
     }
   ],
   "metadata": {
     "session_id": "sess_1793850684_c30dd8_428",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 7
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 1.5,
+    "dependency_waves": [[1], [2]]
   },
-  "memory_candidates": [
-    {
-      "content": "In this codebase's /orchestrate architecture, skill_create_postflight_marker (and the SubagentStop-wired subagent-postflight.sh block it enables) is only called from skill-reviser, skill-spawn, and extension-provided skill-{domain}-research/-implementation skills. skill-orchestrate's own direct Agent-tool dispatch of core-type agents (planner-agent, general-research-agent, general-implementation-agent via command-route-agent.sh) never creates this marker, so the one SubagentStop-level enforcement mechanism in the codebase cannot fire for that dispatch path. Any future proposal to enforce a dispatched agent's terminal-write obligation via SubagentStop on the orchestrate path requires NEW marker-creation wiring in skill-orchestrate itself, not just extending the existing hook's check logic.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/428_enforce_planner_agent_terminal_write/reports/01_terminal-write-enforcement.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["skill-orchestrate", "SubagentStop", "postflight-pending", "terminal-write", "dispatch-enforcement"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 428 to create implementation plan"
+  "memory_candidates": [],
+  "user_decision": {
+    "question": "Research found that both fix locations this task names (planner-agent's terminal-write contract and postflight's detection) are already correct and already closed; the only remaining gap is structural -- nothing on the /orchestrate direct-dispatch path can PREVENT a missing terminal write, because no .postflight-pending marker is ever armed for that path. This plan documents that boundary. Should genuine prevention also be funded as a separate follow-up task?",
+    "options": [
+      "Document the scope boundary only (this plan) -- detection via RECOVERY_DECLINED stays the sole enforcement, no new infrastructure",
+      "Also scope a separate follow-up task to arm a dispatch-scoped marker in skill-orchestrate and add a SubagentStop-level terminal-status check"
+    ],
+    "recommended": "Document the scope boundary only (this plan) -- detection via RECOVERY_DECLINED stays the sole enforcement, no new infrastructure",
+    "blocking": false
+  },
+  "next_steps": "Run /orchestrate 428 to execute the plan"
 }

@@ -1,0 +1,33 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 2,
+  "summary": "Wrote a 2-phase, markdown-only implementation plan at specs/428_enforce_planner_agent_terminal_write/plans/01_terminal-write-enforcement-scope.md (1.5h, waves [1],[2]). Research established that both fix locations this task names are already correct and already closed, and that the one open gap is structural: no .postflight-pending marker is ever armed on skill-orchestrate's direct-dispatch path, so the codebase's only SubagentStop-level block cannot fire there. That claim was independently re-verified by grep during planning (zero matches in skill-orchestrate/ and orchestrate-cycle-*.sh). The plan closes the task by documenting that enforcement scope boundary in three existing source-store files -- handoff-schema.md (primary statement, sited in Outcome Channels rather than Postflight Boundary), skill-lifecycle.md and system-defect-discrimination.md (one-sentence pointers) -- and touches no contract, no detector, no test, and not the handoff-staleness gate.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/428_enforce_planner_agent_terminal_write/plans/01_terminal-write-enforcement-scope.md",
+      "summary": "Two-phase plan documenting the terminal-write enforcement scope boundary across three existing source-store markdown files."
+    }
+  ],
+  "decisions_made": [
+    "Do not edit agents/planner-agent.md: its terminal-write contract is already complete (Stage 0, 6b, 6c, Error Handling, MUST-DO 1/2/7/9) and the failure mode is execution-time interruption, not textual omission.",
+    "Do not touch orchestrate-cycle-postflight.sh, orchestrate-recover-outcome.sh, the handoff-staleness gate, or task 426's existing test fixtures.",
+    "Site the primary statement in handoff-schema.md's '## Outcome Channels' rather than '## Postflight Boundary' (research's suggestion): Outcome Channels already owns the fail-closed return-meta recovery rules and names in_progress by value, so the boundary statement belongs beside the mechanism it qualifies.",
+    "Scope the prevention mechanism (marker wiring + SubagentStop terminal-status check) out of this task; surfaced as a non-blocking user_decision instead.",
+    "No redeploy phase: the deployed tree is already stale for core/lean/literature and three sibling tasks are editing the same source store this cycle, so a whole-tree regeneration here would deploy their in-flight work. No __WHOLE_TREE__ claim is declared."
+  ],
+  "user_decision": {
+    "question": "Research found that both fix locations this task names (planner-agent's terminal-write contract and postflight's detection) are already correct and already closed; the only remaining gap is structural -- nothing on the /orchestrate direct-dispatch path can PREVENT a missing terminal write, because no .postflight-pending marker is ever armed for that path. This plan documents that boundary. Should genuine prevention also be funded as a separate follow-up task?",
+    "options": [
+      "Document the scope boundary only (this plan) -- detection via RECOVERY_DECLINED stays the sole enforcement, no new infrastructure",
+      "Also scope a separate follow-up task to arm a dispatch-scoped marker in skill-orchestrate and add a SubagentStop-level terminal-status check"
+    ],
+    "recommended": "Document the scope boundary only (this plan) -- detection via RECOVERY_DECLINED stays the sole enforcement, no new infrastructure",
+    "blocking": false
+  },
+  "next_action_hint": "Dispatch implement for task 428 against plans/01_terminal-write-enforcement-scope.md; Phase 1 step 1 captures a full verify-deploy.sh --findings baseline before any edit, because pre-existing deploy staleness means the final phase cannot close on an absolute green."
+}

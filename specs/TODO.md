@@ -47,8 +47,8 @@ next_project_number: 486
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-469 [RESEARCHED] — Allowlist engine-written infrastructure paths in the...
-470 [RESEARCHED] — Clarify verify-deploy.sh TARGET contract versus its...
+469 [PLANNING] — Allowlist engine-written infrastructure paths in the...
+470 [PLANNING] — Clarify verify-deploy.sh TARGET contract versus its...
   └─ 471 [NOT STARTED] — Lint the extensions README table against the real extension...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
@@ -104,7 +104,7 @@ next_project_number: 486
 
 ### Orchestrator
 
-428 [RESEARCHED] — Enforce and detect planner-agent terminal return-meta write
+428 [PLANNED] — Enforce and detect planner-agent terminal return-meta write
   └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
@@ -116,7 +116,7 @@ next_project_number: 486
 ### Agent System
 
 401 [NOT STARTED] — Two repositories file against one source store with no...
-414 [RESEARCHED] — Enforce the gate verdict-line extraction contract mechanically
+414 [PLANNING] — Enforce the gate verdict-line extraction contract mechanically
   └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
     └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
       └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
@@ -1043,7 +1043,7 @@ CONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 also declare ver
 
 ### 470. Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim
 - **Effort**: small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1077,7 +1077,7 @@ CONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 (all not_started
 
 ### 469. Allowlist engine-written infrastructure paths in the file_scope Containment sites
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2975,11 +2975,12 @@ EDIT TARGET: the source store under agent-system/extensions/core/ (never .claude
 ---
 
 ### 428. Enforce and detect planner-agent terminal return-meta write
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378
 - **Research**: [428_enforce_planner_agent_terminal_write/reports/01_terminal-write-enforcement.md]
+- **Plan**: [428_enforce_planner_agent_terminal_write/plans/01_terminal-write-enforcement-scope.md]
 
 **Description**: A planner-agent dispatch terminated without writing its terminal status: its .return-meta.json was left at status: in_progress, and no .orchestrator-handoff.json was produced at all, so the orchestrator postflight had no handoff to read and fell back to its recovery path. Observed in task 328, entry_id iss_1792162538950_NYX4YD.
 
@@ -3421,7 +3422,7 @@ test-guard-git-push.sh. Do not attribute these to this work and do not fix them 
 ---
 
 ### 414. Enforce the gate verdict-line extraction contract mechanically
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 413, Task 411
