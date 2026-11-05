@@ -10,7 +10,11 @@
 # identifier, with NO partial Challenge emitted. Cases R6-R8 cover `extract_goal_names()`'s own
 # Goals-block parsing specifically: the list-item label form (R6), a Lean keyword backticked in
 # prose (R7), and a non-keyword word backticked in a preamble paragraph before the first
-# bulleted identifier (R8).
+# bulleted identifier (R8). Cases R9-R10 cover the shared Unicode-aware identifier pattern: a
+# non-ASCII declaration name is harvested, declared, and cross-validated IN FULL rather than
+# truncated at its first non-ASCII character (R9), and a Goals bullet naming only the ASCII
+# prefix of a non-ASCII declared name fails cross-validation rather than silently colliding with
+# it (R10).
 #
 # (2) R2 legacy fallback (Case R3): a plan with no `## Lean Challenge Statements` section falls
 # back to extracting an existing sorried declaration from the target project's git tree, and
@@ -293,6 +297,52 @@ if [ "$rc" -eq 0 ] \
   pass "R8: a non-keyword word backticked in a Goals preamble paragraph (before the first bulleted identifier) is not harvested as an identifier"
 else
   fail "R8: expected exit 0 with theorem_names naming comm and assoc and no identifier-set mismatch, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R9: a non-ASCII declaration name (a subscript-digit suffix) is harvested, declared, and
+# cross-validated IN FULL -- the shared Unicode-aware identifier pattern must span the whole
+# name rather than matching only its ASCII-leading prefix.
+#
+# Mutation this case kills: reverting the shared `LEAN_IDENT_PATTERN` (or any one of its four
+# consuming sites) back to the ASCII-only class makes the backtick-delimited Goals token fail to
+# match at all (no closing backtick immediately after the ASCII prefix), so no identifier is
+# harvested under **Goals**: and the run exits 71 ("no identifiers found") instead of 0.
+# ===========================================================================
+repo=$(make_repo "r9" 920 plan_r9_unicode.md)
+out=$(run_tool "$repo" 920 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] \
+  && echo "$out" | grep -q "theorem_names: comm₁$" \
+  && echo "$out" | grep -q "^theorem comm₁ "; then
+  pass "R9: a non-ASCII declaration name is harvested, declared, and cross-validated in full"
+else
+  fail "R9: expected exit 0 with theorem_names=comm₁ (in full) and the assembled module declaring comm₁, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R10: the truncation-collision guard. A Goals bullet naming only the ASCII PREFIX of a
+# non-ASCII declared name (`comm` naming the prefix of declared `comm₁`) must FAIL
+# cross-validation, never silently pass as though the two names were the same identifier.
+#
+# Mutation this case kills: reverting the shared `LEAN_IDENT_PATTERN` (or any one of its four
+# consuming sites) back to the ASCII-only class truncates the DECLARED name to `comm` (matching
+# only up to the first non-ASCII character), which then equals the Goals-harvested `comm` and
+# the run exits 0 -- silently recording the wrong identifier instead of the loud mismatch this
+# case requires. This is the specific case the dispatch calls "worse than escaping": a collision
+# between two genuinely different names.
+# ===========================================================================
+repo=$(make_repo "r10" 921 plan_r10_truncation.md)
+out=$(run_tool "$repo" 921 "$repo" --dry-run 2>&1)
+rc=$?
+only_in_goals_line=$(echo "$out" | grep "but not declared:" || true)
+only_in_declared_line=$(echo "$out" | grep "but not named in" || true)
+if [ "$rc" -eq 71 ] \
+  && echo "$only_in_goals_line" | grep -q "comm $" \
+  && echo "$only_in_declared_line" | grep -q "comm₁ $"; then
+  pass "R10: the ASCII prefix of a non-ASCII declared name fails cross-validation (truncation-collision guard)"
+else
+  fail "R10: expected exit 71 naming 'comm' as Goals-only and 'comm₁' as declared-only, got rc=$rc: $out"
 fi
 
 # ===========================================================================

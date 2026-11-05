@@ -179,6 +179,27 @@ STATE_JSON="specs/state.json"
 # Exit: 0 no drift; 65 drift (per-identifier diff on stderr); 71 config error (no manifest, a
 # named identifier absent from the current tree, or ambiguous resolution).
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Shared, Unicode-aware Lean identifier pattern -- the ONE definition every declaration-boundary
+# and identifier-harvest site below reads, so the Goals identifier set and the declared
+# identifier set can never again disagree about how to spell a name.
+#
+# Accepts: a leading character that is a word character (Unicode category L/M/N/_) and not a
+# digit, followed by any number of word characters or apostrophes. This matches `foo`, `foo_bar`,
+# `foo'`, and non-ASCII Lean names such as `foo₁` or `αβ` IN FULL -- the previous ASCII-only class
+# matched only the `foo` prefix of `foo₁`, which is the truncation that let a non-ASCII name
+# collide with an unrelated declaration. It also accepts a leading subscript digit (Unicode
+# category No, which `\d` does not cover); this over-acceptance is harmless, since no real Lean
+# name has that shape and over-accepting it can never drop a real identifier.
+#
+# Defined once as an exported shell variable, not a sibling Python module: every consuming site
+# below is a separately quoted `<<'PYEOF'` heredoc, so no shell expansion reaches inside any of
+# them and a literal string cannot be interpolated directly. Each heredoc instead reads this
+# variable via `os.environ`, which needs no new deploy-manifest-registered file and leaves every
+# heredoc's own argv contract unchanged.
+# ---------------------------------------------------------------------------
+export LEAN_IDENT_PATTERN="[^\W\d][\w']*"
+
 normalize_lean_header() {
   # Strips block comments (/- ... -/) and line comments (-- ...), then collapses all whitespace
   # (including newlines) to single spaces and trims. Documented limitation (stated, not papered
@@ -221,6 +242,7 @@ do_check() {
   fi
 
   python3 - "$PROJECT_ROOT" "$challenge_path" "$names_csv" "$pinned_module_file" <<'PYEOF'
+import os
 import re
 import sys
 
@@ -229,10 +251,11 @@ names = [n for n in names_csv.split(",") if n]
 with open(pinned_module_file, encoding="utf-8") as f:
     pinned_module = f.read()
 
+IDENT = os.environ["LEAN_IDENT_PATTERN"]
 DECL_HEADER_RE = re.compile(
     r"(?m)^\s*(?:@\[[^\]]*\]\s*\n?\s*)?"
     r"(?:(?:private|protected|noncomputable)\s+)*"
-    r"(theorem|lemma|def|instance)\s+([A-Za-z_][A-Za-zA-Z0-9_']*)"
+    r"(theorem|lemma|def|instance)\s+(" + IDENT + r")"
 )
 
 
@@ -380,6 +403,7 @@ fi
 # ---------------------------------------------------------------------------
 extract_goal_names() {
   python3 - "$PLAN_FILE" <<'PYEOF'
+import os
 import re
 import sys
 
@@ -387,10 +411,11 @@ plan_path = sys.argv[1]
 text = open(plan_path, encoding="utf-8").read()
 lines = text.split("\n")
 
+IDENT = os.environ["LEAN_IDENT_PATTERN"]
 START_RE = re.compile(r'^-?\s?\*\*Goals\*\*:')
 END_RE = re.compile(r'^-?\s?\*\*[^G]')
 BULLET_RE = re.compile(r'^\s*-\s*')
-TOKEN_RE = re.compile(r"`([a-zA-Z_][a-zA-Z0-9_']*)`")
+TOKEN_RE = re.compile(r"`(" + IDENT + r")`")
 
 LEAN_KEYWORDS = {
     "theorem", "lemma", "def", "abbrev", "instance", "structure", "class", "inductive", "axiom",
@@ -445,6 +470,7 @@ PYEOF
 extract_r1() {
   local plan_file="$1" names_out="$2" module_out="$3"
   python3 - "$plan_file" "$names_out" "$module_out" <<'PYEOF'
+import os
 import re
 import sys
 
@@ -486,10 +512,11 @@ def find_top_level_assign(s):
     return -1
 
 
+IDENT = os.environ["LEAN_IDENT_PATTERN"]
 DECL_RE = re.compile(
     r"(?m)^\s*(?:@\[[^\]]*\]\s*\n?\s*)?"
     r"(?:(?:private|protected|noncomputable)\s+)*"
-    r"(?:theorem|lemma|def|instance)\s+([A-Za-z_][A-Za-zA-Z0-9_']*)"
+    r"(?:theorem|lemma|def|instance)\s+(" + IDENT + r")"
 )
 
 matches = list(DECL_RE.finditer(module_body))
@@ -583,6 +610,7 @@ extract_r2() {
   echo "  Approval commit: $approval_commit" >&2
 
   python3 - "$PROJECT_ROOT" "$approval_commit" "$goals_file" "$names_out" "$module_out" <<'PYEOF'
+import os
 import re
 import subprocess
 import sys
@@ -604,10 +632,11 @@ if tree.returncode != 0:
     sys.exit(71)
 lean_files = [p for p in tree.stdout.splitlines() if p.endswith(".lean")]
 
+IDENT = os.environ["LEAN_IDENT_PATTERN"]
 DECL_HEADER_RE = re.compile(
     r"(?m)^\s*(?:@\[[^\]]*\]\s*\n?\s*)?"
     r"(?:(?:private|protected|noncomputable)\s+)*"
-    r"(theorem|lemma|def|instance)\s+([A-Za-z_][A-Za-zA-Z0-9_']*)"
+    r"(theorem|lemma|def|instance)\s+(" + IDENT + r")"
 )
 
 def find_top_level_assign_or_by(s):

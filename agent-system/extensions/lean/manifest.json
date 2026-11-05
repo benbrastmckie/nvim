@@ -39,6 +39,8 @@
       "tests/fixtures/challenge/plan_keyword_noise.md",
       "tests/fixtures/challenge/plan_list_item_goals.md",
       "tests/fixtures/challenge/plan_goals_preamble.md",
+      "tests/fixtures/challenge/plan_r9_unicode.md",
+      "tests/fixtures/challenge/plan_r10_truncation.md",
       "tests/test-lean-sorry-census.sh",
       "lean-src-roots.sh",
       "tests/test-lean-src-roots.sh",
