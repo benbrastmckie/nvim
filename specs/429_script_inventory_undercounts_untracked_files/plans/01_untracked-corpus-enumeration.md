@@ -1,7 +1,7 @@
 # Implementation Plan: Task #429
 
 - **Task**: 429 - script-inventory.sh undercounts untracked files
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research report; planned directly from the task description plus
@@ -127,29 +127,40 @@ modify ROADMAP.md (`roadmap_flag` not set for this dispatch).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Measure the Exposure and Disposition Recorded Baselines [NOT STARTED]
+### Phase 1: Measure the Exposure and Disposition Recorded Baselines [COMPLETED]
 
 **Goal**: While the tracked-only behaviour is still in place, quantify what it hides and answer the
 description's baseline question in writing. This must run first — once Phase 2 lands, the old
 figure is no longer obtainable without a revert.
 
 **Tasks**:
-- [ ] Record the current tracked-only figure verbatim: `bash agent-system/extensions/core/scripts/script-inventory.sh --root . --size-line`
-- [ ] Record the untracked in-corpus sets the tracked enumeration misses, for both patterns:
+- [x] Record the current tracked-only figure verbatim: `bash agent-system/extensions/core/scripts/script-inventory.sh --root . --size-line` *(completed: scripts=241 lines=96148 test_suites=174 test_lines=84259 md_files=931 md_lines=232238)*
+- [x] Record the untracked in-corpus sets the tracked enumeration misses, for both patterns:
       `git ls-files --others --exclude-standard -- 'agent-system/extensions/**/*.sh'` and the same
       with `'agent-system/extensions/**/*.md'`, applying the `tests/`-dir and `test-` basename
-      split so the delta is attributable per figure
-- [ ] Compute the per-figure delta the union will produce (scripts/lines, test_suites/test_lines,
-      md_files/md_lines) and record it
-- [ ] Inspect the recorded baselines in
+      split so the delta is attributable per figure *(completed: 0 untracked .sh matches; 1
+      untracked .md match — agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_goals_preamble.md,
+      32 lines; the md enumeration has no tests/-dir split to apply)*
+- [x] Compute the per-figure delta the union will produce (scripts/lines, test_suites/test_lines,
+      md_files/md_lines) and record it *(completed: scripts +0, test_suites +0, md_files +1
+      (+32 lines); predicted post-union figure scripts=241 lines=96148 test_suites=174
+      test_lines=84259 md_files=932 md_lines=232270)*
+- [x] Inspect the recorded baselines in
       `specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md`
       and `plans/03_markdown-corpus-consolidation.md`, and state the finding: whether each recorded
       figure was captured under the undercounting behaviour and therefore needs re-capturing, or
-      whether it is unaffected. Do NOT edit those files
-- [ ] Note whether the same `git ls-files` exposure is present in `context-reachability.sh`'s and
+      whether it is unaffected. Do NOT edit those files *(completed: both files freeze the same
+      Phase-1-close baseline, captured under the pre-fix tracked-only tool; re-capture is
+      recommended before 328's pending final NET-accounting phase; disposition recorded in
+      progress/phase-1-progress.json and the task summary, neither 328 plan file edited)*
+- [x] Note whether the same `git ls-files` exposure is present in `context-reachability.sh`'s and
       `census-count.sh`'s enumerations, as a one-line out-of-scope observation for separate filing
-- [ ] Record the findings in this task's own artifacts (progress notes and the eventual summary),
-      and record a `--kind win`/`--kind issue` issue-log entry as appropriate
+      *(completed: context-reachability.sh shares the identical tracked-only exposure;
+      census-count.sh has no hard-coded enumeration of its own, so it is not exposed)*
+- [x] Record the findings in this task's own artifacts (progress notes and the eventual summary),
+      and record a `--kind win`/`--kind issue` issue-log entry as appropriate *(completed:
+      progress/phase-1-progress.json populated; issue-record.sh called with --kind issue
+      --class measurement-exposure)*
 
 **Timing**: 0.5 hours
 

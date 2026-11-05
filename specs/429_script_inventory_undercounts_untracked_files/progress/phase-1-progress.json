@@ -1,0 +1,54 @@
+{
+  "phase": 1,
+  "phase_name": "Measure the Exposure and Disposition Recorded Baselines",
+  "started_at": "2026-11-05T00:28:39Z",
+  "last_updated": "2026-11-05T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Record current tracked-only --size-line figure verbatim",
+      "status": "done",
+      "files_touched": [],
+      "note": "script-inventory: scripts=241 lines=96148 test_suites=174 test_lines=84259 md_files=931 md_lines=232238 (command: bash agent-system/extensions/core/scripts/script-inventory.sh --root . --size-line)"
+    },
+    {
+      "id": 2,
+      "description": "Record untracked in-corpus sets for .sh and .md patterns with tests/-dir and test- basename split",
+      "status": "done",
+      "files_touched": [],
+      "note": "sh pattern (git ls-files --others --exclude-standard -- 'agent-system/extensions/**/*.sh'): empty set, 0 files (matches the plan's Scope Hypothesis). md pattern (same command, *.md): exactly 1 file, agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_goals_preamble.md, 32 lines. No tests/-dir/test- split applies to the md figure: the --size-line markdown enumeration (MD_FILES in script-inventory.sh) has no test-exclusion logic at all, unlike the .sh candidate/test_suite split, so this file counts wholly toward md_files/md_lines regardless of living under a tests/ directory."
+    },
+    {
+      "id": 3,
+      "description": "Compute per-figure delta the union will produce",
+      "status": "done",
+      "files_touched": [],
+      "note": "scripts +0 (+0 lines), test_suites +0 (+0 lines), md_files +1 (+32 lines). Predicted post-Phase-2 figure: scripts=241 lines=96148 test_suites=174 test_lines=84259 md_files=932 md_lines=232270."
+    },
+    {
+      "id": 4,
+      "description": "Inspect recorded baselines in task 328 plan files and state finding",
+      "status": "done",
+      "files_touched": [],
+      "note": "Both plans/01_corpus-consolidation-net-deletion.md (line ~138) and plans/03_markdown-corpus-consolidation.md (line ~206) freeze the identical fixed baseline: 'script-inventory: scripts=232 lines=90568 test_suites=160 test_lines=76832 md_files=927 md_lines=229217', captured at 328's own Phase 1 close via the pre-fix (tracked-only) script-inventory.sh --size-line -- the only version of the tool that existed at that time. Every later re-measurement recorded in both files (through plans/01's post-Phase-6 reading and plans/03's revision-round reading, scripts=234 lines=91059 test_suites=162 test_lines=77132 md_files=927 md_lines=229299) is diffed against that one fixed baseline, never a rolling one. FINDING: yes, re-capture is warranted before 328's pending final NET-accounting phase (which explicitly re-runs the probe and computes NET-PROD/NET-TEST/NET-MD against 'the Phase 1 baseline') -- once this task's fix lands, that phase's new reading will come from the union-based tool while the frozen baseline came from the tracked-only tool, an instrument mismatch independent of any actual phase work. Whether the mismatch is numerically non-zero cannot be verified retroactively (no record of git-status at that past instant survives in the plan text), but 328's own repeated 'every gate's finding set over the live corpus is identical to the Phase 1 baseline' language implies a clean-tree discipline between phases, bounding the plausible exposure to small. This is 328's own territory to action (its plan files are excluded from retro-editing by this task's Non-Goals); 429 records the disposition here only, and does not edit either 328 plan file."
+    },
+    {
+      "id": 5,
+      "description": "Note whether same git ls-files exposure present in context-reachability.sh and census-count.sh",
+      "status": "done",
+      "files_touched": [],
+      "note": "context-reachability.sh: YES, same exposure. Its enumerate_candidates() (header ENUMERATION block, ~line 22-24; implementation ~line 236-262) uses plain tracked-only 'git ls-files -z' over agent-system/extensions/*/context/**/*.md with no --others union, identical in kind to script-inventory.sh's pre-fix enumerate_candidates(). Out of scope for this task; worth filing separately. census-count.sh: NO direct exposure -- its 'membership' subcommand takes --tree-cmd/--declared-cmd as caller-supplied shell commands rather than hard-coding any enumeration itself, so the exposure (if any) would live in whatever command a caller supplies, not in census-count.sh's own code."
+    },
+    {
+      "id": 6,
+      "description": "Record findings and issue-log entry",
+      "status": "done",
+      "files_touched": [],
+      "note": "issue-record.sh called with --kind issue --class measurement-exposure --severity costly summarizing the live undercount, the context-reachability.sh sibling exposure, and the 328 baseline re-capture recommendation."
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
