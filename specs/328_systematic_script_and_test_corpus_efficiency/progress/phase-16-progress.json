@@ -31,8 +31,11 @@
     {
       "id": 3,
       "description": "Write the lint's fixture suite with a deliberately-violating fixture plus conforming fixtures",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-anchor-pointer-collapse.sh",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ]
     },
     {
       "id": 5,
@@ -47,7 +50,7 @@
       "files_touched": []
     }
   ],
-  "current_objective": 3,
+  "current_objective": 5,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

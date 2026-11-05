@@ -2277,9 +2277,20 @@ the per-file ledger and the full gate set, both below.
       block's sharing files are legitimately not-yet-migrated at any point mid-tranche, and a
       whole-corpus scan would fire on all of them the moment the first file is collapsed —
       see `scripts/lint/lint-anchor-pointer-collapse.sh`'s own header for the full rationale.)*
-- [ ] Write the lint's fixture suite with a **deliberately violating fixture** (a file
+- [x] Write the lint's fixture suite with a **deliberately violating fixture** (a file
       re-introducing a collapsed block) proving the lint fires, plus conforming fixtures proving
       it does not fire on the anchor itself or on a legitimate gate-required restatement.
+      *(completed: `scripts/tests/test-lint-anchor-pointer-collapse.sh`, 6 cases — missing
+      registry (no-op pass), a correctly-collapsed migrated file (pass), a regressed migrated
+      file reintroducing the block (fails with a VIOLATION line), a not-yet-migrated sibling file
+      still carrying the full block and deliberately NOT in `migrated_files` (pass — proves the
+      per-row scoping, not a whole-corpus scan), a missing `block_file` (exit 2 environment
+      error), and comment/blank registry lines (skipped, not misread as rows). Classified `unit`
+      in `suite-classification.data` — it never spawns deploy-headless.sh/verify-deploy.sh/
+      run-all.sh, confirmed by `lint-unit-integration-boundary.sh --verbose` (0 violations across
+      141 discovered suites). Ran green via
+      `tests/run-all.sh --only test-lint-anchor-pointer-collapse.sh,test-lint-agent-contracts.sh,test-lint-postflight-boundary.sh`
+      (3 passed, 0 failed) and `shellcheck -x -S warning` clean on both the lint and the suite.)*
 - [x] Decide and record whether the lint gets a gate row or rides an existing gate. Default to
       riding an existing gate; a new row needs a written reason, per this task's own no-new-gate-row
       constraint. *(completed: rides gate 9 (`lint-postflight-boundary.sh`, "full corpus") —

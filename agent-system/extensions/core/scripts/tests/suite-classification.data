@@ -108,6 +108,7 @@ test-lint-agent-contracts-await-notification.sh	unit	-
 test-lint-agent-contracts-handoff-section.sh	unit	-
 test-lint-agent-contracts-heartbeat.sh	unit	-
 test-lint-agent-contracts.sh	unit	-
+test-lint-anchor-pointer-collapse.sh	unit	-
 test-lint-branch-gated-sections.sh	integration	invokes:verify-deploy.sh
 test-lint-corpus-scan-lib.sh	unit	-
 test-lint-dead-command-recommendations.sh	unit	-
