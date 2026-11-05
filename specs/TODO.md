@@ -11,8 +11,8 @@ next_project_number: 492
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489,490,491 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
+| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475,490,491 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
 | 3 | 360,391,399,420,436,438,439,444,448,474,476,484 | 313,328,369,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 5 | 421,450,457,462,480,481,487 | 390,402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
@@ -32,6 +32,8 @@ next_project_number: 492
     └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
     └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
   └─ 465 [RESEARCHED] — check-record-versioning.sh PATH\_SCOPE mode reports...
+  └─ 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
+  └─ 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
@@ -50,8 +52,6 @@ next_project_number: 492
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
 489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
-490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
-491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -130,7 +130,7 @@ next_project_number: 492
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 328
 
 **Description**: Fix the Pass-2 semantic scorer in audit-task-proposals.sh, whose normalization inflates scores against verbose corpus records and so fires duplicate-of-open on proposals that share only house boilerplate.
 
@@ -172,7 +172,7 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 328
 
 **Description**: Make generate-task-order.sh read `active_goal` from state.json so the field stops being a dead write: it is declared, documented, validated, and written, but no consumer ever reads it.
 
