@@ -21,9 +21,6 @@ LIB="$SCRIPT_DIR/../lib/common.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$LIB" ]; then
   echo "ERROR: shared library common.sh not found at $LIB" >&2
@@ -45,15 +42,15 @@ DASH_AFTER="$-"
 SET_O_AFTER="$(set -o)"
 
 if [ "$DASH_BEFORE" = "$DASH_AFTER" ]; then
-  pass "sourcing common.sh: \$- unchanged ($DASH_BEFORE)"
+  common_test_pass "sourcing common.sh: \$- unchanged ($DASH_BEFORE)"
 else
-  fail "sourcing common.sh: \$- changed from '$DASH_BEFORE' to '$DASH_AFTER'"
+  common_test_fail "sourcing common.sh: \$- changed from '$DASH_BEFORE' to '$DASH_AFTER'"
 fi
 
 if [ "$SET_O_BEFORE" = "$SET_O_AFTER" ]; then
-  pass "sourcing common.sh: 'set -o' state byte-for-byte unchanged"
+  common_test_pass "sourcing common.sh: 'set -o' state byte-for-byte unchanged"
 else
-  fail "sourcing common.sh: 'set -o' state changed"
+  common_test_fail "sourcing common.sh: 'set -o' state changed"
 fi
 
 # ── common_repo_root: depth 2 (scripts/ callers) ──────────────────────────────
@@ -62,9 +59,9 @@ mkdir -p "$FIXTURE_ROOT/scripts"
 resolved=$(common_repo_root "$FIXTURE_ROOT/scripts" 2)
 expected="$(cd "$FIXTURE_ROOT/scripts/../.." && pwd)"
 if [ "$resolved" = "$expected" ]; then
-  pass "common_repo_root depth 2 resolves scripts/ callers correctly"
+  common_test_pass "common_repo_root depth 2 resolves scripts/ callers correctly"
 else
-  fail "common_repo_root depth 2: expected '$expected', got '$resolved'"
+  common_test_fail "common_repo_root depth 2: expected '$expected', got '$resolved'"
 fi
 
 # ── common_repo_root: depth 3 (scripts/lib/, scripts/tests/, scripts/lint/) ──
@@ -73,105 +70,105 @@ for sub in lib tests lint; do
   resolved=$(common_repo_root "$FIXTURE_ROOT/scripts/$sub" 3)
   expected="$(cd "$FIXTURE_ROOT/scripts/$sub/../../.." && pwd)"
   if [ "$resolved" = "$expected" ]; then
-    pass "common_repo_root depth 3 resolves scripts/$sub/ callers correctly"
+    common_test_pass "common_repo_root depth 3 resolves scripts/$sub/ callers correctly"
   else
-    fail "common_repo_root depth 3 ($sub): expected '$expected', got '$resolved'"
+    common_test_fail "common_repo_root depth 3 ($sub): expected '$expected', got '$resolved'"
   fi
 done
 
 # ── common_repo_root: empty script_dir yields empty output, not an error ─────
 resolved=$(common_repo_root "" 2)
 if [ -z "$resolved" ]; then
-  pass "common_repo_root with empty script_dir yields empty output (safe default)"
+  common_test_pass "common_repo_root with empty script_dir yields empty output (safe default)"
 else
-  fail "common_repo_root with empty script_dir yielded '$resolved', expected empty"
+  common_test_fail "common_repo_root with empty script_dir yielded '$resolved', expected empty"
 fi
 
 # ── common_repo_root: nonexistent path yields empty output, not a nonzero exit ─
 resolved=$(common_repo_root "/nonexistent/path/that/does/not/exist" 2)
 rc=$?
 if [ "$rc" -eq 0 ] && [ -z "$resolved" ]; then
-  pass "common_repo_root with nonexistent path returns 0 with empty output"
+  common_test_pass "common_repo_root with nonexistent path returns 0 with empty output"
 else
-  fail "common_repo_root with nonexistent path: rc=$rc, output='$resolved' (expected rc=0, empty)"
+  common_test_fail "common_repo_root with nonexistent path: rc=$rc, output='$resolved' (expected rc=0, empty)"
 fi
 
 # ── common_session_id: shape ──────────────────────────────────────────────────
 sid=$(common_session_id)
 if [[ "$sid" =~ ^sess_[0-9]+_[0-9a-f]{6}$ ]]; then
-  pass "common_session_id matches ^sess_[0-9]+_[0-9a-f]{6}\$ ($sid)"
+  common_test_pass "common_session_id matches ^sess_[0-9]+_[0-9a-f]{6}\$ ($sid)"
 else
-  fail "common_session_id did not match expected shape: '$sid'"
+  common_test_fail "common_session_id did not match expected shape: '$sid'"
 fi
 
 # ── common_session_id: no embedded whitespace or newline ─────────────────────
 if [ "$(printf '%s' "$sid" | wc -l)" -eq 0 ] && [[ "$sid" != *" "* ]]; then
-  pass "common_session_id has no embedded whitespace or newline"
+  common_test_pass "common_session_id has no embedded whitespace or newline"
 else
-  fail "common_session_id contains embedded whitespace or newline: '$sid'"
+  common_test_fail "common_session_id contains embedded whitespace or newline: '$sid'"
 fi
 
 # ── common_session_id: two calls yield different IDs (random component varies) ─
 sid2=$(common_session_id)
 if [ "$sid" != "$sid2" ]; then
-  pass "common_session_id: two successive calls yield different IDs"
+  common_test_pass "common_session_id: two successive calls yield different IDs"
 else
-  info "two successive common_session_id calls yielded the same ID (rare but not necessarily a bug within the same second + same random bytes)"
-  pass "common_session_id: two successive calls (non-fatal duplicate check)"
+  common_test_info "two successive common_session_id calls yielded the same ID (rare but not necessarily a bug within the same second + same random bytes)"
+  common_test_pass "common_session_id: two successive calls (non-fatal duplicate check)"
 fi
 
 # ── common_timestamp_iso: format ──────────────────────────────────────────────
 iso=$(common_timestamp_iso)
 if [[ "$iso" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]]; then
-  pass "common_timestamp_iso matches YYYY-MM-DDTHH:MM:SSZ ($iso)"
+  common_test_pass "common_timestamp_iso matches YYYY-MM-DDTHH:MM:SSZ ($iso)"
 else
-  fail "common_timestamp_iso did not match expected format: '$iso'"
+  common_test_fail "common_timestamp_iso did not match expected format: '$iso'"
 fi
 
 # ── common_timestamp_epoch: format ────────────────────────────────────────────
 epoch=$(common_timestamp_epoch)
 if [[ "$epoch" =~ ^[0-9]+$ ]]; then
-  pass "common_timestamp_epoch is a plain integer ($epoch)"
+  common_test_pass "common_timestamp_epoch is a plain integer ($epoch)"
 else
-  fail "common_timestamp_epoch did not match expected format: '$epoch'"
+  common_test_fail "common_timestamp_epoch did not match expected format: '$epoch'"
 fi
 
 # ── common_timestamp_date: format ─────────────────────────────────────────────
 dt=$(common_timestamp_date)
 if [[ "$dt" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-  pass "common_timestamp_date matches YYYY-MM-DD ($dt)"
+  common_test_pass "common_timestamp_date matches YYYY-MM-DD ($dt)"
 else
-  fail "common_timestamp_date did not match expected format: '$dt'"
+  common_test_fail "common_timestamp_date did not match expected format: '$dt'"
 fi
 
 # ── common_log_error / common_log_warn: stream routing (stderr) ──────────────
 err_out=$(common_log_error "test error" 2>&1 1>/dev/null)
 if [[ "$err_out" == "ERROR: test error" ]]; then
-  pass "common_log_error routes to stderr with 'ERROR: ' prefix"
+  common_test_pass "common_log_error routes to stderr with 'ERROR: ' prefix"
 else
-  fail "common_log_error stderr routing/format wrong: '$err_out'"
+  common_test_fail "common_log_error stderr routing/format wrong: '$err_out'"
 fi
 
 warn_out=$(common_log_warn "test warning" 2>&1 1>/dev/null)
 if [[ "$warn_out" == "WARNING: test warning" ]]; then
-  pass "common_log_warn routes to stderr with 'WARNING: ' prefix"
+  common_test_pass "common_log_warn routes to stderr with 'WARNING: ' prefix"
 else
-  fail "common_log_warn stderr routing/format wrong: '$warn_out'"
+  common_test_fail "common_log_warn stderr routing/format wrong: '$warn_out'"
 fi
 
 # ── common_log_info: stream routing (stdout) ──────────────────────────────────
 info_out=$(common_log_info "test info" 2>/dev/null)
 if [[ "$info_out" == "INFO: test info" ]]; then
-  pass "common_log_info routes to stdout with 'INFO: ' prefix"
+  common_test_pass "common_log_info routes to stdout with 'INFO: ' prefix"
 else
-  fail "common_log_info stdout routing/format wrong: '$info_out'"
+  common_test_fail "common_log_info stdout routing/format wrong: '$info_out'"
 fi
 
 info_err=$(common_log_info "test info" 2>&1 1>/dev/null)
 if [ -z "$info_err" ]; then
-  pass "common_log_info emits nothing to stderr"
+  common_test_pass "common_log_info emits nothing to stderr"
 else
-  fail "common_log_info unexpectedly wrote to stderr: '$info_err'"
+  common_test_fail "common_log_info unexpectedly wrote to stderr: '$info_err'"
 fi
 
 # ── common_test_pass / common_test_fail: counter arithmetic on caller's vars ──
@@ -188,31 +185,31 @@ fi
   fi
 )
 if [ $? -eq 0 ]; then
-  pass "common_test_pass/common_test_fail increment caller's PASSED/FAILED correctly"
+  common_test_pass "common_test_pass/common_test_fail increment caller's PASSED/FAILED correctly"
 else
-  fail "common_test_pass/common_test_fail counter arithmetic incorrect"
+  common_test_fail "common_test_pass/common_test_fail counter arithmetic incorrect"
 fi
 
 # ── common_test_pass/_fail/_info: output format matches shell-script-testing.md ──
 tp_out=$(PASSED=0; common_test_pass "case")
 if [[ "$tp_out" == "[PASS] case" ]]; then
-  pass "common_test_pass emits '[PASS] <msg>'"
+  common_test_pass "common_test_pass emits '[PASS] <msg>'"
 else
-  fail "common_test_pass output format wrong: '$tp_out'"
+  common_test_fail "common_test_pass output format wrong: '$tp_out'"
 fi
 
 tf_out=$(FAILED=0; common_test_fail "case")
 if [[ "$tf_out" == "[FAIL] case" ]]; then
-  pass "common_test_fail emits '[FAIL] <msg>'"
+  common_test_pass "common_test_fail emits '[FAIL] <msg>'"
 else
-  fail "common_test_fail output format wrong: '$tf_out'"
+  common_test_fail "common_test_fail output format wrong: '$tf_out'"
 fi
 
 ti_out=$(common_test_info "case")
 if [[ "$ti_out" == "[INFO] case" ]]; then
-  pass "common_test_info emits '[INFO] <msg>'"
+  common_test_pass "common_test_info emits '[INFO] <msg>'"
 else
-  fail "common_test_info output format wrong: '$ti_out'"
+  common_test_fail "common_test_info output format wrong: '$ti_out'"
 fi
 
 # ── common_test_repo_root: git-aware fixture (depth-independent) ─────────────
@@ -222,9 +219,9 @@ mkdir -p "$GIT_FIXTURE/scripts/tests"
 git_root_resolved=$(common_test_repo_root "$GIT_FIXTURE/scripts/tests")
 git_root_expected="$(cd "$GIT_FIXTURE" && pwd -P)"
 if [ "$git_root_resolved" = "$git_root_expected" ]; then
-  pass "common_test_repo_root resolves a git work tree via git rev-parse (depth-independent)"
+  common_test_pass "common_test_repo_root resolves a git work tree via git rev-parse (depth-independent)"
 else
-  fail "common_test_repo_root (git fixture): expected '$git_root_expected', got '$git_root_resolved'"
+  common_test_fail "common_test_repo_root (git fixture): expected '$git_root_expected', got '$git_root_resolved'"
 fi
 
 # ── common_test_repo_root: non-git fixture falls back to the fixed-depth walk ─
@@ -233,9 +230,9 @@ mkdir -p "$NONGIT_FIXTURE/a/b/c/scripts/tests"
 nongit_resolved=$(common_test_repo_root "$NONGIT_FIXTURE/a/b/c/scripts/tests" 2)
 nongit_expected="$(cd "$NONGIT_FIXTURE/a/b/c" && pwd -P)"
 if [ "$nongit_resolved" = "$nongit_expected" ]; then
-  pass "common_test_repo_root falls back to common_repo_root's fixed-depth walk outside a git tree"
+  common_test_pass "common_test_repo_root falls back to common_repo_root's fixed-depth walk outside a git tree"
 else
-  fail "common_test_repo_root (non-git fallback): expected '$nongit_expected', got '$nongit_resolved'"
+  common_test_fail "common_test_repo_root (non-git fallback): expected '$nongit_expected', got '$nongit_resolved'"
 fi
 
 # ── common_test_resolve_candidate: found / not-found polarity ────────────────
@@ -244,18 +241,18 @@ mkdir -p "$RESOLVE_FIXTURE"
 touch "$RESOLVE_FIXTURE/real.sh"
 found=$(common_test_resolve_candidate "real.sh" "$RESOLVE_FIXTURE/missing.sh" "$RESOLVE_FIXTURE/real.sh")
 if [ "$found" = "$RESOLVE_FIXTURE/real.sh" ]; then
-  pass "common_test_resolve_candidate returns the first existing candidate"
+  common_test_pass "common_test_resolve_candidate returns the first existing candidate"
 else
-  fail "common_test_resolve_candidate (found): expected '$RESOLVE_FIXTURE/real.sh', got '$found'"
+  common_test_fail "common_test_resolve_candidate (found): expected '$RESOLVE_FIXTURE/real.sh', got '$found'"
 fi
 
 resolve_err=$(common_test_resolve_candidate "ghost.sh" "$RESOLVE_FIXTURE/ghost1.sh" "$RESOLVE_FIXTURE/ghost2.sh" 2>&1 1>/dev/null)
 resolve_rc=0
 common_test_resolve_candidate "ghost.sh" "$RESOLVE_FIXTURE/ghost1.sh" "$RESOLVE_FIXTURE/ghost2.sh" >/dev/null 2>&1 || resolve_rc=$?
 if [ "$resolve_rc" -eq 1 ] && [[ "$resolve_err" == "ERROR: ghost.sh not found at any of:"* ]]; then
-  pass "common_test_resolve_candidate returns 1 with an enumerated ERROR when no candidate exists"
+  common_test_pass "common_test_resolve_candidate returns 1 with an enumerated ERROR when no candidate exists"
 else
-  fail "common_test_resolve_candidate (not found): rc=$resolve_rc, stderr='$resolve_err'"
+  common_test_fail "common_test_resolve_candidate (not found): rc=$resolve_rc, stderr='$resolve_err'"
 fi
 
 # ── common_test_workdir_init: creates WORKDIR and tears it down on EXIT ──────
@@ -272,18 +269,18 @@ inner_wd_file="$WORKDIR/inner-wd-path.txt"
 inner_rc=$?
 inner_wd="$(cat "$inner_wd_file" 2>/dev/null)"
 if [ "$inner_rc" -eq 0 ] && [ -n "$inner_wd" ] && [ ! -d "$inner_wd" ]; then
-  pass "common_test_workdir_init creates WORKDIR during the call and removes it via an EXIT trap"
+  common_test_pass "common_test_workdir_init creates WORKDIR during the call and removes it via an EXIT trap"
 else
-  fail "common_test_workdir_init: inner_rc=$inner_rc, inner_wd='$inner_wd' (expected created-then-gone)"
+  common_test_fail "common_test_workdir_init: inner_rc=$inner_rc, inner_wd='$inner_wd' (expected created-then-gone)"
 fi
 
 # ── Single-definition assertion: each new function has exactly one definition ─
 for fn in common_test_repo_root common_test_resolve_candidate common_test_workdir_init; do
   hits=$(grep -rc "^${fn}() {" --include="*.sh" "$SCRIPT_DIR/../lib" 2>/dev/null | awk -F: '{sum+=$2} END {print sum+0}')
   if [ "$hits" -eq 1 ]; then
-    pass "$fn has exactly one definition under scripts/lib/"
+    common_test_pass "$fn has exactly one definition under scripts/lib/"
   else
-    fail "$fn: expected exactly one definition under scripts/lib/, found $hits"
+    common_test_fail "$fn: expected exactly one definition under scripts/lib/, found $hits"
   fi
 done
 
@@ -318,15 +315,15 @@ echo "Failed: \$FAILED"
 EOF
 chmod +x "$GOOD_FIXTURE"
 if detect_test_helper_redefinition "$GOOD_FIXTURE"; then
-  fail "detect_test_helper_redefinition: false positive on a fixture with no local pass/fail/info"
+  common_test_fail "detect_test_helper_redefinition: false positive on a fixture with no local pass/fail/info"
 else
-  pass "detect_test_helper_redefinition: correctly clears a fixture sourcing common.sh with no local redefinition"
+  common_test_pass "detect_test_helper_redefinition: correctly clears a fixture sourcing common.sh with no local redefinition"
 fi
 good_out=$(bash "$GOOD_FIXTURE")
 if [[ "$good_out" == *"[PASS] sourced trio works without local redefinition"* ]] && [[ "$good_out" == *"Passed: 1"* ]]; then
-  pass "good-suite fixture runs end-to-end on the shared trio with no local pass/fail/info"
+  common_test_pass "good-suite fixture runs end-to-end on the shared trio with no local pass/fail/info"
 else
-  fail "good-suite fixture did not run correctly: $good_out"
+  common_test_fail "good-suite fixture did not run correctly: $good_out"
 fi
 
 BAD_FIXTURE="$WORKDIR/bad-suite.sh"
@@ -344,9 +341,9 @@ pass "this suite still redefines its own trio after sourcing common.sh"
 EOF
 chmod +x "$BAD_FIXTURE"
 if detect_test_helper_redefinition "$BAD_FIXTURE"; then
-  pass "detect_test_helper_redefinition: correctly flags a fixture that redefines pass/fail/info after sourcing common.sh"
+  common_test_pass "detect_test_helper_redefinition: correctly flags a fixture that redefines pass/fail/info after sourcing common.sh"
 else
-  fail "detect_test_helper_redefinition: missed a fixture that redefines pass/fail/info after sourcing common.sh"
+  common_test_fail "detect_test_helper_redefinition: missed a fixture that redefines pass/fail/info after sourcing common.sh"
 fi
 
 # ── Single-source assertion: no inline sess_$(date generation outside lib/common.sh ──
@@ -361,9 +358,9 @@ fi
 # scoped to commands/skills/agents, which leaves illustrative prose under context/, docs/, and
 # rules/ out of scope by construction rather than by a growing exclusion list.
 if grep -q 'sess_\$(date' "$LIB" 2>/dev/null; then
-  pass "common.sh itself defines the canonical sess_\$(date generator"
+  common_test_pass "common.sh itself defines the canonical sess_\$(date generator"
 else
-  fail "common.sh does not appear to define the canonical session-ID generator"
+  common_test_fail "common.sh does not appear to define the canonical session-ID generator"
 fi
 
 # ── Detect source-store vs. deployed layout ───────────────────────────────────
@@ -431,11 +428,11 @@ collect_session_id_offenders() {
 
 offending=$(collect_session_id_offenders "$SCAN_MODE" "$SCAN_ROOT")
 if [ -z "$offending" ]; then
-  pass "single-source assertion: no inline sess_\$(date generation outside lib/common.sh"
+  common_test_pass "single-source assertion: no inline sess_\$(date generation outside lib/common.sh"
 else
-  fail "single-source assertion: inline sess_\$(date generation found outside lib/common.sh:"
+  common_test_fail "single-source assertion: inline sess_\$(date generation found outside lib/common.sh:"
   while IFS= read -r off_line; do
-    [ -n "$off_line" ] && info "  $off_line"
+    [ -n "$off_line" ] && common_test_info "  $off_line"
   done <<< "$offending"
 fi
 
@@ -454,14 +451,14 @@ printf '```bash\nsession_id="%s"\n```\n' "$FIXTURE_GENERATOR" > "$WORKDIR/deploy
 
 deployed_offenders="$(collect_session_id_offenders deployed "$WORKDIR/deployed")"
 if echo "$deployed_offenders" | grep -q "commands/planted.md"; then
-  pass "collect_session_id_offenders (deployed): detects planted commands/ offender"
+  common_test_pass "collect_session_id_offenders (deployed): detects planted commands/ offender"
 else
-  fail "collect_session_id_offenders (deployed): did not detect planted commands/ offender"
+  common_test_fail "collect_session_id_offenders (deployed): did not detect planted commands/ offender"
 fi
 if echo "$deployed_offenders" | grep -q "context/illustrative.md"; then
-  fail "collect_session_id_offenders (deployed): incorrectly flagged illustrative-prose context/ site"
+  common_test_fail "collect_session_id_offenders (deployed): incorrectly flagged illustrative-prose context/ site"
 else
-  pass "collect_session_id_offenders (deployed): correctly excludes illustrative-prose context/ site"
+  common_test_pass "collect_session_id_offenders (deployed): correctly excludes illustrative-prose context/ site"
 fi
 
 # -- Source-store-layout fixture (including an extension lacking commands/skills/agents) --
@@ -471,26 +468,26 @@ printf '```bash\nsession_id="%s"\n```\n' "$FIXTURE_GENERATOR" > "$WORKDIR/source
 
 source_offenders="$(collect_session_id_offenders source-store "$WORKDIR/source")"
 if echo "$source_offenders" | grep -q "someext/commands/planted.md"; then
-  pass "collect_session_id_offenders (source-store): detects planted extension offender"
+  common_test_pass "collect_session_id_offenders (source-store): detects planted extension offender"
 else
-  fail "collect_session_id_offenders (source-store): did not detect planted extension offender"
+  common_test_fail "collect_session_id_offenders (source-store): did not detect planted extension offender"
 fi
 if [ -n "$source_offenders" ] && ! echo "$source_offenders" | grep -q "someext/commands/planted.md" 2>/dev/null; then
-  fail "collect_session_id_offenders (source-store): unexpected offender set: $source_offenders"
+  common_test_fail "collect_session_id_offenders (source-store): unexpected offender set: $source_offenders"
 else
-  pass "collect_session_id_offenders (source-store): skips bareext/ (no commands/skills/agents) without error"
+  common_test_pass "collect_session_id_offenders (source-store): skips bareext/ (no commands/skills/agents) without error"
 fi
 
 # -- Mode-probe correctness --
 if [ -f "$WORKDIR/deployed/core/manifest.json" ]; then
-  fail "mode probe: deployed fixture unexpectedly carries core/manifest.json"
+  common_test_fail "mode probe: deployed fixture unexpectedly carries core/manifest.json"
 else
-  pass "mode probe: deployed fixture correctly lacks core/manifest.json (resolves deployed)"
+  common_test_pass "mode probe: deployed fixture correctly lacks core/manifest.json (resolves deployed)"
 fi
 if [ -f "$WORKDIR/source/core/manifest.json" ]; then
-  pass "mode probe: source-store fixture correctly has core/manifest.json (resolves source-store)"
+  common_test_pass "mode probe: source-store fixture correctly has core/manifest.json (resolves source-store)"
 else
-  fail "mode probe: source-store fixture missing core/manifest.json"
+  common_test_fail "mode probe: source-store fixture missing core/manifest.json"
 fi
 
 echo ""

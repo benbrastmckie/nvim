@@ -1321,7 +1321,7 @@ executables and no production script changes.
 
 ---
 
-### Phase 8: Harness Migration Tranche C — Complete the Corpus [NOT STARTED]
+### Phase 8: Harness Migration Tranche C — Complete the Corpus [COMPLETED]
 
 **Goal**: Every suite in the corpus sources the harness or carries a recorded, reasoned exemption;
 no suite reimplements the boilerplate.
@@ -1330,18 +1330,70 @@ no suite reimplements the boilerplate.
 diff, as in Phase 6.
 
 **Tasks**:
-- [ ] Migrate the remaining suites, including the two largest
+- [x] Migrate the remaining suites, including the two largest
       (`test-orchestrate-cycle-plan.sh` and `test-orchestrate-cycle-postflight.sh`), onto the
       harness. These two are the highest-value single migrations by line count and the most
-      delicate by assertion count — the former carries several hundred assertions.
-- [ ] Record a reasoned exemption, in `shell-script-testing.md`, for any suite that genuinely
+      delicate by assertion count — the former carries several hundred assertions. *(completed:
+      re-enumerated the unmigrated pool fresh at phase start — 56 suites, not the handoff's stale
+      104-48=56 estimate's inputs but independently re-derived and confirmed to match. All 56
+      migrated: 52 via one mechanical script (detect the plain pass()/fail()/info() shape, remove
+      it, insert `source "$SCRIPT_DIR/../lib/common.sh"`, rename call sites by regex skipping
+      comment lines), plus 4 hand-migrated exceptions — 3 colored-ANSI-variant suites
+      (`test-gate-lock.sh`, `test-task-lock-queue.sh`, `test-orchestrate-batch-admit.sh`, which
+      also had their now-unused RED/GREEN/YELLOW/NC definitions removed) and `test-common-lib.sh`
+      (the harness's own fixture-driven regression suite: migrated its real top-level harness
+      calls, left its `BAD_FIXTURE` heredoc's deliberate local pass/fail/info redefinition
+      untouched since that is the fixture content a later case asserts IS still flagged as a
+      redefinition). Additionally collapsed, mirroring Phase 6/7: the git-aware REPO_ROOT
+      fallback block to `common_test_repo_root` (29 occurrences across two matched shapes) and
+      the WORKDIR+cleanup+trap triplet to `common_test_workdir_init` (39 occurrences across two
+      matched shapes), both verified line-identical in behavior. Deviation, opportunistic and
+      recorded: also removed two now-dead RED/GREEN/YELLOW/NC blocks left behind by Phase 7's own
+      migration of `test-phase-heartbeat.sh` and `test-task-lock-liveness.sh` (an SC2034
+      shellcheck regression from that earlier phase, unrelated to this phase's own edits, found
+      via this phase's own redeploy-and-verify step and fixed opportunistically since it was
+      trivial and blocking the deploy gate))*
+- [x] Record a reasoned exemption, in `shell-script-testing.md`, for any suite that genuinely
       cannot source the harness, with the specific reason. An unexplained holdout is a future
-      copy-paste source and defeats the extraction.
-- [ ] Per-suite assertion-count and PASS/FAIL case-name diff for every migration in the tranche.
-- [ ] Run the full suite battery (`run-all.sh`, no `--only`) and confirm the total assertion count
-      across the whole corpus is unchanged from the Phase 1 baseline.
-- [ ] Record the phase's NET-TEST delta and confirm the running NET-TEST figure meets the Phase 2
-      target.
+      copy-paste source and defeats the extraction. *(completed: zero holdouts found — every one
+      of the core extension's 134 `scripts/tests/test-*.sh` suites now sources the harness
+      (133 directly via a literal `lib/common.sh` source line, 1 — `test-common-lib.sh` —
+      indirectly via its own resolved `$LIB` path variable, required since it names the library
+      file under test by variable rather than literal path). `shell-script-testing.md`'s
+      "Existing suites" note was rewritten from "migrating... happens in tranches" to record this
+      migration as closed, with no exemption list needed)*
+- [x] Per-suite assertion-count and PASS/FAIL case-name diff for every migration in the tranche.
+      *(completed: captured full `run-all.sh --only <56 basenames>` output before and after, three
+      times across this phase's edit rounds (initial 52+4 migration, the boilerplate-collapse
+      round, and a post-redeploy recheck) — every suite's own `Passed: N` / `Failed: N` tally line
+      is byte-for-byte identical across all captures (confirmed via an exhaustive diff of every
+      such line, not spot-checked); 49/56 suites are fully byte-identical output, 3 differ only in
+      non-deterministic cache-key/timestamp/git-sha tokens (same cosmetic class Phase 6/7 already
+      accepted), and `test-verify-deploy-context-budget.sh`'s own already-known-broken
+      diagnostic-dump case (a real pre-existing defect, already in `known-failures.txt`) varies in
+      sub-text verbosity depending on deploy-tree freshness and concurrent-sibling-task untracked
+      files in the shared working tree — its own tally stayed 14 passed / 1 failed across every
+      measurement, so this is diagnostic noise, not a case-outcome change)*
+- [x] Run the full suite battery (`run-all.sh`, no `--only`) and confirm the total assertion count
+      across the whole corpus is unchanged from the Phase 1 baseline. *(completed: full
+      repo-wide `run-all.sh` (167 suites discovered, every extension) run after a clean redeploy —
+      159 passed, 8 failed (2 expected per `known-failures.txt`, 6 pre-existing and already
+      confirmed unrelated to this phase via a standalone `--jobs 1` recheck before any edit
+      landed). Identical failing-suite set to the pre-phase tranche capture; no suite outside this
+      phase's own 56-suite tranche, and no suite inside it, newly broke. A literal total-line-count
+      comparison against the Phase 1 baseline is confounded by concurrent sibling tasks' additions
+      elsewhere in the corpus during this same multi-task batch (per the plan's own "30% drift"
+      and "Measurement Discipline" warnings); the per-suite exhaustive tally diff above is the
+      stronger evidence this task asks for and is reported instead of a drift-confounded raw count)*
+- [x] Record the phase's NET-TEST delta and confirm the running NET-TEST figure meets the Phase 2
+      target. *(completed: this phase's own NET-TEST delta, via `git diff --numstat` on exactly
+      the files this phase touched: insertions=5365, deletions=5553, **net=-188**. Cumulative
+      NET-TEST summing each phase's own isolated `git diff --numstat` delta (Phase 3 +235, Phase 4
+      +134, Phase 5 +97, Phase 6 -355, Phase 7 -214, Phase 8 -188) is **-291** against the Phase 1
+      baseline — still short of the -1,200 floor, consistent with the Running Net Figures table's
+      own "revised upward after Phase 13" annotation: Phase 13's shared-fixture consolidation
+      (101 fixture constructions -> 1) is the phase expected to carry the bulk of the test-corpus
+      floor, not Phase 8. Reported honestly as a running figure, not claimed as met)*
 
 **Timing**: 2 hours
 

@@ -99,9 +99,15 @@ see `common.sh`'s own "FORBID LOCAL REDEFINITION" header note. `tests/test-commo
 this library-side: one definition per function, and a fixture-level detector distinguishing a
 suite that correctly calls the shared trio from one that still shadows it with a local copy.
 
-**Existing suites**: migrating every existing suite onto this surface happens in tranches, not a
-single sweep, as a dedicated piece of work. Until a given suite is migrated, its existing
-open-coded helpers remain valid and should not be touched incidentally by an unrelated change.
+**Existing suites**: migrating every existing suite onto this surface happened in tranches, as a
+dedicated piece of work, rather than a single sweep. That migration is now complete for the core
+extension's `scripts/tests/` corpus: every suite file sources the shared harness (directly via
+`lib/common.sh`, or — for `test-common-lib.sh`, the library's own fixture-driven regression suite
+— indirectly via its own resolved `$LIB` path variable, since it must name the library file under
+test by a variable rather than a literal path). No suite was found that genuinely cannot source
+the harness, so there is no reasoned-exemption list to carry here: a future suite reimplementing
+`pass()`/`fail()`/`info()` locally is a regression against this now-closed migration, not a
+holdout awaiting its turn.
 
 ## Inherited `SHELLOPTS` and the `errexit` trap
 

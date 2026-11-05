@@ -25,6 +25,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RUN_ALL_SRC="$CORE_DIR/tests/run-all.sh"
 SUITE_SELECTION_LIB="$CORE_DIR/lib/suite-selection-lib.sh"
@@ -40,13 +41,8 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # See test-run-all-parallel.sh's identical header note: an outer run-all.sh unconditionally
 # exports RUN_ALL_NESTED=1 into every suite it launches (including this one, when discovered
@@ -91,22 +87,22 @@ done
 unset _cand _cand_base _cand_matches
 
 if [ -z "$ZERO_REF_CANDIDATE" ]; then
-  fail "case1: setup error -- no zero-reference candidate could be derived from the current corpus"
-  fail "case1b: skipped -- case1's candidate derivation failed"
+  common_test_fail "case1: setup error -- no zero-reference candidate could be derived from the current corpus"
+  common_test_fail "case1b: skipped -- case1's candidate derivation failed"
 else
   escalation_out="$(suite_selection_select "$CORE_DIR/$ZERO_REF_CANDIDATE")"
   if [ "$escalation_out" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
-    pass "case1: a real zero-reference script ($ZERO_REF_CANDIDATE) escalates to the full-sweep sentinel"
+    common_test_pass "case1: a real zero-reference script ($ZERO_REF_CANDIDATE) escalates to the full-sweep sentinel"
   else
-    fail "case1: expected the full-sweep sentinel for $ZERO_REF_CANDIDATE, got:" "$escalation_out"
+    common_test_fail "case1: expected the full-sweep sentinel for $ZERO_REF_CANDIDATE, got:" "$escalation_out"
   fi
 
   # Case 1b: the unmapped-reporter names the same path as unmappable.
   unmapped_out="$(suite_selection_unmapped "$CORE_DIR/$ZERO_REF_CANDIDATE")"
   if [ "$unmapped_out" = "$CORE_DIR/$ZERO_REF_CANDIDATE" ]; then
-    pass "case1b: suite_selection_unmapped names the zero-reference path verbatim"
+    common_test_pass "case1b: suite_selection_unmapped names the zero-reference path verbatim"
   else
-    fail "case1b: suite_selection_unmapped did not name the unmappable path as expected" "$unmapped_out"
+    common_test_fail "case1b: suite_selection_unmapped did not name the unmappable path as expected" "$unmapped_out"
   fi
 fi
 
@@ -114,9 +110,9 @@ fi
 LINT_FIXTURE="lint-agent-contracts.sh"
 lint_out="$(suite_selection_select "$CORE_DIR/lint/$LINT_FIXTURE")"
 if printf '%s\n' "$lint_out" | grep -qx "test-${LINT_FIXTURE}"; then
-  pass "case2: lint/$LINT_FIXTURE maps to its paired suite test-$LINT_FIXTURE"
+  common_test_pass "case2: lint/$LINT_FIXTURE maps to its paired suite test-$LINT_FIXTURE"
 else
-  fail "case2: lint/$LINT_FIXTURE did not map to test-$LINT_FIXTURE" "$lint_out"
+  common_test_fail "case2: lint/$LINT_FIXTURE did not map to test-$LINT_FIXTURE" "$lint_out"
 fi
 
 # Case 2b: a shared lib/ file maps to its full many-to-one suite set (reference count >= 10,
@@ -125,9 +121,9 @@ LIB_FIXTURE="task-lookup-lib.sh"
 lib_out="$(suite_selection_select "$CORE_DIR/lib/$LIB_FIXTURE")"
 lib_count="$(printf '%s\n' "$lib_out" | grep -c .)"
 if [ "$lib_count" -ge 10 ]; then
-  pass "case2b: lib/$LIB_FIXTURE maps to its full many-to-one suite set ($lib_count suites)"
+  common_test_pass "case2b: lib/$LIB_FIXTURE maps to its full many-to-one suite set ($lib_count suites)"
 else
-  fail "case2b: lib/$LIB_FIXTURE mapped to only $lib_count suite(s), expected >= 10" "$lib_out"
+  common_test_fail "case2b: lib/$LIB_FIXTURE mapped to only $lib_count suite(s), expected >= 10" "$lib_out"
 fi
 
 # Case 2c: every returned suite carries a resolution-order classification (one of the three
@@ -142,20 +138,20 @@ while IFS='|' read -r _suite _class; do
   esac
 done <<< "$annotated_out"
 if [ "$bad_class_count" -eq 0 ] && [ -n "$annotated_out" ]; then
-  pass "case2c: every selected suite carries a valid resolution-order classification"
+  common_test_pass "case2c: every selected suite carries a valid resolution-order classification"
 else
-  fail "case2c: $bad_class_count selected suite(s) carried an invalid/missing classification" "$annotated_out"
+  common_test_fail "case2c: $bad_class_count selected suite(s) carried an invalid/missing classification" "$annotated_out"
 fi
 
 # Case 3: multi-path union, except a single unmappable path escalates the whole call.
 if [ -z "$ZERO_REF_CANDIDATE" ]; then
-  fail "case3: skipped -- case1's candidate derivation failed"
+  common_test_fail "case3: skipped -- case1's candidate derivation failed"
 else
   union_out="$(suite_selection_select "$CORE_DIR/lint/$LINT_FIXTURE" "$CORE_DIR/$ZERO_REF_CANDIDATE")"
   if [ "$union_out" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
-    pass "case3: one unmappable path among several escalates the whole multi-path call"
+    common_test_pass "case3: one unmappable path among several escalates the whole multi-path call"
   else
-    fail "case3: multi-path call with one unmappable path did not escalate" "$union_out"
+    common_test_fail "case3: multi-path call with one unmappable path did not escalate" "$union_out"
   fi
 fi
 
@@ -170,9 +166,9 @@ bad_token_rc=$?
 if [ "$bad_token_rc" -eq 2 ] \
    && printf '%s\n' "$bad_token_out" | grep -q "definitely-not-a-real-suite.sh" \
    && ! printf '%s\n' "$bad_token_out" | grep -q '\[RUN\]'; then
-  pass "case4: invalid --only token exits 2, names the token, runs no suite"
+  common_test_pass "case4: invalid --only token exits 2, names the token, runs no suite"
 else
-  fail "case4: invalid --only token did not refuse cleanly (rc=$bad_token_rc)" "$bad_token_out"
+  common_test_fail "case4: invalid --only token did not refuse cleanly (rc=$bad_token_rc)" "$bad_token_out"
 fi
 
 # Case 4b: a mixed valid+invalid token list refuses the WHOLE run (no partial subset silently
@@ -180,18 +176,18 @@ fi
 mixed_out="$(bash "$RUN_ALL_SRC" --only "test-common-lib.sh,definitely-not-a-real-suite.sh" 2>&1)"
 mixed_rc=$?
 if [ "$mixed_rc" -eq 2 ] && ! printf '%s\n' "$mixed_out" | grep -q '\[RUN\]'; then
-  pass "case4b: a mixed valid+invalid --only list refuses the whole run, not a partial subset"
+  common_test_pass "case4b: a mixed valid+invalid --only list refuses the whole run, not a partial subset"
 else
-  fail "case4b: mixed valid+invalid --only list did not refuse cleanly (rc=$mixed_rc)" "$mixed_out"
+  common_test_fail "case4b: mixed valid+invalid --only list did not refuse cleanly (rc=$mixed_rc)" "$mixed_out"
 fi
 
 # Case 4c: --only with an empty argument exits 2 with a named error.
 empty_out="$(bash "$RUN_ALL_SRC" --only "" 2>&1)"
 empty_rc=$?
 if [ "$empty_rc" -eq 2 ] && printf '%s\n' "$empty_out" | grep -q "ERROR: --only"; then
-  pass "case4c: --only with an empty argument exits 2 with a named error"
+  common_test_pass "case4c: --only with an empty argument exits 2 with a named error"
 else
-  fail "case4c: --only '' did not exit 2 with a named error (rc=$empty_rc)" "$empty_out"
+  common_test_fail "case4c: --only '' did not exit 2 with a named error (rc=$empty_rc)" "$empty_out"
 fi
 
 # =====================================================================================
@@ -257,9 +253,9 @@ noflag_out="$(bash "$FIXTURE_RUNNER" --quiet 2>&1)"
 noflag_rc=$?
 if [ "$noflag_rc" -eq 1 ] \
    && printf '%s\n' "$noflag_out" | grep -qF "4 passed, 2 failed (1 expected, 1 NEW), 0 skipped, 6 total"; then
-  pass "case5: no-flag run's tally line matches expected pre-selection semantics exactly"
+  common_test_pass "case5: no-flag run's tally line matches expected pre-selection semantics exactly"
 else
-  fail "case5: no-flag run's tally line did not match expected semantics (rc=$noflag_rc)" "$noflag_out"
+  common_test_fail "case5: no-flag run's tally line did not match expected semantics (rc=$noflag_rc)" "$noflag_out"
 fi
 
 # Case 6: --only selects exactly the given subset, preserving EXPECTED/NEW classification
@@ -269,9 +265,9 @@ only_out="$(bash "$FIXTURE_RUNNER" --quiet --timings "$TIMINGS_FILE" --only "tes
 only_rc=$?
 if [ "$only_rc" -eq 1 ] \
    && printf '%s\n' "$only_out" | grep -qF "1 passed, 2 failed (1 expected, 1 NEW), 0 skipped, 3 total"; then
-  pass "case6: --only selects exactly the given 3-suite subset with identical EXPECTED/NEW classification"
+  common_test_pass "case6: --only selects exactly the given 3-suite subset with identical EXPECTED/NEW classification"
 else
-  fail "case6: --only subset tally did not match expected (rc=$only_rc)" "$only_out"
+  common_test_fail "case6: --only subset tally did not match expected (rc=$only_rc)" "$only_out"
 fi
 
 # Case 6b: --timings emits exactly one row per SELECTED suite plus the aggregate TOTAL row --
@@ -280,12 +276,12 @@ if [ -f "$TIMINGS_FILE" ]; then
   timings_lines="$(wc -l < "$TIMINGS_FILE")"
   timings_suite_rows="$(grep -vc '^TOTAL,' "$TIMINGS_FILE")"
   if [ "$timings_lines" -eq 4 ] && [ "$timings_suite_rows" -eq 3 ]; then
-    pass "case6b: --timings under selection emits exactly 3 suite rows + 1 TOTAL row (not all $FIXTURE_TOTAL discovered)"
+    common_test_pass "case6b: --timings under selection emits exactly 3 suite rows + 1 TOTAL row (not all $FIXTURE_TOTAL discovered)"
   else
-    fail "case6b: --timings row count under selection was wrong (expected 3 suite + 1 TOTAL, got $timings_suite_rows suite + $((timings_lines - timings_suite_rows)) other)" "$(cat "$TIMINGS_FILE")"
+    common_test_fail "case6b: --timings row count under selection was wrong (expected 3 suite + 1 TOTAL, got $timings_suite_rows suite + $((timings_lines - timings_suite_rows)) other)" "$(cat "$TIMINGS_FILE")"
   fi
 else
-  fail "case6b: expected timings file $TIMINGS_FILE was not created"
+  common_test_fail "case6b: expected timings file $TIMINGS_FILE was not created"
 fi
 
 # Case 7: --only + --jobs 2 exercises the parallel path and TOTAL_ACCOUNTED cleanly (no
@@ -297,9 +293,9 @@ jobs2_rc=$?
 if [ "$jobs2_rc" -eq 0 ] \
    && printf '%s\n' "$jobs2_out" | grep -qF "3 passed, 0 failed (0 expected, 0 NEW), 0 skipped, 3 total" \
    && ! printf '%s\n' "$jobs2_out" | grep -q "internal scheduling error"; then
-  pass "case7: --only + --jobs 2 runs cleanly with no TOTAL_ACCOUNTED scheduling error"
+  common_test_pass "case7: --only + --jobs 2 runs cleanly with no TOTAL_ACCOUNTED scheduling error"
 else
-  fail "case7: --only + --jobs 2 did not run cleanly (rc=$jobs2_rc)" "$jobs2_out"
+  common_test_fail "case7: --only + --jobs 2 did not run cleanly (rc=$jobs2_rc)" "$jobs2_out"
 fi
 
 # Case 8: a LOAD_SENSITIVE_BASENAMES member included in --only still runs alone, serially,
@@ -307,9 +303,9 @@ fi
 # for a load-sensitive suite, even under selection.
 loadsens_out="$(bash "$FIXTURE_RUNNER" --jobs 2 --only "test-fx-pass1.sh,test-run-all-parallel.sh" 2>&1)"
 if printf '%s\n' "$loadsens_out" | grep -qF "[RUN]  $TESTS_DIR/test-run-all-parallel.sh (load-sensitive: serialized, not in the parallel pool)"; then
-  pass "case8: a LOAD_SENSITIVE_BASENAMES member selected via --only still serializes ahead of the parallel pool"
+  common_test_pass "case8: a LOAD_SENSITIVE_BASENAMES member selected via --only still serializes ahead of the parallel pool"
 else
-  fail "case8: load-sensitive serialization annotation missing under --only + --jobs 2" "$loadsens_out"
+  common_test_fail "case8: load-sensitive serialization annotation missing under --only + --jobs 2" "$loadsens_out"
 fi
 
 # Case 9: RUN_ALL_NESTED=1 still forces sequential under --only + --jobs N (same RELATIVE-ratio
@@ -334,12 +330,12 @@ RUN_ALL_NESTED=1 bash "$FIXTURE_RUNNER" --quiet --jobs 2 --only "test-fx-slow-a.
 t1=$(date +%s%3N)
 only_nested_ms=$((t1 - t0))
 
-info "case9 timing: --only+parallel=${only_parallel_ms}ms --only+nested(forced-sequential)=${only_nested_ms}ms"
+common_test_info "case9 timing: --only+parallel=${only_parallel_ms}ms --only+nested(forced-sequential)=${only_nested_ms}ms"
 
 if [ "$only_nested_ms" -ge "$only_parallel_ms" ]; then
-  pass "case9: RUN_ALL_NESTED=1 forces sequential (${only_nested_ms}ms) under --only, not faster than unguarded parallel (${only_parallel_ms}ms)"
+  common_test_pass "case9: RUN_ALL_NESTED=1 forces sequential (${only_nested_ms}ms) under --only, not faster than unguarded parallel (${only_parallel_ms}ms)"
 else
-  fail "case9: RUN_ALL_NESTED=1 (${only_nested_ms}ms) was FASTER than unguarded --only + --jobs 2 (${only_parallel_ms}ms) -- the nested guard may not compose with selection"
+  common_test_fail "case9: RUN_ALL_NESTED=1 (${only_nested_ms}ms) was FASTER than unguarded --only + --jobs 2 (${only_parallel_ms}ms) -- the nested guard may not compose with selection"
 fi
 
 # Case 10 (producer-side pinning, consumer/producer verdict-row contract): run-all.sh's own
@@ -352,16 +348,16 @@ fi
 if printf '%s\n' "$noflag_out" | grep -qE '^\[FAIL\] .*test-fx-fail1\.sh$' \
    && printf '%s\n' "$noflag_out" | grep -qE '^\[FAIL\] .*test-fx-fail2\.sh$' \
    && ! printf '%s\n' "$noflag_out" | grep -qP '^\x1b\[' 2>/dev/null; then
-  pass "case10: run-all.sh's [FAIL] <suite> verdict rows are line-initial and uncolored"
+  common_test_pass "case10: run-all.sh's [FAIL] <suite> verdict rows are line-initial and uncolored"
 else
   # grep -P may be unavailable on some hosts; fall back to a portable ANSI-escape probe for the
   # color-freedom half of the assertion so this case cannot spuriously fail on a missing -P flag.
   if printf '%s\n' "$noflag_out" | grep -qE '^\[FAIL\] .*test-fx-fail1\.sh$' \
      && printf '%s\n' "$noflag_out" | grep -qE '^\[FAIL\] .*test-fx-fail2\.sh$' \
      && ! printf '%s\n' "$noflag_out" | od -c | grep -q '033   \['; then
-    pass "case10: run-all.sh's [FAIL] <suite> verdict rows are line-initial and uncolored (portable probe)"
+    common_test_pass "case10: run-all.sh's [FAIL] <suite> verdict rows are line-initial and uncolored (portable probe)"
   else
-    fail "case10: run-all.sh's [FAIL] <suite> verdict row shape regressed" "$noflag_out"
+    common_test_fail "case10: run-all.sh's [FAIL] <suite> verdict row shape regressed" "$noflag_out"
   fi
 fi
 
@@ -389,9 +385,9 @@ if [ "$stall_rc" -eq 1 ] \
    && printf '%s\n' "$stall_out" | grep -qE '^\[FAIL\] .*test-fx-stall\.sh$' \
    && printf '%s\n' "$stall_out" | grep -qF "TIMEOUT: $TESTS_DIR/test-fx-stall.sh exceeded the 2s per-suite bound and was killed" \
    && [ "$stall_ms" -lt 8000 ]; then
-  pass "case11: sequential per-suite timeout fires, names the suite and the 2s bound, within margin (${stall_ms}ms)"
+  common_test_pass "case11: sequential per-suite timeout fires, names the suite and the 2s bound, within margin (${stall_ms}ms)"
 else
-  fail "case11: sequential per-suite timeout did not fire as expected (rc=$stall_rc, elapsed=${stall_ms}ms)" "$stall_out"
+  common_test_fail "case11: sequential per-suite timeout did not fire as expected (rc=$stall_rc, elapsed=${stall_ms}ms)" "$stall_out"
 fi
 
 # Case 12: parallel (--jobs 2) per-suite timeout kills only the stalled suite -- the sibling
@@ -403,9 +399,9 @@ if [ "$par_rc" -eq 1 ] \
    && printf '%s\n' "$par_out" | grep -qE '^\[FAIL\] .*test-fx-stall\.sh$' \
    && printf '%s\n' "$par_out" | grep -qF "TIMEOUT:" \
    && printf '%s\n' "$par_out" | grep -qF "1 passed, 1 failed (0 expected, 1 NEW), 0 skipped, 2 total"; then
-  pass "case12: parallel per-suite timeout kills only the stalled suite; the sibling suite still completes and the run reaches a stable summary"
+  common_test_pass "case12: parallel per-suite timeout kills only the stalled suite; the sibling suite still completes and the run reaches a stable summary"
 else
-  fail "case12: parallel per-suite timeout did not isolate correctly (rc=$par_rc)" "$par_out"
+  common_test_fail "case12: parallel per-suite timeout did not isolate correctly (rc=$par_rc)" "$par_out"
 fi
 
 # Case 13: a suite that explicitly ignores SIGTERM is still terminated within a small margin of
@@ -428,9 +424,9 @@ ign_ms=$((t1 - t0))
 if [ "$ign_rc" -eq 1 ] \
    && printf '%s\n' "$ign_out" | grep -qF "TIMEOUT:" \
    && [ "$ign_ms" -lt 15000 ]; then
-  pass "case13: a SIGTERM-ignoring suite is still killed via -k 5's SIGKILL escalation (${ign_ms}ms, not the full 30s sleep)"
+  common_test_pass "case13: a SIGTERM-ignoring suite is still killed via -k 5's SIGKILL escalation (${ign_ms}ms, not the full 30s sleep)"
 else
-  fail "case13: SIGTERM-ignoring suite was not reliably killed (rc=$ign_rc, elapsed=${ign_ms}ms)" "$ign_out"
+  common_test_fail "case13: SIGTERM-ignoring suite was not reliably killed (rc=$ign_rc, elapsed=${ign_ms}ms)" "$ign_out"
 fi
 
 echo ""

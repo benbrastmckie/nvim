@@ -45,10 +45,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/script-inventory.sh"
@@ -77,13 +75,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 mk_git_fixture() {
   local dir="$1"
@@ -121,14 +114,14 @@ ENUM_OUT="$(bash "$TOOL" --root "$ENUM_DIR" 2>"$WORKDIR/enum_stderr")"
 enum_count="$(echo "$ENUM_OUT" | jq -r '.candidate_count')"
 enum_paths="$(echo "$ENUM_OUT" | jq -r '.scripts[].path' | sort)"
 if [ "$enum_count" = "1" ]; then
-  pass "enumeration: candidate_count == 1 (tests/ and test-* excluded)"
+  common_test_pass "enumeration: candidate_count == 1 (tests/ and test-* excluded)"
 else
-  fail "enumeration: candidate_count == $enum_count (expected 1); stderr: $(cat "$WORKDIR/enum_stderr")"
+  common_test_fail "enumeration: candidate_count == $enum_count (expected 1); stderr: $(cat "$WORKDIR/enum_stderr")"
 fi
 if [ "$enum_paths" = "agent-system/extensions/core/scripts/real.sh" ]; then
-  pass "enumeration: only real.sh enumerated"
+  common_test_pass "enumeration: only real.sh enumerated"
 else
-  fail "enumeration: unexpected enumerated set: $enum_paths"
+  common_test_fail "enumeration: unexpected enumerated set: $enum_paths"
 fi
 
 # =====================================================================
@@ -147,14 +140,14 @@ SIZE_OUT="$(bash "$TOOL" --root "$SIZE_DIR" 2>"$WORKDIR/size_stderr")"
 got_lines="$(echo "$SIZE_OUT" | jq -r '.scripts[0].lines')"
 got_bytes="$(echo "$SIZE_OUT" | jq -r '.scripts[0].bytes')"
 if [ "$got_lines" = "$expected_lines" ]; then
-  pass "size metrics: lines == $expected_lines"
+  common_test_pass "size metrics: lines == $expected_lines"
 else
-  fail "size metrics: lines == $got_lines (expected $expected_lines)"
+  common_test_fail "size metrics: lines == $got_lines (expected $expected_lines)"
 fi
 if [ "$got_bytes" = "$expected_bytes" ]; then
-  pass "size metrics: bytes == $expected_bytes"
+  common_test_pass "size metrics: bytes == $expected_bytes"
 else
-  fail "size metrics: bytes == $got_bytes (expected $expected_bytes)"
+  common_test_fail "size metrics: bytes == $got_bytes (expected $expected_bytes)"
 fi
 
 # =====================================================================
@@ -180,14 +173,14 @@ a_callers="$(echo "$CALLER_OUT" | jq -r '.scripts[] | select(.path == "agent-sys
 a_caller_paths="$(echo "$CALLER_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/a.sh") | .inbound_caller_paths[]')"
 b_zero="$(echo "$CALLER_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/b.sh") | .zero_caller_finding')"
 if [ "$a_callers" = "1" ] && [ "$a_caller_paths" = "agent-system/extensions/core/scripts/b.sh" ]; then
-  pass "caller counting: a.sh has exactly 1 caller (b.sh), excluding itself"
+  common_test_pass "caller counting: a.sh has exactly 1 caller (b.sh), excluding itself"
 else
-  fail "caller counting: a.sh callers=$a_callers paths=[$a_caller_paths] (expected 1, b.sh only)"
+  common_test_fail "caller counting: a.sh callers=$a_callers paths=[$a_caller_paths] (expected 1, b.sh only)"
 fi
 if [ "$b_zero" = "true" ]; then
-  pass "caller counting: b.sh (referenced by nothing) has zero_caller_finding == true"
+  common_test_pass "caller counting: b.sh (referenced by nothing) has zero_caller_finding == true"
 else
-  fail "caller counting: b.sh zero_caller_finding == $b_zero (expected true)"
+  common_test_fail "caller counting: b.sh zero_caller_finding == $b_zero (expected true)"
 fi
 
 # =====================================================================
@@ -219,14 +212,14 @@ tested_paths="$(echo "$HASTEST_OUT" | jq -r '.scripts[] | select(.path == "agent
 untested_has="$(echo "$HASTEST_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/untested.sh") | .has_test')"
 untested_paths_count="$(echo "$HASTEST_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/untested.sh") | .test_paths | length')"
 if [ "$tested_has" = "true" ] && [ "$tested_paths" = "agent-system/extensions/core/scripts/tests/test-tested.sh" ]; then
-  pass "has_test: tested.sh reports true with correct test_paths"
+  common_test_pass "has_test: tested.sh reports true with correct test_paths"
 else
-  fail "has_test: tested.sh has_test=$tested_has test_paths=[$tested_paths]"
+  common_test_fail "has_test: tested.sh has_test=$tested_has test_paths=[$tested_paths]"
 fi
 if [ "$untested_has" = "false" ] && [ "$untested_paths_count" = "0" ]; then
-  pass "has_test: untested.sh reports false with empty test_paths"
+  common_test_pass "has_test: untested.sh reports false with empty test_paths"
 else
-  fail "has_test: untested.sh has_test=$untested_has test_paths_count=$untested_paths_count"
+  common_test_fail "has_test: untested.sh has_test=$untested_has test_paths_count=$untested_paths_count"
 fi
 
 # =====================================================================
@@ -239,12 +232,12 @@ if DEGEN_OUT="$(bash "$TOOL" --root "$DEGENERATE_DIR" 2>"$WORKDIR/degen_stderr")
   degen_scripts_len="$(echo "$DEGEN_OUT" | jq -r '.scripts | length')"
   degen_summary="$(echo "$DEGEN_OUT" | jq -c '.summary')"
   if [ "$degen_count" = "0" ] && [ "$degen_scripts_len" = "0" ] && [ "$degen_summary" = "null" ]; then
-    pass "degenerate root: candidate_count 0, scripts [], summary null"
+    common_test_pass "degenerate root: candidate_count 0, scripts [], summary null"
   else
-    fail "degenerate root: count=$degen_count scripts_len=$degen_scripts_len summary=$degen_summary"
+    common_test_fail "degenerate root: count=$degen_count scripts_len=$degen_scripts_len summary=$degen_summary"
   fi
 else
-  fail "degenerate root: script-inventory.sh exited non-zero; stderr: $(cat "$WORKDIR/degen_stderr")"
+  common_test_fail "degenerate root: script-inventory.sh exited non-zero; stderr: $(cat "$WORKDIR/degen_stderr")"
 fi
 
 # =====================================================================
@@ -255,9 +248,9 @@ bash "$TOOL" --root >/dev/null 2>"$WORKDIR/usage_stderr"
 usage_exit=$?
 set -e 2>/dev/null || true
 if [ "$usage_exit" -eq 1 ]; then
-  pass "usage error: --root with no argument exits 1"
+  common_test_pass "usage error: --root with no argument exits 1"
 else
-  fail "usage error: --root with no argument exited $usage_exit (expected 1)"
+  common_test_fail "usage error: --root with no argument exited $usage_exit (expected 1)"
 fi
 
 # =====================================================================
@@ -277,9 +270,9 @@ before_manifest="$(find "$NOFX_DIR" -type f | sort)"
 bash "$TOOL" --root "$NOFX_DIR" >/dev/null 2>"$WORKDIR/nofx_stderr"
 after_manifest="$(find "$NOFX_DIR" -type f | sort)"
 if [ "$before_manifest" = "$after_manifest" ]; then
-  pass "no side effects: fixture root file manifest unchanged across a run"
+  common_test_pass "no side effects: fixture root file manifest unchanged across a run"
 else
-  fail "no side effects: fixture root file manifest changed; before=[$before_manifest] after=[$after_manifest]"
+  common_test_fail "no side effects: fixture root file manifest changed; before=[$before_manifest] after=[$after_manifest]"
 fi
 
 # =====================================================================
@@ -306,14 +299,14 @@ sizeline_exit=$?
 set -e 2>/dev/null || true
 sizeline_linecount="$(printf '%s' "$SIZELINE_OUT" | grep -c '^' || true)"
 if [ "$sizeline_exit" -eq 0 ] && [ "$sizeline_linecount" -eq 1 ]; then
-  pass "--size-line: emits exactly one line and exits 0"
+  common_test_pass "--size-line: emits exactly one line and exits 0"
 else
-  fail "--size-line: exit=$sizeline_exit line_count=$sizeline_linecount output=[$SIZELINE_OUT]; stderr: $(cat "$WORKDIR/sizeline_stderr")"
+  common_test_fail "--size-line: exit=$sizeline_exit line_count=$sizeline_linecount output=[$SIZELINE_OUT]; stderr: $(cat "$WORKDIR/sizeline_stderr")"
 fi
 if echo "$SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=2 test_lines=6 md_files=1 md_lines=6'; then
-  pass "--size-line: counts match the fixture (2 scripts/8 lines, 2 test suites/6 lines, 1 md file/6 lines)"
+  common_test_pass "--size-line: counts match the fixture (2 scripts/8 lines, 2 test suites/6 lines, 1 md file/6 lines)"
 else
-  fail "--size-line: unexpected output: $SIZELINE_OUT"
+  common_test_fail "--size-line: unexpected output: $SIZELINE_OUT"
 fi
 
 set +e
@@ -321,9 +314,9 @@ bash "$TOOL" --root "$SIZELINE_DIR" --size-line --check >/dev/null 2>"$WORKDIR/s
 sizeline_both_exit=$?
 set -e 2>/dev/null || true
 if [ "$sizeline_both_exit" -eq 1 ]; then
-  pass "--size-line: composed with --check is a usage error (exit 1)"
+  common_test_pass "--size-line: composed with --check is a usage error (exit 1)"
 else
-  fail "--size-line: --size-line --check exited $sizeline_both_exit (expected 1)"
+  common_test_fail "--size-line: --size-line --check exited $sizeline_both_exit (expected 1)"
 fi
 
 # =====================================================================
@@ -352,14 +345,14 @@ untracked_sizeline_exit=$?
 set -e 2>/dev/null || true
 untracked_sizeline_linecount="$(printf '%s' "$UNTRACKED_SIZELINE_OUT" | grep -c '^' || true)"
 if [ "$untracked_sizeline_exit" -eq 0 ] && [ "$untracked_sizeline_linecount" -eq 1 ]; then
-  pass "untracked inclusion: --size-line emits exactly one line and exits 0"
+  common_test_pass "untracked inclusion: --size-line emits exactly one line and exits 0"
 else
-  fail "untracked inclusion: exit=$untracked_sizeline_exit line_count=$untracked_sizeline_linecount output=[$UNTRACKED_SIZELINE_OUT]; stderr: $(cat "$WORKDIR/untracked_sizeline_stderr")"
+  common_test_fail "untracked inclusion: exit=$untracked_sizeline_exit line_count=$untracked_sizeline_linecount output=[$UNTRACKED_SIZELINE_OUT]; stderr: $(cat "$WORKDIR/untracked_sizeline_stderr")"
 fi
 if echo "$UNTRACKED_SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=1 test_lines=2 md_files=1 md_lines=3 untracked=3'; then
-  pass "untracked inclusion: --size-line counts the tracked AND unstaged non-test scripts (2/8), the unstaged test suite (1/2), the unstaged markdown file (1/3), excludes the gitignored script, and reports untracked=3"
+  common_test_pass "untracked inclusion: --size-line counts the tracked AND unstaged non-test scripts (2/8), the unstaged test suite (1/2), the unstaged markdown file (1/3), excludes the gitignored script, and reports untracked=3"
 else
-  fail "untracked inclusion: unexpected --size-line output: $UNTRACKED_SIZELINE_OUT"
+  common_test_fail "untracked inclusion: unexpected --size-line output: $UNTRACKED_SIZELINE_OUT"
 fi
 
 UNTRACKED_JSON_OUT="$(bash "$TOOL" --root "$UNTRACKED_DIR" 2>"$WORKDIR/untracked_json_stderr")"
@@ -369,19 +362,19 @@ untracked_json_paths="$(echo "$UNTRACKED_JSON_OUT" | jq -r '.untracked_paths[]')
 untracked_script_tracked="$(echo "$UNTRACKED_JSON_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/untracked.sh") | .tracked')"
 tracked_script_tracked="$(echo "$UNTRACKED_JSON_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/tracked.sh") | .tracked')"
 if [ "$untracked_candidate_count" = "2" ]; then
-  pass "untracked inclusion: JSON candidate_count includes the unstaged script (2 total)"
+  common_test_pass "untracked inclusion: JSON candidate_count includes the unstaged script (2 total)"
 else
-  fail "untracked inclusion: JSON candidate_count == $untracked_candidate_count (expected 2); stderr: $(cat "$WORKDIR/untracked_json_stderr")"
+  common_test_fail "untracked inclusion: JSON candidate_count == $untracked_candidate_count (expected 2); stderr: $(cat "$WORKDIR/untracked_json_stderr")"
 fi
 if [ "$untracked_json_count" = "1" ] && [ "$untracked_json_paths" = "agent-system/extensions/core/scripts/untracked.sh" ]; then
-  pass "untracked inclusion: JSON untracked_count/untracked_paths name exactly untracked.sh"
+  common_test_pass "untracked inclusion: JSON untracked_count/untracked_paths name exactly untracked.sh"
 else
-  fail "untracked inclusion: untracked_count=$untracked_json_count untracked_paths=[$untracked_json_paths] (expected 1, untracked.sh only)"
+  common_test_fail "untracked inclusion: untracked_count=$untracked_json_count untracked_paths=[$untracked_json_paths] (expected 1, untracked.sh only)"
 fi
 if [ "$untracked_script_tracked" = "false" ] && [ "$tracked_script_tracked" = "true" ]; then
-  pass "untracked inclusion: per-script tracked boolean is false for untracked.sh, true for tracked.sh"
+  common_test_pass "untracked inclusion: per-script tracked boolean is false for untracked.sh, true for tracked.sh"
 else
-  fail "untracked inclusion: untracked.sh tracked=$untracked_script_tracked, tracked.sh tracked=$tracked_script_tracked (expected false, true)"
+  common_test_fail "untracked inclusion: untracked.sh tracked=$untracked_script_tracked, tracked.sh tracked=$tracked_script_tracked (expected false, true)"
 fi
 
 # Gitignored file never appears anywhere: not in the ranked scripts, not in the ignored-aware
@@ -389,9 +382,9 @@ fi
 # above, which would be scripts=3/untracked=4 if ignored.sh leaked in).
 ignored_present="$(echo "$UNTRACKED_JSON_OUT" | jq -r '[.scripts[].path] | any(. == "agent-system/extensions/core/scripts/ignored.sh")')"
 if [ "$ignored_present" = "false" ]; then
-  pass "untracked inclusion: gitignored ignored.sh is absent from the JSON scripts array"
+  common_test_pass "untracked inclusion: gitignored ignored.sh is absent from the JSON scripts array"
 else
-  fail "untracked inclusion: gitignored ignored.sh unexpectedly present in the JSON scripts array"
+  common_test_fail "untracked inclusion: gitignored ignored.sh unexpectedly present in the JSON scripts array"
 fi
 
 # Negative control: a scratch copy of script-inventory.sh with the Phase 2 *.sh union reverted
@@ -406,9 +399,9 @@ set +e
 REVERTED_OUT="$(bash "$REVERTED_TOOL" --root "$UNTRACKED_DIR" --size-line 2>"$WORKDIR/reverted_stderr")"
 set -e 2>/dev/null || true
 if echo "$REVERTED_OUT" | grep -q 'scripts=1 '; then
-  pass "negative control: reverting the *.sh union makes the untracked case FAIL to see untracked.sh (scripts=1, not 2) -- the new assertions are not vacuous"
+  common_test_pass "negative control: reverting the *.sh union makes the untracked case FAIL to see untracked.sh (scripts=1, not 2) -- the new assertions are not vacuous"
 else
-  fail "negative control: reverted script unexpectedly still reports the untracked script; output: $REVERTED_OUT"
+  common_test_fail "negative control: reverted script unexpectedly still reports the untracked script; output: $REVERTED_OUT"
 fi
 
 # Negative control: dropping --exclude-standard entirely (so --others would see gitignored files
@@ -421,9 +414,9 @@ set +e
 NOEXCLUDE_OUT="$(bash "$NOEXCLUDE_TOOL" --root "$UNTRACKED_DIR" --size-line 2>"$WORKDIR/noexclude_stderr")"
 set -e 2>/dev/null || true
 if echo "$NOEXCLUDE_OUT" | grep -q 'scripts=3 '; then
-  pass "negative control: dropping --exclude-standard lets the gitignored script leak in (scripts=3) -- the gitignore-exclusion assertion is not vacuous"
+  common_test_pass "negative control: dropping --exclude-standard lets the gitignored script leak in (scripts=3) -- the gitignore-exclusion assertion is not vacuous"
 else
-  fail "negative control: dropping --exclude-standard did not surface the gitignored script as expected; output: $NOEXCLUDE_OUT"
+  common_test_fail "negative control: dropping --exclude-standard did not surface the gitignored script as expected; output: $NOEXCLUDE_OUT"
 fi
 
 # =====================================================================
@@ -458,19 +451,19 @@ if command -v git >/dev/null 2>&1; then
   unreg_val="$(echo "$MANIFEST_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/unregistered.sh") | .manifest_registered')"
   unreg_zero="$(echo "$MANIFEST_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/unregistered.sh") | .zero_caller_finding')"
   if [ "$reg_val" = "true" ]; then
-    pass "manifest_registered: registered.sh (declared in provides.scripts) reports true"
+    common_test_pass "manifest_registered: registered.sh (declared in provides.scripts) reports true"
   else
-    fail "manifest_registered: registered.sh reports $reg_val (expected true); stderr: $(cat "$WORKDIR/manifest_stderr")"
+    common_test_fail "manifest_registered: registered.sh reports $reg_val (expected true); stderr: $(cat "$WORKDIR/manifest_stderr")"
   fi
   if [ "$unreg_val" = "false" ]; then
-    pass "manifest_registered: unregistered.sh (absent from provides.scripts) reports false"
+    common_test_pass "manifest_registered: unregistered.sh (absent from provides.scripts) reports false"
   else
-    fail "manifest_registered: unregistered.sh reports $unreg_val (expected false)"
+    common_test_fail "manifest_registered: unregistered.sh reports $unreg_val (expected false)"
   fi
   if [ "$unreg_zero" = "false" ]; then
-    pass "manifest_registered isolation: unregistered.sh has a real caller, so its finding is manifest-drift only, not also zero-caller"
+    common_test_pass "manifest_registered isolation: unregistered.sh has a real caller, so its finding is manifest-drift only, not also zero-caller"
   else
-    fail "manifest_registered isolation: unregistered.sh zero_caller_finding == $unreg_zero (expected false -- registered.sh references it)"
+    common_test_fail "manifest_registered isolation: unregistered.sh zero_caller_finding == $unreg_zero (expected false -- registered.sh references it)"
   fi
 
   set +e
@@ -478,12 +471,12 @@ if command -v git >/dev/null 2>&1; then
   manifest_check_exit=$?
   set -e 2>/dev/null || true
   if [ "$manifest_check_exit" -eq 1 ]; then
-    pass "--check: manifest-drift-only fixture exits 1 (zero zero-caller findings present)"
+    common_test_pass "--check: manifest-drift-only fixture exits 1 (zero zero-caller findings present)"
   else
-    fail "--check: manifest-drift fixture exited $manifest_check_exit (expected 1)"
+    common_test_fail "--check: manifest-drift fixture exited $manifest_check_exit (expected 1)"
   fi
 else
-  info "git not on PATH -- skipping manifest_registered git-fixture cases"
+  common_test_info "git not on PATH -- skipping manifest_registered git-fixture cases"
 fi
 
 # =====================================================================
@@ -513,9 +506,9 @@ bash "$TOOL" --root "$CLEANCHECK_DIR" --check >/dev/null 2>"$WORKDIR/cleancheck_
 cleancheck_exit=$?
 set -e 2>/dev/null || true
 if [ "$cleancheck_exit" -eq 0 ]; then
-  pass "--check: fully clean fixture (registered + referenced via its own test file) exits 0"
+  common_test_pass "--check: fully clean fixture (registered + referenced via its own test file) exits 0"
 else
-  fail "--check: clean fixture exited $cleancheck_exit (expected 0); stderr: $(cat "$WORKDIR/cleancheck_stderr")"
+  common_test_fail "--check: clean fixture exited $cleancheck_exit (expected 0); stderr: $(cat "$WORKDIR/cleancheck_stderr")"
 fi
 
 # =====================================================================
@@ -568,14 +561,14 @@ dup1_count="$(echo "$DUP_OUT" | jq -r '.scripts[] | select(.path == "agent-syste
 dup1_peers="$(echo "$DUP_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/dup1.sh") | .duplicate_block_peers[]')"
 lone_count="$(echo "$DUP_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/lone.sh") | .duplicate_blocks')"
 if [ "$dup1_count" -ge 1 ] 2>/dev/null && [ "$dup1_peers" = "agent-system/extensions/core/scripts/dup2.sh" ]; then
-  pass "duplicate-block detection: dup1.sh/dup2.sh's shared 10-line block is detected, cross-referenced to its peer"
+  common_test_pass "duplicate-block detection: dup1.sh/dup2.sh's shared 10-line block is detected, cross-referenced to its peer"
 else
-  fail "duplicate-block detection: dup1.sh duplicate_blocks=$dup1_count peers=[$dup1_peers] (expected >=1, peer dup2.sh); stderr: $(cat "$WORKDIR/dup_stderr")"
+  common_test_fail "duplicate-block detection: dup1.sh duplicate_blocks=$dup1_count peers=[$dup1_peers] (expected >=1, peer dup2.sh); stderr: $(cat "$WORKDIR/dup_stderr")"
 fi
 if [ "$lone_count" = "0" ]; then
-  pass "duplicate-block detection: a same-length but unshared block is NOT reported (below the 2-file / 3-occurrence threshold)"
+  common_test_pass "duplicate-block detection: a same-length but unshared block is NOT reported (below the 2-file / 3-occurrence threshold)"
 else
-  fail "duplicate-block detection: lone.sh duplicate_blocks=$lone_count (expected 0)"
+  common_test_fail "duplicate-block detection: lone.sh duplicate_blocks=$lone_count (expected 0)"
 fi
 
 # =====================================================================
@@ -585,9 +578,9 @@ fi
 RANK_RUN1="$(bash "$TOOL" --root "$DUP_DIR" 2>/dev/null | jq 'del(.generated_at)')"
 RANK_RUN2="$(bash "$TOOL" --root "$DUP_DIR" 2>/dev/null | jq 'del(.generated_at)')"
 if [ "$RANK_RUN1" = "$RANK_RUN2" ]; then
-  pass "rank ordering: two consecutive runs on the same fixture are identical modulo generated_at"
+  common_test_pass "rank ordering: two consecutive runs on the same fixture are identical modulo generated_at"
 else
-  fail "rank ordering: two consecutive runs diverged"
+  common_test_fail "rank ordering: two consecutive runs diverged"
 fi
 
 echo ""

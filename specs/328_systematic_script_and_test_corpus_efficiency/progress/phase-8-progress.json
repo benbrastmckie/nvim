@@ -1,0 +1,129 @@
+{
+  "phase": 8,
+  "phase_name": "Harness Migration Tranche C - Complete the Corpus",
+  "started_at": "2026-11-05T01:25:00Z",
+  "last_updated": "2026-11-05T02:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Migrate remaining suites (incl. the two largest) onto common.sh harness",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh",
+        "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
+        "agent-system/extensions/core/scripts/tests/test-check-task-references.sh",
+        "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+        "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-context-reachability.sh",
+        "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
+        "agent-system/extensions/core/scripts/tests/test-detect-noop-bash.sh",
+        "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-lock.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-snapshot.sh",
+        "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh",
+        "agent-system/extensions/core/scripts/tests/test-guard-git-push.sh",
+        "agent-system/extensions/core/scripts/tests/test-issue-record.sh",
+        "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-triage-classify.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
+        "agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh",
+        "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+        "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh",
+        "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh",
+        "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+        "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
+        "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
+        "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh",
+        "agent-system/extensions/core/scripts/tests/test-script-inventory.sh",
+        "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+        "agent-system/extensions/core/scripts/tests/test-subagent-postflight-marker.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-lock-queue.sh",
+        "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-no-task-references.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+        "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Record reasoned exemptions in shell-script-testing.md for genuine holdouts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Per-suite assertion-count/PASS-FAIL diff for every migration",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run full run-all.sh (no --only) and confirm total assertion count unchanged",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Record NET-TEST delta and confirm running figure meets Phase 2 target",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Mechanical Python script: detect plain pass()/fail()/info() shape, remove, insert source line, regex-rename call sites skipping comments",
+      "result": "success",
+      "reason": "Applied cleanly to 52 of 56 files in one pass; 4 exceptions (3 colored-ANSI variants, 1 self-referential harness test) handled individually"
+    },
+    {
+      "approach": "Regex-based collapse of the REPO_ROOT git-rev-parse fallback block and the WORKDIR+cleanup+trap triplet to common_test_repo_root/common_test_workdir_init",
+      "result": "success",
+      "reason": "Two shape variants needed (single vs double bracket test); both collapsed safely after verifying no suite's cleanup() did more than rm -rf "
+    },
+    {
+      "approach": "Naive per-line '[FAIL]' substring counting to diff before/after suite output",
+      "result": "partial",
+      "reason": "Produced a false-positive count mismatch on test-verify-deploy-context-budget.sh because its own already-broken diagnostic case dumps a live-repo gate3/doc-lint scan whose sub-text varies with deploy freshness and concurrent-sibling untracked files; replaced with the suite's own authoritative 'Passed: N'/'Failed: N' tally line comparison, which was identical across every capture"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "8.1",
+      "description": "Remove dangling RED/GREEN/YELLOW/NC color-var definitions left unused by Phase 7's earlier migration of test-phase-heartbeat.sh and test-task-lock-liveness.sh",
+      "type": "altered",
+      "reason": "Blocking verify-deploy's shellcheck gate (SC2034); trivial 4-line-each dead-code removal, unrelated to this phase's own 56-suite tranche but within the task's file_scope and opportunistic to fix while already deep in this corpus",
+      "annotation": "*(deviation: altered -- opportunistic pre-existing-defect fix, see Task 1 completion note)*"
+    }
+  ]
+}

@@ -32,14 +32,12 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 require_file() {
   if [ ! -f "$1" ]; then
@@ -68,9 +66,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage-classify.sh \
@@ -121,7 +117,7 @@ jqf() { echo "$LAST_STDOUT" | jq -r "$1" 2>/dev/null; }
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 1: Eligibility -- status never gates; a failed predecessor blocks
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 1: eligibility (status-not-gated; failed-predecessor blocks)"
+common_test_info "Group 1: eligibility (status-not-gated; failed-predecessor blocks)"
 write_state <<'EOF'
 {
   "active_projects": [
@@ -133,32 +129,32 @@ write_state <<'EOF'
 EOF
 run_sut --session g1_sess --dry-run -- 101 102 103
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "eligibility: SUT exits 0"
+  common_test_pass "eligibility: SUT exits 0"
 else
-  fail "eligibility: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "eligibility: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 103)) | length')" = "1" ] && \
    [ "$(jqf '.dispatch | map(select(.task == 103)) | .[0].phase')" = "research" ]; then
-  pass "eligibility: candidate #103 in 'researching' status dispatches to research (status never gates)"
+  common_test_pass "eligibility: candidate #103 in 'researching' status dispatches to research (status never gates)"
 else
-  fail "eligibility: candidate #103 did not dispatch to research (stdout: $LAST_STDOUT)"
+  common_test_fail "eligibility: candidate #103 did not dispatch to research (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.blocked | map(select(.task == 102)) | length')" = "1" ]; then
-  pass "eligibility: candidate #102 with an abandoned predecessor is blocked"
+  common_test_pass "eligibility: candidate #102 with an abandoned predecessor is blocked"
 else
-  fail "eligibility: candidate #102 was not blocked (stdout: $LAST_STDOUT)"
+  common_test_fail "eligibility: candidate #102 was not blocked (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 102)) | length')" = "0" ] && \
    [ "$(jqf '.deferred | map(select(.task == 102)) | length')" = "0" ]; then
-  pass "eligibility: blocked candidate #102 is absent from dispatch and deferred"
+  common_test_pass "eligibility: blocked candidate #102 is absent from dispatch and deferred"
 else
-  fail "eligibility: candidate #102 leaked into dispatch or deferred (stdout: $LAST_STDOUT)"
+  common_test_fail "eligibility: candidate #102 leaked into dispatch or deferred (stdout: $LAST_STDOUT)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 2: Per-candidate forced phases -- canonical ordering, stop-after-last-named fall-through
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 2: per-candidate forced phases (canonical ordering)"
+common_test_info "Group 2: per-candidate forced phases (canonical ordering)"
 write_state <<'EOF'
 {
   "active_projects": [
@@ -169,27 +165,27 @@ write_state <<'EOF'
 EOF
 run_sut --session g2_sess --dry-run --force-phases "implement,research" -- 201
 if [ "$(jqf '.dispatch | map(select(.task == 201)) | .[0].phase')" = "research" ]; then
-  pass "forced-phases: canonical order wins over typed order (research dispatched first, not implement)"
+  common_test_pass "forced-phases: canonical order wins over typed order (research dispatched first, not implement)"
 else
-  fail "forced-phases: candidate #201 did not dispatch to research first (stdout: $LAST_STDOUT)"
+  common_test_fail "forced-phases: candidate #201 did not dispatch to research first (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 201)) | .[0].force')" = "true" ]; then
-  pass "forced-phases: dispatch row's force field is true for a task whose phase was popped off force_phases_remaining this cycle"
+  common_test_pass "forced-phases: dispatch row's force field is true for a task whose phase was popped off force_phases_remaining this cycle"
 else
-  fail "forced-phases: expected .dispatch[].force=true for candidate #201, got: $LAST_STDOUT"
+  common_test_fail "forced-phases: expected .dispatch[].force=true for candidate #201, got: $LAST_STDOUT"
 fi
 # A separate invocation (no --force-phases, a fresh session so no queue carries over) against the
 # SAME candidate set's other member proves the mechanism is gated by the flag, not hardcoded.
 run_sut --session g2_sess_plain --dry-run -- 202
 if [ "$(jqf '.dispatch | map(select(.task == 202)) | .[0].phase')" = "plan" ]; then
-  pass "forced-phases: without --force-phases, classification stays ordinary status-derived (researched -> plan)"
+  common_test_pass "forced-phases: without --force-phases, classification stays ordinary status-derived (researched -> plan)"
 else
-  fail "forced-phases: candidate #202 did not classify status-derived (stdout: $LAST_STDOUT)"
+  common_test_fail "forced-phases: candidate #202 did not classify status-derived (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 202)) | .[0].force')" = "false" ]; then
-  pass "forced-phases: dispatch row's force field is false for an ordinary status-derived dispatch"
+  common_test_pass "forced-phases: dispatch row's force field is false for an ordinary status-derived dispatch"
 else
-  fail "forced-phases: expected .dispatch[].force=false for candidate #202, got: $LAST_STDOUT"
+  common_test_fail "forced-phases: expected .dispatch[].force=false for candidate #202, got: $LAST_STDOUT"
 fi
 # Stop-after-the-last-forced-phase (Phase 3 fix; this task no longer "falls through" once its
 # queue empties) is exercised on the LIVE path (Group 4/5's stubbed build-dispatch/
@@ -202,7 +198,7 @@ fi
 # Group 3: Verdict relay -- 2+ self-modifying candidates; ORDERING CONSTRAINT text; forbidden
 # literals absent from the script
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 3: verdict relay (self-modifying tie-breaker; forbidden-literal negative assertion)"
+common_test_info "Group 3: verdict relay (self-modifying tie-breaker; forbidden-literal negative assertion)"
 write_state <<'EOF'
 {
   "active_projects": [
@@ -221,40 +217,40 @@ if { [ "$(jqf '.dispatch | map(select(.task==301))|length')" = "1" ] && [ "$defe
   one_deferred_one_admitted=true
 fi
 if [ "$one_deferred_one_admitted" = "true" ]; then
-  pass "verdict-relay: designated (lowest-numbered) self-modifying candidate dispatches, the other defers"
+  common_test_pass "verdict-relay: designated (lowest-numbered) self-modifying candidate dispatches, the other defers"
 else
-  fail "verdict-relay: expected exactly one admitted + one deferred self-modifying candidate (stdout: $LAST_STDOUT)"
+  common_test_fail "verdict-relay: expected exactly one admitted + one deferred self-modifying candidate (stdout: $LAST_STDOUT)"
 fi
 relayed_reason=$(jqf '.deferred[0].reason // empty')
 if echo "$relayed_reason" | grep -q "ORDERING CONSTRAINT"; then
-  pass "verdict-relay: deferred reason names the ORDERING CONSTRAINT text verbatim"
+  common_test_pass "verdict-relay: deferred reason names the ORDERING CONSTRAINT text verbatim"
 else
-  fail "verdict-relay: ORDERING CONSTRAINT text missing from relayed reason ('$relayed_reason')"
+  common_test_fail "verdict-relay: ORDERING CONSTRAINT text missing from relayed reason ('$relayed_reason')"
 fi
 if [ -n "$admit_reason_301" ] && [ "$deferred_reason_301" = "$admit_reason_301" ]; then
-  pass "verdict-relay: relayed reason is byte-identical to the admission script's own .reason"
+  common_test_pass "verdict-relay: relayed reason is byte-identical to the admission script's own .reason"
 elif [ -z "$deferred_reason_301" ]; then
-  info "verdict-relay: candidate #301 was the admitted (not deferred) side this run; byte-identity checked via #302 instead"
+  common_test_info "verdict-relay: candidate #301 was the admitted (not deferred) side this run; byte-identity checked via #302 instead"
   admit_reason_302=$(bash "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh" --invocation-count 2 --session-id g3_sess 301 302 2>/dev/null | jq -r 'select(.task_number == 302) | .reason // empty')
   if [ -n "$admit_reason_302" ] && [ "$deferred_reason_302" = "$admit_reason_302" ]; then
-    pass "verdict-relay: relayed reason is byte-identical to the admission script's own .reason (#302)"
+    common_test_pass "verdict-relay: relayed reason is byte-identical to the admission script's own .reason (#302)"
   else
-    fail "verdict-relay: relayed reason diverges from the admission script's own .reason"
+    common_test_fail "verdict-relay: relayed reason diverges from the admission script's own .reason"
   fi
 else
-  fail "verdict-relay: relayed reason diverges from the admission script's own .reason"
+  common_test_fail "verdict-relay: relayed reason diverges from the admission script's own .reason"
 fi
 
 if grep -q "runs solo only" "$SUT_SRC" || grep -q "re-run it alone" "$SUT_SRC"; then
-  fail "verdict-relay: forbidden literal ('runs solo only' or 're-run it alone') found in orchestrate-cycle-plan.sh"
+  common_test_fail "verdict-relay: forbidden literal ('runs solo only' or 're-run it alone') found in orchestrate-cycle-plan.sh"
 else
-  pass "verdict-relay: forbidden literals absent from orchestrate-cycle-plan.sh"
+  common_test_pass "verdict-relay: forbidden literals absent from orchestrate-cycle-plan.sh"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 4/5: Lock refusal + session-id invariant (LIVE path; stubbed build-dispatch/update-status)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 4/5: lock refusal removes a candidate from the batch; bare-vs-suffixed session_id invariant"
+common_test_info "Group 4/5: lock refusal removes a candidate from the batch; bare-vs-suffixed session_id invariant"
 
 ARGV_LOG="$WORKDIR/build-dispatch-argv.log"
 : > "$ARGV_LOG"
@@ -307,65 +303,65 @@ EOF
 run_sut --session g45_sess -- 401 402 403
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "live: SUT exits 0"
+  common_test_pass "live: SUT exits 0"
 else
-  fail "live: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "live: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 403)) | length')" = "0" ] && \
    [ "$(jqf '.deferred | map(select(.task == 403)) | length')" = "1" ] && \
    [ "$(jqf '.blocked | map(select(.task == 403)) | length')" = "0" ]; then
-  pass "lock-refusal: locked candidate #403 is absent from dispatch, present in deferred, absent from blocked"
+  common_test_pass "lock-refusal: locked candidate #403 is absent from dispatch, present in deferred, absent from blocked"
 else
-  fail "lock-refusal: candidate #403 bucketing wrong (stdout: $LAST_STDOUT)"
+  common_test_fail "lock-refusal: candidate #403 bucketing wrong (stdout: $LAST_STDOUT)"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 401)) | length')" = "1" ] && \
    [ "$(jqf '.dispatch | map(select(.task == 402)) | length')" = "1" ]; then
-  pass "lock-refusal: sibling (unlocked) candidates still dispatch this cycle"
+  common_test_pass "lock-refusal: sibling (unlocked) candidates still dispatch this cycle"
 else
-  fail "lock-refusal: an unlocked sibling failed to dispatch (stdout: $LAST_STDOUT)"
+  common_test_fail "lock-refusal: an unlocked sibling failed to dispatch (stdout: $LAST_STDOUT)"
 fi
 
 plan_argv=$(grep '^401 plan' "$ARGV_LOG" || true)
 implement_argv=$(grep '^402 implement' "$ARGV_LOG" || true)
 if echo "$plan_argv" | grep -q -- "--session g45_sess_401"; then
-  pass "session-id invariant: plan dispatch uses the SUFFIXED session id for orchestrate-build-dispatch.sh"
+  common_test_pass "session-id invariant: plan dispatch uses the SUFFIXED session id for orchestrate-build-dispatch.sh"
 else
-  fail "session-id invariant: plan dispatch argv missing suffixed session id (argv: '$plan_argv')"
+  common_test_fail "session-id invariant: plan dispatch argv missing suffixed session id (argv: '$plan_argv')"
 fi
 if echo "$implement_argv" | grep -q -- "--session g45_sess " || echo "$implement_argv" | grep -qE -- "--session g45_sess\$"; then
-  pass "session-id invariant: implement dispatch uses the BARE session id for orchestrate-build-dispatch.sh"
+  common_test_pass "session-id invariant: implement dispatch uses the BARE session id for orchestrate-build-dispatch.sh"
 else
-  fail "session-id invariant: implement dispatch argv missing bare session id (argv: '$implement_argv')"
+  common_test_fail "session-id invariant: implement dispatch argv missing bare session id (argv: '$implement_argv')"
 fi
 
 plan_preflight=$(grep '^preflight 401 plan' "$UTS_LOG" || true)
 implement_preflight=$(grep '^preflight 402 implement' "$UTS_LOG" || true)
 if echo "$plan_preflight" | grep -q "g45_sess_401"; then
-  pass "session-id invariant: skill_preflight_update receives the SUFFIXED session id for plan"
+  common_test_pass "session-id invariant: skill_preflight_update receives the SUFFIXED session id for plan"
 else
-  fail "session-id invariant: plan preflight argv missing suffixed session id (argv: '$plan_preflight')"
+  common_test_fail "session-id invariant: plan preflight argv missing suffixed session id (argv: '$plan_preflight')"
 fi
 if echo "$implement_preflight" | grep -q "g45_sess\$"; then
-  pass "session-id invariant: skill_preflight_update receives the BARE session id for implement"
+  common_test_pass "session-id invariant: skill_preflight_update receives the BARE session id for implement"
 else
-  fail "session-id invariant: implement preflight argv missing bare session id (argv: '$implement_preflight')"
+  common_test_fail "session-id invariant: implement preflight argv missing bare session id (argv: '$implement_preflight')"
 fi
 
 mt_state_file_live="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g45_sess.json"
 if [ -f "$mt_state_file_live" ]; then
   dispatch_seq_count=$(jq -r '.dispatch_seq | keys | length' "$mt_state_file_live" 2>/dev/null)
   if [ "$dispatch_seq_count" = "2" ]; then
-    pass "session-id invariant: dispatch_seq minted for both dispatched candidates in one mt_state_file"
+    common_test_pass "session-id invariant: dispatch_seq minted for both dispatched candidates in one mt_state_file"
   else
-    fail "session-id invariant: expected 2 dispatch_seq entries, got '$dispatch_seq_count'"
+    common_test_fail "session-id invariant: expected 2 dispatch_seq entries, got '$dispatch_seq_count'"
   fi
 else
-  fail "session-id invariant: mt_state_file not written for live dispatch"
+  common_test_fail "session-id invariant: mt_state_file not written for live dispatch"
 fi
 
-info "Group 4/5 (continued): per-candidate forced-phase stop-after-last-named (LIVE)"
+common_test_info "Group 4/5 (continued): per-candidate forced-phase stop-after-last-named (LIVE)"
 write_state <<'EOF'
 {
   "active_projects": [
@@ -383,14 +379,14 @@ reset_lock_dirs
 run_sut --session g5_fallthrough_sess --no-plan-cache --force-phases "research" -- 501
 cycle1_phase=$(jqf '.dispatch | map(select(.task == 501)) | .[0].phase')
 if [ "$cycle1_phase" = "research" ]; then
-  pass "stop-after-last-named: cycle 1 forces the named phase (research) despite status implementing"
+  common_test_pass "stop-after-last-named: cycle 1 forces the named phase (research) despite status implementing"
 else
-  fail "stop-after-last-named: cycle 1 did not force research (stdout: $LAST_STDOUT)"
+  common_test_fail "stop-after-last-named: cycle 1 did not force research (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 501)) | .[0].force')" = "true" ]; then
-  pass "stop-after-last-named: cycle 1's dispatch row carries force=true (live path, not just --dry-run)"
+  common_test_pass "stop-after-last-named: cycle 1's dispatch row carries force=true (live path, not just --dry-run)"
 else
-  fail "stop-after-last-named: expected .dispatch[].force=true on cycle 1 (live path), got: $LAST_STDOUT"
+  common_test_fail "stop-after-last-named: expected .dispatch[].force=true on cycle 1 (live path), got: $LAST_STDOUT"
 fi
 # Cycle 2, same session (mt_state_file persists live state across separate invocations, mirroring
 # how the thin lead's loop calls this script once per cycle): the one-item queue popped in cycle 1
@@ -408,30 +404,30 @@ run_sut --session g5_fallthrough_sess --no-plan-cache -- 501
 g5_status_after=$(jq -r '.active_projects[] | select(.project_number == 501) | .status' "$STATE_FILE")
 g5_cycle_after=$(jq -r --arg t "501" '.cycle_counts[$t] // 0' "$g5_mt_state" 2>/dev/null)
 if [ "$(jqf '.dispatch | map(select(.task == 501)) | length')" = "0" ]; then
-  pass "stop-after-last-named: cycle 2 dispatches nothing once the forced queue this run seeded is exhausted (stop, not fall-through)"
+  common_test_pass "stop-after-last-named: cycle 2 dispatches nothing once the forced queue this run seeded is exhausted (stop, not fall-through)"
 else
-  fail "stop-after-last-named: expected zero dispatch rows for candidate #501 on cycle 2, got: $LAST_STDOUT"
+  common_test_fail "stop-after-last-named: expected zero dispatch rows for candidate #501 on cycle 2, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.blocked | map(select(.task == 501 and (.reason | contains("forced round complete")))) | length')" = "1" ]; then
-  pass "stop-after-last-named: cycle 2 emits exactly one blocked[] row carrying the forced-round-complete reason"
+  common_test_pass "stop-after-last-named: cycle 2 emits exactly one blocked[] row carrying the forced-round-complete reason"
 else
-  fail "stop-after-last-named: expected one blocked[] row with the forced-round-complete reason, got: $LAST_STDOUT"
+  common_test_fail "stop-after-last-named: expected one blocked[] row with the forced-round-complete reason, got: $LAST_STDOUT"
 fi
 if [ "$g5_status_before" = "$g5_status_after" ]; then
-  pass "stop-after-last-named: status unchanged across the exclusion cycle ($g5_status_after)"
+  common_test_pass "stop-after-last-named: status unchanged across the exclusion cycle ($g5_status_after)"
 else
-  fail "stop-after-last-named: status changed -- before='$g5_status_before' after='$g5_status_after'"
+  common_test_fail "stop-after-last-named: status changed -- before='$g5_status_before' after='$g5_status_after'"
 fi
 if [ "$g5_cycle_before" = "$g5_cycle_after" ]; then
-  pass "stop-after-last-named: cycle_counts unchanged across the exclusion cycle ($g5_cycle_after)"
+  common_test_pass "stop-after-last-named: cycle_counts unchanged across the exclusion cycle ($g5_cycle_after)"
 else
-  fail "stop-after-last-named: cycle_counts changed -- before='$g5_cycle_before' after='$g5_cycle_after'"
+  common_test_fail "stop-after-last-named: cycle_counts changed -- before='$g5_cycle_before' after='$g5_cycle_after'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 6: Dry-run no-mutation -- state.json, mt_state_file, and .lock/ unchanged across a run
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 6: dry-run mutates nothing"
+common_test_info "Group 6: dry-run mutates nothing"
 write_state <<'EOF'
 {
   "active_projects": [
@@ -446,14 +442,14 @@ before_checksum=$(find "$WORKDIR/specs" -type f | sort | xargs -I{} md5sum {} 2>
 run_sut --session g6_sess --dry-run -- 601
 after_checksum=$(find "$WORKDIR/specs" -type f | sort | xargs -I{} md5sum {} 2>/dev/null | md5sum)
 if [ "$before_checksum" = "$after_checksum" ]; then
-  pass "dry-run: specs/ tree (state.json, mt_state_file, .lock/) is byte-identical before and after"
+  common_test_pass "dry-run: specs/ tree (state.json, mt_state_file, .lock/) is byte-identical before and after"
 else
-  fail "dry-run: specs/ tree changed across a --dry-run invocation"
+  common_test_fail "dry-run: specs/ tree changed across a --dry-run invocation"
 fi
 if [ -d "$WORKDIR/specs/601_g6_candidate" ]; then
-  fail "dry-run: candidate directory was created despite --dry-run"
+  common_test_fail "dry-run: candidate directory was created despite --dry-run"
 else
-  pass "dry-run: no candidate directory created"
+  common_test_pass "dry-run: no candidate directory created"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -468,7 +464,7 @@ fi
 # archived-abandoned still blocks) and the reporting rule (a genuinely unresolvable edge is named
 # in blocked[], never dropped).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 7: dependency resolution spans the archive (archived predecessor is not 'in flight')"
+common_test_info "Group 7: dependency resolution spans the archive (archived predecessor is not 'in flight')"
 mkdir -p "$WORKDIR/specs/archive"
 cat > "$WORKDIR/specs/archive/state.json" <<'EOF'
 {
@@ -493,40 +489,40 @@ write_state <<'EOF'
 EOF
 run_sut --session g7_sess --dry-run -- 710 711 712 713
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "archive-deps: SUT exits 0"
+  common_test_pass "archive-deps: SUT exits 0"
 else
-  fail "archive-deps: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "archive-deps: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 710)) | length')" = "1" ]; then
-  pass "archive-deps: candidate #710 dispatches -- an archived COMPLETED predecessor is satisfied, not in-flight"
+  common_test_pass "archive-deps: candidate #710 dispatches -- an archived COMPLETED predecessor is satisfied, not in-flight"
 else
-  fail "archive-deps: candidate #710 did not dispatch; archived completed predecessor read as unsatisfied (stdout: $LAST_STDOUT)"
+  common_test_fail "archive-deps: candidate #710 did not dispatch; archived completed predecessor read as unsatisfied (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.blocked | map(select(.task == 711)) | length')" = "1" ]; then
-  pass "archive-deps: candidate #711 is blocked -- an archived ABANDONED predecessor still blocks"
+  common_test_pass "archive-deps: candidate #711 is blocked -- an archived ABANDONED predecessor still blocks"
 else
-  fail "archive-deps: candidate #711 was not blocked (stdout: $LAST_STDOUT)"
+  common_test_fail "archive-deps: candidate #711 was not blocked (stdout: $LAST_STDOUT)"
 fi
 g7_dangling_reason=$(jqf '.blocked | map(select(.task == 712)) | .[0].reason // ""')
 if [ "$(jqf '.blocked | map(select(.task == 712)) | length')" = "1" ] && \
    [[ "$g7_dangling_reason" == *9999* ]]; then
-  pass "archive-deps: candidate #712's dangling edge is reported in blocked[] and names the number"
+  common_test_pass "archive-deps: candidate #712's dangling edge is reported in blocked[] and names the number"
 else
-  fail "archive-deps: candidate #712's dangling dependency was not reported in blocked[] (stdout: $LAST_STDOUT)"
+  common_test_fail "archive-deps: candidate #712's dangling dependency was not reported in blocked[] (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 713)) | length')" = "1" ]; then
-  pass "archive-deps: candidate #713 dispatches -- an orphan_archived predecessor is terminal, not in-flight"
+  common_test_pass "archive-deps: candidate #713 dispatches -- an orphan_archived predecessor is terminal, not in-flight"
 else
-  fail "archive-deps: candidate #713 did not dispatch (stdout: $LAST_STDOUT)"
+  common_test_fail "archive-deps: candidate #713 did not dispatch (stdout: $LAST_STDOUT)"
 fi
 for n in 710 711 712 713; do
   in_dispatch=$(jqf ".dispatch | map(select(.task == $n)) | length")
   in_deferred=$(jqf ".deferred | map(select(.task == $n)) | length")
   in_blocked=$(jqf ".blocked | map(select(.task == $n)) | length")
   if [ "$((in_dispatch + in_deferred + in_blocked))" -ge 1 ]; then
-    pass "archive-deps: candidate #$n is accounted for in exactly one bucket (never silently dropped)"
+    common_test_pass "archive-deps: candidate #$n is accounted for in exactly one bucket (never silently dropped)"
   else
-    fail "archive-deps: candidate #$n vanished from the plan entirely -- the silent-drop regression (stdout: $LAST_STDOUT)"
+    common_test_fail "archive-deps: candidate #$n vanished from the plan entirely -- the silent-drop regression (stdout: $LAST_STDOUT)"
   fi
 done
 
@@ -535,7 +531,7 @@ done
 # the durable guard file's cycle_count any more), mode-aware max_cycles WITHIN one run, six
 # forced runs in a row never refused for budget, and dispatch_seq durability across runs.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 8: per-RUN cycle budget"
+common_test_info "Group 8: per-RUN cycle budget"
 
 # ── A fresh session starts cycle_counts at 0 regardless of the durable guard file's cycle_count
 # -- the inverted core assertion (was: "resumes the prior cycle_count", now: "never seeded from
@@ -556,20 +552,20 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_sess_a.json"
 
 run_sut --session g8_sess_a -- 801
 if [ "$(jqf '.dispatch | map(select(.task == 801)) | length')" = "1" ]; then
-  pass "budget: a fresh session dispatches normally despite the durable guard's cycle_count=5 (never seeded from it)"
+  common_test_pass "budget: a fresh session dispatches normally despite the durable guard's cycle_count=5 (never seeded from it)"
 else
-  fail "budget: a fresh session was blocked despite starting at cycle_counts=0 (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: a fresh session was blocked despite starting at cycle_counts=0 (stdout: $LAST_STDOUT)"
 fi
 g8a_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g8_sess_a.json"
 if [ "$(jq -r --arg t "801" '.cycle_counts[$t] // 0' "$g8a_mt_state" 2>/dev/null)" = "1" ]; then
-  pass "budget: in-session cycle_counts[801] is 1 after one dispatch this run (not 6)"
+  common_test_pass "budget: in-session cycle_counts[801] is 1 after one dispatch this run (not 6)"
 else
-  fail "budget: cycle_counts[801] is not 1 after one dispatch (got: $(jq -c '.cycle_counts' "$g8a_mt_state" 2>/dev/null))"
+  common_test_fail "budget: cycle_counts[801] is not 1 after one dispatch (got: $(jq -c '.cycle_counts' "$g8a_mt_state" 2>/dev/null))"
 fi
 if [ "$(jq -r '.cycle_count // "absent"' "$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard")" = "5" ]; then
-  pass "budget: the durable guard's own cycle_count is left untouched (inert historical data, never flushed by this engine any more)"
+  common_test_pass "budget: the durable guard's own cycle_count is left untouched (inert historical data, never flushed by this engine any more)"
 else
-  fail "budget: the durable guard's cycle_count was unexpectedly modified (got: $(cat "$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard"))"
+  common_test_fail "budget: the durable guard's cycle_count was unexpectedly modified (got: $(cat "$WORKDIR/specs/801_g8_budget/.orchestrator-loop-guard"))"
 fi
 
 # ── Mode-aware max_cycles bound WITHIN one run: base mode's 5 vs. hard mode's 13. Pre-seed the
@@ -591,16 +587,16 @@ jq -n --arg t "802" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestration
 run_sut --session g8_mode_base -- 802
 if [ "$(jqf '.blocked | map(select(.task == 802)) | length')" = "1" ] && \
    [[ "$(jqf '.blocked | map(select(.task == 802)) | .[0].reason')" == *MAX_CYCLES* ]]; then
-  pass "budget: base mode (max_cycles=5) blocks a candidate already at cycle_counts=5 THIS run"
+  common_test_pass "budget: base mode (max_cycles=5) blocks a candidate already at cycle_counts=5 THIS run"
 else
-  fail "budget: base-mode candidate at cycle_counts=5 was not blocked for MAX_CYCLES (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: base-mode candidate at cycle_counts=5 was not blocked for MAX_CYCLES (stdout: $LAST_STDOUT)"
 fi
 
 run_sut --session g8_mode_hard --hard -- 802
 if [ "$(jqf '.dispatch | map(select(.task == 802)) | length')" = "1" ]; then
-  pass "budget: hard mode (max_cycles=13) dispatches the SAME candidate at cycle_counts=5 THIS run"
+  common_test_pass "budget: hard mode (max_cycles=13) dispatches the SAME candidate at cycle_counts=5 THIS run"
 else
-  fail "budget: hard-mode candidate at cycle_counts=5 did not dispatch (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: hard-mode candidate at cycle_counts=5 did not dispatch (stdout: $LAST_STDOUT)"
 fi
 
 # ── Batch-of-one budget-exhaustion stop, WITHIN one run (--dry-run never persists, so this
@@ -618,27 +614,27 @@ jq -n --arg t "803" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestration
 
 run_sut --session g8_exhausted_sess -- 803
 if [ "$(jqf '.stop.reason')" = "max_cycles" ]; then
-  pass "budget: a batch-of-one whose only task is budget-exhausted THIS run stops with reason=max_cycles"
+  common_test_pass "budget: a batch-of-one whose only task is budget-exhausted THIS run stops with reason=max_cycles"
 else
-  fail "budget: batch-of-one exhaustion did not stop with reason=max_cycles (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: batch-of-one exhaustion did not stop with reason=max_cycles (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | length')" = "0" ]; then
-  pass "budget: exhausted batch-of-one dispatches nothing"
+  common_test_pass "budget: exhausted batch-of-one dispatches nothing"
 else
-  fail "budget: exhausted batch-of-one unexpectedly dispatched (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: exhausted batch-of-one unexpectedly dispatched (stdout: $LAST_STDOUT)"
 fi
 if [[ "$(jqf '.stop.message')" != *continue-budget* ]] && [[ "$(jqf '.stop.message')" == *re-invoke* ]]; then
-  pass "budget: the stop message names re-invoking /orchestrate, not the withdrawn --continue-budget flag"
+  common_test_pass "budget: the stop message names re-invoking /orchestrate, not the withdrawn --continue-budget flag"
 else
-  fail "budget: the stop message still references --continue-budget, or does not name re-invocation (got: $(jqf '.stop.message'))"
+  common_test_fail "budget: the stop message still references --continue-budget, or does not name re-invocation (got: $(jqf '.stop.message'))"
 fi
 
 # ── --continue-budget is withdrawn end to end: it is now an ordinary unrecognized flag.
 run_sut --session g8_withdrawn_sess --continue-budget -- 803
 if [ "$LAST_EXIT" -eq 2 ] && echo "$LAST_STDERR" | grep -q 'unrecognized flag'; then
-  pass "budget: --continue-budget is withdrawn -- rejected as an unrecognized flag (exit 2)"
+  common_test_pass "budget: --continue-budget is withdrawn -- rejected as an unrecognized flag (exit 2)"
 else
-  fail "budget: --continue-budget was not rejected as unrecognized (exit $LAST_EXIT, stderr: $LAST_STDERR)"
+  common_test_fail "budget: --continue-budget was not rejected as unrecognized (exit $LAST_EXIT, stderr: $LAST_STDERR)"
 fi
 
 # ── Mixed batch, SHARED POOL: a task that has already spent five cycles keeps drawing from the
@@ -659,14 +655,14 @@ jq -n --arg t "804" '{cycle_counts: {($t): 5}}' > "$WORKDIR/specs/.orchestration
 
 run_sut --session g8_mixed_sess -- 804 805
 if [ "$(jqf '[.blocked[]? | select(.reason | test("MAX_CYCLES"))] | length')" = "0" ] && [ "$(jqf '.stop')" = "null" ]; then
-  pass "budget: a pool of 10 with 5 spent leaves room -- no candidate is budget-excluded"
+  common_test_pass "budget: a pool of 10 with 5 spent leaves room -- no candidate is budget-excluded"
 else
-  fail "budget: a candidate was budget-excluded although the shared pool had room (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: a candidate was budget-excluded although the shared pool had room (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | length')" -ge 1 ]; then
-  pass "budget: the batch still dispatches while the shared pool has room"
+  common_test_pass "budget: the batch still dispatches while the shared pool has room"
 else
-  fail "budget: nothing dispatched although the shared pool had room (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: nothing dispatched although the shared pool had room (stdout: $LAST_STDOUT)"
 fi
 
 # ── Pool exhaustion is BATCH-WIDE, and one task may spend more than its own contribution: 6 + 4
@@ -678,14 +674,14 @@ jq -n '{cycle_counts: {"804": 6, "805": 4}}' > "$WORKDIR/specs/.orchestration/.o
 
 run_sut --session g8_pool_done -- 804 805
 if [ "$(jqf '[.blocked[]? | select(.reason | test("MAX_CYCLES"))] | length')" = "2" ]; then
-  pass "budget: an exhausted pool (6+4 of 10) excludes BOTH candidates, not just the over-spender"
+  common_test_pass "budget: an exhausted pool (6+4 of 10) excludes BOTH candidates, not just the over-spender"
 else
-  fail "budget: an exhausted pool did not exclude both candidates (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: an exhausted pool did not exclude both candidates (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.stop.reason')" = "max_cycles" ] && [ "$(jqf '.dispatch | length')" = "0" ]; then
-  pass "budget: an exhausted pool stops the batch with reason=max_cycles and dispatches nothing"
+  common_test_pass "budget: an exhausted pool stops the batch with reason=max_cycles and dispatches nothing"
 else
-  fail "budget: an exhausted pool did not stop with reason=max_cycles (stdout: $LAST_STDOUT)"
+  common_test_fail "budget: an exhausted pool did not stop with reason=max_cycles (stdout: $LAST_STDOUT)"
 fi
 
 # ── Six forced runs in a row (separate sessions) on ONE task are never refused for budget --
@@ -708,17 +704,17 @@ for i in 1 2 3 4 5 6; do
   run_sut --session "g8_six_run_${i}" --force-phases research -- 806
   if [ "$(jqf '.dispatch | map(select(.task == 806)) | length')" != "1" ]; then
     six_runs_ok=false
-    info "six-forced-runs: run $i did not dispatch (stdout: $LAST_STDOUT)"
+    common_test_info "six-forced-runs: run $i did not dispatch (stdout: $LAST_STDOUT)"
   fi
   if [ "$(jqf '.blocked | map(select(.task == 806 and (.reason | test("MAX_CYCLES")))) | length')" != "0" ]; then
     six_runs_ok=false
-    info "six-forced-runs: run $i was refused for MAX_CYCLES (stdout: $LAST_STDOUT)"
+    common_test_info "six-forced-runs: run $i was refused for MAX_CYCLES (stdout: $LAST_STDOUT)"
   fi
 done
 if [ "$six_runs_ok" = "true" ]; then
-  pass "budget: six forced runs in a row (separate sessions) on one task are never refused for budget"
+  common_test_pass "budget: six forced runs in a row (separate sessions) on one task are never refused for budget"
 else
-  fail "budget: at least one of six forced runs in a row was refused for budget (see INFO lines above)"
+  common_test_fail "budget: at least one of six forced runs in a row was refused for budget (see INFO lines above)"
 fi
 
 # ── dispatch_seq never repeats across runs: two separate sessions dispatching the SAME task in
@@ -754,16 +750,16 @@ run_sut --session g8_seq_run2 -- 807
 g8_durable_seq_after_run2=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/807_g8_seq_no_repeat/.orchestrator-loop-guard" 2>/dev/null)
 if [ -n "$g8_durable_seq_after_run1" ] && [ -n "$g8_durable_seq_after_run2" ] && \
    [ "$g8_durable_seq_after_run2" -gt "$g8_durable_seq_after_run1" ]; then
-  pass "budget: dispatch_seq_counter is durable and strictly increases across two separate runs on the same task ($g8_durable_seq_after_run1 -> $g8_durable_seq_after_run2)"
+  common_test_pass "budget: dispatch_seq_counter is durable and strictly increases across two separate runs on the same task ($g8_durable_seq_after_run1 -> $g8_durable_seq_after_run2)"
 else
-  fail "budget: dispatch_seq_counter did not durably increase across runs (run1=$g8_durable_seq_after_run1, run2=$g8_durable_seq_after_run2)"
+  common_test_fail "budget: dispatch_seq_counter did not durably increase across runs (run1=$g8_durable_seq_after_run1, run2=$g8_durable_seq_after_run2)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 9: H1 hard-mode per-phase dispatch (heading-scan, conformance gate, marker crosscheck,
 # territory, fixed-agent-never fallthrough)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 9: H1 hard-mode per-phase dispatch"
+common_test_info "Group 9: H1 hard-mode per-phase dispatch"
 
 # ── Case A: a non-conforming heading (3a-style) produces a blocked row, never a dispatch row ──
 write_state <<'EOF'
@@ -786,14 +782,14 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9a_sess.json"
 run_sut --session g9a_sess --hard -- 901
 if [ "$(jqf '.dispatch | map(select(.task == 901)) | length')" = "0" ] && \
    [ "$(jqf '.blocked | map(select(.task == 901)) | length')" = "1" ]; then
-  pass "H1: a non-conforming heading blocks the candidate, never dispatches it"
+  common_test_pass "H1: a non-conforming heading blocks the candidate, never dispatches it"
 else
-  fail "H1: non-conforming-heading candidate not blocked as expected (stdout: $LAST_STDOUT)"
+  common_test_fail "H1: non-conforming-heading candidate not blocked as expected (stdout: $LAST_STDOUT)"
 fi
 if [[ "$(jqf '.blocked | map(select(.task == 901)) | .[0].reason')" == *"true next phase is UNKNOWN"* ]]; then
-  pass "H1: blocked reason names the true-next-phase-UNKNOWN text"
+  common_test_pass "H1: blocked reason names the true-next-phase-UNKNOWN text"
 else
-  fail "H1: blocked reason missing the expected text (got: $(jqf '.blocked | map(select(.task == 901)) | .[0].reason'))"
+  common_test_fail "H1: blocked reason missing the expected text (got: $(jqf '.blocked | map(select(.task == 901)) | .[0].reason'))"
 fi
 
 # ── Case B: marker/handoff mismatch -- blocked row AND the disputed heading downgrades to
@@ -821,19 +817,19 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9b_sess.json"
 run_sut --session g9b_sess --hard -- 902
 if [ "$(jqf '.dispatch | map(select(.task == 902)) | length')" = "0" ] && \
    [ "$(jqf '.blocked | map(select(.task == 902)) | length')" = "1" ]; then
-  pass "H1: a marker/handoff mismatch blocks the candidate, never dispatches it"
+  common_test_pass "H1: a marker/handoff mismatch blocks the candidate, never dispatches it"
 else
-  fail "H1: mismatch candidate not blocked as expected (stdout: $LAST_STDOUT)"
+  common_test_fail "H1: mismatch candidate not blocked as expected (stdout: $LAST_STDOUT)"
 fi
 if [[ "$(jqf '.blocked | map(select(.task == 902)) | .[0].reason')" == *"MARKER/HANDOFF MISMATCH"* ]]; then
-  pass "H1: blocked reason names MARKER/HANDOFF MISMATCH"
+  common_test_pass "H1: blocked reason names MARKER/HANDOFF MISMATCH"
 else
-  fail "H1: blocked reason missing MARKER/HANDOFF MISMATCH text"
+  common_test_fail "H1: blocked reason missing MARKER/HANDOFF MISMATCH text"
 fi
 if grep -q '^### Phase 1: One \[PARTIAL\]$' "$WORKDIR/specs/902_g9_mismatch/plans/01_plan.md"; then
-  pass "H1: the disputed phase heading is downgraded to [PARTIAL] in place"
+  common_test_pass "H1: the disputed phase heading is downgraded to [PARTIAL] in place"
 else
-  fail "H1: disputed heading was not downgraded (plan content: $(cat "$WORKDIR/specs/902_g9_mismatch/plans/01_plan.md"))"
+  common_test_fail "H1: disputed heading was not downgraded (plan content: $(cat "$WORKDIR/specs/902_g9_mismatch/plans/01_plan.md"))"
 fi
 
 # ── Case C: a well-formed plan with an open heading dispatches WITH --phase-number/--territory ──
@@ -860,20 +856,20 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9c_sess.json"
 run_sut --session g9c_sess --hard -- 903
 if [ "$(jqf '.dispatch | map(select(.task == 903)) | length')" = "1" ] && \
    [ "$(jqf '.blocked | map(select(.task == 903)) | length')" = "0" ]; then
-  pass "H1: a well-formed open heading dispatches (not blocked)"
+  common_test_pass "H1: a well-formed open heading dispatches (not blocked)"
 else
-  fail "H1: well-formed candidate did not dispatch as expected (stdout: $LAST_STDOUT)"
+  common_test_fail "H1: well-formed candidate did not dispatch as expected (stdout: $LAST_STDOUT)"
 fi
 dispatch_argv=$(grep '^903 implement' "$ARGV_LOG" || true)
 if echo "$dispatch_argv" | grep -q -- "--phase-number 2"; then
-  pass "H1: orchestrate-build-dispatch.sh receives --phase-number 2 (the selected open phase)"
+  common_test_pass "H1: orchestrate-build-dispatch.sh receives --phase-number 2 (the selected open phase)"
 else
-  fail "H1: --phase-number 2 missing from orchestrate-build-dispatch.sh argv (argv: '$dispatch_argv')"
+  common_test_fail "H1: --phase-number 2 missing from orchestrate-build-dispatch.sh argv (argv: '$dispatch_argv')"
 fi
 if echo "$dispatch_argv" | grep -q -- "--territory"; then
-  pass "H1: orchestrate-build-dispatch.sh receives --territory for the hard-mode implement row"
+  common_test_pass "H1: orchestrate-build-dispatch.sh receives --territory for the hard-mode implement row"
 else
-  fail "H1: --territory missing from orchestrate-build-dispatch.sh argv (argv: '$dispatch_argv')"
+  common_test_fail "H1: --territory missing from orchestrate-build-dispatch.sh argv (argv: '$dispatch_argv')"
 fi
 
 # ── Case D: no open heading, not inconclusive -- falls through to ORDINARY dispatch, never a
@@ -900,15 +896,15 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9d_sess.json"
 run_sut --session g9d_sess --hard -- 904
 if [ "$(jqf '.dispatch | map(select(.task == 904)) | length')" = "1" ] && \
    [ "$(jqf '.blocked | map(select(.task == 904)) | length')" = "0" ]; then
-  pass "H1: no open heading (not inconclusive) falls through to ordinary dispatch"
+  common_test_pass "H1: no open heading (not inconclusive) falls through to ordinary dispatch"
 else
-  fail "H1: no-open-heading candidate did not fall through as expected (stdout: $LAST_STDOUT)"
+  common_test_fail "H1: no-open-heading candidate did not fall through as expected (stdout: $LAST_STDOUT)"
 fi
 fallthrough_argv=$(grep '^904 implement' "$ARGV_LOG" || true)
 if echo "$fallthrough_argv" | grep -q -- "--phase-number"; then
-  fail "H1: fallthrough dispatch unexpectedly carries --phase-number (argv: '$fallthrough_argv')"
+  common_test_fail "H1: fallthrough dispatch unexpectedly carries --phase-number (argv: '$fallthrough_argv')"
 else
-  pass "H1: fallthrough dispatch carries no --phase-number (ordinary status-derived dispatch)"
+  common_test_pass "H1: fallthrough dispatch carries no --phase-number (ordinary status-derived dispatch)"
 fi
 
 # ── Case E: --dry-run parity -- the SAME blocked verdict, with NO plan-file mutation ──
@@ -934,22 +930,22 @@ plan_before=$(cat "$WORKDIR/specs/905_g9_dryrun/plans/01_plan.md")
 run_sut --session g9e_sess --hard --dry-run -- 905
 if [ "$(jqf '.blocked | map(select(.task == 905)) | length')" = "1" ] && \
    [[ "$(jqf '.blocked | map(select(.task == 905)) | .[0].reason')" == *"MARKER/HANDOFF MISMATCH"* ]]; then
-  pass "H1: --dry-run reports the SAME blocked verdict as the live path"
+  common_test_pass "H1: --dry-run reports the SAME blocked verdict as the live path"
 else
-  fail "H1: --dry-run did not report the expected blocked verdict (stdout: $LAST_STDOUT)"
+  common_test_fail "H1: --dry-run did not report the expected blocked verdict (stdout: $LAST_STDOUT)"
 fi
 plan_after=$(cat "$WORKDIR/specs/905_g9_dryrun/plans/01_plan.md")
 if [ "$plan_before" = "$plan_after" ]; then
-  pass "H1: --dry-run performs NO disputed-heading downgrade (mutates nothing)"
+  common_test_pass "H1: --dry-run performs NO disputed-heading downgrade (mutates nothing)"
 else
-  fail "H1: --dry-run unexpectedly mutated the plan file"
+  common_test_fail "H1: --dry-run unexpectedly mutated the plan file"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 10: Decision 2 — aux_dispatch[] emission (fixed agents, per-task caps, chaining,
 # mutual exclusion, --dry-run parity)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 10: aux_dispatch[] emission"
+common_test_info "Group 10: aux_dispatch[] emission"
 
 # The REAL orchestrate-build-aux-dispatch.sh runs in this group (never stubbed) -- it never calls
 # memory/lit/command-route-agent.sh by its own design, so it is safe to exercise for real; this is
@@ -989,21 +985,21 @@ if [ "$(jqf '.aux_dispatch | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].kind')" = "blocker-research" ] && \
    [ "$(jqf '.aux_dispatch[0].agent')" = "fork" ] && \
    [ "$(jqf '.aux_dispatch[0].orchestrator_mode')" = "false" ]; then
-  pass "aux: blocker-research aux_pending produces exactly one row (agent=fork, orchestrator_mode=false)"
+  common_test_pass "aux: blocker-research aux_pending produces exactly one row (agent=fork, orchestrator_mode=false)"
 else
-  fail "aux: blocker-research row missing or malformed (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: blocker-research row missing or malformed (stdout: $LAST_STDOUT)"
 fi
 aux_file_a=$(jqf '.aux_dispatch[0].dispatch_file')
 if [ -n "$aux_file_a" ] && [ -f "$aux_file_a" ] && ! grep -qi "memory\|literature" "$aux_file_a"; then
-  pass "aux: blocker-research dispatch file exists and carries no memory/literature block"
+  common_test_pass "aux: blocker-research dispatch file exists and carries no memory/literature block"
 else
-  fail "aux: blocker-research dispatch file missing or unexpectedly carries a memory/lit block ($aux_file_a)"
+  common_test_fail "aux: blocker-research dispatch file missing or unexpectedly carries a memory/lit block ($aux_file_a)"
 fi
 if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ] && \
    [ "$(jq -r --arg t "1001" '.blocker_escalation_count[$t] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "1" ]; then
-  pass "aux: blocker-research clears aux_pending and increments blocker_escalation_count to 1"
+  common_test_pass "aux: blocker-research clears aux_pending and increments blocker_escalation_count to 1"
 else
-  fail "aux: aux_pending not cleared or counter not incremented ($(cat "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"))"
+  common_test_fail "aux: aux_pending not cleared or counter not incremented ($(cat "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"))"
 fi
 
 # ── Case B: MAX_BLOCKER_ESCALATIONS=2 cap -- a third blocker-research signal emits no row ───────
@@ -1011,14 +1007,14 @@ jq -n --arg t "1001" '{blocker_escalation_count: {($t): 2}, aux_pending: {($t): 
   > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"
 run_sut --session g10_a -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
-  pass "aux: MAX_BLOCKER_ESCALATIONS cap suppresses a third blocker-research row"
+  common_test_pass "aux: MAX_BLOCKER_ESCALATIONS cap suppresses a third blocker-research row"
 else
-  fail "aux: blocker-research cap did not suppress the row (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: blocker-research cap did not suppress the row (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ]; then
-  pass "aux: a capped-out aux_pending entry is still cleared (never re-evaluated next cycle)"
+  common_test_pass "aux: a capped-out aux_pending entry is still cleared (never re-evaluated next cycle)"
 else
-  fail "aux: capped-out aux_pending entry was not cleared"
+  common_test_fail "aux: capped-out aux_pending entry was not cleared"
 fi
 
 # ── Case C: MAX_DRIFT_INSPECTIONS=1 cap -- base mode ─────────────────────────────────────────────
@@ -1028,17 +1024,17 @@ jq -n --arg t "1001" '{aux_pending: {($t): {kind: "drift-inspection"}}}' \
 run_sut --session g10_c -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "drift-inspection")) | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].agent')" = "fork" ]; then
-  pass "aux: drift-inspection aux_pending (base mode) produces one row, agent=fork"
+  common_test_pass "aux: drift-inspection aux_pending (base mode) produces one row, agent=fork"
 else
-  fail "aux: drift-inspection row missing or malformed (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: drift-inspection row missing or malformed (stdout: $LAST_STDOUT)"
 fi
 jq -n --arg t "1001" '{drift_inspection_count: {($t): 1}, aux_pending: {($t): {kind: "drift-inspection"}}}' \
   > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_c.json"
 run_sut --session g10_c -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
-  pass "aux: MAX_DRIFT_INSPECTIONS cap suppresses a second drift-inspection row"
+  common_test_pass "aux: MAX_DRIFT_INSPECTIONS cap suppresses a second drift-inspection row"
 else
-  fail "aux: drift-inspection cap did not suppress the row (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: drift-inspection cap did not suppress the row (stdout: $LAST_STDOUT)"
 fi
 
 # ── Case D: mutual exclusion -- drift-inspection aux_pending under --hard is suppressed, never
@@ -1048,9 +1044,9 @@ jq -n --arg t "1001" '{aux_pending: {($t): {kind: "drift-inspection"}}}' \
   > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_d.json"
 run_sut --session g10_d --hard -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
-  pass "aux: mutual exclusion -- a drift-inspection aux_pending under --hard emits no row"
+  common_test_pass "aux: mutual exclusion -- a drift-inspection aux_pending under --hard emits no row"
 else
-  fail "aux: drift-inspection under --hard unexpectedly emitted a row (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: drift-inspection under --hard unexpectedly emitted a row (stdout: $LAST_STDOUT)"
 fi
 
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_e.json"
@@ -1058,9 +1054,9 @@ jq -n --arg t "1001" '{aux_pending: {($t): {kind: "divergence-audit", target: "t
   > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_e.json"
 run_sut --session g10_e -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ]; then
-  pass "aux: mutual exclusion -- a divergence-audit aux_pending in base mode emits no row"
+  common_test_pass "aux: mutual exclusion -- a divergence-audit aux_pending in base mode emits no row"
 else
-  fail "aux: divergence-audit in base mode unexpectedly emitted a row (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: divergence-audit in base mode unexpectedly emitted a row (stdout: $LAST_STDOUT)"
 fi
 
 # ── Case E: divergence-audit under --hard dispatches with the task's own already-resolved
@@ -1072,9 +1068,9 @@ jq -n --arg t "1001" \
 run_sut --session g10_f --hard -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "divergence-audit")) | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].agent')" = "stub-research-agent" ]; then
-  pass "aux: divergence-audit under --hard dispatches with the task's stored research_agents[t], never re-resolved"
+  common_test_pass "aux: divergence-audit under --hard dispatches with the task's stored research_agents[t], never re-resolved"
 else
-  fail "aux: divergence-audit row missing or used the wrong agent (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: divergence-audit row missing or used the wrong agent (stdout: $LAST_STDOUT)"
 fi
 
 # ── Case F: chaining -- a completed blocker-research fork's .blocker-research.json produces a
@@ -1087,14 +1083,14 @@ run_sut --session g10_g -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "plan-revision")) | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].agent')" = "reviser-agent" ] && \
    [ "$(jqf '.aux_dispatch[0].model')" = "opus" ]; then
-  pass "aux: a completed .blocker-research.json chains to a plan-revision row (agent=reviser-agent, model=opus from frontmatter)"
+  common_test_pass "aux: a completed .blocker-research.json chains to a plan-revision row (agent=reviser-agent, model=opus from frontmatter)"
 else
-  fail "aux: blocker-research chain did not produce the expected plan-revision row (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: blocker-research chain did not produce the expected plan-revision row (stdout: $LAST_STDOUT)"
 fi
 if [ ! -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json" ]; then
-  pass "aux: .blocker-research.json is consumed (removed) once chained into a plan-revision row"
+  common_test_pass "aux: .blocker-research.json is consumed (removed) once chained into a plan-revision row"
 else
-  fail "aux: .blocker-research.json was not removed after chaining"
+  common_test_fail "aux: .blocker-research.json was not removed after chaining"
 fi
 
 # ── Case G: chaining -- drift_pct <= 0.30 logs "Drift check passed" and emits NO row; the marker
@@ -1103,14 +1099,14 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_h.json"
 jq -n '{drift_pct: 0.10, summary: "low drift"}' > "$WORKDIR/specs/1001_g10_aux/.drift-inspection.json"
 run_sut --session g10_h -- 1001
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1001)) | length')" = "0" ] && [[ "$LAST_STDERR" == *"Drift check passed"* ]]; then
-  pass "aux: drift_pct <= 0.30 emits no row and logs 'Drift check passed'"
+  common_test_pass "aux: drift_pct <= 0.30 emits no row and logs 'Drift check passed'"
 else
-  fail "aux: low-drift chain unexpectedly emitted a row or omitted the log line (stderr: $LAST_STDERR)"
+  common_test_fail "aux: low-drift chain unexpectedly emitted a row or omitted the log line (stderr: $LAST_STDERR)"
 fi
 if [ ! -f "$WORKDIR/specs/1001_g10_aux/.drift-inspection.json" ]; then
-  pass "aux: .drift-inspection.json is consumed (removed) even when drift_pct is below threshold"
+  common_test_pass "aux: .drift-inspection.json is consumed (removed) even when drift_pct is below threshold"
 else
-  fail "aux: .drift-inspection.json was not removed after a below-threshold chain check"
+  common_test_fail "aux: .drift-inspection.json was not removed after a below-threshold chain check"
 fi
 
 # ── Case H: --dry-run parity -- same kind/agent rendered, dispatch_file/model null, NO mutation.
@@ -1128,14 +1124,14 @@ if [ "$(jqf '.aux_dispatch | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].agent')" = "reviser-agent" ] && \
    [ "$(jqf '.aux_dispatch[0].dispatch_file')" = "null" ] && \
    [ "$(jqf '.aux_dispatch[0].model')" = "null" ]; then
-  pass "aux: --dry-run renders the SAME aux row (dispatch_file/model null)"
+  common_test_pass "aux: --dry-run renders the SAME aux row (dispatch_file/model null)"
 else
-  fail "aux: --dry-run aux rendering incorrect (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: --dry-run aux rendering incorrect (stdout: $LAST_STDOUT)"
 fi
 if [ -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json" ]; then
-  pass "aux: --dry-run mutates nothing (chain marker file left in place)"
+  common_test_pass "aux: --dry-run mutates nothing (chain marker file left in place)"
 else
-  fail "aux: --dry-run unexpectedly consumed the chain marker file"
+  common_test_fail "aux: --dry-run unexpectedly consumed the chain marker file"
 fi
 rm -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
 
@@ -1160,15 +1156,15 @@ jq -n --arg t "1002" '{failed_tasks: [1002], aux_pending: {($t): {kind: "blocker
   > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_j.json"
 run_sut --session g10_j -- 1002
 if [ "$(jqf '.stop.reason')" = "all_terminal" ]; then
-  pass "aux: fixture confirms the all-terminal short-circuit actually fires this cycle (failed_tasks pre-seeded)"
+  common_test_pass "aux: fixture confirms the all-terminal short-circuit actually fires this cycle (failed_tasks pre-seeded)"
 else
-  fail "aux: fixture did not reach the all-terminal short-circuit as expected (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: fixture did not reach the all-terminal short-circuit as expected (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.aux_dispatch | map(select(.task == 1002 and .kind == "blocker-research")) | length')" = "1" ] && \
    [ "$(jqf '.aux_dispatch[0].agent')" = "fork" ]; then
-  pass "aux: REGRESSION -- an aux_dispatch[] row is still built even though this cycle stops for all_terminal"
+  common_test_pass "aux: REGRESSION -- an aux_dispatch[] row is still built even though this cycle stops for all_terminal"
 else
-  fail "aux: REGRESSION -- aux row was suppressed by the all-terminal short-circuit (stdout: $LAST_STDOUT)"
+  common_test_fail "aux: REGRESSION -- aux row was suppressed by the all-terminal short-circuit (stdout: $LAST_STDOUT)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1192,7 +1188,7 @@ fi
 # never populate -- confirming, by construction, that cases (a)-(k) exercise the CANNOTVERIFY ->
 # run fallback path rather than accidentally exercising a skip.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 11: inter-cycle redeploy checkpoint (three-branch contract + durable ledger skip rules)"
+common_test_info "Group 11: inter-cycle redeploy checkpoint (three-branch contract + durable ledger skip rules)"
 
 # shellcheck source=/dev/null
 source "$CORE_DIR/lib/deploy-ledger-lib.sh"
@@ -1415,19 +1411,19 @@ write_g11_deploy_headless_stub 1
 run_sut --session g11_a -- 9101
 mt_a="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_a.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_a" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (a): deploy-headless.sh exit 1 defers the batch (deferred_deploy_checkpoint contains the task)"
+  common_test_pass "checkpoint (a): deploy-headless.sh exit 1 defers the batch (deferred_deploy_checkpoint contains the task)"
 else
-  fail "checkpoint (a): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_a" 2>/dev/null))"
+  common_test_fail "checkpoint (a): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_a" 2>/dev/null))"
 fi
 if [ "$(jq -r '.verify_deploy_baseline_notices | length' "$mt_a" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (a): no baseline notice recorded (branch (a) never consults the baseline)"
+  common_test_pass "checkpoint (a): no baseline notice recorded (branch (a) never consults the baseline)"
 else
-  fail "checkpoint (a): unexpected verify_deploy_baseline_notices entry recorded"
+  common_test_fail "checkpoint (a): unexpected verify_deploy_baseline_notices entry recorded"
 fi
 if [ -f "$G11_CALL_MARKER" ] && [ "$(cat "$G11_CALL_MARKER")" = "1" ]; then
-  pass "checkpoint (a): verify-deploy.sh called exactly once (pre-snapshot only; post-snapshot never taken)"
+  common_test_pass "checkpoint (a): verify-deploy.sh called exactly once (pre-snapshot only; post-snapshot never taken)"
 else
-  fail "checkpoint (a): expected exactly one verify-deploy.sh call, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
+  common_test_fail "checkpoint (a): expected exactly one verify-deploy.sh call, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
 fi
 
 # ── Case (b): deploy-headless.sh exit 3 (landed, gate red) WITH a genuinely new finding relative
@@ -1439,14 +1435,14 @@ write_g11_deploy_headless_stub 3
 run_sut --session g11_b -- 9101
 mt_b="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_b.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_b" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (b): a NEW finding on exit 3 still defers the batch"
+  common_test_pass "checkpoint (b): a NEW finding on exit 3 still defers the batch"
 else
-  fail "checkpoint (b): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_b" 2>/dev/null))"
+  common_test_fail "checkpoint (b): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_b" 2>/dev/null))"
 fi
 if [ "$(jq -r '.verify_deploy_baseline_notices | length' "$mt_b" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (b): no baseline notice recorded (a genuinely new failure is not a tolerated pre-existing one)"
+  common_test_pass "checkpoint (b): no baseline notice recorded (a genuinely new failure is not a tolerated pre-existing one)"
 else
-  fail "checkpoint (b): unexpected verify_deploy_baseline_notices entry recorded"
+  common_test_fail "checkpoint (b): unexpected verify_deploy_baseline_notices entry recorded"
 fi
 
 # ── Case (c): deploy-headless.sh exit 3 (landed, gate red) with EVERY post-redeploy finding
@@ -1460,19 +1456,19 @@ run_sut --session g11_c -- 9101
 mt_c="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_c.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_c" 2>/dev/null)" = "false" ] || \
    [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_c" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (c): a pre-existing-only finding set on exit 3 does NOT defer the batch"
+  common_test_pass "checkpoint (c): a pre-existing-only finding set on exit 3 does NOT defer the batch"
 else
-  fail "checkpoint (c): batch was unexpectedly deferred (mt_state: $(cat "$mt_c" 2>/dev/null))"
+  common_test_fail "checkpoint (c): batch was unexpectedly deferred (mt_state: $(cat "$mt_c" 2>/dev/null))"
 fi
 if [ "$(jq -r '.verify_deploy_baseline_notices | length' "$mt_c" 2>/dev/null)" -ge "1" ]; then
-  pass "checkpoint (c): a verify_deploy_baseline_notices entry was recorded"
+  common_test_pass "checkpoint (c): a verify_deploy_baseline_notices entry was recorded"
 else
-  fail "checkpoint (c): expected a verify_deploy_baseline_notices entry, found none (mt_state: $(cat "$mt_c" 2>/dev/null))"
+  common_test_fail "checkpoint (c): expected a verify_deploy_baseline_notices entry, found none (mt_state: $(cat "$mt_c" 2>/dev/null))"
 fi
 if [ "$(jq -r '.deployed_critical_paths | index(".claude/scripts/orchestrate-cycle-plan.sh") != null' "$mt_c" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (c): deployed_critical_paths records the matched critical path"
+  common_test_pass "checkpoint (c): deployed_critical_paths records the matched critical path"
 else
-  fail "checkpoint (c): deployed_critical_paths does not record the matched path (mt_state: $(cat "$mt_c" 2>/dev/null))"
+  common_test_fail "checkpoint (c): deployed_critical_paths does not record the matched path (mt_state: $(cat "$mt_c" 2>/dev/null))"
 fi
 
 # ── Case (d): a candidate new finding does NOT reproduce on the confirmation re-run -- FLAKY.
@@ -1485,20 +1481,20 @@ run_sut --session g11_d -- 9101
 mt_d="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_d.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_d" 2>/dev/null)" = "false" ] || \
    [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_d" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (d): a flaky (non-reproducing) new finding does NOT defer the batch"
+  common_test_pass "checkpoint (d): a flaky (non-reproducing) new finding does NOT defer the batch"
 else
-  fail "checkpoint (d): batch was unexpectedly deferred (mt_state: $(cat "$mt_d" 2>/dev/null))"
+  common_test_fail "checkpoint (d): batch was unexpectedly deferred (mt_state: $(cat "$mt_d" 2>/dev/null))"
 fi
 if [ "$(jq -r '.verify_deploy_baseline_notices[-1].filtered' "$mt_d" 2>/dev/null)" = "true" ] && \
    [ "$(jq -r '.verify_deploy_baseline_notices[-1].flaky_count' "$mt_d" 2>/dev/null)" -ge "1" ]; then
-  pass "checkpoint (d): notice records the finding as flaky (filtered:true, flaky_count>=1)"
+  common_test_pass "checkpoint (d): notice records the finding as flaky (filtered:true, flaky_count>=1)"
 else
-  fail "checkpoint (d): expected a filtered notice with flaky_count>=1 (mt_state: $(cat "$mt_d" 2>/dev/null))"
+  common_test_fail "checkpoint (d): expected a filtered notice with flaky_count>=1 (mt_state: $(cat "$mt_d" 2>/dev/null))"
 fi
 if [ "$(jq -r '.deployed_critical_paths | index(".claude/scripts/orchestrate-cycle-plan.sh") != null' "$mt_d" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (d): deployed_critical_paths still recorded when proceeding on a flaky finding"
+  common_test_pass "checkpoint (d): deployed_critical_paths still recorded when proceeding on a flaky finding"
 else
-  fail "checkpoint (d): deployed_critical_paths not recorded (mt_state: $(cat "$mt_d" 2>/dev/null))"
+  common_test_fail "checkpoint (d): deployed_critical_paths not recorded (mt_state: $(cat "$mt_d" 2>/dev/null))"
 fi
 
 # ── Case (e): a CONFIRMED new finding names an identifier absent from this batch's own
@@ -1510,15 +1506,15 @@ run_sut --session g11_e -- 9101
 mt_e="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_e.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_e" 2>/dev/null)" = "false" ] || \
    [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_e" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (e): a confirmed but unrelated new finding does NOT defer the batch"
+  common_test_pass "checkpoint (e): a confirmed but unrelated new finding does NOT defer the batch"
 else
-  fail "checkpoint (e): batch was unexpectedly deferred (mt_state: $(cat "$mt_e" 2>/dev/null))"
+  common_test_fail "checkpoint (e): batch was unexpectedly deferred (mt_state: $(cat "$mt_e" 2>/dev/null))"
 fi
 if [ "$(jq -r '.verify_deploy_baseline_notices[-1].filtered' "$mt_e" 2>/dev/null)" = "true" ] && \
    [ "$(jq -r '.verify_deploy_baseline_notices[-1].unrelated_count' "$mt_e" 2>/dev/null)" -ge "1" ]; then
-  pass "checkpoint (e): notice records the finding as unrelated (filtered:true, unrelated_count>=1)"
+  common_test_pass "checkpoint (e): notice records the finding as unrelated (filtered:true, unrelated_count>=1)"
 else
-  fail "checkpoint (e): expected a filtered notice with unrelated_count>=1 (mt_state: $(cat "$mt_e" 2>/dev/null))"
+  common_test_fail "checkpoint (e): expected a filtered notice with unrelated_count>=1 (mt_state: $(cat "$mt_e" 2>/dev/null))"
 fi
 
 # ── Case (f): a CONFIRMED new finding names an identifier PRESENT in this batch's own
@@ -1529,23 +1525,23 @@ write_g11_deploy_headless_stub 3
 run_sut --session g11_f -- 9101
 mt_f="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_f.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_f" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (f): a confirmed, attributable new finding still defers the batch"
+  common_test_pass "checkpoint (f): a confirmed, attributable new finding still defers the batch"
 else
-  fail "checkpoint (f): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_f" 2>/dev/null))"
+  common_test_fail "checkpoint (f): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_f" 2>/dev/null))"
 fi
 
 # ── Case (g): the defer message (stderr) and defer_ledger[].detail both name the specific
 # blocking finding -- Defect B, now against the FILTERED set. Reuses case (f)'s already-run
 # fixture and captured $LAST_STDERR (no separate run needed). ──────────────────────────────────
 if printf '%s' "$LAST_STDERR" | grep -q "orchestrate-cycle-plan.sh"; then
-  pass "checkpoint (g): defer stderr names the specific blocking finding"
+  common_test_pass "checkpoint (g): defer stderr names the specific blocking finding"
 else
-  fail "checkpoint (g): defer stderr does not name the finding (stderr: $LAST_STDERR)"
+  common_test_fail "checkpoint (g): defer stderr does not name the finding (stderr: $LAST_STDERR)"
 fi
 if [ "$(jq -r '.defer_ledger[-1].detail' "$mt_f" 2>/dev/null | grep -c "orchestrate-cycle-plan.sh")" -ge "1" ]; then
-  pass "checkpoint (g): defer_ledger[].detail names the specific blocking finding"
+  common_test_pass "checkpoint (g): defer_ledger[].detail names the specific blocking finding"
 else
-  fail "checkpoint (g): defer_ledger[].detail does not name the finding (mt_state: $(cat "$mt_f" 2>/dev/null))"
+  common_test_fail "checkpoint (g): defer_ledger[].detail does not name the finding (mt_state: $(cat "$mt_f" 2>/dev/null))"
 fi
 
 # ── Case (h): a CONFIRMED new finding names NO identifier at all -- the attribution filter must
@@ -1556,9 +1552,9 @@ write_g11_deploy_headless_stub 3
 run_sut --session g11_h -- 9101
 mt_h="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_h.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_h" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (h): an identifier-free confirmed finding still defers (fail-safe attribution)"
+  common_test_pass "checkpoint (h): an identifier-free confirmed finding still defers (fail-safe attribution)"
 else
-  fail "checkpoint (h): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_h" 2>/dev/null))"
+  common_test_fail "checkpoint (h): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_h" 2>/dev/null))"
 fi
 
 # ── Case (i): depth-symmetry regression guard -- a gate-8 finding present in BOTH pre and post
@@ -1571,19 +1567,19 @@ run_sut --session g11_i -- 9101
 mt_i="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_i.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_i" 2>/dev/null)" = "false" ] || \
    [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_i" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (i): a gate-8 finding present in BOTH pre and post is not treated as new"
+  common_test_pass "checkpoint (i): a gate-8 finding present in BOTH pre and post is not treated as new"
 else
-  fail "checkpoint (i): batch was unexpectedly deferred (mt_state: $(cat "$mt_i" 2>/dev/null))"
+  common_test_fail "checkpoint (i): batch was unexpectedly deferred (mt_state: $(cat "$mt_i" 2>/dev/null))"
 fi
 if [ "$(jq -r '.verify_deploy_baseline_notices[-1].filtered' "$mt_i" 2>/dev/null)" = "false" ]; then
-  pass "checkpoint (i): takes the ORIGINAL branch (c) (filtered:false), not the new filtered sub-branch"
+  common_test_pass "checkpoint (i): takes the ORIGINAL branch (c) (filtered:false), not the new filtered sub-branch"
 else
-  fail "checkpoint (i): expected filtered:false (original branch (c)) (mt_state: $(cat "$mt_i" 2>/dev/null))"
+  common_test_fail "checkpoint (i): expected filtered:false (original branch (c)) (mt_state: $(cat "$mt_i" 2>/dev/null))"
 fi
 if [ -f "$G11_CALL_MARKER" ] && [ "$(cat "$G11_CALL_MARKER")" = "2" ]; then
-  pass "checkpoint (i): verify-deploy.sh called exactly twice (no confirmation call when new_findings is empty)"
+  common_test_pass "checkpoint (i): verify-deploy.sh called exactly twice (no confirmation call when new_findings is empty)"
 else
-  fail "checkpoint (i): expected exactly two verify-deploy.sh calls, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
+  common_test_fail "checkpoint (i): expected exactly two verify-deploy.sh calls, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
 fi
 
 # ── Case (j): call-count guard for the ORIGINAL branch (c) (identical to the pre-existing case
@@ -1594,9 +1590,9 @@ write_g11_verify_stub "FINDING gate1 pre-existing" "" 1
 write_g11_deploy_headless_stub 3
 run_sut --session g11_j -- 9101
 if [ -f "$G11_CALL_MARKER" ] && [ "$(cat "$G11_CALL_MARKER")" = "2" ]; then
-  pass "checkpoint (j): branch (c) (no new findings) makes exactly two verify-deploy.sh calls"
+  common_test_pass "checkpoint (j): branch (c) (no new findings) makes exactly two verify-deploy.sh calls"
 else
-  fail "checkpoint (j): expected exactly two verify-deploy.sh calls, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
+  common_test_fail "checkpoint (j): expected exactly two verify-deploy.sh calls, got $(cat "$G11_CALL_MARKER" 2>/dev/null || echo 'none')"
 fi
 
 # ── Case (k): Defect A depth-disagreement report -- deploy-headless.sh's OWN internal
@@ -1612,19 +1608,19 @@ write_g11_deploy_headless_stub 0
 run_sut --session g11_k -- 9101
 mt_k="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_k.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_k" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (k): still defers despite deploy-headless.sh's own fast verify passing"
+  common_test_pass "checkpoint (k): still defers despite deploy-headless.sh's own fast verify passing"
 else
-  fail "checkpoint (k): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_k" 2>/dev/null))"
+  common_test_fail "checkpoint (k): deferred_deploy_checkpoint does not contain 9101 (mt_state: $(cat "$mt_k" 2>/dev/null))"
 fi
 if printf '%s' "$LAST_STDERR" | grep -q "DEPTH NOTE"; then
-  pass "checkpoint (k): stderr carries the explicit depth-disagreement note"
+  common_test_pass "checkpoint (k): stderr carries the explicit depth-disagreement note"
 else
-  fail "checkpoint (k): stderr missing the depth-disagreement note (stderr: $LAST_STDERR)"
+  common_test_fail "checkpoint (k): stderr missing the depth-disagreement note (stderr: $LAST_STDERR)"
 fi
 if [ "$(jq -r '.defer_ledger[-1].depth_disagreement' "$mt_k" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (k): defer_ledger[].depth_disagreement records the depth disagreement"
+  common_test_pass "checkpoint (k): defer_ledger[].depth_disagreement records the depth disagreement"
 else
-  fail "checkpoint (k): defer_ledger[].depth_disagreement is not true (mt_state: $(cat "$mt_k" 2>/dev/null))"
+  common_test_fail "checkpoint (k): defer_ledger[].depth_disagreement is not true (mt_state: $(cat "$mt_k" 2>/dev/null))"
 fi
 
 # ── Case (l): skip on unchanged hash -- the ordinary case. Ledger clean, same content, fresh
@@ -1639,24 +1635,24 @@ write_g11_deploy_headless_stub 1
 run_sut --session g11_l -- 9101
 mt_l="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_l.json"
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "0" ]; then
-  pass "checkpoint (l): skip_hash never invokes deploy-headless.sh"
+  common_test_pass "checkpoint (l): skip_hash never invokes deploy-headless.sh"
 else
-  fail "checkpoint (l): expected deploy-headless.sh to be skipped, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null) call(s)"
+  common_test_fail "checkpoint (l): expected deploy-headless.sh to be skipped, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null) call(s)"
 fi
 if [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_l" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (l): the batch is not deferred on a hash skip"
+  common_test_pass "checkpoint (l): the batch is not deferred on a hash skip"
 else
-  fail "checkpoint (l): batch was unexpectedly deferred (mt_state: $(cat "$mt_l" 2>/dev/null))"
+  common_test_fail "checkpoint (l): batch was unexpectedly deferred (mt_state: $(cat "$mt_l" 2>/dev/null))"
 fi
 if [ "$(jq -r '.redeploy_skip_notices[-1].decision' "$mt_l" 2>/dev/null)" = "skip_hash" ]; then
-  pass "checkpoint (l): redeploy_skip_notices records decision=skip_hash"
+  common_test_pass "checkpoint (l): redeploy_skip_notices records decision=skip_hash"
 else
-  fail "checkpoint (l): expected redeploy_skip_notices[-1].decision=skip_hash (mt_state: $(cat "$mt_l" 2>/dev/null))"
+  common_test_fail "checkpoint (l): expected redeploy_skip_notices[-1].decision=skip_hash (mt_state: $(cat "$mt_l" 2>/dev/null))"
 fi
 if [ "$(jq -r '.deployed_critical_paths | length' "$mt_l" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (l): deployed_critical_paths is left unchanged (empty) on a skip"
+  common_test_pass "checkpoint (l): deployed_critical_paths is left unchanged (empty) on a skip"
 else
-  fail "checkpoint (l): expected deployed_critical_paths to stay empty on a skip (mt_state: $(cat "$mt_l" 2>/dev/null))"
+  common_test_fail "checkpoint (l): expected deployed_critical_paths to stay empty on a skip (mt_state: $(cat "$mt_l" 2>/dev/null))"
 fi
 
 # ── Case (m): skip within the recency window -- the self-modifying-task case. Content changed
@@ -1672,19 +1668,19 @@ write_g11_deploy_headless_stub 1
 run_sut --session g11_m -- 9101
 mt_m="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_m.json"
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "0" ]; then
-  pass "checkpoint (m): skip_attributed never invokes deploy-headless.sh"
+  common_test_pass "checkpoint (m): skip_attributed never invokes deploy-headless.sh"
 else
-  fail "checkpoint (m): expected deploy-headless.sh to be skipped, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null) call(s)"
+  common_test_fail "checkpoint (m): expected deploy-headless.sh to be skipped, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null) call(s)"
 fi
 if [ "$(jq -r '.redeploy_skip_notices[-1].decision' "$mt_m" 2>/dev/null)" = "skip_attributed" ]; then
-  pass "checkpoint (m): redeploy_skip_notices records decision=skip_attributed"
+  common_test_pass "checkpoint (m): redeploy_skip_notices records decision=skip_attributed"
 else
-  fail "checkpoint (m): expected redeploy_skip_notices[-1].decision=skip_attributed (mt_state: $(cat "$mt_m" 2>/dev/null))"
+  common_test_fail "checkpoint (m): expected redeploy_skip_notices[-1].decision=skip_attributed (mt_state: $(cat "$mt_m" 2>/dev/null))"
 fi
 if [ "$(jq -r '.redeploy_skip_notices[-1].attributing_tasks | index(9101) != null' "$mt_m" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (m): the skip notice attributes the skip to project #9101"
+  common_test_pass "checkpoint (m): the skip notice attributes the skip to project #9101"
 else
-  fail "checkpoint (m): expected attributing_tasks to contain 9101 (mt_state: $(cat "$mt_m" 2>/dev/null))"
+  common_test_fail "checkpoint (m): expected attributing_tasks to contain 9101 (mt_state: $(cat "$mt_m" 2>/dev/null))"
 fi
 
 # ── Case (n): NO skip when the source store genuinely changed OUTSIDE the recency window --
@@ -1699,22 +1695,22 @@ write_g11_deploy_headless_stub 0
 run_sut --session g11_n -- 9101
 mt_n="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_n.json"
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
-  pass "checkpoint (n): outside the recency window, the full pipeline runs (deploy-headless.sh called)"
+  common_test_pass "checkpoint (n): outside the recency window, the full pipeline runs (deploy-headless.sh called)"
 else
-  fail "checkpoint (n): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
+  common_test_fail "checkpoint (n): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
 fi
 if [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_n" 2>/dev/null)" = "0" ]; then
-  pass "checkpoint (n): a clean redeploy does not defer the batch"
+  common_test_pass "checkpoint (n): a clean redeploy does not defer the batch"
 else
-  fail "checkpoint (n): batch was unexpectedly deferred (mt_state: $(cat "$mt_n" 2>/dev/null))"
+  common_test_fail "checkpoint (n): batch was unexpectedly deferred (mt_state: $(cat "$mt_n" 2>/dev/null))"
 fi
 ledger_n_outcome="$(jq -r '.verify_outcome' "$WORKDIR/specs/.orchestrator-deploy-ledger.json" 2>/dev/null)"
 expected_hash_n="$(deploy_ledger_hash_state "$WORKDIR" "$WORKDIR/.claude/context/reference/orchestrator-critical-paths.json" | jq -r '.aggregate')"
 ledger_n_agg="$(jq -r '.aggregate' "$WORKDIR/specs/.orchestrator-deploy-ledger.json" 2>/dev/null)"
 if [ "$ledger_n_outcome" = "clean" ] && [ "$ledger_n_agg" = "$expected_hash_n" ]; then
-  pass "checkpoint (n): the ledger is rewritten with the new aggregate and outcome clean"
+  common_test_pass "checkpoint (n): the ledger is rewritten with the new aggregate and outcome clean"
 else
-  fail "checkpoint (n): expected ledger outcome=clean aggregate=$expected_hash_n, got outcome=$ledger_n_outcome aggregate=$ledger_n_agg"
+  common_test_fail "checkpoint (n): expected ledger outcome=clean aggregate=$expected_hash_n, got outcome=$ledger_n_outcome aggregate=$ledger_n_agg"
 fi
 
 # ── Case (o): NO skip on a FOREIGN change -- an in-window, shared-task ledger, but the critical
@@ -1729,9 +1725,9 @@ write_g11_verify_stub "" "" 0
 write_g11_deploy_headless_stub 0
 run_sut --session g11_o -- 9101
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
-  pass "checkpoint (o): a foreign changed critical path (not covered by cycle_modified_files) is not skipped"
+  common_test_pass "checkpoint (o): a foreign changed critical path (not covered by cycle_modified_files) is not skipped"
 else
-  fail "checkpoint (o): expected the pipeline to run (not skip) on a foreign change, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
+  common_test_fail "checkpoint (o): expected the pipeline to run (not skip) on a foreign change, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
 fi
 
 # ── Case (p): deploy_pending override -- a batch task directory's own .return-meta.json carries
@@ -1745,9 +1741,9 @@ write_g11_verify_stub "" "" 0
 write_g11_deploy_headless_stub 0
 run_sut --session g11_p -- 9101
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
-  pass "checkpoint (p): a deploy_pending batch task forces run despite an otherwise-matching hash"
+  common_test_pass "checkpoint (p): a deploy_pending batch task forces run despite an otherwise-matching hash"
 else
-  fail "checkpoint (p): expected the pipeline to run under deploy_pending override, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
+  common_test_fail "checkpoint (p): expected the pipeline to run under deploy_pending override, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
 fi
 rm -f "$WORKDIR/specs/9101_g11_terminal/.return-meta.json"
 rmdir "$WORKDIR/specs/9101_g11_terminal" 2>/dev/null || true
@@ -1764,9 +1760,9 @@ write_g11_deploy_headless_stub 3
 run_sut --session g11_q -- 9101
 LEDGER_FILE_Q="$WORKDIR/specs/.orchestrator-deploy-ledger.json"
 if [ -f "$LEDGER_FILE_Q" ] && [ "$(jq -r '.verify_outcome' "$LEDGER_FILE_Q" 2>/dev/null)" = "blocking" ]; then
-  pass "checkpoint (q): a branch (b) defer writes a negative 'blocking' ledger record"
+  common_test_pass "checkpoint (q): a branch (b) defer writes a negative 'blocking' ledger record"
 else
-  fail "checkpoint (q): expected ledger verify_outcome=blocking after a branch-(b) defer, got: $(cat "$LEDGER_FILE_Q" 2>/dev/null || echo MISSING)"
+  common_test_fail "checkpoint (q): expected ledger verify_outcome=blocking after a branch-(b) defer, got: $(cat "$LEDGER_FILE_Q" 2>/dev/null || echo MISSING)"
 fi
 
 g11_reset_mt "g11_q2" '["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]'
@@ -1774,14 +1770,14 @@ write_g11_verify_stub "" "" 0
 write_g11_deploy_headless_stub 0
 run_sut --session g11_q2 -- 9101
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
-  pass "checkpoint (q): a following run with unchanged content does NOT skip on a non-eligible (blocking) ledger record"
+  common_test_pass "checkpoint (q): a following run with unchanged content does NOT skip on a non-eligible (blocking) ledger record"
 else
-  fail "checkpoint (q): expected the pipeline to run (not skip) despite unchanged content, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
+  common_test_fail "checkpoint (q): expected the pipeline to run (not skip) despite unchanged content, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
 fi
 if [ "$(jq -r '.verify_outcome' "$LEDGER_FILE_Q" 2>/dev/null)" = "clean" ]; then
-  pass "checkpoint (q): the ledger converges back to 'clean' once a clean deploy lands"
+  common_test_pass "checkpoint (q): the ledger converges back to 'clean' once a clean deploy lands"
 else
-  fail "checkpoint (q): expected ledger verify_outcome=clean after the follow-up run, got $(jq -c '.' "$LEDGER_FILE_Q" 2>/dev/null)"
+  common_test_fail "checkpoint (q): expected ledger verify_outcome=clean after the follow-up run, got $(jq -c '.' "$LEDGER_FILE_Q" 2>/dev/null)"
 fi
 
 # ── Case (r): the NAMED self-modifying-task acceptance criterion. A task whose file_scope and
@@ -1839,16 +1835,16 @@ g11_run_self_modifying_sequence() {
 
 g11_r_normal_count="$(g11_run_self_modifying_sequence "normal")"
 if [ "$g11_r_normal_count" = "1" ]; then
-  pass "checkpoint (r): self-modifying-task acceptance -- total deploy count stays 1 across 3 invocations (the attributed skip closes the observed failure mode)"
+  common_test_pass "checkpoint (r): self-modifying-task acceptance -- total deploy count stays 1 across 3 invocations (the attributed skip closes the observed failure mode)"
 else
-  fail "checkpoint (r): expected total deploy count 1 across 3 self-modifying invocations, got $g11_r_normal_count"
+  common_test_fail "checkpoint (r): expected total deploy count 1 across 3 self-modifying invocations, got $g11_r_normal_count"
 fi
 
 g11_r_counterfactual_count="$(g11_run_self_modifying_sequence "counterfactual" "-1")"
 if [ "$g11_r_counterfactual_count" = "3" ]; then
-  pass "checkpoint (r): counterfactual -- a hash-only rule (DEPLOY_LEDGER_RECENT_SEC=-1, recency window unsatisfiable) redeploys on every one of the 3 invocations, proving the attributed rule (not the hash rule) is what closes the failure mode"
+  common_test_pass "checkpoint (r): counterfactual -- a hash-only rule (DEPLOY_LEDGER_RECENT_SEC=-1, recency window unsatisfiable) redeploys on every one of the 3 invocations, proving the attributed rule (not the hash rule) is what closes the failure mode"
 else
-  fail "checkpoint (r): expected counterfactual deploy count 3 (a hash-only rule never skips the self-modifying class), got $g11_r_counterfactual_count"
+  common_test_fail "checkpoint (r): expected counterfactual deploy count 3 (a hash-only rule never skips the self-modifying class), got $g11_r_counterfactual_count"
 fi
 
 rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
@@ -1875,35 +1871,35 @@ write_g11_verify_stub "" "" 0
 write_g11_deploy_headless_stub 0
 run_sut --session g11_s -- 9101
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
-  pass "checkpoint (s): the widened predicate reaches the deploy body when matched_count==0 but deploy_pending_any=true (a non-allowlisted agent-system/extensions/** path)"
+  common_test_pass "checkpoint (s): the widened predicate reaches the deploy body when matched_count==0 but deploy_pending_any=true (a non-allowlisted agent-system/extensions/** path)"
 else
-  fail "checkpoint (s): expected the pipeline to run under the widened predicate, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
+  common_test_fail "checkpoint (s): expected the pipeline to run under the widened predicate, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none') call(s)"
 fi
 if echo "$LAST_STDERR" | grep -q "REDEPLOY CHECKPOINT: triggered by the deploy_pending marker" && \
    echo "$LAST_STDERR" | grep -q '\[9101\]'; then
-  pass "checkpoint (s): the announcement names its own reason (deploy_pending marker naming the candidate), not a misleading 'touched 0 orchestrator-critical path(s)' line"
+  common_test_pass "checkpoint (s): the announcement names its own reason (deploy_pending marker naming the candidate), not a misleading 'touched 0 orchestrator-critical path(s)' line"
 else
-  fail "checkpoint (s): expected the deploy_pending-triggered announcement naming the candidate, got: $LAST_STDERR"
+  common_test_fail "checkpoint (s): expected the deploy_pending-triggered announcement naming the candidate, got: $LAST_STDERR"
 fi
 if echo "$LAST_STDERR" | grep -q "touched 0 orchestrator-critical path(s)"; then
-  fail "checkpoint (s): the misleading 'touched 0 orchestrator-critical path(s)' line must not appear on the widened path"
+  common_test_fail "checkpoint (s): the misleading 'touched 0 orchestrator-critical path(s)' line must not appear on the widened path"
 else
-  pass "checkpoint (s): no misleading 'touched 0 orchestrator-critical path(s)' line"
+  common_test_pass "checkpoint (s): no misleading 'touched 0 orchestrator-critical path(s)' line"
 fi
 mt_s="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_s.json"
 if [ "$(jq -r '.cycle_modified_files' "$mt_s" 2>/dev/null)" = "[]" ]; then
-  pass "checkpoint (s): cycle_modified_files is still reset to [] after the widened-path run (unconditional reset preserved)"
+  common_test_pass "checkpoint (s): cycle_modified_files is still reset to [] after the widened-path run (unconditional reset preserved)"
 else
-  fail "checkpoint (s): expected cycle_modified_files reset to [] after the run, got: $(cat "$mt_s" 2>/dev/null)"
+  common_test_fail "checkpoint (s): expected cycle_modified_files reset to [] after the run, got: $(cat "$mt_s" 2>/dev/null)"
 fi
 # Ledger-consult assertion (plan verification requirement): the widened path must still ROUTE
 # THROUGH deploy_ledger_decide and write the durable ledger on a clean outcome, never bypass it --
 # a written ledger record with verify_outcome=clean is only reachable via that consult+write path.
 ledger_file_s="$WORKDIR/specs/.orchestrator-deploy-ledger.json"
 if [ -f "$ledger_file_s" ] && [ "$(jq -r '.verify_outcome' "$ledger_file_s" 2>/dev/null)" = "clean" ]; then
-  pass "checkpoint (s): the widened path still routes through deploy_ledger_decide (durable ledger written with verify_outcome=clean), not a bypass"
+  common_test_pass "checkpoint (s): the widened path still routes through deploy_ledger_decide (durable ledger written with verify_outcome=clean), not a bypass"
 else
-  fail "checkpoint (s): expected the durable ledger to be written with verify_outcome=clean on the widened path, got: $(cat "$ledger_file_s" 2>/dev/null || echo MISSING)"
+  common_test_fail "checkpoint (s): expected the durable ledger to be written with verify_outcome=clean on the widened path, got: $(cat "$ledger_file_s" 2>/dev/null || echo MISSING)"
 fi
 rm -f "$WORKDIR/specs/9101_g11_terminal/.return-meta.json"
 rmdir "$WORKDIR/specs/9101_g11_terminal" 2>/dev/null || true
@@ -1925,30 +1921,30 @@ write_g11_verify_stub "" "" 0
 write_g11_self_rewriting_deploy_stub 3
 run_sut --session g11_t -- 9101 9111
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "checkpoint (t): SUT exits 0 despite the mid-run self-rewrite (deploy-landed branch)"
+  common_test_pass "checkpoint (t): SUT exits 0 despite the mid-run self-rewrite (deploy-landed branch)"
 else
-  fail "checkpoint (t): SUT exited $LAST_EXIT after the mid-run self-rewrite (stderr: $LAST_STDERR)"
+  common_test_fail "checkpoint (t): SUT exited $LAST_EXIT after the mid-run self-rewrite (stderr: $LAST_STDERR)"
 fi
 if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
-  pass "checkpoint (t): stdout is valid, non-empty JSON after the mid-run self-rewrite"
+  common_test_pass "checkpoint (t): stdout is valid, non-empty JSON after the mid-run self-rewrite"
 else
-  fail "checkpoint (t): stdout did not parse as JSON after the mid-run self-rewrite (stdout: $LAST_STDOUT)"
+  common_test_fail "checkpoint (t): stdout did not parse as JSON after the mid-run self-rewrite (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 9111)) | length')" = "1" ] && \
    [ "$(jqf '.dispatch | map(select(.task == 9111)) | .[0].phase')" = "plan" ]; then
-  pass "checkpoint (t): a real, non-empty dispatch row for the live candidate survives the mid-run self-rewrite"
+  common_test_pass "checkpoint (t): a real, non-empty dispatch row for the live candidate survives the mid-run self-rewrite"
 else
-  fail "checkpoint (t): expected a dispatch row for candidate #9111 (phase plan), got: $LAST_STDOUT"
+  common_test_fail "checkpoint (t): expected a dispatch row for candidate #9111 (phase plan), got: $LAST_STDOUT"
 fi
 if echo "$LAST_STDERR" | grep -qiE 'unbound variable|syntax error|unexpected (token|EOF)'; then
-  fail "checkpoint (t): stderr carries a crash signature from the mid-run self-rewrite: $LAST_STDERR"
+  common_test_fail "checkpoint (t): stderr carries a crash signature from the mid-run self-rewrite: $LAST_STDERR"
 else
-  pass "checkpoint (t): stderr carries none of the incident's crash signatures"
+  common_test_pass "checkpoint (t): stderr carries none of the incident's crash signatures"
 fi
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
-  pass "checkpoint (t): deploy-headless.sh was called exactly once"
+  common_test_pass "checkpoint (t): deploy-headless.sh was called exactly once"
 else
-  fail "checkpoint (t): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
+  common_test_fail "checkpoint (t): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
 fi
 rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
 rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
@@ -1964,36 +1960,36 @@ write_g11_verify_stub "FINDING gate1 pre-existing" "FINDING gate2 NEW" 1
 write_g11_self_rewriting_deploy_stub 1
 run_sut --session g11_u -- 9101 9111
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "checkpoint (u): SUT exits 0 despite the mid-run self-rewrite (deploy-failure branch)"
+  common_test_pass "checkpoint (u): SUT exits 0 despite the mid-run self-rewrite (deploy-failure branch)"
 else
-  fail "checkpoint (u): SUT exited $LAST_EXIT after the mid-run self-rewrite (stderr: $LAST_STDERR)"
+  common_test_fail "checkpoint (u): SUT exited $LAST_EXIT after the mid-run self-rewrite (stderr: $LAST_STDERR)"
 fi
 if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
-  pass "checkpoint (u): stdout is valid, non-empty JSON after the mid-run self-rewrite"
+  common_test_pass "checkpoint (u): stdout is valid, non-empty JSON after the mid-run self-rewrite"
 else
-  fail "checkpoint (u): stdout did not parse as JSON after the mid-run self-rewrite (stdout: $LAST_STDOUT)"
+  common_test_fail "checkpoint (u): stdout did not parse as JSON after the mid-run self-rewrite (stdout: $LAST_STDOUT)"
 fi
 if echo "$LAST_STDERR" | grep -qiE 'unbound variable|syntax error|unexpected (token|EOF)'; then
-  fail "checkpoint (u): stderr carries a crash signature from the mid-run self-rewrite: $LAST_STDERR"
+  common_test_fail "checkpoint (u): stderr carries a crash signature from the mid-run self-rewrite: $LAST_STDERR"
 else
-  pass "checkpoint (u): stderr carries none of the incident's crash signatures"
+  common_test_pass "checkpoint (u): stderr carries none of the incident's crash signatures"
 fi
 mt_u="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g11_u.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | index(9101) != null' "$mt_u" 2>/dev/null)" = "true" ] && \
    [ "$(jq -r '.deferred_deploy_checkpoint | index(9111) != null' "$mt_u" 2>/dev/null)" = "true" ]; then
-  pass "checkpoint (u): both the terminal fixture task and the live candidate are deferred (deploy-failure defer not weakened by the rewrite)"
+  common_test_pass "checkpoint (u): both the terminal fixture task and the live candidate are deferred (deploy-failure defer not weakened by the rewrite)"
 else
-  fail "checkpoint (u): deferred_deploy_checkpoint missing an expected task (mt_state: $(cat "$mt_u" 2>/dev/null))"
+  common_test_fail "checkpoint (u): deferred_deploy_checkpoint missing an expected task (mt_state: $(cat "$mt_u" 2>/dev/null))"
 fi
 if [ "$(jq -r '.defer_ledger[-1].detail' "$mt_u" 2>/dev/null | grep -c "deploy-headless.sh exit 1")" -ge "1" ]; then
-  pass "checkpoint (u): defer_ledger[].detail is intact (names the deploy-headless.sh exit code)"
+  common_test_pass "checkpoint (u): defer_ledger[].detail is intact (names the deploy-headless.sh exit code)"
 else
-  fail "checkpoint (u): defer_ledger[].detail missing/incorrect (mt_state: $(cat "$mt_u" 2>/dev/null))"
+  common_test_fail "checkpoint (u): defer_ledger[].detail missing/incorrect (mt_state: $(cat "$mt_u" 2>/dev/null))"
 fi
 if [ "$(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 0)" = "1" ]; then
-  pass "checkpoint (u): deploy-headless.sh was called exactly once"
+  common_test_pass "checkpoint (u): deploy-headless.sh was called exactly once"
 else
-  fail "checkpoint (u): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
+  common_test_fail "checkpoint (u): expected exactly one deploy-headless.sh call, got $(cat "$G11_DEPLOY_CALL_MARKER" 2>/dev/null || echo 'none')"
 fi
 rm -f "$WORKDIR/.claude/scripts/verify-deploy.sh" "$WORKDIR/.claude/scripts/deploy-headless.sh" "$G11_CALL_MARKER" "$G11_DEPLOY_CALL_MARKER"
 rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
@@ -2004,7 +2000,7 @@ rm -f "$WORKDIR/specs/.orchestrator-deploy-ledger.json"
 # candidate's dispatched phase`), not by orchestrate-build-dispatch.sh itself (which is
 # phase-agnostic and is exercised separately in its own test suite).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 12: --compare forwarding (implement-phase only, never research/plan)"
+common_test_info "Group 12: --compare forwarding (implement-phase only, never research/plan)"
 
 G12_ARGV_LOG="$WORKDIR/g12-build-dispatch-argv.log"
 : > "$G12_ARGV_LOG"
@@ -2047,24 +2043,24 @@ reset_lock_dirs
 run_sut --session g12_sess --compare -- 1201 1202
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 12: SUT exits 0"
+  common_test_pass "Group 12: SUT exits 0"
 else
-  fail "Group 12: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 12: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 g12_plan_argv=$(grep '^1201 plan' "$G12_ARGV_LOG" || true)
 g12_implement_argv=$(grep '^1202 implement' "$G12_ARGV_LOG" || true)
 
 if echo "$g12_implement_argv" | grep -q -- "--compare"; then
-  pass "Group 12: --compare forwarded into build_args for the implement-phase candidate"
+  common_test_pass "Group 12: --compare forwarded into build_args for the implement-phase candidate"
 else
-  fail "Group 12: --compare missing from implement-phase build_args (argv: '$g12_implement_argv')"
+  common_test_fail "Group 12: --compare missing from implement-phase build_args (argv: '$g12_implement_argv')"
 fi
 
 if echo "$g12_plan_argv" | grep -q -- "--compare"; then
-  fail "Group 12: --compare unexpectedly forwarded into build_args for the plan-phase candidate (argv: '$g12_plan_argv')"
+  common_test_fail "Group 12: --compare unexpectedly forwarded into build_args for the plan-phase candidate (argv: '$g12_plan_argv')"
 else
-  pass "Group 12: --compare NOT forwarded into build_args for the plan-phase candidate"
+  common_test_pass "Group 12: --compare NOT forwarded into build_args for the plan-phase candidate"
 fi
 
 # ── --compare --hard together: both flags reach the implement dispatch (composition, never
@@ -2083,9 +2079,9 @@ run_sut --session g12b_sess --compare --hard -- 1203
 
 g12_hard_argv=$(grep '^1203 implement' "$G12_ARGV_LOG" || true)
 if echo "$g12_hard_argv" | grep -q -- "--compare" && echo "$g12_hard_argv" | grep -q -- "--hard"; then
-  pass "Group 12: --compare --hard together both reach the implement dispatch (composition, not competition)"
+  common_test_pass "Group 12: --compare --hard together both reach the implement dispatch (composition, not competition)"
 else
-  fail "Group 12: expected both --compare and --hard in implement build_args, got: '$g12_hard_argv'"
+  common_test_fail "Group 12: expected both --compare and --hard in implement build_args, got: '$g12_hard_argv'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2102,7 +2098,7 @@ fi
 # inside) runs unconditionally and --dry-run renders its output directly, per this script's own
 # header.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 13: degraded-classifier fallback table (orchestrate-triage-classify.sh exit != 0)"
+common_test_info "Group 13: degraded-classifier fallback table (orchestrate-triage-classify.sh exit != 0)"
 
 cat > "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh" <<'EOF'
 #!/usr/bin/env bash
@@ -2124,27 +2120,27 @@ reset_lock_dirs
 run_sut --session g13_sess --dry-run -- 1301 1302
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 13: SUT exits 0 despite the degraded classifier"
+  common_test_pass "Group 13: SUT exits 0 despite the degraded classifier"
 else
-  fail "Group 13: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 13: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if echo "$LAST_STDERR" | grep -q "orchestrate-triage-classify.sh degraded"; then
-  pass "Group 13: degraded-classifier WARNING logged"
+  common_test_pass "Group 13: degraded-classifier WARNING logged"
 else
-  fail "Group 13: no degraded-classifier WARNING in stderr: $LAST_STDERR"
+  common_test_fail "Group 13: no degraded-classifier WARNING in stderr: $LAST_STDERR"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 1301)) | .[0].phase')" = "research" ]; then
-  pass "Group 13: fallback table routes not_started -> research (research-first default, no --fast, matching the live classifier)"
+  common_test_pass "Group 13: fallback table routes not_started -> research (research-first default, no --fast, matching the live classifier)"
 else
-  fail "Group 13: expected not_started candidate #1301 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1301))')"
+  common_test_fail "Group 13: expected not_started candidate #1301 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1301))')"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 1302)) | .[0].phase')" = "research" ]; then
-  pass "Group 13: fallback table keeps researching -> research (load-bearing for the needs_research return path)"
+  common_test_pass "Group 13: fallback table keeps researching -> research (load-bearing for the needs_research return path)"
 else
-  fail "Group 13: expected researching candidate #1302 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1302))')"
+  common_test_fail "Group 13: expected researching candidate #1302 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1302))')"
 fi
 
 # --fast variant: not_started reverts to plan (the pre-research-first escape hatch); researching
@@ -2153,21 +2149,21 @@ reset_lock_dirs
 run_sut --session g13_sess_fast --dry-run --fast -- 1301 1302
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 13 (--fast): SUT exits 0 despite the degraded classifier"
+  common_test_pass "Group 13 (--fast): SUT exits 0 despite the degraded classifier"
 else
-  fail "Group 13 (--fast): SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 13 (--fast): SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 1301)) | .[0].phase')" = "plan" ]; then
-  pass "Group 13 (--fast): fallback table routes not_started -> plan, matching the live classifier's --effort fast row"
+  common_test_pass "Group 13 (--fast): fallback table routes not_started -> plan, matching the live classifier's --effort fast row"
 else
-  fail "Group 13 (--fast): expected not_started candidate #1301 to route to plan via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1301))')"
+  common_test_fail "Group 13 (--fast): expected not_started candidate #1301 to route to plan via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1301))')"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 1302)) | .[0].phase')" = "research" ]; then
-  pass "Group 13 (--fast): fallback table keeps researching -> research even under --fast (planner-requested research never skipped)"
+  common_test_pass "Group 13 (--fast): fallback table keeps researching -> research even under --fast (planner-requested research never skipped)"
 else
-  fail "Group 13 (--fast): expected researching candidate #1302 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1302))')"
+  common_test_fail "Group 13 (--fast): expected researching candidate #1302 to route to research via the fallback table, got: $(jqf '.dispatch | map(select(.task == 1302))')"
 fi
 
 # Restore the real classifier for any test run after this point -- Group 20 below relies on the
@@ -2184,7 +2180,7 @@ chmod +x "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
 # assertion). No change was needed inside that script for this task, so this suite does not
 # re-test its rendering.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 14: research_questions --focus wiring at the research-dispatch build call"
+common_test_info "Group 14: research_questions --focus wiring at the research-dispatch build call"
 
 G14_ARGV_LOG="$WORKDIR/g14-build-dispatch-argv.log"
 : > "$G14_ARGV_LOG"
@@ -2221,23 +2217,23 @@ reset_lock_dirs
 run_sut --session g14_sess -- 1401 1402
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 14: SUT exits 0"
+  common_test_pass "Group 14: SUT exits 0"
 else
-  fail "Group 14: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 14: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 g14_line_1401=$(grep '^1401 research' "$G14_ARGV_LOG" || true)
 if echo "$g14_line_1401" | grep -qF -- "--focus Does library X expose a streaming API?; Is the retry policy configurable?"; then
-  pass "Group 14: research_questions joined and forwarded as --focus for the needs_research-originated task"
+  common_test_pass "Group 14: research_questions joined and forwarded as --focus for the needs_research-originated task"
 else
-  fail "Group 14: expected --focus with the joined research_questions in argv, got: '$g14_line_1401'"
+  common_test_fail "Group 14: expected --focus with the joined research_questions in argv, got: '$g14_line_1401'"
 fi
 
 g14_line_1402=$(grep '^1402 research' "$G14_ARGV_LOG" || true)
 if [ -n "$g14_line_1402" ] && ! echo "$g14_line_1402" | grep -q -- "--focus"; then
-  pass "Group 14: no research_questions -> no --focus flag passed (byte-for-byte no-op)"
+  common_test_pass "Group 14: no research_questions -> no --focus flag passed (byte-for-byte no-op)"
 else
-  fail "Group 14: unexpected --focus (or missing argv line) for the ordinary research candidate: '$g14_line_1402'"
+  common_test_fail "Group 14: unexpected --focus (or missing argv line) for the ordinary research candidate: '$g14_line_1402'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2256,7 +2252,7 @@ fi
 # each one write to stderr while returning a VALID payload on stdout, and assert (a) stdout is
 # still parseable plan JSON and (b) the diagnostic reached stderr rather than vanishing.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 15: stdout stays pure JSON when collaborators write to stderr"
+common_test_info "Group 15: stdout stays pure JSON when collaborators write to stderr"
 
 # Real Identity-bearing file (see Group 4/5's stub comment for why). Switched from a quoted to
 # an unquoted heredoc so $WORKDIR expands into a real, writable path at write time.
@@ -2316,22 +2312,22 @@ reset_lock_dirs
 run_sut --session g15_sess -- 1501
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 15: SUT exits 0 with chatty collaborators"
+  common_test_pass "Group 15: SUT exits 0 with chatty collaborators"
 else
-  fail "Group 15: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 15: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
-  pass "Group 15: stdout parses as JSON despite collaborator stderr on all four call sites"
+  common_test_pass "Group 15: stdout parses as JSON despite collaborator stderr on all four call sites"
 else
-  fail "Group 15: stdout is not parseable JSON -- stderr leaked into the payload: '$LAST_STDOUT'"
+  common_test_fail "Group 15: stdout is not parseable JSON -- stderr leaked into the payload: '$LAST_STDOUT'"
 fi
 
 g15_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
 if [ "$g15_dispatch_file" = "$WORKDIR/fake-dispatch/1501-plan.md" ]; then
-  pass "Group 15: dispatch_file parsed correctly from the stub payload (not corrupted by stderr)"
+  common_test_pass "Group 15: dispatch_file parsed correctly from the stub payload (not corrupted by stderr)"
 else
-  fail "Group 15: expected $WORKDIR/fake-dispatch/1501-plan.md, got '$g15_dispatch_file'"
+  common_test_fail "Group 15: expected $WORKDIR/fake-dispatch/1501-plan.md, got '$g15_dispatch_file'"
 fi
 
 g15_missing=""
@@ -2339,9 +2335,9 @@ for marker in "[lit:auto] simulated resolver rationale" "[triage] simulated clas
   echo "$LAST_STDERR" | grep -qF "$marker" || g15_missing="${g15_missing}${marker}; "
 done
 if [ -z "$g15_missing" ]; then
-  pass "Group 15: all three collaborator diagnostics forwarded to stderr (nothing swallowed)"
+  common_test_pass "Group 15: all three collaborator diagnostics forwarded to stderr (nothing swallowed)"
 else
-  fail "Group 15: diagnostics missing from stderr: $g15_missing"
+  common_test_fail "Group 15: diagnostics missing from stderr: $g15_missing"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2355,7 +2351,7 @@ fi
 # with NO `>&2` of its own, exactly like the pre-fix real script -- and asserts the entry-point
 # redirect alone still keeps the emitted plan JSON pure.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 16: entry-point fd-3 redirect keeps plan JSON pure against an uncaptured, chatty collaborator"
+common_test_info "Group 16: entry-point fd-3 redirect keeps plan JSON pure against an uncaptured, chatty collaborator"
 
 # Real Identity-bearing file (see Group 4/5's stub comment for why). Unquoted heredoc so
 # $WORKDIR expands into a real, writable path at write time.
@@ -2422,35 +2418,35 @@ reset_lock_dirs
 run_sut --session g16_sess -- 1601
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 16: SUT exits 0 despite the chatty, uncaptured collaborator"
+  common_test_pass "Group 16: SUT exits 0 despite the chatty, uncaptured collaborator"
 else
-  fail "Group 16: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 16: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
-  pass "Group 16: stdout parses as a single JSON object"
+  common_test_pass "Group 16: stdout parses as a single JSON object"
 else
-  fail "Group 16: stdout is not parseable JSON -- '$LAST_STDOUT'"
+  common_test_fail "Group 16: stdout is not parseable JSON -- '$LAST_STDOUT'"
 fi
 
 g16_lines=$(printf '%s\n' "$LAST_STDOUT" | grep -c . || true)
 if [ "$g16_lines" -eq 1 ]; then
-  pass "Group 16: stdout is exactly one line (no prose preamble)"
+  common_test_pass "Group 16: stdout is exactly one line (no prose preamble)"
 else
-  fail "Group 16: expected exactly 1 stdout line, got $g16_lines: '$LAST_STDOUT'"
+  common_test_fail "Group 16: expected exactly 1 stdout line, got $g16_lines: '$LAST_STDOUT'"
 fi
 
 g16_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
 if [ "$g16_dispatch_file" = "$WORKDIR/fake-dispatch/1601-plan.md" ]; then
-  pass "Group 16: .dispatch[0] intact and correctly parsed"
+  common_test_pass "Group 16: .dispatch[0] intact and correctly parsed"
 else
-  fail "Group 16: expected $WORKDIR/fake-dispatch/1601-plan.md, got '$g16_dispatch_file'"
+  common_test_fail "Group 16: expected $WORKDIR/fake-dispatch/1601-plan.md, got '$g16_dispatch_file'"
 fi
 
 if echo "$LAST_STDERR" | grep -qF "OK: candidate #1601 state.json already at 'plan'"; then
-  pass "Group 16: the chatty collaborator's prose landed on stderr, not the data channel"
+  common_test_pass "Group 16: the chatty collaborator's prose landed on stderr, not the data channel"
 else
-  fail "Group 16: expected the collaborator's prose on stderr; got: '$LAST_STDERR'"
+  common_test_fail "Group 16: expected the collaborator's prose on stderr; got: '$LAST_STDERR'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2459,7 +2455,7 @@ fi
 # --dry-run with no --session synthesizes an internal, never-persisted identity and still emits
 # parseable plan JSON; live mode with no --session is unchanged (still exits 2).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 17: --session is optional under --dry-run, still required in live mode"
+common_test_info "Group 17: --session is optional under --dry-run, still required in live mode"
 
 write_state <<'EOF'
 {
@@ -2473,29 +2469,29 @@ reset_lock_dirs
 run_sut --dry-run -- 1701
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 17: --dry-run with no --session exits 0"
+  common_test_pass "Group 17: --dry-run with no --session exits 0"
 else
-  fail "Group 17: --dry-run with no --session exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 17: --dry-run with no --session exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
-  pass "Group 17: --dry-run with no --session still prints parseable plan JSON on stdout"
+  common_test_pass "Group 17: --dry-run with no --session still prints parseable plan JSON on stdout"
 else
-  fail "Group 17: --dry-run with no --session did not print parseable JSON: '$LAST_STDOUT'"
+  common_test_fail "Group 17: --dry-run with no --session did not print parseable JSON: '$LAST_STDOUT'"
 fi
 
 run_sut -- 1701
 
 if [ "$LAST_EXIT" -eq 2 ]; then
-  pass "Group 17: live mode with no --session still exits 2"
+  common_test_pass "Group 17: live mode with no --session still exits 2"
 else
-  fail "Group 17: live mode with no --session exited $LAST_EXIT (expected 2); stderr: '$LAST_STDERR'"
+  common_test_fail "Group 17: live mode with no --session exited $LAST_EXIT (expected 2); stderr: '$LAST_STDERR'"
 fi
 
 if echo "$LAST_STDERR" | grep -qF -- "--session is required"; then
-  pass "Group 17: live mode's no-session error message is preserved"
+  common_test_pass "Group 17: live mode's no-session error message is preserved"
 else
-  fail "Group 17: expected a '--session is required' message on stderr; got: '$LAST_STDERR'"
+  common_test_fail "Group 17: expected a '--session is required' message on stderr; got: '$LAST_STDERR'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2503,7 +2499,7 @@ fi
 # since, replays verbatim and charges nothing; once the cache is invalidated (simulating a real
 # postflight), the next run recomputes and charges normally.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 18: in-session plan cache replay charges nothing; post-invalidation recompute charges normally"
+common_test_info "Group 18: in-session plan cache replay charges nothing; post-invalidation recompute charges normally"
 
 # Real Identity-bearing file (see Group 4/5's stub comment for why). Unquoted heredoc so
 # $WORKDIR expands into a real, writable path at write time. Also embeds a per-call nonce
@@ -2554,48 +2550,48 @@ g18_run1_stdout="$LAST_STDOUT"
 g18_run1_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$g18_run1_dispatch_file" = "$WORKDIR/fake-dispatch/1801-plan.md" ]; then
-  pass "Group 18: run 1 genuinely composes and dispatches"
+  common_test_pass "Group 18: run 1 genuinely composes and dispatches"
 else
-  fail "Group 18: run 1 did not compose/dispatch as expected: $LAST_STDOUT"
+  common_test_fail "Group 18: run 1 did not compose/dispatch as expected: $LAST_STDOUT"
 fi
 
 g18_cycle_counts_after_1=$(jq -r --arg t "1801" '.cycle_counts[$t] // 0' "$g18_mt_state" 2>/dev/null)
 g18_dsc_after_1=$(jq -r '.dispatch_seq_counter // 0' "$g18_mt_state" 2>/dev/null)
 if jq -e '.plan_cache != null and .plan_cache.dispatch_seq_counter == .dispatch_seq_counter' "$g18_mt_state" >/dev/null 2>&1; then
-  pass "Group 18: run 1's composition wrote plan_cache keyed at the resulting dispatch_seq_counter"
+  common_test_pass "Group 18: run 1's composition wrote plan_cache keyed at the resulting dispatch_seq_counter"
 else
-  fail "Group 18: expected plan_cache written and keyed at the current dispatch_seq_counter after run 1"
+  common_test_fail "Group 18: expected plan_cache written and keyed at the current dispatch_seq_counter after run 1"
 fi
 
 run_sut --session g18_sess -- 1801
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$LAST_STDOUT" = "$g18_run1_stdout" ]; then
-  pass "Group 18: run 2 (nothing consumed since run 1) replays byte-identical stdout"
+  common_test_pass "Group 18: run 2 (nothing consumed since run 1) replays byte-identical stdout"
 else
-  fail "Group 18: run 2 stdout differs from run 1 (expected a verbatim replay). run1: '$g18_run1_stdout' run2: '$LAST_STDOUT'"
+  common_test_fail "Group 18: run 2 stdout differs from run 1 (expected a verbatim replay). run1: '$g18_run1_stdout' run2: '$LAST_STDOUT'"
 fi
 if echo "$LAST_STDERR" | grep -qF "PLAN CACHE REPLAY"; then
-  pass "Group 18: run 2 logs the PLAN CACHE REPLAY notice on stderr"
+  common_test_pass "Group 18: run 2 logs the PLAN CACHE REPLAY notice on stderr"
 else
-  fail "Group 18: expected a PLAN CACHE REPLAY notice on stderr; got: '$LAST_STDERR'"
+  common_test_fail "Group 18: expected a PLAN CACHE REPLAY notice on stderr; got: '$LAST_STDERR'"
 fi
 g18_cycle_counts_after_2=$(jq -r --arg t "1801" '.cycle_counts[$t] // 0' "$g18_mt_state" 2>/dev/null)
 if [ "$g18_cycle_counts_after_2" = "$g18_cycle_counts_after_1" ]; then
-  pass "Group 18: run 2 leaves cycle_counts[1801] unchanged (no cycle charged for the replay)"
+  common_test_pass "Group 18: run 2 leaves cycle_counts[1801] unchanged (no cycle charged for the replay)"
 else
-  fail "Group 18: expected cycle_counts unchanged after replay; before=$g18_cycle_counts_after_1 after=$g18_cycle_counts_after_2"
+  common_test_fail "Group 18: expected cycle_counts unchanged after replay; before=$g18_cycle_counts_after_1 after=$g18_cycle_counts_after_2"
 fi
 g18_guard_file="$WORKDIR/specs/1801_g18_plan_cache/.orchestrator-loop-guard"
 g18_guard_dsc_after_2=$(jq -r '.dispatch_seq_counter // 0' "$g18_guard_file" 2>/dev/null)
 if [ "$g18_guard_dsc_after_2" = "$g18_dsc_after_1" ]; then
-  pass "Group 18: the durable loop-guard file's dispatch_seq_counter is unchanged by the replay (no extra --flush-seq)"
+  common_test_pass "Group 18: the durable loop-guard file's dispatch_seq_counter is unchanged by the replay (no extra --flush-seq)"
 else
-  fail "Group 18: durable loop-guard dispatch_seq_counter ($g18_guard_dsc_after_2) diverged from the pre-replay in-memory value ($g18_dsc_after_1)"
+  common_test_fail "Group 18: durable loop-guard dispatch_seq_counter ($g18_guard_dsc_after_2) diverged from the pre-replay in-memory value ($g18_dsc_after_1)"
 fi
 if [ "$(jq -r '.cycle_count // "absent"' "$g18_guard_file" 2>/dev/null)" = "absent" ]; then
-  pass "Group 18: the durable loop-guard file's cycle_count is never written by this engine any more (per-run budget contract)"
+  common_test_pass "Group 18: the durable loop-guard file's cycle_count is never written by this engine any more (per-run budget contract)"
 else
-  fail "Group 18: durable loop-guard cycle_count is unexpectedly present/written: $(cat "$g18_guard_file" 2>/dev/null)"
+  common_test_fail "Group 18: durable loop-guard cycle_count is unexpectedly present/written: $(cat "$g18_guard_file" 2>/dev/null)"
 fi
 
 # Simulate a postflight: clear plan_cache directly (mirrors orchestrate-cycle-postflight.sh's own
@@ -2605,20 +2601,20 @@ jq 'del(.plan_cache)' "$g18_mt_state" > "${g18_mt_state}.tmp" && mv "${g18_mt_st
 run_sut --session g18_sess -- 1801
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 18: run 3 (post-invalidation) exits 0"
+  common_test_pass "Group 18: run 3 (post-invalidation) exits 0"
 else
-  fail "Group 18: run 3 exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 18: run 3 exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if echo "$LAST_STDERR" | grep -qF "PLAN CACHE REPLAY"; then
-  fail "Group 18: run 3 unexpectedly replayed from cache after invalidation"
+  common_test_fail "Group 18: run 3 unexpectedly replayed from cache after invalidation"
 else
-  pass "Group 18: run 3 does not replay (cache was invalidated)"
+  common_test_pass "Group 18: run 3 does not replay (cache was invalidated)"
 fi
 g18_cycle_counts_after_3=$(jq -r --arg t "1801" '.cycle_counts[$t] // 0' "$g18_mt_state" 2>/dev/null)
 if [ "$g18_cycle_counts_after_3" -eq "$((g18_cycle_counts_after_1 + 1))" ]; then
-  pass "Group 18: run 3 charges exactly one additional cycle after cache invalidation"
+  common_test_pass "Group 18: run 3 charges exactly one additional cycle after cache invalidation"
 else
-  fail "Group 18: expected cycle_counts[1801] to advance by exactly 1 after invalidation; before=$g18_cycle_counts_after_1 after=$g18_cycle_counts_after_3"
+  common_test_fail "Group 18: expected cycle_counts[1801] to advance by exactly 1 after invalidation; before=$g18_cycle_counts_after_1 after=$g18_cycle_counts_after_3"
 fi
 
 # A composition that dispatches nothing must never write plan_cache at all.
@@ -2634,14 +2630,14 @@ g18b_mt_state="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g18b_sess
 rm -f "$g18b_mt_state"
 run_sut --session g18b_sess -- 1802
 if [ "$(jqf '.dispatch | length')" = "0" ]; then
-  pass "Group 18: the no-dispatch fixture composition dispatches nothing (precondition for the next check)"
+  common_test_pass "Group 18: the no-dispatch fixture composition dispatches nothing (precondition for the next check)"
 else
-  fail "Group 18: expected 0 dispatched for the terminal-status fixture; got: $LAST_STDOUT"
+  common_test_fail "Group 18: expected 0 dispatched for the terminal-status fixture; got: $LAST_STDOUT"
 fi
 if [ ! -f "$g18b_mt_state" ] || jq -e '.plan_cache == null' "$g18b_mt_state" >/dev/null 2>&1; then
-  pass "Group 18: a no-dispatch composition writes no plan_cache"
+  common_test_pass "Group 18: a no-dispatch composition writes no plan_cache"
 else
-  fail "Group 18: a no-dispatch composition unexpectedly wrote plan_cache: $(cat "$g18b_mt_state" 2>/dev/null)"
+  common_test_fail "Group 18: a no-dispatch composition unexpectedly wrote plan_cache: $(cat "$g18b_mt_state" 2>/dev/null)"
 fi
 
 # ── Group 18 (continued) — Part B red-baseline: an aux-only composition (>=1 aux_dispatch row,
@@ -2664,14 +2660,14 @@ jq -n --arg t "1803" '{aux_pending: {($t): {kind: "blocker-research", blocker_de
   > "$g18c_mt_state"
 run_sut --session g18c_sess -- 1803
 if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.aux_dispatch | length')" = "1" ]; then
-  pass "Group 18: aux-only fixture composes zero dispatch rows and exactly one aux_dispatch row (precondition)"
+  common_test_pass "Group 18: aux-only fixture composes zero dispatch rows and exactly one aux_dispatch row (precondition)"
 else
-  fail "Group 18: aux-only fixture precondition not met (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 18: aux-only fixture precondition not met (stdout: $LAST_STDOUT)"
 fi
 if [ ! -f "$g18c_mt_state" ] || jq -e '.plan_cache == null' "$g18c_mt_state" >/dev/null 2>&1; then
-  pass "Group 18: an aux-only composition (>=1 aux_dispatch row, zero dispatch rows) writes no plan_cache"
+  common_test_pass "Group 18: an aux-only composition (>=1 aux_dispatch row, zero dispatch rows) writes no plan_cache"
 else
-  fail "Group 18: an aux-only composition unexpectedly wrote plan_cache (Part B defect): $(cat "$g18c_mt_state" 2>/dev/null)"
+  common_test_fail "Group 18: an aux-only composition unexpectedly wrote plan_cache (Part B defect): $(cat "$g18c_mt_state" 2>/dev/null)"
 fi
 
 # ── Group 18 (continued) — Part B red-baseline: an invocation whose --force-phases value differs
@@ -2696,21 +2692,21 @@ rm -f "$g18d_mt_state"
 
 run_sut --session g18d_sess --force-phases research -- 1805
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].phase')" = "research" ] && [ "$(jqf '.dispatch[0].force')" = "true" ]; then
-  pass "Group 18: force-mismatch fixture run 1 (forced research) dispatches and caches (precondition)"
+  common_test_pass "Group 18: force-mismatch fixture run 1 (forced research) dispatches and caches (precondition)"
 else
-  fail "Group 18: force-mismatch fixture run 1 did not dispatch to research as expected (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 18: force-mismatch fixture run 1 did not dispatch to research as expected (stdout: $LAST_STDOUT)"
 fi
 
 run_sut --session g18d_sess -- 1805
 if echo "$LAST_STDERR" | grep -qF "PLAN CACHE REPLAY"; then
-  fail "Group 18: run 2, invoked with a --force-phases value differing from run 1's, incorrectly replayed run 1's cached plan"
+  common_test_fail "Group 18: run 2, invoked with a --force-phases value differing from run 1's, incorrectly replayed run 1's cached plan"
 else
-  pass "Group 18: run 2, invoked with a --force-phases value differing from run 1's, does not replay run 1's cached plan"
+  common_test_pass "Group 18: run 2, invoked with a --force-phases value differing from run 1's, does not replay run 1's cached plan"
 fi
 if [ "$(jqf '.blocked | map(select(.task == 1805)) | length')" = "1" ] && [ "$(jqf '.dispatch | map(select(.task == 1805)) | length')" = "0" ]; then
-  pass "Group 18: run 2 correctly recomputes (forced_round_complete -> blocked) instead of replaying run 1's research dispatch"
+  common_test_pass "Group 18: run 2 correctly recomputes (forced_round_complete -> blocked) instead of replaying run 1's research dispatch"
 else
-  fail "Group 18: run 2 did not recompute the correct forced_round_complete outcome (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 18: run 2 did not recompute the correct forced_round_complete outcome (stdout: $LAST_STDOUT)"
 fi
 
 # ── Group 18 (continued) — non-regression pin: the no-charge replay benefit survives for a
@@ -2731,16 +2727,16 @@ rm -f "$g18e_mt_state"
 run_sut --session g18e_sess --force-phases research -- 1806
 g18e_run1_stdout="$LAST_STDOUT"
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch[0].phase')" = "research" ]; then
-  pass "Group 18: force-match fixture run 1 (forced research) dispatches and caches (precondition)"
+  common_test_pass "Group 18: force-match fixture run 1 (forced research) dispatches and caches (precondition)"
 else
-  fail "Group 18: force-match fixture run 1 did not dispatch to research as expected (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 18: force-match fixture run 1 did not dispatch to research as expected (stdout: $LAST_STDOUT)"
 fi
 
 run_sut --session g18e_sess --force-phases research -- 1806
 if [ "$LAST_EXIT" -eq 0 ] && [ "$LAST_STDOUT" = "$g18e_run1_stdout" ] && echo "$LAST_STDERR" | grep -qF "PLAN CACHE REPLAY"; then
-  pass "Group 18: a repeated, matching non-empty --force-phases value still replays the cache verbatim (no-charge benefit preserved)"
+  common_test_pass "Group 18: a repeated, matching non-empty --force-phases value still replays the cache verbatim (no-charge benefit preserved)"
 else
-  fail "Group 18: a repeated, matching --force-phases value unexpectedly failed to replay (stdout: '$LAST_STDOUT', stderr: '$LAST_STDERR')"
+  common_test_fail "Group 18: a repeated, matching --force-phases value unexpectedly failed to replay (stdout: '$LAST_STDOUT', stderr: '$LAST_STDERR')"
 fi
 
 # ── Group 18 (continued) — stdout shape: this script's stdout contract is a single-line JSON
@@ -2759,16 +2755,16 @@ rm -f "$g18f_mt_state"
 
 run_sut --session g18f_sess --dry-run -- 1807
 if [[ "$LAST_STDOUT" != *$'\n'* ]] && echo "$LAST_STDOUT" | jq -e 'type == "object"' >/dev/null 2>&1; then
-  pass "Group 18: --dry-run stdout is exactly one line of a single JSON object"
+  common_test_pass "Group 18: --dry-run stdout is exactly one line of a single JSON object"
 else
-  fail "Group 18: --dry-run stdout is not single-line JSON (stdout: '$LAST_STDOUT')"
+  common_test_fail "Group 18: --dry-run stdout is not single-line JSON (stdout: '$LAST_STDOUT')"
 fi
 
 run_sut --session g18f_sess -- 1807
 if [[ "$LAST_STDOUT" != *$'\n'* ]] && echo "$LAST_STDOUT" | jq -e 'type == "object"' >/dev/null 2>&1; then
-  pass "Group 18: live-mode stdout is exactly one line of a single JSON object"
+  common_test_pass "Group 18: live-mode stdout is exactly one line of a single JSON object"
 else
-  fail "Group 18: live-mode stdout is not single-line JSON (stdout: '$LAST_STDOUT')"
+  common_test_fail "Group 18: live-mode stdout is not single-line JSON (stdout: '$LAST_STDOUT')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2781,7 +2777,7 @@ fi
 # absent pending_dispatch all charge normally (in-session cycle_counts advances by 1, and the
 # durable dispatch_seq_counter -- seeded from the guard file and minted onward -- advances too).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 19: durable pending_dispatch ledger -- matched+file-present replays, else charges"
+common_test_info "Group 19: durable pending_dispatch ledger -- matched+file-present replays, else charges"
 
 # The stub writes a REAL dispatch file at a real .dispatch/ path, with a byte-compatible
 # `## Identity` / `- dispatch_seq: N` line (matching orchestrate-build-dispatch.sh's own Identity
@@ -2840,19 +2836,19 @@ run_sut --session g19_sess_case1 -- 1901
 g19_case1_dispatch_file=$(jqf '.dispatch[0].dispatch_file')
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 19 case 1: SUT exits 0"
+  common_test_pass "Group 19 case 1: SUT exits 0"
 else
-  fail "Group 19 case 1: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 19 case 1: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
-  pass "Group 19 case 1: logs the UNCONSUMED DISPATCH REPLAY notice"
+  common_test_pass "Group 19 case 1: logs the UNCONSUMED DISPATCH REPLAY notice"
 else
-  fail "Group 19 case 1: expected the UNCONSUMED DISPATCH REPLAY notice; got: '$LAST_STDERR'"
+  common_test_fail "Group 19 case 1: expected the UNCONSUMED DISPATCH REPLAY notice; got: '$LAST_STDERR'"
 fi
 if [ "$(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)" = "2" ]; then
-  pass "Group 19 case 1: the durable guard file's cycle_count is unchanged (never written by this engine any more)"
+  common_test_pass "Group 19 case 1: the durable guard file's cycle_count is unchanged (never written by this engine any more)"
 else
-  fail "Group 19 case 1: expected cycle_count unchanged at 2; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
+  common_test_fail "Group 19 case 1: expected cycle_count unchanged at 2; got: $(jq -r '.cycle_count' "$g19_guard_file" 2>/dev/null)"
 fi
 # Argued correction, as implemented (ACCEPTANCE #7): this assertion is TRUE both BEFORE and
 # AFTER the replay-hoist fix -- `--flush-seq` really is skipped on a replay in both versions, so
@@ -2866,20 +2862,20 @@ fi
 # assertion is KEPT (it is still a true, necessary fact), not weakened or deleted; the new
 # ephemeral-counter assertion a few lines below closes the sufficiency gap it always had.
 if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "3" ]; then
-  pass "Group 19 case 1: the durable guard file's dispatch_seq_counter is unchanged by a replay (no extra --flush-seq) -- necessary but, on its own, NOT sufficient: see the ephemeral-counter assertion below for the leak this one cannot see"
+  common_test_pass "Group 19 case 1: the durable guard file's dispatch_seq_counter is unchanged by a replay (no extra --flush-seq) -- necessary but, on its own, NOT sufficient: see the ephemeral-counter assertion below for the leak this one cannot see"
 else
-  fail "Group 19 case 1: expected durable dispatch_seq_counter unchanged at 3 after a replay; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
+  common_test_fail "Group 19 case 1: expected durable dispatch_seq_counter unchanged at 3 after a replay; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
 fi
 g19_mt_state_1="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g19_sess_case1.json"
 if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_1" 2>/dev/null)" = "0" ]; then
-  pass "Group 19 case 1: in-memory cycle_counts[1901] starts at 0 THIS run (per-run budget contract; NOT seeded from the durable cycle_count=2)"
+  common_test_pass "Group 19 case 1: in-memory cycle_counts[1901] starts at 0 THIS run (per-run budget contract; NOT seeded from the durable cycle_count=2)"
 else
-  fail "Group 19 case 1: in-memory cycle_counts[1901] diverged from the per-run-zero-start contract: $(cat "$g19_mt_state_1" 2>/dev/null)"
+  common_test_fail "Group 19 case 1: in-memory cycle_counts[1901] diverged from the per-run-zero-start contract: $(cat "$g19_mt_state_1" 2>/dev/null)"
 fi
 if [ "$(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)" = "3" ]; then
-  pass "Group 19 case 1: the recorded seq (3) is reused for dispatch_seq[1901], not a freshly minted one"
+  common_test_pass "Group 19 case 1: the recorded seq (3) is reused for dispatch_seq[1901], not a freshly minted one"
 else
-  fail "Group 19 case 1: expected dispatch_seq[1901]=3 (reused); got: $(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)"
+  common_test_fail "Group 19 case 1: expected dispatch_seq[1901]=3 (reused); got: $(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)"
 fi
 
 # ─── Four-leg seq agreement (the composed dispatch file is read here, not only state files) ────
@@ -2900,15 +2896,15 @@ fi
 # observed incident actually failed on.
 g19_case1_identity_seq=$(grep -m1 '^- dispatch_seq: ' "$g19_case1_dispatch_file" 2>/dev/null | sed 's/^- dispatch_seq: //')
 if [ "$g19_case1_identity_seq" = "3" ]; then
-  pass "Group 19 case 1: Leg 1 -- composed dispatch file's Identity dispatch_seq is 3 (the replayed seq, not a freshly minted one)"
+  common_test_pass "Group 19 case 1: Leg 1 -- composed dispatch file's Identity dispatch_seq is 3 (the replayed seq, not a freshly minted one)"
 else
-  fail "Group 19 case 1: Leg 1 -- expected composed dispatch file Identity dispatch_seq=3; got '$g19_case1_identity_seq' from $g19_case1_dispatch_file"
+  common_test_fail "Group 19 case 1: Leg 1 -- expected composed dispatch file Identity dispatch_seq=3; got '$g19_case1_identity_seq' from $g19_case1_dispatch_file"
 fi
 g19_case1_state_seq=$(jq -r --arg t "1901" '.dispatch_seq[$t]' "$g19_mt_state_1" 2>/dev/null)
 if [ -n "$g19_case1_identity_seq" ] && [ "$g19_case1_identity_seq" = "$g19_case1_state_seq" ]; then
-  pass "Group 19 case 1: Leg 1 and Leg 2 agree ($g19_case1_identity_seq) -- the composed file and mt_json.dispatch_seq[1901] cannot drift silently"
+  common_test_pass "Group 19 case 1: Leg 1 and Leg 2 agree ($g19_case1_identity_seq) -- the composed file and mt_json.dispatch_seq[1901] cannot drift silently"
 else
-  fail "Group 19 case 1: Leg 1 ($g19_case1_identity_seq) and Leg 2 ($g19_case1_state_seq) disagree -- exactly the defect this task fixes"
+  common_test_fail "Group 19 case 1: Leg 1 ($g19_case1_identity_seq) and Leg 2 ($g19_case1_state_seq) disagree -- exactly the defect this task fixes"
 fi
 
 # Leg 3: fabricate a .return-meta.json whose dispatch_seq is read FROM the composed dispatch
@@ -2924,9 +2920,9 @@ g19_case1_recover=$(bash "$WORKDIR/.claude/scripts/orchestrate-recover-outcome.s
 g19_case1_recovered=$(echo "$g19_case1_recover" | jq -r 'if has("recovered") then (.recovered | tostring) else "unknown" end' 2>/dev/null)
 g19_case1_recover_reason=$(echo "$g19_case1_recover" | jq -r '.reason // "unknown"' 2>/dev/null)
 if [ "$g19_case1_recovered" = "true" ] && [ "$g19_case1_recover_reason" != "META_DISPATCH_SEQ_MISMATCH" ]; then
-  pass "Group 19 case 1: Leg 3 -- orchestrate-recover-outcome.sh recovers the fabricated .return-meta.json (recovered=true, reason=$g19_case1_recover_reason)"
+  common_test_pass "Group 19 case 1: Leg 3 -- orchestrate-recover-outcome.sh recovers the fabricated .return-meta.json (recovered=true, reason=$g19_case1_recover_reason)"
 else
-  fail "Group 19 case 1: Leg 3 -- expected recovered=true and reason != META_DISPATCH_SEQ_MISMATCH; got recovered=$g19_case1_recovered reason=$g19_case1_recover_reason"
+  common_test_fail "Group 19 case 1: Leg 3 -- expected recovered=true and reason != META_DISPATCH_SEQ_MISMATCH; got recovered=$g19_case1_recovered reason=$g19_case1_recover_reason"
 fi
 rm -f "$g19_case1_meta"
 
@@ -2937,9 +2933,9 @@ rm -f "$g19_case1_meta"
 # from the dispatch file).
 g19_case1_handoff_seq="$g19_case1_identity_seq"
 if [ -n "$g19_case1_handoff_seq" ] && [ "$g19_case1_handoff_seq" = "$g19_case1_state_seq" ]; then
-  pass "Group 19 case 1: Leg 4 -- handoff dispatch_seq ($g19_case1_handoff_seq) matches mt_json.dispatch_seq[1901] ($g19_case1_state_seq); postflight would CONSUME this handoff rather than discard it"
+  common_test_pass "Group 19 case 1: Leg 4 -- handoff dispatch_seq ($g19_case1_handoff_seq) matches mt_json.dispatch_seq[1901] ($g19_case1_state_seq); postflight would CONSUME this handoff rather than discard it"
 else
-  fail "Group 19 case 1: Leg 4 -- handoff dispatch_seq ($g19_case1_handoff_seq) does not match mt_json.dispatch_seq[1901] ($g19_case1_state_seq); postflight would discard a valid handoff as HANDOFF_STALE_OR_ABSENT"
+  common_test_fail "Group 19 case 1: Leg 4 -- handoff dispatch_seq ($g19_case1_handoff_seq) does not match mt_json.dispatch_seq[1901] ($g19_case1_state_seq); postflight would discard a valid handoff as HANDOFF_STALE_OR_ABSENT"
 fi
 
 # Ephemeral-counter assertion (DELIVERABLE 1b). The durable guard file's dispatch_seq_counter
@@ -2955,9 +2951,9 @@ fi
 # plan's Decisions section) for why that older assertion alone gave false assurance.
 g19_case1_ephemeral_dsc=$(jq -r '.dispatch_seq_counter // "absent"' "$g19_mt_state_1" 2>/dev/null)
 if [ "$g19_case1_ephemeral_dsc" = "3" ]; then
-  pass "Group 19 case 1: ephemeral mt_json.dispatch_seq_counter stays at 3 (the replayed seq) after a replay, not bumped to 4 by a mint-then-discard"
+  common_test_pass "Group 19 case 1: ephemeral mt_json.dispatch_seq_counter stays at 3 (the replayed seq) after a replay, not bumped to 4 by a mint-then-discard"
 else
-  fail "Group 19 case 1: expected ephemeral mt_json.dispatch_seq_counter=3 after a replay; got '$g19_case1_ephemeral_dsc'"
+  common_test_fail "Group 19 case 1: expected ephemeral mt_json.dispatch_seq_counter=3 after a replay; got '$g19_case1_ephemeral_dsc'"
 fi
 
 # Case 2: phase mismatch (pending_dispatch recorded for "research", candidate actually dispatches
@@ -2968,25 +2964,25 @@ EOF
 reset_lock_dirs
 run_sut --session g19_sess_case2 -- 1901
 if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
-  fail "Group 19 case 2: unexpectedly replayed despite a phase mismatch"
+  common_test_fail "Group 19 case 2: unexpectedly replayed despite a phase mismatch"
 else
-  pass "Group 19 case 2: a phase mismatch does not replay"
+  common_test_pass "Group 19 case 2: a phase mismatch does not replay"
 fi
 g19_mt_state_2="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g19_sess_case2.json"
 if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_2" 2>/dev/null)" = "1" ]; then
-  pass "Group 19 case 2: in-session cycle_counts[1901] charges normally (0 -> 1) on a phase mismatch"
+  common_test_pass "Group 19 case 2: in-session cycle_counts[1901] charges normally (0 -> 1) on a phase mismatch"
 else
-  fail "Group 19 case 2: expected in-session cycle_counts[1901]=1 after a genuine charge; got: $(cat "$g19_mt_state_2" 2>/dev/null)"
+  common_test_fail "Group 19 case 2: expected in-session cycle_counts[1901]=1 after a genuine charge; got: $(cat "$g19_mt_state_2" 2>/dev/null)"
 fi
 if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "4" ]; then
-  pass "Group 19 case 2: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge"
+  common_test_pass "Group 19 case 2: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge"
 else
-  fail "Group 19 case 2: expected durable dispatch_seq_counter=4 after a genuine charge; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
+  common_test_fail "Group 19 case 2: expected durable dispatch_seq_counter=4 after a genuine charge; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
 fi
 if [ "$(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)" = "2" ]; then
-  pass "Group 19 case 2: the durable guard's cycle_count stays untouched (never written by this engine any more)"
+  common_test_pass "Group 19 case 2: the durable guard's cycle_count stays untouched (never written by this engine any more)"
 else
-  fail "Group 19 case 2: durable cycle_count unexpectedly changed: $(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)"
+  common_test_fail "Group 19 case 2: durable cycle_count unexpectedly changed: $(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)"
 fi
 
 # Case 3: matching phase/forced, but the recorded dispatch_file no longer exists on disk -- must
@@ -2997,20 +2993,20 @@ EOF
 reset_lock_dirs
 run_sut --session g19_sess_case3 -- 1901
 if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
-  fail "Group 19 case 3: unexpectedly replayed despite a missing dispatch_file"
+  common_test_fail "Group 19 case 3: unexpectedly replayed despite a missing dispatch_file"
 else
-  pass "Group 19 case 3: a missing dispatch_file does not replay"
+  common_test_pass "Group 19 case 3: a missing dispatch_file does not replay"
 fi
 g19_mt_state_3="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g19_sess_case3.json"
 if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_3" 2>/dev/null)" = "1" ]; then
-  pass "Group 19 case 3: in-session cycle_counts[1901] charges normally (0 -> 1) when the dispatch_file is missing"
+  common_test_pass "Group 19 case 3: in-session cycle_counts[1901] charges normally (0 -> 1) when the dispatch_file is missing"
 else
-  fail "Group 19 case 3: expected in-session cycle_counts[1901]=1 after a genuine charge; got: $(cat "$g19_mt_state_3" 2>/dev/null)"
+  common_test_fail "Group 19 case 3: expected in-session cycle_counts[1901]=1 after a genuine charge; got: $(cat "$g19_mt_state_3" 2>/dev/null)"
 fi
 if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "4" ]; then
-  pass "Group 19 case 3: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge"
+  common_test_pass "Group 19 case 3: the durable guard's dispatch_seq_counter durably advances (3 -> 4) on a genuine charge"
 else
-  fail "Group 19 case 3: expected durable dispatch_seq_counter=4 after a genuine charge; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
+  common_test_fail "Group 19 case 3: expected durable dispatch_seq_counter=4 after a genuine charge; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
 fi
 
 # Case 4: no pending_dispatch recorded at all (the ordinary case) -- charges normally, and
@@ -3022,14 +3018,14 @@ reset_lock_dirs
 run_sut --session g19_sess_case4 -- 1901
 g19_mt_state_4="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g19_sess_case4.json"
 if [ "$(jq -r --arg t "1901" '.cycle_counts[$t] // 0' "$g19_mt_state_4" 2>/dev/null)" = "1" ]; then
-  pass "Group 19 case 4: no pending_dispatch charges normally in-session (0 -> 1)"
+  common_test_pass "Group 19 case 4: no pending_dispatch charges normally in-session (0 -> 1)"
 else
-  fail "Group 19 case 4: expected in-session cycle_counts[1901]=1; got: $(cat "$g19_mt_state_4" 2>/dev/null)"
+  common_test_fail "Group 19 case 4: expected in-session cycle_counts[1901]=1; got: $(cat "$g19_mt_state_4" 2>/dev/null)"
 fi
 if [ "$(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)" = "2" ]; then
-  pass "Group 19 case 4: the durable guard's cycle_count stays untouched (never written by this engine any more)"
+  common_test_pass "Group 19 case 4: the durable guard's cycle_count stays untouched (never written by this engine any more)"
 else
-  fail "Group 19 case 4: durable cycle_count unexpectedly changed: $(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)"
+  common_test_fail "Group 19 case 4: durable cycle_count unexpectedly changed: $(jq -r '.cycle_count // "absent"' "$g19_guard_file" 2>/dev/null)"
 fi
 
 # Note: dispatch_seq_counter DOES durably cross invocations now (unlike cycle_count): this fresh
@@ -3037,14 +3033,14 @@ fi
 # and section (i) mints 3+1=4 -- so the freshly recorded pending_dispatch's seq is 4, matching
 # the durable dispatch_seq_counter this same charge flushes via --flush-seq (also 4).
 if jq -e '.pending_dispatch.phase == "plan" and .pending_dispatch.seq == 4' "$g19_guard_file" >/dev/null 2>&1; then
-  pass "Group 19 case 4: a fresh pending_dispatch is recorded (seq=4, phase=plan) for a future invocation"
+  common_test_pass "Group 19 case 4: a fresh pending_dispatch is recorded (seq=4, phase=plan) for a future invocation"
 else
-  fail "Group 19 case 4: expected a fresh pending_dispatch to be recorded with seq=4; got: $(cat "$g19_guard_file" 2>/dev/null)"
+  common_test_fail "Group 19 case 4: expected a fresh pending_dispatch to be recorded with seq=4; got: $(cat "$g19_guard_file" 2>/dev/null)"
 fi
 if [ "$(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)" = "4" ]; then
-  pass "Group 19 case 4: the durable guard's dispatch_seq_counter durably advances (3 -> 4)"
+  common_test_pass "Group 19 case 4: the durable guard's dispatch_seq_counter durably advances (3 -> 4)"
 else
-  fail "Group 19 case 4: expected durable dispatch_seq_counter=4; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
+  common_test_fail "Group 19 case 4: expected durable dispatch_seq_counter=4; got: $(jq -r '.dispatch_seq_counter' "$g19_guard_file" 2>/dev/null)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3055,7 +3051,7 @@ fi
 # orchestrate-batch-admit.sh with always-"plan"/always-"admit" stubs and never restore them, so
 # both are restored here first -- Group 13's own restore only covers the gap up to Group 14.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 20: live classifier forwarding (not_started research-first default, --fast escape hatch)"
+common_test_info "Group 20: live classifier forwarding (not_started research-first default, --fast escape hatch)"
 
 cp "$CORE_DIR/orchestrate-triage-classify.sh" "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
 cp "$CORE_DIR/orchestrate-batch-admit.sh" "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
@@ -3073,48 +3069,48 @@ reset_lock_dirs
 run_sut --session g20_sess --dry-run -- 2001 2002
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 20: SUT exits 0 (no --fast)"
+  common_test_pass "Group 20: SUT exits 0 (no --fast)"
 else
-  fail "Group 20: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 20: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 2001)) | .[0].phase')" = "research" ]; then
-  pass "Group 20: live classifier routes not_started -> research with no --fast (research-first default)"
+  common_test_pass "Group 20: live classifier routes not_started -> research with no --fast (research-first default)"
 else
-  fail "Group 20: expected not_started candidate #2001 to route to research, got: $(jqf '.dispatch | map(select(.task == 2001))')"
+  common_test_fail "Group 20: expected not_started candidate #2001 to route to research, got: $(jqf '.dispatch | map(select(.task == 2001))')"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 2002)) | .[0].phase')" = "plan" ]; then
-  pass "Group 20: live classifier keeps researched -> plan with no --fast (never re-researches)"
+  common_test_pass "Group 20: live classifier keeps researched -> plan with no --fast (never re-researches)"
 else
-  fail "Group 20: expected researched candidate #2002 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2002))')"
+  common_test_fail "Group 20: expected researched candidate #2002 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2002))')"
 fi
 
 reset_lock_dirs
 run_sut --session g20_sess_fast --dry-run --fast -- 2001 2002
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 20 (--fast): SUT exits 0"
+  common_test_pass "Group 20 (--fast): SUT exits 0"
 else
-  fail "Group 20 (--fast): SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 20 (--fast): SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 2001)) | .[0].phase')" = "plan" ]; then
-  pass "Group 20 (--fast): live classifier routes not_started -> plan (the pre-research-first escape hatch), proving --fast actually reaches --effort"
+  common_test_pass "Group 20 (--fast): live classifier routes not_started -> plan (the pre-research-first escape hatch), proving --fast actually reaches --effort"
 else
-  fail "Group 20 (--fast): expected not_started candidate #2001 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2001))')"
+  common_test_fail "Group 20 (--fast): expected not_started candidate #2001 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2001))')"
 fi
 
 if [ "$(jqf '.dispatch | map(select(.task == 2002)) | .[0].phase')" = "plan" ]; then
-  pass "Group 20 (--fast): live classifier keeps researched -> plan under --fast too (never re-researches)"
+  common_test_pass "Group 20 (--fast): live classifier keeps researched -> plan under --fast too (never re-researches)"
 else
-  fail "Group 20 (--fast): expected researched candidate #2002 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2002))')"
+  common_test_fail "Group 20 (--fast): expected researched candidate #2002 to route to plan, got: $(jqf '.dispatch | map(select(.task == 2002))')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 21: forced phase on terminal and archived tasks (task acceptance, Cases A-E)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 21: forced phase on terminal and archived tasks (Cases A-E)"
+common_test_info "Group 21: forced phase on terminal and archived tasks (Cases A-E)"
 
 # Restore the REAL classify/admit collaborators -- a prior group (13/15/16) may have left a stub
 # in place, same precaution Group 20 takes. Also install the REAL orchestrate-build-dispatch.sh,
@@ -3158,19 +3154,19 @@ reset_lock_dirs
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21a.json"
 run_sut --session g21a --dry-run --force-phases research -- 2101
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case A: SUT exits 0"
+  common_test_pass "Case A: SUT exits 0"
 else
-  fail "Case A: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Case A: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 2101 and .phase == "research" and .force == true)) | length')" = "1" ]; then
-  pass "Case A: active-terminal candidate #2101 dispatches with phase=research, force=true"
+  common_test_pass "Case A: active-terminal candidate #2101 dispatches with phase=research, force=true"
 else
-  fail "Case A: candidate #2101 did not dispatch as forced research (stdout: $LAST_STDOUT)"
+  common_test_fail "Case A: candidate #2101 did not dispatch as forced research (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.stop')" = "null" ]; then
-  pass "Case A: does NOT stop with all_terminal (the forced-phase exemption keeps all_done false)"
+  common_test_pass "Case A: does NOT stop with all_terminal (the forced-phase exemption keeps all_done false)"
 else
-  fail "Case A: unexpectedly stopped: $(jqf '.stop')"
+  common_test_fail "Case A: unexpectedly stopped: $(jqf '.stop')"
 fi
 
 # ── Case B: archived terminal, forced -- dispatches into specs/archive/{NNN}_{slug}/ ────────────
@@ -3193,26 +3189,26 @@ reset_lock_dirs
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21b.json"
 run_sut --session g21b --force-phases research -- 2102
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case B: SUT exits 0 (LIVE)"
+  common_test_pass "Case B: SUT exits 0 (LIVE)"
 else
-  fail "Case B: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Case B: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 b_dispatch_file=$(jqf '.dispatch | map(select(.task == 2102)) | .[0].dispatch_file // ""')
 if [[ "$b_dispatch_file" == *"/specs/archive/2102_g21b_archived_completed/"* ]]; then
-  pass "Case B: archived-terminal candidate #2102's dispatch_file lands under specs/archive/ (got: $b_dispatch_file)"
+  common_test_pass "Case B: archived-terminal candidate #2102's dispatch_file lands under specs/archive/ (got: $b_dispatch_file)"
 else
-  fail "Case B: expected dispatch_file under specs/archive/2102_g21b_archived_completed/, got: '$b_dispatch_file' (stdout: $LAST_STDOUT, stderr: $LAST_STDERR)"
+  common_test_fail "Case B: expected dispatch_file under specs/archive/2102_g21b_archived_completed/, got: '$b_dispatch_file' (stdout: $LAST_STDOUT, stderr: $LAST_STDERR)"
 fi
 if [ -n "$b_dispatch_file" ] && [ -f "$b_dispatch_file" ]; then
-  pass "Case B: the dispatch file was actually written to disk"
+  common_test_pass "Case B: the dispatch file was actually written to disk"
 else
-  fail "Case B: dispatch file '$b_dispatch_file' does not exist on disk"
+  common_test_fail "Case B: dispatch file '$b_dispatch_file' does not exist on disk"
 fi
 b_status_after=$(jq -r '.completed_projects[] | select(.project_number == 2102) | .status' "$WORKDIR/specs/archive/state.json")
 if [ "$b_status_after" = "completed" ]; then
-  pass "Case B: archive/state.json status is untouched (still completed; the archive read is read-only)"
+  common_test_pass "Case B: archive/state.json status is untouched (still completed; the archive read is read-only)"
 else
-  fail "Case B: archive/state.json status unexpectedly changed to '$b_status_after'"
+  common_test_fail "Case B: archive/state.json status unexpectedly changed to '$b_status_after'"
 fi
 
 # ── Case C: unforced terminal -- must still stop at all_terminal, zero dispatch rows ────────────
@@ -3227,14 +3223,14 @@ reset_lock_dirs
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21c.json"
 run_sut --session g21c --dry-run -- 2103
 if [ "$(jqf '.stop.reason')" = "all_terminal" ]; then
-  pass "Case C: unforced terminal candidate #2103 stops with all_terminal (Non-Goal regression guard)"
+  common_test_pass "Case C: unforced terminal candidate #2103 stops with all_terminal (Non-Goal regression guard)"
 else
-  fail "Case C: expected stop_reason all_terminal, got: $(jqf '.stop') (stdout: $LAST_STDOUT)"
+  common_test_fail "Case C: expected stop_reason all_terminal, got: $(jqf '.stop') (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | length')" = "0" ]; then
-  pass "Case C: zero dispatch rows for the unforced terminal candidate"
+  common_test_pass "Case C: zero dispatch rows for the unforced terminal candidate"
 else
-  fail "Case C: expected zero dispatch rows, got: $LAST_STDOUT"
+  common_test_fail "Case C: expected zero dispatch rows, got: $LAST_STDOUT"
 fi
 
 # ── Case D: LIVE no-regression -- REAL update-task-status.sh, status stays completed ────────────
@@ -3253,24 +3249,24 @@ d_status_before=$(jq -r '.active_projects[] | select(.project_number == 2105) | 
 run_sut --session g21d --force-phases research -- 2105
 d_status_after=$(jq -r '.active_projects[] | select(.project_number == 2105) | .status' "$WORKDIR/specs/state.json")
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case D: LIVE forced round exits 0"
+  common_test_pass "Case D: LIVE forced round exits 0"
 else
-  fail "Case D: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Case D: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if [ "$d_status_before" = "completed" ] && [ "$d_status_after" = "completed" ]; then
-  pass "Case D: state.json status is 'completed' both before and after the LIVE forced round (no regression)"
+  common_test_pass "Case D: state.json status is 'completed' both before and after the LIVE forced round (no regression)"
 else
-  fail "Case D: status regressed -- before='$d_status_before' after='$d_status_after' (stderr: $LAST_STDERR)"
+  common_test_fail "Case D: status regressed -- before='$d_status_before' after='$d_status_after' (stderr: $LAST_STDERR)"
 fi
 if echo "$LAST_STDERR" | grep -q '\[monotonic-max\]'; then
-  pass "Case D: the preflight clamp actually fired (named [monotonic-max] notice present on stderr)"
+  common_test_pass "Case D: the preflight clamp actually fired (named [monotonic-max] notice present on stderr)"
 else
-  fail "Case D: expected a [monotonic-max] clamp notice on stderr; got: $LAST_STDERR"
+  common_test_fail "Case D: expected a [monotonic-max] clamp notice on stderr; got: $LAST_STDERR"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 2105)) | length')" = "1" ]; then
-  pass "Case D: candidate #2105 still dispatches despite the clamp skipping the status write"
+  common_test_pass "Case D: candidate #2105 still dispatches despite the clamp skipping the status write"
 else
-  fail "Case D: candidate #2105 did not dispatch (stdout: $LAST_STDOUT)"
+  common_test_fail "Case D: candidate #2105 did not dispatch (stdout: $LAST_STDOUT)"
 fi
 
 # ── Case E: --force-phases implement on a completed task dispatches (Decision (c)) -- WITH a
@@ -3290,9 +3286,9 @@ printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDI
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g21e.json"
 run_sut --session g21e --dry-run --force-phases implement -- 2104
 if [ "$(jqf '.dispatch | map(select(.task == 2104 and .phase == "implement" and .force == true)) | length')" = "1" ]; then
-  pass "Case E: --force-phases implement on a completed task WITH a plan dispatches with phase=implement, force=true"
+  common_test_pass "Case E: --force-phases implement on a completed task WITH a plan dispatches with phase=implement, force=true"
 else
-  fail "Case E: candidate #2104 did not dispatch as forced implement (stdout: $LAST_STDOUT)"
+  common_test_fail "Case E: candidate #2104 did not dispatch as forced implement (stdout: $LAST_STDOUT)"
 fi
 
 # ── Regression guard: Group 10 Case I's failed_tasks-driven all_terminal fixture must remain
@@ -3310,7 +3306,7 @@ fi
 # borrowed from Group 14 (research_questions wiring) and Group 21 Case D (real-collaborator LIVE
 # forced round).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 22: --focus threading into the live dispatch file's User focus: block"
+common_test_info "Group 22: --focus threading into the live dispatch file's User focus: block"
 
 # ── Case A: --focus alone (no research_questions) -- forced research dispatch ───────────────────
 write_state <<'EOF'
@@ -3326,21 +3322,21 @@ reset_lock_dirs
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g22a.json"
 run_sut --session g22a --force-phases research --focus "Q1? Q2?" -- 2201
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 22 Case A: SUT exits 0"
+  common_test_pass "Group 22 Case A: SUT exits 0"
 else
-  fail "Group 22 Case A: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 22 Case A: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 g22a_dispatch_file=$(jqf '.dispatch | map(select(.task == 2201)) | .[0].dispatch_file // ""')
 if [ -n "$g22a_dispatch_file" ] && [ -f "$g22a_dispatch_file" ] && \
    grep -qF "User focus: From the user: Q1? Q2?" "$g22a_dispatch_file"; then
-  pass "Group 22 Case A: dispatch file carries a User focus: block with the --focus text"
+  common_test_pass "Group 22 Case A: dispatch file carries a User focus: block with the --focus text"
 else
-  fail "Group 22 Case A: expected 'User focus: From the user: Q1? Q2?' in '$g22a_dispatch_file' (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 22 Case A: expected 'User focus: From the user: Q1? Q2?' in '$g22a_dispatch_file' (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 2201)) | .[0].focus // ""')" = "From the user: Q1? Q2?" ]; then
-  pass "Group 22 Case A: the composed .dispatch[].focus row field matches"
+  common_test_pass "Group 22 Case A: the composed .dispatch[].focus row field matches"
 else
-  fail "Group 22 Case A: unexpected .dispatch[].focus: $(jqf '.dispatch')"
+  common_test_fail "Group 22 Case A: unexpected .dispatch[].focus: $(jqf '.dispatch')"
 fi
 
 # ── Case B: --focus AND research_questions both present -- both labelled segments appear ───────
@@ -3360,9 +3356,9 @@ g22b_dispatch_file=$(jqf '.dispatch | map(select(.task == 2202)) | .[0].dispatch
 if [ -n "$g22b_dispatch_file" ] && [ -f "$g22b_dispatch_file" ] && \
    grep -qF "From the user: Extra context here" "$g22b_dispatch_file" && \
    grep -qF "Research questions: Does X exist?; Is Y true?" "$g22b_dispatch_file"; then
-  pass "Group 22 Case B: dispatch file carries BOTH labelled segments; neither replaced the other"
+  common_test_pass "Group 22 Case B: dispatch file carries BOTH labelled segments; neither replaced the other"
 else
-  fail "Group 22 Case B: expected both labelled segments in '$g22b_dispatch_file' (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 22 Case B: expected both labelled segments in '$g22b_dispatch_file' (stdout: $LAST_STDOUT)"
 fi
 
 # ── Case C: no --focus, research_questions present -- byte-for-byte identical to Group 14's
@@ -3382,14 +3378,14 @@ run_sut --session g22c --force-phases research -- 2203
 g22c_dispatch_file=$(jqf '.dispatch | map(select(.task == 2203)) | .[0].dispatch_file // ""')
 if [ -n "$g22c_dispatch_file" ] && [ -f "$g22c_dispatch_file" ] && \
    grep -qxF "User focus: Only RQ present" "$g22c_dispatch_file"; then
-  pass "Group 22 Case C: no --focus -> bare research_questions line, no label (byte-for-byte unchanged)"
+  common_test_pass "Group 22 Case C: no --focus -> bare research_questions line, no label (byte-for-byte unchanged)"
 else
-  fail "Group 22 Case C: expected exact line 'User focus: Only RQ present' with no label in '$g22c_dispatch_file' (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 22 Case C: expected exact line 'User focus: Only RQ present' with no label in '$g22c_dispatch_file' (stdout: $LAST_STDOUT)"
 fi
 if ! grep -qF "From the user:" "$g22c_dispatch_file" 2>/dev/null && ! grep -qF "Research questions:" "$g22c_dispatch_file" 2>/dev/null; then
-  pass "Group 22 Case C: neither label string appears anywhere in the dispatch file"
+  common_test_pass "Group 22 Case C: neither label string appears anywhere in the dispatch file"
 else
-  fail "Group 22 Case C: an unexpected label string leaked into the dispatch file"
+  common_test_fail "Group 22 Case C: an unexpected label string leaked into the dispatch file"
 fi
 
 # ── Case D: a --focus value containing spaces AND an embedded double quote survives intact ──────
@@ -3408,9 +3404,9 @@ run_sut --session g22d --force-phases research --focus 'has "quoted" words and s
 g22d_dispatch_file=$(jqf '.dispatch | map(select(.task == 2204)) | .[0].dispatch_file // ""')
 if [ -n "$g22d_dispatch_file" ] && [ -f "$g22d_dispatch_file" ] && \
    grep -qF 'User focus: From the user: has "quoted" words and spaces' "$g22d_dispatch_file"; then
-  pass "Group 22 Case D: a focus value with spaces and an embedded double quote survives intact"
+  common_test_pass "Group 22 Case D: a focus value with spaces and an embedded double quote survives intact"
 else
-  fail "Group 22 Case D: expected the quoted/spaced focus text intact in '$g22d_dispatch_file' (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 22 Case D: expected the quoted/spaced focus text intact in '$g22d_dispatch_file' (stdout: $LAST_STDOUT)"
 fi
 
 # ── Case E: --dry-run with --focus surfaces a non-empty .dispatch[].focus before any live run ───
@@ -3425,9 +3421,9 @@ reset_lock_dirs
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g22e.json"
 run_sut --session g22e --dry-run --force-phases research --focus "dry run focus text" -- 2205
 if [ "$(jqf '.dispatch | map(select(.task == 2205)) | .[0].focus // ""')" = "From the user: dry run focus text" ]; then
-  pass "Group 22 Case E: --dry-run emits a non-empty .dispatch[].focus carrying the --focus text"
+  common_test_pass "Group 22 Case E: --dry-run emits a non-empty .dispatch[].focus carrying the --focus text"
 else
-  fail "Group 22 Case E: expected a non-empty .dispatch[].focus under --dry-run, got: $(jqf '.dispatch')"
+  common_test_fail "Group 22 Case E: expected a non-empty .dispatch[].focus under --dry-run, got: $(jqf '.dispatch')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3439,7 +3435,7 @@ fi
 # REAL orchestrate-build-dispatch.sh/update-task-status.sh/state-write.sh (LIVE dispatch actually
 # writes files and reads reviser-agent.md's own field names).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 23: artifact-based admission for forced plan and implement"
+common_test_info "Group 23: artifact-based admission for forced plan and implement"
 
 # ── Case A: --implement on a RESEARCHED task WITH a plan dispatches implement ───────────────────
 write_state <<'EOF'
@@ -3456,9 +3452,9 @@ printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDI
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23a.json"
 run_sut --session g23a --force-phases implement -- 2301
 if [ "$(jqf '.dispatch | map(select(.task == 2301 and .phase == "implement" and .force == true)) | length')" = "1" ]; then
-  pass "Group 23 Case A: --implement on a RESEARCHED task WITH a plan dispatches implement"
+  common_test_pass "Group 23 Case A: --implement on a RESEARCHED task WITH a plan dispatches implement"
 else
-  fail "Group 23 Case A: expected a forced implement dispatch for candidate #2301, got: $LAST_STDOUT"
+  common_test_fail "Group 23 Case A: expected a forced implement dispatch for candidate #2301, got: $LAST_STDOUT"
 fi
 
 # ── Case B: --implement on a task with NO plan yields exactly one blocked[] row; no dispatch
@@ -3477,29 +3473,29 @@ g23b_status_before=$(jq -r '.active_projects[] | select(.project_number == 2302)
 run_sut --session g23b --force-phases implement -- 2302
 g23b_status_after=$(jq -r '.active_projects[] | select(.project_number == 2302) | .status' "$STATE_FILE")
 if [ "$(jqf '.blocked | map(select(.task == 2302 and (.reason == "no plan artifact; run --plan first"))) | length')" = "1" ]; then
-  pass "Group 23 Case B: --implement with no plan yields exactly one blocked[] row with the named reason"
+  common_test_pass "Group 23 Case B: --implement with no plan yields exactly one blocked[] row with the named reason"
 else
-  fail "Group 23 Case B: expected the no-plan blocked[] row, got: $LAST_STDOUT"
+  common_test_fail "Group 23 Case B: expected the no-plan blocked[] row, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 2302)) | length')" = "0" ]; then
-  pass "Group 23 Case B: no dispatch row for candidate #2302"
+  common_test_pass "Group 23 Case B: no dispatch row for candidate #2302"
 else
-  fail "Group 23 Case B: unexpectedly dispatched candidate #2302 (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 23 Case B: unexpectedly dispatched candidate #2302 (stdout: $LAST_STDOUT)"
 fi
 if [ ! -d "$WORKDIR/specs/2302_g23b_implement_no_plan/.dispatch" ]; then
-  pass "Group 23 Case B: no .dispatch/ directory or file was created"
+  common_test_pass "Group 23 Case B: no .dispatch/ directory or file was created"
 else
-  fail "Group 23 Case B: a .dispatch/ directory was unexpectedly created"
+  common_test_fail "Group 23 Case B: a .dispatch/ directory was unexpectedly created"
 fi
 if [ ! -d "$WORKDIR/specs/2302_g23b_implement_no_plan/.lock" ]; then
-  pass "Group 23 Case B: no task lock was taken"
+  common_test_pass "Group 23 Case B: no task lock was taken"
 else
-  fail "Group 23 Case B: a .lock/ directory was unexpectedly created"
+  common_test_fail "Group 23 Case B: a .lock/ directory was unexpectedly created"
 fi
 if [ "$g23b_status_before" = "$g23b_status_after" ]; then
-  pass "Group 23 Case B: status unchanged (no status write) -- before='$g23b_status_before' after='$g23b_status_after'"
+  common_test_pass "Group 23 Case B: status unchanged (no status write) -- before='$g23b_status_before' after='$g23b_status_after'"
 else
-  fail "Group 23 Case B: status changed -- before='$g23b_status_before' after='$g23b_status_after'"
+  common_test_fail "Group 23 Case B: status changed -- before='$g23b_status_before' after='$g23b_status_after'"
 fi
 
 # ── Case C: --plan with an existing plan resolves reviser-agent; dispatch file carries
@@ -3518,17 +3514,17 @@ printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$WORKDI
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23c.json"
 run_sut --session g23c --force-phases plan -- 2303
 if [ "$(jqf '.dispatch | map(select(.task == 2303)) | .[0].agent // ""')" = "reviser-agent" ]; then
-  pass "Group 23 Case C: --plan with an existing plan resolves reviser-agent"
+  common_test_pass "Group 23 Case C: --plan with an existing plan resolves reviser-agent"
 else
-  fail "Group 23 Case C: expected agent=reviser-agent for candidate #2303, got: $LAST_STDOUT"
+  common_test_fail "Group 23 Case C: expected agent=reviser-agent for candidate #2303, got: $LAST_STDOUT"
 fi
 g23c_dispatch_file=$(jqf '.dispatch | map(select(.task == 2303)) | .[0].dispatch_file // ""')
 if [ -n "$g23c_dispatch_file" ] && [ -f "$g23c_dispatch_file" ] && \
    grep -qF "existing_plan_path: specs/2303_g23c_plan_revise/plans/01_fixture-plan.md" "$g23c_dispatch_file" && \
    grep -qF "revision_reason: forced --plan round" "$g23c_dispatch_file"; then
-  pass "Group 23 Case C: dispatch file carries existing_plan_path and revision_reason"
+  common_test_pass "Group 23 Case C: dispatch file carries existing_plan_path and revision_reason"
 else
-  fail "Group 23 Case C: expected existing_plan_path/revision_reason in '$g23c_dispatch_file'"
+  common_test_fail "Group 23 Case C: expected existing_plan_path/revision_reason in '$g23c_dispatch_file'"
 fi
 
 # ── Case D: --plan with no plan resolves planner-agent (ordinary path, unchanged) ───────────────
@@ -3545,9 +3541,9 @@ mkdir -p "$WORKDIR/specs/2304_g23d_plan_author/reports"
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23d.json"
 run_sut --session g23d --force-phases plan -- 2304
 if [ "$(jqf '.dispatch | map(select(.task == 2304)) | .[0].agent // ""')" = "planner-agent" ]; then
-  pass "Group 23 Case D: --plan with no plan resolves planner-agent"
+  common_test_pass "Group 23 Case D: --plan with no plan resolves planner-agent"
 else
-  fail "Group 23 Case D: expected agent=planner-agent for candidate #2304, got: $LAST_STDOUT"
+  common_test_fail "Group 23 Case D: expected agent=planner-agent for candidate #2304, got: $LAST_STDOUT"
 fi
 
 # ── Case E: both plan admission modes are admitted at TERMINAL status too, proving the rule is
@@ -3568,14 +3564,14 @@ mkdir -p "$WORKDIR/specs/2306_g23f_terminal_plan_author"
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g23ef.json"
 run_sut --session g23ef --dry-run --force-phases plan -- 2305 2306
 if [ "$(jqf '.dispatch | map(select(.task == 2305)) | .[0].agent // ""')" = "reviser-agent" ]; then
-  pass "Group 23 Case E: terminal (completed) task with a plan still resolves reviser-agent when forced"
+  common_test_pass "Group 23 Case E: terminal (completed) task with a plan still resolves reviser-agent when forced"
 else
-  fail "Group 23 Case E: expected agent=reviser-agent for terminal candidate #2305, got: $LAST_STDOUT"
+  common_test_fail "Group 23 Case E: expected agent=reviser-agent for terminal candidate #2305, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 2306)) | .[0].agent // ""')" = "planner-agent" ]; then
-  pass "Group 23 Case E: terminal (abandoned) task with no plan still resolves planner-agent when forced"
+  common_test_pass "Group 23 Case E: terminal (abandoned) task with no plan still resolves planner-agent when forced"
 else
-  fail "Group 23 Case E: expected agent=planner-agent for terminal candidate #2306, got: $LAST_STDOUT"
+  common_test_fail "Group 23 Case E: expected agent=planner-agent for terminal candidate #2306, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3589,7 +3585,7 @@ fi
 # update-task-status.sh, state-write.sh, and generate-todo.sh are already installed by Group 21
 # above and never re-stubbed since -- this group relies on that real end-to-end write path.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 24: pending_dispatch pre-image capture (prior_* fields) and replay non-overwrite"
+common_test_info "Group 24: pending_dispatch pre-image capture (prior_* fields) and replay non-overwrite"
 
 write_state <<'EOF'
 {
@@ -3608,40 +3604,40 @@ run_sut --session g24_case1 --force-phases plan -- 2401
 g24_guard_file="$WORKDIR/specs/2401_g24_prior_image/.orchestrator-loop-guard"
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 24 case 1: LIVE forced plan round exits 0"
+  common_test_pass "Group 24 case 1: LIVE forced plan round exits 0"
 else
-  fail "Group 24 case 1: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 24 case 1: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if [ "$(jq -r '.pending_dispatch.prior_status // ""' "$g24_guard_file" 2>/dev/null)" = "researched" ]; then
-  pass "Group 24 case 1: pending_dispatch.prior_status captures the pre-dispatch status ('researched')"
+  common_test_pass "Group 24 case 1: pending_dispatch.prior_status captures the pre-dispatch status ('researched')"
 else
-  fail "Group 24 case 1: expected prior_status='researched'; got: $(cat "$g24_guard_file" 2>/dev/null)"
+  common_test_fail "Group 24 case 1: expected prior_status='researched'; got: $(cat "$g24_guard_file" 2>/dev/null)"
 fi
 if [ "$(jq -r '.pending_dispatch.prior_last_updated // ""' "$g24_guard_file" 2>/dev/null)" = "2020-01-01T00:00:00Z" ]; then
-  pass "Group 24 case 1: pending_dispatch.prior_last_updated captures the pre-dispatch last_updated"
+  common_test_pass "Group 24 case 1: pending_dispatch.prior_last_updated captures the pre-dispatch last_updated"
 else
-  fail "Group 24 case 1: expected prior_last_updated='2020-01-01T00:00:00Z'; got: $(cat "$g24_guard_file" 2>/dev/null)"
+  common_test_fail "Group 24 case 1: expected prior_last_updated='2020-01-01T00:00:00Z'; got: $(cat "$g24_guard_file" 2>/dev/null)"
 fi
 if [ "$(jq -r '.pending_dispatch.prior_session_id // ""' "$g24_guard_file" 2>/dev/null)" = "sess_before_case1" ]; then
-  pass "Group 24 case 1: pending_dispatch.prior_session_id captures the pre-dispatch session_id"
+  common_test_pass "Group 24 case 1: pending_dispatch.prior_session_id captures the pre-dispatch session_id"
 else
-  fail "Group 24 case 1: expected prior_session_id='sess_before_case1'; got: $(cat "$g24_guard_file" 2>/dev/null)"
+  common_test_fail "Group 24 case 1: expected prior_session_id='sess_before_case1'; got: $(cat "$g24_guard_file" 2>/dev/null)"
 fi
 if [ "$(jq -r '.pending_dispatch.prior_dispatch_seq_counter // -1' "$g24_guard_file" 2>/dev/null)" = "7" ]; then
-  pass "Group 24 case 1: pending_dispatch.prior_dispatch_seq_counter captures the pre-charge durable counter (7)"
+  common_test_pass "Group 24 case 1: pending_dispatch.prior_dispatch_seq_counter captures the pre-charge durable counter (7)"
 else
-  fail "Group 24 case 1: expected prior_dispatch_seq_counter=7; got: $(cat "$g24_guard_file" 2>/dev/null)"
+  common_test_fail "Group 24 case 1: expected prior_dispatch_seq_counter=7; got: $(cat "$g24_guard_file" 2>/dev/null)"
 fi
 if [ "$(jq -r '.dispatch_seq_counter' "$g24_guard_file" 2>/dev/null)" = "8" ]; then
-  pass "Group 24 case 1: the durable dispatch_seq_counter itself advances normally (7 -> 8) alongside the pre-image"
+  common_test_pass "Group 24 case 1: the durable dispatch_seq_counter itself advances normally (7 -> 8) alongside the pre-image"
 else
-  fail "Group 24 case 1: expected dispatch_seq_counter=8 after the charge; got: $(cat "$g24_guard_file" 2>/dev/null)"
+  common_test_fail "Group 24 case 1: expected dispatch_seq_counter=8 after the charge; got: $(cat "$g24_guard_file" 2>/dev/null)"
 fi
 g24_status_after_case1=$(jq -r '.active_projects[] | select(.project_number == 2401) | .status' "$WORKDIR/specs/state.json")
 if [ "$g24_status_after_case1" != "researched" ]; then
-  pass "Group 24 case 1: state.json status actually changed away from the captured pre-image ('$g24_status_after_case1')"
+  common_test_pass "Group 24 case 1: state.json status actually changed away from the captured pre-image ('$g24_status_after_case1')"
 else
-  fail "Group 24 case 1: expected state.json status to change from 'researched'; still researched"
+  common_test_fail "Group 24 case 1: expected state.json status to change from 'researched'; still researched"
 fi
 
 # Snapshot the full pending_dispatch record before the replay run, to prove it is byte-for-byte
@@ -3653,20 +3649,20 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g24_case2.json"
 run_sut --session g24_case2 --force-phases plan -- 2401
 
 if echo "$LAST_STDERR" | grep -qF "UNCONSUMED DISPATCH REPLAY"; then
-  pass "Group 24 case 2: a same-phase, file-present re-dispatch replays instead of re-charging"
+  common_test_pass "Group 24 case 2: a same-phase, file-present re-dispatch replays instead of re-charging"
 else
-  fail "Group 24 case 2: expected an UNCONSUMED DISPATCH REPLAY notice; got stderr: $LAST_STDERR"
+  common_test_fail "Group 24 case 2: expected an UNCONSUMED DISPATCH REPLAY notice; got stderr: $LAST_STDERR"
 fi
 g24_pending_after_case2="$(jq -c '.pending_dispatch' "$g24_guard_file" 2>/dev/null)"
 if [ "$g24_pending_after_case2" = "$g24_pending_before_case2" ]; then
-  pass "Group 24 case 2: the replay leaves the ENTIRE pending_dispatch record (pre-image included) byte-for-byte untouched"
+  common_test_pass "Group 24 case 2: the replay leaves the ENTIRE pending_dispatch record (pre-image included) byte-for-byte untouched"
 else
-  fail "Group 24 case 2: replay unexpectedly mutated pending_dispatch -- before: $g24_pending_before_case2 -- after: $g24_pending_after_case2"
+  common_test_fail "Group 24 case 2: replay unexpectedly mutated pending_dispatch -- before: $g24_pending_before_case2 -- after: $g24_pending_after_case2"
 fi
 if [ "$(jq -r '.dispatch_seq_counter' "$g24_guard_file" 2>/dev/null)" = "8" ]; then
-  pass "Group 24 case 2: the durable dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)"
+  common_test_pass "Group 24 case 2: the durable dispatch_seq_counter is unchanged by a replay (no extra --flush-seq)"
 else
-  fail "Group 24 case 2: expected dispatch_seq_counter unchanged at 8 after a replay; got: $(cat "$g24_guard_file" 2>/dev/null)"
+  common_test_fail "Group 24 case 2: expected dispatch_seq_counter unchanged at 8 after a replay; got: $(cat "$g24_guard_file" 2>/dev/null)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3679,7 +3675,7 @@ fi
 # rather than a rendered dispatch file (that half -- ## Territory + the territory.md pointer --
 # is Group 13 of test-orchestrate-build-dispatch.sh's job, not this suite's).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 25: base-mode sibling territory (mixed granularity, single-task regression, hard-mode merge)"
+common_test_info "Group 25: base-mode sibling territory (mixed granularity, single-task regression, hard-mode merge)"
 
 G25_ARGV_LOG="$WORKDIR/g25-build-dispatch-argv.log"
 : > "$G25_ARGV_LOG"
@@ -3735,34 +3731,34 @@ reset_lock_dirs
 run_sut --session g25_sess -- 2501 2502 2503
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 25 (Cases A-C): SUT exits 0"
+  common_test_pass "Group 25 (Cases A-C): SUT exits 0"
 else
-  fail "Group 25 (Cases A-C): SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 25 (Cases A-C): SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if [ "$(jqf '.dispatch | length')" = "3" ]; then
-  pass "Group 25 (Cases A-C): all three siblings dispatch this cycle"
+  common_test_pass "Group 25 (Cases A-C): all three siblings dispatch this cycle"
 else
-  fail "Group 25 (Cases A-C): expected 3 dispatch rows; got: $LAST_STDOUT"
+  common_test_fail "Group 25 (Cases A-C): expected 3 dispatch rows; got: $LAST_STDOUT"
 fi
 
 # Case A: #2501's own --territory names #2502 (undeclared) and shows the undeclared sentinel.
 g25_2501_argv=$(grep '^2501 implement' "$G25_ARGV_LOG" || true)
 if echo "$g25_2501_argv" | grep -q -- "--territory"; then
-  pass "Case A: #2501 receives --territory"
+  common_test_pass "Case A: #2501 receives --territory"
 else
-  fail "Case A: --territory missing from #2501's argv ('$g25_2501_argv')"
+  common_test_fail "Case A: --territory missing from #2501's argv ('$g25_2501_argv')"
 fi
 if echo "$g25_2501_argv" | grep -q '"task_number":2502' && \
    echo "$g25_2501_argv" | grep -q '"scope_declared":false' && \
    echo "$g25_2501_argv" | grep -q '"scope_granularity":"undeclared"'; then
-  pass "Case A: #2501's territory names sibling #2502 as undeclared (scope_declared=false)"
+  common_test_pass "Case A: #2501's territory names sibling #2502 as undeclared (scope_declared=false)"
 else
-  fail "Case A: #2501's territory missing the undeclared #2502 entry (argv: '$g25_2501_argv')"
+  common_test_fail "Case A: #2501's territory missing the undeclared #2502 entry (argv: '$g25_2501_argv')"
 fi
 if echo "$g25_2501_argv" | grep -q "context/contracts/territory.md"; then
-  pass "Case A: #2501's concurrency_note cites context/contracts/territory.md"
+  common_test_pass "Case A: #2501's concurrency_note cites context/contracts/territory.md"
 else
-  fail "Case A: territory.md citation missing from #2501's concurrency_note"
+  common_test_fail "Case A: territory.md citation missing from #2501's concurrency_note"
 fi
 
 # Case B: #2502's own --territory names #2501 with its exact file and granularity=file.
@@ -3770,18 +3766,18 @@ g25_2502_argv=$(grep '^2502 implement' "$G25_ARGV_LOG" || true)
 if echo "$g25_2502_argv" | grep -q '"task_number":2501' && \
    echo "$g25_2502_argv" | grep -q "FormalSystem/Metalogic/Soundness.lean" && \
    echo "$g25_2502_argv" | grep -q '"granularity":"file"'; then
-  pass "Case B: #2502's territory names sibling #2501 with its exact file and granularity=file"
+  common_test_pass "Case B: #2502's territory names sibling #2501 with its exact file and granularity=file"
 else
-  fail "Case B: #2502's territory missing the file-granularity #2501 entry (argv: '$g25_2502_argv')"
+  common_test_fail "Case B: #2502's territory missing the file-granularity #2501 entry (argv: '$g25_2502_argv')"
 fi
 
 # Case C: #2501's territory also names #2503 as coarse/directory.
 if echo "$g25_2501_argv" | grep -q '"task_number":2503' && \
    echo "$g25_2501_argv" | grep -q '"granularity":"directory"' && \
    echo "$g25_2501_argv" | grep -q '"scope_granularity":"coarse"'; then
-  pass "Case C: #2501's territory names sibling #2503 as coarse/directory"
+  common_test_pass "Case C: #2501's territory names sibling #2503 as coarse/directory"
 else
-  fail "Case C: #2501's territory missing the coarse #2503 entry (argv: '$g25_2501_argv')"
+  common_test_fail "Case C: #2501's territory missing the coarse #2503 entry (argv: '$g25_2501_argv')"
 fi
 
 # Case C2: a SEPARATE two-candidate cycle (2501 + 2504 only -- see the comment above Cases A-C for
@@ -3800,16 +3796,16 @@ reset_lock_dirs
 : > "$G25_ARGV_LOG"
 run_sut --session g25_sess_c2 -- 2501 2504
 if [ "$(jqf '.dispatch | length')" = "2" ]; then
-  pass "Case C2: both candidates dispatch this cycle (2504 is the sole, hence designated, absent-scope candidate)"
+  common_test_pass "Case C2: both candidates dispatch this cycle (2504 is the sole, hence designated, absent-scope candidate)"
 else
-  fail "Case C2: expected 2 dispatch rows; got: $LAST_STDOUT"
+  common_test_fail "Case C2: expected 2 dispatch rows; got: $LAST_STDOUT"
 fi
 g25_2501_c2_argv=$(grep '^2501 implement' "$G25_ARGV_LOG" || true)
 if echo "$g25_2501_c2_argv" | grep -q '"task_number":2504' && \
    echo "$g25_2501_c2_argv" | grep -q '"scope_granularity":"undeclared"'; then
-  pass "Case C2: #2501's territory renders #2504's empty-array file_scope identically to absent (undeclared)"
+  common_test_pass "Case C2: #2501's territory renders #2504's empty-array file_scope identically to absent (undeclared)"
 else
-  fail "Case C2: #2501's territory did not render #2504 as undeclared (argv: '$g25_2501_c2_argv')"
+  common_test_fail "Case C2: #2501's territory did not render #2504 as undeclared (argv: '$g25_2501_c2_argv')"
 fi
 
 # Case D (regression guard): a single-task cycle (same state.json, but only #2501 named on the
@@ -3820,9 +3816,9 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g25_solo.json"
 run_sut --session g25_solo -- 2501
 g25_solo_argv=$(grep '^2501 implement' "$G25_ARGV_LOG" || true)
 if [ -n "$g25_solo_argv" ] && ! echo "$g25_solo_argv" | grep -q -- "--territory"; then
-  pass "Case D: a single-task cycle never receives --territory (no siblings scheduled)"
+  common_test_pass "Case D: a single-task cycle never receives --territory (no siblings scheduled)"
 else
-  fail "Case D: expected no --territory in a single-task cycle (argv: '$g25_solo_argv')"
+  common_test_fail "Case D: expected no --territory in a single-task cycle (argv: '$g25_solo_argv')"
 fi
 
 # Case E: hard mode -- an H1 implement candidate (#2601, its own plan has an open phase) keeps its
@@ -3851,19 +3847,19 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g25_hard.json"
 run_sut --session g25_hard --hard -- 2601 2602
 g25_hard_argv=$(grep '^2601 implement' "$G25_ARGV_LOG" || true)
 if echo "$g25_hard_argv" | grep -q -- "--phase-number 2"; then
-  pass "Case E: #2601 still receives --phase-number 2 (H1 unaffected by the sibling merge)"
+  common_test_pass "Case E: #2601 still receives --phase-number 2 (H1 unaffected by the sibling merge)"
 else
-  fail "Case E: --phase-number 2 missing from #2601's argv ('$g25_hard_argv')"
+  common_test_fail "Case E: --phase-number 2 missing from #2601's argv ('$g25_hard_argv')"
 fi
 if echo "$g25_hard_argv" | grep -q "owned_files" && echo "$g25_hard_argv" | grep -q '"concurrent_siblings"'; then
-  pass "Case E: #2601's --territory carries BOTH the H1 owned_files literal AND concurrent_siblings"
+  common_test_pass "Case E: #2601's --territory carries BOTH the H1 owned_files literal AND concurrent_siblings"
 else
-  fail "Case E: #2601's --territory missing owned_files or concurrent_siblings (argv: '$g25_hard_argv')"
+  common_test_fail "Case E: #2601's --territory missing owned_files or concurrent_siblings (argv: '$g25_hard_argv')"
 fi
 if echo "$g25_hard_argv" | grep -q '"task_number":2602'; then
-  pass "Case E: #2601's concurrent_siblings names sibling #2602"
+  common_test_pass "Case E: #2601's concurrent_siblings names sibling #2602"
 else
-  fail "Case E: #2601's concurrent_siblings missing sibling #2602 (argv: '$g25_hard_argv')"
+  common_test_fail "Case E: #2601's concurrent_siblings missing sibling #2602 (argv: '$g25_hard_argv')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3875,7 +3871,7 @@ fi
 # never dispatch[] or eligible_tasks. Companion negative case: an empty-blockers[] partial is
 # still routed to `implement` unchanged.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 26: a partial+blockers task (status already written by postflight) is excluded from redispatch; an empty-blockers partial still dispatches"
+common_test_info "Group 26: a partial+blockers task (status already written by postflight) is excluded from redispatch; an empty-blockers partial still dispatches"
 write_state <<'EOF'
 {
   "active_projects": [
@@ -3890,21 +3886,21 @@ cat > "$WORKDIR/specs/2701_g26_partial_blockers/.orchestrator-handoff.json" <<'E
 EOF
 run_sut --session g26_sess --dry-run -- 2701
 if [ "$(jqf '.blocked | map(select(.task == 2701)) | length')" = "1" ]; then
-  pass "Group 26: candidate #2701 (partial+blockers) lands in blocked[] -- visible, never a silent skip"
+  common_test_pass "Group 26: candidate #2701 (partial+blockers) lands in blocked[] -- visible, never a silent skip"
 else
-  fail "Group 26: candidate #2701 not found in blocked[] (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 26: candidate #2701 not found in blocked[] (stdout: $LAST_STDOUT)"
 fi
 g26_reason=$(jqf '.blocked | map(select(.task == 2701)) | .[0].reason // ""')
 if [[ "$g26_reason" == *"needs human"* ]] || [[ "$g26_reason" == *"unresolved blocker"* ]]; then
-  pass "Group 26: candidate #2701's blocked[] reason names the unresolved-blocker/needs-human cause"
+  common_test_pass "Group 26: candidate #2701's blocked[] reason names the unresolved-blocker/needs-human cause"
 else
-  fail "Group 26: candidate #2701's blocked[] reason missing the expected text (got: '$g26_reason')"
+  common_test_fail "Group 26: candidate #2701's blocked[] reason missing the expected text (got: '$g26_reason')"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 2701)) | length')" = "0" ] && \
    [ "$(jqf '.deferred | map(select(.task == 2701)) | length')" = "0" ]; then
-  pass "Group 26: candidate #2701 is absent from dispatch[] and deferred[] -- not routed back to implement"
+  common_test_pass "Group 26: candidate #2701 is absent from dispatch[] and deferred[] -- not routed back to implement"
 else
-  fail "Group 26: candidate #2701 leaked into dispatch or deferred (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 26: candidate #2701 leaked into dispatch or deferred (stdout: $LAST_STDOUT)"
 fi
 
 # Companion negative case: the identical fixture shape, but with an empty blockers[] -- still
@@ -3925,21 +3921,21 @@ EOF
 run_sut --session g26b_sess --dry-run -- 2702
 if [ "$(jqf '.dispatch | map(select(.task == 2702)) | length')" = "1" ] && \
    [ "$(jqf '.dispatch | map(select(.task == 2702)) | .[0].phase')" = "implement" ]; then
-  pass "Group 26 (negative): candidate #2702 (partial, no blockers) still dispatches to implement"
+  common_test_pass "Group 26 (negative): candidate #2702 (partial, no blockers) still dispatches to implement"
 else
-  fail "Group 26 (negative): candidate #2702 did not dispatch to implement (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 26 (negative): candidate #2702 did not dispatch to implement (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.blocked | map(select(.task == 2702)) | length')" = "0" ]; then
-  pass "Group 26 (negative): candidate #2702 is absent from blocked[]"
+  common_test_pass "Group 26 (negative): candidate #2702 is absent from blocked[]"
 else
-  fail "Group 26 (negative): candidate #2702 unexpectedly landed in blocked[] (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 26 (negative): candidate #2702 unexpectedly landed in blocked[] (stdout: $LAST_STDOUT)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 27: Fix 2 (Phase 1) -- identical-dispatch content hashing and per-task streak accounting.
 # Log-only: no dispatch is blocked and no behavior changes (Phase 2 adds the halt).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 27: identical-dispatch content hashing and streak accounting (log-only)"
+common_test_info "Group 27: identical-dispatch content hashing and streak accounting (log-only)"
 
 # Restore the REAL orchestrate-build-dispatch.sh AND update-task-status.sh -- Group 25
 # (immediately prior) installs its own stubs (a fixed "/fake/<n>-<phase>.md" dispatch_file that
@@ -3959,9 +3955,9 @@ chmod +x "$WORKDIR/.claude/scripts/orchestrate-build-dispatch.sh" "$WORKDIR/.cla
 # lines (dispatch_seq, dispatch_start_ts) differ; a different digest when any other line differs.
 g27_hash_fn=$(sed -n '/^cycle_plan_dispatch_hash() {/,/^}/p' "$SUT_SRC")
 if [ -n "$g27_hash_fn" ]; then
-  pass "Group 27 Case A: cycle_plan_dispatch_hash() found in SUT source"
+  common_test_pass "Group 27 Case A: cycle_plan_dispatch_hash() found in SUT source"
 else
-  fail "Group 27 Case A: could not extract cycle_plan_dispatch_hash() from $SUT_SRC"
+  common_test_fail "Group 27 Case A: could not extract cycle_plan_dispatch_hash() from $SUT_SRC"
 fi
 
 g27_f1="$WORKDIR/g27_dispatch_a.md"
@@ -3990,14 +3986,14 @@ g27_h1=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f1")
 g27_h2=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f2")
 g27_h3=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f3")
 if [ -n "$g27_h1" ] && [ "$g27_h1" = "$g27_h2" ]; then
-  pass "Group 27 Case A: identical digest for two files differing only in dispatch_seq/dispatch_start_ts"
+  common_test_pass "Group 27 Case A: identical digest for two files differing only in dispatch_seq/dispatch_start_ts"
 else
-  fail "Group 27 Case A: expected matching digests, got '$g27_h1' vs '$g27_h2'"
+  common_test_fail "Group 27 Case A: expected matching digests, got '$g27_h1' vs '$g27_h2'"
 fi
 if [ -n "$g27_h3" ] && [ "$g27_h3" != "$g27_h1" ]; then
-  pass "Group 27 Case A: different digest when a non-varying line (Description) differs"
+  common_test_pass "Group 27 Case A: different digest when a non-varying line (Description) differs"
 else
-  fail "Group 27 Case A: expected a different digest for a genuinely different dispatch, got '$g27_h3' (same as '$g27_h1')"
+  common_test_fail "Group 27 Case A: expected a different digest for a genuinely different dispatch, got '$g27_h3' (same as '$g27_h1')"
 fi
 
 # ── Case B: sha256sum-absent degrade path -- returns exit 2 (never a crash, never a fatal), no
@@ -4007,9 +4003,9 @@ g27_bash_abs="$(command -v bash)"
 g27_degrade_out=$(PATH="" "$g27_bash_abs" -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f1" 2>/dev/null)
 g27_degrade_rc=$?
 if [ "$g27_degrade_rc" -eq 2 ] && [ -z "$g27_degrade_out" ]; then
-  pass "Group 27 Case B: cycle_plan_dispatch_hash returns 2 (degrade, not crash) when sha256sum is unavailable"
+  common_test_pass "Group 27 Case B: cycle_plan_dispatch_hash returns 2 (degrade, not crash) when sha256sum is unavailable"
 else
-  fail "Group 27 Case B: expected exit 2 and empty output with sha256sum unavailable, got rc=$g27_degrade_rc out='$g27_degrade_out'"
+  common_test_fail "Group 27 Case B: expected exit 2 and empty output with sha256sum unavailable, got rc=$g27_degrade_rc out='$g27_degrade_out'"
 fi
 
 # ── Cases C-D: full LIVE pipeline -- `--no-plan-cache` forces a genuinely fresh composition on
@@ -4034,20 +4030,20 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27live.json"
 
 run_sut --session g27live --no-plan-cache -- 2703
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | length')" = "1" ]; then
-  pass "Group 27 Case C: cycle 1 dispatches candidate #2703 normally"
+  common_test_pass "Group 27 Case C: cycle 1 dispatches candidate #2703 normally"
 else
-  fail "Group 27 Case C: cycle 1 did not dispatch candidate #2703 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+  common_test_fail "Group 27 Case C: cycle 1 did not dispatch candidate #2703 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
 fi
 g27_streak_after_1=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27live.json")
 if [ "$g27_streak_after_1" = "1" ]; then
-  pass "Group 27 Case C: streak recorded as 1 after the first dispatch"
+  common_test_pass "Group 27 Case C: streak recorded as 1 after the first dispatch"
 else
-  fail "Group 27 Case C: expected streak 1 after cycle 1, got '$g27_streak_after_1'"
+  common_test_fail "Group 27 Case C: expected streak 1 after cycle 1, got '$g27_streak_after_1'"
 fi
 if [[ "$LAST_STDERR" != *"IDENTICAL DISPATCH:"* ]]; then
-  pass "Group 27 Case C: no IDENTICAL DISPATCH notice on a first-ever dispatch (streak=1)"
+  common_test_pass "Group 27 Case C: no IDENTICAL DISPATCH notice on a first-ever dispatch (streak=1)"
 else
-  fail "Group 27 Case C: unexpected IDENTICAL DISPATCH notice on the first dispatch: $LAST_STDERR"
+  common_test_fail "Group 27 Case C: unexpected IDENTICAL DISPATCH notice on the first dispatch: $LAST_STDERR"
 fi
 
 # ── Case D: a genuinely different dispatch (description changed) still records streak=1 -- never
@@ -4056,20 +4052,20 @@ g27_desc_filter='(.active_projects[] | select(.project_number == 2703)).descript
 jq "$g27_desc_filter" "$STATE_FILE" > "$STATE_FILE.tmp" && mv "$STATE_FILE.tmp" "$STATE_FILE"
 run_sut --session g27live --no-plan-cache -- 2703
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2703)) | length')" = "1" ]; then
-  pass "Group 27 Case D: a genuinely different dispatch still dispatches normally"
+  common_test_pass "Group 27 Case D: a genuinely different dispatch still dispatches normally"
 else
-  fail "Group 27 Case D: expected a normal dispatch for genuinely different content, got exit=$LAST_EXIT stdout: $LAST_STDOUT"
+  common_test_fail "Group 27 Case D: expected a normal dispatch for genuinely different content, got exit=$LAST_EXIT stdout: $LAST_STDOUT"
 fi
 g27_streak_after_2=$(jq -r '.identical_dispatch_streak["2703"] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27live.json")
 if [ "$g27_streak_after_2" = "1" ]; then
-  pass "Group 27 Case D: streak stays at 1 when the dispatch content genuinely differs from the previous cycle"
+  common_test_pass "Group 27 Case D: streak stays at 1 when the dispatch content genuinely differs from the previous cycle"
 else
-  fail "Group 27 Case D: expected streak 1, got '$g27_streak_after_2'"
+  common_test_fail "Group 27 Case D: expected streak 1, got '$g27_streak_after_2'"
 fi
 if [[ "$LAST_STDERR" != *"IDENTICAL DISPATCH:"* ]]; then
-  pass "Group 27 Case D: no IDENTICAL DISPATCH notice on a streak of 1"
+  common_test_pass "Group 27 Case D: no IDENTICAL DISPATCH notice on a streak of 1"
 else
-  fail "Group 27 Case D: unexpected IDENTICAL DISPATCH notice on a genuinely different dispatch: $LAST_STDERR"
+  common_test_fail "Group 27 Case D: unexpected IDENTICAL DISPATCH notice on a genuinely different dispatch: $LAST_STDERR"
 fi
 
 # ── Case E: --dry-run composition is untouched -- the guard lives entirely in the live-only half.
@@ -4084,14 +4080,14 @@ reset_lock_dirs
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27dry.json"
 run_sut --session g27dry --dry-run -- 2704
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2704 and .phase == "research")) | length')" = "1" ]; then
-  pass "Group 27 Case E: --dry-run still dispatches normally"
+  common_test_pass "Group 27 Case E: --dry-run still dispatches normally"
 else
-  fail "Group 27 Case E: --dry-run behavior changed (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+  common_test_fail "Group 27 Case E: --dry-run behavior changed (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
 fi
 if [ ! -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g27dry.json" ]; then
-  pass "Group 27 Case E: --dry-run never persists a multi-state file (no accounting side effect)"
+  common_test_pass "Group 27 Case E: --dry-run never persists a multi-state file (no accounting side effect)"
 else
-  fail "Group 27 Case E: --dry-run unexpectedly wrote a multi-state file"
+  common_test_fail "Group 27 Case E: --dry-run unexpectedly wrote a multi-state file"
 fi
 
 # ── Case F: all THREE per-cycle-varying locations are normalized away (the Identity pair plus the
@@ -4138,14 +4134,14 @@ g27_h4=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f4")
 g27_h5=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f5")
 g27_h6=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f6")
 if [ -n "$g27_h4" ] && [ "$g27_h4" = "$g27_h5" ]; then
-  pass "Group 27 Case F: identical digest when all three per-cycle-varying locations differ (Identity pair + Issue Log [--dispatch-seq N] placeholder)"
+  common_test_pass "Group 27 Case F: identical digest when all three per-cycle-varying locations differ (Identity pair + Issue Log [--dispatch-seq N] placeholder)"
 else
-  fail "Group 27 Case F: expected matching digests for a genuinely identical dispatch, got '$g27_h4' vs '$g27_h5'"
+  common_test_fail "Group 27 Case F: expected matching digests for a genuinely identical dispatch, got '$g27_h4' vs '$g27_h5'"
 fi
 if [ -n "$g27_h6" ] && [ "$g27_h6" != "$g27_h4" ]; then
-  pass "Group 27 Case F: different digest when a non-varying line (Description) differs, even with the Issue Log line present"
+  common_test_pass "Group 27 Case F: different digest when a non-varying line (Description) differs, even with the Issue Log line present"
 else
-  fail "Group 27 Case F: expected a different digest for a genuinely different dispatch, got '$g27_h6' (same as '$g27_h4')"
+  common_test_fail "Group 27 Case F: expected a different digest for a genuinely different dispatch, got '$g27_h6' (same as '$g27_h4')"
 fi
 
 # ── Case G: the batch-gate deferral directive (orchestrate-build-dispatch.sh's "## Batch Gate
@@ -4194,16 +4190,16 @@ EOF
 g27_h7=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f7")
 g27_h8=$(bash -c "$g27_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g27_f8")
 if [ -n "$g27_h7" ] && [ -n "$g27_h8" ] && [ "$g27_h7" != "$g27_h8" ]; then
-  pass "Group 27 Case G: dispatch hashes differ when only the Batch Gate Deferral section's presence differs (deliberately unstripped, like Territory)"
+  common_test_pass "Group 27 Case G: dispatch hashes differ when only the Batch Gate Deferral section's presence differs (deliberately unstripped, like Territory)"
 else
-  fail "Group 27 Case G: expected different digests for presence/absence of Batch Gate Deferral, got '$g27_h7' vs '$g27_h8'"
+  common_test_fail "Group 27 Case G: expected different digests for presence/absence of Batch Gate Deferral, got '$g27_h7' vs '$g27_h8'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 28: Fix 2 (Phase 2) -- halt on a second consecutive identical dispatch (N=2). Verification
 # arm (5): the same dispatch fired twice with identical content stops the run for that task.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 28: identical-dispatch halt, inline back-out, and the halted-set exclusion"
+common_test_info "Group 28: identical-dispatch halt, inline back-out, and the halted-set exclusion"
 
 write_state <<'EOF'
 {
@@ -4219,15 +4215,15 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g28halt.json"
 # Cycle 1: an ordinary, first-ever dispatch -- dispatches ok, streak=1, no halt.
 run_sut --session g28halt --no-plan-cache -- 2801
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 2801 and .phase == "research")) | length')" = "1" ]; then
-  pass "Group 28: cycle 1 dispatches candidate #2801 normally"
+  common_test_pass "Group 28: cycle 1 dispatches candidate #2801 normally"
 else
-  fail "Group 28: cycle 1 did not dispatch candidate #2801 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+  common_test_fail "Group 28: cycle 1 did not dispatch candidate #2801 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
 fi
 g28_status_after_1=$(jq -r '.active_projects[] | select(.project_number == 2801) | .status' "$STATE_FILE")
 if [ "$g28_status_after_1" = "researching" ]; then
-  pass "Group 28: cycle 1's preflight write actually changed status to 'researching'"
+  common_test_pass "Group 28: cycle 1's preflight write actually changed status to 'researching'"
 else
-  fail "Group 28: expected status 'researching' after cycle 1's preflight write, got '$g28_status_after_1'"
+  common_test_fail "Group 28: expected status 'researching' after cycle 1's preflight write, got '$g28_status_after_1'"
 fi
 # Snapshot the exact pre-image cycle 2's own halt must restore -- cycle 2's own preflight write
 # would have overwritten last_updated/session_id with ITS OWN fresh values even though status is
@@ -4245,25 +4241,25 @@ g28_dispatch_1_present=1
 # effect from this cycle backed out.
 run_sut --session g28halt --no-plan-cache -- 2801
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | length')" = "0" ]; then
-  pass "Group 28: cycle 2 (identical content) issues ZERO dispatch rows -- halted, not re-dispatched"
+  common_test_pass "Group 28: cycle 2 (identical content) issues ZERO dispatch rows -- halted, not re-dispatched"
 else
-  fail "Group 28: cycle 2 unexpectedly dispatched (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+  common_test_fail "Group 28: cycle 2 unexpectedly dispatched (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
 fi
 if [ "$(jqf '.blocked | map(select(.task == 2801)) | length')" = "1" ]; then
-  pass "Group 28: cycle 2 reports candidate #2801 in blocked[] -- visible, never a silent skip"
+  common_test_pass "Group 28: cycle 2 reports candidate #2801 in blocked[] -- visible, never a silent skip"
 else
-  fail "Group 28: expected candidate #2801 in blocked[] after the halt, got: $LAST_STDOUT"
+  common_test_fail "Group 28: expected candidate #2801 in blocked[] after the halt, got: $LAST_STDOUT"
 fi
 g28_blocked_reason=$(jqf '.blocked | map(select(.task == 2801)) | .[0].reason // ""')
 if [[ "$g28_blocked_reason" == *"identical-dispatch convergence guard"* ]] && [[ "$g28_blocked_reason" == *"2 times in a row"* ]]; then
-  pass "Group 28: the blocked[] reason names the guard and the streak"
+  common_test_pass "Group 28: the blocked[] reason names the guard and the streak"
 else
-  fail "Group 28: blocked[] reason missing the expected text, got: '$g28_blocked_reason'"
+  common_test_fail "Group 28: blocked[] reason missing the expected text, got: '$g28_blocked_reason'"
 fi
 if [[ "$LAST_STDERR" == *"IDENTICAL DISPATCH HALT:"* ]]; then
-  pass "Group 28: the named IDENTICAL DISPATCH HALT notice fires on stderr"
+  common_test_pass "Group 28: the named IDENTICAL DISPATCH HALT notice fires on stderr"
 else
-  fail "Group 28: expected the IDENTICAL DISPATCH HALT notice on stderr, got: $LAST_STDERR"
+  common_test_fail "Group 28: expected the IDENTICAL DISPATCH HALT notice on stderr, got: $LAST_STDERR"
 fi
 
 # Back-out assertion 1: state.json status/last_updated/session_id restored to the EXACT pre-image
@@ -4274,46 +4270,46 @@ g28_status_after_2=$(jq -r '.active_projects[] | select(.project_number == 2801)
 g28_lu_after_2=$(jq -r '.active_projects[] | select(.project_number == 2801) | .last_updated // ""' "$STATE_FILE")
 g28_sid_after_2=$(jq -r '.active_projects[] | select(.project_number == 2801) | .session_id // ""' "$STATE_FILE")
 if [ "$g28_status_after_2" = "$g28_status_after_1" ] && [ "$g28_lu_after_2" = "$g28_lu_after_1" ] && [ "$g28_sid_after_2" = "$g28_sid_after_1" ]; then
-  pass "Group 28: state.json status/last_updated/session_id restored to cycle 1's exact post-write pre-image"
+  common_test_pass "Group 28: state.json status/last_updated/session_id restored to cycle 1's exact post-write pre-image"
 else
-  fail "Group 28: expected status='$g28_status_after_1' last_updated='$g28_lu_after_1' session_id='$g28_sid_after_1', got status='$g28_status_after_2' last_updated='$g28_lu_after_2' session_id='$g28_sid_after_2'"
+  common_test_fail "Group 28: expected status='$g28_status_after_1' last_updated='$g28_lu_after_1' session_id='$g28_sid_after_1', got status='$g28_status_after_2' last_updated='$g28_lu_after_2' session_id='$g28_sid_after_2'"
 fi
 
 # Back-out assertion 2: the just-written .dispatch/2.md file is gone.
 if [ ! -f "$WORKDIR/specs/2801_g28_halt/.dispatch/2.md" ]; then
-  pass "Group 28: the halted cycle's .dispatch/2.md file was removed"
+  common_test_pass "Group 28: the halted cycle's .dispatch/2.md file was removed"
 else
-  fail "Group 28: .dispatch/2.md unexpectedly still exists after the halt"
+  common_test_fail "Group 28: .dispatch/2.md unexpectedly still exists after the halt"
 fi
 # Cycle 1's own dispatch file is untouched -- the back-out only removes THIS cycle's own file.
 if [ "$g28_dispatch_1_present" -eq 0 ] && [ -f "$WORKDIR/specs/2801_g28_halt/.dispatch/1.md" ]; then
-  pass "Group 28: cycle 1's own .dispatch/1.md file is untouched by cycle 2's back-out"
+  common_test_pass "Group 28: cycle 1's own .dispatch/1.md file is untouched by cycle 2's back-out"
 else
-  fail "Group 28: cycle 1's .dispatch/1.md file was unexpectedly affected"
+  common_test_fail "Group 28: cycle 1's .dispatch/1.md file was unexpectedly affected"
 fi
 
 # Back-out assertion 3: the task lock is released.
 if [ ! -d "$WORKDIR/specs/2801_g28_halt/.lock" ]; then
-  pass "Group 28: the task lock was released by the halt back-out"
+  common_test_pass "Group 28: the task lock was released by the halt back-out"
 else
-  fail "Group 28: the task lock is still held after the halt back-out"
+  common_test_fail "Group 28: the task lock is still held after the halt back-out"
 fi
 
 # Back-out assertion 4: the durable dispatch_seq_counter did NOT advance past cycle 1's value --
 # the halted cycle never flushed a second charge.
 g28_seq_counter_after_2=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/2801_g28_halt/.orchestrator-loop-guard")
 if [ "$g28_seq_counter_after_2" = "$g28_seq_counter_after_1" ]; then
-  pass "Group 28: the durable dispatch_seq_counter did not advance past the halted cycle ($g28_seq_counter_after_1 -> $g28_seq_counter_after_2)"
+  common_test_pass "Group 28: the durable dispatch_seq_counter did not advance past the halted cycle ($g28_seq_counter_after_1 -> $g28_seq_counter_after_2)"
 else
-  fail "Group 28: expected the durable dispatch_seq_counter to stay at $g28_seq_counter_after_1, got $g28_seq_counter_after_2"
+  common_test_fail "Group 28: expected the durable dispatch_seq_counter to stay at $g28_seq_counter_after_1, got $g28_seq_counter_after_2"
 fi
 
 # Back-out assertion 5: the per-task cycle budget was not charged a second time.
 g28_cycle_count_after_2=$(jq -r '.cycle_counts["2801"] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g28halt.json")
 if [ "$g28_cycle_count_after_2" = "$g28_cycle_count_after_1" ]; then
-  pass "Group 28: the per-task cycle budget was not charged for the halted cycle ($g28_cycle_count_after_1 -> $g28_cycle_count_after_2)"
+  common_test_pass "Group 28: the per-task cycle budget was not charged for the halted cycle ($g28_cycle_count_after_1 -> $g28_cycle_count_after_2)"
 else
-  fail "Group 28: expected cycle_counts unchanged at $g28_cycle_count_after_1, got $g28_cycle_count_after_2"
+  common_test_fail "Group 28: expected cycle_counts unchanged at $g28_cycle_count_after_1, got $g28_cycle_count_after_2"
 fi
 
 # Cycle 3: a subsequent cycle emits the same blocked[] reason and dispatches nothing for this
@@ -4321,9 +4317,9 @@ fi
 run_sut --session g28halt --no-plan-cache -- 2801
 if [ "$(jqf '.dispatch | map(select(.task == 2801)) | length')" = "0" ] && \
    [ "$(jqf '.blocked | map(select(.task == 2801)) | length')" = "1" ]; then
-  pass "Group 28: cycle 3 (a later cycle) still excludes candidate #2801 via blocked[], dispatching nothing"
+  common_test_pass "Group 28: cycle 3 (a later cycle) still excludes candidate #2801 via blocked[], dispatching nothing"
 else
-  fail "Group 28: cycle 3 did not keep candidate #2801 excluded (stdout: $LAST_STDOUT)"
+  common_test_fail "Group 28: cycle 3 did not keep candidate #2801 excluded (stdout: $LAST_STDOUT)"
 fi
 
 # ── Regression guard: a non-repeating multi-task composition is unaffected -- two brand-new
@@ -4341,9 +4337,9 @@ rm -rf "$WORKDIR/specs/2802_g28_norepeat_a" "$WORKDIR/specs/2803_g28_norepeat_b"
 rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g28norepeat.json"
 run_sut --session g28norepeat --no-plan-cache -- 2802 2803
 if [ "$(jqf '.dispatch | length')" = "2" ] && [ "$(jqf '.blocked | length')" = "0" ]; then
-  pass "Group 28: a non-repeating two-candidate composition dispatches both, with zero blocked[] rows"
+  common_test_pass "Group 28: a non-repeating two-candidate composition dispatches both, with zero blocked[] rows"
 else
-  fail "Group 28: non-repeating composition regression -- expected 2 dispatch rows and 0 blocked rows, got: $LAST_STDOUT"
+  common_test_fail "Group 28: non-repeating composition regression -- expected 2 dispatch rows and 0 blocked rows, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -4364,7 +4360,7 @@ fi
 #
 # Additive only: every assertion below is new. No existing Group 1-28 case is modified.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 29: deploy_pending vs identical-dispatch guard composition (reproduction + regression)"
+common_test_info "Group 29: deploy_pending vs identical-dispatch guard composition (reproduction + regression)"
 
 # Install the REAL reconcile-task-status.sh and its own remaining dependency chain (state-write.sh,
 # generate-todo.sh, update-task-status.sh, and lib/status-vocabulary.sh are already real as of
@@ -4485,25 +4481,25 @@ write_g11_verify_stub "" "" 0
 write_g11_deploy_headless_stub 0
 run_sut --session g29_a --no-plan-cache -- 9201
 if [[ "$LAST_STDERR" == *"post-deploy reconcile for task #9201"*"promoted"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
-  pass "Arm A: the post-deploy reconcile line fires and reports 'promoted'"
+  common_test_pass "Arm A: the post-deploy reconcile line fires and reports 'promoted'"
 else
-  fail "Arm A: expected a promoted post-deploy reconcile line on stderr, got: $LAST_STDERR"
+  common_test_fail "Arm A: expected a promoted post-deploy reconcile line on stderr, got: $LAST_STDERR"
 fi
 a_status="$(jq -r '.active_projects[] | select(.project_number == 9201) | .status' "$STATE_FILE")"
 if [ "$a_status" = "completed" ]; then
-  pass "Arm A: candidate #9201's state.json status becomes 'completed' within this single run"
+  common_test_pass "Arm A: candidate #9201's state.json status becomes 'completed' within this single run"
 else
-  fail "Arm A: expected status 'completed', got '$a_status'"
+  common_test_fail "Arm A: expected status 'completed', got '$a_status'"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 9201 and .phase == "implement")) | length')" = "0" ]; then
-  pass "Arm A: zero implement dispatch rows are emitted for candidate #9201"
+  common_test_pass "Arm A: zero implement dispatch rows are emitted for candidate #9201"
 else
-  fail "Arm A: an implement dispatch row was unexpectedly emitted for candidate #9201 (stdout: $LAST_STDOUT)"
+  common_test_fail "Arm A: an implement dispatch row was unexpectedly emitted for candidate #9201 (stdout: $LAST_STDOUT)"
 fi
 if [ "$(jq -r '.deploy_pending // "absent"' "$WORKDIR/specs/9201_g29_arm_a/.return-meta.json")" = "absent" ]; then
-  pass "Arm A: deploy_pending is cleared from .return-meta.json after the promotion"
+  common_test_pass "Arm A: deploy_pending is cleared from .return-meta.json after the promotion"
 else
-  fail "Arm A: deploy_pending was not cleared from .return-meta.json after the promotion"
+  common_test_fail "Arm A: deploy_pending was not cleared from .return-meta.json after the promotion"
 fi
 
 # ── Arm B (dispatch verification item 2): guard still live -- a candidate with a complete plan
@@ -4513,20 +4509,20 @@ g29_seed_state_and_mt "g29_b" '[]' 9202 "g29_arm_b" "implementing"
 g29_write_task_fixture 9202 "g29_arm_b" "false" '[]' "false"
 run_sut --session g29_b --no-plan-cache -- 9202
 if [ "$(jqf '.dispatch | map(select(.task == 9202 and .phase == "implement")) | length')" = "1" ]; then
-  pass "Arm B: cycle 1 dispatches the non-deploy-pending candidate normally"
+  common_test_pass "Arm B: cycle 1 dispatches the non-deploy-pending candidate normally"
 else
-  fail "Arm B: cycle 1 did not dispatch candidate #9202 (stdout: $LAST_STDOUT)"
+  common_test_fail "Arm B: cycle 1 did not dispatch candidate #9202 (stdout: $LAST_STDOUT)"
 fi
 run_sut --session g29_b --no-plan-cache -- 9202
 if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.blocked | map(select(.task == 9202)) | length')" = "1" ]; then
-  pass "Arm B: cycle 2 (identical content, no deploy_pending marker) is halted -- guard fully live"
+  common_test_pass "Arm B: cycle 2 (identical content, no deploy_pending marker) is halted -- guard fully live"
 else
-  fail "Arm B: expected cycle 2 to halt candidate #9202, got: $LAST_STDOUT"
+  common_test_fail "Arm B: expected cycle 2 to halt candidate #9202, got: $LAST_STDOUT"
 fi
 if [[ "$LAST_STDERR" == *"IDENTICAL DISPATCH HALT: task #9202"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
-  pass "Arm B: the IDENTICAL DISPATCH HALT notice fires on stderr"
+  common_test_pass "Arm B: the IDENTICAL DISPATCH HALT notice fires on stderr"
 else
-  fail "Arm B: expected the IDENTICAL DISPATCH HALT notice for candidate #9202, got: $LAST_STDERR"
+  common_test_fail "Arm B: expected the IDENTICAL DISPATCH HALT notice for candidate #9202, got: $LAST_STDERR"
 fi
 
 # ── Arm C (streak-freeze, per-candidate scope): a two-candidate fixture where only ONE carries
@@ -4543,35 +4539,35 @@ g29_write_task_fixture 9204 "g29_arm_c_plain" "false" '[]' "false"
 run_sut --session g29_c --no-plan-cache -- 9203 9204
 c_dispatch_count_1=$(jqf '.dispatch | length')
 if [ "$c_dispatch_count_1" = "2" ]; then
-  pass "Arm C: cycle 1 dispatches both candidates normally"
+  common_test_pass "Arm C: cycle 1 dispatches both candidates normally"
 else
-  fail "Arm C: cycle 1 expected 2 dispatch rows, got $c_dispatch_count_1 (stdout: $LAST_STDOUT)"
+  common_test_fail "Arm C: cycle 1 expected 2 dispatch rows, got $c_dispatch_count_1 (stdout: $LAST_STDOUT)"
 fi
 mt_c="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g29_c.json"
 c_streak_9203_after_1=$(jq -r '.identical_dispatch_streak["9203"] // 0' "$mt_c")
 
 run_sut --session g29_c --no-plan-cache -- 9203 9204
 if [ "$(jqf '.dispatch | map(select(.task == 9203 and .phase == "implement")) | length')" = "1" ]; then
-  pass "Arm C: cycle 2 still dispatches the deploy-pending candidate #9203 -- not halted by the freeze"
+  common_test_pass "Arm C: cycle 2 still dispatches the deploy-pending candidate #9203 -- not halted by the freeze"
 else
-  fail "Arm C: candidate #9203 was unexpectedly halted or missing from dispatch (stdout: $LAST_STDOUT)"
+  common_test_fail "Arm C: candidate #9203 was unexpectedly halted or missing from dispatch (stdout: $LAST_STDOUT)"
 fi
 c_streak_9203_after_2=$(jq -r '.identical_dispatch_streak["9203"] // 0' "$mt_c")
 if [ "$c_streak_9203_after_2" = "$c_streak_9203_after_1" ]; then
-  pass "Arm C: candidate #9203's identical_dispatch_streak is unchanged by the second identical cycle (frozen at $c_streak_9203_after_1)"
+  common_test_pass "Arm C: candidate #9203's identical_dispatch_streak is unchanged by the second identical cycle (frozen at $c_streak_9203_after_1)"
 else
-  fail "Arm C: expected identical_dispatch_streak unchanged at $c_streak_9203_after_1, got $c_streak_9203_after_2"
+  common_test_fail "Arm C: expected identical_dispatch_streak unchanged at $c_streak_9203_after_1, got $c_streak_9203_after_2"
 fi
 if [[ "$LAST_STDERR" == *"task #9203 implement content matches the previous one, but the task is deploy-pending"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
-  pass "Arm C: the distinct streak-freeze stderr notice fires for candidate #9203"
+  common_test_pass "Arm C: the distinct streak-freeze stderr notice fires for candidate #9203"
 else
-  fail "Arm C: expected the streak-freeze notice for candidate #9203, got: $LAST_STDERR"
+  common_test_fail "Arm C: expected the streak-freeze notice for candidate #9203, got: $LAST_STDERR"
 fi
 if [ "$(jqf '.dispatch | map(select(.task == 9204)) | length')" = "0" ] && \
    [ "$(jqf '.blocked | map(select(.task == 9204)) | length')" = "1" ]; then
-  pass "Arm C: the sibling WITHOUT a deploy_pending marker (candidate #9204) still halts normally"
+  common_test_pass "Arm C: the sibling WITHOUT a deploy_pending marker (candidate #9204) still halts normally"
 else
-  fail "Arm C: expected candidate #9204 to halt on cycle 2 same as Arm B, got: $LAST_STDOUT"
+  common_test_fail "Arm C: expected candidate #9204 to halt on cycle 2 same as Arm B, got: $LAST_STDOUT"
 fi
 
 # ── Arm D (marker clearing closes the freeze): simulates the POST-clearing state Phase 1's
@@ -4586,9 +4582,9 @@ g29_write_task_fixture 9205 "g29_arm_d" "false" '[]' "false"
 run_sut --session g29_d --no-plan-cache -- 9205
 run_sut --session g29_d --no-plan-cache -- 9205
 if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.blocked | map(select(.task == 9205)) | length')" = "1" ]; then
-  pass "Arm D: once deploy_pending is absent (the post-clearing state), a genuine identical-dispatch repeat halts normally"
+  common_test_pass "Arm D: once deploy_pending is absent (the post-clearing state), a genuine identical-dispatch repeat halts normally"
 else
-  fail "Arm D: expected candidate #9205 to halt on cycle 2 with no deploy_pending marker present, got: $LAST_STDOUT"
+  common_test_fail "Arm D: expected candidate #9205 to halt on cycle 2 with no deploy_pending marker present, got: $LAST_STDOUT"
 fi
 
 # ── Arm E (dispatch verification item 3, negative control): failure path -- deploy-headless.sh
@@ -4601,15 +4597,15 @@ write_g11_verify_stub "" "" 0
 write_g11_deploy_headless_stub 1
 run_sut --session g29_e --no-plan-cache -- 9206
 if [[ "$LAST_STDERR" != *"post-deploy reconcile for task #9206"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
-  pass "Arm E: no post-deploy reconcile line fires when the deploy itself did not land"
+  common_test_pass "Arm E: no post-deploy reconcile line fires when the deploy itself did not land"
 else
-  fail "Arm E: an unexpected post-deploy reconcile line fired despite deploy-headless.sh exit 1, got: $LAST_STDERR"
+  common_test_fail "Arm E: an unexpected post-deploy reconcile line fired despite deploy-headless.sh exit 1, got: $LAST_STDERR"
 fi
 e_status="$(jq -r '.active_projects[] | select(.project_number == 9206) | .status' "$STATE_FILE")"
 if [ "$e_status" = "implementing" ]; then
-  pass "Arm E: candidate #9206's status is left unchanged (still implementing) when the deploy did not land"
+  common_test_pass "Arm E: candidate #9206's status is left unchanged (still implementing) when the deploy did not land"
 else
-  fail "Arm E: expected status 'implementing' unchanged, got '$e_status'"
+  common_test_fail "Arm E: expected status 'implementing' unchanged, got '$e_status'"
 fi
 
 # ── Arm F (dispatch verification item 4 -- NEW: batch ledger + scoped commit): a post-deploy
@@ -4643,39 +4639,39 @@ run_sut --session g29_f --no-plan-cache -- 9207
 # the new ledger/commit assertions below -- so a RED result on those is attributable to the
 # missing ledger-append/commit, never to a broken fixture.
 if [[ "$LAST_STDERR" == *"post-deploy reconcile for task #9207"*"promoted"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
-  pass "Arm F: the post-deploy reconcile line fires and reports 'promoted' (baseline)"
+  common_test_pass "Arm F: the post-deploy reconcile line fires and reports 'promoted' (baseline)"
 else
-  fail "Arm F: expected a promoted post-deploy reconcile line on stderr, got: $LAST_STDERR"
+  common_test_fail "Arm F: expected a promoted post-deploy reconcile line on stderr, got: $LAST_STDERR"
 fi
 f_status="$(jq -r '.active_projects[] | select(.project_number == 9207) | .status' "$STATE_FILE")"
 if [ "$f_status" = "completed" ]; then
-  pass "Arm F: candidate #9207's state.json status becomes 'completed' within this single run (baseline)"
+  common_test_pass "Arm F: candidate #9207's state.json status becomes 'completed' within this single run (baseline)"
 else
-  fail "Arm F: expected status 'completed', got '$f_status' (baseline)"
+  common_test_fail "Arm F: expected status 'completed', got '$f_status' (baseline)"
 fi
 
 # NEW assertion (i): the batch ledger reflects the promotion.
 mt_f="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g29_f.json"
 if jq -e '(.completed_tasks // []) | index(9207) != null' "$mt_f" >/dev/null 2>&1; then
-  pass "Arm F: candidate #9207 is appended to the batch's .completed_tasks ledger"
+  common_test_pass "Arm F: candidate #9207 is appended to the batch's .completed_tasks ledger"
 else
-  fail "Arm F: expected 9207 in .completed_tasks, got: $(jq -c '.completed_tasks // []' "$mt_f" 2>/dev/null)"
+  common_test_fail "Arm F: expected 9207 in .completed_tasks, got: $(jq -c '.completed_tasks // []' "$mt_f" 2>/dev/null)"
 fi
 
 # NEW assertion (ii): the promotion issues its own scoped commit -- HEAD must advance.
 g29_f_after_head="$(cd "$WORKDIR" && git rev-parse HEAD)"
 if [ "$g29_f_before_head" != "$g29_f_after_head" ]; then
-  pass "Arm F: the promotion's own scoped commit advances HEAD"
+  common_test_pass "Arm F: the promotion's own scoped commit advances HEAD"
 else
-  fail "Arm F: expected HEAD to advance from the promotion's own commit, still at $g29_f_before_head"
+  common_test_fail "Arm F: expected HEAD to advance from the promotion's own commit, still at $g29_f_before_head"
 fi
 
 # NEW assertion (iii): no uncommitted completion transition is left behind.
 g29_f_porcelain="$(cd "$WORKDIR" && git status --porcelain -- specs/state.json specs/TODO.md)"
 if [ -z "$g29_f_porcelain" ]; then
-  pass "Arm F: no uncommitted residue in specs/state.json or specs/TODO.md after the promotion"
+  common_test_pass "Arm F: no uncommitted residue in specs/state.json or specs/TODO.md after the promotion"
 else
-  fail "Arm F: expected no uncommitted residue, got: $g29_f_porcelain"
+  common_test_fail "Arm F: expected no uncommitted residue, got: $g29_f_porcelain"
 fi
 
 # ── Arm G (this task's own acceptance fixture -- checkpoint branch (c), self-attribution
@@ -4700,41 +4696,41 @@ write_g11_deploy_headless_stub 3
 run_sut --session g29_g --no-plan-cache -- 9208 9209
 mt_g="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g29_g.json"
 if [ "$(jq -r '.deferred_deploy_checkpoint | length' "$mt_g" 2>/dev/null)" = "0" ]; then
-  pass "Arm G: the batch is NOT deferred (branch (c)'s own batch-level verdict is unchanged)"
+  common_test_pass "Arm G: the batch is NOT deferred (branch (c)'s own batch-level verdict is unchanged)"
 else
-  fail "Arm G: batch was unexpectedly deferred (mt_state: $(cat "$mt_g" 2>/dev/null))"
+  common_test_fail "Arm G: batch was unexpectedly deferred (mt_state: $(cat "$mt_g" 2>/dev/null))"
 fi
 g_status_9208="$(jq -r '.active_projects[] | select(.project_number == 9208) | .status' "$STATE_FILE")"
 if [ "$g_status_9208" = "implementing" ]; then
-  pass "Arm G: self-attributed candidate #9208 is WITHHELD -- stays 'implementing', not promoted"
+  common_test_pass "Arm G: self-attributed candidate #9208 is WITHHELD -- stays 'implementing', not promoted"
 else
-  fail "Arm G: expected #9208 to stay 'implementing' (withheld), got '$g_status_9208'"
+  common_test_fail "Arm G: expected #9208 to stay 'implementing' (withheld), got '$g_status_9208'"
 fi
 g_status_9209="$(jq -r '.active_projects[] | select(.project_number == 9209) | .status' "$STATE_FILE")"
 if [ "$g_status_9209" = "completed" ]; then
-  pass "Arm G: the non-self-attributed sibling #9209, in the SAME batch, still reconciles to 'completed'"
+  common_test_pass "Arm G: the non-self-attributed sibling #9209, in the SAME batch, still reconciles to 'completed'"
 else
-  fail "Arm G: expected sibling #9209 to reconcile to 'completed', got '$g_status_9209'"
+  common_test_fail "Arm G: expected sibling #9209 to reconcile to 'completed', got '$g_status_9209'"
 fi
 if [ "$(jq -r '.verify_deploy_baseline_notices[-1].self_attributed_withheld | index(9208) != null' "$mt_g" 2>/dev/null)" = "true" ]; then
-  pass "Arm G: the baseline notice names #9208 in self_attributed_withheld"
+  common_test_pass "Arm G: the baseline notice names #9208 in self_attributed_withheld"
 else
-  fail "Arm G: expected #9208 in the baseline notice's self_attributed_withheld (mt_state: $(cat "$mt_g" 2>/dev/null))"
+  common_test_fail "Arm G: expected #9208 in the baseline notice's self_attributed_withheld (mt_state: $(cat "$mt_g" 2>/dev/null))"
 fi
 if [ "$(jq -r '.verify_deploy_baseline_notices[-1].self_attribution_notices | map(select(.task == 9208)) | length' "$mt_g" 2>/dev/null)" = "1" ]; then
-  pass "Arm G: the baseline notice's self_attribution_notices names #9208's attributing finding"
+  common_test_pass "Arm G: the baseline notice's self_attribution_notices names #9208's attributing finding"
 else
-  fail "Arm G: expected exactly one self_attribution_notices entry for #9208 (mt_state: $(cat "$mt_g" 2>/dev/null))"
+  common_test_fail "Arm G: expected exactly one self_attribution_notices entry for #9208 (mt_state: $(cat "$mt_g" 2>/dev/null))"
 fi
 if [ "$(jq -r '.deploy_pending // "absent"' "$WORKDIR/specs/9209_g29_arm_g_sibling/.return-meta.json")" = "absent" ]; then
-  pass "Arm G: deploy_pending is cleared from #9209's .return-meta.json after its promotion"
+  common_test_pass "Arm G: deploy_pending is cleared from #9209's .return-meta.json after its promotion"
 else
-  fail "Arm G: deploy_pending was not cleared from #9209's .return-meta.json"
+  common_test_fail "Arm G: deploy_pending was not cleared from #9209's .return-meta.json"
 fi
 if [ "$(jq -r '.deploy_pending // "absent"' "$WORKDIR/specs/9208_g29_arm_g_self/.return-meta.json")" = "true" ]; then
-  pass "Arm G: deploy_pending remains true on #9208's .return-meta.json (withheld, not promoted, not cleared)"
+  common_test_pass "Arm G: deploy_pending remains true on #9208's .return-meta.json (withheld, not promoted, not cleared)"
 else
-  fail "Arm G: expected deploy_pending to remain true on #9208's .return-meta.json (withheld)"
+  common_test_fail "Arm G: expected deploy_pending to remain true on #9208's .return-meta.json (withheld)"
 fi
 
 # Arm G negative control -- SELF_ATTRIBUTION_GATE_MODE=off restores the exact pre-screen
@@ -4748,9 +4744,9 @@ write_g11_deploy_headless_stub 3
 SELF_ATTRIBUTION_GATE_MODE=off run_sut --session g29_g_off --no-plan-cache -- 9210
 g_off_status_9210="$(jq -r '.active_projects[] | select(.project_number == 9210) | .status' "$STATE_FILE")"
 if [ "$g_off_status_9210" = "completed" ]; then
-  pass "Arm G (off mode): SELF_ATTRIBUTION_GATE_MODE=off restores the pre-screen behavior -- #9210 promotes despite self-attribution"
+  common_test_pass "Arm G (off mode): SELF_ATTRIBUTION_GATE_MODE=off restores the pre-screen behavior -- #9210 promotes despite self-attribution"
 else
-  fail "Arm G (off mode): expected #9210 to promote under mode=off, got '$g_off_status_9210'"
+  common_test_fail "Arm G (off mode): expected #9210 to promote under mode=off, got '$g_off_status_9210'"
 fi
 
 # Arm-scoped git repo teardown -- Groups 31-33b below must see the same non-git $WORKDIR they
@@ -4821,7 +4817,7 @@ chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
 # in a bare `bash -c`), proving that branch is correct even though live traffic never reaches it
 # through this integration path.
 # =====================================================================================================
-info "Group 31: contended-path manifest producer (build_contended_manifest)"
+common_test_info "Group 31: contended-path manifest producer (build_contended_manifest)"
 
 MANIFEST_DIR="$WORKDIR/specs/.contention-manifest"
 
@@ -4840,35 +4836,35 @@ reset_lock_dirs
 run_sut --session g31a -- 3101 3102
 g31a_dispatched=$(jqf '.dispatch | length')
 if [ "$g31a_dispatched" = "2" ]; then
-  pass "Case A: both candidates admit together (glob-vs-concrete is invisible to admission's Overlap predicate)"
+  common_test_pass "Case A: both candidates admit together (glob-vs-concrete is invisible to admission's Overlap predicate)"
 else
-  fail "Case A: expected both candidates admitted (glob blind spot), got $g31a_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case A: expected both candidates admitted (glob blind spot), got $g31a_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 g31a_manifest="$MANIFEST_DIR/g31a.json"
 if [ -f "$g31a_manifest" ]; then
-  pass "Case A: manifest file written for the glob-vs-concrete cycle"
+  common_test_pass "Case A: manifest file written for the glob-vs-concrete cycle"
 else
-  fail "Case A: expected manifest file at $g31a_manifest (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case A: expected manifest file at $g31a_manifest (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 # Row order is not asserted (bash associative-array key iteration order is unspecified) --
 # each row is looked up by its own .path instead of comparing the whole array positionally.
 a_glob_row=$(jq -c '.contended[] | select(.path == "docs/glob/*.md")' "$g31a_manifest" 2>/dev/null)
 a_file_row=$(jq -c '.contended[] | select(.path == "docs/glob/target.md")' "$g31a_manifest" 2>/dev/null)
 if [ "$a_glob_row" = '{"path":"docs/glob/*.md","tasks":[3101,3102],"granularity":"glob"}' ]; then
-  pass "Case A: the glob entry (docs/glob/*.md) lists both tasks, granularity=glob"
+  common_test_pass "Case A: the glob entry (docs/glob/*.md) lists both tasks, granularity=glob"
 else
-  fail "Case A: unexpected glob row: $a_glob_row"
+  common_test_fail "Case A: unexpected glob row: $a_glob_row"
 fi
 if [ "$a_file_row" = '{"path":"docs/glob/target.md","tasks":[3101,3102],"granularity":"file"}' ]; then
-  pass "Case A: the concrete file it matches also lists both tasks, granularity=file"
+  common_test_pass "Case A: the concrete file it matches also lists both tasks, granularity=file"
 else
-  fail "Case A: unexpected file row: $a_file_row"
+  common_test_fail "Case A: unexpected file row: $a_file_row"
 fi
 a_contended_count=$(jq '.contended | length' "$g31a_manifest" 2>/dev/null)
 if [ "$a_contended_count" = "2" ]; then
-  pass "Case A: exactly two contended rows (the glob entry and the file entry), each exactly once"
+  common_test_pass "Case A: exactly two contended rows (the glob entry and the file entry), each exactly once"
 else
-  fail "Case A: expected exactly 2 contended rows, got $a_contended_count"
+  common_test_fail "Case A: expected exactly 2 contended rows, got $a_contended_count"
 fi
 
 # Case B: same glob-blind-spot shape, this time framed as a "family of files" glob standing in for
@@ -4887,28 +4883,28 @@ reset_lock_dirs
 run_sut --session g31b -- 3103 3104
 g31b_dispatched=$(jqf '.dispatch | length')
 if [ "$g31b_dispatched" = "2" ]; then
-  pass "Case B: both candidates admit together (glob-as-coarse-scope is also invisible to admission)"
+  common_test_pass "Case B: both candidates admit together (glob-as-coarse-scope is also invisible to admission)"
 else
-  fail "Case B: expected both candidates admitted, got $g31b_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case B: expected both candidates admitted, got $g31b_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 g31b_manifest="$MANIFEST_DIR/g31b.json"
 b_glob_row=$(jq -c '.contended[] | select(.path == "lib/config/*")' "$g31b_manifest" 2>/dev/null)
 b_file_row=$(jq -c '.contended[] | select(.path == "lib/config/settings.md")' "$g31b_manifest" 2>/dev/null)
 if [ "$b_glob_row" = '{"path":"lib/config/*","tasks":[3103,3104],"granularity":"glob"}' ]; then
-  pass "Case B: the glob entry (lib/config/*) lists both tasks, granularity=glob"
+  common_test_pass "Case B: the glob entry (lib/config/*) lists both tasks, granularity=glob"
 else
-  fail "Case B: unexpected glob row: $b_glob_row"
+  common_test_fail "Case B: unexpected glob row: $b_glob_row"
 fi
 if [ "$b_file_row" = '{"path":"lib/config/settings.md","tasks":[3103,3104],"granularity":"file"}' ]; then
-  pass "Case B: the concrete file it covers also lists both tasks, granularity=file"
+  common_test_pass "Case B: the concrete file it covers also lists both tasks, granularity=file"
 else
-  fail "Case B: unexpected file row: $b_file_row"
+  common_test_fail "Case B: unexpected file row: $b_file_row"
 fi
 b_contended_count=$(jq '.contended | length' "$g31b_manifest" 2>/dev/null)
 if [ "$b_contended_count" = "2" ]; then
-  pass "Case B: exactly two contended rows (the glob entry and the file entry), each exactly once"
+  common_test_pass "Case B: exactly two contended rows (the glob entry and the file entry), each exactly once"
 else
-  fail "Case B: expected exactly 2 contended rows, got $b_contended_count"
+  common_test_fail "Case B: expected exactly 2 contended rows, got $b_contended_count"
 fi
 
 # Case C: disjoint scopes -- no manifest entry (and no manifest file at all, since the empty
@@ -4925,9 +4921,9 @@ reset_lock_dirs
 run_sut --session g31c -- 3105 3106
 g31c_manifest="$MANIFEST_DIR/g31c.json"
 if [ ! -f "$g31c_manifest" ]; then
-  pass "Case C: disjoint file_scope entries produce no manifest file at all"
+  common_test_pass "Case C: disjoint file_scope entries produce no manifest file at all"
 else
-  fail "Case C: expected no manifest file for disjoint scopes, found: $(cat "$g31c_manifest" 2>/dev/null)"
+  common_test_fail "Case C: expected no manifest file for disjoint scopes, found: $(cat "$g31c_manifest" 2>/dev/null)"
 fi
 
 # Case D: single-task cycle -- no manifest, regardless of file_scope.
@@ -4942,9 +4938,9 @@ reset_lock_dirs
 run_sut --session g31d -- 3107
 g31d_manifest="$MANIFEST_DIR/g31d.json"
 if [ ! -f "$g31d_manifest" ]; then
-  pass "Case D: a single-task cycle writes no manifest file"
+  common_test_pass "Case D: a single-task cycle writes no manifest file"
 else
-  fail "Case D: expected no manifest file for a single-task cycle, found: $(cat "$g31d_manifest" 2>/dev/null)"
+  common_test_fail "Case D: expected no manifest file for a single-task cycle, found: $(cat "$g31d_manifest" 2>/dev/null)"
 fi
 
 # Case E: a former build-heavy (lean4) implement candidate's own declared file_scope now
@@ -4973,27 +4969,27 @@ reset_lock_dirs
 run_sut --session g31e -- 3108 3109
 g31e_manifest="$MANIFEST_DIR/g31e.json"
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case E: SUT exits 0 with the former build-heavy candidate and its sibling in the same cycle"
+  common_test_pass "Case E: SUT exits 0 with the former build-heavy candidate and its sibling in the same cycle"
 else
-  fail "Case E: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Case E: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 g31e_dispatched=$(jqf '.dispatch | length')
 if [ "$g31e_dispatched" = "2" ]; then
-  pass "Case E: both candidates admit together (glob blind spot, same mechanism as Case A)"
+  common_test_pass "Case E: both candidates admit together (glob blind spot, same mechanism as Case A)"
 else
-  fail "Case E: expected both candidates admitted, got $g31e_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case E: expected both candidates admitted, got $g31e_dispatched dispatched (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 e_concrete_row=$(jq -c '.contended[] | select(.path == "docs/shared2/file.md")' "$g31e_manifest" 2>/dev/null)
 if [ "$e_concrete_row" = '{"path":"docs/shared2/file.md","tasks":[3108,3109],"granularity":"file"}' ]; then
-  pass "Case E: the lean4 candidate's own concrete file_scope entry names BOTH tasks -- no longer excluded"
+  common_test_pass "Case E: the lean4 candidate's own concrete file_scope entry names BOTH tasks -- no longer excluded"
 else
-  fail "Case E: expected the lean4 task's concrete entry to name both tasks; got: $e_concrete_row (manifest: $(cat "$g31e_manifest" 2>/dev/null))"
+  common_test_fail "Case E: expected the lean4 task's concrete entry to name both tasks; got: $e_concrete_row (manifest: $(cat "$g31e_manifest" 2>/dev/null))"
 fi
 e_glob_row=$(jq -c '.contended[] | select(.path == "docs/shared2/*.md")' "$g31e_manifest" 2>/dev/null)
 if [ "$e_glob_row" = '{"path":"docs/shared2/*.md","tasks":[3108,3109],"granularity":"glob"}' ]; then
-  pass "Case E: the sibling's glob entry also names both tasks"
+  common_test_pass "Case E: the sibling's glob entry also names both tasks"
 else
-  fail "Case E: unexpected glob row: $e_glob_row"
+  common_test_fail "Case E: unexpected glob row: $e_glob_row"
 fi
 
 # Case F: --dry-run writes nothing, even for a 2-task cycle with a glob-vs-concrete pair that
@@ -5010,14 +5006,14 @@ reset_lock_dirs
 run_sut --session g31f --dry-run -- 3110 3111
 g31f_manifest="$MANIFEST_DIR/g31f.json"
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case F: --dry-run exits 0 for the would-contend fixture"
+  common_test_pass "Case F: --dry-run exits 0 for the would-contend fixture"
 else
-  fail "Case F: --dry-run exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Case F: --dry-run exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if [ ! -f "$g31f_manifest" ]; then
-  pass "Case F: --dry-run writes no manifest file even though the same fixture would contend live"
+  common_test_pass "Case F: --dry-run writes no manifest file even though the same fixture would contend live"
 else
-  fail "Case F: --dry-run unexpectedly wrote a manifest file: $(cat "$g31f_manifest" 2>/dev/null)"
+  common_test_fail "Case F: --dry-run unexpectedly wrote a manifest file: $(cat "$g31f_manifest" 2>/dev/null)"
 fi
 
 # Case G (unit-level, Group 27's extraction precedent): the directory-containment branch of
@@ -5029,23 +5025,23 @@ fi
 g31g_src="$CORE_DIR/lib/territory-contention-lib.sh"
 g31g_fn=$(sed -n '/^_paths_contend() {/,/^}/p' "$g31g_src")
 if [ -n "$g31g_fn" ]; then
-  pass "Case G: _paths_contend() found in territory-contention-lib.sh"
+  common_test_pass "Case G: _paths_contend() found in territory-contention-lib.sh"
 else
-  fail "Case G: could not extract _paths_contend() from $g31g_src"
+  common_test_fail "Case G: could not extract _paths_contend() from $g31g_src"
 fi
 g31g_rc=0
 bash -c "$g31g_fn"$'\n''_paths_contend "docs/notes/" "directory" "docs/notes/file.md" "file"' _ || g31g_rc=$?
 if [ "$g31g_rc" -eq 0 ]; then
-  pass "Case G: a directory entry contends with a file beneath it (rc=0)"
+  common_test_pass "Case G: a directory entry contends with a file beneath it (rc=0)"
 else
-  fail "Case G: expected rc=0 for a directory containing a file, got rc=$g31g_rc"
+  common_test_fail "Case G: expected rc=0 for a directory containing a file, got rc=$g31g_rc"
 fi
 g31g_rc2=0
 bash -c "$g31g_fn"$'\n''_paths_contend "foo/" "directory" "bar/baz.md" "file"' _ || g31g_rc2=$?
 if [ "$g31g_rc2" -eq 1 ]; then
-  pass "Case G: an unrelated directory does not contend with a disjoint file (rc=1)"
+  common_test_pass "Case G: an unrelated directory does not contend with a disjoint file (rc=1)"
 else
-  fail "Case G: expected rc=1 for disjoint paths, got rc=$g31g_rc2"
+  common_test_fail "Case G: expected rc=1 for disjoint paths, got rc=$g31g_rc2"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -5059,7 +5055,7 @@ fi
 # candidates now defers on its own) can be what fires here -- this group's own build-heavy rule is,
 # by construction, the only thing that can produce these deferred rows.
 # =====================================================================================================
-info "Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heavy implement tasks per cycle)"
+common_test_info "Group 32: Mode 2 build-heavy co-scheduling admission (never two build-heavy implement tasks per cycle)"
 
 # write_g32_metrics <project_number> <project_name> -- writes stdin as a synthetic
 # specs/{NNN}_{project_name}/metrics.jsonl fixture, matching task_lookup_dir()'s own
@@ -5092,20 +5088,20 @@ run_sut --session g32a --dry-run -- 3201 3202
 g32a_dispatched=$(jqf '.dispatch | length')
 g32a_deferred=$(jqf '.deferred | length')
 if [ "$g32a_dispatched" = "1" ] && [ "$g32a_deferred" = "1" ]; then
-  pass "Case (i): two build-heavy implement candidates in one cycle -> 1 dispatch + 1 deferred"
+  common_test_pass "Case (i): two build-heavy implement candidates in one cycle -> 1 dispatch + 1 deferred"
 else
-  fail "Case (i): expected 1 dispatch/1 deferred, got dispatch=$g32a_dispatched deferred=$g32a_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case (i): expected 1 dispatch/1 deferred, got dispatch=$g32a_dispatched deferred=$g32a_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 g32a_reason=$(jqf '.deferred[0].reason')
 if echo "$g32a_reason" | grep -q "build-heavy implement co-scheduling"; then
-  pass "Case (i): deferred row carries the new rule's own named reason"
+  common_test_pass "Case (i): deferred row carries the new rule's own named reason"
 else
-  fail "Case (i): deferred reason does not mention the new rule (reason: '$g32a_reason')"
+  common_test_fail "Case (i): deferred reason does not mention the new rule (reason: '$g32a_reason')"
 fi
 if ! echo "$g32a_reason" | grep -qi "file_scope"; then
-  pass "Case (i): deferred reason is NOT the file_scope_collision string (confirms the new rule fired, not the pre-existing check)"
+  common_test_pass "Case (i): deferred reason is NOT the file_scope_collision string (confirms the new rule fired, not the pre-existing check)"
 else
-  fail "Case (i): deferred reason unexpectedly mentions file_scope (reason: '$g32a_reason')"
+  common_test_fail "Case (i): deferred reason unexpectedly mentions file_scope (reason: '$g32a_reason')"
 fi
 
 # Case (ii): one build-heavy (lean4) + one ordinary implement candidate -- both dispatch, unchanged.
@@ -5122,9 +5118,9 @@ run_sut --session g32b --dry-run -- 3203 3204
 g32b_dispatched=$(jqf '.dispatch | length')
 g32b_deferred=$(jqf '.deferred | length')
 if [ "$g32b_dispatched" = "2" ] && [ "$g32b_deferred" = "0" ]; then
-  pass "Case (ii): one build-heavy + one ordinary implement candidate -> both dispatch, unchanged"
+  common_test_pass "Case (ii): one build-heavy + one ordinary implement candidate -> both dispatch, unchanged"
 else
-  fail "Case (ii): expected 2 dispatch/0 deferred, got dispatch=$g32b_dispatched deferred=$g32b_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case (ii): expected 2 dispatch/0 deferred, got dispatch=$g32b_dispatched deferred=$g32b_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 
 # Case (iii): two build-heavy candidates in DIFFERENT phases (one implementing, one researched/plan)
@@ -5142,9 +5138,9 @@ run_sut --session g32c --dry-run -- 3205 3206
 g32c_dispatched=$(jqf '.dispatch | length')
 g32c_deferred=$(jqf '.deferred | length')
 if [ "$g32c_dispatched" = "2" ] && [ "$g32c_deferred" = "0" ]; then
-  pass "Case (iii): two build-heavy candidates in different phases -> both dispatch (implement-phase scoping)"
+  common_test_pass "Case (iii): two build-heavy candidates in different phases -> both dispatch (implement-phase scoping)"
 else
-  fail "Case (iii): expected 2 dispatch/0 deferred, got dispatch=$g32c_dispatched deferred=$g32c_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case (iii): expected 2 dispatch/0 deferred, got dispatch=$g32c_dispatched deferred=$g32c_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 
 # Case (iv): Case (i)'s own fixture, run once under --dry-run and once live -- the deferred
@@ -5170,14 +5166,14 @@ g32d_live_dispatched=$(jqf '.dispatch | length')
 g32d_live_reason=$(jqf '.deferred[0].reason')
 
 if [ "$g32d_dry_dispatched" = "1" ] && [ "$g32d_live_dispatched" = "1" ]; then
-  pass "Case (iv): both --dry-run and live dispatch exactly 1 of the 2 build-heavy candidates"
+  common_test_pass "Case (iv): both --dry-run and live dispatch exactly 1 of the 2 build-heavy candidates"
 else
-  fail "Case (iv): expected 1/1, got dry-run=$g32d_dry_dispatched live=$g32d_live_dispatched"
+  common_test_fail "Case (iv): expected 1/1, got dry-run=$g32d_dry_dispatched live=$g32d_live_dispatched"
 fi
 if [ -n "$g32d_dry_reason" ] && [ "$g32d_dry_reason" = "$g32d_live_reason" ]; then
-  pass "Case (iv): --dry-run and live report byte-for-byte identical deferred reasons"
+  common_test_pass "Case (iv): --dry-run and live report byte-for-byte identical deferred reasons"
 else
-  fail "Case (iv): deferred reasons differ -- dry-run='$g32d_dry_reason' live='$g32d_live_reason'"
+  common_test_fail "Case (iv): deferred reasons differ -- dry-run='$g32d_dry_reason' live='$g32d_live_reason'"
 fi
 
 # Case (v): THE HEADLINE FIX. Two lean4 implement candidates, each with 2 implement-phase
@@ -5204,9 +5200,9 @@ run_sut --session g32e --dry-run -- 3209 3210
 g32e_dispatched=$(jqf '.dispatch | length')
 g32e_deferred=$(jqf '.deferred | length')
 if [ "$g32e_dispatched" = "2" ] && [ "$g32e_deferred" = "0" ]; then
-  pass "Case (v): two MEASURED-LIGHT lean4 implement candidates co-schedule freely (the static family list categorically refused this)"
+  common_test_pass "Case (v): two MEASURED-LIGHT lean4 implement candidates co-schedule freely (the static family list categorically refused this)"
 else
-  fail "Case (v): expected 2 dispatch/0 deferred, got dispatch=$g32e_dispatched deferred=$g32e_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case (v): expected 2 dispatch/0 deferred, got dispatch=$g32e_dispatched deferred=$g32e_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 
 # Case (vi): min-samples guard. One lean4 candidate with exactly 1 light measurement (below
@@ -5229,9 +5225,9 @@ run_sut --session g32f --dry-run -- 3211 3212
 g32f_dispatched=$(jqf '.dispatch | length')
 g32f_deferred=$(jqf '.deferred | length')
 if [ "$g32f_dispatched" = "1" ] && [ "$g32f_deferred" = "1" ]; then
-  pass "Case (vi): a single light measurement (below the min-samples floor) is still treated as heavy"
+  common_test_pass "Case (vi): a single light measurement (below the min-samples floor) is still treated as heavy"
 else
-  fail "Case (vi): expected 1 dispatch/1 deferred, got dispatch=$g32f_dispatched deferred=$g32f_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case (vi): expected 1 dispatch/1 deferred, got dispatch=$g32f_dispatched deferred=$g32f_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 
 # Case (vii): max-not-mean proof. One lean4 candidate with 3 entries (10, 10, 1800) whose MEAN
@@ -5255,9 +5251,9 @@ run_sut --session g32g --dry-run -- 3213 3214
 g32g_dispatched=$(jqf '.dispatch | length')
 g32g_deferred=$(jqf '.deferred | length')
 if [ "$g32g_dispatched" = "1" ] && [ "$g32g_deferred" = "1" ]; then
-  pass "Case (vii): max-not-mean -- a mean-below/max-above candidate is still treated as heavy"
+  common_test_pass "Case (vii): max-not-mean -- a mean-below/max-above candidate is still treated as heavy"
 else
-  fail "Case (vii): expected 1 dispatch/1 deferred, got dispatch=$g32g_dispatched deferred=$g32g_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case (vii): expected 1 dispatch/1 deferred, got dispatch=$g32g_dispatched deferred=$g32g_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 
 # Case (viii): omission-not-zeroing. metrics.jsonl present with implement entries that OMIT
@@ -5280,9 +5276,9 @@ run_sut --session g32h --dry-run -- 3215 3216
 g32h_dispatched=$(jqf '.dispatch | length')
 g32h_deferred=$(jqf '.deferred | length')
 if [ "$g32h_dispatched" = "1" ] && [ "$g32h_deferred" = "1" ]; then
-  pass "Case (viii): omission-not-zeroing -- an entry missing wall_clock_seconds is never read as 0 (never maximally light)"
+  common_test_pass "Case (viii): omission-not-zeroing -- an entry missing wall_clock_seconds is never read as 0 (never maximally light)"
 else
-  fail "Case (viii): expected 1 dispatch/1 deferred, got dispatch=$g32h_dispatched deferred=$g32h_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case (viii): expected 1 dispatch/1 deferred, got dispatch=$g32h_dispatched deferred=$g32h_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 
 # Case (ix): candidacy pre-filter proof. Two "general" implement candidates with a very large
@@ -5310,9 +5306,9 @@ run_sut --session g32i --dry-run -- 3217 3218
 g32i_dispatched=$(jqf '.dispatch | length')
 g32i_deferred=$(jqf '.deferred | length')
 if [ "$g32i_dispatched" = "2" ] && [ "$g32i_deferred" = "0" ]; then
-  pass "Case (ix): candidacy pre-filter -- a non-family task_type is never build-heavy regardless of measured duration"
+  common_test_pass "Case (ix): candidacy pre-filter -- a non-family task_type is never build-heavy regardless of measured duration"
 else
-  fail "Case (ix): expected 2 dispatch/0 deferred, got dispatch=$g32i_dispatched deferred=$g32i_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
+  common_test_fail "Case (ix): expected 2 dispatch/0 deferred, got dispatch=$g32i_dispatched deferred=$g32i_deferred (stdout: $LAST_STDOUT stderr: $LAST_STDERR)"
 fi
 
 # Case (x): malformed-line tolerance. metrics.jsonl contains a non-JSON line alongside valid
@@ -5334,15 +5330,15 @@ EOF
 reset_lock_dirs
 run_sut --session g32j --dry-run -- 3219 3220
 if [ "$LAST_EXIT" = "0" ]; then
-  pass "Case (x): a malformed metrics.jsonl line does not abort the bucketing loop (SUT exits 0)"
+  common_test_pass "Case (x): a malformed metrics.jsonl line does not abort the bucketing loop (SUT exits 0)"
 else
-  fail "Case (x): expected exit 0 despite a malformed metrics.jsonl line, got exit=$LAST_EXIT (stderr: $LAST_STDERR)"
+  common_test_fail "Case (x): expected exit 0 despite a malformed metrics.jsonl line, got exit=$LAST_EXIT (stderr: $LAST_STDERR)"
 fi
 g32j_total=$(( $(jqf '.dispatch | length') + $(jqf '.deferred | length') ))
 if [ "$g32j_total" = "2" ]; then
-  pass "Case (x): both candidates still receive a verdict (dispatch+deferred totals 2) despite the malformed line"
+  common_test_pass "Case (x): both candidates still receive a verdict (dispatch+deferred totals 2) despite the malformed line"
 else
-  fail "Case (x): expected dispatch+deferred to total 2, got $g32j_total (stdout: $LAST_STDOUT)"
+  common_test_fail "Case (x): expected dispatch+deferred to total 2, got $g32j_total (stdout: $LAST_STDOUT)"
 fi
 
 # Case (xi): basis observability. A measured-heavy defer's reason string must carry the signal
@@ -5364,19 +5360,19 @@ reset_lock_dirs
 run_sut --session g32k --dry-run -- 3221 3222
 g32k_reason=$(jqf '.deferred[0].reason')
 if echo "$g32k_reason" | grep -q "build-heavy implement co-scheduling"; then
-  pass "Case (xi): deferred reason still carries the existing rule prefix verbatim"
+  common_test_pass "Case (xi): deferred reason still carries the existing rule prefix verbatim"
 else
-  fail "Case (xi): deferred reason lost the existing rule prefix (reason: '$g32k_reason')"
+  common_test_fail "Case (xi): deferred reason lost the existing rule prefix (reason: '$g32k_reason')"
 fi
 if echo "$g32k_reason" | grep -q "measured max 1820"; then
-  pass "Case (xi): deferred reason carries the measured signal basis"
+  common_test_pass "Case (xi): deferred reason carries the measured signal basis"
 else
-  fail "Case (xi): deferred reason does not carry the expected signal basis (reason: '$g32k_reason')"
+  common_test_fail "Case (xi): deferred reason does not carry the expected signal basis (reason: '$g32k_reason')"
 fi
 if ! echo "$g32k_reason" | grep -qi "file_scope"; then
-  pass "Case (xi): deferred reason still carries no file_scope token"
+  common_test_pass "Case (xi): deferred reason still carries no file_scope token"
 else
-  fail "Case (xi): deferred reason unexpectedly mentions file_scope (reason: '$g32k_reason')"
+  common_test_fail "Case (xi): deferred reason unexpectedly mentions file_scope (reason: '$g32k_reason')"
 fi
 
 # Case (xii): regression safety. A fixture with NO task directory (hence no metrics.jsonl, hence
@@ -5397,9 +5393,9 @@ g32l_dispatched=$(jqf '.dispatch | length')
 g32l_deferred=$(jqf '.deferred | length')
 g32l_reason=$(jqf '.deferred[0].reason')
 if [ "$g32l_dispatched" = "1" ] && [ "$g32l_deferred" = "1" ] && echo "$g32l_reason" | grep -q "conservative default-to-heavy"; then
-  pass "Case (xii): regression safety -- no task directory reproduces today's exact verdict via the named conservative fallback"
+  common_test_pass "Case (xii): regression safety -- no task directory reproduces today's exact verdict via the named conservative fallback"
 else
-  fail "Case (xii): expected 1 dispatch/1 deferred naming the conservative fallback, got dispatch=$g32l_dispatched deferred=$g32l_deferred reason='$g32l_reason'"
+  common_test_fail "Case (xii): expected 1 dispatch/1 deferred naming the conservative fallback, got dispatch=$g32l_dispatched deferred=$g32l_deferred reason='$g32l_reason'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -5409,7 +5405,7 @@ fi
 # ever reaching the bucketing switch, producing NO blocked[] row at all (a silent skip) rather
 # than the named, reasoned row asserted below.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 33: held tasks -> blocked[] row naming the hold, never dispatched"
+common_test_info "Group 33: held tasks -> blocked[] row naming the hold, never dispatched"
 write_state <<'EOF'
 {
   "active_projects": [
@@ -5420,15 +5416,15 @@ EOF
 reset_lock_dirs
 run_sut --session g33_sess --dry-run -- 3301
 if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.blocked | map(select(.task == 3301)) | length')" = "1" ]; then
-  pass "Group 33: held candidate #3301 is excluded from dispatch and lands in blocked[]"
+  common_test_pass "Group 33: held candidate #3301 is excluded from dispatch and lands in blocked[]"
 else
-  fail "Group 33: expected 0 dispatch / 1 blocked[] row for candidate #3301, got: $LAST_STDOUT"
+  common_test_fail "Group 33: expected 0 dispatch / 1 blocked[] row for candidate #3301, got: $LAST_STDOUT"
 fi
 g33_reason=$(jqf '.blocked | map(select(.task == 3301)) | .[0].reason // ""')
 if echo "$g33_reason" | grep -q "Awaiting upstream API decision"; then
-  pass "Group 33: the blocked[] reason names the hold's own hold_reason text"
+  common_test_pass "Group 33: the blocked[] reason names the hold's own hold_reason text"
 else
-  fail "Group 33: blocked[] reason missing the expected hold_reason text (got: '$g33_reason')"
+  common_test_fail "Group 33: blocked[] reason missing the expected hold_reason text (got: '$g33_reason')"
 fi
 
 # Group 33b: an explicit forced phase overrides a hold for exactly one dispatch (via the
@@ -5441,9 +5437,9 @@ reset_lock_dirs
 run_sut --session g33b_sess --dry-run --force-phases implement -- 3301
 if [ "$(jqf '.dispatch | map(select(.task == 3301)) | length')" = "1" ] && \
    [ "$(jqf '.dispatch | map(select(.task == 3301)) | .[0].phase')" = "implement" ]; then
-  pass "Group 33b: --force-phases implement admits held candidate #3301 for exactly this dispatch"
+  common_test_pass "Group 33b: --force-phases implement admits held candidate #3301 for exactly this dispatch"
 else
-  fail "Group 33b: expected candidate #3301 to dispatch to implement under --force-phases, got: $LAST_STDOUT"
+  common_test_fail "Group 33b: expected candidate #3301 to dispatch to implement under --force-phases, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -5453,7 +5449,7 @@ fi
 # fabricated, never-real defer_reason so this test does not depend on any live admission
 # predicate ever actually producing an unrecognized value.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 34: unrecognized defer_reason triggers the loud default arm, never silent exclusion"
+common_test_info "Group 34: unrecognized defer_reason triggers the loud default arm, never silent exclusion"
 
 cat > "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh" <<'EOF'
 #!/usr/bin/env bash
@@ -5479,36 +5475,36 @@ reset_lock_dirs
 run_sut --session g34_sess --dry-run -- 3401
 
 if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.deferred | map(select(.task == 3401)) | length')" = "1" ]; then
-  pass "Group 34: candidate #3401 is excluded from dispatch this cycle (deferred, not dispatched)"
+  common_test_pass "Group 34: candidate #3401 is excluded from dispatch this cycle (deferred, not dispatched)"
 else
-  fail "Group 34: expected candidate #3401 excluded via deferred[], got: $LAST_STDOUT"
+  common_test_fail "Group 34: expected candidate #3401 excluded via deferred[], got: $LAST_STDOUT"
 fi
 if [[ "$LAST_STDERR" == *"UNRECOGNIZED defer_reason"* ]]; then
-  pass "Group 34: the loud default-arm warning fires on stderr"
+  common_test_pass "Group 34: the loud default-arm warning fires on stderr"
 else
-  fail "Group 34: expected the loud UNRECOGNIZED defer_reason warning on stderr, got: $LAST_STDERR"
+  common_test_fail "Group 34: expected the loud UNRECOGNIZED defer_reason warning on stderr, got: $LAST_STDERR"
 fi
 
 mt_g34="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g34_sess.json"
 if [ -f "$mt_g34" ]; then
   g34_ledger_count=$(jq '[.unrecognized_defer_reason_ledger[]? | select(.task == 3401)] | length' "$mt_g34" 2>/dev/null)
   if [ "$g34_ledger_count" = "1" ]; then
-    pass "Group 34: an unrecognized_defer_reason_ledger entry is recorded for candidate #3401 -- never silent"
+    common_test_pass "Group 34: an unrecognized_defer_reason_ledger entry is recorded for candidate #3401 -- never silent"
   else
-    fail "Group 34: expected exactly one unrecognized_defer_reason_ledger entry for #3401, got $g34_ledger_count"
+    common_test_fail "Group 34: expected exactly one unrecognized_defer_reason_ledger entry for #3401, got $g34_ledger_count"
   fi
 else
   # --dry-run never persists mt_state_file (same no-mutation contract Group 6 already
   # establishes) -- the stderr warning and the deferred[] exclusion above are this mode's own
   # loud signal, and the ledger write is asserted on the live path instead.
-  info "Group 34: mt_state_file not persisted under --dry-run (expected no-mutation contract); re-asserting live"
+  common_test_info "Group 34: mt_state_file not persisted under --dry-run (expected no-mutation contract); re-asserting live"
   run_sut --session g34_live_sess -- 3401
   mt_g34_live="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g34_live_sess.json"
   g34_live_ledger_count=$(jq '[.unrecognized_defer_reason_ledger[]? | select(.task == 3401)] | length' "$mt_g34_live" 2>/dev/null)
   if [ "$g34_live_ledger_count" = "1" ]; then
-    pass "Group 34 (live): an unrecognized_defer_reason_ledger entry is recorded for candidate #3401 -- never silent"
+    common_test_pass "Group 34 (live): an unrecognized_defer_reason_ledger entry is recorded for candidate #3401 -- never silent"
   else
-    fail "Group 34 (live): expected exactly one unrecognized_defer_reason_ledger entry for #3401, got $g34_live_ledger_count"
+    common_test_fail "Group 34 (live): expected exactly one unrecognized_defer_reason_ledger entry for #3401, got $g34_live_ledger_count"
   fi
 fi
 
@@ -5521,7 +5517,7 @@ fi
 # orchestrate-batch-admit.sh so this test does not depend on co-dispatching a real
 # sentinel-carrying peer.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 34b: whole_tree_claim defer_reason records a defer_ledger entry, not unrecognized"
+common_test_info "Group 34b: whole_tree_claim defer_reason records a defer_ledger entry, not unrecognized"
 
 cat > "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh" <<'EOF'
 #!/usr/bin/env bash
@@ -5546,29 +5542,29 @@ reset_lock_dirs
 run_sut --session g34b_sess -- 3501
 
 if [[ "$LAST_STDERR" != *"UNRECOGNIZED defer_reason"* ]]; then
-  pass "Group 34b: whole_tree_claim does NOT trigger the loud UNRECOGNIZED default-arm warning"
+  common_test_pass "Group 34b: whole_tree_claim does NOT trigger the loud UNRECOGNIZED default-arm warning"
 else
-  fail "Group 34b: whole_tree_claim unexpectedly triggered the UNRECOGNIZED warning: $LAST_STDERR"
+  common_test_fail "Group 34b: whole_tree_claim unexpectedly triggered the UNRECOGNIZED warning: $LAST_STDERR"
 fi
 
 mt_g34b="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g34b_sess.json"
 g34b_ledger_count=$(jq '[.defer_ledger[]? | select(.task == 3501 and .defer_reason == "whole_tree_claim")] | length' "$mt_g34b" 2>/dev/null)
 if [ "$g34b_ledger_count" = "1" ]; then
-  pass "Group 34b: a defer_ledger entry (not unrecognized_defer_reason_ledger) is recorded for candidate #3501"
+  common_test_pass "Group 34b: a defer_ledger entry (not unrecognized_defer_reason_ledger) is recorded for candidate #3501"
 else
-  fail "Group 34b: expected exactly one defer_ledger entry with defer_reason whole_tree_claim for #3501, got $g34b_ledger_count (mt_state: $(cat "$mt_g34b" 2>/dev/null))"
+  common_test_fail "Group 34b: expected exactly one defer_ledger entry with defer_reason whole_tree_claim for #3501, got $g34b_ledger_count (mt_state: $(cat "$mt_g34b" 2>/dev/null))"
 fi
 g34b_collision_scope=$(jq -r '[.defer_ledger[]? | select(.task == 3501)] | .[-1].collision_scope // "MISSING"' "$mt_g34b" 2>/dev/null)
 if [ "$g34b_collision_scope" = "in_batch" ]; then
-  pass "Group 34b: the defer_ledger entry preserves collision_scope (in_batch)"
+  common_test_pass "Group 34b: the defer_ledger entry preserves collision_scope (in_batch)"
 else
-  fail "Group 34b: expected collision_scope \"in_batch\" in the defer_ledger entry, got \"$g34b_collision_scope\""
+  common_test_fail "Group 34b: expected collision_scope \"in_batch\" in the defer_ledger entry, got \"$g34b_collision_scope\""
 fi
 g34b_unrecognized_count=$(jq '[.unrecognized_defer_reason_ledger[]? | select(.task == 3501)] | length' "$mt_g34b" 2>/dev/null)
 if [ "$g34b_unrecognized_count" = "0" ]; then
-  pass "Group 34b: no unrecognized_defer_reason_ledger entry is recorded for candidate #3501"
+  common_test_pass "Group 34b: no unrecognized_defer_reason_ledger entry is recorded for candidate #3501"
 else
-  fail "Group 34b: expected zero unrecognized_defer_reason_ledger entries for #3501, got $g34b_unrecognized_count"
+  common_test_fail "Group 34b: expected zero unrecognized_defer_reason_ledger entries for #3501, got $g34b_unrecognized_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -5579,7 +5575,7 @@ fi
 # phase-agnostic and exercised in its own suite. Also asserts --gate --compare --hard
 # composition.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 35: --gate forwarding (implement-phase only, never research/plan)"
+common_test_info "Group 35: --gate forwarding (implement-phase only, never research/plan)"
 
 G35_ARGV_LOG="$WORKDIR/g35-build-dispatch-argv.log"
 : > "$G35_ARGV_LOG"
@@ -5656,9 +5652,9 @@ reset_lock_dirs
 run_sut --session g35_sess --gate -- 3501 3502 3503
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Group 35: SUT exits 0"
+  common_test_pass "Group 35: SUT exits 0"
 else
-  fail "Group 35: SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "Group 35: SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 g35_plan_argv=$(grep '^3501 plan' "$G35_ARGV_LOG" || true)
@@ -5666,9 +5662,9 @@ g35_implement_argv=$(grep '^3502 implement' "$G35_ARGV_LOG" || true)
 g35_research_argv=$(grep '^3503 research' "$G35_ARGV_LOG" || true)
 
 if echo "$g35_implement_argv" | grep -q -- "--gate"; then
-  pass "Group 35: --gate forwarded into build_args for the implement-phase candidate"
+  common_test_pass "Group 35: --gate forwarded into build_args for the implement-phase candidate"
 else
-  fail "Group 35: --gate missing from implement-phase build_args (argv: '$g35_implement_argv')"
+  common_test_fail "Group 35: --gate missing from implement-phase build_args (argv: '$g35_implement_argv')"
 fi
 
 # Non-vacuity guard: an EMPTY argv would make the two non-forwarding assertions below pass for
@@ -5676,22 +5672,22 @@ fi
 # forge a green result here. Require the dispatch to have actually happened first.
 if [ -n "$g35_plan_argv" ]; then
   if echo "$g35_plan_argv" | grep -q -- "--gate"; then
-    fail "Group 35: --gate unexpectedly forwarded into build_args for the plan-phase candidate (argv: '$g35_plan_argv')"
+    common_test_fail "Group 35: --gate unexpectedly forwarded into build_args for the plan-phase candidate (argv: '$g35_plan_argv')"
   else
-    pass "Group 35: --gate NOT forwarded into build_args for the plan-phase candidate"
+    common_test_pass "Group 35: --gate NOT forwarded into build_args for the plan-phase candidate"
   fi
 else
-  fail "Group 35: no plan-phase dispatch was built, so the non-forwarding assertion would be vacuous (argv log: $(tr '\n' '|' < "$G35_ARGV_LOG"))"
+  common_test_fail "Group 35: no plan-phase dispatch was built, so the non-forwarding assertion would be vacuous (argv log: $(tr '\n' '|' < "$G35_ARGV_LOG"))"
 fi
 
 if [ -n "$g35_research_argv" ]; then
   if echo "$g35_research_argv" | grep -q -- "--gate"; then
-    fail "Group 35: --gate unexpectedly forwarded into build_args for the research-phase candidate (argv: '$g35_research_argv')"
+    common_test_fail "Group 35: --gate unexpectedly forwarded into build_args for the research-phase candidate (argv: '$g35_research_argv')"
   else
-    pass "Group 35: --gate NOT forwarded into build_args for the research-phase candidate"
+    common_test_pass "Group 35: --gate NOT forwarded into build_args for the research-phase candidate"
   fi
 else
-  fail "Group 35: no research-phase dispatch was built, so the non-forwarding assertion would be vacuous (argv log: $(tr '\n' '|' < "$G35_ARGV_LOG"))"
+  common_test_fail "Group 35: no research-phase dispatch was built, so the non-forwarding assertion would be vacuous (argv log: $(tr '\n' '|' < "$G35_ARGV_LOG"))"
 fi
 
 # ── --gate --compare --hard together: all three flags reach the implement dispatch
@@ -5712,9 +5708,9 @@ g35_compose_argv=$(grep '^3504 implement' "$G35_ARGV_LOG" || true)
 if echo "$g35_compose_argv" | grep -q -- "--gate" \
   && echo "$g35_compose_argv" | grep -q -- "--compare" \
   && echo "$g35_compose_argv" | grep -q -- "--hard"; then
-  pass "Group 35: --gate --compare --hard together all reach the implement dispatch (composition, not competition)"
+  common_test_pass "Group 35: --gate --compare --hard together all reach the implement dispatch (composition, not competition)"
 else
-  fail "Group 35: expected --gate, --compare and --hard in implement build_args, got: '$g35_compose_argv'"
+  common_test_fail "Group 35: expected --gate, --compare and --hard in implement build_args, got: '$g35_compose_argv'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

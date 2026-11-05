@@ -20,13 +20,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 require_file() {
   if [ ! -f "$1" ]; then
@@ -59,9 +57,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 setup_sandbox() {
   rm -rf "$WORKDIR"
@@ -205,7 +201,7 @@ write_session_registry_fixture() {
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (1): a handoff whose mtime predates the dispatch window routes to recovery
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (1): stale mtime routes to recovery, not the trusted handoff"
+common_test_info "Acceptance (1): stale mtime routes to recovery, not the trusted handoff"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/701_candidate/summaries"
 echo x > "$WORKDIR/specs/701_candidate/summaries/01_x-summary.md"
@@ -231,35 +227,35 @@ run_sut specs/701_candidate --session sess_701 --phase implement --task-type gen
   --dispatch-seq 5 --dispatch-start-ts "$future_window" 1
 
 if [ "$(jqf '.status')" = "implemented" ] && [ "$(jqf '.phases_completed')" = "6" ]; then
-  pass "acceptance (1): stale-mtime handoff (status=planned, 0/0) is ignored; recovery reports the TRUE outcome (implemented, 6/6)"
+  common_test_pass "acceptance (1): stale-mtime handoff (status=planned, 0/0) is ignored; recovery reports the TRUE outcome (implemented, 6/6)"
 else
-  fail "acceptance (1): expected status=implemented phases_completed=6 from recovery, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "acceptance (1): expected status=implemented phases_completed=6 from recovery, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 if echo "$LAST_STDERR" | grep -q "STALE HANDOFF"; then
-  pass "acceptance (1): stale-handoff detection is logged"
+  common_test_pass "acceptance (1): stale-handoff detection is logged"
 else
-  fail "acceptance (1): no STALE HANDOFF notice in stderr"
+  common_test_fail "acceptance (1): no STALE HANDOFF notice in stderr"
 fi
 if jq -e '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length >= 1' \
      "$WORKDIR/specs/701_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "acceptance (1): HANDOFF_STALE_OR_ABSENT recorded in the loop guard"
+  common_test_pass "acceptance (1): HANDOFF_STALE_OR_ABSENT recorded in the loop guard"
 else
-  fail "acceptance (1): no HANDOFF_STALE_OR_ABSENT recorded"
+  common_test_fail "acceptance (1): no HANDOFF_STALE_OR_ABSENT recorded"
 fi
 # Dispatch's arm (c): the genuinely-stale-handoff path fires the stale-handoff gate,
 # unconditionally, before WORK (d) is ever reached (recovery here is recovered=true) -- this
 # task's RECOVERY_DECLINED discrimination must record nothing on this path.
 if jq -e '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length == 0' \
      "$WORKDIR/specs/701_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "acceptance (1): zero RECOVERY_DECLINED rows on the genuinely-stale-handoff path"
+  common_test_pass "acceptance (1): zero RECOVERY_DECLINED rows on the genuinely-stale-handoff path"
 else
-  fail "acceptance (1): unexpected RECOVERY_DECLINED row on the stale-handoff path"
+  common_test_fail "acceptance (1): unexpected RECOVERY_DECLINED row on the stale-handoff path"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (2): dispatch_seq mismatch routes to recovery, INCLUDING when mtime is newer
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (2): dispatch_seq mismatch routes to recovery even with a newer (in-window) mtime"
+common_test_info "Acceptance (2): dispatch_seq mismatch routes to recovery even with a newer (in-window) mtime"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/702_candidate/summaries"
 echo x > "$WORKDIR/specs/702_candidate/summaries/01_x-summary.md"
@@ -285,26 +281,26 @@ run_sut specs/702_candidate --session sess_702 --phase implement --task-type gen
   --dispatch-seq 7 --dispatch-start-ts "$window_start" 702
 
 if [ "$(jqf '.status')" = "implemented" ]; then
-  pass "acceptance (2): dispatch_seq-mismatched handoff (mtime newer than window) is rejected; recovery reports the true outcome"
+  common_test_pass "acceptance (2): dispatch_seq-mismatched handoff (mtime newer than window) is rejected; recovery reports the true outcome"
 else
-  fail "acceptance (2): expected status=implemented from recovery, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "acceptance (2): expected status=implemented from recovery, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 if echo "$LAST_STDERR" | grep -q "DISPATCH_SEQ MISMATCH"; then
-  pass "acceptance (2): dispatch_seq mismatch is logged"
+  common_test_pass "acceptance (2): dispatch_seq mismatch is logged"
 else
-  fail "acceptance (2): no DISPATCH_SEQ MISMATCH notice in stderr"
+  common_test_fail "acceptance (2): no DISPATCH_SEQ MISMATCH notice in stderr"
 fi
 if jq -e '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length >= 1' \
      "$WORKDIR/specs/702_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "acceptance (2): HANDOFF_STALE_OR_ABSENT recorded despite the newer mtime"
+  common_test_pass "acceptance (2): HANDOFF_STALE_OR_ABSENT recorded despite the newer mtime"
 else
-  fail "acceptance (2): no HANDOFF_STALE_OR_ABSENT recorded"
+  common_test_fail "acceptance (2): no HANDOFF_STALE_OR_ABSENT recorded"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (3): a git-restored predecessor .return-meta.json is rejected by recovery too
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (3): git-restored predecessor return-meta (fresh in-window mtime, stale dispatch_seq) rejected"
+common_test_info "Acceptance (3): git-restored predecessor return-meta (fresh in-window mtime, stale dispatch_seq) rejected"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/703_candidate"
 write_state <<'EOF'
@@ -326,9 +322,9 @@ run_sut specs/703_candidate --session sess_703 --phase implement --task-type gen
   --dispatch-seq 9 --dispatch-start-ts "$window_start" 703
 
 if [ "$(jqf '.verdict')" = "failed" ]; then
-  pass "acceptance (3): git-restored predecessor return-meta is rejected -- verdict=failed, not a false success"
+  common_test_pass "acceptance (3): git-restored predecessor return-meta is rejected -- verdict=failed, not a false success"
 else
-  fail "acceptance (3): expected verdict=failed for a rejected git-restored predecessor, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "acceptance (3): expected verdict=failed for a rejected git-restored predecessor, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 # Confirm the SPECIFIC gate that fired is D2's dispatch_seq check (not some other rejection
 # reason) by calling orchestrate-recover-outcome.sh directly with the same arguments the SUT
@@ -338,15 +334,15 @@ fi
 recover_probe=$(bash "$WORKDIR/.claude/scripts/orchestrate-recover-outcome.sh" \
   "$WORKDIR/specs/703_candidate" "$window_start" 9 2>/dev/null)
 if [ "$(echo "$recover_probe" | jq -r '.reason')" = "META_DISPATCH_SEQ_MISMATCH" ]; then
-  pass "acceptance (3): the recovery-path dispatch_seq check (D2, orchestrate-recover-outcome.sh) is specifically what rejected it"
+  common_test_pass "acceptance (3): the recovery-path dispatch_seq check (D2, orchestrate-recover-outcome.sh) is specifically what rejected it"
 else
-  fail "acceptance (3): expected reason=META_DISPATCH_SEQ_MISMATCH from orchestrate-recover-outcome.sh, got: $recover_probe"
+  common_test_fail "acceptance (3): expected reason=META_DISPATCH_SEQ_MISMATCH from orchestrate-recover-outcome.sh, got: $recover_probe"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (4), direction A: contractual non-writer with no handoff records NO defect
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (4a): a contractual non-writer's absent handoff records no defect (recovered outcome)"
+common_test_info "Acceptance (4a): a contractual non-writer's absent handoff records no defect (recovered outcome)"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/704_candidate/summaries"
 echo x > "$WORKDIR/specs/704_candidate/summaries/01_x-summary.md"
@@ -367,29 +363,29 @@ run_sut specs/704_candidate --session sess_704 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 704
 
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "acceptance (4a): general-implementation-agent's absent handoff still recovers successfully"
+  common_test_pass "acceptance (4a): general-implementation-agent's absent handoff still recovers successfully"
 else
-  fail "acceptance (4a): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "acceptance (4a): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/704_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$defect_count" = "0" ]; then
-  pass "acceptance (4a): zero defects recorded for a non-writer's absent handoff"
+  common_test_pass "acceptance (4a): zero defects recorded for a non-writer's absent handoff"
 else
-  fail "acceptance (4a): expected 0 detected_defects, got $defect_count"
+  common_test_fail "acceptance (4a): expected 0 detected_defects, got $defect_count"
 fi
 # This is an ordinary (non-ask_user) path, so it exercises the `else` jq -n emit block's own
 # copy of persisted_status -- the ask_user block is covered separately by Acceptance (5) above.
 persisted_status_val=$(jqf '.persisted_status')
 if [ -n "$persisted_status_val" ] && [ "$persisted_status_val" != "null" ]; then
-  pass "acceptance (4a): persisted_status present and non-empty on an ordinary (non-ask_user) path ($persisted_status_val)"
+  common_test_pass "acceptance (4a): persisted_status present and non-empty on an ordinary (non-ask_user) path ($persisted_status_val)"
 else
-  fail "acceptance (4a): expected a non-empty persisted_status on the else emit block, got: $persisted_status_val"
+  common_test_fail "acceptance (4a): expected a non-empty persisted_status on the else emit block, got: $persisted_status_val"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (4), direction B: a genuine seq-mismatched late write still records
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (4b): a genuine seq-mismatched late write (present handoff) still records, regardless of agent"
+common_test_info "Acceptance (4b): a genuine seq-mismatched late write (present handoff) still records, regardless of agent"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/705_candidate"
 write_state <<'EOF'
@@ -410,9 +406,9 @@ run_sut specs/705_candidate --session sess_705 --phase plan --task-type general 
 
 defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/705_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$defect_count" -ge 1 ] 2>/dev/null; then
-  pass "acceptance (4b): a present-but-seq-mismatched handoff still records a defect, even from a non-contractual-writer agent"
+  common_test_pass "acceptance (4b): a present-but-seq-mismatched handoff still records a defect, even from a non-contractual-writer agent"
 else
-  fail "acceptance (4b): expected >=1 detected_defects for a present seq-mismatched handoff, got $defect_count"
+  common_test_fail "acceptance (4b): expected >=1 detected_defects for a present seq-mismatched handoff, got $defect_count"
 fi
 # handoff dispatch_seq=1 vs minted --dispatch-seq=3: the OLDER direction (1 < 3) -- a
 # still-live predecessor's late write. Attribution stays unchanged at skill-orchestrate/SKILL.md,
@@ -420,14 +416,14 @@ fi
 # counterpart to test-handoff-dispatch-identity.sh's dry-run case 2.
 attributed_path=$(jq -r '.detected_defects[-1].attributed_source_path' "$WORKDIR/specs/705_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$attributed_path" = "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md" ]; then
-  pass "acceptance (4b): older-direction mismatch attributed to skill-orchestrate/SKILL.md"
+  common_test_pass "acceptance (4b): older-direction mismatch attributed to skill-orchestrate/SKILL.md"
 else
-  fail "acceptance (4b): expected attributed_source_path=skill-orchestrate/SKILL.md, got $attributed_path"
+  common_test_fail "acceptance (4b): expected attributed_source_path=skill-orchestrate/SKILL.md, got $attributed_path"
 fi
 detecting_site=$(jq -r '.detected_defects[-1].detecting_site' "$WORKDIR/specs/705_candidate/.orchestrator-loop-guard" 2>/dev/null)
 case "$detecting_site" in
-  *-newer) fail "acceptance (4b): older-direction detecting_site must not end in -newer, got $detecting_site" ;;
-  *) pass "acceptance (4b): older-direction detecting_site does not carry the -newer suffix ($detecting_site)" ;;
+  *-newer) common_test_fail "acceptance (4b): older-direction detecting_site must not end in -newer, got $detecting_site" ;;
+  *) common_test_pass "acceptance (4b): older-direction detecting_site does not carry the -newer suffix ($detecting_site)" ;;
 esac
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -435,7 +431,7 @@ esac
 # test-handoff-dispatch-identity.sh's dry-run case 5. Same fixture shape as (4b) with the seq
 # direction flipped: handoff dispatch_seq=5 against minted --dispatch-seq=3 (5 > 3).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (4c): a newer-than-minted handoff dispatch_seq records a defect attributed to the minting script"
+common_test_info "Acceptance (4c): a newer-than-minted handoff dispatch_seq records a defect attributed to the minting script"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/707_candidate"
 write_state <<'EOF'
@@ -456,32 +452,32 @@ run_sut specs/707_candidate --session sess_707 --phase plan --task-type general 
 
 defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$defect_count" -ge 1 ] 2>/dev/null; then
-  pass "acceptance (4c): a present newer-than-minted handoff still records a defect"
+  common_test_pass "acceptance (4c): a present newer-than-minted handoff still records a defect"
 else
-  fail "acceptance (4c): expected >=1 detected_defects for a present newer-than-minted handoff, got $defect_count"
+  common_test_fail "acceptance (4c): expected >=1 detected_defects for a present newer-than-minted handoff, got $defect_count"
 fi
 attributed_path=$(jq -r '.detected_defects[-1].attributed_source_path' "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$attributed_path" = "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh" ]; then
-  pass "acceptance (4c): newer-direction mismatch attributed to orchestrate-cycle-plan.sh (the minting site)"
+  common_test_pass "acceptance (4c): newer-direction mismatch attributed to orchestrate-cycle-plan.sh (the minting site)"
 else
-  fail "acceptance (4c): expected attributed_source_path=orchestrate-cycle-plan.sh, got $attributed_path"
+  common_test_fail "acceptance (4c): expected attributed_source_path=orchestrate-cycle-plan.sh, got $attributed_path"
 fi
 detecting_site=$(jq -r '.detected_defects[-1].detecting_site' "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" 2>/dev/null)
 case "$detecting_site" in
-  *:cycle-postflight-dispatch-seq-mismatch-newer) pass "acceptance (4c): detecting_site ends in the -newer suffix ($detecting_site)" ;;
-  *) fail "acceptance (4c): expected detecting_site ending in :cycle-postflight-dispatch-seq-mismatch-newer, got $detecting_site" ;;
+  *:cycle-postflight-dispatch-seq-mismatch-newer) common_test_pass "acceptance (4c): detecting_site ends in the -newer suffix ($detecting_site)" ;;
+  *) common_test_fail "acceptance (4c): expected detecting_site ending in :cycle-postflight-dispatch-seq-mismatch-newer, got $detecting_site" ;;
 esac
 defect_class=$(jq -r '.detected_defects[-1].defect_class' "$WORKDIR/specs/707_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$defect_class" = "HANDOFF_STALE_OR_ABSENT" ]; then
-  pass "acceptance (4c): defect_class is still HANDOFF_STALE_OR_ABSENT (no vocabulary churn, D2)"
+  common_test_pass "acceptance (4c): defect_class is still HANDOFF_STALE_OR_ABSENT (no vocabulary churn, D2)"
 else
-  fail "acceptance (4c): expected defect_class=HANDOFF_STALE_OR_ABSENT, got $defect_class"
+  common_test_fail "acceptance (4c): expected defect_class=HANDOFF_STALE_OR_ABSENT, got $defect_class"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (5): a user_decision payload is relayed intact with status unchanged
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (5): user_decision payload relayed verbatim, status left as the agent reported it"
+common_test_info "Acceptance (5): user_decision payload relayed verbatim, status left as the agent reported it"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/706_candidate"
 write_state <<'EOF'
@@ -501,21 +497,21 @@ run_sut specs/706_candidate --session sess_706 --phase implement --task-type gen
   --dispatch-seq 2 --dispatch-start-ts "$window_start" 706
 
 if [ "$(jqf '.verdict')" = "ask_user" ]; then
-  pass "acceptance (5): verdict=ask_user when a user_decision payload is present"
+  common_test_pass "acceptance (5): verdict=ask_user when a user_decision payload is present"
 else
-  fail "acceptance (5): expected verdict=ask_user, got: $LAST_STDOUT"
+  common_test_fail "acceptance (5): expected verdict=ask_user, got: $LAST_STDOUT"
 fi
 expected_ud='{"question":"Which approach — A or B?","options":["A","B"]}'
 actual_ud=$(jqf '.user_decision')
 if [ "$(jq -c -n --argjson a "$expected_ud" '$a')" = "$(jq -c -n --argjson b "$actual_ud" '$b' 2>/dev/null)" ]; then
-  pass "acceptance (5): user_decision payload relayed verbatim (question and options intact)"
+  common_test_pass "acceptance (5): user_decision payload relayed verbatim (question and options intact)"
 else
-  fail "acceptance (5): user_decision payload not relayed intact: got $actual_ud, expected $expected_ud"
+  common_test_fail "acceptance (5): user_decision payload not relayed intact: got $actual_ud, expected $expected_ud"
 fi
 if [ "$(jqf '.status')" = "partial" ]; then
-  pass "acceptance (5): status left exactly as the agent reported it (partial)"
+  common_test_pass "acceptance (5): status left exactly as the agent reported it (partial)"
 else
-  fail "acceptance (5): expected status=partial (unchanged), got: $(jqf '.status')"
+  common_test_fail "acceptance (5): expected status=partial (unchanged), got: $(jqf '.status')"
 fi
 # This is the fixture where status and persisted_status provably DIVERGE -- the whole point of
 # the field: this cycle's empty-blocker/ask_user outcome performs no state.json transition by
@@ -523,16 +519,16 @@ fi
 # while status echoes the agent's self-reported "partial". Two different values, both now
 # legible to a consumer.
 if [ "$(jqf '.persisted_status')" = "implementing" ]; then
-  pass "acceptance (5): persisted_status reports state.json's actual unchanged status (implementing), diverging from status=partial"
+  common_test_pass "acceptance (5): persisted_status reports state.json's actual unchanged status (implementing), diverging from status=partial"
 else
-  fail "acceptance (5): expected persisted_status=implementing, got: $(jqf '.persisted_status')"
+  common_test_fail "acceptance (5): expected persisted_status=implementing, got: $(jqf '.persisted_status')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Acceptance (5b): persisted_status falls back to "unknown" (never an empty string) when the
 # task's row is absent from state.json's active_projects -- the named fallback Phase 4 commits to.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (5b): persisted_status falls back to \"unknown\" when the task row is absent from state.json"
+common_test_info "Acceptance (5b): persisted_status falls back to \"unknown\" when the task row is absent from state.json"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/709_candidate"
 write_state <<'EOF'
@@ -550,9 +546,9 @@ run_sut specs/709_candidate --session sess_709 --phase implement --task-type gen
 
 persisted_status_val=$(jqf '.persisted_status')
 if [ "$persisted_status_val" = "unknown" ]; then
-  pass "acceptance (5b): persisted_status falls back to \"unknown\" for an absent task row"
+  common_test_pass "acceptance (5b): persisted_status falls back to \"unknown\" for an absent task row"
 else
-  fail "acceptance (5b): expected persisted_status=unknown for an absent task row, got: $persisted_status_val"
+  common_test_fail "acceptance (5b): expected persisted_status=unknown for an absent task row, got: $persisted_status_val"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -563,7 +559,7 @@ fi
 # "researched" fixture template (Acceptance (4a) above): planner-agent never writes a handoff
 # (base-mode, mirroring general-implementation-agent), so recovery reads .return-meta.json.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (6): needs_research verdict -- halt=false, no OFF_SCHEMA_STATUS, researching state write, no artifact-round advance"
+common_test_info "Acceptance (6): needs_research verdict -- halt=false, no OFF_SCHEMA_STATUS, researching state write, no artifact-round advance"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/900_candidate"
 write_state <<'EOF'
@@ -583,43 +579,43 @@ run_sut specs/900_candidate --session sess_900 --phase plan --task-type meta \
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 900
 
 if [ "$(jqf '.verdict')" = "needs_research" ]; then
-  pass "acceptance (6): verdict=needs_research"
+  common_test_pass "acceptance (6): verdict=needs_research"
 else
-  fail "acceptance (6): expected verdict=needs_research, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "acceptance (6): expected verdict=needs_research, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 if [ "$(jqf '.halt')" = "false" ]; then
-  pass "acceptance (6): halt=false"
+  common_test_pass "acceptance (6): halt=false"
 else
-  fail "acceptance (6): expected halt=false, got: $(jqf '.halt')"
+  common_test_fail "acceptance (6): expected halt=false, got: $(jqf '.halt')"
 fi
 defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/900_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$defect_count" = "0" ]; then
-  pass "acceptance (6): zero defects recorded (no OFF_SCHEMA_STATUS)"
+  common_test_pass "acceptance (6): zero defects recorded (no OFF_SCHEMA_STATUS)"
 else
-  fail "acceptance (6): expected 0 detected_defects, got $defect_count: $(jq -c '.detected_defects' "$WORKDIR/specs/900_candidate/.orchestrator-loop-guard")"
+  common_test_fail "acceptance (6): expected 0 detected_defects, got $defect_count: $(jq -c '.detected_defects' "$WORKDIR/specs/900_candidate/.orchestrator-loop-guard")"
 fi
 if ! echo "$LAST_STDERR" | grep -qi "OFF-SCHEMA\|OFF_SCHEMA"; then
-  pass "acceptance (6): no off-schema mention in stderr"
+  common_test_pass "acceptance (6): no off-schema mention in stderr"
 else
-  fail "acceptance (6): unexpected off-schema mention in stderr: $LAST_STDERR"
+  common_test_fail "acceptance (6): unexpected off-schema mention in stderr: $LAST_STDERR"
 fi
 new_status=$(jq -r --argjson n 900 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status" = "researching" ]; then
-  pass "acceptance (6): state.json status -> researching"
+  common_test_pass "acceptance (6): state.json status -> researching"
 else
-  fail "acceptance (6): expected state.json status=researching, got: $new_status"
+  common_test_fail "acceptance (6): expected state.json status=researching, got: $new_status"
 fi
 new_rq=$(jq -c --argjson n 900 '.active_projects[] | select(.project_number == $n) | .research_questions' "$WORKDIR/specs/state.json")
 if [ "$new_rq" = '["Does library X expose a streaming API?","Is the retry policy configurable?"]' ]; then
-  pass "acceptance (6): research_questions persisted to state.json"
+  common_test_pass "acceptance (6): research_questions persisted to state.json"
 else
-  fail "acceptance (6): expected research_questions persisted, got: $new_rq"
+  common_test_fail "acceptance (6): expected research_questions persisted, got: $new_rq"
 fi
 new_next_artifact=$(jq -r --argjson n 900 '.active_projects[] | select(.project_number == $n) | .next_artifact_number' "$WORKDIR/specs/state.json")
 if [ "$new_next_artifact" = "1" ]; then
-  pass "acceptance (6): next_artifact_number NOT advanced (no plan artifact was produced)"
+  common_test_pass "acceptance (6): next_artifact_number NOT advanced (no plan artifact was produced)"
 else
-  fail "acceptance (6): expected next_artifact_number unchanged at 1, got: $new_next_artifact"
+  common_test_fail "acceptance (6): expected next_artifact_number unchanged at 1, got: $new_next_artifact"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -630,7 +626,7 @@ fi
 # write resolves to (researching, rank 1) -- which a naive monotonic-max check would otherwise
 # treat as a regression and skip.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (7): needs_research under --force-invoked (monotonic-max clamp does not block it)"
+common_test_info "Acceptance (7): needs_research under --force-invoked (monotonic-max clamp does not block it)"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/901_candidate"
 write_state <<'EOF'
@@ -650,15 +646,15 @@ run_sut specs/901_candidate --session sess_901 --phase plan --task-type meta \
   --dispatch-seq 1 --dispatch-start-ts "$window_start" --force-invoked true 901
 
 if [ "$(jqf '.verdict')" = "needs_research" ] && [ "$(jqf '.halt')" = "false" ]; then
-  pass "acceptance (7): force-invoked needs_research still yields verdict=needs_research, halt=false"
+  common_test_pass "acceptance (7): force-invoked needs_research still yields verdict=needs_research, halt=false"
 else
-  fail "acceptance (7): expected verdict=needs_research/halt=false under force-invoked, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "acceptance (7): expected verdict=needs_research/halt=false under force-invoked, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 new_status_901=$(jq -r --argjson n 901 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_901" = "researching" ]; then
-  pass "acceptance (7): state.json status -> researching even though current status (planning, rank 3) outranks the resting state (researching, rank 1) -- clamp does not apply, by construction"
+  common_test_pass "acceptance (7): state.json status -> researching even though current status (planning, rank 3) outranks the resting state (researching, rank 1) -- clamp does not apply, by construction"
 else
-  fail "acceptance (7): expected state.json status=researching (clamp must not block needs_research), got: $new_status_901"
+  common_test_fail "acceptance (7): expected state.json status=researching (clamp must not block needs_research), got: $new_status_901"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -674,7 +670,7 @@ fi
 # that Phase 4's triage-classify fixtures (not_started routes to plan, not research) already
 # proved is reachable in a single hop under the research-on-demand default.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Acceptance (8): not_started -> planned in one dispatch, with a plan that passes validate-artifact.sh"
+common_test_info "Acceptance (8): not_started -> planned in one dispatch, with a plan that passes validate-artifact.sh"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/902_candidate/plans"
 cat > "$WORKDIR/specs/902_candidate/plans/01_fixture-spec.md" << 'EOF'
@@ -722,9 +718,9 @@ x
 EOF
 
 if bash "$CORE_DIR/validate-artifact.sh" "$WORKDIR/specs/902_candidate/plans/01_fixture-spec.md" plan >/tmp/va-out-$$.log 2>&1; then
-  pass "acceptance (8a): the plan artifact passes validate-artifact.sh"
+  common_test_pass "acceptance (8a): the plan artifact passes validate-artifact.sh"
 else
-  fail "acceptance (8a): plan artifact failed validate-artifact.sh: $(cat /tmp/va-out-$$.log)"
+  common_test_fail "acceptance (8a): plan artifact failed validate-artifact.sh: $(cat /tmp/va-out-$$.log)"
 fi
 rm -f /tmp/va-out-$$.log
 
@@ -745,21 +741,21 @@ run_sut specs/902_candidate --session sess_902 --phase plan --task-type meta \
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 902
 
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "acceptance (8b): verdict=ok for a planned outcome reached directly from not_started (no research round)"
+  common_test_pass "acceptance (8b): verdict=ok for a planned outcome reached directly from not_started (no research round)"
 else
-  fail "acceptance (8b): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "acceptance (8b): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 new_status_902=$(jq -r --argjson n 902 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_902" = "planned" ]; then
-  pass "acceptance (8b): state.json status -> planned (the [NOT STARTED] -> [PLANNED] half of the acceptance line, in one dispatch)"
+  common_test_pass "acceptance (8b): state.json status -> planned (the [NOT STARTED] -> [PLANNED] half of the acceptance line, in one dispatch)"
 else
-  fail "acceptance (8b): expected state.json status=planned, got: $new_status_902"
+  common_test_fail "acceptance (8b): expected state.json status=planned, got: $new_status_902"
 fi
 linked_artifact=$(jq -r --argjson n 902 '.active_projects[] | select(.project_number == $n) | .artifacts // [] | map(select(.type == "plan")) | .[0].path // ""' "$WORKDIR/specs/state.json")
 if [ "$linked_artifact" = "specs/902_candidate/plans/01_fixture-spec.md" ]; then
-  pass "acceptance (8b): the validate-artifact.sh-passing plan was linked into state.json's artifacts"
+  common_test_pass "acceptance (8b): the validate-artifact.sh-passing plan was linked into state.json's artifacts"
 else
-  fail "acceptance (8b): expected the fixture plan linked as a plan artifact, got: $linked_artifact"
+  common_test_fail "acceptance (8b): expected the fixture plan linked as a plan artifact, got: $linked_artifact"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -769,7 +765,7 @@ fi
 # (--handoff-expected defaults to true), this now records HANDOFF_STALE_OR_ABSENT -- the exact
 # gap the old allowlist left silently unrecorded.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (A): general-implementation-agent double-miss (no handoff, no return-meta) now records a defect"
+common_test_info "Fixture (A): general-implementation-agent double-miss (no handoff, no return-meta) now records a defect"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/910_candidate"
 write_state <<'EOF'
@@ -786,44 +782,44 @@ run_sut specs/910_candidate --session sess_910 --phase implement --task-type met
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 910
 
 if [ "$(jqf '.verdict')" = "failed" ]; then
-  pass "fixture (A): verdict=failed for the double-miss"
+  common_test_pass "fixture (A): verdict=failed for the double-miss"
 else
-  fail "fixture (A): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "fixture (A): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 a_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length' \
   "$WORKDIR/specs/910_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$a_defect_count" = "1" ]; then
-  pass "fixture (A): exactly one HANDOFF_STALE_OR_ABSENT defect row recorded"
+  common_test_pass "fixture (A): exactly one HANDOFF_STALE_OR_ABSENT defect row recorded"
 else
-  fail "fixture (A): expected exactly 1 HANDOFF_STALE_OR_ABSENT defect, got $a_defect_count"
+  common_test_fail "fixture (A): expected exactly 1 HANDOFF_STALE_OR_ABSENT defect, got $a_defect_count"
 fi
 # Sub-case (i), META_MISSING: this task's WORK (d) discrimination must not touch this arm at
 # all -- attribution stays skill-orchestrate/SKILL.md and zero RECOVERY_DECLINED rows are
 # recorded, made an assertion rather than an assumption per the dispatch's arm (b).
 if jq -e '.detected_defects[] | select(.defect_class == "HANDOFF_STALE_OR_ABSENT") | .attributed_source_path == "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"' \
      "$WORKDIR/specs/910_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "fixture (A): HANDOFF_STALE_OR_ABSENT still attributed to skill-orchestrate/SKILL.md, unchanged"
+  common_test_pass "fixture (A): HANDOFF_STALE_OR_ABSENT still attributed to skill-orchestrate/SKILL.md, unchanged"
 else
-  fail "fixture (A): HANDOFF_STALE_OR_ABSENT attribution changed unexpectedly"
+  common_test_fail "fixture (A): HANDOFF_STALE_OR_ABSENT attribution changed unexpectedly"
 fi
 a_recovery_declined_count=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
   "$WORKDIR/specs/910_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$a_recovery_declined_count" = "0" ]; then
-  pass "fixture (A): zero RECOVERY_DECLINED rows recorded for the META_MISSING sub-case"
+  common_test_pass "fixture (A): zero RECOVERY_DECLINED rows recorded for the META_MISSING sub-case"
 else
-  fail "fixture (A): expected 0 RECOVERY_DECLINED rows, got $a_recovery_declined_count"
+  common_test_fail "fixture (A): expected 0 RECOVERY_DECLINED rows, got $a_recovery_declined_count"
 fi
 if echo "$LAST_STDERR" | grep -q "not on the contractual handoff-writer allowlist"; then
-  fail "fixture (A): stale allowlist WARN text still present on stderr"
+  common_test_fail "fixture (A): stale allowlist WARN text still present on stderr"
 else
-  pass "fixture (A): no allowlist WARN text on stderr (the removed mechanism's wording is gone)"
+  common_test_pass "fixture (A): no allowlist WARN text on stderr (the removed mechanism's wording is gone)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Fixture (B): the explicit opt-out. Same double-miss, but the caller passes
 # --handoff-expected false -- the aux-dispatch-equivalent case. No defect is recorded.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (B): --handoff-expected false double-miss records zero defects"
+common_test_info "Fixture (B): --handoff-expected false double-miss records zero defects"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/911_candidate"
 write_state <<'EOF'
@@ -841,14 +837,14 @@ run_sut specs/911_candidate --session sess_911 --phase implement --task-type met
 
 b_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/911_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$b_defect_count" = "0" ]; then
-  pass "fixture (B): --handoff-expected false records zero defects for the same double-miss"
+  common_test_pass "fixture (B): --handoff-expected false records zero defects for the same double-miss"
 else
-  fail "fixture (B): expected 0 detected_defects, got $b_defect_count"
+  common_test_fail "fixture (B): expected 0 detected_defects, got $b_defect_count"
 fi
 if echo "$LAST_STDERR" | grep -q "handoff not expected for this dispatch"; then
-  pass "fixture (B): neutral INFO line present for the explicit opt-out"
+  common_test_pass "fixture (B): neutral INFO line present for the explicit opt-out"
 else
-  fail "fixture (B): expected the neutral opt-out INFO line on stderr, got: $LAST_STDERR"
+  common_test_fail "fixture (B): expected the neutral opt-out INFO line on stderr, got: $LAST_STDERR"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -857,7 +853,7 @@ fi
 # neither file). Asserts verdict=failed, one defect, and task status unchanged (never
 # "researched").
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (C): general-research-agent double-miss (research phase) records a defect and never advances to researched"
+common_test_info "Fixture (C): general-research-agent double-miss (research phase) records a defect and never advances to researched"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/912_candidate"
 write_state <<'EOF'
@@ -874,42 +870,42 @@ run_sut specs/912_candidate --session sess_912 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 912
 
 if [ "$(jqf '.verdict')" = "failed" ]; then
-  pass "fixture (C): verdict=failed for the research-phase double-miss"
+  common_test_pass "fixture (C): verdict=failed for the research-phase double-miss"
 else
-  fail "fixture (C): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "fixture (C): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 c_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length' \
   "$WORKDIR/specs/912_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$c_defect_count" = "1" ]; then
-  pass "fixture (C): exactly one HANDOFF_STALE_OR_ABSENT defect row recorded"
+  common_test_pass "fixture (C): exactly one HANDOFF_STALE_OR_ABSENT defect row recorded"
 else
-  fail "fixture (C): expected exactly 1 HANDOFF_STALE_OR_ABSENT defect, got $c_defect_count"
+  common_test_fail "fixture (C): expected exactly 1 HANDOFF_STALE_OR_ABSENT defect, got $c_defect_count"
 fi
 # Sub-case (i), META_MISSING (research phase, this task's own observed incident's sibling
 # shape): attribution stays skill-orchestrate/SKILL.md and zero RECOVERY_DECLINED rows.
 if jq -e '.detected_defects[] | select(.defect_class == "HANDOFF_STALE_OR_ABSENT") | .attributed_source_path == "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"' \
      "$WORKDIR/specs/912_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "fixture (C): HANDOFF_STALE_OR_ABSENT still attributed to skill-orchestrate/SKILL.md, unchanged"
+  common_test_pass "fixture (C): HANDOFF_STALE_OR_ABSENT still attributed to skill-orchestrate/SKILL.md, unchanged"
 else
-  fail "fixture (C): HANDOFF_STALE_OR_ABSENT attribution changed unexpectedly"
+  common_test_fail "fixture (C): HANDOFF_STALE_OR_ABSENT attribution changed unexpectedly"
 fi
 c_recovery_declined_count=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
   "$WORKDIR/specs/912_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$c_recovery_declined_count" = "0" ]; then
-  pass "fixture (C): zero RECOVERY_DECLINED rows recorded for the META_MISSING sub-case"
+  common_test_pass "fixture (C): zero RECOVERY_DECLINED rows recorded for the META_MISSING sub-case"
 else
-  fail "fixture (C): expected 0 RECOVERY_DECLINED rows, got $c_recovery_declined_count"
+  common_test_fail "fixture (C): expected 0 RECOVERY_DECLINED rows, got $c_recovery_declined_count"
 fi
 new_status_912=$(jq -r --argjson n 912 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_912" = "researching" ]; then
-  pass "fixture (C): task status unchanged (still researching, never advanced to researched)"
+  common_test_pass "fixture (C): task status unchanged (still researching, never advanced to researched)"
 else
-  fail "fixture (C): expected status to remain researching, got: $new_status_912"
+  common_test_fail "fixture (C): expected status to remain researching, got: $new_status_912"
 fi
 if [ "$(jqf '.report_missing')" = "true" ]; then
-  pass "fixture (G): fixture C's double-miss also surfaces report_missing=true for the message-recovery consumer"
+  common_test_pass "fixture (G): fixture C's double-miss also surfaces report_missing=true for the message-recovery consumer"
 else
-  fail "fixture (G): expected report_missing=true for fixture C's double-miss, got: $(jqf '.report_missing') ($LAST_STDOUT)"
+  common_test_fail "fixture (G): expected report_missing=true for fixture C's double-miss, got: $(jqf '.report_missing') ($LAST_STDOUT)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -920,7 +916,7 @@ fi
 # RECOVERY_DECLINED attributed to the dispatched agent's own file, never HANDOFF_STALE_OR_ABSENT
 # attributed to skill-orchestrate/SKILL.md.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (H): STATUS_NOT_SUCCESS (status=completed) records RECOVERY_DECLINED attributed to the dispatched agent"
+common_test_info "Fixture (H): STATUS_NOT_SUCCESS (status=completed) records RECOVERY_DECLINED attributed to the dispatched agent"
 setup_sandbox
 stub_agent_file general-research-agent
 mkdir -p "$WORKDIR/specs/913_candidate/reports"
@@ -941,45 +937,45 @@ run_sut specs/913_candidate --session sess_913 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 913
 
 if [ "$(jqf '.verdict')" = "failed" ]; then
-  pass "fixture (H): verdict=failed"
+  common_test_pass "fixture (H): verdict=failed"
 else
-  fail "fixture (H): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "fixture (H): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 h_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
   "$WORKDIR/specs/913_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$h_recovery_declined" = "1" ]; then
-  pass "fixture (H): exactly one RECOVERY_DECLINED defect row recorded"
+  common_test_pass "fixture (H): exactly one RECOVERY_DECLINED defect row recorded"
 else
-  fail "fixture (H): expected exactly 1 RECOVERY_DECLINED defect, got $h_recovery_declined"
+  common_test_fail "fixture (H): expected exactly 1 RECOVERY_DECLINED defect, got $h_recovery_declined"
 fi
 h_stale_absent=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length' \
   "$WORKDIR/specs/913_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$h_stale_absent" = "0" ]; then
-  pass "fixture (H): zero HANDOFF_STALE_OR_ABSENT rows recorded"
+  common_test_pass "fixture (H): zero HANDOFF_STALE_OR_ABSENT rows recorded"
 else
-  fail "fixture (H): expected 0 HANDOFF_STALE_OR_ABSENT rows, got $h_stale_absent"
+  common_test_fail "fixture (H): expected 0 HANDOFF_STALE_OR_ABSENT rows, got $h_stale_absent"
 fi
 if jq -e '.detected_defects[] | select(.defect_class == "RECOVERY_DECLINED") | .attributed_source_path == "agent-system/extensions/core/agents/general-research-agent.md"' \
      "$WORKDIR/specs/913_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "fixture (H): RECOVERY_DECLINED attributed to the dispatched agent's own file, not skill-orchestrate/SKILL.md"
+  common_test_pass "fixture (H): RECOVERY_DECLINED attributed to the dispatched agent's own file, not skill-orchestrate/SKILL.md"
 else
-  fail "fixture (H): RECOVERY_DECLINED attribution did not resolve to the dispatched agent's file"
+  common_test_fail "fixture (H): RECOVERY_DECLINED attribution did not resolve to the dispatched agent's file"
 fi
 if echo "$LAST_STDERR" | grep -q "Skill did not write orchestrator handoff"; then
-  fail "fixture (H): stale 'Skill did not write orchestrator handoff' text still present on stderr"
+  common_test_fail "fixture (H): stale 'Skill did not write orchestrator handoff' text still present on stderr"
 else
-  pass "fixture (H): no longer claims the skill failed to write a handoff"
+  common_test_pass "fixture (H): no longer claims the skill failed to write a handoff"
 fi
 if echo "$LAST_STDERR" | grep -q "status value is 'completed', which is explicitly forbidden"; then
-  pass "fixture (H): stderr names the forbidden status value, sourced from the shared vocabulary library"
+  common_test_pass "fixture (H): stderr names the forbidden status value, sourced from the shared vocabulary library"
 else
-  fail "fixture (H): expected the forbidden-status message on stderr, got: $LAST_STDERR"
+  common_test_fail "fixture (H): expected the forbidden-status message on stderr, got: $LAST_STDERR"
 fi
 new_status_913=$(jq -r --argjson n 913 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_913" = "researching" ]; then
-  pass "fixture (H): task status unchanged (never advanced on the strength of an unaccepted status)"
+  common_test_pass "fixture (H): task status unchanged (never advanced on the strength of an unaccepted status)"
 else
-  fail "fixture (H): expected status to remain researching, got: $new_status_913"
+  common_test_fail "fixture (H): expected status to remain researching, got: $new_status_913"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -988,7 +984,7 @@ fi
 # vocabulary member, not itself a violation). Same class and attribution as fixture (H); the
 # message must read as an interrupted write, not a vocabulary violation.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (I): STATUS_IN_PROGRESS records RECOVERY_DECLINED attributed to the dispatched agent"
+common_test_info "Fixture (I): STATUS_IN_PROGRESS records RECOVERY_DECLINED attributed to the dispatched agent"
 setup_sandbox
 stub_agent_file general-research-agent
 mkdir -p "$WORKDIR/specs/914_candidate/reports"
@@ -1009,34 +1005,34 @@ run_sut specs/914_candidate --session sess_914 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 914
 
 if [ "$(jqf '.verdict')" = "failed" ]; then
-  pass "fixture (I): verdict=failed"
+  common_test_pass "fixture (I): verdict=failed"
 else
-  fail "fixture (I): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "fixture (I): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 i_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
   "$WORKDIR/specs/914_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$i_recovery_declined" = "1" ]; then
-  pass "fixture (I): exactly one RECOVERY_DECLINED defect row recorded"
+  common_test_pass "fixture (I): exactly one RECOVERY_DECLINED defect row recorded"
 else
-  fail "fixture (I): expected exactly 1 RECOVERY_DECLINED defect, got $i_recovery_declined"
+  common_test_fail "fixture (I): expected exactly 1 RECOVERY_DECLINED defect, got $i_recovery_declined"
 fi
 i_stale_absent=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_STALE_OR_ABSENT")) | length' \
   "$WORKDIR/specs/914_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$i_stale_absent" = "0" ]; then
-  pass "fixture (I): zero HANDOFF_STALE_OR_ABSENT rows recorded"
+  common_test_pass "fixture (I): zero HANDOFF_STALE_OR_ABSENT rows recorded"
 else
-  fail "fixture (I): expected 0 HANDOFF_STALE_OR_ABSENT rows, got $i_stale_absent"
+  common_test_fail "fixture (I): expected 0 HANDOFF_STALE_OR_ABSENT rows, got $i_stale_absent"
 fi
 if jq -e '.detected_defects[] | select(.defect_class == "RECOVERY_DECLINED") | .attributed_source_path == "agent-system/extensions/core/agents/general-research-agent.md"' \
      "$WORKDIR/specs/914_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "fixture (I): RECOVERY_DECLINED attributed to the dispatched agent's own file, not skill-orchestrate/SKILL.md"
+  common_test_pass "fixture (I): RECOVERY_DECLINED attributed to the dispatched agent's own file, not skill-orchestrate/SKILL.md"
 else
-  fail "fixture (I): RECOVERY_DECLINED attribution did not resolve to the dispatched agent's file"
+  common_test_fail "fixture (I): RECOVERY_DECLINED attribution did not resolve to the dispatched agent's file"
 fi
 if echo "$LAST_STDERR" | grep -q "terminal write never happened"; then
-  pass "fixture (I): stderr phrases the failure as a terminal write that never happened, not a vocabulary violation"
+  common_test_pass "fixture (I): stderr phrases the failure as a terminal write that never happened, not a vocabulary violation"
 else
-  fail "fixture (I): expected the terminal-write-never-happened phrasing on stderr, got: $LAST_STDERR"
+  common_test_fail "fixture (I): expected the terminal-write-never-happened phrasing on stderr, got: $LAST_STDERR"
 fi
 # VERIFY (1)/(2): the adjacent issue-record.sh call (now live in the sandbox -- see
 # setup_sandbox's issue-record.sh copy-list comment) carries the dispatch's real phase and a
@@ -1047,21 +1043,21 @@ i_issues_file="$WORKDIR/specs/914_candidate/issues.jsonl"
 i_od_count=0
 [ -f "$i_issues_file" ] && i_od_count=$(jq -s '[.[] | select(.class == "orchestration defect")] | length' "$i_issues_file" 2>/dev/null)
 if [ "$i_od_count" = "1" ]; then
-  pass "fixture (I): exactly one orchestration-defect issues.jsonl entry recorded"
+  common_test_pass "fixture (I): exactly one orchestration-defect issues.jsonl entry recorded"
 else
-  fail "fixture (I): expected exactly 1 orchestration-defect issues.jsonl entry, got ${i_od_count:-0}"
+  common_test_fail "fixture (I): expected exactly 1 orchestration-defect issues.jsonl entry, got ${i_od_count:-0}"
 fi
 i_issue_phase=$(jq -s -r '[.[] | select(.class == "orchestration defect")][0].phase // "MISSING"' "$i_issues_file" 2>/dev/null)
 if [ "$i_issue_phase" = "research" ]; then
-  pass "fixture (I): issues.jsonl entry carries phase=research, not the old --phase implement literal (VERIFY 1)"
+  common_test_pass "fixture (I): issues.jsonl entry carries phase=research, not the old --phase implement literal (VERIFY 1)"
 else
-  fail "fixture (I): expected issues.jsonl .phase == research, got: $i_issue_phase"
+  common_test_fail "fixture (I): expected issues.jsonl .phase == research, got: $i_issue_phase"
 fi
 i_issue_seq=$(jq -s -r '[.[] | select(.class == "orchestration defect")][0].dispatch_seq // "MISSING"' "$i_issues_file" 2>/dev/null)
 if [ "$i_issue_seq" = "1" ]; then
-  pass "fixture (I): issues.jsonl entry carries non-null dispatch_seq=1, matching this fixture's --dispatch-seq 1 (VERIFY 2)"
+  common_test_pass "fixture (I): issues.jsonl entry carries non-null dispatch_seq=1, matching this fixture's --dispatch-seq 1 (VERIFY 2)"
 else
-  fail "fixture (I): expected issues.jsonl .dispatch_seq == 1 (non-null), got: $i_issue_seq"
+  common_test_fail "fixture (I): expected issues.jsonl .dispatch_seq == 1 (non-null), got: $i_issue_seq"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1070,7 +1066,7 @@ fi
 # produced no handoff). Mirrors fixture (I)'s shape exactly except for phase/agent/dispatch_seq,
 # confirming VERIFY (1)/(2) hold outside the research-only fixture (I) above.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (I2): STATUS_IN_PROGRESS at --phase plan records the real phase and dispatch_seq (regression pin for the cited incident)"
+common_test_info "Fixture (I2): STATUS_IN_PROGRESS at --phase plan records the real phase and dispatch_seq (regression pin for the cited incident)"
 setup_sandbox
 stub_agent_file planner-agent
 mkdir -p "$WORKDIR/specs/915_candidate/plans"
@@ -1091,29 +1087,29 @@ run_sut specs/915_candidate --session sess_915 --phase plan --task-type general 
   --dispatch-seq 7 --dispatch-start-ts "$i2_window_start" 915
 
 if [ "$(jqf '.verdict')" = "failed" ]; then
-  pass "fixture (I2): verdict=failed"
+  common_test_pass "fixture (I2): verdict=failed"
 else
-  fail "fixture (I2): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "fixture (I2): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 i2_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
   "$WORKDIR/specs/915_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$i2_recovery_declined" = "1" ]; then
-  pass "fixture (I2): exactly one RECOVERY_DECLINED defect row recorded"
+  common_test_pass "fixture (I2): exactly one RECOVERY_DECLINED defect row recorded"
 else
-  fail "fixture (I2): expected exactly 1 RECOVERY_DECLINED defect, got $i2_recovery_declined"
+  common_test_fail "fixture (I2): expected exactly 1 RECOVERY_DECLINED defect, got $i2_recovery_declined"
 fi
 i2_issues_file="$WORKDIR/specs/915_candidate/issues.jsonl"
 i2_issue_phase=$(jq -s -r '[.[] | select(.class == "orchestration defect")][0].phase // "MISSING"' "$i2_issues_file" 2>/dev/null)
 if [ "$i2_issue_phase" = "plan" ]; then
-  pass "fixture (I2): issues.jsonl entry carries phase=plan -- the direct regression pin for the cited planner-dispatch incident (VERIFY 1)"
+  common_test_pass "fixture (I2): issues.jsonl entry carries phase=plan -- the direct regression pin for the cited planner-dispatch incident (VERIFY 1)"
 else
-  fail "fixture (I2): expected issues.jsonl .phase == plan, got: $i2_issue_phase"
+  common_test_fail "fixture (I2): expected issues.jsonl .phase == plan, got: $i2_issue_phase"
 fi
 i2_issue_seq=$(jq -s -r '[.[] | select(.class == "orchestration defect")][0].dispatch_seq // "MISSING"' "$i2_issues_file" 2>/dev/null)
 if [ "$i2_issue_seq" = "7" ]; then
-  pass "fixture (I2): issues.jsonl entry carries non-null dispatch_seq=7, matching this fixture's minted seq (VERIFY 2)"
+  common_test_pass "fixture (I2): issues.jsonl entry carries non-null dispatch_seq=7, matching this fixture's minted seq (VERIFY 2)"
 else
-  fail "fixture (I2): expected issues.jsonl .dispatch_seq == 7 (non-null), got: $i2_issue_seq"
+  common_test_fail "fixture (I2): expected issues.jsonl .dispatch_seq == 7 (non-null), got: $i2_issue_seq"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1122,7 +1118,7 @@ fi
 # in both the structured tags and the what_happened prose, while the defect class and severity
 # stay unchanged in both -- the annotation discriminates, it never reclassifies.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (J1): a commit inside the dispatch window -> tags.stall_corroborated=true (VERIFY 3a)"
+common_test_info "Fixture (J1): a commit inside the dispatch window -> tags.stall_corroborated=true (VERIFY 3a)"
 setup_sandbox
 stub_agent_file planner-agent
 mkdir -p "$WORKDIR/specs/916_candidate/plans"
@@ -1150,37 +1146,37 @@ run_sut specs/916_candidate --session sess_916 --phase plan --task-type general 
 j1_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
   "$WORKDIR/specs/916_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$j1_recovery_declined" = "1" ]; then
-  pass "fixture (J1): exactly one RECOVERY_DECLINED defect row recorded"
+  common_test_pass "fixture (J1): exactly one RECOVERY_DECLINED defect row recorded"
 else
-  fail "fixture (J1): expected exactly 1 RECOVERY_DECLINED defect, got $j1_recovery_declined"
+  common_test_fail "fixture (J1): expected exactly 1 RECOVERY_DECLINED defect, got $j1_recovery_declined"
 fi
 j1_entry=$(jq -s '[.[] | select(.class == "orchestration defect")][0]' "$WORKDIR/specs/916_candidate/issues.jsonl" 2>/dev/null)
 j1_severity=$(echo "$j1_entry" | jq -r '.severity // "MISSING"')
 if [ "$j1_severity" = "blocking" ]; then
-  pass "fixture (J1): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
+  common_test_pass "fixture (J1): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
 else
-  fail "fixture (J1): expected severity=blocking, got $j1_severity"
+  common_test_fail "fixture (J1): expected severity=blocking, got $j1_severity"
 fi
 j1_stall_corr=$(echo "$j1_entry" | jq -r 'if (.tags | has("stall_corroborated")) then (.tags.stall_corroborated | tostring) else "MISSING" end')
 if [ "$j1_stall_corr" = "true" ]; then
-  pass "fixture (J1): tags.stall_corroborated == true when a commit lands inside the dispatch window (VERIFY 3a)"
+  common_test_pass "fixture (J1): tags.stall_corroborated == true when a commit lands inside the dispatch window (VERIFY 3a)"
 else
-  fail "fixture (J1): expected tags.stall_corroborated == true, got $j1_stall_corr"
+  common_test_fail "fixture (J1): expected tags.stall_corroborated == true, got $j1_stall_corr"
 fi
 j1_commit_count=$(echo "$j1_entry" | jq -r '.tags.stall_commit_count // 0')
 if [ "${j1_commit_count:-0}" -gt 0 ] 2>/dev/null; then
-  pass "fixture (J1): tags.stall_commit_count is positive ($j1_commit_count)"
+  common_test_pass "fixture (J1): tags.stall_commit_count is positive ($j1_commit_count)"
 else
-  fail "fixture (J1): expected a positive tags.stall_commit_count, got $j1_commit_count"
+  common_test_fail "fixture (J1): expected a positive tags.stall_commit_count, got $j1_commit_count"
 fi
 j1_what_happened=$(echo "$j1_entry" | jq -r '.what_happened // ""')
 if echo "$j1_what_happened" | grep -q "one re-prompt"; then
-  pass "fixture (J1): what_happened carries the one-re-prompt remedy phrasing"
+  common_test_pass "fixture (J1): what_happened carries the one-re-prompt remedy phrasing"
 else
-  fail "fixture (J1): expected the one-re-prompt remedy phrasing in what_happened, got: $j1_what_happened"
+  common_test_fail "fixture (J1): expected the one-re-prompt remedy phrasing in what_happened, got: $j1_what_happened"
 fi
 
-info "Fixture (J2): no commit inside the dispatch window -> tags.stall_corroborated=false (VERIFY 3b)"
+common_test_info "Fixture (J2): no commit inside the dispatch window -> tags.stall_corroborated=false (VERIFY 3b)"
 setup_sandbox
 stub_agent_file planner-agent
 mkdir -p "$WORKDIR/specs/917_candidate/plans"
@@ -1204,28 +1200,28 @@ run_sut specs/917_candidate --session sess_917 --phase plan --task-type general 
 j2_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
   "$WORKDIR/specs/917_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$j2_recovery_declined" = "1" ]; then
-  pass "fixture (J2): exactly one RECOVERY_DECLINED defect row recorded"
+  common_test_pass "fixture (J2): exactly one RECOVERY_DECLINED defect row recorded"
 else
-  fail "fixture (J2): expected exactly 1 RECOVERY_DECLINED defect, got $j2_recovery_declined"
+  common_test_fail "fixture (J2): expected exactly 1 RECOVERY_DECLINED defect, got $j2_recovery_declined"
 fi
 j2_entry=$(jq -s '[.[] | select(.class == "orchestration defect")][0]' "$WORKDIR/specs/917_candidate/issues.jsonl" 2>/dev/null)
 j2_severity=$(echo "$j2_entry" | jq -r '.severity // "MISSING"')
 if [ "$j2_severity" = "blocking" ]; then
-  pass "fixture (J2): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
+  common_test_pass "fixture (J2): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
 else
-  fail "fixture (J2): expected severity=blocking, got $j2_severity"
+  common_test_fail "fixture (J2): expected severity=blocking, got $j2_severity"
 fi
 j2_stall_corr=$(echo "$j2_entry" | jq -r 'if (.tags | has("stall_corroborated")) then (.tags.stall_corroborated | tostring) else "MISSING" end')
 if [ "$j2_stall_corr" = "false" ]; then
-  pass "fixture (J2): tags.stall_corroborated == false when no commit landed inside the window (VERIFY 3b)"
+  common_test_pass "fixture (J2): tags.stall_corroborated == false when no commit landed inside the window (VERIFY 3b)"
 else
-  fail "fixture (J2): expected tags.stall_corroborated == false, got $j2_stall_corr"
+  common_test_fail "fixture (J2): expected tags.stall_corroborated == false, got $j2_stall_corr"
 fi
 j2_what_happened=$(echo "$j2_entry" | jq -r '.what_happened // ""')
 if echo "$j2_what_happened" | grep -q "none found"; then
-  pass "fixture (J2): what_happened carries the explicit no-corroborating-signal phrasing"
+  common_test_pass "fixture (J2): what_happened carries the explicit no-corroborating-signal phrasing"
 else
-  fail "fixture (J2): expected the no-corroborating-signal phrasing in what_happened, got: $j2_what_happened"
+  common_test_fail "fixture (J2): expected the no-corroborating-signal phrasing in what_happened, got: $j2_what_happened"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1245,7 +1241,7 @@ fi
 # which is why T1 omits --loop-guard-file too. This is a structural property of the production
 # script, not a fixture bug to work around by backdating .orchestrator-loop-guard.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (J3): stranded lock fixture -> tags.stranded_corroborated=true, stall_corroborated=false"
+common_test_info "Fixture (J3): stranded lock fixture -> tags.stranded_corroborated=true, stall_corroborated=false"
 setup_sandbox
 stub_agent_file general-implementation-agent
 mkdir -p "$WORKDIR/specs/918_candidate"
@@ -1285,28 +1281,28 @@ run_sut specs/918_candidate --session sess_918 --phase implement --task-type gen
 j3_recovery_declined=$(jq '.detected_defects | map(select(.defect_class == "RECOVERY_DECLINED")) | length' \
   "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_918.json" 2>/dev/null)
 if [ "$j3_recovery_declined" = "1" ]; then
-  pass "fixture (J3): exactly one RECOVERY_DECLINED defect row recorded"
+  common_test_pass "fixture (J3): exactly one RECOVERY_DECLINED defect row recorded"
 else
-  fail "fixture (J3): expected exactly 1 RECOVERY_DECLINED defect, got $j3_recovery_declined"
+  common_test_fail "fixture (J3): expected exactly 1 RECOVERY_DECLINED defect, got $j3_recovery_declined"
 fi
 j3_entry=$(jq -s '[.[] | select(.class == "orchestration defect")][0]' "$WORKDIR/specs/918_candidate/issues.jsonl" 2>/dev/null)
 j3_severity=$(echo "$j3_entry" | jq -r '.severity // "MISSING"')
 if [ "$j3_severity" = "blocking" ]; then
-  pass "fixture (J3): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
+  common_test_pass "fixture (J3): issues.jsonl entry severity stays blocking (annotation discriminates, does not reclassify)"
 else
-  fail "fixture (J3): expected severity=blocking, got $j3_severity"
+  common_test_fail "fixture (J3): expected severity=blocking, got $j3_severity"
 fi
 j3_strand_corr=$(echo "$j3_entry" | jq -r 'if (.tags | has("stranded_corroborated")) then (.tags.stranded_corroborated | tostring) else "MISSING" end')
 if [ "$j3_strand_corr" = "true" ]; then
-  pass "fixture (J3): tags.stranded_corroborated == true for a stranded lock fixture"
+  common_test_pass "fixture (J3): tags.stranded_corroborated == true for a stranded lock fixture"
 else
-  fail "fixture (J3): expected tags.stranded_corroborated == true, got $j3_strand_corr"
+  common_test_fail "fixture (J3): expected tags.stranded_corroborated == true, got $j3_strand_corr"
 fi
 j3_stall_corr=$(echo "$j3_entry" | jq -r 'if (.tags | has("stall_corroborated")) then (.tags.stall_corroborated | tostring) else "MISSING" end')
 if [ "$j3_stall_corr" = "false" ]; then
-  pass "fixture (J3): tags.stall_corroborated == false alongside stranded_corroborated=true (the two annotations are independent, exactly as the emitted fields are)"
+  common_test_pass "fixture (J3): tags.stall_corroborated == false alongside stranded_corroborated=true (the two annotations are independent, exactly as the emitted fields are)"
 else
-  fail "fixture (J3): expected tags.stall_corroborated == false, got $j3_stall_corr"
+  common_test_fail "fixture (J3): expected tags.stall_corroborated == false, got $j3_stall_corr"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1321,24 +1317,24 @@ fi
 # this pin flaky. This test must be updated only alongside an explicit decision to revise either
 # ruling -- never to make a widening change pass.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "VERIFY (4): stall_suspected's and stranded_suspected's canonical trigger expressions are unwidened"
+common_test_info "VERIFY (4): stall_suspected's and stranded_suspected's canonical trigger expressions are unwidened"
 stall_canonical_block=$(sed -n '/^stall_suspected=false$/,+6p' "$SUT_SRC" | sed ':a;N;$!ba;s/\\\n[ \t]*/ /g' | tr -s ' ')
 stall_trigger_count=$(echo "$stall_canonical_block" | grep -o -F \
   '{ [ "$phase" = "implement" ] || [ "$phase" = "plan" ]; } && [ "$have_outcome" != "true" ] && [ "$dispatch_start_ts" != "9999999999" ]' \
   | wc -l)
 if [ "$stall_trigger_count" = "1" ]; then
-  pass "VERIFY (4): stall_suspected's canonical trigger expression is present verbatim exactly once in its own block"
+  common_test_pass "VERIFY (4): stall_suspected's canonical trigger expression is present verbatim exactly once in its own block"
 else
-  fail "VERIFY (4): expected stall_suspected's canonical trigger expression exactly once in its own block, got $stall_trigger_count"
+  common_test_fail "VERIFY (4): expected stall_suspected's canonical trigger expression exactly once in its own block, got $stall_trigger_count"
 fi
 stranded_canonical_block=$(sed -n '/^stranded_suspected=false$/,+6p' "$SUT_SRC" | sed ':a;N;$!ba;s/\\\n[ \t]*/ /g' | tr -s ' ')
 stranded_trigger_count=$(echo "$stranded_canonical_block" | grep -o -F \
   '[ "$have_outcome" != "true" ] && [ "$dispatch_start_ts" != "9999999999" ] && [ "$strand_probe_verdict" = "stranded" ]' \
   | wc -l)
 if [ "$stranded_trigger_count" = "1" ]; then
-  pass "VERIFY (4): stranded_suspected's canonical trigger expression is present verbatim exactly once in its own block"
+  common_test_pass "VERIFY (4): stranded_suspected's canonical trigger expression is present verbatim exactly once in its own block"
 else
-  fail "VERIFY (4): expected stranded_suspected's canonical trigger expression exactly once in its own block, got $stranded_trigger_count"
+  common_test_fail "VERIFY (4): expected stranded_suspected's canonical trigger expression exactly once in its own block, got $stranded_trigger_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1346,7 +1342,7 @@ fi
 # verdict=failed, task status never advances to researched, one ARTIFACTS_MISSING_ON_SUCCESS
 # defect, report_missing=true.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (D): researched outcome with a nonexistent report file is refused"
+common_test_info "Fixture (D): researched outcome with a nonexistent report file is refused"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/920_candidate"
 write_state <<'EOF'
@@ -1366,34 +1362,34 @@ run_sut specs/920_candidate --session sess_920 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 920
 
 if [ "$(jqf '.verdict')" = "failed" ]; then
-  pass "fixture (D): verdict=failed for a nonexistent report file"
+  common_test_pass "fixture (D): verdict=failed for a nonexistent report file"
 else
-  fail "fixture (D): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "fixture (D): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 new_status_920=$(jq -r --argjson n 920 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_920" = "researching" ]; then
-  pass "fixture (D): task status never advanced to researched"
+  common_test_pass "fixture (D): task status never advanced to researched"
 else
-  fail "fixture (D): expected status to remain researching, got: $new_status_920"
+  common_test_fail "fixture (D): expected status to remain researching, got: $new_status_920"
 fi
 d_defect_count=$(jq '.detected_defects | map(select(.defect_class == "ARTIFACTS_MISSING_ON_SUCCESS")) | length' \
   "$WORKDIR/specs/920_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$d_defect_count" = "1" ]; then
-  pass "fixture (D): exactly one ARTIFACTS_MISSING_ON_SUCCESS defect recorded"
+  common_test_pass "fixture (D): exactly one ARTIFACTS_MISSING_ON_SUCCESS defect recorded"
 else
-  fail "fixture (D): expected exactly 1 ARTIFACTS_MISSING_ON_SUCCESS defect, got $d_defect_count"
+  common_test_fail "fixture (D): expected exactly 1 ARTIFACTS_MISSING_ON_SUCCESS defect, got $d_defect_count"
 fi
 if [ "$(jqf '.report_missing')" = "true" ]; then
-  pass "fixture (D): report_missing=true"
+  common_test_pass "fixture (D): report_missing=true"
 else
-  fail "fixture (D): expected report_missing=true, got: $(jqf '.report_missing')"
+  common_test_fail "fixture (D): expected report_missing=true, got: $(jqf '.report_missing')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Fixture (E): a "researched" outcome whose claimed report artifact exists but is EMPTY (0
 # bytes). Same assertions as (D) -- an empty file is not a usable report.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (E): researched outcome with an empty report file is refused"
+common_test_info "Fixture (E): researched outcome with an empty report file is refused"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/921_candidate/reports"
 : > "$WORKDIR/specs/921_candidate/reports/01_x-report.md"
@@ -1414,27 +1410,27 @@ run_sut specs/921_candidate --session sess_921 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 921
 
 if [ "$(jqf '.verdict')" = "failed" ]; then
-  pass "fixture (E): verdict=failed for an empty report file"
+  common_test_pass "fixture (E): verdict=failed for an empty report file"
 else
-  fail "fixture (E): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "fixture (E): expected verdict=failed, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 new_status_921=$(jq -r --argjson n 921 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_921" = "researching" ]; then
-  pass "fixture (E): task status never advanced to researched"
+  common_test_pass "fixture (E): task status never advanced to researched"
 else
-  fail "fixture (E): expected status to remain researching, got: $new_status_921"
+  common_test_fail "fixture (E): expected status to remain researching, got: $new_status_921"
 fi
 e_defect_count=$(jq '.detected_defects | map(select(.defect_class == "ARTIFACTS_MISSING_ON_SUCCESS")) | length' \
   "$WORKDIR/specs/921_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$e_defect_count" = "1" ]; then
-  pass "fixture (E): exactly one ARTIFACTS_MISSING_ON_SUCCESS defect recorded"
+  common_test_pass "fixture (E): exactly one ARTIFACTS_MISSING_ON_SUCCESS defect recorded"
 else
-  fail "fixture (E): expected exactly 1 ARTIFACTS_MISSING_ON_SUCCESS defect, got $e_defect_count"
+  common_test_fail "fixture (E): expected exactly 1 ARTIFACTS_MISSING_ON_SUCCESS defect, got $e_defect_count"
 fi
 if [ "$(jqf '.report_missing')" = "true" ]; then
-  pass "fixture (E): report_missing=true"
+  common_test_pass "fixture (E): report_missing=true"
 else
-  fail "fixture (E): expected report_missing=true, got: $(jqf '.report_missing')"
+  common_test_fail "fixture (E): expected report_missing=true, got: $(jqf '.report_missing')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1442,7 +1438,7 @@ fi
 # .return-meta.json still yields verdict=ok, status->researched, report_missing=false, and the
 # artifact gets linked.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fixture (F): a real non-empty report still transitions to researched (regression guard)"
+common_test_info "Fixture (F): a real non-empty report still transitions to researched (regression guard)"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/922_candidate/reports"
 echo "real findings" > "$WORKDIR/specs/922_candidate/reports/01_x-report.md"
@@ -1463,50 +1459,50 @@ run_sut specs/922_candidate --session sess_922 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 922
 
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "fixture (F): verdict=ok for a genuine non-empty report"
+  common_test_pass "fixture (F): verdict=ok for a genuine non-empty report"
 else
-  fail "fixture (F): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "fixture (F): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 new_status_922=$(jq -r --argjson n 922 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_922" = "researched" ]; then
-  pass "fixture (F): task status advanced to researched"
+  common_test_pass "fixture (F): task status advanced to researched"
 else
-  fail "fixture (F): expected status=researched, got: $new_status_922"
+  common_test_fail "fixture (F): expected status=researched, got: $new_status_922"
 fi
 f_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/922_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$f_defect_count" = "0" ]; then
-  pass "fixture (F): zero defects recorded for a genuine success"
+  common_test_pass "fixture (F): zero defects recorded for a genuine success"
 else
-  fail "fixture (F): expected 0 detected_defects, got $f_defect_count"
+  common_test_fail "fixture (F): expected 0 detected_defects, got $f_defect_count"
 fi
 if [ "$(jqf '.report_missing')" = "false" ]; then
-  pass "fixture (F): report_missing=false"
+  common_test_pass "fixture (F): report_missing=false"
 else
-  fail "fixture (F): expected report_missing=false, got: $(jqf '.report_missing')"
+  common_test_fail "fixture (F): expected report_missing=false, got: $(jqf '.report_missing')"
 fi
 linked_report_922=$(jq -r --argjson n 922 '.active_projects[] | select(.project_number == $n) | .artifacts // [] | map(select(.type == "report")) | .[0].path // ""' "$WORKDIR/specs/state.json")
 if [ "$linked_report_922" = "specs/922_candidate/reports/01_x-report.md" ]; then
-  pass "fixture (F): the report was linked into state.json's artifacts"
+  common_test_pass "fixture (F): the report was linked into state.json's artifacts"
 else
-  fail "fixture (F): expected the report linked, got: $linked_report_922"
+  common_test_fail "fixture (F): expected the report linked, got: $linked_report_922"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: the 9999999999 sentinel is literal and shared across the two gate scripts
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Invariant: 9999999999 fail-closed sentinel is the same literal in both scripts"
+common_test_info "Invariant: 9999999999 fail-closed sentinel is the same literal in both scripts"
 sentinel_count_1=$(grep -c 9999999999 "$CORE_DIR/orchestrate-cycle-postflight.sh")
 sentinel_count_2=$(grep -c 9999999999 "$CORE_DIR/orchestrate-recover-outcome.sh")
 if [ "$sentinel_count_1" -ge 1 ] && [ "$sentinel_count_2" -ge 1 ]; then
-  pass "invariant: 9999999999 sentinel present in both orchestrate-cycle-postflight.sh and orchestrate-recover-outcome.sh"
+  common_test_pass "invariant: 9999999999 sentinel present in both orchestrate-cycle-postflight.sh and orchestrate-recover-outcome.sh"
 else
-  fail "invariant: 9999999999 sentinel missing from one or both scripts (postflight=$sentinel_count_1, recover=$sentinel_count_2)"
+  common_test_fail "invariant: 9999999999 sentinel missing from one or both scripts (postflight=$sentinel_count_1, recover=$sentinel_count_2)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: the excursion advisory never changes exit code or verdict
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Invariant: modified_files-vs-file_scope excursion never changes exit code or verdict"
+common_test_info "Invariant: modified_files-vs-file_scope excursion never changes exit code or verdict"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/707_candidate/summaries"
 echo x > "$WORKDIR/specs/707_candidate/summaries/01_x-summary.md"
@@ -1541,37 +1537,37 @@ run_sut specs/707_candidate --session sess_707 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 707
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "invariant: an excursion outside file_scope still exits 0 with verdict=ok (detection only)"
+  common_test_pass "invariant: an excursion outside file_scope still exits 0 with verdict=ok (detection only)"
 else
-  fail "invariant: excursion changed exit code or verdict — exit=$LAST_EXIT, verdict=$(jqf '.verdict')"
+  common_test_fail "invariant: excursion changed exit code or verdict — exit=$LAST_EXIT, verdict=$(jqf '.verdict')"
 fi
 if echo "$LAST_STDERR" | grep -q "ADVISORY.*excursion.sh"; then
-  pass "invariant: the excursion is actually logged (the check is not silently inert)"
+  common_test_pass "invariant: the excursion is actually logged (the check is not silently inert)"
 else
-  fail "invariant: no ADVISORY excursion notice found in stderr: $LAST_STDERR"
+  common_test_fail "invariant: no ADVISORY excursion notice found in stderr: $LAST_STDERR"
 fi
 committed_files_707=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
 if echo "$committed_files_707" | grep -qx "completely/unrelated/excursion.sh"; then
-  fail "invariant: excursion path was committed despite being outside declared file_scope: $committed_files_707"
+  common_test_fail "invariant: excursion path was committed despite being outside declared file_scope: $committed_files_707"
 else
-  pass "invariant: excursion path was NOT staged into the commit (dropped, not committed)"
+  common_test_pass "invariant: excursion path was NOT staged into the commit (dropped, not committed)"
 fi
 if echo "$committed_files_707" | grep -qx "specs/707_candidate/summaries/01_x-summary.md"; then
-  pass "invariant: the in-scope summary file was committed"
+  common_test_pass "invariant: the in-scope summary file was committed"
 else
-  fail "invariant: in-scope summary file missing from commit contents: $committed_files_707"
+  common_test_fail "invariant: in-scope summary file missing from commit contents: $committed_files_707"
 fi
 dirty_707=$(cd "$WORKDIR" && git status --porcelain -- completely/unrelated/excursion.sh)
 if [ -n "$dirty_707" ]; then
-  pass "invariant: the dropped excursion path remains dirty on disk afterwards (left for manual review, not lost)"
+  common_test_pass "invariant: the dropped excursion path remains dirty on disk afterwards (left for manual review, not lost)"
 else
-  fail "invariant: the dropped excursion path is unexpectedly clean on disk — change may have been lost rather than merely left uncommitted"
+  common_test_fail "invariant: the dropped excursion path is unexpectedly clean on disk — change may have been lost rather than merely left uncommitted"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Fail-open: an empty declared file_scope commits every reported modified_files entry, unfiltered
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Fail-open: an empty declared file_scope commits every reported modified_files entry, unfiltered"
+common_test_info "Fail-open: an empty declared file_scope commits every reported modified_files entry, unfiltered"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/712_candidate/summaries"
 echo x > "$WORKDIR/specs/712_candidate/summaries/01_x-summary.md"
@@ -1596,27 +1592,27 @@ run_sut specs/712_candidate --session sess_712 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 712
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "fail-open: exit 0 and verdict=ok for an empty declared file_scope"
+  common_test_pass "fail-open: exit 0 and verdict=ok for an empty declared file_scope"
 else
-  fail "fail-open: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+  common_test_fail "fail-open: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
 fi
 committed_712=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
 if echo "$committed_712" | grep -qx "some/source/path/file.sh"; then
-  pass "fail-open: the reported modified_files entry was committed unfiltered (empty file_scope means no excursion filtering runs at all)"
+  common_test_pass "fail-open: the reported modified_files entry was committed unfiltered (empty file_scope means no excursion filtering runs at all)"
 else
-  fail "fail-open: expected some/source/path/file.sh in the commit, got: $committed_712"
+  common_test_fail "fail-open: expected some/source/path/file.sh in the commit, got: $committed_712"
 fi
 if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED"; then
-  fail "fail-open: unexpected EXCURSION DROPPED warning for an empty declared file_scope: $LAST_STDERR"
+  common_test_fail "fail-open: unexpected EXCURSION DROPPED warning for an empty declared file_scope: $LAST_STDERR"
 else
-  pass "fail-open: zero EXCURSION DROPPED warnings for an empty declared file_scope"
+  common_test_pass "fail-open: zero EXCURSION DROPPED warnings for an empty declared file_scope"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # specs/ carve-out: TASK_DIR/, TODO.md, state.json and the plan path are committed even when
 # file_scope names none of them (the four carve-out appends sit outside the filtered loop)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "specs/ carve-out: TASK_DIR, TODO.md, state.json and the plan path are committed even when declared file_scope names none of them"
+common_test_info "specs/ carve-out: TASK_DIR, TODO.md, state.json and the plan path are committed even when declared file_scope names none of them"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/713_candidate/summaries" "$WORKDIR/specs/713_candidate/plans"
 echo x > "$WORKDIR/specs/713_candidate/summaries/01_x-summary.md"
@@ -1646,42 +1642,42 @@ run_sut specs/713_candidate --session sess_713 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 713
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "carve-out: exit 0 and verdict=ok"
+  common_test_pass "carve-out: exit 0 and verdict=ok"
 else
-  fail "carve-out: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+  common_test_fail "carve-out: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
 fi
 committed_713=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
 if echo "$committed_713" | grep -qx "specs/713_candidate/.return-meta.json"; then
-  pass "carve-out: the task's own directory (.return-meta.json) was committed despite file_scope naming none of it"
+  common_test_pass "carve-out: the task's own directory (.return-meta.json) was committed despite file_scope naming none of it"
 else
-  fail "carve-out: expected specs/713_candidate/.return-meta.json in the commit, got: $committed_713"
+  common_test_fail "carve-out: expected specs/713_candidate/.return-meta.json in the commit, got: $committed_713"
 fi
 if echo "$committed_713" | grep -qx "specs/state.json"; then
-  pass "carve-out: state.json was committed despite file_scope naming none of it"
+  common_test_pass "carve-out: state.json was committed despite file_scope naming none of it"
 else
-  fail "carve-out: expected specs/state.json in the commit, got: $committed_713"
+  common_test_fail "carve-out: expected specs/state.json in the commit, got: $committed_713"
 fi
 if echo "$committed_713" | grep -qx "specs/TODO.md"; then
-  pass "carve-out: TODO.md was committed despite file_scope naming none of it"
+  common_test_pass "carve-out: TODO.md was committed despite file_scope naming none of it"
 else
-  fail "carve-out: expected specs/TODO.md in the commit, got: $committed_713"
+  common_test_fail "carve-out: expected specs/TODO.md in the commit, got: $committed_713"
 fi
 if echo "$committed_713" | grep -qx "specs/713_candidate/plans/01_plan.md"; then
-  pass "carve-out: the plan path was committed despite file_scope naming none of it"
+  common_test_pass "carve-out: the plan path was committed despite file_scope naming none of it"
 else
-  fail "carve-out: expected specs/713_candidate/plans/01_plan.md in the commit, got: $committed_713"
+  common_test_fail "carve-out: expected specs/713_candidate/plans/01_plan.md in the commit, got: $committed_713"
 fi
 if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED"; then
-  fail "carve-out: unexpected EXCURSION DROPPED warning — the carve-out paths are never tested against file_scope: $LAST_STDERR"
+  common_test_fail "carve-out: unexpected EXCURSION DROPPED warning — the carve-out paths are never tested against file_scope: $LAST_STDERR"
 else
-  pass "carve-out: zero EXCURSION DROPPED warnings (the carve-out paths never entered modified_files, so none could be dropped)"
+  common_test_pass "carve-out: zero EXCURSION DROPPED warnings (the carve-out paths never entered modified_files, so none could be dropped)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # All-entries-dropped edge: every modified_files entry is an excursion, so stage_paths reduces to
 # just the specs/ carve-out entries -- must still commit cleanly (no V3/V6 refusal)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "All-entries-dropped edge: every reported modified_files entry is an excursion; stage_paths reduces to the specs/ carve-out alone"
+common_test_info "All-entries-dropped edge: every reported modified_files entry is an excursion; stage_paths reduces to the specs/ carve-out alone"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/714_candidate/summaries"
 echo x > "$WORKDIR/specs/714_candidate/summaries/01_x-summary.md"
@@ -1707,33 +1703,33 @@ run_sut specs/714_candidate --session sess_714 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 714
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "all-dropped: exit 0 and verdict=ok even when every reported entry is dropped"
+  common_test_pass "all-dropped: exit 0 and verdict=ok even when every reported entry is dropped"
 else
-  fail "all-dropped: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+  common_test_fail "all-dropped: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
 fi
 after_head_714=$(cd "$WORKDIR" && git rev-parse HEAD)
 if [ "$before_head_714" != "$after_head_714" ]; then
-  pass "all-dropped: a commit was still created from the specs/ carve-out alone (HEAD advanced, no V3/V6 refusal)"
+  common_test_pass "all-dropped: a commit was still created from the specs/ carve-out alone (HEAD advanced, no V3/V6 refusal)"
 else
-  fail "all-dropped: HEAD did not advance -- the commit was refused or skipped when it should have proceeded on the carve-out alone"
+  common_test_fail "all-dropped: HEAD did not advance -- the commit was refused or skipped when it should have proceeded on the carve-out alone"
 fi
 if echo "$LAST_STDERR" | grep -q "WARNING: commit failed"; then
-  fail "all-dropped: unexpected commit-failed warning: $LAST_STDERR"
+  common_test_fail "all-dropped: unexpected commit-failed warning: $LAST_STDERR"
 else
-  pass "all-dropped: no commit-failed warning"
+  common_test_pass "all-dropped: no commit-failed warning"
 fi
 committed_714=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
 if echo "$committed_714" | grep -qx "completely/unrelated2/excursion2.sh"; then
-  fail "all-dropped: the excursion path was unexpectedly committed: $committed_714"
+  common_test_fail "all-dropped: the excursion path was unexpectedly committed: $committed_714"
 else
-  pass "all-dropped: the sole reported entry was dropped, not committed"
+  common_test_pass "all-dropped: the sole reported entry was dropped, not committed"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Zero modified_files: the existing warning fires with its sanctioned wording, unchanged, and
 # nothing from source is committed (confirmed, not previously covered by any existing case)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Zero modified_files: sanctioned warning wording fires unchanged, nothing from source committed"
+common_test_info "Zero modified_files: sanctioned warning wording fires unchanged, nothing from source committed"
 setup_sandbox
 zm_num=790
 mkdir -p "$WORKDIR/specs/${zm_num}_candidate/summaries"
@@ -1756,21 +1752,21 @@ run_sut "specs/${zm_num}_candidate" --session "sess_${zm_num}" --phase implement
 
 expected_zm_warning="[postflight] WARNING: no modified_files reported for task #${zm_num}; source-file changes NOT committed automatically. Review and commit manually."
 if echo "$LAST_STDERR" | grep -qF "$expected_zm_warning"; then
-  pass "zero modified_files: sanctioned warning wording fires unchanged"
+  common_test_pass "zero modified_files: sanctioned warning wording fires unchanged"
 else
-  fail "zero modified_files: sanctioned warning wording not found: $LAST_STDERR"
+  common_test_fail "zero modified_files: sanctioned warning wording not found: $LAST_STDERR"
 fi
 if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED"; then
-  fail "zero modified_files: unexpected EXCURSION DROPPED warning with nothing reported: $LAST_STDERR"
+  common_test_fail "zero modified_files: unexpected EXCURSION DROPPED warning with nothing reported: $LAST_STDERR"
 else
-  pass "zero modified_files: zero EXCURSION DROPPED warnings with nothing reported"
+  common_test_pass "zero modified_files: zero EXCURSION DROPPED warnings with nothing reported"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Engine-written state-file allowlist: specs/TODO.md and specs/state.json inside modified_files
 # are never classified as excursions, while a genuine out-of-scope path in the same run still is
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Engine-written state-file allowlist: specs/TODO.md and specs/state.json in modified_files are never excursions; a genuine excursion in the same run still is"
+common_test_info "Engine-written state-file allowlist: specs/TODO.md and specs/state.json in modified_files are never excursions; a genuine excursion in the same run still is"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/718_candidate/summaries"
 echo x > "$WORKDIR/specs/718_candidate/summaries/01_x-summary.md"
@@ -1802,76 +1798,76 @@ run_sut specs/718_candidate --session sess_718 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 718
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "state-file allowlist: exit 0 and verdict=ok"
+  common_test_pass "state-file allowlist: exit 0 and verdict=ok"
 else
-  fail "state-file allowlist: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+  common_test_fail "state-file allowlist: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
 fi
 if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED.*specs/TODO.md"; then
-  fail "state-file allowlist: unexpected EXCURSION DROPPED naming specs/TODO.md: $LAST_STDERR"
+  common_test_fail "state-file allowlist: unexpected EXCURSION DROPPED naming specs/TODO.md: $LAST_STDERR"
 else
-  pass "state-file allowlist: zero EXCURSION DROPPED lines naming specs/TODO.md"
+  common_test_pass "state-file allowlist: zero EXCURSION DROPPED lines naming specs/TODO.md"
 fi
 if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED.*specs/state.json"; then
-  fail "state-file allowlist: unexpected EXCURSION DROPPED naming specs/state.json: $LAST_STDERR"
+  common_test_fail "state-file allowlist: unexpected EXCURSION DROPPED naming specs/state.json: $LAST_STDERR"
 else
-  pass "state-file allowlist: zero EXCURSION DROPPED lines naming specs/state.json"
+  common_test_pass "state-file allowlist: zero EXCURSION DROPPED lines naming specs/state.json"
 fi
 if echo "$LAST_STDERR" | grep -q "ADVISORY.*specs/TODO.md"; then
-  fail "state-file allowlist: unexpected ADVISORY line naming specs/TODO.md: $LAST_STDERR"
+  common_test_fail "state-file allowlist: unexpected ADVISORY line naming specs/TODO.md: $LAST_STDERR"
 else
-  pass "state-file allowlist: zero ADVISORY lines naming specs/TODO.md"
+  common_test_pass "state-file allowlist: zero ADVISORY lines naming specs/TODO.md"
 fi
 if echo "$LAST_STDERR" | grep -q "ADVISORY.*specs/state.json"; then
-  fail "state-file allowlist: unexpected ADVISORY line naming specs/state.json: $LAST_STDERR"
+  common_test_fail "state-file allowlist: unexpected ADVISORY line naming specs/state.json: $LAST_STDERR"
 else
-  pass "state-file allowlist: zero ADVISORY lines naming specs/state.json"
+  common_test_pass "state-file allowlist: zero ADVISORY lines naming specs/state.json"
 fi
 # Matches only the per-path "EXCURSION DROPPED: '<path>' is outside..." lines, not the trailing
 # summary line's own parenthetical back-reference ("... (see EXCURSION DROPPED lines above)."),
 # which also contains the bare substring "EXCURSION DROPPED" without the colon.
 excursion_dropped_lines_718=$(echo "$LAST_STDERR" | grep -c "EXCURSION DROPPED:" || true)
 if [ "$excursion_dropped_lines_718" -eq 1 ]; then
-  pass "state-file allowlist: exactly one EXCURSION DROPPED line (the genuine excursion only)"
+  common_test_pass "state-file allowlist: exactly one EXCURSION DROPPED line (the genuine excursion only)"
 else
-  fail "state-file allowlist: expected exactly 1 EXCURSION DROPPED line, got $excursion_dropped_lines_718: $LAST_STDERR"
+  common_test_fail "state-file allowlist: expected exactly 1 EXCURSION DROPPED line, got $excursion_dropped_lines_718: $LAST_STDERR"
 fi
 if echo "$LAST_STDERR" | grep -q "EXCURSION DROPPED.*completely/unrelated3/excursion3.sh"; then
-  pass "state-file allowlist: the genuine excursion path is still dropped and warned"
+  common_test_pass "state-file allowlist: the genuine excursion path is still dropped and warned"
 else
-  fail "state-file allowlist: expected EXCURSION DROPPED naming the genuine excursion path: $LAST_STDERR"
+  common_test_fail "state-file allowlist: expected EXCURSION DROPPED naming the genuine excursion path: $LAST_STDERR"
 fi
 committed_718=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
 if echo "$committed_718" | grep -qx "specs/TODO.md"; then
-  pass "state-file allowlist: specs/TODO.md is present in the commit"
+  common_test_pass "state-file allowlist: specs/TODO.md is present in the commit"
 else
-  fail "state-file allowlist: expected specs/TODO.md in the commit, got: $committed_718"
+  common_test_fail "state-file allowlist: expected specs/TODO.md in the commit, got: $committed_718"
 fi
 if echo "$committed_718" | grep -qx "specs/state.json"; then
-  pass "state-file allowlist: specs/state.json is present in the commit"
+  common_test_pass "state-file allowlist: specs/state.json is present in the commit"
 else
-  fail "state-file allowlist: expected specs/state.json in the commit, got: $committed_718"
+  common_test_fail "state-file allowlist: expected specs/state.json in the commit, got: $committed_718"
 fi
 if echo "$committed_718" | grep -qx "completely/unrelated3/excursion3.sh"; then
-  fail "state-file allowlist: the genuine excursion path was unexpectedly committed: $committed_718"
+  common_test_fail "state-file allowlist: the genuine excursion path was unexpectedly committed: $committed_718"
 else
-  pass "state-file allowlist: the genuine excursion path was NOT committed"
+  common_test_pass "state-file allowlist: the genuine excursion path was NOT committed"
 fi
 dirty_718=$(cd "$WORKDIR" && git status --porcelain -- completely/unrelated3/excursion3.sh)
 if [ -n "$dirty_718" ]; then
-  pass "state-file allowlist: the dropped excursion path remains dirty on disk afterwards (left for manual review, not lost)"
+  common_test_pass "state-file allowlist: the dropped excursion path remains dirty on disk afterwards (left for manual review, not lost)"
 else
-  fail "state-file allowlist: the dropped excursion path is unexpectedly clean on disk -- change may have been lost rather than merely left uncommitted"
+  common_test_fail "state-file allowlist: the dropped excursion path is unexpectedly clean on disk -- change may have been lost rather than merely left uncommitted"
 fi
 if echo "$LAST_STDERR" | grep -qF "1 of 4 reported modified_files entries were dropped"; then
-  pass "state-file allowlist: excursion_dropped_count counter reports 1 of 4 (only the genuine excursion, both state files excluded from the count)"
+  common_test_pass "state-file allowlist: excursion_dropped_count counter reports 1 of 4 (only the genuine excursion, both state files excluded from the count)"
 else
-  fail "state-file allowlist: expected the '1 of 4 reported modified_files entries were dropped' counter line: $LAST_STDERR"
+  common_test_fail "state-file allowlist: expected the '1 of 4 reported modified_files entries were dropped' counter line: $LAST_STDERR"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: --dry-run mutates nothing (git, state.json, loop guard all byte-identical)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Invariant: --dry-run leaves git status, state.json, and the loop guard unchanged"
+common_test_info "Invariant: --dry-run leaves git status, state.json, and the loop guard unchanged"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/708_candidate/summaries"
 echo x > "$WORKDIR/specs/708_candidate/summaries/01_x-summary.md"
@@ -1902,32 +1898,32 @@ after_head=$(cd "$WORKDIR" && git rev-parse HEAD)
 after_porcelain=$(cd "$WORKDIR" && git status --porcelain)
 
 if [ "$before_state" = "$after_state" ]; then
-  pass "invariant: --dry-run leaves state.json byte-identical"
+  common_test_pass "invariant: --dry-run leaves state.json byte-identical"
 else
-  fail "invariant: --dry-run mutated state.json"
+  common_test_fail "invariant: --dry-run mutated state.json"
 fi
 if [ "$before_guard" = "$after_guard" ]; then
-  pass "invariant: --dry-run leaves the loop guard (defect store) byte-identical"
+  common_test_pass "invariant: --dry-run leaves the loop guard (defect store) byte-identical"
 else
-  fail "invariant: --dry-run mutated the loop guard"
+  common_test_fail "invariant: --dry-run mutated the loop guard"
 fi
 if [ "$before_head" = "$after_head" ] && [ "$before_porcelain" = "$after_porcelain" ]; then
-  pass "invariant: --dry-run performs no commit and leaves git status unchanged"
+  common_test_pass "invariant: --dry-run performs no commit and leaves git status unchanged"
 else
-  fail "invariant: --dry-run changed git HEAD or working-tree status"
+  common_test_fail "invariant: --dry-run changed git HEAD or working-tree status"
 fi
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "invariant: --dry-run still emits the identical decision output (verdict=ok)"
+  common_test_pass "invariant: --dry-run still emits the identical decision output (verdict=ok)"
 else
-  fail "invariant: --dry-run's decision output diverged, got verdict=$(jqf '.verdict')"
+  common_test_fail "invariant: --dry-run's decision output diverged, got verdict=$(jqf '.verdict')"
 fi
 # persisted_status is a read, never a mutation, so it is correct under --dry-run too: it reports
 # state.json's unchanged pre-existing status ("implementing", per this fixture's write_state
 # above), not a value --dry-run would have transitioned to had it actually run live.
 if [ "$(jqf '.persisted_status')" = "implementing" ]; then
-  pass "invariant: --dry-run's persisted_status reports the unchanged pre-existing status (implementing)"
+  common_test_pass "invariant: --dry-run's persisted_status reports the unchanged pre-existing status (implementing)"
 else
-  fail "invariant: expected --dry-run persisted_status=implementing (unchanged), got: $(jqf '.persisted_status')"
+  common_test_fail "invariant: expected --dry-run persisted_status=implementing (unchanged), got: $(jqf '.persisted_status')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1937,7 +1933,7 @@ fi
 # of this task's own plan: verdict="failed" alone cannot tell a caller whether to EXIT the whole
 # /orchestrate invocation (off-schema — the outcome cannot be trusted at all) or simply let the
 # task stay in-flight for the next cycle (a genuine in-vocabulary dispatch_status="failed").
-info "Invariant: halt=true only for an off-schema dispatch_status"
+common_test_info "Invariant: halt=true only for an off-schema dispatch_status"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/705_candidate"
 write_state <<'EOF'
@@ -1957,14 +1953,14 @@ run_sut specs/705_candidate --session sess_705 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 705
 
 if [ "$(jqf '.verdict')" = "failed" ] && [ "$(jqf '.halt')" = "true" ]; then
-  pass "invariant: an off-schema dispatch_status yields verdict=failed AND halt=true"
+  common_test_pass "invariant: an off-schema dispatch_status yields verdict=failed AND halt=true"
 else
-  fail "invariant: expected verdict=failed halt=true for an off-schema status, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "invariant: expected verdict=failed halt=true for an off-schema status, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 if [ "$(jqf '.infra_exempt_cycle')" = "false" ]; then
-  pass "invariant: an off-schema dispatch_status is not infra-exempt"
+  common_test_pass "invariant: an off-schema dispatch_status is not infra-exempt"
 else
-  fail "invariant: expected infra_exempt_cycle=false for an off-schema status, got: $LAST_STDOUT"
+  common_test_fail "invariant: expected infra_exempt_cycle=false for an off-schema status, got: $LAST_STDOUT"
 fi
 # Cross-check, same sandbox: a genuine IN-VOCABULARY dispatch_status="failed" (a present, fresh,
 # correctly-seq'd handoff -- the ordinary "the dispatched agent reported it failed" case) must
@@ -1986,16 +1982,16 @@ run_sut specs/707_candidate --session sess_707 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 707
 
 if [ "$(jqf '.verdict')" = "failed" ] && [ "$(jqf '.halt')" = "false" ]; then
-  pass "invariant: a genuine in-vocabulary dispatch_status=failed leaves halt=false (does not stop the loop)"
+  common_test_pass "invariant: a genuine in-vocabulary dispatch_status=failed leaves halt=false (does not stop the loop)"
 else
-  fail "invariant: expected verdict=failed halt=false for an in-vocabulary failed status, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "invariant: expected verdict=failed halt=false for an in-vocabulary failed status, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: infra_exempt_cycle=true only for a corroborated infra failure, never for an ordinary
 # defer (partial dispatch, or implemented with the completion-claim gate refused)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Invariant: infra_exempt_cycle=true when the infra-failure discrimination is corroborated"
+common_test_info "Invariant: infra_exempt_cycle=true when the infra-failure discrimination is corroborated"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/706_candidate"
 write_state <<'EOF'
@@ -2015,14 +2011,14 @@ run_sut specs/706_candidate --session sess_706 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" --transport-error true 706
 
 if [ "$(jqf '.infra_exempt_cycle')" = "true" ] && [ "$(jqf '.verdict')" = "defer" ]; then
-  pass "invariant: a corroborated infra failure yields infra_exempt_cycle=true (verdict=defer)"
+  common_test_pass "invariant: a corroborated infra failure yields infra_exempt_cycle=true (verdict=defer)"
 else
-  fail "invariant: expected infra_exempt_cycle=true verdict=defer for a corroborated infra failure, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "invariant: expected infra_exempt_cycle=true verdict=defer for a corroborated infra failure, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 if [ "$(jqf '.halt')" = "false" ]; then
-  pass "invariant: a corroborated infra failure does not halt"
+  common_test_pass "invariant: a corroborated infra failure does not halt"
 else
-  fail "invariant: expected halt=false for a corroborated infra failure, got: $LAST_STDOUT"
+  common_test_fail "invariant: expected halt=false for a corroborated infra failure, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2030,7 +2026,7 @@ fi
 # blocker target reach the three-strikes threshold and request a divergence audit); a base-mode
 # run never invokes it at all.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "WORK (k): --hard invokes orchestrate-churn.sh; base mode does not"
+common_test_info "WORK (k): --hard invokes orchestrate-churn.sh; base mode does not"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/820_candidate"
 write_state <<'EOF'
@@ -2055,47 +2051,47 @@ EOF
 
 run_churn_cycle 1
 if [ -f "$WORKDIR/specs/820_candidate/.orchestrator-churn-state.json" ]; then
-  pass "churn: --hard invokes orchestrate-churn.sh (churn-state file created)"
+  common_test_pass "churn: --hard invokes orchestrate-churn.sh (churn-state file created)"
 else
-  fail "churn: --hard did not invoke orchestrate-churn.sh (no churn-state file)"
+  common_test_fail "churn: --hard did not invoke orchestrate-churn.sh (no churn-state file)"
 fi
 if [ "$(jqf '.aux_signal')" = "null" ]; then
-  pass "churn: cycle 1 (no prior phases_completed_last) records no aux_signal yet"
+  common_test_pass "churn: cycle 1 (no prior phases_completed_last) records no aux_signal yet"
 else
-  fail "churn: cycle 1 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
+  common_test_fail "churn: cycle 1 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
 fi
 
 run_churn_cycle 2
 if [ "$(jqf '.aux_signal')" = "null" ]; then
-  pass "churn: cycle 2 (churn count 1) does not yet request an audit"
+  common_test_pass "churn: cycle 2 (churn count 1) does not yet request an audit"
 else
-  fail "churn: cycle 2 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
+  common_test_fail "churn: cycle 2 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
 fi
 
 run_churn_cycle 3
 if [ "$(jqf '.aux_signal')" = "null" ]; then
-  pass "churn: cycle 3 (churn count 2) does not yet request an audit"
+  common_test_pass "churn: cycle 3 (churn count 2) does not yet request an audit"
 else
-  fail "churn: cycle 3 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
+  common_test_fail "churn: cycle 3 unexpectedly recorded an aux_signal: $(jqf '.aux_signal')"
 fi
 
 run_churn_cycle 4
 if [ "$(jqf '.aux_signal.kind')" = "divergence-audit" ] && [ "$(jqf '.aux_signal.target')" = "foo" ] \
    && [ "$(jqf '.aux_signal.verbatim_goal')" = "do foo" ]; then
-  pass "churn: cycle 4 (churn count 3) requests a divergence-audit aux_signal"
+  common_test_pass "churn: cycle 4 (churn count 3) requests a divergence-audit aux_signal"
 else
-  fail "churn: cycle 4 did not request a divergence-audit (stdout: $LAST_STDOUT)"
+  common_test_fail "churn: cycle 4 did not request a divergence-audit (stdout: $LAST_STDOUT)"
 fi
 if jq -e '.aux_pending."820".kind == "divergence-audit" and .aux_pending."820".target == "foo"' \
      "$WORKDIR/specs/820_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "churn: aux_pending[820] persisted to the resolved state store (loop-guard file)"
+  common_test_pass "churn: aux_pending[820] persisted to the resolved state store (loop-guard file)"
 else
-  fail "churn: aux_pending[820] not found in the loop-guard file"
+  common_test_fail "churn: aux_pending[820] not found in the loop-guard file"
 fi
 if [ "$(jqf '.verdict')" != "null" ] && [ "$(jqf '.halt')" = "false" ]; then
-  pass "churn: recording an aux_signal never changes verdict/halt (still an ordinary defer outcome)"
+  common_test_pass "churn: recording an aux_signal never changes verdict/halt (still an ordinary defer outcome)"
 else
-  fail "churn: recording an aux_signal unexpectedly changed verdict/halt: $LAST_STDOUT"
+  common_test_fail "churn: recording an aux_signal unexpectedly changed verdict/halt: $LAST_STDOUT"
 fi
 
 # Base-mode companion: the SAME churn signature, without --hard, must never invoke the script.
@@ -2115,23 +2111,23 @@ run_sut specs/821_candidate --session sess_821 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 821
 
 if [ ! -f "$WORKDIR/specs/821_candidate/.orchestrator-churn-state.json" ]; then
-  pass "churn: a base-mode run (no --hard) never invokes orchestrate-churn.sh"
+  common_test_pass "churn: a base-mode run (no --hard) never invokes orchestrate-churn.sh"
 else
-  fail "churn: a base-mode run unexpectedly created a churn-state file"
+  common_test_fail "churn: a base-mode run unexpectedly created a churn-state file"
 fi
 # NOTE: this handoff (2/5 phases, 40%) also happens to be below the drift threshold, so a
 # drift-inspection aux_signal IS correctly expected here (base mode's own trigger) -- the
 # invariant under test is narrower: never a divergence-audit signal outside --hard.
 if [ "$(jqf '.aux_signal.kind')" != "divergence-audit" ]; then
-  pass "churn: a base-mode run with a churn-shaped handoff never records a divergence-audit aux_signal"
+  common_test_pass "churn: a base-mode run with a churn-shaped handoff never records a divergence-audit aux_signal"
 else
-  fail "churn: a base-mode run unexpectedly recorded a divergence-audit aux_signal: $(jqf '.aux_signal')"
+  common_test_fail "churn: a base-mode run unexpectedly recorded a divergence-audit aux_signal: $(jqf '.aux_signal')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # WORK (k): base-mode drift-inspection aux signal (phases_completed/phases_total < 70%)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "WORK (k): base-mode drift-inspection aux signal fires below the 70% threshold, not above it"
+common_test_info "WORK (k): base-mode drift-inspection aux signal fires below the 70% threshold, not above it"
 mkdir -p "$WORKDIR/specs/822_candidate"
 write_state <<'EOF'
 {"next_project_number": 2, "active_projects": [{"project_number": 822, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #822", "dependencies": [], "file_scope": []}]}
@@ -2148,15 +2144,15 @@ run_sut specs/822_candidate --session sess_822 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 822
 
 if [ "$(jqf '.aux_signal.kind')" = "drift-inspection" ]; then
-  pass "drift: 1/5 phases (20%, below 70%) records a drift-inspection aux_signal"
+  common_test_pass "drift: 1/5 phases (20%, below 70%) records a drift-inspection aux_signal"
 else
-  fail "drift: expected a drift-inspection aux_signal at 1/5 phases, got: $LAST_STDOUT"
+  common_test_fail "drift: expected a drift-inspection aux_signal at 1/5 phases, got: $LAST_STDOUT"
 fi
 if jq -e '.aux_pending."822".kind == "drift-inspection"' \
      "$WORKDIR/specs/822_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "drift: aux_pending[822] persisted to the loop-guard file"
+  common_test_pass "drift: aux_pending[822] persisted to the loop-guard file"
 else
-  fail "drift: aux_pending[822] not found in the loop-guard file"
+  common_test_fail "drift: aux_pending[822] not found in the loop-guard file"
 fi
 
 # Negative case: 4/5 phases (80%, at/above 70%) must NOT record a drift signal.
@@ -2176,15 +2172,15 @@ run_sut specs/823_candidate --session sess_823 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 823
 
 if [ "$(jqf '.aux_signal')" = "null" ]; then
-  pass "drift: 4/5 phases (80%, at/above 70%) records no drift-inspection aux_signal"
+  common_test_pass "drift: 4/5 phases (80%, at/above 70%) records no drift-inspection aux_signal"
 else
-  fail "drift: unexpected aux_signal at 4/5 phases: $(jqf '.aux_signal')"
+  common_test_fail "drift: unexpected aux_signal at 4/5 phases: $(jqf '.aux_signal')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # WORK (k): blocker-research aux signal fires unconditionally on verdict=blocked (either mode)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "WORK (k): blocker-research aux signal fires on verdict=blocked"
+common_test_info "WORK (k): blocker-research aux signal fires on verdict=blocked"
 mkdir -p "$WORKDIR/specs/824_candidate"
 write_state <<'EOF'
 {"next_project_number": 2, "active_projects": [{"project_number": 824, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #824", "dependencies": [], "file_scope": [], "blockers": "Missing API key"}]}
@@ -2202,15 +2198,15 @@ run_sut specs/824_candidate --session sess_824 --phase implement --task-type gen
 
 if [ "$(jqf '.verdict')" = "blocked" ] && [ "$(jqf '.aux_signal.kind')" = "blocker-research" ] \
    && [ "$(jqf '.aux_signal.blocker_desc')" = "Missing API key" ]; then
-  pass "blocker-research: verdict=blocked records a blocker-research aux_signal with the state.json blocker description"
+  common_test_pass "blocker-research: verdict=blocked records a blocker-research aux_signal with the state.json blocker description"
 else
-  fail "blocker-research: expected a blocker-research aux_signal, got: $LAST_STDOUT"
+  common_test_fail "blocker-research: expected a blocker-research aux_signal, got: $LAST_STDOUT"
 fi
 if jq -e '.aux_pending."824".kind == "blocker-research"' \
      "$WORKDIR/specs/824_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "blocker-research: aux_pending[824] persisted to the loop-guard file"
+  common_test_pass "blocker-research: aux_pending[824] persisted to the loop-guard file"
 else
-  fail "blocker-research: aux_pending[824] not found in the loop-guard file"
+  common_test_fail "blocker-research: aux_pending[824] not found in the loop-guard file"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2220,7 +2216,7 @@ fi
 # reachable) AND raises the widened blocker-research aux signal, with its description derived
 # from the handoff (not the never-written state.json .active_projects[].blockers string).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Regression: partial + non-empty blockers[] writes status=partial and records a handoff-derived blocker-research aux signal"
+common_test_info "Regression: partial + non-empty blockers[] writes status=partial and records a handoff-derived blocker-research aux signal"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/830_candidate"
 write_state <<'EOF'
@@ -2240,38 +2236,38 @@ run_sut specs/830_candidate --session sess_830 --phase implement --task-type gen
 
 new_status_830=$(jq -r --argjson n 830 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_830" = "partial" ]; then
-  pass "regression (830): state.json status -> partial (blocker-bearing partial)"
+  common_test_pass "regression (830): state.json status -> partial (blocker-bearing partial)"
 else
-  fail "regression (830): expected state.json status=partial, got: $new_status_830"
+  common_test_fail "regression (830): expected state.json status=partial, got: $new_status_830"
 fi
 if [ "$(jqf '.verdict')" = "defer" ]; then
-  pass "regression (830): verdict=defer (unchanged)"
+  common_test_pass "regression (830): verdict=defer (unchanged)"
 else
-  fail "regression (830): expected verdict=defer, got: $(jqf '.verdict')"
+  common_test_fail "regression (830): expected verdict=defer, got: $(jqf '.verdict')"
 fi
 if [ "$(jqf '.halt')" = "false" ]; then
-  pass "regression (830): halt=false"
+  common_test_pass "regression (830): halt=false"
 else
-  fail "regression (830): expected halt=false, got: $(jqf '.halt')"
+  common_test_fail "regression (830): expected halt=false, got: $(jqf '.halt')"
 fi
 if [ "$(jqf '.aux_signal.kind')" = "blocker-research" ]; then
-  pass "regression (830): aux_signal.kind=blocker-research"
+  common_test_pass "regression (830): aux_signal.kind=blocker-research"
 else
-  fail "regression (830): expected aux_signal.kind=blocker-research, got: $LAST_STDOUT"
+  common_test_fail "regression (830): expected aux_signal.kind=blocker-research, got: $LAST_STDOUT"
 fi
 blocker_desc_830=$(jqf '.aux_signal.blocker_desc')
 if [ "$blocker_desc_830" != "Unspecified blocker" ] \
    && echo "$blocker_desc_830" | grep -q "aeneas-macos-aarch64 asset" \
    && echo "$blocker_desc_830" | grep -q "upstream release lacks this asset"; then
-  pass "regression (830): blocker_desc derived from the handoff (target + why_it_failed), not the fallback"
+  common_test_pass "regression (830): blocker_desc derived from the handoff (target + why_it_failed), not the fallback"
 else
-  fail "regression (830): expected a handoff-derived blocker_desc, got: $blocker_desc_830"
+  common_test_fail "regression (830): expected a handoff-derived blocker_desc, got: $blocker_desc_830"
 fi
 if jq -e '.aux_pending."830".kind == "blocker-research"' \
      "$WORKDIR/specs/830_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "regression (830): aux_pending[830] persisted to the loop-guard file"
+  common_test_pass "regression (830): aux_pending[830] persisted to the loop-guard file"
 else
-  fail "regression (830): aux_pending[830] not found in the loop-guard file"
+  common_test_fail "regression (830): aux_pending[830] not found in the loop-guard file"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2279,7 +2275,7 @@ fi
 # status UNCHANGED (still "implementing") -- the explicit "current defer behaviour must be
 # preserved" requirement -- and must record no blocker-research aux signal.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Regression: partial + empty blockers[] leaves state.json status unchanged and records no blocker-research aux signal"
+common_test_info "Regression: partial + empty blockers[] leaves state.json status unchanged and records no blocker-research aux signal"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/831_candidate"
 write_state <<'EOF'
@@ -2299,26 +2295,26 @@ run_sut specs/831_candidate --session sess_831 --phase implement --task-type gen
 
 new_status_831=$(jq -r --argjson n 831 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_831" = "implementing" ]; then
-  pass "regression (831): state.json status unchanged (still implementing) for an empty-blockers partial"
+  common_test_pass "regression (831): state.json status unchanged (still implementing) for an empty-blockers partial"
 else
-  fail "regression (831): expected state.json status to remain implementing, got: $new_status_831"
+  common_test_fail "regression (831): expected state.json status to remain implementing, got: $new_status_831"
 fi
 if [ "$(jqf '.verdict')" = "defer" ]; then
-  pass "regression (831): verdict=defer"
+  common_test_pass "regression (831): verdict=defer"
 else
-  fail "regression (831): expected verdict=defer, got: $(jqf '.verdict')"
+  common_test_fail "regression (831): expected verdict=defer, got: $(jqf '.verdict')"
 fi
 if [ "$(jqf '.aux_signal.kind')" != "blocker-research" ]; then
-  pass "regression (831): no blocker-research aux signal recorded (75% progress is also above the drift threshold)"
+  common_test_pass "regression (831): no blocker-research aux signal recorded (75% progress is also above the drift threshold)"
 else
-  fail "regression (831): unexpected blocker-research aux signal for an empty-blockers partial: $(jqf '.aux_signal')"
+  common_test_fail "regression (831): unexpected blocker-research aux signal for an empty-blockers partial: $(jqf '.aux_signal')"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Regression: partial + non-empty blockers[] + a user_decision payload -- the status write and
 # the ask_user verdict resolution are independent and both apply (Risk table interaction case).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Regression: partial + blockers[] + user_decision -- status write still happens, ask_user verdict still resolves"
+common_test_info "Regression: partial + blockers[] + user_decision -- status write still happens, ask_user verdict still resolves"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/832_candidate"
 write_state <<'EOF'
@@ -2338,21 +2334,21 @@ run_sut specs/832_candidate --session sess_832 --phase implement --task-type gen
 
 new_status_832=$(jq -r --argjson n 832 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_832" = "partial" ]; then
-  pass "regression (832): state.json status -> partial even alongside a user_decision payload"
+  common_test_pass "regression (832): state.json status -> partial even alongside a user_decision payload"
 else
-  fail "regression (832): expected state.json status=partial, got: $new_status_832"
+  common_test_fail "regression (832): expected state.json status=partial, got: $new_status_832"
 fi
 if [ "$(jqf '.verdict')" = "ask_user" ]; then
-  pass "regression (832): verdict=ask_user (user_decision relay still resolves its own verdict)"
+  common_test_pass "regression (832): verdict=ask_user (user_decision relay still resolves its own verdict)"
 else
-  fail "regression (832): expected verdict=ask_user, got: $(jqf '.verdict')"
+  common_test_fail "regression (832): expected verdict=ask_user, got: $(jqf '.verdict')"
 fi
 expected_ud_832='{"question":"Skip the macOS build or wait for upstream?","options":["skip","wait"]}'
 actual_ud_832=$(jqf '.user_decision')
 if [ "$(jq -c -n --argjson a "$expected_ud_832" '$a')" = "$(jq -c -n --argjson b "$actual_ud_832" '$b' 2>/dev/null)" ]; then
-  pass "regression (832): user_decision payload relayed verbatim alongside the status write"
+  common_test_pass "regression (832): user_decision payload relayed verbatim alongside the status write"
 else
-  fail "regression (832): user_decision payload not relayed intact: got $actual_ud_832, expected $expected_ud_832"
+  common_test_fail "regression (832): user_decision payload not relayed intact: got $actual_ud_832, expected $expected_ud_832"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2360,7 +2356,7 @@ fi
 # orchestrate-stage5-gates.sh) fires for BOTH engines -- exercised here via the multi-task path
 # (no --loop-guard-file), since the single-task path already had this coverage historically.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Invariant: stray-handoff sweep fires and records HANDOFF_MISLOCATED (multi-task path)"
+common_test_info "Invariant: stray-handoff sweep fires and records HANDOFF_MISLOCATED (multi-task path)"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/708_candidate/summaries"
 echo x > "$WORKDIR/specs/708_candidate/summaries/01_x-summary.md"
@@ -2381,27 +2377,27 @@ run_sut specs/708_candidate --session sess_708 --phase implement --task-type gen
   --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 708
 
 if echo "$LAST_STDERR" | grep -q "STRAY HANDOFF"; then
-  pass "invariant: stray handoff at repo root is detected"
+  common_test_pass "invariant: stray handoff at repo root is detected"
 else
-  fail "invariant: no STRAY HANDOFF notice in stderr: $LAST_STDERR"
+  common_test_fail "invariant: no STRAY HANDOFF notice in stderr: $LAST_STDERR"
 fi
 if [ ! -e "$WORKDIR/.orchestrator-handoff.json" ]; then
-  pass "invariant: stray handoff was moved aside (not left at repo root)"
+  common_test_pass "invariant: stray handoff was moved aside (not left at repo root)"
 else
-  fail "invariant: stray handoff was NOT moved aside"
+  common_test_fail "invariant: stray handoff was NOT moved aside"
 fi
 if jq -e '.detected_defects | map(select(.defect_class == "HANDOFF_MISLOCATED")) | length >= 1' \
      "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_708.json" >/dev/null 2>&1; then
-  pass "invariant: HANDOFF_MISLOCATED recorded in the multi-state file (not just the loop guard)"
+  common_test_pass "invariant: HANDOFF_MISLOCATED recorded in the multi-state file (not just the loop guard)"
 else
-  fail "invariant: no HANDOFF_MISLOCATED recorded in the multi-state file"
+  common_test_fail "invariant: no HANDOFF_MISLOCATED recorded in the multi-state file"
 fi
 # The task's own outcome (recovered via .return-meta.json, since no handoff sits at the correct
 # path) must still resolve normally -- the sweep is a side observation, never a gate.
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "invariant: the stray-handoff sweep never blocks this dispatch's own outcome resolution"
+  common_test_pass "invariant: the stray-handoff sweep never blocks this dispatch's own outcome resolution"
 else
-  fail "invariant: expected verdict=ok despite the stray handoff, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "invariant: expected verdict=ok despite the stray handoff, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2417,7 +2413,7 @@ fi
 # sandbox by setup_sandbox) rather than a stub, since the real script's own final lines already
 # reproduce the exact shape this phase fixes structurally.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Invariant: entry-point fd-3 redirect keeps the postflight verdict JSON pure against update-task-status.sh's own stdout confirmation"
+common_test_info "Invariant: entry-point fd-3 redirect keeps the postflight verdict JSON pure against update-task-status.sh's own stdout confirmation"
 setup_sandbox
 candidate_num=1601
 mkdir -p "$WORKDIR/specs/${candidate_num}_candidate"
@@ -2438,35 +2434,35 @@ run_sut "specs/${candidate_num}_candidate" --session sess_fd3 --phase plan --tas
   --dispatch-seq 1 --dispatch-start-ts "$window_start" "$candidate_num"
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "invariant (fd-3): SUT exits 0 with the real update-task-status.sh confirmation on its own stdout"
+  common_test_pass "invariant (fd-3): SUT exits 0 with the real update-task-status.sh confirmation on its own stdout"
 else
-  fail "invariant (fd-3): SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "invariant (fd-3): SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 
 if echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
-  pass "invariant (fd-3): stdout parses as a single JSON object"
+  common_test_pass "invariant (fd-3): stdout parses as a single JSON object"
 else
-  fail "invariant (fd-3): stdout is not parseable JSON -- '$LAST_STDOUT'"
+  common_test_fail "invariant (fd-3): stdout is not parseable JSON -- '$LAST_STDOUT'"
 fi
 
 g_fd3_lines=$(printf '%s\n' "$LAST_STDOUT" | grep -c . || true)
 if [ "$g_fd3_lines" -eq 1 ]; then
-  pass "invariant (fd-3): stdout is exactly one line (no confirmation preamble)"
+  common_test_pass "invariant (fd-3): stdout is exactly one line (no confirmation preamble)"
 else
-  fail "invariant (fd-3): expected exactly 1 stdout line, got $g_fd3_lines: '$LAST_STDOUT'"
+  common_test_fail "invariant (fd-3): expected exactly 1 stdout line, got $g_fd3_lines: '$LAST_STDOUT'"
 fi
 
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "invariant (fd-3): verdict=ok, the underlying postflight write still succeeded"
+  common_test_pass "invariant (fd-3): verdict=ok, the underlying postflight write still succeeded"
 else
-  fail "invariant (fd-3): expected verdict=ok, got: $LAST_STDOUT"
+  common_test_fail "invariant (fd-3): expected verdict=ok, got: $LAST_STDOUT"
 fi
 
 g_fd3_marker="OK: task ${candidate_num}"
 if echo "$LAST_STDERR" | grep -qF "$g_fd3_marker"; then
-  pass "invariant (fd-3): update-task-status.sh's own stdout confirmation landed on stderr, not the data channel"
+  common_test_pass "invariant (fd-3): update-task-status.sh's own stdout confirmation landed on stderr, not the data channel"
 else
-  fail "invariant (fd-3): expected update-task-status.sh's confirmation on stderr; got: '$LAST_STDERR'"
+  common_test_fail "invariant (fd-3): expected update-task-status.sh's confirmation on stderr; got: '$LAST_STDERR'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2475,7 +2471,7 @@ fi
 # this script clears it unconditionally as one of its first writes -- engine-agnostic (targets
 # the durable per-task .orchestrator-loop-guard file directly, not the ephemeral mt_state_file).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Invariant: pending_dispatch is cleared from the durable loop-guard file on any postflight outcome"
+common_test_info "Invariant: pending_dispatch is cleared from the durable loop-guard file on any postflight outcome"
 setup_sandbox
 pd_candidate_num=1602
 mkdir -p "$WORKDIR/specs/${pd_candidate_num}_candidate/summaries"
@@ -2498,20 +2494,20 @@ run_sut "specs/${pd_candidate_num}_candidate" --session sess_pd --phase implemen
   --dispatch-seq 5 --dispatch-start-ts "$future_window" "$pd_candidate_num"
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "invariant (pending-dispatch): SUT exits 0"
+  common_test_pass "invariant (pending-dispatch): SUT exits 0"
 else
-  fail "invariant (pending-dispatch): SUT exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "invariant (pending-dispatch): SUT exited $LAST_EXIT ($LAST_STDERR)"
 fi
 pd_guard_file="$WORKDIR/specs/${pd_candidate_num}_candidate/.orchestrator-loop-guard"
 if jq -e '.pending_dispatch == null or has("pending_dispatch") == false' "$pd_guard_file" >/dev/null 2>&1; then
-  pass "invariant (pending-dispatch): pending_dispatch was cleared from the durable loop-guard file"
+  common_test_pass "invariant (pending-dispatch): pending_dispatch was cleared from the durable loop-guard file"
 else
-  fail "invariant (pending-dispatch): pending_dispatch still present: $(cat "$pd_guard_file")"
+  common_test_fail "invariant (pending-dispatch): pending_dispatch still present: $(cat "$pd_guard_file")"
 fi
 if [ "$(jq -r '.cycle_count' "$pd_guard_file" 2>/dev/null)" = "3" ]; then
-  pass "invariant (pending-dispatch): every other loop-guard field (cycle_count) is preserved"
+  common_test_pass "invariant (pending-dispatch): every other loop-guard field (cycle_count) is preserved"
 else
-  fail "invariant (pending-dispatch): cycle_count was not preserved: $(cat "$pd_guard_file")"
+  common_test_fail "invariant (pending-dispatch): cycle_count was not preserved: $(cat "$pd_guard_file")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2523,7 +2519,7 @@ fi
 # orchestrate-cycle-postflight.sh -- do not re-gate that block on dispatch_status/verdict/the
 # postflight rc without updating this case.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Characterization: cycle_modified_files accumulates across a real exit-6 deploy-pending postflight refusal"
+common_test_info "Characterization: cycle_modified_files accumulates across a real exit-6 deploy-pending postflight refusal"
 setup_sandbox
 dp_candidate_num=709
 mkdir -p "$WORKDIR/specs/${dp_candidate_num}_candidate"
@@ -2543,26 +2539,26 @@ run_sut "specs/${dp_candidate_num}_candidate" --session sess_709 --phase impleme
   --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$dp_candidate_num"
 
 if echo "$LAST_STDERR" | grep -q "extension 'core' is stale"; then
-  pass "characterization: the completion-deploy gate refused (exit-6 refusal message present on stderr)"
+  common_test_pass "characterization: the completion-deploy gate refused (exit-6 refusal message present on stderr)"
 else
-  fail "characterization: expected the deploy-check refusal message on stderr, got: $LAST_STDERR"
+  common_test_fail "characterization: expected the deploy-check refusal message on stderr, got: $LAST_STDERR"
 fi
 dp_status_after="$(jq -r --argjson n "$dp_candidate_num" '.active_projects[] | select(.project_number==$n) | .status' "$STATE_FILE" 2>/dev/null)"
 if [ "$dp_status_after" = "implementing" ]; then
-  pass "characterization: state.json status unchanged (still implementing) after the refusal -- the refusal is real, not a false one"
+  common_test_pass "characterization: state.json status unchanged (still implementing) after the refusal -- the refusal is real, not a false one"
 else
-  fail "characterization: expected status still 'implementing' after refusal, got: $dp_status_after"
+  common_test_fail "characterization: expected status still 'implementing' after refusal, got: $dp_status_after"
 fi
 dp_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_709.json"
 if jq -e '.cycle_modified_files == ["agent-system/extensions/core/scripts/foo.sh"]' "$dp_mt_file" >/dev/null 2>&1; then
-  pass "characterization: cycle_modified_files accumulated the refused task's modified_files despite the exit-6 refusal"
+  common_test_pass "characterization: cycle_modified_files accumulated the refused task's modified_files despite the exit-6 refusal"
 else
-  fail "characterization: cycle_modified_files did not accumulate after the refusal: $(cat "$dp_mt_file" 2>/dev/null)"
+  common_test_fail "characterization: cycle_modified_files did not accumulate after the refusal: $(cat "$dp_mt_file" 2>/dev/null)"
 fi
 if jq -e '.deploy_pending == true' "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" >/dev/null 2>&1; then
-  pass "characterization: deploy_pending marker recorded on .return-meta.json (the durable cross-invocation signal the checkpoint widening consumes)"
+  common_test_pass "characterization: deploy_pending marker recorded on .return-meta.json (the durable cross-invocation signal the checkpoint widening consumes)"
 else
-  fail "characterization: deploy_pending marker missing from .return-meta.json: $(cat "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" 2>/dev/null)"
+  common_test_fail "characterization: deploy_pending marker missing from .return-meta.json: $(cat "$WORKDIR/specs/${dp_candidate_num}_candidate/.return-meta.json" 2>/dev/null)"
 fi
 
 # ─── Regression-anchor check: temporarily re-gate the WORK (j) accumulation block on a
@@ -2571,7 +2567,7 @@ fi
 # source file via a backup/restore pair (setup_sandbox always re-copies FROM $CORE_DIR, so the
 # mutation must live there, not on the already-copied $SUT, to survive the next setup_sandbox
 # call) and is guaranteed to be reverted even on an early exit via the trap below. ───────────────
-info "Characterization: regression-anchor self-check (temporarily re-gating WORK (j) must flip this case red)"
+common_test_info "Characterization: regression-anchor self-check (temporarily re-gating WORK (j) must flip this case red)"
 anchor_marker='# Accumulate modified_files into cycle_modified_files HERE (not re-read later)'
 ANCHOR_SRC="$CORE_DIR/orchestrate-cycle-postflight.sh"
 if grep -qF "$anchor_marker" "$ANCHOR_SRC"; then
@@ -2602,12 +2598,12 @@ EOF
   trap cleanup EXIT
 
   if jq -e '.cycle_modified_files == []' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_709.json" >/dev/null 2>&1; then
-    pass "characterization: artificially re-gating the WORK (j) block flips this case red (anchor confirmed live)"
+    common_test_pass "characterization: artificially re-gating the WORK (j) block flips this case red (anchor confirmed live)"
   else
-    fail "characterization: artificially re-gating the WORK (j) block did NOT flip this case red -- the case is not exercising the block"
+    common_test_fail "characterization: artificially re-gating the WORK (j) block did NOT flip this case red -- the case is not exercising the block"
   fi
 else
-  fail "characterization: WORK (j) accumulation block's anchor comment not found in $ANCHOR_SRC -- regression-anchor self-check cannot run"
+  common_test_fail "characterization: WORK (j) accumulation block's anchor comment not found in $ANCHOR_SRC -- regression-anchor self-check cannot run"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2615,7 +2611,7 @@ fi
 # and the paused commit message, not verdict=ok / "complete implementation" -- even though the
 # phase-accounting gate (skill_gate_completion_claim) itself passed.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Phase 2: a deploy-pending-refused implemented postflight yields verdict=defer and the paused commit message"
+common_test_info "Phase 2: a deploy-pending-refused implemented postflight yields verdict=defer and the paused commit message"
 setup_sandbox
 dp2_candidate_num=710
 mkdir -p "$WORKDIR/specs/${dp2_candidate_num}_candidate"
@@ -2638,14 +2634,14 @@ after_head_710=$(cd "$WORKDIR" && git rev-parse HEAD)
 after_subject_710=$(cd "$WORKDIR" && git log -1 --format=%s)
 
 if [ "$(jqf '.verdict')" = "defer" ]; then
-  pass "phase 2: verdict=defer on a deploy-pending-refused implemented postflight"
+  common_test_pass "phase 2: verdict=defer on a deploy-pending-refused implemented postflight"
 else
-  fail "phase 2: expected verdict=defer, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "phase 2: expected verdict=defer, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 if echo "$LAST_STDERR" | grep -q "DEPLOY-PENDING: task ${dp2_candidate_num}"; then
-  pass "phase 2: the operator-facing deferred-convergence notice is printed on stderr"
+  common_test_pass "phase 2: the operator-facing deferred-convergence notice is printed on stderr"
 else
-  fail "phase 2: expected a DEPLOY-PENDING notice on stderr, got: $LAST_STDERR"
+  common_test_fail "phase 2: expected a DEPLOY-PENDING notice on stderr, got: $LAST_STDERR"
 fi
 # Corrected-message assertion: the trailing clause now describes the delivered two-outcome
 # structure (checkpoint deploys and then automatically reconciles this candidate's status) rather
@@ -2653,21 +2649,21 @@ fi
 # observed incident. A distinctive substring of the NEW wording, leaving the pre-existing prefix
 # assertion immediately above untouched.
 if echo "$LAST_STDERR" | grep -q "automatically reconciles this task's status"; then
-  pass "phase 2: the DEPLOY-PENDING notice carries the corrected trailing clause (automatic reconcile, not an unconditional 'no manual action needed')"
+  common_test_pass "phase 2: the DEPLOY-PENDING notice carries the corrected trailing clause (automatic reconcile, not an unconditional 'no manual action needed')"
 else
-  fail "phase 2: expected the corrected trailing clause on the DEPLOY-PENDING notice, got: $LAST_STDERR"
+  common_test_fail "phase 2: expected the corrected trailing clause on the DEPLOY-PENDING notice, got: $LAST_STDERR"
 fi
 if [ "$before_head_710" != "$after_head_710" ] && [ "$after_subject_710" = "task ${dp2_candidate_num}: orchestration paused (cycle 0)" ]; then
-  pass "phase 2: the commit message is the paused message, not 'complete implementation'"
+  common_test_pass "phase 2: the commit message is the paused message, not 'complete implementation'"
 else
-  fail "phase 2: expected commit subject 'task ${dp2_candidate_num}: orchestration paused (cycle 0)', got: '$after_subject_710' (head moved: $([ "$before_head_710" != "$after_head_710" ] && echo yes || echo no))"
+  common_test_fail "phase 2: expected commit subject 'task ${dp2_candidate_num}: orchestration paused (cycle 0)', got: '$after_subject_710' (head moved: $([ "$before_head_710" != "$after_head_710" ] && echo yes || echo no))"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Phase 2 (contrast case): the UNREFUSED implemented path still yields verdict=ok and the
 # ordinary completion commit message -- the honesty fix must not touch the non-refused path.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Phase 2 (contrast): an unrefused implemented postflight still yields verdict=ok and the completion commit message"
+common_test_info "Phase 2 (contrast): an unrefused implemented postflight still yields verdict=ok and the completion commit message"
 setup_sandbox
 ur_candidate_num=711
 mkdir -p "$WORKDIR/specs/${ur_candidate_num}_candidate/summaries"
@@ -2689,19 +2685,19 @@ run_sut "specs/${ur_candidate_num}_candidate" --session sess_711 --phase impleme
 after_subject_711=$(cd "$WORKDIR" && git log -1 --format=%s)
 
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "phase 2 (contrast): verdict=ok on an unrefused implemented postflight"
+  common_test_pass "phase 2 (contrast): verdict=ok on an unrefused implemented postflight"
 else
-  fail "phase 2 (contrast): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "phase 2 (contrast): expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 if [ "$after_subject_711" = "task ${ur_candidate_num}: complete implementation" ]; then
-  pass "phase 2 (contrast): the commit message is still 'complete implementation' when unrefused"
+  common_test_pass "phase 2 (contrast): the commit message is still 'complete implementation' when unrefused"
 else
-  fail "phase 2 (contrast): expected commit subject 'task ${ur_candidate_num}: complete implementation', got: '$after_subject_711'"
+  common_test_fail "phase 2 (contrast): expected commit subject 'task ${ur_candidate_num}: complete implementation', got: '$after_subject_711'"
 fi
 if echo "$LAST_STDERR" | grep -q "DEPLOY-PENDING:"; then
-  fail "phase 2 (contrast): unexpected DEPLOY-PENDING notice on an unrefused path"
+  common_test_fail "phase 2 (contrast): unexpected DEPLOY-PENDING notice on an unrefused path"
 else
-  pass "phase 2 (contrast): no DEPLOY-PENDING notice on the unrefused path"
+  common_test_pass "phase 2 (contrast): no DEPLOY-PENDING notice on the unrefused path"
 fi
 # task-ref-ok:begin category 6-adjacent: "task #999" below is synthetic fixture data (the
 # holder identity a manually-acquired task-lock.sh claim reports back) exercising
@@ -2719,7 +2715,7 @@ fi
 # non-blocking WARNING -- it was folded into that bucket specifically so a caller branches on it;
 # see this script's own exit-code commentary.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Phase 9: WORK (i)'s commit call passes --task through to git-commit-scoped.sh's V5 refusal"
+common_test_info "Phase 9: WORK (i)'s commit call passes --task through to git-commit-scoped.sh's V5 refusal"
 setup_sandbox
 p9_num=750
 p9_summary="specs/${p9_num}_candidate/summaries/01_x-summary.md"
@@ -2748,24 +2744,24 @@ run_sut "specs/${p9_num}_candidate" --session "sess_p9" --phase implement --task
 after_p9=$(cd "$WORKDIR" && git rev-list --count HEAD)
 
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "phase 9: postflight still exits 0 despite the commit being refused (non-blocking)"
+  common_test_pass "phase 9: postflight still exits 0 despite the commit being refused (non-blocking)"
 else
-  fail "phase 9: postflight exited $LAST_EXIT ($LAST_STDERR)"
+  common_test_fail "phase 9: postflight exited $LAST_EXIT ($LAST_STDERR)"
 fi
 if echo "$LAST_STDERR" | grep -q "Verified Finding V5" && echo "$LAST_STDERR" | grep -q "task #999"; then
-  pass "phase 9: the V5 contended-path refusal notice reached postflight's own diagnostic stream, naming the holding task"
+  common_test_pass "phase 9: the V5 contended-path refusal notice reached postflight's own diagnostic stream, naming the holding task"
 else
-  fail "phase 9: expected a V5 refusal notice naming task #999 on stderr, got: $LAST_STDERR"
+  common_test_fail "phase 9: expected a V5 refusal notice naming task #999 on stderr, got: $LAST_STDERR"
 fi
 if grep -q "ERROR: git-commit-scoped.sh exited 3 for task ${p9_num}" <<< "$LAST_STDERR"; then
-  pass "phase 9: the V5 refusal (exit 3) takes the loud, attributable ERROR branch, not the old bare non-blocking WARNING"
+  common_test_pass "phase 9: the V5 refusal (exit 3) takes the loud, attributable ERROR branch, not the old bare non-blocking WARNING"
 else
-  fail "phase 9: expected a loud ERROR naming exit 3 for task ${p9_num}; got: $LAST_STDERR"
+  common_test_fail "phase 9: expected a loud ERROR naming exit 3 for task ${p9_num}; got: $LAST_STDERR"
 fi
 if [ "$after_p9" -eq "$before_p9" ]; then
-  pass "phase 9: no commit landed while the claim was held (HEAD unchanged)"
+  common_test_pass "phase 9: no commit landed while the claim was held (HEAD unchanged)"
 else
-  fail "phase 9: expected HEAD unchanged, before=$before_p9 after=$after_p9"
+  common_test_fail "phase 9: expected HEAD unchanged, before=$before_p9 after=$after_p9"
 fi
 ( cd "$WORKDIR" && bash .claude/scripts/task-lock.sh claim-release "$p9_summary" 999 >/dev/null 2>&1 )
 # task-ref-ok:end
@@ -2776,7 +2772,7 @@ fi
 # records RETURN_META_SCHEMA_VIOLATION attributed to the dispatched agent -- the exact opposite
 # of the observed harm this task's dispatch names (a discarded, validated research report).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 950: return-meta schema probe WARNs and records on a bare-string partial_progress, dispatch still completes"
+common_test_info "Case 950: return-meta schema probe WARNs and records on a bare-string partial_progress, dispatch still completes"
 setup_sandbox
 stub_agent_file general-research-agent
 mkdir -p "$WORKDIR/specs/950_candidate/reports"
@@ -2798,33 +2794,33 @@ run_sut specs/950_candidate --session sess_950 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 950
 
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "case 950: dispatch still completes (verdict=ok) despite the schema violation"
+  common_test_pass "case 950: dispatch still completes (verdict=ok) despite the schema violation"
 else
-  fail "case 950: expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "case 950: expected verdict=ok, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 new_status_950=$(jq -r --argjson n 950 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")
 if [ "$new_status_950" = "researched" ]; then
-  pass "case 950: task status is still persisted (advanced to researched)"
+  common_test_pass "case 950: task status is still persisted (advanced to researched)"
 else
-  fail "case 950: expected status=researched, got: $new_status_950"
+  common_test_fail "case 950: expected status=researched, got: $new_status_950"
 fi
 if echo "$LAST_STDERR" | grep -q "WARN:" && echo "$LAST_STDERR" | grep -q "general-research-agent" && echo "$LAST_STDERR" | grep -q "partial_progress"; then
-  pass "case 950: a WARN notice naming the dispatched agent and partial_progress appears on stderr"
+  common_test_pass "case 950: a WARN notice naming the dispatched agent and partial_progress appears on stderr"
 else
-  fail "case 950: expected a WARN notice naming the agent and partial_progress, got: $LAST_STDERR"
+  common_test_fail "case 950: expected a WARN notice naming the agent and partial_progress, got: $LAST_STDERR"
 fi
 case_950_defect_count=$(jq '.detected_defects | map(select(.defect_class == "RETURN_META_SCHEMA_VIOLATION")) | length' \
   "$WORKDIR/specs/950_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$case_950_defect_count" = "1" ]; then
-  pass "case 950: exactly one RETURN_META_SCHEMA_VIOLATION defect row recorded"
+  common_test_pass "case 950: exactly one RETURN_META_SCHEMA_VIOLATION defect row recorded"
 else
-  fail "case 950: expected exactly 1 RETURN_META_SCHEMA_VIOLATION defect, got $case_950_defect_count"
+  common_test_fail "case 950: expected exactly 1 RETURN_META_SCHEMA_VIOLATION defect, got $case_950_defect_count"
 fi
 if jq -e '.detected_defects[] | select(.defect_class == "RETURN_META_SCHEMA_VIOLATION") | .attributed_source_path == "agent-system/extensions/core/agents/general-research-agent.md"' \
      "$WORKDIR/specs/950_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "case 950: RETURN_META_SCHEMA_VIOLATION attributed to the dispatched agent's own file"
+  common_test_pass "case 950: RETURN_META_SCHEMA_VIOLATION attributed to the dispatched agent's own file"
 else
-  fail "case 950: RETURN_META_SCHEMA_VIOLATION attribution did not resolve to the dispatched agent's file"
+  common_test_fail "case 950: RETURN_META_SCHEMA_VIOLATION attribution did not resolve to the dispatched agent's file"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2834,7 +2830,7 @@ fi
 # exercising the recorder-adjacent branch without needing the recorder to run, matching the
 # sibling fixtures' idiom for recorder-adjacent assertions elsewhere in this file).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 951: --dry-run variant asserts the [dry-run] would record line, no recorder call"
+common_test_info "Case 951: --dry-run variant asserts the [dry-run] would record line, no recorder call"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/951_candidate/reports"
 echo "real findings" > "$WORKDIR/specs/951_candidate/reports/01_x-report.md"
@@ -2855,15 +2851,15 @@ run_sut specs/951_candidate --session sess_951 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" --dry-run 951
 
 if echo "$LAST_STDERR" | grep -q '\[dry-run\] would record RETURN_META_SCHEMA_VIOLATION'; then
-  pass "case 951: --dry-run prints the would-record line for RETURN_META_SCHEMA_VIOLATION"
+  common_test_pass "case 951: --dry-run prints the would-record line for RETURN_META_SCHEMA_VIOLATION"
 else
-  fail "case 951: expected the [dry-run] would record RETURN_META_SCHEMA_VIOLATION line, got: $LAST_STDERR"
+  common_test_fail "case 951: expected the [dry-run] would record RETURN_META_SCHEMA_VIOLATION line, got: $LAST_STDERR"
 fi
 case_951_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/951_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$case_951_defect_count" = "0" ]; then
-  pass "case 951: --dry-run performs no detected_defects write"
+  common_test_pass "case 951: --dry-run performs no detected_defects write"
 else
-  fail "case 951: expected 0 detected_defects under --dry-run, got $case_951_defect_count"
+  common_test_fail "case 951: expected 0 detected_defects under --dry-run, got $case_951_defect_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2874,7 +2870,7 @@ fi
 # of its partial_progress-specific output (which would re-fire on every status-vocabulary
 # [FAIL], exactly the deferred blocker this task's dispatch names).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 952: noise guard -- a non-canonical status with no partial_progress produces no probe output"
+common_test_info "Case 952: noise guard -- a non-canonical status with no partial_progress produces no probe output"
 setup_sandbox
 stub_agent_file general-research-agent
 mkdir -p "$WORKDIR/specs/952_candidate"
@@ -2895,23 +2891,23 @@ run_sut specs/952_candidate --session sess_952 --phase research --task-type gene
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 952
 
 if echo "$LAST_STDERR" | grep -q "RETURN_META_SCHEMA_VIOLATION"; then
-  fail "case 952: unexpected RETURN_META_SCHEMA_VIOLATION mention on stderr for a status-only violation, got: $LAST_STDERR"
+  common_test_fail "case 952: unexpected RETURN_META_SCHEMA_VIOLATION mention on stderr for a status-only violation, got: $LAST_STDERR"
 else
-  pass "case 952: no RETURN_META_SCHEMA_VIOLATION mention on stderr -- the probe does not fire on the validator's aggregate exit code"
+  common_test_pass "case 952: no RETURN_META_SCHEMA_VIOLATION mention on stderr -- the probe does not fire on the validator's aggregate exit code"
 fi
 case_952_defect_count=$(jq '.detected_defects | map(select(.defect_class == "RETURN_META_SCHEMA_VIOLATION")) | length' \
   "$WORKDIR/specs/952_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$case_952_defect_count" = "0" ]; then
-  pass "case 952: zero RETURN_META_SCHEMA_VIOLATION defects recorded -- the noise-regression guard holds"
+  common_test_pass "case 952: zero RETURN_META_SCHEMA_VIOLATION defects recorded -- the noise-regression guard holds"
 else
-  fail "case 952: expected 0 RETURN_META_SCHEMA_VIOLATION defects, got $case_952_defect_count"
+  common_test_fail "case 952: expected 0 RETURN_META_SCHEMA_VIOLATION defects, got $case_952_defect_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 953: a fully well-formed .return-meta.json (no partial_progress field, everything else
 # valid) produces no probe output at all.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 953: a fully well-formed .return-meta.json produces no probe output at all"
+common_test_info "Case 953: a fully well-formed .return-meta.json produces no probe output at all"
 setup_sandbox
 stub_agent_file general-implementation-agent
 mkdir -p "$WORKDIR/specs/953_candidate/summaries"
@@ -2933,15 +2929,15 @@ run_sut specs/953_candidate --session sess_953 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 953
 
 if echo "$LAST_STDERR" | grep -q "RETURN_META_SCHEMA_VIOLATION" || echo "$LAST_STDERR" | grep -qi "partial_progress"; then
-  fail "case 953: unexpected return-meta schema probe output for a fully well-formed file, got: $LAST_STDERR"
+  common_test_fail "case 953: unexpected return-meta schema probe output for a fully well-formed file, got: $LAST_STDERR"
 else
-  pass "case 953: a fully well-formed .return-meta.json produces no probe output at all"
+  common_test_pass "case 953: a fully well-formed .return-meta.json produces no probe output at all"
 fi
 case_953_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/953_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$case_953_defect_count" = "0" ]; then
-  pass "case 953: zero defects of any kind recorded for a clean success"
+  common_test_pass "case 953: zero defects of any kind recorded for a clean success"
 else
-  fail "case 953: expected 0 detected_defects, got $case_953_defect_count"
+  common_test_fail "case 953: expected 0 detected_defects, got $case_953_defect_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -2949,7 +2945,7 @@ fi
 # this point is unchanged -- these only ADD coverage for the push-consent specialization of the
 # user_decision relay (Acceptance 5 above already covers the general case).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Push-consent (1): a blocking:true push-class user_decision relays as verdict=ask_user, and this script writes no .decisions.json entry itself"
+common_test_info "Push-consent (1): a blocking:true push-class user_decision relays as verdict=ask_user, and this script writes no .decisions.json entry itself"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/960_candidate"
 write_state <<'EOF'
@@ -2969,22 +2965,22 @@ run_sut specs/960_candidate --session sess_960 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 960
 
 if [ "$(jqf '.verdict')" = "ask_user" ]; then
-  pass "push-consent (1): verdict=ask_user for a push-class user_decision"
+  common_test_pass "push-consent (1): verdict=ask_user for a push-class user_decision"
 else
-  fail "push-consent (1): expected verdict=ask_user, got: $LAST_STDOUT"
+  common_test_fail "push-consent (1): expected verdict=ask_user, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.user_decision.blocking')" = "true" ]; then
-  pass "push-consent (1): blocking=true is relayed intact"
+  common_test_pass "push-consent (1): blocking=true is relayed intact"
 else
-  fail "push-consent (1): expected blocking=true in the relayed payload, got: $(jqf '.user_decision')"
+  common_test_fail "push-consent (1): expected blocking=true in the relayed payload, got: $(jqf '.user_decision')"
 fi
 if [ -f "$WORKDIR/specs/960_candidate/.decisions.json" ]; then
-  fail "push-consent (1): postflight must never write .decisions.json itself, but the file exists"
+  common_test_fail "push-consent (1): postflight must never write .decisions.json itself, but the file exists"
 else
-  pass "push-consent (1): no .decisions.json written by postflight (relay only, never resolved)"
+  common_test_pass "push-consent (1): no .decisions.json written by postflight (relay only, never resolved)"
 fi
 
-info "Push-consent (2): a blocking:false push-class user_decision is a contract violation the agent-facing docs name explicitly -- this script still relays it as ask_user rather than silently treating it as non-blocking, since the relay layer itself has no way to detect the violation"
+common_test_info "Push-consent (2): a blocking:false push-class user_decision is a contract violation the agent-facing docs name explicitly -- this script still relays it as ask_user rather than silently treating it as non-blocking, since the relay layer itself has no way to detect the violation"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/961_candidate"
 write_state <<'EOF'
@@ -3004,9 +3000,9 @@ run_sut specs/961_candidate --session sess_961 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 961
 
 if [ "$(jqf '.verdict')" = "ask_user" ]; then
-  pass "push-consent (2): relay still resolves verdict=ask_user regardless of the payload's own blocking value (the relay layer surfaces what the agent set; context/standards/push-consent-relay.md's contract that this class MUST be blocking:true is an agent/doc-authoring-time rule, not something this relay script enforces)"
+  common_test_pass "push-consent (2): relay still resolves verdict=ask_user regardless of the payload's own blocking value (the relay layer surfaces what the agent set; context/standards/push-consent-relay.md's contract that this class MUST be blocking:true is an agent/doc-authoring-time rule, not something this relay script enforces)"
 else
-  fail "push-consent (2): expected verdict=ask_user, got: $LAST_STDOUT"
+  common_test_fail "push-consent (2): expected verdict=ask_user, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3020,7 +3016,7 @@ fi
 # Acceptance (1)-(4) case above, which deliberately stales/mismatches the handoff to exercise
 # the recovery fallback instead.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Skeleton follow-up (1): a skeleton=true handoff with a two-entry sorry_inventory reports only the strategic entry"
+common_test_info "Skeleton follow-up (1): a skeleton=true handoff with a two-entry sorry_inventory reports only the strategic entry"
 setup_sandbox
 sk_candidate_num=970
 mkdir -p "$WORKDIR/specs/${sk_candidate_num}_candidate/summaries"
@@ -3046,39 +3042,39 @@ run_sut "specs/${sk_candidate_num}_candidate" --session "sess_${sk_candidate_num
 
 sk_follow_up_lines=$(echo "$LAST_STDERR" | grep -c "SKELETON FOLLOW-UP" || true)
 if [ "$sk_follow_up_lines" = "1" ]; then
-  pass "skeleton follow-up (1a): exactly one SKELETON FOLLOW-UP line on stderr (the non-strategic entry is filtered out)"
+  common_test_pass "skeleton follow-up (1a): exactly one SKELETON FOLLOW-UP line on stderr (the non-strategic entry is filtered out)"
 else
-  fail "skeleton follow-up (1a): expected exactly 1 SKELETON FOLLOW-UP line, got $sk_follow_up_lines: $LAST_STDERR"
+  common_test_fail "skeleton follow-up (1a): expected exactly 1 SKELETON FOLLOW-UP line, got $sk_follow_up_lines: $LAST_STDERR"
 fi
 if echo "$LAST_STDERR" | grep -q "SKELETON FOLLOW-UP: Proof/Foo.lean:42"; then
-  pass "skeleton follow-up (1a): the stderr line names the strategic entry's file:line"
+  common_test_pass "skeleton follow-up (1a): the stderr line names the strategic entry's file:line"
 else
-  fail "skeleton follow-up (1a): expected a SKELETON FOLLOW-UP line naming Proof/Foo.lean:42, got: $LAST_STDERR"
+  common_test_fail "skeleton follow-up (1a): expected a SKELETON FOLLOW-UP line naming Proof/Foo.lean:42, got: $LAST_STDERR"
 fi
 
 sk_state_entry=$(jq -c --argjson n "$sk_candidate_num" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null)
 if [ "$(echo "$sk_state_entry" | jq -r '.skeleton_follow_ups | length' 2>/dev/null)" = "1" ]; then
-  pass "skeleton follow-up (1b): state.json records exactly one skeleton_follow_ups entry (the strategic one)"
+  common_test_pass "skeleton follow-up (1b): state.json records exactly one skeleton_follow_ups entry (the strategic one)"
 else
-  fail "skeleton follow-up (1b): expected skeleton_follow_ups length 1, got: $sk_state_entry"
+  common_test_fail "skeleton follow-up (1b): expected skeleton_follow_ups length 1, got: $sk_state_entry"
 fi
 if [ "$(echo "$sk_state_entry" | jq -r '.skeleton_follow_ups[0].follow_up_task' 2>/dev/null)" = "Prove decidability of X for foo_bar" ] \
    && [ "$(echo "$sk_state_entry" | jq -r '.skeleton_follow_ups[0].recorded_cycle' 2>/dev/null)" = "3" ] \
    && [ "$(echo "$sk_state_entry" | jq -r '.skeleton_follow_ups[0].session_id' 2>/dev/null)" = "sess_${sk_candidate_num}" ]; then
-  pass "skeleton follow-up (1b): the recorded entry carries follow_up_task, recorded_cycle, and session_id"
+  common_test_pass "skeleton follow-up (1b): the recorded entry carries follow_up_task, recorded_cycle, and session_id"
 else
-  fail "skeleton follow-up (1b): missing/wrong follow_up_task, recorded_cycle, or session_id, got: $sk_state_entry"
+  common_test_fail "skeleton follow-up (1b): missing/wrong follow_up_task, recorded_cycle, or session_id, got: $sk_state_entry"
 fi
 if echo "$sk_state_entry" | jq -r '.completion_summary' 2>/dev/null | grep -q "Skeleton follow-ups" \
    && echo "$sk_state_entry" | jq -r '.completion_summary' 2>/dev/null | grep -q "Prove decidability of X for foo_bar"; then
-  pass "skeleton follow-up (1c): completion_summary carries the Skeleton follow-ups block and the strategic entry's follow_up_task"
+  common_test_pass "skeleton follow-up (1c): completion_summary carries the Skeleton follow-ups block and the strategic entry's follow_up_task"
 else
-  fail "skeleton follow-up (1c): completion_summary missing the skeleton follow-up block, got: $(echo "$sk_state_entry" | jq -r '.completion_summary' 2>/dev/null)"
+  common_test_fail "skeleton follow-up (1c): completion_summary missing the skeleton follow-up block, got: $(echo "$sk_state_entry" | jq -r '.completion_summary' 2>/dev/null)"
 fi
 if [ "$(jqf '.verdict')" = "ok" ] && [ "$(echo "$sk_state_entry" | jq -r '.status' 2>/dev/null)" = "completed" ]; then
-  pass "skeleton follow-up (1d): the completion outcome is unchanged -- verdict=ok and task status=completed"
+  common_test_pass "skeleton follow-up (1d): the completion outcome is unchanged -- verdict=ok and task status=completed"
 else
-  fail "skeleton follow-up (1d): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$sk_state_entry" | jq -r '.status' 2>/dev/null)"
+  common_test_fail "skeleton follow-up (1d): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$sk_state_entry" | jq -r '.status' 2>/dev/null)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3087,7 +3083,7 @@ fi
 # field -- the reporting is gated on handoff.skeleton, not fired unconditionally for every
 # implemented completion.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Skeleton follow-up (2) (contrast): a non-skeleton implemented handoff produces no skeleton follow-up output"
+common_test_info "Skeleton follow-up (2) (contrast): a non-skeleton implemented handoff produces no skeleton follow-up output"
 setup_sandbox
 ns_candidate_num=971
 mkdir -p "$WORKDIR/specs/${ns_candidate_num}_candidate/summaries"
@@ -3112,20 +3108,20 @@ run_sut "specs/${ns_candidate_num}_candidate" --session "sess_${ns_candidate_num
   --dispatch-seq 1 --dispatch-start-ts "$window_start" "$ns_candidate_num"
 
 if echo "$LAST_STDERR" | grep -q "SKELETON FOLLOW-UP"; then
-  fail "skeleton follow-up (2) (contrast): unexpected SKELETON FOLLOW-UP line for a non-skeleton handoff, got: $LAST_STDERR"
+  common_test_fail "skeleton follow-up (2) (contrast): unexpected SKELETON FOLLOW-UP line for a non-skeleton handoff, got: $LAST_STDERR"
 else
-  pass "skeleton follow-up (2) (contrast): no SKELETON FOLLOW-UP line for a non-skeleton handoff"
+  common_test_pass "skeleton follow-up (2) (contrast): no SKELETON FOLLOW-UP line for a non-skeleton handoff"
 fi
 ns_state_entry=$(jq -c --argjson n "$ns_candidate_num" '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null)
 if echo "$ns_state_entry" | jq -e 'has("skeleton_follow_ups")' >/dev/null 2>&1; then
-  fail "skeleton follow-up (2) (contrast): unexpected skeleton_follow_ups field on a non-skeleton task entry, got: $ns_state_entry"
+  common_test_fail "skeleton follow-up (2) (contrast): unexpected skeleton_follow_ups field on a non-skeleton task entry, got: $ns_state_entry"
 else
-  pass "skeleton follow-up (2) (contrast): no skeleton_follow_ups field written for a non-skeleton handoff"
+  common_test_pass "skeleton follow-up (2) (contrast): no skeleton_follow_ups field written for a non-skeleton handoff"
 fi
 if [ "$(jqf '.verdict')" = "ok" ] && [ "$(echo "$ns_state_entry" | jq -r '.status' 2>/dev/null)" = "completed" ]; then
-  pass "skeleton follow-up (2) (contrast): the ordinary completion outcome is unchanged -- verdict=ok and task status=completed"
+  common_test_pass "skeleton follow-up (2) (contrast): the ordinary completion outcome is unchanged -- verdict=ok and task status=completed"
 else
-  fail "skeleton follow-up (2) (contrast): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$ns_state_entry" | jq -r '.status' 2>/dev/null)"
+  common_test_fail "skeleton follow-up (2) (contrast): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$ns_state_entry" | jq -r '.status' 2>/dev/null)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3175,7 +3171,7 @@ EOF
 INNEREOF
 }
 
-info "Observer acceptance (A): topic X fires, sees pre-existing metrics/issues records"
+common_test_info "Observer acceptance (A): topic X fires, sees pre-existing metrics/issues records"
 setup_sandbox
 declare_observer_fixture testobs probe-observer probe-observer.sh X \
   'probe="$4/obs_probe.txt"; { [ -f "$4/metrics.jsonl" ] && echo metrics_present || echo metrics_absent; [ -f "$4/issues.jsonl" ] && echo issues_present || echo issues_absent; } > "$probe"; exit 0'
@@ -3187,17 +3183,17 @@ run_sut "specs/981_candidate" --session sess_981 --phase implement --task-type g
 if [ -f "$WORKDIR/specs/981_candidate/obs_probe.txt" ] \
   && grep -q "metrics_present" "$WORKDIR/specs/981_candidate/obs_probe.txt" \
   && grep -q "issues_present" "$WORKDIR/specs/981_candidate/obs_probe.txt"; then
-  pass "observer acceptance (A): topic X observer fired and saw metrics.jsonl/issues.jsonl already present"
+  common_test_pass "observer acceptance (A): topic X observer fired and saw metrics.jsonl/issues.jsonl already present"
 else
-  fail "observer acceptance (A): probe file missing or did not report both records present"
+  common_test_fail "observer acceptance (A): probe file missing or did not report both records present"
 fi
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "observer acceptance (A): SUT verdict unaffected by a successful observer (verdict=ok)"
+  common_test_pass "observer acceptance (A): SUT verdict unaffected by a successful observer (verdict=ok)"
 else
-  fail "observer acceptance (A): expected verdict=ok, got $(jqf '.verdict')"
+  common_test_fail "observer acceptance (A): expected verdict=ok, got $(jqf '.verdict')"
 fi
 
-info "Observer acceptance (B): topic X:sub (prefix match) fires"
+common_test_info "Observer acceptance (B): topic X:sub (prefix match) fires"
 setup_sandbox
 declare_observer_fixture testobs probe-observer probe-observer.sh X \
   'probe="$4/obs_probe.txt"; echo fired > "$probe"; exit 0'
@@ -3207,12 +3203,12 @@ run_sut "specs/982_candidate" --session sess_982 --phase implement --task-type g
   --agent general-implementation-agent --loop-guard-file specs/982_candidate/.orchestrator-loop-guard \
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 982
 if [ -f "$WORKDIR/specs/982_candidate/obs_probe.txt" ]; then
-  pass "observer acceptance (B): topic X:sub prefix-matches declared topic X and fires"
+  common_test_pass "observer acceptance (B): topic X:sub prefix-matches declared topic X and fires"
 else
-  fail "observer acceptance (B): observer did not fire for topic X:sub"
+  common_test_fail "observer acceptance (B): observer did not fire for topic X:sub"
 fi
 
-info "Observer acceptance (C): non-matching topic Y does not fire"
+common_test_info "Observer acceptance (C): non-matching topic Y does not fire"
 setup_sandbox
 declare_observer_fixture testobs probe-observer probe-observer.sh X \
   'probe="$4/obs_probe.txt"; echo fired > "$probe"; exit 0'
@@ -3222,12 +3218,12 @@ run_sut "specs/983_candidate" --session sess_983 --phase implement --task-type g
   --agent general-implementation-agent --loop-guard-file specs/983_candidate/.orchestrator-loop-guard \
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 983
 if [ ! -f "$WORKDIR/specs/983_candidate/obs_probe.txt" ]; then
-  pass "observer acceptance (C): non-matching topic Y does not fire the topic-X observer"
+  common_test_pass "observer acceptance (C): non-matching topic Y does not fire the topic-X observer"
 else
-  fail "observer acceptance (C): observer unexpectedly fired for non-matching topic Y"
+  common_test_fail "observer acceptance (C): observer unexpectedly fired for non-matching topic Y"
 fi
 
-info "Observer acceptance (D): a crashing observer leaves the SUT verdict and persisted status unaffected"
+common_test_info "Observer acceptance (D): a crashing observer leaves the SUT verdict and persisted status unaffected"
 setup_sandbox
 declare_observer_fixture testobs crash-observer crash-observer.sh Z \
   'echo "deliberate crash noise" >&2; exit 1'
@@ -3238,9 +3234,9 @@ run_sut "specs/984_candidate" --session sess_984 --phase implement --task-type g
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 984
 obs_state_entry=$(jq -c --argjson n 984 '.active_projects[] | select(.project_number == $n)' "$STATE_FILE" 2>/dev/null)
 if [ "$(jqf '.verdict')" = "ok" ] && [ "$(echo "$obs_state_entry" | jq -r '.status' 2>/dev/null)" = "completed" ]; then
-  pass "observer acceptance (D): a crashing observer leaves verdict=ok and status=completed unaffected"
+  common_test_pass "observer acceptance (D): a crashing observer leaves verdict=ok and status=completed unaffected"
 else
-  fail "observer acceptance (D): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$obs_state_entry" | jq -r '.status' 2>/dev/null)"
+  common_test_fail "observer acceptance (D): expected verdict=ok and status=completed, got verdict=$(jqf '.verdict') status=$(echo "$obs_state_entry" | jq -r '.status' 2>/dev/null)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3276,18 +3272,18 @@ run_sut "specs/700_stall_probe" 700 --session sess_0000000000_stall --phase impl
   --transport-error false --force-invoked false --dispatch-start-ts "$stall_ts" --dry-run
 s1="$(jqf '.stall_suspected')"
 if [ "$s1" = "true" ]; then
-  pass "stall_suspected (S1): no outcome + a commit inside the dispatch window flags the abandoned wrap-up"
+  common_test_pass "stall_suspected (S1): no outcome + a commit inside the dispatch window flags the abandoned wrap-up"
 else
-  fail "stall_suspected (S1): expected true, got '$s1' (verdict=$(jqf '.verdict'))"
+  common_test_fail "stall_suspected (S1): expected true, got '$s1' (verdict=$(jqf '.verdict'))"
 fi
 
 # Case S2 (advisory only): the flag must not change verdict/status bookkeeping. Whatever verdict
 # the no-outcome path already produced, stall_suspected must not have rewritten it into something
 # else -- it is a parallel signal, exactly like report_missing.
 if [ -n "$(jqf '.verdict')" ] && [ "$(jqf '.verdict')" != "null" ]; then
-  pass "stall_suspected (S2): the no-outcome verdict is still emitted alongside the flag (verdict=$(jqf '.verdict'))"
+  common_test_pass "stall_suspected (S2): the no-outcome verdict is still emitted alongside the flag (verdict=$(jqf '.verdict'))"
 else
-  fail "stall_suspected (S2): verdict missing or null when stall_suspected fired"
+  common_test_fail "stall_suspected (S2): verdict missing or null when stall_suspected fired"
 fi
 
 # Case S3 (negative, the discriminating half): same no-outcome dispatch, but NO commit inside the
@@ -3309,9 +3305,9 @@ run_sut "specs/701_stall_probe" 701 --session sess_0000000000_dead --phase imple
   --transport-error false --force-invoked false --dispatch-start-ts "$dead_ts" --dry-run
 s3="$(jqf '.stall_suspected')"
 if [ "$s3" = "false" ]; then
-  pass "stall_suspected (S3): no outcome and no commit in the window is NOT flagged (genuine failure, not a stall)"
+  common_test_pass "stall_suspected (S3): no outcome and no commit in the window is NOT flagged (genuine failure, not a stall)"
 else
-  fail "stall_suspected (S3): expected false, got '$s3'"
+  common_test_fail "stall_suspected (S3): expected false, got '$s3'"
 fi
 
 # Case S4 (research is out of scope): the research phase has its own report_missing/D4 recovery
@@ -3336,9 +3332,9 @@ run_sut "specs/702_stall_probe" 702 --session sess_0000000000_res --phase resear
   --transport-error false --force-invoked false --dispatch-start-ts "$r_ts" --dry-run
 s4="$(jqf '.stall_suspected')"
 if [ "$s4" = "false" ]; then
-  pass "stall_suspected (S4): the research phase never sets the flag (report_missing owns that path)"
+  common_test_pass "stall_suspected (S4): the research phase never sets the flag (report_missing owns that path)"
 else
-  fail "stall_suspected (S4): expected false for research phase, got '$s4'"
+  common_test_fail "stall_suspected (S4): expected false for research phase, got '$s4'"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3357,9 +3353,9 @@ fi
 # lock_state resolves `free` (heartbeat not stale), and stranded_suspected is false trivially.
 if echo "$LAST_STDOUT" | jq -e 'has("stranded_suspected")' >/dev/null 2>&1 \
    && [ "$(jqf '.stranded_suspected')" = "false" ]; then
-  pass "stranded_suspected (T0): field present and false on a dispatch with no lock fixture (free lock state)"
+  common_test_pass "stranded_suspected (T0): field present and false on a dispatch with no lock fixture (free lock state)"
 else
-  fail "stranded_suspected (T0): expected field present and false, got: $LAST_STDOUT"
+  common_test_fail "stranded_suspected (T0): expected field present and false, got: $LAST_STDOUT"
 fi
 
 # Case T1 (positive): a no-outcome dispatch whose fixture lock is stranded -- live holder pid
@@ -3367,7 +3363,7 @@ fi
 # session registry entry resolving pid-alive, and the task directory NEVER committed (so
 # `git log --since=... -- <task_dir>` returns empty regardless of wall-clock commit timing in
 # this very test run) -- must flag stranded_suspected=true.
-info "=== stranded_suspected (T1): stranded lock fixture -> true ==="
+common_test_info "=== stranded_suspected (T1): stranded lock fixture -> true ==="
 setup_sandbox
 write_state <<'EOF'
 {"active_projects":[{"project_number":710,"title":"strand probe","status":"implementing","task_type":"meta","next_artifact_number":1}]}
@@ -3391,23 +3387,23 @@ run_sut "specs/710_strand_probe" 710 --session sess_0000000000_t1 --phase implem
   --transport-error false --force-invoked false --dispatch-start-ts "$t1_ts" --dry-run
 t1="$(jqf '.stranded_suspected')"
 if [ "$t1" = "true" ]; then
-  pass "stranded_suspected (T1): a stranded lock fixture (live pid, stale heartbeat, quiescent dir) flags true"
+  common_test_pass "stranded_suspected (T1): a stranded lock fixture (live pid, stale heartbeat, quiescent dir) flags true"
 else
-  fail "stranded_suspected (T1): expected true, got '$t1' (stderr: $LAST_STDERR)"
+  common_test_fail "stranded_suspected (T1): expected true, got '$t1' (stderr: $LAST_STDERR)"
 fi
 # stall_suspected must stay false here (no commit landed at all) -- proves the two fields are
 # genuinely independent, not the same signal under two names.
 if [ "$(jqf '.stall_suspected')" = "false" ]; then
-  pass "stranded_suspected (T1b): stall_suspected stays false alongside stranded_suspected=true (independent fields)"
+  common_test_pass "stranded_suspected (T1b): stall_suspected stays false alongside stranded_suspected=true (independent fields)"
 else
-  fail "stranded_suspected (T1b): expected stall_suspected=false, got '$(jqf ".stall_suspected")'"
+  common_test_fail "stranded_suspected (T1b): expected stall_suspected=false, got '$(jqf ".stall_suspected")'"
 fi
 
 # Case T2 (the false-positive regression, negative): identical stale-lock/session fixture, but
 # one artifact touched INSIDE the window -- must classify live, stranded_suspected=false. This
 # is the measured shape (two healthy tasks held-live at 32/41 minutes past a 30-minute
 # threshold, both completing normally minutes later).
-info "=== stranded_suspected (T2): healthy-but-slow lock fixture -> false ==="
+common_test_info "=== stranded_suspected (T2): healthy-but-slow lock fixture -> false ==="
 setup_sandbox
 write_state <<'EOF'
 {"active_projects":[{"project_number":711,"title":"healthy slow probe","status":"implementing","task_type":"meta","next_artifact_number":1}]}
@@ -3428,16 +3424,16 @@ run_sut "specs/711_strand_probe" 711 --session sess_0000000000_t2 --phase implem
   --transport-error false --force-invoked false --dispatch-start-ts "$t2_ts" --dry-run
 t2="$(jqf '.stranded_suspected')"
 if [ "$t2" = "false" ]; then
-  pass "stranded_suspected (T2): healthy-but-slow (heartbeat 41 min past threshold, artifact moved) does NOT flag -- the false-positive regression stays closed"
+  common_test_pass "stranded_suspected (T2): healthy-but-slow (heartbeat 41 min past threshold, artifact moved) does NOT flag -- the false-positive regression stays closed"
 else
-  fail "stranded_suspected (T2): expected false, got '$t2' (stderr: $LAST_STDERR)"
+  common_test_fail "stranded_suspected (T2): expected false, got '$t2' (stderr: $LAST_STDERR)"
 fi
 
 # Case T3 (both emission arms carry the field): Acceptance (5)'s run (user_decision-populated
 # arm) and T1's run (plain arm) both already asserted `has("stranded_suspected")`-equivalent
 # truth above via explicit value checks; this case re-confirms presence explicitly on a fresh
 # ask_user run so neither arm can silently omit the key.
-info "=== stranded_suspected (T3): present in both JSON emission arms ==="
+common_test_info "=== stranded_suspected (T3): present in both JSON emission arms ==="
 setup_sandbox
 mkdir -p "$WORKDIR/specs/712_ask_probe"
 write_state <<'EOF'
@@ -3456,9 +3452,9 @@ run_sut "specs/712_ask_probe" 712 --session sess_0000000000_t3 --phase implement
   --task-type meta --agent general-implementation-agent --cycle-count 1 \
   --transport-error false --force-invoked false --dispatch-seq 1 --dry-run
 if [ "$(jqf '.verdict')" = "ask_user" ] && echo "$LAST_STDOUT" | jq -e 'has("stranded_suspected")' >/dev/null 2>&1; then
-  pass "stranded_suspected (T3): present alongside an ask_user verdict (the user_decision-populated emission arm)"
+  common_test_pass "stranded_suspected (T3): present alongside an ask_user verdict (the user_decision-populated emission arm)"
 else
-  fail "stranded_suspected (T3): expected verdict=ask_user with stranded_suspected present, got: $LAST_STDOUT"
+  common_test_fail "stranded_suspected (T3): expected verdict=ask_user with stranded_suspected present, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3466,7 +3462,7 @@ fi
 # defect, attributed to the dispatched agent's own source-store file -- the exact shape measured
 # live in the production incidents that motivated this check.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 970: implemented handoff missing blockers records one HANDOFF_VALIDATION_FAILED defect"
+common_test_info "Case 970: implemented handoff missing blockers records one HANDOFF_VALIDATION_FAILED defect"
 setup_sandbox
 stub_agent_file general-implementation-agent
 mkdir -p "$WORKDIR/specs/970_candidate/summaries"
@@ -3487,29 +3483,29 @@ run_sut specs/970_candidate --session sess_970 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 970
 
 if echo "$LAST_STDERR" | grep -q "ERROR: HANDOFF VALIDATION FAILED"; then
-  pass "case 970: ERROR: HANDOFF VALIDATION FAILED notice appears on stderr"
+  common_test_pass "case 970: ERROR: HANDOFF VALIDATION FAILED notice appears on stderr"
 else
-  fail "case 970: expected an ERROR: HANDOFF VALIDATION FAILED notice, got: $LAST_STDERR"
+  common_test_fail "case 970: expected an ERROR: HANDOFF VALIDATION FAILED notice, got: $LAST_STDERR"
 fi
 case_970_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_VALIDATION_FAILED")) | length' \
   "$WORKDIR/specs/970_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$case_970_defect_count" = "1" ]; then
-  pass "case 970: exactly one HANDOFF_VALIDATION_FAILED defect row recorded"
+  common_test_pass "case 970: exactly one HANDOFF_VALIDATION_FAILED defect row recorded"
 else
-  fail "case 970: expected exactly 1 HANDOFF_VALIDATION_FAILED defect, got $case_970_defect_count"
+  common_test_fail "case 970: expected exactly 1 HANDOFF_VALIDATION_FAILED defect, got $case_970_defect_count"
 fi
 if jq -e '.detected_defects[] | select(.defect_class == "HANDOFF_VALIDATION_FAILED") | .attributed_source_path == "agent-system/extensions/core/agents/general-implementation-agent.md"' \
      "$WORKDIR/specs/970_candidate/.orchestrator-loop-guard" >/dev/null 2>&1; then
-  pass "case 970: HANDOFF_VALIDATION_FAILED attributed to the dispatched agent's own file"
+  common_test_pass "case 970: HANDOFF_VALIDATION_FAILED attributed to the dispatched agent's own file"
 else
-  fail "case 970: HANDOFF_VALIDATION_FAILED attribution did not resolve to the dispatched agent's file"
+  common_test_fail "case 970: HANDOFF_VALIDATION_FAILED attribution did not resolve to the dispatched agent's file"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 971: the --dry-run variant of Case 970 -- asserts the [dry-run] would record line and
 # performs no recorder call / no detected_defects write.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 971: --dry-run variant asserts the [dry-run] would record line, no recorder call"
+common_test_info "Case 971: --dry-run variant asserts the [dry-run] would record line, no recorder call"
 setup_sandbox
 stub_agent_file general-implementation-agent
 mkdir -p "$WORKDIR/specs/971_candidate/summaries"
@@ -3530,22 +3526,22 @@ run_sut specs/971_candidate --session sess_971 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" --dry-run 971
 
 if echo "$LAST_STDERR" | grep -q '\[dry-run\] would record HANDOFF_VALIDATION_FAILED'; then
-  pass "case 971: --dry-run prints the would-record line for HANDOFF_VALIDATION_FAILED"
+  common_test_pass "case 971: --dry-run prints the would-record line for HANDOFF_VALIDATION_FAILED"
 else
-  fail "case 971: expected the [dry-run] would record HANDOFF_VALIDATION_FAILED line, got: $LAST_STDERR"
+  common_test_fail "case 971: expected the [dry-run] would record HANDOFF_VALIDATION_FAILED line, got: $LAST_STDERR"
 fi
 case_971_defect_count=$(jq '.detected_defects | length' "$WORKDIR/specs/971_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$case_971_defect_count" = "0" ]; then
-  pass "case 971: --dry-run performs no detected_defects write"
+  common_test_pass "case 971: --dry-run performs no detected_defects write"
 else
-  fail "case 971: expected 0 detected_defects under --dry-run, got $case_971_defect_count"
+  common_test_fail "case 971: expected 0 detected_defects under --dry-run, got $case_971_defect_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 972: a clean, fully-conforming handoff produces no HANDOFF_VALIDATION_FAILED mention on
 # stderr at all -- the regression guard proving this check does not fire on an ordinary dispatch.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 972: a clean handoff produces no HANDOFF_VALIDATION_FAILED mention on stderr"
+common_test_info "Case 972: a clean handoff produces no HANDOFF_VALIDATION_FAILED mention on stderr"
 setup_sandbox
 stub_agent_file general-implementation-agent
 mkdir -p "$WORKDIR/specs/972_candidate/summaries"
@@ -3566,23 +3562,23 @@ run_sut specs/972_candidate --session sess_972 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 972
 
 if echo "$LAST_STDERR" | grep -q "HANDOFF_VALIDATION_FAILED"; then
-  fail "case 972: unexpected HANDOFF_VALIDATION_FAILED mention on stderr for a clean handoff, got: $LAST_STDERR"
+  common_test_fail "case 972: unexpected HANDOFF_VALIDATION_FAILED mention on stderr for a clean handoff, got: $LAST_STDERR"
 else
-  pass "case 972: no HANDOFF_VALIDATION_FAILED mention on stderr for a clean handoff"
+  common_test_pass "case 972: no HANDOFF_VALIDATION_FAILED mention on stderr for a clean handoff"
 fi
 case_972_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_VALIDATION_FAILED")) | length' \
   "$WORKDIR/specs/972_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$case_972_defect_count" = "0" ]; then
-  pass "case 972: zero HANDOFF_VALIDATION_FAILED defects recorded for a clean handoff"
+  common_test_pass "case 972: zero HANDOFF_VALIDATION_FAILED defects recorded for a clean handoff"
 else
-  fail "case 972: expected 0 HANDOFF_VALIDATION_FAILED defects, got $case_972_defect_count"
+  common_test_fail "case 972: expected 0 HANDOFF_VALIDATION_FAILED defects, got $case_972_defect_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 973: a planned-status handoff missing `summary` also records -- the coverage this phase's
 # refinement exists to add (validation is no longer gated on dispatch_status == "implemented").
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 973: a planned-status handoff missing summary also records HANDOFF_VALIDATION_FAILED"
+common_test_info "Case 973: a planned-status handoff missing summary also records HANDOFF_VALIDATION_FAILED"
 setup_sandbox
 stub_agent_file planner-agent
 mkdir -p "$WORKDIR/specs/973_candidate/plans"
@@ -3603,16 +3599,16 @@ run_sut specs/973_candidate --session sess_973 --phase plan --task-type general 
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 973
 
 if echo "$LAST_STDERR" | grep -q "ERROR: HANDOFF VALIDATION FAILED"; then
-  pass "case 973: ERROR: HANDOFF VALIDATION FAILED notice appears on stderr for a planned-status handoff"
+  common_test_pass "case 973: ERROR: HANDOFF VALIDATION FAILED notice appears on stderr for a planned-status handoff"
 else
-  fail "case 973: expected an ERROR: HANDOFF VALIDATION FAILED notice, got: $LAST_STDERR"
+  common_test_fail "case 973: expected an ERROR: HANDOFF VALIDATION FAILED notice, got: $LAST_STDERR"
 fi
 case_973_defect_count=$(jq '.detected_defects | map(select(.defect_class == "HANDOFF_VALIDATION_FAILED")) | length' \
   "$WORKDIR/specs/973_candidate/.orchestrator-loop-guard" 2>/dev/null)
 if [ "$case_973_defect_count" = "1" ]; then
-  pass "case 973: exactly one HANDOFF_VALIDATION_FAILED defect row recorded for a planned-status handoff"
+  common_test_pass "case 973: exactly one HANDOFF_VALIDATION_FAILED defect row recorded for a planned-status handoff"
 else
-  fail "case 973: expected exactly 1 HANDOFF_VALIDATION_FAILED defect, got $case_973_defect_count"
+  common_test_fail "case 973: expected exactly 1 HANDOFF_VALIDATION_FAILED defect, got $case_973_defect_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -3623,7 +3619,7 @@ fi
 # task that does NOT declare its own directory in file_scope, which is the shape the defect
 # actually fired on.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case (a): writing only inside the task's own (undeclared) directory produces ZERO excursion advisories"
+common_test_info "Case (a): writing only inside the task's own (undeclared) directory produces ZERO excursion advisories"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/715_candidate/summaries"
 echo x > "$WORKDIR/specs/715_candidate/summaries/01_x-summary.md"
@@ -3644,17 +3640,17 @@ run_sut specs/715_candidate --session sess_715 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 715
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "case (a): exit 0 and verdict=ok for an own-directory-only write (file_scope does not declare the task's own directory)"
+  common_test_pass "case (a): exit 0 and verdict=ok for an own-directory-only write (file_scope does not declare the task's own directory)"
 else
-  fail "case (a): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+  common_test_fail "case (a): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
 fi
 if echo "$LAST_STDERR" | grep -q "ADVISORY"; then
-  fail "case (a): unexpected ADVISORY line for a write confined to the task's own directory: $LAST_STDERR"
+  common_test_fail "case (a): unexpected ADVISORY line for a write confined to the task's own directory: $LAST_STDERR"
 else
-  pass "case (a): zero ADVISORY lines for a write confined to the task's own directory"
+  common_test_pass "case (a): zero ADVISORY lines for a write confined to the task's own directory"
 fi
 
-info "Case (b): a genuinely undeclared file outside both scope and own directory still produces exactly one advisory"
+common_test_info "Case (b): a genuinely undeclared file outside both scope and own directory still produces exactly one advisory"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/716_candidate/summaries"
 echo x > "$WORKDIR/specs/716_candidate/summaries/01_x-summary.md"
@@ -3675,28 +3671,28 @@ run_sut specs/716_candidate --session sess_716 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 716
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "case (b): exit 0 and verdict=ok unchanged despite a genuine excursion (detection only)"
+  common_test_pass "case (b): exit 0 and verdict=ok unchanged despite a genuine excursion (detection only)"
 else
-  fail "case (b): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+  common_test_fail "case (b): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
 fi
 advisory_lines=$(echo "$LAST_STDERR" | grep -c "ADVISORY")
 if [ "$advisory_lines" -eq 1 ] 2>/dev/null; then
-  pass "case (b): exactly one ADVISORY line emitted"
+  common_test_pass "case (b): exactly one ADVISORY line emitted"
 else
-  fail "case (b): expected exactly one ADVISORY line, got $advisory_lines: $LAST_STDERR"
+  common_test_fail "case (b): expected exactly one ADVISORY line, got $advisory_lines: $LAST_STDERR"
 fi
 if echo "$LAST_STDERR" | grep -q "ADVISORY.*excursion.sh"; then
-  pass "case (b): the advisory names the genuinely undeclared path (completely/unrelated/excursion.sh)"
+  common_test_pass "case (b): the advisory names the genuinely undeclared path (completely/unrelated/excursion.sh)"
 else
-  fail "case (b): advisory did not name completely/unrelated/excursion.sh: $LAST_STDERR"
+  common_test_fail "case (b): advisory did not name completely/unrelated/excursion.sh: $LAST_STDERR"
 fi
 if echo "$LAST_STDERR" | grep "ADVISORY" | grep -q "01_x-summary.md"; then
-  fail "case (b): the own-directory summary file must not also be named in the advisory: $LAST_STDERR"
+  common_test_fail "case (b): the own-directory summary file must not also be named in the advisory: $LAST_STDERR"
 else
-  pass "case (b): the own-directory summary file is not named in the advisory (the exemption still applies alongside the genuine excursion)"
+  common_test_pass "case (b): the own-directory summary file is not named in the advisory (the exemption still applies alongside the genuine excursion)"
 fi
 
-info "Case (c): an archived task directory (specs/archive/{N}_{name}/) is resolved and exempted the same way"
+common_test_info "Case (c): an archived task directory (specs/archive/{N}_{name}/) is resolved and exempted the same way"
 setup_sandbox
 mkdir -p "$WORKDIR/specs/archive/717_candidate/summaries"
 echo x > "$WORKDIR/specs/archive/717_candidate/summaries/01_x-summary.md"
@@ -3717,14 +3713,14 @@ run_sut specs/archive/717_candidate --session sess_717 --phase implement --task-
   --dispatch-seq 1 --dispatch-start-ts "$window_start" 717
 
 if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "case (c): exit 0 and verdict=ok for an archived task directory's own-directory write"
+  common_test_pass "case (c): exit 0 and verdict=ok for an archived task directory's own-directory write"
 else
-  fail "case (c): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
+  common_test_fail "case (c): expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
 fi
 if echo "$LAST_STDERR" | grep -q "ADVISORY"; then
-  fail "case (c): unexpected ADVISORY line for a write confined to the archived task's own directory: $LAST_STDERR"
+  common_test_fail "case (c): unexpected ADVISORY line for a write confined to the archived task's own directory: $LAST_STDERR"
 else
-  pass "case (c): zero ADVISORY lines -- the implicit member resolved from the ARCHIVED --task-dir actually used, not an assumed active path"
+  common_test_pass "case (c): zero ADVISORY lines -- the implicit member resolved from the ARCHIVED --task-dir actually used, not an assumed active path"
 fi
 
 # task-ref-ok:begin category 6-adjacent: the "980"/"981" fixture numbers below, and the literal
@@ -3767,7 +3763,7 @@ EOF
   chmod +x "$WORKDIR/.claude/scripts/git-commit-scoped.sh"
 }
 
-info "Case 980: a stubbed exit 6 (V9 out-of-repository drop alongside a landed commit) takes the loud ERROR branch, with verdict unchanged from a clean exit 0"
+common_test_info "Case 980: a stubbed exit 6 (V9 out-of-repository drop alongside a landed commit) takes the loud ERROR branch, with verdict unchanged from a clean exit 0"
 
 # Baseline run: stub exits 0.
 setup_sandbox
@@ -3791,45 +3787,45 @@ verdict_980_probe="$(jqf '.verdict')"
 note_980_probe="$(jqf '.note')"
 
 if grep -q "ERROR: git-commit-scoped.sh exited 6 for task 980" <<< "$LAST_STDERR"; then
-  pass "case 980: the named ERROR appears on stderr with the exit code in it"
+  common_test_pass "case 980: the named ERROR appears on stderr with the exit code in it"
 else
-  fail "case 980: expected a named ERROR naming exit 6 for task 980 on stderr; got: $LAST_STDERR"
+  common_test_fail "case 980: expected a named ERROR naming exit 6 for task 980 on stderr; got: $LAST_STDERR"
 fi
 if [ -n "$note_980_probe" ] && [ "$note_980_probe" != "null" ]; then
-  pass "case 980: the emitted verdict JSON's .note field is non-empty"
+  common_test_pass "case 980: the emitted verdict JSON's .note field is non-empty"
 else
-  fail "case 980: expected a non-empty .note field; got '$note_980_probe'"
+  common_test_fail "case 980: expected a non-empty .note field; got '$note_980_probe'"
 fi
 if [ -z "$note_980_baseline" ] || [ "$note_980_baseline" = "null" ]; then
-  pass "case 980: the baseline (stub exit 0) run's .note field is empty, confirming the probe's non-empty .note is caused by the stubbed failure"
+  common_test_pass "case 980: the baseline (stub exit 0) run's .note field is empty, confirming the probe's non-empty .note is caused by the stubbed failure"
 else
-  fail "case 980: expected the baseline run's .note to be empty; got '$note_980_baseline'"
+  common_test_fail "case 980: expected the baseline run's .note to be empty; got '$note_980_baseline'"
 fi
 if [ "$verdict_980_probe" = "$verdict_980_baseline" ]; then
-  pass "case 980: .verdict is UNCHANGED between the exit-6 probe and the clean exit-0 baseline -- this branch is observability, not a control-flow change (discriminates: a verdict demotion would fail this)"
+  common_test_pass "case 980: .verdict is UNCHANGED between the exit-6 probe and the clean exit-0 baseline -- this branch is observability, not a control-flow change (discriminates: a verdict demotion would fail this)"
 else
-  fail "case 980: expected .verdict unchanged between probe and baseline; got probe='$verdict_980_probe' baseline='$verdict_980_baseline'"
+  common_test_fail "case 980: expected .verdict unchanged between probe and baseline; got probe='$verdict_980_probe' baseline='$verdict_980_baseline'"
 fi
 # The following three assertions COMPLEMENT, and must not replace, the .verdict-unchanged
 # assertion immediately above: a landed-commit code (exit 6, V9) must not trigger the new
 # commit-landing status-correction demotion added alongside this exit-code branch.
 if [ "$(jqf '.persisted_status')" = "completed" ]; then
-  pass "case 980: a landed-commit code (exit 6) does not demote -- persisted_status stays completed"
+  common_test_pass "case 980: a landed-commit code (exit 6) does not demote -- persisted_status stays completed"
 else
-  fail "case 980: expected persisted_status=completed (no demotion) for exit 6, got: $(jqf '.persisted_status')"
+  common_test_fail "case 980: expected persisted_status=completed (no demotion) for exit 6, got: $(jqf '.persisted_status')"
 fi
 if jq -e '(.blockers // []) | length == 0' "$WORKDIR/specs/980_candidate/.orchestrator-handoff.json" >/dev/null 2>&1; then
-  pass "case 980: exit 6 does not append a handoff blocker -- blockers[] stays empty"
+  common_test_pass "case 980: exit 6 does not append a handoff blocker -- blockers[] stays empty"
 else
-  fail "case 980: expected handoff blockers[] to stay empty for exit 6; got: $(cat "$WORKDIR/specs/980_candidate/.orchestrator-handoff.json" 2>/dev/null)"
+  common_test_fail "case 980: expected handoff blockers[] to stay empty for exit 6; got: $(cat "$WORKDIR/specs/980_candidate/.orchestrator-handoff.json" 2>/dev/null)"
 fi
 if grep -q "STATUS DEMOTED" <<< "$LAST_STDERR"; then
-  fail "case 980: unexpected STATUS DEMOTED line for a landed-commit exit code (6): $LAST_STDERR"
+  common_test_fail "case 980: unexpected STATUS DEMOTED line for a landed-commit exit code (6): $LAST_STDERR"
 else
-  pass "case 980: no STATUS DEMOTED line for exit 6"
+  common_test_pass "case 980: no STATUS DEMOTED line for exit 6"
 fi
 
-info "Case 981: a stubbed exit 1 (benign nothing-to-commit) stays on the unchanged non-blocking WARNING path -- no ERROR, empty .note"
+common_test_info "Case 981: a stubbed exit 1 (benign nothing-to-commit) stays on the unchanged non-blocking WARNING path -- no ERROR, empty .note"
 
 setup_sandbox
 write_case98x_fixture 981
@@ -3840,29 +3836,29 @@ run_sut specs/981_candidate --session sess_981 --phase implement --task-type gen
 note_981="$(jqf '.note')"
 
 if echo "$LAST_STDERR" | grep -q "WARNING: commit failed for task 981 (non-blocking)"; then
-  pass "case 981: the benign exit-1 no-op still uses the existing non-blocking WARNING wording, verbatim"
+  common_test_pass "case 981: the benign exit-1 no-op still uses the existing non-blocking WARNING wording, verbatim"
 else
-  fail "case 981: expected the existing non-blocking WARNING for exit 1; got: $LAST_STDERR"
+  common_test_fail "case 981: expected the existing non-blocking WARNING for exit 1; got: $LAST_STDERR"
 fi
 if grep -q "ERROR: git-commit-scoped.sh exited" <<< "$LAST_STDERR"; then
-  fail "case 981: unexpected attribution ERROR for the benign exit-1 case: $LAST_STDERR"
+  common_test_fail "case 981: unexpected attribution ERROR for the benign exit-1 case: $LAST_STDERR"
 else
-  pass "case 981: no attribution ERROR for the benign exit-1 case"
+  common_test_pass "case 981: no attribution ERROR for the benign exit-1 case"
 fi
 if [ -z "$note_981" ] || [ "$note_981" = "null" ]; then
-  pass "case 981: .note is empty for the benign exit-1 case"
+  common_test_pass "case 981: .note is empty for the benign exit-1 case"
 else
-  fail "case 981: expected .note empty for exit 1; got '$note_981'"
+  common_test_fail "case 981: expected .note empty for exit 1; got '$note_981'"
 fi
 if [ "$(jqf '.persisted_status')" = "completed" ]; then
-  pass "case 981: the benign exit-1 no-op does not demote -- persisted_status stays completed"
+  common_test_pass "case 981: the benign exit-1 no-op does not demote -- persisted_status stays completed"
 else
-  fail "case 981: expected persisted_status=completed (no demotion) for exit 1, got: $(jqf '.persisted_status')"
+  common_test_fail "case 981: expected persisted_status=completed (no demotion) for exit 1, got: $(jqf '.persisted_status')"
 fi
 if grep -q "STATUS DEMOTED" <<< "$LAST_STDERR"; then
-  fail "case 981: unexpected STATUS DEMOTED line for the benign exit-1 no-op: $LAST_STDERR"
+  common_test_fail "case 981: unexpected STATUS DEMOTED line for the benign exit-1 no-op: $LAST_STDERR"
 else
-  pass "case 981: no STATUS DEMOTED line for exit 1"
+  common_test_pass "case 981: no STATUS DEMOTED line for exit 1"
 fi
 # task-ref-ok:end
 
@@ -3879,7 +3875,7 @@ fi
 # gate implements. A clean exit-0 baseline on the identical fixture discriminates: it must stay
 # at completed/ok, confirming the demotion is caused by the stubbed failure, not the fixture.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 985: a stubbed exit 3 (V5 contended-path refusal) for a just-completed implement dispatch demotes completed -> partial, amends the handoff, and flips verdict to defer"
+common_test_info "Case 985: a stubbed exit 3 (V5 contended-path refusal) for a just-completed implement dispatch demotes completed -> partial, amends the handoff, and flips verdict to defer"
 
 # Baseline run: stub exits 0 -- stays at completed/ok.
 setup_sandbox
@@ -3893,9 +3889,9 @@ verdict_985_baseline="$(jqf '.verdict')"
 status_985_baseline="$(jqf '.persisted_status')"
 
 if [ "$status_985_baseline" = "completed" ] && [ "$verdict_985_baseline" = "ok" ]; then
-  pass "case 985 (baseline): a clean commit (exit 0) leaves the task at completed/ok"
+  common_test_pass "case 985 (baseline): a clean commit (exit 0) leaves the task at completed/ok"
 else
-  fail "case 985 (baseline): expected persisted_status=completed and verdict=ok, got persisted_status='$status_985_baseline' verdict='$verdict_985_baseline'"
+  common_test_fail "case 985 (baseline): expected persisted_status=completed and verdict=ok, got persisted_status='$status_985_baseline' verdict='$verdict_985_baseline'"
 fi
 
 # Probe run: identical fixture, stub exits 3.
@@ -3911,64 +3907,64 @@ halt_985_probe="$(jqf '.halt')"
 infra_exempt_985_probe="$(jqf '.infra_exempt_cycle')"
 
 if [ "$status_985_probe" = "partial" ]; then
-  pass "case 985: a genuinely non-landing commit (exit 3) demotes persisted_status from completed to partial"
+  common_test_pass "case 985: a genuinely non-landing commit (exit 3) demotes persisted_status from completed to partial"
 else
-  fail "case 985: expected persisted_status=partial after the exit-3 demotion, got: '$status_985_probe'"
+  common_test_fail "case 985: expected persisted_status=partial after the exit-3 demotion, got: '$status_985_probe'"
 fi
 if [ "$verdict_985_probe" = "defer" ]; then
-  pass "case 985: verdict flips to defer (the established in-flight/retry-same-phase meaning)"
+  common_test_pass "case 985: verdict flips to defer (the established in-flight/retry-same-phase meaning)"
 else
-  fail "case 985: expected verdict=defer, got: '$verdict_985_probe'"
+  common_test_fail "case 985: expected verdict=defer, got: '$verdict_985_probe'"
 fi
 if [ "$halt_985_probe" = "false" ]; then
-  pass "case 985: halt stays false (HARD CONSTRAINT: never touched by the demotion)"
+  common_test_pass "case 985: halt stays false (HARD CONSTRAINT: never touched by the demotion)"
 else
-  fail "case 985: expected halt=false, got: '$halt_985_probe'"
+  common_test_fail "case 985: expected halt=false, got: '$halt_985_probe'"
 fi
 if [ "$infra_exempt_985_probe" = "false" ]; then
-  pass "case 985: infra_exempt_cycle stays false (HARD CONSTRAINT: never touched by the demotion)"
+  common_test_pass "case 985: infra_exempt_cycle stays false (HARD CONSTRAINT: never touched by the demotion)"
 else
-  fail "case 985: expected infra_exempt_cycle=false, got: '$infra_exempt_985_probe'"
+  common_test_fail "case 985: expected infra_exempt_cycle=false, got: '$infra_exempt_985_probe'"
 fi
 if grep -q "STATUS DEMOTED: task 985 completed -> partial" <<< "$LAST_STDERR"; then
-  pass "case 985: a named STATUS DEMOTED line appears on stderr naming the task and the completed -> partial transition"
+  common_test_pass "case 985: a named STATUS DEMOTED line appears on stderr naming the task and the completed -> partial transition"
 else
-  fail "case 985: expected a STATUS DEMOTED line naming task 985 on stderr; got: $LAST_STDERR"
+  common_test_fail "case 985: expected a STATUS DEMOTED line naming task 985 on stderr; got: $LAST_STDERR"
 fi
 
 handoff_985="$WORKDIR/specs/985_candidate/.orchestrator-handoff.json"
 if jq -e '(.blockers // []) | length > 0' "$handoff_985" >/dev/null 2>&1; then
-  pass "case 985: the handoff's blockers[] gained at least one entry"
+  common_test_pass "case 985: the handoff's blockers[] gained at least one entry"
 else
-  fail "case 985: expected a non-empty handoff blockers[] after the demotion; got: $(cat "$handoff_985" 2>/dev/null)"
+  common_test_fail "case 985: expected a non-empty handoff blockers[] after the demotion; got: $(cat "$handoff_985" 2>/dev/null)"
 fi
 if [ "$(jq -r '.blockers[-1].phase // ""' "$handoff_985" 2>/dev/null)" = "implement" ] \
    && [ -n "$(jq -r '.blockers[-1].target // ""' "$handoff_985" 2>/dev/null)" ]; then
-  pass "case 985: the new blocker carries phase and target (the schema's required fields)"
+  common_test_pass "case 985: the new blocker carries phase and target (the schema's required fields)"
 else
-  fail "case 985: expected the new blocker to carry phase=implement and a non-empty target; got: $(jq -c '.blockers[-1]' "$handoff_985" 2>/dev/null)"
+  common_test_fail "case 985: expected the new blocker to carry phase=implement and a non-empty target; got: $(jq -c '.blockers[-1]' "$handoff_985" 2>/dev/null)"
 fi
 if [ "$(jq -r '.continuation_path // "null"' "$handoff_985" 2>/dev/null)" = "null" ]; then
-  pass "case 985: continuation_path is null after the demotion -- the next cycle's triage routes to needs_human, not a redundant implement re-dispatch"
+  common_test_pass "case 985: continuation_path is null after the demotion -- the next cycle's triage routes to needs_human, not a redundant implement re-dispatch"
 else
-  fail "case 985: expected continuation_path=null after the demotion; got: $(jq -r '.continuation_path' "$handoff_985" 2>/dev/null)"
+  common_test_fail "case 985: expected continuation_path=null after the demotion; got: $(jq -r '.continuation_path' "$handoff_985" 2>/dev/null)"
 fi
 if [ "$(jq -r '.continuation_context.handoff_path // "null"' "$handoff_985" 2>/dev/null)" = "null" ]; then
-  pass "case 985: continuation_context.handoff_path is null (the deprecated nested form, also cleared)"
+  common_test_pass "case 985: continuation_context.handoff_path is null (the deprecated nested form, also cleared)"
 else
-  fail "case 985: expected continuation_context.handoff_path=null; got: $(jq -r '.continuation_context.handoff_path' "$handoff_985" 2>/dev/null)"
+  common_test_fail "case 985: expected continuation_context.handoff_path=null; got: $(jq -r '.continuation_context.handoff_path' "$handoff_985" 2>/dev/null)"
 fi
 if [ "$(jq -r '.status' "$handoff_985" 2>/dev/null)" = "partial" ]; then
-  pass "case 985: the handoff's own .status field is amended to partial"
+  common_test_pass "case 985: the handoff's own .status field is amended to partial"
 else
-  fail "case 985: expected handoff .status=partial, got: $(jq -r '.status' "$handoff_985" 2>/dev/null)"
+  common_test_fail "case 985: expected handoff .status=partial, got: $(jq -r '.status' "$handoff_985" 2>/dev/null)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 986: a stubbed exit 3 on a `planned` (not `implemented`) dispatch takes the existing loud
 # ERROR branch, but the new demotion gate never fires -- implement-only, by construction.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 986: a stubbed exit 3 on a planned dispatch is NOT demoted -- the gate is implement-only"
+common_test_info "Case 986: a stubbed exit 3 on a planned dispatch is NOT demoted -- the gate is implement-only"
 
 setup_sandbox
 mkdir -p "$WORKDIR/specs/986_candidate"
@@ -3992,20 +3988,20 @@ run_sut specs/986_candidate --session sess_986 --phase plan --task-type meta \
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 986
 
 if grep -q "STATUS DEMOTED" <<< "$LAST_STDERR"; then
-  fail "case 986: unexpected STATUS DEMOTED line for a non-implement (planned) dispatch: $LAST_STDERR"
+  common_test_fail "case 986: unexpected STATUS DEMOTED line for a non-implement (planned) dispatch: $LAST_STDERR"
 else
-  pass "case 986: no STATUS DEMOTED line for a planned dispatch -- the gate is implement-only"
+  common_test_pass "case 986: no STATUS DEMOTED line for a planned dispatch -- the gate is implement-only"
 fi
 status_986="$(jq -r --argjson n 986 '.active_projects[] | select(.project_number == $n) | .status' "$WORKDIR/specs/state.json")"
 if [ "$status_986" = "planned" ]; then
-  pass "case 986: state.json status still planned -- the ordinary planned transition is untouched"
+  common_test_pass "case 986: state.json status still planned -- the ordinary planned transition is untouched"
 else
-  fail "case 986: expected state.json status=planned, got: $status_986"
+  common_test_fail "case 986: expected state.json status=planned, got: $status_986"
 fi
 if jq -e '(.blockers // []) | length == 0' "$WORKDIR/specs/986_candidate/.orchestrator-handoff.json" >/dev/null 2>&1; then
-  pass "case 986: handoff blockers[] stays empty for a non-implement dispatch"
+  common_test_pass "case 986: handoff blockers[] stays empty for a non-implement dispatch"
 else
-  fail "case 986: expected handoff blockers[] to stay empty for a planned dispatch"
+  common_test_fail "case 986: expected handoff blockers[] to stay empty for a planned dispatch"
 fi
 # task-ref-ok:end
 
@@ -4070,7 +4066,7 @@ write_derived_return_meta() {
 EOF
 }
 
-info "Case 990 (evidence-shaped): two declared components, one gate run (compA, probe passes) and one never run (compB, probe fails) -- ends red (verdict defer, derived_staleness true, status left implementing), and compA's regenerated certificate is STAGED, never dropped"
+common_test_info "Case 990 (evidence-shaped): two declared components, one gate run (compA, probe passes) and one never run (compB, probe fails) -- ends red (verdict defer, derived_staleness true, status left implementing), and compA's regenerated certificate is STAGED, never dropped"
 
 setup_sandbox
 write_derived_components_fixture 990
@@ -4091,37 +4087,37 @@ run_sut specs/990_candidate --session sess_990 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 990
 
 if [ "$(jqf '.verdict')" = "defer" ]; then
-  pass "case 990 (evidence-shaped): verdict is 'defer'"
+  common_test_pass "case 990 (evidence-shaped): verdict is 'defer'"
 else
-  fail "case 990 (evidence-shaped): expected verdict='defer', got: $LAST_STDOUT"
+  common_test_fail "case 990 (evidence-shaped): expected verdict='defer', got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.derived_staleness')" = "true" ]; then
-  pass "case 990 (evidence-shaped): derived_staleness is true"
+  common_test_pass "case 990 (evidence-shaped): derived_staleness is true"
 else
-  fail "case 990 (evidence-shaped): expected derived_staleness=true, got: $LAST_STDOUT"
+  common_test_fail "case 990 (evidence-shaped): expected derived_staleness=true, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.persisted_status')" = "implementing" ]; then
-  pass "case 990 (evidence-shaped): persisted_status left at 'implementing'"
+  common_test_pass "case 990 (evidence-shaped): persisted_status left at 'implementing'"
 else
-  fail "case 990 (evidence-shaped): expected persisted_status='implementing', got: $LAST_STDOUT"
+  common_test_fail "case 990 (evidence-shaped): expected persisted_status='implementing', got: $LAST_STDOUT"
 fi
 if grep -q "DERIVED-STALENESS" <<< "$LAST_STDERR" && grep -q "compB" <<< "$LAST_STDERR"; then
-  pass "case 990 (evidence-shaped): a DERIVED-STALENESS line names the failing component (compB)"
+  common_test_pass "case 990 (evidence-shaped): a DERIVED-STALENESS line names the failing component (compB)"
 else
-  fail "case 990 (evidence-shaped): expected a DERIVED-STALENESS line naming compB. stderr: $LAST_STDERR"
+  common_test_fail "case 990 (evidence-shaped): expected a DERIVED-STALENESS line naming compB. stderr: $LAST_STDERR"
 fi
 if grep -q "EXCURSION DROPPED.*compA/certs/digest.txt" <<< "$LAST_STDERR"; then
-  fail "case 990 (evidence-shaped): compA's regenerated certificate was EXCURSION DROPPED -- the derived-output exemption did not apply"
+  common_test_fail "case 990 (evidence-shaped): compA's regenerated certificate was EXCURSION DROPPED -- the derived-output exemption did not apply"
 else
-  pass "case 990 (evidence-shaped): compA's regenerated certificate was NOT dropped as an excursion"
+  common_test_pass "case 990 (evidence-shaped): compA's regenerated certificate was NOT dropped as an excursion"
 fi
 if git -C "$WORKDIR" show --stat -1 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
-  pass "case 990 (evidence-shaped): compA's regenerated certificate IS present in the resulting commit"
+  common_test_pass "case 990 (evidence-shaped): compA's regenerated certificate IS present in the resulting commit"
 else
-  fail "case 990 (evidence-shaped): expected components/compA/certs/digest.txt in the resulting commit"
+  common_test_fail "case 990 (evidence-shaped): expected components/compA/certs/digest.txt in the resulting commit"
 fi
 
-info "Case 991 (all probes pass): both components' probes pass -- verdict ok, derived_staleness false, regenerated certificate still staged with its cause"
+common_test_info "Case 991 (all probes pass): both components' probes pass -- verdict ok, derived_staleness false, regenerated certificate still staged with its cause"
 
 setup_sandbox
 write_derived_components_fixture 991
@@ -4138,27 +4134,27 @@ run_sut specs/991_candidate --session sess_991 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 991
 
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "case 991 (all pass): verdict is 'ok'"
+  common_test_pass "case 991 (all pass): verdict is 'ok'"
 else
-  fail "case 991 (all pass): expected verdict='ok', got: $LAST_STDOUT"
+  common_test_fail "case 991 (all pass): expected verdict='ok', got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.derived_staleness')" = "false" ]; then
-  pass "case 991 (all pass): derived_staleness is false"
+  common_test_pass "case 991 (all pass): derived_staleness is false"
 else
-  fail "case 991 (all pass): expected derived_staleness=false, got: $LAST_STDOUT"
+  common_test_fail "case 991 (all pass): expected derived_staleness=false, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.persisted_status')" = "completed" ]; then
-  pass "case 991 (all pass): persisted_status is 'completed'"
+  common_test_pass "case 991 (all pass): persisted_status is 'completed'"
 else
-  fail "case 991 (all pass): expected persisted_status='completed', got: $LAST_STDOUT"
+  common_test_fail "case 991 (all pass): expected persisted_status='completed', got: $LAST_STDOUT"
 fi
 if git -C "$WORKDIR" show --stat -1 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
-  pass "case 991 (all pass): compA's regenerated certificate IS present in the resulting commit"
+  common_test_pass "case 991 (all pass): compA's regenerated certificate IS present in the resulting commit"
 else
-  fail "case 991 (all pass): expected components/compA/certs/digest.txt in the resulting commit"
+  common_test_fail "case 991 (all pass): expected components/compA/certs/digest.txt in the resulting commit"
 fi
 
-info "Case 992 (regression): no derived_artifact_probes declaration at all -- byte-for-byte unaffected: the regenerated certificate outside file_scope is DROPPED as an ordinary advisory excursion, exactly as before this mechanism existed"
+common_test_info "Case 992 (regression): no derived_artifact_probes declaration at all -- byte-for-byte unaffected: the regenerated certificate outside file_scope is DROPPED as an ordinary advisory excursion, exactly as before this mechanism existed"
 
 setup_sandbox
 write_derived_components_fixture 992
@@ -4175,34 +4171,34 @@ run_sut specs/992_candidate --session sess_992 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 992
 
 if [ "$(jqf '.derived_staleness')" = "false" ]; then
-  pass "case 992 (regression): derived_staleness is false (no declaration, probe never executed)"
+  common_test_pass "case 992 (regression): derived_staleness is false (no declaration, probe never executed)"
 else
-  fail "case 992 (regression): expected derived_staleness=false, got: $LAST_STDOUT"
+  common_test_fail "case 992 (regression): expected derived_staleness=false, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  pass "case 992 (regression): verdict is 'ok' (phase accounting alone decides, unaffected by this mechanism)"
+  common_test_pass "case 992 (regression): verdict is 'ok' (phase accounting alone decides, unaffected by this mechanism)"
 else
-  fail "case 992 (regression): expected verdict='ok', got: $LAST_STDOUT"
+  common_test_fail "case 992 (regression): expected verdict='ok', got: $LAST_STDOUT"
 fi
 if grep -q "ADVISORY:.*compA/certs/digest.txt" <<< "$LAST_STDERR"; then
-  pass "case 992 (regression): the ordinary file_scope excursion ADVISORY still fires for the out-of-scope certificate"
+  common_test_pass "case 992 (regression): the ordinary file_scope excursion ADVISORY still fires for the out-of-scope certificate"
 else
-  fail "case 992 (regression): expected the ordinary ADVISORY excursion line. stderr: $LAST_STDERR"
+  common_test_fail "case 992 (regression): expected the ordinary ADVISORY excursion line. stderr: $LAST_STDERR"
 fi
 if grep -q "EXCURSION DROPPED.*compA/certs/digest.txt" <<< "$LAST_STDERR"; then
-  pass "case 992 (regression): the out-of-scope certificate is EXCURSION DROPPED (not staged), exactly as before this mechanism existed"
+  common_test_pass "case 992 (regression): the out-of-scope certificate is EXCURSION DROPPED (not staged), exactly as before this mechanism existed"
 else
-  fail "case 992 (regression): expected EXCURSION DROPPED for the out-of-scope certificate. stderr: $LAST_STDERR"
+  common_test_fail "case 992 (regression): expected EXCURSION DROPPED for the out-of-scope certificate. stderr: $LAST_STDERR"
 fi
 if git -C "$WORKDIR" show --stat -1 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
-  fail "case 992 (regression): the out-of-scope certificate should NOT be in the resulting commit"
+  common_test_fail "case 992 (regression): the out-of-scope certificate should NOT be in the resulting commit"
 else
-  pass "case 992 (regression): the out-of-scope certificate is correctly absent from the resulting commit"
+  common_test_pass "case 992 (regression): the out-of-scope certificate is correctly absent from the resulting commit"
 fi
 if grep -q "DERIVED-OUTPUT EXEMPTION" <<< "$LAST_STDERR"; then
-  fail "case 992 (regression): unexpected DERIVED-OUTPUT EXEMPTION line with no declaration present"
+  common_test_fail "case 992 (regression): unexpected DERIVED-OUTPUT EXEMPTION line with no declaration present"
 else
-  pass "case 992 (regression): no DERIVED-OUTPUT EXEMPTION line (no declaration, strict no-op)"
+  common_test_pass "case 992 (regression): no DERIVED-OUTPUT EXEMPTION line (no declaration, strict no-op)"
 fi
 # task-ref-ok:end
 
@@ -4212,7 +4208,7 @@ fi
 # for one task; two distinct tasks produce two keys; a task reporting no modified_files adds no
 # key; an absolute-path entry does not corrupt the map.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "invocation_modified_files (1): two postflight calls for the same task across two cycles union into one task key"
+common_test_info "invocation_modified_files (1): two postflight calls for the same task across two cycles union into one task key"
 setup_sandbox
 imf1_num=795
 mkdir -p "$WORKDIR/specs/${imf1_num}_candidate/summaries"
@@ -4237,12 +4233,12 @@ run_sut "specs/${imf1_num}_candidate" --session sess_795 --phase implement --tas
   --agent general-implementation-agent --dispatch-seq 2 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf1_num"
 imf1_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_795.json"
 if jq -e --arg t "$imf1_num" '.invocation_modified_files[$t] == ["agent-system/extensions/core/scripts/a.sh","agent-system/extensions/core/scripts/b.sh"]' "$imf1_mt_file" >/dev/null 2>&1; then
-  pass "invocation_modified_files (1): two cycles for the same task unioned into one key"
+  common_test_pass "invocation_modified_files (1): two cycles for the same task unioned into one key"
 else
-  fail "invocation_modified_files (1): expected a union of both files under this task's key: $(cat "$imf1_mt_file" 2>/dev/null)"
+  common_test_fail "invocation_modified_files (1): expected a union of both files under this task's key: $(cat "$imf1_mt_file" 2>/dev/null)"
 fi
 
-info "invocation_modified_files (2): two different tasks produce two distinct keys"
+common_test_info "invocation_modified_files (2): two different tasks produce two distinct keys"
 setup_sandbox
 imf2a_num=796
 imf2b_num=797
@@ -4271,12 +4267,12 @@ imf2_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_796.j
 if jq -e --arg a "$imf2a_num" --arg b "$imf2b_num" \
   '(.invocation_modified_files[$a] == ["agent-system/extensions/core/scripts/c.sh"]) and (.invocation_modified_files[$b] == ["agent-system/extensions/core/scripts/d.sh"])' \
   "$imf2_mt_file" >/dev/null 2>&1; then
-  pass "invocation_modified_files (2): two different tasks produced two distinct keys"
+  common_test_pass "invocation_modified_files (2): two different tasks produced two distinct keys"
 else
-  fail "invocation_modified_files (2): expected two distinct per-task keys: $(cat "$imf2_mt_file" 2>/dev/null)"
+  common_test_fail "invocation_modified_files (2): expected two distinct per-task keys: $(cat "$imf2_mt_file" 2>/dev/null)"
 fi
 
-info "invocation_modified_files (3): a task reporting no modified_files adds no key"
+common_test_info "invocation_modified_files (3): a task reporting no modified_files adds no key"
 setup_sandbox
 imf3_num=798
 mkdir -p "$WORKDIR/specs/${imf3_num}_candidate/summaries"
@@ -4296,12 +4292,12 @@ run_sut "specs/${imf3_num}_candidate" --session sess_798 --phase implement --tas
   --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf3_num"
 imf3_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_798.json"
 if jq -e --arg t "$imf3_num" '(.invocation_modified_files // {}) | has($t) | not' "$imf3_mt_file" >/dev/null 2>&1; then
-  pass "invocation_modified_files (3): a task with no modified_files adds no key"
+  common_test_pass "invocation_modified_files (3): a task with no modified_files adds no key"
 else
-  fail "invocation_modified_files (3): expected no key for this task: $(cat "$imf3_mt_file" 2>/dev/null)"
+  common_test_fail "invocation_modified_files (3): expected no key for this task: $(cat "$imf3_mt_file" 2>/dev/null)"
 fi
 
-info "invocation_modified_files (4): an absolute-path entry does not corrupt the map"
+common_test_info "invocation_modified_files (4): an absolute-path entry does not corrupt the map"
 setup_sandbox
 imf4_num=799
 mkdir -p "$WORKDIR/specs/${imf4_num}_candidate/summaries"
@@ -4321,14 +4317,14 @@ run_sut "specs/${imf4_num}_candidate" --session sess_799 --phase implement --tas
   --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$imf4_num"
 imf4_mt_file="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_799.json"
 if jq -e '.' "$imf4_mt_file" >/dev/null 2>&1; then
-  pass "invocation_modified_files (4): the multi-state file remains valid JSON after an absolute-path entry"
+  common_test_pass "invocation_modified_files (4): the multi-state file remains valid JSON after an absolute-path entry"
 else
-  fail "invocation_modified_files (4): the multi-state file is no longer valid JSON: $(cat "$imf4_mt_file" 2>/dev/null)"
+  common_test_fail "invocation_modified_files (4): the multi-state file is no longer valid JSON: $(cat "$imf4_mt_file" 2>/dev/null)"
 fi
 if jq -e --arg t "$imf4_num" '.invocation_modified_files[$t] == ["/tmp/absolute/excursion.sh"]' "$imf4_mt_file" >/dev/null 2>&1; then
-  pass "invocation_modified_files (4): the absolute-path entry is recorded under its task's key unmodified"
+  common_test_pass "invocation_modified_files (4): the absolute-path entry is recorded under its task's key unmodified"
 else
-  fail "invocation_modified_files (4): expected the absolute-path entry recorded verbatim: $(cat "$imf4_mt_file" 2>/dev/null)"
+  common_test_fail "invocation_modified_files (4): expected the absolute-path entry recorded verbatim: $(cat "$imf4_mt_file" 2>/dev/null)"
 fi
 
 echo ""
