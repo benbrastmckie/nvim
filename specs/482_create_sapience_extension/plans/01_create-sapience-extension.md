@@ -277,7 +277,7 @@ see an extension that is not yet loaded.
 
 ---
 
-### Phase 3: Domain Notes [NOT STARTED]
+### Phase 3: Domain Notes [COMPLETED]
 
 **Goal**: Write `context/project/sapience/` — the README index plus four domain notes covering the
 vault model, the review-gate boundary, the transcript-filter ceiling, and the deliberate absence of
@@ -285,16 +285,16 @@ per-dispatch injection (gap 3's documented resolution).
 
 **Tasks**:
 
-- [ ] `context/project/sapience/README.md`: context index and navigation, plus a loading-strategy
+- [x] `context/project/sapience/README.md`: context index and navigation, plus a loading-strategy
       table stating that all of these files are read-on-demand reference material with no eager
-      load hook.
-- [ ] `context/project/sapience/domain/vault-model.md`: hosted vault at app.spnc.ai, the MCP server
+      load hook. *(completed)*
+- [x] `context/project/sapience/domain/vault-model.md`: hosted vault at app.spnc.ai, the MCP server
       as a thin client, the local `sf1`/`sapience` CLI, and the exact CLI mode inventory of
       `~/.sapience/mcp.py` (`--briefing-text`, `--statusline`, `--stats`, `--status`, `--receipt`,
       `--effect-line`, `--adddoc`, `--adddir`, `--refresh-cache`) with the explicit note that there
       is NO `--search` and NO `--ask` mode, so any shell-side query is a network round-trip through
-      `sf1 "question"` or `/v1/ask`.
-- [ ] `context/project/sapience/domain/review-gate-boundary.md`: `config.json`'s
+      `sf1 "question"` or `/v1/ask`. *(completed)*
+- [x] `context/project/sapience/domain/review-gate-boundary.md`: `config.json`'s
       `auto_approve: false` gates the transcript-extraction path (`sapience sync`/`coverage`/
       `pending`/`review`, i.e. `~/.sapience/upload.py`) by staging locally; the MCP write tools
       (`sapience_remember`, `_wrapup`, `_handoff`, `_adddoc`) write straight to the hosted vault
@@ -302,14 +302,14 @@ per-dispatch injection (gap 3's documented resolution).
       scoping load-bearing: it bounds unreviewed content per task rather than per tool call. Also
       record the repository-scoped limitation of the permission grant and name
       `~/.dotfiles/config/claude/settings.json` as the out-of-scope machine-wide follow-up, plus the
-      explicit-vs-wildcard grant tradeoff.
-- [ ] `context/project/sapience/domain/transcript-filter-ceiling.md`: `source_skip()` in
+      explicit-vs-wildcard grant tradeoff. *(completed)*
+- [x] `context/project/sapience/domain/transcript-filter-ceiling.md`: `source_skip()` in
       `~/.sapience/upload.py` classifies a transcript as `subagent` (by path or `agent-` filename
       prefix) or `harness-started` (from its opening human turns); both classifications are final
       and cached, and `harness-started` is explicitly not overridable by
       `SAPIENCE_INCLUDE_HEADLESS=1`. Conclude that orchestrated work cannot reach the vault by
-      extraction at all, which is why an explicit tool call is the only path in.
-- [ ] `context/project/sapience/domain/subagent-orientation.md`: gap 3's documented resolution.
+      extraction at all, which is why an explicit tool call is the only path in. *(completed)*
+- [x] `context/project/sapience/domain/subagent-orientation.md`: gap 3's documented resolution.
       State that subagents receive no briefing because SessionStart fires for the root session
       only; that no per-dispatch injection hook exists for sapience by design; and the checkable
       refutation — `skill_get_extension_dir()` in
@@ -320,8 +320,8 @@ per-dispatch injection (gap 3's documented resolution).
       own domain's tasks) and why post-task observers are also the wrong shape (they fire only
       after a task reaches a resting state, so they cannot deliver pre-work orientation). Name the
       deliberate alternative: session-level briefing plus an explicitly invoked `sf1 "question"`
-      escape hatch, and the anti-goal against a second always-on injection path.
-- [ ] Across all five files: no task-number references (these are deliverables outside `specs/**`
+      escape hatch, and the anti-goal against a second always-on injection path. *(completed)*
+- [x] Across all five files: no task-number references (these are deliverables outside `specs/**`
       — cite durable anchors such as filenames and function names instead), and no record-
       versioning language.
 
