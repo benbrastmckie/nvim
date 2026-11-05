@@ -1,0 +1,36 @@
+{
+  "status": "researched",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/022_silence_opencode_fragment_validation_spam/reports/01_silence-opencode-validation-spam.md",
+      "summary": "Confirms all three absorbed scopes (opencode spam/frozen-policy/fake-tool-line, picker Reload All/Regenerate honesty, Global Update) are still fully unimplemented, flags that defect-class-2 evidence (lean agent file paths) has drifted stale, and recommends a 3-phase plan split by disjoint file scope."
+    }
+  ],
+  "next_steps": "Run /orchestrate 22 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1793893148_3d43f7_22",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9,
+    "issue_log_contribution": 1
+  },
+  "memory_candidates": [
+    {
+      "content": "In lua/neotex/plugins/ai/shared/extensions/merge.lua, validate_opencode_fragment() sorts agent_name keys before iterating (table.insert + table.sort) specifically to make its accumulated error list deterministic across repeated runs, since Lua's pairs() iteration order is otherwise nondeterministic for string keys. Worth reusing this sort-before-iterate pattern anywhere else in the codebase that builds a reported list from a pairs()-iterated table and needs run-to-run determinism.",
+      "category": "PATTERN",
+      "source_artifact": "specs/022_silence_opencode_fragment_validation_spam/reports/01_silence-opencode-validation-spam.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["lua", "pairs-nondeterminism", "deterministic-iteration", "merge.lua", "validate_opencode_fragment"]
+    },
+    {
+      "content": ".opencode/ in this repo is an independently git-tracked, hand-maintained tree (its own commit history, e.g. 'mirror to .opencode/' commits) that is NOT a deploy artifact of the .claude-extensions.json source-store system -- .claude-extensions.json has no entry or source_dir pointing at it. The source-store/deploy-boundary rule (edit the source store, never hand-author the deployed .claude/** tree) therefore does not apply to .opencode/**; it can be edited directly.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/022_silence_opencode_fragment_validation_spam/reports/01_silence-opencode-validation-spam.md",
+      "confidence": 0.85,
+      "suggested_keywords": [".opencode", "source-store-boundary", "claude-extensions.json", "deploy-artifact", "git-tracked"]
+    }
+  ]
+}
