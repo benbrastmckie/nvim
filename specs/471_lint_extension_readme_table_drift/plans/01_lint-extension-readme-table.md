@@ -451,34 +451,49 @@ The implementer confirms with `git diff -- agent-system/extensions/core/manifest
 
 ---
 
-### Phase 6: Redeploy and run the full gate set [NOT STARTED]
+### Phase 6: Redeploy and run the full gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The source-store changes reach `.claude/` through a real redeploy, and the complete gate
 set -- including the new gate -- is observed green.
 
 **Tasks**:
 
-- [ ] Re-run the new lint directly against the live corpus first:
+- [x] Re-run the new lint directly against the live corpus first:
       `bash agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh --verbose`. If
       a concurrent task has added or removed an extension directory since Phase 1, repair the table
       here (add the missing row, drop the dangling one) rather than reporting a spurious gate
-      failure; record the repair in the issue log.
-- [ ] Redeploy with the bounded-wait idiom, raising the Bash tool timeout to 600000:
+      failure; record the repair in the issue log. *(completed: clean, 0 violations, no repair needed)*
+- [x] Redeploy with the bounded-wait idiom, raising the Bash tool timeout to 600000:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`. Wait for `RESULT=landed_verify_clean`.
-      Never hand-patch a deployed file in place of a redeploy.
-- [ ] Confirm the deployed copies landed:
+      Never hand-patch a deployed file in place of a redeploy. *(completed: RESULT=landed_verify_clean)*
+- [x] Confirm the deployed copies landed:
       `.claude/scripts/lint/lint-extension-readme-table.sh` and
       `.claude/scripts/tests/test-lint-extension-readme-table.sh` both exist, and
-      `.claude/scripts/gate-registry.data` carries the new row.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. No `--skip-slow`, no
+      `.claude/scripts/gate-registry.data` carries the new row. *(completed: both present, row confirmed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. No `--skip-slow`, no
       `--only-gate`, no `--max-cost` narrowing -- a narrowed pass is not evidence for this phase's
-      purpose.
-- [ ] Run the full shell-suite battery: `bash .claude/scripts/tests/run-all.sh` (no `--only`).
-- [ ] Record the outcome #3 verdict from Phase 1 in the task summary as an explicit finding
+      purpose. *(completed: gates 1-26 all PASS; sole FAIL is gate 8's aggregate run-all.sh exit, addressed via Reasoned Exclusions below)*
+- [x] Run the full shell-suite battery: `bash .claude/scripts/tests/run-all.sh` (no `--only`). *(completed: 165 passed, 7 failed -- 2 already-declared EXPECTED plus 5 pre-existing, independently-tracked failures; see Reasoned Exclusions below)*
+- [x] Record the outcome #3 verdict from Phase 1 in the task summary as an explicit finding
       ("confirmed already resolved; no functional change required; two stale prose mentions
-      corrected"), not as a silently-skipped outcome.
-- [ ] Record a `kind: win` issue-log entry if the dynamic gate dispatch meant no call-site list
-      needed editing, or attest explicitly that nothing noteworthy arose.
+      corrected"), not as a silently-skipped outcome. *(completed: recorded in summary)*
+- [x] Record a `kind: win` issue-log entry if the dynamic gate dispatch meant no call-site list
+      needed editing, or attest explicitly that nothing noteworthy arose. *(completed: recorded
+      as a win -- see Reasoned Exclusions evidence trail below)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-orchestrate-cycle-postflight.sh` failing under the unnarrowed `bash .claude/scripts/tests/run-all.sh` | Pre-existing defect, unrelated to this task's changes (gate 26 / `lint-extension-readme-table.sh` / the README table / the gate registry). Reproduces identically in total isolation with no gate-lock contention. | `run-all.sh --only test-orchestrate-cycle-postflight.sh` fails alone: `line 1: cleanup: command not found`. `grep -n project-number-inuse` on this suite is empty, but it copies `lib/*.sh` via its own hardcoded fixture list (`cp "$CORE_DIR/lib/$f" ...`) that predates and does not track `lib/project-number-inuse.sh` (added by commit `ab6aaf8c8`, 1793736718s -- roughly 1.9 days before this dispatch's `dispatch_start_ts` 1793897724). `git log --format='%ct' \| awk '$1 > 1793897724'` shows zero commits since this dispatch started touching any orchestrate-cycle/state-write file. Independently tracked and attributed: open record 476 ("isolate seven red gate8 shell suites") names this exact suite, citing record 275's proof (via `git stash push` against unmodified master) that it "fails IDENTICALLY on unmodified master" -- not this task's doing. |
+| `test-orchestrate-predispatch-review.sh` failing likewise | Same pre-existing-defect class; its fixture's hardcoded `REQUIRED_LIB_SCRIPTS` array (same pattern) omits `project-number-inuse.sh`. | `run-all.sh --only` output: `state-write.sh: line 214: .../lib/project-number-inuse.sh: No such file or directory`. Also named in record 476's seven-suite scope. |
+| `test-orchestrate-unwind-dispatch.sh` failing likewise | Same pre-existing-defect class and same `REQUIRED_LIB_SCRIPTS` omission, confirmed by direct `grep` on the suite file. | Identical `project-number-inuse.sh: No such file or directory` stderr in the isolated `--only` run; `grep -n REQUIRED_LIB_SCRIPTS agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh` shows the fixture-copy array; `grep -n project-number-inuse` on the same file returns nothing (the array was never updated). Also named in record 476's seven-suite scope. |
+| `test-postflight-deploy-gate.sh` failing likewise | Same pre-existing-defect class; a parallel hardcoded `cp "$DEPLOY_SCRIPTS_SRC/lib/$f"` fixture-copy loop, also missing `project-number-inuse.sh`. | `run-all.sh --only` output shows cascading status mismatches (`expected status 'completed', got 'implementing'`) consistent with the same missing-dependency class seen in the sibling suites above. Also named in record 476's seven-suite scope. |
+| `test-redeploy-checkpoint-promotion.sh` failing likewise | Same pre-existing-defect class; same `cp "$DEPLOY_SCRIPTS_SRC/lib/$f"` fixture-copy shape. | `run-all.sh --only` output shows the same `status='implementing'`-not-`'completed'` symptom family. Also named in record 476's seven-suite scope. |
+| `test-gate-cache-equivalence.sh` failing under the unnarrowed run | Pre-existing, already-declared EXPECTED/load-sensitive flake, unrelated to gate 26. | Listed in `agent-system/extensions/core/scripts/tests/known-failures.txt` as `load-sensitive`, with its own entry explicitly stating it is "Confirmed unrelated to any dead-command-recommendation-lint change" (an earlier, structurally identical gate-numbering addition) and unaffected by any in-flight uncommitted edit. `run-all.sh`'s own summary line tags it `(EXPECTED)`. |
+| `test-verify-deploy-context-budget.sh` failing under the unnarrowed run | Pre-existing, already-declared `real-defect` entry with an assigned owner, unrelated to gate 26. | Listed in `known-failures.txt` as a deterministic content-size regression against `orchestrator-context-budget.json`'s eager-load baseline, already owned by open record 423 per task 476's own description. `run-all.sh`'s summary line tags it `(EXPECTED)`. |
+
+All seven are the complete set of `(NEW)`/`(EXPECTED)` failures `bash .claude/scripts/tests/run-all.sh` reports; `gate26_run` and every other of gates 1-26 passed individually in the same unnarrowed `verify-deploy.sh` run (the sole FAIL line was gate 8's aggregate `run-all.sh reported failing or undiscoverable suites (exit 1)`). Nothing here is this task's residual work: all seven are independently tracked (five by open record 476 plus its upstream record 275 proof, two by `known-failures.txt`'s own existing entries), and none touches `gate-registry.data`, `verify-deploy.sh`'s gate dispatch, `lint-extension-readme-table.sh`, or `agent-system/extensions/README.md`.
 
 **Timing**: 1 hour
 

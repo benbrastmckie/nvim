@@ -1,0 +1,36 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and run the full gate set",
+  "started_at": "2026-11-05T01:20:00Z",
+  "last_updated": "2026-11-05T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run new lint against live corpus", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Redeploy with bounded-wait idiom to RESULT=landed_verify_clean", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed copies landed", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run complete unnarrowed gate set (verify-deploy.sh)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run full shell-suite battery (run-all.sh)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record outcome #3 verdict in summary", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record win/issue log entries", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.exclusions",
+      "description": "bash .claude/scripts/tests/run-all.sh (unnarrowed) reported 7 failing suites rather than 0.",
+      "type": "altered",
+      "reason": "All 7 are pre-existing, independently tracked and unrelated to this task's changes: 5 share a hardcoded fixture lib-copy allowlist missing lib/project-number-inuse.sh (added well before this dispatch by commit ab6aaf8c8) and are named in open record 476's seven-suite scope (itself citing record 275's stash-based proof against unmodified master); 2 are already-declared EXPECTED entries in known-failures.txt. None touch gate-registry.data, verify-deploy.sh's gate dispatch, lint-extension-readme-table.sh, or agent-system/extensions/README.md. Closed Phase 6 as [COMPLETED WITH EXCLUSIONS] with a full evidence-backed Reasoned Exclusions record rather than treating this as a blocker or a task-471 regression.",
+      "annotation": "*(deviation: altered -- Phase 6 closed [COMPLETED WITH EXCLUSIONS]; see plan's own Reasoned Exclusions table)*"
+    }
+  ],
+  "verification": {
+    "lint_live_corpus": "clean, 0 violations",
+    "deploy_headless": "RESULT=landed_verify_clean",
+    "deployed_copies": "both present; gate-registry.data row confirmed",
+    "verify_deploy_unnarrowed": "39 checks PASS (gates 1-26 all individually PASS); 1 FAIL (gate 8 aggregate run-all.sh exit)",
+    "run_all_unnarrowed": "165 passed, 7 failed (2 EXPECTED, 5 NEW-but-pre-existing-and-tracked), 0 skipped, 172 total",
+    "lint_deployed_copy": "exit 0, clean",
+    "git_status_scope": "only pre-existing dirty files from other concurrent tasks; this task's own changes already committed"
+  }
+}
