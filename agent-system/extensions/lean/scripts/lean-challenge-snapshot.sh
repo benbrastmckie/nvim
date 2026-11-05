@@ -31,7 +31,7 @@
 #
 # Usage:
 #   lean-challenge-snapshot.sh <task_number> <project_root> [--commit REF]
-#     [--challenge-module NAME] [--force] [--dry-run] [--json]
+#     [--challenge-module NAME] [--force] [--dry-run [--compile]] [--json]
 #   lean-challenge-snapshot.sh --check <task_number> <project_root> [--json]
 #
 # Required (both modes):
@@ -54,6 +54,17 @@
 #                          success. See the design record's "What Stops Regeneration" section.
 #   --dry-run              Print the assembled module and the resolved theorem_names to stdout;
 #                          perform NO filesystem or git side effects. Exits 0 on success.
+#   --compile              Accepted ONLY together with --dry-run. After assembling the module,
+#                          additionally COMPILES it -- in a scratch location that cannot write
+#                          into project_root -- using project_root's own Lean toolchain and Lake
+#                          environment, converting a silent declaration-boundary swallow (or any
+#                          future variant of it) into a loud compile failure instead of relying on
+#                          this script's own keyword enumeration. A compile FAILURE is FATAL (exit
+#                          74, never advisory -- an assembled module that does not compile is not
+#                          a usable Challenge). When no Lean toolchain or Lake project is
+#                          detectable at project_root, the step announces a SKIP and leaves the
+#                          exit status exactly as --dry-run alone would have left it -- an absent
+#                          toolchain is not evidence of a broken module.
 #   --json                  Emit the verdict record as one JSON object instead of key: value lines.
 #
 # Check-mode:
@@ -64,7 +75,8 @@
 #
 # Exit codes (see the design record's "Exit-Code Vocabulary" section for the full table and the
 # intentional alignment with lean-comparator-run.sh's own codes):
-#   0   OK (snapshot succeeded, or --check found no drift)
+#   0   OK (snapshot succeeded, or --check found no drift, or --compile was skipped for lack of a
+#       detectable toolchain/Lake project)
 #   64  Usage error
 #   65  Statement drift detected (--check mode only)
 #   71  Config error -- identifier-set mismatch between `## Lean Challenge Statements` and
@@ -72,6 +84,8 @@
 #       named identifier absent from the current working tree
 #   73  Snapshot refused -- status-gate refusal (regeneration attempted past `planned`), or an
 #       existing manifest without --force
+#   74  --compile ran and the assembled module FAILED to compile. FATAL, never advisory -- unlike
+#       --check's exit 65, this is not a downstream caller's promotion decision to make.
 #
 set -uo pipefail
 
@@ -83,7 +97,7 @@ set -uo pipefail
 # invoke this script from the repo root that owns the specs/{padded}_{slug}/ directory.
 
 usage() {
-  echo "Usage: lean-challenge-snapshot.sh <task_number> <project_root> [--commit REF] [--challenge-module NAME] [--force] [--dry-run] [--json]" >&2
+  echo "Usage: lean-challenge-snapshot.sh <task_number> <project_root> [--commit REF] [--challenge-module NAME] [--force] [--dry-run [--compile]] [--json]" >&2
   echo "       lean-challenge-snapshot.sh --check <task_number> <project_root> [--json]" >&2
   exit 64
 }
@@ -92,6 +106,7 @@ CHECK_MODE=false
 DRY_RUN=false
 FORCE=false
 JSON_OUT=false
+COMPILE=false
 COMMIT_REF=""
 CHALLENGE_MODULE="Challenge"
 TASK_NUMBER=""
@@ -109,6 +124,7 @@ while [ $# -gt 0 ]; do
     --dry-run) DRY_RUN=true; shift ;;
     --force) FORCE=true; shift ;;
     --json) JSON_OUT=true; shift ;;
+    --compile) COMPILE=true; shift ;;
     --commit)
       [ $# -ge 2 ] || usage
       COMMIT_REF="$2"; shift 2 ;;
@@ -136,8 +152,12 @@ if [ ! -d "$PROJECT_ROOT" ]; then
   echo "ERROR: project_root does not exist or is not a directory: $PROJECT_ROOT" >&2
   usage
 fi
-if $CHECK_MODE && { $DRY_RUN || $FORCE; }; then
-  echo "ERROR: --check is read-only and cannot be combined with --dry-run or --force" >&2
+if $CHECK_MODE && { $DRY_RUN || $FORCE || $COMPILE; }; then
+  echo "ERROR: --check is read-only and cannot be combined with --dry-run, --force, or --compile" >&2
+  usage
+fi
+if $COMPILE && ! $DRY_RUN; then
+  echo "ERROR: --compile is accepted only together with --dry-run" >&2
   usage
 fi
 
@@ -806,6 +826,63 @@ PYEOF
 }
 
 # ---------------------------------------------------------------------------
+# --compile (opt-in, --dry-run only): converts a silent declaration-boundary swallow -- or any
+# future variant of it this script's own keyword enumeration does not anticipate -- into a loud
+# compile failure, by actually compiling the assembled module rather than only pattern-matching
+# its text.
+#
+# DETECTION: a toolchain/Lake project is "detectable" only when BOTH hold: `lean` and `lake` are
+# on PATH, AND project_root carries a Lake project file (`lakefile.toml` or `lakefile.lean`).
+# Neither condition alone is sufficient -- a bare `lean`/`lake` on PATH with no Lake project at
+# project_root cannot resolve the assembled module's imports, and a Lake project with no
+# toolchain on PATH cannot be invoked at all.
+#
+# COMPILATION: the assembled module is written to a SCRATCH location (a fresh `mktemp -d`
+# directory, never under project_root) so this step can never write into the target project.
+# `lake env lean <scratch_file>` is invoked with the working directory set to project_root, so
+# the project's own Lake environment (built dependencies, LEAN_PATH) resolves the module's
+# imports even though the file itself lives outside project_root.
+#
+# RETURN: 0 if compilation succeeded OR was skipped (the caller's exit status is unaffected
+# either way); non-zero (always 1, regardless of the real compiler's own exit code) if
+# compilation was attempted and failed, which the caller turns into the FATAL exit 74 -- never
+# advisory, unlike --check's exit 65.
+#
+# run_compile_check <module_file>
+# ---------------------------------------------------------------------------
+run_compile_check() {
+  local module_file="$1"
+
+  if ! command -v lean >/dev/null 2>&1 || ! command -v lake >/dev/null 2>&1; then
+    echo "# compile: skipped -- no Lean toolchain ('lean'/'lake') found on PATH" >&2
+    return 0
+  fi
+  if [ ! -f "$PROJECT_ROOT/lakefile.toml" ] && [ ! -f "$PROJECT_ROOT/lakefile.lean" ]; then
+    echo "# compile: skipped -- $PROJECT_ROOT is not a Lake project (no lakefile.toml/lakefile.lean)" >&2
+    return 0
+  fi
+
+  local scratch_dir scratch_file compile_output compile_rc
+  scratch_dir=$(mktemp -d)
+  scratch_file="$scratch_dir/${CHALLENGE_MODULE}.lean"
+  cp "$module_file" "$scratch_file"
+
+  compile_output=$(cd "$PROJECT_ROOT" && lake env lean "$scratch_file" 2>&1)
+  compile_rc=$?
+  rm -rf "$scratch_dir"
+
+  if [ "$compile_rc" -ne 0 ]; then
+    echo "# compile: FAILED -- the assembled module does not compile against $PROJECT_ROOT's" >&2
+    echo "#          own Lean toolchain and Lake environment:" >&2
+    echo "$compile_output" >&2
+    return 1
+  fi
+
+  echo "# compile: OK -- the assembled module compiles against $PROJECT_ROOT's own toolchain" >&2
+  return 0
+}
+
+# ---------------------------------------------------------------------------
 # Main resolution: R1 first, R2 fallback only when the R1 section is entirely absent.
 # ---------------------------------------------------------------------------
 GOALS_FILE=$(mktemp)
@@ -843,6 +920,11 @@ if $DRY_RUN; then
   echo "# theorem_names: $THEOREM_NAMES"
   echo "---"
   cat "$MODULE_FILE"
+  if $COMPILE; then
+    if ! run_compile_check "$MODULE_FILE"; then
+      exit 74
+    fi
+  fi
   exit 0
 fi
 

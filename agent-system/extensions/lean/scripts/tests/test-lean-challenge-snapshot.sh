@@ -10,7 +10,14 @@
 # identifier, with NO partial Challenge emitted. Cases R6-R8 cover `extract_goal_names()`'s own
 # Goals-block parsing specifically: the list-item label form (R6), a Lean keyword backticked in
 # prose (R7), and a non-keyword word backticked in a preamble paragraph before the first
-# bulleted identifier (R8). Cases R9-R10 cover the shared Unicode-aware identifier pattern: a
+# bulleted identifier (R8). Cases R15-R17 cover the opt-in `--compile` extension to `--dry-run`:
+# a stubbed toolchain reporting failure exits 74/FATAL with diagnostics surfaced (R15, plus a
+# REAL-toolchain variant, R15-REAL, exercising both the success and failure paths against an
+# actual `lean`/`lake` on PATH when one is reachable, skipped otherwise); no detectable Lake
+# project announces a skip and leaves the exit status unchanged (R16); and the flag is rejected
+# (usage error) both without `--dry-run` and combined with `--check` (R17).
+#
+# Cases R9-R10 cover the shared Unicode-aware identifier pattern: a
 # non-ASCII declaration name is harvested, declared, and cross-validated IN FULL rather than
 # truncated at its first non-ASCII character (R9), and a Goals bullet naming only the ASCII
 # prefix of a non-ASCII declared name fails cross-validation rather than silently colliding with
@@ -559,6 +566,127 @@ if [ "$before_porcelain" = "$after_porcelain" ]; then
   pass "C5: --check is read-only -- git status --porcelain is unchanged across a --check run"
 else
   fail "C5: --check mutated the working tree"
+fi
+
+# ===========================================================================
+# Case R15-REAL: when a REAL Lean toolchain is reachable on this host (not merely the stub
+# below), the compile step is exercised against it too -- both the success path (the bare
+# `comm` theorem needs no imports and compiles under core Lean alone) and the failure path (an
+# unknown identifier). Skipped on a host with no real `lean`/`lake` on PATH, since the stub
+# cases below already cover both outcomes without depending on a real toolchain being present.
+# ===========================================================================
+if command -v lean >/dev/null 2>&1 && command -v lake >/dev/null 2>&1; then
+  repo=$(make_repo "r15real-ok" 930 plan_r1.md)
+  cat > "$repo/lakefile.toml" <<'EOF'
+name = "test"
+defaultTargets = []
+EOF
+  out=$(run_tool "$repo" 930 "$repo" --dry-run --compile 2>&1)
+  rc=$?
+  if [ "$rc" -eq 0 ] && echo "$out" | grep -q "compile: OK"; then
+    pass "R15-REAL (success): a real toolchain compiles the comm theorem successfully (exit 0)"
+  else
+    fail "R15-REAL (success): expected exit 0 with 'compile: OK', got rc=$rc: $out"
+  fi
+
+  repo=$(make_repo "r15real-fail" 931 plan_mismatched.md)
+  cat > "$repo/lakefile.toml" <<'EOF'
+name = "test"
+defaultTargets = []
+EOF
+  # plan_mismatched.md names `comm` AND `assoc` under Goals but declares only `comm` -- not
+  # useful here (R2 already covers that mismatch); instead corrupt the ONLY declared theorem's
+  # SIGNATURE (never its body -- extract_r1() always force-rewrites the body to `:= sorry`
+  # regardless of what the plan writes there, so a broken body would have no effect on the
+  # assembled module) so the REAL compiler rejects it, while keeping the Goals/declared
+  # identifier sets equal so cross-validation itself passes and execution reaches the compile
+  # step at all.
+  sed -i "s/- \`comm\` and \`assoc\` -- commutativity and associativity of natural number addition\\./- \`comm\` -- commutativity of natural number addition./" \
+    "$(ls "$repo"/specs/*/plans/*.md)"
+  # A bare unbound identifier in the signature does NOT suffice -- Lean 4's `autoImplicit`
+  # silently binds an unknown identifier as an implicit variable, which still compiles. An
+  # unbound identifier used in FUNCTION-APPLICATION position cannot be auto-bound (autoImplicit
+  # cannot invent a function-typed implicit for an application), and genuinely fails.
+  sed -i 's/theorem comm (n m : Nat) : n + m = m + n := sorry/theorem comm (n m : Nat) : nonexistentFunctionXyz n m = m + n := sorry/' \
+    "$(ls "$repo"/specs/*/plans/*.md)"
+  out=$(run_tool "$repo" 931 "$repo" --dry-run --compile 2>&1)
+  rc=$?
+  if [ "$rc" -eq 74 ] && echo "$out" | grep -q "compile: FAILED" && echo "$out" | grep -qi "nonexistentFunctionXyz"; then
+    pass "R15-REAL (failure): a real toolchain rejects a genuinely broken signature with exit 74"
+  else
+    fail "R15-REAL (failure): expected exit 74 with the real compiler's diagnostics, got rc=$rc: $out"
+  fi
+else
+  skip "R15-REAL: no real Lean toolchain (lean/lake) on PATH -- stub-only coverage (R15) applies"
+fi
+
+# ===========================================================================
+# Case R15: `--dry-run --compile` with a Lake project present and a STUBBED `lean`/`lake` on
+# PATH that reports compile failure -> the new FATAL exit code (74), with the compiler's own
+# diagnostics surfaced on stderr. Never advisory, unlike --check's exit 65.
+# ===========================================================================
+stub_bin_r15="$WORKDIR/stub-bin-r15"
+mkdir -p "$stub_bin_r15"
+cat > "$stub_bin_r15/lean" <<'STUBEOF'
+#!/usr/bin/env bash
+exit 0
+STUBEOF
+cat > "$stub_bin_r15/lake" <<'STUBEOF'
+#!/usr/bin/env bash
+echo "stub lake: simulated compile failure: unknown identifier 'comm'" >&2
+exit 1
+STUBEOF
+chmod +x "$stub_bin_r15/lean" "$stub_bin_r15/lake"
+
+repo=$(make_repo "r15" 926 plan_r1.md)
+: > "$repo/lakefile.toml"
+out=$(PATH="$stub_bin_r15:$PATH" run_tool "$repo" 926 "$repo" --dry-run --compile 2>&1)
+rc=$?
+if [ "$rc" -eq 74 ] \
+  && echo "$out" | grep -q "compile: FAILED" \
+  && echo "$out" | grep -q "simulated compile failure"; then
+  pass "R15: a stubbed toolchain reporting compile failure exits 74 (FATAL) with diagnostics surfaced"
+else
+  fail "R15: expected exit 74 with the stub's diagnostics surfaced, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R16: `--dry-run --compile` with NO Lake project detectable at project_root (no
+# lakefile.toml/lakefile.lean) -> the compile step announces a SKIP and leaves the exit status
+# exactly as --dry-run alone would have left it (0), regardless of whether a real Lean
+# toolchain happens to be on this host's PATH.
+# ===========================================================================
+repo=$(make_repo "r16" 927 plan_r1.md)
+out=$(run_tool "$repo" 927 "$repo" --dry-run --compile 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] \
+  && echo "$out" | grep -q "compile: skipped" \
+  && echo "$out" | grep -q "^# theorem_names: comm$"; then
+  pass "R16: no detectable Lake project announces a compile skip and leaves the exit status unchanged"
+else
+  fail "R16: expected exit 0 with an announced compile skip, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R17: `--compile` is rejected (usage error, exit 64) both without `--dry-run` and when
+# combined with `--check`.
+# ===========================================================================
+repo=$(make_repo "r17a" 928 plan_r1.md)
+out=$(run_tool "$repo" 928 "$repo" --compile 2>&1)
+rc=$?
+if [ "$rc" -eq 64 ] && echo "$out" | grep -qi -- "--compile is accepted only together with --dry-run"; then
+  pass "R17a: --compile without --dry-run is a usage error (exit 64)"
+else
+  fail "R17a: expected exit 64 naming the --dry-run requirement, got rc=$rc: $out"
+fi
+
+repo=$(make_repo "r17b" 929 plan_r1.md)
+out=$(run_tool "$repo" --check 929 "$repo" --compile 2>&1)
+rc=$?
+if [ "$rc" -eq 64 ] && echo "$out" | grep -qi -- "--check is read-only"; then
+  pass "R17b: --compile combined with --check is a usage error (exit 64)"
+else
+  fail "R17b: expected exit 64 naming the --check incompatibility, got rc=$rc: $out"
 fi
 
 # ===========================================================================
