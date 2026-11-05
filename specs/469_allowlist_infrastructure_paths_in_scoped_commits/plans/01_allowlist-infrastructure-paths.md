@@ -1,7 +1,7 @@
 # Implementation Plan: Task #469
 
 - **Task**: 469 - Allowlist infrastructure paths in scoped commits
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: None (concurrent-territory serialization note only — see Risks & Mitigations)
 - **Research Inputs**: specs/469_allowlist_infrastructure_paths_in_scoped_commits/reports/01_allowlist-infrastructure-paths.md
@@ -124,38 +124,39 @@ resolved source store `agent-system/extensions/core/` unless written out in full
 
 ---
 
-### Phase 1: Canonical Engine-Written-State Path Library [NOT STARTED]
+### Phase 1: Canonical Engine-Written-State Path Library [COMPLETED]
 
 **Goal**: One definition of the engine-written-state path set exists, with its own regression
 suite, before any consumer is migrated to it.
 
 **Tasks**:
 
-- [ ] Create `scripts/lib/engine-written-state-paths-lib.sh`, structurally modelled on
+- [x] Create `scripts/lib/engine-written-state-paths-lib.sh`, structurally modelled on
       `scripts/lib/derived-artifact-probe-lib.sh`'s header style: a contract statement, the
       fail-open posture, and an explicit enumeration of the three consumers. Sourced, never
-      executed; sets no shell options a caller inherits.
-- [ ] Export one function, `engine_written_state_paths`, printing the compact JSON array
+      executed; sets no shell options a caller inherits. *(completed)*
+- [x] Export one function, `engine_written_state_paths`, printing the compact JSON array
       `["specs/TODO.md","specs/state.json","specs/events.jsonl","specs/errors.json"]` on stdout,
       rc 0. Build it with `printf` from a literal, NOT via `jq` — the set is a fixed constant of
       the core engine (no `.claude-extensions.json` lookup, unlike the derived-output probes), so
       the function must not acquire a `jq` dependency it does not need and must still succeed on
-      a host without `jq`.
-- [ ] In the header, record the admission bar verbatim so a future addition is held to it:
+      a host without `jq`. *(completed)*
+- [x] In the header, record the admission bar verbatim so a future addition is held to it:
       engine-written on behalf of every/many tasks AND never legitimately declarable in any one
       task's own `file_scope`. Record the four rejected `specs/` candidates
       (`CHANGE_LOG.md`, `ROADMAP.md`, `README.md`, and any task-owned `specs/{NNN}_*/` path) with
-      the one-line reason each fails the bar.
-- [ ] Add `scripts/tests/test-engine-written-state-paths-lib.sh`, using the harness conventions
+      the one-line reason each fails the bar. *(completed)*
+- [x] Add `scripts/tests/test-engine-written-state-paths-lib.sh`, using the harness conventions
       the sibling suites already use (`set -uo pipefail`, `lib/common.sh`'s
       `common_test_pass`/`common_test_fail`/`common_test_info`, PASSED/FAILED tally). Assert:
       (a) the function prints valid JSON that is an array of strings; (b) it contains exactly the
       four expected members, no more; (c) `specs/events.jsonl` and `specs/errors.json` are
       present; (d) `specs/CHANGE_LOG.md` and `specs/ROADMAP.md` are absent (a membership-creep
       tripwire, not a tautology); (e) sourcing the file twice is idempotent and emits nothing on
-      stdout or stderr at source time.
-- [ ] Confirm `scripts/tests/run-all.sh` picks the new suite up without a roster edit (it globs
-      `scripts/tests/test-*.sh`; no explicit list to update).
+      stdout or stderr at source time. *(completed: 10/10 assertions passing)*
+- [x] Confirm `scripts/tests/run-all.sh` picks the new suite up without a roster edit (it globs
+      `scripts/tests/test-*.sh`; no explicit list to update). *(completed: confirmed via grep and
+      a successful --only run)*
 
 **Timing**: 0.75 hours
 

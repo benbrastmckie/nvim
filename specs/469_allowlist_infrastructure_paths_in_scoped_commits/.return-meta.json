@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/plans/01_allowlist-infrastructure-paths.md",
-      "summary": "Six-phase plan consolidating the engine-written-state allowlist into one shared library consumed by all three Containment sites, adding specs/events.jsonl and specs/errors.json, with per-site paired admission/non-regression fixtures, the git-staging-scope.md landing record, and a redeploy plus real observed events.jsonl commit."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1793850684_c30dd8_469",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 469 to execute the plan",
-  "dispatch_seq": 6
+    "session_id": "sess_1793850684_c30dd8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
