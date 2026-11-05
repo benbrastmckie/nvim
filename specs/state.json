@@ -949,7 +949,7 @@
     {
       "project_number": 429,
       "project_name": "script_inventory_undercounts_untracked_files",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "scripts/script-inventory.sh enumerates the corpus via git ls-files, so its --size-line output (and its full JSON output) sees only TRACKED files. A newly created, not-yet-staged file is invisible to the probe, silently undercounting a phase's NET-PROD / NET-TEST delta until git add is run.\n\nObserved directly: a newly added lib/lint-corpus-scan-lib.sh did not change the probe's scripts= count at all until it was staged, and the effect was confirmed by comparing staged and unstaged runs of the same probe.\n\nWHY THIS MATTERS BEYOND A COSMETIC MISCOUNT: script-inventory.sh is the standing measurement instrument for the corpus-consolidation effort's net-deletion acceptance criterion (a -10,000 non-test-line floor, reported as a running insertions-minus-deletions figure per phase). An enumeration that cannot see new untracked files systematically understates insertions, which biases the running net figure in the FAVOURABLE direction -- it makes a phase look more net-negative than it is. That is the one direction of error a net-deletion acceptance criterion cannot tolerate, because it hides exactly the drift the criterion exists to catch.\n\nSCOPE:\n- Decide and implement the correct enumeration: either include untracked-but-not-ignored files (git ls-files --others --exclude-standard alongside the tracked set), or fail loudly when the working tree carries untracked files in the scanned corpus, rather than silently undercounting. Preserve the existing exclusion of gitignored and deploy-artifact paths.\n- The probe must stay cheap: it is run once per gate invocation and must remain a single cheap line of output.\n- Add a regression test pinning the new behaviour, using the existing fixture conventions in scripts/tests/ (a fixture repo containing one tracked and one untracked in-corpus file, asserting both are counted, or that the loud failure fires).\n- Re-check whether any recorded baseline figure was captured under the undercounting behaviour and therefore needs re-capturing; state the finding either way.\n\nEDIT TARGET: the source store under agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact). Redeploy afterwards. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.",
       "effort": "small",
@@ -957,7 +957,7 @@
       "topic": "core-agent-system",
       "dependencies": [],
       "created": "2026-10-16T21:01:28Z",
-      "last_updated": "2026-11-05T00:27:52Z",
+      "last_updated": "2026-11-05T01:00:29Z",
       "artifacts": [
         {
           "path": "specs/429_script_inventory_undercounts_untracked_files/plans/01_untracked-corpus-enumeration.md",
