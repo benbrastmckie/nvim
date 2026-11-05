@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Repo registry for extension loads",
+  "started_at": "2026-11-05T17:35:00Z",
+  "last_updated": "2026-11-05T17:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Investigate load call sites, state.lua, config.lua global_dir convention", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Decide registry storage location and schema", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add repo_registry.lua module: read/upsert/list/prune-unreachable", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/repo_registry.lua"]},
+    {"id": 4, "description": "Hook upsert into extension-load path (non-fatal)", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 5, "description": "Decide host-repo inclusion/exclusion and document", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/repo_registry.lua"]},
+    {"id": 6, "description": "Add LuaDoc for every public function", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/repo_registry.lua"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.config",
+      "description": "Files to modify conditionally listed config.lua for a registry location constant, 'if the investigation step concludes it belongs with the other path config'",
+      "type": "skipped",
+      "reason": "config.lua is per-preset (claude/opencode base_dir, root_state_file, etc.); the registry is deliberately preset-agnostic and spans both presets and every repo, so its location constant lives as a local inside repo_registry.lua itself (following the stdpath('data') .. '/neotex-ai' convention from ai-tool-picker.lua) rather than in config.lua.",
+      "annotation": "*(deviation: skipped -- config.lua not modified; registry location constant kept local to repo_registry.lua, a deliberate design call documented in that module's own header comment)*"
+    }
+  ]
+}

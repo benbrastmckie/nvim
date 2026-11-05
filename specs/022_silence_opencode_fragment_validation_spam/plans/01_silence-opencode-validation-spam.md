@@ -375,33 +375,39 @@ plus a live picker open; no shell suite covers `lua/**` (`__FULL_SWEEP__`), so n
 
 ---
 
-### Phase 4: Repo registry for extension loads [NOT STARTED]
+### Phase 4: Repo registry for extension loads [COMPLETED]
 
 **Goal**: A durable registry records which repositories `<leader>al` has loaded extensions into,
 and which extensions each has loaded, with a small documented read/write API that Phase 5
 consumes. No picker UI change in this phase.
 
 **Tasks**:
-- [ ] Investigate before designing: locate every call site that loads an extension into a project
+- [x] Investigate before designing: locate every call site that loads an extension into a project
       directory (`grep -rn "exts\.load\|manager\.load" lua/`, plus the picker's own load path at
       `lua/neotex/plugins/ai/claude/commands/picker/init.lua`), and read
       `lua/neotex/plugins/ai/shared/extensions/state.lua` plus `config.lua` to see how per-project
       state (`root_state_file`) and the `global_dir` convention already work. Record the chosen
-      hook point and registry location in a comment before writing code.
-- [ ] Decide and document the registry's storage location — a single global JSON file (the
+      hook point and registry location in a comment before writing code. *(completed: chosen
+      hook point is `manager.load`'s success path in init.lua, recorded in that site's own
+      comment; registry location/schema recorded in repo_registry.lua's header comment)*
+- [x] Decide and document the registry's storage location — a single global JSON file (the
       `global_dir` / `vim.fn.stdpath("data")` convention, not a per-project file, since the
       registry's whole purpose is to span projects) — and its schema (per-repo path, the
-      extensions loaded there, a last-seen timestamp).
-- [ ] Add a small registry module under `lua/neotex/plugins/ai/shared/extensions/` exposing read,
+      extensions loaded there, a last-seen timestamp). *(completed:
+      `stdpath("data") .. "/neotex-ai/extension-repo-registry.json"`, reusing the existing
+      `ai-tool-picker.lua` data_dir convention)*
+- [x] Add a small registry module under `lua/neotex/plugins/ai/shared/extensions/` exposing read,
       upsert (register-or-update one repo), list, and prune-unreachable operations. Use `pcall`
-      around all file I/O and return structured errors rather than raising.
-- [ ] Hook the upsert into the extension-load path so loading an extension into any project
+      around all file I/O and return structured errors rather than raising. *(completed:
+      repo_registry.lua)*
+- [x] Hook the upsert into the extension-load path so loading an extension into any project
       directory registers that directory and its loaded-extension set. Make the hook non-fatal:
-      a registry write failure logs and continues, never failing the load.
-- [ ] Do not register the host repo itself in a way that makes `Global Update` recurse into the
+      a registry write failure logs and continues, never failing the load. *(completed)*
+- [x] Do not register the host repo itself in a way that makes `Global Update` recurse into the
       current repo twice; decide and document whether the current repo is included or excluded.
-- [ ] Add LuaDoc for every public function per the repo's Lua standards (2-space indent,
-      `snake_case`, `~100` char lines).
+      *(completed: excluded, via `vim.fn.stdpath("config")` identity check)*
+- [x] Add LuaDoc for every public function per the repo's Lua standards (2-space indent,
+      `snake_case`, `~100` char lines). *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -9,6 +9,7 @@ local state_mod = require("neotex.plugins.ai.shared.extensions.state")
 local loader_mod = require("neotex.plugins.ai.shared.extensions.loader")
 local merge_mod = require("neotex.plugins.ai.shared.extensions.merge")
 local verify_mod = require("neotex.plugins.ai.shared.extensions.verify")
+local repo_registry = require("neotex.plugins.ai.shared.extensions.repo_registry")
 local settings_backup = require("neotex.plugins.ai.shared.extensions.settings_backup")
 local helpers = require("neotex.plugins.ai.claude.commands.picker.utils.helpers")
 
@@ -680,6 +681,13 @@ function M.create(config)
     if verification.status ~= "passed" then
       verify_mod.notify_results(verification)
     end
+
+    -- Register this repo + extension in the cross-repo registry so `Global Update` can later
+    -- reload it (repo_registry.lua). Wrapped in pcall so a registry failure can never fail an
+    -- otherwise-successful load -- repo_registry.upsert already handles its own errors
+    -- non-fatally internally, but this pcall also guards against it erroring outright (e.g. a
+    -- bad argument), matching the "never raise" contract the rest of this load path keeps.
+    pcall(repo_registry.upsert, project_dir, extension_name)
 
     return true, nil, json_skips or {}
   end
