@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and Observe a Real events.jsonl Commit",
+  "started_at": "2026-11-05T08:34:00Z",
+  "last_updated": "2026-11-05T08:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run scoped suite battery for touched suites (Batch Gate Deferral narrowing)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Redeploy via bounded-wait idiom to RESULT=landed_verify_clean", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed copies carry the change (grep + lib existence)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Observe a real commit carrying an actual specs/events.jsonl delta", "status": "done", "files_touched": ["specs/events.jsonl"]},
+    {"id": 5, "description": "Verify by observation (git show, no drop warning, no new scope-excursion issue entry)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-read specs/events.jsonl staged delta; confirm/record interleaved-sibling-rows is expected", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6-gate8",
+      "description": "Batch Gate Deferral applied: the complete gate set (verify-deploy.sh with every gate, including gate 8's full tests/run-all.sh) is deferred to the once-per-invocation batch-level stage rather than independently run in this dispatch",
+      "type": "deferred",
+      "reason": "Dispatch file's Batch Gate Deferral section directs this (the plan's own final phase declaring Verification Tier: full). deploy-headless.sh's own internal verify-deploy.sh --skip-slow call already ran gates 1-7,9-25 (38 checks, 0 failures) as a side effect of the redeploy itself, which is broader coverage than a hand-picked --only-gate subset would have given, so no additional narrower verify-deploy.sh call was made beyond that. The scoped suite battery (test-engine-written-state-paths-lib.sh, test-git-commit-scoped.sh, test-orchestrate-cycle-postflight.sh, test-git-commit-phase.sh) was run directly via run-all.sh --only before the redeploy, per the deferral's own suggested narrowing form.",
+      "annotation": "*(deviation: deferred -- gate 8's full suite run deferred to batch stage per dispatch directive)*"
+    }
+  ]
+}

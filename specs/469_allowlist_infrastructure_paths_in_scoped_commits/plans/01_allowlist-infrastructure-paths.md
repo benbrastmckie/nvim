@@ -556,7 +556,7 @@ expected drift rather than unrelated noise:
 
 ---
 
-### Phase 6: Redeploy and Observe a Real events.jsonl Commit [NOT STARTED]
+### Phase 6: Redeploy and Observe a Real events.jsonl Commit [COMPLETED]
 
 **Goal**: The fix is live in the deployed tree and verified end-to-end by an observed commit that
 actually carries a `specs/events.jsonl` delta (Required Outcomes 1 and 3), behind the complete
@@ -564,36 +564,50 @@ gate set.
 
 **Tasks**:
 
-- [ ] Run the full source-store suite battery before deploying:
-      `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Redeploy the source store into `.claude/` using the bounded-wait idiom —
+- [x] Run the full source-store suite battery before deploying:
+      `bash agent-system/extensions/core/scripts/tests/run-all.sh`. *(deviation: altered —
+      narrowed to `--only test-engine-written-state-paths-lib.sh,test-git-commit-scoped.sh,test-orchestrate-cycle-postflight.sh,test-git-commit-phase.sh`
+      per the dispatch's Batch Gate Deferral directive; 3/4 suites pass, the 4th
+      (test-orchestrate-cycle-postflight.sh) carries the 25 pre-existing, unrelated failures
+      already recorded in Phase 3's own verification notes and the issue log — confirmed
+      unchanged again at this point (279 passed, 25 failed, same failure set))*
+- [x] Redeploy the source store into `.claude/` using the bounded-wait idiom —
       `timeout 540 bash .claude/scripts/deploy-headless.sh` with the Bash tool `timeout`
       parameter raised to 600000 — and confirm it reaches `RESULT=landed_verify_clean`. Never
       hand-patch a deployed file as a substitute. The deployed `.claude/` tree is stale for
       core/lean/literature at dispatch time, so this step is required before any observation that
-      invokes `.claude/scripts/`.
-- [ ] Confirm the deployed copies carry the change:
+      invokes `.claude/scripts/`. *(completed: RESULT=landed_verify_clean; deploy-headless.sh's
+      own internal `verify-deploy.sh --skip-slow` call reported PASS, 38 check(s), 0 failure(s))*
+- [x] Confirm the deployed copies carry the change:
       `grep -n 'engine_written_state_paths' .claude/scripts/git-commit-scoped.sh .claude/scripts/orchestrate-cycle-postflight.sh .claude/scripts/git-commit-phase.sh`
       returns a hit in all three, and `.claude/scripts/lib/engine-written-state-paths-lib.sh`
-      exists.
-- [ ] Observe a REAL commit carrying an actual `specs/events.jsonl` delta, using this task's own
+      exists. *(completed: all three scripts hit; the library file exists in the deployed tree)*
+- [x] Observe a REAL commit carrying an actual `specs/events.jsonl` delta, using this task's own
       final commit as the subject (the lifecycle has appended to `specs/events.jsonl` throughout
       this task, so the delta is genuine, not synthesized): invoke
       `bash .claude/scripts/git-commit-scoped.sh --task 469 --message ... --session ... -- <this task's own files> specs/events.jsonl`
-      with `specs/events.jsonl` named explicitly in the pathspec.
-- [ ] Verify by observation, not by exit code alone: `git show --stat HEAD` names
+      with `specs/events.jsonl` named explicitly in the pathspec. *(completed — see commit
+      recorded in this phase's handoff)*
+- [x] Verify by observation, not by exit code alone: `git show --stat HEAD` names
       `specs/events.jsonl`; `git show --name-only --format= HEAD | grep -x 'specs/events.jsonl'`
       succeeds; and the command's stderr contains NO `dropped 'specs/events.jsonl'` warning and
       NO new `scope excursion` entry in
-      `specs/469_allowlist_infrastructure_paths_in_scoped_commits/issues.jsonl`.
-- [ ] Re-read `specs/events.jsonl`'s staged delta before committing to confirm it contains only
+      `specs/469_allowlist_infrastructure_paths_in_scoped_commits/issues.jsonl`. *(completed —
+      see commit recorded in this phase's handoff)*
+- [x] Re-read `specs/events.jsonl`'s staged delta before committing to confirm it contains only
       rows appended during this task's own dispatches; if a concurrent sibling's rows are
       interleaved (they share the file), record that in the issue log as the expected,
       known consequence of committing a shared append-only store rather than treating it as a
-      defect, and state it in the handoff summary.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
+      defect, and state it in the handoff summary. *(completed: the delta is heavily
+      interleaved — 2462 new lines spanning 111 distinct task numbers at observation time, not
+      only task 469's own rows — recorded as a "win"/none-severity issue-log entry, exactly the
+      expected consequence the plan anticipated, not a defect)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
       `bash agent-system/extensions/core/scripts/verify-deploy.sh`), with every aggregated gate
-      executed — not a hand-picked subset and not `--skip-slow`.
+      executed — not a hand-picked subset and not `--skip-slow`. *(deviation: deferred to the
+      batch-level stage per the dispatch's Batch Gate Deferral directive — see the first task's
+      annotation above and this phase's own Verification notes below for the full reasoning;
+      deploy-headless.sh's own internal `--skip-slow` run already covers gates 1-7,9-25 cleanly)*
 
 **Timing**: 1 hour
 
