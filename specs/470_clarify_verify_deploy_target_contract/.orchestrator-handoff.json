@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "task_number": 470,
+  "phase": "plan",
+  "session_id": "sess_1793850684_c30dd8_470",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a four-phase plan separating verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis: a new TARGET_REPO CONTRACT header paragraph plus a usage-line subsection (outcomes 1-2), one added gate0 stderr line (outcome 3), and a companion-docs phase that widens regeneration-is-manual-only.md's existing pointer by one clause rather than duplicating the contract (outcome 4, decided as header-alone authority). Planning established two facts the research report lacked: context/formats/plan-format.md:364 is the actual origin of the cited defect, carrying a verbatim copy-pasteable --only-gate 3,4 <source_dir> invocation that was reproduced failing with exit 2, so correcting it is folded into phase 3; and gate 3 (doc-lint) already FAILS at baseline from pre-existing deploy staleness, so every phase verifies differentially against a captured --findings baseline plus an explicit exit-status check. No behavioral change to any gate's pass/fail semantics (outcome 5).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/470_clarify_verify_deploy_target_contract/plans/01_two-axis-target-contract.md",
+      "summary": "Four-phase plan: verify-deploy.sh header two-axis split, gate0 stderr convention line, companion-doc pointer plus origin-site invocation fix, redeploy and full verification."
+    }
+  ],
+  "next_steps": "Run /orchestrate 470 to execute the plan"
+}

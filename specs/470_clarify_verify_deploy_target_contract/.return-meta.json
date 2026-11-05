@@ -1,18 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793850684_c30dd8_470",
-  "task_number": 470,
-  "dispatch_seq": 4,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/470_clarify_verify_deploy_target_contract/reports/01_target-contract-clarification.md",
-      "summary": "Confirms the two-axis contract (invocation CWD vs. TARGET-argument shape) mechanically, verifies no test pins gate0's exact stderr text, verifies no other file duplicates the header's TARGET-axis prose, and recommends additive-only edits to the header, usage-line comment, and gate0 stderr plus a one-clause strengthening of regeneration-is-manual-only.md's existing pointer sentence (not a new duplicate section)."
+      "type": "plan",
+      "path": "specs/470_clarify_verify_deploy_target_contract/plans/01_two-axis-target-contract.md",
+      "summary": "Four-phase plan separating verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis across the script header, usage line, gate0 stderr, and two companion docs, plus a redeploy-and-verify phase."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 470 to create implementation plan"
+  "memory_candidates": [
+    {
+      "content": "A documentation defect can have two distinct sites: the PROSE that is merely silent or ambiguous, and a COPY-PASTEABLE EXAMPLE elsewhere that actively prescribes the wrong thing. When a defect report cites a wrong command verbatim, grep the repo for that exact command shape before accepting the ambiguous-prose site as the origin: an authoritative format/standard doc carrying a copy-pasteable invocation is a far more likely source than a nearby true-but-incomplete sentence, because planners copy examples rather than re-deriving from prose. Clarifying the prose while leaving the example intact leaves the defect live. Concrete instance: verify-deploy.sh's header was silent on its TARGET-argument shape (ambiguous prose), while context/formats/plan-format.md's __FULL_SWEEP__ sub-case handed planners a verbatim non-working invocation (the actual origin). Related axis-conflation pattern: a script's explicit TARGET/REPO_ROOT argument has its own required-shape contract, wholly independent of where the script may be invoked FROM; a true claim about one axis reads as a claim about the other unless both are stated.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/470_clarify_verify_deploy_target_contract/plans/01_two-axis-target-contract.md",
+      "confidence": 0.72,
+      "suggested_keywords": ["copy-pasteable-example", "documentation-defect-origin", "target-argument-contract", "invocation-cwd-axis", "verify-deploy", "axis-conflation"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1793850684_c30dd8_470",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2.65,
+    "dependency_waves": 3
+  },
+  "next_steps": "Run /orchestrate 470 to execute the plan",
+  "dispatch_seq": 8
 }
