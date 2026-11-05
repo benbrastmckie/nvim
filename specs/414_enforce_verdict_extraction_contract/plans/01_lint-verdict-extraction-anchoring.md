@@ -232,7 +232,7 @@ the lint itself; no other module can observe this file until Phase 3 wires it.
 
 ---
 
-### Phase 2: Both-polarity fixture suite for the lint [NOT STARTED]
+### Phase 2: Both-polarity fixture suite for the lint [COMPLETED]
 
 **Goal**: A committed test suite that proves each flagged shape is detected from a seeded
 fixture, each intended exemption is not flagged, and the lint's own output satisfies the
@@ -240,38 +240,41 @@ producer-side contract.
 
 **Tasks**:
 
-- [ ] Read `scripts/tests/test-lint-hook-registration-paths.sh` in full as the structural model
+- [x] Read `scripts/tests/test-lint-hook-registration-paths.sh` in full as the structural model
       (`common_test_repo_root`, `common_test_resolve_candidate`, `common_test_workdir_init`,
       `common_test_pass`/`common_test_fail`/`common_test_info`, mktemp `WORKDIR` fixtures,
-      no committed fixture files).
-- [ ] Create `scripts/tests/test-lint-verdict-extraction-anchoring.sh` resolving the
-      lint-under-test deploy-tree-first with source-store fallback, as that model does.
-- [ ] FAILING case: a fixture `.sh` containing a bare `grep -F '[FAIL]'` applied to a captured
+      no committed fixture files). *(completed)*
+- [x] Create `scripts/tests/test-lint-verdict-extraction-anchoring.sh` resolving the
+      lint-under-test deploy-tree-first with source-store fallback, as that model does. *(completed)*
+- [x] FAILING case: a fixture `.sh` containing a bare `grep -F '[FAIL]'` applied to a captured
       producer-output variable — assert exit 1 and assert the emitted message is the
-      **unanchored** remedy text.
-- [ ] FAILING case: a fixture `.sh` containing a bare `grep -E '^\[FAIL\]'` — assert exit 1 and
+      **unanchored** remedy text. *(completed)*
+- [x] FAILING case: a fixture `.sh` containing a bare `grep -E '^\[FAIL\]'` — assert exit 1 and
       assert the emitted message is the **naive-anchor** remedy text and that it names the
       SGR-stripping requirement. Assert the two messages are not identical to each other, so a
-      future merge of the two verdicts into one generic message fails this suite.
-- [ ] FAILING case: the same two shapes with the `[VIOLATION]` token instead of `[FAIL]`.
-- [ ] PASSING case: a fixture routing through
-      `verify_deploy_extract_verdict_lines '[FAIL]' "$output"` — assert exit 0.
-- [ ] PASSING case: a fixture reproducing `gate-verdict-extract-lib.sh`'s own shape — the literal
+      future merge of the two verdicts into one generic message fails this suite. *(completed)*
+- [x] FAILING case: the same two shapes with the `[VIOLATION]` token instead of `[FAIL]`. *(completed)*
+- [x] PASSING case: a fixture routing through
+      `verify_deploy_extract_verdict_lines '[FAIL]' "$output"` — assert exit 0. *(completed)*
+- [x] PASSING case: a fixture reproducing `gate-verdict-extract-lib.sh`'s own shape — the literal
       bad shapes appearing only inside `#` comment lines, plus an executable pipeline anchored on
-      a variable — assert exit 0.
-- [ ] PASSING case: a fixture reproducing `lint-json-channel-discipline.sh`'s comment shape —
-      assert exit 0.
-- [ ] PASSING case: a fixture with an unrelated `grep` and an unrelated bracketed token — assert
-      exit 0 (no over-matching).
-- [ ] Producer-side self-check case (the dispatch's explicit requirement): capture the lint's own
+      a variable — assert exit 0. *(completed)*
+- [x] PASSING case: a fixture reproducing `lint-json-channel-discipline.sh`'s comment shape —
+      assert exit 0. *(completed)*
+- [x] PASSING case: a fixture with an unrelated `grep` and an unrelated bracketed token — assert
+      exit 0 (no over-matching). *(completed)*
+- [x] Producer-side self-check case (the dispatch's explicit requirement): capture the lint's own
       stdout from a multi-violation fixture, source
       `scripts/lib/gate-verdict-extract-lib.sh`, pipe that output through
       `verify_deploy_extract_verdict_lines '[VIOLATION]' "$output"`, and assert the selected line
-      count and content equal the lint's own reported finding set exactly.
-- [ ] Live-corpus case: run the lint with no positional argument against the real source store
-      and assert exit 0 — the standing assertion that the gate is not red on the live tree.
-- [ ] `chmod +x` the new suite; confirm it is auto-discovered by `run-all.sh` (glob-based, no
-      roster edit) and that `suite_selection_select` pairs it to the lint by basename.
+      count and content equal the lint's own reported finding set exactly. *(completed: compares
+      against the lint's own "Total violations: N" summary line rather than a raw substring
+      grep, since a flagged fixture line can legitimately re-quote the bracketed token in its own
+      message continuation)*
+- [x] Live-corpus case: run the lint with no positional argument against the real source store
+      and assert exit 0 — the standing assertion that the gate is not red on the live tree. *(completed)*
+- [x] `chmod +x` the new suite; confirm it is auto-discovered by `run-all.sh` (glob-based, no
+      roster edit) and that `suite_selection_select` pairs it to the lint by basename. *(completed)*
 
 **Timing**: 1.5 hours
 

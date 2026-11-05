@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Both-polarity fixture suite for the lint",
+  "started_at": "2026-11-05T00:35:00Z",
+  "last_updated": "2026-11-05T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read structural model test-lint-hook-registration-paths.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Create test-lint-verdict-extraction-anchoring.sh with all fixture cases, verify green, shellcheck clean, run-all.sh discovery, negative control", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-verdict-extraction-anchoring.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "raw grep -c '\\[VIOLATION\\]' on lint output as expected finding count in producer-side round-trip case", "result": "failed", "reason": "a flagged fixture line can legitimately re-quote the bracketed token in its own message continuation text, over-counting; replaced with the lint's own 'Total violations: N' summary line as ground truth"}
+  ],
+  "handoff_count": 0
+}
