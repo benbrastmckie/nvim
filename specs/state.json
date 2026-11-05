@@ -1897,9 +1897,9 @@
           "type": "plan"
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md",
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_shared-deployed-tree-fixture-summary.md",
           "type": "summary",
-          "summary": "Phase 12 close: added cost_per_assertion_ms to the size probe, classified all 157 deployed/merged suites as unit or integration in a new declarative data file, added a lint enforcing a unit-class suite cannot spawn the three heavyweight tools (riding gate 8's existing discovery, zero gate-registry changes), and wrote its both-polarity fixture suite. NET-PROD +273, NET-TEST +339, both pre-declared net-positive. Phase 13 scoped as the next step."
+          "summary": "Phase 13 close: built and regression-tested the shared deployed-tree fixture mechanism, migrated the one genuine consumer suite, and recorded the broader migration aspiration as Reasoned Exclusions with evidence. NET-PROD +109, NET-TEST +267, NET-MD +51, all net-positive and justified as future-growth-prevention infrastructure."
         }
       ],
       "next_artifact_number": 4,

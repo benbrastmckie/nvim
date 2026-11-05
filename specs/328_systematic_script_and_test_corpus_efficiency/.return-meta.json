@@ -1,56 +1,63 @@
 {
   "status": "partial",
-  "dispatch_seq": 26,
+  "dispatch_seq": 27,
   "partial_progress": {
     "stage": "phase_complete_more_remain",
-    "details": "Phase 12 (Classify Every Suite and Enforce the Unit/Integration Boundary) closed [COMPLETED]. Added cost_per_assertion_ms to script-inventory.sh's --size-line probe; classified all 157 suites discovered in the DEPLOYED/merged tests/ directory (not just core's own 139) as unit or integration in a new declarative data file (116 unit, 41 integration); added lint-unit-integration-boundary.sh enforcing that a unit-class suite cannot spawn deploy-headless.sh/verify-deploy.sh/run-all.sh, plus a coverage-gap check and a malformed-row check; wrote its both-polarity fixture suite (8 cases/15 assertions). Rode gate 8's existing full-battery discovery for enforcement rather than adding or extending a gate-registry.data row (deviation, recorded in the plan and progress file). Both net deltas net-positive as pre-declared: NET-PROD +273, NET-TEST +339. Full redeploy + full verify-deploy.sh battery green (26/26 gates, 39 checks, 0 failures) both before and after this phase's edits. 8 of 20 plan phases remain [NOT STARTED] (Phase 13 next). Clean phase boundary, not a context-exhaustion handoff.",
-    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-12-handoff-20261105T192141Z.md",
-    "phases_completed": 12,
+    "details": "Phase 13 (Build the Deployed-Tree Fixture Once and Lend It Read-Only) closed [COMPLETED WITH EXCLUSIONS]. Built a shared deployed-tree fixture in run-all.sh (built once before any suite runs, lent read-only via chmod -R a-w, exported as RUN_ALL_SHARED_FIXTURE only when a declared consumer is selected) and common_test_fixture_overlay (lib/common.sh, cp -a --reflink=auto, never hardlinks) for a consumer that must mutate it. Investigated the realistic consumer set directly against each of the 38 core integration-classified suites' own content (not suite-classification.data's documented conservative textual-reference reason field) and found exactly one genuine consumer, test-deploy-orphans.sh, now migrated (8/8 assertions identical standalone and under the shared fixture). Excluded test-deploy-propagation.sh, test-gate-cache-equivalence.sh, and test-deploy-verify-wiring.sh with evidence (each deliberately drives multiple/flag-varied real deploy-headless.sh/verify-deploy.sh invocations whose own variance is what they verify); the remaining rows are textual-reference false positives or (the two dispatch-named stragglers) already migrated by task 416 Phase 8 onto an unrelated rsync-based fixture. Added test-run-all-shared-fixture.sh (8 assertions) pinning build-once/never-built-when-unused/write-blocked; extended test-common-lib.sh with 6 assertions for common_test_fixture_overlay's own contract. Documented the shared-fixture contract in shell-script-testing.md, including the two-sibling-artifact (.claude-extensions.json, .syncprotect) overlay requirement discovered while migrating test-deploy-orphans.sh (an incomplete overlay misclassified the entire deployed tree as orphaned -- 743 false findings -- before the fix). Net deltas recorded but net-POSITIVE, not negative as originally stated: NET-PROD +109, NET-TEST +267, NET-MD +51; justified in the plan's own closing note as the cheapest route to a later negative net (reusable future-growth-prevention infrastructure, same reasoning class as Phase 14's own advance net-positive justification) rather than reverted. Full redeploy + full verify-deploy.sh battery run twice, 39 checks / 0 failures both times, including gate 8's complete shell-suite battery. A mid-phase informal --jobs auto battery run surfaced 6 transient failures traced to a concurrent sibling process live-mutating specs/state.json/TODO.md during the run (host-state contention, logged, unrelated to this phase's own edits, not reproduced on either full deploy-headless.sh verification run). 7 of 20 plan phases remain [NOT STARTED] (Phase 14 next). Clean phase boundary, not a context-exhaustion handoff.",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-13-handoff-20261105T195859Z.md",
+    "phases_completed": 13,
     "phases_total": 20
   },
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md",
-      "summary": "Phase 12 close: added cost_per_assertion_ms to the size probe, classified all 157 deployed/merged suites as unit or integration in a new declarative data file, added a lint enforcing a unit-class suite cannot spawn the three heavyweight tools (riding gate 8's existing discovery, zero gate-registry changes), and wrote its both-polarity fixture suite. NET-PROD +273, NET-TEST +339, both pre-declared net-positive. Phase 13 scoped as the next step."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_shared-deployed-tree-fixture-summary.md",
+      "summary": "Phase 13 close: built and regression-tested the shared deployed-tree fixture mechanism (run-all.sh build/lend/enforce block, common_test_fixture_overlay), migrated the one genuine consumer suite, and recorded the broader migration aspiration as Reasoned Exclusions with evidence. NET-PROD +109, NET-TEST +267, NET-MD +51, all net-positive and justified as future-growth-prevention infrastructure."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-12-handoff-20261105T192141Z.md",
-      "summary": "Phase 12 close: classification scope corrected mid-phase to the deployed/merged 157-suite corpus, the gate-riding deviation reasoning, and what NOT to assume about core-only suite counts for the next dispatch."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-13-handoff-20261105T195859Z.md",
+      "summary": "Phase 13 close: the consumer-discriminator finding (why most integration-class suites are not candidates), the two-sibling-artifact overlay requirement, the host-state-contention observation, and what NOT to re-propose for the next dispatch."
     }
   ],
   "completion_data": {
-    "completion_summary": "Closed Phase 12: added a cost-per-assertion figure to the standing size probe, classified all 157 suites in the deployed/merged test corpus as unit or integration in a new declarative data file, added lint-unit-integration-boundary.sh (riding gate 8's existing discovery with zero gate-registry.data changes) plus its 15-assertion fixture suite. NET-PROD +273, NET-TEST +339, both pre-declared net-positive. Full gate battery green before and after."
+    "completion_summary": "Closed Phase 13: built the shared deployed-tree fixture mechanism (run-all.sh + common_test_fixture_overlay), migrated the one suite that genuinely fits (test-deploy-orphans.sh), and recorded three investigated-and-excluded candidates plus the classification file's over-count as Reasoned Exclusions. Net-positive (NET-PROD +109, NET-TEST +267, NET-MD +51), justified as reusable future-growth-prevention infrastructure. Full gate battery green twice."
   },
   "modified_files": [
     "agent-system/extensions/core/context/standards/shell-script-testing.md",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/lint/lint-unit-integration-boundary.sh",
-    "agent-system/extensions/core/scripts/script-inventory.sh",
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/tests/run-all.sh",
     "agent-system/extensions/core/scripts/tests/suite-classification.data",
-    "agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-script-inventory.sh",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-12-handoff-20261105T192141Z.md",
+    "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-all-shared-fixture.sh",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-13-handoff-20261105T195859Z.md",
     "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl",
     "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-12-progress.json",
-    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md"
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-13-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_shared-deployed-tree-fixture-summary.md"
   ],
   "memory_candidates": [
     {
-      "content": "When a repo deploys a multi-extension source store into one flat consumer tree (each extension's own scripts/tests/*.sh merged into one shared .claude/scripts/tests/ directory), a lint or data file enumerating 'every discovered test suite' must be checked against the DEPLOYED/merged corpus, not any single extension's own source-store directory -- the merged set is what a test-runner (e.g. run-all.sh) actually discovers and runs in production, and a source-store-only enumeration will systematically undercount by exactly the suites contributed by every OTHER extension. Catch this early by running the new lint's own fixture-test case against the deployed tree, not just the source-store path, before declaring the classification complete.",
+      "content": "Before chartering or executing a 'build it once, lend it read-only' shared-fixture consolidation for a test corpus, verify the realistic consumer count by reading each nominated suite's ACTUAL construction call (grep for a real, unflagged subprocess invocation against a scratch target), never by trusting a classification file's documented conservative/over-counting textual-reference scan. A suite that drives MULTIPLE or flag-varied real invocations of the heavyweight tool under test (fresh-vs-resync idempotency, a flag matrix, an equivalence proof) is categorically NOT a sharing candidate: the variance across its invocations IS what it verifies, and substituting a single shared artifact changes what the suite proves rather than merely how cheaply. In one real corpus this narrowed a textually-counted 38-suite 'integration' population down to exactly 1 genuine consumer.",
       "category": "PATTERN",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_shared-deployed-tree-fixture-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-merge", "multi-extension-corpus", "test-discovery-scope", "source-store-vs-deployed", "suite-classification"]
+      "suggested_keywords": ["shared-fixture", "test-consolidation", "consumer-discriminator", "scope-hypothesis", "over-counting-classification"]
     },
     {
-      "content": "A corpus-wide lint whose enforcement target is itself part of the test corpus (e.g. 'no unit-class suite may spawn the full test runner') can ride an existing full-battery test-runner gate with ZERO changes to a declarative gate registry: simply add the lint's own fixture suite as a normal discovered test-*.sh file, and the existing full-suite-runner gate executes it on every invocation automatically. This is a stronger form of a 'no new gate row' constraint than extending an existing numbered gate function with a second check -- it requires no gate-registry/dispatcher edit at all, matching a pre-existing lint-without-a-gate-row precedent if one already exists in the corpus (check for it before assuming a new row is needed).",
+      "content": "When overlaying a cheap COPY of an already-deployed tree into a consuming test suite's own scratch target (instead of re-running the real deploy script), copy every top-level artifact the deploy process writes, not just its primary output subdirectory. A manifest/extension-driven deploy (e.g. deploy-headless.sh writing .claude/) commonly ALSO writes PROJECT-ROOT SIBLING files (here: .claude-extensions.json naming the active extension set, .syncprotect naming excluded paths) that downstream checks (here: find_orphans) read independently of the primary subdirectory. Omitting a sibling file makes those checks silently resolve an EMPTY declared/excluded set, misclassifying the entire copied tree (here: 743 false 'orphan' findings) -- a failure mode indistinguishable from a real defect until traced to the missing sibling artifact. Always diff a fresh real deploy's full top-level listing against what a 'cheap overlay' plans to copy before trusting the overlay is complete.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["gate-registry", "ride-existing-gate", "fixture-suite-as-enforcement", "no-new-gate-row", "test-runner-discovery"]
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_shared-deployed-tree-fixture-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-fixture", "overlay-completeness", "sibling-artifacts", "find-orphans", "fixture-migration-pitfall"]
+    },
+    {
+      "content": "Implementing a 'fast copy of a read-only shared fixture that the copy's own consumer may then mutate' helper: use `cp -a --reflink=auto`, never `cp -l`/`cp -al` (hardlinks). A hardlink shares the SAME inode as the read-only source, so a subsequent `chmod` on the writable copy also changes the source's permission bits, silently defeating the read-only-lending contract the whole mechanism exists to enforce. `--reflink=auto` gives copy-on-write (independent inodes sharing data blocks) on a supporting filesystem and falls back to a plain deep copy elsewhere -- correct in both cases, unlike hardlinks which are a correctness hazard disguised as a performance optimization.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_shared-deployed-tree-fixture-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["cp-reflink", "copy-on-write", "hardlink-hazard", "read-only-fixture", "shared-mutable-state"]
     }
   ],
   "metadata": {
@@ -58,7 +65,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 12,
+    "phases_completed": 13,
     "phases_total": 20
   }
 }
