@@ -116,7 +116,7 @@ next_project_number: 486
 ### Agent System
 
 401 [NOT STARTED] — Two repositories file against one source store with no...
-414 [PLANNED] — Enforce the gate verdict-line extraction contract mechanically
+414 [IMPLEMENTING] — Enforce the gate verdict-line extraction contract mechanically
   └─ 415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
     └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
       └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
@@ -3424,7 +3424,7 @@ test-guard-git-push.sh. Do not attribute these to this work and do not fix them 
 ---
 
 ### 414. Enforce the gate verdict-line extraction contract mechanically
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 413, Task 411

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #414
 
 - **Task**: 414 - Enforce the gate verdict-line extraction contract mechanically
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: 413, 411 (per state.json)
 - **Research Inputs**: specs/414_enforce_verdict_extraction_contract/reports/01_lint-verdict-extraction-anchoring-design.md
@@ -144,51 +144,51 @@ No roadmap context was provided in this dispatch (`roadmap_path` absent, `roadma
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the verdict-extraction-anchoring lint [NOT STARTED]
+### Phase 1: Author the verdict-extraction-anchoring lint [COMPLETED]
 
 **Goal**: A standalone, runnable `lint-verdict-extraction-anchoring.sh` that reports the two bad
 shapes distinctly over the narrow hand-picked corpus and is clean against the live tree.
 
 **Tasks**:
 
-- [ ] Read `scripts/lint/lint-state-writer-boundary.sh` in full as the structural template, and
-      `scripts/lint/lint-hook-registration-paths.sh` for its two-layer classification shape.
-- [ ] Create `scripts/lint/lint-verdict-extraction-anchoring.sh` with: a header stating the
+- [x] Read `scripts/lint/lint-state-writer-boundary.sh` in full as the structural template, and
+      `scripts/lint/lint-hook-registration-paths.sh` for its two-layer classification shape. *(completed)*
+- [x] Create `scripts/lint/lint-verdict-extraction-anchoring.sh` with: a header stating the
       contract it enforces, a cross-citation of
       `context/standards/shell-script-testing.md`'s "Verdict-line extraction contract
       (producer/consumer)" section, a `DETECTION MODEL` block describing both layers, and a
       `KNOWN LIMITATION` block disclaiming variable-indirected and multi-line-assembled
-      extraction (matching the sibling lints' wording discipline).
-- [ ] Implement argument handling via `lint_corpus_scan_collect_files` /
+      extraction (matching the sibling lints' wording discipline). *(completed)*
+- [x] Implement argument handling via `lint_corpus_scan_collect_files` /
       `lint_corpus_scan_parse_flags` from `scripts/lib/lint-corpus-scan-lib.sh`, sourcing
       `scripts/lib/common.sh` first per that library's contract: `--verbose`, `--quiet`, and
       positional scan paths (a positional path is what lets the Phase 2 fixture suite point the
-      lint at a scratch directory).
-- [ ] Implement `resolve_project_root` robust to both the deployed
+      lint at a scratch directory). *(completed)*
+- [x] Implement `resolve_project_root` robust to both the deployed
       (`.claude/scripts/lint/`) and source-store (`agent-system/extensions/core/scripts/lint/`)
-      invocation locations, as the sibling lints do.
-- [ ] Set the default corpus to exactly the three hand-picked entries:
+      invocation locations, as the sibling lints do. *(completed)*
+- [x] Set the default corpus to exactly the three hand-picked entries:
       `scripts/verify-deploy.sh`, `scripts/lib/gate-verdict-extract-lib.sh`, and
       `scripts/lint/*.sh` (resolved under the source store). Do **not** default to
-      `agent-system/extensions`.
-- [ ] Implement Layer 1 (`classify_line`) returning three outcomes: `VIOLATION (unanchored)` for
+      `agent-system/extensions`. *(completed)*
+- [x] Implement Layer 1 (`classify_line`) returning three outcomes: `VIOLATION (unanchored)` for
       a bare `grep -F '[FAIL]'` / `grep -F '[VIOLATION]'`; `VIOLATION (naive-anchor, SGR-blind)`
       for a bare `grep -E '^\[FAIL\]'` / `grep -E '^\[VIOLATION\]'` with no SGR strip in the same
       statement; and `EXEMPT: <reason>` otherwise. Classify the two shapes apart by whether the
-      matched pattern argument's first character after the quote is `^`.
-- [ ] Add the Layer-1 comment-line exemption (`EXEMPT: comment line`) for a candidate whose first
+      matched pattern argument's first character after the quote is `^`. *(completed)*
+- [x] Add the Layer-1 comment-line exemption (`EXEMPT: comment line`) for a candidate whose first
       non-whitespace character is `#` — this is what covers
       `gate-verdict-extract-lib.sh`'s explanatory header and
-      `lint-json-channel-discipline.sh`'s comment on principle rather than by name.
-- [ ] Add the Layer-2 `EXCLUDED_FILES` array with its single entry (this lint's own source) and
-      that entry's reason stated inline, per the cluster's exemption-marker discipline.
-- [ ] Emit findings as `echo -e "${RED}[VIOLATION]${NC} $file:$lineno: <message>"` — line-initial
+      `lint-json-channel-discipline.sh`'s comment on principle rather than by name. *(completed)*
+- [x] Add the Layer-2 `EXCLUDED_FILES` array with its single entry (this lint's own source) and
+      that entry's reason stated inline, per the cluster's exemption-marker discipline. *(completed)*
+- [x] Emit findings as `echo -e "${RED}[VIOLATION]${NC} $file:$lineno: <message>"` — line-initial
       modulo SGR, exactly one space after the token — so the lint itself satisfies the producer
       side of the contract it enforces. Give the two shapes visibly different remedy text, the
-      naive-anchor one naming the SGR-stripping requirement and the helper explicitly.
-- [ ] Implement the cluster's exit-code contract: 0 clean, 1 violations found, 2 environment or
-      bad-scan-path error, with a quiet/verbose summary block.
-- [ ] `chmod +x` the new script.
+      naive-anchor one naming the SGR-stripping requirement and the helper explicitly. *(completed)*
+- [x] Implement the cluster's exit-code contract: 0 clean, 1 violations found, 2 environment or
+      bad-scan-path error, with a quiet/verbose summary block. *(completed)*
+- [x] `chmod +x` the new script. *(completed)*
 
 **Timing**: 1.5 hours
 
