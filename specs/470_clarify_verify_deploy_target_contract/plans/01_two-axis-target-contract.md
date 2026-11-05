@@ -1,7 +1,7 @@
 # Implementation Plan: Task #470
 
 - **Task**: 470 - Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.65 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/470_clarify_verify_deploy_target_contract/reports/01_target-contract-clarification.md

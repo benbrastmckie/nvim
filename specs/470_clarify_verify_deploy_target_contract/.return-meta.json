@@ -22,21 +22,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/470_clarify_verify_deploy_target_contract/summaries/01_two-axis-target-contract-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["batch-gate-deferral", "concurrent-sibling-dispatch", "gate8-pre-existing-defect", "scoped-verification-substitute", "multi-task-orchestrate"]
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "concurrent-sibling-dispatch",
+        "gate8-pre-existing-defect",
+        "scoped-verification-substitute",
+        "multi-task-orchestrate"
+      ]
     },
     {
       "content": "Editing a source-store file ahead of its redeploy intentionally and predictably produces a transient 'deployed script/doc content drift' gate-3 FINDING for that exact file in any differential --findings comparison run before the redeploy -- this is not a regression, it is the expected mid-task signature of the source-store/deployed-tree split itself. The finding (and any Rule R line_count mismatch from an edited markdown file) clears on its own once the redeploy runs. Do not gate an intermediate phase's verification on a differential-findings diff staying perfectly clean when later phases of the same task still owe a redeploy; gate on it only at the final, post-redeploy comparison.",
       "category": "INSIGHT",
       "source_artifact": "specs/470_clarify_verify_deploy_target_contract/summaries/01_two-axis-target-contract-summary.md",
       "confidence": 0.78,
-      "suggested_keywords": ["content-drift-finding", "source-store-deploy-boundary", "differential-findings", "verify-deploy", "transient-gate3-finding"]
+      "suggested_keywords": [
+        "content-drift-finding",
+        "source-store-deploy-boundary",
+        "differential-findings",
+        "verify-deploy",
+        "transient-gate3-finding"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793850684_c30dd8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
