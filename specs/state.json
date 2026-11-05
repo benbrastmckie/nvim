@@ -1874,9 +1874,9 @@
           "type": "plan"
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_install-uninstall-dedup-summary.md",
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_typst-pair-dedup-summary.md",
           "type": "summary",
-          "summary": "Phase 9 close: extracted install-extension.sh/uninstall-extension.sh's mutual duplication into lib/extension-install-lib.sh after writing a new characterization test, NET-PROD -70, a recurring commit-pipeline defect routed around, Phase 10 scoped as the next step."
+          "summary": "Phase 10 close: extracted chapter-quality-check.sh/typst-element-lint.sh's shared CLI/output skeleton into a new typst-extension-local lib/typst-scan-lib.sh, NET-PROD -2, duplicate-block count 44/44 -> 0/0, Phase 11 scoped as the next step."
         }
       ],
       "next_artifact_number": 4,

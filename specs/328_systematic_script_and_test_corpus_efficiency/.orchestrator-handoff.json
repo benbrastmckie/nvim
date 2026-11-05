@@ -1,20 +1,20 @@
 {
-  "dispatch_seq": 21,
+  "dispatch_seq": 22,
   "status": "partial",
-  "phases_completed": 9,
+  "phases_completed": 10,
   "phases_total": 20,
-  "summary": "Closed Phase 9 (Deduplicate the Extension Install/Uninstall Pair): extracted install-extension.sh/uninstall-extension.sh's mutual duplication into a new lib/extension-install-lib.sh (validation/logging preamble plus generic extlib_install_symlinks/extlib_remove_symlinks helpers covering all six per-type symlink loops), after first writing the pair's first-ever characterization test (17 cases, since has_test was false for both) and verifying it green before and after the refactor. Deliberately preserved a genuine pre-existing behavioral discrepancy (install_agents never checked an existing symlink's target, unlike install_commands/install_skills) rather than normalizing it away. NET-PROD -70 (a header-only-extraction first attempt landed +13 with no later phase to pay it back, so the extraction was widened to the symlink-loop bodies, the larger duplicate mass); duplicate-block count for the pair dropped 35/35 -> 6/6. NET-TEST +274 (the new characterization suite, a one-time required cost). Verification: run-all.sh --only for the new suite (17/17), full-corpus shellcheck clean (0 findings/415 files), manifest-sync suite green after registering the new lib and test in manifest.json. Per the phase's own declared local tier, no full redeploy/gate battery was run (deferred to Phase 20's full tier). Hit the SAME recurring git-commit-phase.sh double-slash containment bug that already hit Phases 7 and 8's closing commits (dropped the new test file and manifest.json from the phase-closing commit); recovered via the established follow-up-commit pattern. 11 of 20 plan phases remain, starting with Phase 10 (typst script pair deduplication).",
+  "summary": "Closed Phase 10 (Deduplicate the Typst Script Pair): extracted chapter-quality-check.sh/typst-element-lint.sh's mutual duplication (shared color palette, --verbose/--help CLI-parsing loop, recursive .typ-file collection loop) into a new typst-extension-local lib/typst-scan-lib.sh. Both scripts already had paired fixture suites, so no characterization test was needed. Verified byte-identical finding output over a constructed scratch fixture plus four CLI edge cases per script (no PATH, --help, a nonexistent PATH, an unknown option) -- 8 captures, all identical before and after. NET-PROD -2 (small, since this pair's shared mass was only the CLI/output skeleton, not large per-type loops like Phase 9's install/uninstall pair); duplicate-block count for the pair dropped 44/44 -> 0/0. Shellcheck clean (6 deliberate SC2034 disables on the lib's color/VERBOSE globals, each with an inline reason, since they're consumed only by the sourcing script). manifest.json's provides.scripts registration for the new lib was dropped by git-commit-phase.sh's containment self-check (the path is not itself in task 328's declared file_scope) and recovered via a labeled follow-up commit, matching Phase 9's precedent for this same recurring defect class. Per the phase's own declared local tier, no redeploy/full gate battery was run (deferred to Phase 20). 10 of 20 plan phases remain, starting with Phase 11 (literature-search.sh's self-internal Python-heredoc repetition -- a different defect class, not bash duplication).",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_install-uninstall-dedup-summary.md",
-      "summary": "Phase 9 close: extracted install-extension.sh/uninstall-extension.sh's mutual duplication into lib/extension-install-lib.sh after writing a new characterization test, NET-PROD -70, a recurring commit-pipeline defect routed around, Phase 10 scoped as the next step."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_typst-pair-dedup-summary.md",
+      "summary": "Phase 10 close: extracted chapter-quality-check.sh/typst-element-lint.sh's shared CLI/output skeleton into a new typst-extension-local lib/typst-scan-lib.sh, NET-PROD -2, duplicate-block count 44/44 -> 0/0, Phase 11 scoped as the next step."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-9-handoff-20261105T031308Z.md",
-      "summary": "Phase 9 close: extraction design iteration (header-only attempt landed net-positive, widened to the symlink loops to reach -70), preserved install_agents target-check discrepancy, and Phase 10's scope."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-10-handoff-20261105T151401Z.md",
+      "summary": "Phase 10 close: both scripts already fixture-tested, extraction scoped to exactly the sliding-window-detected shared surface, byte-identical before/after verification method, and Phase 11's literature-search.sh Python-heredoc scope named for the next dispatch."
     }
   ]
 }
