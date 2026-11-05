@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Header — Separate the Invocation-CWD Axis from the TARGET Axis",
+  "started_at": "2026-11-05T07:24:00Z",
+  "last_updated": "2026-11-05T07:24:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture differential --findings baseline", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Capture gate0 reproduction baseline", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Check verify-deploy.sh for foreign uncommitted diff", "status": "done", "files_touched": [], "note": "verify-deploy.sh has zero foreign uncommitted diff at implement time (resolved upstream); recorded as a win via issue-record.sh."},
+    {"id": 4, "description": "Insert TARGET_REPO CONTRACT header paragraph and TARGET_REPO placeholder usage subsection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

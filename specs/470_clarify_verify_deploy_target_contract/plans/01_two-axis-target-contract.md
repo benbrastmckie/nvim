@@ -1,7 +1,7 @@
 # Implementation Plan: Task #470
 
 - **Task**: 470 - Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.65 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/470_clarify_verify_deploy_target_contract/reports/01_target-contract-clarification.md
@@ -121,26 +121,31 @@ source store. That is deliberate: it is the contract this task documents, and it
 
 ---
 
-### Phase 1: Header — Separate the Invocation-CWD Axis from the TARGET Axis [NOT STARTED]
+### Phase 1: Header — Separate the Invocation-CWD Axis from the TARGET Axis [COMPLETED]
 
 **Goal**: The header states both axes explicitly, and `[TARGET_REPO]` carries its contract inline
 (outcomes 1 and 2).
 
 **Tasks**:
 
-- [ ] Capture the differential baseline:
+- [x] Capture the differential baseline:
       `bash agent-system/extensions/core/scripts/verify-deploy.sh --findings --quiet --skip-slow --only-gate 3,4,22 /home/benjamin/.config/nvim 2>/dev/null | grep '^FINDING ' | sort -u > /tmp/claude-1000/-home-benjamin--config-nvim/fcbf2ae8-d69d-4f60-b0d2-b3405211c42d/scratchpad/470-findings-before.txt`
-      (expected: non-empty, exit 1 — see Research Integration finding 2).
-- [ ] Capture the gate0 reproduction baseline:
+      (expected: non-empty, exit 1 — see Research Integration finding 2). *(completed: baseline
+      shifted since planning — 0 findings, exit 0; gate 3's pre-existing FAIL has since been
+      resolved by other work. Recorded via issue-record.sh as a `kind: win`.)*
+- [x] Capture the gate0 reproduction baseline:
       `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 agent-system/extensions/core 2>&1`
-      — record the exact three stderr lines and exit 2 for later comparison.
-- [ ] Run `git diff -- agent-system/extensions/core/scripts/verify-deploy.sh` and `git log -1 --stat`.
+      — record the exact three stderr lines and exit 2 for later comparison. *(completed)*
+- [x] Run `git diff -- agent-system/extensions/core/scripts/verify-deploy.sh` and `git log -1 --stat`.
       Confirm the uncommitted diff is **not** this session's own work, then record it via
       `issue-record.sh --kind issue --class "concurrency" --severity costly` naming the foreign
-      hunks and their line regions. Do not revert, stash, or reset it.
-- [ ] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh` lines 1-40 immediately
-      before editing.
-- [ ] Insert a new `# TARGET_REPO CONTRACT:` paragraph immediately after the existing
+      hunks and their line regions. Do not revert, stash, or reset it. *(deviation: altered — the
+      diff is empty at implement time; the foreign warn_advisory()/WARN-FINDING hunks the plan
+      flagged were already committed upstream (`task 810 phase 4`), so there is no foreign work to
+      disclose. Recorded as a `kind: win` instead of `kind: issue`.)*
+- [x] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh` lines 1-40 immediately
+      before editing. *(completed)*
+- [x] Insert a new `# TARGET_REPO CONTRACT:` paragraph immediately after the existing
       `# INVOCATION CONTRACT:` paragraph (which ends at line ~12 with "running a sub-check's
       source-store copy instead would make that comparison meaningless."). The new paragraph must:
       open by naming itself as a **separate axis** from the paragraph above; state that TARGET,
@@ -151,15 +156,18 @@ source store. That is deliberate: it is the contract this task documents, and it
       guarded on `$TARGET/agent-system/extensions`) additionally `[SKIP]`s unless TARGET also
       holds `agent-system/extensions`; and conclude that TARGET must therefore be simultaneously a
       deploy consumer AND the source store for those gates to run at all — in this repository,
-      only the repo root.
-- [ ] Leave the existing `# INVOCATION CONTRACT:` paragraph byte-identical. It is correct on its
-      own axis and the task description requires it be qualified, not deleted.
-- [ ] Add a `# TARGET_REPO placeholder (see TARGET_REPO CONTRACT above):` explanatory subsection
+      only the repo root. *(completed)*
+- [x] Leave the existing `# INVOCATION CONTRACT:` paragraph byte-identical. It is correct on its
+      own axis and the task description requires it be qualified, not deleted. *(completed:
+      verified byte-identical and `grep -c 'INVOCATION CONTRACT'` is 1 — the new paragraph refers
+      to "the paragraph above" rather than repeating the literal label, to keep that grep count
+      meaningful.)*
+- [x] Add a `# TARGET_REPO placeholder (see TARGET_REPO CONTRACT above):` explanatory subsection
       directly below the `# Usage:` block (line ~33), mirroring the existing
       `# Minimal-init hatch (--minimal-init DIR, ...)` subsection shape already used in this
       header. It must name the concrete consequence: `--only-gate 3,4 <source_dir>` cannot work,
       because `<source_dir>` has no `.claude/` and gate0 fires before gate selection is consulted;
-      the repo root is the correct `TARGET_REPO` for exercising source-store gates.
+      the repo root is the correct `TARGET_REPO` for exercising source-store gates. *(completed)*
 
 **Timing**: 0.75 hours
 

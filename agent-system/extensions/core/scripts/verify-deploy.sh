@@ -11,6 +11,24 @@
 # because its purpose is comparing the deployed tree against the source store -- running a
 # sub-check's source-store copy instead would make that comparison meaningless.
 #
+# TARGET_REPO CONTRACT: a SEPARATE axis from the paragraph above. That paragraph is about where
+# THIS SCRIPT may be invoked FROM (either tree, no override). This paragraph is about what the
+# TARGET argument itself must BE. The two are easy to conflate because the paragraph above's
+# "runs correctly from either tree" sentence is true about invocation directory but reads, at a
+# glance, like a claim about the TARGET value -- it is not. TARGET,
+# when given explicitly (or defaulted from `$(pwd)`; see the TARGET assignment below), MUST be a
+# repository that already holds a DEPLOYED `.claude/` tree: gate0 hard-requires `$TARGET/.claude`
+# to exist and `exit 2`s with "no deploy tree" when it does not. TARGET is therefore NEVER an
+# `agent-system/extensions/<name>` source-store directory -- a source-store directory has no
+# `.claude/` subdirectory of its own, so passing one as TARGET always fails at gate0 before any
+# gate selection is even consulted. Separately, every source-store-only gate (3, 4, 6, 7, 12 and
+# others, each individually guarded on `$TARGET/agent-system/extensions`) additionally `[SKIP]`s
+# unless TARGET *also* holds `agent-system/extensions` alongside its deployed `.claude/`. Put the
+# two requirements together: TARGET must be simultaneously a deploy CONSUMER (has `.claude/`) AND
+# the SOURCE STORE (has `agent-system/extensions`) for a source-store-only gate to actually run
+# rather than SKIP -- in this repository, that is only the repo root, never a source-store
+# subdirectory passed in its place.
+#
 # This is the first of the two gates that any claim about deployed behavior has to clear. It
 # answers "is the deploy tree current and are its hooks registered?" -- it does NOT answer "have
 # events actually flowed?", which requires real command invocations over time. Do not report a
@@ -32,6 +50,16 @@
 #
 # Usage:
 #   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [--skip-unchanged] [--jobs N|auto] [--minimal-init DIR] [TARGET_REPO]
+#
+# TARGET_REPO placeholder (see TARGET_REPO CONTRACT above):
+#   TARGET_REPO is a repository root, not a directory to be checked -- it must already hold a
+#   deployed `.claude/` tree (gate0 requires it, else `exit 2`), and, for any source-store-only
+#   gate to run instead of `[SKIP]`, must also hold `agent-system/extensions`. Concretely, this
+#   means `--only-gate 3,4 <source_dir>` (passing a source-store directory such as
+#   `agent-system/extensions/core` as TARGET_REPO) CANNOT work: `<source_dir>` has no `.claude/`,
+#   and gate0 exits 2 before gate selection is even consulted, regardless of `--only-gate`. The
+#   repo root is the correct TARGET_REPO for exercising source-store gates, because it is the
+#   only directory that is simultaneously the deploy consumer and the source store.
 #
 # Minimal-init hatch (--minimal-init DIR, additive-only):
 #   Opt-in escape hatch for CI/container environments with no user nvim config: this script's two
