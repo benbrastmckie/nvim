@@ -2259,17 +2259,34 @@ the per-file ledger and the full gate set, both below.
       collapse records its claim-retention ledger entry. Keep it short — a long new standard in a
       task chartered against machinery growth is its own counterexample. *(completed:
       `context/standards/anchor-pointer-convention.md`, 70 lines)*
-- [ ] Write the regression lint: for each collapsed block recorded in the Phase 15 inventory,
+- [x] Write the regression lint: for each collapsed block recorded in the Phase 15 inventory,
       FAIL if the block's text reappears in any file other than its anchor. Consume the Phase 15
       inventory file rather than hardcoding block text, so adding a collapse later is a data edit,
       not a code edit — the exact property the gate-framework refactor was chartered to produce
-      and measurably failed to.
+      and measurably failed to. *(completed with a necessary refinement: the lint does NOT read
+      `specs/328_.../markdown-block-inventory.tsv` directly at runtime — that path is under an
+      ephemeral, renumberable task directory, and a deliverable under `agent-system/**` must not
+      hardcode a task-numbered path (`source-store-deploy-boundary.md`,
+      `no-task-references-in-deliverables.md`). Instead it reads a permanent registry,
+      `scripts/lint/collapsed-blocks/registry.tsv`, seeded from the Phase 15 inventory's chosen
+      rows. "Consume the inventory rather than hardcoding block text" is satisfied at the CODE
+      level: `lint-anchor-pointer-collapse.sh` contains no block text or file list, only
+      generic registry-driven logic; later phases extend coverage by appending registry rows (a
+      data edit), never by editing the lint. Also scoped the check to each row's own
+      `migrated_files` list rather than a whole-corpus scan, since the overwhelming majority of a
+      block's sharing files are legitimately not-yet-migrated at any point mid-tranche, and a
+      whole-corpus scan would fire on all of them the moment the first file is collapsed —
+      see `scripts/lint/lint-anchor-pointer-collapse.sh`'s own header for the full rationale.)*
 - [ ] Write the lint's fixture suite with a **deliberately violating fixture** (a file
       re-introducing a collapsed block) proving the lint fires, plus conforming fixtures proving
       it does not fire on the anchor itself or on a legitimate gate-required restatement.
-- [ ] Decide and record whether the lint gets a gate row or rides an existing gate. Default to
+- [x] Decide and record whether the lint gets a gate row or rides an existing gate. Default to
       riding an existing gate; a new row needs a written reason, per this task's own no-new-gate-row
-      constraint.
+      constraint. *(completed: rides gate 9 (`lint-postflight-boundary.sh`, "full corpus") —
+      both are full-corpus markdown-content-presence lints over the source-store repo, so no
+      SKIP/invocation-shape difference was needed; wired as a second check inside `gate9_run` in
+      `verify-deploy.sh`, contributing to the same PASS/FAIL and `FINDINGS_LIST` gate9 already
+      emits. No new gate row added.)*
 - [ ] Pilot the collapse on five `agents/` files drawn from the inventory's highest sharing-factor
       block (the dispatch-file preamble, shared by 68 files at revision time). For each: collapse
       the block, write the ledger entry naming every claim in the removed text and the anchor

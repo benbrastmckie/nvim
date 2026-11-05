@@ -15,18 +15,22 @@
     {
       "id": 2,
       "description": "Write the inventory-driven regression lint (reads a permanent collapsed-block registry, not a hardcoded block list)",
-      "status": "not_started",
-      "files_touched": []
-    },
-    {
-      "id": 3,
-      "description": "Write the lint's fixture suite with a deliberately-violating fixture plus conforming fixtures",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-anchor-pointer-collapse.sh"
+      ]
     },
     {
       "id": 4,
       "description": "Decide and record whether the lint gets a new gate row or rides an existing gate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Write the lint's fixture suite with a deliberately-violating fixture plus conforming fixtures",
       "status": "not_started",
       "files_touched": []
     },
@@ -43,7 +47,7 @@
       "files_touched": []
     }
   ],
-  "current_objective": 2,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []
