@@ -410,8 +410,15 @@ tier is the CEILING the standalone path (a bare `/implement N`, or a single-task
 
 **What the override changes**: the final phase's own in-dispatch obligation narrows from the
 complete gate set to a scoped tier (`local` or `interface`) naming a concrete narrowing
-invocation — `run-all.sh --only SUITE[,SUITE...]` or `verify-deploy.sh --only-gate N[,M...]` —
-covering only the files that dispatch itself touched.
+invocation — `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE...]` or
+`bash .claude/scripts/verify-deploy.sh --only-gate N[,M...]` in a deploy-target repository, or
+the parallel `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE...]`
+/ `bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate N[,M...]` form when the
+dispatch is composed from inside the agent-system source-store repository itself — covering only
+the files that dispatch itself touched. The composer resolves and interpolates whichever of the
+two actually exists in the repository the dispatch is running in (never a hardcoded path that
+cannot resolve there); if neither exists, the directive degrades to stating the full gate set as
+such instead of naming a dead path.
 
 **What the override does not change**: the phase's `**Verification Tier**: full` field in the
 plan file stays exactly as written — it is never edited, rewritten, or demoted by the override's

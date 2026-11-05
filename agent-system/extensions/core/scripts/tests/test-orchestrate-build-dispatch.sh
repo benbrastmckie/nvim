@@ -1296,12 +1296,18 @@ else
   common_test_fail "implement (no --batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
+# Default fixture carries NEITHER narrowing-invocation candidate (no
+# .claude/scripts/tests/run-all.sh, no .claude/scripts/verify-deploy.sh) -- this run therefore
+# exercises the DEGRADATION path (neither candidate resolves). The two assertions this replaces
+# (bare "run-all.sh" / "--only-gate" substring checks) are too weak to detect the resolved-path
+# fix either way, because the degraded wording below does not even mention those invocations --
+# see the resolved-path positive case further below for the real regression coverage.
 run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890 --batch-gate-deferral
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_bgd="$(cat "$LAST_DISPATCH_FILE")"
-  assert_contains "$content_bgd" "## Batch Gate Deferral" "implement (--batch-gate-deferral): section heading present"
-  assert_contains "$content_bgd" "run-all.sh" "implement (--batch-gate-deferral): names a concrete run-all.sh narrowing invocation"
-  assert_contains "$content_bgd" "--only-gate" "implement (--batch-gate-deferral): names a concrete verify-deploy.sh --only-gate narrowing invocation"
+  assert_contains "$content_bgd" "## Batch Gate Deferral" "implement (--batch-gate-deferral, no resolvable candidate): section heading present"
+  assert_contains "$content_bgd" "COMPLETE gate set" "implement (--batch-gate-deferral, no resolvable candidate): degrades to stating the full gate set as such"
+  assert_not_contains "$content_bgd" "agent-system/extensions/core/scripts/" "implement (--batch-gate-deferral, no resolvable candidate): never prints the bare source-store path when it cannot resolve"
   if diff -q "$WORKDIR/dispatch-no-bgd.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
     common_test_fail "implement (--batch-gate-deferral): expected a diff against the no-flag dispatch file, got none"
   else
@@ -1310,6 +1316,26 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
 else
   common_test_fail "implement (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
+
+# Resolved-path positive case: install stub files at the DEPLOYED-mirror candidate paths
+# (.claude/scripts/tests/run-all.sh, .claude/scripts/verify-deploy.sh) and confirm the emitted
+# directive interpolates those resolved, deployed paths rather than the bare, unresolvable
+# "agent-system/extensions/core/scripts/..." string a deploy-target repository never carries.
+mkdir -p "$FIXTURE/.claude/scripts/tests"
+: > "$FIXTURE/.claude/scripts/tests/run-all.sh"
+: > "$FIXTURE/.claude/scripts/verify-deploy.sh"
+run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890 --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_bgd_resolved="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_bgd_resolved" "${FIXTURE}/.claude/scripts/tests/run-all.sh --only SUITE" "implement (--batch-gate-deferral, deployed candidates present): names the resolved deployed run-all.sh path"
+  assert_contains "$content_bgd_resolved" "${FIXTURE}/.claude/scripts/verify-deploy.sh --only-gate N" "implement (--batch-gate-deferral, deployed candidates present): names the resolved deployed verify-deploy.sh path"
+  assert_not_contains "$content_bgd_resolved" "agent-system/extensions/core/scripts/" "implement (--batch-gate-deferral, deployed candidates present): does not also print the bare source-store path"
+else
+  common_test_fail "implement (--batch-gate-deferral, deployed candidates present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+# Restore the fixture to its original shape (no narrowing-invocation candidates) so later groups
+# are unaffected by these two stub files.
+rm -f "$FIXTURE/.claude/scripts/tests/run-all.sh" "$FIXTURE/.claude/scripts/verify-deploy.sh"
 
 # research/plan: this SUT nests the whole batch-gate-deferral emission inside its own
 # `if [ "$phase" = "implement" ]` block (unlike --gate/--compare, which are phase-agnostic

@@ -13,6 +13,19 @@ scoped tier, deferring the complete gate set's discharge to this stage. See
 Mechanism A implements, and `context/contracts/phase-closure.md`'s no-promotion-without-evidence
 carve-out for how a deferred `full` declaration stays honest.
 
+**Narrowing-invocation paths are resolved, not hardcoded.** Mechanism A's emitted directive names
+two narrowing invocations — a scoped `run-all.sh --only SUITE[,SUITE...]` and a scoped
+`verify-deploy.sh --only-gate N[,M...]` — and the composer resolves each one across the
+deploy/source-store boundary before interpolating it into the directive text: the deployed mirror
+(`.claude/scripts/tests/run-all.sh`, `.claude/scripts/verify-deploy.sh`) is tried first, with the
+agent-system source-store path (`agent-system/extensions/core/scripts/tests/run-all.sh`,
+`agent-system/extensions/core/scripts/verify-deploy.sh`) as the fallback for when the composer
+runs inside the agent-system repository itself. A deploy-target repository never carries the
+source-store path, so a directive that hardcoded it unconditionally named a path that could not
+resolve there. If neither candidate exists, the directive degrades to stating the full gate set
+as such rather than naming a dead path — see `orchestrate-build-dispatch.sh`'s
+`batch_gate_deferral_flag` block for the resolution logic itself.
+
 Each confirmed finding this stage's shared run produces is attributed to the task(s) whose own
 `modified_files` plausibly caused it. A finding attributable to no task is recorded as a
 batch-level unattributed finding and stays blocking — never dropped, never pinned on one
