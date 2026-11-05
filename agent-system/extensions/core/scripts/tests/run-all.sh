@@ -32,6 +32,8 @@
 #
 # Usage:
 #   run-all.sh [--quiet] [--timings FILE] [--jobs N|auto] [--only SUITE[,SUITE,...]]
+#              [--class CLASS[,CLASS,...]] [--tag TAG[,TAG,...]]
+#              [--cost-class CLASS[,CLASS,...]] [--fail-on-new]
 #
 # --quiet: suppress per-suite [RUN]/[PASS] narration; still prints [FAIL] lines and the final
 #          summary line, so a caller (e.g. Gate 8 in verify-deploy.sh) can capture failures
@@ -125,6 +127,30 @@
 #          was identified, and suite-selection-lib.sh always emits an exact resolved basename
 #          list, never a pattern, so there is nothing today that would consume a pattern syntax.
 #
+# --class CLASS[,CLASS,...] / --tag TAG[,TAG,...] / --cost-class CLASS[,CLASS,...]: three further
+#          OPT-IN selection axes, layered ON TOP of --only (composed by intersection: when --only
+#          and one or more of these are both given, the result is suites satisfying --only AND
+#          every supplied axis -- never a replacement for --only). Each axis selects the UNION of
+#          suites matching ANY of its own comma-separated values, reading declarative data this
+#          corpus already has (scripts/lib/suite-selection-lib.sh's "Declarative class / tag /
+#          cost-class selection" section owns the full derivation rule and is sourced from here
+#          for it, never duplicated):
+#            --class        tests/suite-classification.data's own unit/integration column.
+#            --tag          mechanically derived, never hand-authored: every invoked-tool token
+#                           an integration-class suite's own `reason` column already names, plus
+#                           the fixed tag "lint" for every test-lint-*.sh suite.
+#            --cost-class   tests/suite-cost-hints.txt's advisory wall_ms column, bucketed free /
+#                           moderate / slow at suite-selection-lib.sh's fixed thresholds, plus
+#                           "unknown" for a suite the (optional) hints file does not cover.
+#          Every token across all three flags is validated against its own axis's closed known-
+#          value vocabulary BEFORE any suite runs -- an unknown token refuses the whole run with
+#          exit 2, naming the offending token and its axis, mirroring --only's own "refuse
+#          loudly, never silently run a subset" discipline. Absent all three flags, no filtering
+#          from this block runs at all and output is byte-identical to a pre-Phase-14 run; --jobs,
+#          --timings and --fail-on-new behave identically under this narrowing, exactly as they
+#          already do under --only, because filtering happens before TOTAL_DISCOVERED is computed
+#          and every downstream mechanism inherits it for free, same as --only's own site.
+#
 # --fail-on-new: opt-in. When a committed tests/known-failures.txt manifest is present (see its
 #          own header -- advisory, optional, basename-keyed, format
 #          `basename|category|reason|owner`), each failing suite is classified as EXPECTED
@@ -210,6 +236,9 @@ TIMINGS_FILE=""
 JOBS=auto
 FAIL_ON_NEW=false
 ONLY_SUITES=""
+CLASS_FILTER=""
+TAG_FILTER=""
+COST_CLASS_FILTER=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
@@ -237,9 +266,33 @@ while [ $# -gt 0 ]; do
       ONLY_SUITES="$2"
       shift 2
       ;;
+    --class)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --class requires CLASS[,CLASS,...] (a non-empty value list)" >&2
+        exit 2
+      fi
+      CLASS_FILTER="$2"
+      shift 2
+      ;;
+    --tag)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --tag requires TAG[,TAG,...] (a non-empty value list)" >&2
+        exit 2
+      fi
+      TAG_FILTER="$2"
+      shift 2
+      ;;
+    --cost-class)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --cost-class requires CLASS[,CLASS,...] (a non-empty value list)" >&2
+        exit 2
+      fi
+      COST_CLASS_FILTER="$2"
+      shift 2
+      ;;
     --fail-on-new) FAIL_ON_NEW=true; shift ;;
     -h|--help)
-      sed -n '2,139p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '2,163p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     *)
@@ -392,6 +445,73 @@ if [ -n "$ONLY_SUITES" ]; then
   done
   SUITES=("${ONLY_FILTERED_SUITES[@]}")
   unset ONLY_TOKENS DISCOVERED_BASENAMES only_tok ONLY_FILTERED_SUITES base s
+fi
+
+# --class / --tag / --cost-class: three further opt-in axes, composed with --only (and with each
+# other) by intersection -- see this file's own header for the full contract. Absent all three,
+# this whole block is a no-op and SUITES/output stay byte-identical to a pre-Phase-14 run. Sourced
+# here, not duplicated: scripts/lib/suite-selection-lib.sh owns the declarative derivation for
+# every axis (the touched-path mapping functions this library already had are untouched).
+if [ -n "$CLASS_FILTER" ] || [ -n "$TAG_FILTER" ] || [ -n "$COST_CLASS_FILTER" ]; then
+  SUITE_SELECTION_LIB="$SCRIPT_DIR/../lib/suite-selection-lib.sh"
+  if [ ! -f "$SUITE_SELECTION_LIB" ]; then
+    echo "ERROR: --class/--tag/--cost-class require $SUITE_SELECTION_LIB (not found)" >&2
+    exit 2
+  fi
+  # shellcheck source=/dev/null
+  source "$SUITE_SELECTION_LIB"
+
+  _validate_filter_tokens() {
+    # Usage: _validate_filter_tokens AXIS_NAME TOKEN_CSV KNOWN_VALUES_NEWLINE_LIST
+    # Exits 2, naming both the axis and the offending token, on a value absent from the known
+    # vocabulary -- mirrors --only's own "a partially-valid list must refuse loudly" discipline.
+    local axis="$1" csv="$2" known="$3"
+    local -a toks=()
+    local tok
+    IFS=',' read -r -a toks <<< "$csv"
+    for tok in "${toks[@]}"; do
+      if [ -z "$tok" ] || ! printf '%s\n' "$known" | grep -qxF "$tok"; then
+        echo "ERROR: --$axis: unknown value '$tok' (known: $(printf '%s' "$known" | tr '\n' ',' | sed 's/,$//'))" >&2
+        exit 2
+      fi
+    done
+  }
+
+  if [ -n "$CLASS_FILTER" ]; then
+    _validate_filter_tokens class "$CLASS_FILTER" "$(suite_selection_known_classes)"
+  fi
+  if [ -n "$TAG_FILTER" ]; then
+    _validate_filter_tokens tag "$TAG_FILTER" "$(suite_selection_known_tags)"
+  fi
+  if [ -n "$COST_CLASS_FILTER" ]; then
+    _validate_filter_tokens cost-class "$COST_CLASS_FILTER" "$(suite_selection_known_cost_classes)"
+  fi
+
+  if [ -n "$CLASS_FILTER" ]; then
+    declare -A _MATCH_CLASS=()
+    while IFS= read -r _m; do [ -n "$_m" ] && _MATCH_CLASS["$_m"]=1; done < <(suite_selection_by_class "$CLASS_FILTER")
+  fi
+  if [ -n "$TAG_FILTER" ]; then
+    declare -A _MATCH_TAG=()
+    while IFS= read -r _m; do [ -n "$_m" ] && _MATCH_TAG["$_m"]=1; done < <(suite_selection_by_tag "$TAG_FILTER")
+  fi
+  if [ -n "$COST_CLASS_FILTER" ]; then
+    declare -A _MATCH_COST=()
+    while IFS= read -r _m; do [ -n "$_m" ] && _MATCH_COST["$_m"]=1; done < <(suite_selection_by_cost_class "$COST_CLASS_FILTER")
+  fi
+
+  CLASS_TAG_COST_FILTERED_SUITES=()
+  for s in "${SUITES[@]}"; do
+    base="$(basename "$s")"
+    keep=true
+    [ -n "$CLASS_FILTER" ] && [ -z "${_MATCH_CLASS[$base]:-}" ] && keep=false
+    [ -n "$TAG_FILTER" ] && [ -z "${_MATCH_TAG[$base]:-}" ] && keep=false
+    [ -n "$COST_CLASS_FILTER" ] && [ -z "${_MATCH_COST[$base]:-}" ] && keep=false
+    [ "$keep" = "true" ] && CLASS_TAG_COST_FILTERED_SUITES+=("$s")
+  done
+  SUITES=("${CLASS_TAG_COST_FILTERED_SUITES[@]}")
+  unset -f _validate_filter_tokens
+  unset _MATCH_CLASS _MATCH_TAG _MATCH_COST CLASS_TAG_COST_FILTERED_SUITES base s keep _m SUITE_SELECTION_LIB
 fi
 
 TOTAL_DISCOVERED="${#SUITES[@]}"

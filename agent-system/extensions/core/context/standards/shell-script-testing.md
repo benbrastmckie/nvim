@@ -516,6 +516,24 @@ mutating the destination never mutates the source (the hardlink-sharing hazard
   (`verify-deploy.sh`, two bullets up) keeps running the full, unselected sweep unchanged; `--only`
   is for a cheaper mid-task phase gate that needs real (not skipped) coverage of what the phase
   actually touched, which `--skip-slow` cannot provide.
+- `--class CLASS[,...]` / `--tag TAG[,...]` / `--cost-class CLASS[,...]`: three further opt-in
+  axes, layered on top of `--only` by intersection (every supplied axis narrows further; absent
+  all three, this is a no-op and output stays byte-identical). Each selects the union of suites
+  matching ANY of its own comma-separated values, reading declarative data the corpus already
+  has rather than requiring new per-suite authoring: `--class` from
+  `tests/suite-classification.data`'s own unit/integration column; `--tag` mechanically derived
+  from that same file's `reason` column (an integration suite's own `invokes:X[,Y]` tokens become
+  tags, e.g. `deploy-headless`, `verify-deploy`) plus the fixed tag `lint` for every
+  `test-lint-*.sh` suite; `--cost-class` from `tests/suite-cost-hints.txt`'s advisory `wall_ms`
+  column bucketed `free`/`moderate`/`slow` at `scripts/lib/suite-selection-lib.sh`'s fixed
+  thresholds, plus `unknown` for a suite the (optional) hints file does not cover. Every token is
+  validated against its own axis's closed known-value vocabulary before any suite runs -- an
+  unknown token refuses the whole run (exit 2, naming the token and axis), mirroring `--only`'s
+  own discipline. The derivation and selection functions live in `suite-selection-lib.sh`
+  (`suite_selection_known_classes`/`_tags`/`_cost_classes` and `suite_selection_by_class`/`_tag`/
+  `_cost_class`), sourced from `run-all.sh` rather than duplicated there -- see
+  `tests/test-run-all-selection.sh`'s Part 5 cases for the full regression coverage (known-value
+  correctness against the real corpus, flag-level validation/composition against a fixture).
 
 ### Mapping a touched file to its suite: `scripts/lib/suite-selection-lib.sh`
 

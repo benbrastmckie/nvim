@@ -1,0 +1,76 @@
+{
+  "phase": 14,
+  "phase_name": "Add Class, Tag and Cost-Class Selection to run-all.sh",
+  "started_at": "2026-11-05T21:55:00Z",
+  "last_updated": "2026-11-05T22:42:55Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read task 416's live plan Phase headings first",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add selection by class, tag, and cost class, layered on top of existing flags",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/run-all.sh",
+        "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Preserve --only, --jobs, --timings and --fail-on-new behavior byte-identically",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Compose with scripts/lib/suite-selection-lib.sh rather than replacing it",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Extend tests/test-run-all-selection.sh with cases for each new selector, including refuse-loudly cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Record the phase's NET-PROD and NET-TEST deltas",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Document the new selectors in shell-script-testing.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Hand-authoring a per-suite tag column in suite-classification.data (203 rows)",
+      "result": "rejected",
+      "reason": "A full-corpus hand-authored retrofit is error-prone and itself adds net lines, contrary to the task's net-deletion charter. Tags are instead mechanically derived from the existing invokes: reason column plus a fixed basename rule (test-lint-*.sh), requiring zero new per-suite authoring."
+    },
+    {
+      "approach": "Literal Tier Justification command verify-deploy.sh --skip-slow --only-gate 8",
+      "result": "ran as specified but produced no real coverage",
+      "reason": "--skip-slow defers gate 8 entirely (SKIP), per the dispatch's own documented COORDINATION note -- the literal command cannot exercise gate 8 at all. Superseded by a direct, unbounded verify-deploy.sh --only-gate 8 run and a direct run-all.sh --quiet full-battery run for real coverage."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

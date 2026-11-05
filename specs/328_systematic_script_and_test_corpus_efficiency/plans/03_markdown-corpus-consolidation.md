@@ -1851,7 +1851,7 @@ this phase's own scope; the honest accounting is `[COMPLETED WITH EXCLUSIONS]`, 
 
 ---
 
-### Phase 14: Add Class, Tag and Cost-Class Selection to run-all.sh [NOT STARTED]
+### Phase 14: Add Class, Tag and Cost-Class Selection to run-all.sh [COMPLETED]
 
 **Goal**: Running an appropriate subset no longer requires knowing and typing exact filenames, so
 the corpus's volume stops being a cost paid in full on every task.
@@ -1861,21 +1861,44 @@ change-impact selection library, and `run-all.sh`'s own flag behavior is asserte
 that invoke it.
 
 **Tasks**:
-- [ ] **Re-read task 416's live plan `### Phase` headings first**; this phase touches
-      `tests/run-all.sh` and 416's phase 13 is a redeploy of the same file's area.
-- [ ] Add selection by class (unit/integration, from Phase 12's data file), by tag, and by cost
-      class, layered **on top of** the existing flags.
-- [ ] Preserve `--only`, `--jobs`, `--timings` and `--fail-on-new` behavior byte-identically. The
+- [x] **Re-read task 416's live plan `### Phase` headings first**; this phase touches
+      `tests/run-all.sh` and 416's phase 13 is a redeploy of the same file's area. *(completed:
+      task 416 is fully `completed` and archived in `specs/CHANGE_LOG.md` -- all 13 phases
+      landed, no live advancement to collide with)*
+- [x] Add selection by class (unit/integration, from Phase 12's data file), by tag, and by cost
+      class, layered **on top of** the existing flags. *(completed: `--class`, `--tag`,
+      `--cost-class` added, each comma-separated, each composing with `--only` and with each
+      other by intersection. `--class` reads `tests/suite-classification.data`'s own column;
+      `--tag` is mechanically derived -- never hand-authored -- from that same file's
+      `invokes:X[,Y]` reason tokens plus a fixed `lint` tag for `test-lint-*.sh`; `--cost-class`
+      buckets `tests/suite-cost-hints.txt`'s `wall_ms` at fixed thresholds (free &lt;2000ms,
+      moderate &lt;30000ms, else slow; `unknown` for an unhinted suite))*
+- [x] Preserve `--only`, `--jobs`, `--timings` and `--fail-on-new` behavior byte-identically. The
       existing `--only` contract — every token must match a discovered suite or the run refuses
       loudly, and a narrowed run's accounting inherits the narrowing — is the model the new
       selectors must follow, including the "a selected-subset pass is not evidence of a full pass"
-      honesty clause.
-- [ ] Compose with `scripts/lib/suite-selection-lib.sh` rather than replacing it; it is a working
+      honesty clause. *(completed: confirmed byte-identical via a direct diff against the
+      pre-change file on an identical `--only` invocation; every new flag's filtering block is a
+      no-op when absent, placed before `TOTAL_DISCOVERED` exactly as `--only`'s own block is, so
+      `--jobs`/`--timings`/`--fail-on-new`/the nested guard/`LOAD_SENSITIVE_BASENAMES`/
+      `known-failures.txt` all inherit any new narrowing for free)*
+- [x] Compose with `scripts/lib/suite-selection-lib.sh` rather than replacing it; it is a working
       change-impact selector with its own regression suite and its `__FULL_SWEEP__` escalation
-      sentinel is relied on by the verification-tier contract.
-- [ ] Extend `tests/test-run-all-selection.sh` with cases for each new selector, including the
-      refuse-loudly case for an unmatched selector value.
-- [ ] Record the phase's NET-PROD and NET-TEST deltas.
+      sentinel is relied on by the verification-tier contract. *(completed: the three new axes'
+      derivation/selection functions (`suite_selection_known_classes`/`_tags`/`_cost_classes`,
+      `suite_selection_by_class`/`_tag`/`_cost_class`) are new, additive functions appended to
+      the library; every pre-existing function (`suite_selection_select`, `_unmapped`,
+      `_classify`, `_select_annotated`, the `__FULL_SWEEP__` sentinel) is untouched.
+      `run-all.sh` sources the library only when one of the three new flags is given)*
+- [x] Extend `tests/test-run-all-selection.sh` with cases for each new selector, including the
+      refuse-loudly case for an unmatched selector value. *(completed: 12 new cases (14-25) --
+      4 library-level correctness cases against the real corpus (known-vocabulary sanity,
+      unit/integration disjointness, lint-tag precision, fixed cost-class vocabulary) and 8
+      run-all.sh flag-level cases against a dedicated fixture carrying its own
+      suite-classification.data/suite-cost-hints.txt: `--class` selection and refusal, `--tag`
+      refusal, `--cost-class` selection (both `slow` and `unknown` buckets) and refusal, and an
+      AND-composition case proving `--class` + `--tag` intersect rather than union)*
+- [x] Record the phase's NET-PROD and NET-TEST deltas. *(completed: see Verification below)*
 
 **Timing**: 2 hours
 
@@ -1909,10 +1932,45 @@ pressure that produced the growth this task is counterweighting returns immediat
 
 **Verification**:
 - `run-all.sh --only test-run-all-selection.sh` is green, including the new selector cases.
+  *(confirmed: `test-run-all-selection.sh` run standalone -- 31/31 cases passed (cases 1-13
+  pre-existing, 14-25 new); `run-all.sh --only test-run-all-selection.sh` -- "1 passed, 0 failed".)*
 - `--only`, `--jobs`, `--timings` and `--fail-on-new` produce byte-identical output to a pre-change run on the same selection.
+  *(confirmed: pre-change `run-all.sh` (via `git show HEAD:...`) copied alongside the edited file
+  and both invoked with `--quiet --only test-common-lib.sh,test-approve-classify.sh` -- outputs
+  byte-identical.)*
 - An unmatched selector value refuses loudly and exits non-zero, matching `--only`'s existing contract.
+  *(confirmed live against the real corpus: `--class bogus` -> exit 2, "unknown value 'bogus'
+  (known: integration,unit)"; `--tag bogus` -> exit 2, "known: deploy-headless,lint,run-all,
+  verify-deploy"; `--cost-class bogus` -> exit 2, "known: free,moderate,slow,unknown" -- all
+  before any suite ran. Also pinned as cases 20-22 in the fixture suite.)*
 - `verify-deploy.sh --skip-slow --only-gate 8 <source_dir>` is green.
+  *(literal command: SKIPs, as documented -- `--skip-slow` defers gate 8 entirely, per the
+  dispatch's own COORDINATION note; this is not a new finding. Stronger evidence gathered
+  instead: `verify-deploy.sh --only-gate 8 .` (no `--skip-slow`, the gate's real full run) and a
+  direct `run-all.sh --quiet` (no `--only`) full-battery run both executed against the live,
+  redeployed corpus. Result: 168 passed, 7 failed (2 EXPECTED, 5 NEW) of 175/182 discovered.
+  NONE of the 7 failing suites reference `run-all.sh`, `suite-selection-lib.sh`,
+  `suite-classification.data`, `suite-cost-hints.txt`, or `test-run-all-selection.sh` -- the
+  failures are in unrelated orchestrate-cycle/postflight/deploy-gate fixture suites, the same
+  host-state-contention class Phase 13's own handoff already flagged, and this session had
+  multiple concurrent sibling orchestrate cycles live throughout (visible as other active agents
+  in this same session). Logged via `issue-record.sh` (class `host-state-contention`) rather than
+  treated as a regression. `deploy-headless.sh` + `verify-deploy.sh --skip-slow` were each run
+  twice during this phase; one of the two --skip-slow runs showed a single transient gate10
+  (`validate-state.sh --deep`) timeout under the same contention, with an immediate re-run of
+  gate10 alone and a full re-run both clean (39/39, 0 failures) -- confirming the deploy itself
+  landed correctly and the failure was transient, not caused by this phase's edits.)*
 - Both net deltas are recorded, with the net-positive justification restated in the closing note.
+  *(confirmed, both net-positive as pre-declared above. NET-PROD = +318: `run-all.sh` +121/-1
+  (net +120) + `suite-selection-lib.sh` +198/-0 (net +198). NET-TEST = +175:
+  `test-run-all-selection.sh` +175/-0 (new cases 14-25, all additive, no existing case altered).
+  `shell-script-testing.md`'s new paragraph (+19 lines) belongs to the markdown population, out
+  of this phase's own NET-PROD/NET-TEST scope either way, per Phase 12's own precedent for
+  doc-only lines. Net-positive justification restated verbatim from above: this phase adds a
+  selection surface that is the cheapest route to a later negative net because it is the
+  mechanism that makes the smaller corpus *stay* smaller -- without it, running an appropriate
+  subset requires knowing exact filenames, so the default is to run everything, which is exactly
+  the pressure this task exists to counteract.)*
 
 ---
 

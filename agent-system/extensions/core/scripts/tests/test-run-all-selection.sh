@@ -429,6 +429,181 @@ else
   common_test_fail "case13: SIGTERM-ignoring suite was not reliably killed (rc=$ign_rc, elapsed=${ign_ms}ms)" "$ign_out"
 fi
 
+# =====================================================================================
+# PART 5 -- --class / --tag / --cost-class selection (Phase 14). Library-level correctness runs
+# against the REAL corpus (suite-selection-lib.sh's new axis functions, already sourced for
+# Part 1 above); run-all.sh flag-level validation/composition runs against a FIXTURE carrying its
+# own minimal suite-classification.data and suite-cost-hints.txt, never the real corpus's.
+# =====================================================================================
+
+# Case 14: suite_selection_known_classes against the real corpus returns exactly {unit, integration}.
+known_classes_out="$(suite_selection_known_classes)"
+if printf '%s\n' "$known_classes_out" | grep -qx "unit" \
+   && printf '%s\n' "$known_classes_out" | grep -qx "integration" \
+   && [ "$(printf '%s\n' "$known_classes_out" | grep -c .)" -eq 2 ]; then
+  common_test_pass "case14: suite_selection_known_classes returns exactly {unit, integration}"
+else
+  common_test_fail "case14: suite_selection_known_classes did not return exactly {unit, integration}" "$known_classes_out"
+fi
+
+# Case 15: suite_selection_by_class unit vs. integration are non-empty and disjoint (coverage of
+# every discovered suite is lint-unit-integration-boundary.sh's own separate concern).
+unit_out="$(suite_selection_by_class unit)"
+integ_out="$(suite_selection_by_class integration)"
+unit_count="$(printf '%s\n' "$unit_out" | grep -c .)"
+integ_count="$(printf '%s\n' "$integ_out" | grep -c .)"
+overlap_count="$(comm -12 <(printf '%s\n' "$unit_out" | sort) <(printf '%s\n' "$integ_out" | sort) | grep -c .)"
+if [ "$unit_count" -gt 0 ] && [ "$integ_count" -gt 0 ] && [ "$overlap_count" -eq 0 ]; then
+  common_test_pass "case15: suite_selection_by_class unit ($unit_count) and integration ($integ_count) are non-empty and disjoint"
+else
+  common_test_fail "case15: unit/integration selection sanity failed (unit=$unit_count, integration=$integ_count, overlap=$overlap_count)"
+fi
+
+# Case 16: suite_selection_known_tags includes "lint" (mechanically derived from the real,
+# non-empty test-lint-*.sh population) plus at least one invoked-tool-derived tag.
+known_tags_out="$(suite_selection_known_tags)"
+if printf '%s\n' "$known_tags_out" | grep -qx "lint" \
+   && [ "$(printf '%s\n' "$known_tags_out" | grep -c .)" -ge 2 ]; then
+  common_test_pass "case16: suite_selection_known_tags includes 'lint' plus at least one invoked-tool tag"
+else
+  common_test_fail "case16: suite_selection_known_tags did not include the expected tag set" "$known_tags_out"
+fi
+
+# Case 17: suite_selection_by_tag lint selects only suites actually named test-lint-*.sh.
+tag_lint_out="$(suite_selection_by_tag lint)"
+bad_lint_count=0
+while IFS= read -r _tl; do
+  [ -n "$_tl" ] || continue
+  case "$_tl" in test-lint-*.sh) ;; *) bad_lint_count=$((bad_lint_count + 1)) ;; esac
+done <<< "$tag_lint_out"
+if [ "$bad_lint_count" -eq 0 ] && [ -n "$tag_lint_out" ]; then
+  common_test_pass "case17: suite_selection_by_tag lint selects only test-lint-*.sh suites"
+else
+  common_test_fail "case17: suite_selection_by_tag lint selected $bad_lint_count non-lint suite(s)" "$tag_lint_out"
+fi
+
+# Case 18: suite_selection_known_cost_classes is the fixed closed vocabulary.
+known_cost_out="$(suite_selection_known_cost_classes)"
+expected_cost_out="$(printf '%s\n' free moderate slow unknown)"
+if [ "$known_cost_out" = "$expected_cost_out" ]; then
+  common_test_pass "case18: suite_selection_known_cost_classes is exactly {free, moderate, slow, unknown}"
+else
+  common_test_fail "case18: suite_selection_known_cost_classes did not match the fixed vocabulary" "$known_cost_out"
+fi
+
+# Fixture additions for the run-all.sh flag-level cases below: the real suite-selection-lib.sh
+# COPIED into the fixture's own lib/ sibling (mirroring how run-all.sh itself is copied above) --
+# the fixture's FIXTURE_RUNNER resolves it at "$SCRIPT_DIR/../lib/suite-selection-lib.sh" exactly
+# as the real run-all.sh does, so --class/--tag/--cost-class need it present at that path -- plus
+# a minimal suite-classification.data and suite-cost-hints.txt scoped to THIS fixture's own
+# suites only, never the real corpus's files.
+mkdir -p "$EXT_ROOT/core/scripts/lib"
+cp "$CORE_DIR/lib/suite-selection-lib.sh" "$EXT_ROOT/core/scripts/lib/suite-selection-lib.sh"
+
+# A basename-tagged "lint" fixture suite, unit-classified -- gives case25 below a value ("lint")
+# that IS a recognized tag in THIS fixture's own vocabulary, so its empty-intersection case tests
+# AND-composition genuinely (two recognized-but-non-overlapping values), not an unknown-token
+# refusal that would short-circuit before composition is ever exercised.
+cat > "$TESTS_DIR/test-lint-fx.sh" << 'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+chmod +x "$TESTS_DIR/test-lint-fx.sh"
+
+printf 'test-fx-pass1.sh\tunit\t-\n' > "$TESTS_DIR/suite-classification.data"
+printf 'test-fx-pass2.sh\tunit\t-\n' >> "$TESTS_DIR/suite-classification.data"
+printf 'test-fx-fail1.sh\tintegration\tinvokes:deploy-headless.sh\n' >> "$TESTS_DIR/suite-classification.data"
+printf 'test-fx-fail2.sh\tintegration\tinvokes:verify-deploy.sh\n' >> "$TESTS_DIR/suite-classification.data"
+printf 'test-lint-fx.sh\tunit\t-\n' >> "$TESTS_DIR/suite-classification.data"
+
+printf 'test-fx-pass1.sh,500\n' > "$TESTS_DIR/suite-cost-hints.txt"
+printf 'test-fx-pass2.sh,500\n' >> "$TESTS_DIR/suite-cost-hints.txt"
+printf 'test-fx-fail1.sh,500\n' >> "$TESTS_DIR/suite-cost-hints.txt"
+printf 'test-fx-fail2.sh,50000\n' >> "$TESTS_DIR/suite-cost-hints.txt"
+# test-fx-flat1.sh is deliberately left unhinted -- exercises the "unknown" cost-class bucket.
+
+# Case 19: --class unit intersects with --only to select exactly the fixture's 2 unit-class
+# suites, excluding the integration-class pair.
+class_out="$(bash "$FIXTURE_RUNNER" --quiet --class unit --only "test-fx-pass1.sh,test-fx-pass2.sh,test-fx-fail1.sh,test-fx-fail2.sh" 2>&1)"
+class_rc=$?
+if [ "$class_rc" -eq 0 ] \
+   && printf '%s\n' "$class_out" | grep -qF "2 passed, 0 failed (0 expected, 0 NEW), 0 skipped, 2 total"; then
+  common_test_pass "case19: --class unit intersects with --only to select exactly the 2 unit-class fixture suites"
+else
+  common_test_fail "case19: --class unit did not select the expected 2-suite subset (rc=$class_rc)" "$class_out"
+fi
+
+# Case 20: --class with an unknown value refuses the whole run (exit 2), names the token, runs
+# nothing -- mirrors --only's own refuse-loudly discipline.
+bad_class_out="$(bash "$FIXTURE_RUNNER" --quiet --class bogus-class --only "test-fx-pass1.sh" 2>&1)"
+bad_class_rc=$?
+if [ "$bad_class_rc" -eq 2 ] \
+   && printf '%s\n' "$bad_class_out" | grep -qF "bogus-class" \
+   && ! printf '%s\n' "$bad_class_out" | grep -q '\[RUN\]'; then
+  common_test_pass "case20: --class with an unknown value refuses the whole run, names the token, runs nothing"
+else
+  common_test_fail "case20: --class bogus-class did not refuse cleanly (rc=$bad_class_rc)" "$bad_class_out"
+fi
+
+# Case 21: --tag with an unknown value refuses the whole run (exit 2), names the token.
+bad_tag_out="$(bash "$FIXTURE_RUNNER" --quiet --tag bogus-tag --only "test-fx-pass1.sh" 2>&1)"
+bad_tag_rc=$?
+if [ "$bad_tag_rc" -eq 2 ] \
+   && printf '%s\n' "$bad_tag_out" | grep -qF "bogus-tag" \
+   && ! printf '%s\n' "$bad_tag_out" | grep -q '\[RUN\]'; then
+  common_test_pass "case21: --tag with an unknown value refuses the whole run, names the token, runs nothing"
+else
+  common_test_fail "case21: --tag bogus-tag did not refuse cleanly (rc=$bad_tag_rc)" "$bad_tag_out"
+fi
+
+# Case 22: --cost-class with an unknown value refuses the whole run (exit 2), names the token.
+bad_cost_out="$(bash "$FIXTURE_RUNNER" --quiet --cost-class bogus-cost --only "test-fx-pass1.sh" 2>&1)"
+bad_cost_rc=$?
+if [ "$bad_cost_rc" -eq 2 ] \
+   && printf '%s\n' "$bad_cost_out" | grep -qF "bogus-cost" \
+   && ! printf '%s\n' "$bad_cost_out" | grep -q '\[RUN\]'; then
+  common_test_pass "case22: --cost-class with an unknown value refuses the whole run, names the token, runs nothing"
+else
+  common_test_fail "case22: --cost-class bogus-cost did not refuse cleanly (rc=$bad_cost_rc)" "$bad_cost_out"
+fi
+
+# Case 23: --cost-class slow selects the one fixture suite hinted above the slow threshold
+# (test-fx-fail2.sh, 50000ms), excluding its cheaper sibling. test-fx-fail2.sh is not registered
+# in this fixture's known-failures.txt, so it classifies NEW.
+costslow_out="$(bash "$FIXTURE_RUNNER" --quiet --cost-class slow --only "test-fx-pass1.sh,test-fx-fail2.sh" 2>&1)"
+costslow_rc=$?
+if [ "$costslow_rc" -eq 1 ] \
+   && printf '%s\n' "$costslow_out" | grep -qF "0 passed, 1 failed (0 expected, 1 NEW), 0 skipped, 1 total"; then
+  common_test_pass "case23: --cost-class slow selects exactly the one hinted-slow fixture suite"
+else
+  common_test_fail "case23: --cost-class slow did not select the expected 1-suite subset (rc=$costslow_rc)" "$costslow_out"
+fi
+
+# Case 24: --cost-class unknown selects a fixture suite the hints file never covers
+# (test-fx-flat1.sh), excluding a hinted sibling.
+costunknown_out="$(bash "$FIXTURE_RUNNER" --quiet --cost-class unknown --only "test-fx-pass1.sh,test-fx-flat1.sh" 2>&1)"
+costunknown_rc=$?
+if [ "$costunknown_rc" -eq 0 ] \
+   && printf '%s\n' "$costunknown_out" | grep -qF "1 passed, 0 failed (0 expected, 0 NEW), 0 skipped, 1 total"; then
+  common_test_pass "case24: --cost-class unknown selects exactly the one un-hinted fixture suite"
+else
+  common_test_fail "case24: --cost-class unknown did not select the expected 1-suite subset (rc=$costunknown_rc)" "$costunknown_out"
+fi
+
+# Case 25: --class + --tag compose by intersection (AND), not union (OR). Among the 3 selected
+# fixture suites, test-fx-fail1.sh/test-fx-fail2.sh satisfy --class integration but not --tag lint
+# (not named test-lint-*.sh), and test-lint-fx.sh satisfies --tag lint but not --class integration
+# (classified unit above) -- no single suite satisfies BOTH at once, so the intersection must be
+# empty, which run-all.sh reports as a harness failure (exit 2, zero discovered), never a silent
+# partial run that happened to pick one axis over the other.
+intersect_out="$(bash "$FIXTURE_RUNNER" --quiet --class integration --tag lint --only "test-fx-fail1.sh,test-fx-fail2.sh,test-lint-fx.sh" 2>&1)"
+intersect_rc=$?
+if [ "$intersect_rc" -eq 2 ] && printf '%s\n' "$intersect_out" | grep -q "zero test suites discovered"; then
+  common_test_pass "case25: --class + --tag compose by intersection (an empty intersection is a harness failure, not a silent partial run)"
+else
+  common_test_fail "case25: --class integration --tag lint under --only did not behave as an empty-intersection harness failure (rc=$intersect_rc)" "$intersect_out"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

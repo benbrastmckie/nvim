@@ -92,6 +92,15 @@
 #       Convenience wrapper over the two functions above: either the sentinel alone, or one
 #       "SUITE_BASENAME|CLASSIFICATION" row per selected suite (classification computed against
 #       the first given touched path's basename each suite was selected for).
+#   suite_selection_known_classes / suite_selection_known_tags / suite_selection_known_cost_classes
+#       Stdout: the closed vocabulary for the class/tag/cost-class axis, one value per line. A
+#       caller validates an incoming selector token against these BEFORE calling the matching
+#       `suite_selection_by_*` below, for the loud-refusal-on-unknown-value behavior.
+#   suite_selection_by_class / suite_selection_by_tag / suite_selection_by_cost_class CLASS[,...]
+#       Stdout: discovered-suite basenames matching ANY given value within that one axis, sorted
+#       unique. See the "Declarative class / tag / cost-class selection" section further down for
+#       the full derivation rule of each axis. Always returns 0; an unrecognized value simply
+#       selects nothing.
 #
 # Usage:
 #   source agent-system/extensions/core/scripts/lib/suite-selection-lib.sh
@@ -306,5 +315,194 @@ suite_selection_select_annotated() {
   done
 
   unset _ssl_args _ssl_first_base _ssl_line _ssl_class _ssl_selected
+  return 0
+}
+
+# ─── Declarative class / tag / cost-class selection (Phase 14, run-all.sh's --class/--tag/
+# --cost-class) ─────────────────────────────────────────────────────────────────────────────────
+# A SECOND, independent selection mode, orthogonal to the touched-path mapping above: instead of
+# resolving a source edit to the suites that cover it, these select directly from declarative
+# classification data this corpus already has, with ZERO new per-suite authoring:
+#   class       tests/suite-classification.data's own `class` column (unit/integration).
+#   tag         mechanically derived, never hand-authored: every invoked-tool token already named
+#               by an integration-class suite's own `reason` column (e.g.
+#               "invokes:deploy-headless.sh,verify-deploy.sh" -> tags "deploy-headless",
+#               "verify-deploy"), PLUS the fixed tag "lint" for every discovered test-lint-*.sh
+#               suite. A suite with neither source present simply carries zero tags.
+#   cost-class  tests/suite-cost-hints.txt's advisory wall_ms column, bucketed at the fixed
+#               thresholds below. A suite absent from that (optional) file is bucket "unknown" --
+#               never silently folded into "free".
+#
+# Each axis exposes a KNOWN-VOCABULARY function (the closed set of values a caller -- run-all.sh
+# -- must validate an incoming --class/--tag/--cost-class token against BEFORE calling the
+# matching selector, mirroring --only's own "a partially-valid list must refuse loudly, not
+# silently run a subset" discipline) and a SELECTOR function (the union of basenames matching ANY
+# given value within that one axis). Neither validates its own input and neither ever exits --
+# same contract as every function above; an unrecognized value simply selects nothing.
+
+SUITE_SELECTION_COST_FREE_MS=2000
+SUITE_SELECTION_COST_MODERATE_MS=30000
+
+# suite_selection_known_classes -- stdout: every class value present anywhere in
+# tests/suite-classification.data, one per line, sorted unique. Empty when the file is
+# absent/unreadable (the correct fail-safe: no declarative data exists to select against).
+suite_selection_known_classes() {
+  local _ssl_file="${_SSL_TESTS_DIR}/suite-classification.data"
+  [ -r "${_ssl_file}" ] || return 0
+  awk -F'\t' '!/^#/ && NF>=2 {print $2}' "${_ssl_file}" 2>/dev/null | sort -u
+  unset _ssl_file
+  return 0
+}
+
+# suite_selection_by_class CLASS[,CLASS...] -- stdout: discovered-suite basenames whose
+# suite-classification.data row's class matches ANY given value, sorted unique. A value the file
+# never declares simply matches nothing -- validate against suite_selection_known_classes first
+# for the loud-refusal behavior.
+suite_selection_by_class() {
+  local _ssl_file="${_SSL_TESTS_DIR}/suite-classification.data"
+  local _ssl_wanted="$1"
+  [ -r "${_ssl_file}" ] || return 0
+  awk -F'\t' -v wanted=",${_ssl_wanted}," \
+    '!/^#/ && NF>=2 { if (index(wanted, "," $2 ",") > 0) print $1 }' \
+    "${_ssl_file}" 2>/dev/null | sort -u
+  unset _ssl_file _ssl_wanted
+  return 0
+}
+
+# suite_selection_known_tags -- stdout: every tag value currently derivable across the discovered
+# corpus (see this section's header for the derivation rule), one per line, sorted unique. Never
+# hand-authored, so this always reflects the LIVE corpus, not a stale snapshot.
+suite_selection_known_tags() {
+  local _ssl_file="${_SSL_TESTS_DIR}/suite-classification.data"
+  local _ssl_base _ssl_class _ssl_reason _ssl_tok _ssl_f
+  local -a _ssl_tags=()
+
+  if [ -r "${_ssl_file}" ]; then
+    while IFS=$'\t' read -r _ssl_base _ssl_class _ssl_reason; do
+      case "${_ssl_base}" in \#*|"") continue ;; esac
+      [ "${_ssl_class}" = "integration" ] || continue
+      _ssl_reason="${_ssl_reason#invokes:}"
+      _ssl_reason="${_ssl_reason%% *}"
+      while IFS= read -r _ssl_tok; do
+        [ -n "${_ssl_tok}" ] && _ssl_tags+=("${_ssl_tok%.sh}")
+      done < <(printf '%s\n' "${_ssl_reason}" | tr ',' '\n')
+    done < "${_ssl_file}"
+  fi
+
+  if [ -d "${_SSL_TESTS_DIR}" ]; then
+    for _ssl_f in "${_SSL_TESTS_DIR}"/test-lint-*.sh; do
+      if [ -e "${_ssl_f}" ]; then
+        _ssl_tags+=("lint")
+        break
+      fi
+    done
+  fi
+
+  if [ "${#_ssl_tags[@]}" -gt 0 ]; then
+    printf '%s\n' "${_ssl_tags[@]}" | sort -u
+  fi
+
+  unset _ssl_file _ssl_base _ssl_class _ssl_reason _ssl_tok _ssl_f _ssl_tags
+  return 0
+}
+
+# suite_selection_by_tag TAG[,TAG...] -- stdout: discovered-suite basenames carrying ANY given
+# tag, sorted unique. A value this library cannot currently derive simply matches nothing --
+# validate against suite_selection_known_tags first for the loud-refusal behavior.
+suite_selection_by_tag() {
+  local _ssl_file="${_SSL_TESTS_DIR}/suite-classification.data"
+  local -a _ssl_wanted_arr=()
+  local _ssl_w _ssl_base _ssl_class _ssl_reason _ssl_tok _ssl_f
+  local -a _ssl_hits=()
+
+  IFS=',' read -r -a _ssl_wanted_arr <<< "$1"
+
+  if [ -r "${_ssl_file}" ]; then
+    while IFS=$'\t' read -r _ssl_base _ssl_class _ssl_reason; do
+      case "${_ssl_base}" in \#*|"") continue ;; esac
+      [ "${_ssl_class}" = "integration" ] || continue
+      _ssl_reason="${_ssl_reason#invokes:}"
+      _ssl_reason="${_ssl_reason%% *}"
+      while IFS= read -r _ssl_tok; do
+        [ -n "${_ssl_tok}" ] || continue
+        _ssl_tok="${_ssl_tok%.sh}"
+        for _ssl_w in "${_ssl_wanted_arr[@]}"; do
+          [ "${_ssl_tok}" = "${_ssl_w}" ] && _ssl_hits+=("${_ssl_base}")
+        done
+      done < <(printf '%s\n' "${_ssl_reason}" | tr ',' '\n')
+    done < "${_ssl_file}"
+  fi
+
+  for _ssl_w in "${_ssl_wanted_arr[@]}"; do
+    if [ "${_ssl_w}" = "lint" ] && [ -d "${_SSL_TESTS_DIR}" ]; then
+      for _ssl_f in "${_SSL_TESTS_DIR}"/test-lint-*.sh; do
+        [ -e "${_ssl_f}" ] && _ssl_hits+=("$(basename "${_ssl_f}")")
+      done
+    fi
+  done
+
+  if [ "${#_ssl_hits[@]}" -gt 0 ]; then
+    printf '%s\n' "${_ssl_hits[@]}" | sort -u
+  fi
+
+  unset _ssl_file _ssl_wanted_arr _ssl_w _ssl_base _ssl_class _ssl_reason _ssl_tok _ssl_f _ssl_hits
+  return 0
+}
+
+# suite_selection_known_cost_classes -- stdout: the fixed, closed bucket-name vocabulary, one per
+# line (free, moderate, slow, unknown). Unlike known_classes/known_tags this is NOT derived from
+# any file -- the bucket NAMES are fixed; per-suite bucket MEMBERSHIP is what the hints file
+# drives (see suite_selection_by_cost_class).
+suite_selection_known_cost_classes() {
+  printf '%s\n' free moderate slow unknown
+  return 0
+}
+
+# suite_selection_by_cost_class CLASS[,CLASS...] -- stdout: discovered-suite basenames whose
+# tests/suite-cost-hints.txt wall_ms bucket matches ANY given value, sorted unique. Thresholds:
+# < SUITE_SELECTION_COST_FREE_MS -> free; < SUITE_SELECTION_COST_MODERATE_MS -> moderate;
+# otherwise slow. A suite absent from the (advisory, optional) hints file is bucket "unknown" --
+# never silently folded into "free". An unrecognized wanted value simply matches nothing.
+suite_selection_by_cost_class() {
+  local _ssl_file="${_SSL_TESTS_DIR}/suite-cost-hints.txt"
+  local -a _ssl_wanted_arr=()
+  local _ssl_w _ssl_base _ssl_ms _ssl_bucket
+  local -a _ssl_hits=()
+  local -A _ssl_hinted=()
+
+  IFS=',' read -r -a _ssl_wanted_arr <<< "$1"
+
+  if [ -r "${_ssl_file}" ]; then
+    while IFS=',' read -r _ssl_base _ssl_ms; do
+      [ -n "${_ssl_base}" ] || continue
+      case "${_ssl_base}" in \#*) continue ;; esac
+      _ssl_hinted["${_ssl_base}"]=1
+      if [ "${_ssl_ms}" -lt "${SUITE_SELECTION_COST_FREE_MS}" ] 2>/dev/null; then
+        _ssl_bucket="free"
+      elif [ "${_ssl_ms}" -lt "${SUITE_SELECTION_COST_MODERATE_MS}" ] 2>/dev/null; then
+        _ssl_bucket="moderate"
+      else
+        _ssl_bucket="slow"
+      fi
+      for _ssl_w in "${_ssl_wanted_arr[@]}"; do
+        [ "${_ssl_w}" = "${_ssl_bucket}" ] && _ssl_hits+=("${_ssl_base}")
+      done
+    done < "${_ssl_file}"
+  fi
+
+  for _ssl_w in "${_ssl_wanted_arr[@]}"; do
+    if [ "${_ssl_w}" = "unknown" ]; then
+      while IFS= read -r _ssl_base; do
+        [ -n "${_ssl_base}" ] || continue
+        [ -n "${_ssl_hinted[${_ssl_base}]:-}" ] || _ssl_hits+=("${_ssl_base}")
+      done < <(_ssl_discovered_basenames)
+    fi
+  done
+
+  if [ "${#_ssl_hits[@]}" -gt 0 ]; then
+    printf '%s\n' "${_ssl_hits[@]}" | sort -u
+  fi
+
+  unset _ssl_file _ssl_wanted_arr _ssl_w _ssl_base _ssl_ms _ssl_bucket _ssl_hits _ssl_hinted
   return 0
 }
