@@ -22,29 +22,53 @@
       "category": "PATTERN",
       "source_artifact": "specs/428_enforce_planner_agent_terminal_write/summaries/01_terminal-write-enforcement-scope-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verify-deploy.sh", "TARGET", "source-store", "gate-invocation", "doc-lint"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "TARGET",
+        "source-store",
+        "gate-invocation",
+        "doc-lint"
+      ]
     },
     {
       "content": "agent-system/extensions/core/scripts/generate-context-line-counts.sh (the index-entries.json line_count repair tool) must be invoked from the DEPLOYED copy (.claude/scripts/generate-context-line-counts.sh), never the source-store copy -- the source-store copy refuses to run because its relative '../..' repo-root resolution is bogus from that location. It performs a surgical, line-oriented awk substitution touching only line_count fields, so it is safe to run even while sibling tasks hold other uncommitted edits to index-entries.json.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/428_enforce_planner_agent_terminal_write/summaries/01_terminal-write-enforcement-scope-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["index-entries.json", "line_count", "doc-lint", "generate-context-line-counts.sh", "deployed-copy"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "doc-lint",
+        "generate-context-line-counts.sh",
+        "deployed-copy"
+      ]
     },
     {
       "content": "A plan verification step that greps for an exact multi-word phrase inserted as prose (not as a heading) can silently fail if the prose naturally line-wraps across that phrase at ~100 chars -- grep -n matches single lines only. When adding a pointer sentence that must grep-match a heading's exact text, reflow the sentence so the full quoted phrase stays on one line, even if that line exceeds the usual prose wrap width.",
       "category": "INSIGHT",
       "source_artifact": "specs/428_enforce_planner_agent_terminal_write/summaries/01_terminal-write-enforcement-scope-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["grep", "line-wrap", "verification", "single-sourcing", "plan-verification"]
+      "suggested_keywords": [
+        "grep",
+        "line-wrap",
+        "verification",
+        "single-sourcing",
+        "plan-verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793850684_c30dd8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 2,
     "phases_total": 2
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

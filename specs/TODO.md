@@ -2982,6 +2982,7 @@ EDIT TARGET: the source store under agent-system/extensions/core/ (never .claude
 - **Dependencies**: Task 378
 - **Research**: [428_enforce_planner_agent_terminal_write/reports/01_terminal-write-enforcement.md]
 - **Plan**: [428_enforce_planner_agent_terminal_write/plans/01_terminal-write-enforcement-scope.md]
+- **Summary**: [428_enforce_planner_agent_terminal_write/summaries/01_terminal-write-enforcement-scope-summary.md]
 
 **Description**: A planner-agent dispatch terminated without writing its terminal status: its .return-meta.json was left at status: in_progress, and no .orchestrator-handoff.json was produced at all, so the orchestrator postflight had no handoff to read and fell back to its recovery path. Observed in task 328, entry_id iss_1792162538950_NYX4YD.
 

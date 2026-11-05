@@ -2641,6 +2641,11 @@
           "path": "specs/428_enforce_planner_agent_terminal_write/plans/01_terminal-write-enforcement-scope.md",
           "type": "plan",
           "summary": "Two-phase plan documenting the terminal-write enforcement scope boundary across three existing source-store markdown files."
+        },
+        {
+          "path": "specs/428_enforce_planner_agent_terminal_write/summaries/01_terminal-write-enforcement-scope-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: what changed, decisions, deviations, and verification evidence."
         }
       ],
       "file_scope": [
@@ -2654,7 +2659,8 @@
       ],
       "last_updated": "2026-11-05T05:59:25Z",
       "session_id": "sess_1793850684_c30dd8",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a single authoritative subsection to handoff-schema.md's Outcome Channels stating that RECOVERY_DECLINED detection is the sole, detection-only enforcement of a dispatched agent's terminal .return-meta.json write on the /orchestrate direct-dispatch path, plus one-sentence pointers to it in skill-lifecycle.md and system-defect-discrimination.md. No contract, detector, or test file was edited; the handoff-staleness gate is unchanged."
     },
     {
       "project_number": 429,
