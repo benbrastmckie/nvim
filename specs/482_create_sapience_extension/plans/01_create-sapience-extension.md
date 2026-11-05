@@ -210,33 +210,33 @@ break, and deployed-tree effects are phase 5's concern.
 
 ---
 
-### Phase 2: EXTENSION.md and README.md [NOT STARTED]
+### Phase 2: EXTENSION.md and README.md [COMPLETED]
 
 **Goal**: Write the two required extension docs. `EXTENSION.md` is the gap-2 payload: it merges
 into `.claude/CLAUDE.md` and therefore reaches every agent dispatch.
 
 **Tasks**:
 
-- [ ] Write `EXTENSION.md`, opening with `## Sapience Extension` (match `memory/EXTENSION.md`'s
+- [x] Write `EXTENSION.md`, opening with `## Sapience Extension` (match `memory/EXTENSION.md`'s
       heading level, since the merge inserts it as a CLAUDE.md section). Content, in order:
       one line on what sapience is, pointing at `~/.dotfiles/docs/sapience.md` for the machine
       configuration rather than duplicating it; a short "Already ambient — do not rebuild" note
       naming the MCP server registration and the three SessionStart/SessionEnd/Stop hooks; the
       gap-2 wrapup instruction; a one-line statement that this extension provides no task type, no
       routing, and no slash command; and a read-on-demand Context Pointers list of the five
-      `context/project/sapience/` paths as plain backticked paths (never `@`-imports).
-- [ ] Phrase the gap-2 instruction precisely: at the `[IMPLEMENTING]` -> `[COMPLETED]` transition,
+      `context/project/sapience/` paths as plain backticked paths (never `@`-imports). *(completed)*
+- [x] Phrase the gap-2 instruction precisely: at the `[IMPLEMENTING]` -> `[COMPLETED]` transition,
       call `sapience_wrapup` with 3-8 distilled notes drawn from the summary artifact just written;
       do NOT call `sapience_remember` proactively mid-run, because MCP write tools bypass the
       `sapience review` gate and a per-dispatch save would flood the vault across an
-      `/orchestrate` batch.
-- [ ] Keep `EXTENSION.md` at 60 lines or fewer (`check-extension-docs.sh` Rule U, per
+      `/orchestrate` batch. *(completed)*
+- [x] Keep `EXTENSION.md` at 60 lines or fewer (`check-extension-docs.sh` Rule U, per
       `extension-slim-standard.md`). Target roughly 35-45 lines, matching `memory/EXTENSION.md`'s
-      38, to leave headroom.
-- [ ] Write `README.md`: purpose, file inventory, the three gaps this extension closes and how, the
+      38, to leave headroom. *(completed: 44 lines)*
+- [x] Write `README.md`: purpose, file inventory, the three gaps this extension closes and how, the
       repository-scoped limitation of the permission fix, and an explicit note that gap 3 is closed
       by documentation rather than a hook (with a pointer to the domain note carrying the code
-      citation). `README.md` is not merged into CLAUDE.md and has no line limit.
+      citation). `README.md` is not merged into CLAUDE.md and has no line limit. *(completed)*
 
 **Timing**: 0.75 hours
 
