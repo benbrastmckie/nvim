@@ -1,61 +1,69 @@
 {
   "status": "partial",
-  "dispatch_seq": 28,
+  "dispatch_seq": 29,
   "partial_progress": {
     "stage": "phase_complete_more_remain",
-    "details": "Phase 14 (Add Class, Tag and Cost-Class Selection to run-all.sh) closed [COMPLETED]. Added --class CLASS[,...], --tag TAG[,...], --cost-class CLASS[,...] to tests/run-all.sh, each opt-in and composing with --only and with each other by intersection. Zero new per-suite hand-authoring: --class reads the existing suite-classification.data column; --tag is mechanically derived from that same file's invokes:X[,Y] reason tokens plus a fixed 'lint' tag for test-lint-*.sh; --cost-class buckets the existing suite-cost-hints.txt wall_ms column at fixed thresholds (free, moderate, slow, unknown). The six new selection/derivation functions live in scripts/lib/suite-selection-lib.sh as additive functions; every pre-existing function and the __FULL_SWEEP__ sentinel are untouched. Extended test-run-all-selection.sh with 12 new cases (14-25): 4 library-level correctness cases against the real corpus and 8 run-all.sh flag-level cases (selection, refuse-loudly-on-unknown-value, AND-composition) against a dedicated fixture -- all 31 cases pass. Confirmed --only/--jobs/--timings/--fail-on-new remain byte-identical absent the new flags via a direct diff against the pre-change file. Documented the new selectors in shell-script-testing.md. NET-PROD +318 (run-all.sh +121/-1, suite-selection-lib.sh +198/-0), NET-TEST +175 (test-run-all-selection.sh, fully additive), both net-positive and pre-justified in the plan as the mechanism that keeps the corpus from re-growing. The Tier Justification's literal verification command (verify-deploy.sh --skip-slow --only-gate 8) is a documented no-op (SKIP, since --skip-slow defers gate 8 entirely); real coverage came from a direct, unbounded verify-deploy.sh --only-gate 8 run and a direct run-all.sh --quiet full-battery run on the live, redeployed corpus: 168/175 passed, 7 failed (2 EXPECTED, 5 NEW), none of which reference any file this phase touched -- logged via issue-record.sh as host-state-contention (multiple concurrent sibling orchestrate cycles were live throughout this session), not treated as a regression. A separate transient gate10 timeout on one of two --skip-slow deploy verification runs was confirmed non-reproducing on immediate re-run. 6 of 20 plan phases remain [NOT STARTED] (Phase 15 next). Clean phase boundary, not a context-exhaustion handoff.",
-    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-14-handoff-20261105T224309Z.md",
-    "phases_completed": 14,
+    "details": "Phase 15 (Classify the Markdown Duplicate-Block Inventory and Declare NET-MD) closed [COMPLETED]. Re-derived the markdown corpus's cross-file duplicated-block volume via 5-line shingling over substantive lines with (g-1)/g removable share: 17,135 total removable lines (confirms the Scope Widening hypothesis of 16,851 within normal corpus drift). Gate-required hard exclusion: 3,982 lines (confirms ~3,997 within 15 lines; re-reading lint-agent-contracts.sh found a fifth, previously-undocumented fragment variable, MODIFIED_FILES_FRAGMENT, read by Check L, folded into this figure). Deliberate-inlining hard exclusion: 12 lines (REPLACES the ~102-line hypothesis -- the email extension's inlined safety content is evidently adapted/paraphrased per destination file rather than copy-pasted verbatim, so it mostly does not register as cross-file-identical text). Eligible upper bound after hard exclusions: 13,053 lines (confirms ~12,752). Of that eligible pool, mechanically confirmed only 933 lines (26 distinct anchor files, 197 of 3,359 eligible windows) as anchor-backed, using a strict exact-5-gram test requiring the duplicated window to recur verbatim inside a file under a canonical anchor-category directory. An earlier, looser per-line-presence test was tried first and discarded: it produced 399 false-positive 'anchors' from coincidental matches on generic short lines (code fences, Stage headings) in one large reference file, verified by direct inspection of sample matches. Wrote the 26-row confirmed inventory to markdown-block-inventory.tsv (anchor_path, anchor_heading, sharing_factor, occurrences, total_span_lines, files). The confirmed 933-line floor is an 89% shortfall against the plan's declared -8,100 NET-MD target (which assumed 64% capture of the 12,752-line eligible upper bound); per this phase's own task-list instruction, the eligibility test was NOT relaxed to close the gap -- the shortfall is recorded in the plan's new 'Phase 15 Re-Derivation' subsection and raised as the user_decision below. file_scope was widened by 3 concrete paths not already covered by existing directory-level entries (134 of the 137 files the confirmed inventory touches were already covered); update-task-status.sh --file-scope-add refused this mid-implement call (restricted to postflight/research-or-plan), so a direct, minimal, additive-only specs/state.json edit was used instead, confirmed via git diff to be a pure 3-line addition. NET-MD delta for this phase: +0 (measurement-only; no markdown file outside specs/** was edited). validate-artifact.sh passes on the plan file. 5 of 20 plan phases remain, starting with Phase 16 (land the anchor-pointer convention, its regression lint, and a pilot) -- Phase 16 must read this dispatch's user_decision before assuming -8,100 is still the live target.",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-15-handoff-20261105T233928Z.md",
+    "phases_completed": 15,
     "phases_total": 20
   },
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_class-tag-cost-class-selection-summary.md",
-      "summary": "Phase 14 close: added --class/--tag/--cost-class selection to run-all.sh, sourced from six new additive suite-selection-lib.sh functions, zero per-suite hand-authoring, 12 new regression cases, both net deltas net-positive and pre-justified."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
+      "summary": "Phase 15 close: re-derived markdown duplicate-block volume and exclusions, mechanically confirmed 933 of 13,053 eligible lines as anchor-backed, wrote markdown-block-inventory.tsv, raised the resulting NET-MD target shortfall as a user_decision."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-14-handoff-20261105T224309Z.md",
-      "summary": "Phase 14 close: key design decisions, the literal Tier Justification command's documented no-op, the full-battery host-contention finding, and the ~180s auto-background environment quirk for a future long gate-8 run."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-15-handoff-20261105T233928Z.md",
+      "summary": "Phase 15 close: anchor-test methodology (and the discarded false-positive-prone first attempt), the file_scope-widening mechanism deviation, and the live user_decision Phase 16+ must read before assuming the original NET-MD target."
     }
   ],
   "completion_data": {
-    "completion_summary": "Closed Phase 14: added --class/--tag/--cost-class selection to tests/run-all.sh (zero per-suite hand-authoring, composed via scripts/lib/suite-selection-lib.sh), 12 new regression cases all green, both net deltas net-positive and pre-justified. Full-battery run on a contended host showed 7 unrelated failures (host-state-contention, logged), none touching this phase's files."
+    "completion_summary": "Closed Phase 15: mechanically re-derived the markdown corpus's duplicate-block volume (17,135 total, 3,982 gate-required, 12 deliberately-inlined, 13,053 eligible upper bound -- all confirming or replacing the Scope Widening hypothesis), confirmed only 933 lines (26 anchors) as anchor-backed via a strict exact-match test, wrote markdown-block-inventory.tsv, widened file_scope by 3 paths, and raised the resulting 89% NET-MD target shortfall as a user_decision rather than relaxing the eligibility test."
   },
   "modified_files": [
-    "agent-system/extensions/core/scripts/tests/run-all.sh",
-    "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
-    "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
-    "agent-system/extensions/core/context/standards/shell-script-testing.md",
     "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-14-progress.json",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-14-handoff-20261105T224309Z.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_class-tag-cost-class-selection-summary.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl"
+    "specs/328_systematic_script_and_test_corpus_efficiency/markdown-block-inventory.tsv",
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-15-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-15-handoff-20261105T233928Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl",
+    "specs/state.json"
   ],
   "memory_candidates": [
     {
-      "content": "When a test corpus's existing per-suite declarative data file already records WHY a suite is classified a certain way (e.g. an 'invokes:X,Y' reason column for an integration-class suite), a new free-form 'tag' selection axis can be mechanically derived from that existing column plus one or two fixed basename rules, with ZERO new per-suite hand-authoring. This is strictly preferable to retrofitting a new tag column across the whole corpus by hand: a bulk hand-authored retrofit is itself a net-line-count cost and an error-prone one-time snapshot that drifts, while a mechanical derivation always reflects the live corpus and costs nothing to keep current.",
-      "category": "PATTERN",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_class-tag-cost-class-selection-summary.md",
+      "content": "When mechanically testing whether a duplicated N-line text block already has an existing 'anchor' document that owns the content, a per-line-presence test (checking whether each of the block's lines independently appears SOMEWHERE in a candidate anchor file) produces large false positives on a corpus with generic recurring short lines (code-fence markers, repeated heading templates like '### Stage N:'): dozens to hundreds of semantically unrelated blocks get misattributed to one large reference file purely by coincidental line overlap. The reliable mechanical test instead requires the EXACT contiguous N-line window to recur verbatim inside the candidate anchor file (i.e. the anchor file is itself one of the window's exact-match sharing participants). This eliminates the false-positive class but is then itself a conservative floor, not a ceiling, since real anchor docs typically explain a pattern in different wording than the operational copies that restate it -- a semantic (human/agent-judgment) pass will usually find more true anchors than either mechanical test.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["suite-tagging", "mechanical-derivation", "zero-authoring", "declarative-classification", "net-deletion"]
+      "suggested_keywords": ["anchor-detection", "duplicate-block-analysis", "false-positive", "exact-match", "shingling"]
     },
     {
-      "content": "In this Claude Code sandbox environment, a foreground Bash tool call is auto-backgrounded by the harness after approximately 180 seconds of execution REGARDLESS of the Bash tool's own requested `timeout` parameter value (observed at timeout=590000 and 430000, both still cut at ~180s). A true single-call 'block until the wait resolves' bounded-waiter idiom is therefore not achievable past ~180s in this environment. The workable substitute: explicitly `nohup cmd > log 2>&1 & disown` to obtain a real, independently-pollable PID outside the harness's own backgrounding path, then issue repeated SHORT (<180s) `kill -0 \"$pid\"` liveness-check calls one at a time (each its own tool call) until the process exits, then read the log file directly. Do not assume a single long-`timeout` foreground call will actually block for its full stated duration in this environment.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_class-tag-cost-class-selection-summary.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["bash-tool-timeout", "harness-auto-background", "bounded-waiter", "nohup-disown", "kill-0-polling"]
+      "content": "update-task-status.sh's --file-scope-add flag is hard-restricted to operation==postflight with target_status in {research, plan} -- it refuses with a validation error if called mid-implement or at any other operation/status combination. When a mid-implement phase needs to widen a task's file_scope (e.g. to cover files a classification/inventory step just discovered), the sanctioned fallback is a direct, minimal, additive-only edit to specs/state.json's file_scope array (append via union-merge, never replace the array), confirmed via git diff to be a scoped addition. Caution: do NOT edit state.json via a full json.load()/json.dump() round-trip in Python -- json.dump defaults to ensure_ascii=True, which silently converts every literal non-ASCII character anywhere in the whole file (em-dashes, etc., in unrelated task descriptions) into \\\\uXXXX escapes, turning an intended 3-line change into a file-wide diff. Use targeted Edit/sed-style insertions against unique surrounding context instead.",
+      "category": "PATTERN",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["file-scope-add", "state-json-editing", "json-ensure-ascii", "mid-implement-widening", "targeted-edit"]
     }
   ],
+  "user_decision": {
+    "question": "Phase 15's mechanically-confirmed anchor-backed markdown pool is only 933 lines, an 89% shortfall against the plan's declared -8,100 NET-MD target (itself derived to meet the retained -10,000 NET-TOTAL floor). How should the markdown tranche phases (16-19) and the plan's declared target proceed?",
+    "options": [
+      "Accept the mechanically-confirmed 933-line floor and revise NET-MD/NET-TOTAL downward (NET-TOTAL becomes roughly -2,800, well short of the retained -10,000 floor -- the third consecutive measurement round to fall short from enumerated, confirmed volume)",
+      "Authorize Phases 17-19 to perform semantic (not merely literal-text) anchor-finding as they consolidate each block -- reading a candidate anchor doc and judging genuine conceptual ownership, not only exact-text recurrence -- which this phase's own evidence suggests would recover materially more of the 12,752-line eligible upper bound without authoring any new anchor document",
+      "Lower the retained -10,000 NET-TOTAL floor itself, since three independent measurement rounds (the script-cluster derivation, the markdown Scope Widening hypothesis, and now this phase's anchor-confirmation pass) have each found the floor unreachable from the next-enumerated source of volume"
+    ],
+    "recommended": "Authorize Phases 17-19 to perform semantic (not merely literal-text) anchor-finding as they consolidate each block -- reading a candidate anchor doc and judging genuine conceptual ownership, not only exact-text recurrence -- which this phase's own evidence suggests would recover materially more of the 12,752-line eligible upper bound without authoring any new anchor document",
+    "blocking": false
+  },
   "metadata": {
-    "session_id": "sess_1793915195_d7f9f0",
+    "session_id": "sess_1793920608_e862fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 14,
+    "phases_completed": 15,
     "phases_total": 20
   }
 }

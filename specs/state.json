@@ -1897,9 +1897,9 @@
           "type": "plan"
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_class-tag-cost-class-selection-summary.md",
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
           "type": "summary",
-          "summary": "Phase 14 close: added --class/--tag/--cost-class selection to run-all.sh, sourced from six new additive suite-selection-lib.sh functions, zero per-suite hand-authoring, 12 new regression cases, both net deltas net-positive and pre-justified."
+          "summary": "Phase 15 close: re-derived markdown duplicate-block volume and exclusions, mechanically confirmed 933 of 13,053 eligible lines as anchor-backed, wrote markdown-block-inventory.tsv, raised the resulting NET-MD target shortfall as a user_decision."
         }
       ],
       "next_artifact_number": 4,
