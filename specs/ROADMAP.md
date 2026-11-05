@@ -100,12 +100,12 @@ it reads `0.1.0` — owner action, never an agent's. Nothing depends on it.
 and `specs/TODO.md`, which every task writes, so it overlaps everything.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 482
+/orchestrate 482,483,485
 ```
 
 ## Open work
 
-**Core agent system (33)**
+**Core agent system (34)**
 ```
 328 IN FLIGHT       systematic_script_and_test_corpus_efficiency
 313 blocked:328,401 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
@@ -140,9 +140,10 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 470 ready           Clarify verify-deploy.sh TARGET contract versus its invocation-directory claim
 473 ready           Strip record-versioning language from the boundary-owned architecture docs
 478 ready           Make lint Check J fail on a missing handoff-writer section instead of skippin...
+485 ready           Recapture corpus baselines under the corrected inventory probe
 ```
 
-**Extensions (7)**
+**Extensions (8)**
 ```
 342 HOLD            Refactor the books extension's context corpus against the settled convention:...
 29 blocked:22       Generate .mcp.json from extension manifests, then register obsidian-memory th...
@@ -151,6 +152,7 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 408 ready           Gate the formal extension's mandatory Mathlib-lookup step on an actual Lean t...
 482 ready           create_sapience_extension
+483 ready           Document that an extension lifecycle hook can never fire without a declared t...
 ```
 
 **Literature (2)**
@@ -164,11 +166,12 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 22 ready            Freeze .opencode: silence fragment validation spam and record the frozen-mirr...
 ```
 
-**File scope lifecycle (3)**
+**File scope lifecycle (4)**
 ```
 430 blocked:428     Feed observed-but-undeclared implement paths back into a task declared file_s...
 446 blocked:328,385,430  Close the plan-to-file_scope reconciliation gap and make a containment d...
 455 blocked:328,435,446,448  Pre-flag the predictable first-run module-invariant failures that wi...
+484 blocked:430,446,469  Collapse per-path scope excursion issue rows into one record per drop event
 ```
 
 **Lean extension (8)**
