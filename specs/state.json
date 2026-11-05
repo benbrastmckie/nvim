@@ -2046,6 +2046,7 @@
         ".opencode/extensions/web/agents/web-implementation-agent.md",
         "__WHOLE_TREE__",
         "agent-system/docs/docs-README.md",
+        "agent-system/extensions/core/docs/docs-README.md",
         "agent-system/extensions/lean/opencode-agents.json",
         "lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua",
         "lua/neotex/plugins/ai/claude/commands/picker/display/previewer.lua",

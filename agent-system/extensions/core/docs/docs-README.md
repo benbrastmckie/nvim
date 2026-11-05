@@ -141,6 +141,8 @@ Reusable templates for creating new system components are available in [template
 - [Extension Catalog](../../README.md) - Every available domain extension, what each provides,
   and how extensions are structured. Loaded on demand via the editor's extension picker:
   `<leader>ac` (Neovim) or `<leader>ao` (OpenCode).
+- [OpenCode README](../../../../.opencode/README.md) - the sibling `.opencode/` tree's own docs,
+  including its frozen/unmaintained status (see that file's "Status: Frozen" section).
 
 ### Project Documentation
 - [Project README](../../../../README.md) - Main project documentation
