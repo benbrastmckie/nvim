@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1793844135_5d8257_482",
+  "dispatch_seq": 1,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/482_create_sapience_extension/reports/01_create-sapience-extension.md",
+      "summary": "Confirms gap-1 (permission grants) and gap-2 (postflight wrapup instruction) are closeable as scoped, but gap-3's prescribed manifest hooks.context_injection mechanism is structurally unreachable under non-goal (a) -- recommends dropping it in favor of a documentation-only, session-level orientation story."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this agent system, manifest.json's top-level `hooks` object (context_injection/preflight/verification/postflight) is resolved by skill_get_extension_dir() via EXACT STRING EQUALITY between the current dispatched task's own task_type and a SINGLE extension's declared task_type (first-match-wins across loaded extensions, never a loop that fires every active extension's hook). An extension with no task_type (a routing_exempt resource-only extension, e.g. approvals/literature-shaped) can therefore NEVER have its context_injection (or any lifecycle) hook fire for any task of any type -- the mechanism is strictly per-domain, not cross-cutting. The only existing cross-cutting (task-type-independent) per-dispatch injection in this codebase (<memory-context>) is NOT implemented via this hook system at all -- it's a hardcoded call to memory-retrieve.sh inside core's own orchestrate-build-dispatch.sh. Post-Task Observers (a separate manifest `observers` schema, topic/task_type prefix-matched, resolve-ALL) were built specifically because lifecycle hooks can't express this, but observers fire only AFTER a task reaches a resting state (from orchestrate-cycle-postflight.sh), so they can't deliver a pre-work briefing either.",
+      "category": "PATTERN",
+      "source_artifact": "specs/482_create_sapience_extension/reports/01_create-sapience-extension.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manifest-hooks", "context_injection", "task_type", "extension-system", "skill-base.sh", "post-task-observers"]
+    },
+    {
+      "content": "mcp-server-ownership.md's rule 'grant permissions at the same scope where the server is registered' means a user-scope-registered MCP server (top-level ~/.claude.json mcpServers) should get its permissions.allow grant in user-scope ~/.claude/settings.json, not in a per-repo extension's settings-fragment.json (which only merges into that one repo's project-scoped .claude/settings.local.json). When an enforced-by-activation file (e.g. a home-manager-managed ~/.claude/settings.json) makes a direct user-scope edit unsustainable, routing the grant through a single repo's settings-fragment.json is a valid but explicitly repository-scoped workaround, not a machine-wide fix -- name that tradeoff explicitly rather than let it read as a full fix.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/482_create_sapience_extension/reports/01_create-sapience-extension.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["mcp-permissions", "settings-fragment", "scope-mismatch", "home-manager", "mcp-server-ownership"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 482 to create implementation plan"
+}
