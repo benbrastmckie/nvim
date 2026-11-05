@@ -170,7 +170,7 @@
 #   pool, regardless of worker count -- the one gate that itself spawns further nested processes
 #   (run-all.sh's own pool), an ambient-load precaution ported from run-all.sh's
 #   LOAD_SENSITIVE_BASENAMES precedent, not a resource-collision requirement (a live audit of
-#   every one of the 23 real gates' function bodies for a fixed-path write, lock, or socket
+#   every one of the 26 real gates' function bodies for a fixed-path write, lock, or socket
 #   outside its own mktemp-scoped fixture found none -- see
 #   context/standards/shell-script-testing.md's gate-level parallelism-safety audit record).
 #   Text output and the final PASS/FAIL line are deterministic and byte-identical regardless of
@@ -734,7 +734,7 @@ gate_selected() {
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# GATE FUNCTIONS 1-23 -- all migrated onto the declarative gate registry
+# GATE FUNCTIONS 1-26 -- all migrated onto the declarative gate registry
 # (scripts/gate-registry.data, scripts/lib/gate-registry-lib.sh). Each function body
 # below is the UNMODIFIED original gate block (including its own internal
 # `if gate_selected N; then ... fi` guard, now redundant with the registry's own
@@ -1911,6 +1911,34 @@ else
       while IFS= read -r verdict_extraction_lint_line; do
         FINDINGS_LIST+=("FINDING gate25 $verdict_extraction_lint_line")
       done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$verdict_extraction_lint_output")
+    fi
+  fi
+fi
+
+say ""
+fi
+}
+
+gate26_run() {
+if gate_selected 26; then
+say "26. Extension README table lint (lint-extension-readme-table.sh)"
+CURRENT_GATE="gate26"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- extension README table lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh" ]; then
+  fail "lint-extension-readme-table.sh not found in source store"
+else
+  extension_readme_table_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh" --verbose 2>&1)
+  extension_readme_table_lint_status=$?
+  if [ "$extension_readme_table_lint_status" -eq 0 ]; then
+    pass "extension README table lint reports no drift between the directory set and the Available Extensions table"
+  else
+    fail "extension README table lint reported drift between the extension directory set and the Available Extensions table" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r extension_readme_table_lint_line; do
+        FINDINGS_LIST+=("FINDING gate26 $extension_readme_table_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$extension_readme_table_lint_output")
     fi
   fi
 fi

@@ -323,7 +323,7 @@ grows a second argument and the case count stays the same.
 
 ---
 
-### Phase 4: Register the gate and clear the stale gate-count prose [NOT STARTED]
+### Phase 4: Register the gate and clear the stale gate-count prose [COMPLETED]
 
 **Goal**: The new lint runs as part of the gate set, via a conforming `gate-registry.data` row and a
 `gate26_run` function matching `gate24_run`'s shape exactly; the two stale `23`-mentioning prose
@@ -331,19 +331,19 @@ lines in `verify-deploy.sh` are corrected to the real gate count in the same edi
 
 **Tasks**:
 
-- [ ] Use the next free gate id recorded in Phase 1 (expected 26). Append a 9-field,
+- [x] Use the next free gate id recorded in Phase 1 (expected 26). Append a 9-field,
       TAB-separated row to `agent-system/extensions/core/scripts/gate-registry.data`:
       id = the free id; name = `Extension README table lint (lint-extension-readme-table.sh)`;
       invoke = `gate<ID>_run`; dependencies = `-` (the placeholder, never a genuinely empty field --
       an empty field silently collapses the tab delimiter and shifts every later column);
       requires_source_store = `true`; timeout_s = `30`; cost_class = `free` (matching every other
       pure-lint gate: 6, 7, 9, 11, 12, 15, 17, 18, 19, 24, 25); serialized = `false`;
-      input_corpus = `@extensions`.
-- [ ] Confirm the `@extensions` choice in a one-line comment or in the summary: the named view is
+      input_corpus = `@extensions`. *(completed: id=26)*
+- [x] Confirm the `@extensions` choice in a one-line comment or in the summary: the named view is
       the shared `git ls-files` enumeration of `agent-system/extensions/`, which already contains
       `agent-system/extensions/README.md`, so it covers both of the lint's inputs and makes
-      `--skip-unchanged` invalidation correct without a compound expression.
-- [ ] Add `gate<ID>_run()` to `agent-system/extensions/core/scripts/verify-deploy.sh` immediately
+      `--skip-unchanged` invalidation correct without a compound expression. *(completed: confirmed in this summary)*
+- [x] Add `gate<ID>_run()` to `agent-system/extensions/core/scripts/verify-deploy.sh` immediately
       after `gate25_run`, located by that anchor text and never by line number. Mirror
       `gate24_run`'s body exactly: `if gate_selected <ID>; then`, `say "<ID>. Extension README table
       lint (lint-extension-readme-table.sh)"`, `CURRENT_GATE="gate<ID>"`, SKIP with a stated reason
@@ -353,17 +353,17 @@ lines in `verify-deploy.sh` are corrected to the real gate count in the same edi
       `pass` on 0, and on nonzero `fail` plus -- under `FINDINGS` -- stream
       `verify_deploy_extract_verdict_lines '[VIOLATION]' "$output"` into
       `FINDINGS_LIST+=("FINDING gate<ID> $line")`. Confirm `[VIOLATION]` is the tag the Phase 2
-      lint actually emits before wiring it.
-- [ ] Verify no call-site list needs editing: gate functions are dispatched dynamically as
+      lint actually emits before wiring it. *(completed: gate26_run added after gate25_run)*
+- [x] Verify no call-site list needs editing: gate functions are dispatched dynamically as
       `"gate${_gate_id}_run"` driven by `gate_registry_ids`, so the registry row plus the defined
-      function is the complete wiring.
-- [ ] Correct the two stale prose mentions in the same file: line ~173's "every one of the 23 real
+      function is the complete wiring. *(completed: confirmed, no edit needed)*
+- [x] Correct the two stale prose mentions in the same file: line ~173's "every one of the 23 real
       gates" and line ~737's `# GATE FUNCTIONS 1-23` banner, both to the real post-change count.
       Leave the cache-invalidation comment near line 2033 untouched -- its gate-id list is a record
-      of one specific past reproduction, not a live enumeration.
-- [ ] If Phase 1 found that a hardcoded `--only-gate` ceiling had returned, fix it here in the same
+      of one specific past reproduction, not a live enumeration. *(completed: both corrected to 26)*
+- [x] If Phase 1 found that a hardcoded `--only-gate` ceiling had returned, fix it here in the same
       edit (deriving the bound from `gate_registry_ids`, matching the form already present), and
-      record the deviation in the issue log.
+      record the deviation in the issue log. *(completed: none found, no fix needed)*
 
 **Timing**: 1 hour
 

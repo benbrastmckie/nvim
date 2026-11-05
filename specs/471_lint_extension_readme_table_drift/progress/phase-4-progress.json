@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Register the gate and clear the stale gate-count prose",
+  "started_at": "2026-11-05T00:40:00Z",
+  "last_updated": "2026-11-05T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append 9-field gate-registry.data row for id 26", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 2, "description": "Confirm @extensions input_corpus choice", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add gate26_run after gate25_run in verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Verify no call-site list needs editing (dynamic dispatch)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Correct two stale 23-mentioning prose lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 6, "description": "Hardcoded --only-gate ceiling check (none found, no fix needed)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Deviation: bump hardcoded gate-count/id expectations in test-gate-registry-resolution.sh and test-verify-deploy-gate-selection.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh", "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra",
+      "description": "test-gate-registry-resolution.sh (case1, case32, case33) and test-verify-deploy-gate-selection.sh (case(c) invalid id 24, case(d) seq 1 23) hardcode the registry's previous gate count/max id and failed once gate 26 was added.",
+      "type": "altered",
+      "reason": "Not listed in the plan's Files to modify, but both suites are in the plan's own Phase 4 Verification criteria and must pass; their hardcoded expectations are a known, recurring maintenance point each time a gate is added (confirmed by test-gate-registry-resolution.sh's own header crediting a prior task's Phase 4 for a similar fix). Updated the hardcoded ids/counts (25->26, 24->27 out-of-range probe, seq 1 23->1 26) to match the real registry; this is a required consequence of the new gate, not scope creep.",
+      "annotation": "*(deviation: altered -- bumped hardcoded gate-count/id expectations in test-gate-registry-resolution.sh and test-verify-deploy-gate-selection.sh to match the new live max of 26)*"
+    }
+  ],
+  "verification": {
+    "lint_gate_registry": "7 passed, 0 failed; gate 26 defined; id sequence contiguous 1..26",
+    "run_all_three_suites": "3 passed, 0 failed",
+    "only_gate_26": "runs the new gate, PASS",
+    "only_gate_27": "rejected: out of range (must be 1-26)",
+    "stale_prose_grep": "empty (both lines corrected)",
+    "lint_shellcheck_verify_deploy": "exit 0, 0 findings"
+  }
+}
