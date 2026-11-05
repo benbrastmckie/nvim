@@ -268,27 +268,30 @@ this phase.
 
 ---
 
-### Phase 3: Pin the Behaviour with a Git-Fixture Regression Case [NOT STARTED]
+### Phase 3: Pin the Behaviour with a Git-Fixture Regression Case [COMPLETED]
 
 **Goal**: A fixture that fails if the enumeration ever reverts to tracked-only, and that
 simultaneously proves gitignored in-corpus files stay excluded.
 
 **Tasks**:
-- [ ] Add a case to `agent-system/extensions/core/scripts/tests/test-script-inventory.sh` using the
+- [x] Add a case to `agent-system/extensions/core/scripts/tests/test-script-inventory.sh` using the
       existing `mk_git_fixture` helper: build an in-corpus tree with one tracked non-test script,
       one deliberately unstaged non-test script, one unstaged `tests/`-dir script, one unstaged
-      `.md` file, and one unstaged file matched by a fixture `.gitignore`
-- [ ] `git add` + commit only the tracked subset, mirroring the existing `--size-line` case's
-      explicit staging list
-- [ ] Assert `--size-line` counts BOTH the tracked and the unstaged non-test scripts (and their
+      `.md` file, and one unstaged file matched by a fixture `.gitignore` *(completed: the
+      "Untracked inclusion" case)*
+- [x] `git add` + commit only the tracked subset, mirroring the existing `--size-line` case's
+      explicit staging list *(completed)*
+- [x] Assert `--size-line` counts BOTH the tracked and the unstaged non-test scripts (and their
       combined line total), counts the unstaged test-suite and markdown files in their own figures,
-      and does NOT count the gitignored file
-- [ ] Assert the `untracked=` field reports the expected count and appears on the single stdout line
-- [ ] Assert the exactly-one-line and exit-0 contracts still hold for this fixture
-- [ ] Assert the default JSON mode's `candidate_count` includes the unstaged script and that
-      `untracked_paths` names it
-- [ ] Extend the suite header's `# Cases:` block with the new case description, following the
-      existing entry style
+      and does NOT count the gitignored file *(completed)*
+- [x] Assert the `untracked=` field reports the expected count and appears on the single stdout line
+      *(completed)*
+- [x] Assert the exactly-one-line and exit-0 contracts still hold for this fixture *(completed)*
+- [x] Assert the default JSON mode's `candidate_count` includes the unstaged script and that
+      `untracked_paths` names it *(completed; also asserts untracked_count, per-script tracked,
+      and gitignored-file absence)*
+- [x] Extend the suite header's `# Cases:` block with the new case description, following the
+      existing entry style *(completed)*
 
 **Timing**: 1 hour
 

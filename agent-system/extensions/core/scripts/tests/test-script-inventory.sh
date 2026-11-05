@@ -24,6 +24,16 @@
 #                     Asserts the mode emits exactly one line, exits 0, and that line's counts
 #                     match the fixture exactly. Also asserts --size-line composed with --check
 #                     is a usage error (exit 1).
+#   Untracked        -- a fixture with one tracked non-test script, one UNSTAGED non-test script,
+#     inclusion         one UNSTAGED tests/-dir script, one UNSTAGED markdown file, and one
+#                     UNSTAGED file matched by a fixture .gitignore. Asserts --size-line and the
+#                     default JSON mode count both the tracked and unstaged files (scripts,
+#                     test-suite, and markdown figures alike), exclude the gitignored file
+#                     entirely, report the correct untracked=N total and JSON
+#                     untracked_count/untracked_paths/per-script tracked boolean, and that two
+#                     scratch-reverted copies of the tool (the *.sh union dropped; and
+#                     --exclude-standard dropped) each fail the corresponding assertion, proving
+#                     the case is not vacuous.
 #
 # Structural model: tests/test-assess-repo-health.sh (pass()/fail()/info() helpers, PASSED/FAILED
 # integer counters, deploy-tree-first/source-store-fallback resolution, exit 0 on all-pass /
@@ -314,6 +324,106 @@ if [ "$sizeline_both_exit" -eq 1 ]; then
   pass "--size-line: composed with --check is a usage error (exit 1)"
 else
   fail "--size-line: --size-line --check exited $sizeline_both_exit (expected 1)"
+fi
+
+# =====================================================================
+# Untracked inclusion: a tracked non-test script, an UNSTAGED non-test script, an UNSTAGED
+# tests/-dir script, an UNSTAGED markdown file, and an UNSTAGED file matched by a fixture
+# .gitignore. Pins that the unstaged-but-not-ignored files ARE folded into every figure, the
+# gitignored file is excluded from all of them, and the untracked= total is correct.
+# =====================================================================
+UNTRACKED_DIR="$WORKDIR/untracked"
+mkdir -p "$UNTRACKED_DIR/agent-system/extensions/core/scripts/tests"
+printf 'line1\nline2\nline3\n' > "$UNTRACKED_DIR/agent-system/extensions/core/scripts/tracked.sh"
+echo 'agent-system/extensions/core/scripts/ignored.sh' > "$UNTRACKED_DIR/.gitignore"
+mk_git_fixture "$UNTRACKED_DIR"
+git -C "$UNTRACKED_DIR" add agent-system/extensions/core/scripts/tracked.sh .gitignore
+git -C "$UNTRACKED_DIR" commit -q -m init
+
+# Created AFTER the commit above and deliberately never `git add`-ed.
+printf 'line1\nline2\nline3\nline4\nline5\n' > "$UNTRACKED_DIR/agent-system/extensions/core/scripts/untracked.sh"
+printf 'line1\nline2\n' > "$UNTRACKED_DIR/agent-system/extensions/core/scripts/tests/test-untracked.sh"
+printf 'l1\nl2\nl3\n' > "$UNTRACKED_DIR/agent-system/extensions/core/README.md"
+printf 'ignored1\nignored2\n' > "$UNTRACKED_DIR/agent-system/extensions/core/scripts/ignored.sh"
+
+set +e
+UNTRACKED_SIZELINE_OUT="$(bash "$TOOL" --root "$UNTRACKED_DIR" --size-line 2>"$WORKDIR/untracked_sizeline_stderr")"
+untracked_sizeline_exit=$?
+set -e 2>/dev/null || true
+untracked_sizeline_linecount="$(printf '%s' "$UNTRACKED_SIZELINE_OUT" | grep -c '^' || true)"
+if [ "$untracked_sizeline_exit" -eq 0 ] && [ "$untracked_sizeline_linecount" -eq 1 ]; then
+  pass "untracked inclusion: --size-line emits exactly one line and exits 0"
+else
+  fail "untracked inclusion: exit=$untracked_sizeline_exit line_count=$untracked_sizeline_linecount output=[$UNTRACKED_SIZELINE_OUT]; stderr: $(cat "$WORKDIR/untracked_sizeline_stderr")"
+fi
+if echo "$UNTRACKED_SIZELINE_OUT" | grep -q 'scripts=2 lines=8 test_suites=1 test_lines=2 md_files=1 md_lines=3 untracked=3'; then
+  pass "untracked inclusion: --size-line counts the tracked AND unstaged non-test scripts (2/8), the unstaged test suite (1/2), the unstaged markdown file (1/3), excludes the gitignored script, and reports untracked=3"
+else
+  fail "untracked inclusion: unexpected --size-line output: $UNTRACKED_SIZELINE_OUT"
+fi
+
+UNTRACKED_JSON_OUT="$(bash "$TOOL" --root "$UNTRACKED_DIR" 2>"$WORKDIR/untracked_json_stderr")"
+untracked_candidate_count="$(echo "$UNTRACKED_JSON_OUT" | jq -r '.candidate_count')"
+untracked_json_count="$(echo "$UNTRACKED_JSON_OUT" | jq -r '.untracked_count')"
+untracked_json_paths="$(echo "$UNTRACKED_JSON_OUT" | jq -r '.untracked_paths[]')"
+untracked_script_tracked="$(echo "$UNTRACKED_JSON_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/untracked.sh") | .tracked')"
+tracked_script_tracked="$(echo "$UNTRACKED_JSON_OUT" | jq -r '.scripts[] | select(.path == "agent-system/extensions/core/scripts/tracked.sh") | .tracked')"
+if [ "$untracked_candidate_count" = "2" ]; then
+  pass "untracked inclusion: JSON candidate_count includes the unstaged script (2 total)"
+else
+  fail "untracked inclusion: JSON candidate_count == $untracked_candidate_count (expected 2); stderr: $(cat "$WORKDIR/untracked_json_stderr")"
+fi
+if [ "$untracked_json_count" = "1" ] && [ "$untracked_json_paths" = "agent-system/extensions/core/scripts/untracked.sh" ]; then
+  pass "untracked inclusion: JSON untracked_count/untracked_paths name exactly untracked.sh"
+else
+  fail "untracked inclusion: untracked_count=$untracked_json_count untracked_paths=[$untracked_json_paths] (expected 1, untracked.sh only)"
+fi
+if [ "$untracked_script_tracked" = "false" ] && [ "$tracked_script_tracked" = "true" ]; then
+  pass "untracked inclusion: per-script tracked boolean is false for untracked.sh, true for tracked.sh"
+else
+  fail "untracked inclusion: untracked.sh tracked=$untracked_script_tracked, tracked.sh tracked=$tracked_script_tracked (expected false, true)"
+fi
+
+# Gitignored file never appears anywhere: not in the ranked scripts, not in the ignored-aware
+# ls-files pattern, and not reflected in any figure above (already proven by scripts=2/untracked=3
+# above, which would be scripts=3/untracked=4 if ignored.sh leaked in).
+ignored_present="$(echo "$UNTRACKED_JSON_OUT" | jq -r '[.scripts[].path] | any(. == "agent-system/extensions/core/scripts/ignored.sh")')"
+if [ "$ignored_present" = "false" ]; then
+  pass "untracked inclusion: gitignored ignored.sh is absent from the JSON scripts array"
+else
+  fail "untracked inclusion: gitignored ignored.sh unexpectedly present in the JSON scripts array"
+fi
+
+# Negative control: a scratch copy of script-inventory.sh with the Phase 2 *.sh union reverted
+# (the --others --exclude-standard line dropped from enumerate_candidates) must NOT see
+# untracked.sh at all -- proving the new case actually pins the union rather than passing
+# vacuously against any enumeration. Script-only; the markdown/gitignore halves of this fixture
+# are not exercised by this specific revert (enumerate_candidates covers only the *.sh pattern).
+REVERTED_TOOL="$WORKDIR/script-inventory-reverted.sh"
+sed '/ls-files -z --others --exclude-standard -- .agent-system\/extensions\/\*\*\/\*\.sh./d' "$TOOL" > "$REVERTED_TOOL"
+chmod +x "$REVERTED_TOOL"
+set +e
+REVERTED_OUT="$(bash "$REVERTED_TOOL" --root "$UNTRACKED_DIR" --size-line 2>"$WORKDIR/reverted_stderr")"
+set -e 2>/dev/null || true
+if echo "$REVERTED_OUT" | grep -q 'scripts=1 '; then
+  pass "negative control: reverting the *.sh union makes the untracked case FAIL to see untracked.sh (scripts=1, not 2) -- the new assertions are not vacuous"
+else
+  fail "negative control: reverted script unexpectedly still reports the untracked script; output: $REVERTED_OUT"
+fi
+
+# Negative control: dropping --exclude-standard entirely (so --others would see gitignored files
+# too) must make ignored.sh leak into the candidate count -- proving the gitignore exclusion
+# assertion above is also not vacuous.
+NOEXCLUDE_TOOL="$WORKDIR/script-inventory-noexclude.sh"
+sed 's/ls-files -z --others --exclude-standard --/ls-files -z --others --/' "$TOOL" > "$NOEXCLUDE_TOOL"
+chmod +x "$NOEXCLUDE_TOOL"
+set +e
+NOEXCLUDE_OUT="$(bash "$NOEXCLUDE_TOOL" --root "$UNTRACKED_DIR" --size-line 2>"$WORKDIR/noexclude_stderr")"
+set -e 2>/dev/null || true
+if echo "$NOEXCLUDE_OUT" | grep -q 'scripts=3 '; then
+  pass "negative control: dropping --exclude-standard lets the gitignored script leak in (scripts=3) -- the gitignore-exclusion assertion is not vacuous"
+else
+  fail "negative control: dropping --exclude-standard did not surface the gitignored script as expected; output: $NOEXCLUDE_OUT"
 fi
 
 # =====================================================================
