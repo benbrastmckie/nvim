@@ -2,13 +2,12 @@
 # test-lint-anchor-pointer-collapse.sh - Both-polarity fixture test for
 # scripts/lint/lint-anchor-pointer-collapse.sh.
 #
-# The lint's job is to fail when a block already registered as collapsed reappears verbatim in
-# one of its own registered "migrated files", while staying silent on a migrated file that
-# correctly carries only the pointer, on a file not registered as migrated at all (even if it
-# still carries the full block -- that is the expected, not-yet-migrated state mid-tranche), and
-# on an empty/missing registry. Every fixture is built in a scratch directory (`--root`) with a
-# scratch registry (`--registry`); this suite never depends on, or mutates, the real repository
-# or the real production registry.
+# The lint's job is to fail when a file already registered as collapsed has its removed block
+# text reappear verbatim, while staying silent on a registered file that correctly carries only
+# the pointer, on a file not registered at all (even if it still carries the full block -- that
+# is the expected, not-yet-migrated state mid-tranche), and on an empty/missing registry. Every
+# fixture is built in a scratch directory (`--root`) with a scratch registry (`--registry`); this
+# suite never depends on, or mutates, the real repository or the real production registry.
 #
 # Structural model: test-lint-verdict-extraction-anchoring.sh (mktemp -d WORKDIR, deploy-tree-
 # first / source-store-fallback candidate resolution, common_test_pass/_fail/_info helpers).
@@ -93,7 +92,7 @@ cat > "$CASE2/root/agent-system/extensions/core/agents/collapsed.md" << 'EOF'
 
 See `context/standards/anchor.md` for the owning heading.
 EOF
-printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tblock.txt\tagent-system/extensions/core/agents/collapsed.md\n' \
+printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tagent-system/extensions/core/agents/collapsed.md\tblock.txt\n' \
   > "$CASE2/reg/registry.tsv"
 out="$(run_lint "$CASE2/root" "$CASE2/reg/registry.tsv" --quiet)"
 rc=$?
@@ -116,7 +115,7 @@ Line one of the shared block.
 Line two of the shared block.
 Line three of the shared block.
 EOF
-printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tblock.txt\tagent-system/extensions/core/agents/regressed.md\n' \
+printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tagent-system/extensions/core/agents/regressed.md\tblock.txt\n' \
   > "$CASE3/reg/registry.tsv"
 out="$(run_lint "$CASE3/root" "$CASE3/reg/registry.tsv" --verbose)"
 rc=$?
@@ -127,7 +126,7 @@ else
 fi
 
 # =====================================================================
-# Case 4 (PASSING): a file NOT in migrated_files still carries the full block (expected
+# Case 4 (PASSING): a file NOT registered still carries the full block (expected
 # not-yet-migrated mid-tranche state) -- must stay silent, proving this lint is scoped to
 # registered files only, never a whole-corpus scan.
 # =====================================================================
@@ -140,7 +139,7 @@ cat > "$CASE4/root/agent-system/extensions/core/agents/collapsed.md" << 'EOF'
 See `context/standards/anchor.md` for the owning heading.
 EOF
 # Not-yet-migrated sibling: still carries the full block verbatim, and is deliberately NOT named
-# in migrated_files below.
+# in the file column below.
 cat > "$CASE4/root/agent-system/extensions/core/agents/not-yet-migrated.md" << 'EOF'
 # Not-yet-migrated agent
 
@@ -148,7 +147,7 @@ Line one of the shared block.
 Line two of the shared block.
 Line three of the shared block.
 EOF
-printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tblock.txt\tagent-system/extensions/core/agents/collapsed.md\n' \
+printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tagent-system/extensions/core/agents/collapsed.md\tblock.txt\n' \
   > "$CASE4/reg/registry.tsv"
 out="$(run_lint "$CASE4/root" "$CASE4/reg/registry.tsv" --quiet)"
 rc=$?
@@ -167,7 +166,7 @@ build_shared_fixture "$CASE5"
 cat > "$CASE5/root/agent-system/extensions/core/agents/collapsed.md" << 'EOF'
 # Collapsed agent
 EOF
-printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tdoes-not-exist.txt\tagent-system/extensions/core/agents/collapsed.md\n' \
+printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tagent-system/extensions/core/agents/collapsed.md\tdoes-not-exist.txt\n' \
   > "$CASE5/reg/registry.tsv"
 out="$(run_lint "$CASE5/root" "$CASE5/reg/registry.tsv" --quiet)"
 rc=$?
@@ -191,7 +190,7 @@ EOF
 {
   echo "# registry.tsv - header comment"
   echo ""
-  printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tblock.txt\tagent-system/extensions/core/agents/collapsed.md\n'
+  printf 'agent-system/extensions/core/context/standards/anchor.md\tOwning Heading\tagent-system/extensions/core/agents/collapsed.md\tblock.txt\n'
 } > "$CASE6/reg/registry.tsv"
 out="$(run_lint "$CASE6/root" "$CASE6/reg/registry.tsv" --quiet)"
 rc=$?
