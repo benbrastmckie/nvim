@@ -1261,7 +1261,7 @@ beyond `run-all.sh`'s own discovery, and no production script changes in this ph
 
 ---
 
-### Phase 7: Harness Migration Tranche B [NOT STARTED]
+### Phase 7: Harness Migration Tranche B [COMPLETED]
 
 **Goal**: The bulk of the mid-size suites source the harness, carrying the largest single share of
 this task's test-corpus net deletion.
@@ -1270,16 +1270,28 @@ this task's test-corpus net deletion.
 diff, as in Phase 6.
 
 **Tasks**:
-- [ ] Migrate roughly 45 mid-size suites onto `common.sh`'s test-helper surface
+- [x] Migrate roughly 45 mid-size suites onto `common.sh`'s test-helper surface
       (`common_test_pass`/`_fail`/`_info`, `common_test_repo_root`, `common_test_resolve_candidate`,
       `common_test_workdir_init`), following Phase 6's established pattern. Phase 4's deviation
       landed the harness in `lib/common.sh` rather than in a separate `lib/test-harness-lib.sh`;
-      that file does not exist and no phase creates it.
-- [ ] Per-suite assertion-count and PASS/FAIL case-name diff, as in Phase 6.
-- [ ] Handle the suites that resolve candidates by a non-standard path shape individually rather
+      that file does not exist and no phase creates it. *(completed: 48 suites migrated — a fresh
+      104-suite unmigrated pool, filtered to exclude runtime outliers >=10s, then the 48
+      smallest-by-line-count. pass/fail/info on all 48; the 4-line REPO_ROOT fallback block on 25
+      of 48; a second exact-shape WORKDIR+cleanup()+trap triplet, not covered by Phase 6, on 26 of
+      48)*
+- [x] Per-suite assertion-count and PASS/FAIL case-name diff, as in Phase 6. *(completed: 40 of 48
+      byte-identical before/after; 8 cosmetic-only diffs — non-deterministic mktemp paths (4),
+      timing-jitter milliseconds (2), ANSI-color-code loss matching Phase 6's own established
+      precedent (2) — none touching assertion count or case-name text)*
+- [x] Handle the suites that resolve candidates by a non-standard path shape individually rather
       than forcing them into the harness's `resolve_candidate` — only 22 of 121 define it today,
-      so the harness must not assume a shape the other 99 never used.
-- [ ] Record the phase's NET-TEST delta and the running NET-TEST figure.
+      so the harness must not assume a shape the other 99 never used. *(completed: no suite in
+      this tranche was forced onto common_test_resolve_candidate; none presented a shape worth a
+      mechanical extraction this round)*
+- [x] Record the phase's NET-TEST delta and the running NET-TEST figure. *(completed: NET-TEST
+      -214 for this phase (insertions=1449, deletions=1663) across the 48 migrated suites plus a
+      recorded deviation to lib/common.sh's common_test_fail — see Reasoned Exclusions / progress
+      file for the running-figure caveat)*
 
 **Timing**: 2 hours
 

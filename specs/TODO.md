@@ -22,7 +22,7 @@ next_project_number: 482
 
 ### Core Agent System
 
-328 [PLANNED] — Systematic top-to-bottom CONSOLIDATION of the shell script...
+328 [IMPLEMENTING] — Systematic top-to-bottom CONSOLIDATION of the shell script...
   └─ 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
   └─ 431 [NOT STARTED] — Record the gate-enforced verbatim-duplication exclusion class...
@@ -5198,7 +5198,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 328. Systematic script and test corpus efficiency
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 170, Task 411, Task 429

@@ -1,0 +1,94 @@
+{
+  "phase": 7,
+  "phase_name": "Harness Migration Tranche B",
+  "started_at": "2026-11-04T00:00:00Z",
+  "last_updated": "2026-11-04T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Migrate roughly 45 mid-size suites onto common.sh's test-helper surface (common_test_pass/_fail/_info, common_test_repo_root, common_test_resolve_candidate, common_test_workdir_init), following Phase 6's established pattern",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-await-notification.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate3-strict-equivalence.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate3-parallel-equivalence.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh",
+        "agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-reference-patterns-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-reconcile-demote-stranded.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-verify-overlap.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-no-record-versioning.sh",
+        "agent-system/extensions/core/scripts/tests/test-derived-artifact-probe-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh",
+        "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+        "agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh",
+        "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh",
+        "agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh",
+        "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh",
+        "agent-system/extensions/core/scripts/tests/test-double-loading-check.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh",
+        "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh",
+        "agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh",
+        "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh",
+        "agent-system/extensions/core/scripts/tests/test-init-specs.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+        "agent-system/extensions/core/scripts/tests/test-please-grant.sh",
+        "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-ledger-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh",
+        "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
+        "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh"
+      ],
+      "note": "Enumerated a fresh pool of 104 unmigrated core suites (up from Phase 6's 98-suite estimate, confirming the plan's own drift warning), joined against suite-cost-hints.txt, and excluded suites costing >=10s wall time (including the already-known test-verify-deploy-gate-selection-crash-net.sh outlier, 148,607ms) to keep before/after verification tractable within this dispatch. Selected the 48 smallest-by-line-count remaining suites (14,038 lines total) as Tranche B. All 48 migrated: local pass()/fail()/info() single-line definitions removed and call sites renamed to common_test_pass/_fail/_info (word-boundary-safe regex restricted to call shapes, comments left untouched); a `source \"$SCRIPT_DIR/../lib/common.sh\"` line inserted after SCRIPT_DIR where not already sourced. 25 of 48 also had the exact-shape 4-line git-rev-parse+fixed-depth REPO_ROOT fallback block, collapsed to one common_test_repo_root call. 26 of 48 also had the exact-shape WORKDIR=mktemp-d + local cleanup() + trap-cleanup-EXIT triplet (a pattern distinct from Phase 6's bare-trap shape), collapsed to one common_test_workdir_init call -- verified no suite invoked `cleanup` by name outside the trap. common_test_resolve_candidate was not forced onto any suite this tranche (no exact-shape match found worth the risk)."
+    },
+    {
+      "id": 2,
+      "description": "Per-suite assertion-count and PASS/FAIL case-name diff, as in Phase 6",
+      "status": "done",
+      "files_touched": [],
+      "note": "Captured full stdout/stderr for all 48 suites before any edit and after migration (two full before/after passes, ~68s hinted-cost pool each). 40 of 48 byte-identical. 8 cosmetic-only diffs, none touching assertion count or PASS/FAIL case-name text: 4 are non-deterministic mktemp tmpdir path names embedded in [INFO]/[FAIL] lines (test-deploy-orphans.sh, test-lint-deploy-caller-wrap.sh, test-validate-return-meta.sh, test-deploy-propagation.sh); 2 are timing-jitter milliseconds inside otherwise-identical PASS messages (test-run-all-parallel.sh, test-measure-gate-costs.sh); 2 are the same ANSI-color-code loss Phase 6 already established as acceptable (test-task-lock-liveness.sh, test-phase-heartbeat.sh -- confirmed byte-identical after stripping \\x1b[...m sequences). Verified via grep-based PASS/FAIL case-name list diff for the two files with the largest textual diff (test-measure-gate-costs.sh: 12/12 case names identical)."
+    },
+    {
+      "id": 3,
+      "description": "Handle the suites that resolve candidates by a non-standard path shape individually rather than forcing them into the harness's resolve_candidate",
+      "status": "done",
+      "files_touched": [],
+      "note": "No suite in this tranche was forced onto common_test_resolve_candidate; none presented the exact shape worth a mechanical extraction this round, consistent with the harness's own documented 22-of-121 adoption rate. Left as a Phase 8 (or later) opportunity."
+    },
+    {
+      "id": 4,
+      "description": "Record the phase's NET-TEST delta and the running NET-TEST figure",
+      "status": "done",
+      "files_touched": [],
+      "note": "git diff --numstat across the 48 migrated test files plus lib/common.sh: insertions=1449 deletions=1663 NET-TEST=-214 for this phase. Deviation recorded: common_test_fail() in lib/common.sh was extended with an optional $2 diagnostic-detail argument (echoed verbatim after the [FAIL] line) to absorb 4 suites' pre-existing `fail() { ...; [ -n \"${2:-}\" ] && echo \"$2\"; }` local override verbatim -- without this extension those 4 suites' diagnostic detail on failure would have been silently dropped by the migration. This is the 'only if a tranche suite needs a harness piece the Phase 4 surface does not yet cover' contingency the plan's own Files-to-modify note anticipated."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Treat any file containing the substring 'lib/common.sh' anywhere (including inside a `cp ... lib/common.sh` fixture-construction line or a dependency-check comment) as already sourcing the harness, and skip inserting the source line",
+      "result": "failed",
+      "reason": "9 of 48 files referenced lib/common.sh only as a fixture-copy source or dependency-existence check, never as an actual `source`/`.` statement in the suite's own shell. Skipping the source-line insertion for these 9 left every renamed common_test_pass/_fail/_info/_repo_root call undefined, producing silent 'command not found' on stderr (with set -uo pipefail, not set -e, so the suite continued and completed with 0 recorded assertions instead of crashing). Caught by the before/after diff showing entire blocks of PASS lines replaced by nothing (e.g. test-errors-append.sh: '14 passed' -> '0 passed'). Fixed by restoring all 9 files from HEAD via `git show HEAD:<path>` and re-running the migration with the detection narrowed to an actual top-level `source`/`.` statement naming lib/common.sh."
+    }
+  ],
+  "handoff_count": 0
+}

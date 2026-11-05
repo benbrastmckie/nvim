@@ -1,42 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-      "summary": "Revised plan carrying the markdown/context-corpus consolidation phases the widened scope requires: Phases 1-6 preserved at their recorded statuses (1-4 COMPLETED, 5 COMPLETED WITH EXCLUSIONS with its Reasoned Exclusions table, 6 COMPLETED), Phases 7-20 carried with no renumbering, NET-MD added as a third never-blended net-figure population against the retained -10,000 floor, the gate-enforced verbatim-duplication exclusion class made a hard constraint whose member list must be derived from each lint's own fragment paths rather than hardcoded, and every phase's Files to modify list repaired to be harvestable (56 -> 123 paths)."
-    }
-  ],
-  "next_steps": "Run /implement 328 to resume at Phase 7 (harness migration tranche B). The markdown track starts at Phase 15, which must run its derivation and its file_scope widening before any markdown tranche edits a file.",
+  "status": "in_progress",
+  "dispatch_seq": 18,
   "metadata": {
-    "session_id": "sess_1792196836_32d2f9",
-    "agent_type": "reviser-agent",
-    "delegation_path": ["orchestrator", "revise", "reviser-agent"],
-    "phase_count": 20,
-    "estimated_hours": 45,
-    "reports_integrated": ["01_corpus-consolidation-research.md"],
-    "plan_revision": {
-      "mode": "plan_revision",
-      "superseded_plan": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "phases_preserved": [1, 2, 3, 4, 5, 6],
-      "phases_carried_unchanged": [7, 8, 9, 10, 11, 12, 13, 14],
-      "markdown_phases": [15, 16, 17, 18, 19],
-      "renumbered": false,
-      "net_md_target_lines": -8100,
-      "retained_floor_lines": -10000
-    },
-    "measurements_at_revision": {
-      "instrument": "scripts/script-inventory.sh --size-line",
-      "size_line": "scripts=234 lines=91059 test_suites=162 test_lines=77132 md_files=927 md_lines=229299",
-      "phase_1_baseline": "scripts=232 lines=90568 test_suites=160 test_lines=76832 md_files=927 md_lines=229217",
-      "core_suites": "123 files / 61201 lines",
-      "core_suites_still_redefining_pass_fail": "98 / 123",
-      "markdown_by_role": "agents 80, skills 93, commands 50, context 594, docs 29, rules 21"
-    },
-    "findings": [
-      "The task description's '0 of 121 sourcing a shared harness / 121 of 121 redefining pass()/fail()' is a pre-Phase-6 measurement; live is 98 of 123 unmigrated. Phases 7-8 enumerate from the live figure.",
-      "scripts/plan-file-scope-harvest.sh saw only 56 of the plan's paths before this round: Phases 4 and 5 carried a trailing italic on the Files-to-modify field label and three markdown phases carried glob-shaped entries, neither accepted by the harvester's grammar. Repaired to 123 paths, zero validate-artifact warnings, with no closed phase's recorded content altered. This is the mechanism behind the twenty paths dropped from phase commits.",
-      "Task 431 (blocked on 328) owns the durable agent-system record of the gate-enforced verbatim-duplication exclusion class; this plan derives and applies the class but deliberately does not author that record."
-    ]
+    "session_id": "sess_1793838084_ef69bd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
