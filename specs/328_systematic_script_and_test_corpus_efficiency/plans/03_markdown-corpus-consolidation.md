@@ -1974,7 +1974,7 @@ pressure that produced the growth this task is counterweighting returns immediat
 
 ---
 
-### Phase 15: Classify the Markdown Duplicate-Block Inventory and Declare NET-MD [NOT STARTED]
+### Phase 15: Classify the Markdown Duplicate-Block Inventory and Declare NET-MD [COMPLETED]
 
 **Goal**: A mechanically produced, block-level inventory of the markdown corpus's cross-file
 duplication, partitioned into the consolidation-eligible set and the two hard-exclusion sets,
@@ -1984,18 +1984,26 @@ with the NET-MD target confirmed or its shortfall recorded — before any markdo
 modifies no executable file and no markdown file.
 
 **Tasks**:
-- [ ] Re-run `script-inventory.sh --size-line` and confirm the markdown corpus figure (927 files
+- [x] Re-run `script-inventory.sh --size-line` and confirm the markdown corpus figure (927 files
       / 229,217 lines at the Phase 1 baseline; 927 / 229,299 re-measured at this revision round,
       the +82 being concurrent unrelated drift). Every figure in the Scope Widening section is a
       snapshot and the corpus has demonstrated 30% drift in twelve days. Measure against the
-      Phase 1 baseline, not the revision-round reading.
-- [ ] Re-derive the cross-file duplicated-block inventory over the live corpus: 5-line shingling
+      Phase 1 baseline, not the revision-round reading. *(completed: live re-measurement at this
+      phase's start is `md_files=948 md_lines=233093` — +21 files / +3,876 lines against the
+      Phase 1 baseline, attributed to concurrent unrelated repository activity (a new `sapience`
+      extension, 17 new `lean/scripts/*.md`, 8 new `memory/data/*.md`, confirmed by direct
+      per-extension diffing), not to any phase of this plan. Per this task item's own instruction,
+      every NET-MD delta below is measured against the Phase 1 baseline (229,217), never against
+      this reading.)*
+- [x] Re-derive the cross-file duplicated-block inventory over the live corpus: 5-line shingling
       over substantive (trimmed, length ≥ 3) lines of every `*.md` under
       `agent-system/extensions/**`, marking each line that falls inside a window appearing
       verbatim in two or more distinct files, charging each marked line its removable share
       `(g−1)/g`. Record the per-role table (`agents/`, `skills/`, `commands/`, `context/`,
-      `docs/`, `rules/`, other) in this plan, superseding Scope Widening's figures.
-- [ ] Emit the **gate-required exclusion list mechanically**, not by eye: read the four canonical
+      `docs/`, `rules/`, other) in this plan, superseding Scope Widening's figures. *(completed:
+      see "Phase 15 Re-Derivation" below — 17,135 total removable lines, confirming Scope
+      Widening's 16,851 to within 1.7% drift)*
+- [x] Emit the **gate-required exclusion list mechanically**, not by eye: read the four canonical
       fragments `lint-agent-contracts.sh` names at runtime (`FRAGMENT_FILE`,
       `ARTIFACTS_TEMPLATE_FRAGMENT`, `PLAN_STATUS_OWNERSHIP_FRAGMENT`, `BOUNDED_WAIT_FRAGMENT`)
       from that script rather than hardcoding their paths, plus every literal-presence predicate
@@ -2004,29 +2012,76 @@ modifies no executable file and no markdown file.
       whether any other lint has since grown a literal-presence predicate over markdown; a new
       presence check added later is a new exclusion, and missing it would change a gate's finding
       set. This discharges the plan-level requirement in "Derived, Never Hardcoded" above — the
-      ≈ 3,997-line figure is a hypothesis to confirm, never the list.
-- [ ] Emit the **deliberate-inlining exclusion list**: every block inside a file whose own
+      ≈ 3,997-line figure is a hypothesis to confirm, never the list. *(completed: confirmed
+      3,982 lines — within 15 lines of the 3,997 hypothesis. Re-reading `lint-agent-contracts.sh`
+      found a FIFTH fragment variable added since this plan's figures were derived —
+      `MODIFIED_FILES_FRAGMENT="context/contracts/modified-files-bullet.md"`, read by Check L —
+      not present in this plan's four-fragment list above; it is folded into the 3,982 figure.
+      `lint-postflight-boundary.sh`'s literal `^## MUST NOT \(Postflight Boundary\)` heading
+      predicate is unchanged, confirmed by direct re-read.)*
+- [x] Emit the **deliberate-inlining exclusion list**: every block inside a file whose own
       extension documents that its content is carried inline at invocation time rather than by
       pointer. The email extension is the known case; confirm whether any other extension has
-      since adopted the same convention rather than assuming it is the only one.
-- [ ] For each remaining (eligible) block, record the **durable anchor** that already owns its
+      since adopted the same convention rather than assuming it is the only one. *(completed:
+      confirmed 12 lines — REPLACES, not confirms, the ≈102-line hypothesis. No other extension's
+      CLAUDE.md pointer section documents the same inline-at-invocation convention (re-read
+      confirmed email is still the only case). The hypothesis measured generic cross-file overlap
+      near email bodies; a corrected test — overlap specifically against the five domain files'
+      own line content — finds the true EXACT-verbatim share is far smaller: the inlined safety
+      content is evidently adapted/paraphrased per destination file rather than copy-pasted, so
+      it mostly does not register as cross-file-identical text at all.)*
+- [x] For each remaining (eligible) block, record the **durable anchor** that already owns its
       content, by path and section heading, and mark any block with no existing anchor as **not
       eligible in this task** — this task points at anchors that exist; it does not author new
-      anchor documents to create a consolidation target.
-- [ ] Write the eligible inventory to a durable, machine-readable file under the task directory
+      anchor documents to create a consolidation target. *(completed: see "Phase 15 Re-Derivation"
+      below. Mechanical test: a shared 5-line window counts as anchor-backed only when that EXACT
+      window also recurs, verbatim, inside a file under a canonical anchor-category directory
+      (`context/{contracts,standards,patterns,guides,formats,reference}/`) — i.e. the anchor file
+      is itself one of the window's sharing participants. An earlier, looser per-line-presence
+      variant of this test was tried and discarded: it produced large false positives (399
+      semantically unrelated windows all "anchored" to one large reference file purely because
+      its many generic short lines — code-fence markers, `### Stage N:` headings — coincide with
+      unrelated windows by chance). The strict test found 197 of 3,359 eligible windows (26
+      distinct anchor files) anchor-backed, confirming 933 removable lines; the remaining 3,162
+      windows (≈12,499 removable lines) have **no mechanically-verified existing anchor** and are
+      marked not eligible in this task round.)*
+- [x] Write the eligible inventory to a durable, machine-readable file under the task directory
       (one row per block: anchor path, anchor heading, sharing factor, line span, the files
-      carrying it) so Phases 17, 18 and 19 consume one derivation rather than three.
-- [ ] Declare the confirmed NET-MD target and its per-tranche allocation. If the confirmed
+      carrying it) so Phases 17, 18 and 19 consume one derivation rather than three. *(completed:
+      `markdown-block-inventory.tsv`, 26 rows, one per distinct confirmed anchor, each naming
+      `anchor_path`, `anchor_heading` (nearest ATX heading at or above the matching line — Phases
+      17-19 must re-verify the exact section before replacing content, not trust this heading
+      blindly), `sharing_factor`, `occurrences`, `total_span_lines`, and the full `files` list)*
+- [x] Declare the confirmed NET-MD target and its per-tranche allocation. If the confirmed
       eligible volume cannot support the 64% capture the −8,100 target requires, record the gap
       and raise it as a `user_decision` on this dispatch's `.return-meta.json` rather than
-      relaxing the eligibility test or quietly missing the floor.
-- [ ] **Widen `file_scope` from the inventory before any tranche runs**: emit the concrete,
+      relaxing the eligibility test or quietly missing the floor. *(completed: the confirmed
+      anchor-backed pool (933 lines) supports at most −933 at 100% capture, far short of the
+      −8,100 target — see "Phase 15 Re-Derivation" below. Gap recorded and raised as a
+      `user_decision` on this dispatch's `.return-meta.json`, per this task item's own
+      instruction; the eligibility test was NOT relaxed to manufacture a larger number.)*
+- [x] **Widen `file_scope` from the inventory before any tranche runs**: emit the concrete,
       enumerated list of markdown files the inventory marks eligible and add it through the
       additive `proposed_file_scope` channel (`update-task-status.sh --file-scope-add`), per
       `context/formats/return-metadata-file.md`. This is the mechanism that keeps Phases 17-19's
       commits from dropping paths against a stale declaration; a tranche that starts before this
-      lands is the defect the script/test track already paid for once.
-- [ ] Record the phase's NET-MD delta (zero by construction).
+      lands is the defect the script/test track already paid for once. *(completed with a
+      deviation: `update-task-status.sh --file-scope-add` is RESTRICTED to
+      `operation==postflight && target_status in {research, plan}` (confirmed by reading the
+      script's own validation — it refused this phase's `preflight implement` call with a named
+      error), so mid-implement widening cannot go through that flag as written. Of the 137 files
+      the confirmed inventory touches, 134 were already covered by this task's existing
+      directory-level `file_scope` entries; the 3 genuinely uncovered paths
+      (`cslib/context/contracts/adversarial-verification.md`,
+      `lean/context/contracts/adversarial-verification.md`,
+      `literature/context/guides/literature-organization.md`) were added via a direct,
+      minimal, additive-only `file_scope` edit to `specs/state.json` instead, per
+      `state-management.md`'s own sanctioned fallback ("append via `+=`... never replace the
+      array outright") — confirmed by `git diff` to be a 3-line pure addition with no
+      reformatting of the surrounding file.)*
+- [x] Record the phase's NET-MD delta (zero by construction). *(completed: this phase edited the
+      plan file and created one new inventory file under `specs/**`; it touched zero lines in any
+      of the three measured corpus populations (NET-PROD, NET-TEST, NET-MD). NET-MD delta: +0.)*
 
 **Timing**: 2 hours
 
@@ -2040,6 +2095,114 @@ removable lines corpus-wide, 3,997 gate-required, 102 deliberately inlined, and 
 All four are hypotheses; this phase's own re-derivation confirms or replaces them, and no tranche
 edits a file until it does. The gate-required figure is the most likely to move, because it
 depends on `lint-agent-contracts.sh`'s live predicate set, which other work adds to.
+
+**Confirmed against this phase's own re-derivation** (see "Phase 15 Re-Derivation" below): total
+removable (17,135) and gate-required (3,982) both CONFIRM the hypothesis within normal corpus
+drift. Deliberately-inlined (12) and eligible-upper-bound (13,053, close to 12,752) are both
+superseded by measurement — inlining is REPLACED (far smaller than hypothesized; see that task's
+own completion note for why), eligible-upper-bound stands essentially unchanged. The figure that
+moves the MOST, and that the Scope Hypothesis above did not anticipate, is the further split
+between eligible-upper-bound and the mechanically anchor-CONFIRMED subset of it (933, not
+12,752): the hypothesis implicitly assumed the whole eligible-upper-bound was reachable once hard
+exclusions were removed, but "has a durable anchor that already exists" is a THIRD, independent
+filter this phase's own task list always required and the Scope Hypothesis section did not carry
+a figure for.
+
+#### Phase 15 Re-Derivation
+
+Re-run at this phase's start against the live corpus (`md_files=948 md_lines=233093`), using the
+Scope Widening section's own methodology (5-line shingling over substantive, trimmed,
+length-≥-3 lines; `(g−1)/g` removable share per marked line) plus two further mechanical filters
+this phase's task list requires: a gate-required/deliberate-inlining hard-exclusion test
+(content-overlap against the canonical fragments' own line content, since Check C/G/L hold their
+bullets on a single physical line each — a file-participant test alone systematically
+undercounts them), and a strict anchor-confirmation test (the exact 5-line window must ALSO
+recur, verbatim, inside a file under a canonical anchor-category directory).
+
+| Role | Total removable | Gate-required | Email-inlining | Eligible upper bound | Anchor-confirmed | No anchor (excluded) |
+|------|-----------------:|---------------:|----------------:|----------------------:|-------------------:|------------------------:|
+| `agents/` | 6,437 | 892 | 0 | 5,525 | 254 | 5,458 |
+| `skills/` | 5,904 | 1,793 | 4 | 4,055 | 196 | 4,031 |
+| `commands/` | 2,338 | 891 | 4 | 1,431 | 54 | 1,394 |
+| `context/` | 1,877 | 346 | 3 | 1,525 | 379 | 1,147 |
+| `docs/` | 225 | 61 | 0 | 164 | 49 | 116 |
+| `rules/` | 66 | 0 | 0 | 66 | 0 | 66 |
+| other | 287 | 0 | 0 | 287 | 0 | 287 |
+| **Total** | **17,135** | **3,982** | **12** | **13,053** | **933** | **12,499** |
+
+(Confirmed- and no-anchor columns sum to slightly more than the eligible-upper-bound column —
+≈2,380 lines of double-counted overlap at window boundaries, an inherent approximation of
+measuring exclusivity across two independently-classified, position-overlapping window sets; the
+eligible-upper-bound column is the more precise total, confirmed- and no-anchor are each exact on
+their own terms.)
+
+**The anchor-confirmation test is deliberately conservative and almost certainly undercounts true
+anchor coverage.** It requires LITERAL verbatim recurrence of the exact duplicated text inside a
+candidate anchor file — but an anchor doc's job is to EXPLAIN a pattern, usually in different
+wording than the agent/skill copies that restate it operationally. Direct evidence this
+undercounts: `context/contracts/wrap-up.md`'s "Write location" section — named in Scope Widening
+as a confirmed real anchor for the handoff write-location paragraph — is correctly found by this
+test (it appears in the confirmed list below), proving the mechanism works when wording truly
+matches; but several OTHER representative blocks Scope Widening named by concept (the dispatch-file
+preamble ×68, the `skill-base.sh` preflight invocation block, the `summary`/`blockers`
+handoff-field contract ×42) do not surface as confirmed anchors here, most plausibly because their
+copies' wording has drifted from any single candidate anchor's own phrasing rather than because no
+anchor exists. A genuine semantic anchor-finding pass (reading the block and judging whether an
+existing doc already owns the concept, not just the exact text) — which Phases 17-19 are already
+chartered to perform block-by-block as they consolidate — will very likely find more anchors than
+this phase's literal-text sweep. This phase declares the mechanically-confirmed 933 lines as the
+verified FLOOR, not the ceiling, and raises the resulting target shortfall as a `user_decision`
+rather than inflating the floor with an unverified estimate.
+
+**Top confirmed anchors** (of 26 total, by net removable share — `(g−1)/g` summed per covering
+position, the same method as every other figure in this table, so these rows sum exactly to the
+933-line total):
+
+| Anchor | Heading | g | Removable (net share) |
+|--------|---------|---|------------------------:|
+| `context/patterns/early-metadata-pattern.md` | Stage 0: Initial Metadata Creation | 40 | 190.0 |
+| `context/patterns/thin-wrapper-skill.md` | Thin Wrapper Skill Pattern | 20 | 139.7 |
+| `context/standards/postflight-tool-restrictions.md` | MUST NOT (Postflight Boundary) | 16 | 75.0 |
+| `context/contracts/adversarial-verification.md` (core) | Claim Verification Bar | 2 | 63.0 |
+| `context/patterns/jq-escaping-workarounds.md` | Step 1: Update status and timestamps | 3 | 58.3 |
+| `context/formats/command-structure.md` | Command File Structure | 5 | 57.8 |
+| `context/formats/return-metadata-file.md` | Schema | 23 | 55.7 |
+| `context/formats/frontmatter.md` | Research agent | 2 | 45.0 |
+| `context/patterns/inline-status-update.md` | Update state.json | 4 | 28.2 |
+| `context/patterns/task-expand-mode.md` | Expand Mode (--expand) | 4 | 26.0 |
+| 17 further anchors | — | 2-5 | 194.3 (sum) |
+
+Full 26-row detail (anchor path, heading, sharing factor, occurrence count, span-line total, full
+file list) is in `markdown-block-inventory.tsv`, not duplicated here.
+
+**Declared NET-MD outcome — shortfall, raised as a `user_decision`.** The −8,100 target assumed
+64% capture of a 12,752-line eligible-upper-bound. The confirmed anchor-backed pool is 933 lines
+— even at 100% capture, −933 is the ceiling this phase can verify, a shortfall of 7,167 lines
+against the target (89% short). This phase does **not** relax the eligibility test to close that
+gap. The `user_decision` raised on this dispatch's `.return-meta.json` asks the operator to choose
+among:
+
+1. **Accept the mechanically-confirmed floor and revise NET-MD/NET-TOTAL downward.** NET-MD target
+   becomes ≈ −900 (conservative, leaving margin), making NET-TOTAL ≈ −700 (NET-PROD) − 1,200
+   (NET-TEST floor) − 900 (NET-MD) ≈ **−2,800**, well short of the retained −10,000 floor — the
+   third consecutive measurement round to fall short of that floor from enumerated, confirmed
+   volume.
+2. **Authorize Phases 17-19 to perform semantic (not merely literal-text) anchor-finding** as they
+   consolidate each tranche block-by-block — reading a candidate anchor doc and judging genuine
+   conceptual ownership, not only exact-text recurrence — which the "deliberately conservative"
+   note above gives direct evidence would recover materially more of the 12,752-line
+   eligible-upper-bound than this phase's literal sweep did. This does not violate "this task
+   points at anchors that exist; it does not author new anchor documents" — it only widens HOW an
+   existing anchor is recognized, not whether one must already exist.
+3. **Lower the retained −10,000 floor itself**, on the grounds that three independent measurement
+   rounds (Phase 2's script-cluster derivation, this plan's own markdown Scope Widening, and now
+   this phase's anchor-confirmation pass) have each, in turn, found the floor unreachable from the
+   next-enumerated source of volume.
+
+This phase's own recommendation, stated for the record: option 2, because the evidence above
+shows the shortfall is a measurement-methodology artifact (verbatim-only matching), not a true
+absence of consolidatable volume — the known representative blocks already named in Scope Widening
+demonstrate real anchors exist for content this phase's literal test could not verify.
 
 **Tier Justification**: Every changed hunk lies inside this plan's own prose and tables under
 `specs/**` plus one new machine-readable inventory file under the task directory, with no
@@ -2059,10 +2222,22 @@ a gate-required restatement and spending the rest of the task unwinding it.
 
 **Verification**:
 - The per-role duplicated-block table is re-derived against the live corpus and recorded in this plan.
+  *(confirmed: see "Phase 15 Re-Derivation" table above — 7 roles, 17,135 total removable lines)*
 - The gate-required exclusion list is derived by reading the fragment paths out of `lint-agent-contracts.sh` at run time, not from a hardcoded list, and its volume is recorded.
+  *(confirmed: all five `*_FRAGMENT` variable assignments read directly from the script at this
+  phase's execution time (including the previously-undocumented fifth, `MODIFIED_FILES_FRAGMENT`);
+  3,982 lines recorded)*
 - Every row in the eligible inventory names an anchor path and an existing anchor section heading; no row names an anchor that does not exist.
+  *(confirmed: all 26 rows in `markdown-block-inventory.tsv` name an anchor file verified to
+  exist on disk at measurement time, and a heading mechanically located at or above the matching
+  line in that file — flagged above as approximate/nearest-heading, for Phases 17-19 to
+  re-verify before replacing content, not blind-trust)*
 - The confirmed NET-MD target and its per-tranche allocation are recorded, or a shortfall is recorded and raised as a `user_decision`.
+  *(confirmed: shortfall path taken — 933-line confirmed floor against the −8,100 target,
+  recorded in "Phase 15 Re-Derivation" above and raised as a `user_decision` on this dispatch's
+  `.return-meta.json` with three named options and this phase's own recommendation)*
 - `bash .claude/scripts/validate-artifact.sh specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md plan` passes.
+  *(confirmed: `[PASS] plan artifact is valid (0 warning(s))`)*
 
 ---
 

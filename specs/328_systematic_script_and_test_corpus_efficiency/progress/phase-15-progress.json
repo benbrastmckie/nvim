@@ -1,0 +1,102 @@
+{
+  "phase": 15,
+  "phase_name": "Classify the Markdown Duplicate-Block Inventory and Declare NET-MD",
+  "started_at": "2026-11-05T23:30:00Z",
+  "last_updated": "2026-11-06T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run script-inventory.sh --size-line and confirm the markdown corpus figure against the Phase 1 baseline",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Re-derive the cross-file duplicated-block inventory (5-line shingling) and record the per-role table",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Emit the gate-required exclusion list mechanically from lint-agent-contracts.sh and lint-postflight-boundary.sh",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Emit the deliberate-inlining exclusion list (email extension; check for other adopters)",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "For each remaining eligible block, record the durable anchor; mark anchor-less blocks not eligible",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+        "specs/328_systematic_script_and_test_corpus_efficiency/markdown-block-inventory.tsv"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Write the eligible inventory to markdown-block-inventory.tsv",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/markdown-block-inventory.tsv"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Declare the confirmed NET-MD target and its per-tranche allocation, or record a shortfall as a user_decision",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "Widen file_scope from the inventory via update-task-status.sh --file-scope-add",
+      "status": "done",
+      "files_touched": [
+        "specs/state.json"
+      ]
+    },
+    {
+      "id": 9,
+      "description": "Record the phase's NET-MD delta (zero by construction)",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Per-line-presence anchor test (any 3-of-5 window lines independently present anywhere in a candidate anchor file)",
+      "result": "failed",
+      "reason": "Produced large false positives: 399 semantically unrelated windows all anchored to one large reference file via coincidental matches on common short lines (code fences, generic Stage headings), unrelated to actual content ownership."
+    },
+    {
+      "approach": "Exact-5-gram anchor test (the window must literally recur as a contiguous run inside the anchor file, i.e. the anchor file is itself one of the window's sharing participants)",
+      "result": "success",
+      "reason": "Eliminated the false-positive class; found 197 of 3,359 eligible windows (26 distinct anchors, 933 net removable lines) genuinely anchor-backed. Flagged in the plan as likely a conservative undercount of true (semantic) anchor coverage."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "15.8",
+      "description": "Widen file_scope from the inventory before any tranche runs, via update-task-status.sh --file-scope-add",
+      "type": "altered",
+      "reason": "--file-scope-add is restricted to operation==postflight && target_status in {research, plan}; this phase runs mid-implement, so the script refused the call. Used a direct, minimal, additive-only file_scope edit to specs/state.json instead, per state-management.md's sanctioned manual fallback.",
+      "annotation": "*(completed with a deviation: ... see task item's own completion note for the full detail)*"
+    }
+  ]
+}

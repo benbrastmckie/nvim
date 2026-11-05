@@ -1879,8 +1879,8 @@
         429
       ],
       "created": "2026-10-03T15:12:01Z",
-      "last_updated": "2026-11-05T21:47:03Z",
-      "session_id": "sess_1793915195_d7f9f0",
+      "last_updated": "2026-11-05T23:17:21Z",
+      "session_id": "sess_1793920608_e862fc",
       "artifacts": [
         {
           "path": "specs/328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md",
@@ -1974,6 +1974,7 @@
         "agent-system/extensions/core/skills/",
         "agent-system/extensions/cslib/agents/",
         "agent-system/extensions/cslib/commands/",
+        "agent-system/extensions/cslib/context/contracts/adversarial-verification.md",
         "agent-system/extensions/cslib/rules/",
         "agent-system/extensions/cslib/skills/",
         "agent-system/extensions/email/agents/",
@@ -1995,10 +1996,12 @@
         "agent-system/extensions/latex/skills/",
         "agent-system/extensions/lean/agents/",
         "agent-system/extensions/lean/commands/",
+        "agent-system/extensions/lean/context/contracts/adversarial-verification.md",
         "agent-system/extensions/lean/rules/",
         "agent-system/extensions/lean/skills/",
         "agent-system/extensions/literature/agents/",
         "agent-system/extensions/literature/commands/",
+        "agent-system/extensions/literature/context/guides/literature-organization.md",
         "agent-system/extensions/literature/scripts/literature-search.sh",
         "agent-system/extensions/literature/scripts/tests/",
         "agent-system/extensions/literature/skills/",
