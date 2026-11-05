@@ -203,6 +203,11 @@
         {
           "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
           "type": "plan"
+        },
+        {
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-b-summary.md",
+          "type": "summary",
+          "summary": "Phase 7 close: 48 test suites migrated onto the shared test harness, NET-TEST -214, a commit-pipeline defect found and routed around, Phase 8 scoped as the next step."
         }
       ],
       "next_artifact_number": 4,

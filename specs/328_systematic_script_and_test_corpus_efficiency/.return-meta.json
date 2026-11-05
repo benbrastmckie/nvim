@@ -1,10 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 18,
+  "partial_progress": {
+    "stage": "phase_complete_more_remain",
+    "details": "Phase 7 (Harness Migration Tranche B) closed [COMPLETED]: 48 test suites migrated onto lib/common.sh's shared test harness, NET-TEST -214 for this phase. 12 of 20 plan phases remain [NOT STARTED] (Phase 8 next). Not a context-exhaustion handoff -- a clean phase boundary at a sensible dispatch-sized unit of work, given Phase 8's materially different risk profile (the corpus's two largest suites plus a 543-second runtime outlier).",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-7-handoff-20261105T011855Z.md",
+    "phases_completed": 7,
+    "phases_total": 20
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-b-summary.md",
+      "summary": "Phase 7 close: 48 test suites migrated onto the shared test harness, NET-TEST -214, a commit-pipeline defect found and routed around, Phase 8 scoped as the next step."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-7-handoff-20261105T011855Z.md",
+      "summary": "Phase 7 close: migration method, NET-TEST figure, the source-detection bug found and fixed mid-phase, and Phase 8's deferred-suite list."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Migrated 48 mid-size test suites onto lib/common.sh's shared test harness (pass/fail/info call renaming, REPO_ROOT and WORKDIR/cleanup/trap boilerplate collapse on 25 and 26 of 48 respectively), extending common_test_fail() with an optional detail argument to preserve 4 suites' diagnostic output. NET-TEST -214 lines for the phase; all 49 relevant suites (48 migrated + test-common-lib.sh) pass with assertion counts and PASS/FAIL case-name lists unchanged from baseline."
+  },
+  "modified_files": ["agent-system/extensions/core/scripts/lib/common.sh", "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh", "agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh", "agent-system/extensions/core/scripts/tests/test-deploy-ledger-lib.sh", "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh", "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh", "agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh", "agent-system/extensions/core/scripts/tests/test-deploy-verify-overlap.sh", "agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh", "agent-system/extensions/core/scripts/tests/test-derived-artifact-probe-lib.sh", "agent-system/extensions/core/scripts/tests/test-double-loading-check.sh", "agent-system/extensions/core/scripts/tests/test-errors-append.sh", "agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh", "agent-system/extensions/core/scripts/tests/test-gate3-parallel-equivalence.sh", "agent-system/extensions/core/scripts/tests/test-gate3-strict-equivalence.sh", "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh", "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh", "agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh", "agent-system/extensions/core/scripts/tests/test-init-specs.sh", "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-await-notification.sh", "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh", "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh", "agent-system/extensions/core/scripts/tests/test-lint-corpus-scan-lib.sh", "agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh", "agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh", "agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh", "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh", "agent-system/extensions/core/scripts/tests/test-lint-shellcheck-parallel.sh", "agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh", "agent-system/extensions/core/scripts/tests/test-measure-gate-costs.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-churn.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh", "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh", "agent-system/extensions/core/scripts/tests/test-please-grant.sh", "agent-system/extensions/core/scripts/tests/test-reconcile-demote-stranded.sh", "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh", "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh", "agent-system/extensions/core/scripts/tests/test-run-all-parallel.sh", "agent-system/extensions/core/scripts/tests/test-stall-reprompt-wiring.sh", "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh", "agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh", "agent-system/extensions/core/scripts/tests/test-task-reference-patterns-lib.sh", "agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh", "agent-system/extensions/core/scripts/tests/test-validate-handoff-location.sh", "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh", "agent-system/extensions/core/scripts/tests/test-validate-no-record-versioning.sh", "agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh"],
+  "memory_candidates": [
+    {
+      "content": "When mechanically migrating many shell test suites onto a shared library (sourcing lib/common.sh), do not detect 'already sources the library' by substring-matching the library's path anywhere in the file. A suite that merely copies the library into a fixture (`cp .../lib/common.sh ...`) or checks its existence in a dependency-presence test contains the substring without actually sourcing it. Require a regex match on an actual top-level `source`/`.` statement naming the library. The failure mode this produces -- removed local helper definitions plus undefined replacement calls under `set -uo pipefail` without `set -e` -- fails SILENTLY (exit 0, 0 recorded assertions) rather than crashing, and is caught only by a before/after output diff, never by a syntax check.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-b-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-test-migration", "source-detection", "set-uo-pipefail", "silent-failure", "before-after-diff"]
+    },
+    {
+      "content": "A phase-commit wrapper's containment self-check that builds a glob pattern by string-concatenating '/*' onto a file_scope entry can silently produce a double-slash pattern (and therefore match nothing) when the entry already ends in a trailing '/'. Any file_scope that mixes bare directory entries ending in '/' with exact-file entries is at risk; verify such a wrapper's dropped-path warnings are empty before trusting a phase commit's file count, and recover an incomplete commit with an explicit follow-up git-commit-scoped.sh call naming the exact dropped paths rather than widening the pathspec.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-b-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["git-commit-phase", "containment-check", "file-scope", "trailing-slash", "glob-pattern-bug"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793838084_ef69bd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 20
   }
 }

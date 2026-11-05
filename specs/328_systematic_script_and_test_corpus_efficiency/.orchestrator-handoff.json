@@ -1,21 +1,20 @@
 {
+  "dispatch_seq": 18,
   "status": "partial",
-  "phase": "implement",
-  "dispatch_seq": 15,
-  "summary": "Completed Phase 6 (Harness Migration Tranche A -- The Lint Suites). Migrated 25 test suites (the 7 test-lint-*.sh suites from the Phase 3/5 cluster plus 18 of the smallest remaining core suites, cost-checked against suite-cost-hints.txt) onto common.sh's test harness, deleting each suite's own hand-rolled pass/fail/info, REPO_ROOT resolution, resolve_candidate, and mktemp-d+trap boilerplate where the shape matched. 23 of 25 suites' output is byte-identical before/after; 2 carry cosmetic-only diffs with identical assertion counts and PASS/FAIL case names. Two migration-script defects were caught by the mandated before/after diff and fixed before closing. NET-TEST -355 for this phase. file_scope was missing the 18 non-lint paths; appended them and landed a follow-up commit for files the phase-commit wrapper's containment check had dropped. 14 of 20 plan phases remain.",
+  "phases_completed": 7,
+  "phases_total": 20,
+  "summary": "Closed Phase 7 (Harness Migration Tranche B): migrated 48 mid-size test suites in agent-system/extensions/core/scripts/tests/ onto lib/common.sh's shared test harness, collapsing pass/fail/info boilerplate on all 48, a REPO_ROOT fallback block on 25, and a WORKDIR/cleanup/trap triplet on 26. NET-TEST -214 lines for the phase; all 49 relevant suites pass with assertion counts and PASS/FAIL case-name lists unchanged. Found and recovered from a commit-pipeline defect in git-commit-phase.sh's containment self-check (a trailing-slash file_scope entry produces a double-slash glob that matches nothing) via an explicit follow-up commit; recorded as an issue rather than fixed (out of this task's file_scope). 12 of 20 plan phases remain, starting with Phase 8.",
+  "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
-      "summary": "Phase 6 marked [COMPLETED] with its checklist annotations, per-suite migration notes, a Scope Hypothesis confirmation note, and an updated Running Net Figures 'Re-measured after Phase 6' paragraph (NET-TEST -355)."
+      "type": "summary",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-b-summary.md",
+      "summary": "Phase 7 close: 48 test suites migrated onto the shared test harness, NET-TEST -214, a commit-pipeline defect found and routed around, Phase 8 scoped as the next step."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-6-handoff-20261016T225041Z.md",
-      "summary": "Phase 6 completion handoff: the shape-aware partial-migration decision, the suite-cost-hints.txt swap rationale, and two migration-script defects caught by the before/after diff with what-not-to-try guidance for future tranches."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-7-handoff-20261105T011855Z.md",
+      "summary": "Phase 7 close: migration method, NET-TEST figure, the source-detection bug found and fixed mid-phase, and Phase 8's deferred-suite list."
     }
-  ],
-  "phases_completed": 6,
-  "phases_total": 20,
-  "blockers": []
+  ]
 }
