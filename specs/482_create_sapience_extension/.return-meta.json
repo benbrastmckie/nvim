@@ -30,22 +30,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/482_create_sapience_extension/summaries/01_create-sapience-extension-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["eager-load", "gate-20", "measure-eager-context.sh", "EXTENSION.md", "orchestrator-context-budget"]
+      "suggested_keywords": [
+        "eager-load",
+        "gate-20",
+        "measure-eager-context.sh",
+        "EXTENSION.md",
+        "orchestrator-context-budget"
+      ]
     },
     {
       "content": "check-extension-docs.sh's script-reference check flags ANY .sh filename literally mentioned in an extension's docs (EXTENSION.md/README.md) that is not also present in that extension's manifest provides.scripts array -- it does not distinguish 'this extension ships X' from 'this extension deliberately does NOT ship X'. When documenting a deliberately-dropped script or hook by name (e.g. explaining why a gap-3 context-injection script was not built), describe the mechanism without writing the literal filename/.sh string anywhere in the extension's own files, or the doc-lint gate fails on a true negative.",
       "category": "INSIGHT",
       "source_artifact": "specs/482_create_sapience_extension/summaries/01_create-sapience-extension-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["check-extension-docs.sh", "doc-lint", "provides.scripts", "false-positive", "script-reference-check"]
+      "suggested_keywords": [
+        "check-extension-docs.sh",
+        "doc-lint",
+        "provides.scripts",
+        "false-positive",
+        "script-reference-check"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793893148_3d43f7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

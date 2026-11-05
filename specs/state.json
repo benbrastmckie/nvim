@@ -1653,6 +1653,11 @@
           "path": "specs/482_create_sapience_extension/plans/01_create-sapience-extension.md",
           "type": "plan",
           "summary": "Five-phase plan: manifest plus permission grants, EXTENSION.md wrapup instruction, domain notes, index entries, activate/redeploy/verify. 4.25h, waves [[1],[2,3],[4],[5]]."
+        },
+        {
+          "path": "specs/482_create_sapience_extension/summaries/01_create-sapience-extension-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: what changed, decisions, plan deviations, verification, impacts, and follow-ups for the sapience extension."
         }
       ],
       "next_artifact_number": 2,
@@ -1669,7 +1674,8 @@
         "agent-system/extensions/sapience/index-entries.json",
         "agent-system/extensions/sapience/manifest.json",
         "agent-system/extensions/sapience/settings-fragment.json"
-      ]
+      ],
+      "completion_summary": "Created and activated the sapience extension at agent-system/extensions/sapience/: permission grants for the four MCP write tools (gap 1), a postflight sapience_wrapup instruction in EXTENSION.md (gap 2), and five context/project/sapience domain notes documenting the vault model, review-gate boundary, transcript-filter ceiling, and the deliberate absence of a per-dispatch context-injection hook (gap 3). Redeployed the tree and confirmed all five merge-target assertions hold with a scoped verification gate set green."
     },
     {
       "project_number": 458,

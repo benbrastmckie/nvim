@@ -387,6 +387,7 @@ Every other `duplicate-of-open` verdict in the document carries `mechanical_clas
 - **Dependencies**: None
 - **Research**: [482_create_sapience_extension/reports/01_create-sapience-extension.md]
 - **Plan**: [482_create_sapience_extension/plans/01_create-sapience-extension.md]
+- **Summary**: [482_create_sapience_extension/summaries/01_create-sapience-extension-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Redeploy afterwards via deploy-headless.sh.
 
