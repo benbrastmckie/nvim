@@ -1,61 +1,70 @@
 {
   "status": "partial",
-  "dispatch_seq": 22,
+  "dispatch_seq": 24,
   "partial_progress": {
     "stage": "phase_complete_more_remain",
-    "details": "Phase 10 (Deduplicate the Typst Script Pair) closed [COMPLETED]: extracted the mutual duplication between chapter-quality-check.sh and typst-element-lint.sh (shared color palette, CLI option-parsing loop, and .typ-file collection loop) into a new typst-extension-local lib/typst-scan-lib.sh. Both scripts already had paired fixture suites, so no characterization test was required. NET-PROD -2 for this phase (chapter-quality-check.sh 4 ins/60 del, typst-element-lint.sh 5 ins/59 del, lib/typst-scan-lib.sh +108/-0 new file; manifest.json excluded from the NET-PROD figure per Phase 9's convention and committed as a separate follow-up commit after git-commit-phase.sh's containment self-check correctly dropped it as out of this task's declared file_scope). Duplicate-block count for the pair dropped 44/44 -> 0/0. Byte-identical finding output confirmed on 8 captures (4 CLI edge cases x 2 scripts) plus a scratch fixture exercising every check in both scripts, both before and after the refactor. 10 of 20 plan phases remain [NOT STARTED] (Phase 11 next). Clean phase boundary, not a context-exhaustion handoff.",
-    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-10-handoff-20261105T151401Z.md",
-    "phases_completed": 10,
+    "details": "Phase 11 (Collapse literature-search.sh's Self-Internal Repetition) closed [COMPLETED]: no paired test existed (has_test:false), so wrote a characterization suite (tests/test-literature-search.sh, 49 assertions over a from-scratch fixture local+global corpus) and confirmed it green on the unmodified script before any edit. Extracted load_fidelity_map/get_fidelity/TIER_RANK/ROW_TIER_LABEL/ensure_trigram/build_sql/run_ladder/search_db/run_single_search into a new file-local lib/literature_search_pylib.py, imported by do_search/do_multi_search/do_read/do_toc's python3 heredocs. The single largest duplicate block -- do_search's ~230-line duplicate 'retry without project filter' fallback (a second, separately-interpolated python3 heredoc) -- collapsed into an in-process retry inside the new run_single_search() helper. literature-search.sh: 1,645 -> 950 lines (+30/-725 git diff, net -695); duplicate_blocks 172 -> 0. NET-PROD -363 (-695 + 332 for the new lib file; manifest.json's +2-line registration excluded per Phase 9's convention). NET-TEST +384 (the new characterization suite, not required negative for this phase). Diffed every CLI mode's raw output (40 captured files across 20 modes) before vs. after the refactor via diff -r: zero differences. shellcheck clean; test-lit-pipeline.sh (a real downstream caller) green. manifest.json and the new lib/ file were dropped by git-commit-phase.sh's containment self-check (out of task 328's declared file_scope) and recovered via a follow-up commit, matching Phase 10's established pattern. 9 of 20 plan phases remain [NOT STARTED] (Phase 12 next). Clean phase boundary, not a context-exhaustion handoff.",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-11-handoff-20261105T194500Z.md",
+    "phases_completed": 11,
     "phases_total": 20
   },
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_typst-pair-dedup-summary.md",
-      "summary": "Phase 10 close: extracted chapter-quality-check.sh/typst-element-lint.sh's shared CLI/output skeleton into a new typst-extension-local lib/typst-scan-lib.sh, NET-PROD -2, duplicate-block count 44/44 -> 0/0, Phase 11 scoped as the next step."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_literature-search-self-dedup-summary.md",
+      "summary": "Phase 11 close: collapsed literature-search.sh's 172 self-internal duplicate blocks (peers=0) into a new file-local Python module and an in-process fallback retry replacing a duplicate heredoc, NET-PROD -363, duplicate-block count 172 -> 0, Phase 12 scoped as the next step."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-10-handoff-20261105T151401Z.md",
-      "summary": "Phase 10 close: both scripts already fixture-tested, extraction scoped to exactly the sliding-window-detected shared surface, byte-identical before/after verification method, and Phase 11's literature-search.sh Python-heredoc scope named for the next dispatch."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-11-handoff-20261105T194500Z.md",
+      "summary": "Phase 11 close: characterization test written first (has_test was false), extraction scoped to the Python-heredoc repetition plus the duplicate fallback heredoc, byte-identical before/after verification method, and Phase 12's re-derivation caveats named for the next dispatch."
     }
   ],
   "completion_data": {
-    "completion_summary": "Deduplicated chapter-quality-check.sh/typst-element-lint.sh via a new shared typst-extension-local lib/typst-scan-lib.sh (color palette, CLI option parsing, .typ-file collection). NET-PROD -2; duplicate-block count 44/44 -> 0/0. Shellcheck clean; manifest.json updated and manifest-sync suite green; both scripts' test suites green before and after."
+    "completion_summary": "Collapsed literature-search.sh's 172 self-internal duplicate blocks via a new file-local lib/literature_search_pylib.py and an in-process retry replacing its largest duplicate block (a ~230-line second search-pipeline heredoc). NET-PROD -363; duplicate_blocks 172 -> 0. Wrote the mandatory characterization test first (49 assertions), confirmed green before and after, and confirmed byte-identical output across all 20 CLI modes."
   },
   "modified_files": [
-    "agent-system/extensions/typst/manifest.json",
-    "agent-system/extensions/typst/scripts/chapter-quality-check.sh",
-    "agent-system/extensions/typst/scripts/lib/typst-scan-lib.sh",
-    "agent-system/extensions/typst/scripts/typst-element-lint.sh",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-10-handoff-20261105T151401Z.md",
+    "agent-system/extensions/literature/manifest.json",
+    "agent-system/extensions/literature/scripts/lib/literature_search_pylib.py",
+    "agent-system/extensions/literature/scripts/literature-search.sh",
+    "agent-system/extensions/literature/scripts/tests/test-literature-search.sh",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-11-handoff-20261105T194500Z.md",
     "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl",
     "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-10-progress.json",
-    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_typst-pair-dedup-summary.md"
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-11-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_literature-search-self-dedup-summary.md",
+    "specs/TODO.md",
+    "specs/state.json"
   ],
   "memory_candidates": [
     {
-      "content": "When extracting a shared library out of a mutual duplicate-block pair, use the sliding-window detector's own unit of measure (script-inventory.sh's 10-line normalized window) to scope the extraction precisely to what it flags -- in a CLI-tool pair this is typically just the color palette, the option-parsing loop, and the path/file-collection loop, never the tool-specific check logic. Verify behavioral equivalence by diffing the pre/post-refactor output byte-for-byte over a constructed fixture that exercises every finding class, plus every CLI edge case (no args, --help, a bad path, an unknown option) -- these edge-case code paths are exactly what the extracted CLI-parsing block controls and are easy to omit from a 'does it still find the same bugs' check that focuses only on the main-path findings.",
+      "content": "When a bash script spawns several separate python3 heredocs (one per function), the biggest duplicate-block finding is often not repeated HELPER functions but an entire duplicate PIPELINE: a function that re-runs its whole search/computation a second time (e.g. 'retry without a filter if the filtered attempt returned zero rows') as a second, separately-interpolated heredoc. Extracting shared helpers into one file-local python module (imported via sys.path.insert from each heredoc) fixes the helper duplication, but the bigger win is restructuring the caller to invoke the now-shared pipeline function TWICE IN-PROCESS instead of running two heredocs -- this eliminates the second python3 invocation entirely rather than merely deduplicating what it contained. Roughly half of a -363 NET-PROD figure came from this restructuring, not from the helper-function move alone.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_typst-pair-dedup-summary.md",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_literature-search-self-dedup-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["net-deletion", "shared-lib-extraction", "duplicate-blocks", "cli-parsing", "byte-identical-verification"]
+      "suggested_keywords": ["python-heredoc", "duplicate-pipeline", "net-deletion", "shared-module-extraction", "in-process-retry"]
     },
     {
-      "content": "git-commit-phase.sh's Phase-Commit Containment Self-Check drops any files_touched path not matching the task's declared file_scope, even when the edit (e.g. a manifest.json registration for a newly extracted lib file) is a legitimate, necessary incidental touch. This is drop-and-warn by design, not a bug to work around: recover the dropped path with a small, explicitly-labeled follow-up commit via git-commit-scoped.sh directly (never widen the phase commit's pathspec or add the path to file_scope reflexively). The commit message should name which path was dropped and why it was legitimate.",
-      "category": "PATTERN",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_typst-pair-dedup-summary.md",
+      "content": "When writing a characterization test for a script with has_test:false before a self-internal-duplication refactor (peers=0 in script-inventory.sh), capture every tested mode's raw stdout+exit code to files under a caller-overridable CAPTURE_DIR directory, then run the SAME test script once against the unmodified code and once against the refactored code, and diff -r the two capture directories. This reuses one test file as both the pass/fail oracle and the before/after byte-identical-output oracle, and works cleanly as long as no absolute temp path (mktemp dir, git toplevel) leaks into any captured JSON output -- verify that by construction (pop/never-emit any internal path field) rather than by normalizing paths after the fact.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_literature-search-self-dedup-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["git-commit-phase", "file-scope", "containment-check", "follow-up-commit", "manifest-registration"]
+      "suggested_keywords": ["characterization-test", "byte-identical-diff", "capture-dir", "before-after-verification", "has-test-false"]
+    },
+    {
+      "content": "Bash 5.3's `local` builtin, under `set -u`, treats every name declared in a single multi-assignment `local` statement as unset until the WHOLE statement finishes -- so `local a=\"$1\" b=\"$a\"` raises 'a: unbound variable' even though `a` was assigned earlier in the same statement. This is a real behavior (reproduced minimally), not a one-off typo. Fix: split into separate `local` statements (`local a=\"$1\"` then `local b=\"$a\"`) whenever a later name in the list needs to read an earlier one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_literature-search-self-dedup-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash-5.3", "local-builtin", "set-u", "unbound-variable", "shell-gotcha"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1793890953_7cb51f",
+    "session_id": "sess_1793904029_00a39c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 10,
+    "phases_completed": 11,
     "phases_total": 20
   }
 }

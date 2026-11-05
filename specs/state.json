@@ -1899,7 +1899,7 @@
         {
           "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_literature-search-self-dedup-summary.md",
           "type": "summary",
-          "summary": "Phase 11 close: collapsed literature-search.sh 172 self-internal duplicate blocks (peers=0) via a new file-local Python module and an in-process fallback retry replacing a duplicate heredoc; NET-PROD -363; characterization test (49 assertions) written first and confirmed byte-identical before/after."
+          "summary": "Phase 11 close: collapsed literature-search.sh's 172 self-internal duplicate blocks (peers=0) into a new file-local Python module and an in-process fallback retry replacing a duplicate heredoc, NET-PROD -363, duplicate-block count 172 -> 0, Phase 12 scoped as the next step."
         }
       ],
       "next_artifact_number": 4,

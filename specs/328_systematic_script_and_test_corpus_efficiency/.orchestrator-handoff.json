@@ -1,20 +1,20 @@
 {
-  "dispatch_seq": 22,
+  "dispatch_seq": 24,
   "status": "partial",
-  "phases_completed": 10,
+  "phases_completed": 11,
   "phases_total": 20,
-  "summary": "Closed Phase 10 (Deduplicate the Typst Script Pair): extracted chapter-quality-check.sh/typst-element-lint.sh's mutual duplication (shared color palette, --verbose/--help CLI-parsing loop, recursive .typ-file collection loop) into a new typst-extension-local lib/typst-scan-lib.sh. Both scripts already had paired fixture suites, so no characterization test was needed. Verified byte-identical finding output over a constructed scratch fixture plus four CLI edge cases per script (no PATH, --help, a nonexistent PATH, an unknown option) -- 8 captures, all identical before and after. NET-PROD -2 (small, since this pair's shared mass was only the CLI/output skeleton, not large per-type loops like Phase 9's install/uninstall pair); duplicate-block count for the pair dropped 44/44 -> 0/0. Shellcheck clean (6 deliberate SC2034 disables on the lib's color/VERBOSE globals, each with an inline reason, since they're consumed only by the sourcing script). manifest.json's provides.scripts registration for the new lib was dropped by git-commit-phase.sh's containment self-check (the path is not itself in task 328's declared file_scope) and recovered via a labeled follow-up commit, matching Phase 9's precedent for this same recurring defect class. Per the phase's own declared local tier, no redeploy/full gate battery was run (deferred to Phase 20). 10 of 20 plan phases remain, starting with Phase 11 (literature-search.sh's self-internal Python-heredoc repetition -- a different defect class, not bash duplication).",
+  "summary": "Closed Phase 11 (Collapse literature-search.sh's Self-Internal Repetition): this script had has_test:false, so a characterization suite (tests/test-literature-search.sh, 49 assertions over a from-scratch fixture local+global corpus) was written first and confirmed green on the unmodified script before any edit. Extracted the repeated Python helpers (load_fidelity_map, get_fidelity, TIER_RANK/ROW_TIER_LABEL, ensure_trigram, build_sql, run_ladder, search_db, run_single_search) into a new file-local lib/literature_search_pylib.py, imported from do_search/do_multi_search/do_read/do_toc's own python3 heredocs. The single largest duplicate block -- do_search's ~230-line duplicate 'retry without the project filter' fallback, previously a second separately-interpolated python3 heredoc -- collapsed into an in-process retry inside the new run_single_search() helper. literature-search.sh: 1,645 -> 950 lines; duplicate_blocks 172 -> 0. NET-PROD -363 (-695 net on literature-search.sh plus +332 for the new lib file; manifest.json's +2-line registration excluded per Phase 9's convention). NET-TEST +384 for the new characterization suite (not required negative for this phase). Verified byte-identical: captured all 20 CLI modes' raw stdout+exit code (40 files) before and after the refactor, diff -r reported zero differences. Shellcheck clean; test-lit-pipeline.sh (a real downstream caller) green. manifest.json and the new lib/ file were dropped by git-commit-phase.sh's containment self-check (not in task 328's declared file_scope) and recovered via a labeled follow-up commit, matching Phase 10's precedent. Per the phase's own declared local tier, no redeploy/full gate battery was run (deferred to Phase 20). 9 of 20 plan phases remain, starting with Phase 12 (classify every suite and enforce the unit/integration boundary -- its own Scope Hypothesis flags that the dispatch's heavyweight-operation invocation counts and the research report's file counts must be re-derived consistently before use, since they count different things).",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_typst-pair-dedup-summary.md",
-      "summary": "Phase 10 close: extracted chapter-quality-check.sh/typst-element-lint.sh's shared CLI/output skeleton into a new typst-extension-local lib/typst-scan-lib.sh, NET-PROD -2, duplicate-block count 44/44 -> 0/0, Phase 11 scoped as the next step."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_literature-search-self-dedup-summary.md",
+      "summary": "Phase 11 close: collapsed literature-search.sh's 172 self-internal duplicate blocks (peers=0) into a new file-local Python module and an in-process fallback retry replacing a duplicate heredoc, NET-PROD -363, duplicate-block count 172 -> 0, Phase 12 scoped as the next step."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-10-handoff-20261105T151401Z.md",
-      "summary": "Phase 10 close: both scripts already fixture-tested, extraction scoped to exactly the sliding-window-detected shared surface, byte-identical before/after verification method, and Phase 11's literature-search.sh Python-heredoc scope named for the next dispatch."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-11-handoff-20261105T194500Z.md",
+      "summary": "Phase 11 close: characterization test written first (has_test was false), extraction scoped to the Python-heredoc repetition plus the duplicate fallback heredoc, byte-identical before/after verification method, and Phase 12's re-derivation caveats named for the next dispatch."
     }
   ]
 }
