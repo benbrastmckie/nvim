@@ -1,5 +1,5 @@
 ---
-next_project_number: 493
+next_project_number: 500
 ---
 
 # TODO
@@ -11,11 +11,15 @@ next_project_number: 493
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475,490,491 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
-| 3 | 360,391,399,420,436,438,439,444,448,474,476,484,492 | 313,328,369,398,409,418,423,431,445,446,458,491 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 5 | 421,450,457,462,480,481,487 | 390,402,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
+| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,435,437,456,459,464,466,473,477,478,483,485,488,489,493,494,495 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 313,369,384,398,409,418,430,431,445,453,458,463,465,472,475,490,491,497 | 29,328,383,397,401,412,415,419,435,459,494 | core-agent-system, extensions, literature, ... |
+| 3 | 391,399,420,436,439,444,446,448,474,476,492 | 313,328,369,385,398,409,418,423,430,431,445,458,491 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 360,390,402,438,451,454,455,461,484 | 313,385,391,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 5 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 6 | 450,480,487 | 420,435,449,479 | core-agent-system, orchestrator |
+| 7 | 496 | 450,487,488 | extensions |
+| 8 | 498 | 496 | extensions |
+| 9 | 499 | 497,498 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -53,6 +57,7 @@ next_project_number: 493
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
 489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
+493 [NOT STARTED] — Fix plan-format.md Tier Justification: a suite entry point...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -72,7 +77,13 @@ next_project_number: 493
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
 483 [NOT STARTED] — Document that an extension lifecycle hook can never fire...
+495 [NOT STARTED] — Give the formal extension research agents the verbatim...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
+496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
+  └─ 498 [NOT STARTED] — Replace the email preference harvest tally substrate
+    └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
+497 [NOT STARTED] — Promote the three vault-independent distill telemetry...
+  └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the... (see above)
 
 ### Literature
 
@@ -81,11 +92,12 @@ next_project_number: 493
 
 ### File Scope Lifecycle
 
-430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
-  └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
-    └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
-    └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
-      └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
+494 [NOT STARTED] — Exempt a task own artifact directory from the phase-commit...
+  └─ 430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
+    └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
+      └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
+      └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
+        └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
 
 ### Lean Extension
 
@@ -125,6 +137,416 @@ next_project_number: 493
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 499. Retarget the store-coupled distill sub-modes and retire the memory extension
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 496, Task 497, Task 498
+
+**Description**: Retarget the two store-coupled `/distill` sub-modes onto the hosted store, drop the six that the hosted store already performs, remove core's now-orphaned callers, and retire the memory extension.
+
+SOURCE STORE IS THE EDIT TARGET: `agent-system/**`, never a deployed `.claude/**` tree, which is a gitignored disposable deploy artifact regenerated from the source store (see `rules/source-store-deploy-boundary.md`). Resolve `source_dir` from `<project-root>/.claude-extensions.json` and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via `deploy-headless.sh`.
+
+== PART A: RETARGET TWO SUB-MODES ==
+
+`--revise` (correlates deviation/blocker evidence to stored knowledge, classifying each correlated item corroborated / contradicted / gap) and `--learn` (retroactive batch harvest across already-archived tasks whose candidates were never harvested) are store-coupled and must be retargeted onto hosted knowledge objects rather than relocated or deleted.
+
+Carry forward: the three-strikes threshold before anything counts as contradicted or a gap; the interactive selection gate (neither may ever run under `--auto`); the first-class degraded path when the event store is empty (`total_events: 0` is a NORMAL outcome, not an error). Note that `--revise`'s event-to-OTel session join degrades on this machine because OTel is not enabled -- it must announce that explicitly, not silently.
+
+The `--revise` classification outcomes that previously tombstoned or updated a local record must be rethought against a store with NO DELETE API: a contradicted item cannot be tombstoned. Decide and record what replaces it -- most likely writing a superseding note that carries the correction, since the hosted store performs its own conflict surfacing and stale-position re-confirmation.
+
+== PART B: DROP SIX SUB-MODES ==
+
+Delete `report`, `--purge`, `--merge`, `--compress`, `--refine` and `--gc` outright. The hosted store already performs all six server-side: overnight consolidation and compaction, staleness re-confirmation of load-bearing positions, and active conflict detection between a person's own notes. This was observed directly in a session briefing reporting 2372 knowledge objects compacted into 5 structures, a stale-position re-confirmation prompt, and 10 open conflicts awaiting resolution. Porting them would duplicate a service the store provides.
+
+Record this reasoning in the retirement documentation, because "we deleted six maintenance modes" is otherwise indistinguishable from a capability regression.
+
+== PART C: REMOVE ORPHANED CORE CALLERS ==
+
+Three memory-coupled pieces live in CORE, not in the memory extension, and would be left dangling by a naive uninstall:
+- `agent-system/extensions/core/scripts/memory-retrieve.sh` -- superseded by the sapience retrieval script.
+- `agent-system/extensions/core/scripts/memory-harvest.sh` -- already uncalled by any skill or command (its own header says so); delete it.
+- `agent-system/extensions/core/skills/skill-todo/SKILL.md`'s HarvestMemories stage -- reads candidates from `state.json`, dedups against the local index, writes record files and regenerates local indices. Retarget it to the sapience write path or remove it, and update the archival flow's accounting of what it touches.
+
+== PART D: RETIRE THE EXTENSION ==
+
+Remove the memory extension from the source store and from `.claude-extensions.json`, and update the sapience extension's own documentation so it describes the single remaining knowledge path rather than the split-by-altitude arrangement it currently documents.
+
+== HARD SEQUENCING CONSTRAINT ==
+
+`.memory/` STAYS ON DISK, READ-ONLY, THROUGHOUT. Do not delete it as part of retirement, and do not attempt to bulk-import it. There is no re-import path into the hosted store and no delete API, so a bad import cannot be undone -- an import that turns out wrong is permanent. The local records remain readable for as long as the hosted corpus has not accumulated an equivalent. Deleting `.memory/` is a separate, later, owner-initiated decision and is explicitly out of scope here.
+
+Note also that the vault data was never tracked in the extension's own installed-file manifest, so an ordinary uninstall leaves it in place by default. That is the desired behaviour; do not "fix" it.
+
+== RELATION TO EXISTING RECORDS ==
+
+`superset-of-open` of 421 by mechanical scope -- the same relocation relation the sub-mode promotion task carries, covered by the declared edges and by 421's re-sequencing behind that promotion task.
+
+== VERIFICATION ==
+
+- `--revise` and `--learn` operate against hosted knowledge objects and take their stated degraded paths when the event store is empty and when OTel is absent.
+- No remaining reference anywhere in the source store points at the memory extension, at `memory-retrieve.sh`, or at `memory-harvest.sh`.
+- A full deploy from a clean tree succeeds with the memory extension absent.
+- An `/orchestrate` dispatch still receives repo-scoped injected context (from the sapience retrieval path) and still degrades to empty context on failure.
+- `/todo` archival completes without the HarvestMemories stage erroring.
+- `.memory/` is present and unmodified at the end of the task.
+- Email triage Stage 7 still accumulates preferences correctly (guaranteed by the dependency on the email tally substrate task).
+
+---
+
+### 498. Replace the email preference harvest tally substrate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 496
+
+**Description**: Port `skill-email-cleanup`'s Stage 7 sender/domain preference harvest off the local knowledge vault, so the memory extension can be retired without breaking email triage. This is the hardest break in the migration and it BLOCKS retirement.
+
+SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/email/**`, never a deployed `.claude/**` tree, which is a gitignored disposable deploy artifact regenerated from the source store (see `rules/source-store-deploy-boundary.md`). Resolve `source_dir` from `<project-root>/.claude-extensions.json` and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via `deploy-headless.sh`.
+
+== WHAT CURRENTLY DEPENDS ON THE LOCAL VAULT ==
+
+Stage 7 of `skill-email-cleanup` is live, executable prose, not a design sketch. It calls `email-preference-harvest.sh dedup .memory/memory-index.json "email/preferences/${ACCOUNT}/${KEY}"` to decide CREATE vs EXTEND vs UPDATE, then applies tally arithmetic via that script's `tally-op` subcommand, gates on its `threshold` subcommand, and resolves mixed senders via `dominant`. It depends on four things the local store provides and the hosted store does not:
+
+1. NAMESPACE-SCOPED TALLY ARITHMETIC -- CREATE once, then UPDATE/EXTEND an accumulating per-sender action count, never one record per message.
+2. EXACT-KEY DEDUP FOR RESERVED NAMESPACES -- an exact hit/miss lookup on the key `email/preferences/{account}/{key}`, not a fuzzy or semantic match.
+3. ARCHIVE-SCOPE TALLY ISOLATION -- an archive-scope pass records its delta in a separate sub-section and must never merge into the inbox-scope tally.
+4. A READABLE INDEX -- the ground-truth tally is read back from the record body before each update.
+
+The hosted store offers none of these. Its write tool is a freeform note with no tally arithmetic, no exact-key namespace dedup, and no local index to read back; and as established in the sapience per-repo storage task, there is no delete API, so a mis-accumulated tally cannot be removed.
+
+== WHAT THIS TASK MUST SETTLE ==
+
+The ruling is deliberately NOT pre-made and is the first thing to decide at plan time: whether the tally substrate becomes (a) a small local state file owned by the email extension itself, with the hosted store receiving only the settled preference as a durable note, or (b) a fully hosted representation read back through repo-filtered search. Argue it both ways and record the verdict with its reason.
+
+Considerations for (a): tally accumulation is high-frequency, low-value intermediate state -- exactly what should NOT go to a store with permanent, undeletable, unreviewed writes. The hosted store's noise gate would also judge most intermediate tally updates operational chatter. Considerations for (b): a second local store is the substrate the migration exists to remove, and reintroducing one under a different name needs justifying.
+
+Whichever is chosen, preserve: the exact-key (not fuzzy) dedup semantics for the reserved namespace, archive-scope isolation as a first-class separate accumulator, the evidentiary threshold gate (uniform-batch this round, or rolling N>=3 at >=80% against the post-update tally), the mixed-sender branch that splits or declines rather than averaging into a false scalar action, and the single consolidated never-silent approval gate.
+
+== CONSTRAINTS ==
+
+- Stage 7 must keep firing ONLY after Stage 6, reading ONLY the Stage 6 executed diff -- never the Stage 2 candidate manifest and never an approved-but-not-yet-executed manifest. The migration must not relax this.
+- `.memory/` is READ-ONLY for the duration of the whole migration. This task may read the existing tallies to carry them forward; it must not write to them.
+- The deterministic subcommands of `email-preference-harvest.sh` (`normalize`, `freemail`, `identity`, `tally-op`, `dominant`, `threshold`) are pure and should be REUSED unchanged wherever possible. Only `dedup`'s substrate changes. Do not fork the tally arithmetic.
+
+== VERIFICATION ==
+
+- A uniform-batch pass over a fixture produces a CREATE, and a second pass over the same sender produces an EXTEND or UPDATE with a correctly accumulated count -- never a second parallel record.
+- An archive-scope pass's delta lands in the archive accumulator and does not perturb the inbox tally.
+- A mixed-sender group with no uniform majority either splits by token into distinct keys or declines to aggregate, and never averages.
+- A sender below both evidentiary bars is tallied but NOT presented as a strong preference.
+- The existing tallies in `.memory/` are carried forward without loss, and `.memory/` is not written to.
+
+---
+
+### 497. Promote the three vault-independent distill telemetry sub-modes into core
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 435, Task 328
+
+**Description**: Relocate the `--meta`, `--dream` and `--review` sub-modes out of the memory extension into core, so they survive the memory extension's retirement.
+
+SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` and `agent-system/extensions/memory/**`, never a deployed `.claude/**` tree, which is a gitignored disposable deploy artifact regenerated from the source store (see `rules/source-store-deploy-boundary.md`). Resolve `source_dir` from `<project-root>/.claude-extensions.json` and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via `deploy-headless.sh`.
+
+== WHY THESE THREE AND NOT THE OTHER SIX ==
+
+`/distill` carries nine sub-modes serving two unrelated jobs. Six are knowledge-store maintenance (`report`, `--purge`, `--merge`, `--compress`, `--refine`, `--gc`). Two are store-coupled (`--revise` correlates evidence to stored knowledge; `--learn` harvests into the store). These THREE touch no store at all: they read `specs/events.jsonl`, `~/.claude/history.jsonl`, session transcripts and OTel, and they report or propose. They live under the memory extension only by accident of when they were built.
+
+The relocation is MECHANICAL, not a rewrite. Their mandated data access path, `events-query.sh`, ALREADY lives in core at `agent-system/extensions/core/scripts/events-query.sh` and was verified working (it returns `{"total_events": 7586, ...}` against this repo). No dependency untangling is required.
+
+A second benefit: promotion frees them from the knowledge-store `validate-on-read` precondition they are currently gated behind via the Shared Sub-Mode Skeleton's Edge Case Checks. None of the three needs it.
+
+== WHAT EACH SUB-MODE IS FOR, AND THE SIGNAL CONFIRMING IT IS WORTH KEEPING ==
+
+`--meta`: surfaces recurring (three-strikes) friction pointing at a named skill, hook, rule or checkpoint, then delegates task creation to `meta-builder-agent`. Current signal in this repo's `specs/events.jsonl` (7586 events: 83 deviation, 2 blocker, 32 system_defect) shows unambiguous clusters -- 14 occurrences of "handoff mtime N predates this dispatch window"; 5 of handoff `dispatch_status` off-schema (the writer emits a key named `dispatch_status` instead of the schema-required `status`, with values including `"completed"`, `"weird_status"` and empty); 3 `dispatch_seq` mismatches (1 vs 2, 19 vs 18, 4 vs 7); several dispatches that narrated completed work but wrote no handoff, no `.return-meta.json` and no report artifact; and one record reading "research dispatch narrated 4 source-store file modifications but reported modified_files: [] -- the scoped commit would have stranded them", which is a near-data-loss defect. The handoff-schema cluster alone clears the three-strikes threshold several times over and is currently unread by anything.
+
+`--dream`: clusters the user's own prompt history (`~/.claude/history.jsonl`, 31666 prompts total, 3135 for this repo, sliced by each line's `project` field) and surfaces recurring themes that no stored knowledge or open task covers. The dominant uncovered cluster in recent history is the user hand-auditing batch dependencies before dispatching -- repeated requests of the form "are there any natural dependencies missing", "are the appropriate dependencies in place for me to resume", "can I now run this batch", "if some tasks should revise others, make that explicit". Five instances inside roughly 400 prompts, with no command covering it. That is exactly the shape `--dream` exists to surface and funnel to `--meta`.
+
+`--review "<question>"`: strictly read-only ad hoc inquiry spanning all four source tiers, answering in prose with per-tier evidence citations. It never writes and never proposes; findings funnel to `--meta`, `--revise` or the write path.
+
+== CAVEATS TO CARRY INTO THE RELOCATED SPECIFICATIONS ==
+
+- OTel IS NOT ENABLED on this machine: there is no `CLAUDE_CODE_ENABLE_TELEMETRY` in the environment or in any settings file. So `--review`'s Tier 1 is unavailable and must take its stated degraded path ("OTel not enabled for this session/repo -- outcome evidence unavailable for this question"), announced explicitly, never silently. `--meta` and `--dream` do not use OTel and are unaffected.
+- The `reflection` event type has exactly ONE record in this repo's event store and no live producer (see `context/formats/events-format.md`). Anything keyed on reflections is effectively dead signal; the relocated specifications must not present it as a live input.
+- `--review` and `--dream` carry a sanctioned MANDATORY STOP exemption because neither mutates. Preserve those exemptions as explicitly STATED, not silently dropped -- the existing specifications are deliberate about this and the relocation must not quietly lose it.
+
+== RELATION TO EXISTING RECORDS, ALREADY RULED ==
+
+This task is a `superset-of-open` of 421 (`retarget_distill_meta_as_evidence_consumer`) by mechanical scope: 421's own two declared files are a subset of this task's. The ruling, made by the owner at the confirmation gate, is RELOCATE FIRST: this task moves the three sub-modes into core as a pure relocation, and 421 is re-sequenced to depend on this task so its retargeting work (issues.jsonl ingestion, matcher consumption, consolidation channel, per-invocation cap) lands at the new core location rather than being written into a tree about to be retired. 421's own `file_scope` will need updating to the new core paths as part of that re-sequencing.
+
+This task is also a `subset-of-open` of 435 (`reword_dead_lifecycle_command_prose_per_class`), which declares the broader `agent-system/extensions/memory/context/` and `agent-system/extensions/memory/skills/` directories. Edge declared. 328 is declared because it is currently `implementing` across `agent-system/extensions/memory/commands/` and `agent-system/extensions/memory/skills/`, which contains this task's `skill-distill/SKILL.md` edit.
+
+Three further `duplicate-of-open` verdicts (459, 451, 360) were ruled NOT duplicates at the confirmation gate: all three are `mechanical_class: none` at 41-45% semantic similarity, and none concerns sub-mode relocation.
+
+== EXPLICIT NON-GOALS ==
+
+- Do not retarget, redesign or extend any of the three sub-modes. This is relocation. 421 owns `--meta`'s retargeting.
+- Do not relocate `--revise` or `--learn` -- they are store-coupled and belong to the retirement task.
+- Do not delete the six store-maintenance sub-modes here; that is the retirement task's work.
+
+== VERIFICATION ==
+
+- Each of the three sub-modes is invocable after relocation and produces its documented output shape against this repo's real `events.jsonl` and `history.jsonl`.
+- `--meta` run against this repo surfaces the handoff-schema cluster described above, demonstrating the signal path works end to end at the new location.
+- `--review` with OTel absent takes the stated degraded path and says so explicitly.
+- No remaining reference anywhere in the source store points at the old memory-extension paths for these three files.
+- The relocated specifications' MANDATORY STOP exemptions for `--review` and `--dream` are still explicitly stated.
+
+---
+
+### 496. Add per-repo storage and injection to the sapience extension
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 360, Task 449, Task 450, Task 487, Task 488
+
+**Description**: Give the sapience extension repo-scoped knowledge storage and per-dispatch context injection, so it can replace the memory extension's local vault substrate. This is the essential piece of the migration -- the other three tasks in this batch depend on it.
+
+SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/sapience/**` and `agent-system/extensions/core/**`, never a deployed `.claude/**` tree, which is a gitignored disposable deploy artifact regenerated from the source store (see `rules/source-store-deploy-boundary.md`). Resolve `source_dir` from `<project-root>/.claude-extensions.json` and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via `deploy-headless.sh`.
+
+== THE SCOPING MECHANISM IS ALREADY SETTLED, AND IT IS NOT THE OBVIOUS ONE ==
+
+Per-repo scoping works ONLY via a repo tag embedded in the KO's `provenance` string, filtered on read by `/v1/search`'s `source=` substring parameter. This was established empirically against the live host; do not re-derive it, and do not substitute the `project` field.
+
+What was measured:
+- A KO written with `provenance` containing `[repo:nvim]` is returned by `source=[repo:nvim]` and by `source=repo:nvim`, and is NOT returned by `source=[repo:bimodal]`. The filter acts as a hard pre-filter that dominates relevance ranking -- an unrelated query still returned only the repo-tagged row.
+- The `project` field is a DEAD END. `/v1/search` silently ignores `&project=`: identical 8-row result sets for a real slug, another repo's slug, and a nonexistent slug. `/v1/sf1/handoff?project=X` merely echoes the slug back with `project_known: false` and returns cross-project KOs even for a bogus project. `/v1/sf1/state` returns 404. `/v1/projects` returns 403 `{"code": "company_only"}` -- project surfaces are a paid team feature on this account.
+- `source_loc` (the field the `sapience_remember` MCP tool's own `source` argument populates) is NOT matched by the `source=` filter and is not returned in search results. A probe written with `source_loc: repo:/home/benjamin/.config/nvim` was not findable by that value; a probe with the tag in `provenance` was.
+- CONSEQUENCE: the `sapience_remember` MCP tool CANNOT be used for tagged writes, because `mcp.py`'s `remember_provenance()` hardcodes provenance to `"<Name> via Claude Code session (MCP)"` with no injectable repo marker (an unknown `SAPIENCE_CLIENT` collapses to the label `AI`, so it cannot be smuggled in that way either). Tagged writes must go to `POST /ingest-kos` directly, which accepts an arbitrary `provenance` string verbatim.
+
+== DELIVERABLE 1: sapience-retrieve.sh ==
+
+A retrieval script calling `GET /v1/search?q=<keywords>&source=[repo:<slug>]&limit=5`, emitting the SAME `<memory-context>` envelope `memory-retrieve.sh` emits today, so the dispatch-side contract is unchanged. Preserve that script's existing budget discipline: 2000-token budget, 5-entry cap. Derive the repo slug from `git rev-parse --show-toplevel` (basename), so the same script works unmodified in every repo the system deploys into. Reuse `memory-retrieve.sh`'s existing keyword-extraction stage (lowercase, split on non-alpha, stop-word filter, length>3, top 10) rather than inventing a second one -- only the corpus lookup changes, not the query derivation.
+
+Measured latency: 0.22s average over five cold queries against the live host, so per-dispatch injection is viable. The response's `meter` field is informational (`tokens_read`/`tokens_held`), not a search quota.
+
+== DELIVERABLE 2: the dispatch swap ==
+
+Swap the retrieval call in at `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`, at the existing memory-retrieval call site in its Stage 3.5 `memory_context` block (currently a `bash "${SKILL_REPO_ROOT}/.claude/scripts/memory-retrieve.sh" "$description" "$task_type" "$memory_arg3" 2>/dev/null || memory_context=""` form, guarded by the `--clean` flag check).
+
+PRESERVE THE FAILURE-SWALLOWING WRAPPER. The `2>/dev/null) || memory_context=""` shape means a failure degrades to no injection rather than a broken dispatch. This matters MORE after the swap than before it, because the new call is a network round-trip rather than a local jq pass -- an outage must not break every dispatch in a batch. Also preserve the `--clean` suppression semantics unchanged.
+
+== DELIVERABLE 3: sapience-remember.sh ==
+
+A write script calling `POST /ingest-kos` with the repo-tagged provenance AND `explicit: true`.
+
+`explicit: true` IS MANDATORY, not an optimization. Measured: a realistically-worded probe note was silently discarded by the server's noise gate -- the response was `{"ok": true, "written": 0, "gated": 1}`, with `ok: true` despite nothing being written. The same note with `explicit: true` wrote successfully (`written: 1`). Without the flag, task findings would be lost invisibly, and the success-shaped response makes the loss undetectable from the caller side. The script MUST additionally treat `gated >= 1` as a loud, reported outcome rather than a silent success, so a future gate change cannot reintroduce silent loss.
+
+== CONSTRAINTS AND KNOWN HAZARDS TO RECORD IN THE DESIGN ==
+
+- THERE IS NO DELETE API. `DELETE /v1/ko/<hash>`, `DELETE /v1/kos/<hash>` and `POST /v1/ko/<hash>/delete` all return 404. Writes are permanent; deletion is web-app-only. This is the principal risk of any per-dispatch write path and MUST shape how much is written per task -- prefer few, high-value, well-formed writes at a task boundary over a write per decision.
+- Writes through this path bypass the `auto_approve: false` review gate entirely (that gate governs only the transcript-extraction path), so every write is permanent and unreviewed. State this in the extension's own documentation.
+- The transcript-extraction path CANNOT be repo-tagged, so it will keep writing untagged KOs that repo-filtered reads never see. The vault therefore accumulates two differently-shaped populations. Document this asymmetry rather than attempting to fix it.
+- Two disposable probe KOs written during the research that established the above could not be deleted via API and need manual removal at app.spnc.ai: hashes `806180dc43c5cb34` ("sapience source_loc filter probe") and `9ba2b479b5e4a7e2` ("sapience provenance tagging probe"). Note this as a manual cleanup item; it is not implementation work.
+
+== WHY THE DEPENDENCY EDGES EXIST ==
+
+`orchestrate-build-dispatch.sh` is shared file territory with four non-terminal records (360, 449, 450, 487). Per the batching rule, shared territory means a declared edge and a serialized sequence, never a bare exclusion. 488 is declared because it owns `agent-system/extensions/sapience/settings-fragment.json` and `review-gate-boundary.md`, which this task's documentation deliverable touches.
+
+== BACKLOG AUDIT DISPOSITION (adjudicated at the confirmation gate) ==
+
+The audit's `duplicate-of-open #421` verdict is `mechanical_class: none` at 41% semantic similarity and was ruled NOT a duplicate: 421 concerns evidence consumption, not context injection. The `overlaps-open` verdicts against 360, 435, 449, 450 and 487 are real and are discharged by the declared dependency edges above.
+
+== VERIFICATION ==
+
+- A tagged write followed by a repo-filtered read returns that KO, and a read filtered to a DIFFERENT repo tag does not.
+- A write whose response carries `gated >= 1` is reported as a failure by the script, not swallowed.
+- With the retrieval endpoint unreachable (simulated), a dispatch still builds and runs with an empty `memory_context`, exactly as the current `|| memory_context=""` behaviour provides.
+- `--clean` still suppresses injection after the swap.
+- The emitted `<memory-context>` block is byte-comparable in shape to the one `memory-retrieve.sh` produces for an equivalent corpus, so no consumer needs changing.
+
+---
+
+### 495. Give the formal extension research agents the verbatim required-heading contract their core counterpart already carries
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/formal/** (and agent-system/extensions/core/** if the chosen remedy reaches core) -- never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one; note that file carries NO top-level source_dir, only per-extension entries, so resolve the `formal` entry specifically. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over task 878 in ~/Projects/BimodalLogic, session sess_1793904111_6edc04. User-approved at the lead level.
+
+SEVERITY: minor.
+
+CITATION -- ~/Projects/BimodalLogic/specs/878_lplus_ztime_decidability_paper_proof_repair/issues.jsonl (that repository, NOT this one): iss_1793906824199_f2HBxS
+
+LIVE SYMPTOM: validate-artifact.sh failed the report produced by that run's research dispatch (formal-research-agent, dispatch seq 1) -- missing the required `## Recommendations` section per report-format.md. It was patched by hand in a later phase. A research agent produced a report that its own format standard rejects, and nothing caught it at the point of authorship.
+
+=== THE DIAGNOSIS ALREADY EXISTS AND WAS ONLY HALF-APPLIED -- READ IT FIRST ===
+
+Abandoned project 166 ("Stop research reports drifting from validate-artifact.sh's required section headings") worked out this exact failure mode in full. Its findings, which this record inherits rather than re-deriving:
+
+- THE SKELETON IS NOT ITSELF INVALID. validate-artifact.sh matches each required section with `grep -qE "^##+ ${section}"` -- an any-depth heading-prefix regex -- so a third-level `### Recommendations` DOES satisfy the check. The agent departed from its own template when writing a real report.
+- CONTRIBUTING FACTOR (a), BURIAL: in the skeleton, `### Recommendations` is a third-level subsection of `## Findings`, while every other required section is top-level. An agent restructuring Findings for a real report gets no signal that this one subsection is load-bearing for validation.
+- CONTRIBUTING FACTOR (b), NEAR-MISS TRAP: the same skeleton separately contains `## Context Extension Recommendations`. An agent writing that heading may reasonably believe the requirement is met. Project 166 recorded that the observed failing artifact contained exactly that heading.
+
+Project 166's agent-side remedy LANDED IN CORE ONLY. agent-system/extensions/core/agents/general-research-agent.md now carries (around lines 386-395) a verbatim, explicitly non-paraphrasable statement of the five required headings, the `^##+ {section}` regex, the warning that the match is exact-text and not fuzzy, and both observed near-misses named outright (`## Recommended Next Steps` and `## Context Extension Recommendations`), with the instruction to keep the latter but never as a substitute. Project 166's own SCOPE line asked only for an enumeration of "every CORE agent carrying a report or summary skeleton," and its file_scope covered only core. The extension agents were never swept. Project 166 was then abandoned.
+
+=== MEASURED THIS RUN (re-derive before editing) ===
+
+All four of the formal extension's research agents -- agent-system/extensions/formal/agents/formal-research-agent.md, logic-research-agent.md, math-research-agent.md and physics-research-agent.md -- contain:
+- exactly ONE occurrence each of the string "Recommendations": the buried `### Recommendations` nested under `## Findings` (formal-research-agent.md around line 188, alongside `### Cross-Domain Synthesis`);
+- ZERO occurrences of "validate-artifact".
+
+None of the four carries the verbatim-heading contract, the `^##+` matching rule, or either named near-miss. The exact shape project 166 diagnosed is intact in all four, and it has now failed in production. formal-research-agent.md names general-research-agent.md as its "Copy source" for the canonical report shape, but the warning block that copy source gained was never propagated.
+
+=== SCOPE -- decide and implement ONE coherent rule, recording the reasoning ===
+
+(1) Carry the verbatim required-heading contract into the formal extension's four research agents. Prefer a SINGLE referenceable statement the agents point at over a fourth and fifth verbatim copy: four divergent copies of one contract is the mechanism that produced this gap. If no suitable referenceable home exists, say so and state why a copy is the lesser evil.
+(2) Decide whether to promote `### Recommendations` to a top-level `## Recommendations` in these four skeletons -- project 166's remedy (ii), which it explicitly permitted combining with the agent-side remedy. This removes contributing factor (a) STRUCTURALLY rather than relying on instruction-following, which is precisely what failed both times. Weigh the cost: it changes the report shape these agents emit, and `### Recommendations` currently sits deliberately inside the per-domain Findings structure.
+(3) Decide whether an authorship-time check belongs here at all: whether these agents should run validate-artifact.sh against their own report before returning, or whether the gate belongs in the research postflight that already reaches the validator. Weigh a per-dispatch self-check's cost against a repair that currently happens by hand a phase later.
+(4) Complete the sweep project 166 scoped but never ran outside core: machine-check EVERY extension agent carrying a report or summary skeleton against the validator's own REPORT_SECTIONS/SUMMARY_SECTIONS arrays using the validator's own regex -- not by eye -- and list any further gaps found. The typst and lean extensions' research agents are the obvious next candidates. Completed project 137 ("Give the lean research and implementation agents the artifact skeletons their general-* counterparts already have") did this shape of fix for the lean agents and is the model to follow for any gap this enumeration turns up; filing a separate record per extension is acceptable if the sweep is large.
+
+=== HARD CONSTRAINTS ===
+- Do NOT relax validate-artifact.sh's matching to make this green. Project 166 recorded this as dangerous and the ruling stands: a substring match would let `## Context Extension Recommendations` satisfy `Recommendations`, converting a true failure into a false pass. Do not weaken a check to make it pass.
+- Keep `## Context Extension Recommendations` available as a distinct, useful section -- never as a substitute for the required heading.
+- Pre-existing non-conforming artifacts authored before their agent gained a conforming contract are OUT OF SCOPE; they fail for a different reason and are a separate backfill question, as project 166 also recorded.
+- If remedies (3) or (4) reach core scripts or other extensions' agents, widen file_scope at plan time; this record declares only the four formal agents.
+
+=== ACCEPTANCE ===
+- The exact failure is reproduced in a fixture (a report carrying `## Context Extension Recommendations` and/or `## Recommended Next Steps` but no `## Recommendations`), shown to fail before the remedy and pass after it.
+- All four formal research agents' skeletons machine-check clean against the validator's own regex and its own required-section arrays.
+- The enumeration required by scope item (4) is recorded, with any remaining gaps listed or filed.
+- The ruling and its reasoning are recorded, including explicitly why the validator was NOT changed.
+
+---
+
+### 494. Exempt a task own artifact directory from the phase-commit containment predicate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one; note that file carries NO top-level source_dir, only per-extension entries. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over task 878 in ~/Projects/BimodalLogic, session sess_1793904111_6edc04. User-approved at the lead level.
+
+SEVERITY: minor as recorded, but the effect is a task's OWN required artifact silently omitted from its OWN phase commit.
+
+CITATION -- ~/Projects/BimodalLogic/specs/878_lplus_ztime_decidability_paper_proof_repair/issues.jsonl (that repository, NOT this one): iss_1793906925617_Kqxs0T
+
+LIVE SYMPTOM: git-commit-phase.sh dropped
+
+    specs/878_lplus_ztime_decidability_paper_proof_repair/reports/01_lplus-ztime-decidability-proof-repair.md
+
+from a phase commit pathspec, warning that it was "not contained in this task's declared file_scope". The dropped path is that task's own research report, sitting under that task's own artifact directory. A task's own artifact directory should never need an explicit file_scope declaration to be committable by that same task's own phase commit.
+
+=== MECHANICS VERIFIED IN THE SOURCE STORE (re-derive before editing; line numbers move) ===
+
+The defect is an ASYMMETRY BETWEEN TWO DIFFERENT CONSTRUCTS INSIDE THE SAME SCRIPT, agent-system/extensions/core/scripts/git-commit-phase.sh:
+
+- `stage_paths` (around line 201) is seeded ("${task_dir}/" "specs/TODO.md" "specs/state.json"). The task's own directory IS staged unconditionally and sits structurally outside the self-check.
+- `file_scope_arr` -- the array the `is_contained()` containment predicate tests each `files_touched` entry against (around lines 237-270) -- is widened with the engine-written-state paths read from scripts/lib/engine-written-state-paths-lib.sh, plus a literal ("specs/TODO.md", "specs/state.json") fallback pair. It is NOT widened with `task_dir`.
+
+So a `files_touched` entry under the task's own directory is staged by the seed and then flagged and REMOVED from the pathspec by the self-check. The script's own comment around lines 197-199 already warns that the two are a "DIFFERENT construct"; the member missing from the second one is the task's own directory.
+
+=== WHY THIS IS A PROPAGATION GAP, NOT A NEW IDEA ===
+
+agent-system/extensions/core/context/standards/git-staging-scope.md's "Three Containment sites, not one" section names three independent sites checking the SAME containment predicate. The own-task-directory exemption already exists at two of them:
+
+- Site 1, orchestrate-cycle-postflight.sh's WORK (h) advisory, gained the dispatching task's own resolved directory as an implicit, unconditional in-scope member under completed project 284. That record's stated reason for making the exemption WHOLE-DIRECTORY was explicit parity with "the commit pipeline, which already stages the whole directory regardless of declared scope."
+- Site 3, git-commit-scoped.sh's V10 gate, splices the contending task's own directory into `containment_scope_arr` (around lines 491-496), with a comment noting the carve-out "lives under the task's own directory, which this implicit member already" covers.
+- Site 2, git-commit-phase.sh's Phase-Commit Containment Self-Check, never received it.
+
+The observed drop is precisely that gap. Note the irony to be recorded: project 284's parity assumption -- that the commit pipeline already covers the whole task directory regardless of declared scope -- is TRUE of git-commit-phase.sh's staging seed and FALSE of its containment self-check, which is exactly the distinction this defect exposes.
+
+A sibling precedent for the shape of the fix: completed project 425 added the (specs/TODO.md, specs/state.json) literal pair to site 1's effective scope, explicitly "mirroring the existing V10 allowlist already landed in git-commit-scoped.sh at a sibling, non-subsuming containment site," and recorded the relationship in git-staging-scope.md. Follow that shape.
+
+=== ESTABLISH THIS BEFORE EDITING ===
+
+This run's pre-dispatch review separately flagged task 878 as `file_scope is missing_key` and admitted it carrying an `absent_scope_advisory`. But the predicate FAILS OPEN on a missing, empty, unreadable or malformed file_scope -- a genuinely absent key should have skipped the containment check entirely and dropped nothing. Determine why a drop fired anyway for a task reported as missing the key. Candidates to test, not to assume: the key was present-but-not-covering by the time the phase commit ran (e.g. populated between review and commit by an earlier postflight's --file-scope-add union merge); or the review and the commit read different state; or the fail-open guard does not cover the observed shape of "missing". This decides whether the fix is only the missing task_dir member or ALSO a fail-open defect, so answer it first and record the answer.
+
+=== SCOPE -- decide and implement ONE coherent rule, recording the reasoning ===
+
+(1) Add the dispatching task's own resolved artifact directory as an implicit, unconditional in-scope member of site 2's containment predicate, mirroring sites 1 and 3.
+(2) Decide WHERE that member belongs: in the shared definition (scripts/lib/engine-written-state-paths-lib.sh) so all three sites inherit one statement, or as a per-site splice as today. Weigh honestly: sites 1 and 3 both use per-site splices already, and the task directory is PER-TASK rather than a fixed literal path, so a shared literal allowlist may simply be the wrong home for it. State the ruling rather than defaulting to "share it because sharing is good."
+(3) Record site 2's new member in git-staging-scope.md's "Three Containment sites, not one" section, with its relationship to sites 1 and 3 and to the staging seed, as project 425 did for site 1.
+
+=== HARD CONSTRAINTS ===
+- Do NOT weaken the containment predicate for a genuine excursion. Drop-and-warn for an out-of-territory source edit is correct and must survive intact, pinned by a test.
+- Do NOT make the check fatal. Fail-open on a missing/empty/malformed file_scope, and never refusing a whole commit over this guard, are both deliberate and must stay. (This is separate from establishing WHY fail-open did not apply above -- diagnose that without removing the posture.)
+- Do NOT re-introduce or disturb the trailing-slash glob normalization in `is_contained()` or the engine-written-paths allowlist; both are already present and working.
+- Do NOT widen the staging seed to compensate; the seed is already correct. The defect is in the predicate.
+- Any state.json write goes through the mutex-guarded state-write.sh path, never a second writer.
+
+=== TERRITORY OVERLAP -- SEQUENCE, DO NOT PARALLELIZE ===
+Open tasks 486 and 430 each declare agent-system/extensions/core/scripts/git-commit-phase.sh, scripts/tests/test-git-commit-phase.sh and context/standards/git-staging-scope.md in their own file_scope, and each changes the same containment predicate. This record is the narrowest of the three and is the natural predecessor; serializing dependency edges onto those two records were added at creation time -- tasks 486 and 430 each gained a dependency on this record, cycle-checked via validate-state.sh --deep. Neither subsumes this work: 486 concerns an extension's own manifest.json registration (not under any task directory), and 430 concerns stale hand-authored file_scope for SOURCE paths (its twenty cited drops are all agent-system/** files, none under a task's artifact tree). A task's own artifact directory is structurally engine territory that should never have required declaration at all, which is a different claim from either.
+
+=== ACCEPTANCE ===
+- A fixture proves a task whose declared, NON-EMPTY file_scope omits its own artifact directory has a report written under that directory land in its phase commit, with zero scope-excursion issue records emitted for it.
+- A sibling fixture in the same run proves a genuinely out-of-territory source path is still dropped, still warned, and still recorded as a scope excursion.
+- A fixture preserves the fail-open posture for a missing/empty/malformed file_scope.
+- The answer to the `missing_key`-yet-dropped question above is recorded, with whatever follow-on it implies either fixed here or filed.
+- git-staging-scope.md records site 2's member and its relationship to sites 1 and 3.
+
+---
+
+### 493. Fix plan-format.md Tier Justification: a suite entry point that cannot resolve and a selector result asserted instead of measured
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one; note that file carries NO top-level source_dir, only per-extension entries. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over task 878 in ~/Projects/BimodalLogic, session sess_1793904111_6edc04. User-approved at the lead level.
+
+SEVERITY: minor (both defects).
+
+TWO DEFECTS, ONE FILE, ONE SUBSECTION -- filed together deliberately. Both land in the `**Tier Justification**:` block of agent-system/extensions/core/context/formats/plan-format.md (around lines 332-345). Shared file territory is a reason to batch, never to separate.
+
+CITATIONS -- ~/Projects/BimodalLogic/specs/878_lplus_ztime_decidability_paper_proof_repair/issues.jsonl (that repository, NOT this one):
+  iss_1793905878455_9R7xHR -- defect 1
+  iss_1793905661566_XjC7uq -- defect 2
+
+=== DEFECT 1: a suite entry point that cannot resolve in a deploy-target repository ===
+
+MEASURED. plan-format.md line 339 names the suite-subset narrowing mechanism as, verbatim:
+
+    bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE,...]
+
+In a deploy-target repository there is no agent-system/ directory at all (verified: ~/Projects/BimodalLogic has none), so a plan author following that line verbatim is handed a nonexistent path. The working entry point there is `bash .claude/scripts/tests/run-all.sh --only ...`. The line is inconsistent even within its own list: the sibling bullet two lines below already uses the deploy form, `bash .claude/scripts/verify-deploy.sh --only-gate N[,M,...]`.
+
+THE DOCUMENT ALREADY STATES THE CORRECT RULE, 80 LINES LATER -- do not invent a new convention. The same file's forcing-override section (around lines 420-429) sets out the dual-form convention explicitly: the deploy form `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE...]` "in a deploy-target repository", or "the parallel `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE...]` ... form when the dispatch is composed from inside the agent-system source-store repository itself", and then: "The composer resolves and interpolates whichever of the two actually exists in the repository the dispatch is running in (never a hardcoded path that cannot resolve there); if neither exists, the directive degrades to stating the full gate set as such instead of naming a dead path." Line 339 violates a rule its own document already owns. Apply that rule at line 339 BY REFERENCE -- do not fork a second verbatim copy of the convention; a duplicated contract is how the two statements drifted apart in the first place.
+
+=== DEFECT 2: a Tier Justification line asserted a selector result instead of measuring it ===
+
+A prior plan for task 878 asserted, in two separate Tier Justification lines, that specs/ROADMAP.md resolves to the `__FULL_SWEEP__` sentinel under `suite_selection_select` -- i.e. that no suite covers it.
+
+MEASURED directly this run, from the deploy tree:
+
+    suite_selection_select specs/ROADMAP.md
+    -> test-engine-written-state-paths-lib.sh test-roadmap-generation.sh
+
+Two covering suites, not the sentinel. Only a different path in that same plan (a report path) actually returns `__FULL_SWEEP__`. So a Tier Justification line carried a false claim about the selector's own output, and nothing in the standard required the author to run the selector before writing the claim.
+
+THE PATTERN, not the single wrong line, is the subject: a Tier Justification is the one sentence that licenses a phase to verify below `full`. An unmeasured claim there can silently under-verify a phase.
+
+=== SCOPE -- decide and implement ONE coherent rule per defect, recording the reasoning ===
+
+(1) ENTRY POINT. Make line 339 name a form that resolves in both repository shapes, governed by the resolve-whichever-exists rule the override section already states, referenced rather than restated.
+
+(2) MEASUREMENT. Decide whether plan-format.md's Tier Justification requirement should REQUIRE the author to have run `suite_selection_select` on the touched path(s) and quote its actual output in the line, rather than asserting a covering suite or the `__FULL_SWEEP__` sentinel. Weigh honestly: a measurement requirement makes every non-final sub-`full` phase pay a selector invocation at plan time, and plan-format.md is already a long standard whose requirements compete for an author's attention; against that, an unmeasured tier claim can license under-verification of a phase, which is the whole point of the field. Consider explicitly whether a MECHANICAL check -- a plan lint that re-runs the selector for any Tier Justification naming a suite subset or the sentinel, and fails on a mismatch -- is the sounder enforcement than a prose requirement that relies on instruction-following. State the ruling either way; do not leave it implicit.
+
+=== HARD CONSTRAINTS ===
+- Do NOT change the tier taxonomy, the final-phase `full` invariant, or the rule that the final phase carries no justification line.
+- Do NOT weaken or remove the `__FULL_SWEEP__` documentation around line 342; it is correct and is what made defect 2 diagnosable.
+- Keep the override section's dual-form convention as the SINGLE statement of that rule. Reference it; do not copy it.
+- If remedy (2) selects a lint, file_scope must be widened at plan time to cover the lint script, its test suite, and any gate wiring -- this record declares only plan-format.md.
+
+=== TERRITORY NOTE ===
+The creation-time backlog audit returned mechanical `subset-of-open` overlap on agent-system/extensions/core/context/formats/plan-format.md against open tasks 459, 328, 360, 385 and 420. None of them addresses either defect above. If any is dispatched concurrently with this one, the shared file must be sequenced, not run in parallel.
+
+=== ACCEPTANCE ===
+- Line 339 names a form that resolves in a deploy-target repository AND in the source-store repository, under the convention the override section already states.
+- A grep of plan-format.md for the bare `agent-system/extensions/core/scripts/tests/run-all.sh` path returns only occurrences explicitly paired with the deploy form or explicitly labelled as the source-store-repository form.
+- The measurement ruling is recorded with its reasoning, including why a lint was or was not added.
+- If a lint is added, a fixture proves a Tier Justification carrying a fabricated selector result fails, and one carrying the measured result passes.
+
+---
 
 ### 492. Key the backlog-audit confirmation prompt to corroboration, not verdict label
 - **Effort**: small
@@ -363,7 +785,7 @@ TERRITORY EDGES -- orchestrate-build-dispatch.sh and orchestrate-cycle-plan.sh a
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 430, Task 446, Task 484
+- **Dependencies**: Task 430, Task 446, Task 484, Task 494
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -3186,7 +3608,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428
+- **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428, Task 494
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
