@@ -11,7 +11,7 @@ next_project_number: 488
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,471,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,471,473,477,478,483,485 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,313,384,398,409,418,431,445,446,453,458,463,465,472,475 | 22,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
 | 3 | 360,369,399,420,436,438,439,444,448,474,476,484 | 29,313,328,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 391,449,451,452,454,455,461,479,486 | 360,369,385,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
@@ -68,7 +68,6 @@ next_project_number: 488
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
-482 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
 483 [NOT STARTED] — Document that an extension lifecycle hook can never fire...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
@@ -381,7 +380,7 @@ Every other `duplicate-of-open` verdict in the document carries `mechanical_clas
 ---
 
 ### 482. Create sapience extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
