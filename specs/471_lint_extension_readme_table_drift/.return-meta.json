@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "task_number": 471,
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1793897002_11e720_471",
+  "dispatch_seq": 1,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/471_lint_extension_readme_table_drift/reports/01_lint-extension-readme-table-drift.md",
+      "summary": "Research for a new lint-extension-readme-table.sh gate: confirms no existing analog lint, finds outcome #3's --only-gate 1-23 cap already fixed on HEAD (commit 3d28b4399, predates this dispatch), and finds a genuine live drift the dispatch's CURRENT STATE claim missed -- the sapience extension (added by task 482 after this dispatch was authored) has no Available Extensions table row, which must be added to satisfy outcome #5's full-green requirement. Documents sibling lint conventions, gate-registry.data/verify-deploy.sh wiring pattern, sync-manifest-scripts.sh usage, and the test-suite template to follow."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/, verify-deploy.sh's --only-gate validation derives its max-id bound dynamically from gate_registry_ids() (iterating the live gate-registry.data), falling back to a literal 23 only when that enumeration is empty/degraded. Before assuming a '--only-gate hard-caps at N' bug report is still live, re-check this derivation with git log -L on the --only-gate parsing block -- it may already have been fixed by an earlier, unrelated task (e.g. a WARN-finding-escalation task) that touched the same region for a different reason.",
+      "category": "PATTERN",
+      "source_artifact": "specs/471_lint_extension_readme_table_drift/reports/01_lint-extension-readme-table-drift.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy.sh", "only-gate", "gate-registry", "stale-cap", "dynamic-bound"]
+    },
+    {
+      "content": "manifest.json's routing_exempt: true is NOT a reliable signal for 'this extension is excluded from the top-level agent-system/extensions/README.md Available Extensions table' -- approvals, slidev, and sapience all set routing_exempt: true yet all belong in the table (Task Type: -). The only extension genuinely excluded from that table is core itself, and the correct way to encode that exemption in a lint is an explicit directory-name string check, never an inferred manifest-field heuristic.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/471_lint_extension_readme_table_drift/reports/01_lint-extension-readme-table-drift.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["routing_exempt", "extensions-readme", "core-extension", "manifest.json", "false-signal"]
+    },
+    {
+      "content": "sync-manifest-scripts.sh (agent-system/extensions/core/scripts/) is the sanctioned --check/--write tool for deriving an extension manifest's provides.scripts array (including new tests/test-*.sh entries) from git ls-files, surgically rewriting only that array block in the SOURCE-STORE manifest. Never hand-edit provides.scripts when adding a new script or test file -- run this with --write instead.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/471_lint_extension_readme_table_drift/reports/01_lint-extension-readme-table-drift.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sync-manifest-scripts", "provides.scripts", "manifest.json", "source-store", "test-declaration"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 471 to create implementation plan"
+}
