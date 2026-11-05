@@ -1,10 +1,29 @@
 {
-  "version": "1.0.0",
   "extensions": {
     "memory": {
-      "loaded_at": "2026-10-18T03:49:11Z",
+      "version": "1.0.0",
       "data_skeleton_files": [],
       "merged_sections": {
+        "settings": {
+          "mcpServers": {
+            "type": "merged",
+            "children": {
+              "obsidian-memory": {
+                "type": "merged",
+                "children": {
+                  "args": {
+                    "type": "appended",
+                    "items": []
+                  },
+                  "env": {
+                    "type": "merged",
+                    "children": []
+                  }
+                }
+              }
+            }
+          }
+        },
         "index": {
           "paths": [
             "project/memory/learn-usage.md",
@@ -25,33 +44,13 @@
             "project/memory/patterns/distill-merge-submode.md",
             "project/memory/patterns/distill-purge-submode.md"
           ]
-        },
-        "settings": {
-          "mcpServers": {
-            "type": "merged",
-            "children": {
-              "obsidian-memory": {
-                "type": "merged",
-                "children": {
-                  "args": {
-                    "type": "appended",
-                    "items": []
-                  },
-                  "env": {
-                    "type": "merged",
-                    "children": []
-                  }
-                }
-              }
-            }
-          }
         }
       },
       "installed_dirs": [],
-      "version": "1.0.0",
-      "source_git_head": "a541079e189301a9a28174b8ece3af5cd9721e6d",
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/memory",
+      "source_git_head": "21a6bc205d4ccfccb0deeb8af5856b5da64eff66",
       "status": "active",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/memory",
+      "loaded_at": "2026-11-05T15:50:29Z",
       "installed_files": [
         ".claude/commands/learn.md",
         ".claude/commands/distill.md",
@@ -83,10 +82,91 @@
         ".claude/extensions/memory/manifest.json"
       ]
     },
-    "core": {
-      "loaded_at": "2026-10-18T03:49:10Z",
+    "sapience": {
+      "version": "1.0.0",
       "data_skeleton_files": [],
       "merged_sections": {
+        "settings": {
+          "permissions": {
+            "children": {
+              "allow": {
+                "items": [],
+                "type": "appended"
+              }
+            },
+            "type": "merged"
+          }
+        },
+        "index": {
+          "paths": [
+            "project/sapience/README.md",
+            "project/sapience/domain/vault-model.md",
+            "project/sapience/domain/review-gate-boundary.md",
+            "project/sapience/domain/transcript-filter-ceiling.md",
+            "project/sapience/domain/subagent-orientation.md"
+          ]
+        }
+      },
+      "installed_dirs": [],
+      "source_git_head": "0131759ecb13cafccebd7c73f3835f4aa3d88b98",
+      "status": "active",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/sapience",
+      "loaded_at": "2026-11-05T16:04:36Z",
+      "installed_files": [
+        ".claude/context/project/sapience/README.md",
+        ".claude/context/project/sapience/domain/review-gate-boundary.md",
+        ".claude/context/project/sapience/domain/subagent-orientation.md",
+        ".claude/context/project/sapience/domain/transcript-filter-ceiling.md",
+        ".claude/context/project/sapience/domain/vault-model.md",
+        ".claude/extensions/sapience/manifest.json"
+      ]
+    },
+    "core": {
+      "version": "1.0.0",
+      "data_skeleton_files": [],
+      "merged_sections": {
+        "settings": {
+          "hooks": {
+            "type": "merged",
+            "children": {
+              "PreToolUse": {
+                "items": [],
+                "hook_items": [],
+                "type": "hook_merged"
+              },
+              "UserPromptSubmit": {
+                "items": [],
+                "hook_items": [],
+                "type": "hook_merged"
+              },
+              "Notification": {
+                "items": [],
+                "hook_items": [],
+                "type": "hook_merged"
+              },
+              "SessionStart": {
+                "items": [],
+                "hook_items": [],
+                "type": "hook_merged"
+              },
+              "Stop": {
+                "items": [],
+                "hook_items": [],
+                "type": "hook_merged"
+              },
+              "SubagentStop": {
+                "items": [],
+                "hook_items": [],
+                "type": "hook_merged"
+              },
+              "PostToolUse": {
+                "items": [],
+                "hook_items": [],
+                "type": "hook_merged"
+              }
+            }
+          }
+        },
         "index": {
           "paths": [
             "architecture/component-checklist.md",
@@ -257,55 +337,14 @@
             "standards/post-incident-verification-checklist.md",
             "standards/shared-worktree-discipline.md",
             "patterns/plan-revision-notification.md",
-            "standards/repo-level-declarations.md"
+            "standards/repo-level-declarations.md",
+            "patterns/backlog-reconciliation.md"
           ]
-        },
-        "settings": {
-          "hooks": {
-            "type": "merged",
-            "children": {
-              "UserPromptSubmit": {
-                "hook_items": [],
-                "type": "hook_merged",
-                "items": []
-              },
-              "SubagentStop": {
-                "hook_items": [],
-                "type": "hook_merged",
-                "items": []
-              },
-              "SessionStart": {
-                "hook_items": [],
-                "type": "hook_merged",
-                "items": []
-              },
-              "PostToolUse": {
-                "hook_items": [],
-                "type": "hook_merged",
-                "items": []
-              },
-              "PreToolUse": {
-                "hook_items": [],
-                "type": "hook_merged",
-                "items": []
-              },
-              "Stop": {
-                "hook_items": [],
-                "type": "hook_merged",
-                "items": []
-              },
-              "Notification": {
-                "hook_items": [],
-                "type": "hook_merged",
-                "items": []
-              }
-            }
-          }
         }
       },
       "installed_dirs": [],
-      "version": "1.0.0",
-      "source_git_head": "cd27da9cc7d4541886466e1aeae98950bbbc6941",
+      "source_git_head": "94ba53e8dcd28c2c7d339f30448dba6c19589f95",
+      "loaded_at": "2026-11-05T15:50:28Z",
       "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/core",
       "status": "active",
       "installed_files": [
@@ -422,6 +461,7 @@
         ".claude/context/patterns/adoption-lint-conventions.md",
         ".claude/context/patterns/anti-stop-patterns.md",
         ".claude/context/patterns/artifact-linking-todo.md",
+        ".claude/context/patterns/backlog-reconciliation.md",
         ".claude/context/patterns/batch-drain-loop.md",
         ".claude/context/patterns/batch-orchestration-guardrails.md",
         ".claude/context/patterns/bounded-build-waiter.md",
@@ -529,6 +569,7 @@
         ".claude/context/workflows/task-breakdown.md",
         ".claude/scripts/assess-repo-health.sh",
         ".claude/scripts/audit-deletion-references.sh",
+        ".claude/scripts/audit-task-proposals.sh",
         ".claude/scripts/backfill-file-scope.sh",
         ".claude/scripts/census-count.sh",
         ".claude/scripts/check-consumer-freshness.sh",
@@ -572,6 +613,8 @@
         ".claude/scripts/lib/deploy-freshness-lib.sh",
         ".claude/scripts/lib/deploy-ledger-lib.sh",
         ".claude/scripts/lib/derived-artifact-probe-lib.sh",
+        ".claude/scripts/lib/engine-written-state-paths-lib.sh",
+        ".claude/scripts/lib/extension-install-lib.sh",
         ".claude/scripts/lib/file-scope-overlap.sh",
         ".claude/scripts/lib/gate-cache-lib.sh",
         ".claude/scripts/lib/gate-registry-lib.sh",
@@ -581,21 +624,22 @@
         ".claude/scripts/lib/phase-heading-patterns.sh",
         ".claude/scripts/lib/phase-heartbeat-lib.sh",
         ".claude/scripts/lib/plan-status-line.sh",
+        ".claude/scripts/lib/project-number-inuse.sh",
         ".claude/scripts/lib/push-grant-lib.sh",
-        ".claude/scripts/lib/stash-provenance-lib.sh",
+        ".claude/scripts/lib/record-version-patterns.sh",
         ".claude/scripts/lib/redeploy-checkpoint-lib.sh",
         ".claude/scripts/lib/redeploy-remedy-lib.sh",
         ".claude/scripts/lib/return-meta-artifacts-lib.sh",
         ".claude/scripts/lib/return-meta-status-vocabulary.sh",
         ".claude/scripts/lib/runtime-file-patterns.sh",
+        ".claude/scripts/lib/stash-provenance-lib.sh",
+        ".claude/scripts/lib/status-vocabulary.sh",
+        ".claude/scripts/lib/suite-selection-lib.sh",
         ".claude/scripts/lib/task-classification-lib.sh",
         ".claude/scripts/lib/task-lookup-lib.sh",
         ".claude/scripts/lib/task-reference-patterns.sh",
-        ".claude/scripts/lib/record-version-patterns.sh",
         ".claude/scripts/lib/task-type-detect.sh",
         ".claude/scripts/lib/territory-contention-lib.sh",
-        ".claude/scripts/lib/status-vocabulary.sh",
-        ".claude/scripts/lib/suite-selection-lib.sh",
         ".claude/scripts/lifecycle-notify.sh",
         ".claude/scripts/lint/lint-agent-contracts.sh",
         ".claude/scripts/lint/lint-branch-gated-sections.sh",
@@ -613,6 +657,7 @@
         ".claude/scripts/lint/lint-state-writer-boundary.sh",
         ".claude/scripts/lint/lint-task-lookup-adoption.sh",
         ".claude/scripts/lint/lint-test-harness-adoption.sh",
+        ".claude/scripts/lint/lint-verdict-extraction-anchoring.sh",
         ".claude/scripts/manage-topics.sh",
         ".claude/scripts/measure-eager-context.sh",
         ".claude/scripts/measure-eager-surface.sh",
@@ -629,13 +674,14 @@
         ".claude/scripts/orchestrate-conclusion-aggregate.sh",
         ".claude/scripts/orchestrate-cycle-plan.sh",
         ".claude/scripts/orchestrate-cycle-postflight.sh",
-        ".claude/scripts/orchestrate-predispatch-review.sh",
         ".claude/scripts/orchestrate-loop-guard-init.sh",
+        ".claude/scripts/orchestrate-predispatch-review.sh",
         ".claude/scripts/orchestrate-record-decision.sh",
         ".claude/scripts/orchestrate-recover-message-findings.sh",
         ".claude/scripts/orchestrate-recover-outcome.sh",
         ".claude/scripts/orchestrate-stage5-gates.sh",
         ".claude/scripts/orchestrate-stage5-postflight.sh",
+        ".claude/scripts/orchestrate-suggest-next-batch.sh",
         ".claude/scripts/orchestrate-triage-classify.sh",
         ".claude/scripts/orchestrate-unwind-dispatch.sh",
         ".claude/scripts/orchestrator-postflight.sh",
@@ -662,72 +708,81 @@
         ".claude/scripts/test-state-write-regen-timing.sh",
         ".claude/scripts/test-state-write-spill-names.sh",
         ".claude/scripts/test-task-lock-reap.sh",
+        ".claude/scripts/tests/known-failures.txt",
         ".claude/scripts/tests/run-all.sh",
+        ".claude/scripts/tests/suite-cost-hints.txt",
         ".claude/scripts/tests/test-askuserquestion-rehome.sh",
         ".claude/scripts/tests/test-assess-repo-health.sh",
+        ".claude/scripts/tests/test-audit-task-proposals.sh",
         ".claude/scripts/tests/test-backfill-file-scope.sh",
         ".claude/scripts/tests/test-census-count.sh",
-        ".claude/scripts/tests/test-common-lib.sh",
+        ".claude/scripts/tests/test-check-record-versioning.sh",
+        ".claude/scripts/tests/test-check-task-references.sh",
         ".claude/scripts/tests/test-claude-refresh-matcher.sh",
+        ".claude/scripts/tests/test-common-lib.sh",
+        ".claude/scripts/tests/test-consumer-freshness.sh",
         ".claude/scripts/tests/test-context-reachability.sh",
         ".claude/scripts/tests/test-corroborate-phase-counts.sh",
+        ".claude/scripts/tests/test-deploy-baseline-lib.sh",
+        ".claude/scripts/tests/test-deploy-freshness.sh",
+        ".claude/scripts/tests/test-deploy-ledger-lib.sh",
+        ".claude/scripts/tests/test-deploy-orphans.sh",
+        ".claude/scripts/tests/test-deploy-propagation.sh",
         ".claude/scripts/tests/test-deploy-root-guard.sh",
+        ".claude/scripts/tests/test-deploy-verify-overlap.sh",
+        ".claude/scripts/tests/test-deploy-verify-wiring.sh",
+        ".claude/scripts/tests/test-derived-artifact-probe-lib.sh",
+        ".claude/scripts/tests/test-detect-noop-bash.sh",
+        ".claude/scripts/tests/test-dispatch-metrics.sh",
         ".claude/scripts/tests/test-dispatch-strand-probe.sh",
+        ".claude/scripts/tests/test-double-loading-check.sh",
+        ".claude/scripts/tests/test-engine-written-state-paths-lib.sh",
         ".claude/scripts/tests/test-errors-append.sh",
         ".claude/scripts/tests/test-force-phases.sh",
         ".claude/scripts/tests/test-gate-cache-equivalence.sh",
         ".claude/scripts/tests/test-gate-cache-lib.sh",
+        ".claude/scripts/tests/test-gate-lock.sh",
+        ".claude/scripts/tests/test-gate-out-derived-staleness.sh",
         ".claude/scripts/tests/test-gate-out-repair-reporting.sh",
         ".claude/scripts/tests/test-gate-out-self-attribution.sh",
-        ".claude/scripts/tests/test-gate-out-derived-staleness.sh",
         ".claude/scripts/tests/test-gate-registry-resolution.sh",
+        ".claude/scripts/tests/test-gate3-parallel-equivalence.sh",
+        ".claude/scripts/tests/test-gate3-strict-equivalence.sh",
         ".claude/scripts/tests/test-generate-task-order.sh",
         ".claude/scripts/tests/test-git-commit-phase.sh",
         ".claude/scripts/tests/test-git-commit-scoped.sh",
         ".claude/scripts/tests/test-git-snapshot.sh",
         ".claude/scripts/tests/test-guard-destructive-git.sh",
         ".claude/scripts/tests/test-guard-git-push.sh",
-        ".claude/scripts/tests/test-lint-agent-contracts-await-notification.sh",
-        ".claude/scripts/tests/test-lint-agent-contracts-handoff-section.sh",
-        ".claude/scripts/tests/test-lint-dead-command-recommendations.sh",
-        ".claude/scripts/tests/test-manifest-scripts-sync.sh",
-        ".claude/scripts/tests/test-please-grant.sh",
-        ".claude/scripts/tests/test-reconcile-demote-stranded.sh",
-        ".claude/scripts/tests/test-record-stash-provenance.sh",
-        ".claude/scripts/tests/test-deploy-freshness.sh",
-        ".claude/scripts/tests/test-deploy-baseline-lib.sh",
-        ".claude/scripts/tests/test-deploy-ledger-lib.sh",
-        ".claude/scripts/tests/test-consumer-freshness.sh",
-        ".claude/scripts/tests/test-deploy-orphans.sh",
-        ".claude/scripts/tests/test-deploy-verify-overlap.sh",
-        ".claude/scripts/tests/test-postflight-deploy-gate.sh",
-        ".claude/scripts/tests/test-deploy-propagation.sh",
-        ".claude/scripts/tests/test-deploy-verify-wiring.sh",
-        ".claude/scripts/tests/test-derived-artifact-probe-lib.sh",
-        ".claude/scripts/tests/test-detect-noop-bash.sh",
-        ".claude/scripts/tests/test-dispatch-metrics.sh",
-        ".claude/scripts/tests/test-double-loading-check.sh",
         ".claude/scripts/tests/test-handoff-dispatch-identity.sh",
         ".claude/scripts/tests/test-handoff-reader-parity.sh",
         ".claude/scripts/tests/test-index-entries-schema.sh",
         ".claude/scripts/tests/test-init-specs.sh",
+        ".claude/scripts/tests/test-install-uninstall-extension.sh",
         ".claude/scripts/tests/test-issue-record.sh",
         ".claude/scripts/tests/test-lake-build-guard.sh",
+        ".claude/scripts/tests/test-lint-agent-contracts-await-notification.sh",
+        ".claude/scripts/tests/test-lint-agent-contracts-handoff-section.sh",
         ".claude/scripts/tests/test-lint-agent-contracts-heartbeat.sh",
         ".claude/scripts/tests/test-lint-agent-contracts.sh",
         ".claude/scripts/tests/test-lint-branch-gated-sections.sh",
         ".claude/scripts/tests/test-lint-corpus-scan-lib.sh",
+        ".claude/scripts/tests/test-lint-dead-command-recommendations.sh",
+        ".claude/scripts/tests/test-lint-deploy-caller-wrap.sh",
         ".claude/scripts/tests/test-lint-directory-pathspec-boundary.sh",
         ".claude/scripts/tests/test-lint-hook-registration-paths.sh",
         ".claude/scripts/tests/test-lint-json-channel-discipline.sh",
         ".claude/scripts/tests/test-lint-lifecycle-status-var.sh",
         ".claude/scripts/tests/test-lint-postflight-boundary.sh",
         ".claude/scripts/tests/test-lint-scoped-commit-boundary.sh",
-        ".claude/scripts/tests/test-lint-shellcheck.sh",
         ".claude/scripts/tests/test-lint-shellcheck-parallel.sh",
+        ".claude/scripts/tests/test-lint-shellcheck.sh",
         ".claude/scripts/tests/test-lint-state-writer-boundary.sh",
         ".claude/scripts/tests/test-lint-task-lookup-adoption.sh",
         ".claude/scripts/tests/test-lint-test-harness-adoption.sh",
+        ".claude/scripts/tests/test-lint-verdict-extraction-anchoring.sh",
+        ".claude/scripts/tests/test-manage-topics-create-order.sh",
+        ".claude/scripts/tests/test-manifest-scripts-sync.sh",
         ".claude/scripts/tests/test-measure-gate-costs.sh",
         ".claude/scripts/tests/test-mint-dispatch-seq.sh",
         ".claude/scripts/tests/test-orchestrate-batch-admit.sh",
@@ -743,53 +798,56 @@
         ".claude/scripts/tests/test-orchestrate-record-decision.sh",
         ".claude/scripts/tests/test-orchestrate-recover-message-findings.sh",
         ".claude/scripts/tests/test-orchestrate-recover-outcome.sh",
+        ".claude/scripts/tests/test-orchestrate-suggest-next-batch.sh",
         ".claude/scripts/tests/test-orchestrate-triage-classify.sh",
         ".claude/scripts/tests/test-orchestrate-unwind-dispatch.sh",
         ".claude/scripts/tests/test-phase-heading-patterns.sh",
-        ".claude/scripts/tests/test-record-version-patterns.sh",
         ".claude/scripts/tests/test-phase-heartbeat.sh",
         ".claude/scripts/tests/test-plan-file-scope-harvest.sh",
+        ".claude/scripts/tests/test-please-grant.sh",
+        ".claude/scripts/tests/test-postflight-deploy-gate.sh",
+        ".claude/scripts/tests/test-postflight-marker-schema.sh",
+        ".claude/scripts/tests/test-reconcile-demote-stranded.sh",
+        ".claude/scripts/tests/test-reconcile-handoff-status.sh",
+        ".claude/scripts/tests/test-record-stash-provenance.sh",
+        ".claude/scripts/tests/test-record-version-patterns.sh",
         ".claude/scripts/tests/test-redeploy-checkpoint-promotion.sh",
         ".claude/scripts/tests/test-redeploy-remedy-lib.sh",
-        ".claude/scripts/tests/test-runtime-file-tracking.sh",
-        ".claude/scripts/tests/test-stall-reprompt-wiring.sh",
-        ".claude/scripts/tests/test-status-vocabulary.sh",
-        ".claude/scripts/tests/test-sweep-invalidated-claims.sh",
-        ".claude/scripts/tests/test-task-lock-liveness.sh",
-        ".claude/scripts/tests/test-validate-bounded-waiter.sh",
-        ".claude/scripts/tests/test-validate-state.sh",
-        ".claude/scripts/tests/test-postflight-marker-schema.sh",
-        ".claude/scripts/tests/test-subagent-postflight-marker.sh",
-        ".claude/scripts/tests/test-reconcile-handoff-status.sh",
         ".claude/scripts/tests/test-resume-scan-nonconformance.sh",
         ".claude/scripts/tests/test-return-meta-status-vocabulary.sh",
         ".claude/scripts/tests/test-roadmap-generation.sh",
         ".claude/scripts/tests/test-routing-resolution.sh",
+        ".claude/scripts/tests/test-run-all-failure-reporting.sh",
+        ".claude/scripts/tests/test-run-all-parallel.sh",
+        ".claude/scripts/tests/test-run-all-selection.sh",
+        ".claude/scripts/tests/test-run-task-observers.sh",
+        ".claude/scripts/tests/test-runtime-file-tracking.sh",
         ".claude/scripts/tests/test-script-inventory.sh",
         ".claude/scripts/tests/test-skill-base-lifecycle.sh",
+        ".claude/scripts/tests/test-stall-reprompt-wiring.sh",
+        ".claude/scripts/tests/test-status-vocabulary.sh",
+        ".claude/scripts/tests/test-subagent-postflight-marker.sh",
+        ".claude/scripts/tests/test-sweep-invalidated-claims.sh",
+        ".claude/scripts/tests/test-task-lock-liveness.sh",
+        ".claude/scripts/tests/test-task-lock-queue.sh",
+        ".claude/scripts/tests/test-task-reference-patterns-lib.sh",
+        ".claude/scripts/tests/test-task-type-detect.sh",
+        ".claude/scripts/tests/test-todo-move-pair-staging.sh",
         ".claude/scripts/tests/test-update-plan-status.sh",
         ".claude/scripts/tests/test-update-task-status.sh",
         ".claude/scripts/tests/test-validate-artifact.sh",
-        ".claude/scripts/tests/test-validate-handoff.sh",
+        ".claude/scripts/tests/test-validate-bounded-waiter.sh",
         ".claude/scripts/tests/test-validate-handoff-location.sh",
+        ".claude/scripts/tests/test-validate-handoff.sh",
+        ".claude/scripts/tests/test-validate-no-record-versioning.sh",
         ".claude/scripts/tests/test-validate-no-task-references.sh",
         ".claude/scripts/tests/test-validate-return-meta.sh",
+        ".claude/scripts/tests/test-validate-state.sh",
+        ".claude/scripts/tests/test-validate-task-creation-audit.sh",
+        ".claude/scripts/tests/test-validate-wiring.sh",
         ".claude/scripts/tests/test-verify-deploy-context-budget.sh",
-        ".claude/scripts/tests/test-manage-topics-create-order.sh",
-        ".claude/scripts/tests/test-task-type-detect.sh",
-        ".claude/scripts/tests/suite-cost-hints.txt",
-        ".claude/scripts/tests/known-failures.txt",
-        ".claude/scripts/tests/test-lint-deploy-caller-wrap.sh",
-        ".claude/scripts/tests/test-run-all-parallel.sh",
-        ".claude/scripts/tests/test-run-all-failure-reporting.sh",
-        ".claude/scripts/tests/test-run-all-selection.sh",
-        ".claude/scripts/tests/test-run-task-observers.sh",
         ".claude/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh",
         ".claude/scripts/tests/test-verify-deploy-gate-selection.sh",
-        ".claude/scripts/tests/test-check-task-references.sh",
-        ".claude/scripts/tests/test-check-record-versioning.sh",
-        ".claude/scripts/tests/test-validate-wiring.sh",
-        ".claude/scripts/tests/test-todo-move-pair-staging.sh",
         ".claude/scripts/tier-selection.sh",
         ".claude/scripts/uninstall-extension.sh",
         ".claude/scripts/update-phase-status.sh",
@@ -799,9 +857,9 @@
         ".claude/scripts/validate-context-budgets.sh",
         ".claude/scripts/validate-context-index.sh",
         ".claude/scripts/validate-handoff.sh",
+        ".claude/scripts/validate-index.sh",
         ".claude/scripts/validate-return-meta.sh",
         ".claude/scripts/validate-state.sh",
-        ".claude/scripts/validate-index.sh",
         ".claude/scripts/validate-wiring.sh",
         ".claude/scripts/verify-deploy.sh",
         ".claude/hooks/claude-stop-notify.sh",
@@ -820,9 +878,11 @@
         ".claude/hooks/validate-bounded-waiter.sh",
         ".claude/hooks/validate-handoff-location.sh",
         ".claude/hooks/validate-meta-write.sh",
+        ".claude/hooks/validate-no-record-versioning.sh",
         ".claude/hooks/validate-no-task-references.sh",
         ".claude/hooks/validate-plan-write.sh",
         ".claude/hooks/validate-state-sync.sh",
+        ".claude/hooks/validate-task-creation-audit.sh",
         ".claude/hooks/wezterm-clear-task-number.sh",
         ".claude/hooks/wezterm-notify.sh",
         ".claude/hooks/wezterm-preflight-status.sh",
@@ -865,10 +925,66 @@
         ".claude/extensions/core/manifest.json"
       ]
     },
-    "email": {
-      "loaded_at": "2026-10-18T03:49:10Z",
+    "approvals": {
+      "version": "1.0.0",
       "data_skeleton_files": [],
       "merged_sections": {
+        "index": {
+          "paths": [
+            "project/approvals/README.md",
+            "project/approvals/standards/approval-artifact-convention.md",
+            "project/approvals/standards/confidence-vocabulary.md",
+            "project/approvals/patterns/approve-interaction-design.md"
+          ]
+        }
+      },
+      "installed_dirs": [],
+      "source_git_head": "bd580e406218b4c277217e8bdcc2be34b46274ea",
+      "loaded_at": "2026-11-05T15:50:28Z",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/approvals",
+      "status": "active",
+      "installed_files": [
+        ".claude/commands/approve.md",
+        ".claude/skills/skill-approve/SKILL.md",
+        ".claude/context/project/approvals/README.md",
+        ".claude/context/project/approvals/patterns/approve-interaction-design.md",
+        ".claude/context/project/approvals/standards/approval-artifact-convention.md",
+        ".claude/context/project/approvals/standards/confidence-vocabulary.md",
+        ".claude/scripts/approve-classify.sh",
+        ".claude/scripts/approve-guard.sh",
+        ".claude/scripts/approve-paths.sh",
+        ".claude/scripts/tests/test-approve-classify.sh",
+        ".claude/scripts/tests/test-approve-paths.sh",
+        ".claude/scripts/tests/test-approve-refusals.sh",
+        ".claude/scripts/tests/test-approve-structural.sh",
+        ".claude/extensions/approvals/manifest.json"
+      ]
+    },
+    "email": {
+      "version": "1.0.0",
+      "data_skeleton_files": [],
+      "merged_sections": {
+        "settings": {
+          "hooks": {
+            "type": "merged",
+            "children": {
+              "PreToolUse": {
+                "items": [],
+                "hook_items": [],
+                "type": "hook_merged"
+              }
+            }
+          },
+          "permissions": {
+            "type": "merged",
+            "children": {
+              "deny": {
+                "type": "appended",
+                "items": []
+              }
+            }
+          }
+        },
         "index": {
           "paths": [
             "project/email/email-preferences.md",
@@ -883,32 +999,11 @@
             "project/email/design/email-to-memory-preferences.md",
             "project/email/patterns/email-cleanup-all-mode.md"
           ]
-        },
-        "settings": {
-          "permissions": {
-            "type": "merged",
-            "children": {
-              "deny": {
-                "type": "appended",
-                "items": []
-              }
-            }
-          },
-          "hooks": {
-            "type": "merged",
-            "children": {
-              "PreToolUse": {
-                "hook_items": [],
-                "type": "hook_merged",
-                "items": []
-              }
-            }
-          }
         }
       },
       "installed_dirs": [],
-      "version": "1.0.0",
       "source_git_head": "0ba82875c3c8088a1d0ce6944520cb801a1b8a6b",
+      "loaded_at": "2026-11-05T15:50:28Z",
       "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/email",
       "status": "active",
       "installed_files": [
@@ -933,68 +1028,80 @@
         ".claude/extensions/email/manifest.json"
       ]
     },
-    "nix": {
-      "loaded_at": "2026-10-18T03:49:11Z",
+    "nvim": {
+      "version": "1.0.0",
       "data_skeleton_files": [],
       "merged_sections": {
         "index": {
           "paths": [
-            "project/nix/README.md",
-            "project/nix/domain/nix-language.md",
-            "project/nix/domain/flakes.md",
-            "project/nix/domain/nixos-modules.md",
-            "project/nix/domain/home-manager.md",
-            "project/nix/patterns/module-patterns.md",
-            "project/nix/patterns/overlay-patterns.md",
-            "project/nix/patterns/derivation-patterns.md",
-            "project/nix/standards/nix-style-guide.md",
-            "project/nix/tools/nixos-rebuild-guide.md",
-            "project/nix/tools/home-manager-guide.md",
-            "project/nix/tools/mcp-nixos-integration.md"
+            "project/neovim/README.md",
+            "project/neovim/domain/lua-patterns.md",
+            "project/neovim/domain/neovim-api.md",
+            "project/neovim/domain/plugin-ecosystem.md",
+            "project/neovim/domain/lsp-overview.md",
+            "project/neovim/patterns/autocommand-patterns.md",
+            "project/neovim/patterns/ftplugin-patterns.md",
+            "project/neovim/patterns/keymap-patterns.md",
+            "project/neovim/patterns/plugin-spec.md",
+            "project/neovim/standards/lua-style-guide.md",
+            "project/neovim/standards/testing-patterns.md",
+            "project/neovim/templates/ftplugin-template.md",
+            "project/neovim/templates/plugin-template.md",
+            "project/neovim/tools/lazy-nvim-guide.md",
+            "project/neovim/tools/telescope-guide.md",
+            "project/neovim/tools/treesitter-guide.md",
+            "project/neovim/standards/box-drawing-guide.md",
+            "project/neovim/standards/documentation-policy.md",
+            "project/neovim/standards/emoji-policy.md",
+            "project/neovim/standards/lua-assertion-patterns.md",
+            "project/neovim/hooks/wezterm-integration.md",
+            "project/neovim/guides/neovim-integration.md",
+            "project/neovim/guides/tts-stt-integration.md",
+            "project/neovim/domain/extension-deploy-modes.md"
           ]
-        },
-        "settings": {
-          "permissions": {
-            "type": "merged",
-            "children": {
-              "allow": {
-                "type": "appended",
-                "items": []
-              }
-            }
-          }
         }
       },
       "installed_dirs": [],
-      "version": "1.0.0",
-      "installed_files": [
-        ".claude/agents/nix-research-agent.md",
-        ".claude/agents/nix-implementation-agent.md",
-        ".claude/rules/nix.md",
-        ".claude/skills/skill-nix-research/SKILL.md",
-        ".claude/skills/skill-nix-implementation/SKILL.md",
-        ".claude/context/project/nix/README.md",
-        ".claude/context/project/nix/domain/flakes.md",
-        ".claude/context/project/nix/domain/home-manager.md",
-        ".claude/context/project/nix/domain/nix-language.md",
-        ".claude/context/project/nix/domain/nixos-modules.md",
-        ".claude/context/project/nix/patterns/derivation-patterns.md",
-        ".claude/context/project/nix/patterns/module-patterns.md",
-        ".claude/context/project/nix/patterns/overlay-patterns.md",
-        ".claude/context/project/nix/standards/nix-style-guide.md",
-        ".claude/context/project/nix/tools/home-manager-guide.md",
-        ".claude/context/project/nix/tools/mcp-nixos-integration.md",
-        ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
-        ".claude/scripts/nix-preflight.sh",
-        ".claude/scripts/nix-context.sh",
-        ".claude/extensions/nix/manifest.json"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nix",
+      "source_git_head": "c3a5b348c03b1414260beb30dfba3568a41b05a3",
       "status": "active",
-      "source_git_head": "c3a5b348c03b1414260beb30dfba3568a41b05a3"
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nvim",
+      "loaded_at": "2026-11-05T15:50:29Z",
+      "installed_files": [
+        ".claude/agents/neovim-research-agent.md",
+        ".claude/agents/neovim-implementation-agent.md",
+        ".claude/rules/neovim-lua.md",
+        ".claude/skills/skill-neovim-research/SKILL.md",
+        ".claude/skills/skill-neovim-implementation/SKILL.md",
+        ".claude/context/project/neovim/README.md",
+        ".claude/context/project/neovim/domain/extension-deploy-modes.md",
+        ".claude/context/project/neovim/domain/lsp-overview.md",
+        ".claude/context/project/neovim/domain/lua-patterns.md",
+        ".claude/context/project/neovim/domain/neovim-api.md",
+        ".claude/context/project/neovim/domain/plugin-ecosystem.md",
+        ".claude/context/project/neovim/guides/neovim-integration.md",
+        ".claude/context/project/neovim/guides/tts-stt-integration.md",
+        ".claude/context/project/neovim/hooks/wezterm-integration.md",
+        ".claude/context/project/neovim/patterns/autocommand-patterns.md",
+        ".claude/context/project/neovim/patterns/ftplugin-patterns.md",
+        ".claude/context/project/neovim/patterns/keymap-patterns.md",
+        ".claude/context/project/neovim/patterns/plugin-spec.md",
+        ".claude/context/project/neovim/standards/box-drawing-guide.md",
+        ".claude/context/project/neovim/standards/documentation-policy.md",
+        ".claude/context/project/neovim/standards/emoji-policy.md",
+        ".claude/context/project/neovim/standards/lua-assertion-patterns.md",
+        ".claude/context/project/neovim/standards/lua-style-guide.md",
+        ".claude/context/project/neovim/standards/testing-patterns.md",
+        ".claude/context/project/neovim/templates/ftplugin-template.md",
+        ".claude/context/project/neovim/templates/plugin-template.md",
+        ".claude/context/project/neovim/tools/lazy-nvim-guide.md",
+        ".claude/context/project/neovim/tools/telescope-guide.md",
+        ".claude/context/project/neovim/tools/treesitter-guide.md",
+        ".claude/scripts/nvim-context.sh",
+        ".claude/extensions/nvim/manifest.json"
+      ]
     },
     "literature": {
-      "loaded_at": "2026-10-18T03:49:11Z",
+      "version": "2.0.0",
       "data_skeleton_files": [],
       "merged_sections": {
         "index": {
@@ -1031,7 +1138,10 @@
         }
       },
       "installed_dirs": [],
-      "version": "2.0.0",
+      "source_git_head": "5a511bf0d205dc55336be0d91b57befbf4d07694",
+      "status": "active",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/literature",
+      "loaded_at": "2026-11-05T15:50:29Z",
       "installed_files": [
         ".claude/agents/literature-agent.md",
         ".claude/commands/literature.md",
@@ -1121,122 +1231,23 @@
         ".claude/scripts/tests/fixtures/tier3-semanticscholar-empty-200.json",
         ".claude/scripts/tests/fixtures/tier3-unpaywall-200.json",
         ".claude/extensions/literature/manifest.json"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/literature",
-      "status": "active",
-      "source_git_head": "c3a5b348c03b1414260beb30dfba3568a41b05a3"
-    },
-    "nvim": {
-      "loaded_at": "2026-10-18T03:49:11Z",
-      "data_skeleton_files": [],
-      "merged_sections": {
-        "index": {
-          "paths": [
-            "project/neovim/README.md",
-            "project/neovim/domain/lua-patterns.md",
-            "project/neovim/domain/neovim-api.md",
-            "project/neovim/domain/plugin-ecosystem.md",
-            "project/neovim/domain/lsp-overview.md",
-            "project/neovim/patterns/autocommand-patterns.md",
-            "project/neovim/patterns/ftplugin-patterns.md",
-            "project/neovim/patterns/keymap-patterns.md",
-            "project/neovim/patterns/plugin-spec.md",
-            "project/neovim/standards/lua-style-guide.md",
-            "project/neovim/standards/testing-patterns.md",
-            "project/neovim/templates/ftplugin-template.md",
-            "project/neovim/templates/plugin-template.md",
-            "project/neovim/tools/lazy-nvim-guide.md",
-            "project/neovim/tools/telescope-guide.md",
-            "project/neovim/tools/treesitter-guide.md",
-            "project/neovim/standards/box-drawing-guide.md",
-            "project/neovim/standards/documentation-policy.md",
-            "project/neovim/standards/emoji-policy.md",
-            "project/neovim/standards/lua-assertion-patterns.md",
-            "project/neovim/hooks/wezterm-integration.md",
-            "project/neovim/guides/neovim-integration.md",
-            "project/neovim/guides/tts-stt-integration.md",
-            "project/neovim/domain/extension-deploy-modes.md"
-          ]
-        }
-      },
-      "installed_dirs": [],
-      "version": "1.0.0",
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nvim",
-      "source_git_head": "c3a5b348c03b1414260beb30dfba3568a41b05a3",
-      "status": "active",
-      "installed_files": [
-        ".claude/agents/neovim-research-agent.md",
-        ".claude/agents/neovim-implementation-agent.md",
-        ".claude/rules/neovim-lua.md",
-        ".claude/skills/skill-neovim-research/SKILL.md",
-        ".claude/skills/skill-neovim-implementation/SKILL.md",
-        ".claude/context/project/neovim/README.md",
-        ".claude/context/project/neovim/domain/extension-deploy-modes.md",
-        ".claude/context/project/neovim/domain/lsp-overview.md",
-        ".claude/context/project/neovim/domain/lua-patterns.md",
-        ".claude/context/project/neovim/domain/neovim-api.md",
-        ".claude/context/project/neovim/domain/plugin-ecosystem.md",
-        ".claude/context/project/neovim/guides/neovim-integration.md",
-        ".claude/context/project/neovim/guides/tts-stt-integration.md",
-        ".claude/context/project/neovim/hooks/wezterm-integration.md",
-        ".claude/context/project/neovim/patterns/autocommand-patterns.md",
-        ".claude/context/project/neovim/patterns/ftplugin-patterns.md",
-        ".claude/context/project/neovim/patterns/keymap-patterns.md",
-        ".claude/context/project/neovim/patterns/plugin-spec.md",
-        ".claude/context/project/neovim/standards/box-drawing-guide.md",
-        ".claude/context/project/neovim/standards/documentation-policy.md",
-        ".claude/context/project/neovim/standards/emoji-policy.md",
-        ".claude/context/project/neovim/standards/lua-assertion-patterns.md",
-        ".claude/context/project/neovim/standards/lua-style-guide.md",
-        ".claude/context/project/neovim/standards/testing-patterns.md",
-        ".claude/context/project/neovim/templates/ftplugin-template.md",
-        ".claude/context/project/neovim/templates/plugin-template.md",
-        ".claude/context/project/neovim/tools/lazy-nvim-guide.md",
-        ".claude/context/project/neovim/tools/telescope-guide.md",
-        ".claude/context/project/neovim/tools/treesitter-guide.md",
-        ".claude/scripts/nvim-context.sh",
-        ".claude/extensions/nvim/manifest.json"
       ]
     },
-    "approvals": {
-      "loaded_at": "2026-10-18T03:49:10Z",
-      "data_skeleton_files": [],
-      "merged_sections": {
-        "index": {
-          "paths": [
-            "project/approvals/README.md",
-            "project/approvals/standards/approval-artifact-convention.md",
-            "project/approvals/standards/confidence-vocabulary.md",
-            "project/approvals/patterns/approve-interaction-design.md"
-          ]
-        }
-      },
-      "installed_dirs": [],
-      "version": "1.0.0",
-      "installed_files": [
-        ".claude/commands/approve.md",
-        ".claude/skills/skill-approve/SKILL.md",
-        ".claude/context/project/approvals/README.md",
-        ".claude/context/project/approvals/patterns/approve-interaction-design.md",
-        ".claude/context/project/approvals/standards/approval-artifact-convention.md",
-        ".claude/context/project/approvals/standards/confidence-vocabulary.md",
-        ".claude/scripts/approve-classify.sh",
-        ".claude/scripts/approve-guard.sh",
-        ".claude/scripts/approve-paths.sh",
-        ".claude/scripts/tests/test-approve-classify.sh",
-        ".claude/scripts/tests/test-approve-paths.sh",
-        ".claude/scripts/tests/test-approve-refusals.sh",
-        ".claude/scripts/tests/test-approve-structural.sh",
-        ".claude/extensions/approvals/manifest.json"
-      ],
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/approvals",
-      "status": "active",
-      "source_git_head": "bd580e406218b4c277217e8bdcc2be34b46274ea"
-    },
     "lean": {
-      "loaded_at": "2026-10-18T03:49:11Z",
+      "version": "1.0.0",
       "data_skeleton_files": [],
       "merged_sections": {
+        "settings": {
+          "permissions": {
+            "type": "merged",
+            "children": {
+              "allow": {
+                "type": "appended",
+                "items": []
+              }
+            }
+          }
+        },
         "index": {
           "paths": [
             "project/lean4/domain/mathlib-overview.md",
@@ -1282,21 +1293,13 @@
             "project/lean4/domain/sentence-translation-contract.md",
             "project/lean4/domain/ladder-counter-observables.md"
           ]
-        },
-        "settings": {
-          "permissions": {
-            "type": "merged",
-            "children": {
-              "allow": {
-                "type": "appended",
-                "items": []
-              }
-            }
-          }
         }
       },
       "installed_dirs": [],
-      "version": "1.0.0",
+      "source_git_head": "41d5448129d46da1634c1e6fd6fabfcf31327a97",
+      "status": "active",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/lean",
+      "loaded_at": "2026-11-05T15:50:29Z",
       "installed_files": [
         ".claude/agents/lean-research-agent.md",
         ".claude/agents/lean-implementation-agent.md",
@@ -1354,9 +1357,21 @@
         ".claude/context/contracts/anti-analysis.md",
         ".claude/context/contracts/context-hygiene.md",
         ".claude/context/contracts/reference-grounding.md",
+        ".claude/scripts/lean-plan-compliance-check.sh",
         ".claude/scripts/lean-sorry-census.sh",
         ".claude/scripts/tests/fixtures/challenge/plan_keyword_noise.md",
         ".claude/scripts/tests/fixtures/challenge/plan_list_item_goals.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_goals_preamble.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r18_paren_goals.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r19_multiline_paren_goals.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r20_non_goals_only.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r21_empty_goals.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r9_unicode.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r10_truncation.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r11_abbrev_between.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r12_anon_instance.md",
+        ".claude/scripts/tests/fixtures/challenge/plan_r14_trailing_prose.md",
+        ".claude/scripts/tests/test-lean-plan-compliance-check.sh",
         ".claude/scripts/tests/test-lean-sorry-census.sh",
         ".claude/scripts/lean-src-roots.sh",
         ".claude/scripts/tests/test-lean-src-roots.sh",
@@ -1394,10 +1409,68 @@
         ".claude/scripts/tests/test-lean-mcp-registration.sh",
         ".claude/hooks/lean-lsp-register-project.sh",
         ".claude/extensions/lean/manifest.json"
-      ],
-      "source_git_head": "c3a5b348c03b1414260beb30dfba3568a41b05a3",
+      ]
+    },
+    "nix": {
+      "version": "1.0.0",
+      "data_skeleton_files": [],
+      "merged_sections": {
+        "settings": {
+          "permissions": {
+            "type": "merged",
+            "children": {
+              "allow": {
+                "type": "appended",
+                "items": []
+              }
+            }
+          }
+        },
+        "index": {
+          "paths": [
+            "project/nix/README.md",
+            "project/nix/domain/nix-language.md",
+            "project/nix/domain/flakes.md",
+            "project/nix/domain/nixos-modules.md",
+            "project/nix/domain/home-manager.md",
+            "project/nix/patterns/module-patterns.md",
+            "project/nix/patterns/overlay-patterns.md",
+            "project/nix/patterns/derivation-patterns.md",
+            "project/nix/standards/nix-style-guide.md",
+            "project/nix/tools/nixos-rebuild-guide.md",
+            "project/nix/tools/home-manager-guide.md",
+            "project/nix/tools/mcp-nixos-integration.md"
+          ]
+        }
+      },
+      "installed_dirs": [],
+      "source_git_head": "c7f57054aa4620b9805e0ec3feb43536cc71dec8",
+      "loaded_at": "2026-11-05T15:50:29Z",
+      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nix",
       "status": "active",
-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/lean"
+      "installed_files": [
+        ".claude/agents/nix-research-agent.md",
+        ".claude/agents/nix-implementation-agent.md",
+        ".claude/rules/nix.md",
+        ".claude/skills/skill-nix-research/SKILL.md",
+        ".claude/skills/skill-nix-implementation/SKILL.md",
+        ".claude/context/project/nix/README.md",
+        ".claude/context/project/nix/domain/flakes.md",
+        ".claude/context/project/nix/domain/home-manager.md",
+        ".claude/context/project/nix/domain/nix-language.md",
+        ".claude/context/project/nix/domain/nixos-modules.md",
+        ".claude/context/project/nix/patterns/derivation-patterns.md",
+        ".claude/context/project/nix/patterns/module-patterns.md",
+        ".claude/context/project/nix/patterns/overlay-patterns.md",
+        ".claude/context/project/nix/standards/nix-style-guide.md",
+        ".claude/context/project/nix/tools/home-manager-guide.md",
+        ".claude/context/project/nix/tools/mcp-nixos-integration.md",
+        ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
+        ".claude/scripts/nix-preflight.sh",
+        ".claude/scripts/nix-context.sh",
+        ".claude/extensions/nix/manifest.json"
+      ]
     }
-  }
+  },
+  "version": "1.0.0"
 }

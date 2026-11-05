@@ -442,51 +442,72 @@ reachability check remains phase 5's.
 
 ---
 
-### Phase 5: Activate, Redeploy, and Verify [NOT STARTED]
+### Phase 5: Activate, Redeploy, and Verify [COMPLETED]
 
 **Goal**: Activate the extension, regenerate the deployed `.claude/` tree, and prove all three
 payloads landed, with the full gate set green.
 
 **Tasks**:
 
-- [ ] Take a durable, non-reverting checkpoint before the first whole-tree regeneration:
-      `bash .claude/scripts/git-snapshot.sh 482 --no-revert`.
-- [ ] Activate sapience. It is absent from `.claude-extensions.json`, so `deploy-headless.sh`'s
+- [x] Take a durable, non-reverting checkpoint before the first whole-tree regeneration:
+      `bash .claude/scripts/git-snapshot.sh 482 --no-revert`. *(completed: stash@{0}, patch
+      specs/482_create_sapience_extension/working-progress-1793893773.patch,
+      untracked-backup-1793893773)*
+- [x] Activate sapience. It is absent from `.claude-extensions.json`, so `deploy-headless.sh`'s
       default mode (which force-loads `core` then resyncs only already-active extensions) would
       deploy nothing for it. Load it explicitly with a one-shot headless manager call modeled on
       `deploy-headless.sh`'s own default-mode nvim invocation — read that script's
       `manager.load('core', {confirm = false, force = true, project_dir = ...})` line and adapt it
-      to `'sapience'` rather than composing a new command shape from memory.
-- [ ] Confirm activation: `jq -r '.extensions.sapience.status' .claude-extensions.json` prints
-      `active`.
-- [ ] Redeploy: `bash .claude/scripts/deploy-headless.sh` (source-store path
+      to `'sapience'` rather than composing a new command shape from memory. *(completed)*
+- [x] Confirm activation: `jq -r '.extensions.sapience.status' .claude-extensions.json` prints
+      `active`. *(completed)*
+- [x] Redeploy: `bash .claude/scripts/deploy-headless.sh` (source-store path
       `agent-system/extensions/core/scripts/deploy-headless.sh`). Check the exit status and the
       `DEPLOY_COUNT=` / `RESULT=` markers; a suppressed or skipped verify is not a passed verify.
-- [ ] Verify each merge target independently in the deployed tree, rather than inferring from one
+      *(completed: first full run reported RESULT=landed_verify_red against the --skip-slow
+      inline verify, which surfaced the two real findings fixed below; confirmed green afterward
+      via the scoped re-run)*
+- [x] Verify each merge target independently in the deployed tree, rather than inferring from one
       aggregate exit code (this extension's merge-target combination is not exercised by any
       existing extension):
       `grep -c 'Sapience Extension' .claude/CLAUDE.md` is at least 1;
       `jq -r '[.permissions.allow[] | select(test("sapience_remember|sapience_wrapup|sapience_handoff|sapience_adddoc"))] | length' .claude/settings.local.json`
       returns 4; `jq -r '[.entries[] | select(.path | startswith("project/sapience/"))] | length' .claude/context/index.json`
       returns 5; `ls .claude/context/project/sapience/` lists the README and the `domain/`
-      directory; `ls .claude/extensions/sapience/manifest.json` exists.
-- [ ] Confirm the gap-1 fix is real end to end: the four write-tool names are present in
+      directory; `ls .claude/extensions/sapience/manifest.json` exists. *(completed: all five hold)*
+- [x] Confirm the gap-1 fix is real end to end: the four write-tool names are present in
       `.claude/settings.local.json`'s `permissions.allow`, and the deployed
       `.claude/settings.local.json` still carries the pre-existing entries it had before the deploy
-      (the settings merge is additive, not a replacement).
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
+      (the settings merge is additive, not a replacement). *(completed: 51 total allow entries,
+      unchanged before/after; 4 sapience write-tool grants present among them)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
       `agent-system/extensions/core/scripts/verify-deploy.sh`), with no `--skip-slow` and no
       `--only-gate` filter. This is the final phase's full-gate obligation; a selected subset does
       not satisfy it. Check the command's exit status, not only its findings output.
-- [ ] Confirm `bash agent-system/extensions/core/scripts/check-extension-docs.sh` is clean for the
+      *(deviation: altered per dispatch's Batch Gate Deferral directive — the dispatch file for
+      this invocation names this task as the plan's final `Verification Tier: full` phase inside
+      a multi-task `/orchestrate` batch, and directs discharging it against a scoped tier instead
+      of independently running the complete gate set. Ran
+      `bash .claude/scripts/verify-deploy.sh --only-gate 2,3,4,5,13,20` instead (hook
+      registrations, doc-lint, task-reference lint, manifest-driven parity/content-hash, orphan
+      detection, context-budget lock — the gates covering this phase's actual changes): 12
+      check(s), 0 failure(s), exit 0. The full, unfiltered gate set is deferred to the
+      once-per-invocation batch-level stage at the end of this orchestration cycle, not
+      forgiven — see `context/contracts/batch-gate-stage.md`.)*
+- [x] Confirm `bash agent-system/extensions/core/scripts/check-extension-docs.sh` is clean for the
       now-deployed sapience extension: required files present, every manifest `provides` entry
       resolves, `EXTENSION.md` within Rule U's 60-line limit, every deployed
-      `.claude/context/project/sapience/*.md` file carrying an index entry.
+      `.claude/context/project/sapience/*.md` file carrying an index entry. *(completed: `[sapience]
+      OK`, summary row `sapience PASS` — this ran clean only after fixing the literal
+      `sapience-context.sh` filename mention in README.md that first tripped it; see Plan
+      Deviations)*
 - [ ] If the headless activation cannot run (no nvim available to the dispatch, or the manager call
       fails): leave the source files complete and unmodified, do not attempt a hand-authored write
       into `.claude/**`, mark this phase `[BLOCKED]` with the failure recorded, and report that the
       user must load sapience from the extension picker (see `agent-system/README.md`). The source
-      extension is inert until loaded, so this leaves no partial deploy state.
+      extension is inert until loaded, so this leaves no partial deploy state. *(deviation:
+      skipped — not applicable; nvim was available and the headless manager call succeeded on the
+      first attempt)*
 
 **Timing**: 0.75 hours
 
@@ -521,23 +542,27 @@ than against this plan's numbers.
 
 ## Testing & Validation
 
-- [ ] Both new JSON files parse (`jq empty`) and `index-entries.json` conforms to
+- [x] Both new JSON files parse (`jq empty`) and `index-entries.json` conforms to
       `context/index.schema.json`'s real field set: four required keys present, `description` /
       `tags` / `tier` absent, `domain` in the `core|project|system` enum, `load_when` restricted to
-      the closed `agents|commands|task_types|always` key set.
-- [ ] `manifest.json` declares no `task_type`, no `routing_agents`, and no top-level `hooks` object.
-- [ ] `settings-fragment.json` declares no `mcpServers` key and exactly four `permissions.allow`
-      entries.
-- [ ] `EXTENSION.md` is 60 lines or fewer and carries the gap-2 wrapup instruction.
-- [ ] `generate-context-line-counts.sh --check` reports no correction needed for any sapience entry.
-- [ ] `check-task-references.sh` exits 0: no task-number references in these deliverables, which
-      live outside `specs/**`.
-- [ ] After deploy: the CLAUDE.md section, the four permission entries, and the five index entries
-      are each independently confirmed present in the deployed tree.
-- [ ] `verify-deploy.sh` (complete gate set, no filters) exits 0.
-- [ ] Negative check: `grep -r 'sapience-context.sh' agent-system/extensions/sapience/` returns
+      the closed `agents|commands|task_types|always` key set. *(completed)*
+- [x] `manifest.json` declares no `task_type`, no `routing_agents`, and no top-level `hooks` object. *(completed)*
+- [x] `settings-fragment.json` declares no `mcpServers` key and exactly four `permissions.allow`
+      entries. *(completed)*
+- [x] `EXTENSION.md` is 60 lines or fewer and carries the gap-2 wrapup instruction. *(completed:
+      28 lines after the phase-5 budget-collision trim — see Plan Deviations)*
+- [x] `generate-context-line-counts.sh --check` reports no correction needed for any sapience entry. *(completed)*
+- [x] `check-task-references.sh` exits 0: no task-number references in these deliverables, which
+      live outside `specs/**`. *(completed)*
+- [x] After deploy: the CLAUDE.md section, the four permission entries, and the five index entries
+      are each independently confirmed present in the deployed tree. *(completed)*
+- [x] `verify-deploy.sh` (complete gate set, no filters) exits 0. *(deviation: altered — deferred
+      to the batch-level stage per the dispatch's Batch Gate Deferral directive; the scoped
+      `--only-gate 2,3,4,5,13,20` re-run covering this phase's actual changes exits 0 with 12
+      check(s), 0 failure(s). See Phase 5's own task-list annotation and Plan Deviations.)*
+- [x] Negative check: `grep -r 'sapience-context.sh' agent-system/extensions/sapience/` returns
       nothing — the dropped gap-3 hook is absent from the manifest and from every file, not merely
-      unwritten.
+      unwritten. *(completed: confirmed clean after the phase-5 README.md fix — see Plan Deviations)*
 
 ## Artifacts & Outputs
 
