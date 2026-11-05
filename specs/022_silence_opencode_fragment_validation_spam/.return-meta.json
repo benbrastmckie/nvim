@@ -1,12 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/022_silence_opencode_fragment_validation_spam/summaries/01_silence-opencode-validation-spam-summary.md",
+      "summary": "All 6 phases completed across three scopes (opencode validation-spam silencing, picker Reload All/Regenerate honesty, Global Update repo registry), each verified against real production code paths."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Silenced the opencode-agents.json validation WARN spam (silent by default, returns detail, aggregates to one INFO summary at resync_all), fixed the fake-tool line and recorded the frozen .opencode/ policy, made the Reload All/Regenerate picker entries honest with a shared preview branch, and added a new cross-repo repo_registry.lua module plus a Global Update picker entry that resyncs every registered repo's own loaded-extension set."
+  },
+  "modified_files": [
+    ".opencode/README.md",
+    ".opencode/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/core/docs/docs-README.md",
+    "lua/neotex/plugins/ai/claude/commands/picker/display/entries.lua",
+    "lua/neotex/plugins/ai/claude/commands/picker/display/previewer.lua",
+    "lua/neotex/plugins/ai/claude/commands/picker/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+    "lua/neotex/plugins/ai/shared/extensions/repo_registry.lua"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In neotex's extension system (lua/neotex/plugins/ai/shared/extensions/init.lua), manager.resync_all's bulk-reload loop calls manager.load (force=true) once per loaded extension, and each manager.load call re-invokes generate_opencode_json, which recomputes the WHOLE merged opencode.json from scratch (every currently-loaded extension's fragment) on every single step of that loop -- not just the extension being reloaded in that step. Consequence: a transient filesystem state change mid-loop (e.g. extension B's deploy file briefly missing when extension A's own reload step runs generate_opencode_json) can be observed and reported by an intermediate step even though a later step in the SAME loop self-heals it before the loop finishes, and the final on-disk file reflects the healed state. Any future aggregation or diagnostic logic built on top of this generation path must account for this per-step full-recompute behavior rather than assuming generate_opencode_json only ever sees the final, settled state.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/022_silence_opencode_fragment_validation_spam/summaries/01_silence-opencode-validation-spam-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["resync_all", "generate_opencode_json", "per-step-recompute", "nvim-extension-system", "transient-state"]
+    },
+    {
+      "content": "This nvim config repo has an established convention for global, cross-repo, non-task-scoped state: a single JSON file under vim.fn.stdpath('data') .. '/neotex-ai/<name>.json' (see lua/neotex/plugins/ai/shared/picker/ai-tool-picker.lua's data_dir). When a new feature needs state that spans multiple projects/repos (not per-project state, which instead uses the root_state_file convention in shared/extensions/config.lua), reuse this stdpath('data')/neotex-ai convention rather than inventing a new location. To avoid a cross-repo tool recursing into the repo it is run from, compare the target directory (via vim.fn.resolve) against vim.fn.resolve(vim.fn.stdpath('config')), which identifies 'this nvim config repo' reliably when global_dir defaults are left at their standard ~/.config/nvim value.",
+      "category": "PATTERN",
+      "source_artifact": "specs/022_silence_opencode_fragment_validation_spam/summaries/01_silence-opencode-validation-spam-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["stdpath-data", "neotex-ai", "cross-repo-registry", "host-repo-identity", "global-state-convention"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793893148_3d43f7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }
