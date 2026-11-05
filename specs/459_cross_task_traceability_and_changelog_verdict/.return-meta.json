@@ -1,40 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793893148_3d43f7_459",
-  "dispatch_seq": 4,
-  "task_number": 459,
-  "findings_count": 14,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/459_cross_task_traceability_and_changelog_verdict/reports/01_traceability-design-and-changelog-verdict.md",
-      "summary": "Verdict-first design: KEEP specs/CHANGE_LOG.md unmodified (re-verified not stale, self-healing batch writer), accept-and-work-around the task {N}: commit convention (session_id already provides the durable join), no new field/file/script, and a documentation-only cross-record decision-citation convention (project_name slug + artifact round + Decision N) as the one genuine gap."
+      "type": "plan",
+      "path": "specs/459_cross_task_traceability_and_changelog_verdict/plans/01_decision-citation-convention.md",
+      "summary": "Three-phase plan implementing the research's Decision 5 alone: a named cross-record decision-citation convention in report-format.md pointed at from summary-format.md and plan-format.md, a recognized-optional Decisions heading for plans with the documentation-only mirror in validate-artifact.sh, and a redeploy plus full gate run."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1793893148_3d43f7_459",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "task_number": 459,
+    "phase_count": 3,
+    "estimated_hours": 2,
+    "dependency_waves": [[1, 2], [3]]
+  },
   "memory_candidates": [
     {
-      "content": "In this agent-system, .orchestrator-handoff.json's decisions_made field is EPHEMERAL (overwritten every dispatch cycle per handoff-schema.md's Writing Contract) and must not be confused with the durable, append-only .decisions.json (which records only AskUserQuestion-surfaced user_decision answers, written by orchestrate-record-decision.sh). Neither is a general durable design-decision log; the actual durable home for design decisions is the mandatory ## Decisions heading inside report/summary artifacts.",
+      "content": "Before documenting a new REQUIRED section in one of this system's artifact-format standards (context/formats/{report,plan,summary}-format.md), check scripts/validate-artifact.sh's matching {REPORT,PLAN,SUMMARY}_SECTIONS array: those arrays drive a hard `log_error \"Missing required section\"` at gate-out, so promoting a section to required retroactively fails every existing artifact that lacks it. The sanctioned landing for a new convention is the recognized-optional tier, whose in-script precedent is the documentation-only SUMMARY_SECTIONS_OPTIONAL array (carrying `# shellcheck disable=SC2034`, deliberately never wired into required_sections) -- an anti-drift mirror of the standard's own optional-section list that changes no validation behavior.",
       "category": "PATTERN",
-      "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/reports/01_traceability-design-and-changelog-verdict.md",
+      "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/plans/01_decision-citation-convention.md",
       "confidence": 0.85,
-      "suggested_keywords": ["decisions_made", "orchestrator-handoff", "ephemeral", "decisions.json", "traceability"]
-    },
-    {
-      "content": "scripts/dispatch-metrics.sh correlates git commits with a dispatch via `git log --grep=\"<session_id>\"`, never by parsing the `task {N}: {action}` subject-line convention. The task number baked into commit subjects is human-skimming sugar only; the one real machine join key is the opaque, renumbering-immune session_id trailer (present in ~96% of commits sampled). Relevant to any future question about historical commit-message ambiguity after a vault renumbering.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/reports/01_traceability-design-and-changelog-verdict.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["dispatch-metrics", "session_id", "commit convention", "renumbering", "git log --grep"]
-    },
-    {
-      "content": "specs/CHANGE_LOG.md's writer (skill-todo's UpdateChangelog stage) is self-healing under a long gap between /todo runs: a ~5-week gap observed 2026-09-29 to 2026-11-04 was caught up in one batched commit (222 lines, 44 tasks) with no data loss. A measured staleness window in this file does not by itself imply lost data -- re-check the next /todo run's diff before concluding anything was dropped.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/reports/01_traceability-design-and-changelog-verdict.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["CHANGE_LOG", "skill-todo", "self-healing", "archival batching"]
+      "suggested_keywords": ["validate-artifact", "required sections", "optional section", "format standards", "gate-out", "anti-drift"]
     }
   ],
-  "next_steps": "Run /orchestrate 459 to create implementation plan (scope: three documentation edits under agent-system/extensions/core/context/formats/{report,summary,plan}-format.md per the report's Decision 5 -- no new field, file, or script)."
+  "next_steps": "Run /orchestrate 459 to execute the plan",
+  "dispatch_seq": 7
 }

@@ -1,0 +1,26 @@
+{
+  "status": "planned",
+  "task_number": 459,
+  "phase": "plan",
+  "session_id": "sess_1793893148_3d43f7_459",
+  "dispatch_seq": 7,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a three-phase, 2-hour plan implementing the research report's Decision 5 only; the other five Decisions are recorded verdicts requiring no work. Phase 1 adds a named Cross-Record Decision Citation section to report-format.md with a one-line pointer from summary-format.md; Phase 2 documents a Decisions heading as a recognized-optional plan section and adds the documentation-only PLAN_SECTIONS_OPTIONAL mirror to validate-artifact.sh; Phase 3 redeploys and runs the complete gate set. Two planning corrections to Decision 5 are recorded with grounds: the plan Decisions section lands at the recognized-optional tier (promoting it to PLAN_SECTIONS would fail every existing plan at gate-out) and the convention is stated once and pointed at twice rather than triplicated.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/459_cross_task_traceability_and_changelog_verdict/plans/01_decision-citation-convention.md",
+      "summary": "Three-phase plan: named citation convention in report-format.md plus pointers, recognized-optional Decisions heading for plans with validate-artifact.sh mirror, redeploy and full gate."
+    }
+  ],
+  "blockers": [],
+  "decisions_made": [
+    "Implement research Decision 5 only; Decisions 1-4 and 6 (KEEP CHANGE_LOG unmodified, accept-and-work-around the commit convention, mint no new id scheme, leave parent_task unoverloaded, land no mechanism) require no implementation work.",
+    "Land the plan-level Decisions heading at the recognized-optional tier, not as a required section: validate-artifact.sh's PLAN_SECTIONS array drives a hard missing-required-section error, and no existing plan carries the heading.",
+    "State the citation convention once as a named section in report-format.md and reference it by a one-line Writing Guidance bullet from summary-format.md and plan-format.md, rather than writing the prose into all three standards.",
+    "Decline the research's optional Context Extension Recommendation to also mention the convention in state-management-schema.md, to avoid a fourth copy-or-pointer site."
+  ],
+  "next_steps": "Run /orchestrate 459 to execute the plan. Plan postflight's plan-file-scope-harvest.sh will widen file_scope to the four source-store targets plus __WHOLE_TREE__ (verified by dry run) before the implement dispatch.",
+  "file_scope_note": "Plan declares four source-store edit targets under agent-system/extensions/core/ plus the __WHOLE_TREE__ sentinel for the redeploy phase; none overlaps the one concurrent sibling's file_scope."
+}
