@@ -1,5 +1,5 @@
 ---
-next_project_number: 485
+next_project_number: 486
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 485
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,328,338,342,383,385,397,401,408,410,412,414,419,423,428,435,437,456,459,464,466,469,470,473,477,478,482,483 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,328,338,342,383,385,397,401,408,410,412,414,419,423,428,435,437,456,459,464,466,469,470,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,313,384,398,409,415,430,431,453,458,463,465,471,472,475 | 22,328,383,397,401,412,414,428,435,459,470 | core-agent-system, extensions, literature, ... |
 | 3 | 369,399,418,436,439,445,446,474 | 29,313,328,385,398,415,419,430,431,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 360,391,420,438,444,448,454,476,484 | 313,328,369,409,418,423,435,439,445,446,458,469 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -52,6 +52,7 @@ next_project_number: 485
   └─ 471 [NOT STARTED] — Lint the extensions README table against the real extension...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
+485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -128,6 +129,43 @@ next_project_number: 485
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 485. Recapture corpus baselines under the corrected inventory probe
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 328
+
+**Description**: SOURCE STORE IS THE EDIT TARGET for any agent-system change: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). This record's primary edit target, however, is this parent record's own plan files under specs/, which are exempt from the no-task-reference and no-record-versioning rules.
+
+GOAL. Recapture the corpus baseline figures that the parent record's net-deletion acceptance criterion is measured against, now that the measurement instrument has been corrected.
+
+=== WHY ===
+scripts/script-inventory.sh enumerated the corpus via `git ls-files` alone, so its --size-line and JSON output saw only TRACKED files. A newly created, not-yet-staged file was invisible to the probe. That has now been fixed: the enumeration unions tracked with untracked-but-not-ignored in-corpus files and discloses the contribution via a trailing `untracked=N` field on --size-line plus `untracked_count`/`untracked_paths` in JSON, pinned by a git-fixture regression case.
+
+THE DIRECTION OF THE ERROR IS WHAT MATTERS. An enumeration blind to new untracked files systematically understates insertions, which biases a running insertions-minus-deletions figure in the FAVOURABLE direction -- it makes a phase look more net-negative than it actually was. That is the one direction of error a net-deletion acceptance criterion cannot tolerate, because it hides exactly the drift the criterion exists to catch.
+
+=== WHAT IS AFFECTED (verify before acting; figures drift) ===
+Two plan files in the parent record's directory hold baseline figures captured under the old tracked-only behaviour:
+  - plans/01_corpus-consolidation-net-deletion.md
+  - plans/03_markdown-corpus-consolidation.md
+The -10,000 non-test-line floor and the -8,100 markdown target are both stated against those baselines.
+
+The finding was recorded by the record that fixed the probe, which deliberately did NOT edit these files: the parent was an active task at the time and those files were its own territory. Nothing has acted on the finding since. Re-derive which specific figures were captured under the old behaviour rather than assuming all of them were -- some may postdate the fix.
+
+=== SCOPE ===
+- Re-run script-inventory.sh against the current tree and record the corrected figures.
+- Determine, for each recorded baseline figure in the two plan files above, whether it was captured under the undercounting behaviour. State the finding either way, including for figures that turn out to be unaffected.
+- Where a baseline shifts, update it AND restate the running net figure derived from it, so the acceptance criterion is measured against a sound baseline.
+- Report the magnitude of the correction explicitly (old figure, new figure, delta). If the correction is immaterial -- the untracked contribution at capture time was zero or negligible -- say so plainly and close; a null result is a valid and useful outcome here, not a failure.
+
+=== ACCEPTANCE ===
+- Every baseline figure in the two named plan files is either confirmed sound or corrected, with the determination stated per figure.
+- The parent record's running net-deletion figure is restated against the corrected baseline.
+- The magnitude of the correction is reported (old, new, delta), including an explicit null result if that is what the measurement shows.
+
+---
 
 ### 484. Collapse per-path scope excursion issue rows into one record per drop event
 - **Status**: [NOT STARTED]
