@@ -43,7 +43,7 @@ next_project_number: 486
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory... (see above)
   └─ 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
-459 [NOT STARTED] — Design cross-record traceability; verdict on CHANGE\_LOG...
+459 [RESEARCHING] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
@@ -68,7 +68,7 @@ next_project_number: 486
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
-482 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
+482 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
 483 [NOT STARTED] — Document that an extension lifecycle hook can never fire...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
@@ -80,7 +80,7 @@ next_project_number: 486
 
 ### Neovim
 
-22 [NOT STARTED] — Freeze .opencode: silence fragment validation spam and record...
+22 [RESEARCHING] — Freeze .opencode: silence fragment validation spam and record...
 
 ### File Scope Lifecycle
 
@@ -287,7 +287,7 @@ Every other `duplicate-of-open` verdict in the document carries `mechanical_clas
 ---
 
 ### 482. Create sapience extension
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -1436,7 +1436,7 @@ DUPLICATE CHECK PERFORMED. Nearest neighbours are 430 and 446, both of which own
 ---
 
 ### 459. Design cross-record traceability; verdict on CHANGE_LOG retirement
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -5786,7 +5786,7 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 ---
 
 ### 22. Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None

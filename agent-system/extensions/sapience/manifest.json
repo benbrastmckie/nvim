@@ -1,0 +1,32 @@
+{
+  "name": "sapience",
+  "version": "1.0.0",
+  "description": "Permission grants and orientation docs for the hosted Sapience knowledge vault (app.spnc.ai): closes the MCP write-tool permission gap and documents the postflight wrapup instruction and the vault's review-gate/transcript-filter boundaries",
+  "dependencies": ["core"],
+  "routing_exempt": true,
+  "provides": {
+    "agents": [],
+    "commands": [],
+    "skills": [],
+    "rules": [],
+    "scripts": [],
+    "hooks": [],
+    "data": [],
+    "context": ["project/sapience"]
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "EXTENSION.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_sapience"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    },
+    "settings": {
+      "source": "settings-fragment.json",
+      "target": ".claude/settings.local.json"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #482
 
 - **Task**: 482 - Create sapience extension
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/482_create_sapience_extension/reports/01_create-sapience-extension.md
@@ -146,15 +146,15 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Scaffold, Manifest, and Permission Grants [NOT STARTED]
+### Phase 1: Scaffold, Manifest, and Permission Grants [COMPLETED]
 
 **Goal**: Create the extension directory and its two JSON files, closing gap 1's payload. This is
 the blocker phase: gaps 2 and 3 are unreachable until the extension exists as a loadable unit.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/sapience/` and `agent-system/extensions/sapience/context/project/sapience/domain/`.
-- [ ] Write `manifest.json`: `name: "sapience"`, `version: "1.0.0"`, a one-line `description` (shown
+- [x] Create `agent-system/extensions/sapience/` and `agent-system/extensions/sapience/context/project/sapience/domain/`. *(completed)*
+- [x] Write `manifest.json`: `name: "sapience"`, `version: "1.0.0"`, a one-line `description` (shown
       in the picker UI), `dependencies: ["core"]`, `routing_exempt: true`, and a `provides` object
       with `agents`, `commands`, `skills`, `rules`, `scripts`, `hooks`, `data` all `[]` and
       `context: ["project/sapience"]`. Add `merge_targets` for `claudemd` (source `EXTENSION.md`,
@@ -162,12 +162,14 @@ the blocker phase: gaps 2 and 3 are unreachable until the extension exists as a 
       `index-entries.json`, target `.claude/context/index.json`), and `settings` (source
       `settings-fragment.json`, target `.claude/settings.local.json`) — copy the three-target shape
       from `agent-system/extensions/memory/manifest.json` verbatim, changing only the `section_id`.
-- [ ] Assert the manifest declares NO `task_type`, NO `routing_agents`, and NO top-level `hooks`
+      *(completed)*
+- [x] Assert the manifest declares NO `task_type`, NO `routing_agents`, and NO top-level `hooks`
       object (`provides.hooks: []` is the file-copy array and is a different key — it stays, empty).
-- [ ] Write `settings-fragment.json` with `permissions.allow` listing exactly the four write tools:
+      *(completed: verified via jq -e)*
+- [x] Write `settings-fragment.json` with `permissions.allow` listing exactly the four write tools:
       `mcp__sapience__sapience_remember`, `mcp__sapience__sapience_wrapup`,
       `mcp__sapience__sapience_handoff`, `mcp__sapience__sapience_adddoc`. Model the file's shape on
-      `agent-system/extensions/nix/settings-fragment.json`. No other key.
+      `agent-system/extensions/nix/settings-fragment.json`. No other key. *(completed)*
 
 **Timing**: 0.75 hours
 

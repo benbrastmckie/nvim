@@ -1,37 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/482_create_sapience_extension/plans/01_create-sapience-extension.md",
-      "summary": "Five-phase plan to create the sapience extension in the source store: manifest plus permission grants (gap 1), EXTENSION.md wrapup instruction (gap 2), four domain notes (gap 3 documented), index entries, then activate/redeploy/verify."
-    }
-  ],
-  "next_steps": "Run /orchestrate 482 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 4.25,
-  "dependency_waves": [[1], [2, 3], [4], [5]],
-  "memory_candidates": [
-    {
-      "content": "An extension lifecycle hook declared in manifest.json's top-level `hooks` object can NEVER fire for an extension that declares no `task_type`. `skill_get_extension_dir()` in agent-system/extensions/core/scripts/skill-base.sh gates on `[ -n \"$ext_task_type\" ] && [ \"$ext_task_type\" = \"$task_type\" ]` and returns the FIRST matching extension, and all four call sites of `skill_run_extension_hook` (preflight, context_injection, verification, postflight) pass the CURRENT task's own TASK_TYPE. So nvim/nix context-injection hooks work only because each declares its own matching task_type and fires only on its own domain's tasks. There is no extension-declarable seam for cross-cutting, task-type-independent pre-dispatch injection: the one instance of that shape (<memory-context>) is a hardcoded memory-retrieve.sh call inside core's own orchestrate-build-dispatch.sh. Post-task observers are also wrong for pre-work orientation -- they fire only after a task reaches a resting state.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/482_create_sapience_extension/plans/01_create-sapience-extension.md",
-      "confidence": 0.9,
-      "suggested_keywords": [
-        "skill_get_extension_dir",
-        "context_injection",
-        "lifecycle-hooks",
-        "task_type",
-        "extension-manifest",
-        "skill-base.sh"
-      ]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1793844135_5d8257_482",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1793893148_3d43f7",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 2
+  "dispatch_seq": 5
 }

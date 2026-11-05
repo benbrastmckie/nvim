@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__sapience__sapience_remember",
+      "mcp__sapience__sapience_wrapup",
+      "mcp__sapience__sapience_handoff",
+      "mcp__sapience__sapience_adddoc"
+    ]
+  }
+}
