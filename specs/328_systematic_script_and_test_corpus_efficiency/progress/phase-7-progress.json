@@ -78,7 +78,9 @@
       "id": 4,
       "description": "Record the phase's NET-TEST delta and the running NET-TEST figure",
       "status": "done",
-      "files_touched": [],
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/common.sh"
+      ],
       "note": "git diff --numstat across the 48 migrated test files plus lib/common.sh: insertions=1449 deletions=1663 NET-TEST=-214 for this phase. Deviation recorded: common_test_fail() in lib/common.sh was extended with an optional $2 diagnostic-detail argument (echoed verbatim after the [FAIL] line) to absorb 4 suites' pre-existing `fail() { ...; [ -n \"${2:-}\" ] && echo \"$2\"; }` local override verbatim -- without this extension those 4 suites' diagnostic detail on failure would have been silently dropped by the migration. This is the 'only if a tranche suite needs a harness piece the Phase 4 surface does not yet cover' contingency the plan's own Files-to-modify note anticipated."
     }
   ],
