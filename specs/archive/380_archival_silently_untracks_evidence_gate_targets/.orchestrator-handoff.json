@@ -1,0 +1,16 @@
+{
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 17,
+  "summary": "Verified the archival-untracks warning this task asked for already exists, committed (7ffb39166), and undrifted at both named mv sites (task-abandon-mode.md, skill-todo/SKILL.md); made no source-store edit since a duplicate warning was not needed. Closed the single phase COMPLETED WITH EXCLUSIONS after the full verify-deploy.sh gate reported FAIL 4/37 for reasons traced entirely to concurrent sibling tasks (379/381/388) and pre-existing lean-extension staleness, not this task's zero-edit file_scope.",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/380_archival_silently_untracks_evidence_gate_targets/summaries/01_verify-archival-warning-present-summary.md",
+      "summary": "Evidence trail: both mv-site warnings read in full, git diff --stat empty, git log -1 matches commit 7ffb39166 on both files; Reasoned Exclusions for the full-gate-green criterion recorded in the plan and here."
+    }
+  ],
+  "phases_completed": 1,
+  "phases_total": 1,
+  "blockers": []
+}

@@ -12,6 +12,228 @@ Each entry includes:
 
 ---
 
+### 2026-11-05
+
+**Task 468: core_docs_correctness_and_single_authority_audit**
+- Status: completed
+- Type: meta
+- Summary: Audited and corrected all 29 files under agent-system/extensions/core/docs/ for dead command surfaces, broken relative links, a stale command inventory, and topic duplication, establishing one authoritative home per duplicated topic; redeployed to the live .claude/ tree with one reasoned, pre-existing, out-of-scope gate exclusion (lint-task-lookup-adoption.sh on a file this task never touched).
+
+**Task 467: orchestrate_first_workflow_docs_restructure**
+- Status: completed
+- Type: meta
+- Summary: Rewrote the five named source-store documentation files around the /task -> /orchestrate -> /todo spine, retargeting the removed /research /plan /implement commands into /orchestrate's forcing-flag coverage, adding /project-overview, /please, /zulip, and a top-level Extensions section, correcting the extension catalog table, and stripping record-versioning prose from research-flow-example.md. Redeployed via deploy-headless.sh; all six plan phases closed (five COMPLETED, one COMPLETED WITH EXCLUSIONS for two unrelated, pre-existing, evidenced-and-logged defects).
+
+**Task 443: task_reference_hook_resolve_markers_against_full_file**
+- Status: completed
+- Type: meta
+- Summary: Resolved the dispatch's observation: the write-time task-reference hook now resolves an Edit's markers against the reconstructed post-edit file via a region-aware, depth-counting parser, honoring a file-wide marker pair without needing a redundant nested pair. All five plan phases completed, redeployed, and verified live.
+
+**Task 442: deploy_before_implement_postflight_to_avoid_cycle_cost**
+- Status: completed
+- Type: meta
+- Summary: Landed a new evaluation-record subsection in batch-orchestration-guardrails.md documenting why a pre-postflight-sweep deploy trigger was evaluated and intentionally left unbuilt (safe but not worth a third genuine deploy-caller site on cost/benefit grounds), added pointer comments at the two script sites where the question naturally arises, and redeployed the source store. No gate logic or trigger predicate changed anywhere.
+
+**Task 441: resolve_source_store_verification_invocation_contract**
+- Status: completed
+- Type: meta
+- Summary: Resolved the source-store verification invocation contract: check-extension-docs.sh and sync-manifest-scripts.sh now run from either tree via an opt-in self-correcting path in deploy-root-guard.sh, with no environment override required; verify-deploy.sh gained a clarifying header note (no behavioral change, since it never carried the refusal). Documented in regeneration-is-manual-only.md. Deployed clean after fixing 3 shellcheck findings surfaced by the redeploy's inline verification.
+
+**Task 440: fix_file_scope_glob_containment_predicate**
+- Status: completed
+- Type: meta
+- Summary: Fixed the quoted-entry-disables-own-glob bug in both is_contained_v10 (git-commit-scoped.sh) and its ported twin is_contained (git-commit-phase.sh), so a /**-suffixed file_scope entry now contains its direct children and every deeper descendant without widening containment for any non-/** entry or same-prefix sibling. Added Z11-Z14 and Case 10-11 test coverage (each independently confirmed RED against pre-fix behaviour), redeployed via deploy-headless.sh, and confirmed both deployed copies carry the fix via a live sanity check against a real /** entry in specs/state.json.
+
+**Task 434: lint_and_fix_actionable_dead_command_references**
+- Status: completed
+- Type: meta
+- Summary: Added lint-dead-command-recommendations.sh (self-updating, enumeration-driven, no hardcoded allowlist) plus its fixture suite, retargeted all 188 dead lifecycle-command recommendation lines across 92 files onto /orchestrate, structurally fixed command-output.md's template assignments, wired the lint as gate 24 in verify-deploy.sh, and redeployed to RESULT=landed_verify_clean.
+
+**Task 427: dispatch_composer_emits_contradictory_authoritative_inputs**
+- Status: completed
+- Type: meta
+- Summary: Added an optional description_fingerprint field to .decisions.json entries, taught orchestrate-build-dispatch.sh to mark a description-mismatched Prior Decision POTENTIALLY SUPERSEDED inline with a conditional intro, and stated the full precedence rule once in orchestrate-state-machine.md. All four plan phases COMPLETED; full gate deferred to the batch stage per dispatch directive, discharged via a 15-suite scoped set plus gates 3/4, all green.
+
+**Task 426: recovery_declined_cannot_tell_stall_from_agent_fault**
+- Status: completed
+- Type: meta
+- Summary: Fixed the RECOVERY_DECLINED arm's two recording bugs (real --phase, real --dispatch-seq) and added arm-local, record-time stall/strand corroboration in its message and in issue-record.sh's --tags-json, so a reader can tell an abandoned wrap-up or heartbeat-strand from an uncorroborated agent-contract violation without touching either canonical signal's own trigger expression. Closed a test-sandbox gap and pinned all four VERIFY items with fixtures proven to bite.
+
+**Task 425: state_files_dropped_as_file_scope_excursions**
+- Status: completed
+- Type: meta
+- Summary: Spliced specs/TODO.md and specs/state.json into orchestrate-cycle-postflight.sh's WORK (h) effective_file_scope_json allowlist, eliminating the false ADVISORY/EXCURSION DROPPED diagnostics those two engine-written files triggered when self-reported in modified_files. Added a new fixture pinning the fix alongside the unchanged drop-and-warn for genuine excursions (verified to fail pre-fix via a disable/restore reproduction check), documented the landing in git-staging-scope.md, and confirmed the deployed tree matches the source store.
+
+**Task 424: harden_four_tier_conflict_case1_releaser_race**
+- Status: completed
+- Type: meta
+- Summary: Replaced Case 1's fixed-delay releaser in test-four-tier-conflict.sh with a signal-file-gated construction that enforces foreground/background ordering by direct evidence instead of a wall-clock margin, confirmed non-vacuous under the dispatch's induced-load reproduction method (original fixture failed twice at loads 18.33/23.66; fixed fixture passed three times at loads 22.62-26.98), confirmed Cases 2-13 unaffected, and redeployed with the full gate set run (one reasoned exclusion recorded for a pre-existing, unrelated standing failure).
+
+**Task 422: fix_guard_git_push_expired_grant_matching_defect**
+- Status: completed
+- Type: meta
+- Summary: Fixed test-guard-git-push.sh's single failing case by unsetting PG_EXPIRY_WINDOW (this machine's ambient 1800s override) alongside the suite's existing two isolated knobs, confirmed 47/47 green under the real ambient environment, and retired the now-resolved known-failures.txt row plus its two stale surrounding prose counts.
+
+**Task 417: resolve_gate20_eager_load_budget_overage**
+- Status: completed
+- Type: meta
+- Summary: Resolved the gate20 eager-load context-budget overage via route (a): recovered 1,488 B of real headroom under the unmoved 66,800 B baseline by relocating two genuinely duplicated eager sections (rules/artifact-formats.md's Phase Status Markers, memory/EXTENSION.md's /distill table and lifecycle diagram) to their existing non-eager homes, dated the budget config's own record, and redeployed. gate20 and the context-budget suite are both fully green; the full gate battery's 9 other failures were confirmed as load-contention timeouts unrelated to this task's files.
+
+**Task 416: reaim_gate_cost_model_input_scoped_invalidation**
+- Status: completed
+- Type: meta
+- Summary: Completed the final 3 phases (11-13) of task 416's 13-phase input-scoped gate invalidation plan. Phase 11 cut gate 3's (doc-lint) full-sweep cost ~7.9x (125,669ms -> 16,003ms) by removing a redundant duplicate invocation and parallelizing its per-extension loop across real child processes (CED_JOBS=4). Phase 12 decided on evidence to keep gate 8 serialized, closing COMPLETED WITH EXCLUSIONS after sharpening the original ambient-CPU-pressure rationale into a measured, currently-live memory-margin risk against a bounded ~14% maximum overlap upside. Phase 13 redeployed the source store, fixed a manifest-registration gap for two new test suites, ran the complete gate set directly (cold and warm --skip-unchanged passes), and recorded the task's headline result: a warm, unchanged run cache-skips 17-20 of 24 real gates outright at near-zero cost, honestly reporting gate 8's own full-sweep cost increase (457,197ms -> 662,354ms) as an attributed trade-off from this task's own necessary new equivalence-proof test coverage.
+
+**Task 413: coordinate_concurrent_gate_runs**
+- Status: completed
+- Type: meta
+- Summary: Added a repo-scoped .gate-lock bounded-wait, fail-open mutex to task-lock.sh and bracketed tests/run-all.sh's top level and verify-deploy.sh's Gate 8 with it, so two concurrent sessions' full gate-set batteries serialize instead of contending for the same cores. All seven plan phases closed [COMPLETED]: 15/15 fixture cases pass against the real mechanism (serialization, non-vacuousness, stale-reclaim, nested invocation, fail-open at both call sites, verdict identity); the contract is documented in batch-orchestration-guardrails.md; the deploy is regenerated and confirmed byte-identical to source; and the complete gate set passes 37/38 against the explicit source-store target, with the sole failure traced to a foreign, out-of-scope uncommitted mutation in a file this task never touched. A genuine integration defect (VERIFY_DEPLOY_NESTED read before its own unconditional export, inside gate8_run()) was found and fixed during implementation and is documented in the plan body and summary.
+
+**Task 411: refactor_verify_deploy_gate_framework**
+- Status: completed
+- Type: meta
+- Summary: Closed Phase 11 (the task's final phase) as [COMPLETED WITH EXCLUSIONS]: redeployed the source store, confirmed no task-number/record-versioning language in touched files, proved finding-set equivalence and verdict/summary-line determinism across two full-battery verify-deploy.sh runs against the explicit repo-root (source-store) target, re-confirmed stalled-gate/stalled-suite fixtures and the Inter-Cycle Redeploy Checkpoint, and traced two transient ambient-contention findings to isolated-reproduction non-regressions. Objective 3 (idle-machine wall-clock table) is the one operator-authorized exclusion, recorded with a full Reasoned Exclusions record in the plan. Task 411 is now complete end to end (phases 1-11); phases 12-17 remain in the plan as reference material for a separate, already-named cost-model re-aim task.
+
+**Task 407: derive_artifact_round_from_existing_artifacts**
+- Status: completed
+- Type: meta
+- Summary: Fixed skill_read_artifact_number()'s // 1 default (which masked its own count-based fallback) by replacing it with an unconditional max-prefix normalization, added regression coverage in both the dispatch-integration suite and the function's own unit suite, aligned the schema reference doc, and redeployed to RESULT=landed_verify_clean.
+
+**Task 406: mint_hook_dirties_tree_before_precondition_read**
+- Status: completed
+- Type: meta
+- Summary: Implemented buffer-then-flush for push-grant audit writes (push-grant-lib.sh, events-log-lifecycle.sh), documented the pattern in events-format.md, recorded the invariant in skill-tag/SKILL.md, added five regression cases, and ran the complete gate set, closing Phase 5 [COMPLETED WITH EXCLUSIONS] after attributing every one of 5 verify-deploy.sh and 4 run-all.sh failures to pre-existing or concurrent-sibling causes outside this task's file_scope.
+
+**Task 405: detect_stranded_dispatch_from_stale_heartbeat**
+- Status: completed
+- Type: meta
+- Summary: Implemented dispatch-strand-probe.sh (a read-only heartbeat+quiescence conjunction probe) and wired it into orchestrate-cycle-postflight.sh's new stranded_suspected field, skill-orchestrate/SKILL.md's existing one-re-prompt relay, and reconcile-task-status.sh's demotion gate -- so a stranded dispatch is detected and recovered before any failure is charged. Extended lint-agent-contracts.sh with Check K to mechanically reject the detach-then-await-a-notification antipattern. Found and fixed two regressions during Phase 8's full-gate verification (a test's section-scoping boundary, and a SKILL.md eager-load ceiling overrun) before redeploying.
+
+**Task 404: zotero_export_test_hangs_full_gate**
+- Status: completed
+- Type: meta
+- Summary: Fixed test-zotero-generate-export.sh's unbounded runtime by rewriting synthesize_citekeys() as a single bulk jq pass and adding a 60s wall-clock bound with a proof-of-fire scenario; verified the whole suite (13/13 pass, ~12s), confirmed run-all.sh and the complete verify-deploy.sh gate set both now terminate deterministically (previously an indefinite hang), and closed the final verification phase COMPLETED WITH EXCLUSIONS against 4 pre-existing, unrelated gate failures with full evidence.
+
+**Task 403: share_one_verify_deploy_gate_run_per_batch**
+- Status: completed
+- Type: meta
+- Summary: Verified the batch-shared verify-deploy gate design end to end: a live fixture confirmed the multi-task deferral directive and single-task invariance, a repo-wide grep confirmed the bare-/implement invariance, and the complete verify-deploy.sh gate set was run. Fixed the one genuine regression (Gate 20's SKILL.md per-file ceiling, caused by this task's own Phase 5) and closed the phase COMPLETED WITH EXCLUSIONS for the remaining four pre-existing/sibling-caused findings, each with command-level evidence recorded in the plan's Reasoned Exclusions table.
+
+**Task 400: task_number_allocation_staleness_undetected**
+- Status: completed
+- Type: meta
+- Summary: Added an archive-aware base-mode counter-staleness check and promoted project_number uniqueness to base mode in validate-state.sh, added a mutex-scoped --allocate-into allocation primitive (stale-counter refusal plus counter-advance assertion) to state-write.sh, covered both in their owning test suites (70 and 14 fixtures/cases respectively, all green), fixed a pre-existing D6 fixture regression the new check surfaced, and redeployed the source store to RESULT=landed_verify_clean with the full 37-gate verify-deploy.sh passing.
+
+**Task 396: lean_phase_commit_full_build_and_plan_anchor**
+- Status: completed
+- Type: meta
+- Summary: Added the full-library-build phase-commit gate (revising three passages that previously permitted a scoped build) and the forward-search plan-file section-anchoring rule across the lean standard agent, hard-mode agent, and their shared flow file. Deploy regenerated the .claude/** tree and all three copies were confirmed byte-identical to source. Phase 4 closed [COMPLETED WITH EXCLUSIONS]: the complete gate set was discharged against the dispatch's Batch Gate Deferral directive via a scoped verify-deploy.sh --only-gate 3,4,5,6 run (5/5 pass), deferring gate 8 to the once-per-batch stage.
+
+**Task 395: surface_failed_per_cycle_commit_into_task_status**
+- Status: completed
+- Type: meta
+- Summary: Added a narrowly-gated demotion block to orchestrate-cycle-postflight.sh's WORK (i): a genuinely failed per-cycle commit (exit 2/3/4/5) for a just-completed implement dispatch now demotes state.json to partial, amends the handoff with a blocker, flips verdict to defer, and emits a loud STATUS DEMOTED line. Added both-polarity regression test coverage, documented the sanctioned terminal-state exception in status-markers.md and git-staging-scope.md, and deployed with the scoped gate narrowing confirmed green (full gate-8 battery deferred to this batch's once-per-invocation stage per the dispatch's Batch Gate Deferral directive).
+
+**Task 394: file_scope_containment_chokepoint_for_scoped_commit**
+- Status: completed
+- Type: meta
+- Summary: Added the V10 file_scope-Containment gate inside git-commit-scoped.sh (layered onto --task, exit code 7), ten new regression cases in test-git-commit-scoped.sh, and a full git-staging-scope.md contract update including the archived specification's Rider subsection. All 5 plan phases closed (4 COMPLETED, Phase 5 COMPLETED WITH EXCLUSIONS for two deploy-boundary artifacts and two confirmed-unrelated pre-existing corpus test failures).
+
+**Task 393: propagate_modified_files_constraint_to_silent_agents**
+- Status: completed
+- Type: meta
+- Summary: Propagated the modified_files repo-relative-paths MUST-DO constraint and track-on-write procedure into all 13 implementation agents that never mentioned the field, via a new canonical fragment (modified-files-bullet.md) and a new lint check (Check L) with full fixture coverage in lint-agent-contracts.sh/test-lint-agent-contracts.sh. All 6 plan phases completed; the originating grep -L sweep returns nothing and the full test suite passes 37/37.
+
+**Task 389: verify_deploy_context_budget_fixture_missing_git_add**
+- Status: completed
+- Type: meta
+- Summary: Converted test-verify-deploy-context-budget.sh's fixture-staging invariant into a mechanically enforced index-population assertion, verified via lint/positive-run/negative-probe. The dispatch's named cause was already fixed before dispatch; recorded as a stale-premise issue rather than re-applied. Both phases closed COMPLETED WITH EXCLUSIONS after discharging the complete verify-deploy.sh gate set, which fails 3 of 37 checks for three independent pre-existing causes unrelated to this task, each evidenced and issue-tracked.
+
+**Task 388: prune_next_body_flag_misparse_drops_active_task**
+- Status: completed
+- Type: meta
+- Summary: No summary recorded
+
+**Task 387: whole_tree_regeneration_scope_claim**
+- Status: completed
+- Type: meta
+- Summary: Completed Phase 7 (redeploy and full gate), the plan's final phase, closing out task 387's full 7-phase implementation. Executed the revised measurement-integrity gate (deploy-baseline-lib.sh capture/confirm/attribute pipeline) instead of the withdrawn clean-working-tree precondition: ran deploy-headless.sh unconditionally (landed clean, 8 extensions resynced), confirmed the post-deploy findings set is identical to the pre-deploy baseline (no new findings), confirmed all 9 persisting findings are unattributable to this task's own modified_files, confirmed all 13 touched files are byte-identical between the deployed tree and the source store, and confirmed validate-state.sh exits 0.
+
+**Task 386: silent_exit_in_no_revert_snapshot**
+- Status: completed
+- Type: meta
+- Summary: Fixed all four silently-aborting command substitutions in git-snapshot.sh (three in --no-revert mode, one duplicated in default mode), degrading the --no-revert stash pair to a named warning while keeping the untracked-enumeration fatal-with-reason, structurally removed both SIGPIPE-prone stash-list pipelines via a new resolve_latest_stash_ref() helper, and documented the per-mode failure posture in the script header. Added RED-first regression coverage (held index.lock, SIGPIPE, negative controls) to test-git-snapshot.sh; full suite is 7 passed, 0 failed, and the deployed tree is confirmed byte-identical to source.
+
+**Task 382: guard_foreign_stash_pop**
+- Status: completed
+- Type: meta
+- Summary: Added a session-scoped stash-provenance ledger and a new tree-state-blind hazard-class-3 predicate to guard-destructive-git.sh that refuses git stash pop/apply of a foreign (not-this-session-created) entry with exit 2, closing the 2026-10-09 'push saved nothing, then pop drops a foreign entry' incident. All 4 ACCEPTANCE criteria verified via 107 passing fixture cases plus a live end-to-end probe against the redeployed hook; git-snapshot.sh's rollback flow (both modes) and an owned pop continue to pass.
+
+**Task 381: implement_postflight_derived_artifact_staleness**
+- Status: completed
+- Type: meta
+- Summary: Closed Phase 6 of the derived-artifact staleness task: added three acceptance fixtures (evidence-shaped, all-pass, no-declaration regression) to test-orchestrate-cycle-postflight.sh (233/233 passing), confirmed single-task-engine cross-engine coverage already sufficient, redeployed cleanly (core/lean no longer stale), and closed the complete-gate-set verification as COMPLETED WITH EXCLUSIONS against two pre-existing filed obstructions, two findings already excluded by a concurrent sibling task, and severe transient ambient system contention, with every new/changed suite independently verified clean.
+
+**Task 380: archival_silently_untracks_evidence_gate_targets**
+- Status: completed
+- Type: meta
+- Summary: No summary recorded
+
+**Task 379: validate_state_cannot_validate_archive_state**
+- Status: completed
+- Type: meta
+- Summary: No summary recorded
+
+**Task 378: reviser_agent_handoff_contract_contradiction**
+- Status: completed
+- Type: meta
+- Summary: Resolved the reviser-agent handoff-writer contract contradiction: added an orchestrator_mode-gated .orchestrator-handoff.json section to agents/reviser-agent.md, registered it in docs/architecture/handoff-schema.md's Handoff Writers table, added a clarifying note to skill-orchestrate/SKILL.md's Skill-to-Agent Mapping table, and corrected a stale comment in scripts/reconcile-task-status.sh. No script behavior changed (orchestrate-cycle-plan.sh and orchestrate-cycle-postflight.sh are byte-unchanged). Also bumped orchestrator-context-budget.json's SKILL.md ceiling (24500 -> 25000 B) to keep Gate 20 green after the required clarifying note.
+
+**Task 376: lean_agents_mandate_forbidden_detach_then_await**
+- Status: completed
+- Type: meta
+- Summary: Removed the lean extension's instruction to detach a build via the harness's Bash(run_in_background: true) parameter and then end the turn awaiting a completion notification, replacing it everywhere with bounded-build-waiter.md's single-Bash-call bounded idiom while preserving detachment and the build guard. Discharged lint-agent-contracts.sh Check K's now-stale exclusion for the two lean implementation agents (lint now 348 passed/13 warnings/0 failed), redeployed, and created successor task #439 carrying forward the cross-extension duplication/propagation-architecture question.
+
+**Task 362: shared_worktree_history_read_discipline**
+- Status: completed
+- Type: meta
+- Summary: Authored agent-system/extensions/core/context/standards/shared-worktree-discipline.md naming the read-only history-inspection techniques and the three forbidden tree-reverting git commands, registered it in index-entries.json, cross-referenced it from git-safety.md, and added a literal pointer bullet to all 15 in-scope implementation agent definitions plus the agent template. Redeployed and demonstrated the pointer chain on the deployed tree with a reproducible grep; the two Lean implementation agent definitions were deliberately left untouched per the declared scope boundary.
+
+**Task 359: close_lint_curated_array_coverage_gaps**
+- Status: completed
+- Type: meta
+- Summary: Closed both measured curated-array coverage gaps in lint-agent-contracts.sh: normalized and registered the two books implementation agents in Checks C and G, propagated the bounded-wait bullet pair to the measured 11-of-23 exposed research agents behind a new Check M, added a Check N completeness net so the next drift fails the lint instead of waiting to be discovered by measurement, extended the test suite from 37 to 61 assertions, ran four deliberate-removal demonstrations, and redeployed with a clean 36-check verify-deploy.sh pass.
+
+**Task 350: offer_owner_review_when_approval_needed**
+- Status: completed
+- Type: meta
+- Summary: Implemented the full 5-phase plan for task 350: a books-domain record pinning the approvals-stage absent-or-stale detection signature and rulings, a read-only recognizer script (books-approvals-signal.sh) emitting a user_decision offering enter-review-now/defer/decline with blocking:false and recommended=defer, a 76-case forgery-probed fixture suite, and the cross-cutting detection rule wired into both books implementation agents. Demonstrated end to end that the recognizer's emitted object reaches verdict=ask_user verbatim through orchestrate-cycle-postflight.sh, with the honest-red half (status unchanged, nothing written) confirmed via a --dry-run scratch run. Two deviations recorded: the books extension is not loaded in this repository so the literal deploy-to-.claude/ demonstration could not be observed here (deploy-headless.sh's own internal full gate still passed 36/0), and the final phase's full gate set was discharged against the dispatch file's Batch Gate Deferral directive (scoped narrowing invocations) rather than independently re-run.
+
+**Task 312: backlog_reconciliation_required_at_task_creation**
+- Status: completed
+- Type: meta
+- Summary: Implemented the two-layer backlog-reconciliation mechanism: scripts/audit-task-proposals.sh (shared matcher, mechanical + semantic passes, open+closed corpus), scripts/state-write.sh's audit-evidence gate (--audit-verdict/--audit-override, exit 5), hooks/validate-task-creation-audit.sh (structural backstop), Component 4b in the Multi-Task Creation Standard, and wiring into all seven creation surfaces (/meta, /task, /fix-it, /spawn, /review, /errors). Verified live against the deployed tree: both the open-backlog and closed-record (archived + live-completed) acceptance cases pass, the backstop hook refuses a raw bypass write post-deploy, and the scoped regression suite (8 suites) is green. Four pre-existing, unrelated findings were observed during the full gate sweep and recorded non-fatally rather than fixed.
+
+**Task 282: record_versioning_write_time_hook**
+- Status: completed
+- Type: meta
+- Summary: Built hooks/validate-no-record-versioning.sh (a PreToolUse Write|Edit hook blocking BLOCKING-tier record-versioning language via exit 2, advisory-silent, payload-only, fail-open), its fixture test, restored the lint/hook scope-agreement case in test-check-record-versioning.sh, registered it bare on both settings surfaces plus manifest.json, truth-ed up the taxonomy's Enforcement section, and redeployed with four live probes all confirming correct behavior.
+
+**Task 275: per_repo_orchestration_queue**
+- Status: completed
+- Type: meta
+- Summary: Added a per-repo orchestration queue as six additive task-lock.sh subcommands (queue-register/heartbeat/finish/reap/list/check), built on the existing session registry: per-orchestration identity distinct from session_id, lifecycle registered->running->finished->archived, archive-on-finish rather than rm -f, liveness computed via the existing session_liveness() unchanged, and a blocking queue-check admission gate wired into /orchestrate's pre-dispatch stage. Documented in a new Orchestration-Queue CLI section in task-lock.md and two new Class Table rows in orchestrator-runtime-files.md, covered by a 17-case fixture suite, with shellcheck clean and the deployed tree fresh.
+
+**Task 274: next_admissible_batch_suggestion**
+- Status: completed
+- Type: meta
+- Summary: Implemented orchestrate-suggest-next-batch.sh with --next-batch and --alternatives modes, both establishing admissibility exclusively by invoking the real orchestrate-batch-admit.sh and reading its v6 verdicts, plus an edge-proposing step for file_scope-colliding pairs. Built a 7-fixture scratch-tree regression suite, registered the script and suite in manifest.json, and wired both trigger points (conclusion-stage.md Step 7, commands/orchestrate.md's queue-check refusal branch) with supporting documentation updates. This dispatch (seq 23) closed the one outstanding Gate 20 finding (commands/orchestrate.md 281 B and skills/skill-orchestrate/SKILL.md 116 B over their ceilings) via compaction/relocation only -- no ceiling move was needed. Gate 20 now passes.
+
+**Task 170: isolate_shell_suites_from_host_state**
+- Status: completed
+- Type: meta
+- Summary: Isolated the two confirmed ambient-host-state instances in the shell test corpus (test-four-tier-conflict.sh cases 5/6 via a PATH-shimmed clock injection, test-detect-noop-bash.sh's shared-path checks via a delta-based rewrite), triaged all 153 corpus suites with a recorded verdict each, recorded the isolation convention in shell-script-testing.md, and discharged Phase 6's repeated-run acceptance bar via the dispatch's own Batch Gate Deferral directive. Spawned three follow-up tasks (422, 423, 424) for defects found but correctly kept out of this task's own scope.
+
 ### 2026-09-29
 
 **Task 266: deploy_pending_vs_identical_dispatch_guard**

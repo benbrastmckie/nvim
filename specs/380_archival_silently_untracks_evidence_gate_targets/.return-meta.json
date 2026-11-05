@@ -1,9 +1,0 @@
-{
-  "status": "in_progress",
-  "metadata": {
-    "session_id": "sess_1791989937_2c550f",
-    "agent_type": "general-implementation-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
-}

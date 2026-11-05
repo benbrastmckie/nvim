@@ -1,0 +1,20 @@
+{
+  "status": "implemented",
+  "dispatch_seq": 14,
+  "phases_completed": 5,
+  "phases_total": 5,
+  "summary": "Fixed prune_next_body() and count_pruned_next_ids() in roadmap-integration.sh so a CLI flag segment on a Run line (e.g. '--hard') is preserved verbatim through --prune instead of fusing into the id list and silently dropping an active task. Added 25 new flag-bearing test cases across both roadmap layouts, extended roadmap-format.md's Next Grammar, and redeployed. The full gate set passes except three pre-existing, evidenced, unrelated findings (a hanging literature-extension test suite, a lean-extension doc-lint gap, and a 225B eager-load budget overage), excluded via a documented Reasoned Exclusions record in Phase 5.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/388_prune_next_body_flag_misparse_drops_active_task/summaries/01_prune-next-body-flag-misparse-summary.md",
+      "summary": "Implementation summary covering the flag-segment fix, test coverage, grammar documentation, and Phase 5's reasoned exclusions."
+    },
+    {
+      "type": "plan",
+      "path": "specs/388_prune_next_body_flag_misparse_drops_active_task/plans/01_prune-next-body-flag-misparse.md",
+      "summary": "5-phase implementation plan, all phases closed (4 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
+    }
+  ]
+}
