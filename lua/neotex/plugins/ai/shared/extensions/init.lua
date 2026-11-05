@@ -263,9 +263,17 @@ function M.create(config)
 
   --- Load an extension into the current project
   --- @param extension_name string Extension name
-  --- @param opts table|nil Options {confirm = true, project_dir = nil, force = false}
+  --- @param opts table|nil Options {confirm = true, project_dir = nil, force = false,
+  ---   notify_skips = false}. `notify_skips` forwards to `generate_opencode_json`'s own
+  ---   `opts.notify_skips`: when true, restores the full per-extension "skipped agent key(s)"
+  ---   WARN notification; when false (default), the detail is silent here and only available via
+  ---   this function's 3rd return value (see below) or a bulk caller's aggregate summary.
   --- @return boolean success True if load succeeded
   --- @return string|nil error Error message if load failed
+  --- @return table opencode_skips Skip report from `generate_opencode_json` (extension_name ->
+  ---   list of {key, missing}); empty table when nothing was skipped or opencode.json was not
+  ---   regenerated on this call path. Existing two-return-value call sites are unaffected -- Lua
+  ---   silently discards extra return values at call sites that destructure fewer locals.
   function manager.load(extension_name, opts)
     opts = opts or {}
     local confirm = opts.confirm ~= false  -- Default to true
@@ -358,6 +366,7 @@ function M.create(config)
           confirm = false,  -- dependencies load silently
           project_dir = project_dir,
           force = opts.force,
+          notify_skips = opts.notify_skips,
           _loading_stack = child_stack,
         })
         if not dep_ok then
@@ -640,7 +649,13 @@ function M.create(config)
 
     -- Regenerate opencode.json (computed artifact) after state is updated.
     -- This rebuilds the file from base template + all loaded extension fragments.
-    local json_ok, json_err = merge_mod.generate_opencode_json(project_dir, config)
+    -- `opts.notify_skips` forwards the caller's verbose opt-in (default false, silent) through
+    -- to the per-extension skip WARN inside generate_opencode_json; the returned skip report is
+    -- passed through as manager.load's own 3rd return value so a bulk caller
+    -- (manager.resync_all) can aggregate it into a single summary instead of per-extension spam.
+    local json_ok, json_err, json_skips = merge_mod.generate_opencode_json(
+      project_dir, config, { notify_skips = opts.notify_skips }
+    )
     if not json_ok then
       vim.schedule(function()
         vim.notify("Warning: opencode.json regeneration failed: " .. tostring(json_err), vim.log.levels.WARN)
@@ -666,7 +681,7 @@ function M.create(config)
       verify_mod.notify_results(verification)
     end
 
-    return true, nil
+    return true, nil, json_skips or {}
   end
 
   --- Unload an extension from the current project
@@ -820,8 +835,10 @@ function M.create(config)
     end
 
     -- Regenerate opencode.json (computed artifact) after state is updated.
-    -- This rebuilds the file without the unloaded extension's agents.
-    local json_ok, json_err = merge_mod.generate_opencode_json(project_dir, config)
+    -- This rebuilds the file without the unloaded extension's agents. The skip report (3rd
+    -- return value) is captured here to mirror the load path's shape, but manager.unload has no
+    -- consumer for it today, so its own 2-return-value contract is left unchanged.
+    local json_ok, json_err, _unload_json_skips = merge_mod.generate_opencode_json(project_dir, config)
     if not json_ok then
       vim.schedule(function()
         vim.notify("Warning: opencode.json regeneration failed: " .. tostring(json_err), vim.log.levels.WARN)
@@ -965,11 +982,18 @@ function M.create(config)
   --- Never unloads: each extension is re-loaded in place via `manager.load(..., {force = true})`,
   --- so there is no destructive intermediate "everything unloaded" state -- unlike the former
   --- picker-local unload-all/load-all reimplementation this function replaces.
-  --- @param opts table|nil Options: { project_dir = string|nil }
+  --- @param opts table|nil Options: { project_dir = string|nil, notify_skips = boolean|nil }.
+  ---   `notify_skips` (default false): forwarded to every `manager.load` call this makes, which
+  ---   forwards it to `generate_opencode_json`. When false, no per-extension "skipped agent
+  ---   key(s)" WARN is emitted during the resync; instead, every call's opencode-skip report is
+  ---   accumulated across the whole loop and, after it finishes, surfaced as AT MOST ONE
+  ---   aggregate INFO notification (nothing is emitted when the aggregate is empty). Set
+  ---   `notify_skips = true` to restore the old per-extension WARN behavior instead.
   --- @return table result { succeeded = {name, ...}, failed = {{name=, error=}, ...}, total = N }
   function manager.resync_all(opts)
     opts = opts or {}
     local project_dir = opts.project_dir or vim.fn.getcwd()
+    local notify_skips = opts.notify_skips or false
 
     local loaded = manager.list_loaded(project_dir)
     local result = { succeeded = {}, failed = {}, total = #loaded }
@@ -980,13 +1004,43 @@ function M.create(config)
 
     local resync_order = manager.compute_deploy_order(loaded)
 
+    -- Aggregated across the whole bulk reload: extension_name -> skipped-key count, so a single
+    -- INFO summary can be emitted after the loop instead of one WARN per extension per
+    -- manager.load call (see generate_opencode_json's own doc comment for why per-call silence
+    -- alone is not enough -- resync_all calls manager.load once per loaded extension).
+    local aggregate_skip_count = 0
+    local aggregate_ext_count = 0
+
     for _, name in ipairs(resync_order) do
-      local ok, err = manager.load(name, { confirm = false, project_dir = project_dir, force = true })
+      local ok, err, opencode_skips = manager.load(name, {
+        confirm = false, project_dir = project_dir, force = true, notify_skips = notify_skips,
+      })
       if ok then
         table.insert(result.succeeded, name)
       else
         table.insert(result.failed, { name = name, error = err })
       end
+      if opencode_skips and next(opencode_skips) ~= nil then
+        aggregate_ext_count = aggregate_ext_count + 1
+        for _, entries in pairs(opencode_skips) do
+          aggregate_skip_count = aggregate_skip_count + #entries
+        end
+      end
+    end
+
+    if aggregate_skip_count > 0 then
+      vim.schedule(function()
+        vim.notify(
+          string.format(
+            "opencode.json: %d agent key(s) skipped across %d extension(s) due to unresolved "
+              .. "{file:...} references (expected under the frozen .opencode/ policy; see "
+              .. ".opencode/README.md). Pass notify_skips=true to resync_all for per-extension "
+              .. "detail.",
+            aggregate_skip_count, aggregate_ext_count
+          ),
+          vim.log.levels.INFO
+        )
+      end)
     end
 
     return result

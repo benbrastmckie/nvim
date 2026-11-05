@@ -2,7 +2,7 @@
 
 - **Task**: 22 - Silence opencode-agents.json fragment validation spam (absorbed: picker Reload
   All/Regenerate honesty fix; absorbed: Global Update repo-registration feature)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None blocking. One concurrent sibling (task 459) is scheduled this same
   `/orchestrate` cycle with `file_scope` limited to `specs/459_cross_task_traceability_and_changelog_verdict/`
@@ -146,40 +146,42 @@ as a working stepwise resync.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Silence the opencode fragment-validation spam [NOT STARTED]
+### Phase 1: Silence the opencode fragment-validation spam [COMPLETED]
 
 **Goal**: A bulk `<leader>al` reload emits at most one aggregate INFO notification about skipped
 agent keys instead of one WARN per extension, with the per-extension detail preserved in return
 values and restorable via an opt-in verbose flag. Nothing is deleted.
 
 **Tasks**:
-- [ ] Re-read `lua/neotex/plugins/ai/shared/extensions/merge.lua` around
-      `M.validate_opencode_fragment` and `M.generate_opencode_json` before editing.
-- [ ] Give `M.generate_opencode_json` an optional third `opts` parameter
+- [x] Re-read `lua/neotex/plugins/ai/shared/extensions/merge.lua` around
+      `M.validate_opencode_fragment` and `M.generate_opencode_json` before editing. *(completed)*
+- [x] Give `M.generate_opencode_json` an optional third `opts` parameter
       (`{ notify_skips = boolean }`, default `false`). Replace the in-loop
       `vim.schedule(vim.notify(..., WARN))` skip emission with accumulation into a local skip
       report table keyed by extension name; emit the per-extension WARN only when
-      `opts.notify_skips` is true.
-- [ ] Return the skip report as a third return value from `M.generate_opencode_json`, documented
+      `opts.notify_skips` is true. *(completed)*
+- [x] Return the skip report as a third return value from `M.generate_opencode_json`, documented
       in its LuaDoc block (`@param opts`, `@return table skips`). Leave
       `M.validate_opencode_fragment` itself untouched — it already collects every missing
-      reference deterministically.
-- [ ] Add a comment at the emission site recording *why* the default is silent: missing `{file:}`
+      reference deterministically. *(completed)*
+- [x] Add a comment at the emission site recording *why* the default is silent: missing `{file:}`
       deploy targets are an expected state under the frozen `.opencode/` policy, so they are not
-      an error to shout about on every reload.
-- [ ] In `lua/neotex/plugins/ai/shared/extensions/init.lua`, have `manager.load` (the
+      an error to shout about on every reload. *(completed)*
+- [x] In `lua/neotex/plugins/ai/shared/extensions/init.lua`, have `manager.load` (the
       `generate_opencode_json` call near `init.lua:643`) capture the skip report and pass it
       through as an additional return value; mirror the capture on the unload path
       (near `init.lua:824`) without changing `manager.unload`'s contract if it has no consumer.
-- [ ] In `manager.resync_all`, accumulate each `manager.load` call's skip report across the whole
+      *(completed)*
+- [x] In `manager.resync_all`, accumulate each `manager.load` call's skip report across the whole
       resync loop and, after the loop, emit at most one INFO notification summarising the
       aggregate (extension count and skipped-key count, pointing at the verbose flag for detail).
-      Emit nothing when the aggregate is empty.
-- [ ] Thread the verbose opt-in so an operator can still get the full per-extension WARN output on
+      Emit nothing when the aggregate is empty. *(completed)*
+- [x] Thread the verbose opt-in so an operator can still get the full per-extension WARN output on
       demand (a `notify_skips` option on `resync_all`/`load` that defaults false and is forwarded
-      to `generate_opencode_json`).
-- [ ] Confirm no fragment, no validator function, and no `.opencode/` file was deleted by this
-      phase (`git diff --stat` shows only the two Lua files).
+      to `generate_opencode_json`). *(completed)*
+- [x] Confirm no fragment, no validator function, and no `.opencode/` file was deleted by this
+      phase (`git diff --stat` shows only the two Lua files). *(completed: verified via
+      `git diff --stat` and `git diff --diff-filter=D`)*
 
 **Timing**: 1.5 hours
 

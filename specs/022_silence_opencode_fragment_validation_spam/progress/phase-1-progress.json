@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Silence the opencode fragment-validation spam",
+  "started_at": "2026-11-05T16:21:30Z",
+  "last_updated": "2026-11-05T16:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read merge.lua validate_opencode_fragment/generate_opencode_json", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add opts.notify_skips param to generate_opencode_json; accumulate skip report instead of WARN notify", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 3, "description": "Return skip report as 3rd return value with LuaDoc", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 4, "description": "Add comment at emission site explaining silent default under frozen policy", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 5, "description": "init.lua manager.load captures skip report, passes through; mirror on unload path", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 6, "description": "manager.resync_all accumulates skip reports, emits one INFO summary", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 7, "description": "Thread notify_skips verbose opt-in through resync_all/load", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua", "lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 8, "description": "Confirm no fragment/validator/.opencode file deleted via git diff --stat", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -1009,9 +1009,23 @@ end
 ---
 --- @param project_dir string Project directory
 --- @param config table Extension system configuration
+--- @param opts table|nil Optional settings. `opts.notify_skips` (boolean, default false): when
+---   true, emit the per-extension "skipped agent key(s)" WARN notification immediately, as
+---   before. When false (the default), no per-extension WARN is emitted here at all; the same
+---   detail is accumulated into the returned `skips` table instead, so a caller (e.g.
+---   manager.resync_all) can aggregate it into a single summary. Missing `{file:}` deploy
+---   targets are an EXPECTED state under the frozen `.opencode/` policy (see .opencode/README.md),
+---   so per-extension WARN spam on every reload is not warranted by default; the detail is never
+---   destroyed, only gated behind this opt-in.
 --- @return boolean success True if generation succeeded
 --- @return string|nil error Error message if generation failed
-function M.generate_opencode_json(project_dir, config)
+--- @return table skips Map of extension_name -> { {key = agent_name, missing = file_path}, ... }
+---   for every extension that had at least one agent key skipped due to an unresolved
+---   {file:...} reference. Empty table when nothing was skipped.
+function M.generate_opencode_json(project_dir, config, opts)
+  opts = opts or {}
+  local notify_skips = opts.notify_skips or false
+  local skips = {}
   -- Lazy-require to avoid circular deps
   local state_mod = require("neotex.plugins.ai.shared.extensions.state")
   local manifest_mod = require("neotex.plugins.ai.shared.extensions.manifest")
@@ -1021,7 +1035,7 @@ function M.generate_opencode_json(project_dir, config)
 
   -- Step 1.2: Managed/unmanaged gating
   if vim.fn.filereadable(managed_marker) ~= 1 then
-    return true, nil
+    return true, nil, skips
   end
 
   -- Read base template (project-local first, then global fallback)
@@ -1093,19 +1107,30 @@ function M.generate_opencode_json(project_dir, config)
           if #skipped_keys > 0 then
             table.sort(skipped_keys)
             local skip_details = {}
+            local ext_skip_entries = {}
             for _, key in ipairs(skipped_keys) do
               table.insert(skip_details, string.format("%s (missing %s)", key, missing_by_key[key]))
+              table.insert(ext_skip_entries, { key = key, missing = missing_by_key[key] })
             end
-            vim.schedule(function()
-              vim.notify(
-                string.format(
-                  "Extension '%s' opencode-agents.json: skipped agent key(s) %s due to unresolved "
-                    .. "{file:...} reference(s); the rest of this fragment was merged.",
-                  ext_name, table.concat(skip_details, ", ")
-                ),
-                vim.log.levels.WARN
-              )
-            end)
+            skips[ext_name] = ext_skip_entries
+            -- Silent by default (opts.notify_skips == false): missing {file:} deploy targets are
+            -- an EXPECTED state under the frozen .opencode/ policy (.opencode/README.md), so
+            -- shouting a per-extension WARN on every reload is not warranted. The detail above is
+            -- never discarded -- it is accumulated into `skips` and returned to the caller, which
+            -- (manager.resync_all) aggregates it into a single summary. Set opts.notify_skips to
+            -- restore the full per-extension WARN output on demand.
+            if notify_skips then
+              vim.schedule(function()
+                vim.notify(
+                  string.format(
+                    "Extension '%s' opencode-agents.json: skipped agent key(s) %s due to unresolved "
+                      .. "{file:...} reference(s); the rest of this fragment was merged.",
+                    ext_name, table.concat(skip_details, ", ")
+                  ),
+                  vim.log.levels.WARN
+                )
+              end)
+            end
           end
         end
       end
@@ -1115,14 +1140,14 @@ function M.generate_opencode_json(project_dir, config)
   -- Step 1.3: Validate final computed table before writing
   local ok = pcall(vim.json.encode, base)
   if not ok then
-    return false, "generate_opencode_json: failed to encode computed JSON"
+    return false, "generate_opencode_json: failed to encode computed JSON", skips
   end
 
   -- Atomic write: write to temp then rename
   local temp_path = target_path .. ".tmp." .. tostring(os.time())
   local write_ok = M.write_json(temp_path, base)
   if not write_ok then
-    return false, "generate_opencode_json: failed to write temporary file"
+    return false, "generate_opencode_json: failed to write temporary file", skips
   end
 
   local rename_ok = os.rename(temp_path, target_path)
@@ -1130,11 +1155,11 @@ function M.generate_opencode_json(project_dir, config)
     -- Fallback: direct write
     write_ok = M.write_json(target_path, base)
     if not write_ok then
-      return false, "generate_opencode_json: failed to write opencode.json"
+      return false, "generate_opencode_json: failed to write opencode.json", skips
     end
   end
 
-  return true, nil
+  return true, nil, skips
 end
 
 return M

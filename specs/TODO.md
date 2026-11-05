@@ -79,7 +79,7 @@ next_project_number: 488
 
 ### Neovim
 
-22 [PLANNED] — Freeze .opencode: silence fragment validation spam and record...
+22 [IMPLEMENTING] — Freeze .opencode: silence fragment validation spam and record...
 
 ### File Scope Lifecycle
 
@@ -5882,7 +5882,7 @@ VERIFICATION: .mcp.json contains the entry after a fixture deploy; `jq empty` on
 ---
 
 ### 22. Freeze .opencode: silence fragment validation spam and record the frozen-mirror policy
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: neovim
 - **Dependencies**: None
