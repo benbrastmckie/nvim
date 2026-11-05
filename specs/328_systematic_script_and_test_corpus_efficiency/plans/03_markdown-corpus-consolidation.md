@@ -1486,7 +1486,7 @@ on an internal signature this phase changes.
 
 ---
 
-### Phase 10: Deduplicate the Typst Script Pair [NOT STARTED]
+### Phase 10: Deduplicate the Typst Script Pair [COMPLETED]
 
 **Goal**: The 44 mutual duplicate blocks between `chapter-quality-check.sh` and
 `typst-element-lint.sh` collapse into one shared helper set within the typst extension.
@@ -1495,13 +1495,28 @@ on an internal signature this phase changes.
 suite, write a characterization test before refactoring it.
 
 **Tasks**:
-- [ ] Re-run `script-inventory.sh` and confirm the pair's duplicate-block count before acting.
-- [ ] Determine paired-test coverage; write characterization tests first where absent.
-- [ ] Extract the shared blocks into a typst-extension-local shared helper. Keep it inside the
+- [x] Re-run `script-inventory.sh` and confirm the pair's duplicate-block count before acting.
+      *(completed: re-measured 763/370 lines, 44/44 duplicate blocks, mutual peers — matches the
+      dispatch's own figures exactly, no drift)*
+- [x] Determine paired-test coverage; write characterization tests first where absent.
+      *(completed: both already fixture-tested — `tests/test-chapter-quality-check.sh` (472
+      lines) and `tests/test-typst-element-lint.sh` (381 lines) — no characterization test
+      needed)*
+- [x] Extract the shared blocks into a typst-extension-local shared helper. Keep it inside the
       typst extension — a cross-extension lib would couple the typst extension to core for no
       gain, and extension independence is a deliberate property of the layout.
-- [ ] Diff both scripts' finding output over a representative typst fixture tree before and after.
-- [ ] Record the phase's NET-PROD delta.
+      *(completed: new `agent-system/extensions/typst/scripts/lib/typst-scan-lib.sh` — the
+      shared ANSI color palette, the `--verbose/--help`/`--`/`-*` option-parsing loop, and the
+      recursive `*.typ` directory-expansion loop, the exact shared surface both scripts
+      duplicated; registered in `agent-system/extensions/typst/manifest.json`'s
+      `provides.scripts`)*
+- [x] Diff both scripts' finding output over a representative typst fixture tree before and
+      after. *(completed: a scratch fixture exercising placement/item-count/density/presence
+      findings (element-lint) and backtick-path/CONFIRM/heading-depth/claim-ratio/hedging/
+      paragraph-length/judged-prompt findings (chapter-quality-check), plus the four CLI edge
+      cases — no PATH, `--help`, a nonexistent PATH, an unknown option — for both scripts: all
+      eight captures byte-identical before and after, confirmed via `diff`)*
+- [x] Record the phase's NET-PROD delta. *(completed: NET-PROD -2; see Running Net Figures)*
 
 **Timing**: 1.5 hours
 
@@ -1526,9 +1541,9 @@ plus both scripts' finding-output diff over a typst fixture tree.
 - `agent-system/extensions/typst/scripts/tests/` - characterization tests, if absent
 
 **Verification**:
-- Both scripts' finding output over a representative typst fixture tree is byte-identical before and after.
-- The pair's suites (existing or newly written) are green.
-- The phase's NET-PROD delta is recorded and negative.
+- Both scripts' finding output over a representative typst fixture tree is byte-identical before and after. *(confirmed: see above — 8/8 captures identical via `diff`)*
+- The pair's suites (existing or newly written) are green. *(confirmed: `run-all.sh --only test-chapter-quality-check.sh,test-typst-element-lint.sh` — 2 passed, 0 failed, both before and after the refactor; `test-manifest-scripts-sync.sh` also green after staging the new lib file)*
+- The phase's NET-PROD delta is recorded and negative. *(confirmed: NET-PROD -2 via `git diff --numstat` across the three touched production files — `chapter-quality-check.sh` 4 ins/60 del, `typst-element-lint.sh` 5 ins/59 del, `lib/typst-scan-lib.sh` +108/-0 new file (manifest.json's own 2 ins/1 del excluded, consistent with Phase 9's convention, since `script-inventory.sh`'s line totals cover `*.sh` only); 117 insertions - 119 deletions = -2. Confirmed independently via raw line counts: 763+370=1,133 before vs. 707+316+108=1,131 after. Small because, unlike the install/uninstall pair (whose shared mass was six per-type symlink loops), this pair's shared mass was the CLI-parsing/path-collection skeleton plus a 5-line color palette — the same skeleton the shared-lint-corpus-scan-lib precedent already extracted for a different cluster, at a comparably modest per-pair yield. Duplicate-block count for the pair dropped 44/44 -> 0/0 (`script-inventory.sh` re-measure). No new test file was required (Paired-Test Coverage precondition already satisfied), so NET-TEST for this phase is 0 — unlike Phase 9's one-time characterization-suite cost.)*
 
 ---
 

@@ -88,11 +88,9 @@
 # context/standards/shell-strict-mode.md's Class B admission test.
 set -uo pipefail
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/typst-scan-lib.sh
+source "${SCRIPT_DIR}/lib/typst-scan-lib.sh"
 
 VERBOSE=false
 
@@ -131,60 +129,8 @@ Exit codes: 0 = pass (warnings allowed), 1 = placement failures found, 2 = usage
 EOF
 }
 
-PATHS=()
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --verbose|-v)
-      VERBOSE=true
-      shift
-      ;;
-    --help|-h)
-      usage
-      exit 0
-      ;;
-    --)
-      shift
-      while [[ $# -gt 0 ]]; do
-        PATHS+=("$1")
-        shift
-      done
-      ;;
-    -*)
-      echo "Error: unknown option: $1" >&2
-      usage >&2
-      exit 2
-      ;;
-    *)
-      PATHS+=("$1")
-      shift
-      ;;
-  esac
-done
-
-if [[ ${#PATHS[@]} -eq 0 ]]; then
-  echo "Error: no PATH given" >&2
-  usage >&2
-  exit 2
-fi
-
-TYP_FILES=()
-for p in "${PATHS[@]}"; do
-  if [[ -f "$p" ]]; then
-    TYP_FILES+=("$p")
-  elif [[ -d "$p" ]]; then
-    while IFS= read -r -d '' f; do
-      TYP_FILES+=("$f")
-    done < <(find "$p" -type f -name '*.typ' -print0 | sort -z)
-  else
-    echo "Error: path does not exist: $p" >&2
-    exit 2
-  fi
-done
-
-if [[ ${#TYP_FILES[@]} -eq 0 ]]; then
-  echo "Error: no .typ files found under the given path(s)" >&2
-  exit 2
-fi
+typst_scan_parse_args "$@"
+typst_scan_collect_files
 
 TOTAL_FAILURES=0
 TOTAL_WARNINGS=0

@@ -1,0 +1,49 @@
+{
+  "phase": 10,
+  "phase_name": "Deduplicate the Typst Script Pair",
+  "started_at": "2026-11-05T15:05:00Z",
+  "last_updated": "2026-11-05T15:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run script-inventory.sh and confirm the pair's duplicate-block count before acting",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Determine paired-test coverage; write characterization tests first where absent",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Extract the shared blocks into a typst-extension-local shared helper",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/typst/scripts/lib/typst-scan-lib.sh",
+        "agent-system/extensions/typst/scripts/chapter-quality-check.sh",
+        "agent-system/extensions/typst/scripts/typst-element-lint.sh",
+        "agent-system/extensions/typst/manifest.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Diff both scripts' finding output over a representative typst fixture tree before and after",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Record the phase's NET-PROD delta",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
