@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase implementation plan for consolidating the engine-written-state Containment allowlist. Phase 1 creates one canonical scripts/lib/engine-written-state-paths-lib.sh (four members: specs/TODO.md, specs/state.json, specs/events.jsonl, specs/errors.json) with its own suite; Phases 2-4 migrate Site 3 (git-commit-scoped.sh V10) and Site 1 (orchestrate-cycle-postflight.sh WORK (h)) off their hand-copied literals and add Site 2's net-new splice in git-commit-phase.sh, each with paired admission plus genuine-excursion non-regression fixtures; Phase 5 records the landing in git-staging-scope.md; Phase 6 redeploys and observes a real commit carrying an actual specs/events.jsonl delta. Key design decision added beyond research: every consumer falls back to the existing two-literal pair on a source failure, so library resolution failure is behavior-preserving rather than scope-narrowing.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/plans/01_allowlist-infrastructure-paths.md",
+      "summary": "Six-phase plan: shared allowlist library, three site migrations with paired fixtures, standard update, redeploy plus end-to-end observation."
+    }
+  ],
+  "dispatch_seq": 6
+}

@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793850684_c30dd8_469",
-  "dispatch_seq": 2,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/reports/01_allowlist-infrastructure-paths.md",
-      "summary": "Pins the exact per-site allowlist locations (git-commit-scoped.sh:499, orchestrate-cycle-postflight.sh:1670, and git-commit-phase.sh's currently-absent Site 2 allowlist); reconstructs the real end-to-end path for task #467's historical drop (the task-creation commit, matched by exact timestamp and by the V10-specific zero-phase/zero-dispatch-seq issue shape); recommends one canonical shared library (engine_written_state_paths, modelled on lib/derived-artifact-probe-lib.sh) listing specs/TODO.md, specs/state.json, specs/events.jsonl, specs/errors.json; and maps the required git-staging-scope.md and test-fixture updates."
+      "type": "plan",
+      "path": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/plans/01_allowlist-infrastructure-paths.md",
+      "summary": "Six-phase plan consolidating the engine-written-state allowlist into one shared library consumed by all three Containment sites, adding specs/events.jsonl and specs/errors.json, with per-site paired admission/non-regression fixtures, the git-staging-scope.md landing record, and a redeploy plus real observed events.jsonl commit."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In agent-system/extensions/core, the proven pattern for a value multiple scripts must consult identically is a small sourced lib file (e.g. scripts/lib/derived-artifact-probe-lib.sh) exporting a function that echoes a compact JSON array, sourced defensively (`source ... 2>/dev/null`) by every consumer rather than each consumer hand-copying the same literal. Reuse this shape for any future 'same allowlist needed at N sites' defect instead of re-copying literals.",
-      "category": "PATTERN",
-      "source_artifact": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/reports/01_allowlist-infrastructure-paths.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["shared-lib-pattern", "containment", "allowlist", "derived-artifact-probe-lib", "git-commit-scoped"]
-    },
-    {
-      "content": "When reconstructing which of several near-identical code sites fired a historical issue-record.sh entry, the entry's own --phase/--dispatch-seq presence/absence (each call site passes a different, fixed subset of those flags) plus its exact timestamp matched against `git log` commit times is a reliable discriminator -- more reliable than inferring from which call site's pathspec 'could' have contained the path, since agent-composed bash (from a commands/*.md or SKILL.md prose template) is not guaranteed to match the template's literal example verbatim.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/reports/01_allowlist-infrastructure-paths.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["issue-record", "root-cause", "git-log", "timestamp-correlation", "debugging"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 469 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1793850684_c30dd8_469",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 5,
+    "dependency_waves": 4
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 469 to execute the plan",
+  "dispatch_seq": 6
 }
