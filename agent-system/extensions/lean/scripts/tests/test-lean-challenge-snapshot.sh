@@ -14,7 +14,11 @@
 # non-ASCII declaration name is harvested, declared, and cross-validated IN FULL rather than
 # truncated at its first non-ASCII character (R9), and a Goals bullet naming only the ASCII
 # prefix of a non-ASCII declared name fails cross-validation rather than silently colliding with
-# it (R10).
+# it (R10). Cases R11-R13 cover the widened, decoupled declaration-boundary alternation: an
+# `abbrev` between two theorems survives with its real body and both theorems stay sorry-forced
+# (R11); an anonymous `instance` between two theorems survives with its real body and
+# contributes no name (R12); and the `abbrev` from R11 contributes no name to `theorem_names`,
+# pinning that the boundary widening never also widens what is cross-validated or forced (R13).
 #
 # (2) R2 legacy fallback (Case R3): a plan with no `## Lean Challenge Statements` section falls
 # back to extracting an existing sorried declaration from the target project's git tree, and
@@ -343,6 +347,66 @@ if [ "$rc" -eq 71 ] \
   pass "R10: the ASCII prefix of a non-ASCII declared name fails cross-validation (truncation-collision guard)"
 else
   fail "R10: expected exit 71 naming 'comm' as Goals-only and 'comm₁' as declared-only, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R11: an `abbrev` sitting between two theorems must survive into the assembled module with
+# its REAL body, and both theorems must still be forced to `sorry`.
+#
+# Mutation this case kills: reverting the widened LEAN_DECL_BOUNDARY_KW back to
+# `theorem|lemma|def|instance` (no `abbrev`) makes `abbrev Doubled` match no boundary at all, so
+# it is swallowed whole into the preceding `comm` chunk and discarded with everything up to
+# `comm`'s own `:=` -- the assembled module then contains no trace of `Doubled` at all.
+# ===========================================================================
+repo=$(make_repo "r11" 922 plan_r11_abbrev_between.md)
+out=$(run_tool "$repo" 922 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] \
+  && echo "$out" | grep -q "theorem_names: assoc,comm" \
+  && echo "$out" | grep -q "^abbrev Doubled (n : Nat) : Nat := n + n$" \
+  && [ "$(echo "$out" | grep -c "^theorem .* := sorry$")" -eq 2 ]; then
+  pass "R11: an abbrev between two theorems survives with its real body; both theorems still forced to sorry"
+else
+  fail "R11: expected exit 0 with Doubled's real body intact and both theorems sorry-forced, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R12: an anonymous `instance` (no identifier) sitting between two theorems must survive
+# into the assembled module with its real body, and must contribute NO entry to
+# `theorem_names`.
+#
+# Mutation this case kills: reverting the widened LEAN_DECL_BOUNDARY_KW's OPTIONAL identifier
+# back to a REQUIRED one makes the anonymous `instance : Inhabited Nat := ...` match no boundary
+# at all (its keyword is in the alternation, but a required identifier cannot match `:`), so it
+# is swallowed whole into the preceding `comm` chunk exactly as in the pre-fix defect.
+# ===========================================================================
+repo=$(make_repo "r12" 923 plan_r12_anon_instance.md)
+out=$(run_tool "$repo" 923 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] \
+  && echo "$out" | grep -q "theorem_names: assoc,comm" \
+  && echo "$out" | grep -q "^instance : Inhabited Nat := ⟨0⟩$"; then
+  pass "R12: an anonymous instance between two theorems survives with its real body and contributes no name"
+else
+  fail "R12: expected exit 0 with the anonymous instance's real body intact and theorem_names=assoc,comm (no instance entry), got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case R13: regression assertion pinning the decoupling itself -- the `abbrev` in R11's fixture
+# contributes NO name to `theorem_names`, so it is never newly required to appear under
+# `**Goals**:`. This is what a naive one-regex widening (recognizing `abbrev` as a boundary AND
+# as a name-contributing/forced declaration in one undifferentiated step) would get wrong: it
+# would make `Doubled` a required Goal, and R11's own fixture -- which does not name `Doubled`
+# under `**Goals**:` -- would then fail cross-validation instead of passing.
+# ===========================================================================
+repo=$(make_repo "r13" 924 plan_r11_abbrev_between.md)
+r13_out=$(run_tool "$repo" 924 "$repo" --dry-run 2>&1)
+r13_names_line=$(echo "$r13_out" | grep "^# theorem_names:" || true)
+if echo "$r13_out" | grep -q "^# route:" \
+  && ! echo "$r13_names_line" | grep -q "Doubled"; then
+  pass "R13: the abbrev in R11's fixture contributes no name to theorem_names (decoupling pinned)"
+else
+  fail "R13: expected theorem_names line to never mention 'Doubled', got: $r13_names_line"
 fi
 
 # ===========================================================================

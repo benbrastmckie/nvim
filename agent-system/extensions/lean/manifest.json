@@ -41,6 +41,8 @@
       "tests/fixtures/challenge/plan_goals_preamble.md",
       "tests/fixtures/challenge/plan_r9_unicode.md",
       "tests/fixtures/challenge/plan_r10_truncation.md",
+      "tests/fixtures/challenge/plan_r11_abbrev_between.md",
+      "tests/fixtures/challenge/plan_r12_anon_instance.md",
       "tests/test-lean-sorry-census.sh",
       "lean-src-roots.sh",
       "tests/test-lean-src-roots.sh",

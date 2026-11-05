@@ -200,6 +200,35 @@ STATE_JSON="specs/state.json"
 # ---------------------------------------------------------------------------
 export LEAN_IDENT_PATTERN="[^\W\d][\w']*"
 
+# ---------------------------------------------------------------------------
+# Shared declaration-boundary keyword alternation, exported the same way as LEAN_IDENT_PATTERN
+# and read the same way (`os.environ`, inside each quoted heredoc).
+#
+# THREE SEPARATE ROLES, deliberately decoupled rather than conflated into one regex:
+#
+#   - BOUNDARY role (this alternation, LEAN_DECL_BOUNDARY_KW): recognizes every keyword that
+#     starts a declaration -- theorem, lemma, def, instance, AND abbrev -- with an OPTIONAL
+#     identifier, since an anonymous `instance` has none. This is what decides where one
+#     declaration's text ends and the next one's begins, so no `abbrev` or anonymous `instance`
+#     sitting between two theorems can ever be swallowed into a neighboring chunk.
+#   - NAME-HARVEST role (LEAN_DECL_NAME_KW, narrower): only a boundary match whose keyword is
+#     theorem/lemma/def/instance AND which carries a name contributes that name to the
+#     cross-validated declared-identifier set. An `abbrev` contributes no name; an anonymous
+#     `instance` has none to contribute. This is UNCHANGED in breadth from before this file
+#     recognized `abbrev`/anonymous-`instance` as boundaries at all, which is what keeps a plan
+#     that passed before this widening still passing today.
+#   - BODY-FORCING role: the SAME predicate as name-harvest (keyword in LEAN_DECL_NAME_KW and a
+#     name present) decides which declaration's body is forced to `:= sorry`. A newly-recognized
+#     `abbrev` or anonymous `instance` keeps its real body verbatim -- `abbrev Bar := sorry` is an
+#     unusable definition that would break every downstream theorem referencing `Bar`.
+#
+# Widening LEAN_DECL_BOUNDARY_KW alone, with name-harvest and body-forcing still keyed off
+# LEAN_DECL_NAME_KW, is what stops a wider boundary match from also widening what counts as a
+# required Goal or what gets its body destroyed.
+# ---------------------------------------------------------------------------
+export LEAN_DECL_BOUNDARY_KW="theorem|lemma|def|instance|abbrev"
+export LEAN_DECL_NAME_KW="theorem|lemma|def|instance"
+
 normalize_lean_header() {
   # Strips block comments (/- ... -/) and line comments (-- ...), then collapses all whitespace
   # (including newlines) to single spaces and trims. Documented limitation (stated, not papered
@@ -252,10 +281,14 @@ with open(pinned_module_file, encoding="utf-8") as f:
     pinned_module = f.read()
 
 IDENT = os.environ["LEAN_IDENT_PATTERN"]
+BOUNDARY_KW = os.environ["LEAN_DECL_BOUNDARY_KW"]
+# BOUNDARY role only here (do_check() reads only chunk[:assign_pos] and is not itself exposed to
+# the swallowing failure mode), widened to agree with extract_r1()/extract_r2() about what counts
+# as a declaration. The identifier is OPTIONAL to admit an anonymous `instance`.
 DECL_HEADER_RE = re.compile(
     r"(?m)^\s*(?:@\[[^\]]*\]\s*\n?\s*)?"
     r"(?:(?:private|protected|noncomputable)\s+)*"
-    r"(theorem|lemma|def|instance)\s+(" + IDENT + r")"
+    r"(?:" + BOUNDARY_KW + r")(?:\s+(" + IDENT + r"))?"
 )
 
 
@@ -279,7 +312,7 @@ def headers_by_name(text):
     matches = list(DECL_HEADER_RE.finditer(text))
     out = {}
     for idx, m in enumerate(matches):
-        name = m.group(2)
+        name = m.group(1)
         start = m.start()
         end = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
         chunk = text[start:end]
@@ -457,8 +490,13 @@ PYEOF
 
 # ---------------------------------------------------------------------------
 # R1: plan-declared statements -- extract every ```lean fenced block under
-# `## Lean Challenge Statements`, concatenate in document order, and force every declaration
-# body to `sorry` regardless of what the block actually contains.
+# `## Lean Challenge Statements`, concatenate in document order, and recognize every
+# theorem/lemma/def/instance/abbrev declaration as its own chunk (so none of them can be
+# swallowed into a neighbor's body). Only a theorem/lemma/def/named-instance chunk is forced to
+# `:= sorry` and contributes its name to the cross-validated declared-identifier set; an abbrev
+# or an anonymous instance keeps its real body verbatim and contributes no name, exactly as
+# today -- see LEAN_DECL_BOUNDARY_KW/LEAN_DECL_NAME_KW's header comment for the full three-role
+# separation this preserves.
 #
 # Exit status of extract_r1 (via the embedded python3 helper):
 #   0  section found, at least one lean block present -> names/module written to the two temp
@@ -513,22 +551,43 @@ def find_top_level_assign(s):
 
 
 IDENT = os.environ["LEAN_IDENT_PATTERN"]
+BOUNDARY_KW = os.environ["LEAN_DECL_BOUNDARY_KW"]
+NAME_KW = set(os.environ["LEAN_DECL_NAME_KW"].split("|"))
+# BOUNDARY role (widened): recognizes theorem/lemma/def/instance/abbrev, with an OPTIONAL name,
+# so no abbrev or anonymous instance sitting between two theorems can fall inside either one's
+# chunk. The keyword is captured (group 1) so the name-harvest/body-forcing predicate below can
+# read it back; the name is optional (group 2), since an anonymous instance has none.
 DECL_RE = re.compile(
     r"(?m)^\s*(?:@\[[^\]]*\]\s*\n?\s*)?"
     r"(?:(?:private|protected|noncomputable)\s+)*"
-    r"(?:theorem|lemma|def|instance)\s+(" + IDENT + r")"
+    r"(" + BOUNDARY_KW + r")(?:\s+(" + IDENT + r"))?"
 )
 
 matches = list(DECL_RE.finditer(module_body))
-declared_names = [mm.group(1) for mm in matches]
 
-# Force every declaration body to `sorry`.
+
+def is_forced(m):
+    # NAME-HARVEST and BODY-FORCING roles (unchanged in breadth): only a match whose keyword is
+    # theorem/lemma/def/instance AND which carries a name is a "real" declaration that
+    # contributes a name and gets its body forced. An abbrev contributes no name and keeps its
+    # body verbatim (a forced `abbrev Bar := sorry` would break every downstream reference to
+    # `Bar`); an anonymous instance has no name to contribute and is left verbatim likewise.
+    return m.group(1) in NAME_KW and m.group(2) is not None
+
+
+declared_names = [mm.group(2) for mm in matches if is_forced(mm)]
+
+# Force only the "real" declarations' bodies to `sorry`; an abbrev or anonymous instance keeps
+# its chunk verbatim.
 if matches:
     pieces = [module_body[: matches[0].start()]]
     for idx, mm in enumerate(matches):
         start = mm.start()
         end = matches[idx + 1].start() if idx + 1 < len(matches) else len(module_body)
         chunk = module_body[start:end]
+        if not is_forced(mm):
+            pieces.append(chunk)
+            continue
         assign_pos = find_top_level_assign(chunk)
         if assign_pos == -1:
             pieces.append(chunk)
@@ -633,10 +692,18 @@ if tree.returncode != 0:
 lean_files = [p for p in tree.stdout.splitlines() if p.endswith(".lean")]
 
 IDENT = os.environ["LEAN_IDENT_PATTERN"]
+BOUNDARY_KW = os.environ["LEAN_DECL_BOUNDARY_KW"]
+NAME_KW = set(os.environ["LEAN_DECL_NAME_KW"].split("|"))
+# BOUNDARY role (widened): recognizes theorem/lemma/def/instance/abbrev, with an OPTIONAL name,
+# so an abbrev or anonymous instance sitting between two wanted declarations in the git tree
+# never gets folded into a neighboring chunk. NAME-HARVEST/BODY-FORCING role (unchanged in
+# breadth, applied below via `m.group(1) in NAME_KW`): only a theorem/lemma/def/named-instance
+# match can resolve a wanted Goals name -- an abbrev or anonymous instance is never treated as
+# the declaration satisfying a wanted name, even if it happens to share that name.
 DECL_HEADER_RE = re.compile(
     r"(?m)^\s*(?:@\[[^\]]*\]\s*\n?\s*)?"
     r"(?:(?:private|protected|noncomputable)\s+)*"
-    r"(theorem|lemma|def|instance)\s+(" + IDENT + r")"
+    r"(" + BOUNDARY_KW + r")(?:\s+(" + IDENT + r"))?"
 )
 
 def find_top_level_assign_or_by(s):
@@ -665,8 +732,10 @@ for path in lean_files:
     file_cache[path] = content
     matches = list(DECL_HEADER_RE.finditer(content))
     for idx, m in enumerate(matches):
+        if m.group(1) not in NAME_KW:
+            continue
         decl_name = m.group(2)
-        if decl_name not in names:
+        if decl_name is None or decl_name not in names:
             continue
         start = m.start()
         end = matches[idx + 1].start() if idx + 1 < len(matches) else len(content)
