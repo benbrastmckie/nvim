@@ -16,169 +16,32 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+source "${SCRIPT_DIR}/lib/extension-install-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 CLAUDE_DIR="$PROJECT_ROOT/.claude"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-NC='\033[0m' # No Color
-
-log_info() {
-  echo -e "${GREEN}[INFO]${NC} $1"
-}
-
-log_warn() {
-  echo -e "${YELLOW}[WARN]${NC} $1"
-}
-
-log_error() {
-  echo -e "${RED}[ERROR]${NC} $1" >&2
-}
+log_info() { extlib_log_info "$1"; }
+log_warn() { extlib_log_warn "$1"; }
+log_error() { extlib_log_error "$1"; }
 
 # Validate arguments
 if [ $# -ne 1 ]; then
-  echo "Usage: $0 <extension-directory>"
-  echo "Example: $0 .claude/extensions/z3"
-  exit 1
+  extlib_usage_and_exit "$0"
 fi
 
-EXT_DIR="$1"
-
-# Convert to absolute path if relative
-if [[ ! "$EXT_DIR" = /* ]]; then
-  EXT_DIR="$PROJECT_ROOT/$EXT_DIR"
-fi
-
-# Validate extension directory exists
-if [ ! -d "$EXT_DIR" ]; then
-  log_error "Extension directory not found: $EXT_DIR"
-  exit 1
-fi
-
-# Validate manifest.json exists
-MANIFEST="$EXT_DIR/manifest.json"
-if [ ! -f "$MANIFEST" ]; then
-  log_error "manifest.json not found in $EXT_DIR"
-  exit 1
-fi
-
-# Read extension name
-EXT_NAME=$(jq -r '.name' "$MANIFEST")
-if [ -z "$EXT_NAME" ] || [ "$EXT_NAME" = "null" ]; then
-  log_error "Extension name not found in manifest.json"
-  exit 1
-fi
+EXT_DIR="$(extlib_resolve_ext_dir "$PROJECT_ROOT" "$1")"
+EXT_NAME="$(extlib_validate_extension "$EXT_DIR")" || exit 1
 
 log_info "Installing extension: $EXT_NAME"
 
-# Function to create symlinks for commands
-install_commands() {
-  local commands_dir="$EXT_DIR/commands"
-  local target_dir="$CLAUDE_DIR/commands"
-
-  if [ ! -d "$commands_dir" ]; then
-    log_info "No commands directory found, skipping command symlinks"
-    return 0
-  fi
-
-  for cmd in "$commands_dir"/*.md; do
-    if [ -f "$cmd" ]; then
-      local cmd_name
-      cmd_name=$(basename "$cmd")
-      local target="$target_dir/$cmd_name"
-
-      if [ -L "$target" ]; then
-        # Already a symlink, check if it points to the right place
-        local current_target
-        current_target=$(readlink "$target")
-        local expected_target="../../agent-system/extensions/$EXT_NAME/commands/$cmd_name"
-        if [ "$current_target" = "$expected_target" ]; then
-          log_info "Command symlink already exists: $cmd_name"
-        else
-          log_warn "Command symlink exists but points elsewhere: $cmd_name"
-        fi
-      elif [ -f "$target" ]; then
-        log_warn "Command file exists (not a symlink): $cmd_name"
-      else
-        # Create symlink
-        local rel_path="../../agent-system/extensions/$EXT_NAME/commands/$cmd_name"
-        ln -s "$rel_path" "$target"
-        log_info "Created command symlink: $cmd_name -> $rel_path"
-      fi
-    fi
-  done
-}
-
-# Function to create symlinks for skills
-install_skills() {
-  local skills_dir="$EXT_DIR/skills"
-  local target_dir="$CLAUDE_DIR/skills"
-
-  if [ ! -d "$skills_dir" ]; then
-    log_info "No skills directory found, skipping skill symlinks"
-    return 0
-  fi
-
-  for skill in "$skills_dir"/skill-*; do
-    if [ -d "$skill" ]; then
-      local skill_name
-      skill_name=$(basename "$skill")
-      local target="$target_dir/$skill_name"
-
-      if [ -L "$target" ]; then
-        # Already a symlink, check if it points to the right place
-        local current_target
-        current_target=$(readlink "$target")
-        local expected_target="../../agent-system/extensions/$EXT_NAME/skills/$skill_name"
-        if [ "$current_target" = "$expected_target" ]; then
-          log_info "Skill symlink already exists: $skill_name"
-        else
-          log_warn "Skill symlink exists but points elsewhere: $skill_name"
-        fi
-      elif [ -d "$target" ]; then
-        log_warn "Skill directory exists (not a symlink): $skill_name"
-      else
-        # Create symlink
-        local rel_path="../../agent-system/extensions/$EXT_NAME/skills/$skill_name"
-        ln -s "$rel_path" "$target"
-        log_info "Created skill symlink: $skill_name -> $rel_path"
-      fi
-    fi
-  done
-}
-
-# Function to create symlinks for agents
-install_agents() {
-  local agents_dir="$EXT_DIR/agents"
-  local target_dir="$CLAUDE_DIR/agents"
-
-  if [ ! -d "$agents_dir" ]; then
-    log_info "No agents directory found, skipping agent symlinks"
-    return 0
-  fi
-
-  for agent in "$agents_dir"/*.md; do
-    if [ -f "$agent" ]; then
-      local agent_name
-      agent_name=$(basename "$agent")
-      local target="$target_dir/$agent_name"
-
-      if [ -L "$target" ]; then
-        log_info "Agent symlink already exists: $agent_name"
-      elif [ -f "$target" ]; then
-        log_warn "Agent file exists (not a symlink): $agent_name"
-      else
-        # Create symlink
-        local rel_path="../../agent-system/extensions/$EXT_NAME/agents/$agent_name"
-        ln -s "$rel_path" "$target"
-        log_info "Created agent symlink: $agent_name -> $rel_path"
-      fi
-    fi
-  done
-}
+# Symlink creation for commands/skills/agents: see extlib_install_symlinks's own header for the
+# parameter meaning, in particular why the agents call passes check-target=0 (install_agents
+# never verified an existing symlink's target before this extraction, and that lenient behavior
+# is preserved rather than silently tightened).
+install_commands() { extlib_install_symlinks "$EXT_NAME" "$EXT_DIR" "$CLAUDE_DIR/commands" '*.md' 0 command 1; }
+install_skills() { extlib_install_symlinks "$EXT_NAME" "$EXT_DIR" "$CLAUDE_DIR/skills" 'skill-*' 1 skill 1; }
+install_agents() { extlib_install_symlinks "$EXT_NAME" "$EXT_DIR" "$CLAUDE_DIR/agents" '*.md' 0 agent 0; }
 
 # Function to merge index entries
 merge_index_entries() {

@@ -1426,7 +1426,7 @@ non-test gates the final phase covers.
 
 ---
 
-### Phase 9: Deduplicate the Extension Install/Uninstall Pair [NOT STARTED]
+### Phase 9: Deduplicate the Extension Install/Uninstall Pair [COMPLETED]
 
 **Goal**: The mutual duplication between `install-extension.sh` and `uninstall-extension.sh`
 collapses into one shared helper set.
@@ -1437,14 +1437,25 @@ observable behavior **before** any refactor — a large script with no paired te
 refactored, and that constraint is about test coverage, not about any dependency.
 
 **Tasks**:
-- [ ] Re-run `script-inventory.sh` and confirm the pair's duplicate-block count and mutual-peer
-      relation before acting.
-- [ ] Determine whether a paired suite exists; if not, write a characterization test first.
-- [ ] Extract the shared blocks into one helper set — either a new
+- [x] Re-run `script-inventory.sh` and confirm the pair's duplicate-block count and mutual-peer
+      relation before acting. *(completed: re-measured 300/243 lines, 35/35 duplicate blocks,
+      mutual peers -- matches the dispatch's own figures exactly, no drift)*
+- [x] Determine whether a paired suite exists; if not, write a characterization test first.
+      *(completed: no paired suite existed (`has_test: false`); wrote
+      `tests/test-install-uninstall-extension.sh`, 17 cases, green against the pre-refactor
+      scripts before any edit)*
+- [x] Extract the shared blocks into one helper set — either a new
       `lib/extension-install-lib.sh` or, where the logic already belongs there, `lib/common.sh`.
-- [ ] Diff both scripts' observable behavior (install then uninstall round-trip on a scratch
+      *(completed: new `lib/extension-install-lib.sh` -- the validation/logging preamble plus
+      generic `extlib_install_symlinks`/`extlib_remove_symlinks` helpers covering all six
+      per-type symlink loops (commands/skills/agents x install/remove); registered in
+      manifest.json)*
+- [x] Diff both scripts' observable behavior (install then uninstall round-trip on a scratch
       fixture tree) before and after. The resulting tree state must be identical.
-- [ ] Record the phase's NET-PROD delta.
+      *(completed: the characterization suite's case 5 performs this round-trip tree-identity
+      check; 17/17 green both before and after the refactor, byte-identical log-line text in a
+      manual spot-check of the "points elsewhere" warning branch)*
+- [x] Record the phase's NET-PROD delta. *(completed: NET-PROD -70; see Running Net Figures)*
 
 **Timing**: 1.5 hours
 
@@ -1469,9 +1480,9 @@ on an internal signature this phase changes.
 - `agent-system/extensions/core/scripts/tests/` - the pair's characterization test, if none exists
 
 **Verification**:
-- The install-then-uninstall round-trip on a scratch fixture tree produces an identical tree state before and after the refactor.
-- The pair's suite (existing or newly written) is green.
-- The phase's NET-PROD delta is recorded and negative.
+- The install-then-uninstall round-trip on a scratch fixture tree produces an identical tree state before and after the refactor. *(confirmed: `tests/test-install-uninstall-extension.sh` case 5, green on both the pre-refactor and post-refactor run)*
+- The pair's suite (existing or newly written) is green. *(confirmed: 17/17 passed via `run-all.sh --only test-install-uninstall-extension.sh`)*
+- The phase's NET-PROD delta is recorded and negative. *(confirmed: NET-PROD -70 via `git diff --numstat` across the three touched production files -- install-extension.sh 14 ins/151 del, uninstall-extension.sh 14 ins/150 del, lib/extension-install-lib.sh +203/-0 new file; 231 insertions - 301 deletions = -70. The header-only extraction first attempted landed +13 with no later phase to pay it back, unlike the lint-library precedent -- extending the extraction to the six per-type symlink loops (the larger duplicate mass) is what makes this phase's own net negative rather than carrying a positive-net balance forward. Duplicate-block count for the pair dropped 35/35 -> 6/6 (script-inventory.sh re-measure). NET-TEST for this phase is +274 (the wholly new characterization suite, required by the Paired-Test Coverage precondition since neither script had any prior test coverage) -- a one-time test-infrastructure cost, not a duplication-deepening positive-net, and reported separately from NET-PROD per the Running Net Figures policy.)*
 
 ---
 

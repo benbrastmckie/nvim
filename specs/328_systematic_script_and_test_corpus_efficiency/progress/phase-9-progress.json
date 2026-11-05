@@ -1,0 +1,57 @@
+{
+  "phase": 9,
+  "phase_name": "Deduplicate the Extension Install/Uninstall Pair",
+  "started_at": "2026-11-05T02:50:00Z",
+  "last_updated": "2026-11-05T03:12:02Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run script-inventory.sh and confirm the pair's duplicate-block count and mutual-peer relation before acting",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Determine whether a paired suite exists; if not, write a characterization test first",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-install-uninstall-extension.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Extract the shared blocks into one helper set (lib/extension-install-lib.sh)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/extension-install-lib.sh",
+        "agent-system/extensions/core/scripts/install-extension.sh",
+        "agent-system/extensions/core/scripts/uninstall-extension.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Diff both scripts' observable behavior (install then uninstall round-trip on a scratch fixture tree) before and after",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Record the phase's NET-PROD delta",
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Extract only the header boilerplate (SCRIPT_DIR/common.sh/PROJECT_ROOT/guard/CLAUDE_DIR, colors+logging, arg validation, EXT_DIR resolution, manifest validation) into the shared lib",
+      "result": "insufficient",
+      "reason": "Landed NET-PROD +13 (105 insertions / 92 deletions across the two scripts plus the new 91-line lib) -- positive and with no later phase to migrate onto this lib for payback, unlike the lint-library precedent. Extended the extraction to the install/remove symlink-loop bodies (install_commands/install_skills/install_agents and remove_commands/remove_skills/remove_agents), which were the larger duplicate mass, bringing NET-PROD to -70."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
