@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/414_enforce_verdict_extraction_contract/reports/01_lint-verdict-extraction-anchoring-design.md",
+      "summary": "Confirms the helper/contract/14-call-site state is already correct, identifies lint-state-writer-boundary.sh/lint-hook-registration-paths.sh as the structural template to clone, and surfaces two concrete scoping risks: a naive broad scan corpus would false-positive on dozens of unrelated test-assertion lines plus an out-of-scope pre-existing site, and verify-deploy.sh's --only-gate range is already hardcoded stale (rejects gate 24 live) and must be widened for gate 25 to be selectable."
+    }
+  ],
+  "dispatch_seq": 3,
+  "next_steps": "Run /orchestrate 414 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1793850684_c30dd8_414",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "This codebase's 'boundary lint' family (lint-state-writer-boundary.sh, lint-hook-registration-paths.sh, lint-scoped-commit-boundary.sh, lint-directory-pathspec-boundary.sh) shares one structural template: a resolve_project_root helper robust to running from either the deployed or source-store location, a DEFAULT_SCAN + positional-SCAN_PATHS-override pair, a two-layer detection model (Layer 1: broad CANDIDATE_PATTERN regex -> classify_line narrowing to VIOLATION or EXEMPT:<reason>; Layer 2: a file-level EXCLUDED_FILES allowlist where every entry states WHY it is exempt in a comment, never a bare path), and echo -e \"${RED}[VIOLATION]${NC} $file:$lineno: ...\" emission. Their own test suites build every fixture (both polarities) inside a mktemp -d WORKDIR at test-run time and pass it as a positional path override -- no fixture file is ever committed to the repo. Reuse this template wholesale for any new source-text-shape lint rather than inventing a new structure.",
+      "category": "PATTERN",
+      "source_artifact": "specs/414_enforce_verdict_extraction_contract/reports/01_lint-verdict-extraction-anchoring-design.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["lint", "boundary-lint", "exemption-allowlist", "mktemp-fixture", "gate-registry"]
+    },
+    {
+      "content": "When designing a new corpus-scanning lint for a narrowly-contractual shell-script shape (a producer/consumer contract documented for one specific subsystem, not a codebase-wide rule), prefer a hand-picked explicit file list as the default scan corpus over a directory walk (@extensions/@repo/a whole scripts/ subtree). A broad walk force-forward false-positives on syntactically-similar but semantically-unrelated code -- in this codebase specifically, ordinary test-assertion lines across scripts/tests/*.sh routinely grep a test subject's own [FAIL]/[VIOLATION]-shaped output for assertion purposes, which looks identical to the dangerous shape a verdict-extraction lint is designed to catch but is a completely different, legitimate idiom. A narrow corpus matching the contract document's own stated scope avoids inventing an open-ended allowlist reactively.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/414_enforce_verdict_extraction_contract/reports/01_lint-verdict-extraction-anchoring-design.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint-corpus-scope", "false-positive", "verdict-extraction", "allowlist-design"]
+    }
+  ]
+}
