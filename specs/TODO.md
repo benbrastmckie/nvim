@@ -1,5 +1,5 @@
 ---
-next_project_number: 490
+next_project_number: 491
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 490
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489,490 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
 | 3 | 360,391,399,420,436,438,439,444,448,474,476,484 | 313,328,369,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
@@ -50,6 +50,7 @@ next_project_number: 490
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
 489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
+490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -122,6 +123,40 @@ next_project_number: 490
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 490. Make generate-task-order.sh read active_goal so the field stops being a dead write
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Make generate-task-order.sh read `active_goal` from state.json so the field stops being a dead write: it is declared, documented, validated, and written, but no consumer ever reads it.
+
+THE GAP, VERIFIED (2026-11-05):
+- Declared: context/schemas/state-schema.json:164 defines `active_goal`.
+- Documented: context/reference/state-management-schema.md:77 describes it as a free-prose statement of the repository's current goal.
+- Validated: scripts/validate-state.sh:858 lists `active_goal` among recognized widened fields, so writing it passes validation cleanly.
+- Written: commands/review.md:734-740 (Section 6.7.3) writes `.active_goal` via `state-write.sh ... --regen-todo`, explicitly so the TODO.md regeneration happens inside the same mutex as the write that triggered it.
+- NEVER READ: scripts/generate-task-order.sh resolves the Goal line only from (a) an explicit `--goal TEXT` override (GOAL_OVERRIDE, lines ~92, 110-112, 1040-1042) or (b) read_existing_goal() (lines ~909-931), which greps the existing `**Goal**: ` line back out of TODO.md. `grep -n active_goal scripts/generate-task-order.sh` returns nothing.
+
+REPRODUCED: in a consumer repo, writing active_goal via `state-write.sh ... --regen-todo` succeeded (state.json updated) but TODO.md was left byte-identical with no Goal line, because TODO.md had no prior Goal line for read_existing_goal() to recover. The line rendered only after manually passing `--goal "$(jq -r .active_goal specs/state.json)"` to `generate-task-order.sh --update-todo`. Any caller that sets active_goal expecting it to render hits the same silent no-op; /review Section 6.7.3 is the one in-tree caller that does.
+
+--- REQUIRED OUTCOMES ---
+
+1. generate-task-order.sh resolves the Goal line from a defined precedence: explicit `--goal` override first, then state.json `active_goal`, then the existing TODO.md Goal line (current read_existing_goal behavior), then omit the line entirely. The existing `--goal` and preserve-across-regeneration behaviors must not regress.
+
+2. Decide and record the conflict rule between a state.json `active_goal` and a hand-edited TODO.md Goal line. The preserve-from-TODO behavior exists so regeneration does not clobber a human edit; giving active_goal higher precedence means a stale active_goal silently overwrites hand edits. State the chosen rule and its rationale rather than leaving it implicit in the code.
+
+3. context/formats/task-order-format.md documents the full precedence. Its Goal Statement section currently documents only the preserve-from-TODO and `--goal` behaviors; the Generation and Generation Algorithm sections, which enumerate what the script reads, also need the new source listed.
+
+4. A regression case in scripts/tests/test-generate-task-order.sh: with `active_goal` set in state.json and no Goal line present in TODO.md, `--update-todo` must emit the Goal line. That is the exact condition which silently no-ops today, so the test must fail against the current script.
+
+5. Confirm whether commands/review.md Section 6.7.3 needs any change once the reader exists. Its `--regen-todo` rationale becomes accurate rather than aspirational, so a comment or no change may suffice. Do not widen scope to other callers unless they are found to write active_goal.
+
+SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, never in a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md.
+
+---
 
 ### 489. Derive gate-count expectations in sibling test suites from the live gate registry
 - **Effort**: small
