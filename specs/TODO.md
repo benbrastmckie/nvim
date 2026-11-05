@@ -11,12 +11,12 @@ next_project_number: 486
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,428,435,437,456,459,464,466,469,470,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 29,313,384,398,409,418,430,431,445,453,458,463,465,471,472,475 | 22,328,383,397,401,412,415,419,428,435,459,470 | core-agent-system, extensions, literature, ... |
-| 3 | 369,399,420,436,439,444,446,448,474,476 | 29,313,328,385,398,409,418,423,430,431,445,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 360,391,438,451,454,455,461,484 | 313,369,385,420,435,439,446,448,458,469 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 5 | 390,402,449,452,457,462,479 | 360,391,435,444,448,451,455 | core-agent-system, extensions, lean-extension, ... |
-| 6 | 421,450,480,481 | 390,402,420,435,449,479 | core-agent-system, orchestrator, agent-system |
+| 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,469,470,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 29,313,384,398,409,418,431,445,446,453,458,463,465,471,472,475 | 22,328,383,385,397,401,412,415,419,430,435,459,470 | core-agent-system, extensions, literature, ... |
+| 3 | 360,369,399,420,436,438,439,444,448,474,476,484 | 29,313,328,398,409,418,423,431,445,446,458,469 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 391,449,451,452,454,455,461,479 | 360,369,385,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 5 | 390,402,450,457,462,480 | 391,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
+| 6 | 421,481 | 390,402 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -104,14 +104,13 @@ next_project_number: 486
 
 ### Orchestrator
 
-428 [IMPLEMENTING] — Enforce and detect planner-agent terminal return-meta write
-  └─ 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
+472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 
 ### Agent System
 
@@ -2976,7 +2975,7 @@ EDIT TARGET: the source store under agent-system/extensions/core/ (never .claude
 ---
 
 ### 428. Enforce and detect planner-agent terminal return-meta write
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 378
