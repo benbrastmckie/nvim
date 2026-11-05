@@ -1,5 +1,5 @@
 ---
-next_project_number: 482
+next_project_number: 483
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 482
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,328,338,342,383,385,397,401,408,410,412,414,419,423,428,435,437,456,459,464,466,469,470,473,477,478 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,328,338,342,383,385,397,401,408,410,412,414,419,423,428,435,437,456,459,464,466,469,470,473,477,478,482 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,313,384,398,409,415,430,431,453,458,463,465,471,472,475 | 22,328,383,397,401,412,414,428,435,459,470 | core-agent-system, extensions, literature, ... |
 | 3 | 369,399,418,436,439,445,446,474 | 29,313,328,385,398,415,419,430,431,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 360,391,420,438,444,448,454,476 | 313,328,369,409,418,423,435,439,445,446,458 | core-agent-system, agent-system |
@@ -69,6 +69,7 @@ next_project_number: 482
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
+482 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
@@ -125,6 +126,34 @@ next_project_number: 482
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 482. Create sapience extension
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Redeploy afterwards via deploy-headless.sh.
+
+Create a sapience extension modeled on agent-system/extensions/memory/. Sapience (app.spnc.ai) is the hosted knowledge vault configured by modules/home/services/sapience.nix; see ~/.dotfiles/docs/sapience.md for the full machine configuration. Scope and sequencing below were settled by direct reading of ~/.sapience/{mcp.py,sf1.py,upload.py}, ~/.dotfiles/config/claude/settings.json, ~/.claude.json, and agent-system/extensions/memory/.
+
+ALREADY AMBIENT -- DO NOT REBUILD: the MCP server registration in ~/.claude.json (mcpServers.sapience, written by the nix module's activation), and three hooks already present in ~/.dotfiles/config/claude/settings.json: SessionStart -> `mcp.py --briefing-text`, SessionEnd -> `mcp.py --receipt`, Stop -> `mcp.py --effect-line`. An extension that re-registers any of these is dead weight. Note also that those hook/permission keys are ENFORCED by home.activation.claudeSettings, which resets them from the dotfiles repo on every home-manager switch -- so the extension must not attempt to write them.
+
+GAP 1 (the blocker; sequence first -- gaps 2 and 3 are unreachable until it is closed). The seven mcp__sapience__* entries in the dotfiles permissions.allow list are all READ-only: sapience_search, sapience_briefing, sapience_context, sapience_ask, sapience_outstanding, sapience_papers, plus a literal "mcp__sapience__sapience" entry that does not name any real tool and should be checked for whether it silently matches nothing. The WRITE tools -- sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc -- are absent, so an autonomous dispatch that tries to save a finding hits a permission prompt and fails non-interactively. Close this with permissions.allow grants in the extension's own settings-fragment.json, which merges into the project-scoped, deploy-regenerated .claude/settings.local.json -- a different file from the ~/.claude/settings.json the activation enforces, so there is no conflict with the enforced-key mechanism.
+
+CONSTRAINT FROM AN OPEN SIBLING (task 29, generate_mcp_json_from_extension_manifests): that task records that `mcpServers` keys inside settings-fragment.json register NOTHING, because settings files are not a server-registration surface. That finding concerns server registration and does NOT invalidate this approach -- permissions.allow is a genuine settings.json key and a distinct concern from mcpServers. The extension must therefore carry permission grants ONLY and must not declare an mcpServers block. Consult agent-system/extensions/core/context/patterns/mcp-server-ownership.md (the artifact produced by the completed task 241, reconcile_mcp_registration_surfaces) for the canonical ownership split between registration and permission surfaces before writing settings-fragment.json.
+
+GAP 2. source_skip() in ~/.sapience/upload.py classifies each transcript as `subagent` or `harness-started` from its opening turns and those are NEVER read; the run logs them as "thread mechanics; never read" and the message states outright that SAPIENCE_INCLUDE_HEADLESS=1 does not override it. Measured on this machine: 1013 of 1295 transcripts on disk are removed by this filter, against 203 eligible. Because most work in this repo runs through orchestrated dispatch, agent work therefore CANNOT reach the vault by extraction at all -- the only path in is an explicit tool call during the run. Close it with a postflight wrapup instruction: 3-8 distilled notes per completed task, written from the summary artifact at the [IMPLEMENTING] -> [COMPLETED] transition. Do NOT instead instruct every agent to fire sapience_remember mid-run. That scoping is deliberate and load-bearing: sapience_remember via MCP writes straight to the hosted vault rather than staging a finding, so it bypasses the `sapience review` gate that config.json auto_approve=false exists to preserve; a per-agent proactive-save instruction would flood the vault with unreviewed content across an /orchestrate batch.
+
+GAP 3 (weakest case; sequence last). Subagents receive no briefing, because SessionStart fires for the root session only, so every /orchestrate research/plan/implement dispatch begins with no vault orientation. Use the top-level manifest.json "hooks" object with a context_injection entry -- the mechanism already exercised by the nix and nvim extensions. See agent-system/extensions/nvim/scripts/nvim-context.sh for the stable 5-positional-arg calling contract (task_number, task_type, task_dir, session_id, operation) invoked by skill_context_injection() in skill-base.sh. Keep the hook CHEAP: statusline-grade, or cached once per session. mcp.py exposes NO --search and NO --ask CLI mode (the available modes are --briefing-text, --statusline, --stats, --status, --receipt, --effect-line, --adddoc, --adddir, --refresh-cache), so any shell-side query must go through `sf1 "question"` one-shot or a direct curl to /v1/ask -- i.e. a network round-trip on every dispatch.
+
+EXPLICIT ANTI-GOAL -- DO NOT ADD A SECOND PER-DISPATCH RETRIEVAL INJECTION. memory-retrieve.sh is local, keyword-scored against .memory/memory-index.json, zero-network, capped at a 2000-token budget and 5 entries. A sapience equivalent would add a network round-trip to every agent in a batch. Split the two systems by altitude instead: sapience for session-level orientation and cross-project recall, the memory extension for per-dispatch injection. The two must not compete for the same context budget.
+
+DELIVERABLE file set, modeled on agent-system/extensions/memory/: manifest.json; EXTENSION.md (merged into .claude/CLAUDE.md under section_id extension_sapience); index-entries.json; settings-fragment.json (the permission grants -- the actual payload of gap 1); scripts/sapience-context.sh (the gap 3 hook); context/project/sapience/ with a README.md plus domain notes covering the vault model, the review-gate boundary (what staging means and what bypasses it), and the transcript-filter ceiling that motivates gap 2.
+
+EXPLICIT NON-GOALS. (a) No task_type and no routing_agents in the manifest: sapience is not a domain one implements in, so a research/plan/implement triple would route to agents with nothing to research. (b) No /sapience slash command wrapping the CLI -- review, sync, coverage, pending and stats are terminal verbs already covered by the three GNOME desktop launchers the nix module installs. (c) No re-registration of the MCP server or of the three existing hooks. (d) No mcpServers block in settings-fragment.json (see the task 29 constraint above).
+
+---
 
 ### 481. Rule on and migrate the 32-record mis-sited agent-system task delta accumulated since the first migration record
 - **Status**: [NOT STARTED]
