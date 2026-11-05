@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Declare both new scripts in core's manifest",
+  "started_at": "2026-11-05T01:05:00Z",
+  "last_updated": "2026-11-05T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm both new files tracked by git", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run sync-manifest-scripts.sh --check then --write", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Confirm diff confined to provides.scripts, adds exactly two expected entries", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "sync-manifest-scripts.sh --write also declared two pre-existing, already-committed entries belonging to a concurrent task (task 469's engine-written-state-paths-lib.sh pair), which were genuinely missing from the manifest and purely additive/non-conflicting with this task's two entries. Kept rather than stripped; recorded via issue-record.sh (class concurrent-territory-overlap).",
+  "verification": {
+    "sync_check_before": "2 missing (lint-extension-readme-table.sh, test-lint-extension-readme-table.sh)",
+    "sync_write": "wrote 2 missing entries",
+    "sync_check_after": "0 missing, 0 absent",
+    "jq_validity": "valid",
+    "jq_index_lookups": "both new entries found",
+    "git_diff_scope": "confined to provides.scripts array (4 additions total: 2 this task's, 2 a concurrent task's genuinely-missing entries)"
+  }
+}

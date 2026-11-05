@@ -404,22 +404,22 @@ whatever those two commands actually report.
 
 ---
 
-### Phase 5: Declare both new scripts in core's manifest [NOT STARTED]
+### Phase 5: Declare both new scripts in core's manifest [COMPLETED]
 
 **Goal**: `agent-system/extensions/core/manifest.json`'s `provides.scripts` array lists the new lint
 and the new test suite, derived mechanically rather than hand-edited.
 
 **Tasks**:
 
-- [ ] Confirm both new files are tracked by git (`git add -- <lint> <suite>` if needed), since
-      `sync-manifest-scripts.sh` derives `provides.scripts` from `git ls-files`.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` first to see
+- [x] Confirm both new files are tracked by git (`git add -- <lint> <suite>` if needed), since
+      `sync-manifest-scripts.sh` derives `provides.scripts` from `git ls-files`. *(completed: both already committed in Phases 2/3)*
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` first to see
       the pending delta, then `--write` to apply it. Never hand-edit `provides.scripts` -- the tool
       is surgical (a line-oriented rewrite of just that array), whereas a hand edit or a `jq`
-      round-trip would reformat the two manifests that are not `jq --indent 2` canonical.
-- [ ] Confirm the resulting diff touches only the `provides.scripts` array and adds exactly the two
+      round-trip would reformat the two manifests that are not `jq --indent 2` canonical. *(completed)*
+- [x] Confirm the resulting diff touches only the `provides.scripts` array and adds exactly the two
       expected entries: `lint/lint-extension-readme-table.sh` and
-      `tests/test-lint-extension-readme-table.sh`.
+      `tests/test-lint-extension-readme-table.sh`. *(completed: diff confined to provides.scripts; also includes two unrelated, genuinely-missing entries for a concurrent task's already-committed files -- see issue log)*
 
 **Timing**: 0.5 hours
 
