@@ -353,6 +353,51 @@ qualified where applicable (`tests/test-census-count.sh`, not just `test-census-
 `provides.scripts` already carries other subdirectory-qualified paths (`lint/lint-*.sh`), so this
 needs no new schema or new `provides` sub-array.
 
+## Unit/integration classification and the spawn-boundary lint
+
+Every suite `tests/run-all.sh` discovers is classified `unit` or `integration` in
+`tests/suite-classification.data`, a declarative, TAB-separated data file (one row per suite:
+`basename  class  reason`; see that file's own header for the full grammar). Adding a suite is a
+data edit to that file, never a documentation edit — `lint/lint-unit-integration-boundary.sh`
+requires every discovered suite to carry a row and fails loudly on a coverage gap, so the
+classification cannot silently drift out of sync with the corpus the way an unenforced convention
+always does.
+
+**The rule a `unit`-class suite must satisfy**: it must not spawn `deploy-headless.sh`,
+`verify-deploy.sh`, or (nested) `tests/run-all.sh` — those three are full-system integration
+operations, and this corpus's own measured finding is that the dominant cost of the whole test
+pool sits in exactly the suites that spawn them, wearing a unit test's clothing. An `integration`
+-class suite is unconstrained by this rule; its row's `reason` field names which heavyweight
+tool(s) it legitimately invokes.
+
+**Scope note, stated once here rather than per call site**: the classification file is owned by,
+and physically lives under, the core extension, but its coverage is NOT core-only. In the
+deployed tree, `deploy-headless.sh`'s per-extension merge flattens every extension's own
+`scripts/tests/*.sh` into one shared `.claude/scripts/tests/` directory — the actual set
+`tests/run-all.sh` (gate 8) discovers and runs in production — while the equivalent path in the
+source store sees only core's own suites. A suite physically filed under a different extension
+(`approvals/`, `lean/`, `literature/`, ...) still needs a row the moment it lands in that merged
+set.
+
+**Detection method, deliberately bounded (not a general call-graph analysis)**: a literal
+basename match (`grep -qF`) for each of the three tool names against a suite's own file content —
+the same conservative, cheap, over-counting-never-under-counting textual-reference method
+`script-inventory.sh`'s own `inbound_callers` field already documents. A suite whose content
+mentions one of these names only in a comment or a fixture string literal (never a real
+invocation) still trips the lint; the remedy is to reclassify it to `integration` with a stated
+reason, never to suppress the finding — this corpus's own `test-lint-unit-integration-boundary.sh`
+is itself classified `integration` for exactly this reason (its fixtures plant the three tool
+names as string literals to exercise the lint's own detection).
+
+**The standing size probe's cost-per-assertion figure** (`script-inventory.sh --size-line`'s
+`cost_per_assertion_ms=X` field, also surfaced in `verify-deploy.sh`'s own corpus summary line)
+is the companion measurement: it divides `tests/suite-cost-hints.txt`'s hinted sequential
+wall-clock pool by a corpus-wide, command-position assertion-call count (the same call-site shape
+`lint-test-harness-adoption.sh`'s `call_re` recognizes), so a suite drifting into integration cost
+without integration value is visible in the run that causes it rather than discovered twelve days
+later. Reports the literal string `n/a` when no hints file is present or zero assertions are
+found (expected outside the real corpus, e.g. any fixture built under a synthetic `--root`).
+
 ## Suite runtime: `--jobs`, `--timings`, and gate selection
 
 - `run-all.sh --timings FILE` writes one CSV row per suite (`suite_path,wall_ms,result`) plus a

@@ -2,7 +2,7 @@
   "phase": 12,
   "phase_name": "Classify Every Suite and Enforce the Unit/Integration Boundary",
   "started_at": "2026-11-05T20:00:00Z",
-  "last_updated": "2026-11-05T20:00:00Z",
+  "last_updated": "2026-11-05T21:10:00Z",
   "objectives": [
     {
       "id": 1,
@@ -22,30 +22,52 @@
     {
       "id": 3,
       "description": "Classify every suite as unit-class or integration-class in a declarative data file",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/suite-classification.data",
+        "agent-system/extensions/core/manifest.json"
+      ]
     },
     {
       "id": 4,
       "description": "Add a lint enforcing a unit-class suite does not invoke deploy-headless.sh/verify-deploy.sh/run-all.sh; ride an existing gate row",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-unit-integration-boundary.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
     },
     {
       "id": 5,
       "description": "Write the lint's both-polarity fixture suite including a deliberately-violating fixture",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data",
+        "agent-system/extensions/core/manifest.json"
+      ]
     },
     {
       "id": 6,
       "description": "Record the phase's NET-PROD and NET-TEST deltas",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+      ]
     }
   ],
-  "current_objective": 3,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [
+    {
+      "task_id": "12.4",
+      "description": "Add a lint enforcing the unit/integration boundary, riding an existing gate row rather than adding one",
+      "type": "altered",
+      "reason": "Rather than appending a second check inside an existing numbered gateN_run function, the lint rides gate 8 with zero changes to gate-registry.data/verify-deploy.sh: its own fixture suite is a discovered test-*.sh file, so gate 8's existing full-battery run already executes it every invocation. This mirrors the corpus's pre-existing lint-test-harness-adoption.sh precedent (also fixture-tested only, no gate row) and is a stronger form of the no-new-gate-row constraint (zero gate-surface changes, not just zero new ids).",
+      "annotation": "*(deviation: altered -- rides gate 8's existing full-battery discovery instead of an existing numbered gateN_run function; see the task's own completion annotation for the full reasoning)*"
+    }
+  ],
+  "closing_note": "Phase 12 closed [COMPLETED]. NET-PROD +273 (script-inventory.sh +33, new lint-unit-integration-boundary.sh +240). NET-TEST +339 (test-script-inventory.sh +49, new test-lint-unit-integration-boundary.sh +290). Both net-positive, matching the plan's own pre-declared advance justification (Phase 13 needs this classification; an unenforced boundary drifts back within days). suite-classification.data (202 lines, new) is uncounted by script-inventory.sh's own metrics (not a *.sh file). Classified against the DEPLOYED/merged 157-suite corpus (not just core's own 139) since that merged set is what gate 8 actually runs in production -- a scope correction made mid-phase after the first fixture-test run against the deployed tree surfaced 18 unclassified suites from approvals/lean/literature. Full redeploy + full verify-deploy.sh battery green (26/26 gates, 39 checks, 0 failures) both before any edit and after this phase's edits. Phase 13 next."
 }

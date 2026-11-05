@@ -1628,7 +1628,7 @@ plus the per-search-mode output diff against a fixture literature index.
 
 ---
 
-### Phase 12: Classify Every Suite and Enforce the Unit/Integration Boundary [IN PROGRESS]
+### Phase 12: Classify Every Suite and Enforce the Unit/Integration Boundary [COMPLETED]
 
 **Goal**: A unit-class suite mechanically cannot spawn `deploy-headless.sh`, `verify-deploy.sh` or
 `run-all.sh`, and the standing size probe reports cost-per-assertion so a suite drifting into
@@ -1644,21 +1644,43 @@ vacuously.
       advanced into either since Phase 2's check. *(completed: task 416 is fully `completed` and
       archived in specs/CHANGE_LOG.md -- all 13 phases landed, no live advancement to collide
       with)*
-- [ ] Classify every suite as unit-class or integration-class, recording the classification in a
+- [x] Classify every suite as unit-class or integration-class, recording the classification in a
       declarative data file rather than in prose — adding a suite must be a data edit, not a
-      documentation edit.
-- [ ] Add a lint enforcing that a unit-class suite does not invoke `deploy-headless.sh`,
+      documentation edit. *(completed: `tests/suite-classification.data`, one row per
+      `basename<TAB>class<TAB>reason`. Classified against the DEPLOYED (merged) tests/
+      directory, 157 suites, not just core's own 139 -- the deploy merge flattens every
+      extension's own `scripts/tests/*.sh` into one shared directory, which is what
+      `run-all.sh`/gate 8 actually discovers in production; see the file's own SCOPE NOTE. 116
+      unit, 41 integration, derived via a literal `grep -lE` sweep for the three heavyweight
+      tool basenames)*
+- [x] Add a lint enforcing that a unit-class suite does not invoke `deploy-headless.sh`,
       `verify-deploy.sh` or `run-all.sh`. Ride an existing gate row rather than adding one, per
-      this task's own no-new-gate-row constraint.
-- [ ] Write the lint's both-polarity fixture suite, including a deliberately-violating fixture that
-      must trip it.
+      this task's own no-new-gate-row constraint. *(completed:
+      `lint/lint-unit-integration-boundary.sh`. DEVIATION on the "ride an existing gate row"
+      clause: rather than extending an existing numbered `gateN_run` function (which would still
+      add a second check under an existing id), this lint rides gate 8 itself with ZERO changes
+      to `gate-registry.data`/`verify-deploy.sh` -- its own fixture suite is simply a discovered
+      `test-*.sh` file, so gate 8's existing full-battery run already executes it on every
+      invocation. This mirrors the corpus's own pre-existing precedent,
+      `lint-test-harness-adoption.sh`, which is enforced the same way (fixture-tested only, no
+      gate row). Also enforces a coverage-gap check (every discovered suite must have a
+      classification row) and a malformed-row check (integration class with no reason), neither
+      of which the plan's own task text named but both of which are necessary for the
+      classification file to stay trustworthy)*
+- [x] Write the lint's both-polarity fixture suite, including a deliberately-violating fixture that
+      must trip it. *(completed: `tests/test-lint-unit-integration-boundary.sh`, 8 cases/15
+      assertions: a conforming unit+integration fixture, the deliberately-violating
+      unit-classified-but-run-all.sh-invoking fixture, a coverage-gap fixture, a missing-reason
+      fixture, an unrecognized-class fixture, a stale-row-is-INFO-only fixture, two
+      environment-error cases, and the live corpus itself asserted at zero violations. All 15
+      green)*
 - [x] Extend the Phase 1 size-probe line with a cost-per-assertion figure, derived from the live
       hint pool and per-suite assertion counts. Keep it on the same single line. *(completed:
       cost_per_assertion_ms=X appended to script-inventory.sh --size-line, derived from
       suite-cost-hints.txt's pool / a corpus-wide command-position assertion-call grep sweep;
       "n/a" when no hints file. 3 new/updated assertions in test-script-inventory.sh, full suite
       green: 32 passed, 0 failed)*
-- [ ] Record the phase's NET-PROD and NET-TEST deltas.
+- [x] Record the phase's NET-PROD and NET-TEST deltas. *(completed: see Verification below)*
 
 **Timing**: 2 hours
 
@@ -1693,10 +1715,35 @@ unenforced boundary produces.
 
 **Verification**:
 - The deliberately-violating fixture trips the new lint (non-zero exit); the conforming fixtures do not.
+  *(confirmed: Case 2 of test-lint-unit-integration-boundary.sh plants a unit-classified suite
+  that invokes run-all.sh; the lint exits non-zero and names both the suite and the tool. Cases
+  1 and 6 (conforming + stale-row) exit 0.)*
 - The lint reports zero findings over the live corpus after classification.
+  *(confirmed: `lint-unit-integration-boundary.sh --verbose` against the live, redeployed tree
+  reports "0 violation(s) across 157 discovered suite(s)"; also asserted as Case 8 of its own
+  fixture suite.)*
 - The size-probe line carries a cost-per-assertion figure and is still one line.
+  *(confirmed: `cost_per_assertion_ms=193.1` on the live corpus, one line, via `verify-deploy.sh`'s
+  own corpus summary.)*
 - `run-all.sh --only <the lint's fixture suite>,test-script-inventory.sh` is green.
+  *(confirmed: `run-all.sh --only test-lint-unit-integration-boundary.sh,test-script-inventory.sh`
+  -> "2 passed, 0 failed". Full redeploy + full `verify-deploy.sh` battery also green: 26/26
+  gates, 39 checks, 0 failures.)*
 - Both net deltas are recorded, with the net-positive justification restated in the closing note.
+  *(confirmed, both net-positive as pre-declared above. NET-PROD = +273:
+  `script-inventory.sh` +33 (+39/-6 via `git diff --numstat`) + new
+  `lint/lint-unit-integration-boundary.sh` +240 (new file). NET-TEST = +339:
+  `tests/test-script-inventory.sh` +49 (+52/-3) + new
+  `tests/test-lint-unit-integration-boundary.sh` +290 (new file). Uncounted by either figure:
+  the new `tests/suite-classification.data` (202 lines) is not a `*.sh` file, so
+  `script-inventory.sh`'s own `scripts=`/`test_suites=` metrics never see it; `manifest.json`'s
+  +3 registration lines are excluded from NET-PROD per Phase 9's convention; `shell-script-
+  testing.md`'s +45 lines belong to the markdown population, out of this phase's scope either
+  way. Net-positive justification restated verbatim from above: this phase is the cheapest route
+  to a later negative net because Phase 13's shared-fixture consolidation needs this
+  classification to know which suites may legitimately build a deployed tree, and an unenforced
+  classification drifts back within days -- exactly the dispatch's own "sixteen additive tasks
+  against three reductive ones" finding.)*
 
 ---
 

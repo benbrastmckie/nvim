@@ -1,0 +1,202 @@
+# suite-classification.data - Declarative unit/integration classification for every suite
+# discovered by tests/run-all.sh. Adding a suite is a DATA EDIT here, never a documentation edit
+# -- lint/lint-unit-integration-boundary.sh requires every discovered suite to have a row and
+# fails loudly on an unclassified suite, so this file cannot silently drift out of sync with the
+# corpus.
+#
+# SCOPE NOTE: this file is owned by, and physically lives under, the core extension, but its
+# coverage is NOT core-only. In the DEPLOYED tree every extension's own scripts/tests/*.sh is
+# merged flat into one shared .claude/scripts/tests/ directory (deploy-headless.sh's own
+# per-extension merge), and that merged directory -- not any single extension's source-store
+# tests/ tree -- is what tests/run-all.sh (gate 8) actually discovers and runs in production. A
+# suite physically filed under a different extension (approvals/, lean/, literature/, ...) still
+# needs a row here the moment it lands in that merged set; re-run against the deployed tree
+# (lint-unit-integration-boundary.sh's default `--tests-dir` resolves to its own sibling
+# ../tests/, which is core-only in the SOURCE STORE but the full merged set once deployed) before
+# trusting this file complete.
+#
+# Format: one row per suite, TAB-separated, 3 fields: basename  class  reason
+#   basename   The suite's own filename (e.g. "test-foo.sh"), matched against run-all.sh's own
+#              discovered-suite basenames.
+#   class      "unit" or "integration".
+#     unit        -- must not spawn deploy-headless.sh, verify-deploy.sh, or (nested) run-all.sh.
+#                    lint-unit-integration-boundary.sh enforces this mechanically; a suite
+#                    reclassified to unit while still invoking one of those three is a lint
+#                    failure, not a silent pass.
+#     integration -- a full-system check wearing the test harness's clothing (spawns one or more
+#                    of deploy-headless.sh / verify-deploy.sh / run-all.sh against a constructed
+#                    or shared deployed tree). The boundary lint does not constrain these; Phase
+#                    13's shared read-only deployed-tree fixture is scoped to this class.
+#   reason     "-" for a unit-class suite. For an integration-class suite, "invokes:X[,Y,...]"
+#              naming which of the three heavyweight tools (deploy-headless.sh, verify-deploy.sh,
+#              run-all.sh) a literal textual reference to that tool's basename was found in the
+#              suite's own content -- the same conservative, cheap, over-counting-never-under-
+#              counting textual-reference method script-inventory.sh's own inbound_callers field
+#              documents (a comment or fixture string mentioning the name also counts; a reader
+#              auditing a specific row should open the file and confirm a real invocation).
+#
+# DERIVATION (re-run before trusting this file; the corpus drifts -- see script-inventory.sh's own
+# header on the 30%-in-twelve-days finding):
+#   grep -lE 'deploy-headless\.sh|verify-deploy\.sh|run-all\.sh' test-*.sh   # -> integration
+#   every other discovered test-*.sh                                        # -> unit
+#
+# Classified 2026-11-05 against 157 suites discovered in the deployed, merged tests/ directory
+# (139 physically filed under core, 18 under approvals/lean/literature -- see the SCOPE NOTE
+# above; 116 unit, 41 integration).
+test-approve-classify.sh	unit	-
+test-approve-paths.sh	unit	-
+test-approve-refusals.sh	unit	-
+test-approve-structural.sh	unit	-
+test-askuserquestion-rehome.sh	unit	-
+test-assess-repo-health.sh	unit	-
+test-audit-task-proposals.sh	unit	-
+test-backfill-file-scope.sh	integration	invokes:deploy-headless.sh
+test-census-count.sh	unit	-
+test-check-record-versioning.sh	unit	-
+test-check-task-references.sh	integration	invokes:verify-deploy.sh
+test-claude-refresh-matcher.sh	integration	invokes:verify-deploy.sh
+test-common-lib.sh	integration	invokes:run-all.sh
+test-consumer-freshness.sh	unit	-
+test-context-reachability.sh	unit	-
+test-corroborate-phase-counts.sh	unit	-
+test-deploy-baseline-lib.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-deploy-freshness.sh	integration	invokes:deploy-headless.sh
+test-deploy-ledger-lib.sh	unit	-
+test-deploy-orphans.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
+test-deploy-propagation.sh	integration	invokes:deploy-headless.sh
+test-deploy-root-guard.sh	unit	-
+test-deploy-verify-overlap.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
+test-deploy-verify-wiring.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh
+test-derived-artifact-probe-lib.sh	unit	-
+test-detect-noop-bash.sh	unit	-
+test-dispatch-metrics.sh	unit	-
+test-dispatch-strand-probe.sh	unit	-
+test-double-loading-check.sh	integration	invokes:deploy-headless.sh,run-all.sh
+test-engine-written-state-paths-lib.sh	unit	-
+test-errors-append.sh	unit	-
+test-force-phases.sh	unit	-
+test-gate3-parallel-equivalence.sh	integration	invokes:run-all.sh
+test-gate3-strict-equivalence.sh	integration	invokes:verify-deploy.sh
+test-gate-cache-equivalence.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh
+test-gate-cache-lib.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
+test-gate-lock.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-gate-out-derived-staleness.sh	unit	-
+test-gate-out-repair-reporting.sh	unit	-
+test-gate-out-self-attribution.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
+test-gate-registry-resolution.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-generate-task-order.sh	unit	-
+test-git-commit-phase.sh	unit	-
+test-git-commit-scoped.sh	unit	-
+test-git-snapshot.sh	unit	-
+test-guard-destructive-git.sh	unit	-
+test-guard-git-push.sh	unit	-
+test-handoff-dispatch-identity.sh	unit	-
+test-handoff-reader-parity.sh	unit	-
+test-index-entries-schema.sh	unit	-
+test-init-specs.sh	unit	-
+test-install-uninstall-extension.sh	unit	-
+test-issue-record.sh	unit	-
+test-lake-build-guard.sh	unit	-
+test-lean-challenge-snapshot.sh	unit	-
+test-lean-comparator-run.sh	unit	-
+test-lean-mcp-preflight-check.sh	unit	-
+test-lean-mcp-registration.sh	unit	-
+test-lean-plan-compliance-check.sh	unit	-
+test-lean-sorry-census.sh	unit	-
+test-lean-src-roots.sh	unit	-
+test-lint-agent-contracts-await-notification.sh	unit	-
+test-lint-agent-contracts-handoff-section.sh	unit	-
+test-lint-agent-contracts-heartbeat.sh	unit	-
+test-lint-agent-contracts.sh	unit	-
+test-lint-branch-gated-sections.sh	integration	invokes:verify-deploy.sh
+test-lint-corpus-scan-lib.sh	unit	-
+test-lint-dead-command-recommendations.sh	unit	-
+test-lint-deploy-caller-wrap.sh	integration	invokes:deploy-headless.sh
+test-lint-directory-pathspec-boundary.sh	unit	-
+test-lint-extension-readme-table.sh	unit	-
+test-lint-hook-registration-paths.sh	integration	invokes:verify-deploy.sh
+test-lint-json-channel-discipline.sh	integration	invokes:verify-deploy.sh
+test-lint-lifecycle-status-var.sh	unit	-
+test-lint-postflight-boundary.sh	unit	-
+test-lint-scoped-commit-boundary.sh	unit	-
+test-lint-shellcheck-parallel.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-lint-shellcheck.sh	unit	-
+test-lint-state-writer-boundary.sh	unit	-
+test-lint-task-lookup-adoption.sh	integration	invokes:verify-deploy.sh
+test-lint-test-harness-adoption.sh	unit	-
+test-lint-unit-integration-boundary.sh	integration	invokes:run-all.sh,verify-deploy.sh,deploy-headless.sh (fixture string literals exercising this lint's own detection, not real invocations)
+test-lint-verdict-extraction-anchoring.sh	integration	invokes:verify-deploy.sh
+test-literature-build-index.sh	unit	-
+test-literature-convert.sh	unit	-
+test-literature-discover-tier3.sh	unit	-
+test-literature-search.sh	unit	-
+test-manage-topics-create-order.sh	unit	-
+test-manifest-scripts-sync.sh	unit	-
+test-measure-gate-costs.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-mint-dispatch-seq.sh	unit	-
+test-orchestrate-batch-admit.sh	unit	-
+test-orchestrate-batch-gate.sh	integration	invokes:verify-deploy.sh
+test-orchestrate-build-aux-dispatch.sh	unit	-
+test-orchestrate-build-dispatch.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh
+test-orchestrate-churn.sh	unit	-
+test-orchestrate-conclusion-aggregate.sh	unit	-
+test-orchestrate-context-growth.sh	unit	-
+test-orchestrate-cycle-plan.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
+test-orchestrate-cycle-postflight.sh	unit	-
+test-orchestrate-predispatch-review.sh	unit	-
+test-orchestrate-record-decision.sh	unit	-
+test-orchestrate-recover-message-findings.sh	unit	-
+test-orchestrate-recover-outcome.sh	unit	-
+test-orchestrate-suggest-next-batch.sh	unit	-
+test-orchestrate-triage-classify.sh	unit	-
+test-orchestrate-unwind-dispatch.sh	unit	-
+test-phase-heading-patterns.sh	unit	-
+test-phase-heartbeat.sh	unit	-
+test-plan-file-scope-harvest.sh	integration	invokes:deploy-headless.sh
+test-please-grant.sh	unit	-
+test-postflight-deploy-gate.sh	integration	invokes:deploy-headless.sh
+test-postflight-marker-schema.sh	unit	-
+test-quality-gate-notation.sh	unit	-
+test-reconcile-demote-stranded.sh	unit	-
+test-reconcile-handoff-status.sh	unit	-
+test-record-stash-provenance.sh	unit	-
+test-record-version-patterns.sh	unit	-
+test-redeploy-checkpoint-promotion.sh	unit	-
+test-redeploy-remedy-lib.sh	integration	invokes:deploy-headless.sh
+test-resume-scan-nonconformance.sh	unit	-
+test-return-meta-status-vocabulary.sh	unit	-
+test-roadmap-generation.sh	unit	-
+test-routing-resolution.sh	unit	-
+test-run-all-failure-reporting.sh	integration	invokes:run-all.sh
+test-run-all-parallel.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-run-all-selection.sh	integration	invokes:run-all.sh
+test-run-task-observers.sh	unit	-
+test-runtime-file-tracking.sh	unit	-
+test-script-inventory.sh	unit	-
+test-skill-base-lifecycle.sh	integration	invokes:deploy-headless.sh
+test-stall-reprompt-wiring.sh	unit	-
+test-status-vocabulary.sh	unit	-
+test-subagent-postflight-marker.sh	unit	-
+test-sweep-invalidated-claims.sh	unit	-
+test-task-lock-liveness.sh	unit	-
+test-task-lock-queue.sh	unit	-
+test-task-reference-patterns-lib.sh	unit	-
+test-task-type-detect.sh	unit	-
+test-title-sim-dedup.sh	unit	-
+test-todo-move-pair-staging.sh	unit	-
+test-update-plan-status.sh	unit	-
+test-update-task-status.sh	unit	-
+test-validate-artifact.sh	unit	-
+test-validate-bounded-waiter.sh	unit	-
+test-validate-handoff-location.sh	unit	-
+test-validate-handoff.sh	unit	-
+test-validate-no-record-versioning.sh	unit	-
+test-validate-no-task-references.sh	unit	-
+test-validate-return-meta.sh	unit	-
+test-validate-state.sh	integration	invokes:deploy-headless.sh
+test-validate-task-creation-audit.sh	unit	-
+test-validate-wiring.sh	unit	-
+test-verify-deploy-context-budget.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-verify-deploy-gate-selection-crash-net.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-verify-deploy-gate-selection.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-zotero-generate-export.sh	unit	-
