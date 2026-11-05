@@ -192,29 +192,30 @@ is the complete covering check for this phase's blast radius.
 
 ---
 
-### Phase 2: Migrate Site 3 (V10 in git-commit-scoped.sh) [NOT STARTED]
+### Phase 2: Migrate Site 3 (V10 in git-commit-scoped.sh) [COMPLETED]
 
 **Goal**: V10's `containment_scope_arr` is widened from the shared library instead of a
 hand-copied literal, with a source-failure fallback that cannot narrow today's scope.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/git-commit-scoped.sh` immediately before editing (sibling #461 declares
+- [x] Re-read `scripts/git-commit-scoped.sh` immediately before editing (sibling #461 declares
       this file). Relocate the splice by `grep -n '"specs/TODO.md" "specs/state.json"'` rather
-      than trusting the line number recorded here.
-- [ ] Replace the literal `containment_scope_arr+=("specs/TODO.md" "specs/state.json")` with a
+      than trusting the line number recorded here. *(completed)*
+- [x] Replace the literal `containment_scope_arr+=("specs/TODO.md" "specs/state.json")` with a
       defensive source of `lib/engine-written-state-paths-lib.sh` followed by an iteration over
       `engine_written_state_paths`'s entries, structurally mirroring the
       `derived-artifact-probe-lib.sh` block immediately below it in the same function (same
       `source "${SCRIPT_DIR}/lib/..." 2>/dev/null` guard, same `while IFS= read -r` +
-      `jq -r '.[]?'` drain).
-- [ ] Implement Decision 2's fallback: when the source fails or the function yields an empty
+      `jq -r '.[]?'` drain). *(completed)*
+- [x] Implement Decision 2's fallback: when the source fails or the function yields an empty
       string, splice the hardcoded `("specs/TODO.md" "specs/state.json")` pair instead, so a
       library-resolution failure reproduces today's behavior exactly and never a narrower scope.
-- [ ] Update the surrounding comment: it currently says "the two fixed specs/ literals" and
+      *(completed)*
+- [x] Update the surrounding comment: it currently says "the two fixed specs/ literals" and
       "mirrors git-commit-phase.sh's own Containment Self-Check scope exactly". Both statements
-      become false — state the shared source and name the library file.
-- [ ] Add fixtures to `scripts/tests/test-git-commit-scoped.sh`, extending the Z-series from its
+      become false — state the shared source and name the library file. *(completed)*
+- [x] Add fixtures to `scripts/tests/test-git-commit-scoped.sh`, extending the Z-series from its
       current maximum (Z14) using the existing `build_repo_with_scope 999 probe '[...]'` helper:
       - **Z15 (positive)**: a tracked, dirtied `specs/events.jsonl` named directly in the
         pathspec alongside an in-scope source path, with `--task 999`, commits with rc 0, zero
@@ -228,8 +229,12 @@ hand-copied literal, with a source-failure fallback that cannot narrow today's s
       - **Z18 (fallback)**: with `lib/engine-written-state-paths-lib.sh` made unsourceable in the
         fixture repo (the same technique the existing issue-record.sh-unavailable case at Z10
         uses), `specs/TODO.md` is still admitted and still committed — pinning Decision 2.
-- [ ] Copy the fixtures' `git` invocation shape verbatim from the existing Z-cases so
+      *(completed: Z15-Z18 added, 70/70 suite assertions passing; also added
+      `lib/engine-written-state-paths-lib.sh` to `REQUIRED_SCRIPTS` so the shared library is
+      actually present to source in every fixture repo — see progress file deviation 2.5)*
+- [x] Copy the fixtures' `git` invocation shape verbatim from the existing Z-cases so
       `lint-scoped-commit-boundary.sh` and `lint-directory-pathspec-boundary.sh` stay clean.
+      *(completed: both lints exit 0)*
 
 **Timing**: 1 hour
 

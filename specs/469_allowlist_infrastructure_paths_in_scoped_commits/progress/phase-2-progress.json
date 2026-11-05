@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Migrate Site 3 (V10 in git-commit-scoped.sh)",
+  "started_at": "2026-11-05T06:53:00Z",
+  "last_updated": "2026-11-05T07:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git-commit-scoped.sh and relocate splice by grep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace literal splice with defensive source + iteration from shared library", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "Implement Decision 2 fallback (hardcoded two-literal pair on source/empty failure)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 4, "description": "Update surrounding stale comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 5, "description": "Add Z15-Z18 fixtures (two positive, one paired negative, one fallback)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 6, "description": "Verify fixtures copy shape passes lint-scoped-commit-boundary.sh / lint-directory-pathspec-boundary.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Add lib/engine-written-state-paths-lib.sh to test-git-commit-scoped.sh's REQUIRED_SCRIPTS array and chmod-exclusion lists",
+      "type": "altered",
+      "reason": "Not explicitly listed in the plan's task bullets, but necessary: the suite's build_repo/build_repo_tracked_ignored/build_repo_movable helpers copy only files in REQUIRED_SCRIPTS into each scratch repo's .claude/scripts/ tree, so the new shared library would never be present for git-commit-scoped.sh to source inside any fixture without this addition, making Z15/Z16's positive admission impossible to exercise for real (rather than via fallback).",
+      "annotation": "*(deviation: altered — added lib/engine-written-state-paths-lib.sh to REQUIRED_SCRIPTS and its chmod-exclusion lists, not explicit in the plan bullets but required for the fixtures to exercise the real source path)*"
+    }
+  ]
+}

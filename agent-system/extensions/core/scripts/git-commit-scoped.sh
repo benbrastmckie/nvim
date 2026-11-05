@@ -487,16 +487,33 @@ if [ -n "$contention_task_number" ] && [ -f "specs/state.json" ]; then
       done < <(echo "$file_scope_json" | jq -r '.[]' 2>/dev/null)
 
       if [ "${#containment_scope_arr[@]}" -gt 0 ]; then
-        # Widen with the task's own resolved directory and the two fixed specs/ literals --
-        # mirrors git-commit-phase.sh's own Containment Self-Check scope exactly (ported, not
-        # reinvented). The plan path itself needs no separate carve-out: it lives under the
-        # task's own directory, which this implicit member already admits.
+        # Widen with the task's own resolved directory. The plan path itself needs no separate
+        # carve-out: it lives under the task's own directory, which this implicit member already
+        # admits.
         task_project_name="$(echo "$task_entry_json" | jq -r '.project_name // empty' 2>/dev/null)" || task_project_name=""
         if [ -n "$task_project_name" ]; then
           task_dir_entry="$(task_lookup_dir "$contention_task_number" "$task_project_name" "$root_resolved" 2>/dev/null)" || task_dir_entry=""
           [ -n "$task_dir_entry" ] && containment_scope_arr+=("$task_dir_entry")
         fi
-        containment_scope_arr+=("specs/TODO.md" "specs/state.json")
+
+        # Widen with the engine-written-state path set -- the shared source every Containment
+        # site consults (scripts/lib/engine-written-state-paths-lib.sh), not a hand-copied
+        # literal pair. Decision 2's fallback: a failed source or an empty/unparseable result
+        # falls back to the hardcoded two-literal pair, so a library-resolution failure
+        # reproduces today's admitted scope exactly and never narrows it.
+        engine_written_paths_json=""
+        # shellcheck disable=SC1091
+        if source "${SCRIPT_DIR}/lib/engine-written-state-paths-lib.sh" 2>/dev/null; then
+          engine_written_paths_json="$(engine_written_state_paths 2>/dev/null)" || engine_written_paths_json=""
+        fi
+        if [ -n "$engine_written_paths_json" ] \
+           && echo "$engine_written_paths_json" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
+          while IFS= read -r ewp; do
+            [ -n "$ewp" ] && containment_scope_arr+=("$ewp")
+          done < <(echo "$engine_written_paths_json" | jq -r '.[]?' 2>/dev/null)
+        else
+          containment_scope_arr+=("specs/TODO.md" "specs/state.json")
+        fi
 
         # Widen further with every declared derived-output prefix -- the SAME widening
         # postflight's own WORK (h) already applies before this check ever runs (see

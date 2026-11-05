@@ -39,7 +39,7 @@ FAILED=0
 # shellcheck disable=SC2329
 
 # --- Loud-skip discipline: verify all three required scripts exist before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh lib/derived-artifact-probe-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh lib/derived-artifact-probe-lib.sh lib/engine-written-state-paths-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -75,9 +75,10 @@ build_repo() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    # lib/common.sh, lib/task-lookup-lib.sh and lib/derived-artifact-probe-lib.sh are sourced,
-    # never executed -- matches the other scripts/lib/*.sh files.
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    # lib/common.sh, lib/task-lookup-lib.sh, lib/derived-artifact-probe-lib.sh, and
+    # lib/engine-written-state-paths-lib.sh are sourced, never executed -- matches the other
+    # scripts/lib/*.sh files.
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   if [ "$mode" = "covered" ]; then
@@ -120,7 +121,7 @@ build_repo_tracked_ignored() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   mkdir -p "$repo/specs/999_probe/archive"
@@ -195,7 +196,7 @@ build_repo_movable() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   mkdir -p "$repo/specs/999_probe/reports"
@@ -1790,6 +1791,121 @@ if [ "$rc_z14" -eq 0 ] && [ "$after_z14" -eq $((before_z14 + 1)) ] \
   common_test_pass "Z14: a \"/**\" entry alongside a plain non-glob entry -- both the deep-glob descendant and the exact-match entry land unchanged, exit 0"
 else
   common_test_fail "Z14: expected rc=0, HEAD+1, direct.txt and a.txt both in HEAD, no out-of-scope WARN; got rc=$rc_z14 before=$before_z14 after=$after_z14 show='$show_z14' output=$out_z14"
+fi
+
+# =====================================================================
+# Z15-Z18: the shared engine-written-state-paths-lib.sh widening of containment_scope_arr.
+# None of these fixtures declares specs/events.jsonl or specs/errors.json in its own
+# file_scope -- admission comes entirely from the shared library's four-member set, not from
+# the declared scope.
+# =====================================================================
+
+# --- Z15 (positive): a tracked, dirtied specs/events.jsonl named directly in the pathspec
+# alongside an in-scope source path -- commits with rc 0, zero Containment drops,
+# specs/events.jsonl present in HEAD. ---
+
+repo_z15="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+echo "baseline event" > "$repo_z15/specs/events.jsonl"
+git -C "$repo_z15" add specs/events.jsonl
+git -C "$repo_z15" commit -q -m "add baseline specs/events.jsonl"
+echo "modified a" > "$repo_z15/specs/999_probe/a.txt"
+echo "appended event" >> "$repo_z15/specs/events.jsonl"
+before_z15=$(git -C "$repo_z15" rev-list --count HEAD)
+out_z15="$(run_commit "$repo_z15" --message "Z15 probe commit" --session "sess_z15" --task 999 \
+  -- "specs/999_probe/a.txt" "specs/events.jsonl" 2>&1)"
+rc_z15=$?
+after_z15=$(git -C "$repo_z15" rev-list --count HEAD 2>/dev/null || echo "$before_z15")
+show_z15="$(git -C "$repo_z15" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z15" -eq 0 ] && [ "$after_z15" -eq $((before_z15 + 1)) ] \
+  && echo "$show_z15" | grep -qF "specs/999_probe/a.txt" \
+  && echo "$show_z15" | grep -qF "specs/events.jsonl" \
+  && ! echo "$out_z15" | grep -q "out-of-scope"; then
+  common_test_pass "Z15: specs/events.jsonl is admitted via the shared engine-written-state-paths-lib.sh widening, undeclared in file_scope -- exit 0, no Containment drop, present in HEAD"
+else
+  common_test_fail "Z15: expected rc=0, HEAD+1, a.txt and events.jsonl both in HEAD, no out-of-scope WARN; got rc=$rc_z15 before=$before_z15 after=$after_z15 show='$show_z15' output=$out_z15"
+fi
+
+# --- Z16 (positive): the same shape for specs/errors.json. ---
+
+repo_z16="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+echo '{"errors":[]}' > "$repo_z16/specs/errors.json"
+git -C "$repo_z16" add specs/errors.json
+git -C "$repo_z16" commit -q -m "add baseline specs/errors.json"
+echo "modified a" > "$repo_z16/specs/999_probe/a.txt"
+echo '{"errors":[{"id":1}]}' > "$repo_z16/specs/errors.json"
+before_z16=$(git -C "$repo_z16" rev-list --count HEAD)
+out_z16="$(run_commit "$repo_z16" --message "Z16 probe commit" --session "sess_z16" --task 999 \
+  -- "specs/999_probe/a.txt" "specs/errors.json" 2>&1)"
+rc_z16=$?
+after_z16=$(git -C "$repo_z16" rev-list --count HEAD 2>/dev/null || echo "$before_z16")
+show_z16="$(git -C "$repo_z16" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z16" -eq 0 ] && [ "$after_z16" -eq $((before_z16 + 1)) ] \
+  && echo "$show_z16" | grep -qF "specs/999_probe/a.txt" \
+  && echo "$show_z16" | grep -qF "specs/errors.json" \
+  && ! echo "$out_z16" | grep -q "out-of-scope"; then
+  common_test_pass "Z16: specs/errors.json is admitted via the shared engine-written-state-paths-lib.sh widening, undeclared in file_scope -- exit 0, no Containment drop, present in HEAD"
+else
+  common_test_fail "Z16: expected rc=0, HEAD+1, a.txt and errors.json both in HEAD, no out-of-scope WARN; got rc=$rc_z16 before=$before_z16 after=$after_z16 show='$show_z16' output=$out_z16"
+fi
+
+# --- Z17 (paired negative, the non-regression guard): in the SAME fixture shape, a genuinely
+# out-of-scope path (specs/998_sibling/out.txt) alongside the admitted specs/events.jsonl --
+# the commit lands, events.jsonl is in HEAD, out.txt is NOT, the drop WARN names it, and the
+# exit code is the same partial-drop code Z3 already asserts (7). This is the proof the
+# admission is not a blanket pass. ---
+
+repo_z17="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+echo "baseline event" > "$repo_z17/specs/events.jsonl"
+git -C "$repo_z17" add specs/events.jsonl
+git -C "$repo_z17" commit -q -m "add baseline specs/events.jsonl"
+echo "appended event" >> "$repo_z17/specs/events.jsonl"
+echo "modified out" > "$repo_z17/specs/998_sibling/out.txt"
+before_z17=$(git -C "$repo_z17" rev-list --count HEAD)
+out_z17="$(run_commit "$repo_z17" --message "Z17 probe commit" --session "sess_z17" --task 999 \
+  -- "specs/events.jsonl" "specs/998_sibling/out.txt" 2>&1)"
+rc_z17=$?
+after_z17=$(git -C "$repo_z17" rev-list --count HEAD 2>/dev/null || echo "$before_z17")
+show_z17="$(git -C "$repo_z17" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_z17" -eq 7 ] && [ "$after_z17" -eq $((before_z17 + 1)) ] \
+  && echo "$show_z17" | grep -qF "specs/events.jsonl" \
+  && ! echo "$show_z17" | grep -qF "specs/998_sibling/out.txt" \
+  && echo "$out_z17" | grep -q "out-of-scope" \
+  && echo "$out_z17" | grep -qF "specs/998_sibling/out.txt"; then
+  common_test_pass "Z17: specs/events.jsonl is admitted while a genuinely out-of-scope sibling path is STILL dropped and warned exactly as today -- non-regression proof, exit 7"
+else
+  common_test_fail "Z17: expected rc=7, HEAD+1, events.jsonl in HEAD, out.txt absent, WARN naming out.txt; got rc=$rc_z17 before=$before_z17 after=$after_z17 show='$show_z17' output=$out_z17"
+fi
+
+# --- Z18 (fallback): with lib/engine-written-state-paths-lib.sh made unsourceable in the
+# fixture repo (removed after build, the same "absent" technique Z10 uses for
+# issue-record.sh), specs/TODO.md is still admitted and still committed -- pinning Decision 2's
+# fallback: a source failure reproduces today's behavior exactly, never a narrower scope. ---
+
+repo_z18="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
+rm -f "$repo_z18/.claude/scripts/lib/engine-written-state-paths-lib.sh"
+echo "modified a" > "$repo_z18/specs/999_probe/a.txt"
+echo "- probe task" > "$repo_z18/specs/TODO.md"
+if [ -e "$repo_z18/.claude/scripts/lib/engine-written-state-paths-lib.sh" ]; then
+  common_test_fail "Z18: precondition violated -- engine-written-state-paths-lib.sh unexpectedly still present in the scratch repo"
+else
+  before_z18=$(git -C "$repo_z18" rev-list --count HEAD)
+  out_z18="$(run_commit "$repo_z18" --message "Z18 probe commit" --session "sess_z18" --task 999 \
+    -- "specs/999_probe/a.txt" "specs/TODO.md" 2>&1)"
+  rc_z18=$?
+  after_z18=$(git -C "$repo_z18" rev-list --count HEAD 2>/dev/null || echo "$before_z18")
+  show_z18="$(git -C "$repo_z18" show --name-only --format="" HEAD 2>/dev/null)"
+
+  if [ "$rc_z18" -eq 0 ] && [ "$after_z18" -eq $((before_z18 + 1)) ] \
+    && echo "$show_z18" | grep -qF "specs/999_probe/a.txt" \
+    && echo "$show_z18" | grep -qF "specs/TODO.md" \
+    && ! echo "$out_z18" | grep -q "out-of-scope"; then
+    common_test_pass "Z18: with the shared library unsourceable, specs/TODO.md still falls back to the hardcoded two-literal pair and is still admitted -- Decision 2's fallback, exit 0"
+  else
+    common_test_fail "Z18: expected rc=0, HEAD+1, a.txt and TODO.md both in HEAD, no out-of-scope WARN; got rc=$rc_z18 before=$before_z18 after=$after_z18 show='$show_z18' output=$out_z18"
+  fi
 fi
 
 # task-ref-ok:end
