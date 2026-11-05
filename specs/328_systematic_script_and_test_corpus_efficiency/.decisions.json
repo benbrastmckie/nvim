@@ -4,5 +4,12 @@
     "answer": "Accept the evidence-derived targets Phase 2 derives (roughly -2,000 production and -4,000 test lines, tracked separately), keeping markdown/context explicitly out of scope",
     "cycle": 1,
     "timestamp": "2026-10-16T16:18:35Z"
+  },
+  {
+    "question": "Phase 15's mechanically-confirmed anchor-backed markdown pool is only 933 lines, an 89% shortfall against the plan's declared -8,100 NET-MD target (itself derived to meet the retained -10,000 NET-TOTAL floor). How should the markdown tranche phases (16-19) and the plan's declared target proceed?",
+    "answer": "Authorize Phases 17-19 to perform semantic (not merely literal-text) anchor-finding as they consolidate each block -- reading a candidate anchor doc and judging genuine conceptual ownership, not only exact-text recurrence -- which this phase's own evidence suggests would recover materially more of the 12,752-line eligible upper bound without authoring any new anchor document",
+    "cycle": 1,
+    "timestamp": "2026-11-05T23:44:19Z",
+    "description_fingerprint": "b460ea879c4ff070cf70b9a7fbeb2d7d656551af2fa90b44a19b27a532db0eac"
   }
 ]

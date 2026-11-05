@@ -2241,7 +2241,7 @@ a gate-required restatement and spending the rest of the task unwinding it.
 
 ---
 
-### Phase 16: Land the Anchor-Pointer Convention, Its Regression Lint, and a Pilot [NOT STARTED]
+### Phase 16: Land the Anchor-Pointer Convention, Its Regression Lint, and a Pilot [IN PROGRESS]
 
 **Goal**: One documented convention for collapsing a restated block onto its anchor, a lint that
 pins the collapse so the next contract added does not silently re-introduce it, and a five-file
@@ -2253,11 +2253,12 @@ fixture suite in this phase). The five piloted markdown files have no suite; the
 the per-file ledger and the full gate set, both below.
 
 **Tasks**:
-- [ ] Add the anchor-pointer convention to `context/standards/` as a short standard: what a
+- [x] Add the anchor-pointer convention to `context/standards/` as a short standard: what a
       collapsed block looks like (a one-line reference naming the anchor path and its section
       heading), the two hard exclusion classes and how to recognize one, and the obligation that a
       collapse records its claim-retention ledger entry. Keep it short — a long new standard in a
-      task chartered against machinery growth is its own counterexample.
+      task chartered against machinery growth is its own counterexample. *(completed:
+      `context/standards/anchor-pointer-convention.md`, 70 lines)*
 - [ ] Write the regression lint: for each collapsed block recorded in the Phase 15 inventory,
       FAIL if the block's text reappears in any file other than its anchor. Consume the Phase 15
       inventory file rather than hardcoding block text, so adding a collapse later is a data edit,

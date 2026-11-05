@@ -1,62 +1,12 @@
 {
-  "status": "partial",
-  "dispatch_seq": 29,
+  "status": "in_progress",
+  "dispatch_seq": 30,
+  "started_at": "2026-11-05T23:50:25Z",
   "partial_progress": {
-    "stage": "phase_complete_more_remain",
-    "details": "Phase 15 (Classify the Markdown Duplicate-Block Inventory and Declare NET-MD) closed [COMPLETED]. Re-derived the markdown corpus's cross-file duplicated-block volume via 5-line shingling over substantive lines with (g-1)/g removable share: 17,135 total removable lines (confirms the Scope Widening hypothesis of 16,851 within normal corpus drift). Gate-required hard exclusion: 3,982 lines (confirms ~3,997 within 15 lines; re-reading lint-agent-contracts.sh found a fifth, previously-undocumented fragment variable, MODIFIED_FILES_FRAGMENT, read by Check L, folded into this figure). Deliberate-inlining hard exclusion: 12 lines (REPLACES the ~102-line hypothesis -- the email extension's inlined safety content is evidently adapted/paraphrased per destination file rather than copy-pasted verbatim, so it mostly does not register as cross-file-identical text). Eligible upper bound after hard exclusions: 13,053 lines (confirms ~12,752). Of that eligible pool, mechanically confirmed only 933 lines (26 distinct anchor files, 197 of 3,359 eligible windows) as anchor-backed, using a strict exact-5-gram test requiring the duplicated window to recur verbatim inside a file under a canonical anchor-category directory. An earlier, looser per-line-presence test was tried first and discarded: it produced 399 false-positive 'anchors' from coincidental matches on generic short lines (code fences, Stage headings) in one large reference file, verified by direct inspection of sample matches. Wrote the 26-row confirmed inventory to markdown-block-inventory.tsv (anchor_path, anchor_heading, sharing_factor, occurrences, total_span_lines, files). The confirmed 933-line floor is an 89% shortfall against the plan's declared -8,100 NET-MD target (which assumed 64% capture of the 12,752-line eligible upper bound); per this phase's own task-list instruction, the eligibility test was NOT relaxed to close the gap -- the shortfall is recorded in the plan's new 'Phase 15 Re-Derivation' subsection and raised as the user_decision below. file_scope was widened by 3 concrete paths not already covered by existing directory-level entries (134 of the 137 files the confirmed inventory touches were already covered); update-task-status.sh --file-scope-add refused this mid-implement call (restricted to postflight/research-or-plan), so a direct, minimal, additive-only specs/state.json edit was used instead, confirmed via git diff to be a pure 3-line addition. NET-MD delta for this phase: +0 (measurement-only; no markdown file outside specs/** was edited). validate-artifact.sh passes on the plan file. 5 of 20 plan phases remain, starting with Phase 16 (land the anchor-pointer convention, its regression lint, and a pilot) -- Phase 16 must read this dispatch's user_decision before assuming -8,100 is still the live target.",
-    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-15-handoff-20261105T233928Z.md",
+    "stage": "initializing",
+    "details": "Dispatch 30 started: Phase 16 (Land the Anchor-Pointer Convention, Its Regression Lint, and a Pilot). Prior-decisions answer authorizes semantic anchor-finding for Phases 17-19; Phase 16 itself still uses the Phase 15 mechanically-confirmed inventory (literal-match) since it operates on the top-sharing-factor row already confirmed there.",
     "phases_completed": 15,
     "phases_total": 20
-  },
-  "artifacts": [
-    {
-      "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
-      "summary": "Phase 15 close: re-derived markdown duplicate-block volume and exclusions, mechanically confirmed 933 of 13,053 eligible lines as anchor-backed, wrote markdown-block-inventory.tsv, raised the resulting NET-MD target shortfall as a user_decision."
-    },
-    {
-      "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-15-handoff-20261105T233928Z.md",
-      "summary": "Phase 15 close: anchor-test methodology (and the discarded false-positive-prone first attempt), the file_scope-widening mechanism deviation, and the live user_decision Phase 16+ must read before assuming the original NET-MD target."
-    }
-  ],
-  "completion_data": {
-    "completion_summary": "Closed Phase 15: mechanically re-derived the markdown corpus's duplicate-block volume (17,135 total, 3,982 gate-required, 12 deliberately-inlined, 13,053 eligible upper bound -- all confirming or replacing the Scope Widening hypothesis), confirmed only 933 lines (26 anchors) as anchor-backed via a strict exact-match test, wrote markdown-block-inventory.tsv, widened file_scope by 3 paths, and raised the resulting 89% NET-MD target shortfall as a user_decision rather than relaxing the eligibility test."
-  },
-  "modified_files": [
-    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/markdown-block-inventory.tsv",
-    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-15-progress.json",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-15-handoff-20261105T233928Z.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl",
-    "specs/state.json"
-  ],
-  "memory_candidates": [
-    {
-      "content": "When mechanically testing whether a duplicated N-line text block already has an existing 'anchor' document that owns the content, a per-line-presence test (checking whether each of the block's lines independently appears SOMEWHERE in a candidate anchor file) produces large false positives on a corpus with generic recurring short lines (code-fence markers, repeated heading templates like '### Stage N:'): dozens to hundreds of semantically unrelated blocks get misattributed to one large reference file purely by coincidental line overlap. The reliable mechanical test instead requires the EXACT contiguous N-line window to recur verbatim inside the candidate anchor file (i.e. the anchor file is itself one of the window's exact-match sharing participants). This eliminates the false-positive class but is then itself a conservative floor, not a ceiling, since real anchor docs typically explain a pattern in different wording than the operational copies that restate it -- a semantic (human/agent-judgment) pass will usually find more true anchors than either mechanical test.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["anchor-detection", "duplicate-block-analysis", "false-positive", "exact-match", "shingling"]
-    },
-    {
-      "content": "update-task-status.sh's --file-scope-add flag is hard-restricted to operation==postflight with target_status in {research, plan} -- it refuses with a validation error if called mid-implement or at any other operation/status combination. When a mid-implement phase needs to widen a task's file_scope (e.g. to cover files a classification/inventory step just discovered), the sanctioned fallback is a direct, minimal, additive-only edit to specs/state.json's file_scope array (append via union-merge, never replace the array), confirmed via git diff to be a scoped addition. Caution: do NOT edit state.json via a full json.load()/json.dump() round-trip in Python -- json.dump defaults to ensure_ascii=True, which silently converts every literal non-ASCII character anywhere in the whole file (em-dashes, etc., in unrelated task descriptions) into \\\\uXXXX escapes, turning an intended 3-line change into a file-wide diff. Use targeted Edit/sed-style insertions against unique surrounding context instead.",
-      "category": "PATTERN",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["file-scope-add", "state-json-editing", "json-ensure-ascii", "mid-implement-widening", "targeted-edit"]
-    }
-  ],
-  "user_decision": {
-    "question": "Phase 15's mechanically-confirmed anchor-backed markdown pool is only 933 lines, an 89% shortfall against the plan's declared -8,100 NET-MD target (itself derived to meet the retained -10,000 NET-TOTAL floor). How should the markdown tranche phases (16-19) and the plan's declared target proceed?",
-    "options": [
-      "Accept the mechanically-confirmed 933-line floor and revise NET-MD/NET-TOTAL downward (NET-TOTAL becomes roughly -2,800, well short of the retained -10,000 floor -- the third consecutive measurement round to fall short from enumerated, confirmed volume)",
-      "Authorize Phases 17-19 to perform semantic (not merely literal-text) anchor-finding as they consolidate each block -- reading a candidate anchor doc and judging genuine conceptual ownership, not only exact-text recurrence -- which this phase's own evidence suggests would recover materially more of the 12,752-line eligible upper bound without authoring any new anchor document",
-      "Lower the retained -10,000 NET-TOTAL floor itself, since three independent measurement rounds (the script-cluster derivation, the markdown Scope Widening hypothesis, and now this phase's anchor-confirmation pass) have each found the floor unreachable from the next-enumerated source of volume"
-    ],
-    "recommended": "Authorize Phases 17-19 to perform semantic (not merely literal-text) anchor-finding as they consolidate each block -- reading a candidate anchor doc and judging genuine conceptual ownership, not only exact-text recurrence -- which this phase's own evidence suggests would recover materially more of the 12,752-line eligible upper bound without authoring any new anchor document",
-    "blocking": false
   },
   "metadata": {
     "session_id": "sess_1793920608_e862fc",

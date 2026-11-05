@@ -1,0 +1,50 @@
+{
+  "phase": 16,
+  "phase_name": "Land the Anchor-Pointer Convention, Its Regression Lint, and a Pilot",
+  "started_at": "2026-11-05T23:50:25Z",
+  "last_updated": "2026-11-05T23:50:25Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the anchor-pointer convention standard under context/standards/",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/anchor-pointer-convention.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Write the inventory-driven regression lint (reads a permanent collapsed-block registry, not a hardcoded block list)",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Write the lint's fixture suite with a deliberately-violating fixture plus conforming fixtures",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Decide and record whether the lint gets a new gate row or rides an existing gate",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Pilot the collapse on five files drawn from the inventory's highest sharing-factor eligible block, with a claim-retention ledger entry per file",
+      "status": "not_started",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Run the full gate set over the pilot and confirm the finding set matches the Phase 1 baseline; record the phase's NET-MD delta",
+      "status": "not_started",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
