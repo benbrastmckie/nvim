@@ -1,5 +1,5 @@
 ---
-next_project_number: 488
+next_project_number: 489
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 488
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,471,473,477,478,483,485 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,471,473,477,478,483,485,488 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
 | 3 | 360,391,399,420,436,438,439,444,448,474,476,484 | 313,328,369,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
@@ -114,6 +114,7 @@ next_project_number: 488
     └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit... (see above)
+488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -121,6 +122,26 @@ next_project_number: 488
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 488. Adjudicate where MCP write-tool permission grants belong: repo-scoped extension fragment vs. the server owner's own configuration
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+- **Parent**: Task 482
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). Re-derive every quoted clause from the source store, never from a deployed copy. No task-number references and no record-versioning language in any file landing under agent-system/** .
+
+FINDING (recorded during the sapience extension build, issues.jsonl class scope-mismatch, severity minor): the sapience extension's settings-fragment.json grants four MCP write tools (sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc) at THIS repository's project scope. That closes the autonomous-dispatch permission blocker inside this repo and is correct for that purpose. But context/standards/mcp-server-ownership.md's own rule states that permission grants for a given MCP server belong with the entity that OWNS the server registration -- here ~/.dotfiles/config/claude/settings.json, whose keys are reset from the dotfiles repo by home.activation.claudeSettings on every home-manager switch. The two placements are in tension and the tension is currently unresolved rather than decided.
+
+Note the enforcement asymmetry that makes this non-obvious: the dotfiles copy is machine-wide and nix-enforced (so an extension CANNOT durably write it -- an edit there would be reverted on the next switch), while the repo-scoped fragment is the only placement an extension can actually own. A verdict of 'the repo-scoped fragment is correct' is therefore legitimate; it just has to be STATED rather than left as an apparent standards violation.
+
+DECIDE, do not assume: (a) whether mcp-server-ownership.md's rule should be amended to carve out the nix-enforced-settings case explicitly, or whether the sapience grant should move to ~/.dotfiles and the extension stop granting it; (b) whether a repo-scoped write-tool grant for a server the repo does not own needs any additional operator-visible disclosure. Reason about the security posture of the narrower-scope placement on its own merits, not only about which file the standard currently names.
+
+ACCEPTANCE: mcp-server-ownership.md states a verdict covering the nix-enforced-settings case; the sapience extension's grant placement matches that verdict; verify-deploy.sh gate set green after redeploy.
+
+---
 
 ### 487. Stop the identical-dispatch convergence guard halting a task whose previous cycle closed a phase
 - **Status**: [NOT STARTED]
