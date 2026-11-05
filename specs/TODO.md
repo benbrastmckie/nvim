@@ -1,5 +1,5 @@
 ---
-next_project_number: 489
+next_project_number: 490
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 489
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488,489 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
 | 3 | 360,391,399,420,436,438,439,444,448,474,476,484 | 313,328,369,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
@@ -49,6 +49,7 @@ next_project_number: 489
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
+489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -121,6 +122,49 @@ next_project_number: 489
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 489. Derive gate-count expectations in sibling test suites from the live gate registry
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 471
+
+**Description**: Make the gate-count expectations in two sibling test suites derive from the live gate registry instead of hardcoding integers, so that registering a new gate requires no edits to unrelated suites.
+
+CHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1793897002_11e720.
+CITATION: {task 471, iss_1793898478763_2WjvRL}, class "test-fixture-drift".
+
+THE PROBLEM, VERIFIED: registering gate 26 broke five hardcoded assertions across two suites that are not about the new gate at all:
+  scripts/tests/test-gate-registry-resolution.sh -- case1 expected exactly 25 ids; case32 and case33 hardcoded 25 as the live max and 26 as one-past-max.
+  scripts/tests/test-verify-deploy-gate-selection.sh -- case (c) used 24 as an out-of-range probe id; case (d) iterated `seq 1 23`.
+All five were mechanically bumped to the new live max (26) and one-past (27) to land that work. That fix-up is correct but not durable: the next gate registered repeats it exactly, and because neither suite is in a gate-adding task's natural file_scope, it also repeats the declared-scope widening that was needed to commit it.
+
+WHY IT MATTERS: verify-deploy.sh already dispatches gates dynamically via gate_registry_ids plus "gate${id}_run", so adding a gate needs only a gate-registry.data row and a gateN_run function -- no call-site list. These two test suites are the sole remaining place where a hardcoded gate count survives, which makes them a recurring, avoidable tax on every future gate and a standing source of spurious red.
+
+--- REQUIRED OUTCOMES ---
+
+1. Derive the live max gate id and the one-past-max probe id from gate_registry_ids (the same source verify-deploy.sh's own --only-gate bound already derives from) rather than writing integers into assertions. Do not merely move the integers into a variable initialised to a literal -- the value must come from the registry at test time.
+
+2. Preserve each assertion's intent. Case (c)'s out-of-range probe must still probe genuinely out-of-range, and case (d)'s enumeration must still cover exactly the real id set. A derived value that silently makes an assertion vacuous is a regression, not a fix: show for each converted assertion that it still fails when it should.
+
+3. Add a guard that the suites' own notion of the id set matches verify-deploy.sh's, so the two cannot drift apart in the other direction.
+
+4. Verify by registering a throwaway gate in a fixture (never in the real gate-registry.data) and confirming both suites stay green without edits.
+
+CONCURRENT TERRITORY NOTE: the creation-time proposal audit returned three mechanically-corroborated
+subset-of-open verdicts, each sharing BOTH of this task's declared paths: record 328
+(systematic_script_and_test_corpus_efficiency, which declares the whole scripts/tests/ directory),
+record 435 (reword_dead_lifecycle_command_prose_per_class) and record 448
+(contain_deliberate_break_source_mutations). Records 418 and 414 additionally declare
+scripts/gate-registry.data. Serialize against all of these rather than co-scheduling in parallel;
+the audit passed both its mechanical and semantic gates, so these are ordering constraints, not a
+duplication verdict.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. Never hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store. Redeploy afterwards via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean.
+
+---
 
 ### 488. Adjudicate where MCP write-tool permission grants belong: repo-scoped extension fragment vs. the server owner's own configuration
 - **Effort**: small
