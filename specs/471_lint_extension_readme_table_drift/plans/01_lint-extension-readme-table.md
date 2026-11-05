@@ -182,7 +182,7 @@ fresh diff actually shows -- the count is a hypothesis, not a fact.
 
 ---
 
-### Phase 2: Author lint-extension-readme-table.sh [NOT STARTED]
+### Phase 2: Author lint-extension-readme-table.sh [COMPLETED]
 
 **Goal**: A new lint that bidirectionally diffs the extension directory set against the Available
 Extensions table's first column, exempting `core` by explicit name, following the structural
@@ -190,42 +190,42 @@ conventions of its siblings in the same directory.
 
 **Tasks**:
 
-- [ ] Create
+- [x] Create
       `agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh`, modeled
       structurally on `lint/lint-dead-command-recommendations.sh`: `set -euo pipefail`, source
       `lib/common.sh` and `lib/lint-corpus-scan-lib.sh`, parse flags via
       `lint_corpus_scan_parse_flags SCAN_PATHS VERBOSE QUIET -- "$@"`, and resolve the project root
       with the dual-mode `resolve_project_root()` helper (`common_repo_root "$SCRIPT_DIR" 3` first,
       then an up-to-8-parent walk looking for `agent-system/extensions`) so it runs identically
-      from the source store and the deployed copy.
-- [ ] Define the input contract as a single optional positional `EXTENSIONS_ROOT` (the first
+      from the source store and the deployed copy. *(completed)*
+- [x] Define the input contract as a single optional positional `EXTENSIONS_ROOT` (the first
       `SCAN_PATHS` entry), defaulting to `$PROJECT_ROOT/agent-system/extensions`. The lint reads
       `<root>/README.md` and enumerates `<root>/*/` from that same root. This single-root shape is
       what makes one scratch directory a complete fixture in Phase 3; it also keeps the sibling
       positional-path convention rather than inventing a new `--readme`/`--extensions-dir` flag
-      pair.
-- [ ] Parse the directory set: every immediate subdirectory of the root, basename only, excluding
+      pair. *(completed)*
+- [x] Parse the directory set: every immediate subdirectory of the root, basename only, excluding
       the literal `core` via an explicit string comparison with an inline comment stating WHY
       (`core` is the unconditionally-loaded base system, deliberately not a pickable "available
       extension") and why no manifest field can substitute (`routing_exempt: true` is also set by
-      `approvals`, `slidev`, and `sapience`, all of which belong in the table).
-- [ ] Parse the table: locate the `## Available Extensions` heading, skip the header and separator
+      `approvals`, `slidev`, and `sapience`, all of which belong in the table). *(completed)*
+- [x] Parse the table: locate the `## Available Extensions` heading, skip the header and separator
       rows, and extract the first pipe-delimited cell of each subsequent table row until the table
       ends (first non-`|` line). Trim whitespace and strip optional surrounding backticks so the
-      parser is robust to either styling.
-- [ ] Emit both drift directions as `[VIOLATION]`-tagged lines: a directory with no row, and a row
+      parser is robust to either styling. *(completed)*
+- [x] Emit both drift directions as `[VIOLATION]`-tagged lines: a directory with no row, and a row
       naming no directory. Emit `[EXEMPT]` for `core` under `--verbose`. Suppress the per-finding
-      and summary output under `--quiet`.
-- [ ] Exit `0` when clean, `1` when any violation is found, `2` on environment error (unresolvable
+      and summary output under `--quiet`. *(completed)*
+- [x] Exit `0` when clean, `1` when any violation is found, `2` on environment error (unresolvable
       project root, missing shared lib, missing `README.md`, no `## Available Extensions` heading,
-      or an empty directory enumeration -- each a loud named failure, never a silent pass).
-- [ ] Write the dense header comment block every sibling in this directory carries: WHY THIS EXISTS
+      or an empty directory enumeration -- each a loud named failure, never a silent pass). *(completed)*
+- [x] Write the dense header comment block every sibling in this directory carries: WHY THIS EXISTS
       (the table is the only extension inventory a human reads and nothing mechanically checked it),
       DETECTION MODEL (bidirectional set diff; order-blind, description-blind, link-blind), THE
       `core` EXEMPTION (explicit name match, with the `routing_exempt` false-signal reasoning),
       NET-SIZE RATIONALE (why a new file rather than extending `check-extension-docs.sh` or
-      `lint-routing-wiring.sh`), USAGE, and EXIT CODES.
-- [ ] `chmod +x` the new script.
+      `lint-routing-wiring.sh`), USAGE, and EXIT CODES. *(completed)*
+- [x] `chmod +x` the new script. *(completed)*
 
 **Timing**: 1.5 hours
 

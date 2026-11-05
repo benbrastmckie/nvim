@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "Author lint-extension-readme-table.sh",
+  "started_at": "2026-11-05T00:10:00Z",
+  "last_updated": "2026-11-05T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create lint-extension-readme-table.sh with dual-mode root resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh"]},
+    {"id": 2, "description": "Single optional positional EXTENSIONS_ROOT input contract", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh"]},
+    {"id": 3, "description": "Directory enumeration excluding core with inline WHY comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh"]},
+    {"id": 4, "description": "Table parsing: locate heading, skip header/separator, extract first cell", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh"]},
+    {"id": 5, "description": "Emit [VIOLATION]/[EXEMPT] tags, respect --verbose/--quiet", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh"]},
+    {"id": 6, "description": "Exit codes 0/1/2", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh"]},
+    {"id": 7, "description": "Dense header comment block (WHY/DETECTION MODEL/core exemption/NET-SIZE/USAGE/EXIT CODES)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh"]},
+    {"id": 8, "description": "chmod +x", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "lint_against_real_corpus_verbose": "exit 0, EXEMPT core printed",
+    "lint_shellcheck": "exit 0, 0 findings",
+    "manual_missing_row_case": "exit 1, names beta",
+    "manual_extra_row_case": "exit 1, names ghost",
+    "manual_env_error_case": "exit 2, no README.md"
+  }
+}
