@@ -11,7 +11,7 @@
 
 **Goals**:
 
-- Prove `comm` and `assoc` for natural number addition.
+- `comm` and `assoc` -- commutativity and associativity of natural number addition.
 
 **Non-Goals**:
 

@@ -576,7 +576,11 @@ remains unchanged for every task type.
 
 This section exists to fix the *statement* of each theorem a lean plan commits to, not merely its
 *identifier*. `- **Goals**:` bullets name identifiers only (a backtick-delimited list, e.g.
-`` `comm` ``); this section carries the literal, exact signature each identifier resolves to, with
+`` `comm` ``, or `` `a`, `b` and `c` `` for more than one), and each bullet's identifiers must
+LEAD the bullet — the backtick-delimited list begins at the bullet's first non-whitespace
+content after its `- ` marker, with any descriptive prose for that bullet following afterward
+(e.g. `` - `comm` -- commutativity of addition. ``); this section carries the literal, exact
+signature each identifier resolves to, with
 a `sorry` body, so a downstream tool (`lean-challenge-snapshot.sh` — see
 `context/project/lean4/domain/challenge-snapshot.md` for the full design record) can turn a
 plan into a trusted, immutable Challenge module *before* the implementation agent runs.

@@ -11,7 +11,7 @@
 
 **Goals**:
 
-- Prove `comm` for natural number addition.
+- `comm` -- commutativity of natural number addition.
 
 **Non-Goals**:
 

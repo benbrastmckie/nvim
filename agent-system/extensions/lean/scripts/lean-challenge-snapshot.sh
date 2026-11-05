@@ -399,40 +399,37 @@ if $CHECK_MODE; then
 fi
 
 # ---------------------------------------------------------------------------
-# Goal identifiers. Two repairs on the original "any identifier-shaped backtick token anywhere
-# in the Goals range, minus a keyword denylist" approach:
+# ACCEPTED GOALS SURFACE -- read this before writing a plan's `**Goals**:` block for this tool.
 #
-#   (1) The range start/end anchors accept the `- **Goals**:` / `- **Non-Goals**:` (etc.)
-#       list-item form in addition to the column-0 `**Goals**:` form -- plan-format.md's own
-#       canonical template (`## Goals & Non-Goals` -> `- **Goals**: ...` / `- **Non-Goals**: ...`)
-#       uses the list-item form, and landed sibling lean4 plans already use it (e.g.
-#       specs/750_w_run_layer_closure_wide_lift and specs/410_internalize_tableau_branches_and_...
-#       -- both carry `## Lean Challenge Statements`). The column-0-only anchor silently
-#       extracted NOTHING from those plans' Goals block, since `sed` found no line to start the
-#       range on.
+#   RANGE: the Goals range starts at a line matching the column-0 `**Goals**:` form OR the
+#   `- **Goals**:` list-item form (plan-format.md's own canonical template uses the list-item
+#   form), and ends at the next `**`-labeled line (e.g. `**Non-Goals**:` in either form).
 #
-#   (2) PREAMBLE EXCLUSION (closes the over-reading defect: a PROSE PARAGRAPH sitting between
-#       the `**Goals**:` label and the first bulleted identifier had every identifier-shaped
-#       backtick token inside it harvested as a Goal, even when the word is not a Lean keyword
-#       and so survives the (pre-existing) keyword denylist below). Confirmed live against a
-#       landed plan, specs/761_ladder_realization_theorem/plans/01_ladder-realization-blocked-
-#       probe.md, whose Goals block originally carried an explanatory parenthetical sentence of
-#       the shape "the block's `abbrev` definitions, including ... `gPast_adm` ..., are context,
-#       not goals" directly after the bare `**Goals**:` label and before the three real
-#       `- \`name\` -- description` bullets -- every backticked word in that sentence
-#       (`abbrev`, a keyword, AND `gPast_adm`, not a keyword) was reported as an undeclared Goal,
-#       forcing the plan's author to de-backtick every non-goal token in the WHOLE block by hand
-#       (the recorded workaround this fix removes the need for). The fix: a line before the
-#       FIRST bulleted (`- ...`) line in the range is a preamble and is never scanned for
-#       identifiers, however many backticks it contains -- this is exactly the shape
-#       plan-format.md documents (a `**Goals**:` label optionally followed by introductory
-#       prose, then the actual `- \`name\`` bullets) and precisely what the reported defect
-#       exploited. Once the first bulleted line is seen, scanning proceeds exactly as before
-#       (unchanged: this preserves the existing, already-tested in-bullet convention of a single
-#       prose bullet embedding both real identifiers and keyword mentions side by side, e.g.
-#       "- Prove `comm` for natural number addition." and the keyword-noise regression fixture
-#       below) -- this fix narrows WHERE scanning starts, never what counts as an identifier
-#       once scanning is active.
+#   PREAMBLE: any line before the range's FIRST bulleted (`- ...`) line is a preamble and is
+#   never scanned for identifiers, however many backticks it contains. This is exactly the
+#   shape plan-format.md documents: a `**Goals**:` label optionally followed by introductory
+#   prose, then the actual `- \`name\`` bullets.
+#
+#   PER-BULLET LEADING IDENTIFIER RUN: each bulleted line contributes identifiers ONLY from its
+#   own LEADING IDENTIFIER RUN -- the maximal run of backtick-delimited identifiers beginning at
+#   the bullet's first non-whitespace content after its `- ` marker, with individual identifiers
+#   separated only by whitespace, `,`, `/`, or the word `and`. The run ends at the first content
+#   that is not such a token (a prose word, `--`, an em-dash, `:`, etc.), and everything from
+#   there to the end of the line is descriptive prose, ignored by construction -- never scanned,
+#   regardless of what it backticks. A bullet whose first content is not a backticked identifier
+#   contributes nothing. Examples that conform: `` - `comm` -- commutativity of addition. ``,
+#   `` - `a`, `b` and `c` -- the three lemmas this phase proves. ``. An example that does NOT
+#   conform (contributes nothing): a bullet leading with a backticked file path, since a file
+#   path is not identifier-class text.
+#
+#   KEYWORD DENYLIST: `LEAN_KEYWORDS` below still subtracts Lean's reserved keywords from
+#   whatever the leading-run rule harvests, as a second, now largely redundant guard (the
+#   leading-run rule already keeps a keyword mention OUT of the harvest whenever it sits in
+#   trailing position) kept in place rather than removed.
+#
+#   NO SILENT FALLBACK: a Goals block with no conforming bullet harvests zero identifiers and
+#   takes the "no identifiers found under **Goals**:" hard exit below -- a loud, actionable
+#   failure naming the documented shape, never a silent omission.
 # ---------------------------------------------------------------------------
 extract_goal_names() {
   python3 - "$PLAN_FILE" <<'PYEOF'
@@ -449,6 +446,10 @@ START_RE = re.compile(r'^-?\s?\*\*Goals\*\*:')
 END_RE = re.compile(r'^-?\s?\*\*[^G]')
 BULLET_RE = re.compile(r'^\s*-\s*')
 TOKEN_RE = re.compile(r"`(" + IDENT + r")`")
+# LEADING-IDENTIFIER-RUN: the maximal prefix of a bullet's own content (after its `- ` marker)
+# made up of backtick-delimited identifiers separated only by whitespace, `,`, `/`, or the word
+# `and`. See the accepted-surface documentation above extract_goal_names() for the full rule.
+LEADING_RUN_RE = re.compile(r"^(?:`" + IDENT + r"`|[\s,/]|and\b)+")
 
 LEAN_KEYWORDS = {
     "theorem", "lemma", "def", "abbrev", "instance", "structure", "class", "inductive", "axiom",
@@ -474,14 +475,19 @@ if start_idx is not None:
             break
     block = lines[start_idx:end_idx]
 
-    # seen_bullet tracks whether the first bulleted (`- ...`) line in the block has appeared
-    # yet; a line before it is a preamble and is never scanned -- see item (2) above.
-    seen_bullet = False
+    # Only a BULLETED line's own LEADING IDENTIFIER RUN contributes names (see the accepted-
+    # surface documentation above this function). A non-bulleted line -- preamble prose before
+    # the first bullet, prose between bullets, or a wrapped continuation line -- never matches
+    # BULLET_RE and so is never scanned at all, which subsumes the preamble exclusion without a
+    # separate seen_bullet flag: there is no longer any code path that scans a non-bulleted line.
     for line in block:
-        if BULLET_RE.match(line):
-            seen_bullet = True
-        if seen_bullet:
-            names.extend(TOKEN_RE.findall(line))
+        bullet_m = BULLET_RE.match(line)
+        if not bullet_m:
+            continue
+        run_m = LEADING_RUN_RE.match(line[bullet_m.end():])
+        if not run_m:
+            continue  # bullet's first content is not a backticked identifier -> contributes nothing
+        names.extend(TOKEN_RE.findall(run_m.group(0)))
 
 names = sorted(set(n for n in names if n not in LEAN_KEYWORDS))
 sys.stdout.write("\n".join(names) + ("\n" if names else ""))

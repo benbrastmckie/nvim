@@ -11,7 +11,7 @@
 
 **Goals**:
 
-- Prove `hnOpenMirror`, `hnStabMirror`, and `hn_stab` for the modal frame construction.
+- `hnOpenMirror`, `hnStabMirror`, and `hn_stab` -- the modal frame construction's mirror lemmas.
 
 **Non-Goals**:
 

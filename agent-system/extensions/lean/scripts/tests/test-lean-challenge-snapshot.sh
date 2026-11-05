@@ -19,6 +19,12 @@
 # (R11); an anonymous `instance` between two theorems survives with its real body and
 # contributes no name (R12); and the `abbrev` from R11 contributes no name to `theorem_names`,
 # pinning that the boundary widening never also widens what is cross-validated or forced (R13).
+# Case R14 covers the leading-identifier-run narrowing: a bullet's own real Goal leads the
+# bullet and is harvested, while non-keyword backticked tokens (both a capitalized
+# namespace-style token and a lowercase prose word) sitting in TRAILING position in that same
+# bullet are not -- distinct from R7 (which covers reserved keywords, denylist-covered
+# regardless of position) and R8 (which covers preamble position, excluded regardless of
+# keyword status).
 #
 # (2) R2 legacy fallback (Case R3): a plan with no `## Lean Challenge Statements` section falls
 # back to extracting an existing sorried declaration from the target project's git tree, and
@@ -407,6 +413,44 @@ if echo "$r13_out" | grep -q "^# route:" \
   pass "R13: the abbrev in R11's fixture contributes no name to theorem_names (decoupling pinned)"
 else
   fail "R13: expected theorem_names line to never mention 'Doubled', got: $r13_names_line"
+fi
+
+# ===========================================================================
+# Case R14: a Goals bullet carrying NON-KEYWORD backticked prose in TRAILING position --
+# covering both a capitalized namespace-style token (`Nu`, `EUFix`) and a lowercase prose word
+# (`witness`, `true`) -- must not have any of those four harvested as identifiers, even though
+# none of them is a Lean keyword and so none would survive R7's denylist mechanism if it were
+# the only guard in play. The bullet's own real Goal, `comm`, leads the bullet and IS harvested.
+#
+# This is the measured residual this record exists to close: the four spurious tokens are
+# exactly `EUFix`, `Nu`, `true`, `witness` from a bullet reading (trailing prose only) "...
+# established in the `Nu` namespace, providing a `witness` for the `EUFix` operator when the
+# flag is `true`."
+#
+# Distinctness from R7/R8, demonstrated structurally rather than asserted: R7's fixture
+# (plan_keyword_noise.md) backticks RESERVED KEYWORDS (theorem/sorry/abbrev), which the
+# denylist alone would already catch regardless of position. R8's fixture
+# (plan_goals_preamble.md) backticks a non-keyword word in a PREAMBLE paragraph before the
+# first bullet, which the preamble exclusion alone would already catch regardless of the
+# leading-run rule. This case's four tokens are neither reserved keywords nor in a preamble --
+# they sit in TRAILING position inside a real bullet -- so neither R7's nor R8's mechanism can
+# save it; only this phase's leading-identifier-run narrowing does.
+#
+# Mutation this case kills: reverting extract_goal_names() to scan a bulleted line's WHOLE
+# content (the pre-Phase-4 `TOKEN_RE.findall(line)` sweep, still carrying R7's denylist and
+# R8's preamble exclusion) harvests all four spurious tokens alongside `comm`, and
+# cross_validate_identifiers() reports a 71 identifier-set mismatch naming all four -- verified
+# live against the Phase-3 script in this dispatch.
+# ===========================================================================
+repo=$(make_repo "r14" 925 plan_r14_trailing_prose.md)
+out=$(run_tool "$repo" 925 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] \
+  && echo "$out" | grep -q "^# theorem_names: comm$" \
+  && ! echo "$out" | grep -q "identifier-set mismatch"; then
+  pass "R14: non-keyword trailing-prose tokens (capitalized and lowercase) are not harvested as identifiers"
+else
+  fail "R14: expected exit 0 with theorem_names=comm only and no identifier-set mismatch, got rc=$rc: $out"
 fi
 
 # ===========================================================================

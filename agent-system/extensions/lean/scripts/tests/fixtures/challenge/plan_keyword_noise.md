@@ -11,10 +11,9 @@
 
 **Goals**:
 
-- The identifier set equals the one `theorem` declaration below. It is written out as a
-  `sorry`-bodied `abbrev` context in the block for exposition only, because
-  `lean-challenge-snapshot.sh` counts only `theorem` declarations here. Prove `comm` for natural
-  number addition.
+- `comm` -- the identifier set equals the one `theorem` declaration below. It is written out as
+  a `sorry`-bodied `abbrev` context in the block for exposition only, because
+  `lean-challenge-snapshot.sh` counts only `theorem` declarations here.
 
 **Non-Goals**:
 
