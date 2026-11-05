@@ -1,31 +1,10 @@
 {
-  "status": "planned",
-  "task_number": 471,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/471_lint_extension_readme_table_drift/plans/01_lint-extension-readme-table.md",
-      "summary": "6-phase, 6-hour plan adding lint-extension-readme-table.sh as gate 26 with a 5-case fixture suite, repairing the live sapience table drift, and recording outcome #3 as already-resolved."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1793897002_11e720_471",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "In agent-system/extensions/core/scripts/verify-deploy.sh, gate functions are dispatched DYNAMICALLY as \"gate${_gate_id}_run\" driven by gate_registry_ids() iterating gate-registry.data -- there is no static call-site list of gateN_run invocations to edit. Adding a new gate therefore requires exactly two edits: one 9-field TAB-separated row in gate-registry.data and one gateN_run function definition. Before planning a 'wire up the new gate's call site' step, grep for 'gate25_run' and observe it appears only as its own definition, never as a call.",
-      "category": "PATTERN",
-      "source_artifact": "specs/471_lint_extension_readme_table_drift/plans/01_lint-extension-readme-table.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy.sh", "gate-registry", "dynamic-dispatch", "gateN_run", "gate-wiring"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 471 to execute the plan",
-  "dispatch_seq": 2
+    "session_id": "sess_1793897002_11e720",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Re-confirm preconditions and repair the live table drift",
+  "started_at": "2026-11-05T00:00:00Z",
+  "last_updated": "2026-11-05T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-grep verify-deploy.sh for a literal --only-gate ceiling", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record outcome #3 verdict", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-enumerate registry max id", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-diff real corpus vs table", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add missing sapience row to README.md", "status": "done", "files_touched": ["agent-system/extensions/README.md"]},
+    {"id": 6, "description": "Record issue-log entry for invalidated dispatch CURRENT STATE claim", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "findings": {
+    "outcome_3_verdict": "already resolved; no hardcoded --only-gate cap found (derived _only_gate_max_id form at lines 381-401, fallback literal 23 only on empty registry). Two stale 23-mentioning prose lines remain: line 173 'every one of the 23 real gates' and line 737 'GATE FUNCTIONS 1-23'.",
+    "next_free_gate_id": 26,
+    "max_defined_gate": 25,
+    "table_diff": "sapience was the only missing row (23 dirs minus core = 22 expected vs 21 actual); no dangling rows found."
+  }
+}

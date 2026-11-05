@@ -46,7 +46,7 @@ next_project_number: 488
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-471 [PLANNED] — Lint the extensions README table against the real extension...
+471 [IMPLEMENTING] — Lint the extensions README table against the real extension...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
@@ -1095,7 +1095,7 @@ Nothing was lost in the observed run, and that is precisely the risk: the failur
 
 ### 471. Lint the extensions README table against the real extension directory set
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 470

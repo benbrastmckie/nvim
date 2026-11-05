@@ -1,7 +1,7 @@
 # Implementation Plan: Task #471
 
 - **Task**: 471 - Add lint-extension-readme-table.sh and wire it into verify-deploy.sh's gate set
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: task 470 (verify-deploy.sh TARGET-contract task) -- same header/argument-parsing region; serialize, do not co-schedule
 - **Research Inputs**: specs/471_lint_extension_readme_table_drift/reports/01_lint-extension-readme-table-drift.md
@@ -116,7 +116,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-confirm preconditions and repair the live table drift [NOT STARTED]
+### Phase 1: Re-confirm preconditions and repair the live table drift [COMPLETED]
 
 **Goal**: Independently re-verify the three facts this plan depends on (outcome #3's status, the
 next free gate id, the real table-vs-directory diff) against the tree as it stands at
@@ -124,29 +124,29 @@ implementation time, then add the missing `sapience` row so the new gate can rea
 
 **Tasks**:
 
-- [ ] Re-grep `agent-system/extensions/core/scripts/verify-deploy.sh` for a literal `--only-gate`
+- [x] Re-grep `agent-system/extensions/core/scripts/verify-deploy.sh` for a literal `--only-gate`
       ceiling by pattern, not line number: `grep -n 'only_gate_max_id\|-gt 23\|1-23'`. Confirm the
-      derived-max form is still in place and no hardcoded cap has returned.
-- [ ] Record the outcome #3 verdict explicitly for the summary: expected result is "already
+      derived-max form is still in place and no hardcoded cap has returned. *(completed: confirmed, derived-max form intact)*
+- [x] Record the outcome #3 verdict explicitly for the summary: expected result is "already
       resolved by commit `3d28b4399`; no functional change required", with the two stale prose
       mentions (line ~173 `23 real gates`, line ~737 `GATE FUNCTIONS 1-23`) named as the only
       remaining residue. If a hardcoded cap HAS returned, fix it in Phase 4 together with the new
-      gate id and note the deviation in the issue log.
-- [ ] Re-enumerate the registry's current max id:
+      gate id and note the deviation in the issue log. *(completed: no cap returned; verdict recorded in progress file)*
+- [x] Re-enumerate the registry's current max id:
       `grep -v '^#' agent-system/extensions/core/scripts/gate-registry.data | awk -F'\t' 'NF>1 {print $1}' | sort -n | tail -1`.
-      Record the next free id; use it everywhere Phase 4 says "26".
-- [ ] Re-diff the real corpus: compare `ls -d agent-system/extensions/*/` basenames (minus `core`)
+      Record the next free id; use it everywhere Phase 4 says "26". *(completed: max=25, next free=26)*
+- [x] Re-diff the real corpus: compare `ls -d agent-system/extensions/*/` basenames (minus `core`)
       against the first column of `agent-system/extensions/README.md`'s Available Extensions table.
-      Record both directions.
-- [ ] Add the missing table row for `sapience` to `agent-system/extensions/README.md`, with
+      Record both directions. *(completed: sapience missing, no dangling rows)*
+- [x] Add the missing table row for `sapience` to `agent-system/extensions/README.md`, with
       `Task Type: -` (the convention used by `filetypes`, `memory`, `literature`, `slidev`,
       `approvals`), a description drawn from `agent-system/extensions/sapience/manifest.json`'s
       `description` field, and `Docs` link `[README](sapience/README.md)`. Place it alongside the
       other routing-exempt, `-`-task-type rows that already cluster at the table's tail rather than
-      re-deriving an ordering policy.
-- [ ] Add any other row the re-diff found missing, and remove any row naming no real directory.
-- [ ] Record an issue-log entry for the dispatch's invalidated CURRENT STATE claim via
-      `issue-record.sh` (`--kind issue --class stale-dispatch-context --severity minor`).
+      re-deriving an ordering policy. *(completed)*
+- [x] Add any other row the re-diff found missing, and remove any row naming no real directory. *(completed: none other found)*
+- [x] Record an issue-log entry for the dispatch's invalidated CURRENT STATE claim via
+      `issue-record.sh` (`--kind issue --class stale-dispatch-context --severity minor`). *(completed)*
 
 **Timing**: 0.5 hours
 

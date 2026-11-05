@@ -41,6 +41,7 @@ Extensions add domain-specific elements:
 | email | email | AI-assisted email triage over Himalaya/notmuch via wrapper tools | [README](email/README.md) |
 | slidev | - | Shared Slidev animation patterns and CSS style presets | [README](slidev/README.md) |
 | approvals | - | Owner-labeled, agent-assisted specification approval via /approve | [README](approvals/README.md) |
+| sapience | - | Permission grants and orientation docs for the hosted Sapience knowledge vault (app.spnc.ai) | [README](sapience/README.md) |
 
 ## Loading Extensions
 
