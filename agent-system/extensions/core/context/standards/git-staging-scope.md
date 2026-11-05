@@ -354,6 +354,13 @@ sites, each reaching a different commit surface:
    (both already pass `--task`) plus every other caller of `git-commit-scoped.sh` that does the
    same, with zero call-site edits required.
 
+All three sites now test a candidate path against the SAME shared definition of the
+engine-written-state path set, `scripts/lib/engine-written-state-paths-lib.sh` (see "The
+engine-written-state allowlist is one shared, canonical definition" below for the library's own
+contract). Site 2 previously tested `files_touched` against the raw declared `file_scope`
+alone, with no allowlist at all; it now carries the same splice sites 1 and 3 already carried,
+closing that gap rather than leaving it the one site without one.
+
 Site 3 therefore structurally subsumes site 2's own reach: `git-commit-phase.sh` always forwards
 `--task` to `git-commit-scoped.sh` (see that wrapper's own invocation), so V10 now runs on every
 commit site 2's self-check already covered. **Site 2's self-check is consequently deliberately
@@ -367,14 +374,28 @@ the two sites are complementary layers on the SAME surface (the whole-task compl
 not a redundant pair the way sites 2 and 3 are for the phase-commit surface. See "Phase Commit
 (mid-dispatch)" below for the full asymmetry this landing closes.
 
-**Site 1 carries its own engine-written-state allowlist.** WORK (h)'s Containment comparison
-splices `specs/TODO.md` and `specs/state.json` into its own effective `file_scope` before
-testing a reported `modified_files` entry, mirroring site 3's V10 allowlist at this sibling,
-non-subsuming site. WORK (i)'s unconditional `stage_paths` seed (the carve-out described above)
-remains an independent second layer at the same site — this allowlist does not replace it, and
-removing the seed would reintroduce genuine commit-time loss of both files. The "Site 1 is NOT
-subsumed by site 3" asymmetry above is unchanged by this addition: the allowlist closes one
-specific false-positive blind spot in site 1's own diagnostic, not the asymmetry itself.
+**The engine-written-state allowlist is one shared, canonical definition.** All three
+Containment sites widen their own effective scope with the same fixed path set before testing a
+candidate path, sourced from `scripts/lib/engine-written-state-paths-lib.sh` rather than each
+site hand-copying the list separately. That library exports one function,
+`engine_written_state_paths`, printing the four admitted members:
+`specs/TODO.md`, `specs/state.json`, `specs/events.jsonl`, `specs/errors.json`. Its own header
+states the admission bar a future fifth member must clear: engine-written on behalf of
+every/many tasks, AND never legitimately declarable in any one task's own `file_scope` — a
+candidate failing either half does not belong in the set, since widening it weakens every site's
+excursion guard at once. A source or resolution failure at any site falls back to the hardcoded
+two-literal pair (`specs/TODO.md`, `specs/state.json`) rather than an empty scope, so a library
+failure reproduces each site's pre-shared-library behavior exactly rather than narrowing it.
+WORK (i)'s unconditional `stage_paths` seed (the carve-out described above) remains an
+independent second layer at site 1 — this allowlist does not replace it, and removing the seed
+would reintroduce genuine commit-time loss of `specs/TODO.md` and `specs/state.json`. The
+"Site 1 is NOT subsumed by site 3" asymmetry above is unchanged by the shared definition: the
+allowlist closes one specific false-positive blind spot in each site's own diagnostic, not the
+asymmetry itself. The allowlist only ever admits a path when some caller already names it in a
+pathspec or in a reported `modified_files`/`files_touched` entry — it is never itself added to
+any `stage_paths` seed, because unconditionally seeding a shared, append-only store like
+`specs/events.jsonl` into every commit would sweep a concurrently-dispatched sibling task's own
+event rows into this task's commit, the opposite of the excursion guard's purpose.
 
 **Scope of the `git-commit-phase.sh` migration.** A source-store-wide sweep for the same
 hand-typed `stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json" ...)` shape found it

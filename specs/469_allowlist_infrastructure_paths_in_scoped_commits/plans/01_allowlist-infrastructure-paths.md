@@ -452,35 +452,41 @@ becomes a migration like Phase 2 rather than an addition.
 
 ---
 
-### Phase 5: Record the Landing in git-staging-scope.md [NOT STARTED]
+### Phase 5: Record the Landing in git-staging-scope.md [COMPLETED]
 
 **Goal**: The standard describes the landed shape, so its account of the allowlist stays
 truthful (Required Outcome 4).
 
 **Tasks**:
 
-- [ ] Re-read `context/standards/git-staging-scope.md` immediately before editing (siblings
-      #430/#446 declare it).
-- [ ] Amend the **"Three Containment sites, not one."** paragraph: all three sites now consult
+- [x] Re-read `context/standards/git-staging-scope.md` immediately before editing (siblings
+      #430/#446 declare it). *(completed: no foreign collision observed)*
+- [x] Amend the **"Three Containment sites, not one."** paragraph: all three sites now consult
       ONE shared definition; Site 2, which previously tested `files_touched` against the raw
       declared `file_scope` alone, now carries the same splice. Keep the existing
       subsumption analysis (Site 3 subsumes Site 2's reach; Site 1 is not subsumed) intact — the
       shared allowlist does not change that asymmetry, and the paragraph must not imply it does.
-- [ ] Rewrite the **"Site 1 carries its own engine-written-state allowlist."** paragraph: the
+      *(completed)*
+- [x] Rewrite the **"Site 1 carries its own engine-written-state allowlist."** paragraph: the
       heading's claim is no longer accurate once the definition is shared. Reframe it around the
       canonical source, name `scripts/lib/engine-written-state-paths-lib.sh`, state the four
       members, state the admission bar, and state the source-failure fallback (Decision 2).
       Preserve the existing statement that WORK (i)'s unconditional `stage_paths` seed is an
-      independent second layer the allowlist does not replace.
-- [ ] Add one sentence recording the Non-Goal explicitly: the allowlist admits an
+      independent second layer the allowlist does not replace. *(completed: retitled to "The
+      engine-written-state allowlist is one shared, canonical definition." since the old
+      heading's "Site 1" framing was itself one of the now-false claims; the cross-reference at
+      `:358` was updated to the new heading text so it does not point at a stale name)*
+- [x] Add one sentence recording the Non-Goal explicitly: the allowlist admits an
       engine-written path when a caller names it and deliberately does NOT add it to any
       `stage_paths` seed, because unconditionally seeding a shared append-only store would sweep
-      a concurrent sibling's rows into this task's commit.
-- [ ] Write in the current-design voice only: no draft-history or supersession framing, and no
+      a concurrent sibling's rows into this task's commit. *(completed, folded into the
+      rewritten paragraph's closing sentence)*
+- [x] Write in the current-design voice only: no draft-history or supersession framing, and no
       task-number citations — `git-staging-scope.md` is outside `specs/**`, so
       `rules/no-task-references-in-deliverables.md` and
       `rules/no-record-versioning-in-deliverables.md` both bind. Cite the library filename and
-      the paragraph headings as the durable anchors.
+      the paragraph headings as the durable anchors. *(completed, confirmed by
+      check-task-references.sh: 0 unexempted occurrences)*
 
 **Timing**: 0.5 hours
 
@@ -514,6 +520,39 @@ before editing; a third stale paragraph found by that grep is in scope for this 
 - Diff read-through confirms every changed hunk is prose, that no paragraph still claims a
   per-site literal or "the two fixed specs/ literals", and that no version-history or
   task-number language was introduced.
+
+**Verification notes (recorded at implementation time)**: `check-task-references.sh` reports 0
+unexempted occurrences; diff read-through confirms both hunks are prose-only, correctly
+describe the shared-library/four-member/three-site shape, and introduce no version-history or
+task-number language. `verify-deploy.sh --skip-slow --only-gate 3,4` does NOT exit 0 at this
+point in the sequence: gate 4 (task-reference lint) passes cleanly, but gate 3 (doc-lint) still
+reports 6 pre-redeploy "deployed script content drift" FAILs for the five scripts and one
+library edited in Phases 1-4, which have not yet been redeployed — this is the expected,
+by-design state between Phase 4's close and Phase 6's redeploy, not a regression from this
+phase's own prose edit. Two necessary infrastructure fixes were also made in the working tree
+(uncommitted by this phase, deliberately — see below) so gate 3 cleanly reflects only that
+expected drift rather than unrelated noise:
+- `agent-system/extensions/core/manifest.json`: ran `sync-manifest-scripts.sh --write`, adding
+  exactly 2 `provides.scripts` entries for Phase 1's two new files
+  (`lib/engine-written-state-paths-lib.sh`, `tests/test-engine-written-state-paths-lib.sh`).
+  Confirmed via `--check` beforehand that these were the ONLY 2 gaps repo-wide before writing.
+- `agent-system/extensions/core/index-entries.json`: ran the deployed
+  `generate-context-line-counts.sh --write` (the source-store copy refuses to run outside a
+  deployed tree) twice, to correct `standards/git-staging-scope.md`'s `line_count` entry after
+  this phase's own edit (first to 885, then to 884 after a follow-up line-wrap cleanup).
+  **Left uncommitted by this phase's own scoped commit**: this file's working-tree diff also
+  carries unrelated `line_count` corrections for OTHER extensions' content files, already dirty
+  from concurrent sibling tasks' own edits before this phase touched it (the file was already
+  listed modified at this session's start). Committing the whole file under task 469's own
+  attribution would sweep those siblings' unrelated deltas into this task's commit — the exact
+  "scope excursion" failure mode this task exists to fix, in the other direction. Both files are
+  also outside this task's own declared `file_scope` (not in the per-file list; the
+  `__WHOLE_TREE__` member is a batch-serialization sentinel only, never a literal path match —
+  confirmed via `context/patterns/file-footprint-overlap.md`). The on-disk fixes are necessary
+  and safe to leave in place (deploy-headless.sh reads the working tree directly, not git
+  history, so Phase 6's redeploy and gate run see them correctly regardless of commit state);
+  only the COMMIT is deferred. Recorded here so a future reader does not mistake the omission
+  for an oversight, and flagged in this phase's handoff for whoever closes out the batch.
 
 ---
 

@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Record the Landing in git-staging-scope.md",
+  "started_at": "2026-11-05T08:08:00Z",
+  "last_updated": "2026-11-05T08:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git-staging-scope.md, locate target paragraphs", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Amend 'Three Containment sites, not one' paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Rewrite 'Site 1 carries its own allowlist' paragraph to shared-source shape", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 4, "description": "Record Non-Goal sentence", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 5, "description": "Verify current-design voice, no task refs / version language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5-infra",
+      "description": "Ran sync-manifest-scripts.sh --write (manifest.json, +2 entries) and the deployed generate-context-line-counts.sh --write (index-entries.json) to clear gate 3 noise unrelated to this phase's own prose change",
+      "type": "altered",
+      "reason": "Necessary so gate 3 (doc-lint) reflects only the expected pre-redeploy script-content-drift from Phases 1-4, not manifest/index registration gaps. Both files are outside task 469's declared file_scope; index-entries.json's diff is further entangled with unrelated sibling tasks' own pending line_count fixes (file was already dirty at session start). Both on-disk fixes are safe to leave in place, but deliberately NOT staged/committed by this task's own scoped commits -- see this phase's Verification notes in the plan body for the full reasoning.",
+      "annotation": "*(deviation: altered -- manifest.json and index-entries.json fixed on disk but deliberately left uncommitted by this task)*"
+    }
+  ]
+}
