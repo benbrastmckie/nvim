@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Full acceptance sweep and gate run",
+  "started_at": "2026-11-05T18:20:00Z",
+  "last_updated": "2026-11-05T18:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Reproduce original symptom end to end: zero spam, at most one INFO summary", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm nothing deleted (fragments, validator, .opencode files)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm fake-tool line gone, frozen policy written and cross-referenced", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Open <leader>al and select each of the three bulk entries, confirm accurate previews", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm Step Through gone, both rulings present with reasoning", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run gate set (batch-deferred, scoped narrowing for this dispatch) and record result", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.full-gate",
+      "description": "Plan's Phase 6 verification names an unscoped, full verify-deploy.sh run",
+      "type": "altered",
+      "reason": "This dispatch's own dispatch file (.dispatch/8.md) carries a Batch Gate Deferral directive naming this exact phase (final phase, Verification Tier: full) and instructing a scoped narrowing instead, with the full gate set deferred to the /orchestrate batch-level Inter-Cycle Redeploy Checkpoint. Ran verify-deploy.sh --skip-slow --only-gate 4,5 instead: gate 4 PASS, gate 5 found one expected self-resolving finding (deployed docs-README.md not yet regenerated from Phase 2's source-store edit), recorded via issue-record.sh rather than treated as a defect.",
+      "annotation": "*(deviation: altered -- ran the dispatch-directed scoped gate narrowing instead of an independent full verify-deploy.sh run, per Batch Gate Deferral)*"
+    }
+  ]
+}

@@ -516,27 +516,40 @@ live picker open and a two-repo `Global Update` run; no shell suite covers `lua/
 
 ---
 
-### Phase 6: Full acceptance sweep and gate run [NOT STARTED]
+### Phase 6: Full acceptance sweep and gate run [COMPLETED]
 
 **Goal**: Every acceptance criterion from all three scopes is verified live and together, and the
 repository's complete gate set passes.
 
 **Tasks**:
-- [ ] Reproduce the original symptom end to end: from a project carrying an
+- [x] Reproduce the original symptom end to end: from a project carrying an
       `opencode.json.managed` marker, trigger a `<leader>al` reload and confirm zero
-      validation-failure notifications, with at most one aggregate INFO summary.
-- [ ] Confirm nothing was deleted: every `opencode-agents.json` fragment, the
+      validation-failure notifications, with at most one aggregate INFO summary. *(completed:
+      real `manager.load`/`manager.resync_all` calls against a scratch project, including a
+      genuinely-missing deployed `{file:}` target, produced zero per-extension WARNs and exactly
+      one aggregate INFO summary; see the phase-6 handoff for the full harness detail)*
+- [x] Confirm nothing was deleted: every `opencode-agents.json` fragment, the
       `validate_opencode_fragment` function, the managed-marker gating, and every `.opencode/`
       file are all still present (`git diff --diff-filter=D --name-only` lists nothing under
-      `.opencode/` or `agent-system/extensions/*/opencode-agents.json`).
-- [ ] Confirm `browser_verify_text_visible` no longer appears anywhere in `.opencode/` as usable
-      guidance, and that the frozen policy is written down and cross-referenced.
-- [ ] Open `<leader>al` and select each of the three bulk entries in turn, confirming accurate
+      `.opencode/` or `agent-system/extensions/*/opencode-agents.json`). *(completed: empty
+      output)*
+- [x] Confirm `browser_verify_text_visible` no longer appears anywhere in `.opencode/` as usable
+      guidance, and that the frozen policy is written down and cross-referenced. *(completed)*
+- [x] Open `<leader>al` and select each of the three bulk entries in turn, confirming accurate
       one-liners, real Command Details content, and that `"Unknown entry type"` is unreachable for
-      every shipped entry.
-- [ ] Confirm the `"Step Through"` choice is gone and that both recorded rulings (redundancy,
-      `"Step Through"`) are present in the source with their reasoning.
-- [ ] Run the complete gate set and record the result.
+      every shipped entry. *(completed via a headless harness that captures the real
+      `define_preview` closure and renders each entry's preview directly, equivalent to a live
+      selection in the picker)*
+- [x] Confirm the `"Step Through"` choice is gone and that both recorded rulings (redundancy,
+      `"Step Through"`) are present in the source with their reasoning. *(completed)*
+- [x] Run the complete gate set and record the result. *(completed under this dispatch's Batch
+      Gate Deferral: ran `verify-deploy.sh --only-gate 4,5` as the scoped narrowing for this
+      phase's touched files — gate 4 PASS; gate 5 found one expected, self-resolving finding
+      (deployed `.claude/docs/docs-README.md` not yet regenerated from the source-store edit
+      Phase 2 made), recorded via `issue-record.sh` and in this phase's handoff rather than
+      treated as a defect, since the Inter-Cycle Redeploy Checkpoint resolves it at the
+      `/orchestrate` batch level. The full, unscoped gate set still runs once for the whole
+      batch per that checkpoint.)*
 
 **Timing**: 0.75 hours
 
@@ -563,24 +576,32 @@ repository's complete gate set passes.
 
 ## Testing & Validation
 
-- [ ] Headless module loads pass for every touched Lua module (`merge`, `extensions.init`,
+- [x] Headless module loads pass for every touched Lua module (`merge`, `extensions.init`,
       `repo_registry`, `config`, `picker`, `picker.display.entries`, `picker.display.previewer`,
-      `opencode.core`, `opencode`).
-- [ ] A `<leader>al` reload from an `opencode.json.managed` project emits zero
-      validation-failure notifications and at most one aggregate INFO summary.
-- [ ] The verbose opt-in restores full per-extension skip detail, proving the detail was gated and
-      not destroyed.
-- [ ] No file under `.opencode/`, no `opencode-agents.json` fragment, and no validator function is
-      deleted (`git diff --diff-filter=D --name-only`).
-- [ ] `grep -rn "browser_verify_text_visible" .opencode/` yields no usable-tool listing.
-- [ ] `.opencode/README.md` states all four frozen-policy properties, and a source-store docs
-      pointer reaches it.
-- [ ] All three bulk picker entries render accurate one-liners and real Command Details content;
+      `opencode.core`, `opencode`). *(completed)*
+- [x] A `<leader>al` reload from an `opencode.json.managed` project emits zero
+      validation-failure notifications and at most one aggregate INFO summary. *(completed)*
+- [x] The verbose opt-in restores full per-extension skip detail, proving the detail was gated and
+      not destroyed. *(completed)*
+- [x] No file under `.opencode/`, no `opencode-agents.json` fragment, and no validator function is
+      deleted (`git diff --diff-filter=D --name-only`). *(completed)*
+- [x] `grep -rn "browser_verify_text_visible" .opencode/` yields no usable-tool listing.
+      *(completed)*
+- [x] `.opencode/README.md` states all four frozen-policy properties, and a source-store docs
+      pointer reaches it. *(completed)*
+- [x] All three bulk picker entries render accurate one-liners and real Command Details content;
       `"Unknown entry type"` is unreachable for shipped entries and names the entry if ever hit.
-- [ ] `"Step Through"` is removed and both recorded rulings are present with reasoning.
-- [ ] `Global Update` resyncs each registered repo's own loaded-extension set, reports failures,
-      and survives an unreachable registered repo.
+      *(completed)*
+- [x] `"Step Through"` is removed and both recorded rulings are present with reasoning.
+      *(completed)*
+- [x] `Global Update` resyncs each registered repo's own loaded-extension set, reports failures,
+      and survives an unreachable registered repo. *(completed)*
 - [ ] `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh` passes in full.
+      *(deferred per this dispatch's Batch Gate Deferral directive to the `/orchestrate`
+      batch-level Inter-Cycle Redeploy Checkpoint, which runs the full gate set once for the
+      whole batch after redeploying the source-store changes this task made -- see Phase 6's own
+      task-level note and the phase-6 handoff for the scoped `--only-gate 4,5` run this dispatch
+      performed instead)*
 - [ ] No task-number references appear in any text added outside `specs/**`
       (`--only-gate 4` run in Phase 2, full gate 4 run in Phase 6).
 
