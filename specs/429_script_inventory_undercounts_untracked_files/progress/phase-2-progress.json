@@ -1,0 +1,30 @@
+{
+  "phase": 2,
+  "phase_name": "Union the Enumerations and Disclose the Untracked Contribution",
+  "started_at": "2026-11-05T00:31:36Z",
+  "last_updated": "2026-11-05T00:48:00Z",
+  "objectives": [
+    {"id": 1, "description": "Union enumerate_candidates() with --others --exclude-standard for *.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 2, "description": "Apply same union to inline markdown enumeration in --size-line block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 3, "description": "Make downstream dedup/sort explicitly sort -u", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 4, "description": "Reuse UNTRACKED_CANDIDATES for disclosure; keep enumerate_untracked_matches as single source", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 5, "description": "Reframe warn_untracked_candidates() to new-behaviour wording", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 6, "description": "Append untracked=N as final --size-line field", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 7, "description": "Add untracked_count/untracked_paths/per-script tracked to JSON (incl. degenerate-root branch)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]},
+    {"id": 8, "description": "Rewrite header UNTRACKED-CANDIDATE VISIBILITY and ENUMERATION blocks (current design only, no record-versioning or task-number language)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/script-inventory.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": [
+    "bash script-inventory.sh --root . --size-line: scripts=241 lines=96208 test_suites=174 test_lines=84259 md_files=932 md_lines=232270 untracked=1 -- exactly one line, exit 0, untracked=1 matches Phase 1 prediction (0 sh + 0 test-suite + 1 md). lines=96208 vs Phase 1's 96148 (+60, scripts count unchanged at 241) is concurrent sibling-task repo activity in this multi-task batch, not this phase's own edit -- no new script candidate appeared (untracked total still 1).",
+    "JSON mode: jq -e '.untracked_count, .untracked_paths, (.scripts[0]|has(\"tracked\"))' on --root . succeeds (0, [], true) -- 0/[] because the only untracked file is a .md, not a .sh candidate, which is correct since JSON mode is scoped to sh candidates only.",
+    "jq . on --root . output parses cleanly with stderr not redirected.",
+    "Degenerate root (/tmp/<empty-dir> with a .git dir, no agent-system/): JSON carries untracked_count:0/untracked_paths:[]; --size-line emits scripts=0 lines=0 test_suites=0 test_lines=0 md_files=0 md_lines=0 untracked=0.",
+    "bash tests/run-all.sh --only test-script-inventory.sh: 1 passed, 0 failed.",
+    "bash tests/run-all.sh --only test-deploy-verify-wiring.sh: 1 passed, 0 failed.",
+    "Consumer path: verify-deploy.sh's corpus probe invokes $TARGET/agent-system/extensions/core/scripts/script-inventory.sh directly (TARGET defaults to pwd = the source-store checkout in this repo), so it already reads this edited file with no redeploy dependency; manually confirmed its invocation form (--root \"$TARGET\" --size-line) reproduces the same untracked=1 line.",
+    "grep -nE 'previously|no longer|formerly|used to|task [0-9]' on the edited file: no matches."
+  ]
+}

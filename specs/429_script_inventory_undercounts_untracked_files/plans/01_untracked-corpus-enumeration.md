@@ -190,36 +190,41 @@ have moved.
 
 ---
 
-### Phase 2: Union the Enumerations and Disclose the Untracked Contribution [NOT STARTED]
+### Phase 2: Union the Enumerations and Disclose the Untracked Contribution [COMPLETED]
 
 **Goal**: Make every counted figure reflect untracked-but-not-ignored in-corpus files, and make
 that contribution legible on stdout.
 
 **Tasks**:
-- [ ] In `enumerate_candidates()`, inside the git-work-tree branch only, emit the union of
+- [x] In `enumerate_candidates()`, inside the git-work-tree branch only, emit the union of
       `git ls-files -z -- 'agent-system/extensions/**/*.sh'` and
       `git ls-files -z --others --exclude-standard -- 'agent-system/extensions/**/*.sh'`. Leave the
-      non-git `find` fallback untouched (it already sees untracked files)
-- [ ] Apply the same union to the inline markdown enumeration in the `--size-line` block, with the
-      `*.md` pattern
-- [ ] Make the downstream dedup/sort explicitly `sort -u` (both the `CANDIDATES` sort and the
+      non-git `find` fallback untouched (it already sees untracked files) *(completed)*
+- [x] Apply the same union to the inline markdown enumeration in the `--size-line` block, with the
+      `*.md` pattern *(completed)*
+- [x] Make the downstream dedup/sort explicitly `sort -u` (both the `CANDIDATES` sort and the
       markdown/test-suite paths) so a path appearing in both streams can never double-count
-- [ ] Keep `enumerate_untracked_matches` as the single source of the untracked set, and reuse the
+      *(completed: CANDIDATES, TEST_SUITES, and MD_FILES all use sort -u)*
+- [x] Keep `enumerate_untracked_matches` as the single source of the untracked set, and reuse the
       already-computed `UNTRACKED_CANDIDATES` for disclosure rather than re-shelling git
-- [ ] Reframe `warn_untracked_candidates()` to state what is true of the new behaviour: the named
+      *(completed)*
+- [x] Reframe `warn_untracked_candidates()` to state what is true of the new behaviour: the named
       untracked files ARE included in the figures, so a figure is provisional with respect to a
       previously recorded baseline. Keep it stderr-only and keep it a no-op when the set is empty
-- [ ] Append `untracked=N` as the FINAL field of the `--size-line` output line (counting untracked
+      *(completed)*
+- [x] Append `untracked=N` as the FINAL field of the `--size-line` output line (counting untracked
       in-corpus files across all three patterns, or a per-pattern breakdown if it stays one line).
-      Preserve the exactly-one-line and exit-0 contracts
-- [ ] Add `untracked_count` and `untracked_paths` to the top-level JSON document (including the
+      Preserve the exactly-one-line and exit-0 contracts *(completed: single combined total
+      across the sh/non-test, sh/test, and md untracked sets)*
+- [x] Add `untracked_count` and `untracked_paths` to the top-level JSON document (including the
       degenerate-root `jq -n` branch, so the schema is uniform), and a per-script `tracked` boolean
-      derived from set membership
-- [ ] Rewrite the header's `UNTRACKED-CANDIDATE VISIBILITY` block and the `ENUMERATION` block to
+      derived from set membership *(completed)*
+- [x] Rewrite the header's `UNTRACKED-CANDIDATE VISIBILITY` block and the `ENUMERATION` block to
       describe the union behaviour, the gitignore/source-store scoping it preserves, and the
       comparability disclosure. State the current design only: no "previously", "no longer", or
       draft-history framing (`.claude/rules/no-record-versioning-in-deliverables.md`), and no task
-      numbers (`.claude/rules/no-task-references-in-deliverables.md`)
+      numbers (`.claude/rules/no-task-references-in-deliverables.md`) *(completed; verified via
+      grep -nE 'previously|no longer|formerly|task [0-9]' with no matches)*
 
 **Timing**: 1.25 hours
 

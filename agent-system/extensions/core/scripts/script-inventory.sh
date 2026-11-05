@@ -19,33 +19,43 @@
 # extensive header comment, `--root PATH` override, `--check` mode, `usage()` as a `sed`-extract
 # of this header, `set -uo pipefail`, and small integer exit codes.
 #
-# ENUMERATION: non-test `*.sh` files under `<root>/agent-system/extensions/**`, found via
-# `git ls-files` when `<root>` is a git work tree (fast, respects .gitignore, matches how
-# assess-repo-health.sh and census-count.sh already enumerate), else a `find` fallback excluding
-# `.git/` so a non-git fixture (a test's `mktemp -d` workdir) still enumerates correctly. A path
-# is excluded as a "test" file when: (a) it lives under a `tests/` directory anywhere in its
-# path, or (b) its basename starts with the literal prefix `test-`. Candidates are sorted
-# deterministically (plain lexicographic `sort`) so output ordering never depends on filesystem
-# iteration order or git-index order.
+# ENUMERATION: non-test `*.sh` files under `<root>/agent-system/extensions/**`, found via the
+# UNION of `git ls-files` (tracked) and `git ls-files --others --exclude-standard` (untracked but
+# not gitignored) when `<root>` is a git work tree -- fast, respects .gitignore and confines the
+# scan to the source store by construction, matching how assess-repo-health.sh and
+# census-count.sh already enumerate -- else a `find` fallback excluding `.git/` so a non-git
+# fixture (a test's `mktemp -d` workdir) still enumerates correctly (that fallback already sees
+# every on-disk file, tracked or not, so no separate union is needed there). A path is excluded as
+# a "test" file when: (a) it lives under a `tests/` directory anywhere in its path, or (b) its
+# basename starts with the literal prefix `test-`. Candidates are deduplicated and sorted
+# deterministically (`sort -u`) so a path can never be double-counted by appearing in both the
+# tracked and untracked streams, and output ordering never depends on filesystem iteration order
+# or git-index order.
 #
-# UNTRACKED-CANDIDATE VISIBILITY: the `git ls-files` enumeration above is TRACKED-FILES-ONLY by
-# design -- every count below must stay numerically comparable to every previously recorded
-# baseline, so a newly-created, not-yet-`git add`-ed script is deliberately never folded into
-# `candidate_count` / `scripts` / `summary` (nor, for `--size-line`, into its `scripts=`/`lines=`
-# figures). That exclusion was previously SILENT: a brand-new script sat invisible to the probe
-# until staged, with nothing indicating a figure was being skipped. To close that visibility gap
-# without altering the counted figures themselves, every mode additionally checks
-# `git ls-files --others --exclude-standard` against the same `agent-system/extensions/**/*.sh`
-# pattern (the same test-file exclusion rule applied) and, when any untracked match exists,
-# prints a WARNING line to STDERR naming the count and listing each matching path -- so a reader
-# knows the figures are provisional rather than silently trusting an undercount. This warning
-# never touches stdout, so it can never corrupt a JSON consumer's parse or the `--size-line`
-# exactly-one-line contract.
+# UNTRACKED-CANDIDATE VISIBILITY: every counted figure above -- `candidate_count` / `scripts` /
+# `summary` in JSON mode, and `scripts=`/`lines=`/`test_suites=`/`test_lines=`/`md_files=`/
+# `md_lines=` in `--size-line` mode -- includes untracked-but-not-ignored in-corpus files by
+# construction, via the enumeration union described above. `git ls-files --others
+# --exclude-standard` against the same `agent-system/extensions/**` patterns (the same test-file
+# exclusion rule applied for the `*.sh` figures) is the single source of untracked-set membership,
+# reused for three purposes: folding those files into the counts, a per-script JSON `tracked`
+# boolean, and an explicit disclosure of how many counted files are untracked. The disclosure
+# exists because an untracked count changes figure comparability against a baseline recorded
+# before the file existed on disk at all: `--size-line` appends a trailing `untracked=N` field
+# (the total untracked in-corpus file count across all three patterns) as the FINAL field on its
+# one output line, and the JSON document carries top-level `untracked_count` (scoped to the
+# non-test `*.sh` candidates in `scripts`/`ranking`) and `untracked_paths` (their sorted paths),
+# plus a per-script `tracked: false` for a candidate whose own path is in that set. A STDERR-only
+# warning (never stdout, so it can never corrupt a JSON consumer's parse or the `--size-line`
+# exactly-one-line contract) additionally names the untracked paths to stderr; it is a no-op when
+# the set is empty.
 #
 # PER-SCRIPT METRICS:
 #   path                 repo-root-relative path (e.g. "agent-system/extensions/core/scripts/x.sh")
 #   lines                `wc -l` of the file
 #   bytes                `wc -c` of the file
+#   tracked              boolean: false when this script's own path is a member of the untracked
+#                         set described in UNTRACKED-CANDIDATE VISIBILITY above, true otherwise.
 #   inbound_callers      integer: count of DISTINCT files under `<root>/agent-system/extensions/**`
 #                         (excluding the candidate itself) whose content contains the candidate's
 #                         own basename as a literal substring (`grep -rlF`). This spans skills,
@@ -131,8 +141,9 @@
 # an untested script.
 #
 # Degenerate case: when zero non-test `*.sh` candidates are found under `<root>`, `scripts` is
-# emitted as an empty JSON array and `summary` as JSON `null` (never a crash, never a non-empty
-# default) -- the same nullable-field pattern `assess-repo-health.sh` uses for `build_errors`.
+# emitted as an empty JSON array, `summary` as JSON `null` (never a crash, never a non-empty
+# default) -- the same nullable-field pattern `assess-repo-health.sh` uses for `build_errors` --
+# and `untracked_count`/`untracked_paths` as `0`/`[]`.
 #
 # Reproducibility: every field above is a pure function of `<root>`'s on-disk content and is
 # therefore stable across runs. The one field that is NOT reproducible by design is the top-level
@@ -156,12 +167,14 @@
 #                 triggers this). Exits 0 otherwise. Mirrors measure-eager-context.sh's --check
 #                 semantics (report-only, never writes a file).
 #   --size-line   Standing corpus-size probe. Emits EXACTLY ONE line to stdout: non-test script
-#                 count and total lines, test-suite count and total lines, and markdown file
-#                 count and total lines, all under this probe's own canonical corpus definition
-#                 (agent-system/extensions/**, same enumeration as the default mode's CANDIDATES).
-#                 Deliberately SKIPS the duplicate-block precomputation, the manifest_registered
-#                 check-extension-docs.sh shell-out, and the inbound_callers grep sweep -- none of
-#                 those are needed for a size line, and skipping them is what keeps this mode
+#                 count and total lines, test-suite count and total lines, markdown file count and
+#                 total lines, and a trailing untracked=N field (the count of untracked-but-not-
+#                 ignored in-corpus files folded into the figures above), all under this probe's
+#                 own canonical corpus definition (agent-system/extensions/**, same enumeration as
+#                 the default mode's CANDIDATES). Deliberately SKIPS the duplicate-block
+#                 precomputation, the manifest_registered check-extension-docs.sh shell-out, and
+#                 the inbound_callers grep sweep -- none of those are needed for a size line, and
+#                 skipping them is what keeps this mode
 #                 genuinely cheap (~41ms measured at authoring time) so it can run on every
 #                 verify-deploy.sh invocation with no new gate row. Requires neither jq nor
 #                 python3. Composable with --root; not composable with --check. Exits 0 always
@@ -181,7 +194,7 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
-  sed -n '2,163p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,176p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 ROOT=""
@@ -262,7 +275,7 @@ EXT_ROOT="$ROOT/agent-system/extensions"
 
 # ── Enumeration ─────────────────────────────────────────────────────────────────────────────────
 # Prints NUL-delimited repo-root-relative paths of non-test *.sh files under
-# agent-system/extensions/**, sorted lexicographically.
+# agent-system/extensions/**, deduplicated and sorted lexicographically by the caller.
 enumerate_candidates() {
   local rel
   if [ ! -d "$EXT_ROOT" ]; then
@@ -270,6 +283,7 @@ enumerate_candidates() {
   fi
   if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     git -C "$ROOT" ls-files -z -- 'agent-system/extensions/**/*.sh' 2>/dev/null
+    git -C "$ROOT" ls-files -z --others --exclude-standard -- 'agent-system/extensions/**/*.sh' 2>/dev/null
   else
     find "$EXT_ROOT" -type f -name '*.sh' -print0 2>/dev/null | while IFS= read -r -d '' abs; do
       printf '%s\0' "${abs#"$ROOT"/}"
@@ -279,10 +293,11 @@ enumerate_candidates() {
 
 # enumerate_untracked_matches PATTERN -- prints NUL-delimited repo-root-relative paths matching
 # PATTERN under agent-system/extensions/** that exist on disk but are NOT tracked by git (and are
-# not .gitignore'd). Used ONLY to build the undercount-visibility warning below -- these paths are
-# never folded into the tracked-file candidate counts, so those counts stay numerically
-# comparable to every previously recorded baseline. Meaningless outside a git work tree, so
-# callers only invoke this when `git -C "$ROOT" rev-parse --is-inside-work-tree` succeeds.
+# not .gitignore'd). This is the single source of untracked-set membership, reused both to fold
+# those paths into enumerate_candidates()'s union above and to build the visibility disclosure
+# below (the per-script `tracked` field, the JSON `untracked_count`/`untracked_paths`, the
+# `--size-line` `untracked=N` field, and the stderr warning). Meaningless outside a git work tree,
+# so callers only invoke this when `git -C "$ROOT" rev-parse --is-inside-work-tree` succeeds.
 enumerate_untracked_matches() {
   local pattern="$1"
   git -C "$ROOT" ls-files -z --others --exclude-standard -- "$pattern" 2>/dev/null
@@ -302,38 +317,48 @@ while IFS= read -r -d '' rel; do
 done < <(enumerate_candidates)
 
 if [ "${#CANDIDATES[@]}" -gt 0 ]; then
-  mapfile -t CANDIDATES < <(printf '%s\n' "${CANDIDATES[@]}" | sort)
+  mapfile -t CANDIDATES < <(printf '%s\n' "${CANDIDATES[@]}" | sort -u)
 fi
 
 # ── Untracked-candidate visibility (see the header's UNTRACKED-CANDIDATE VISIBILITY entry) ─────
-# Computed once, here, so a single warn_untracked_candidates call downstream covers every mode
-# (--size-line, --check, default JSON, and the degenerate-root branch) without needing a separate
-# call site wired into each. Meaningless outside a git work tree (no tracked/untracked
-# distinction exists there, and the non-git `find` fallback already sees everything), so this is
-# skipped entirely when ROOT is not a git work tree.
+# Computed once, here, so every downstream mode (--size-line, --check, default JSON, and the
+# degenerate-root branch) reads one already-computed set rather than re-shelling git separately.
+# Meaningless outside a git work tree (no tracked/untracked distinction exists there, and the
+# non-git `find` fallback already sees everything), so this is skipped entirely when ROOT is not
+# a git work tree. Split into the two populations enumerate_candidates()'s own test/non-test rule
+# distinguishes: UNTRACKED_CANDIDATES (non-test, the population folded into candidate_count/
+# scripts/summary/ranking and disclosed as untracked_count/untracked_paths/tracked in JSON mode)
+# and UNTRACKED_TEST_SUITES (test-suite files, disclosed only in --size-line's total). Both are
+# subsets of one enumerate_untracked_matches call for the *.sh pattern -- a single shell-out, then
+# a bash-side split, never two separate git invocations for the same pattern.
 declare -a UNTRACKED_CANDIDATES=()
+declare -a UNTRACKED_TEST_SUITES=()
 if [ -d "$EXT_ROOT" ] && git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   while IFS= read -r -d '' rel; do
-    case "$rel" in
-      */tests/*) continue ;;
-    esac
     base="$(basename "$rel")"
+    case "$rel" in
+      */tests/*) UNTRACKED_TEST_SUITES+=("$rel"); continue ;;
+    esac
     case "$base" in
-      test-*) continue ;;
+      test-*) UNTRACKED_TEST_SUITES+=("$rel"); continue ;;
     esac
     UNTRACKED_CANDIDATES+=("$rel")
   done < <(enumerate_untracked_matches 'agent-system/extensions/**/*.sh')
   if [ "${#UNTRACKED_CANDIDATES[@]}" -gt 0 ]; then
-    mapfile -t UNTRACKED_CANDIDATES < <(printf '%s\n' "${UNTRACKED_CANDIDATES[@]}" | sort)
+    mapfile -t UNTRACKED_CANDIDATES < <(printf '%s\n' "${UNTRACKED_CANDIDATES[@]}" | sort -u)
+  fi
+  if [ "${#UNTRACKED_TEST_SUITES[@]}" -gt 0 ]; then
+    mapfile -t UNTRACKED_TEST_SUITES < <(printf '%s\n' "${UNTRACKED_TEST_SUITES[@]}" | sort -u)
   fi
 fi
 
 # warn_untracked_candidates -- prints a STDERR-only warning (never stdout, so it can never
 # corrupt a JSON consumer's parse or the --size-line exactly-one-line contract) naming the count
-# and listing each untracked path, when UNTRACKED_CANDIDATES is non-empty. A no-op otherwise.
+# and listing each untracked non-test script path included in the counts above (the UNTRACKED_
+# CANDIDATES population), when that set is non-empty. A no-op otherwise.
 warn_untracked_candidates() {
   [ "${#UNTRACKED_CANDIDATES[@]}" -eq 0 ] && return 0
-  echo "WARNING: script-inventory: ${#UNTRACKED_CANDIDATES[@]} untracked script file(s) match the candidate pattern and are NOT reflected in the counts below (run 'git add' to include them):" >&2
+  echo "WARNING: script-inventory: ${#UNTRACKED_CANDIDATES[@]} untracked script file(s) match the candidate pattern and ARE included in the counts below -- those figures are provisional with respect to any baseline recorded before these files existed on disk:" >&2
   printf '  %s\n' "${UNTRACKED_CANDIDATES[@]}" >&2
 }
 warn_untracked_candidates
@@ -353,7 +378,8 @@ if [ "$SIZE_LINE_MODE" -eq 1 ]; then
 
   # Test-suite enumeration: the mirror image of enumerate_candidates' exclusion above -- any *.sh
   # file under EXT_ROOT that lives under a tests/ directory or whose basename starts with
-  # "test-". Uses the same git-ls-files-else-find enumeration strategy as enumerate_candidates.
+  # "test-". Uses the same already-unioned (tracked + untracked) enumerate_candidates output,
+  # deduplicated the same way, so a path can never be double-counted here either.
   declare -a TEST_SUITES=()
   while IFS= read -r -d '' rel; do
     base="$(basename "$rel")"
@@ -364,24 +390,37 @@ if [ "$SIZE_LINE_MODE" -eq 1 ]; then
       test-*) TEST_SUITES+=("$rel") ;;
     esac
   done < <(enumerate_candidates)
+  if [ "${#TEST_SUITES[@]}" -gt 0 ]; then
+    mapfile -t TEST_SUITES < <(printf '%s\n' "${TEST_SUITES[@]}" | sort -u)
+  fi
   test_suite_count="${#TEST_SUITES[@]}"
   test_suite_lines=0
   if [ "$test_suite_count" -gt 0 ]; then
     test_suite_lines="$(cat "${TEST_SUITES[@]/#/$ROOT/}" 2>/dev/null | wc -l | tr -d ' ')"
   fi
 
-  # Markdown enumeration: all *.md files under EXT_ROOT, same git-ls-files-else-find strategy.
+  # Markdown enumeration: the union of tracked and untracked *.md files under EXT_ROOT (same
+  # untracked helper the *.sh union reuses), deduplicated; the non-git find fallback already sees
+  # every on-disk file so no separate untracked pass is needed there.
   declare -a MD_FILES=()
+  declare -a UNTRACKED_MD=()
   if [ -d "$EXT_ROOT" ]; then
     if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       while IFS= read -r -d '' rel; do
         MD_FILES+=("$rel")
       done < <(git -C "$ROOT" ls-files -z -- 'agent-system/extensions/**/*.md' 2>/dev/null)
+      while IFS= read -r -d '' rel; do
+        MD_FILES+=("$rel")
+        UNTRACKED_MD+=("$rel")
+      done < <(enumerate_untracked_matches 'agent-system/extensions/**/*.md')
     else
       while IFS= read -r -d '' abs; do
         MD_FILES+=("${abs#"$ROOT"/}")
       done < <(find "$EXT_ROOT" -type f -name '*.md' -print0 2>/dev/null)
     fi
+  fi
+  if [ "${#MD_FILES[@]}" -gt 0 ]; then
+    mapfile -t MD_FILES < <(printf '%s\n' "${MD_FILES[@]}" | sort -u)
   fi
   md_file_count="${#MD_FILES[@]}"
   md_lines=0
@@ -389,7 +428,12 @@ if [ "$SIZE_LINE_MODE" -eq 1 ]; then
     md_lines="$(cat "${MD_FILES[@]/#/$ROOT/}" 2>/dev/null | wc -l | tr -d ' ')"
   fi
 
-  echo "script-inventory: scripts=${script_count} lines=${script_lines} test_suites=${test_suite_count} test_lines=${test_suite_lines} md_files=${md_file_count} md_lines=${md_lines}"
+  # Total untracked in-corpus file count across all three patterns -- the disclosure figure that
+  # makes this line's comparability against an external baseline legible rather than silently
+  # assumed. Reuses the already-computed sets; no additional git shell-outs.
+  untracked_total=$(( ${#UNTRACKED_CANDIDATES[@]} + ${#UNTRACKED_TEST_SUITES[@]} + ${#UNTRACKED_MD[@]} ))
+
+  echo "script-inventory: scripts=${script_count} lines=${script_lines} test_suites=${test_suite_count} test_lines=${test_suite_lines} md_files=${md_file_count} md_lines=${md_lines} untracked=${untracked_total}"
   exit 0
 fi
 
@@ -401,7 +445,7 @@ if [ "${#CANDIDATES[@]}" -eq 0 ]; then
     exit 0
   fi
   jq -n --arg root "$ROOT" --arg generated_at "$generated_at" \
-    '{root: $root, generated_at: $generated_at, candidate_count: 0, scripts: [], ranking: [], summary: null}'
+    '{root: $root, generated_at: $generated_at, candidate_count: 0, scripts: [], ranking: [], summary: null, untracked_count: 0, untracked_paths: []}'
   exit 0
 fi
 
@@ -522,6 +566,13 @@ while IFS=$'\t' read -r dup_rel dup_cnt dup_peers_json; do
   DUP_PEERS_JSON["$dup_rel"]="$dup_peers_json"
 done < <(jq -r 'to_entries[] | [.key, .value.duplicate_blocks, (.value.duplicate_block_peers | tojson)] | @tsv' "$DUP_TMP")
 
+# UNTRACKED_SET -- O(1) membership lookup against UNTRACKED_CANDIDATES for the per-script
+# `tracked` field below, built once rather than re-scanning the array per candidate.
+declare -A UNTRACKED_SET=()
+for rel in "${UNTRACKED_CANDIDATES[@]}"; do
+  UNTRACKED_SET["$rel"]=1
+done
+
 # ── Per-candidate metrics ──────────────────────────────────────────────────────────────────────
 ANY_ZERO_CALLER=0
 ANY_UNREGISTERED=0
@@ -533,6 +584,9 @@ for rel in "${CANDIDATES[@]}"; do
   bytes="$(wc -c < "$abs" | tr -d ' ')"
   base="$(basename "$rel")"
   dir="$(dirname "$rel")"
+
+  tracked="true"
+  [ -n "${UNTRACKED_SET["$rel"]+x}" ] && tracked="false"
 
   # inbound_callers: distinct referencing files under agent-system/extensions/** (excluding the
   # candidate itself) whose content contains this script's own basename as a literal substring.
@@ -608,6 +662,7 @@ for rel in "${CANDIDATES[@]}"; do
     --arg path "$rel" \
     --argjson lines "$lines" \
     --argjson bytes "$bytes" \
+    --argjson tracked "$tracked" \
     --argjson inbound_callers "$inbound_callers" \
     --argjson inbound_caller_paths "$callers_json" \
     --argjson zero_caller_finding "$zero_caller_finding" \
@@ -620,6 +675,7 @@ for rel in "${CANDIDATES[@]}"; do
       path: $path,
       lines: $lines,
       bytes: $bytes,
+      tracked: $tracked,
       inbound_callers: $inbound_callers,
       inbound_caller_paths: $inbound_caller_paths,
       zero_caller_finding: $zero_caller_finding,
@@ -658,6 +714,8 @@ jq -n \
   --arg root "$ROOT" \
   --arg generated_at "$generated_at" \
   --argjson candidate_count "${#CANDIDATES[@]}" \
+  --argjson untracked_count "${#UNTRACKED_CANDIDATES[@]}" \
+  --argjson untracked_paths "$(to_json_array "${UNTRACKED_CANDIDATES[@]}")" \
   --slurpfile scripts_wrap "$SCRIPTS_TMP" \
   '
   def score: .lines + (if .zero_caller_finding then 500 else 0 end) + (.duplicate_blocks // 0);
@@ -669,6 +727,8 @@ jq -n \
     candidate_count: $candidate_count,
     scripts: $ranked,
     ranking: [$ranked[].path],
+    untracked_count: $untracked_count,
+    untracked_paths: $untracked_paths,
     summary: {
       total_lines: ([$ranked[].lines] | add),
       total_bytes: ([$ranked[].bytes] | add),
