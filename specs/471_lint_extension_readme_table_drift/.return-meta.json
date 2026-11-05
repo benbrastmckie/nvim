@@ -28,28 +28,49 @@
       "category": "PATTERN",
       "source_artifact": "specs/471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["fixture", "lib-copy-allowlist", "stale-fixture", "test-isolation", "run-all.sh"]
+      "suggested_keywords": [
+        "fixture",
+        "lib-copy-allowlist",
+        "stale-fixture",
+        "test-isolation",
+        "run-all.sh"
+      ]
     },
     {
       "content": "For a lint that bidirectionally diffs a markdown table's first column against a real directory set, give it a single optional positional ROOT argument (reading <root>/README.md and enumerating <root>/*/ from that same root) rather than two independent path flags. This single-root input contract makes a regression suite trivial: one mktemp scratch directory, varying only its README table rows and subdirectory set, covers every case (clean, missing row, extra row, an exemption case) with one fixture helper.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["lint-design", "fixture-helper", "single-root-input", "bidirectional-diff", "markdown-table-lint"]
+      "suggested_keywords": [
+        "lint-design",
+        "fixture-helper",
+        "single-root-input",
+        "bidirectional-diff",
+        "markdown-table-lint"
+      ]
     },
     {
       "content": "Adding a new gate to a dynamically-dispatched gate registry (gate_registry_ids + \"gate${id}_run\" lookup) requires only a gate-registry.data row plus the new gate<N>_run function -- no call-site list to edit. But it DOES require bumping hardcoded gate-count/max-id assertions in sibling regression suites that pin the registry's exact shape (e.g. test-gate-registry-resolution.sh's expected-id-count and live-max/one-past-max probes, test-verify-deploy-gate-selection.sh's out-of-range probe and `seq 1 N` loop). This is expected, recurring maintenance on every gate addition, not scope creep, and should be anticipated rather than discovered as a surprise test failure.",
       "category": "WORKFLOW",
       "source_artifact": "specs/471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["gate-registry", "verify-deploy.sh", "gate-addition-checklist", "hardcoded-test-assertions"]
+      "suggested_keywords": [
+        "gate-registry",
+        "verify-deploy.sh",
+        "gate-addition-checklist",
+        "hardcoded-test-assertions"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793897002_11e720",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }

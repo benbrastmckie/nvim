@@ -1,7 +1,7 @@
 # Implementation Plan: Task #471
 
 - **Task**: 471 - Add lint-extension-readme-table.sh and wire it into verify-deploy.sh's gate set
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: task 470 (verify-deploy.sh TARGET-contract task) -- same header/argument-parsing region; serialize, do not co-schedule
 - **Research Inputs**: specs/471_lint_extension_readme_table_drift/reports/01_lint-extension-readme-table-drift.md

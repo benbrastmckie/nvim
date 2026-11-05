@@ -11,7 +11,7 @@ next_project_number: 489
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,471,473,477,478,483,485,488 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 29,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,473,477,478,483,485,488 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,431,445,446,453,458,463,465,472,475 | 29,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
 | 3 | 360,391,399,420,436,438,439,444,448,474,476,484 | 313,328,369,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 390,402,449,451,452,454,455,461,479,486 | 360,385,391,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
@@ -46,7 +46,6 @@ next_project_number: 489
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-471 [IMPLEMENTING] — Lint the extensions README table against the real extension...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
 485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
@@ -1116,12 +1115,13 @@ Nothing was lost in the observed run, and that is precisely the risk: the failur
 
 ### 471. Lint the extensions README table against the real extension directory set
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 470
 - **Research**: [471_lint_extension_readme_table_drift/reports/01_lint-extension-readme-table-drift.md]
 - **Plan**: [471_lint_extension_readme_table_drift/plans/01_lint-extension-readme-table.md]
+- **Summary**: [471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md]
 
 **Description**: Add lint-extension-readme-table.sh and wire it into verify-deploy.sh's gate set, so the Available Extensions table cannot silently drift from the real extension directory set.
 
