@@ -11,9 +11,9 @@ next_project_number: 486
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,469,470,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,470,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,313,384,398,409,418,431,445,446,453,458,463,465,471,472,475 | 22,328,383,385,397,401,412,415,419,430,435,459,470 | core-agent-system, extensions, literature, ... |
-| 3 | 360,369,399,420,436,438,439,444,448,474,476,484 | 29,313,328,398,409,418,423,431,445,446,458,469 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 360,369,399,420,436,438,439,444,448,474,476,484 | 29,313,328,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 391,449,451,452,454,455,461,479 | 360,369,385,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 5 | 390,402,450,457,462,480 | 391,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
 | 6 | 421,481 | 390,402 | core-agent-system, agent-system |
@@ -47,7 +47,6 @@ next_project_number: 486
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-469 [IMPLEMENTING] — Allowlist engine-written infrastructure paths in the...
 470 [PLANNED] — Clarify verify-deploy.sh TARGET contract versus its...
   └─ 471 [NOT STARTED] — Lint the extensions README table against the real extension...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -1076,12 +1075,13 @@ CONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 (all not_started
 
 ### 469. Allowlist engine-written infrastructure paths in the file_scope Containment sites
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [469_allowlist_infrastructure_paths_in_scoped_commits/reports/01_allowlist-infrastructure-paths.md]
 - **Plan**: [469_allowlist_infrastructure_paths_in_scoped_commits/plans/01_allowlist-infrastructure-paths.md]
+- **Summary**: [469_allowlist_infrastructure_paths_in_scoped_commits/summaries/01_allowlist-infrastructure-paths-summary.md]
 
 **Description**: Admit engine-written infrastructure paths -- starting with specs/events.jsonl -- to the file_scope Containment allowlists, so durable append-only event rows stop being silently dropped from commits.
 

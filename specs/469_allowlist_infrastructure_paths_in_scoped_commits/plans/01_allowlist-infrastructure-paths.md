@@ -1,7 +1,7 @@
 # Implementation Plan: Task #469
 
 - **Task**: 469 - Allowlist infrastructure paths in scoped commits
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: None (concurrent-territory serialization note only — see Risks & Mitigations)
 - **Research Inputs**: specs/469_allowlist_infrastructure_paths_in_scoped_commits/reports/01_allowlist-infrastructure-paths.md

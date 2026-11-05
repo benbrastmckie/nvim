@@ -29,28 +29,48 @@
       "category": "PATTERN",
       "source_artifact": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/summaries/01_allowlist-infrastructure-paths-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shared-library-consolidation", "sourced-library-pattern", "fail-open-fallback", "allowlist", "containment"]
+      "suggested_keywords": [
+        "shared-library-consolidation",
+        "sourced-library-pattern",
+        "fail-open-fallback",
+        "allowlist",
+        "containment"
+      ]
     },
     {
       "content": "To confirm a new negative/non-regression test assertion (e.g. 'path X is still dropped as out-of-scope') is a genuine guard and not a tautology, temporarily mutate the probed value so the assertion's premise should flip (e.g. widen an allowlist library to include the specific out-of-scope path under test, or to a blanket prefix that covers it), re-run the suite and confirm the target assertion goes red, then restore the original file and verify byte-identical via `diff` before re-running to confirm green again. Pick the widening target carefully: a prefix like [\"specs/\"] only probes paths actually under specs/ -- if the genuine-excursion fixture path lives outside specs/ (e.g. other/outside.txt), that widening will not flip it and the sanity check will falsely appear to pass; widen to literally include the exact excursion path instead when the fixture lives in a different namespace.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/summaries/01_allowlist-infrastructure-paths-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-fixture-tautology-check", "non-regression-assertion", "negative-test-validation"]
+      "suggested_keywords": [
+        "test-fixture-tautology-check",
+        "non-regression-assertion",
+        "negative-test-validation"
+      ]
     },
     {
       "content": "deploy-headless.sh auto-runs the deployed generate-context-line-counts.sh --write before every deploy, but does NOT auto-run sync-manifest-scripts.sh. When a source-store task adds new files under agent-system/extensions/<ext>/scripts/ or scripts/tests/, run `bash agent-system/extensions/<ext>/scripts/sync-manifest-scripts.sh --write` manually (registers missing provides.scripts entries) before redeploying, or the new files may not be correctly tracked/verified even though the deploy mechanism itself (manager.resync_all, a Lua plugin) may still copy them. Also note: generate-context-line-counts.sh refuses to run from the source-store scripts/ path directly (its own ../.. root resolution assumes a deployed tree) -- always invoke the DEPLOYED copy (.claude/scripts/generate-context-line-counts.sh --write), which still writes back to the SOURCE index-entries.json files by design.",
       "category": "CONFIG",
       "source_artifact": "specs/469_allowlist_infrastructure_paths_in_scoped_commits/summaries/01_allowlist-infrastructure-paths-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless", "sync-manifest-scripts", "generate-context-line-counts", "manifest-registration", "source-store"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "sync-manifest-scripts",
+        "generate-context-line-counts",
+        "manifest-registration",
+        "source-store"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793850684_c30dd8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }
