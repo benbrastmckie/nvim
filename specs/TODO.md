@@ -1,5 +1,5 @@
 ---
-next_project_number: 486
+next_project_number: 488
 ---
 
 # TODO
@@ -14,8 +14,8 @@ next_project_number: 486
 | 1 | 22,328,338,342,383,385,397,401,408,410,412,415,419,423,430,435,437,456,459,464,466,471,473,477,478,482,483,485 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 29,313,384,398,409,418,431,445,446,453,458,463,465,472,475 | 22,328,383,385,397,401,412,415,419,430,435,459 | core-agent-system, extensions, literature, ... |
 | 3 | 360,369,399,420,436,438,439,444,448,474,476,484 | 29,313,328,398,409,418,423,431,445,446,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 391,449,451,452,454,455,461,479 | 360,369,385,420,435,439,444,446,448 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 5 | 390,402,450,457,462,480 | 391,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
+| 4 | 391,449,451,452,454,455,461,479,486 | 360,369,385,420,435,439,444,446,448,484 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 5 | 390,402,450,457,462,480,487 | 391,420,435,449,451,455,479 | core-agent-system, extensions, lean-extension, ... |
 | 6 | 421,481 | 390,402 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -88,6 +88,7 @@ next_project_number: 486
   └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
     └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
     └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
+      └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
 
 ### Lean Extension
 
@@ -108,6 +109,7 @@ next_project_number: 486
 409 [NOT STARTED] — Advise at admission when a task's declared file\_scope...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
+  └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 
 ### Agent System
@@ -125,6 +127,98 @@ next_project_number: 486
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 487. Stop the identical-dispatch convergence guard halting a task whose previous cycle closed a phase
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 449
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over task 328, session sess_1793890953_7cb51f. User-approved at the lead level.
+
+SEVERITY: costly. OBSERVED FIRST-HAND. There is NO issues.jsonl citation for this record -- the orchestrate lead's own observation during the originating run, recorded verbatim below, IS the evidence. Do not go looking for a citation that does not exist.
+
+LIVE SYMPTOM: the identical-dispatch convergence guard halts a task on cycle 2 even when cycle 1 closed a real plan phase, capping every /orchestrate invocation at exactly one phase of progress.
+
+EVIDENCE (session sess_1793890953_7cb51f, task 328):
+- Cycle 1 dispatched general-implementation-agent for task 328 at dispatch_seq 22. It closed Phase 10 of specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md, advancing that plan 9/20 -> 10/20 phases, committed as 7a47a6a57 and f41aecf54.
+- Cycle 2's orchestrate-cycle-plan.sh then composed dispatch 24, found its content byte-identical to dispatch 22's, reported `IDENTICAL DISPATCH ... (streak=2)`, and issued `IDENTICAL DISPATCH HALT: task #328 ... halting this task for the rest of the run`.
+- The guard's own stated premise -- that re-issuing an identical dispatch means no progress is being made -- was therefore FALSE here: progress was made AND committed between the two compositions.
+
+ROOT CAUSE, VERIFIED IN THE SOURCE STORE (re-derive before editing; line numbers move):
+- The composed dispatch body's ONLY phase-progress interpolation is the `PHASES COMPLETED: <n> of <m>` line inside orchestrate-build-dispatch.sh's `## Phase Mission` section (around line 617), and that entire section is gated on `[ -n "$phase_number" ]` (around line 604).
+- `--phase-number` is set by orchestrate-cycle-plan.sh at ONE site only (around line 2633): `[ -n "${h1_next_phase[$t]:-}" ] && build_args+=(--phase-number "${h1_next_phase[$t]}")`, whose own comment states it is "only ever set for a hard-mode implement candidate".
+- Therefore an ordinary (non-hard-mode) implement dispatch carries NO phase-progress content whatsoever. Two consecutive cycles for the same task, phase and plan hash identically no matter how many phases landed in between.
+- cycle_plan_dispatch_hash() (orchestrate-cycle-plan.sh, around line 2160 onward) strips exactly three per-cycle-varying lines before hashing: `- dispatch_seq: N`, `- dispatch_start_ts: N`, and the Issue Log's `--what-happened "..." [--phase P] [--dispatch-seq N] \` boilerplate line. Its own header comment asserts that "a real behavioral change to the dispatch (a different phase_number, a different territory payload, a different focus string) changes some OTHER line and therefore still changes the digest". For a non-hard-mode implement dispatch that assertion does not hold: closing a phase changes no line of the body. Correcting that comment is part of this work, not an afterthought.
+
+SCOPE -- decide and implement, with the reasoning recorded. The three candidate directions below are the originating lead's own framing and are NOT a prescription; they are not mutually exclusive:
+(a) Include phase progress in the dispatch content the guard hashes -- emit the completed-phase count, or the next-unstarted-phase identity, into the dispatch body for every implement dispatch rather than only a hard-mode one. Note the STANDING OBLIGATION recorded in cycle_plan_dispatch_hash()'s own header: any new per-cycle-varying content added to a composed dispatch file MUST be reconciled with the strip pattern in the SAME change, or the halt silently goes inert. Phase progress is per-PROGRESS-varying, not per-cycle-varying, so it must NOT be stripped -- state that distinction explicitly wherever it is added, as the existing DECIDED AND RECORDED rulings in that header do.
+(b) Have the guard consult an independent progress signal before halting -- the committed phase count, or `phases_completed` from the handoff file, which orchestrate-build-dispatch.sh already reads (around lines 322-331). A streak would then be charged only when the hash matches AND no phase advanced. Compare with the deploy_pending streak-FREEZE backstop immediately above the halt block: that is the established in-codebase precedent for "do not charge churn when an independent signal explains the repetition", and it freezes rather than suppresses, so a pre-existing genuine streak survives the interruption intact.
+(c) Both.
+
+HARD CONSTRAINTS:
+- The guard MUST still fire for genuine non-convergence. A task that truly re-issues the same dispatch with nothing landing must still halt; this record must not neuter the guard.
+- Preserve the deploy_pending streak-freeze semantics and the hash-degradation posture (sha256sum unavailable, or the just-written dispatch file unreadable, leaves the streak at 0 and disables the guard for the run with a named stderr notice -- never fatal, never a silent skip).
+- Preserve the two DECIDED AND RECORDED non-strip rulings in cycle_plan_dispatch_hash()'s header (the `## Batch Gate Deferral` and `## Outstanding Gate Finding` sections stay unstripped), or restate them with fresh justification if the chosen mechanism genuinely requires revisiting them.
+- The halt's existing clean back-out must survive intact: pre-dispatch status restore via state-write.sh, task-lock release, and no budget charge, no --flush-seq, no pending_dispatch record, no dispatch row for the halted task.
+
+VERIFY: a regression test MUST pin that a cycle which closed a phase is NOT halted by this guard, and a companion fixture MUST pin that a cycle which closed nothing still IS halted. Site both alongside the existing coverage in agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh, whose "Group 27" fixtures already own this guard -- its Case F pins the strip-pattern-drift failure mode that once left the halt inert, and is the model to follow.
+
+COST OF LEAVING IT: every /orchestrate N over a multi-phase plan yields at most one phase of progress. The plan cited above alone has 10 phases remaining -- ten separate invocations instead of progress within one run.
+
+TERRITORY EDGES -- orchestrate-build-dispatch.sh and orchestrate-cycle-plan.sh are SHARED FILE TERRITORY with several open records, so an edge is declared rather than racing them (context/patterns/batch-orchestration-guardrails.md):
+- hoist_batch_gate_deferral_directive: its option (1) re-emits `## Batch Gate Deferral` at a different position in the SAME composed dispatch body this record adds content to, and the hash normalizer carries an explicit DECIDED AND RECORDED ruling about that very section. Dependency edge declared: these two must be ordered, not raced.
+- Also writing one or both of these two scripts; no ordering declared here, but re-check at admission: warn_plan_size_exceeds_cycle_budget, validate_settled_route_before_dispatch, advise_on_dirty_file_scope_at_admission, validate_carried_unverified_names_a_source, snapshot_lean_challenge_at_plan_time.
+
+---
+
+### 486. Stop a required extension manifest.json registration being dropped from a phase commit as a scope excursion
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: Task 430, Task 446, Task 484
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation over task 328, session sess_1793890953_7cb51f. User-approved at the lead level.
+
+SEVERITY: costly. RECURRING -- three separate firings within one task.
+
+CITATIONS -- specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl:
+  iss_1793841635583_gpNhE6 (dispatch_seq 18, Phase 7 -- 47 of 48 migrated test files dropped)
+  iss_1793847274112_byw6XR (dispatch_seq 20, Phase 8 -- 51 touched paths dropped)
+  iss_1793848518784_26KAZz (dispatch_seq 21, Phase 9 -- 2 paths dropped, one of them manifest.json)
+
+LIVE SYMPTOM: git-commit-phase.sh's Phase-Commit Containment Self-Check drops a legitimately-required manifest.json registration from a phase-closing commit. A phase that extracts a new shared shell library into agent-system/extensions/<ext>/scripts/lib/ must ALSO register that lib in that extension's manifest.json provides.scripts -- scripts/tests/test-manifest-scripts-sync.sh enforces that pairing mechanically. But the containment predicate reads the manifest.json path as a file_scope excursion and drops it, so the phase closes with an incomplete commit and has to pay a separate labeled follow-up commit to recover. Observed in Phase 9 (the install-extension / uninstall-extension pair) and again, identically, in Phase 10 (the typst pair).
+
+WHAT IS ALREADY FIXED -- DO NOT RE-FIX IT (verified in the source store while creating this record; re-derive before editing, line numbers move):
+- All three cited entries attribute the drop to a DOUBLE-SLASH glob defect: a trailing-slash file_scope directory entry composing "${entry}/*" into "...tests//*", which never matches a real single-slash child path. THAT DEFECT IS CLOSED. agent-system/extensions/core/scripts/git-commit-phase.sh's is_contained() (around lines 272-305) normalizes a trailing-slash entry down to a bare directory via a `while [ "${entry%/}" != "$entry" ]` loop before composing any glob, and its own comment documents exactly the failure mode those citations describe.
+- An engine-written-paths allowlist is also in place: is_contained()'s file_scope array is pre-seeded from lib/engine-written-state-paths-lib.sh, with a hardcoded ("specs/TODO.md", "specs/state.json") pair as the fallback on a source failure.
+The citations are therefore retained as the evidence of RECURRENCE and of cost, NOT as a live description of the mechanism. Read them for the cost account, not for the diagnosis.
+
+THE ACTUAL OPEN QUESTION -- a manifest.json registration is a STRUCTURALLY DERIVABLE obligation, not an unforeseeable newly-discovered path. When a phase adds a file under agent-system/extensions/<ext>/scripts/, that extension's own manifest.json registration is required BY A TEST, in the same change. Decide and implement ONE coherent rule, with the reasoning recorded:
+(1) Make the containment predicate treat the touched extension's own manifest.json as implicitly in scope whenever the same phase adds or removes a file under that same extension's scripts/ tree. Narrow, mechanically derivable, and prevents the FIRST drop rather than only the repeat. Weigh against: it widens declared territory without review, and file_scope is also the batch admission gate's conflict-detection input and the territory contract between concurrently dispatched tasks.
+(2) Surface the obligation as a PRE-COMMIT requirement instead of an implicit widening -- a phase that adds a script under an extension without also touching that extension's manifest.json is told so before the commit fires, leaving the declaration honest and the operator in the loop.
+(3) Neither, on the grounding that the general declaration-staleness feedback mechanism (see the territory edges below) subsumes this case once it lands. If this is the ruling, record it explicitly and close this record rather than leaving it open.
+
+NOTE ON THE TASK-LOCAL WORKAROUND: the symptom was worked around for one task alone by widening that task's own declared file_scope (commit 059e41377, which added agent-system/extensions/core/manifest.json and agent-system/extensions/typst/manifest.json to it). That workaround is per-task and does not generalize -- the next task that extracts a lib under a different extension hits the same drop with no declaration covering it. Do not mistake the widened file_scope for a fix.
+
+HARD CONSTRAINTS:
+- Do NOT weaken the containment predicate for a genuine excursion. Drop-and-warn for an out-of-territory source edit is correct and must survive intact, pinned by a test.
+- Do NOT make the check fatal. Fail-open on a missing/empty/malformed file_scope, and never refusing a whole commit over this guard, are both deliberate and must stay.
+- Any state.json write must go through the mutex-guarded state-write.sh path, never a second writer.
+- Do NOT re-introduce the trailing-slash normalization or the engine-written-paths allowlist; both are already present and must be left working.
+
+VERIFY: extend agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh with fixtures pinning (a) the chosen rule's behaviour for a phase that adds a new script under an extension plus that extension's manifest.json, (b) a genuinely out-of-territory path STILL dropped with its warning and its issue-record.sh call, (c) fail-open behaviour on absent/empty/malformed file_scope unchanged, and (d) the trailing-slash normalization still working.
+
+TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open records, so dependency edges are declared rather than racing them (context/patterns/batch-orchestration-guardrails.md: shared territory is serialized with an edge, never a bare exclusion):
+- feed_undeclared_implement_paths_into_file_scope: the general form of this exact problem -- feeding observed-but-undeclared implement paths back into the declaration. If its general mechanism lands first, THIS record may reduce to option (3) above, or to a narrow prevention rule layered on top. Read its description before scoping; it already carries a verified account of git-commit-phase.sh's drop site and of the proposed_file_scope channel.
+- close_the_plan_to_file_scope_reconciliation_gap: owns the plan-to-file_scope harvest path (plan-file-scope-harvest.sh, skill-base.sh) and makes a containment drop non-advisory. A manifest.json registration is exactly the kind of path a plan's "Files to modify" block may or may not name, so the two interact directly.
+- collapse_perpath_scope_excursion_issue_rows_into_one: rewrites the per-path issue-record.sh emission inside the very loop this record changes.
+
+---
 
 ### 485. Recapture corpus baselines under the corrected inventory probe
 - **Status**: [RESEARCHED]
