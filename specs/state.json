@@ -7146,6 +7146,11 @@
           "path": "specs/470_clarify_verify_deploy_target_contract/plans/01_two-axis-target-contract.md",
           "type": "plan",
           "summary": "Four-phase plan: verify-deploy.sh header two-axis split, gate0 stderr convention line, companion-doc pointer plus origin-site invocation fix, redeploy and full verification."
+        },
+        {
+          "path": "specs/470_clarify_verify_deploy_target_contract/summaries/01_two-axis-target-contract-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all four phases, plan deviations, and verification evidence."
         }
       ],
       "file_scope": [
@@ -7268,7 +7273,8 @@
       },
       "last_updated": "2026-11-05T08:00:14Z",
       "session_id": "sess_1793850684_c30dd8",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a TARGET_REPO CONTRACT header paragraph, a TARGET_REPO placeholder usage subsection, and one gate0 stderr line to verify-deploy.sh; widened regeneration-is-manual-only.md's existing pointer by one clause; corrected plan-format.md's __FULL_SWEEP__ sub-case (b) copy-pasteable invocation from the broken --only-gate 3,4 <source_dir> shape to a working repo-root TARGET shape. Redeployed to landed_verify_clean and confirmed all three files carry the change in the deployed tree."
     },
     {
       "project_name": "lint_extension_readme_table_drift",

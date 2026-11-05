@@ -1045,6 +1045,7 @@ CONCURRENT TERRITORY NOTE: open tasks #444, #414, #445 and #449 also declare ver
 - **Dependencies**: None
 - **Research**: [470_clarify_verify_deploy_target_contract/reports/01_target-contract-clarification.md]
 - **Plan**: [470_clarify_verify_deploy_target_contract/plans/01_two-axis-target-contract.md]
+- **Summary**: [470_clarify_verify_deploy_target_contract/summaries/01_two-axis-target-contract-summary.md]
 
 **Description**: Separate verify-deploy.sh's invocation-CWD axis from its TARGET-argument axis, so a reader cannot take "runs correctly from either tree" as permission to pass the source directory as TARGET.
 
