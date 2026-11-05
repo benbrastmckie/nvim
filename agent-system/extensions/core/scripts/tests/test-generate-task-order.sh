@@ -40,10 +40,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
@@ -90,13 +88,10 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-info "Under test (source-store-first): $GTO_SRC"
-info "Dependency (deploy-first): $GUARD_SRC"
-info "Dependency (deploy-first): $COMMON_SRC"
+common_test_info "Under test (source-store-first): $GTO_SRC"
+common_test_info "Dependency (deploy-first): $GUARD_SRC"
+common_test_info "Dependency (deploy-first): $COMMON_SRC"
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${TOP_WORKDIR:-}" && -d "$TOP_WORKDIR" ]] && rm -rf "$TOP_WORKDIR"; }
@@ -244,7 +239,7 @@ marker_count() {
 
 PREFIX64="$(printf 'x%.0s' $(seq 1 64))"
 if [[ ${#PREFIX64} -ne 64 ]]; then
-  fail "case-group-1 setup: PREFIX64 is ${#PREFIX64} chars, expected 64 -- fixture invalid"
+  common_test_fail "case-group-1 setup: PREFIX64 is ${#PREFIX64} chars, expected 64 -- fixture invalid"
 fi
 
 # --- 1a: backtick placed EXACTLY at the cut boundary (character 65 of 65) ---
@@ -253,9 +248,9 @@ fi
   naive="${desc:0:65}"
   naive_bt_count=$(printf '%s' "$naive" | grep -o '`' | wc -l)
   if (( naive_bt_count % 2 == 0 )); then
-    fail "1a-fixture-adversarial: naive 65-char slice has an EVEN backtick count ($naive_bt_count) -- fixture does not actually exercise the bug"
+    common_test_fail "1a-fixture-adversarial: naive 65-char slice has an EVEN backtick count ($naive_bt_count) -- fixture does not actually exercise the bug"
   else
-    pass "1a-fixture-adversarial: naive 65-char slice has an odd backtick count ($naive_bt_count), confirming the fixture is adversarial"
+    common_test_pass "1a-fixture-adversarial: naive 65-char slice has an odd backtick count ($naive_bt_count), confirming the fixture is adversarial"
   fi
 
   scratch="$(build_scratch)"
@@ -264,13 +259,13 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 901)"
   if [[ -z "$line" ]]; then
-    fail "1a-actual: no rendered line found for fixture 901"
+    common_test_fail "1a-actual: no rendered line found for fixture 901"
   else
     bt_count=$(printf '%s' "$line" | grep -o '`' | wc -l)
     if (( bt_count % 2 == 0 )); then
-      pass "1a-actual: rendered line has an even backtick count ($bt_count) -- markdown-safe: $line"
+      common_test_pass "1a-actual: rendered line has an even backtick count ($bt_count) -- markdown-safe: $line"
     else
-      fail "1a-actual: rendered line has an ODD backtick count ($bt_count) -- unsafe: $line"
+      common_test_fail "1a-actual: rendered line has an ODD backtick count ($bt_count) -- unsafe: $line"
     fi
   fi
 }
@@ -281,9 +276,9 @@ fi
   naive="${desc:0:65}"
   naive_star_count=$(printf '%s' "$naive" | grep -o '\*' | wc -l)
   if (( naive_star_count % 2 == 0 )); then
-    fail "1b-fixture-adversarial: naive 65-char slice has an EVEN asterisk count ($naive_star_count) -- fixture does not exercise the bug"
+    common_test_fail "1b-fixture-adversarial: naive 65-char slice has an EVEN asterisk count ($naive_star_count) -- fixture does not exercise the bug"
   else
-    pass "1b-fixture-adversarial: naive 65-char slice has an odd asterisk count ($naive_star_count), confirming the fixture is adversarial"
+    common_test_pass "1b-fixture-adversarial: naive 65-char slice has an odd asterisk count ($naive_star_count), confirming the fixture is adversarial"
   fi
 
   scratch="$(build_scratch)"
@@ -292,13 +287,13 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 902)"
   if [[ -z "$line" ]]; then
-    fail "1b-actual: no rendered line found for fixture 902"
+    common_test_fail "1b-actual: no rendered line found for fixture 902"
   else
     star_count=$(printf '%s' "$line" | grep -o '\*' | wc -l)
     if (( star_count % 2 == 0 )); then
-      pass "1b-actual: rendered line has an even asterisk count ($star_count)"
+      common_test_pass "1b-actual: rendered line has an even asterisk count ($star_count)"
     else
-      fail "1b-actual: rendered line has an ODD asterisk count ($star_count) -- unsafe: $line"
+      common_test_fail "1b-actual: rendered line has an ODD asterisk count ($star_count) -- unsafe: $line"
     fi
   fi
 }
@@ -311,9 +306,9 @@ fi
   [[ "$naive" == *"["* ]] && naive_has_open_bracket=1
   naive_close_count=$(printf '%s' "$naive" | grep -o ']' | wc -l)
   if [[ "$naive_has_open_bracket" -eq 1 && "$naive_close_count" -eq 0 ]]; then
-    pass "1c-fixture-adversarial: naive 65-char slice contains an unclosed '[' with no matching ']', confirming the fixture is adversarial"
+    common_test_pass "1c-fixture-adversarial: naive 65-char slice contains an unclosed '[' with no matching ']', confirming the fixture is adversarial"
   else
-    fail "1c-fixture-adversarial: naive 65-char slice does not contain an orphaned '[' -- fixture does not exercise the bug"
+    common_test_fail "1c-fixture-adversarial: naive 65-char slice does not contain an orphaned '[' -- fixture does not exercise the bug"
   fi
 
   scratch="$(build_scratch)"
@@ -322,16 +317,16 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 903)"
   if [[ -z "$line" ]]; then
-    fail "1c-actual: no rendered line found for fixture 903"
+    common_test_fail "1c-actual: no rendered line found for fixture 903"
   else
     # Isolate the description field: the whole line legitimately contains "[NOT STARTED]",
     # so the bracket check must exclude the leading "<num> [STATUS] — " prefix.
     rendered_desc="${line#*] }"
     rendered_desc="${rendered_desc#$'\xe2\x80\x94 '}"
     if printf '%s' "$rendered_desc" | grep -q '\['; then
-      fail "1c-actual: rendered description still carries an open bracket -- unsafe: $line"
+      common_test_fail "1c-actual: rendered description still carries an open bracket -- unsafe: $line"
     else
-      pass "1c-actual: rendered description carries no open bracket"
+      common_test_pass "1c-actual: rendered description carries no open bracket"
     fi
   fi
 }
@@ -345,22 +340,22 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 913)"
   if [[ -z "$line" ]]; then
-    fail "1d-actual: no rendered line found for fixture 913"
+    common_test_fail "1d-actual: no rendered line found for fixture 913"
   else
     rendered_desc="${line#*] }"
     rendered_desc="${rendered_desc#$'\xe2\x80\x94 '}"
     if [[ "$rendered_desc" == *'\_'* ]]; then
-      pass "1d-actual: rendered description preserves the underscore as an escaped '\\_' rather than deleting it: $line"
+      common_test_pass "1d-actual: rendered description preserves the underscore as an escaped '\\_' rather than deleting it: $line"
     else
-      fail "1d-actual: rendered description lost the underscore (expected an escaped '\\_'): $line"
+      common_test_fail "1d-actual: rendered description lost the underscore (expected an escaped '\\_'): $line"
     fi
     # Budget/word-boundary invariant: escaping lengthens the string by one character per
     # underscore, so the invariant must still hold after escaping, not just before it.
     expected_escaped="${desc//_/\\_}"
     if err="$(check_word_boundary_truncation "$expected_escaped" "$rendered_desc" 65)"; then
-      pass "1d-actual: escaped description respects the 65-char budget/word-boundary invariant"
+      common_test_pass "1d-actual: escaped description respects the 65-char budget/word-boundary invariant"
     else
-      fail "1d-actual: budget/word-boundary check failed ($err): $line"
+      common_test_fail "1d-actual: budget/word-boundary check failed ($err): $line"
     fi
   fi
 }
@@ -379,11 +374,11 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 904)"
   if [[ -z "$line" ]]; then
-    fail "2a-actual: no rendered line found for fixture 904"
+    common_test_fail "2a-actual: no rendered line found for fixture 904"
   elif [[ "$line" == *"Slim the fixture generator"* && "$line" != *"deliberately unrelated"* ]]; then
-    pass "2a-actual: line derives from .title, not .description: $line"
+    common_test_pass "2a-actual: line derives from .title, not .description: $line"
   else
-    fail "2a-actual: line did not prefer .title over .description: $line"
+    common_test_fail "2a-actual: line did not prefer .title over .description: $line"
   fi
 }
 
@@ -396,11 +391,11 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 905)"
   if [[ -z "$line" ]]; then
-    fail "2b-actual: no rendered line found for fixture 905"
+    common_test_fail "2b-actual: no rendered line found for fixture 905"
   elif [[ "$line" == *"ordinary description"* ]]; then
-    pass "2b-actual: title-less fixture still renders from .description: $line"
+    common_test_pass "2b-actual: title-less fixture still renders from .description: $line"
   else
-    fail "2b-actual: title-less fixture rendering degraded or empty: $line"
+    common_test_fail "2b-actual: title-less fixture rendering degraded or empty: $line"
   fi
 }
 
@@ -412,11 +407,11 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 906)"
   if [[ -z "$line" ]]; then
-    fail "2c-actual: no rendered line found for fixture 906"
+    common_test_fail "2c-actual: no rendered line found for fixture 906"
   elif [[ "$line" == *"fixture-project-906"* ]]; then
-    pass "2c-actual: line falls back to .project_name when neither .title nor .description exist: $line"
+    common_test_pass "2c-actual: line falls back to .project_name when neither .title nor .description exist: $line"
   else
-    fail "2c-actual: line did not fall back to .project_name: $line"
+    common_test_fail "2c-actual: line did not fall back to .project_name: $line"
   fi
 }
 
@@ -433,18 +428,18 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 907)"
   if [[ -z "$line" ]]; then
-    fail "3a-actual: no rendered line found for fixture 907"
+    common_test_fail "3a-actual: no rendered line found for fixture 907"
   else
     # Isolate just the description field of the rendered line (after the "] — " separator).
     rendered_desc="${line#*] }"
     rendered_desc="${rendered_desc#$'\xe2\x80\x94 '}"
     if [[ "$rendered_desc" != *"..." ]]; then
-      fail "3a-actual: over-budget source was not marked as truncated: $line"
+      common_test_fail "3a-actual: over-budget source was not marked as truncated: $line"
     else
       if err="$(check_word_boundary_truncation "$desc" "$rendered_desc" 65)"; then
-        pass "3a-actual: over-budget source truncated at a word boundary within budget, with marker: $line"
+        common_test_pass "3a-actual: over-budget source truncated at a word boundary within budget, with marker: $line"
       else
-        fail "3a-actual: word-boundary/budget check failed ($err): $line"
+        common_test_fail "3a-actual: word-boundary/budget check failed ($err): $line"
       fi
     fi
   fi
@@ -459,13 +454,13 @@ fi
   grouped="$(extract_grouped "$scratch")"
   line="$(line_for_fixture "$grouped" 908)"
   if [[ -z "$line" ]]; then
-    fail "3b-actual: no rendered line found for fixture 908"
+    common_test_fail "3b-actual: no rendered line found for fixture 908"
   elif [[ "$line" == *"..."* ]]; then
-    fail "3b-actual: under-budget line unexpectedly carries a truncation marker: $line"
+    common_test_fail "3b-actual: under-budget line unexpectedly carries a truncation marker: $line"
   elif [[ "$line" == *"$desc"* ]]; then
-    pass "3b-actual: under-budget line is untouched and carries no marker: $line"
+    common_test_pass "3b-actual: under-budget line is untouched and carries no marker: $line"
   else
-    fail "3b-actual: under-budget line does not contain the original description: $line"
+    common_test_fail "3b-actual: under-budget line does not contain the original description: $line"
   fi
 }
 
@@ -494,27 +489,27 @@ fi
   grouped="$(extract_grouped "$scratch")"
   see_above_line="$(printf '%s\n' "$grouped" | grep -E '\(see above\)$' | grep 'Alpha:' || true)"
   if [[ -z "$see_above_line" ]]; then
-    fail "4a-actual: no cross-topic '(Alpha: ...)' (see above) line found -- recipe did not fire; grouped output was: $grouped"
+    common_test_fail "4a-actual: no cross-topic '(Alpha: ...)' (see above) line found -- recipe did not fire; grouped output was: $grouped"
   else
     short="${see_above_line#*Alpha: }"
     short="${short% (see above)}"
     short="${short%)}"
     if (( ${#short} > 40 )); then
-      fail "4a-actual: cross-topic short_desc exceeds the 40-char budget (${#short} chars): $see_above_line"
+      common_test_fail "4a-actual: cross-topic short_desc exceeds the 40-char budget (${#short} chars): $see_above_line"
     else
-      pass "4a-actual: cross-topic short_desc respects the 40-char budget: $see_above_line"
+      common_test_pass "4a-actual: cross-topic short_desc respects the 40-char budget: $see_above_line"
     fi
     if [[ "$short" == *"..." ]]; then
       core="${short%...}"
       prefix_in_original="${t_desc:0:${#core}}"
       next_char="${t_desc:${#core}:1}"
       if [[ "$prefix_in_original" == "$core" && ( -z "$next_char" || "$next_char" == " " ) ]]; then
-        pass "4a-actual: cross-topic truncation lands on a word boundary with a marker"
+        common_test_pass "4a-actual: cross-topic truncation lands on a word boundary with a marker"
       else
-        fail "4a-actual: cross-topic truncation cut mid-word: $see_above_line"
+        common_test_fail "4a-actual: cross-topic truncation cut mid-word: $see_above_line"
       fi
     else
-      fail "4a-actual: expected the primary description to be truncated by the 40-char secondary cut, but no marker present: $see_above_line"
+      common_test_fail "4a-actual: expected the primary description to be truncated by the 40-char secondary cut, but no marker present: $see_above_line"
     fi
   fi
 }
@@ -531,21 +526,21 @@ fi
   grouped="$(extract_grouped "$scratch")"
   see_above_line="$(printf '%s\n' "$grouped" | grep -E '\(see above\)$' | grep 'Alpha:' || true)"
   if [[ -z "$see_above_line" ]]; then
-    fail "4b-actual: no cross-topic '(Alpha: ...)' (see above) line found; grouped output was: $grouped"
+    common_test_fail "4b-actual: no cross-topic '(Alpha: ...)' (see above) line found; grouped output was: $grouped"
   else
     short="${see_above_line#*Alpha: }"
     short="${short% (see above)}"
     short="${short%)}"
     markers=$(marker_count "$short")
     if [[ "$markers" -gt 1 ]]; then
-      fail "4b-actual: cross-topic short_desc carries a DOUBLED marker ($markers occurrences): $see_above_line"
+      common_test_fail "4b-actual: cross-topic short_desc carries a DOUBLED marker ($markers occurrences): $see_above_line"
     else
-      pass "4b-actual: cross-topic short_desc carries at most one truncation marker ($markers occurrence(s))"
+      common_test_pass "4b-actual: cross-topic short_desc carries at most one truncation marker ($markers occurrence(s))"
     fi
     if (( ${#short} > 40 )); then
-      fail "4b-actual: cross-topic short_desc exceeds the 40-char budget (${#short} chars): $see_above_line"
+      common_test_fail "4b-actual: cross-topic short_desc exceeds the 40-char budget (${#short} chars): $see_above_line"
     else
-      pass "4b-actual: cross-topic short_desc respects the 40-char budget even though the primary slice already truncated it: $see_above_line"
+      common_test_pass "4b-actual: cross-topic short_desc respects the 40-char budget even though the primary slice already truncated it: $see_above_line"
     fi
   fi
 }
@@ -560,9 +555,9 @@ fi
   [[ -f "$REAL_TODO" ]] && REAL_TODO_SUM_AFTER="$(sha256sum "$REAL_TODO" | awk '{print $1}')"
   [[ -f "$REAL_STATE" ]] && REAL_STATE_SUM_AFTER="$(sha256sum "$REAL_STATE" | awk '{print $1}')"
   if [[ "$REAL_TODO_SUM_BEFORE" == "$REAL_TODO_SUM_AFTER" && "$REAL_STATE_SUM_BEFORE" == "$REAL_STATE_SUM_AFTER" ]]; then
-    pass "isolation: real specs/TODO.md and specs/state.json are unchanged after the full run"
+    common_test_pass "isolation: real specs/TODO.md and specs/state.json are unchanged after the full run"
   else
-    fail "isolation: real specs/TODO.md or specs/state.json changed during this suite's run"
+    common_test_fail "isolation: real specs/TODO.md or specs/state.json changed during this suite's run"
   fi
 }
 

@@ -49,6 +49,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
 
@@ -64,13 +65,8 @@ done
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # FIXTURE_RICH: real-copy rsync, same shape/rationale as test-verify-deploy-context-budget.sh.
@@ -125,9 +121,9 @@ only20_out="$(run_vd "$FIXTURE_RICH" --only-gate 20)"
 only20_headers="$(printf '%s\n' "$only20_out" | grep -cE '^[0-9]+\. ')"
 only20_has_gate20_header="$(printf '%s\n' "$only20_out" | grep -c '^20\. ')"
 if [ "$only20_headers" -eq 1 ] && [ "$only20_has_gate20_header" -eq 1 ]; then
-  pass "case(a): --only-gate 20 prints exactly one gate header, and it is gate 20's"
+  common_test_pass "case(a): --only-gate 20 prints exactly one gate header, and it is gate 20's"
 else
-  fail "case(a): expected exactly one gate header (gate 20's), found $only20_headers header(s)" \
+  common_test_fail "case(a): expected exactly one gate header (gate 20's), found $only20_headers header(s)" \
        "$(printf '%s\n' "$only20_out" | grep -E '^[0-9]+\. ')"
 fi
 
@@ -149,23 +145,23 @@ for bad in "${invalid_cases[@]}"; do
   bad_out="$(bash "$VERIFY_DEPLOY" --only-gate "$bad" 2>&1)"
   bad_rc=$?
   if [ "$bad_rc" -ne 2 ]; then
-    fail "case(c): --only-gate $bad expected exit 2, got $bad_rc"
+    common_test_fail "case(c): --only-gate $bad expected exit 2, got $bad_rc"
     case_c_all_ok=false
     continue
   fi
   if ! printf '%s\n' "$bad_out" | grep -q "ERROR: --only-gate:"; then
-    fail "case(c): --only-gate $bad exited 2 but printed no named --only-gate error" "$bad_out"
+    common_test_fail "case(c): --only-gate $bad exited 2 but printed no named --only-gate error" "$bad_out"
     case_c_all_ok=false
   fi
 done
-[ "$case_c_all_ok" = "true" ] && pass "case(c): every invalid gate id (${invalid_cases[*]}) exits 2 with a named error"
+[ "$case_c_all_ok" = "true" ] && common_test_pass "case(c): every invalid gate id (${invalid_cases[*]}) exits 2 with a named error"
 
 findings_bad_out="$(bash "$VERIFY_DEPLOY" --findings --only-gate 99 2>&1)"
 findings_bad_rc=$?
 if [ "$findings_bad_rc" -eq 2 ] && printf '%s\n' "$findings_bad_out" | grep -q '^FINDING gate0 '; then
-  pass "case(c): --findings --only-gate 99 emits a FINDING gate0 line on exit 2"
+  common_test_pass "case(c): --findings --only-gate 99 emits a FINDING gate0 line on exit 2"
 else
-  fail "case(c): --findings --only-gate 99 did not emit the expected FINDING gate0 line" "$findings_bad_out"
+  common_test_fail "case(c): --findings --only-gate 99 did not emit the expected FINDING gate0 line" "$findings_bad_out"
 fi
 
 # =====================================================================
@@ -179,9 +175,9 @@ for n in $(seq 1 23); do
   printf '%s\n' "$noflag_out" | grep -q "^${n}\. " || noflag_missing+=("$n")
 done
 if [ "${#noflag_missing[@]}" -eq 0 ]; then
-  pass "case(d): no --only-gate flag -- all 23 gate headers appear (default unchanged)"
+  common_test_pass "case(d): no --only-gate flag -- all 23 gate headers appear (default unchanged)"
 else
-  fail "case(d): missing gate header(s) with no flag: ${noflag_missing[*]}"
+  common_test_fail "case(d): missing gate header(s) with no flag: ${noflag_missing[*]}"
 fi
 
 # =====================================================================
@@ -196,9 +192,9 @@ if [ "$gate4_rc" -eq 0 ] \
    && printf '%s\n' "$gate4_out" | grep -q '^  \[PASS\] task-reference lint reports no findings' \
    && ! printf '%s\n' "$gate4_out" | grep -q '\[SKIP\]' \
    && printf '%s\n' "$gate4_out" | grep -q 'PASS -- 1 check(s), 0 failure(s)'; then
-  pass "case(e): --only-gate 4 against a deploy-consumer fixture runs a real, passing, non-SKIP check"
+  common_test_pass "case(e): --only-gate 4 against a deploy-consumer fixture runs a real, passing, non-SKIP check"
 else
-  fail "case(e): --only-gate 4 against FIXTURE_CONSUMER did not produce the expected real-check output (rc=$gate4_rc)" "$gate4_out"
+  common_test_fail "case(e): --only-gate 4 against FIXTURE_CONSUMER did not produce the expected real-check output (rc=$gate4_rc)" "$gate4_out"
 fi
 
 # =====================================================================
@@ -211,9 +207,9 @@ gate3_rc=$?
 if [ "$gate3_rc" -eq 2 ] \
    && printf '%s\n' "$gate3_out" | grep -q 'cannot attest:.*--only-gate 3.*skipped or was deferred' \
    && ! printf '%s\n' "$gate3_out" | grep -q 'PASS -- 0 check(s)'; then
-  pass "case(f): an all-SKIP --only-gate 3 selection exits 2 with the named zero-check message"
+  common_test_pass "case(f): an all-SKIP --only-gate 3 selection exits 2 with the named zero-check message"
 else
-  fail "case(f): --only-gate 3 against FIXTURE_CONSUMER did not produce the expected zero-check result (rc=$gate3_rc)" "$gate3_out"
+  common_test_fail "case(f): --only-gate 3 against FIXTURE_CONSUMER did not produce the expected zero-check result (rc=$gate3_rc)" "$gate3_out"
 fi
 
 # =====================================================================
@@ -223,9 +219,9 @@ fi
 gate3_findings_out="$(bash "$VERIFY_DEPLOY" --skip-slow --findings --only-gate 3 "$FIXTURE_CONSUMER" 2>&1)"
 gate3_findings_rc=$?
 if [ "$gate3_findings_rc" -eq 2 ] && printf '%s\n' "$gate3_findings_out" | grep -q '^FINDING gate0 .*--only-gate 3.*skipped or was deferred'; then
-  pass "case(g): --findings --only-gate 3 emits a FINDING gate0 line for the zero-check condition"
+  common_test_pass "case(g): --findings --only-gate 3 emits a FINDING gate0 line for the zero-check condition"
 else
-  fail "case(g): --findings --only-gate 3 against FIXTURE_CONSUMER did not emit the expected FINDING gate0 line (rc=$gate3_findings_rc)" "$gate3_findings_out"
+  common_test_fail "case(g): --findings --only-gate 3 against FIXTURE_CONSUMER did not emit the expected FINDING gate0 line (rc=$gate3_findings_rc)" "$gate3_findings_out"
 fi
 
 # =====================================================================
@@ -238,9 +234,9 @@ gate8_rc=$?
 if [ "$gate8_rc" -eq 2 ] \
    && printf '%s\n' "$gate8_out" | grep -q 'cannot attest:.*--only-gate 8.*skipped or was deferred' \
    && ! printf '%s\n' "$gate8_out" | grep -q 'PASS -- 0 check(s)'; then
-  pass "case(h): a deferred-gate-only --skip-slow --only-gate 8 selection reaches the same zero-check result"
+  common_test_pass "case(h): a deferred-gate-only --skip-slow --only-gate 8 selection reaches the same zero-check result"
 else
-  fail "case(h): --skip-slow --only-gate 8 against FIXTURE_CONSUMER did not produce the expected zero-check result (rc=$gate8_rc)" "$gate8_out"
+  common_test_fail "case(h): --skip-slow --only-gate 8 against FIXTURE_CONSUMER did not produce the expected zero-check result (rc=$gate8_rc)" "$gate8_out"
 fi
 
 # =====================================================================
@@ -252,9 +248,9 @@ free_ids_expected="$(awk -F'\t' '$1 ~ /^[0-9]+$/ && $7 == "free" {print $1}' "$C
 maxcost_free_out="$(run_vd "$FIXTURE_RICH" --max-cost free)"
 maxcost_free_headers="$(printf '%s\n' "$maxcost_free_out" | grep -oE '^[0-9]+\. ' | grep -oE '[0-9]+' | sort -n | tr '\n' ' ' | sed 's/ $//')"
 if [ "$maxcost_free_headers" = "$free_ids_expected" ]; then
-  pass "case(i): --max-cost free runs exactly the registry's free-class gates ($free_ids_expected)"
+  common_test_pass "case(i): --max-cost free runs exactly the registry's free-class gates ($free_ids_expected)"
 else
-  fail "case(i): --max-cost free ran gates '$maxcost_free_headers', expected '$free_ids_expected'"
+  common_test_fail "case(i): --max-cost free ran gates '$maxcost_free_headers', expected '$free_ids_expected'"
 fi
 
 # =====================================================================
@@ -265,9 +261,9 @@ moderate_ids_expected="$(awk -F'\t' '$1 ~ /^[0-9]+$/ && ($7 == "free" || $7 == "
 maxcost_moderate_out="$(run_vd "$FIXTURE_RICH" --max-cost moderate)"
 maxcost_moderate_headers="$(printf '%s\n' "$maxcost_moderate_out" | grep -oE '^[0-9]+\. ' | grep -oE '[0-9]+' | sort -n | tr '\n' ' ' | sed 's/ $//')"
 if [ "$maxcost_moderate_headers" = "$moderate_ids_expected" ]; then
-  pass "case(j): --max-cost moderate runs exactly the registry's free+moderate gates (ordinal ceiling, not exact-class match)"
+  common_test_pass "case(j): --max-cost moderate runs exactly the registry's free+moderate gates (ordinal ceiling, not exact-class match)"
 else
-  fail "case(j): --max-cost moderate ran gates '$maxcost_moderate_headers', expected '$moderate_ids_expected'"
+  common_test_fail "case(j): --max-cost moderate ran gates '$maxcost_moderate_headers', expected '$moderate_ids_expected'"
 fi
 
 # =====================================================================
@@ -277,9 +273,9 @@ fi
 maxcost_bad_out="$(bash "$VERIFY_DEPLOY" --skip-slow --max-cost bogus "$FIXTURE_RICH" 2>&1)"
 maxcost_bad_rc=$?
 if [ "$maxcost_bad_rc" -eq 2 ] && printf '%s\n' "$maxcost_bad_out" | grep -q "invalid class 'bogus'"; then
-  pass "case(k): --max-cost bogus exits 2 with a named invalid-class error"
+  common_test_pass "case(k): --max-cost bogus exits 2 with a named invalid-class error"
 else
-  fail "case(k): --max-cost bogus did not produce the expected exit-2 error (rc=$maxcost_bad_rc)" "$maxcost_bad_out"
+  common_test_fail "case(k): --max-cost bogus did not produce the expected exit-2 error (rc=$maxcost_bad_rc)" "$maxcost_bad_out"
 fi
 
 # =====================================================================
@@ -292,9 +288,9 @@ intersect_out2="$(run_vd "$FIXTURE_RICH" --max-cost free --only-gate 1,3,22)"
 intersect_headers1="$(printf '%s\n' "$intersect_out1" | grep -cE '^[0-9]+\. ')"
 intersect_has1="$(printf '%s\n' "$intersect_out1" | grep -c '^1\. ')"
 if [ "$intersect_headers1" -eq 1 ] && [ "$intersect_has1" -eq 1 ] && [ "$intersect_out1" = "$intersect_out2" ]; then
-  pass "case(l): --only-gate 1,3,22 intersected with --max-cost free selects only gate 1, order-independent"
+  common_test_pass "case(l): --only-gate 1,3,22 intersected with --max-cost free selects only gate 1, order-independent"
 else
-  fail "case(l): expected exactly gate 1 selected and flag-order-independence (got $intersect_headers1 header(s))" \
+  common_test_fail "case(l): expected exactly gate 1 selected and flag-order-independence (got $intersect_headers1 header(s))" \
        "$intersect_out1"
 fi
 
@@ -307,9 +303,9 @@ intersect_zero_out="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 3 --max-cost
 intersect_zero_rc=$?
 if [ "$intersect_zero_rc" -eq 2 ] \
    && printf '%s\n' "$intersect_zero_out" | grep -q 'cannot attest:.*--only-gate 3 intersected with --max-cost free'; then
-  pass "case(m): a zero-gate --only-gate/--max-cost intersection reaches the zero-check result, naming both flags"
+  common_test_pass "case(m): a zero-gate --only-gate/--max-cost intersection reaches the zero-check result, naming both flags"
 else
-  fail "case(m): --only-gate 3 --max-cost free did not produce the expected zero-check result (rc=$intersect_zero_rc)" "$intersect_zero_out"
+  common_test_fail "case(m): --only-gate 3 --max-cost free did not produce the expected zero-check result (rc=$intersect_zero_rc)" "$intersect_zero_out"
 fi
 
 # =====================================================================
@@ -319,9 +315,9 @@ fi
 jobs_invalid_out="$(bash "$VERIFY_DEPLOY" --skip-slow --findings --jobs notanumber "$FIXTURE_CHEAP" 2>&1)"
 jobs_invalid_rc=$?
 if [ "$jobs_invalid_rc" -eq 2 ] && printf '%s\n' "$jobs_invalid_out" | grep -q "FINDING gate0.*--jobs invalid value 'notanumber'"; then
-  pass "case(n): --jobs notanumber exits 2 with a named FINDING gate0 error"
+  common_test_pass "case(n): --jobs notanumber exits 2 with a named FINDING gate0 error"
 else
-  fail "case(n): --jobs notanumber did not produce the expected exit-2/FINDING result (rc=$jobs_invalid_rc)" "$jobs_invalid_out"
+  common_test_fail "case(n): --jobs notanumber did not produce the expected exit-2/FINDING result (rc=$jobs_invalid_rc)" "$jobs_invalid_out"
 fi
 
 # =====================================================================
@@ -331,9 +327,9 @@ fi
 jobs_auto_out="$(run_vd "$FIXTURE_RICH" --jobs auto --only-gate 1,2)"
 jobs_auto_rc=$?
 if [ "$jobs_auto_rc" -eq 0 ] && printf '%s\n' "$jobs_auto_out" | grep -qE '^1\. '; then
-  pass "case(o): --jobs auto resolves and runs cleanly"
+  common_test_pass "case(o): --jobs auto resolves and runs cleanly"
 else
-  fail "case(o): --jobs auto did not run cleanly (rc=$jobs_auto_rc)" "$jobs_auto_out"
+  common_test_fail "case(o): --jobs auto did not run cleanly (rc=$jobs_auto_rc)" "$jobs_auto_out"
 fi
 
 # =====================================================================
@@ -346,9 +342,9 @@ det_out1="$(run_vd "$FIXTURE_RICH" --jobs 1 --findings --only-gate 1,2,4,9,11,14
 det_out2="$(run_vd "$FIXTURE_RICH" --jobs 2 --findings --only-gate 1,2,4,9,11,14,20)"
 det_out4="$(run_vd "$FIXTURE_RICH" --jobs 4 --findings --only-gate 1,2,4,9,11,14,20)"
 if [ "$det_out1" = "$det_out2" ] && [ "$det_out2" = "$det_out4" ]; then
-  pass "case(p): byte-identical output at --jobs 1, 2, and 4 for the same 7-gate selection"
+  common_test_pass "case(p): byte-identical output at --jobs 1, 2, and 4 for the same 7-gate selection"
 else
-  fail "case(p): output diverged across worker counts" \
+  common_test_fail "case(p): output diverged across worker counts" \
        "jobs=1 vs jobs=2 diff:
 $(diff <(echo "$det_out1") <(echo "$det_out2"))
 jobs=2 vs jobs=4 diff:
@@ -380,9 +376,9 @@ ms_nested=$((t1_nested - t0_nested))
 # Generous one-directional margin (nested must not be FASTER than 90% of unguarded) -- matches
 # test-run-all-selection.sh case9's own "not faster than" posture rather than a tight ratio.
 if [ "$ms_nested" -ge "$((ms_unguarded * 9 / 10))" ]; then
-  pass "case(q): VERIFY_DEPLOY_NESTED=1 forces sequential execution -- nested ${ms_nested}ms is not faster than 90% of unguarded --jobs 4's ${ms_unguarded}ms"
+  common_test_pass "case(q): VERIFY_DEPLOY_NESTED=1 forces sequential execution -- nested ${ms_nested}ms is not faster than 90% of unguarded --jobs 4's ${ms_unguarded}ms"
 else
-  fail "case(q): VERIFY_DEPLOY_NESTED=1 (${ms_nested}ms) was FASTER than unguarded --jobs 4 (${ms_unguarded}ms) -- the nested guard may not be forcing sequential execution"
+  common_test_fail "case(q): VERIFY_DEPLOY_NESTED=1 (${ms_nested}ms) was FASTER than unguarded --jobs 4 (${ms_unguarded}ms) -- the nested guard may not be forcing sequential execution"
 fi
 
 echo ""

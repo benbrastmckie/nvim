@@ -51,16 +51,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 LIB_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/phase-heading-patterns.sh"
@@ -94,13 +92,8 @@ done
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 BEGIN_MARKER='resume-scan-conformance-gate:begin'
 END_MARKER='resume-scan-conformance-gate:end'
@@ -154,9 +147,9 @@ script_file="$WORKDIR/syntax-${site}.sh"
   printf '%s\n' "$region"
 } > "$script_file"
 if bash -n "$script_file" 2>"$WORKDIR/syntax-${site}.err"; then
-  pass "Site ${site}: extracted sentinel region is bash -n clean"
+  common_test_pass "Site ${site}: extracted sentinel region is bash -n clean"
 else
-  fail "Site ${site}: extracted sentinel region failed bash -n: $(cat "$WORKDIR/syntax-${site}.err")"
+  common_test_fail "Site ${site}: extracted sentinel region failed bash -n: $(cat "$WORKDIR/syntax-${site}.err")"
 fi
 
 # ─── Region execution harness ──────────────────────────────────────────────────────────────────
@@ -207,7 +200,7 @@ Body text for the non-conforming heading.
 Body text for phase 5.
 EOF
 fixture_a_4c_line="$(grep -n '^### Phase 4C:' "$fixture_a" | head -1 | cut -d: -f1)"
-info "Fixture A: '### Phase 4C' heading is at line ${fixture_a_4c_line}"
+common_test_info "Fixture A: '### Phase 4C' heading is at line ${fixture_a_4c_line}"
 
 declare -A SITE_REGION=( [C]="$region_c" )
 declare -A SITE_BINDVAR=( [C]="plan_file" )
@@ -228,34 +221,34 @@ for site in C; do
   run_region "$region" "$bind_var" "$fixture_a" "$result_var" "$out" "$err"
 
   if grep -q '4C' "$err"; then
-    pass "${label}: Fixture A stderr names the non-conforming '4C' heading"
+    common_test_pass "${label}: Fixture A stderr names the non-conforming '4C' heading"
   else
-    fail "${label}: Fixture A stderr does NOT name '4C' -- got: $(cat "$err")"
+    common_test_fail "${label}: Fixture A stderr does NOT name '4C' -- got: $(cat "$err")"
   fi
 
   if grep -q "${fixture_a_4c_line}" "$err"; then
-    pass "${label}: Fixture A stderr carries the fixture line number (${fixture_a_4c_line}) of the 4C heading"
+    common_test_pass "${label}: Fixture A stderr carries the fixture line number (${fixture_a_4c_line}) of the 4C heading"
   else
-    fail "${label}: Fixture A stderr does NOT carry line number ${fixture_a_4c_line} -- got: $(cat "$err")"
+    common_test_fail "${label}: Fixture A stderr does NOT carry line number ${fixture_a_4c_line} -- got: $(cat "$err")"
   fi
 
   inconclusive="$(result_inconclusive "$out")"
   if [[ "$inconclusive" == "true" ]]; then
-    pass "${label}: Fixture A phase_scan_inconclusive is true"
+    common_test_pass "${label}: Fixture A phase_scan_inconclusive is true"
   else
-    fail "${label}: Fixture A phase_scan_inconclusive expected true, got '${inconclusive}'"
+    common_test_fail "${label}: Fixture A phase_scan_inconclusive expected true, got '${inconclusive}'"
   fi
 
   value="$(result_value "$out")"
   if [[ -z "$value" ]]; then
-    pass "${label}: Fixture A result variable (${result_var}) is empty"
+    common_test_pass "${label}: Fixture A result variable (${result_var}) is empty"
   else
-    fail "${label}: Fixture A result variable (${result_var}) expected empty, got '${value}'"
+    common_test_fail "${label}: Fixture A result variable (${result_var}) expected empty, got '${value}'"
   fi
   if [[ "$value" != "5" ]]; then
-    pass "${label}: Fixture A result variable is specifically NOT '5'"
+    common_test_pass "${label}: Fixture A result variable is specifically NOT '5'"
   else
-    fail "${label}: Fixture A result variable was '5' -- phase 5 was silently selected despite the non-conforming 4C heading"
+    common_test_fail "${label}: Fixture A result variable was '5' -- phase 5 was silently selected despite the non-conforming 4C heading"
   fi
 done
 
@@ -296,22 +289,22 @@ for site in C; do
 
   value="$(result_value "$out")"
   if [[ "$value" == "2" ]]; then
-    pass "${label}: Fixture B (happy path) resolves ${result_var}=2"
+    common_test_pass "${label}: Fixture B (happy path) resolves ${result_var}=2"
   else
-    fail "${label}: Fixture B (happy path) expected ${result_var}=2, got '${value}'"
+    common_test_fail "${label}: Fixture B (happy path) expected ${result_var}=2, got '${value}'"
   fi
 
   inconclusive="$(result_inconclusive "$out")"
   if [[ "$inconclusive" == "false" ]]; then
-    pass "${label}: Fixture B phase_scan_inconclusive is false"
+    common_test_pass "${label}: Fixture B phase_scan_inconclusive is false"
   else
-    fail "${label}: Fixture B phase_scan_inconclusive expected false, got '${inconclusive}'"
+    common_test_fail "${label}: Fixture B phase_scan_inconclusive expected false, got '${inconclusive}'"
   fi
 
   if [[ ! -s "$err" ]]; then
-    pass "${label}: Fixture B stderr is empty (no-behavior-change on the happy path)"
+    common_test_pass "${label}: Fixture B stderr is empty (no-behavior-change on the happy path)"
   else
-    fail "${label}: Fixture B stderr expected empty, got: $(cat "$err")"
+    common_test_fail "${label}: Fixture B stderr expected empty, got: $(cat "$err")"
   fi
 done
 
@@ -351,9 +344,9 @@ for site in C; do
 
   value="$(result_value "$out")"
   if [[ "$value" == "3.1" ]]; then
-    pass "${label}: Fixture C (decimal sub-phase) resolves ${result_var}=3.1"
+    common_test_pass "${label}: Fixture C (decimal sub-phase) resolves ${result_var}=3.1"
   else
-    fail "${label}: Fixture C (decimal sub-phase) expected ${result_var}=3.1, got '${value}'"
+    common_test_fail "${label}: Fixture C (decimal sub-phase) expected ${result_var}=3.1, got '${value}'"
   fi
 done
 
@@ -367,9 +360,9 @@ done
 # Site C: return error guarded by the sentinel.
 site_c_guard_line=$(grep -n 'phase_scan_inconclusive" = "true"' "$SITE_C_FILE" | head -1 | cut -d: -f1)
 if [[ -n "$site_c_guard_line" ]] && sed -n "${site_c_guard_line},$((site_c_guard_line + 3))p" "$SITE_C_FILE" | grep -q 'return error'; then
-  pass "Site C: posture branch guarded by phase_scan_inconclusive contains 'return error'"
+  common_test_pass "Site C: posture branch guarded by phase_scan_inconclusive contains 'return error'"
 else
-  fail "Site C: could not confirm posture branch contains 'return error' near line ${site_c_guard_line:-MISSING}"
+  common_test_fail "Site C: could not confirm posture branch contains 'return error' near line ${site_c_guard_line:-MISSING}"
 fi
 
 # =====================================================================
@@ -383,23 +376,23 @@ fi
 forbidden_hits="$(grep -rnE 'nonconforming_phase_headings[[:space:]]*\|[[:space:]]*grep -q' \
   "$REPO_ROOT/agent-system/extensions" 2>/dev/null | grep -v '`' || true)"
 if [[ -z "$forbidden_hits" ]]; then
-  pass "Repo-wide: zero occurrences of the racy \`nonconforming_phase_headings | grep -q\` invocation form under agent-system/extensions/"
+  common_test_pass "Repo-wide: zero occurrences of the racy \`nonconforming_phase_headings | grep -q\` invocation form under agent-system/extensions/"
 else
-  fail "Repo-wide: found racy pipe-form invocation(s):"$'\n'"${forbidden_hits}"
+  common_test_fail "Repo-wide: found racy pipe-form invocation(s):"$'\n'"${forbidden_hits}"
 fi
 
 # =====================================================================
 # Site D: bash -n only (structural, not executed -- see header note).
 # =====================================================================
 if bash -n "$SITE_D_FILE" 2>"$WORKDIR/site-d.err"; then
-  pass "Site D (update-task-status.sh): bash -n clean"
+  common_test_pass "Site D (update-task-status.sh): bash -n clean"
 else
-  fail "Site D (update-task-status.sh): bash -n failed: $(cat "$WORKDIR/site-d.err")"
+  common_test_fail "Site D (update-task-status.sh): bash -n failed: $(cat "$WORKDIR/site-d.err")"
 fi
 if grep -q 'has_nonconforming_phase_headings "\$plan_file"' "$SITE_D_FILE"; then
-  fail "Site D: the first_phase_heading auto-advance convenience (and its has_nonconforming_phase_headings guard) should have been deleted outright, but the guard invocation is still present"
+  common_test_fail "Site D: the first_phase_heading auto-advance convenience (and its has_nonconforming_phase_headings guard) should have been deleted outright, but the guard invocation is still present"
 else
-  pass "Site D: first_phase_heading auto-advance convenience and its guard were fully deleted -- update_plan_file() writes no per-phase marker on any path"
+  common_test_pass "Site D: first_phase_heading auto-advance convenience and its guard were fully deleted -- update_plan_file() writes no per-phase marker on any path"
 fi
 
 # =====================================================================

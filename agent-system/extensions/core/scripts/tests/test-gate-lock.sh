@@ -42,6 +42,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RUN_ALL_SRC="$CORE_DIR/tests/run-all.sh"
 TASK_LOCK_SRC="$CORE_DIR/task-lock.sh"
@@ -49,16 +50,8 @@ VERIFY_DEPLOY_SRC="$CORE_DIR/verify-deploy.sh"
 # shellcheck source=../lib/gate-verdict-extract-lib.sh
 source "$CORE_DIR/lib/gate-verdict-extract-lib.sh"
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
 PASSED=0
 FAILED=0
-pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
-fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
-info() { echo -e "${YELLOW}[INFO]${NC} $1"; }
 
 if [ ! -f "$RUN_ALL_SRC" ] || [ ! -f "$TASK_LOCK_SRC" ] || [ ! -f "$CORE_DIR/deploy-root-guard.sh" ] \
     || [ ! -f "$CORE_DIR/lib/common.sh" ] || [ ! -f "$CORE_DIR/lib/task-lookup-lib.sh" ] \
@@ -78,9 +71,7 @@ fi
 unset RUN_ALL_NESTED
 unset GATE_MUTEX_HELD
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # --- Fixture layout -----------------------------------------------------------------------
 EXT_CORE_DIR="$WORKDIR/agent-system/extensions/core"
@@ -122,9 +113,9 @@ chmod +x "$TESTS_DIR/test-fixture-marker.sh"
 # header NOTE, not a case in its own right.
 sanity_out=$(cd "$WORKDIR" && bash "$FIXTURE_RUNNER" --quiet --only test-fixture-marker.sh 2>&1)
 if [ -d "$GATE_LOCK_DIR" ]; then
-  fail "sanity: fixture depth check -- .gate-lock should never survive past a completed invocation" "$sanity_out"
+  common_test_fail "sanity: fixture depth check -- .gate-lock should never survive past a completed invocation" "$sanity_out"
 else
-  pass "sanity: fixture resolves and runs cleanly before the real cases begin"
+  common_test_pass "sanity: fixture resolves and runs cleanly before the real cases begin"
 fi
 
 # =====================================================================
@@ -153,19 +144,19 @@ p2_start=$(awk '$1=="p2" && $2=="start" {print $3}' "$MARKER_FILE_A")
 p2_finish=$(awk '$1=="p2" && $2=="finish" {print $3}' "$MARKER_FILE_A")
 
 if [ -z "$p1_start" ] || [ -z "$p1_finish" ] || [ -z "$p2_start" ] || [ -z "$p2_finish" ]; then
-  fail "case: serialization -- markers missing" "$(cat "$MARKER_FILE_A")"
+  common_test_fail "case: serialization -- markers missing" "$(cat "$MARKER_FILE_A")"
 elif [ "$serialization_ok" != "true" ]; then
-  fail "case: serialization -- one or both fixture batteries exited non-zero (p1=$p1_rc p2=$p2_rc)"
+  common_test_fail "case: serialization -- one or both fixture batteries exited non-zero (p1=$p1_rc p2=$p2_rc)"
 elif { [ "$p1_finish" -le "$p2_start" ] || [ "$p2_finish" -le "$p1_start" ]; }; then
-  pass "case: serialization -- two concurrent full-battery invocations did not overlap ([$p1_start,$p1_finish] vs [$p2_start,$p2_finish])"
+  common_test_pass "case: serialization -- two concurrent full-battery invocations did not overlap ([$p1_start,$p1_finish] vs [$p2_start,$p2_finish])"
 else
-  fail "case: serialization -- windows overlapped ([$p1_start,$p1_finish] vs [$p2_start,$p2_finish]) -- the mutex failed to serialize them"
+  common_test_fail "case: serialization -- windows overlapped ([$p1_start,$p1_finish] vs [$p2_start,$p2_finish]) -- the mutex failed to serialize them"
 fi
 
 if [ -d "$GATE_LOCK_DIR" ]; then
-  fail "case: serialization (no-leak) -- $GATE_LOCK_DIR still present after both invocations exited"
+  common_test_fail "case: serialization (no-leak) -- $GATE_LOCK_DIR still present after both invocations exited"
 else
-  pass "case: serialization (no-leak) -- $GATE_LOCK_DIR absent after both invocations exited"
+  common_test_pass "case: serialization (no-leak) -- $GATE_LOCK_DIR absent after both invocations exited"
 fi
 
 # =====================================================================
@@ -197,11 +188,11 @@ nb_p2_start=$(awk '$1=="p2" && $2=="start" {print $3}' "$MARKER_FILE_B")
 nb_p2_finish=$(awk '$1=="p2" && $2=="finish" {print $3}' "$MARKER_FILE_B")
 
 if [ -z "$nb_p1_start" ] || [ -z "$nb_p1_finish" ] || [ -z "$nb_p2_start" ] || [ -z "$nb_p2_finish" ]; then
-  fail "case: non-vacuousness -- markers missing" "$(cat "$MARKER_FILE_B")"
+  common_test_fail "case: non-vacuousness -- markers missing" "$(cat "$MARKER_FILE_B")"
 elif { [ "$nb_p1_finish" -le "$nb_p2_start" ] || [ "$nb_p2_finish" -le "$nb_p1_start" ]; }; then
-  fail "case: non-vacuousness -- windows did NOT overlap with coordination disabled ([$nb_p1_start,$nb_p1_finish] vs [$nb_p2_start,$nb_p2_finish]) -- the serialization case above may be passing for an unrelated reason"
+  common_test_fail "case: non-vacuousness -- windows did NOT overlap with coordination disabled ([$nb_p1_start,$nb_p1_finish] vs [$nb_p2_start,$nb_p2_finish]) -- the serialization case above may be passing for an unrelated reason"
 else
-  pass "case: non-vacuousness -- with the deployed task-lock.sh absent (fail-open), the two invocations DID overlap ([$nb_p1_start,$nb_p1_finish] vs [$nb_p2_start,$nb_p2_finish]), confirming the serialization case above is non-vacuous"
+  common_test_pass "case: non-vacuousness -- with the deployed task-lock.sh absent (fail-open), the two invocations DID overlap ([$nb_p1_start,$nb_p1_finish] vs [$nb_p2_start,$nb_p2_finish]), confirming the serialization case above is non-vacuous"
 fi
 
 # =====================================================================
@@ -223,7 +214,7 @@ wait "$crash_pid"
 kill -9 "$crash_pid" 2>/dev/null || true
 
 if [ ! -d "$GATE_LOCK_DIR" ]; then
-  fail "case: stale/killed holder -- expected $GATE_LOCK_DIR to exist after the crash-victim's acquire" "$(cat "$WORKDIR/crash-token.txt")"
+  common_test_fail "case: stale/killed holder -- expected $GATE_LOCK_DIR to exist after the crash-victim's acquire" "$(cat "$WORKDIR/crash-token.txt")"
 else
   # Backdate claimed_at well past the 2s holder-declared stale_sec written at acquire time.
   echo "$(( $(date -u +%s) - 10 ))" > "$GATE_LOCK_DIR/claimed_at"
@@ -233,24 +224,24 @@ else
   reclaim_token=$(printf '%s\n' "$reclaim_out" | tail -1)
 
   if [ "$reclaim_rc" -ne 0 ]; then
-    fail "case: stale/killed holder -- reclaiming acquire did not succeed (rc=$reclaim_rc)" "$reclaim_out"
+    common_test_fail "case: stale/killed holder -- reclaiming acquire did not succeed (rc=$reclaim_rc)" "$reclaim_out"
   else
-    pass "case: stale/killed holder -- a fresh acquire succeeded after the crashed holder's window elapsed"
+    common_test_pass "case: stale/killed holder -- a fresh acquire succeeded after the crashed holder's window elapsed"
   fi
 
   if printf '%s\n' "$reclaim_out" | grep -q "WARN: reclaiming stale specs/\.gate-lock mutex"; then
-    pass "case: stale/killed holder -- the primitive's own WARN: reclaiming stale specs/.gate-lock mutex line was printed"
+    common_test_pass "case: stale/killed holder -- the primitive's own WARN: reclaiming stale specs/.gate-lock mutex line was printed"
   else
-    fail "case: stale/killed holder -- expected a 'WARN: reclaiming stale specs/.gate-lock mutex' line" "$reclaim_out"
+    common_test_fail "case: stale/killed holder -- expected a 'WARN: reclaiming stale specs/.gate-lock mutex' line" "$reclaim_out"
   fi
 
   bash "$FIXTURE_TASK_LOCK" gate-release "$reclaim_token" >/dev/null 2>&1 || true
 fi
 
 if [ -d "$GATE_LOCK_DIR" ]; then
-  fail "case: stale/killed holder (no-leak) -- $GATE_LOCK_DIR still present after release"
+  common_test_fail "case: stale/killed holder (no-leak) -- $GATE_LOCK_DIR still present after release"
 else
-  pass "case: stale/killed holder (no-leak) -- $GATE_LOCK_DIR absent after release"
+  common_test_pass "case: stale/killed holder (no-leak) -- $GATE_LOCK_DIR absent after release"
 fi
 
 # =====================================================================
@@ -289,7 +280,7 @@ while [ ! -d "$GATE_LOCK_DIR" ] && [ "$siggroup_waited" -lt 3000 ]; do
 done
 
 if [ -z "$siggroup_pid" ] || [ ! -d "$GATE_LOCK_DIR" ]; then
-  fail "case: killed holder (process-group teardown) -- could not observe both a self-reported pid and $GATE_LOCK_DIR held within the poll window; cannot exercise the signal path" "pid=[$siggroup_pid] out=$(cat "$WORKDIR/siggroup.out" 2>/dev/null || true)"
+  common_test_fail "case: killed holder (process-group teardown) -- could not observe both a self-reported pid and $GATE_LOCK_DIR held within the poll window; cannot exercise the signal path" "pid=[$siggroup_pid] out=$(cat "$WORKDIR/siggroup.out" 2>/dev/null || true)"
   [ -n "$siggroup_pid" ] && kill -TERM -- "-$siggroup_pid" 2>/dev/null || true
 else
   kill -TERM -- "-$siggroup_pid" 2>/dev/null || true
@@ -301,9 +292,9 @@ else
   done
 
   if [ -d "$GATE_LOCK_DIR" ]; then
-    fail "case: killed holder (process-group teardown) -- $GATE_LOCK_DIR still present after SIGTERM to the whole process group; the signal-scoped trap did not release it" "$(cat "$WORKDIR/siggroup.out" 2>/dev/null || true)"
+    common_test_fail "case: killed holder (process-group teardown) -- $GATE_LOCK_DIR still present after SIGTERM to the whole process group; the signal-scoped trap did not release it" "$(cat "$WORKDIR/siggroup.out" 2>/dev/null || true)"
   else
-    pass "case: killed holder (process-group teardown) -- $GATE_LOCK_DIR released promptly via the signal-scoped trap instead of leaking until the staleness window"
+    common_test_pass "case: killed holder (process-group teardown) -- $GATE_LOCK_DIR released promptly via the signal-scoped trap instead of leaking until the staleness window"
   fi
 fi
 
@@ -314,21 +305,21 @@ fi
 nested_out=$(cd "$WORKDIR" && RUN_ALL_NESTED=1 MARKER_FILE="$WORKDIR/markers-nested.txt" MARKER_LABEL=n1 bash "$FIXTURE_RUNNER" --quiet 2>&1)
 nested_rc=$?
 if [ -d "$GATE_LOCK_DIR" ]; then
-  fail "case: nested invocation (RUN_ALL_NESTED=1) -- $GATE_LOCK_DIR was created" "$nested_out"
+  common_test_fail "case: nested invocation (RUN_ALL_NESTED=1) -- $GATE_LOCK_DIR was created" "$nested_out"
 elif [ "$nested_rc" -ne 0 ]; then
-  fail "case: nested invocation (RUN_ALL_NESTED=1) -- battery did not complete with its normal verdict (rc=$nested_rc)" "$nested_out"
+  common_test_fail "case: nested invocation (RUN_ALL_NESTED=1) -- battery did not complete with its normal verdict (rc=$nested_rc)" "$nested_out"
 else
-  pass "case: nested invocation (RUN_ALL_NESTED=1) -- no mutex created, battery completed normally"
+  common_test_pass "case: nested invocation (RUN_ALL_NESTED=1) -- no mutex created, battery completed normally"
 fi
 
 guest_out=$(cd "$WORKDIR" && GATE_MUTEX_HELD=1 MARKER_FILE="$WORKDIR/markers-guest.txt" MARKER_LABEL=g1 bash "$FIXTURE_RUNNER" --quiet 2>&1)
 guest_rc=$?
 if [ -d "$GATE_LOCK_DIR" ]; then
-  fail "case: nested invocation (inherited GATE_MUTEX_HELD=1) -- $GATE_LOCK_DIR was created" "$guest_out"
+  common_test_fail "case: nested invocation (inherited GATE_MUTEX_HELD=1) -- $GATE_LOCK_DIR was created" "$guest_out"
 elif [ "$guest_rc" -ne 0 ]; then
-  fail "case: nested invocation (inherited GATE_MUTEX_HELD=1) -- battery did not complete with its normal verdict (rc=$guest_rc)" "$guest_out"
+  common_test_fail "case: nested invocation (inherited GATE_MUTEX_HELD=1) -- battery did not complete with its normal verdict (rc=$guest_rc)" "$guest_out"
 else
-  pass "case: nested invocation (inherited GATE_MUTEX_HELD=1) -- no mutex created, battery completed normally"
+  common_test_pass "case: nested invocation (inherited GATE_MUTEX_HELD=1) -- no mutex created, battery completed normally"
 fi
 
 # =====================================================================
@@ -339,11 +330,11 @@ for jobs_n in 1 2; do
   leak_out=$(cd "$WORKDIR" && MARKER_FILE="$WORKDIR/markers-leak-${jobs_n}.txt" MARKER_LABEL="leak${jobs_n}" bash "$FIXTURE_RUNNER" --quiet --jobs "$jobs_n" 2>&1)
   leak_rc=$?
   if [ -d "$GATE_LOCK_DIR" ]; then
-    fail "case: no-leak (--jobs $jobs_n) -- $GATE_LOCK_DIR still present after exit" "$leak_out"
+    common_test_fail "case: no-leak (--jobs $jobs_n) -- $GATE_LOCK_DIR still present after exit" "$leak_out"
   elif [ "$leak_rc" -ne 0 ]; then
-    fail "case: no-leak (--jobs $jobs_n) -- battery exited non-zero (rc=$leak_rc)" "$leak_out"
+    common_test_fail "case: no-leak (--jobs $jobs_n) -- battery exited non-zero (rc=$leak_rc)" "$leak_out"
   else
-    pass "case: no-leak (--jobs $jobs_n) -- $GATE_LOCK_DIR absent after a normal full-battery exit"
+    common_test_pass "case: no-leak (--jobs $jobs_n) -- $GATE_LOCK_DIR absent after a normal full-battery exit"
   fi
 done
 
@@ -366,28 +357,28 @@ failopen_runall_out=$(cd "$WORKDIR" && MARKER_FILE="$WORKDIR/markers-failopen-ru
 failopen_runall_rc=$?
 
 if [ "$failopen_runall_rc" -ne 0 ]; then
-  fail "case: fail-open (run-all.sh) -- battery did not report its real verdict (rc=$failopen_runall_rc)" "$failopen_runall_out"
+  common_test_fail "case: fail-open (run-all.sh) -- battery did not report its real verdict (rc=$failopen_runall_rc)" "$failopen_runall_out"
 elif ! printf '%s\n' "$failopen_runall_out" | grep -q '^WARNING: failed to acquire specs/\.gate-lock mutex'; then
-  fail "case: fail-open (run-all.sh) -- expected a named WARNING: line" "$failopen_runall_out"
+  common_test_fail "case: fail-open (run-all.sh) -- expected a named WARNING: line" "$failopen_runall_out"
 elif [ -d "$GATE_LOCK_DIR" ]; then
-  fail "case: fail-open (run-all.sh) -- $GATE_LOCK_DIR should never be created when acquire itself fails"
+  common_test_fail "case: fail-open (run-all.sh) -- $GATE_LOCK_DIR should never be created when acquire itself fails"
 else
-  pass "case: fail-open (run-all.sh) -- battery still ran and reported its real verdict, with a named WARNING: line"
+  common_test_pass "case: fail-open (run-all.sh) -- battery still ran and reported its real verdict, with a named WARNING: line"
 fi
 
 failopen_vd_out=$(MARKER_FILE="$WORKDIR/markers-failopen-vd.txt" MARKER_LABEL=fo2 bash "$VERIFY_DEPLOY_SRC" --only-gate 8 "$WORKDIR" 2>&1)
 failopen_vd_rc=$?
 
 if [ "$failopen_vd_rc" -ne 0 ]; then
-  fail "case: fail-open (verify-deploy.sh Gate 8) -- did not report a real PASS verdict (rc=$failopen_vd_rc)" "$failopen_vd_out"
+  common_test_fail "case: fail-open (verify-deploy.sh Gate 8) -- did not report a real PASS verdict (rc=$failopen_vd_rc)" "$failopen_vd_out"
 elif ! printf '%s\n' "$failopen_vd_out" | grep -q '^WARNING: failed to acquire specs/\.gate-lock mutex'; then
-  fail "case: fail-open (verify-deploy.sh Gate 8) -- expected a named WARNING: line" "$failopen_vd_out"
+  common_test_fail "case: fail-open (verify-deploy.sh Gate 8) -- expected a named WARNING: line" "$failopen_vd_out"
 elif ! printf '%s\n' "$failopen_vd_out" | grep -qF '[PASS] run-all.sh: all discovered suites passed'; then
-  fail "case: fail-open (verify-deploy.sh Gate 8) -- expected Gate 8's real PASS line" "$failopen_vd_out"
+  common_test_fail "case: fail-open (verify-deploy.sh Gate 8) -- expected Gate 8's real PASS line" "$failopen_vd_out"
 elif [ -d "$GATE_LOCK_DIR" ]; then
-  fail "case: fail-open (verify-deploy.sh Gate 8) -- $GATE_LOCK_DIR should never be created when acquire itself fails"
+  common_test_fail "case: fail-open (verify-deploy.sh Gate 8) -- $GATE_LOCK_DIR should never be created when acquire itself fails"
 else
-  pass "case: fail-open (verify-deploy.sh Gate 8) -- Gate 8 still ran and reported its real PASS verdict, with a named WARNING: line"
+  common_test_pass "case: fail-open (verify-deploy.sh Gate 8) -- Gate 8 still ran and reported its real PASS verdict, with a named WARNING: line"
 fi
 
 rm -f "$FIXTURE_TASK_LOCK"
@@ -425,16 +416,16 @@ verdict_c1_block="$(extract_verdict_block "$verdict_c1_out")"
 verdict_c2_block="$(extract_verdict_block "$verdict_c2_out")"
 
 if [ "$verdict_serial_block" = "$verdict_c1_block" ] && [ "$verdict_serial_block" = "$verdict_c2_block" ]; then
-  pass "case: verdict identity -- serial baseline and two concurrent invocations produced byte-identical [FAIL] line sets and summary lines"
+  common_test_pass "case: verdict identity -- serial baseline and two concurrent invocations produced byte-identical [FAIL] line sets and summary lines"
 else
-  fail "case: verdict identity -- verdict blocks diverged" "serial vs c1: $(diff <(printf '%s\n' "$verdict_serial_block") <(printf '%s\n' "$verdict_c1_block"))
+  common_test_fail "case: verdict identity -- verdict blocks diverged" "serial vs c1: $(diff <(printf '%s\n' "$verdict_serial_block") <(printf '%s\n' "$verdict_c1_block"))
 serial vs c2: $(diff <(printf '%s\n' "$verdict_serial_block") <(printf '%s\n' "$verdict_c2_block"))"
 fi
 
 if [ -d "$GATE_LOCK_DIR" ]; then
-  fail "case: verdict identity (no-leak) -- $GATE_LOCK_DIR still present after all three invocations exited"
+  common_test_fail "case: verdict identity (no-leak) -- $GATE_LOCK_DIR still present after all three invocations exited"
 else
-  pass "case: verdict identity (no-leak) -- $GATE_LOCK_DIR absent after all three invocations exited"
+  common_test_pass "case: verdict identity (no-leak) -- $GATE_LOCK_DIR absent after all three invocations exited"
 fi
 
 echo ""

@@ -35,15 +35,13 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 LINT_SRC="$SCRIPT_DIR/../check-task-references.sh"
 LIB_SRC="$SCRIPT_DIR/../lib/task-reference-patterns.sh"
 HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-no-task-references.sh"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [[ ! -f "$LINT_SRC" ]]; then
   echo "ERROR: expected check-task-references.sh at $LINT_SRC" >&2
@@ -66,9 +64,7 @@ if ! command -v git >/dev/null 2>&1; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # Fixture: a consumer-repo-shaped layout. Deliberately NO agent-system/extensions, lua,
@@ -197,9 +193,9 @@ run_lint() {
 out="$WORKDIR/case1.txt"
 code="$(run_lint "" "$out")"
 if [[ "$code" -eq 1 ]] && grep -qE '^  docs/notes\.md:[0-9]+:' "$out"; then
-  pass "docs/ citation found (exit 1, finding names docs/notes.md)"
+  common_test_pass "docs/ citation found (exit 1, finding names docs/notes.md)"
 else
-  fail "docs/ citation not found as expected (exit=$code); output:
+  common_test_fail "docs/ citation not found as expected (exit=$code); output:
 $(cat "$out")"
 fi
 
@@ -207,9 +203,9 @@ fi
 # Case 2: source-dir (code/) citation is found -- the ModelChecker reproduction.
 # =====================================================================
 if grep -qE '^  code/operators\.py:[0-9]+:' "$out"; then
-  pass "source dir (code/) citation found"
+  common_test_pass "source dir (code/) citation found"
 else
-  fail "source dir (code/) citation not found; output:
+  common_test_fail "source dir (code/) citation not found; output:
 $(cat "$out")"
 fi
 
@@ -217,9 +213,9 @@ fi
 # Case 2b: README.md citation is found too (repo-wide, not tree-scoped).
 # =====================================================================
 if grep -qE '^  README\.md:[0-9]+:' "$out"; then
-  pass "README.md citation found"
+  common_test_pass "README.md citation found"
 else
-  fail "README.md citation not found; output:
+  common_test_fail "README.md citation not found; output:
 $(cat "$out")"
 fi
 
@@ -227,9 +223,9 @@ fi
 # Case 3: specs/** citation is NOT found -- the one path exemption holds.
 # =====================================================================
 if grep -q 'specs/007_example_task' "$out"; then
-  fail "specs/** citation was scanned (should be exempt)"
+  common_test_fail "specs/** citation was scanned (should be exempt)"
 else
-  pass "specs/** citation correctly exempt"
+  common_test_pass "specs/** citation correctly exempt"
 fi
 
 # =====================================================================
@@ -237,23 +233,23 @@ fi
 # memory's own frontmatter provenance field and the index that mirrors it, neither marked.
 # =====================================================================
 if grep -q 'MEM-technique-example' "$out"; then
-  fail ".memory/ memory-file citation was scanned (should be exempt)"
+  common_test_fail ".memory/ memory-file citation was scanned (should be exempt)"
 else
-  pass ".memory/ memory-file citation correctly exempt"
+  common_test_pass ".memory/ memory-file citation correctly exempt"
 fi
 if grep -q 'memory-index.json' "$out"; then
-  fail ".memory/ index citation was scanned (should be exempt)"
+  common_test_fail ".memory/ index citation was scanned (should be exempt)"
 else
-  pass ".memory/ index citation correctly exempt"
+  common_test_pass ".memory/ index citation correctly exempt"
 fi
 
 # =====================================================================
 # Case 4: task-ref-ok-marked region is NOT found.
 # =====================================================================
 if grep -q 'docs/marked.md' "$out"; then
-  fail "task-ref-ok-marked citation was scanned (should be stripped)"
+  common_test_fail "task-ref-ok-marked citation was scanned (should be stripped)"
 else
-  pass "task-ref-ok-marked citation correctly stripped"
+  common_test_pass "task-ref-ok-marked citation correctly stripped"
 fi
 
 # =====================================================================
@@ -262,18 +258,18 @@ fi
 # unaffected by the shared library's internal depth-counter rewrite.
 # =====================================================================
 if grep -q 'docs/nested-pair.md' "$out"; then
-  fail "nested-pair.md citation was scanned (should be stripped by the depth-counter parser)"
+  common_test_fail "nested-pair.md citation was scanned (should be stripped by the depth-counter parser)"
 else
-  pass "nested-pair.md citation correctly stripped (nested pairs resolve by depth)"
+  common_test_pass "nested-pair.md citation correctly stripped (nested pairs resolve by depth)"
 fi
 
 # =====================================================================
 # Case 5: gitignored file carrying a citation is NOT found (git ls-files exclusion).
 # =====================================================================
 if grep -q 'ignored/scratch.md' "$out"; then
-  fail "gitignored citation was scanned (git ls-files should exclude it)"
+  common_test_fail "gitignored citation was scanned (git ls-files should exclude it)"
 else
-  pass "gitignored citation correctly excluded"
+  common_test_pass "gitignored citation correctly excluded"
 fi
 
 # =====================================================================
@@ -282,9 +278,9 @@ fi
 out6="$WORKDIR/case6.txt"
 code6="$(run_lint "docs" "$out6")"
 if [[ "$code6" -eq 1 ]] && grep -qE '^  docs/notes\.md:[0-9]+:' "$out6"; then
-  pass "PATH_SCOPE=docs finds the docs/ citation, exit 1 (never 2)"
+  common_test_pass "PATH_SCOPE=docs finds the docs/ citation, exit 1 (never 2)"
 else
-  fail "PATH_SCOPE=docs expected exit 1 with docs/notes.md finding, got exit=$code6; output:
+  common_test_fail "PATH_SCOPE=docs expected exit 1 with docs/notes.md finding, got exit=$code6; output:
 $(cat "$out6")"
 fi
 
@@ -294,9 +290,9 @@ fi
 out6b="$WORKDIR/case6b.txt"
 code6b="$(run_lint "nonexistent-scope-xyz" "$out6b")"
 if [[ "$code6b" -eq 0 ]] && grep -q '\[SKIP\]' "$out6b"; then
-  pass "PATH_SCOPE naming a non-existent path prints [SKIP] and exits 0"
+  common_test_pass "PATH_SCOPE naming a non-existent path prints [SKIP] and exits 0"
 else
-  fail "PATH_SCOPE nonexistent-scope-xyz expected exit 0 + [SKIP], got exit=$code6b; output:
+  common_test_fail "PATH_SCOPE nonexistent-scope-xyz expected exit 0 + [SKIP], got exit=$code6b; output:
 $(cat "$out6b")"
 fi
 
@@ -306,9 +302,9 @@ fi
 out6c="$WORKDIR/case6c.txt"
 code6c="$(run_lint "README.md" "$out6c")"
 if [[ "$code6c" -eq 1 ]] && grep -qE '^  README\.md:[0-9]+:' "$out6c" && ! grep -q '\[SKIP\]' "$out6c"; then
-  pass "PATH_SCOPE naming a single file is scanned (not skipped)"
+  common_test_pass "PATH_SCOPE naming a single file is scanned (not skipped)"
 else
-  fail "PATH_SCOPE=README.md expected exit 1, finding, no [SKIP], got exit=$code6c; output:
+  common_test_fail "PATH_SCOPE=README.md expected exit 1, finding, no [SKIP], got exit=$code6c; output:
 $(cat "$out6c")"
 fi
 
@@ -317,9 +313,9 @@ fi
 # ^  [^:]+:[0-9]+:
 # =====================================================================
 if grep -E '^  [^:]+:[0-9]+:' "$out" >/dev/null; then
-  pass "per-finding lines match the gate 4 regex ^  [^:]+:[0-9]+:"
+  common_test_pass "per-finding lines match the gate 4 regex ^  [^:]+:[0-9]+:"
 else
-  fail "no line in default-scan output matched the gate 4 regex"
+  common_test_fail "no line in default-scan output matched the gate 4 regex"
 fi
 
 # =====================================================================
@@ -361,11 +357,11 @@ for rel in "${!AGREEMENT_FIXTURES[@]}"; do
   hook_blocks "$rel" "$content" && hook_verdict=1
   if [[ "$lint_verdict" -ne "$hook_verdict" ]]; then
     agreement_ok=0
-    fail "lint/hook DISAGREE on $rel (lint_found=$lint_verdict hook_blocks=$hook_verdict)"
+    common_test_fail "lint/hook DISAGREE on $rel (lint_found=$lint_verdict hook_blocks=$hook_verdict)"
   fi
 done
 if [[ "$agreement_ok" -eq 1 ]]; then
-  pass "lint and hook agree on every fixture file's in-scope verdict"
+  common_test_pass "lint and hook agree on every fixture file's in-scope verdict"
 fi
 
 # =====================================================================

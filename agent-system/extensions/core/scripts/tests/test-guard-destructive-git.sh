@@ -25,6 +25,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # This single relative path resolves to agent-system/extensions/core/hooks/ in source-store mode
 # and to .claude/hooks/ in deployed mode, with no branching -- see plan Phase 1.
 HOOK="$SCRIPT_DIR/../../hooks/guard-destructive-git.sh"
@@ -39,9 +40,6 @@ SNAPSHOT_SCRIPT="$SCRIPT_DIR/../git-snapshot.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$HOOK" ]; then
   echo "ERROR: expected guard-destructive-git.sh at $HOOK" >&2
@@ -60,9 +58,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # make_dirty_repo
 # Creates a fresh git repo under a new mktemp -d directory, commits one file, then modifies it
@@ -124,9 +120,9 @@ assert_blocked_dirty() {
   code="$(run_hook_in "$repo" "$cmd")"
   rm -rf "$repo"
   if [ "$code" -eq 2 ]; then
-    pass "$label: blocked (exit 2) in dirty repo"
+    common_test_pass "$label: blocked (exit 2) in dirty repo"
   else
-    fail "$label: expected exit 2 in dirty repo, got exit=$code"
+    common_test_fail "$label: expected exit 2 in dirty repo, got exit=$code"
   fi
 }
 
@@ -140,9 +136,9 @@ assert_allowed_dirty() {
   code="$(run_hook_in "$repo" "$cmd")"
   rm -rf "$repo"
   if [ "$code" -eq 0 ]; then
-    pass "$label: allowed (exit 0) in dirty repo"
+    common_test_pass "$label: allowed (exit 0) in dirty repo"
   else
-    fail "$label: expected exit 0 in dirty repo, got exit=$code"
+    common_test_fail "$label: expected exit 0 in dirty repo, got exit=$code"
   fi
 }
 
@@ -155,9 +151,9 @@ assert_allowed_clean() {
   code="$(run_hook_in "$repo" "$cmd")"
   rm -rf "$repo"
   if [ "$code" -eq 0 ]; then
-    pass "$label: allowed (exit 0) in clean repo"
+    common_test_pass "$label: allowed (exit 0) in clean repo"
   else
-    fail "$label: expected exit 0 in clean repo, got exit=$code"
+    common_test_fail "$label: expected exit 0 in clean repo, got exit=$code"
   fi
 }
 
@@ -169,9 +165,9 @@ fixture_repo="$(make_dirty_repo)"
 fixture_status="$(git -C "$fixture_repo" status --porcelain)"
 rm -rf "$fixture_repo"
 if [ -n "$fixture_status" ]; then
-  pass "fixture self-check: make_dirty_repo produces a genuinely dirty tree"
+  common_test_pass "fixture self-check: make_dirty_repo produces a genuinely dirty tree"
 else
-  fail "fixture self-check: make_dirty_repo produced an EMPTY git status --porcelain -- every later BLOCK case would pass vacuously"
+  common_test_fail "fixture self-check: make_dirty_repo produced an EMPTY git status --porcelain -- every later BLOCK case would pass vacuously"
 fi
 
 # =====================================================================
@@ -183,9 +179,9 @@ empty_repo="$(make_dirty_repo)"
 empty_code="$(run_hook_in "$empty_repo" "")"
 rm -rf "$empty_repo"
 if [ "$empty_code" -eq 0 ]; then
-  pass "exemption: empty command allowed (exit 0)"
+  common_test_pass "exemption: empty command allowed (exit 0)"
 else
-  fail "exemption: empty command expected exit 0, got exit=$empty_code"
+  common_test_fail "exemption: empty command expected exit 0, got exit=$empty_code"
 fi
 
 # =====================================================================
@@ -247,9 +243,9 @@ git -C "$stash_apply_repo" stash push -u -m "foreign entry" >/dev/null 2>&1
 stash_apply_code="$(run_hook_in "$stash_apply_repo" "git stash apply")"
 rm -rf "$stash_apply_repo"
 if [ "$stash_apply_code" -eq 2 ]; then
-  pass "stash_pop_foreign: git stash apply of a foreign entry (no session_id) is refused"
+  common_test_pass "stash_pop_foreign: git stash apply of a foreign entry (no session_id) is refused"
 else
-  fail "stash_pop_foreign: expected exit 2 for apply of a foreign entry, got exit=$stash_apply_code"
+  common_test_fail "stash_pop_foreign: expected exit 2 for apply of a foreign entry, got exit=$stash_apply_code"
 fi
 
 stash_pop_repo="$(make_dirty_repo)"
@@ -257,9 +253,9 @@ git -C "$stash_pop_repo" stash push -u -m "foreign entry" >/dev/null 2>&1
 stash_pop_code="$(run_hook_in "$stash_pop_repo" "git stash pop")"
 rm -rf "$stash_pop_repo"
 if [ "$stash_pop_code" -eq 2 ]; then
-  pass "stash_pop_foreign: git stash pop of a foreign entry (no session_id) is refused"
+  common_test_pass "stash_pop_foreign: git stash pop of a foreign entry (no session_id) is refused"
 else
-  fail "stash_pop_foreign: expected exit 2 for pop of a foreign entry, got exit=$stash_pop_code"
+  common_test_fail "stash_pop_foreign: expected exit 2 for pop of a foreign entry, got exit=$stash_pop_code"
 fi
 
 # --- Regression guard: with NO stash entries at all, pop/apply have nothing to resolve and
@@ -405,9 +401,9 @@ echo "nested" > "$overstage_realdir_repo/some_dir/nested.txt"
 overstage_realdir_code="$(run_hook_in "$overstage_realdir_repo" "git add some_dir")"
 rm -rf "$overstage_realdir_repo"
 if [ "$overstage_realdir_code" -eq 2 ]; then
-  pass "overstage: git add some_dir (no trailing slash, real on-disk dir): blocked (exit 2) in dirty repo"
+  common_test_pass "overstage: git add some_dir (no trailing slash, real on-disk dir): blocked (exit 2) in dirty repo"
 else
-  fail "overstage: git add some_dir (no trailing slash, real on-disk dir): expected exit 2 in dirty repo, got exit=$overstage_realdir_code"
+  common_test_fail "overstage: git add some_dir (no trailing slash, real on-disk dir): expected exit 2 in dirty repo, got exit=$overstage_realdir_code"
 fi
 
 # --- BLOCK: glob pathspec ---
@@ -528,9 +524,9 @@ assert_blocked_clean() {
   code="$(run_hook_in "$repo" "$cmd")"
   rm -rf "$repo"
   if [ "$code" -eq 2 ]; then
-    pass "$label: blocked (exit 2) in clean repo"
+    common_test_pass "$label: blocked (exit 2) in clean repo"
   else
-    fail "$label: expected exit 2 in clean repo, got exit=$code"
+    common_test_fail "$label: expected exit 2 in clean repo, got exit=$code"
   fi
 }
 
@@ -545,9 +541,9 @@ assert_allowed_clean_with() {
   code="$(run_hook_in "$repo" "$cmd")"
   rm -rf "$repo"
   if [ "$code" -eq 0 ]; then
-    pass "$label: allowed (exit 0) in clean repo"
+    common_test_pass "$label: allowed (exit 0) in clean repo"
   else
-    fail "$label: expected exit 0 in clean repo, got exit=$code"
+    common_test_fail "$label: expected exit 0 in clean repo, got exit=$code"
   fi
 }
 
@@ -556,9 +552,9 @@ concurrency_fixture_check_repo="$(make_concurrency_repo add_live_lock 139)"
 concurrency_fixture_check_status="$(git -C "$concurrency_fixture_check_repo" status --porcelain)"
 rm -rf "$concurrency_fixture_check_repo"
 if [ -z "$concurrency_fixture_check_status" ]; then
-  pass "fixture self-check: concurrency fixture (live lock) keeps the tree clean"
+  common_test_pass "fixture self-check: concurrency fixture (live lock) keeps the tree clean"
 else
-  fail "fixture self-check: concurrency fixture (live lock) unexpectedly dirtied the tree"
+  common_test_fail "fixture self-check: concurrency fixture (live lock) unexpectedly dirtied the tree"
 fi
 
 # --- BLOCK cases: clean tree + a live foreign task lock ---
@@ -665,9 +661,9 @@ first_code="$(run_hook_in "$grant_repo" "git reset --hard")"
 remaining="$(grant_count_in "$grant_repo")"
 rm -rf "$grant_repo"
 if [ "$first_code" -eq 0 ] && [ "$remaining" -eq 0 ]; then
-  pass "grant: reset_hard grant allows 'git reset --hard' once and is consumed"
+  common_test_pass "grant: reset_hard grant allows 'git reset --hard' once and is consumed"
 else
-  fail "grant: expected exit=0 and grant consumed, got exit=$first_code remaining=$remaining"
+  common_test_fail "grant: expected exit=0 and grant consumed, got exit=$first_code remaining=$remaining"
 fi
 
 # --- A second attempt, with the grant already consumed, is blocked exactly as before ---
@@ -677,8 +673,8 @@ run_hook_in "$grant_repo2" "git reset --hard" >/dev/null
 echo "more dirt" >> "$grant_repo2/tracked.txt"
 second_code="$(run_hook_in "$grant_repo2" "git reset --hard")"
 rm -rf "$grant_repo2"
-[ "$second_code" -eq 2 ] && pass "grant: second 'git reset --hard' with no remaining grant is blocked" \
-  || fail "grant: expected exit=2 on second attempt, got $second_code"
+[ "$second_code" -eq 2 ] && common_test_pass "grant: second 'git reset --hard' with no remaining grant is blocked" \
+  || common_test_fail "grant: expected exit=2 on second attempt, got $second_code"
 
 # --- stash_revert mirrors the reset_hard pair: a matching grant allows the bare git stash once,
 #     consumes it, and a second bare git stash (re-dirtied) blocks exactly as before ---
@@ -687,23 +683,23 @@ mint_destructive_grant_in "$stash_grant_repo" stash_revert
 stash_first_code="$(run_hook_in "$stash_grant_repo" "git stash")"
 stash_remaining="$(grant_count_in "$stash_grant_repo")"
 if [ "$stash_first_code" -eq 0 ] && [ "$stash_remaining" -eq 0 ]; then
-  pass "grant: stash_revert grant allows 'git stash' once and is consumed"
+  common_test_pass "grant: stash_revert grant allows 'git stash' once and is consumed"
 else
-  fail "grant: expected exit=0 and grant consumed for stash_revert, got exit=$stash_first_code remaining=$stash_remaining"
+  common_test_fail "grant: expected exit=0 and grant consumed for stash_revert, got exit=$stash_first_code remaining=$stash_remaining"
 fi
 echo "more dirt" >> "$stash_grant_repo/tracked.txt"
 stash_second_code="$(run_hook_in "$stash_grant_repo" "git stash")"
 rm -rf "$stash_grant_repo"
-[ "$stash_second_code" -eq 2 ] && pass "grant: second 'git stash' with no remaining stash_revert grant is blocked" \
-  || fail "grant: expected exit=2 on second stash_revert attempt, got $stash_second_code"
+[ "$stash_second_code" -eq 2 ] && common_test_pass "grant: second 'git stash' with no remaining stash_revert grant is blocked" \
+  || common_test_fail "grant: expected exit=2 on second stash_revert attempt, got $stash_second_code"
 
 # --- No-grant behaviour is byte-identical to before: a representative blocked case still
 #     blocks the same way with PUSH_GRANT_* exported but no grant file present ---
 noregress_repo="$(make_dirty_repo)"
 noregress_code="$(run_hook_in "$noregress_repo" "git reset --hard")"
 rm -rf "$noregress_repo"
-[ "$noregress_code" -eq 2 ] && pass "grant: no-grant behaviour unchanged (git reset --hard still blocks)" \
-  || fail "grant: no-grant case expected exit=2, got $noregress_code"
+[ "$noregress_code" -eq 2 ] && common_test_pass "grant: no-grant behaviour unchanged (git reset --hard still blocks)" \
+  || common_test_fail "grant: no-grant case expected exit=2, got $noregress_code"
 
 # --- A destructive grant does NOT exempt over-staging (the asymmetry this phase must preserve) ---
 overstage_repo="$(make_dirty_repo)"
@@ -712,9 +708,9 @@ overstage_code="$(run_hook_in "$overstage_repo" "git add -A")"
 overstage_remaining="$(grant_count_in "$overstage_repo")"
 rm -rf "$overstage_repo"
 if [ "$overstage_code" -eq 2 ] && [ "$overstage_remaining" -eq 1 ]; then
-  pass "grant: 'git add -A' still blocked with a live reset_hard grant present (over-staging immunity)"
+  common_test_pass "grant: 'git add -A' still blocked with a live reset_hard grant present (over-staging immunity)"
 else
-  fail "grant: expected over-staging still blocked (exit 2) and grant untouched, got exit=$overstage_code remaining=$overstage_remaining"
+  common_test_fail "grant: expected over-staging still blocked (exit 2) and grant untouched, got exit=$overstage_code remaining=$overstage_remaining"
 fi
 
 # --- The history-rewrite predicate still fires with an unrelated grant live, for a DIFFERENT
@@ -729,9 +725,9 @@ hrw_code="$(run_hook_in "$hrw_repo" "git commit --amend -m x")"
 hrw_remaining="$(grant_count_in "$hrw_repo")"
 rm -rf "$hrw_repo"
 if [ "$hrw_code" -eq 2 ] && [ "$hrw_remaining" -eq 1 ]; then
-  pass "grant: history-rewrite predicate still fires under a live writer with an unrelated reset_hard grant present"
+  common_test_pass "grant: history-rewrite predicate still fires under a live writer with an unrelated reset_hard grant present"
 else
-  fail "grant: expected history-rewrite block (exit 2) with grant untouched, got exit=$hrw_code remaining=$hrw_remaining"
+  common_test_fail "grant: expected history-rewrite block (exit 2) with grant untouched, got exit=$hrw_code remaining=$hrw_remaining"
 fi
 
 # =====================================================================
@@ -780,9 +776,9 @@ drive_bash_call "$owned_repo" "$owned_sid" "git stash push -- tracked.txt"
 owned_pop_code="$(run_hook_in "$owned_repo" "git stash pop" "$owned_sid")"
 rm -rf "$owned_repo"
 if [ "$owned_pop_code" -eq 0 ]; then
-  pass "ACCEPTANCE 1: pop of a session-created entry passes"
+  common_test_pass "ACCEPTANCE 1: pop of a session-created entry passes"
 else
-  fail "ACCEPTANCE 1: expected exit 0 for pop of an owned entry, got exit=$owned_pop_code"
+  common_test_fail "ACCEPTANCE 1: expected exit 0 for pop of an owned entry, got exit=$owned_pop_code"
 fi
 
 # --- ACCEPTANCE 2 + refusal-prevents-the-drop: foreign pop/apply refused in the exact
@@ -811,15 +807,15 @@ for variant_label in "bare pop" "apply" "pop stash@{0}" "pop by raw sha"; do
   esac
   incident_code="$(run_hook_in "$incident_repo" "$incident_cmd" "$incident_sid")"
   if [ "$incident_code" -eq 2 ]; then
-    pass "ACCEPTANCE 2 ($variant_label): foreign entry (push-saved-nothing incident shape) refused"
+    common_test_pass "ACCEPTANCE 2 ($variant_label): foreign entry (push-saved-nothing incident shape) refused"
   else
-    fail "ACCEPTANCE 2 ($variant_label): expected exit 2, got exit=$incident_code"
+    common_test_fail "ACCEPTANCE 2 ($variant_label): expected exit 2, got exit=$incident_code"
   fi
   survive_count="$(git -C "$incident_repo" stash list | wc -l | tr -d ' ')"
   if [ "$survive_count" -eq 1 ]; then
-    pass "refusal-prevents-drop ($variant_label): foreign entry still present in git stash list after the refusal"
+    common_test_pass "refusal-prevents-drop ($variant_label): foreign entry still present in git stash list after the refusal"
   else
-    fail "refusal-prevents-drop ($variant_label): expected the foreign entry to survive, stash list has $survive_count entries"
+    common_test_fail "refusal-prevents-drop ($variant_label): expected the foreign entry to survive, stash list has $survive_count entries"
   fi
   rm -rf "$incident_repo"
 done
@@ -875,16 +871,16 @@ run_snapshot_and_pop() {
   run_hook_post_in "$repo" "$sid" "$cmd"
   ref="$(printf '%s\n' "$out" | grep -oE 'stash@\{[0-9]+\}' | head -1)"
   if [ -z "$ref" ]; then
-    fail "ACCEPTANCE 3 ($label): could not parse a stash@{N} ref from git-snapshot.sh's own output"
+    common_test_fail "ACCEPTANCE 3 ($label): could not parse a stash@{N} ref from git-snapshot.sh's own output"
     rm -rf "$repo"
     return
   fi
   pop_code="$(run_hook_in "$repo" "git stash pop ${ref}" "$sid")"
   rm -rf "$repo"
   if [ "$pop_code" -eq 0 ]; then
-    pass "ACCEPTANCE 3 ($label): git-snapshot.sh rollback pop passes under its own session"
+    common_test_pass "ACCEPTANCE 3 ($label): git-snapshot.sh rollback pop passes under its own session"
   else
-    fail "ACCEPTANCE 3 ($label): expected exit 0 for the rollback pop, got exit=$pop_code"
+    common_test_fail "ACCEPTANCE 3 ($label): expected exit 0 for the rollback pop, got exit=$pop_code"
   fi
 }
 
@@ -898,9 +894,9 @@ failclosed_repo="$(make_foreign_incident_repo "sess_test_failclosed_setup")"
 failclosed_code="$(run_hook_in "$failclosed_repo" "git stash pop")"
 rm -rf "$failclosed_repo"
 if [ "$failclosed_code" -eq 2 ]; then
-  pass "fail-closed regression: a payload with no session_id field refuses rather than allowing"
+  common_test_pass "fail-closed regression: a payload with no session_id field refuses rather than allowing"
 else
-  fail "fail-closed regression: expected exit 2 with no session_id field, got exit=$failclosed_code"
+  common_test_fail "fail-closed regression: expected exit 2 with no session_id field, got exit=$failclosed_code"
 fi
 
 # --- Grant escape hatch: a minted stash_pop_foreign grant allows one foreign pop and is
@@ -911,16 +907,16 @@ mint_destructive_grant_in "$grant_escape_repo" stash_pop_foreign
 grant_escape_code="$(run_hook_in "$grant_escape_repo" "git stash pop" "sess_test_grant_setup")"
 grant_escape_remaining="$(grant_count_in "$grant_escape_repo")"
 if [ "$grant_escape_code" -eq 0 ] && [ "$grant_escape_remaining" -eq 0 ]; then
-  pass "grant: stash_pop_foreign grant allows one foreign pop and is consumed"
+  common_test_pass "grant: stash_pop_foreign grant allows one foreign pop and is consumed"
 else
-  fail "grant: expected exit=0 and grant consumed, got exit=$grant_escape_code remaining=$grant_escape_remaining"
+  common_test_fail "grant: expected exit=0 and grant consumed, got exit=$grant_escape_code remaining=$grant_escape_remaining"
 fi
 grant_escape_second_code="$(run_hook_in "$grant_escape_repo" "git stash pop" "sess_test_grant_setup")"
 rm -rf "$grant_escape_repo"
 if [ "$grant_escape_second_code" -eq 2 ]; then
-  pass "grant: second foreign pop with no remaining stash_pop_foreign grant is blocked"
+  common_test_pass "grant: second foreign pop with no remaining stash_pop_foreign grant is blocked"
 else
-  fail "grant: expected exit=2 on second attempt, got $grant_escape_second_code"
+  common_test_fail "grant: expected exit=2 on second attempt, got $grant_escape_second_code"
 fi
 
 rm -rf "$GRANT_TEST_WORKDIR"

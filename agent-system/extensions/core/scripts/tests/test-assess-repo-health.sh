@@ -61,15 +61,13 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the source-store
 # copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. Resolve via the
 # git worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/assess-repo-health.sh"
@@ -117,26 +115,21 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 STATUS_ENUM_JSON="$(jq -c '.properties.repository_health.properties.status.enum' "$SCHEMA")"
 
 assert_status_in_enum() {
   local status="$1" label="$2"
   if printf '%s' "$STATUS_ENUM_JSON" | jq -e --arg s "$status" 'index($s) != null' >/dev/null 2>&1; then
-    pass "$label: status '$status' is a member of the declared enum"
+    common_test_pass "$label: status '$status' is a member of the declared enum"
   else
-    fail "$label: status '$status' is NOT a member of the declared enum ($STATUS_ENUM_JSON)"
+    common_test_fail "$label: status '$status' is NOT a member of the declared enum ($STATUS_ENUM_JSON)"
   fi
 }
 
-info "Fixture workdirs below are created via mktemp -d, which are never git work trees -- every case passing is itself the proof assess-repo-health.sh's non-git find fallback works, not just its git ls-files path."
+common_test_info "Fixture workdirs below are created via mktemp -d, which are never git work trees -- every case passing is itself the proof assess-repo-health.sh's non-git find fallback works, not just its git ls-files path."
 
 # =====================================================================
 # Clean fixture (control): a valid *.sh and *.json.
@@ -153,19 +146,19 @@ EOF
 
 if CLEAN_OUT="$(bash "$TOOL" --root "$CLEAN_DIR" 2>"$WORKDIR/clean_stderr")"; then
   if echo "$CLEAN_OUT" | jq -e '.build_errors == 0' >/dev/null 2>&1; then
-    pass "clean fixture (control): build_errors == 0"
+    common_test_pass "clean fixture (control): build_errors == 0"
   else
-    fail "clean fixture (control): build_errors != 0 (got: $(echo "$CLEAN_OUT" | jq -c '.build_errors'))"
+    common_test_fail "clean fixture (control): build_errors != 0 (got: $(echo "$CLEAN_OUT" | jq -c '.build_errors'))"
   fi
   clean_status="$(echo "$CLEAN_OUT" | jq -r '.status')"
   if [ "$clean_status" = "healthy" ]; then
-    pass "clean fixture (control): status == healthy"
+    common_test_pass "clean fixture (control): status == healthy"
   else
-    fail "clean fixture (control): status != healthy (got: $clean_status)"
+    common_test_fail "clean fixture (control): status != healthy (got: $clean_status)"
   fi
   assert_status_in_enum "$clean_status" "clean fixture"
 else
-  fail "clean fixture (control): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/clean_stderr")"
+  common_test_fail "clean fixture (control): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/clean_stderr")"
 fi
 
 # =====================================================================
@@ -184,19 +177,19 @@ EOF
 
 if BAR1_OUT="$(bash "$TOOL" --root "$BAR1_DIR" 2>"$WORKDIR/bar1_stderr")"; then
   if echo "$BAR1_OUT" | jq -e '.build_errors > 0' >/dev/null 2>&1; then
-    pass "Bar 1 (failing fixture): build_errors > 0"
+    common_test_pass "Bar 1 (failing fixture): build_errors > 0"
   else
-    fail "Bar 1 (failing fixture): build_errors NOT > 0 (got: $(echo "$BAR1_OUT" | jq -c '.build_errors'))"
+    common_test_fail "Bar 1 (failing fixture): build_errors NOT > 0 (got: $(echo "$BAR1_OUT" | jq -c '.build_errors'))"
   fi
   bar1_status="$(echo "$BAR1_OUT" | jq -r '.status')"
   if [ "$bar1_status" != "healthy" ]; then
-    pass "Bar 1 (failing fixture): status != healthy (got: $bar1_status)"
+    common_test_pass "Bar 1 (failing fixture): status != healthy (got: $bar1_status)"
   else
-    fail "Bar 1 (failing fixture): status == healthy despite deliberate syntax errors"
+    common_test_fail "Bar 1 (failing fixture): status == healthy despite deliberate syntax errors"
   fi
   assert_status_in_enum "$bar1_status" "Bar 1"
 else
-  fail "Bar 1 (failing fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar1_stderr")"
+  common_test_fail "Bar 1 (failing fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar1_stderr")"
 fi
 
 # =====================================================================
@@ -213,24 +206,24 @@ EOF
 
 if BAR2_OUT="$(bash "$TOOL" --root "$BAR2_DIR" 2>"$WORKDIR/bar2_stderr")"; then
   if echo "$BAR2_OUT" | jq -e '.build_errors == null' >/dev/null 2>&1; then
-    pass "Bar 2 (no-probe fixture): build_errors is JSON null"
+    common_test_pass "Bar 2 (no-probe fixture): build_errors is JSON null"
   else
-    fail "Bar 2 (no-probe fixture): build_errors is not JSON null (got: $(echo "$BAR2_OUT" | jq -c '.build_errors'))"
+    common_test_fail "Bar 2 (no-probe fixture): build_errors is not JSON null (got: $(echo "$BAR2_OUT" | jq -c '.build_errors'))"
   fi
   if echo "$BAR2_OUT" | jq -e '.build_errors != 0 and .build_errors != 1' >/dev/null 2>&1; then
-    pass "Bar 2 (no-probe fixture): build_errors is explicitly neither 0 nor 1"
+    common_test_pass "Bar 2 (no-probe fixture): build_errors is explicitly neither 0 nor 1"
   else
-    fail "Bar 2 (no-probe fixture): build_errors equals 0 or 1 (should be null/not-measured)"
+    common_test_fail "Bar 2 (no-probe fixture): build_errors equals 0 or 1 (should be null/not-measured)"
   fi
   bar2_status="$(echo "$BAR2_OUT" | jq -r '.status')"
   if [ "$bar2_status" = "unknown" ]; then
-    pass "Bar 2 (no-probe fixture): status == unknown"
+    common_test_pass "Bar 2 (no-probe fixture): status == unknown"
   else
-    fail "Bar 2 (no-probe fixture): status != unknown (got: $bar2_status)"
+    common_test_fail "Bar 2 (no-probe fixture): status != unknown (got: $bar2_status)"
   fi
   assert_status_in_enum "$bar2_status" "Bar 2"
 else
-  fail "Bar 2 (no-probe fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar2_stderr")"
+  common_test_fail "Bar 2 (no-probe fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar2_stderr")"
 fi
 
 # =====================================================================
@@ -250,9 +243,9 @@ fi
 # =====================================================================
 GENERATE_TODO="$REPO_ROOT/.claude/scripts/generate-todo.sh"
 if [[ ! -f "$GENERATE_TODO" ]]; then
-  info "Bar 3 (frontmatter idempotence, regression lock): SKIPPED -- deployed .claude/scripts/generate-todo.sh not found. generate-todo.sh requires a deployed tree (its deploy-root-guard.sh refuses the source-store copy); deploy first, then re-run this suite to exercise Bar 3."
+  common_test_info "Bar 3 (frontmatter idempotence, regression lock): SKIPPED -- deployed .claude/scripts/generate-todo.sh not found. generate-todo.sh requires a deployed tree (its deploy-root-guard.sh refuses the source-store copy); deploy first, then re-run this suite to exercise Bar 3."
 else
-  info "Bar 3 (frontmatter idempotence): generate-todo.sh is UNMODIFIED by this plan -- this case is a regression lock on its existing full-overwrite-every-run behavior, not a fix."
+  common_test_info "Bar 3 (frontmatter idempotence): generate-todo.sh is UNMODIFIED by this plan -- this case is a regression lock on its existing full-overwrite-every-run behavior, not a fix."
   BAR3_STATE="$WORKDIR/bar3_state.json"
   cat > "$BAR3_STATE" <<'EOF'
 {
@@ -288,12 +281,12 @@ EOF
   if bash "$GENERATE_TODO" --state "$BAR3_STATE" --todo "$BAR3_TODO_1" --no-log 2>"$WORKDIR/bar3_stderr_1" \
      && bash "$GENERATE_TODO" --state "$BAR3_STATE" --todo "$BAR3_TODO_2" --no-log 2>"$WORKDIR/bar3_stderr_2"; then
     if diff <(extract_frontmatter "$BAR3_TODO_1") <(extract_frontmatter "$BAR3_TODO_2") >/dev/null 2>&1; then
-      pass "Bar 3 (frontmatter idempotence): two generate-todo.sh runs against a fixed state.json produced byte-identical frontmatter"
+      common_test_pass "Bar 3 (frontmatter idempotence): two generate-todo.sh runs against a fixed state.json produced byte-identical frontmatter"
     else
-      fail "Bar 3 (frontmatter idempotence): frontmatter differed between two runs against the same state.json"
+      common_test_fail "Bar 3 (frontmatter idempotence): frontmatter differed between two runs against the same state.json"
     fi
   else
-    fail "Bar 3 (frontmatter idempotence): generate-todo.sh exited non-zero; stderr: $(cat "$WORKDIR/bar3_stderr_1" "$WORKDIR/bar3_stderr_2" 2>/dev/null)"
+    common_test_fail "Bar 3 (frontmatter idempotence): generate-todo.sh exited non-zero; stderr: $(cat "$WORKDIR/bar3_stderr_1" "$WORKDIR/bar3_stderr_2" 2>/dev/null)"
   fi
 fi
 
@@ -305,9 +298,9 @@ fi
 # path moved/renamed/deleted but not yet staged) actually arises.
 # =====================================================================
 if ! command -v git >/dev/null 2>&1; then
-  info "Bars 4-6 (git-fixture regression cases): SKIPPED -- git not found on PATH."
+  common_test_info "Bars 4-6 (git-fixture regression cases): SKIPPED -- git not found on PATH."
 else
-  info "Bars 4-6 below build real git work trees (git init/add/commit), unlike every mktemp -d fixture above -- they exercise assess-repo-health.sh's git ls-files enumeration path, not its find fallback."
+  common_test_info "Bars 4-6 below build real git work trees (git init/add/commit), unlike every mktemp -d fixture above -- they exercise assess-repo-health.sh's git ls-files enumeration path, not its find fallback."
 
   git_fixture_init() {
     local dir="$1"
@@ -343,24 +336,24 @@ EOF
 
   if BAR4_OUT="$(bash "$TOOL" --root "$BAR4_DIR" 2>"$WORKDIR/bar4_stderr")"; then
     if echo "$BAR4_OUT" | jq -e '.build_errors == 0' >/dev/null 2>&1; then
-      pass "Bar 4 (phantom-only, git fixture): build_errors == 0"
+      common_test_pass "Bar 4 (phantom-only, git fixture): build_errors == 0"
     else
-      fail "Bar 4 (phantom-only, git fixture): build_errors != 0 (got: $(echo "$BAR4_OUT" | jq -c '.build_errors'))"
+      common_test_fail "Bar 4 (phantom-only, git fixture): build_errors != 0 (got: $(echo "$BAR4_OUT" | jq -c '.build_errors'))"
     fi
     bar4_status="$(echo "$BAR4_OUT" | jq -r '.status')"
     if [ "$bar4_status" = "healthy" ]; then
-      pass "Bar 4 (phantom-only, git fixture): status == healthy"
+      common_test_pass "Bar 4 (phantom-only, git fixture): status == healthy"
     else
-      fail "Bar 4 (phantom-only, git fixture): status != healthy (got: $bar4_status)"
+      common_test_fail "Bar 4 (phantom-only, git fixture): status != healthy (got: $bar4_status)"
     fi
     if echo "$BAR4_OUT" | jq -e '.phantom_paths == 1' >/dev/null 2>&1; then
-      pass "Bar 4 (phantom-only, git fixture): phantom_paths == 1"
+      common_test_pass "Bar 4 (phantom-only, git fixture): phantom_paths == 1"
     else
-      fail "Bar 4 (phantom-only, git fixture): phantom_paths != 1 (got: $(echo "$BAR4_OUT" | jq -c '.phantom_paths'))"
+      common_test_fail "Bar 4 (phantom-only, git fixture): phantom_paths != 1 (got: $(echo "$BAR4_OUT" | jq -c '.phantom_paths'))"
     fi
     assert_status_in_enum "$bar4_status" "Bar 4"
   else
-    fail "Bar 4 (phantom-only, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar4_stderr")"
+    common_test_fail "Bar 4 (phantom-only, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar4_stderr")"
   fi
 
   # ===================================================================
@@ -384,24 +377,24 @@ EOF
 
   if BAR5_OUT="$(bash "$TOOL" --root "$BAR5_DIR" 2>"$WORKDIR/bar5_stderr")"; then
     if echo "$BAR5_OUT" | jq -e '.build_errors == 1' >/dev/null 2>&1; then
-      pass "Bar 5 (phantom + real defect, git fixture): build_errors == 1 exactly"
+      common_test_pass "Bar 5 (phantom + real defect, git fixture): build_errors == 1 exactly"
     else
-      fail "Bar 5 (phantom + real defect, git fixture): build_errors != 1 (got: $(echo "$BAR5_OUT" | jq -c '.build_errors'))"
+      common_test_fail "Bar 5 (phantom + real defect, git fixture): build_errors != 1 (got: $(echo "$BAR5_OUT" | jq -c '.build_errors'))"
     fi
     bar5_status="$(echo "$BAR5_OUT" | jq -r '.status')"
     if [ "$bar5_status" = "critical" ]; then
-      pass "Bar 5 (phantom + real defect, git fixture): status == critical"
+      common_test_pass "Bar 5 (phantom + real defect, git fixture): status == critical"
     else
-      fail "Bar 5 (phantom + real defect, git fixture): status != critical (got: $bar5_status)"
+      common_test_fail "Bar 5 (phantom + real defect, git fixture): status != critical (got: $bar5_status)"
     fi
     if echo "$BAR5_OUT" | jq -e '.phantom_paths == 1' >/dev/null 2>&1; then
-      pass "Bar 5 (phantom + real defect, git fixture): phantom_paths == 1"
+      common_test_pass "Bar 5 (phantom + real defect, git fixture): phantom_paths == 1"
     else
-      fail "Bar 5 (phantom + real defect, git fixture): phantom_paths != 1 (got: $(echo "$BAR5_OUT" | jq -c '.phantom_paths'))"
+      common_test_fail "Bar 5 (phantom + real defect, git fixture): phantom_paths != 1 (got: $(echo "$BAR5_OUT" | jq -c '.phantom_paths'))"
     fi
     assert_status_in_enum "$bar5_status" "Bar 5"
   else
-    fail "Bar 5 (phantom + real defect, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar5_stderr")"
+    common_test_fail "Bar 5 (phantom + real defect, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar5_stderr")"
   fi
 
   # ===================================================================
@@ -421,29 +414,29 @@ EOF
 
   if BAR6_OUT="$(bash "$TOOL" --root "$BAR6_DIR" 2>"$WORKDIR/bar6_stderr")"; then
     if echo "$BAR6_OUT" | jq -e '.build_errors == null' >/dev/null 2>&1; then
-      pass "Bar 6 (all-phantom degenerate, git fixture): build_errors is JSON null"
+      common_test_pass "Bar 6 (all-phantom degenerate, git fixture): build_errors is JSON null"
     else
-      fail "Bar 6 (all-phantom degenerate, git fixture): build_errors is not JSON null (got: $(echo "$BAR6_OUT" | jq -c '.build_errors'))"
+      common_test_fail "Bar 6 (all-phantom degenerate, git fixture): build_errors is not JSON null (got: $(echo "$BAR6_OUT" | jq -c '.build_errors'))"
     fi
     if echo "$BAR6_OUT" | jq -e '.build_errors != 0 and .build_errors != 1' >/dev/null 2>&1; then
-      pass "Bar 6 (all-phantom degenerate, git fixture): build_errors is explicitly neither 0 nor 1"
+      common_test_pass "Bar 6 (all-phantom degenerate, git fixture): build_errors is explicitly neither 0 nor 1"
     else
-      fail "Bar 6 (all-phantom degenerate, git fixture): build_errors equals 0 or 1 (should be null/not-measured)"
+      common_test_fail "Bar 6 (all-phantom degenerate, git fixture): build_errors equals 0 or 1 (should be null/not-measured)"
     fi
     bar6_status="$(echo "$BAR6_OUT" | jq -r '.status')"
     if [ "$bar6_status" = "unknown" ]; then
-      pass "Bar 6 (all-phantom degenerate, git fixture): status == unknown"
+      common_test_pass "Bar 6 (all-phantom degenerate, git fixture): status == unknown"
     else
-      fail "Bar 6 (all-phantom degenerate, git fixture): status != unknown (got: $bar6_status)"
+      common_test_fail "Bar 6 (all-phantom degenerate, git fixture): status != unknown (got: $bar6_status)"
     fi
     if echo "$BAR6_OUT" | jq -e '.phantom_paths == 1' >/dev/null 2>&1; then
-      pass "Bar 6 (all-phantom degenerate, git fixture): phantom_paths == 1"
+      common_test_pass "Bar 6 (all-phantom degenerate, git fixture): phantom_paths == 1"
     else
-      fail "Bar 6 (all-phantom degenerate, git fixture): phantom_paths != 1 (got: $(echo "$BAR6_OUT" | jq -c '.phantom_paths'))"
+      common_test_fail "Bar 6 (all-phantom degenerate, git fixture): phantom_paths != 1 (got: $(echo "$BAR6_OUT" | jq -c '.phantom_paths'))"
     fi
     assert_status_in_enum "$bar6_status" "Bar 6"
   else
-    fail "Bar 6 (all-phantom degenerate, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar6_stderr")"
+    common_test_fail "Bar 6 (all-phantom degenerate, git fixture): assess-repo-health.sh exited non-zero; stderr: $(cat "$WORKDIR/bar6_stderr")"
   fi
 fi
 

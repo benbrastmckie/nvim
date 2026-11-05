@@ -36,13 +36,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # Same depth-independent REPO_ROOT resolution the sibling suite uses (git worktree root first,
 # fixed-depth fallback second) -- this suite lives at the identical depth under both the
 # source-store and deployed trees, so the same fallback arithmetic applies unchanged.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
@@ -86,13 +84,8 @@ done
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ─── build the isolated fixture repo: deployed dependency chain, THEN overlay the four ────────
 # task-edited files with whichever candidate resolve_inverted picked above (source-store,
@@ -134,7 +127,7 @@ ORIG_PWD="$(pwd)"
 # assertion failure -- hence exit 2 (environment error), never exit 1 (test failure), on any
 # miss in this section.
 # =====================================================================
-info "=== harness sanity (resolved-copy provenance) ==="
+common_test_info "=== harness sanity (resolved-copy provenance) ==="
 
 for pair in "skill-base.sh:$SKILL_BASE" "lib/status-vocabulary.sh:$STATUS_VOCAB" \
             "orchestrate-stage5-postflight.sh:$STAGE5_POSTFLIGHT" \
@@ -144,7 +137,7 @@ for pair in "skill-base.sh:$SKILL_BASE" "lib/status-vocabulary.sh:$STATUS_VOCAB"
   echo "[INFO] resolved $desc -> $resolved"
   case "$resolved" in
     "$SOURCE_STORE_SCRIPTS"/*)
-      pass "$desc resolved under agent-system/extensions/core/ (source-store copy)"
+      common_test_pass "$desc resolved under agent-system/extensions/core/ (source-store copy)"
       ;;
     *)
       echo "ERROR: $desc resolved to a non-source-store path ($resolved) -- this suite would silently test the wrong copy. Refusing to continue." >&2
@@ -156,14 +149,14 @@ done
 # shellcheck disable=SC1090
 . "$SKILL_BASE"
 if declare -F status_vocabulary_would_regress >/dev/null 2>&1; then
-  fail "status_vocabulary_would_regress is defined at top-level scope before any clamp call -- unexpected (it should only become defined once skill_postflight_update's monotonic-max branch sources it); harmless if so, but worth recording since it changes what the next case actually proves"
+  common_test_fail "status_vocabulary_would_regress is defined at top-level scope before any clamp call -- unexpected (it should only become defined once skill_postflight_update's monotonic-max branch sources it); harmless if so, but worth recording since it changes what the next case actually proves"
 else
-  info "status_vocabulary_would_regress not yet defined (expected -- skill_postflight_update sources it lazily, only under status_clamp_mode=monotonic-max)"
+  common_test_info "status_vocabulary_would_regress not yet defined (expected -- skill_postflight_update sources it lazily, only under status_clamp_mode=monotonic-max)"
 fi
 # shellcheck disable=SC1090
 . "$STATUS_VOCAB"
 if declare -F status_vocabulary_would_regress >/dev/null 2>&1; then
-  pass "status_vocabulary_would_regress is a defined function once lib/status-vocabulary.sh is sourced directly"
+  common_test_pass "status_vocabulary_would_regress is a defined function once lib/status-vocabulary.sh is sourced directly"
 else
   echo "ERROR: status_vocabulary_would_regress is not defined after sourcing $STATUS_VOCAB -- this is the signature of the partial-fix stale-deploy failure mode, not a logic bug. Refusing to continue." >&2
   exit 2
@@ -172,71 +165,71 @@ fi
 # =====================================================================
 # Parser: FORCE_PHASES_FLAG accumulation and canonicalization
 # =====================================================================
-info "=== parser: FORCE_PHASES_FLAG ==="
+common_test_info "=== parser: FORCE_PHASES_FLAG ==="
 
 # shellcheck disable=SC1090
 . "$PARSE_ARGS" "42 --research --plan" >/dev/null 2>&1
 if [[ "$FORCE_PHASES_FLAG" == "research,plan" ]]; then
-  pass "--research --plan yields FORCE_PHASES_FLAG=research,plan"
+  common_test_pass "--research --plan yields FORCE_PHASES_FLAG=research,plan"
 else
-  fail "--research --plan yielded FORCE_PHASES_FLAG='$FORCE_PHASES_FLAG' (expected research,plan)"
+  common_test_fail "--research --plan yielded FORCE_PHASES_FLAG='$FORCE_PHASES_FLAG' (expected research,plan)"
 fi
 
 # shellcheck disable=SC1090
 . "$PARSE_ARGS" "42 --plan --research" >/dev/null 2>&1
 if [[ "$FORCE_PHASES_FLAG" == "research,plan" ]]; then
-  pass "--plan --research yields the identical FORCE_PHASES_FLAG=research,plan (canonical-order, not token-order)"
+  common_test_pass "--plan --research yields the identical FORCE_PHASES_FLAG=research,plan (canonical-order, not token-order)"
 else
-  fail "--plan --research yielded FORCE_PHASES_FLAG='$FORCE_PHASES_FLAG' (expected research,plan)"
+  common_test_fail "--plan --research yielded FORCE_PHASES_FLAG='$FORCE_PHASES_FLAG' (expected research,plan)"
 fi
 
 # shellcheck disable=SC1090
 . "$PARSE_ARGS" "42 focus on the LSP config" >/dev/null 2>&1
 if [[ "$FORCE_PHASES_FLAG" == "" && "$FOCUS_PROMPT" == "focus on the LSP config" ]]; then
-  pass "no forcing flags yields FORCE_PHASES_FLAG='' and an intact FOCUS_PROMPT"
+  common_test_pass "no forcing flags yields FORCE_PHASES_FLAG='' and an intact FOCUS_PROMPT"
 else
-  fail "no forcing flags: FORCE_PHASES_FLAG='$FORCE_PHASES_FLAG' FOCUS_PROMPT='$FOCUS_PROMPT' (expected '' / 'focus on the LSP config')"
+  common_test_fail "no forcing flags: FORCE_PHASES_FLAG='$FORCE_PHASES_FLAG' FOCUS_PROMPT='$FOCUS_PROMPT' (expected '' / 'focus on the LSP config')"
 fi
 
 # =====================================================================
 # Rank: status_vocabulary_would_regress (the four Phase 2 cases)
 # =====================================================================
-info "=== rank: status_vocabulary_would_regress ==="
+common_test_info "=== rank: status_vocabulary_would_regress ==="
 
 if status_vocabulary_would_regress planned researched; then
-  pass "planned -> researched: regresses (returns 0)"
+  common_test_pass "planned -> researched: regresses (returns 0)"
 else
-  fail "planned -> researched: expected regression (0), got non-regression"
+  common_test_fail "planned -> researched: expected regression (0), got non-regression"
 fi
 
 if status_vocabulary_would_regress researched planned; then
-  fail "researched -> planned: expected non-regression (1), got regression"
+  common_test_fail "researched -> planned: expected non-regression (1), got regression"
 else
-  pass "researched -> planned: does not regress (returns 1)"
+  common_test_pass "researched -> planned: does not regress (returns 1)"
 fi
 
 if status_vocabulary_would_regress planned planned; then
-  pass "planned -> planned: equal rank counts as a regression for monotonic-max purposes (returns 0)"
+  common_test_pass "planned -> planned: equal rank counts as a regression for monotonic-max purposes (returns 0)"
 else
-  fail "planned -> planned: expected regression (0), got non-regression"
+  common_test_fail "planned -> planned: expected regression (0), got non-regression"
 fi
 
 if status_vocabulary_would_regress blocked researched; then
-  fail "blocked -> researched: expected non-regression (1, unranked side), got regression"
+  common_test_fail "blocked -> researched: expected non-regression (1, unranked side), got regression"
 else
-  pass "blocked -> researched: unranked side means the clamp does not apply (returns 1)"
+  common_test_pass "blocked -> researched: unranked side means the clamp does not apply (returns 1)"
 fi
 
 if status_vocabulary_would_regress hold researched; then
-  fail "hold -> researched: expected non-regression (1, unranked side -- hold is deliberately omitted from STATUS_VOCABULARY_LIFECYCLE_RANK alongside blocked/partial/abandoned/expanded), got regression"
+  common_test_fail "hold -> researched: expected non-regression (1, unranked side -- hold is deliberately omitted from STATUS_VOCABULARY_LIFECYCLE_RANK alongside blocked/partial/abandoned/expanded), got regression"
 else
-  pass "hold -> researched: unranked side means the clamp does not apply (returns 1)"
+  common_test_pass "hold -> researched: unranked side means the clamp does not apply (returns 1)"
 fi
 
 # =====================================================================
 # Clamp: skill_postflight_update's monotonic-max mode (positional 7)
 # =====================================================================
-info "=== clamp: skill_postflight_update monotonic-max ==="
+common_test_info "=== clamp: skill_postflight_update monotonic-max ==="
 
 cd "$WORKDIR" || exit 1
 export SKILL_REPO_ROOT="$WORKDIR"
@@ -245,22 +238,22 @@ CLAMP_OUT="$(skill_postflight_update 1 research sess_test_clamp researched "" ""
 CLAMP_RC=$?
 CLAMP_STATUS="$(jq -r '.active_projects[0].status' specs/state.json)"
 if [[ "$CLAMP_RC" -eq 0 && "$CLAMP_STATUS" == "planned" ]] && echo "$CLAMP_OUT" | grep -q '\[monotonic-max\]'; then
-  pass "monotonic-max clamp: forced research->researched against current=planned leaves status at planned, rc=0, and prints the [monotonic-max] notice"
+  common_test_pass "monotonic-max clamp: forced research->researched against current=planned leaves status at planned, rc=0, and prints the [monotonic-max] notice"
 else
-  fail "monotonic-max clamp: rc=$CLAMP_RC status=$CLAMP_STATUS output=$CLAMP_OUT (expected rc=0, status=planned, [monotonic-max] notice present)"
+  common_test_fail "monotonic-max clamp: rc=$CLAMP_RC status=$CLAMP_STATUS output=$CLAMP_OUT (expected rc=0, status=planned, [monotonic-max] notice present)"
 fi
 
 # =====================================================================
 # Clamp opt-out: the identical call WITHOUT the 7th argument transitions normally
 # =====================================================================
-info "=== clamp opt-out (default unchanged) ==="
+common_test_info "=== clamp opt-out (default unchanged) ==="
 
 skill_postflight_update 1 research sess_test_optout researched >/dev/null 2>&1
 OPTOUT_STATUS="$(jq -r '.active_projects[0].status' specs/state.json)"
 if [[ "$OPTOUT_STATUS" == "researched" ]]; then
-  pass "clamp opt-out: the same call WITHOUT status_clamp_mode transitions the status (researched) -- default is unchanged"
+  common_test_pass "clamp opt-out: the same call WITHOUT status_clamp_mode transitions the status (researched) -- default is unchanged"
 else
-  fail "clamp opt-out: expected status=researched, got '$OPTOUT_STATUS'"
+  common_test_fail "clamp opt-out: expected status=researched, got '$OPTOUT_STATUS'"
 fi
 
 # Reset fixture status back to planned for the arity-preservation cases below.
@@ -274,14 +267,14 @@ fi
 # =====================================================================
 # Arity preservation: a 4-argument and a 5-argument call still behave exactly as before
 # =====================================================================
-info "=== arity preservation ==="
+common_test_info "=== arity preservation ==="
 
 skill_postflight_update 1 plan sess_test_4arg planned >/dev/null 2>&1
 ARITY4_STATUS="$(jq -r '.active_projects[0].status' specs/state.json)"
 if [[ "$ARITY4_STATUS" == "planned" ]]; then
-  pass "4-argument call (no phase_check_mode, no clamp) still transitions to the target status normally"
+  common_test_pass "4-argument call (no phase_check_mode, no clamp) still transitions to the target status normally"
 else
-  fail "4-argument call: expected status=planned, got '$ARITY4_STATUS'"
+  common_test_fail "4-argument call: expected status=planned, got '$ARITY4_STATUS'"
 fi
 
 # Deliberately "research" here, not "implement": update-task-status.sh's update_plan_file()
@@ -291,9 +284,9 @@ skill_postflight_update 1 research sess_test_5arg researched warn >/dev/null 2>&
 ARITY5_RC=$?
 ARITY5_STATUS="$(jq -r '.active_projects[0].status' specs/state.json)"
 if [[ "$ARITY5_RC" -eq 0 && "$ARITY5_STATUS" == "researched" ]]; then
-  pass "5-argument call (phase_check_mode=warn, no clamp) transitions normally under the unchanged code path (rc=0, status=researched)"
+  common_test_pass "5-argument call (phase_check_mode=warn, no clamp) transitions normally under the unchanged code path (rc=0, status=researched)"
 else
-  fail "5-argument call: rc=$ARITY5_RC status=$ARITY5_STATUS (expected rc=0, status=researched)"
+  common_test_fail "5-argument call: rc=$ARITY5_RC status=$ARITY5_STATUS (expected rc=0, status=researched)"
 fi
 
 cd "$ORIG_PWD" || exit 1
@@ -302,7 +295,7 @@ unset SKILL_REPO_ROOT
 # =====================================================================
 # Artifact advance: orchestrate-stage5-postflight.sh's force_invoked-gated round advance
 # =====================================================================
-info "=== artifact advance: orchestrate-stage5-postflight.sh ==="
+common_test_info "=== artifact advance: orchestrate-stage5-postflight.sh ==="
 
 run_stage5() {
   local dispatch_status="$1" force_invoked="$2" session_id="$3"
@@ -321,9 +314,9 @@ BEFORE_RESEARCHED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/s
 run_stage5 researched false sess_test_advance_r >/dev/null 2>&1
 AFTER_RESEARCHED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
 if [[ "$AFTER_RESEARCHED" -eq $((BEFORE_RESEARCHED + 1)) ]]; then
-  pass "researched dispatch (unforced) unconditionally advances next_artifact_number ($BEFORE_RESEARCHED -> $AFTER_RESEARCHED)"
+  common_test_pass "researched dispatch (unforced) unconditionally advances next_artifact_number ($BEFORE_RESEARCHED -> $AFTER_RESEARCHED)"
 else
-  fail "researched dispatch: next_artifact_number $BEFORE_RESEARCHED -> $AFTER_RESEARCHED (expected +1)"
+  common_test_fail "researched dispatch: next_artifact_number $BEFORE_RESEARCHED -> $AFTER_RESEARCHED (expected +1)"
 fi
 
 "$WORKDIR/.claude/scripts/state-write.sh" '.active_projects[0].status = "planned"' \
@@ -332,9 +325,9 @@ BEFORE_UNFORCED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/spe
 run_stage5 planned false sess_test_advance_pu >/dev/null 2>&1
 AFTER_UNFORCED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
 if [[ "$AFTER_UNFORCED" -eq "$BEFORE_UNFORCED" ]]; then
-  pass "planned dispatch with force_invoked=false does NOT advance next_artifact_number (stays $BEFORE_UNFORCED)"
+  common_test_pass "planned dispatch with force_invoked=false does NOT advance next_artifact_number (stays $BEFORE_UNFORCED)"
 else
-  fail "planned dispatch, force_invoked=false: next_artifact_number $BEFORE_UNFORCED -> $AFTER_UNFORCED (expected no change)"
+  common_test_fail "planned dispatch, force_invoked=false: next_artifact_number $BEFORE_UNFORCED -> $AFTER_UNFORCED (expected no change)"
 fi
 
 "$WORKDIR/.claude/scripts/state-write.sh" '.active_projects[0].status = "planned"' \
@@ -343,9 +336,9 @@ BEFORE_FORCED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs
 run_stage5 planned true sess_test_advance_pf >/dev/null 2>&1
 AFTER_FORCED=$(jq -r '.active_projects[0].next_artifact_number' "$WORKDIR/specs/state.json")
 if [[ "$AFTER_FORCED" -eq $((BEFORE_FORCED + 1)) ]]; then
-  pass "planned dispatch with force_invoked=true DOES advance next_artifact_number ($BEFORE_FORCED -> $AFTER_FORCED)"
+  common_test_pass "planned dispatch with force_invoked=true DOES advance next_artifact_number ($BEFORE_FORCED -> $AFTER_FORCED)"
 else
-  fail "planned dispatch, force_invoked=true: next_artifact_number $BEFORE_FORCED -> $AFTER_FORCED (expected +1)"
+  common_test_fail "planned dispatch, force_invoked=true: next_artifact_number $BEFORE_FORCED -> $AFTER_FORCED (expected +1)"
 fi
 
 # =====================================================================
@@ -357,13 +350,13 @@ fi
 # inversion (never silently testing the stale deploy copy); every genuinely non-task-edited
 # batch-engine collaborator below keeps this suite's existing deploy-tree provenance.
 # =====================================================================
-info "=== stop-after-last-forced-phase (orchestrate-cycle-plan.sh, observed live incident) ==="
+common_test_info "=== stop-after-last-forced-phase (orchestrate-cycle-plan.sh, observed live incident) ==="
 
 CYCLE_PLAN="$(resolve_inverted "orchestrate-cycle-plan.sh" "orchestrate-cycle-plan.sh")" || exit 2
 echo "[INFO] resolved orchestrate-cycle-plan.sh -> $CYCLE_PLAN"
 case "$CYCLE_PLAN" in
   "$SOURCE_STORE_SCRIPTS"/*)
-    pass "orchestrate-cycle-plan.sh resolved under agent-system/extensions/core/ (source-store copy)"
+    common_test_pass "orchestrate-cycle-plan.sh resolved under agent-system/extensions/core/ (source-store copy)"
     ;;
   *)
     echo "ERROR: orchestrate-cycle-plan.sh resolved to a non-source-store path ($CYCLE_PLAN) -- this suite would silently test the wrong copy. Refusing to continue." >&2
@@ -423,9 +416,9 @@ fphase_cycle1_out=$(run_cycle_plan --session "$FPHASE_SESSION" --no-plan-cache -
 fphase_cycle1_exit=$?
 if [ "$fphase_cycle1_exit" -eq 0 ] && \
    [ "$(echo "$fphase_cycle1_out" | jq -r '.dispatch | map(select(.task == 2 and .phase == "research")) | length')" = "1" ]; then
-  pass "cycle 1: forced research round dispatches candidate #2 (exit 0)"
+  common_test_pass "cycle 1: forced research round dispatches candidate #2 (exit 0)"
 else
-  fail "cycle 1: expected a forced research dispatch for candidate #2 (exit $fphase_cycle1_exit): $fphase_cycle1_out"
+  common_test_fail "cycle 1: expected a forced research dispatch for candidate #2 (exit $fphase_cycle1_exit): $fphase_cycle1_out"
 fi
 fphase_dispatch_files_before=$(find "$WORKDIR/specs/002_fixture_task_fphase/.dispatch" -type f 2>/dev/null | wc -l | tr -d ' ')
 
@@ -443,24 +436,24 @@ fphase_cycle_after_2=$(jq -r --arg t "2" '.cycle_counts[$t] // 0' "$FPHASE_MT_ST
 fphase_dispatch_files_after_2=$(find "$WORKDIR/specs/002_fixture_task_fphase/.dispatch" -type f 2>/dev/null | wc -l | tr -d ' ')
 if [ "$fphase_cycle2_exit" -eq 0 ] && \
    [ "$(echo "$fphase_cycle2_out" | jq -r '.dispatch | map(select(.task == 2)) | length')" = "0" ]; then
-  pass "case 1 (repeated flag): zero dispatch rows for candidate #2"
+  common_test_pass "case 1 (repeated flag): zero dispatch rows for candidate #2"
 else
-  fail "case 1 (repeated flag): expected zero dispatch rows (exit $fphase_cycle2_exit): $fphase_cycle2_out"
+  common_test_fail "case 1 (repeated flag): expected zero dispatch rows (exit $fphase_cycle2_exit): $fphase_cycle2_out"
 fi
 if [ "$fphase_status_after_2" = "researched" ]; then
-  pass "case 1: status stays 'researched' (no regression)"
+  common_test_pass "case 1: status stays 'researched' (no regression)"
 else
-  fail "case 1: status changed to '$fphase_status_after_2'"
+  common_test_fail "case 1: status changed to '$fphase_status_after_2'"
 fi
 if [ "$fphase_dispatch_files_after_2" = "$fphase_dispatch_files_before" ]; then
-  pass "case 1: no new dispatch file written"
+  common_test_pass "case 1: no new dispatch file written"
 else
-  fail "case 1: dispatch file count changed ($fphase_dispatch_files_before -> $fphase_dispatch_files_after_2)"
+  common_test_fail "case 1: dispatch file count changed ($fphase_dispatch_files_before -> $fphase_dispatch_files_after_2)"
 fi
 if [ "$fphase_cycle_after_2" = "$fphase_cycle_before" ]; then
-  pass "case 1: cycle_counts unchanged ($fphase_cycle_after_2)"
+  common_test_pass "case 1: cycle_counts unchanged ($fphase_cycle_after_2)"
 else
-  fail "case 1: cycle_counts changed ($fphase_cycle_before -> $fphase_cycle_after_2)"
+  common_test_fail "case 1: cycle_counts changed ($fphase_cycle_before -> $fphase_cycle_after_2)"
 fi
 
 # Case (2): a live call WITHOUT the flag -- must ALSO be excluded (proves the exclusion is
@@ -473,29 +466,29 @@ fphase_cycle_after_3=$(jq -r --arg t "2" '.cycle_counts[$t] // 0' "$FPHASE_MT_ST
 fphase_dispatch_files_after_3=$(find "$WORKDIR/specs/002_fixture_task_fphase/.dispatch" -type f 2>/dev/null | wc -l | tr -d ' ')
 if [ "$fphase_cycle3_exit" -eq 0 ] && \
    [ "$(echo "$fphase_cycle3_out" | jq -r '.dispatch | map(select(.task == 2)) | length')" = "0" ]; then
-  pass "case 2 (flag omitted): zero dispatch rows for candidate #2"
+  common_test_pass "case 2 (flag omitted): zero dispatch rows for candidate #2"
 else
-  fail "case 2 (flag omitted): expected zero dispatch rows (exit $fphase_cycle3_exit): $fphase_cycle3_out"
+  common_test_fail "case 2 (flag omitted): expected zero dispatch rows (exit $fphase_cycle3_exit): $fphase_cycle3_out"
 fi
 if [ "$fphase_status_after_3" = "researched" ]; then
-  pass "case 2: status stays 'researched' (no regression)"
+  common_test_pass "case 2: status stays 'researched' (no regression)"
 else
-  fail "case 2: status changed to '$fphase_status_after_3'"
+  common_test_fail "case 2: status changed to '$fphase_status_after_3'"
 fi
 if [ "$fphase_dispatch_files_after_3" = "$fphase_dispatch_files_before" ]; then
-  pass "case 2: no new dispatch file written"
+  common_test_pass "case 2: no new dispatch file written"
 else
-  fail "case 2: dispatch file count changed ($fphase_dispatch_files_before -> $fphase_dispatch_files_after_3)"
+  common_test_fail "case 2: dispatch file count changed ($fphase_dispatch_files_before -> $fphase_dispatch_files_after_3)"
 fi
 if [ "$fphase_cycle_after_3" = "$fphase_cycle_before" ]; then
-  pass "case 2: cycle_counts unchanged ($fphase_cycle_after_3)"
+  common_test_pass "case 2: cycle_counts unchanged ($fphase_cycle_after_3)"
 else
-  fail "case 2: cycle_counts changed ($fphase_cycle_before -> $fphase_cycle_after_3)"
+  common_test_fail "case 2: cycle_counts changed ($fphase_cycle_before -> $fphase_cycle_after_3)"
 fi
 if [ "$(echo "$fphase_cycle3_out" | jq -r '.blocked | map(select(.task == 2 and (.reason | contains("forced round complete")))) | length')" = "1" ]; then
-  pass "case 2: a forced_round_complete blocked[] row is present"
+  common_test_pass "case 2: a forced_round_complete blocked[] row is present"
 else
-  fail "case 2: expected a forced_round_complete blocked[] row, got: $fphase_cycle3_out"
+  common_test_fail "case 2: expected a forced_round_complete blocked[] row, got: $fphase_cycle3_out"
 fi
 
 # Counter-case: an UNFORCED multi-phase session still advances research -> plan -> implement
@@ -511,9 +504,9 @@ rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-${UNFORCED_SESSIO
 unforced_cycle1_out=$(run_cycle_plan --session "$UNFORCED_SESSION" --no-plan-cache 3)
 unforced_phase_1=$(echo "$unforced_cycle1_out" | jq -r '.dispatch | map(select(.task == 3)) | .[0].phase // ""')
 if [ "$unforced_phase_1" = "research" ]; then
-  pass "unforced counter-case: cycle 1 (not_started) advances to research"
+  common_test_pass "unforced counter-case: cycle 1 (not_started) advances to research"
 else
-  fail "unforced counter-case: cycle 1 expected phase=research, got '$unforced_phase_1': $unforced_cycle1_out"
+  common_test_fail "unforced counter-case: cycle 1 expected phase=research, got '$unforced_phase_1': $unforced_cycle1_out"
 fi
 
 "$WORKDIR/.claude/scripts/state-write.sh" \
@@ -522,9 +515,9 @@ fi
 unforced_cycle2_out=$(run_cycle_plan --session "$UNFORCED_SESSION" --no-plan-cache 3)
 unforced_phase_2=$(echo "$unforced_cycle2_out" | jq -r '.dispatch | map(select(.task == 3)) | .[0].phase // ""')
 if [ "$unforced_phase_2" = "plan" ]; then
-  pass "unforced counter-case: cycle 2 (researched) advances to plan"
+  common_test_pass "unforced counter-case: cycle 2 (researched) advances to plan"
 else
-  fail "unforced counter-case: cycle 2 expected phase=plan, got '$unforced_phase_2': $unforced_cycle2_out"
+  common_test_fail "unforced counter-case: cycle 2 expected phase=plan, got '$unforced_phase_2': $unforced_cycle2_out"
 fi
 
 "$WORKDIR/.claude/scripts/state-write.sh" \
@@ -533,9 +526,9 @@ fi
 unforced_cycle3_out=$(run_cycle_plan --session "$UNFORCED_SESSION" --no-plan-cache 3)
 unforced_phase_3=$(echo "$unforced_cycle3_out" | jq -r '.dispatch | map(select(.task == 3)) | .[0].phase // ""')
 if [ "$unforced_phase_3" = "implement" ]; then
-  pass "unforced counter-case: cycle 3 (planned) advances to implement"
+  common_test_pass "unforced counter-case: cycle 3 (planned) advances to implement"
 else
-  fail "unforced counter-case: cycle 3 expected phase=implement, got '$unforced_phase_3': $unforced_cycle3_out"
+  common_test_fail "unforced counter-case: cycle 3 expected phase=implement, got '$unforced_phase_3': $unforced_cycle3_out"
 fi
 
 # =====================================================================
@@ -550,7 +543,7 @@ fi
 # project_number below is synthetic fixture data for this suite only -- messages say "candidate
 # #N", never "task N".
 # =====================================================================
-info "=== STAGE 0 hold admission (commands/orchestrate.md) ==="
+common_test_info "=== STAGE 0 hold admission (commands/orchestrate.md) ==="
 ORCH_MD="$SOURCE_STORE_SCRIPTS/../commands/orchestrate.md"
 if [[ ! -f "$ORCH_MD" ]]; then
   echo "ERROR: expected commands/orchestrate.md at $ORCH_MD" >&2
@@ -593,17 +586,17 @@ stage0_unforced_out="$(run_stage0 "")"
 stage0_unforced_validated=$(echo "$stage0_unforced_out" | grep '^validated_tasks=' | cut -d= -f2-)
 stage0_unforced_skipped=$(echo "$stage0_unforced_out" | grep '^skipped_tasks=' | cut -d= -f2-)
 if [[ -z "$stage0_unforced_validated" ]] && echo "$stage0_unforced_skipped" | grep -q "held \[waiting on vendor decision\]"; then
-  pass "STAGE 0, no forcing flag: held candidate #42 is skipped with a hold-specific reason, not validated"
+  common_test_pass "STAGE 0, no forcing flag: held candidate #42 is skipped with a hold-specific reason, not validated"
 else
-  fail "STAGE 0, no forcing flag: expected empty validated_tasks and a hold-specific skip reason, got validated='$stage0_unforced_validated' skipped='$stage0_unforced_skipped'"
+  common_test_fail "STAGE 0, no forcing flag: expected empty validated_tasks and a hold-specific skip reason, got validated='$stage0_unforced_validated' skipped='$stage0_unforced_skipped'"
 fi
 
 stage0_forced_out="$(run_stage0 "implement")"
 stage0_forced_validated=$(echo "$stage0_forced_out" | grep '^validated_tasks=' | cut -d= -f2-)
 if [[ "$stage0_forced_validated" == "42" ]]; then
-  pass "STAGE 0, --force-phases set: held candidate #42 IS admitted into validated_tasks"
+  common_test_pass "STAGE 0, --force-phases set: held candidate #42 IS admitted into validated_tasks"
 else
-  fail "STAGE 0, --force-phases set: expected validated_tasks='42', got '$stage0_forced_validated'"
+  common_test_fail "STAGE 0, --force-phases set: expected validated_tasks='42', got '$stage0_forced_validated'"
 fi
 
 rm -rf "$STAGE0_WORKDIR"

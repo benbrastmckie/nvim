@@ -19,10 +19,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/orchestrate-conclusion-aggregate.sh"
@@ -127,9 +125,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ] && rm -rf "$TOP_WORKDIR"; }
@@ -205,9 +200,9 @@ SID="sess_test_$$_aggregate"
   out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1")"
   cites=$(echo "$out" | jq '[.proposals[] | select(.class=="tooling bug or gap") | .citations[]] | length')
   if [ "$cites" = "2" ]; then
-    pass "(a) resolution-filtering: open+worked_around entries counted, fixed_inline excluded (citations=2)"
+    common_test_pass "(a) resolution-filtering: open+worked_around entries counted, fixed_inline excluded (citations=2)"
   else
-    fail "(a) resolution-filtering: expected 2 citations, got $cites -- $out"
+    common_test_fail "(a) resolution-filtering: expected 2 citations, got $cites -- $out"
   fi
 }
 
@@ -222,9 +217,9 @@ SID="sess_test_$$_aggregate"
   win_count=$(echo "$out" | jq '.wins | length')
   prop_count=$(echo "$out" | jq '[.proposals[] | select(.class=="orchestration defect")] | length')
   if [ "$win_count" = "1" ] && [ "$prop_count" = "0" ]; then
-    pass "(b) win-separation: win entry in wins[], no proposal generated"
+    common_test_pass "(b) win-separation: win entry in wins[], no proposal generated"
   else
-    fail "(b) win-separation: win_count=$win_count prop_count=$prop_count -- $out"
+    common_test_fail "(b) win-separation: win_count=$win_count prop_count=$prop_count -- $out"
   fi
 }
 
@@ -242,9 +237,9 @@ SID="sess_test_$$_aggregate"
   cite_count=$(echo "$out" | jq '[.proposals[] | select(.class=="gate collision") | .citations[]] | length')
   sev_max=$(echo "$out" | jq -r '.proposals[] | select(.class=="gate collision") | .severity_max')
   if [ "$prop_count" = "1" ] && [ "$cite_count" = "3" ] && [ "$sev_max" = "costly" ]; then
-    pass "(c) cross-task-grouping: one proposal, three citations, severity_max=costly"
+    common_test_pass "(c) cross-task-grouping: one proposal, three citations, severity_max=costly"
   else
-    fail "(c) cross-task-grouping: prop_count=$prop_count cite_count=$cite_count sev_max=$sev_max -- $out"
+    common_test_fail "(c) cross-task-grouping: prop_count=$prop_count cite_count=$cite_count sev_max=$sev_max -- $out"
   fi
 }
 
@@ -258,9 +253,9 @@ SID="sess_test_$$_aggregate"
   out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1")"
   ok=$(echo "$out" | jq '[.proposals[] | (.citations | length > 0) and (.citations[0] | has("task") and has("entry_id"))] | all')
   if [ "$ok" = "true" ]; then
-    pass "(d) citation-presence: every proposal carries non-empty citations with task+entry_id"
+    common_test_pass "(d) citation-presence: every proposal carries non-empty citations with task+entry_id"
   else
-    fail "(d) citation-presence: $out"
+    common_test_fail "(d) citation-presence: $out"
   fi
 }
 
@@ -274,9 +269,9 @@ SID="sess_test_$$_aggregate"
   out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1")"
   count=$(echo "$out" | jq '[.unknown_classes[] | select(.class=="a brand new unseeded class")] | length')
   if [ "$count" = "1" ]; then
-    pass "(e) unknown-class-tally: novel class counted in unknown_classes[]"
+    common_test_pass "(e) unknown-class-tally: novel class counted in unknown_classes[]"
   else
-    fail "(e) unknown-class-tally: $out"
+    common_test_fail "(e) unknown-class-tally: $out"
   fi
 }
 
@@ -290,9 +285,9 @@ SID="sess_test_$$_aggregate"
   out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1 4 5")"
   nc="$(echo "$out" | jq -c '.no_contribution_tasks | sort')"
   if [ "$nc" = "[4,5]" ]; then
-    pass "(f) no-contribution-tasks: empty-file task and missing-file task both listed, content task excluded"
+    common_test_pass "(f) no-contribution-tasks: empty-file task and missing-file task both listed, content task excluded"
   else
-    fail "(f) no-contribution-tasks: expected [4,5], got $nc -- $out"
+    common_test_fail "(f) no-contribution-tasks: expected [4,5], got $nc -- $out"
   fi
 }
 
@@ -355,9 +350,9 @@ SID="sess_test_$$_aggregate"
 
   if [ "$case_g1" = "true" ] && [ "$case_g2" = "true" ] && [ "$case_g3" = "true" ] \
     && [ "$case_g4" = "true" ] && [ "$case_g5" = "true" ] && [ "$case_g6" = "true" ]; then
-    pass "(g) [ACCEPTANCE-CRITICAL] per-channel approval isolation: a-only/b-only/c-only/unrecorded/no/malformed all behave correctly"
+    common_test_pass "(g) [ACCEPTANCE-CRITICAL] per-channel approval isolation: a-only/b-only/c-only/unrecorded/no/malformed all behave correctly"
   else
-    fail "(g) per-channel approval isolation: g1=$case_g1 g2=$case_g2 g3=$case_g3 g4=$case_g4 g5=$case_g5 g6=$case_g6"
+    common_test_fail "(g) per-channel approval isolation: g1=$case_g1 g2=$case_g2 g3=$case_g3 g4=$case_g4 g5=$case_g5 g6=$case_g6"
   fi
 }
 
@@ -378,13 +373,13 @@ SID="sess_test_$$_aggregate"
   if [[ -f "$SRC_STORE_SCRIPT" ]]; then
     bash "$SRC_STORE_SCRIPT" --help >/dev/null 2>&1 || src_exit=$?
   else
-    info "(h) source-store copy not found at $SRC_STORE_SCRIPT -- skipping the source-store half of this case"
+    common_test_info "(h) source-store copy not found at $SRC_STORE_SCRIPT -- skipping the source-store half of this case"
     src_exit=1
   fi
   if [ "$deployed_exit" -eq 0 ] && [ "$src_exit" -ne 0 ]; then
-    pass "(h) deploy-root-guard: --help succeeds deployed, refuses from the source store"
+    common_test_pass "(h) deploy-root-guard: --help succeeds deployed, refuses from the source store"
   else
-    fail "(h) deploy-root-guard: deployed_exit=$deployed_exit src_exit=$src_exit"
+    common_test_fail "(h) deploy-root-guard: deployed_exit=$deployed_exit src_exit=$src_exit"
   fi
 }
 
@@ -398,7 +393,7 @@ SID="sess_test_$$_aggregate"
 # =====================================================================================
 {
   if [[ -z "$GIT_COMMIT_SCOPED_SCRIPT" ]] || [[ -z "$TASK_LOCK_SCRIPT" ]]; then
-    info "(i) commit-scope fixture: git-commit-scoped.sh or task-lock.sh not found -- skipping (environment limitation, not a case failure)"
+    common_test_info "(i) commit-scope fixture: git-commit-scoped.sh or task-lock.sh not found -- skipping (environment limitation, not a case failure)"
   else
     cs_repo="$(mktemp -d -p "$TOP_WORKDIR")"
     git -C "$cs_repo" init -q
@@ -442,9 +437,9 @@ SID="sess_test_$$_aggregate"
       && echo "$c_commit_files" | grep -q "specs/state.json" \
       && echo "$c_commit_files" | grep -q "specs/TODO.md" \
       && ! echo "$c_commit_files" | grep -q "channel-a-fix.sh"; then
-      pass "(i) commit-scope: two separate commits, each containing only its own channel's paths"
+      common_test_pass "(i) commit-scope: two separate commits, each containing only its own channel's paths"
     else
-      fail "(i) commit-scope: commit_count=$commit_count a_files=[$a_commit_files] c_files=[$c_commit_files]"
+      common_test_fail "(i) commit-scope: commit_count=$commit_count a_files=[$a_commit_files] c_files=[$c_commit_files]"
     fi
   fi
 }
@@ -459,7 +454,7 @@ SID="sess_test_$$_aggregate"
   mb_agent="$REPO_ROOT/agent-system/extensions/core/agents/meta-builder-agent.md"
   concl="$REPO_ROOT/agent-system/extensions/core/context/contracts/conclusion-stage.md"
   if [[ ! -f "$mb_agent" ]] || [[ ! -f "$concl" ]]; then
-    fail "(j) anti-bypass: required source file(s) not found ($mb_agent / $concl)"
+    common_test_fail "(j) anti-bypass: required source file(s) not found ($mb_agent / $concl)"
   else
     mb_ok=false
     concl_ok=false
@@ -472,9 +467,9 @@ SID="sess_test_$$_aggregate"
       concl_ok=true
     fi
     if [ "$mb_ok" = "true" ] && [ "$concl_ok" = "true" ]; then
-      pass "(j) anti-bypass: meta-builder-agent.md's FORBIDDEN clauses and conclusion-stage.md's channel (b) restatement both still hold"
+      common_test_pass "(j) anti-bypass: meta-builder-agent.md's FORBIDDEN clauses and conclusion-stage.md's channel (b) restatement both still hold"
     else
-      fail "(j) anti-bypass: mb_ok=$mb_ok concl_ok=$concl_ok"
+      common_test_fail "(j) anti-bypass: mb_ok=$mb_ok concl_ok=$concl_ok"
     fi
   fi
 }
@@ -487,7 +482,7 @@ SID="sess_test_$$_aggregate"
 {
   concl="$REPO_ROOT/agent-system/extensions/core/context/contracts/conclusion-stage.md"
   if [[ ! -f "$concl" ]]; then
-    fail "(k) gate-intactness: $concl not found"
+    common_test_fail "(k) gate-intactness: $concl not found"
   else
     # Each step's gate block spans multiple lines (the `--check-approval \` continuation line
     # and the `--channel X` line are separate) -- check membership across the captured block,
@@ -514,9 +509,9 @@ SID="sess_test_$$_aggregate"
     fi
 
     if [ "$a_ok" = "true" ] && [ "$b_ok" = "true" ] && [ "$c_ok" = "true" ]; then
-      pass "(k) gate-intactness: each channel's execution step references --check-approval with its own channel letter only"
+      common_test_pass "(k) gate-intactness: each channel's execution step references --check-approval with its own channel letter only"
     else
-      fail "(k) gate-intactness: a_ok=$a_ok b_ok=$b_ok c_ok=$c_ok"
+      common_test_fail "(k) gate-intactness: a_ok=$a_ok b_ok=$b_ok c_ok=$c_ok"
     fi
   fi
 }
@@ -539,9 +534,9 @@ SID="sess_test_$$_aggregate"
   win_count=$(echo "$out" | jq '.wins | length')
   win_prop_count=$(echo "$out" | jq '[.proposals[] | select(.class=="orchestration defect")] | length')
   if [ "$cites" = "2" ] && [ "$implicit_count" = "1" ] && [ "$win_count" = "1" ] && [ "$win_prop_count" = "0" ]; then
-    pass "(l) null-resolution admission: null-resolution issue entry reaches proposals[] (citations=2), implicit_open_count=1, win exemption intact with null resolution (wins=1, win proposals=0)"
+    common_test_pass "(l) null-resolution admission: null-resolution issue entry reaches proposals[] (citations=2), implicit_open_count=1, win exemption intact with null resolution (wins=1, win proposals=0)"
   else
-    fail "(l) null-resolution admission: cites=$cites implicit_count=$implicit_count win_count=$win_count win_prop_count=$win_prop_count -- $out"
+    common_test_fail "(l) null-resolution admission: cites=$cites implicit_count=$implicit_count win_count=$win_count win_prop_count=$win_prop_count -- $out"
   fi
 }
 

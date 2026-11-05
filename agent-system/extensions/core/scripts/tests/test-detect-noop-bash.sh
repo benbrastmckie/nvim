@@ -23,6 +23,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # This single relative path resolves to agent-system/extensions/core/hooks/ in source-store mode
 # and to .claude/hooks/ in deployed mode, with no branching -- see test-guard-destructive-git.sh
 # for the identical precedent this suite follows.
@@ -31,9 +32,6 @@ HOOK="$SCRIPT_DIR/../../hooks/detect-noop-bash.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 # Snapshot, once, before any case runs, whether this shared, non-fixture, live-tree path
 # already existed. A "nothing stray was created" check against a shared path must be
@@ -79,10 +77,10 @@ check_shared_path_not_stray() {
   local path="$1" preexisted="$2" label="$3" status
   status=$(shared_path_delta_status "$path" "$preexisted")
   case "$status" in
-    pass) pass "$label: no stray directory at $path (absent at suite start, still absent)" ;;
-    fail-stray) fail "$label: stray directory created at $path since suite start" ;;
-    fail-removed) fail "$label: $path existed at suite start but is now absent -- unexpected external removal mid-run" ;;
-    skip) info "$label: loud skip -- $path already existed before this suite started; a pre-existing shared path cannot be attributed to this run" ;;
+    pass) common_test_pass "$label: no stray directory at $path (absent at suite start, still absent)" ;;
+    fail-stray) common_test_fail "$label: stray directory created at $path since suite start" ;;
+    fail-removed) common_test_fail "$label: $path existed at suite start but is now absent -- unexpected external removal mid-run" ;;
+    skip) common_test_info "$label: loud skip -- $path already existed before this suite started; a pre-existing shared path cannot be attributed to this run" ;;
   esac
 }
 
@@ -96,9 +94,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 export NOOP_BASH_STATE_DIR="$WORKDIR"
 
@@ -154,10 +150,10 @@ assert_trivial() {
   out="$(run_hook "$sid" "$cmd")"
   cf="$(count_file "$sid")"
   if [ "$out" = "{}" ] && [ -f "$cf" ] && [ "$(cat "$cf")" = "1" ]; then
-    pass "$label: classified trivial (count file == 1)"
+    common_test_pass "$label: classified trivial (count file == 1)"
   else
-    info "cmd=[$cmd] out=[$out] count_file_exists=$([ -f "$cf" ] && echo yes || echo no) count=$(cat "$cf" 2>/dev/null || echo MISSING)"
-    fail "$label: expected trivial classification with count file == 1"
+    common_test_info "cmd=[$cmd] out=[$out] count_file_exists=$([ -f "$cf" ] && echo yes || echo no) count=$(cat "$cf" 2>/dev/null || echo MISSING)"
+    common_test_fail "$label: expected trivial classification with count file == 1"
   fi
 }
 
@@ -169,10 +165,10 @@ assert_nontrivial() {
   out="$(run_hook "$sid" "$cmd")"
   cf="$(count_file "$sid")"
   if [ "$out" = "{}" ] && [ ! -f "$cf" ]; then
-    pass "$label: classified non-trivial (no count file)"
+    common_test_pass "$label: classified non-trivial (no count file)"
   else
-    info "cmd=[$cmd] out=[$out] count_file_exists=$([ -f "$cf" ] && echo yes || echo no)"
-    fail "$label: expected non-trivial classification (no count file)"
+    common_test_info "cmd=[$cmd] out=[$out] count_file_exists=$([ -f "$cf" ] && echo yes || echo no)"
+    common_test_fail "$label: expected non-trivial classification (no count file)"
   fi
 }
 
@@ -218,19 +214,19 @@ thr_out4="$(run_hook "$thr_session" "true")"
 thr_out5="$(run_hook "$thr_session" "true")"
 thr_out6="$(run_hook "$thr_session" "true")"
 
-if [ "$thr_out1" = "{}" ]; then pass "threshold: 1st call is {}"; else fail "threshold: 1st call expected {}, got $thr_out1"; fi
-if [ "$thr_out2" = "{}" ]; then pass "threshold: 2nd call is {}"; else fail "threshold: 2nd call expected {}, got $thr_out2"; fi
+if [ "$thr_out1" = "{}" ]; then common_test_pass "threshold: 1st call is {}"; else common_test_fail "threshold: 1st call expected {}, got $thr_out1"; fi
+if [ "$thr_out2" = "{}" ]; then common_test_pass "threshold: 2nd call is {}"; else common_test_fail "threshold: 2nd call expected {}, got $thr_out2"; fi
 if printf '%s' "$thr_out3" | grep -q "external-process-wait.md" && printf '%s' "$thr_out3" | jq -e . >/dev/null 2>&1; then
-  pass "threshold: 3rd call fires message and is valid JSON"
+  common_test_pass "threshold: 3rd call fires message and is valid JSON"
 else
-  fail "threshold: 3rd call expected message containing external-process-wait.md, got $thr_out3"
+  common_test_fail "threshold: 3rd call expected message containing external-process-wait.md, got $thr_out3"
 fi
-if [ "$thr_out4" = "{}" ]; then pass "threshold: 4th call is {}"; else fail "threshold: 4th call expected {}, got $thr_out4"; fi
-if [ "$thr_out5" = "{}" ]; then pass "threshold: 5th call is {}"; else fail "threshold: 5th call expected {}, got $thr_out5"; fi
+if [ "$thr_out4" = "{}" ]; then common_test_pass "threshold: 4th call is {}"; else common_test_fail "threshold: 4th call expected {}, got $thr_out4"; fi
+if [ "$thr_out5" = "{}" ]; then common_test_pass "threshold: 5th call is {}"; else common_test_fail "threshold: 5th call expected {}, got $thr_out5"; fi
 if printf '%s' "$thr_out6" | grep -q "external-process-wait.md"; then
-  pass "threshold: 6th call fires message again"
+  common_test_pass "threshold: 6th call fires message again"
 else
-  fail "threshold: 6th call expected message, got $thr_out6"
+  common_test_fail "threshold: 6th call expected message, got $thr_out6"
 fi
 
 # =====================================================================
@@ -242,23 +238,23 @@ run_hook "$reset_session" "true" >/dev/null
 run_hook "$reset_session" "git status" >/dev/null
 reset_cf="$(count_file "$reset_session")"
 if [ ! -f "$reset_cf" ]; then
-  pass "reset: non-trivial call removes the counter file"
+  common_test_pass "reset: non-trivial call removes the counter file"
 else
-  fail "reset: expected counter file removed after non-trivial call, found count=$(cat "$reset_cf")"
+  common_test_fail "reset: expected counter file removed after non-trivial call, found count=$(cat "$reset_cf")"
 fi
 
 reset_out1="$(run_hook "$reset_session" "true")"
 if [ "$reset_out1" = "{}" ] && [ -f "$reset_cf" ] && [ "$(cat "$reset_cf")" = "1" ]; then
-  pass "reset: trivial call after reset restarts the counter at 1"
+  common_test_pass "reset: trivial call after reset restarts the counter at 1"
 else
-  fail "reset: expected count == 1 after reset, got out=[$reset_out1] count=$(cat "$reset_cf" 2>/dev/null || echo MISSING)"
+  common_test_fail "reset: expected count == 1 after reset, got out=[$reset_out1] count=$(cat "$reset_cf" 2>/dev/null || echo MISSING)"
 fi
 
 reset_out2="$(run_hook "$reset_session" "true")"
 if [ "$reset_out2" = "{}" ]; then
-  pass "reset: 2nd call after reset is still {} (below threshold)"
+  common_test_pass "reset: 2nd call after reset is still {} (below threshold)"
 else
-  fail "reset: 2nd call after reset expected {}, got $reset_out2"
+  common_test_fail "reset: 2nd call after reset expected {}, got $reset_out2"
 fi
 
 # =====================================================================
@@ -272,9 +268,9 @@ run_hook "$iso_a" "true" >/dev/null
 iso_b_out="$(run_hook "$iso_b" "true")"
 iso_b_cf="$(count_file "$iso_b")"
 if [ "$iso_b_out" = "{}" ] && [ -f "$iso_b_cf" ] && [ "$(cat "$iso_b_cf")" = "1" ]; then
-  pass "session isolation: session B's own 1st call is unaffected by session A's streak"
+  common_test_pass "session isolation: session B's own 1st call is unaffected by session A's streak"
 else
-  fail "session isolation: expected session B count == 1, got out=[$iso_b_out] count=$(cat "$iso_b_cf" 2>/dev/null || echo MISSING)"
+  common_test_fail "session isolation: expected session B count == 1, got out=[$iso_b_out] count=$(cat "$iso_b_cf" 2>/dev/null || echo MISSING)"
 fi
 
 # =====================================================================
@@ -283,17 +279,17 @@ fi
 fo_out="$(printf '' | bash "$HOOK")"
 fo_code=$?
 if [ "$fo_code" -eq 0 ] && [ "$fo_out" = "{}" ]; then
-  pass "fail-open: empty stdin -> exit 0, {}"
+  common_test_pass "fail-open: empty stdin -> exit 0, {}"
 else
-  fail "fail-open: empty stdin expected exit 0 + {}, got exit=$fo_code out=[$fo_out]"
+  common_test_fail "fail-open: empty stdin expected exit 0 + {}, got exit=$fo_code out=[$fo_out]"
 fi
 
 fo_out="$(printf 'this is not json at all' | bash "$HOOK")"
 fo_code=$?
 if [ "$fo_code" -eq 0 ] && [ "$fo_out" = "{}" ]; then
-  pass "fail-open: non-JSON stdin -> exit 0, {}"
+  common_test_pass "fail-open: non-JSON stdin -> exit 0, {}"
 else
-  fail "fail-open: non-JSON stdin expected exit 0 + {}, got exit=$fo_code out=[$fo_out]"
+  common_test_fail "fail-open: non-JSON stdin expected exit 0 + {}, got exit=$fo_code out=[$fo_out]"
 fi
 
 fo_sid="$(fresh_session)"
@@ -301,17 +297,17 @@ fo_out="$(run_hook "$fo_sid" "true" "Write")"
 fo_code=$?
 fo_cf="$(count_file "$fo_sid")"
 if [ "$fo_code" -eq 0 ] && [ "$fo_out" = "{}" ] && [ ! -f "$fo_cf" ]; then
-  pass "fail-open: non-Bash tool_name -> exit 0, {}, no counting"
+  common_test_pass "fail-open: non-Bash tool_name -> exit 0, {}, no counting"
 else
-  fail "fail-open: non-Bash tool_name expected exit 0 + {} + no count file, got exit=$fo_code out=[$fo_out]"
+  common_test_fail "fail-open: non-Bash tool_name expected exit 0 + {} + no count file, got exit=$fo_code out=[$fo_out]"
 fi
 
 fo_out="$(jq -n --arg c "true" '{tool_name: "Bash", tool_input: {command: $c}}' | bash "$HOOK")"
 fo_code=$?
 if [ "$fo_code" -eq 0 ] && [ "$fo_out" = "{}" ]; then
-  pass "fail-open: missing session_id -> exit 0, {}"
+  common_test_pass "fail-open: missing session_id -> exit 0, {}"
 else
-  fail "fail-open: missing session_id expected exit 0 + {}, got exit=$fo_code out=[$fo_out]"
+  common_test_fail "fail-open: missing session_id expected exit 0 + {}, got exit=$fo_code out=[$fo_out]"
 fi
 
 unwritable_dir="$WORKDIR/unwritable-parent"
@@ -323,9 +319,9 @@ fo_out="$(jq -n --arg s "$fo_sid" --arg c "true" '{tool_name: "Bash", session_id
 fo_code=$?
 chmod 755 "$unwritable_dir"
 if [ "$fo_code" -eq 0 ] && [ "$fo_out" = "{}" ]; then
-  pass "fail-open: unwritable state dir -> exit 0, {}"
+  common_test_pass "fail-open: unwritable state dir -> exit 0, {}"
 else
-  fail "fail-open: unwritable state dir expected exit 0 + {}, got exit=$fo_code out=[$fo_out]"
+  common_test_fail "fail-open: unwritable state dir expected exit 0 + {}, got exit=$fo_code out=[$fo_out]"
 fi
 
 # =====================================================================
@@ -336,14 +332,14 @@ thr2_session="$(fresh_session)"
 thr2_out1="$(run_hook_thr 2 "$thr2_session" "true")"
 thr2_out2="$(run_hook_thr 2 "$thr2_session" "true")"
 if [ "$thr2_out1" = "{}" ]; then
-  pass "threshold override: 1st call (NOOP_BASH_THRESHOLD=2) is {}"
+  common_test_pass "threshold override: 1st call (NOOP_BASH_THRESHOLD=2) is {}"
 else
-  fail "threshold override: 1st call expected {}, got $thr2_out1"
+  common_test_fail "threshold override: 1st call expected {}, got $thr2_out1"
 fi
 if printf '%s' "$thr2_out2" | grep -q "external-process-wait.md"; then
-  pass "threshold override: 2nd call fires with NOOP_BASH_THRESHOLD=2"
+  common_test_pass "threshold override: 2nd call fires with NOOP_BASH_THRESHOLD=2"
 else
-  fail "threshold override: 2nd call expected message, got $thr2_out2"
+  common_test_fail "threshold override: 2nd call expected message, got $thr2_out2"
 fi
 
 badthr_session="$(fresh_session)"
@@ -351,14 +347,14 @@ badthr_out1="$(run_hook_thr "abc" "$badthr_session" "true")"
 badthr_out2="$(run_hook_thr "abc" "$badthr_session" "true")"
 badthr_out3="$(run_hook_thr "abc" "$badthr_session" "true")"
 if [ "$badthr_out1" = "{}" ] && [ "$badthr_out2" = "{}" ]; then
-  pass "threshold override: invalid value (abc) does not fire early"
+  common_test_pass "threshold override: invalid value (abc) does not fire early"
 else
-  fail "threshold override: invalid value expected {} for calls 1-2, got [$badthr_out1] [$badthr_out2]"
+  common_test_fail "threshold override: invalid value expected {} for calls 1-2, got [$badthr_out1] [$badthr_out2]"
 fi
 if printf '%s' "$badthr_out3" | grep -q "external-process-wait.md"; then
-  pass "threshold override: invalid value falls back to default threshold of 3"
+  common_test_pass "threshold override: invalid value falls back to default threshold of 3"
 else
-  fail "threshold override: invalid value expected fallback fire at 3rd call, got $badthr_out3"
+  common_test_fail "threshold override: invalid value expected fallback fire at 3rd call, got $badthr_out3"
 fi
 
 # Zero and negative overrides must also fall back to the default of 3, not divide-by-zero or
@@ -368,9 +364,9 @@ zero_out1="$(run_hook_thr 0 "$zero_session" "true")"
 zero_out2="$(run_hook_thr 0 "$zero_session" "true")"
 zero_out3="$(run_hook_thr 0 "$zero_session" "true")"
 if [ "$zero_out1" = "{}" ] && [ "$zero_out2" = "{}" ] && printf '%s' "$zero_out3" | grep -q "external-process-wait.md"; then
-  pass "threshold override: NOOP_BASH_THRESHOLD=0 falls back to default of 3"
+  common_test_pass "threshold override: NOOP_BASH_THRESHOLD=0 falls back to default of 3"
 else
-  fail "threshold override: NOOP_BASH_THRESHOLD=0 expected fallback to 3, got [$zero_out1] [$zero_out2] [$zero_out3]"
+  common_test_fail "threshold override: NOOP_BASH_THRESHOLD=0 expected fallback to 3, got [$zero_out1] [$zero_out2] [$zero_out3]"
 fi
 
 # =====================================================================
@@ -397,9 +393,9 @@ rm -rf "$nv_shared_path"
 mkdir -p "$nv_shared_path"
 nv_status1=$(shared_path_delta_status "$nv_shared_path" false)
 if [ "$nv_status1" = "fail-stray" ]; then
-  pass "non-vacuousness: simulated mid-run creation correctly yields a fail-stray verdict"
+  common_test_pass "non-vacuousness: simulated mid-run creation correctly yields a fail-stray verdict"
 else
-  fail "non-vacuousness: simulated mid-run creation expected fail-stray, got [$nv_status1]"
+  common_test_fail "non-vacuousness: simulated mid-run creation expected fail-stray, got [$nv_status1]"
 fi
 rm -rf "$nv_shared_path"
 
@@ -408,9 +404,9 @@ rm -rf "$nv_shared_path"
 mkdir -p "$nv_shared_path"
 nv_status2=$(shared_path_delta_status "$nv_shared_path" true)
 if [ "$nv_status2" = "skip" ]; then
-  pass "non-vacuousness: simulated pre-existing path correctly yields a skip verdict (loud skip, not silent pass, not failure)"
+  common_test_pass "non-vacuousness: simulated pre-existing path correctly yields a skip verdict (loud skip, not silent pass, not failure)"
 else
-  fail "non-vacuousness: simulated pre-existing path expected skip, got [$nv_status2]"
+  common_test_fail "non-vacuousness: simulated pre-existing path expected skip, got [$nv_status2]"
 fi
 rm -rf "$nv_shared_path"
 
@@ -481,18 +477,18 @@ for alt_cmd in "${ALTERNATION_SEQUENCE[@]}"; do
 done
 
 if [ "$alt_fires" -ge 1 ]; then
-  pass "measured alternation: the real incident sequence fires at least once (fired $alt_fires time(s), first at call $alt_first_fire of $alt_idx)"
+  common_test_pass "measured alternation: the real incident sequence fires at least once (fired $alt_fires time(s), first at call $alt_first_fire of $alt_idx)"
 else
-  fail "measured alternation: expected at least one firing across $alt_idx calls, got 0 (fired=$alt_fires)"
+  common_test_fail "measured alternation: expected at least one firing across $alt_idx calls, got 0 (fired=$alt_fires)"
 fi
 
 # A future accounting change that merely delays the fire (e.g. to call 50) rather than genuinely
 # fixing the gap is caught here: the real incident's fire point, replayed against the modified
 # hook, is call 28 of 29 -- assert it fires no later than that.
 if [ -n "$alt_first_fire" ] && [ "$alt_first_fire" -le 28 ]; then
-  pass "measured alternation: first firing at call $alt_first_fire (expected at or before call 28)"
+  common_test_pass "measured alternation: first firing at call $alt_first_fire (expected at or before call 28)"
 else
-  fail "measured alternation: first firing expected at or before call 28, got '$alt_first_fire'"
+  common_test_fail "measured alternation: first firing expected at or before call 28, got '$alt_first_fire'"
 fi
 
 # =====================================================================
@@ -503,9 +499,9 @@ fi
 # exceeds the firing threshold -- a streak capped at 1 would mean the fix did not take effect.
 # =====================================================================
 if [ "$alt_max_streak" -gt 1 ]; then
-  pass "measured alternation: new max streak ($alt_max_streak) exceeds the pre-change cap of 1"
+  common_test_pass "measured alternation: new max streak ($alt_max_streak) exceeds the pre-change cap of 1"
 else
-  fail "measured alternation: expected max streak > 1 (pre-change was capped at 1), got $alt_max_streak"
+  common_test_fail "measured alternation: expected max streak > 1 (pre-change was capped at 1), got $alt_max_streak"
 fi
 
 # =====================================================================
@@ -535,9 +531,9 @@ do
   fi
 done
 if [ "$ctrl_fired" -eq 0 ]; then
-  pass "productive-work control: distinct inspection/build commands never fire"
+  common_test_pass "productive-work control: distinct inspection/build commands never fire"
 else
-  fail "productive-work control: expected no firing across distinct productive commands, but one fired"
+  common_test_fail "productive-work control: expected no firing across distinct productive commands, but one fired"
 fi
 
 # =====================================================================
@@ -550,25 +546,25 @@ run_hook "$fsr_session" "true" >/dev/null
 fsr_cf="$(count_file "$fsr_session")"
 # Two trivial calls: counter should be 2 before the probe.
 if [ -f "$fsr_cf" ] && [ "$(cat "$fsr_cf")" = "2" ]; then
-  pass "first-seen-vs-repeat: counter at 2 before first-seen inspection probe"
+  common_test_pass "first-seen-vs-repeat: counter at 2 before first-seen inspection probe"
 else
-  fail "first-seen-vs-repeat: expected counter == 2 before probe, got $(cat "$fsr_cf" 2>/dev/null || echo MISSING)"
+  common_test_fail "first-seen-vs-repeat: expected counter == 2 before probe, got $(cat "$fsr_cf" 2>/dev/null || echo MISSING)"
 fi
 # First-seen inspection probe: Class W -- resets.
 run_hook "$fsr_session" "wc -l /tmp/test-suite.log; grep -c ok /tmp/test-suite.log" >/dev/null
 if [ ! -f "$fsr_cf" ]; then
-  pass "first-seen-vs-repeat: first-seen inspection probe resets the counter (Class W)"
+  common_test_pass "first-seen-vs-repeat: first-seen inspection probe resets the counter (Class W)"
 else
-  fail "first-seen-vs-repeat: expected counter removed after first-seen probe, found $(cat "$fsr_cf")"
+  common_test_fail "first-seen-vs-repeat: expected counter removed after first-seen probe, found $(cat "$fsr_cf")"
 fi
 run_hook "$fsr_session" "true" >/dev/null
 run_hook "$fsr_session" "true" >/dev/null
 # Repeat of the SAME shape: Class P -- must NOT reset.
 run_hook "$fsr_session" "wc -l /tmp/test-suite.log; grep -c ok /tmp/test-suite.log" >/dev/null
 if [ -f "$fsr_cf" ] && [ "$(cat "$fsr_cf")" = "2" ]; then
-  pass "first-seen-vs-repeat: repeated inspection probe shape does NOT reset the counter (Class P)"
+  common_test_pass "first-seen-vs-repeat: repeated inspection probe shape does NOT reset the counter (Class P)"
 else
-  fail "first-seen-vs-repeat: expected counter to survive at 2 after repeated probe shape, got $(cat "$fsr_cf" 2>/dev/null || echo MISSING)"
+  common_test_fail "first-seen-vs-repeat: expected counter to survive at 2 after repeated probe shape, got $(cat "$fsr_cf" 2>/dev/null || echo MISSING)"
 fi
 
 # =====================================================================
@@ -582,9 +578,9 @@ printf 'not a valid fingerprint line\nanother garbage line without a trailing ne
 sc_out="$(run_hook "$sc_sid" "wc -l /tmp/test-suite.log; grep -c ok /tmp/test-suite.log")"
 sc_code=$?
 if [ "$sc_code" -eq 0 ] && [ "$sc_out" = "{}" ]; then
-  pass "sidecar robustness: malformed shapes sidecar -> exit 0, {}"
+  common_test_pass "sidecar robustness: malformed shapes sidecar -> exit 0, {}"
 else
-  fail "sidecar robustness: malformed shapes sidecar expected exit 0 + {}, got exit=$sc_code out=[$sc_out]"
+  common_test_fail "sidecar robustness: malformed shapes sidecar expected exit 0 + {}, got exit=$sc_code out=[$sc_out]"
 fi
 
 sc_unwritable_dir="$WORKDIR/unwritable-shapes-parent"
@@ -597,9 +593,9 @@ sc_out2="$(jq -n --arg s "$sc_sid2" --arg c "wc -l /tmp/test-suite.log; grep -c 
 sc_code2=$?
 chmod 755 "$sc_unwritable_dir"
 if [ "$sc_code2" -eq 0 ] && [ "$sc_out2" = "{}" ]; then
-  pass "sidecar robustness: unwritable shapes state dir -> exit 0, {}"
+  common_test_pass "sidecar robustness: unwritable shapes state dir -> exit 0, {}"
 else
-  fail "sidecar robustness: unwritable shapes state dir expected exit 0 + {}, got exit=$sc_code2 out=[$sc_out2]"
+  common_test_fail "sidecar robustness: unwritable shapes state dir expected exit 0 + {}, got exit=$sc_code2 out=[$sc_out2]"
 fi
 
 check_shared_path_not_stray "$SOURCE_STORE_TMP" "$SOURCE_STORE_TMP_PREEXISTED" \

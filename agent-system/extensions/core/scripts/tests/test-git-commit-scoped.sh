@@ -28,17 +28,15 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 SRC_SCRIPTS_DIR="$SCRIPT_DIR/.."
 
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 # info() is part of the shared pass/fail/info() counter idiom (shell-script-testing.md);
 # unused in this file's current case set, hence never invoked.
 # shellcheck disable=SC2329
-info() { echo "[INFO] $1"; }
 
 # --- Loud-skip discipline: verify all three required scripts exist before running anything. ---
 REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh lib/derived-artifact-probe-lib.sh)
@@ -295,15 +293,15 @@ after_t1=$(git -C "$repo_t1" rev-list --count HEAD 2>/dev/null || echo "$before_
 show_t1="$(git -C "$repo_t1" show --name-only --format="" HEAD 2>/dev/null)"
 
 if [ "$rc_t1" -eq 0 ] && [ "$after_t1" -eq $((before_t1 + 1)) ] && echo "$show_t1" | grep -qF "specs/999_probe/file.txt"; then
-  pass "T1: commit lands (git log gained a commit) with .lock/ present, fully-covered repo (verified via git log/git show, not exit code alone)"
+  common_test_pass "T1: commit lands (git log gained a commit) with .lock/ present, fully-covered repo (verified via git log/git show, not exit code alone)"
 else
-  fail "T1: expected rc=0, HEAD count $before_t1 -> $((before_t1 + 1)), file.txt in HEAD; got rc=$rc_t1 before=$before_t1 after=$after_t1 output=$out_t1"
+  common_test_fail "T1: expected rc=0, HEAD count $before_t1 -> $((before_t1 + 1)), file.txt in HEAD; got rc=$rc_t1 before=$before_t1 after=$after_t1 output=$out_t1"
 fi
 
 if echo "$show_t1" | grep -q '\.lock/'; then
-  fail "T2: .lock unexpectedly present in the T1 commit's file list: $show_t1"
+  common_test_fail "T2: .lock unexpectedly present in the T1 commit's file list: $show_t1"
 else
-  pass "T2: .lock is absent from the T1 commit's file list"
+  common_test_pass "T2: .lock is absent from the T1 commit's file list"
 fi
 
 # =====================================================================
@@ -322,9 +320,9 @@ show_t3="$(git -C "$repo_t3" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_t3" -eq 0 ] && [ "$after_t3" -eq $((before_t3 + 1)) ] \
   && echo "$show_t3" | grep -qF "specs/999_probe/file.txt" \
   && ephemeral_absent "$show_t3"; then
-  pass "T3: commit lands with all four ephemeral paths present; none appear in the commit (fully-covered repo)"
+  common_test_pass "T3: commit lands with all four ephemeral paths present; none appear in the commit (fully-covered repo)"
 else
-  fail "T3: expected rc=0, commit landed, none of the four ephemeral paths staged; got rc=$rc_t3 before=$before_t3 after=$after_t3 show='$show_t3' output=$out_t3"
+  common_test_fail "T3: expected rc=0, commit landed, none of the four ephemeral paths staged; got rc=$rc_t3 before=$before_t3 after=$after_t3 show='$show_t3' output=$out_t3"
 fi
 
 # =====================================================================
@@ -344,9 +342,9 @@ show_t4="$(git -C "$repo_t4" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_t4" -eq 0 ] && [ "$after_t4" -eq $((before_t4 + 1)) ] \
   && echo "$show_t4" | grep -qF "specs/999_probe/file.txt" \
   && ephemeral_absent "$show_t4"; then
-  pass "T4: no .lock/ present, other three present; commit lands and excludes the other three (outcome reading of 'existing callers unaffected')"
+  common_test_pass "T4: no .lock/ present, other three present; commit lands and excludes the other three (outcome reading of 'existing callers unaffected')"
 else
-  fail "T4: expected rc=0, commit landed, other three excluded; got rc=$rc_t4 before=$before_t4 after=$after_t4 show='$show_t4' output=$out_t4"
+  common_test_fail "T4: expected rc=0, commit landed, other three excluded; got rc=$rc_t4 before=$before_t4 after=$after_t4 show='$show_t4' output=$out_t4"
 fi
 
 # =====================================================================
@@ -366,9 +364,9 @@ show_t5="$(git -C "$repo_t5" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_t5" -eq 0 ] && [ "$after_t5" -eq $((before_t5 + 1)) ] \
   && echo "$show_t5" | grep -qF "specs/999_probe/file.txt" \
   && ephemeral_absent "$show_t5"; then
-  pass "T5: under-configured repo (no ephemeral .gitignore block); commit lands and all four excluded via injected :(exclude) pathspecs"
+  common_test_pass "T5: under-configured repo (no ephemeral .gitignore block); commit lands and all four excluded via injected :(exclude) pathspecs"
 else
-  fail "T5: expected rc=0, commit landed, all four excluded via injected pathspecs; got rc=$rc_t5 before=$before_t5 after=$after_t5 show='$show_t5' output=$out_t5"
+  common_test_fail "T5: expected rc=0, commit landed, all four excluded via injected pathspecs; got rc=$rc_t5 before=$before_t5 after=$after_t5 show='$show_t5' output=$out_t5"
 fi
 
 # =====================================================================
@@ -382,9 +380,9 @@ rc_t6=$?
 after_t6=$(git -C "$repo_t6" rev-list --count HEAD 2>/dev/null || echo "$before_t6")
 
 if [ "$rc_t6" -eq 2 ] && [ "$after_t6" -eq "$before_t6" ]; then
-  pass "T6: V3 exclude-only refusal intact -- exit 2, no commit created (git log unchanged)"
+  common_test_pass "T6: V3 exclude-only refusal intact -- exit 2, no commit created (git log unchanged)"
 else
-  fail "T6: expected rc=2 and no new commit; got rc=$rc_t6 before=$before_t6 after=$after_t6 output=$out_t6"
+  common_test_fail "T6: expected rc=2 and no new commit; got rc=$rc_t6 before=$before_t6 after=$after_t6 output=$out_t6"
 fi
 
 # =====================================================================
@@ -403,9 +401,9 @@ show_t7="$(git -C "$repo_t7" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_t7" -eq 0 ] && [ "$after_t7" -eq $((before_t7 + 1)) ] \
   && echo "$show_t7" | grep -qF "specs/999_probe/file.txt" \
   && echo "$out_t7" | grep -q "^WARN:.*nonexistent\.txt"; then
-  pass "T7: V2 unmatched-pathspec drop intact -- commit still lands with the valid path, WARN names the dropped pathspec"
+  common_test_pass "T7: V2 unmatched-pathspec drop intact -- commit still lands with the valid path, WARN names the dropped pathspec"
 else
-  fail "T7: expected rc=0, commit landed with file.txt, WARN naming nonexistent.txt; got rc=$rc_t7 before=$before_t7 after=$after_t7 show='$show_t7' output=$out_t7"
+  common_test_fail "T7: expected rc=0, commit landed with file.txt, WARN naming nonexistent.txt; got rc=$rc_t7 before=$before_t7 after=$after_t7 show='$show_t7' output=$out_t7"
 fi
 
 # =====================================================================
@@ -426,9 +424,9 @@ after_t8=$(git -C "$repo_t8" rev-list --count HEAD 2>/dev/null || echo "$before_
 show_t8="$(git -C "$repo_t8" show --name-status --format="" HEAD 2>/dev/null)"
 
 if [ "$after_t8" -eq $((before_t8 + 1)) ] && echo "$show_t8" | grep -qE '^D[[:space:]]+specs/999_probe/file\.txt$'; then
-  pass "T8: deletion-only scoped commit lands with D specs/999_probe/file.txt in HEAD"
+  common_test_pass "T8: deletion-only scoped commit lands with D specs/999_probe/file.txt in HEAD"
 else
-  fail "T8: expected a new commit carrying 'D specs/999_probe/file.txt'; got rc=$rc_t8 before=$before_t8 after=$after_t8 show='$show_t8' output=$out_t8"
+  common_test_fail "T8: expected a new commit carrying 'D specs/999_probe/file.txt'; got rc=$rc_t8 before=$before_t8 after=$after_t8 show='$show_t8' output=$out_t8"
 fi
 
 # =====================================================================
@@ -457,9 +455,9 @@ if [ "$after_t9" -eq $((before_t9 + 1)) ] \
   && echo "$show_t9" | grep -qE '^D[[:space:]]+specs/999_probe/file\.txt$' \
   && echo "$show_t9" | grep -qE '^M[[:space:]]+specs/999_probe/keep\.txt$' \
   && [ -z "$status_t9" ]; then
-  pass "T9: one commit carries both D specs/999_probe/file.txt and M specs/999_probe/keep.txt; git status clean afterwards"
+  common_test_pass "T9: one commit carries both D specs/999_probe/file.txt and M specs/999_probe/keep.txt; git status clean afterwards"
 else
-  fail "T9: expected one commit with D file.txt + M keep.txt and clean status; got rc=$rc_t9 before=$before_t9 after=$after_t9 show='$show_t9' status='$status_t9' output=$out_t9"
+  common_test_fail "T9: expected one commit with D file.txt + M keep.txt and clean status; got rc=$rc_t9 before=$before_t9 after=$after_t9 show='$show_t9' status='$status_t9' output=$out_t9"
 fi
 
 # =====================================================================
@@ -486,9 +484,9 @@ elif echo "$show_t10" | grep -qE '^D[[:space:]]+specs/999_probe/file\.txt$' \
 fi
 
 if [ "$after_t10" -eq $((before_t10 + 1)) ] && [ "$rename_ok" = "true" ] && [ -z "$status_t10" ]; then
-  pass "T10: in-scope rename commits both halves (D+A or R100); git status clean afterwards"
+  common_test_pass "T10: in-scope rename commits both halves (D+A or R100); git status clean afterwards"
 else
-  fail "T10: expected one commit carrying both rename halves and clean status; got rc=$rc_t10 before=$before_t10 after=$after_t10 show='$show_t10' status='$status_t10' output=$out_t10"
+  common_test_fail "T10: expected one commit carrying both rename halves and clean status; got rc=$rc_t10 before=$before_t10 after=$after_t10 show='$show_t10' status='$status_t10' output=$out_t10"
 fi
 
 # =====================================================================
@@ -507,9 +505,9 @@ after_t11=$(git -C "$repo_t11" rev-list --count HEAD 2>/dev/null || echo "$befor
 
 if [ "$rc_t11" -eq 2 ] && [ "$after_t11" -eq "$before_t11" ] \
   && echo "$out_t11" | grep -q "ERROR:.*zero positive pathspec entries remain"; then
-  pass "T11: all-dropped pathspec list still hits the existing V3 refusal -- exit 2, no commit created (git log unchanged), unaffected by the V6 addition"
+  common_test_pass "T11: all-dropped pathspec list still hits the existing V3 refusal -- exit 2, no commit created (git log unchanged), unaffected by the V6 addition"
 else
-  fail "T11: expected rc=2, no new commit, V3 ERROR naming zero positive entries remaining; got rc=$rc_t11 before=$before_t11 after=$after_t11 output=$out_t11"
+  common_test_fail "T11: expected rc=2, no new commit, V3 ERROR naming zero positive entries remaining; got rc=$rc_t11 before=$before_t11 after=$after_t11 output=$out_t11"
 fi
 
 # =====================================================================
@@ -529,9 +527,9 @@ after_t12=$(git -C "$repo_t12" rev-list --count HEAD 2>/dev/null || echo "$befor
 if [ "$rc_t12" -eq 4 ] && [ "$after_t12" -eq "$before_t12" ] \
   && echo "$out_t12" | grep -q "ERROR:.*01_absent\.md" \
   && ! echo "$out_t12" | grep -q "^NOTE: Nothing to commit"; then
-  pass "T12: V6 posture pinned -- partial drop with no surviving diff refuses as exit 4 (no commit, git log unchanged), ERROR names the dropped path, generic NOTE is not the only diagnostic"
+  common_test_pass "T12: V6 posture pinned -- partial drop with no surviving diff refuses as exit 4 (no commit, git log unchanged), ERROR names the dropped path, generic NOTE is not the only diagnostic"
 else
-  fail "T12: expected rc=4, no new commit, ERROR naming 01_absent.md, no bare NOTE-only output; got rc=$rc_t12 before=$before_t12 after=$after_t12 output=$out_t12"
+  common_test_fail "T12: expected rc=4, no new commit, ERROR naming 01_absent.md, no bare NOTE-only output; got rc=$rc_t12 before=$before_t12 after=$after_t12 output=$out_t12"
 fi
 
 # =====================================================================
@@ -553,9 +551,9 @@ show_t13="$(git -C "$repo_t13" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_t13" -eq 0 ] && [ "$after_t13" -eq $((before_t13 + 1)) ] \
   && echo "$show_t13" | grep -qF "specs/999_probe/file.txt" \
   && echo "$out_t13" | grep -q "^WARN:.*01_absent\.md"; then
-  pass "T13: legitimate partial drop with a surviving diff still commits -- exit 0, HEAD +1, WARN names the dropped path (HARD CONSTRAINT partial-drop half)"
+  common_test_pass "T13: legitimate partial drop with a surviving diff still commits -- exit 0, HEAD +1, WARN names the dropped path (HARD CONSTRAINT partial-drop half)"
 else
-  fail "T13: expected rc=0, HEAD count $before_t13 -> $((before_t13 + 1)), file.txt in HEAD, WARN naming 01_absent.md; got rc=$rc_t13 before=$before_t13 after=$after_t13 show='$show_t13' output=$out_t13"
+  common_test_fail "T13: expected rc=0, HEAD count $before_t13 -> $((before_t13 + 1)), file.txt in HEAD, WARN naming 01_absent.md; got rc=$rc_t13 before=$before_t13 after=$after_t13 show='$show_t13' output=$out_t13"
 fi
 
 # =====================================================================
@@ -619,15 +617,15 @@ if [ "$rc_x1" -eq 5 ] \
   && echo "$out_x1" | grep -q "ERROR:.*V8" \
   && echo "$out_x1" | grep -qF "specs/999_probe/file.txt" \
   && [ "$head_content_x1" != "$wt_content_x1" ]; then
-  pass "X1: the planted drop-injection hook's reproduction of the incident shape is caught -- exit 5, marked ERROR (Verified Finding V8) naming the dropped path, HEAD content independently confirmed to differ from the working tree"
+  common_test_pass "X1: the planted drop-injection hook's reproduction of the incident shape is caught -- exit 5, marked ERROR (Verified Finding V8) naming the dropped path, HEAD content independently confirmed to differ from the working tree"
 else
-  fail "X1: expected rc=5, marked ERROR (V8) naming specs/999_probe/file.txt, HEAD content != working-tree content (the reproduced drop); got rc=$rc_x1 before=$before_x1 after=$after_x1 head='$head_content_x1' wt='$wt_content_x1' output=$out_x1"
+  common_test_fail "X1: expected rc=5, marked ERROR (V8) naming specs/999_probe/file.txt, HEAD content != working-tree content (the reproduced drop); got rc=$rc_x1 before=$before_x1 after=$after_x1 head='$head_content_x1' wt='$wt_content_x1' output=$out_x1"
 fi
 
 if [ "$after_x1" -eq $((before_x1 + 1)) ]; then
-  pass "X1: the commit is still created despite the drop (commit_exit remains 0) -- the integrity gate reports the partial outcome via a dedicated exit code rather than suppressing the commit"
+  common_test_pass "X1: the commit is still created despite the drop (commit_exit remains 0) -- the integrity gate reports the partial outcome via a dedicated exit code rather than suppressing the commit"
 else
-  fail "X1: expected the commit to still be created (HEAD +1) since the underlying commit_exit remains 0; got before=$before_x1 after=$after_x1 output=$out_x1"
+  common_test_fail "X1: expected the commit to still be created (HEAD +1) since the underlying commit_exit remains 0; got before=$before_x1 after=$after_x1 output=$out_x1"
 fi
 
 # --- X1 negative-control probe (not a suite case): confirms X1's assertions are a real guard
@@ -657,12 +655,12 @@ if grep -q 'elif \[ "\$v8_post_state" = "\$v8_intended" \]; then' "$x1_probe_dir
   out_x1_probe="$(run_commit "$repo_x1_probe" --message "X1 inversion probe" --session "sess_x1_probe" -- "specs/999_probe/file.txt" 2>&1)"
   rc_x1_probe=$?
   if [ "$rc_x1_probe" -ne 5 ]; then
-    pass "X1 (inversion probe, non-default): with the V8 mismatch predicate inverted, the identical drop scenario no longer exits 5 -- confirms X1's real-predicate assertions are a genuine guard, not a tautology"
+    common_test_pass "X1 (inversion probe, non-default): with the V8 mismatch predicate inverted, the identical drop scenario no longer exits 5 -- confirms X1's real-predicate assertions are a genuine guard, not a tautology"
   else
-    fail "X1 (inversion probe, non-default): expected the inverted predicate to mask the drop (rc != 5); still got rc=$rc_x1_probe output=$out_x1_probe"
+    common_test_fail "X1 (inversion probe, non-default): expected the inverted predicate to mask the drop (rc != 5); still got rc=$rc_x1_probe output=$out_x1_probe"
   fi
 else
-  fail "X1 (inversion probe, non-default): could not construct the inverted scratch copy -- sed substitution did not apply as expected, inversion probe skipped"
+  common_test_fail "X1 (inversion probe, non-default): could not construct the inverted scratch copy -- sed substitution did not apply as expected, inversion probe skipped"
 fi
 
 # =====================================================================
@@ -683,9 +681,9 @@ rc_x2=$?
 after_x2=$(git -C "$repo_x2" rev-list --count HEAD 2>/dev/null || echo "$before_x2")
 
 if [ "$rc_x2" -eq 0 ] && [ "$after_x2" -eq $((before_x2 + 1)) ] && ! echo "$out_x2" | grep -q "ERROR:.*V8"; then
-  pass "X2: a V2 case-2 already-staged deletion commits cleanly with no V8 diagnostic -- correct absence compares as a match"
+  common_test_pass "X2: a V2 case-2 already-staged deletion commits cleanly with no V8 diagnostic -- correct absence compares as a match"
 else
-  fail "X2: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x2 before=$before_x2 after=$after_x2 output=$out_x2"
+  common_test_fail "X2: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x2 before=$before_x2 after=$after_x2 output=$out_x2"
 fi
 
 # --- X3: V7 fully-staged-deletion acceptance -- a directory-move rename pair, both halves land,
@@ -701,9 +699,9 @@ rc_x3=$?
 after_x3=$(git -C "$repo_x3" rev-list --count HEAD 2>/dev/null || echo "$before_x3")
 
 if [ "$rc_x3" -eq 0 ] && [ "$after_x3" -eq $((before_x3 + 1)) ] && ! echo "$out_x3" | grep -q "ERROR:.*V8"; then
-  pass "X3: a directory-move rename pair commits cleanly with no V8 diagnostic -- the vacated source half is not flagged"
+  common_test_pass "X3: a directory-move rename pair commits cleanly with no V8 diagnostic -- the vacated source half is not flagged"
 else
-  fail "X3: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x3 before=$before_x3 after=$after_x3 output=$out_x3"
+  common_test_fail "X3: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x3 before=$before_x3 after=$after_x3 output=$out_x3"
 fi
 
 # --- X4: directory pathspec in a covered repo with all four ephemeral paths present (U6 shape)
@@ -718,9 +716,9 @@ rc_x4=$?
 after_x4=$(git -C "$repo_x4" rev-list --count HEAD 2>/dev/null || echo "$before_x4")
 
 if [ "$rc_x4" -eq 0 ] && [ "$after_x4" -eq $((before_x4 + 1)) ] && ! echo "$out_x4" | grep -q "ERROR:.*V8"; then
-  pass "X4: a directory pathspec with all four ephemeral paths present commits cleanly with no V8 diagnostic"
+  common_test_pass "X4: a directory pathspec with all four ephemeral paths present commits cleanly with no V8 diagnostic"
 else
-  fail "X4: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x4 before=$before_x4 after=$after_x4 output=$out_x4"
+  common_test_fail "X4: expected rc=0, HEAD+1, no V8 output; got rc=$rc_x4 before=$before_x4 after=$after_x4 output=$out_x4"
 fi
 
 # --- X5: a newly-created, ignore-matched file swept up IMPLICITLY inside a directory pathspec
@@ -742,9 +740,9 @@ show_x5="$(git -C "$repo_x5" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_x5" -eq 0 ] && [ "$after_x5" -eq $((before_x5 + 1)) ] \
   && ! echo "$show_x5" | grep -qF "new.ignoredtmp" \
   && ! echo "$out_x5" | grep -q "ERROR:.*V8"; then
-  pass "X5: a newly-created ignore-matched file swept up implicitly inside a directory pathspec is silently skipped, with no V8 diagnostic"
+  common_test_pass "X5: a newly-created ignore-matched file swept up implicitly inside a directory pathspec is silently skipped, with no V8 diagnostic"
 else
-  fail "X5: expected rc=0, HEAD+1, new.ignoredtmp absent from the commit, no V8 output; got rc=$rc_x5 before=$before_x5 after=$after_x5 show='$show_x5' output=$out_x5"
+  common_test_fail "X5: expected rc=0, HEAD+1, new.ignoredtmp absent from the commit, no V8 output; got rc=$rc_x5 before=$before_x5 after=$after_x5 show='$show_x5' output=$out_x5"
 fi
 
 # --- X6: the benign "nothing to commit" no-op -- every named positive pathspec is tracked and
@@ -757,9 +755,9 @@ rc_x6=$?
 after_x6=$(git -C "$repo_x6" rev-list --count HEAD 2>/dev/null || echo "$before_x6")
 
 if [ "$rc_x6" -eq 1 ] && [ "$after_x6" -eq "$before_x6" ] && ! echo "$out_x6" | grep -q "ERROR:.*V8"; then
-  pass "X6: the benign nothing-to-commit no-op is unchanged -- exit 1, no V8 diagnostic"
+  common_test_pass "X6: the benign nothing-to-commit no-op is unchanged -- exit 1, no V8 diagnostic"
 else
-  fail "X6: expected rc=1, HEAD unchanged, no V8 output; got rc=$rc_x6 before=$before_x6 after=$after_x6 output=$out_x6"
+  common_test_fail "X6: expected rc=1, HEAD unchanged, no V8 output; got rc=$rc_x6 before=$before_x6 after=$after_x6 output=$out_x6"
 fi
 
 # --- X7: V6's exit 4 path still reports 4, not 5, when a genuine drop coincides with no commit
@@ -772,9 +770,9 @@ rc_x7=$?
 after_x7=$(git -C "$repo_x7" rev-list --count HEAD 2>/dev/null || echo "$before_x7")
 
 if [ "$rc_x7" -eq 4 ] && [ "$after_x7" -eq "$before_x7" ]; then
-  pass "X7: V6's exit 4 is unaffected by the V8 addition -- still 4, never 5, when no commit was produced at all"
+  common_test_pass "X7: V6's exit 4 is unaffected by the V8 addition -- still 4, never 5, when no commit was produced at all"
 else
-  fail "X7: expected rc=4 (never 5), HEAD unchanged; got rc=$rc_x7 before=$before_x7 after=$after_x7 output=$out_x7"
+  common_test_fail "X7: expected rc=4 (never 5), HEAD unchanged; got rc=$rc_x7 before=$before_x7 after=$after_x7 output=$out_x7"
 fi
 
 # --- X8: the SECOND V8 mismatch class -- "absent from HEAD" (a path named, present on disk, and
@@ -804,9 +802,9 @@ if [ "$rc_x8" -eq 5 ] && [ "$after_x8" -eq $((before_x8 + 1)) ] \
   && echo "$out_x8" | grep -q "ERROR:.*V8" \
   && echo "$out_x8" | grep -qF "specs/999_probe/newfile.txt" \
   && echo "$out_x8" | grep -q "newfile\.txt.*absent from HEAD"; then
-  pass "X8: the 'absent from HEAD' V8 mismatch class (a brand-new named path dropped entirely, never before tracked) is caught and distinguished from X1's 'present with different content' class -- exit 5, commit still created, diagnostic names the correct classification"
+  common_test_pass "X8: the 'absent from HEAD' V8 mismatch class (a brand-new named path dropped entirely, never before tracked) is caught and distinguished from X1's 'present with different content' class -- exit 5, commit still created, diagnostic names the correct classification"
 else
-  fail "X8: expected rc=5, HEAD+1, newfile.txt absent from HEAD, ERROR naming it as 'absent from HEAD'; got rc=$rc_x8 before=$before_x8 after=$after_x8 in_head=$newfile_in_head_x8 output=$out_x8"
+  common_test_fail "X8: expected rc=5, HEAD+1, newfile.txt absent from HEAD, ERROR naming it as 'absent from HEAD'; got rc=$rc_x8 before=$before_x8 after=$after_x8 in_head=$newfile_in_head_x8 output=$out_x8"
 fi
 
 # --- X2-X5 negative-control probe (not a suite case): confirms the shared "intended absent
@@ -830,12 +828,12 @@ if grep -q 'if \[ "\$v8_intended" = "absent-DISABLED-BY-PROBE" \]; then' "$x2_pr
   out_x2_probe="$(run_commit "$repo_x2_probe" --message "X2 inversion probe" --session "sess_x2_probe" -- "specs/999_probe/file.txt" 2>&1)"
   rc_x2_probe=$?
   if [ "$rc_x2_probe" -eq 5 ] && echo "$out_x2_probe" | grep -q "ERROR:.*V8"; then
-    pass "X2-X5 (inversion probe, non-default): with the 'intended absent' special-case disabled, X2's identical deletion scenario now WRONGLY fires a V8 mismatch -- confirms X2-X5's absence-dependent assertions are a genuine guard, not a tautology"
+    common_test_pass "X2-X5 (inversion probe, non-default): with the 'intended absent' special-case disabled, X2's identical deletion scenario now WRONGLY fires a V8 mismatch -- confirms X2-X5's absence-dependent assertions are a genuine guard, not a tautology"
   else
-    fail "X2-X5 (inversion probe, non-default): expected the disabled special-case to false-positive (rc=5, V8 output); got rc=$rc_x2_probe output=$out_x2_probe"
+    common_test_fail "X2-X5 (inversion probe, non-default): expected the disabled special-case to false-positive (rc=5, V8 output); got rc=$rc_x2_probe output=$out_x2_probe"
   fi
 else
-  fail "X2-X5 (inversion probe, non-default): could not construct the disabled-special-case scratch copy -- sed substitution did not apply as expected, inversion probe skipped"
+  common_test_fail "X2-X5 (inversion probe, non-default): could not construct the disabled-special-case scratch copy -- sed substitution did not apply as expected, inversion probe skipped"
 fi
 
 # =====================================================================
@@ -856,9 +854,9 @@ show_u1="$(git -C "$repo_u1" show --name-only --format="" HEAD 2>/dev/null)"
 
 if [ "$rc_u1" -eq 0 ] && [ "$after_u1" -eq $((before_u1 + 1)) ] \
   && echo "$show_u1" | grep -qF "specs/999_probe/archive/state.json"; then
-  pass "U1: tracked, ignore-matched positive pathspec lands despite git add's advisory exit 1 (verified via git log/git show, not exit code alone)"
+  common_test_pass "U1: tracked, ignore-matched positive pathspec lands despite git add's advisory exit 1 (verified via git log/git show, not exit code alone)"
 else
-  fail "U1: expected rc=0, HEAD count $before_u1 -> $((before_u1 + 1)), state.json in HEAD; got rc=$rc_u1 before=$before_u1 after=$after_u1 show='$show_u1' output=$out_u1"
+  common_test_fail "U1: expected rc=0, HEAD count $before_u1 -> $((before_u1 + 1)), state.json in HEAD; got rc=$rc_u1 before=$before_u1 after=$after_u1 show='$show_u1' output=$out_u1"
 fi
 
 # --- U2: the same tracked, ignore-matched path BATCHED with an ordinary modified path -- both
@@ -876,18 +874,18 @@ show_u2="$(git -C "$repo_u2" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_u2" -eq 0 ] && [ "$after_u2" -eq $((before_u2 + 1)) ] \
   && echo "$show_u2" | grep -qF "specs/999_probe/archive/state.json" \
   && echo "$show_u2" | grep -qF "specs/999_probe/ordinary.txt"; then
-  pass "U2: tracked ignore-matched path batched with an ordinary modified path -- both land in one commit"
+  common_test_pass "U2: tracked ignore-matched path batched with an ordinary modified path -- both land in one commit"
 else
-  fail "U2: expected rc=0, HEAD count $before_u2 -> $((before_u2 + 1)), both paths in HEAD; got rc=$rc_u2 before=$before_u2 after=$after_u2 show='$show_u2' output=$out_u2"
+  common_test_fail "U2: expected rc=0, HEAD count $before_u2 -> $((before_u2 + 1)), both paths in HEAD; got rc=$rc_u2 before=$before_u2 after=$after_u2 show='$show_u2' output=$out_u2"
 fi
 
 # --- U3: the tolerated-advisory invocation emits the stderr NOTE -- the tolerance must never be
 # silent. Reuses U1's captured output. ---
 
 if echo "$out_u1" | grep -qi "NOTE:.*tolerated git add"; then
-  pass "U3: the tolerated gitignore-advisory exit is surfaced via a stderr NOTE, not silent"
+  common_test_pass "U3: the tolerated gitignore-advisory exit is surfaced via a stderr NOTE, not silent"
 else
-  fail "U3: expected a stderr NOTE naming the tolerated git add exit; got output=$out_u1"
+  common_test_fail "U3: expected a stderr NOTE naming the tolerated git add exit; got output=$out_u1"
 fi
 
 # --- U4: a genuine add failure (nothing staged) still refuses with exit 2 and names the failing
@@ -917,9 +915,9 @@ chmod 644 "$repo_u4/specs/999_probe/badperm.txt" 2>/dev/null || true
 if [ "$rc_u4" -eq 2 ] && [ "$after_u4" -eq "$before_u4" ] \
   && echo "$out_u4" | grep -q "ERROR:.*genuinely unstaged" \
   && echo "$out_u4" | grep -qF "badperm.txt"; then
-  pass "U4: a genuine add failure (in-repo, permission-denied) still refuses -- exit 2, no commit, ERROR names the failing path (V7 does not paper over the hard-failure case; this fixture is deliberately in-repo so it survives the V9 addition unchanged)"
+  common_test_pass "U4: a genuine add failure (in-repo, permission-denied) still refuses -- exit 2, no commit, ERROR names the failing path (V7 does not paper over the hard-failure case; this fixture is deliberately in-repo so it survives the V9 addition unchanged)"
 else
-  fail "U4: expected rc=2, no new commit, ERROR naming badperm.txt; got rc=$rc_u4 before=$before_u4 after=$after_u4 output=$out_u4"
+  common_test_fail "U4: expected rc=2, no new commit, ERROR naming badperm.txt; got rc=$rc_u4 before=$before_u4 after=$after_u4 output=$out_u4"
 fi
 
 # --- U5: a brand-new UNTRACKED, ignore-matched file named as an explicit positive pathspec is
@@ -939,9 +937,9 @@ tracked_u5="$(git -C "$repo_u5" ls-files -- specs/999_probe/ignoredsub/new.txt)"
 
 if [ "$rc_u5" -eq 2 ] && [ "$after_u5" -eq "$before_u5" ] && [ -z "$tracked_u5" ] \
   && echo "$out_u5" | grep -q "ERROR:.*genuinely unstaged"; then
-  pass "U5: a brand-new untracked, ignore-matched path named explicitly is still refused -- no -f behavior introduced"
+  common_test_pass "U5: a brand-new untracked, ignore-matched path named explicitly is still refused -- no -f behavior introduced"
 else
-  fail "U5: expected rc=2, no new commit, new.txt never tracked; got rc=$rc_u5 before=$before_u5 after=$after_u5 tracked='$tracked_u5' output=$out_u5"
+  common_test_fail "U5: expected rc=2, no new commit, new.txt never tracked; got rc=$rc_u5 before=$before_u5 after=$after_u5 tracked='$tracked_u5' output=$out_u5"
 fi
 
 # --- U6: a directory pathspec in a fully-covered repo with ephemeral paths present still commits
@@ -960,9 +958,9 @@ show_u6="$(git -C "$repo_u6" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_u6" -eq 0 ] && [ "$after_u6" -eq $((before_u6 + 1)) ] \
   && echo "$show_u6" | grep -qF "specs/999_probe/file.txt" \
   && ephemeral_absent "$show_u6"; then
-  pass "U6: directory pathspec with ephemeral excludes present still commits and excludes them -- the V7 per-path diff check is not false-flagged by the directory pathspec"
+  common_test_pass "U6: directory pathspec with ephemeral excludes present still commits and excludes them -- the V7 per-path diff check is not false-flagged by the directory pathspec"
 else
-  fail "U6: expected rc=0, commit landed, ephemerals excluded; got rc=$rc_u6 before=$before_u6 after=$after_u6 show='$show_u6' output=$out_u6"
+  common_test_fail "U6: expected rc=0, commit landed, ephemerals excluded; got rc=$rc_u6 before=$before_u6 after=$after_u6 show='$show_u6' output=$out_u6"
 fi
 
 # task-ref-ok:begin category 6-adjacent: every "task 40x"/"#40x"/"--task 40x" literal in the V1-V8
@@ -996,9 +994,9 @@ rc_v1=$?
 after_v1=$(git -C "$repo_v1" rev-list --count HEAD 2>/dev/null || echo "$before_v1")
 
 if [ "$rc_v1" -eq 0 ] && [ "$after_v1" -eq $((before_v1 + 1)) ]; then
-  pass "V1: an unlisted path proceeds exactly as today, even with --task given"
+  common_test_pass "V1: an unlisted path proceeds exactly as today, even with --task given"
 else
-  fail "V1: expected rc=0 and HEAD advanced by 1; got rc=$rc_v1 before=$before_v1 after=$after_v1 output=$out_v1"
+  common_test_fail "V1: expected rc=0 and HEAD advanced by 1; got rc=$rc_v1 before=$before_v1 after=$after_v1 output=$out_v1"
 fi
 
 # --- V2: an unclaimed listed path claims, commits, and releases. ---
@@ -1012,14 +1010,14 @@ rc_v2=$?
 after_v2=$(git -C "$repo_v2" rev-list --count HEAD 2>/dev/null || echo "$before_v2")
 
 if [ "$rc_v2" -eq 0 ] && [ "$after_v2" -eq $((before_v2 + 1)) ]; then
-  pass "V2: an unclaimed listed path claims and commits successfully"
+  common_test_pass "V2: an unclaimed listed path claims and commits successfully"
 else
-  fail "V2: expected rc=0 and HEAD advanced by 1; got rc=$rc_v2 before=$before_v2 after=$after_v2 output=$out_v2"
+  common_test_fail "V2: expected rc=0 and HEAD advanced by 1; got rc=$rc_v2 before=$before_v2 after=$after_v2 output=$out_v2"
 fi
 if [ ! -d "$repo_v2/specs/.contention-claims" ] || [ -z "$(ls -A "$repo_v2/specs/.contention-claims" 2>/dev/null)" ]; then
-  pass "V2: the claim was released after the commit (no lingering claim directory)"
+  common_test_pass "V2: the claim was released after the commit (no lingering claim directory)"
 else
-  fail "V2: expected the claim released, found: $(ls "$repo_v2/specs/.contention-claims" 2>/dev/null)"
+  common_test_fail "V2: expected the claim released, found: $(ls "$repo_v2/specs/.contention-claims" 2>/dev/null)"
 fi
 
 # --- V3: a path already claimed by THIS SAME task is re-entrant -- proceeds without error, and
@@ -1036,14 +1034,14 @@ rc_v3=$?
 after_v3=$(git -C "$repo_v3" rev-list --count HEAD 2>/dev/null || echo "$before_v3")
 
 if [ "$rc_v3" -eq 0 ] && [ "$after_v3" -eq $((before_v3 + 1)) ]; then
-  pass "V3: a path already claimed by this same task is re-entrant -- commit proceeds"
+  common_test_pass "V3: a path already claimed by this same task is re-entrant -- commit proceeds"
 else
-  fail "V3: expected rc=0 and HEAD advanced by 1; got rc=$rc_v3 before=$before_v3 after=$after_v3 output=$out_v3"
+  common_test_fail "V3: expected rc=0 and HEAD advanced by 1; got rc=$rc_v3 before=$before_v3 after=$after_v3 output=$out_v3"
 fi
 if [ -d "$repo_v3/specs/.contention-claims" ] && [ -n "$(ls -A "$repo_v3/specs/.contention-claims" 2>/dev/null)" ]; then
-  pass "V3: the pre-existing (outer) claim is left in place -- never auto-released by a re-entrant caller"
+  common_test_pass "V3: the pre-existing (outer) claim is left in place -- never auto-released by a re-entrant caller"
 else
-  fail "V3: expected the outer claim still present after a re-entrant commit, found none"
+  common_test_fail "V3: expected the outer claim still present after a re-entrant commit, found none"
 fi
 (cd "$repo_v3" && bash .claude/scripts/task-lock.sh claim-release "specs/999_probe/file.txt" 401 >/dev/null 2>&1)
 
@@ -1061,25 +1059,25 @@ after_v4=$(git -C "$repo_v4" rev-list --count HEAD 2>/dev/null || echo "$before_
 staged_v4="$(git -C "$repo_v4" diff --cached --name-only 2>/dev/null)"
 
 if [ "$rc_v4" -eq 3 ] && [ "$after_v4" -eq "$before_v4" ]; then
-  pass "V4: a path held by another live task refuses (exit 3), HEAD unchanged"
+  common_test_pass "V4: a path held by another live task refuses (exit 3), HEAD unchanged"
 else
-  fail "V4: expected rc=3 and HEAD unchanged; got rc=$rc_v4 before=$before_v4 after=$after_v4 output=$out_v4"
+  common_test_fail "V4: expected rc=3 and HEAD unchanged; got rc=$rc_v4 before=$before_v4 after=$after_v4 output=$out_v4"
 fi
 if [ -z "$staged_v4" ]; then
-  pass "V4: nothing staged on the foreign-claim refusal (git diff --cached is empty)"
+  common_test_pass "V4: nothing staged on the foreign-claim refusal (git diff --cached is empty)"
 else
-  fail "V4: expected nothing staged, found: $staged_v4"
+  common_test_fail "V4: expected nothing staged, found: $staged_v4"
 fi
 if echo "$out_v4" | grep -q "task #402"; then
-  pass "V4: the refusal names the holding task (#402) verbatim"
+  common_test_pass "V4: the refusal names the holding task (#402) verbatim"
 else
-  fail "V4: expected the refusal to name task #402, got: $out_v4"
+  common_test_fail "V4: expected the refusal to name task #402, got: $out_v4"
 fi
 holder_after_v4=$(jq -r '.task // empty' "$repo_v4/specs/.contention-claims/specs_999_probe_file.txt/holder.json" 2>/dev/null)
 if [ "$holder_after_v4" = "402" ]; then
-  pass "V4: the foreign claim is untouched (still held by task #402)"
+  common_test_pass "V4: the foreign claim is untouched (still held by task #402)"
 else
-  fail "V4: expected the foreign claim to still be held by task #402, got holder='$holder_after_v4'"
+  common_test_fail "V4: expected the foreign claim to still be held by task #402, got holder='$holder_after_v4'"
 fi
 (cd "$repo_v4" && bash .claude/scripts/task-lock.sh claim-release "specs/999_probe/file.txt" 402 >/dev/null 2>&1)
 
@@ -1097,9 +1095,9 @@ rc_v5=$?
 after_v5=$(git -C "$repo_v5" rev-list --count HEAD 2>/dev/null || echo "$before_v5")
 
 if [ "$rc_v5" -eq 0 ] && [ "$after_v5" -eq $((before_v5 + 1)) ]; then
-  pass "V5: a stale foreign claim is reclaimed; the commit proceeds"
+  common_test_pass "V5: a stale foreign claim is reclaimed; the commit proceeds"
 else
-  fail "V5: expected rc=0 and HEAD advanced by 1; got rc=$rc_v5 before=$before_v5 after=$after_v5 output=$out_v5"
+  common_test_fail "V5: expected rc=0 and HEAD advanced by 1; got rc=$rc_v5 before=$before_v5 after=$after_v5 output=$out_v5"
 fi
 
 # --- V6: a missing or malformed manifest fails open -- the commit still proceeds, with a
@@ -1115,14 +1113,14 @@ rc_v6=$?
 after_v6=$(git -C "$repo_v6" rev-list --count HEAD 2>/dev/null || echo "$before_v6")
 
 if [ "$rc_v6" -eq 0 ] && [ "$after_v6" -eq $((before_v6 + 1)) ]; then
-  pass "V6: a malformed manifest fails open -- the commit still proceeds"
+  common_test_pass "V6: a malformed manifest fails open -- the commit still proceeds"
 else
-  fail "V6: expected rc=0 and HEAD advanced by 1 despite the malformed manifest; got rc=$rc_v6 before=$before_v6 after=$after_v6 output=$out_v6"
+  common_test_fail "V6: expected rc=0 and HEAD advanced by 1 despite the malformed manifest; got rc=$rc_v6 before=$before_v6 after=$after_v6 output=$out_v6"
 fi
 if echo "$out_v6" | grep -qi "could not parse contention manifest"; then
-  pass "V6: a non-blocking WARN names the unparseable manifest file"
+  common_test_pass "V6: a non-blocking WARN names the unparseable manifest file"
 else
-  fail "V6: expected a WARN about the malformed manifest, got: $out_v6"
+  common_test_fail "V6: expected a WARN about the malformed manifest, got: $out_v6"
 fi
 
 # --- V7: omitting --task entirely fails open -- no claim check at all, even when the manifest
@@ -1138,9 +1136,9 @@ rc_v7=$?
 after_v7=$(git -C "$repo_v7" rev-list --count HEAD 2>/dev/null || echo "$before_v7")
 
 if [ "$rc_v7" -eq 0 ] && [ "$after_v7" -eq $((before_v7 + 1)) ]; then
-  pass "V7: omitting --task fails open -- the commit proceeds even though the path is held by another task in the manifest"
+  common_test_pass "V7: omitting --task fails open -- the commit proceeds even though the path is held by another task in the manifest"
 else
-  fail "V7: expected rc=0 and HEAD advanced by 1 with --task omitted; got rc=$rc_v7 before=$before_v7 after=$after_v7 output=$out_v7"
+  common_test_fail "V7: expected rc=0 and HEAD advanced by 1 with --task omitted; got rc=$rc_v7 before=$before_v7 after=$after_v7 output=$out_v7"
 fi
 (cd "$repo_v7" && bash .claude/scripts/task-lock.sh claim-release "specs/999_probe/file.txt" 402 >/dev/null 2>&1)
 
@@ -1190,9 +1188,9 @@ if [ "$rc_w1" -eq 0 ] && [ "$after_w1" -eq $((before_w1 + 1)) ] \
   && [ "$renames_w1" -eq 2 ] \
   && ! echo "$show_w1" | grep -qF "specs/998_sibling/file.txt" \
   && [ "$sibling_still_dirty_w1" -eq 1 ]; then
-  pass "W1: a directory-move pathspec pair commits -- HEAD advanced, both files recorded as renames, out-of-scope modified sibling left uncommitted (verified via git log/git show, not exit code)"
+  common_test_pass "W1: a directory-move pathspec pair commits -- HEAD advanced, both files recorded as renames, out-of-scope modified sibling left uncommitted (verified via git log/git show, not exit code)"
 else
-  fail "W1: expected rc=0, HEAD+1, 2 renames in HEAD, sibling absent from the commit and still dirty; got rc=$rc_w1 before=$before_w1 after=$after_w1 renames=$renames_w1 sibling_dirty=$sibling_still_dirty_w1 show=$show_w1 output=$out_w1"
+  common_test_fail "W1: expected rc=0, HEAD+1, 2 renames in HEAD, sibling absent from the commit and still dirty; got rc=$rc_w1 before=$before_w1 after=$after_w1 renames=$renames_w1 sibling_dirty=$sibling_still_dirty_w1 show=$show_w1 output=$out_w1"
 fi
 
 # --- W2: the acceptance is never silent -- it names the accepted pathspec on stderr, matching the
@@ -1200,9 +1198,9 @@ fi
 
 if echo "$out_w1" | grep -q "NOTE:.*fully-staged deletion" \
   && echo "$out_w1" | grep -qF "specs/999_probe"; then
-  pass "W2: the fully-staged-deletion acceptance emits a stderr NOTE naming the accepted pathspec, not silent"
+  common_test_pass "W2: the fully-staged-deletion acceptance emits a stderr NOTE naming the accepted pathspec, not silent"
 else
-  fail "W2: expected a stderr NOTE naming the accepted fully-staged-deletion pathspec; got output=$out_w1"
+  common_test_fail "W2: expected a stderr NOTE naming the accepted fully-staged-deletion pathspec; got output=$out_w1"
 fi
 
 # --- W3: the same acceptance covers a PURE deletion -- the vacated path named with no destination
@@ -1219,9 +1217,9 @@ after_w3=$(git -C "$repo_w3" rev-list --count HEAD 2>/dev/null || echo "$before_
 dels_w3=$(git -C "$repo_w3" show --name-status --format="" HEAD 2>/dev/null | grep -c '^D' || true)
 
 if [ "$rc_w3" -eq 0 ] && [ "$after_w3" -eq $((before_w3 + 1)) ] && [ "$dels_w3" -eq 2 ]; then
-  pass "W3: a pure directory deletion (vacated pathspec, no destination) commits -- HEAD advanced, both files recorded as deletions"
+  common_test_pass "W3: a pure directory deletion (vacated pathspec, no destination) commits -- HEAD advanced, both files recorded as deletions"
 else
-  fail "W3: expected rc=0, HEAD+1, 2 deletions in HEAD; got rc=$rc_w3 before=$before_w3 after=$after_w3 dels=$dels_w3 output=$out_w3"
+  common_test_fail "W3: expected rc=0, HEAD+1, 2 deletions in HEAD; got rc=$rc_w3 before=$before_w3 after=$after_w3 dels=$dels_w3 output=$out_w3"
 fi
 
 # --- W4: THE SAFETY CASE -- a genuine add failure sharing the pathspec list with a legitimate
@@ -1257,9 +1255,9 @@ chmod 644 "$repo_w4/specs/999_badperm.txt" 2>/dev/null || true
 
 if [ "$rc_w4" -eq 2 ] && [ "$after_w4" -eq "$before_w4" ] \
   && echo "$out_w4" | grep -q "ERROR:.*genuinely unstaged"; then
-  pass "W4: a genuine add failure (in-repo, permission-denied) batched with a legitimate directory move still refuses -- exit 2, no commit (the fully-staged-deletion acceptance does not mask an unstaged path; this fixture is deliberately in-repo so it survives the V9 addition unchanged)"
+  common_test_pass "W4: a genuine add failure (in-repo, permission-denied) batched with a legitimate directory move still refuses -- exit 2, no commit (the fully-staged-deletion acceptance does not mask an unstaged path; this fixture is deliberately in-repo so it survives the V9 addition unchanged)"
 else
-  fail "W4: expected rc=2 and no new commit; got rc=$rc_w4 before=$before_w4 after=$after_w4 output=$out_w4"
+  common_test_fail "W4: expected rc=2 and no new commit; got rc=$rc_w4 before=$before_w4 after=$after_w4 output=$out_w4"
 fi
 
 # =====================================================================
@@ -1302,9 +1300,9 @@ if [ "$rc_t14" -eq 6 ] && [ "$after_t14" -eq $((before_t14 + 1)) ] \
   && echo "$show_t14" | grep -qF "specs/999_probe/c.txt" \
   && echo "$out_t14" | grep -q "out-of-repository" \
   && echo "$out_t14" | grep -qF "evidence.txt"; then
-  pass "T14: one out-of-repository absolute path mixed with three valid paths -- the three valid paths commit (verified via git show, not exit code alone), the offending path is named loudly as out-of-repository, exit 6"
+  common_test_pass "T14: one out-of-repository absolute path mixed with three valid paths -- the three valid paths commit (verified via git show, not exit code alone), the offending path is named loudly as out-of-repository, exit 6"
 else
-  fail "T14: expected rc=6, HEAD+1, a.txt/b.txt/c.txt in HEAD, stderr naming evidence.txt as out-of-repository; got rc=$rc_t14 before=$before_t14 after=$after_t14 show='$show_t14' output=$out_t14"
+  common_test_fail "T14: expected rc=6, HEAD+1, a.txt/b.txt/c.txt in HEAD, stderr naming evidence.txt as out-of-repository; got rc=$rc_t14 before=$before_t14 after=$after_t14 show='$show_t14' output=$out_t14"
 fi
 
 # --- T15 (ACCEPTANCE item 4): an ABSOLUTE path that resolves INSIDE the repository continues to
@@ -1323,9 +1321,9 @@ show_t15="$(git -C "$repo_t15" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_t15" -eq 0 ] && [ "$after_t15" -eq $((before_t15 + 1)) ] \
   && echo "$show_t15" | grep -qF "specs/999_probe/abs.txt" \
   && ! echo "$out_t15" | grep -q "out-of-repository"; then
-  pass "T15: an absolute path resolving INSIDE the repository still commits -- exit 0, HEAD+1, no out-of-repository drop WARN"
+  common_test_pass "T15: an absolute path resolving INSIDE the repository still commits -- exit 0, HEAD+1, no out-of-repository drop WARN"
 else
-  fail "T15: expected rc=0, HEAD+1, abs.txt in HEAD, no out-of-repository WARN; got rc=$rc_t15 before=$before_t15 after=$after_t15 show='$show_t15' output=$out_t15"
+  common_test_fail "T15: expected rc=0, HEAD+1, abs.txt in HEAD, no out-of-repository WARN; got rc=$rc_t15 before=$before_t15 after=$after_t15 show='$show_t15' output=$out_t15"
 fi
 
 # --- T16 (the leaf-symlink dimension): an in-repo symlink whose TARGET lies outside the
@@ -1359,9 +1357,9 @@ show_t16="$(git -C "$repo_t16" show --name-only --format="" HEAD 2>/dev/null)"
 if { [ "$rc_t16" -eq 0 ] || [ "$rc_t16" -eq 5 ]; } && [ "$after_t16" -eq $((before_t16 + 1)) ] \
   && echo "$show_t16" | grep -qF "specs/999_probe/leaflink" \
   && ! echo "$out_t16" | grep -q "out-of-repository"; then
-  pass "T16: an in-repo leaf symlink whose target lies outside the repository still commits, NOT dropped as out-of-repository -- HEAD+1, symlink present in the commit (pins parent-only resolution, never the final component; rc may be 5 due to V8's pre-existing, orthogonal symlink hash-object false positive, not an out-of-repository drop)"
+  common_test_pass "T16: an in-repo leaf symlink whose target lies outside the repository still commits, NOT dropped as out-of-repository -- HEAD+1, symlink present in the commit (pins parent-only resolution, never the final component; rc may be 5 due to V8's pre-existing, orthogonal symlink hash-object false positive, not an out-of-repository drop)"
 else
-  fail "T16: expected rc 0 or 5, HEAD+1, leaflink in HEAD, no out-of-repository WARN; got rc=$rc_t16 before=$before_t16 after=$after_t16 show='$show_t16' output=$out_t16"
+  common_test_fail "T16: expected rc 0 or 5, HEAD+1, leaflink in HEAD, no out-of-repository WARN; got rc=$rc_t16 before=$before_t16 after=$after_t16 show='$show_t16' output=$out_t16"
 fi
 
 # --- T17: a path THROUGH an in-repo symlinked directory whose target lies outside the
@@ -1386,9 +1384,9 @@ show_t17="$(git -C "$repo_t17" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_t17" -eq 6 ] && [ "$after_t17" -eq $((before_t17 + 1)) ] \
   && echo "$show_t17" | grep -qF "specs/999_probe/sibling.txt" \
   && echo "$out_t17" | grep -q "out-of-repository"; then
-  pass "T17: a path THROUGH an in-repo symlinked directory pointing outside the repository is dropped as out-of-repository rather than aborting the call -- exit 6, HEAD+1, the valid sibling path committed"
+  common_test_pass "T17: a path THROUGH an in-repo symlinked directory pointing outside the repository is dropped as out-of-repository rather than aborting the call -- exit 6, HEAD+1, the valid sibling path committed"
 else
-  fail "T17: expected rc=6, HEAD+1, sibling.txt in HEAD, stderr naming out-of-repository; got rc=$rc_t17 before=$before_t17 after=$after_t17 show='$show_t17' output=$out_t17"
+  common_test_fail "T17: expected rc=6, HEAD+1, sibling.txt in HEAD, stderr naming out-of-repository; got rc=$rc_t17 before=$before_t17 after=$after_t17 show='$show_t17' output=$out_t17"
 fi
 
 # --- T18 (the degenerate case): EVERY positive pathspec is out-of-repository (two real,
@@ -1414,9 +1412,9 @@ after_t18=$(git -C "$repo_t18" rev-list --count HEAD 2>/dev/null || echo "$befor
 
 if [ "$rc_t18" -eq 2 ] && [ "$after_t18" -eq "$before_t18" ] \
   && echo "$out_t18" | grep -q "zero positive pathspec entries remain"; then
-  pass "T18: every positive pathspec out-of-repository hits the existing V3 all-dropped refusal (not a second refusal path) -- exit 2, no commit, V3's own message, matching T11's all-dropped precedent"
+  common_test_pass "T18: every positive pathspec out-of-repository hits the existing V3 all-dropped refusal (not a second refusal path) -- exit 2, no commit, V3's own message, matching T11's all-dropped precedent"
 else
-  fail "T18: expected rc=2, no new commit, V3 message 'zero positive pathspec entries remain'; got rc=$rc_t18 before=$before_t18 after=$after_t18 output=$out_t18"
+  common_test_fail "T18: expected rc=2, no new commit, V3 message 'zero positive pathspec entries remain'; got rc=$rc_t18 before=$before_t18 after=$after_t18 output=$out_t18"
 fi
 
 # task-ref-ok:begin category 6-adjacent: every "--task 999" literal in the Z1-Z10 block below is
@@ -1447,9 +1445,9 @@ show_z1="$(git -C "$repo_z1" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_z1" -eq 0 ] && [ "$after_z1" -eq $((before_z1 + 1)) ] \
   && echo "$show_z1" | grep -qF "specs/999_probe/file.txt" \
   && ! echo "$out_z1" | grep -q "out-of-scope"; then
-  pass "Z1: --task given but no specs/state.json at all -- fails open, commit lands unchanged"
+  common_test_pass "Z1: --task given but no specs/state.json at all -- fails open, commit lands unchanged"
 else
-  fail "Z1: expected rc=0, HEAD+1, file.txt in HEAD, no out-of-scope WARN; got rc=$rc_z1 before=$before_z1 after=$after_z1 show='$show_z1' output=$out_z1"
+  common_test_fail "Z1: expected rc=0, HEAD+1, file.txt in HEAD, no out-of-scope WARN; got rc=$rc_z1 before=$before_z1 after=$after_z1 show='$show_z1' output=$out_z1"
 fi
 
 # --- Z2: a state.json entry IS found for the dispatching project, but its file_scope is absent,
@@ -1486,9 +1484,9 @@ for z2_shape_name in "absent" "empty-array" "non-array-string" "non-string-membe
 done
 
 if [ "$z2_all_ok" = "true" ]; then
-  pass "Z2: a file_scope that is absent, [], a non-array string, or an array with a non-string member all fail open -- every shape commits both paths unchanged"
+  common_test_pass "Z2: a file_scope that is absent, [], a non-array string, or an array with a non-string member all fail open -- every shape commits both paths unchanged"
 else
-  fail "Z2: at least one malformed file_scope shape did not fail open --$z2_detail"
+  common_test_fail "Z2: at least one malformed file_scope shape did not fail open --$z2_detail"
 fi
 
 # --- Z3: partial drop with a committable survivor -- exit 7, WARN names the dropped path,
@@ -1512,9 +1510,9 @@ if [ "$rc_z3" -eq 7 ] && [ "$after_z3" -eq $((before_z3 + 1)) ] \
   && ! echo "$show_z3" | grep -qF "specs/998_sibling/out.txt" \
   && echo "$out_z3" | grep -q "out-of-scope" \
   && echo "$out_z3" | grep -qF "specs/998_sibling/out.txt"; then
-  pass "Z3: partial Containment drop with a committable survivor -- a.txt lands, out.txt dropped with a named out-of-scope WARN, exit 7"
+  common_test_pass "Z3: partial Containment drop with a committable survivor -- a.txt lands, out.txt dropped with a named out-of-scope WARN, exit 7"
 else
-  fail "Z3: expected rc=7, HEAD+1, a.txt in HEAD, out.txt absent, WARN naming out.txt; got rc=$rc_z3 before=$before_z3 after=$after_z3 show='$show_z3' output=$out_z3"
+  common_test_fail "Z3: expected rc=7, HEAD+1, a.txt in HEAD, out.txt absent, WARN naming out.txt; got rc=$rc_z3 before=$before_z3 after=$after_z3 show='$show_z3' output=$out_z3"
 fi
 
 # --- Z4: every positive pathspec out of scope -- exit 2 (V3's existing all-dropped refusal),
@@ -1530,9 +1528,9 @@ after_z4=$(git -C "$repo_z4" rev-list --count HEAD 2>/dev/null || echo "$before_
 
 if [ "$rc_z4" -eq 2 ] && [ "$after_z4" -eq "$before_z4" ] \
   && echo "$out_z4" | grep -q "zero positive pathspec entries remain"; then
-  pass "Z4: every positive pathspec out of scope hits the existing V3 all-dropped refusal -- exit 2, no commit"
+  common_test_pass "Z4: every positive pathspec out of scope hits the existing V3 all-dropped refusal -- exit 2, no commit"
 else
-  fail "Z4: expected rc=2, no new commit, V3 message; got rc=$rc_z4 before=$before_z4 after=$after_z4 output=$out_z4"
+  common_test_fail "Z4: expected rc=2, no new commit, V3 message; got rc=$rc_z4 before=$before_z4 after=$after_z4 output=$out_z4"
 fi
 
 # --- Z5: a Containment drop whose surviving pathspec carries no diff -- exit 4 (V6's existing
@@ -1550,9 +1548,9 @@ after_z5=$(git -C "$repo_z5" rev-list --count HEAD 2>/dev/null || echo "$before_
 if [ "$rc_z5" -eq 4 ] && [ "$after_z5" -eq "$before_z5" ] \
   && echo "$out_z5" | grep -q "Verified Finding V6" \
   && echo "$out_z5" | grep -qF "specs/998_sibling/out.txt"; then
-  pass "Z5: a Containment drop whose surviving pathspec carries no diff -- exit 4 (V6), naming the dropped path, not the generic nothing-to-commit NOTE"
+  common_test_pass "Z5: a Containment drop whose surviving pathspec carries no diff -- exit 4 (V6), naming the dropped path, not the generic nothing-to-commit NOTE"
 else
-  fail "Z5: expected rc=4, no new commit, V6 message naming out.txt; got rc=$rc_z5 before=$before_z5 after=$after_z5 output=$out_z5"
+  common_test_fail "Z5: expected rc=4, no new commit, V6 message naming out.txt; got rc=$rc_z5 before=$before_z5 after=$after_z5 output=$out_z5"
 fi
 
 # --- Z6: the live per-cycle postflight pathspec shape -- absolute TASK_DIR/, absolute
@@ -1576,9 +1574,9 @@ if [ "$rc_z6" -eq 0 ] && [ "$after_z6" -eq $((before_z6 + 1)) ] \
   && echo "$show_z6" | grep -qF "specs/TODO.md" \
   && echo "$show_z6" | grep -qF "lib/widget.txt" \
   && ! echo "$out_z6" | grep -q "out-of-scope"; then
-  pass "Z6: the live postflight pathspec shape (absolute TASK_DIR/, absolute specs/TODO.md, absolute specs/state.json, plus a relative in-scope source path) commits with zero Containment drops -- exit 0"
+  common_test_pass "Z6: the live postflight pathspec shape (absolute TASK_DIR/, absolute specs/TODO.md, absolute specs/state.json, plus a relative in-scope source path) commits with zero Containment drops -- exit 0"
 else
-  fail "Z6: expected rc=0, HEAD+1, a.txt/TODO.md/widget.txt all in HEAD, no out-of-scope WARN; got rc=$rc_z6 before=$before_z6 after=$after_z6 show='$show_z6' output=$out_z6"
+  common_test_fail "Z6: expected rc=0, HEAD+1, a.txt/TODO.md/widget.txt all in HEAD, no out-of-scope WARN; got rc=$rc_z6 before=$before_z6 after=$after_z6 show='$show_z6' output=$out_z6"
 fi
 
 # --- Z7: trailing-slash asymmetry, both directions. (a) file_scope declares a directory WITHOUT
@@ -1601,9 +1599,9 @@ if [ "$rc_z7" -eq 0 ] && [ "$after_z7" -eq $((before_z7 + 1)) ] \
   && echo "$show_z7" | grep -qF "specs/999_probe/subdir-a/new.txt" \
   && echo "$show_z7" | grep -qF "specs/999_probe/subdir-b/new.txt" \
   && ! echo "$out_z7" | grep -q "out-of-scope"; then
-  pass "Z7: a directory pathspec with a trailing slash matching a file_scope entry without one (and the converse) are both contained -- exit 0, both land"
+  common_test_pass "Z7: a directory pathspec with a trailing slash matching a file_scope entry without one (and the converse) are both contained -- exit 0, both land"
 else
-  fail "Z7: expected rc=0, HEAD+1, both subdir-a/new.txt and subdir-b/new.txt in HEAD, no out-of-scope WARN; got rc=$rc_z7 before=$before_z7 after=$after_z7 show='$show_z7' output=$out_z7"
+  common_test_fail "Z7: expected rc=0, HEAD+1, both subdir-a/new.txt and subdir-b/new.txt in HEAD, no out-of-scope WARN; got rc=$rc_z7 before=$before_z7 after=$after_z7 show='$show_z7' output=$out_z7"
 fi
 
 # --- Z8: a path outside file_scope but under a derived_artifact_probes-declared
@@ -1637,9 +1635,9 @@ if [ "$rc_z8" -eq 0 ] && [ "$after_z8" -eq $((before_z8 + 1)) ] \
   && echo "$show_z8" | grep -qF "specs/999_probe/a.txt" \
   && echo "$show_z8" | grep -qF "build/generated/output.md" \
   && ! echo "$out_z8" | grep -q "out-of-scope"; then
-  pass "Z8: a path under a declared derived_output_dirs prefix, but outside file_scope, is NOT dropped -- exit 0, both land"
+  common_test_pass "Z8: a path under a declared derived_output_dirs prefix, but outside file_scope, is NOT dropped -- exit 0, both land"
 else
-  fail "Z8: expected rc=0, HEAD+1, a.txt/output.md both in HEAD, no out-of-scope WARN; got rc=$rc_z8 before=$before_z8 after=$after_z8 show='$show_z8' output=$out_z8"
+  common_test_fail "Z8: expected rc=0, HEAD+1, a.txt/output.md both in HEAD, no out-of-scope WARN; got rc=$rc_z8 before=$before_z8 after=$after_z8 show='$show_z8' output=$out_z8"
 fi
 
 # --- Z9: --task omitted entirely -- no Containment check at all, even with a declared
@@ -1659,9 +1657,9 @@ if [ "$rc_z9" -eq 0 ] && [ "$after_z9" -eq $((before_z9 + 1)) ] \
   && echo "$show_z9" | grep -qF "specs/999_probe/a.txt" \
   && echo "$show_z9" | grep -qF "specs/999_probe/b.txt" \
   && ! echo "$out_z9" | grep -q "out-of-scope"; then
-  pass "Z9: --task omitted entirely -- no Containment check runs at all, even with a declared file_scope present; both paths land"
+  common_test_pass "Z9: --task omitted entirely -- no Containment check runs at all, even with a declared file_scope present; both paths land"
 else
-  fail "Z9: expected rc=0, HEAD+1, both a.txt and b.txt in HEAD, no out-of-scope WARN; got rc=$rc_z9 before=$before_z9 after=$after_z9 show='$show_z9' output=$out_z9"
+  common_test_fail "Z9: expected rc=0, HEAD+1, both a.txt and b.txt in HEAD, no out-of-scope WARN; got rc=$rc_z9 before=$before_z9 after=$after_z9 show='$show_z9' output=$out_z9"
 fi
 
 # --- Z10: the drop WARN still appears, and the commit still lands, when issue-record.sh is
@@ -1675,7 +1673,7 @@ repo_z10="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
 echo "modified a" > "$repo_z10/specs/999_probe/a.txt"
 echo "modified out" > "$repo_z10/specs/998_sibling/out.txt"
 if [ -e "$repo_z10/.claude/scripts/issue-record.sh" ]; then
-  fail "Z10: precondition violated -- issue-record.sh unexpectedly present in the scratch repo"
+  common_test_fail "Z10: precondition violated -- issue-record.sh unexpectedly present in the scratch repo"
 else
   before_z10=$(git -C "$repo_z10" rev-list --count HEAD)
   out_z10="$(run_commit "$repo_z10" --message "Z10 probe commit" --session "sess_z10" --task 999 \
@@ -1687,9 +1685,9 @@ else
   if [ "$rc_z10" -eq 7 ] && [ "$after_z10" -eq $((before_z10 + 1)) ] \
     && echo "$show_z10" | grep -qF "specs/999_probe/a.txt" \
     && echo "$out_z10" | grep -q "out-of-scope"; then
-    pass "Z10: the drop WARN still appears and the commit still lands when issue-record.sh is entirely absent -- non-fatality proof"
+    common_test_pass "Z10: the drop WARN still appears and the commit still lands when issue-record.sh is entirely absent -- non-fatality proof"
   else
-    fail "Z10: expected rc=7, HEAD+1, a.txt in HEAD, WARN naming the drop; got rc=$rc_z10 before=$before_z10 after=$after_z10 show='$show_z10' output=$out_z10"
+    common_test_fail "Z10: expected rc=7, HEAD+1, a.txt in HEAD, WARN naming the drop; got rc=$rc_z10 before=$before_z10 after=$after_z10 show='$show_z10' output=$out_z10"
   fi
 fi
 
@@ -1718,9 +1716,9 @@ show_z11="$(git -C "$repo_z11" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_z11" -eq 0 ] && [ "$after_z11" -eq $((before_z11 + 1)) ] \
   && echo "$show_z11" | grep -qF "lib/widget-area/direct.txt" \
   && ! echo "$out_z11" | grep -q "out-of-scope"; then
-  pass "Z11: a \"/**\"-suffixed file_scope entry contains a direct child -- exit 0, lands, no out-of-scope WARN"
+  common_test_pass "Z11: a \"/**\"-suffixed file_scope entry contains a direct child -- exit 0, lands, no out-of-scope WARN"
 else
-  fail "Z11: expected rc=0, HEAD+1, direct.txt in HEAD, no out-of-scope WARN; got rc=$rc_z11 before=$before_z11 after=$after_z11 show='$show_z11' output=$out_z11"
+  common_test_fail "Z11: expected rc=0, HEAD+1, direct.txt in HEAD, no out-of-scope WARN; got rc=$rc_z11 before=$before_z11 after=$after_z11 show='$show_z11' output=$out_z11"
 fi
 
 # --- Z12: the same "/**" entry contains a DEEPLY NESTED descendant, at least two directory
@@ -1740,9 +1738,9 @@ show_z12="$(git -C "$repo_z12" show --name-only --format="" HEAD 2>/dev/null)"
 if [ "$rc_z12" -eq 0 ] && [ "$after_z12" -eq $((before_z12 + 1)) ] \
   && echo "$show_z12" | grep -qF "lib/widget-area/deep/deeper/nested.txt" \
   && ! echo "$out_z12" | grep -q "out-of-scope"; then
-  pass "Z12: a \"/**\"-suffixed file_scope entry contains a deeply nested descendant (two levels down) -- exit 0, lands, no out-of-scope WARN"
+  common_test_pass "Z12: a \"/**\"-suffixed file_scope entry contains a deeply nested descendant (two levels down) -- exit 0, lands, no out-of-scope WARN"
 else
-  fail "Z12: expected rc=0, HEAD+1, nested.txt in HEAD, no out-of-scope WARN; got rc=$rc_z12 before=$before_z12 after=$after_z12 show='$show_z12' output=$out_z12"
+  common_test_fail "Z12: expected rc=0, HEAD+1, nested.txt in HEAD, no out-of-scope WARN; got rc=$rc_z12 before=$before_z12 after=$after_z12 show='$show_z12' output=$out_z12"
 fi
 
 # --- Z13: the same "/**" entry does NOT contain a SAME-PREFIX SIBLING -- a path that shares the
@@ -1766,9 +1764,9 @@ if [ "$rc_z13" -eq 7 ] && [ "$after_z13" -eq $((before_z13 + 1)) ] \
   && ! echo "$show_z13" | grep -qF "lib/widget-area-sibling/x.txt" \
   && echo "$out_z13" | grep -q "out-of-scope" \
   && echo "$out_z13" | grep -qF "lib/widget-area-sibling/x.txt"; then
-  pass "Z13: a \"/**\"-suffixed file_scope entry does NOT contain a same-prefix sibling outside its \"/\" boundary -- sibling dropped with a named out-of-scope WARN (exit 7), in-scope descendant still lands (the non-widening proof)"
+  common_test_pass "Z13: a \"/**\"-suffixed file_scope entry does NOT contain a same-prefix sibling outside its \"/\" boundary -- sibling dropped with a named out-of-scope WARN (exit 7), in-scope descendant still lands (the non-widening proof)"
 else
-  fail "Z13: expected rc=7, HEAD+1, direct.txt in HEAD, x.txt absent, WARN naming x.txt; got rc=$rc_z13 before=$before_z13 after=$after_z13 show='$show_z13' output=$out_z13"
+  common_test_fail "Z13: expected rc=7, HEAD+1, direct.txt in HEAD, x.txt absent, WARN naming x.txt; got rc=$rc_z13 before=$before_z13 after=$after_z13 show='$show_z13' output=$out_z13"
 fi
 
 # --- Z14: a "/**" entry alongside a plain non-glob entry in the SAME file_scope -- the
@@ -1789,9 +1787,9 @@ if [ "$rc_z14" -eq 0 ] && [ "$after_z14" -eq $((before_z14 + 1)) ] \
   && echo "$show_z14" | grep -qF "lib/widget-area/direct.txt" \
   && echo "$show_z14" | grep -qF "specs/999_probe/a.txt" \
   && ! echo "$out_z14" | grep -q "out-of-scope"; then
-  pass "Z14: a \"/**\" entry alongside a plain non-glob entry -- both the deep-glob descendant and the exact-match entry land unchanged, exit 0"
+  common_test_pass "Z14: a \"/**\" entry alongside a plain non-glob entry -- both the deep-glob descendant and the exact-match entry land unchanged, exit 0"
 else
-  fail "Z14: expected rc=0, HEAD+1, direct.txt and a.txt both in HEAD, no out-of-scope WARN; got rc=$rc_z14 before=$before_z14 after=$after_z14 show='$show_z14' output=$out_z14"
+  common_test_fail "Z14: expected rc=0, HEAD+1, direct.txt and a.txt both in HEAD, no out-of-scope WARN; got rc=$rc_z14 before=$before_z14 after=$after_z14 show='$show_z14' output=$out_z14"
 fi
 
 # task-ref-ok:end

@@ -21,16 +21,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 LIB_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/phase-heading-patterns.sh"
@@ -56,13 +54,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # Positive fixtures: extract_phase_number succeeds; nonconforming_phase_headings reports nothing.
@@ -73,9 +66,9 @@ assert_extracts() {
   got="$(extract_phase_number "$heading")"
   code=$?
   if [[ "$code" -eq 0 && "$got" == "$expected" ]]; then
-    pass "$label: extract_phase_number -> '$got'"
+    common_test_pass "$label: extract_phase_number -> '$got'"
   else
-    fail "$label: expected '$expected' (exit 0), got '$got' (exit $code)"
+    common_test_fail "$label: expected '$expected' (exit 0), got '$got' (exit $code)"
   fi
 }
 
@@ -99,9 +92,9 @@ cat > "$positive_file" <<'EOF'
 EOF
 positive_findings="$(nonconforming_phase_headings "$positive_file")"
 if [[ -z "$positive_findings" ]]; then
-  pass "positive file: nonconforming_phase_headings reports nothing"
+  common_test_pass "positive file: nonconforming_phase_headings reports nothing"
 else
-  fail "positive file: expected no findings, got: $positive_findings"
+  common_test_fail "positive file: expected no findings, got: $positive_findings"
 fi
 
 # =====================================================================
@@ -111,17 +104,17 @@ fi
 assert_token_ok() {
   local label="$1" token="$2"
   if grep -qE "$PHASE_NUMBER_TOKEN_ERE" <<< "$token"; then
-    pass "$label: '$token' accepted by PHASE_NUMBER_TOKEN_ERE"
+    common_test_pass "$label: '$token' accepted by PHASE_NUMBER_TOKEN_ERE"
   else
-    fail "$label: '$token' unexpectedly rejected by PHASE_NUMBER_TOKEN_ERE"
+    common_test_fail "$label: '$token' unexpectedly rejected by PHASE_NUMBER_TOKEN_ERE"
   fi
 }
 assert_token_rejected() {
   local label="$1" token="$2"
   if grep -qE "$PHASE_NUMBER_TOKEN_ERE" <<< "$token"; then
-    fail "$label: '$token' unexpectedly accepted by PHASE_NUMBER_TOKEN_ERE"
+    common_test_fail "$label: '$token' unexpectedly accepted by PHASE_NUMBER_TOKEN_ERE"
   else
-    pass "$label: '$token' correctly rejected by PHASE_NUMBER_TOKEN_ERE"
+    common_test_pass "$label: '$token' correctly rejected by PHASE_NUMBER_TOKEN_ERE"
   fi
 }
 assert_token_ok "token positive: integer" "3"
@@ -138,9 +131,9 @@ cat > "$prefix_lookup_file" <<'EOF'
 EOF
 prefix_match=$(grep -n "${PHASE_HEADING_PREFIX}3\.1:" "$prefix_lookup_file" | cut -d: -f1)
 if [[ "$prefix_match" == "2" ]]; then
-  pass "PHASE_HEADING_PREFIX: specific-number lookup composition finds the correct line"
+  common_test_pass "PHASE_HEADING_PREFIX: specific-number lookup composition finds the correct line"
 else
-  fail "PHASE_HEADING_PREFIX: expected line 2, got '$prefix_match'"
+  common_test_fail "PHASE_HEADING_PREFIX: expected line 2, got '$prefix_match'"
 fi
 
 # =====================================================================
@@ -152,9 +145,9 @@ assert_rejects() {
   got="$(extract_phase_number "$heading")"
   code=$?
   if [[ "$code" -ne 0 && -z "$got" ]]; then
-    pass "$label: extract_phase_number rejects (empty, non-zero exit)"
+    common_test_pass "$label: extract_phase_number rejects (empty, non-zero exit)"
   else
-    fail "$label: expected empty + non-zero exit, got '$got' (exit $code) -- possible truncated-prefix regression"
+    common_test_fail "$label: expected empty + non-zero exit, got '$got' (exit $code) -- possible truncated-prefix regression"
   fi
 }
 
@@ -172,9 +165,9 @@ cat > "$negative_number_file" <<'EOF'
 EOF
 negative_number_count="$(nonconforming_phase_headings "$negative_number_file" | wc -l | tr -d ' ')"
 if [[ "$negative_number_count" -eq 4 ]]; then
-  pass "negative-number file: all 4 headings reported non-conforming"
+  common_test_pass "negative-number file: all 4 headings reported non-conforming"
 else
-  fail "negative-number file: expected 4 findings, got $negative_number_count"
+  common_test_fail "negative-number file: expected 4 findings, got $negative_number_count"
 fi
 
 # =====================================================================
@@ -188,16 +181,16 @@ cat > "$descoped_file" <<'EOF'
 EOF
 descoped_findings="$(nonconforming_phase_headings "$descoped_file")"
 if [[ -n "$descoped_findings" ]]; then
-  pass "DESCOPED heading: reported by nonconforming_phase_headings"
+  common_test_pass "DESCOPED heading: reported by nonconforming_phase_headings"
 else
-  fail "DESCOPED heading: expected a finding, got none"
+  common_test_fail "DESCOPED heading: expected a finding, got none"
 fi
 
 descoped_warning="$(warn_nonconforming "$descoped_file" "test" 2>&1 1>/dev/null)"
 if echo "$descoped_warning" | grep -qF "COMPLETED WITH EXCLUSIONS"; then
-  pass "DESCOPED warning: names [COMPLETED WITH EXCLUSIONS] as the replacement"
+  common_test_pass "DESCOPED warning: names [COMPLETED WITH EXCLUSIONS] as the replacement"
 else
-  fail "DESCOPED warning: replacement guidance missing. Got: $descoped_warning"
+  common_test_fail "DESCOPED warning: replacement guidance missing. Got: $descoped_warning"
 fi
 
 arbitrary_file="$WORKDIR/arbitrary-marker.md"
@@ -206,15 +199,15 @@ cat > "$arbitrary_file" <<'EOF'
 EOF
 arbitrary_findings="$(nonconforming_phase_headings "$arbitrary_file")"
 if [[ -n "$arbitrary_findings" ]]; then
-  pass "arbitrary-unknown-marker heading: reported (enum-driven, not a DESCOPED special case)"
+  common_test_pass "arbitrary-unknown-marker heading: reported (enum-driven, not a DESCOPED special case)"
 else
-  fail "arbitrary-unknown-marker heading: expected a finding, got none"
+  common_test_fail "arbitrary-unknown-marker heading: expected a finding, got none"
 fi
 arbitrary_warning="$(warn_nonconforming "$arbitrary_file" "test" 2>&1 1>/dev/null)"
 if echo "$arbitrary_warning" | grep -qF "unrecognized status marker" && ! echo "$arbitrary_warning" | grep -qF "COMPLETED WITH EXCLUSIONS"; then
-  pass "arbitrary-unknown-marker warning: generic unrecognized-marker reason, no DESCOPED-specific text"
+  common_test_pass "arbitrary-unknown-marker warning: generic unrecognized-marker reason, no DESCOPED-specific text"
 else
-  fail "arbitrary-unknown-marker warning: unexpected content: $arbitrary_warning"
+  common_test_fail "arbitrary-unknown-marker warning: unexpected content: $arbitrary_warning"
 fi
 
 # =====================================================================
@@ -244,11 +237,11 @@ for heading in "${all_fixture_headings[@]}"; do
   grep -q  "$PHASE_HEADING_BRE" <<< "$heading" && bre_match=1
   if [[ "$ere_match" -ne "$bre_match" ]]; then
     equivalence_ok=0
-    fail "equivalence: ERE/BRE diverge on '$heading' (ere=$ere_match bre=$bre_match)"
+    common_test_fail "equivalence: ERE/BRE diverge on '$heading' (ere=$ere_match bre=$bre_match)"
   fi
 done
 if [[ "$equivalence_ok" -eq 1 ]]; then
-  pass "equivalence: ERE and BRE heading-match forms agree on all fixtures"
+  common_test_pass "equivalence: ERE and BRE heading-match forms agree on all fixtures"
 fi
 
 # TOTAL-form equivalence (full-line conforming-heading-shape forms)
@@ -260,11 +253,11 @@ for heading in "${all_fixture_headings[@]}"; do
   grep -q  "$PHASE_HEADING_TOTAL_BRE" <<< "$heading" && bre_match=1
   if [[ "$ere_match" -ne "$bre_match" ]]; then
     total_equivalence_ok=0
-    fail "TOTAL-form equivalence: ERE/BRE diverge on '$heading' (ere=$ere_match bre=$bre_match)"
+    common_test_fail "TOTAL-form equivalence: ERE/BRE diverge on '$heading' (ere=$ere_match bre=$bre_match)"
   fi
 done
 if [[ "$total_equivalence_ok" -eq 1 ]]; then
-  pass "equivalence: PHASE_HEADING_TOTAL_ERE and PHASE_HEADING_TOTAL_BRE agree on all fixtures"
+  common_test_pass "equivalence: PHASE_HEADING_TOTAL_ERE and PHASE_HEADING_TOTAL_BRE agree on all fixtures"
 fi
 
 # DONE-form equivalence
@@ -276,11 +269,11 @@ for heading in "${all_fixture_headings[@]}"; do
   grep -q  "$PHASE_HEADING_DONE_BRE" <<< "$heading" && bre_match=1
   if [[ "$ere_match" -ne "$bre_match" ]]; then
     done_equivalence_ok=0
-    fail "DONE-form equivalence: ERE/BRE diverge on '$heading' (ere=$ere_match bre=$bre_match)"
+    common_test_fail "DONE-form equivalence: ERE/BRE diverge on '$heading' (ere=$ere_match bre=$bre_match)"
   fi
 done
 if [[ "$done_equivalence_ok" -eq 1 ]]; then
-  pass "equivalence: PHASE_HEADING_DONE_ERE and PHASE_HEADING_DONE_BRE agree on all fixtures"
+  common_test_pass "equivalence: PHASE_HEADING_DONE_ERE and PHASE_HEADING_DONE_BRE agree on all fixtures"
 fi
 
 # =====================================================================
@@ -296,18 +289,18 @@ letter_suffix_findings="$(nonconforming_phase_headings "$letter_suffix_file")"
 distinct_headings="$(echo "$letter_suffix_findings" | cut -d: -f3- | sort -u | wc -l | tr -d ' ')"
 finding_count="$(echo "$letter_suffix_findings" | grep -c . || true)"
 if [[ "$finding_count" -eq 3 && "$distinct_headings" -eq 3 ]]; then
-  pass "3a/3b/3c: three distinct non-conforming reports (no collapse to a single 'Phase 3')"
+  common_test_pass "3a/3b/3c: three distinct non-conforming reports (no collapse to a single 'Phase 3')"
 else
-  fail "3a/3b/3c: expected 3 distinct findings, got $finding_count findings / $distinct_headings distinct: $letter_suffix_findings"
+  common_test_fail "3a/3b/3c: expected 3 distinct findings, got $finding_count findings / $distinct_headings distinct: $letter_suffix_findings"
 fi
 # Each must also fail extract_phase_number individually (never collapsing to a shared "3").
 for h in "### Phase 3a: First [NOT STARTED]" "### Phase 3b: Second [NOT STARTED]" "### Phase 3c: Third [NOT STARTED]"; do
   r="$(extract_phase_number "$h")"
   c=$?
   if [[ "$c" -ne 0 && -z "$r" ]]; then
-    pass "3a/3b/3c: '$h' individually rejected (no collapse to 'Phase 3')"
+    common_test_pass "3a/3b/3c: '$h' individually rejected (no collapse to 'Phase 3')"
   else
-    fail "3a/3b/3c: '$h' unexpectedly extracted '$r'"
+    common_test_fail "3a/3b/3c: '$h' unexpectedly extracted '$r'"
   fi
 done
 
@@ -317,17 +310,17 @@ done
 warn_nonconforming "$positive_file" "test" >/dev/null 2>/dev/null
 clean_rc=$?
 if [[ "$clean_rc" -eq 0 ]]; then
-  pass "warn_nonconforming: returns 0 on a clean file"
+  common_test_pass "warn_nonconforming: returns 0 on a clean file"
 else
-  fail "warn_nonconforming: expected 0 on clean file, got $clean_rc"
+  common_test_fail "warn_nonconforming: expected 0 on clean file, got $clean_rc"
 fi
 
 warn_nonconforming "$negative_number_file" "test" >/dev/null 2>/dev/null
 dirty_rc=$?
 if [[ "$dirty_rc" -eq 1 ]]; then
-  pass "warn_nonconforming: returns 1 when non-conforming headings exist"
+  common_test_pass "warn_nonconforming: returns 1 when non-conforming headings exist"
 else
-  fail "warn_nonconforming: expected 1 on file with findings, got $dirty_rc"
+  common_test_fail "warn_nonconforming: expected 1 on file with findings, got $dirty_rc"
 fi
 
 # =====================================================================
@@ -338,14 +331,14 @@ fi
 # has_nonconforming_phase_headings avoids this via an internal command-substitution capture.
 # =====================================================================
 if has_nonconforming_phase_headings "$positive_file"; then
-  fail "has_nonconforming_phase_headings: expected false (0 findings) on the positive fixture file"
+  common_test_fail "has_nonconforming_phase_headings: expected false (0 findings) on the positive fixture file"
 else
-  pass "has_nonconforming_phase_headings: false (clean) on the positive fixture file"
+  common_test_pass "has_nonconforming_phase_headings: false (clean) on the positive fixture file"
 fi
 if has_nonconforming_phase_headings "$negative_number_file"; then
-  pass "has_nonconforming_phase_headings: true (findings exist) on the negative-number fixture file"
+  common_test_pass "has_nonconforming_phase_headings: true (findings exist) on the negative-number fixture file"
 else
-  fail "has_nonconforming_phase_headings: expected true on the negative-number fixture file"
+  common_test_fail "has_nonconforming_phase_headings: expected true on the negative-number fixture file"
 fi
 # Regression guard for the pipefail/SIGPIPE race itself: run under `set -o pipefail` explicitly,
 # using the OLD racy idiom, and confirm it now agrees with the safe helper on a file large/slow
@@ -364,9 +357,9 @@ if [[ $? -ne 0 ]]; then
   racy_check_ok=0
 fi
 if [[ "$racy_check_ok" -eq 1 ]]; then
-  pass "pipefail regression guard: old racy idiom happened to agree with has_nonconforming_phase_headings this run (has_nonconforming_phase_headings is still the mandated call form regardless)"
+  common_test_pass "pipefail regression guard: old racy idiom happened to agree with has_nonconforming_phase_headings this run (has_nonconforming_phase_headings is still the mandated call form regardless)"
 else
-  pass "pipefail regression guard: reproduced the known SIGPIPE race in the OLD idiom (exactly why has_nonconforming_phase_headings exists and is the mandated call form)"
+  common_test_pass "pipefail regression guard: reproduced the known SIGPIPE race in the OLD idiom (exactly why has_nonconforming_phase_headings exists and is the mandated call form)"
 fi
 
 # =====================================================================

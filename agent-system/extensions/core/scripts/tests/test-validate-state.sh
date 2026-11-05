@@ -19,16 +19,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 VALIDATOR_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/validate-state.sh"
@@ -137,9 +135,6 @@ done
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 WORKDIR="$(mktemp -d)"
 cleanup() {
@@ -185,19 +180,19 @@ JSON
 out=$(bash "$VALIDATOR" "$WORKDIR/valid-state.json" 2>&1)
 rc=$?
 if [[ "$rc" -eq 0 ]]; then
-  pass "positive fixture: valid state exits 0"
+  common_test_pass "positive fixture: valid state exits 0"
 else
-  fail "positive fixture: expected exit 0, got $rc"
-  info "$out"
+  common_test_fail "positive fixture: expected exit 0, got $rc"
+  common_test_info "$out"
 fi
 
 out_deep=$(bash "$VALIDATOR" --deep "$WORKDIR/valid-state.json" 2>&1)
 rc_deep=$?
 if [[ "$rc_deep" -eq 0 ]]; then
-  pass "positive fixture: valid state exits 0 under --deep"
+  common_test_pass "positive fixture: valid state exits 0 under --deep"
 else
-  fail "positive fixture: expected exit 0 under --deep, got $rc_deep"
-  info "$out_deep"
+  common_test_fail "positive fixture: expected exit 0 under --deep, got $rc_deep"
+  common_test_info "$out_deep"
 fi
 
 # =====================================================================
@@ -226,19 +221,19 @@ JSON
 out=$(bash "$VALIDATOR" "$WORKDIR/hold-state.json" 2>&1)
 rc=$?
 if [[ "$rc" -eq 0 ]]; then
-  pass "positive fixture: status 'hold' + hold_reason/held_at/prior_status exits 0 (no off-schema-status FAIL, no unknown-entry-field FAIL)"
+  common_test_pass "positive fixture: status 'hold' + hold_reason/held_at/prior_status exits 0 (no off-schema-status FAIL, no unknown-entry-field FAIL)"
 else
-  fail "positive fixture: hold state expected exit 0, got $rc"
-  info "$out"
+  common_test_fail "positive fixture: hold state expected exit 0, got $rc"
+  common_test_info "$out"
 fi
 
 out_deep=$(bash "$VALIDATOR" --deep "$WORKDIR/hold-state.json" 2>&1)
 rc_deep=$?
 if [[ "$rc_deep" -eq 0 ]]; then
-  pass "positive fixture: hold state exits 0 under --deep"
+  common_test_pass "positive fixture: hold state exits 0 under --deep"
 else
-  fail "positive fixture: hold state expected exit 0 under --deep, got $rc_deep"
-  info "$out_deep"
+  common_test_fail "positive fixture: hold state expected exit 0 under --deep, got $rc_deep"
+  common_test_info "$out_deep"
 fi
 
 # =====================================================================
@@ -271,19 +266,19 @@ JSON
 out=$(bash "$VALIDATOR" "$WORKDIR/stray-field.json" 2>&1)
 rc=$?
 if [[ "$rc" -eq 0 ]] && grep -q "\[WARN\].*Unknown top-level field: totally_undocumented_field" <<< "$out"; then
-  pass "defect fixture: stray top-level field -> advisory WARN with named field, exit 0 (default mode)"
+  common_test_pass "defect fixture: stray top-level field -> advisory WARN with named field, exit 0 (default mode)"
 else
-  fail "defect fixture: stray top-level field did not produce the expected WARN + exit 0 (rc=$rc)"
-  info "$out"
+  common_test_fail "defect fixture: stray top-level field did not produce the expected WARN + exit 0 (rc=$rc)"
+  common_test_info "$out"
 fi
 
 out=$(bash "$VALIDATOR" --strict "$WORKDIR/stray-field.json" 2>&1)
 rc=$?
 if [[ "$rc" -ne 0 ]] && grep -q "Unknown top-level field: totally_undocumented_field" <<< "$out"; then
-  pass "defect fixture: stray top-level field -> nonzero exit with named error under --strict"
+  common_test_pass "defect fixture: stray top-level field -> nonzero exit with named error under --strict"
 else
-  fail "defect fixture: stray top-level field did not produce the expected nonzero exit + named error under --strict (rc=$rc)"
-  info "$out"
+  common_test_fail "defect fixture: stray top-level field did not produce the expected nonzero exit + named error under --strict (rc=$rc)"
+  common_test_info "$out"
 fi
 
 # =====================================================================
@@ -318,10 +313,10 @@ JSON
 out=$(bash "$VALIDATOR" --deep "$WORKDIR/dup-pnum.json" 2>&1)
 rc=$?
 if [[ "$rc" -ne 0 ]] && grep -q "Duplicate project_number: 1" <<< "$out"; then
-  pass "defect fixture: duplicate project_number -> nonzero exit with named error"
+  common_test_pass "defect fixture: duplicate project_number -> nonzero exit with named error"
 else
-  fail "defect fixture: duplicate project_number did not produce the expected nonzero exit + named error (rc=$rc)"
-  info "$out"
+  common_test_fail "defect fixture: duplicate project_number did not produce the expected nonzero exit + named error (rc=$rc)"
+  common_test_info "$out"
 fi
 
 # =====================================================================
@@ -335,13 +330,13 @@ fi
 # and false-PASS on a stale target.
 # =====================================================================
 if [[ -z "$C12_VALIDATOR" ]]; then
-  info "SKIPPING Check 12 / Fixture (f) fixtures: no candidate validate-state.sh contains \"Check 12\""
-  info "Candidates checked:"
+  common_test_info "SKIPPING Check 12 / Fixture (f) fixtures: no candidate validate-state.sh contains \"Check 12\""
+  common_test_info "Candidates checked:"
   for candidate in "${C12_VALIDATOR_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
 else
-  info "Check 12 fixtures running against: $C12_VALIDATOR (confirmed to contain Check 12)"
+  common_test_info "Check 12 fixtures running against: $C12_VALIDATOR (confirmed to contain Check 12)"
 
   # --- Fixture (f): the same duplicate-project_number fixture run WITHOUT --deep -- the
   # base-mode promotion's regression guard (project_number uniqueness is no longer
@@ -349,10 +344,10 @@ else
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/dup-pnum.json" 2>&1)
   rc=$?
   if [[ "$rc" -ne 0 ]] && grep -q "Duplicate project_number: 1" <<< "$out"; then
-    pass "Fixture (f): duplicate project_number fixture run WITHOUT --deep -> nonzero exit with the named finding (base-mode promotion regression guard)"
+    common_test_pass "Fixture (f): duplicate project_number fixture run WITHOUT --deep -> nonzero exit with the named finding (base-mode promotion regression guard)"
   else
-    fail "Fixture (f): duplicate project_number WITHOUT --deep did not produce the expected nonzero exit + named error (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (f): duplicate project_number WITHOUT --deep did not produce the expected nonzero exit + named error (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Fixture (a): counter strictly greater than the active max, no sibling archive -> exit 0,
@@ -369,10 +364,10 @@ JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-a/state.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (6) names a free number" <<< "$out"; then
-    pass "Fixture (a): counter strictly greater than the active max, no sibling archive -> exit 0 and a Check 12 PASS line"
+    common_test_pass "Fixture (a): counter strictly greater than the active max, no sibling archive -> exit 0 and a Check 12 PASS line"
   else
-    fail "Fixture (a): positive Check 12 shape did not produce the expected PASS line (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (a): positive Check 12 shape did not produce the expected PASS line (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Fixture (b): the 2026-10-13 incident shape -- counter equal to a number already present
@@ -390,10 +385,10 @@ JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-b/state.json" 2>&1)
   rc=$?
   if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number (781) is already in use in active_projects" <<< "$out" && grep -q "correct value is 782" <<< "$out"; then
-    pass "Fixture (b): the 2026-10-13 incident shape -- counter equal to an in-use number -> nonzero exit, named FAIL, correct max+1 asserted"
+    common_test_pass "Fixture (b): the 2026-10-13 incident shape -- counter equal to an in-use number -> nonzero exit, named FAIL, correct max+1 asserted"
   else
-    fail "Fixture (b): incident-shape fixture did not produce the expected FAIL + correct value (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (b): incident-shape fixture did not produce the expected FAIL + correct value (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Fixture (c): an archive-held number above the counter does not make the counter stale --
@@ -427,10 +422,10 @@ JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-c/state.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (10) names a free number" <<< "$out"; then
-    pass "Fixture (c): an archive-held number above the counter does not make the counter stale -- exit 0 and a Check 12 PASS line"
+    common_test_pass "Fixture (c): an archive-held number above the counter does not make the counter stale -- exit 0 and a Check 12 PASS line"
   else
-    fail "Fixture (c): archive-held-number-does-not-block shape did not produce the expected PASS (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (c): archive-held-number-does-not-block shape did not produce the expected PASS (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Fixture (d): re-derived, not assumed -- the same state as (c) but with the counter one
@@ -451,10 +446,10 @@ JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-d/state.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (51) names a free number" <<< "$out"; then
-    pass "Fixture (d): counter further above the active max than fixture (c) is likewise free -> exit 0, same PASS shape as (c) under the membership bound"
+    common_test_pass "Fixture (d): counter further above the active max than fixture (c) is likewise free -> exit 0, same PASS shape as (c) under the membership bound"
   else
-    fail "Fixture (d): counter-above-archive-bound shape did not produce the expected PASS (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (d): counter-above-archive-bound shape did not produce the expected PASS (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Fixture (e): a non-numeric next_project_number -> FAIL (Check 2's presence test alone
@@ -468,10 +463,10 @@ JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-e.json" 2>&1)
   rc=$?
   if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number is absent or not a number" <<< "$out"; then
-    pass "Fixture (e): non-numeric next_project_number -> FAIL (Check 2's presence test alone would have passed it)"
+    common_test_pass "Fixture (e): non-numeric next_project_number -> FAIL (Check 2's presence test alone would have passed it)"
   else
-    fail "Fixture (e): non-numeric next_project_number did not produce the expected FAIL (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (e): non-numeric next_project_number did not produce the expected FAIL (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Fixture (g): layer-agreement guard, inverted -- fixture (c)'s state and archive, run
@@ -492,14 +487,14 @@ JSON
       --allocate-into new_num --session-id "sess_c12g" --state-file state.json 2>&1)
     sw_rc=$?
     if [[ "$sw_rc" -eq 0 ]] && jq -e '.active_projects[] | select(.project_number == 6)' "$WORKDIR/c12-g/state.json" >/dev/null 2>&1; then
-      pass "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into succeeds on fixture (c)'s shape for the same reason validate-state.sh's Check 12 PASSes, issuing the derived free number (6)"
+      common_test_pass "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into succeeds on fixture (c)'s shape for the same reason validate-state.sh's Check 12 PASSes, issuing the derived free number (6)"
     else
-      fail "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into did not succeed on fixture (c)'s shape as expected (rc=$sw_rc)"
-      info "$sw_out"
+      common_test_fail "Fixture (g): layer-agreement -- deployed state-write.sh --allocate-into did not succeed on fixture (c)'s shape as expected (rc=$sw_rc)"
+      common_test_info "$sw_out"
     fi
   else
-    info "SKIPPING Fixture (g): no deployed state-write.sh with --allocate-into at $REPO_ROOT/.claude/scripts/state-write.sh"
-    info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
+    common_test_info "SKIPPING Fixture (g): no deployed state-write.sh with --allocate-into at $REPO_ROOT/.claude/scripts/state-write.sh"
+    common_test_info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
   fi
 
   # --- Fixture (h): the smallest-unused-number trap at the validator layer, in two parts. Both
@@ -523,10 +518,10 @@ JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-h1/state.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "Check 12: next_project_number (847) names a free number" <<< "$out"; then
-    pass "Fixture (h-i): the smallest-unused-number trap at the validator layer -- a dense counter (847) just above a high active max (846) PASSes even though much lower numbers (1, 2, 4, 5) are also free"
+    common_test_pass "Fixture (h-i): the smallest-unused-number trap at the validator layer -- a dense counter (847) just above a high active max (846) PASSes even though much lower numbers (1, 2, 4, 5) are also free"
   else
-    fail "Fixture (h-i): dense-counter-above-high-active-max shape did not produce the expected PASS (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (h-i): dense-counter-above-high-active-max shape did not produce the expected PASS (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # (h-ii): counter collides with the HIGH in-use number (846) itself -> FAIL, and the reported
@@ -544,10 +539,10 @@ JSON
   out=$(bash "$C12_VALIDATOR" "$WORKDIR/c12-h2/state.json" 2>&1)
   rc=$?
   if [[ "$rc" -ne 0 ]] && grep -q "Check 12: next_project_number (846) is already in use in active_projects" <<< "$out" && grep -q "correct value is 847" <<< "$out" && ! grep -qE "correct value is (1|2|4|5)\b" <<< "$out"; then
-    pass "Fixture (h-ii): the reported repair value for the same trap shape is the dense 847, never a recycled low gap"
+    common_test_pass "Fixture (h-ii): the reported repair value for the same trap shape is the dense 847, never a recycled low gap"
   else
-    fail "Fixture (h-ii): smallest-unused-number trap fixture did not produce the expected FAIL + dense repair value (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (h-ii): smallest-unused-number trap fixture did not produce the expected FAIL + dense repair value (rc=$rc)"
+    common_test_info "$out"
   fi
 fi
 
@@ -574,10 +569,10 @@ JSON
 out=$(bash "$VALIDATOR" "$WORKDIR/bad-status.json" 2>&1)
 rc=$?
 if [[ "$rc" -ne 0 ]] && grep -q "off-schema status 'foobar'" <<< "$out"; then
-  pass "defect fixture: off-schema status -> nonzero exit with named error"
+  common_test_pass "defect fixture: off-schema status -> nonzero exit with named error"
 else
-  fail "defect fixture: off-schema status did not produce the expected nonzero exit + named error (rc=$rc)"
-  info "$out"
+  common_test_fail "defect fixture: off-schema status did not produce the expected nonzero exit + named error (rc=$rc)"
+  common_test_info "$out"
 fi
 
 # =====================================================================
@@ -603,10 +598,10 @@ JSON
 out=$(bash "$VALIDATOR" --deep "$WORKDIR/dangling-dep.json" 2>&1)
 rc=$?
 if [[ "$rc" -ne 0 ]] && grep -q "Dangling dependency reference: 1 -> 999" <<< "$out"; then
-  pass "defect fixture: dangling dependency -> nonzero exit with named error"
+  common_test_pass "defect fixture: dangling dependency -> nonzero exit with named error"
 else
-  fail "defect fixture: dangling dependency did not produce the expected nonzero exit + named error (rc=$rc)"
-  info "$out"
+  common_test_fail "defect fixture: dangling dependency did not produce the expected nonzero exit + named error (rc=$rc)"
+  common_test_info "$out"
 fi
 
 # =====================================================================
@@ -632,10 +627,10 @@ JSON
 out=$(bash "$VALIDATOR" --deep "$WORKDIR/self-ref.json" 2>&1)
 rc=$?
 if [[ "$rc" -ne 0 ]] && grep -q "Self-referential dependencies" <<< "$out"; then
-  pass "bonus fixture: self-referential dependency -> nonzero exit with named error"
+  common_test_pass "bonus fixture: self-referential dependency -> nonzero exit with named error"
 else
-  fail "bonus fixture: self-referential dependency did not produce the expected result (rc=$rc)"
-  info "$out"
+  common_test_fail "bonus fixture: self-referential dependency did not produce the expected result (rc=$rc)"
+  common_test_info "$out"
 fi
 
 cat > "$WORKDIR/cycle.json" <<'JSON'
@@ -666,10 +661,10 @@ JSON
 out=$(bash "$VALIDATOR" --deep "$WORKDIR/cycle.json" 2>&1)
 rc=$?
 if [[ "$rc" -ne 0 ]] && grep -q "Dependency cycle detected" <<< "$out"; then
-  pass "bonus fixture: dependency cycle -> nonzero exit with named error"
+  common_test_pass "bonus fixture: dependency cycle -> nonzero exit with named error"
 else
-  fail "bonus fixture: dependency cycle did not produce the expected result (rc=$rc)"
-  info "$out"
+  common_test_fail "bonus fixture: dependency cycle did not produce the expected result (rc=$rc)"
+  common_test_info "$out"
 fi
 
 # =====================================================================
@@ -678,15 +673,15 @@ fi
 # pure-append, untyped-entry, and scoped-flag cases.
 # =====================================================================
 if [[ -z "$D5_VALIDATOR" ]]; then
-  info "SKIPPING D5 fixtures: no candidate validator (source-store or deployed) contains the D5"
-  info "per-type artifact-loss check (grepped for \"Check D5\"). Candidates checked:"
+  common_test_info "SKIPPING D5 fixtures: no candidate validator (source-store or deployed) contains the D5"
+  common_test_info "per-type artifact-loss check (grepped for \"Check D5\"). Candidates checked:"
   for candidate in "${D5_VALIDATOR_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
-  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
-  info "deployed candidate, that a deploy has run) before re-running this suite."
+  common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
-  info "D5 fixtures running against: $D5_VALIDATOR (confirmed to contain the D5 check)"
+  common_test_info "D5 fixtures running against: $D5_VALIDATOR (confirmed to contain the D5 check)"
 
   # Creates a fresh git-backed fixture repo under $1 with a committed baseline state.json
   # containing project_number 42 with: 1 report, 1 plan, 5 summaries (mirroring the observed
@@ -747,20 +742,20 @@ JSON
   rc=$?
   if [[ "$rc" -ne 0 ]] && grep -q "Artifact loss: project_number 42, type 'summary'" <<< "$out" \
       && grep -q "removed=5 added=2" <<< "$out"; then
-    pass "D5 negative fixture: 5-dropped/2-added summary loss (raw jq write) -> FAIL naming project, type, counts, paths"
+    common_test_pass "D5 negative fixture: 5-dropped/2-added summary loss (raw jq write) -> FAIL naming project, type, counts, paths"
   else
-    fail "D5 negative fixture: expected FAIL naming project 42/type summary/removed=5 added=2 (rc=$rc)"
-    info "$out"
+    common_test_fail "D5 negative fixture: expected FAIL naming project 42/type summary/removed=5 added=2 (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Positive fixture (opt-in accepted): the IDENTICAL mutated fixture, re-run with the flag ---
   out=$(bash "$D5_VALIDATOR" --deep --allow-artifact-removal 42 "$d5_neg_state" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "ALLOWED by --allow-artifact-removal" <<< "$out"; then
-    pass "D5 positive fixture: identical mutation accepted under --allow-artifact-removal 42, opt-in line logged"
+    common_test_pass "D5 positive fixture: identical mutation accepted under --allow-artifact-removal 42, opt-in line logged"
   else
-    fail "D5 positive fixture: expected exit 0 with opt-in line under --allow-artifact-removal 42 (rc=$rc)"
-    info "$out"
+    common_test_fail "D5 positive fixture: expected exit 0 with opt-in line under --allow-artifact-removal 42 (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Regression fixture (sanctioned supersession): 1-for-1 same-type (report) replacement ---
@@ -776,10 +771,10 @@ JSON
   out=$(bash "$D5_VALIDATOR" --deep "$d5_reg_state" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && ! grep -q "Artifact loss" <<< "$out"; then
-    pass "D5 regression fixture: 1-for-1 same-type (report) supersession passes with no finding"
+    common_test_pass "D5 regression fixture: 1-for-1 same-type (report) supersession passes with no finding"
   else
-    fail "D5 regression fixture: expected exit 0 with no artifact-loss finding for 1-for-1 report supersession (rc=$rc)"
-    info "$out"
+    common_test_fail "D5 regression fixture: expected exit 0 with no artifact-loss finding for 1-for-1 report supersession (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Pure-append fixture: adding one artifact with nothing removed ---
@@ -793,10 +788,10 @@ JSON
   out=$(bash "$D5_VALIDATOR" --deep "$d5_app_state" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && ! grep -q "Artifact loss" <<< "$out"; then
-    pass "D5 pure-append fixture: adding one artifact with nothing removed passes with no finding"
+    common_test_pass "D5 pure-append fixture: adding one artifact with nothing removed passes with no finding"
   else
-    fail "D5 pure-append fixture: expected exit 0 with no artifact-loss finding (rc=$rc)"
-    info "$out"
+    common_test_fail "D5 pure-append fixture: expected exit 0 with no artifact-loss finding (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Untyped-entry fixture: dropping both untyped entries, adding none ---
@@ -811,10 +806,10 @@ JSON
   out=$(bash "$D5_VALIDATOR" --deep "$d5_unt_state" 2>&1)
   rc=$?
   if [[ "$rc" -ne 0 ]] && grep -q "type '(untyped)'" <<< "$out" && grep -q "removed=2 added=0" <<< "$out"; then
-    pass "D5 untyped-entry fixture: dropping 2 untyped entries with none added -> FAIL under sentinel grouping"
+    common_test_pass "D5 untyped-entry fixture: dropping 2 untyped entries with none added -> FAIL under sentinel grouping"
   else
-    fail "D5 untyped-entry fixture: expected FAIL naming type (untyped), removed=2 added=0 (rc=$rc)"
-    info "$out"
+    common_test_fail "D5 untyped-entry fixture: expected FAIL naming type (untyped), removed=2 added=0 (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Scoped-flag fixture: wrong-type opt-in must not over-permit a different type's loss ---
@@ -831,10 +826,10 @@ JSON
   out=$(bash "$D5_VALIDATOR" --deep --allow-artifact-removal 42:report "$d5_scoped_state" 2>&1)
   rc=$?
   if [[ "$rc" -ne 0 ]] && grep -q "Artifact loss: project_number 42, type 'summary'" <<< "$out"; then
-    pass "D5 scoped-flag fixture: --allow-artifact-removal 42:report does not over-permit a summary-type loss"
+    common_test_pass "D5 scoped-flag fixture: --allow-artifact-removal 42:report does not over-permit a summary-type loss"
   else
-    fail "D5 scoped-flag fixture: expected FAIL for summary loss even with --allow-artifact-removal 42:report (rc=$rc)"
-    info "$out"
+    common_test_fail "D5 scoped-flag fixture: expected FAIL for summary loss even with --allow-artifact-removal 42:report (rc=$rc)"
+    common_test_info "$out"
   fi
 fi
 
@@ -842,16 +837,16 @@ fi
 # Check 8 (coarse blast-radius) / Check 9 (duplicate) / --fix fixtures
 # =====================================================================
 if [[ -z "$FS_VALIDATOR" ]]; then
-  info "SKIPPING Check 8/Check 9/--fix fixtures: no candidate validator (source-store or"
-  info "deployed) contains BOTH Check 8 and Check 9 (grepped for \"Check 8\" and \"Check 9\")."
-  info "Candidates checked:"
+  common_test_info "SKIPPING Check 8/Check 9/--fix fixtures: no candidate validator (source-store or"
+  common_test_info "deployed) contains BOTH Check 8 and Check 9 (grepped for \"Check 8\" and \"Check 9\")."
+  common_test_info "Candidates checked:"
   for candidate in "${FS_VALIDATOR_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
-  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
-  info "deployed candidate, that a deploy has run) before re-running this suite."
+  common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
-  info "Check 8/Check 9/--fix fixtures running against: $FS_VALIDATOR (confirmed to contain Check 8 and Check 9)"
+  common_test_info "Check 8/Check 9/--fix fixtures running against: $FS_VALIDATOR (confirmed to contain Check 8 and Check 9)"
 
   # --- Check 8 fixture: one directory-shaped entry overlapping >= 3 non-terminal tasks ---
   # project_number 1 declares "shared/lib/" (trailing slash); 2, 3, 4 each declare a distinct
@@ -879,10 +874,10 @@ JSON
   out=$(bash "$FS_VALIDATOR" "$WORKDIR/coarse-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "Coarse file_scope declaration: project_number 1, entry 'shared/lib/' overlaps 3 distinct non-terminal task(s): 2,3,4" <<< "$out"; then
-    pass "Check 8 fixture: coarse directory-shaped entry overlapping 3 non-terminal tasks -> named WARN, exit 0"
+    common_test_pass "Check 8 fixture: coarse directory-shaped entry overlapping 3 non-terminal tasks -> named WARN, exit 0"
   else
-    fail "Check 8 fixture: expected exit 0 with the named Check 8 WARN line (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 8 fixture: expected exit 0 with the named Check 8 WARN line (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Threshold fixture: same coarse fixture, FILE_SCOPE_COARSE_MIN_OVERLAP above the measured
@@ -890,10 +885,10 @@ JSON
   out=$(FILE_SCOPE_COARSE_MIN_OVERLAP=4 bash "$FS_VALIDATOR" "$WORKDIR/coarse-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && ! grep -q "Coarse file_scope declaration" <<< "$out"; then
-    pass "Check 8 threshold fixture: FILE_SCOPE_COARSE_MIN_OVERLAP=4 (above the measured radius of 3) suppresses the WARN"
+    common_test_pass "Check 8 threshold fixture: FILE_SCOPE_COARSE_MIN_OVERLAP=4 (above the measured radius of 3) suppresses the WARN"
   else
-    fail "Check 8 threshold fixture: expected exit 0 with no Coarse WARN under min-overlap=4 (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 8 threshold fixture: expected exit 0 with no Coarse WARN under min-overlap=4 (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Check 9 fixture: one exact duplicate (Class A) and one normalization-equivalent pair
@@ -913,10 +908,10 @@ JSON
   if [[ "$rc" -eq 0 ]] \
       && grep -q "Duplicate file_scope entry (Class A, exact -- repairable by --fix): project_number 1, entry 'docs/README.md' appears 2 times" <<< "$out" \
       && grep -q "Duplicate file_scope entry (Class B, normalization-equivalent -- NOT auto-repaired): project_number 1, entries 'src/foo' and 'src/foo/' collide after normalization" <<< "$out"; then
-    pass "Check 9 fixture: exact duplicate (Class A) and normalization-equivalent (Class B) both fire with distinct labels, exit 0"
+    common_test_pass "Check 9 fixture: exact duplicate (Class A) and normalization-equivalent (Class B) both fire with distinct labels, exit 0"
   else
-    fail "Check 9 fixture: expected exit 0 with both Class A and Class B WARN lines (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 9 fixture: expected exit 0 with both Class A and Class B WARN lines (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- --fix fixture: exact duplicates removed order-preservingly (project 1, Class A),
@@ -976,20 +971,20 @@ JSON
         && [[ -z "$fix_other_diff" ]] \
         && grep -q "file_scope null_value: project_number 3 (c)" <<< "$out" \
         && ! grep -q -- '--fix: state-write.sh failed' <<< "$out"; then
-      pass "--fix fixture: exact duplicates removed order-preservingly (project 1), Class B untouched (project 2), null-valued file_scope untouched (project 3, now FAIL-promoted and correctly reported), absent-key file_scope untouched (project 4), other fields unchanged"
+      common_test_pass "--fix fixture: exact duplicates removed order-preservingly (project 1), Class B untouched (project 2), null-valued file_scope untouched (project 3, now FAIL-promoted and correctly reported), absent-key file_scope untouched (project 4), other fields unchanged"
     else
-      fail "--fix fixture: expected order-preserving dedup on project 1, untouched Class B on project 2, null-valued project 3 untouched and FAIL-reported, absent-key project 4 untouched, unchanged other fields, and no state-write.sh failure (rc=$rc)"
-      info "$out"
-      info "project 1 file_scope: $fix_fs1"
-      info "project 2 file_scope: $fix_fs2"
-      info "project 3 has(file_scope)\\tis-null: $fix_p3_null"
-      info "project 4 has(file_scope): $fix_p4_has_key"
-      info "other-fields diff: $fix_other_diff"
+      common_test_fail "--fix fixture: expected order-preserving dedup on project 1, untouched Class B on project 2, null-valued project 3 untouched and FAIL-reported, absent-key project 4 untouched, unchanged other fields, and no state-write.sh failure (rc=$rc)"
+      common_test_info "$out"
+      common_test_info "project 1 file_scope: $fix_fs1"
+      common_test_info "project 2 file_scope: $fix_fs2"
+      common_test_info "project 3 has(file_scope)\\tis-null: $fix_p3_null"
+      common_test_info "project 4 has(file_scope): $fix_p4_has_key"
+      common_test_info "other-fields diff: $fix_other_diff"
     fi
     rm -rf "$FIX_FIXTURE_DIR"
   else
-    info "SKIPPING --fix fixture: no deployed state-write.sh at $REPO_ROOT/.claude/scripts/state-write.sh"
-    info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
+    common_test_info "SKIPPING --fix fixture: no deployed state-write.sh at $REPO_ROOT/.claude/scripts/state-write.sh"
+    common_test_info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
   fi
 fi
 
@@ -998,16 +993,16 @@ fi
 # non-manufacture fixtures
 # =====================================================================
 if [[ -z "$SCOPE_VALIDATOR" ]]; then
-  info "SKIPPING Check 10/Check 11/--strict fixtures: no candidate validator (source-store or"
-  info "deployed) contains BOTH Check 10 and Check 11 (grepped for \"Check 10\" and \"Check 11\")."
-  info "Candidates checked:"
+  common_test_info "SKIPPING Check 10/Check 11/--strict fixtures: no candidate validator (source-store or"
+  common_test_info "deployed) contains BOTH Check 10 and Check 11 (grepped for \"Check 10\" and \"Check 11\")."
+  common_test_info "Candidates checked:"
   for candidate in "${SCOPE_VALIDATOR_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
-  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
-  info "deployed candidate, that a deploy has run) before re-running this suite."
+  common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
-  info "Check 10/Check 11/--strict fixtures running against: $SCOPE_VALIDATOR (confirmed to contain Check 10 and Check 11)"
+  common_test_info "Check 10/Check 11/--strict fixtures running against: $SCOPE_VALIDATOR (confirmed to contain Check 10 and Check 11)"
 
   # --- Check 10 fixture: one entry each of missing_key / null_value / empty_array / a concrete
   # (unaffected) entry, all non-terminal -> all three sub-state lines plus the summary counts.
@@ -1038,10 +1033,10 @@ JSON
       && grep -q "file_scope visibility: 1 missing-key, 1 literal-null, 1 empty-array, out of 4 non-terminal task(s)" <<< "$out" \
       && grep -q "file_scope literal-null: 1 finding(s)" <<< "$out" \
       && grep -q "STATE VALIDATION FAILED" <<< "$out"; then
-    pass "Check 10 fixture: missing_key/null_value/empty_array all fire with distinct sub-state lines plus a summary count line and the promoted null_value FAIL, exit 1"
+    common_test_pass "Check 10 fixture: missing_key/null_value/empty_array all fire with distinct sub-state lines plus a summary count line and the promoted null_value FAIL, exit 1"
   else
-    fail "Check 10 fixture: expected exit 1 with all three sub-state lines, the summary line, and the null_value FAIL lines (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 10 fixture: expected exit 1 with all three sub-state lines, the summary line, and the null_value FAIL lines (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Check 10 pure-null_value fixture: a single non-terminal entry with a literal null
@@ -1064,10 +1059,10 @@ JSON
       && grep -q "file_scope literal-null: 1 finding(s)" <<< "$out" \
       && ! grep -q "missing_key\|empty_array" <<< "$out" \
       && grep -q "STATE VALIDATION FAILED" <<< "$out"; then
-    pass "Check 10 pure-null_value fixture: a lone literal-null entry FAILs on its own, no missing_key/empty_array finding present"
+    common_test_pass "Check 10 pure-null_value fixture: a lone literal-null entry FAILs on its own, no missing_key/empty_array finding present"
   else
-    fail "Check 10 pure-null_value fixture: expected exit 1 with the FAIL lines and no missing_key/empty_array finding (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 10 pure-null_value fixture: expected exit 1 with the FAIL lines and no missing_key/empty_array finding (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Check 10 display-cap fixture: 12 missing_key entries (sorted ahead by project_number,
@@ -1092,10 +1087,10 @@ JSON
       && grep -q "file_scope null_value: project_number 999 (cand-null-high)" <<< "$out" \
       && grep -q "file_scope literal-null: 1 finding(s)" <<< "$out" \
       && grep -q "more file_scope visibility finding(s) not shown" <<< "$out"; then
-    pass "Check 10 display-cap fixture: a null_value finding sorting past the 10-item WARN cap still produces a FAIL line"
+    common_test_pass "Check 10 display-cap fixture: a null_value finding sorting past the 10-item WARN cap still produces a FAIL line"
   else
-    fail "Check 10 display-cap fixture: expected exit 1 with the high-project_number null_value FAIL line surviving the display cap (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 10 display-cap fixture: expected exit 1 with the high-project_number null_value FAIL line surviving the display cap (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Check 10 negative fixture: the sole non-terminal entry declares a concrete non-empty
@@ -1114,10 +1109,10 @@ JSON
   if [[ "$rc" -eq 0 ]] \
       && grep -q "No missing/null/empty file_scope found among 1 non-terminal task(s)" <<< "$out" \
       && ! grep -q "file_scope visibility:" <<< "$out"; then
-    pass "Check 10 negative fixture: every non-terminal entry declares a non-empty file_scope -> log_pass, no WARN"
+    common_test_pass "Check 10 negative fixture: every non-terminal entry declares a non-empty file_scope -> log_pass, no WARN"
   else
-    fail "Check 10 negative fixture: expected exit 0 with the log_pass negative and no Check 10 WARN (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 10 negative fixture: expected exit 0 with the log_pass negative and no Check 10 WARN (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Check 10 terminal-exclusion fixture: a completed entry with no file_scope key must NOT
@@ -1139,10 +1134,10 @@ JSON
   if [[ "$rc" -eq 0 ]] \
       && grep -q "No missing/null/empty file_scope found among 1 non-terminal task(s)" <<< "$out" \
       && ! grep -q "cand-terminal" <<< "$out"; then
-    pass "Check 10 terminal-exclusion fixture: a completed entry with no file_scope produces no finding"
+    common_test_pass "Check 10 terminal-exclusion fixture: a completed entry with no file_scope produces no finding"
   else
-    fail "Check 10 terminal-exclusion fixture: expected the terminal entry excluded from both the finding set and the denominator (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 10 terminal-exclusion fixture: expected the terminal entry excluded from both the finding set and the denominator (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Check 11 fixture: a glob-shaped entry fires the named WARN; a non-glob control entry
@@ -1163,10 +1158,10 @@ JSON
   if [[ "$rc" -eq 0 ]] \
       && grep -q "Glob-shaped file_scope entry: project_number 1, entry '\*/agents/\*\*'" <<< "$out" \
       && ! grep -q "Glob-shaped file_scope entry: project_number 2" <<< "$out"; then
-    pass "Check 11 fixture: glob-shaped entry fires the named WARN, non-glob control entry does not, exit 0"
+    common_test_pass "Check 11 fixture: glob-shaped entry fires the named WARN, non-glob control entry does not, exit 0"
   else
-    fail "Check 11 fixture: expected the named Check 11 WARN for project 1 only (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 11 fixture: expected the named Check 11 WARN for project 1 only (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- WARN-only fixture: one missing_key entry, one empty_array entry, one concrete-scope
@@ -1194,10 +1189,10 @@ JSON
       && grep -q "file_scope missing_key: project_number 1 (cand-missing)" <<< "$out" \
       && grep -q "file_scope empty_array: project_number 2 (cand-empty)" <<< "$out" \
       && ! grep -q "null_value\|literal-null: " <<< "$out"; then
-    pass "Check 10 WARN-only fixture: missing_key/empty_array fire as WARN with no null_value, exit 0"
+    common_test_pass "Check 10 WARN-only fixture: missing_key/empty_array fire as WARN with no null_value, exit 0"
   else
-    fail "Check 10 WARN-only fixture: expected exit 0 with missing_key/empty_array WARN lines and no null_value finding (rc=$rc)"
-    info "$out"
+    common_test_fail "Check 10 WARN-only fixture: expected exit 0 with missing_key/empty_array WARN lines and no null_value finding (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- --strict fixtures: the WARN-only Check 10 fixture becomes exit 1 under --strict; the
@@ -1205,19 +1200,19 @@ JSON
   out=$(bash "$SCOPE_VALIDATOR" --strict "$WORKDIR/scope10-warnonly-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 1 ]] && grep -q "STATE VALIDATION FAILED (--strict:" <<< "$out"; then
-    pass "--strict fixture: a WARN-only Check 10 finding becomes exit 1 under --strict"
+    common_test_pass "--strict fixture: a WARN-only Check 10 finding becomes exit 1 under --strict"
   else
-    fail "--strict fixture: expected exit 1 with the strict-mode summary line against the WARN-only Check 10 fixture (rc=$rc)"
-    info "$out"
+    common_test_fail "--strict fixture: expected exit 1 with the strict-mode summary line against the WARN-only Check 10 fixture (rc=$rc)"
+    common_test_info "$out"
   fi
 
   out=$(bash "$SCOPE_VALIDATOR" --strict "$WORKDIR/scope10-negative-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]]; then
-    pass "--strict fixture: a warning-free fixture still exits 0 under --strict"
+    common_test_pass "--strict fixture: a warning-free fixture still exits 0 under --strict"
   else
-    fail "--strict fixture: expected exit 0 against a warning-free fixture under --strict (rc=$rc)"
-    info "$out"
+    common_test_fail "--strict fixture: expected exit 0 against a warning-free fixture under --strict (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- --fix non-manufacture fixture (D4): an entry with no file_scope key must still have no
@@ -1249,17 +1244,17 @@ JSON
     if [[ "$rc" -eq 0 ]] \
         && [[ "$nomfg_fs1" == '["docs/README.md","src/foo.lua"]' ]] \
         && [[ "$nomfg_p2_has_key" == "false" ]]; then
-      pass "--fix non-manufacture fixture (D4): project 1's exact duplicate is repaired, project 2 still has no file_scope key"
+      common_test_pass "--fix non-manufacture fixture (D4): project 1's exact duplicate is repaired, project 2 still has no file_scope key"
     else
-      fail "--fix non-manufacture fixture: expected project 1 deduped and project 2 to remain keyless (rc=$rc)"
-      info "$out"
-      info "project 1 file_scope: $nomfg_fs1"
-      info "project 2 has file_scope key: $nomfg_p2_has_key"
+      common_test_fail "--fix non-manufacture fixture: expected project 1 deduped and project 2 to remain keyless (rc=$rc)"
+      common_test_info "$out"
+      common_test_info "project 1 file_scope: $nomfg_fs1"
+      common_test_info "project 2 has file_scope key: $nomfg_p2_has_key"
     fi
     rm -rf "$NOMFG_FIXTURE_DIR"
   else
-    info "SKIPPING --fix non-manufacture fixture: no deployed state-write.sh at $REPO_ROOT/.claude/scripts/state-write.sh"
-    info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
+    common_test_info "SKIPPING --fix non-manufacture fixture: no deployed state-write.sh at $REPO_ROOT/.claude/scripts/state-write.sh"
+    common_test_info "(run bash .claude/scripts/deploy-headless.sh first, then re-run this suite)"
   fi
 fi
 
@@ -1286,14 +1281,14 @@ for candidate in "${WIDEN_VALIDATOR_CANDIDATES[@]}"; do
 done
 
 if [[ -z "$WIDEN_VALIDATOR" ]]; then
-  info "SKIPPING widened-field fixtures: no candidate validator (source-store or deployed)"
-  info "contains both the resume_phase known-field name and the Check 3 advisory WARN message."
-  info "Candidates checked:"
+  common_test_info "SKIPPING widened-field fixtures: no candidate validator (source-store or deployed)"
+  common_test_info "contains both the resume_phase known-field name and the Check 3 advisory WARN message."
+  common_test_info "Candidates checked:"
   for candidate in "${WIDEN_VALIDATOR_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
 else
-  info "Widened-field fixtures running against: $WIDEN_VALIDATOR (confirmed to contain the widened fields and the advisory posture)"
+  common_test_info "Widened-field fixtures running against: $WIDEN_VALIDATOR (confirmed to contain the widened fields and the advisory posture)"
 
   # --- Positive fixture: all five widened fields with realistic values -> exit 0, no Check 3/4
   # finding of any severity ---
@@ -1323,10 +1318,10 @@ JSON
   if [[ "$rc" -eq 0 ]] \
       && ! grep -q "Unknown top-level field" <<< "$out" \
       && ! grep -q "Unknown entry field" <<< "$out"; then
-    pass "widened-field positive fixture: active_goal, blockers (array), previous_status, resume_phase, researched all accepted, exit 0, no Check 3/4 finding"
+    common_test_pass "widened-field positive fixture: active_goal, blockers (array), previous_status, resume_phase, researched all accepted, exit 0, no Check 3/4 finding"
   else
-    fail "widened-field positive fixture: expected exit 0 with no Check 3/4 finding (rc=$rc)"
-    info "$out"
+    common_test_fail "widened-field positive fixture: expected exit 0 with no Check 3/4 finding (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Legacy scalar-string blockers tolerated in default mode (transitional tolerance) ---
@@ -1350,10 +1345,10 @@ JSON
   out=$(bash "$WIDEN_VALIDATOR" "$WORKDIR/widen-scalar-blockers-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && ! grep -q "Unknown entry field: blockers" <<< "$out"; then
-    pass "legacy scalar-string blockers fixture: accepted in default mode (transitional tolerance), exit 0"
+    common_test_pass "legacy scalar-string blockers fixture: accepted in default mode (transitional tolerance), exit 0"
   else
-    fail "legacy scalar-string blockers fixture: expected exit 0 with no unknown-field finding for blockers (rc=$rc)"
-    info "$out"
+    common_test_fail "legacy scalar-string blockers fixture: expected exit 0 with no unknown-field finding for blockers (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- research_questions on an entry -> no Check 4 finding (regression guard for the
@@ -1378,10 +1373,10 @@ JSON
   out=$(bash "$WIDEN_VALIDATOR" "$WORKDIR/widen-research-questions-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && ! grep -q "Unknown entry field: research_questions" <<< "$out"; then
-    pass "research_questions fixture: no Check 4 finding (regression guard for the pre-existing schema/validator drift)"
+    common_test_pass "research_questions fixture: no Check 4 finding (regression guard for the pre-existing schema/validator drift)"
   else
-    fail "research_questions fixture: expected exit 0 with no unknown-field finding for research_questions (rc=$rc)"
-    info "$out"
+    common_test_fail "research_questions fixture: expected exit 0 with no unknown-field finding for research_questions (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Negative fixture: the three retired top-level fields still produce an unknown-field WARN
@@ -1402,20 +1397,20 @@ JSON
       && grep -q "\[WARN\].*Unknown top-level field: metadata" <<< "$out" \
       && grep -q "\[WARN\].*Unknown top-level field: last_updated" <<< "$out" \
       && ! grep -q "\[FAIL\].*Unknown top-level field" <<< "$out"; then
-    pass "retired top-level fields fixture: artifacts/metadata/last_updated each produce a WARN (not FAIL, not silence), exit 0"
+    common_test_pass "retired top-level fields fixture: artifacts/metadata/last_updated each produce a WARN (not FAIL, not silence), exit 0"
   else
-    fail "retired top-level fields fixture: expected exit 0 with a WARN (not FAIL) for each retired field (rc=$rc)"
-    info "$out"
+    common_test_fail "retired top-level fields fixture: expected exit 0 with a WARN (not FAIL) for each retired field (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- --strict promotes the retired-fields WARN to exit-blocking ---
   out=$(bash "$WIDEN_VALIDATOR" --strict "$WORKDIR/widen-retired-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 1 ]] && grep -q "STATE VALIDATION FAILED (--strict:" <<< "$out"; then
-    pass "retired top-level fields fixture under --strict: the WARN is promoted to exit-blocking"
+    common_test_pass "retired top-level fields fixture under --strict: the WARN is promoted to exit-blocking"
   else
-    fail "retired top-level fields fixture under --strict: expected exit 1 (rc=$rc)"
-    info "$out"
+    common_test_fail "retired top-level fields fixture under --strict: expected exit 1 (rc=$rc)"
+    common_test_info "$out"
   fi
 fi
 
@@ -1438,14 +1433,14 @@ for candidate in "${D6_VALIDATOR_CANDIDATES[@]}"; do
 done
 
 if [[ -z "$D6_VALIDATOR" ]]; then
-  info "SKIPPING Check D6 fixtures: no candidate validator (source-store or deployed) contains"
-  info "the 'Check D6: parentage integrity' signature comment."
-  info "Candidates checked:"
+  common_test_info "SKIPPING Check D6 fixtures: no candidate validator (source-store or deployed) contains"
+  common_test_info "the 'Check D6: parentage integrity' signature comment."
+  common_test_info "Candidates checked:"
   for candidate in "${D6_VALIDATOR_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
 else
-  info "Check D6 fixtures running against: $D6_VALIDATOR (confirmed to contain Check D6)"
+  common_test_info "Check D6 fixtures running against: $D6_VALIDATOR (confirmed to contain Check D6)"
 
   # Shared sibling archive/state.json for the archived-parent fixture below. Lives once in
   # $WORKDIR (shared across every fixture in this suite), using a project-number range
@@ -1483,10 +1478,10 @@ JSON
       && grep -q "No orphaned parent_task references" <<< "$out" \
       && grep -q "No parentage cycles detected among active_projects" <<< "$out" \
       && ! grep -q "Unknown entry field: parent_task" <<< "$out"; then
-    pass "D6a: clean parentage (not_started + blocked children under an active parent) -> all three PASS, no Check 4 finding"
+    common_test_pass "D6a: clean parentage (not_started + blocked children under an active parent) -> all three PASS, no Check 4 finding"
   else
-    fail "D6a: clean parentage fixture did not produce the expected three PASS lines (rc=$rc)"
-    info "$out"
+    common_test_fail "D6a: clean parentage fixture did not produce the expected three PASS lines (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- D6b: archived parent is expected, settled lineage -- not a finding (Ruling 3) ---
@@ -1501,10 +1496,10 @@ JSON
   out=$(bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-archived-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "No orphaned parent_task references" <<< "$out" && ! grep -q "Orphaned parent_task" <<< "$out"; then
-    pass "D6b: parent present only in the sibling archive's terminal arrays -> PASS, not an orphan finding"
+    common_test_pass "D6b: parent present only in the sibling archive's terminal arrays -> PASS, not an orphan finding"
   else
-    fail "D6b: archived-parent fixture unexpectedly produced an orphan finding (rc=$rc)"
-    info "$out"
+    common_test_fail "D6b: archived-parent fixture unexpectedly produced an orphan finding (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- D6c: orphan -- parent_task present in neither active_projects nor the archive ---
@@ -1519,10 +1514,10 @@ JSON
   out=$(bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-orphan-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "Orphaned parent_task reference: 999300 -> 999399" <<< "$out"; then
-    pass "D6c: orphaned parent_task (999300 -> 999399) names both numbers in a single WARN"
+    common_test_pass "D6c: orphaned parent_task (999300 -> 999399) names both numbers in a single WARN"
   else
-    fail "D6c: orphan fixture did not produce the expected named WARN (rc=$rc)"
-    info "$out"
+    common_test_fail "D6c: orphan fixture did not produce the expected named WARN (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- D6c-strict: the same orphan fixture exits 1 under --strict, 0 without it. Asserts the
@@ -1534,10 +1529,10 @@ JSON
   if [[ "$rc" -eq 1 ]] \
       && grep -q "STATE VALIDATION FAILED (--strict:" <<< "$out" \
       && grep -q "Orphaned parent_task reference: 999300 -> 999399" <<< "$out"; then
-    pass "D6c-strict: orphan WARN is promoted to exit-blocking under --strict"
+    common_test_pass "D6c-strict: orphan WARN is promoted to exit-blocking under --strict"
   else
-    fail "D6c-strict: expected exit 1 under --strict with the orphan WARN present (rc=$rc)"
-    info "$out"
+    common_test_fail "D6c-strict: expected exit 1 under --strict with the orphan WARN present (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- D6d: self-parent -- parent_task == project_number. Exactly one WARN, no orphan, no cycle
@@ -1558,10 +1553,10 @@ JSON
       && grep -q "Self-referential parent_task on project_number(s): 999400" <<< "$out" \
       && grep -q "No orphaned parent_task references" <<< "$out" \
       && grep -q "No parentage cycles detected among active_projects" <<< "$out"; then
-    pass "D6d: self-parent produces exactly one WARN, no orphan, no degenerate 1-node cycle"
+    common_test_pass "D6d: self-parent produces exactly one WARN, no orphan, no degenerate 1-node cycle"
   else
-    fail "D6d: self-parent fixture did not produce exactly the expected single WARN (rc=$rc, self_warn_count=$self_warn_count)"
-    info "$out"
+    common_test_fail "D6d: self-parent fixture did not produce exactly the expected single WARN (rc=$rc, self_warn_count=$self_warn_count)"
+    common_test_info "$out"
   fi
 
   # --- D6e: two-node parentage cycle (A parents B, B parents A) -- names both numbers, and the
@@ -1578,12 +1573,12 @@ JSON
   out=$(timeout 10 bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-cycle2-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 124 ]]; then
-    fail "D6e: two-node cycle fixture HUNG (timeout 10s exceeded) -- the seen-set chain walk did not terminate"
+    common_test_fail "D6e: two-node cycle fixture HUNG (timeout 10s exceeded) -- the seen-set chain walk did not terminate"
   elif [[ "$rc" -eq 0 ]] && grep -q "Parentage cycle detected among project_number(s): 999500,999501" <<< "$out"; then
-    pass "D6e: two-node parentage cycle detected, names both numbers, chain walk terminates"
+    common_test_pass "D6e: two-node parentage cycle detected, names both numbers, chain walk terminates"
   else
-    fail "D6e: two-node cycle fixture did not produce the expected named WARN (rc=$rc)"
-    info "$out"
+    common_test_fail "D6e: two-node cycle fixture did not produce the expected named WARN (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- D6f: three-node parentage cycle (A -> B -> C -> A) -- names all three numbers, and
@@ -1601,12 +1596,12 @@ JSON
   out=$(timeout 10 bash "$D6_VALIDATOR" --deep "$WORKDIR/d6-cycle3-fixture.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 124 ]]; then
-    fail "D6f: three-node cycle fixture HUNG (timeout 10s exceeded) -- the seen-set chain walk did not terminate"
+    common_test_fail "D6f: three-node cycle fixture HUNG (timeout 10s exceeded) -- the seen-set chain walk did not terminate"
   elif [[ "$rc" -eq 0 ]] && grep -q "Parentage cycle detected among project_number(s): 999600,999601,999602" <<< "$out"; then
-    pass "D6f: three-node parentage cycle detected, names all three numbers, chain walk terminates"
+    common_test_pass "D6f: three-node parentage cycle detected, names all three numbers, chain walk terminates"
   else
-    fail "D6f: three-node cycle fixture did not produce the expected named WARN (rc=$rc)"
-    info "$out"
+    common_test_fail "D6f: three-node cycle fixture did not produce the expected named WARN (rc=$rc)"
+    common_test_info "$out"
   fi
 fi
 
@@ -1629,14 +1624,14 @@ for candidate in "${SCHEMA_CANDIDATES[@]}"; do
 done
 
 if [[ -z "$SCHEMA" ]]; then
-  info "SKIPPING schema-to-validator drift test: state-schema.json not found at any of:"
+  common_test_info "SKIPPING schema-to-validator drift test: state-schema.json not found at any of:"
   for candidate in "${SCHEMA_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
 elif [[ -z "$WIDEN_VALIDATOR" ]]; then
-  info "SKIPPING schema-to-validator drift test: no validator candidate confirmed to contain the widened fields (see above)."
+  common_test_info "SKIPPING schema-to-validator drift test: no validator candidate confirmed to contain the widened fields (see above)."
 elif ! command -v jq >/dev/null 2>&1; then
-  info "SKIPPING schema-to-validator drift test: jq not available."
+  common_test_info "SKIPPING schema-to-validator drift test: jq not available."
 else
   # Extract KNOWN_TOP_LEVEL_FIELDS / KNOWN_ENTRY_FIELDS array bodies from the validator by
   # sourcing it in a subshell with its own main-body logic disabled -- not attempted here, since
@@ -1649,31 +1644,31 @@ else
   entry_validator_sorted=$(awk '/^KNOWN_ENTRY_FIELDS=\(/,/^\)/' "$WIDEN_VALIDATOR" | grep -v '(' | grep -v ')' | tr -s ' \t\n' '\n' | sed '/^$/d' | sort)
 
   if [[ "$top_schema_sorted" == "$top_validator_sorted" ]]; then
-    pass "drift test: state-schema.json top-level properties == validate-state.sh KNOWN_TOP_LEVEL_FIELDS (sorted sets)"
+    common_test_pass "drift test: state-schema.json top-level properties == validate-state.sh KNOWN_TOP_LEVEL_FIELDS (sorted sets)"
   else
-    fail "drift test: top-level DRIFT detected between state-schema.json and KNOWN_TOP_LEVEL_FIELDS"
-    info "schema (sorted):"
-    info "$top_schema_sorted"
-    info "validator (sorted):"
-    info "$top_validator_sorted"
-    info "in schema but not validator:"
-    info "$(comm -23 <(echo "$top_schema_sorted") <(echo "$top_validator_sorted"))"
-    info "in validator but not schema:"
-    info "$(comm -13 <(echo "$top_schema_sorted") <(echo "$top_validator_sorted"))"
+    common_test_fail "drift test: top-level DRIFT detected between state-schema.json and KNOWN_TOP_LEVEL_FIELDS"
+    common_test_info "schema (sorted):"
+    common_test_info "$top_schema_sorted"
+    common_test_info "validator (sorted):"
+    common_test_info "$top_validator_sorted"
+    common_test_info "in schema but not validator:"
+    common_test_info "$(comm -23 <(echo "$top_schema_sorted") <(echo "$top_validator_sorted"))"
+    common_test_info "in validator but not schema:"
+    common_test_info "$(comm -13 <(echo "$top_schema_sorted") <(echo "$top_validator_sorted"))"
   fi
 
   if [[ "$entry_schema_sorted" == "$entry_validator_sorted" ]]; then
-    pass "drift test: state-schema.json definitions.projectEntry.properties == validate-state.sh KNOWN_ENTRY_FIELDS (sorted sets)"
+    common_test_pass "drift test: state-schema.json definitions.projectEntry.properties == validate-state.sh KNOWN_ENTRY_FIELDS (sorted sets)"
   else
-    fail "drift test: entry-field DRIFT detected between state-schema.json and KNOWN_ENTRY_FIELDS"
-    info "schema (sorted):"
-    info "$entry_schema_sorted"
-    info "validator (sorted):"
-    info "$entry_validator_sorted"
-    info "in schema but not validator:"
-    info "$(comm -23 <(echo "$entry_schema_sorted") <(echo "$entry_validator_sorted"))"
-    info "in validator but not schema:"
-    info "$(comm -13 <(echo "$entry_schema_sorted") <(echo "$entry_validator_sorted"))"
+    common_test_fail "drift test: entry-field DRIFT detected between state-schema.json and KNOWN_ENTRY_FIELDS"
+    common_test_info "schema (sorted):"
+    common_test_info "$entry_schema_sorted"
+    common_test_info "validator (sorted):"
+    common_test_info "$entry_validator_sorted"
+    common_test_info "in schema but not validator:"
+    common_test_info "$(comm -23 <(echo "$entry_schema_sorted") <(echo "$entry_validator_sorted"))"
+    common_test_info "in validator but not schema:"
+    common_test_info "$(comm -13 <(echo "$entry_schema_sorted") <(echo "$entry_validator_sorted"))"
   fi
 fi
 
@@ -1700,16 +1695,16 @@ for candidate in "${XREPO_VALIDATOR_CANDIDATES[@]}"; do
 done
 
 if [[ -z "$XREPO_VALIDATOR" ]]; then
-  info "SKIPPING XREPO fixtures: no candidate validator (source-store or deployed) contains the"
-  info "'default-resolution: script-anchored' marker comment. Candidates checked:"
+  common_test_info "SKIPPING XREPO fixtures: no candidate validator (source-store or deployed) contains the"
+  common_test_info "'default-resolution: script-anchored' marker comment. Candidates checked:"
   for candidate in "${XREPO_VALIDATOR_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
-  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
-  info "deployed candidate, that a deploy has run) before re-running this suite."
+  common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
-  info "XREPO fixtures running against: $XREPO_VALIDATOR (confirmed to contain the"
-  info "default-resolution: script-anchored marker)"
+  common_test_info "XREPO fixtures running against: $XREPO_VALIDATOR (confirmed to contain the"
+  common_test_info "default-resolution: script-anchored marker)"
 
   # Foreign CWD used by both cases below: a directory outside this repository entirely, so any
   # output naming a path under it proves the validator read something it should not have.
@@ -1733,10 +1728,10 @@ JSON
   if ! grep -qF "$OTHER_CWD" <<< "$out" \
       && ! grep -q "VALIDATION FAILED (invalid JSON)" <<< "$out" \
       && grep -qE '(Validating state file: /.*specs/state\.json|File not found: /.*specs/state\.json)' <<< "$out"; then
-    pass "XREPO Case A: cross-repo omitted-argument invocation never reads \$OTHER_CWD's state.json (names an absolute path under the script-anchored repo instead, rc=$rc)"
+    common_test_pass "XREPO Case A: cross-repo omitted-argument invocation never reads \$OTHER_CWD's state.json (names an absolute path under the script-anchored repo instead, rc=$rc)"
   else
-    fail "XREPO Case A: cross-repo omitted-argument invocation contaminated by \$OTHER_CWD or failed to name an absolute script-anchored path (rc=$rc)"
-    info "$out"
+    common_test_fail "XREPO Case A: cross-repo omitted-argument invocation contaminated by \$OTHER_CWD or failed to name an absolute script-anchored path (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Case B: explicit-argument argument-relativity regression (Acceptance #3), run from the
@@ -1765,10 +1760,10 @@ JSON
   out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" --deep "$ARGREL_DIR/state.json" 2>&1)
   rc=$?
   if grep -q "No dangling dependency references" <<< "$out" && ! grep -q "Dangling dependency reference" <<< "$out"; then
-    pass "XREPO Case B1: explicit-argument dependency resolves via the ARGUMENT-relative sibling archive (archive present), run from a foreign CWD"
+    common_test_pass "XREPO Case B1: explicit-argument dependency resolves via the ARGUMENT-relative sibling archive (archive present), run from a foreign CWD"
   else
-    fail "XREPO Case B1: explicit-argument invocation did not resolve the sibling archive relative to the argument (rc=$rc)"
-    info "$out"
+    common_test_fail "XREPO Case B1: explicit-argument invocation did not resolve the sibling archive relative to the argument (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # Sub-case B2: same invocation with the sibling archive removed -> the same dependency is now
@@ -1778,10 +1773,10 @@ JSON
   out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" --deep "$ARGREL_DIR/state.json" 2>&1)
   rc=$?
   if grep -q "Dangling dependency reference: 999700 -> 999710" <<< "$out"; then
-    pass "XREPO Case B2: removing the argument-relative sibling archive makes the SAME dependency dangling (confirms B1 was not coincidental)"
+    common_test_pass "XREPO Case B2: removing the argument-relative sibling archive makes the SAME dependency dangling (confirms B1 was not coincidental)"
   else
-    fail "XREPO Case B2: removing the sibling archive did not produce the expected dangling-dependency finding (rc=$rc)"
-    info "$out"
+    common_test_fail "XREPO Case B2: removing the sibling archive did not produce the expected dangling-dependency finding (rc=$rc)"
+    common_test_info "$out"
   fi
   mv "$ARGREL_DIR/archive.moved-aside" "$ARGREL_DIR/archive"
 
@@ -1791,10 +1786,10 @@ JSON
   out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" --deep "$ARGREL_DIR/state.json" 2>&1)
   rc=$?
   if grep -qF "No sibling TODO.md next to $argrel_abs" <<< "$out"; then
-    pass "XREPO Case B3: missing-sibling-TODO.md warning names the explicit argument's own (ARGUMENT-relative) path"
+    common_test_pass "XREPO Case B3: missing-sibling-TODO.md warning names the explicit argument's own (ARGUMENT-relative) path"
   else
-    fail "XREPO Case B3: missing-sibling-TODO.md warning did not name the fixture's own absolute path (rc=$rc)"
-    info "$out"
+    common_test_fail "XREPO Case B3: missing-sibling-TODO.md warning did not name the fixture's own absolute path (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # Sub-case B4: with a sibling TODO.md created next to the fixture, that warning is absent.
@@ -1804,10 +1799,10 @@ JSON
   out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" --deep "$ARGREL_DIR/state.json" 2>&1)
   rc=$?
   if ! grep -qF "No sibling TODO.md next to" <<< "$out"; then
-    pass "XREPO Case B4: missing-sibling-TODO.md warning is absent once a sibling TODO.md exists next to the fixture"
+    common_test_pass "XREPO Case B4: missing-sibling-TODO.md warning is absent once a sibling TODO.md exists next to the fixture"
   else
-    fail "XREPO Case B4: missing-sibling-TODO.md warning still present despite a sibling TODO.md existing (rc=$rc)"
-    info "$out"
+    common_test_fail "XREPO Case B4: missing-sibling-TODO.md warning still present despite a sibling TODO.md existing (rc=$rc)"
+    common_test_info "$out"
   fi
   rm -f "$ARGREL_DIR/TODO.md"
 
@@ -1816,10 +1811,10 @@ JSON
   out=$(cd "$OTHER_CWD" && bash "$XREPO_VALIDATOR" "$ARGREL_DIR/state.json" 2>&1)
   rc=$?
   if grep -qF "Validating state file: $argrel_abs" <<< "$out"; then
-    pass "XREPO Case B5: explicit-argument banner prints the absolute fixture path"
+    common_test_pass "XREPO Case B5: explicit-argument banner prints the absolute fixture path"
   else
-    fail "XREPO Case B5: explicit-argument banner did not print the expected absolute fixture path (rc=$rc)"
-    info "$out"
+    common_test_fail "XREPO Case B5: explicit-argument banner did not print the expected absolute fixture path (rc=$rc)"
+    common_test_info "$out"
   fi
 fi
 
@@ -1827,15 +1822,15 @@ fi
 # --archive mode (Checks A1-A6, the base-mode unvalidatable-shape guard) fixtures
 # =====================================================================
 if [[ -z "$ARCHIVE_VALIDATOR" ]]; then
-  info "SKIPPING --archive fixtures: no candidate validator (source-store or deployed) contains"
-  info "Check A6 (grepped for \"Check A6\"). Candidates checked:"
+  common_test_info "SKIPPING --archive fixtures: no candidate validator (source-store or deployed) contains"
+  common_test_info "Check A6 (grepped for \"Check A6\"). Candidates checked:"
   for candidate in "${ARCHIVE_VALIDATOR_CANDIDATES[@]}"; do
-    info "  $candidate"
+    common_test_info "  $candidate"
   done
-  info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
-  info "deployed candidate, that a deploy has run) before re-running this suite."
+  common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
+  common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
-  info "--archive fixtures running against: $ARCHIVE_VALIDATOR (confirmed to contain Check A6)"
+  common_test_info "--archive fixtures running against: $ARCHIVE_VALIDATOR (confirmed to contain Check A6)"
 
   # --- Fixture (a): positive archive shape -- archived_projects + completed_projects, each with
   # a few well-formed entries -> exit 0 under --archive.
@@ -1856,10 +1851,10 @@ JSON
   out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-a-positive.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]]; then
-    pass "Fixture (a): positive archive shape exits 0 under --archive"
+    common_test_pass "Fixture (a): positive archive shape exits 0 under --archive"
   else
-    fail "Fixture (a): positive archive shape expected exit 0 under --archive, got $rc"
-    info "$out"
+    common_test_fail "Fixture (a): positive archive shape expected exit 0 under --archive, got $rc"
+    common_test_info "$out"
   fi
 
   # --- Fixture (b): the literal /task --abandon write shape -- a completed_projects entry with
@@ -1878,10 +1873,10 @@ JSON
   out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-b-task-abandon.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]]; then
-    pass "Fixture (b): literal /task --abandon write shape (completed_projects + status=abandoned + 'abandoned' timestamp key, no archived_at) exits 0 under --archive"
+    common_test_pass "Fixture (b): literal /task --abandon write shape (completed_projects + status=abandoned + 'abandoned' timestamp key, no archived_at) exits 0 under --archive"
   else
-    fail "Fixture (b): /task --abandon write shape expected exit 0 under --archive, got $rc"
-    info "$out"
+    common_test_fail "Fixture (b): /task --abandon write shape expected exit 0 under --archive, got $rc"
+    common_test_info "$out"
   fi
 
   # --- Fixture (c): archive defect -- a non-numeric project_number (Check A2, FAIL-level per the
@@ -1899,10 +1894,10 @@ JSON
   out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-c-defect.json" 2>&1)
   rc=$?
   if [[ "$rc" -ne 0 ]] && grep -q "Check A2" <<< "$out" && grep -qF "non-numeric project_number" <<< "$out"; then
-    pass "Fixture (c): non-numeric project_number produces a nonzero exit and a named Check A2 error under --archive"
+    common_test_pass "Fixture (c): non-numeric project_number produces a nonzero exit and a named Check A2 error under --archive"
   else
-    fail "Fixture (c): expected nonzero exit + named Check A2 error, got rc=$rc"
-    info "$out"
+    common_test_fail "Fixture (c): expected nonzero exit + named Check A2 error, got rc=$rc"
+    common_test_info "$out"
   fi
 
   # --- Fixture (d): base-mode regression guard -- an archive-shaped file validated WITHOUT
@@ -1916,10 +1911,10 @@ JSON
      && grep -qF "Required top-level field missing: active_projects" <<< "$out" \
      && grep -qF "Cannot validate: active_projects is absent or not an array" <<< "$out" \
      && ! grep -q "All active_projects\[\]" <<< "$out"; then
-    pass "Fixture (d): base-mode regression guard -- archive-shaped file validated without --archive reports both Check 2 FAILs + the Phase 2 'could not validate' FAIL, and zero 'All active_projects[]...' PASS lines"
+    common_test_pass "Fixture (d): base-mode regression guard -- archive-shaped file validated without --archive reports both Check 2 FAILs + the Phase 2 'could not validate' FAIL, and zero 'All active_projects[]...' PASS lines"
   else
-    fail "Fixture (d): base-mode regression guard assertions not all satisfied (rc=$rc)"
-    info "$out"
+    common_test_fail "Fixture (d): base-mode regression guard assertions not all satisfied (rc=$rc)"
+    common_test_info "$out"
   fi
 
   # --- Fixture (e): cross-array duplicate project_number -- Check A6, WARN-only (never FAIL) --
@@ -1940,18 +1935,18 @@ JSON
   out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-e-crossdup.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -q "Check A6" <<< "$out"; then
-    pass "Fixture (e): cross-array duplicate project_number exits 0 with a named Check A6 WARN under plain --archive"
+    common_test_pass "Fixture (e): cross-array duplicate project_number exits 0 with a named Check A6 WARN under plain --archive"
   else
-    fail "Fixture (e): expected exit 0 + named Check A6 WARN under plain --archive, got rc=$rc"
-    info "$out"
+    common_test_fail "Fixture (e): expected exit 0 + named Check A6 WARN under plain --archive, got rc=$rc"
+    common_test_info "$out"
   fi
   out_strict=$(bash "$ARCHIVE_VALIDATOR" --archive --strict "$WORKDIR/archive-e-crossdup.json" 2>&1)
   rc_strict=$?
   if [[ "$rc_strict" -eq 1 ]]; then
-    pass "Fixture (e): cross-array duplicate project_number exits 1 under --archive --strict (WARN promoted)"
+    common_test_pass "Fixture (e): cross-array duplicate project_number exits 1 under --archive --strict (WARN promoted)"
   else
-    fail "Fixture (e): expected exit 1 under --archive --strict, got $rc_strict"
-    info "$out_strict"
+    common_test_fail "Fixture (e): expected exit 1 under --archive --strict, got $rc_strict"
+    common_test_info "$out_strict"
   fi
 
   # --- Fixture (f): abandoned_projects tolerance -- three variants (absent, present-and-empty,
@@ -1971,10 +1966,10 @@ JSON
     out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-f-${f_variant}.json" 2>&1)
     rc=$?
     if [[ "$rc" -eq 0 ]]; then
-      pass "Fixture (f): abandoned_projects $f_variant variant exits 0 under --archive"
+      common_test_pass "Fixture (f): abandoned_projects $f_variant variant exits 0 under --archive"
     else
-      fail "Fixture (f): abandoned_projects $f_variant variant expected exit 0 under --archive, got $rc"
-      info "$out"
+      common_test_fail "Fixture (f): abandoned_projects $f_variant variant expected exit 0 under --archive, got $rc"
+      common_test_info "$out"
     fi
   done
 
@@ -1983,18 +1978,18 @@ JSON
   out=$(bash "$ARCHIVE_VALIDATOR" --archive --fix "$WORKDIR/archive-a-positive.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 2 ]] && grep -qF "ERROR: --archive --fix is not supported" <<< "$out"; then
-    pass "Fixture (g): --archive --fix exits 2 with a named refusal"
+    common_test_pass "Fixture (g): --archive --fix exits 2 with a named refusal"
   else
-    fail "Fixture (g): --archive --fix expected exit 2 + named refusal, got rc=$rc"
-    info "$out"
+    common_test_fail "Fixture (g): --archive --fix expected exit 2 + named refusal, got rc=$rc"
+    common_test_info "$out"
   fi
   out=$(bash "$ARCHIVE_VALIDATOR" --archive --deep "$WORKDIR/archive-a-positive.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && grep -qF "NOTE: --archive --deep: no --deep checks exist in archive mode" <<< "$out"; then
-    pass "Fixture (g): --archive --deep exits 0 with the named 'no --deep checks exist in archive mode' notice"
+    common_test_pass "Fixture (g): --archive --deep exits 0 with the named 'no --deep checks exist in archive mode' notice"
   else
-    fail "Fixture (g): --archive --deep expected exit 0 + named notice, got rc=$rc"
-    info "$out"
+    common_test_fail "Fixture (g): --archive --deep expected exit 0 + named notice, got rc=$rc"
+    common_test_info "$out"
   fi
 
   # --- Fixture (h): a FOURTH real writer shape, found during Phase 5's read-only re-derivation
@@ -2016,10 +2011,10 @@ JSON
   out=$(bash "$ARCHIVE_VALIDATOR" --archive "$WORKDIR/archive-h-todo-md-orphan.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && ! grep -qF "created_at" <<< "$(grep 'Check A5' <<< "$out")"; then
-    pass "Fixture (h): skill-todo's 'TODO.md orphan' write shape (created_at, no task_type) exits 0 under --archive with no Check A5 'created_at' WARN"
+    common_test_pass "Fixture (h): skill-todo's 'TODO.md orphan' write shape (created_at, no task_type) exits 0 under --archive with no Check A5 'created_at' WARN"
   else
-    fail "Fixture (h): expected exit 0 with no Check A5 'created_at' WARN, got rc=$rc"
-    info "$out"
+    common_test_fail "Fixture (h): expected exit 0 with no Check A5 'created_at' WARN, got rc=$rc"
+    common_test_info "$out"
   fi
 fi
 

@@ -34,15 +34,13 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-no-task-references.sh"
 LIB_SRC="$SCRIPT_DIR/../lib/task-reference-patterns.sh"
 
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$HOOK_SRC" ]; then
   echo "ERROR: expected validate-no-task-references.sh at $HOOK_SRC" >&2
@@ -59,9 +57,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # Mirror the hook's expected sibling layout: hooks/validate-no-task-references.sh sources
 # ../scripts/lib/task-reference-patterns.sh relative to its OWN directory.
@@ -99,9 +95,9 @@ assert_triggers() {
   code="${result%%|*}"
   stderr_out="${result#*|}"
   if [ "$code" -eq 2 ] && [ -n "$stderr_out" ]; then
-    pass "$label: exits 2 with stderr message"
+    common_test_pass "$label: exits 2 with stderr message"
   else
-    fail "$label: expected exit 2 + stderr, got exit=$code stderr='$stderr_out'"
+    common_test_fail "$label: expected exit 2 + stderr, got exit=$code stderr='$stderr_out'"
   fi
 }
 
@@ -111,9 +107,9 @@ assert_silent() {
   local label="$1" file_path="$2" content="$3" code
   code="$(hook_exit_code "$file_path" "$content")"
   if [ "$code" -eq 0 ]; then
-    pass "$label: exits 0 (allowed)"
+    common_test_pass "$label: exits 0 (allowed)"
   else
-    fail "$label: expected exit 0, got exit=$code"
+    common_test_fail "$label: expected exit 0, got exit=$code"
   fi
 }
 
@@ -163,16 +159,16 @@ assert_silent "exemption: .memory/ index, prose-shaped citation" ".memory/memory
 degenerate_fixture_content="See task 788 for context"  # task-ref-ok inline test fixture, category 6
 degenerate_code="$(hook_exit_code "" "$degenerate_fixture_content")"
 if [ "$degenerate_code" -eq 0 ]; then
-  pass "degenerate: empty file_path exits 0"
+  common_test_pass "degenerate: empty file_path exits 0"
 else
-  fail "degenerate: empty file_path expected exit 0, got exit=$degenerate_code"
+  common_test_fail "degenerate: empty file_path expected exit 0, got exit=$degenerate_code"
 fi
 
 degenerate_code="$(hook_exit_code "lua/foo.lua" "")"
 if [ "$degenerate_code" -eq 0 ]; then
-  pass "degenerate: empty content exits 0"
+  common_test_pass "degenerate: empty content exits 0"
 else
-  fail "degenerate: empty content expected exit 0, got exit=$degenerate_code"
+  common_test_fail "degenerate: empty content expected exit 0, got exit=$degenerate_code"
 fi
 # task-ref-ok:end
 
@@ -247,9 +243,9 @@ nolib_out="$(jq -n --arg fp "lua/foo.lua" --arg c "$nolib_fixture_content" \
 nolib_code=$?
 rm -rf "$NOLIBDIR"
 if [ "$nolib_code" -eq 0 ] && [ -n "$nolib_out" ]; then
-  pass "shared-library-missing: fails open (exit 0) with a warning"
+  common_test_pass "shared-library-missing: fails open (exit 0) with a warning"
 else
-  fail "shared-library-missing: expected exit 0 + warning, got exit=$nolib_code out='$nolib_out'"
+  common_test_fail "shared-library-missing: expected exit 0 + warning, got exit=$nolib_code out='$nolib_out'"
 fi
 
 # ─── run_hook_edit: Edit-shaped payload (old_string/new_string), region-aware against the
@@ -304,9 +300,9 @@ case1_disk="$(printf -- '-- before\n-- %s reason\n-- middle\n-- %s\n-- after\n' 
 case1_new="-- middle, see task 701"  # task-ref-ok inline test fixture, category 6
 case1_code="$(hook_edit_exit_code "$case1_file" "$case1_disk" "-- middle" "$case1_new")"
 if [ "$case1_code" -eq 0 ]; then
-  pass "Case 1 (dispatch): Edit inside a file-wide pair exits 0"
+  common_test_pass "Case 1 (dispatch): Edit inside a file-wide pair exits 0"
 else
-  fail "Case 1 (dispatch): expected exit 0, got exit=$case1_code"
+  common_test_fail "Case 1 (dispatch): expected exit 0, got exit=$case1_code"
 fi
 
 # =====================================================================
@@ -317,9 +313,9 @@ case2_disk="$(printf -- '-- unmarked\n-- %s reason\n-- inside\n-- %s\n' "$EDIT_M
 case2_new="-- unmarked, see task 702"  # task-ref-ok inline test fixture, category 6
 case2_code="$(hook_edit_exit_code "$case2_file" "$case2_disk" "-- unmarked" "$case2_new")"
 if [ "$case2_code" -eq 2 ]; then
-  pass "Case 2 (dispatch): Edit outside any pair exits 2"
+  common_test_pass "Case 2 (dispatch): Edit outside any pair exits 2"
 else
-  fail "Case 2 (dispatch): expected exit 2, got exit=$case2_code"
+  common_test_fail "Case 2 (dispatch): expected exit 2, got exit=$case2_code"
 fi
 
 # =====================================================================
@@ -330,9 +326,9 @@ case3_disk="$(printf -- '-- before\n-- %s reason, never closed\n-- editme\n' "$E
 case3_new="-- editme, see task 703"  # task-ref-ok inline test fixture, category 6
 case3_code="$(hook_edit_exit_code "$case3_file" "$case3_disk" "-- editme" "$case3_new")"
 if [ "$case3_code" -eq 2 ]; then
-  pass "Case 3 (dispatch): unterminated marker exits 2"
+  common_test_pass "Case 3 (dispatch): unterminated marker exits 2"
 else
-  fail "Case 3 (dispatch): expected exit 2, got exit=$case3_code"
+  common_test_fail "Case 3 (dispatch): expected exit 2, got exit=$case3_code"
 fi
 
 # =====================================================================
@@ -345,16 +341,16 @@ case4_disk="$(printf -- '-- %s A\n-- %s B\n-- inner-b\n-- %s\n-- between-b-and-a
 case4_new_inner="-- inner-b, task 704"  # task-ref-ok inline test fixture, category 6
 case4_code_inner="$(hook_edit_exit_code "$case4_file" "$case4_disk" "-- inner-b" "$case4_new_inner")"
 if [ "$case4_code_inner" -eq 0 ]; then
-  pass "Case 4a (dispatch): nested pairs, edit inside the B-within-A nest exits 0"
+  common_test_pass "Case 4a (dispatch): nested pairs, edit inside the B-within-A nest exits 0"
 else
-  fail "Case 4a (dispatch): expected exit 0, got exit=$case4_code_inner"
+  common_test_fail "Case 4a (dispatch): expected exit 0, got exit=$case4_code_inner"
 fi
 case4_new_between="-- between-b-and-a, task 705"  # task-ref-ok inline test fixture, category 6
 case4_code_between="$(hook_edit_exit_code "$case4_file" "$case4_disk" "-- between-b-and-a" "$case4_new_between")"
 if [ "$case4_code_between" -eq 0 ]; then
-  pass "Case 4b (dispatch): nested pairs, edit between end-B and end-A (still inside A) exits 0"
+  common_test_pass "Case 4b (dispatch): nested pairs, edit between end-B and end-A (still inside A) exits 0"
 else
-  fail "Case 4b (dispatch): expected exit 0, got exit=$case4_code_between"
+  common_test_fail "Case 4b (dispatch): expected exit 0, got exit=$case4_code_between"
 fi
 
 # =====================================================================
@@ -363,22 +359,22 @@ fi
 # =====================================================================
 case5_file="$EDIT_WORKDIR/case5-new.lua"
 if [ -e "$case5_file" ]; then
-  fail "Case 5 (dispatch) setup: $case5_file unexpectedly exists before the Write fixture runs"
+  common_test_fail "Case 5 (dispatch) setup: $case5_file unexpectedly exists before the Write fixture runs"
 else
-  pass "Case 5 (dispatch) setup: $case5_file does not exist on disk (confirms the Write path reads nothing)"
+  common_test_pass "Case 5 (dispatch) setup: $case5_file does not exist on disk (confirms the Write path reads nothing)"
 fi
 case5_clean_code="$(hook_exit_code "$case5_file" "clean content, no citation")"
 if [ "$case5_clean_code" -eq 0 ]; then
-  pass "Case 5a (dispatch): Write of a new file, clean content, exits 0"
+  common_test_pass "Case 5a (dispatch): Write of a new file, clean content, exits 0"
 else
-  fail "Case 5a (dispatch): expected exit 0, got exit=$case5_clean_code"
+  common_test_fail "Case 5a (dispatch): expected exit 0, got exit=$case5_clean_code"
 fi
 case5_citation_content="citation-bearing content: task 706"  # task-ref-ok inline test fixture, category 6
 case5_citation_code="$(hook_exit_code "$case5_file" "$case5_citation_content")"
 if [ "$case5_citation_code" -eq 2 ]; then
-  pass "Case 5b (dispatch): Write of a new file, citation-bearing content, exits 2"
+  common_test_pass "Case 5b (dispatch): Write of a new file, citation-bearing content, exits 2"
 else
-  fail "Case 5b (dispatch): expected exit 2, got exit=$case5_citation_code"
+  common_test_fail "Case 5b (dispatch): expected exit 2, got exit=$case5_citation_code"
 fi
 
 # =====================================================================
@@ -392,9 +388,9 @@ printf '%s' "$case6_disk" > "$case6_file"
 case6_write_content="see task 707 here"  # task-ref-ok inline test fixture, category 6
 case6_code="$(hook_exit_code "$case6_file" "$case6_write_content")"
 if [ "$case6_code" -eq 2 ]; then
-  pass "Case 6 (dispatch): Write that drops on-disk markers but keeps the citation exits 2"
+  common_test_pass "Case 6 (dispatch): Write that drops on-disk markers but keeps the citation exits 2"
 else
-  fail "Case 6 (dispatch): expected exit 2, got exit=$case6_code"
+  common_test_fail "Case 6 (dispatch): expected exit 2, got exit=$case6_code"
 fi
 
 # =====================================================================
@@ -407,9 +403,9 @@ degen_edit_disk="$(printf -- '-- %s reason\n-- unrelated inside\n-- %s\n' "$EDIT
 degen_edit_new="-- this text never appears on disk, task 708"  # task-ref-ok inline test fixture, category 6
 degen_edit_code="$(hook_edit_exit_code "$degen_edit_file" "$degen_edit_disk" "-- this text does not appear on disk" "$degen_edit_new")"
 if [ "$degen_edit_code" -eq 2 ]; then
-  pass "Degenerate Edit (old_string absent from disk): degrades to a payload-only scan, exits 2 on the unmarked new_string citation"
+  common_test_pass "Degenerate Edit (old_string absent from disk): degrades to a payload-only scan, exits 2 on the unmarked new_string citation"
 else
-  fail "Degenerate Edit (old_string absent from disk): expected exit 2, got exit=$degen_edit_code"
+  common_test_fail "Degenerate Edit (old_string absent from disk): expected exit 2, got exit=$degen_edit_code"
 fi
 
 unreadable_file="$EDIT_WORKDIR/unreadable.lua"
@@ -422,9 +418,9 @@ unreadable_out="$(jq -n --arg fp "$unreadable_file" --arg old "content" --arg ne
 unreadable_code=$?
 chmod 644 "$unreadable_file"
 if [ "$unreadable_code" -eq 2 ]; then
-  pass "Degenerate Edit (unreadable target): degrades to a payload-only scan, exits 2 on the unmarked new_string citation"
+  common_test_pass "Degenerate Edit (unreadable target): degrades to a payload-only scan, exits 2 on the unmarked new_string citation"
 else
-  fail "Degenerate Edit (unreadable target): expected exit 2, got exit=$unreadable_code out='$unreadable_out'"
+  common_test_fail "Degenerate Edit (unreadable target): expected exit 2, got exit=$unreadable_code out='$unreadable_out'"
 fi
 
 # =====================================================================

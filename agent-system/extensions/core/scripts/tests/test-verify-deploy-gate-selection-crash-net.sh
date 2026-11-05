@@ -37,6 +37,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
 
@@ -52,13 +53,8 @@ done
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # FIXTURE_RICH: real-copy rsync, same shape/rationale as the parent suite's own FIXTURE_RICH.
@@ -89,11 +85,11 @@ for n in $(seq 1 23); do
   gate_n_out="$(run_vd "$FIXTURE_RICH" --only-gate "$n")"
   gate_n_rc=$?
   if printf '%s\n' "$gate_n_out" | grep -qiE 'unbound variable|: command not found|unary operator expected'; then
-    fail "case(b): gate $n crashed standalone (rc=$gate_n_rc)" "$(printf '%s\n' "$gate_n_out" | tail -5)"
+    common_test_fail "case(b): gate $n crashed standalone (rc=$gate_n_rc)" "$(printf '%s\n' "$gate_n_out" | tail -5)"
     case_b_all_clean=false
   fi
 done
-[ "$case_b_all_clean" = "true" ] && pass "case(b): all 23 gates run clean standalone against the real-copy fixture (no cross-gate variable dependency)"
+[ "$case_b_all_clean" = "true" ] && common_test_pass "case(b): all 23 gates run clean standalone against the real-copy fixture (no cross-gate variable dependency)"
 
 # =====================================================================
 # Summary

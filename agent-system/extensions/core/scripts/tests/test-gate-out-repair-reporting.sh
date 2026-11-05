@@ -33,10 +33,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 resolve_candidate() {
   local desc="$1"; shift
@@ -100,13 +98,8 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 BASELINE_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 
@@ -324,54 +317,54 @@ EOF
 # =====================================================================
 # Case 1: repaired direction -- gate-out end to end
 # =====================================================================
-info "=== Case 1: repaired direction (command-gate-out.sh end to end) ==="
+common_test_info "=== Case 1: repaired direction (command-gate-out.sh end to end) ==="
 CASE1_ROOT="$WORKDIR/case1"
 build_fixture_repo "$CASE1_ROOT"
 write_repairable_plan "$CASE1_ROOT/specs/001_fixture_task/plans/01_test.md"
 CASE1_OUT="$(cd "$CASE1_ROOT" && bash .claude/scripts/command-gate-out.sh 1 implement sess_case1 2>&1)"
 CASE1_RC=$?
 if [[ "$CASE1_RC" -eq 0 ]]; then
-  pass "Case 1: command-gate-out.sh exits 0 on a repaired artifact"
+  common_test_pass "Case 1: command-gate-out.sh exits 0 on a repaired artifact"
 else
-  fail "Case 1: command-gate-out.sh exited $CASE1_RC (expected 0) on a repaired artifact"
+  common_test_fail "Case 1: command-gate-out.sh exited $CASE1_RC (expected 0) on a repaired artifact"
 fi
 if printf '%s\n' "$CASE1_OUT" | grep -qE '^\[gate-out\] Artifact validation for task 1: [1-9][0-9]* field\(s\) auto-repaired, 0 error\(s\), 0 warning\(s\) remaining\.$'; then  # task-ref-ok inline, category 6 analog: pins the literal numbered text command-gate-out.sh emits
-  pass "Case 1: report line names a nonzero repaired-field count"
+  common_test_pass "Case 1: report line names a nonzero repaired-field count"
 else
-  fail "Case 1: report line did not name a nonzero repaired-field count. Output:
+  common_test_fail "Case 1: report line did not name a nonzero repaired-field count. Output:
 $CASE1_OUT"
 fi
 if printf '%s\n' "$CASE1_OUT" | grep -qF '[gate-out] Auto-repaired artifact(s): '; then
-  pass "Case 1: repaired-files line is present"
+  common_test_pass "Case 1: repaired-files line is present"
 else
-  fail "Case 1: repaired-files line is missing"
+  common_test_fail "Case 1: repaired-files line is missing"
 fi
 
 # =====================================================================
 # Case 2: clean direction -- gate-out end to end. Assert the line is PRESENT, not merely that no
 # error occurred; a report that only appears on repair fails the acceptance criterion.
 # =====================================================================
-info "=== Case 2: clean direction (command-gate-out.sh end to end) ==="
+common_test_info "=== Case 2: clean direction (command-gate-out.sh end to end) ==="
 CASE2_ROOT="$WORKDIR/case2"
 build_fixture_repo "$CASE2_ROOT"
 write_valid_plan "$CASE2_ROOT/specs/001_fixture_task/plans/01_test.md"
 CASE2_OUT="$(cd "$CASE2_ROOT" && bash .claude/scripts/command-gate-out.sh 1 implement sess_case2 2>&1)"
 CASE2_RC=$?
 if [[ "$CASE2_RC" -eq 0 ]]; then
-  pass "Case 2: command-gate-out.sh exits 0 on a clean artifact"
+  common_test_pass "Case 2: command-gate-out.sh exits 0 on a clean artifact"
 else
-  fail "Case 2: command-gate-out.sh exited $CASE2_RC (expected 0) on a clean artifact"
+  common_test_fail "Case 2: command-gate-out.sh exited $CASE2_RC (expected 0) on a clean artifact"
 fi
 if printf '%s\n' "$CASE2_OUT" | grep -qF '[gate-out] Artifact validation for task 1: 0 field(s) auto-repaired, 0 error(s), 0 warning(s) remaining.'; then  # task-ref-ok inline, category 6 analog: pins the literal numbered text command-gate-out.sh emits
-  pass "Case 2: report line is present and names zero (not omitted)"
+  common_test_pass "Case 2: report line is present and names zero (not omitted)"
 else
-  fail "Case 2: report line naming zero was not found. Output:
+  common_test_fail "Case 2: report line naming zero was not found. Output:
 $CASE2_OUT"
 fi
 if printf '%s\n' "$CASE2_OUT" | grep -qF '[gate-out] Auto-repaired artifact(s):'; then
-  fail "Case 2: repaired-files line appeared despite zero fixes"
+  common_test_fail "Case 2: repaired-files line appeared despite zero fixes"
 else
-  pass "Case 2: repaired-files line correctly absent when nothing was repaired"
+  common_test_pass "Case 2: repaired-files line correctly absent when nothing was repaired"
 fi
 
 # =====================================================================
@@ -382,7 +375,7 @@ fi
 # fixtures into plans/ only, despite its own comment claiming "two subdirectories" -- the fixture
 # now matches the claim.)
 # =====================================================================
-info "=== Case 3: multi-file aggregation (direct function call) ==="
+common_test_info "=== Case 3: multi-file aggregation (direct function call) ==="
 CASE3_DIR="$WORKDIR/case3_fixture"
 mkdir -p "$CASE3_DIR/plans" "$CASE3_DIR/reports" "$CASE3_DIR/summaries"
 write_repairable_plan "$CASE3_DIR/plans/01_a.md"
@@ -390,15 +383,15 @@ write_repairable_plan "$CASE3_DIR/plans/02_b.md"
 write_repairable_report "$CASE3_DIR/reports/01_c.md"
 skill_validate_task_artifacts "$CASE3_DIR" > "$WORKDIR/case3.out" 2>&1
 if [[ "${SKILL_VALIDATE_FIXES:-0}" -eq 3 ]]; then
-  pass "Case 3: three repairable artifacts across two subdirectories sum to SKILL_VALIDATE_FIXES=3"
+  common_test_pass "Case 3: three repairable artifacts across two subdirectories sum to SKILL_VALIDATE_FIXES=3"
 else
-  fail "Case 3: expected SKILL_VALIDATE_FIXES=3, got ${SKILL_VALIDATE_FIXES:-<unset>}"
+  common_test_fail "Case 3: expected SKILL_VALIDATE_FIXES=3, got ${SKILL_VALIDATE_FIXES:-<unset>}"
 fi
 if [[ "$SKILL_VALIDATE_FIXED_FILES" == *"01_a.md"* ]] && [[ "$SKILL_VALIDATE_FIXED_FILES" == *"02_b.md"* ]] \
    && [[ "$SKILL_VALIDATE_FIXED_FILES" == *"01_c.md"* ]]; then
-  pass "Case 3: SKILL_VALIDATE_FIXED_FILES names all three repaired paths"
+  common_test_pass "Case 3: SKILL_VALIDATE_FIXED_FILES names all three repaired paths"
 else
-  fail "Case 3: SKILL_VALIDATE_FIXED_FILES did not name all three repaired paths: $SKILL_VALIDATE_FIXED_FILES"
+  common_test_fail "Case 3: SKILL_VALIDATE_FIXED_FILES did not name all three repaired paths: $SKILL_VALIDATE_FIXED_FILES"
 fi
 
 # =====================================================================
@@ -406,15 +399,15 @@ fi
 # bullet: an artifact that gets a metadata field fixed while a required section is still missing
 # reports nonzero fixes AND nonzero errors in the same sweep.
 # =====================================================================
-info "=== Case 4: errors-remaining alongside fixes (direct function call) ==="
+common_test_info "=== Case 4: errors-remaining alongside fixes (direct function call) ==="
 CASE4_DIR="$WORKDIR/case4_fixture"
 mkdir -p "$CASE4_DIR/plans" "$CASE4_DIR/reports" "$CASE4_DIR/summaries"
 write_repair_plus_errors_plan "$CASE4_DIR/plans/01_test.md"
 skill_validate_task_artifacts "$CASE4_DIR" > "$WORKDIR/case4.out" 2>&1
 if [[ "${SKILL_VALIDATE_FIXES:-0}" -gt 0 ]] && [[ "${SKILL_VALIDATE_ERRORS:-0}" -gt 0 ]]; then
-  pass "Case 4: fixes=${SKILL_VALIDATE_FIXES} AND errors=${SKILL_VALIDATE_ERRORS} both nonzero in the same sweep"
+  common_test_pass "Case 4: fixes=${SKILL_VALIDATE_FIXES} AND errors=${SKILL_VALIDATE_ERRORS} both nonzero in the same sweep"
 else
-  fail "Case 4: expected both fixes>0 and errors>0, got fixes=${SKILL_VALIDATE_FIXES:-0} errors=${SKILL_VALIDATE_ERRORS:-0}"
+  common_test_fail "Case 4: expected both fixes>0 and errors>0, got fixes=${SKILL_VALIDATE_FIXES:-0} errors=${SKILL_VALIDATE_ERRORS:-0}"
 fi
 
 # =====================================================================
@@ -423,7 +416,7 @@ fi
 # .claude/scripts/validate-artifact.sh at a directory with no lib/ sibling, which
 # validate-artifact.sh's plan-type path requires.
 # =====================================================================
-info "=== Case 5: validation could not run (exit 5, no silent zero) ==="
+common_test_info "=== Case 5: validation could not run (exit 5, no silent zero) ==="
 CASE5_ROOT="$WORKDIR/case5"
 mkdir -p "$CASE5_ROOT/.claude/scripts" "$CASE5_ROOT/fixture_dir/plans" "$CASE5_ROOT/fixture_dir/reports" \
   "$CASE5_ROOT/fixture_dir/summaries"
@@ -435,9 +428,9 @@ write_valid_plan "$CASE5_ROOT/fixture_dir/plans/01_test.md"
 DIRECT_RC=0
 ( cd "$CASE5_ROOT" && bash .claude/scripts/validate-artifact.sh fixture_dir/plans/01_test.md plan >/dev/null 2>&1 ) || DIRECT_RC=$?
 if [[ "$DIRECT_RC" -eq 5 ]]; then
-  info "Case 5 setup confirmed: direct validate-artifact.sh call exits 5 as expected"
+  common_test_info "Case 5 setup confirmed: direct validate-artifact.sh call exits 5 as expected"
 else
-  info "Case 5 setup produced exit $DIRECT_RC instead of 5 -- environment may differ; case result below still checked"
+  common_test_info "Case 5 setup produced exit $DIRECT_RC instead of 5 -- environment may differ; case result below still checked"
 fi
 (
   cd "$CASE5_ROOT" || exit 2
@@ -446,16 +439,16 @@ fi
 )
 CASE5_ERRORS="$(cat "$WORKDIR/case5.errors" 2>/dev/null || echo 0)"
 if [[ "$CASE5_ERRORS" -gt 0 ]]; then
-  pass "Case 5: validation-could-not-run (exit 5) reports a nonzero error count, never silent zero"
+  common_test_pass "Case 5: validation-could-not-run (exit 5) reports a nonzero error count, never silent zero"
 else
-  fail "Case 5: expected a nonzero error count for an exit-5 validation-could-not-run result, got $CASE5_ERRORS"
+  common_test_fail "Case 5: expected a nonzero error count for an exit-5 validation-could-not-run result, got $CASE5_ERRORS"
 fi
 
 # =====================================================================
 # Case 6: no stale globals -- a call over a repairable fixture followed by a call over a clean
 # fixture reports zero on the second call.
 # =====================================================================
-info "=== Case 6: no stale globals across calls (direct function call) ==="
+common_test_info "=== Case 6: no stale globals across calls (direct function call) ==="
 CASE6_DIR="$WORKDIR/case6_fixture"
 mkdir -p "$CASE6_DIR/plans" "$CASE6_DIR/reports" "$CASE6_DIR/summaries"
 write_repairable_plan "$CASE6_DIR/plans/01_test.md"
@@ -468,9 +461,9 @@ skill_validate_task_artifacts "$CASE6_CLEAN_DIR" > "$WORKDIR/case6b.out" 2>&1
 if [[ "$FIRST_CALL_FIXES" -gt 0 ]] && [[ "${SKILL_VALIDATE_FIXES:-0}" -eq 0 ]] && \
    [[ "${SKILL_VALIDATE_ERRORS:-0}" -eq 0 ]] && [[ "${SKILL_VALIDATE_WARNINGS:-0}" -eq 0 ]] && \
    [[ -z "$SKILL_VALIDATE_FIXED_FILES" ]]; then
-  pass "Case 6: a clean call after a repairing call reports all-zero globals (no stale carryover)"
+  common_test_pass "Case 6: a clean call after a repairing call reports all-zero globals (no stale carryover)"
 else
-  fail "Case 6: stale globals detected. first_call_fixes=$FIRST_CALL_FIXES second_call: fixes=${SKILL_VALIDATE_FIXES:-0} errors=${SKILL_VALIDATE_ERRORS:-0} warnings=${SKILL_VALIDATE_WARNINGS:-0} fixed_files=[$SKILL_VALIDATE_FIXED_FILES]"
+  common_test_fail "Case 6: stale globals detected. first_call_fixes=$FIRST_CALL_FIXES second_call: fixes=${SKILL_VALIDATE_FIXES:-0} errors=${SKILL_VALIDATE_ERRORS:-0} warnings=${SKILL_VALIDATE_WARNINGS:-0} fixed_files=[$SKILL_VALIDATE_FIXED_FILES]"
 fi
 
 # =====================================================================
@@ -483,7 +476,7 @@ fi
 # call's own repairs" partial fix would still pass if only Case 6 existed, because Case 6's second
 # call has zero fixes of its own.
 # =====================================================================
-info "=== Case 6b: repairing-then-repairing cross-call reset (direct function call) ==="
+common_test_info "=== Case 6b: repairing-then-repairing cross-call reset (direct function call) ==="
 CASE6B_FIRST_DIR="$WORKDIR/case6b_first_fixture"
 mkdir -p "$CASE6B_FIRST_DIR/plans" "$CASE6B_FIRST_DIR/reports" "$CASE6B_FIRST_DIR/summaries"
 write_repairable_plan "$CASE6B_FIRST_DIR/plans/01_a.md"
@@ -495,15 +488,15 @@ mkdir -p "$CASE6B_SECOND_DIR/plans" "$CASE6B_SECOND_DIR/reports" "$CASE6B_SECOND
 write_repairable_plan "$CASE6B_SECOND_DIR/plans/01_only.md"
 skill_validate_task_artifacts "$CASE6B_SECOND_DIR" > "$WORKDIR/case6b_second.out" 2>&1
 if [[ "$CASE6B_FIRST_FIXES" -eq 2 ]] && [[ "${SKILL_VALIDATE_FIXES:-0}" -eq 1 ]]; then
-  pass "Case 6b: second repairing call reports exactly its own repair count (1), not the sum (3)"
+  common_test_pass "Case 6b: second repairing call reports exactly its own repair count (1), not the sum (3)"
 else
-  fail "Case 6b: expected first_call_fixes=2 and second_call_fixes=1, got first=$CASE6B_FIRST_FIXES second=${SKILL_VALIDATE_FIXES:-0}"
+  common_test_fail "Case 6b: expected first_call_fixes=2 and second_call_fixes=1, got first=$CASE6B_FIRST_FIXES second=${SKILL_VALIDATE_FIXES:-0}"
 fi
 if [[ "$SKILL_VALIDATE_FIXED_FILES" == *"01_only.md"* ]] \
    && [[ "$SKILL_VALIDATE_FIXED_FILES" != *"01_a.md"* ]] && [[ "$SKILL_VALIDATE_FIXED_FILES" != *"02_b.md"* ]]; then
-  pass "Case 6b: SKILL_VALIDATE_FIXED_FILES names only the second call's own path"
+  common_test_pass "Case 6b: SKILL_VALIDATE_FIXED_FILES names only the second call's own path"
 else
-  fail "Case 6b: SKILL_VALIDATE_FIXED_FILES leaked the first call's paths or omitted the second's: $SKILL_VALIDATE_FIXED_FILES"
+  common_test_fail "Case 6b: SKILL_VALIDATE_FIXED_FILES leaked the first call's paths or omitted the second's: $SKILL_VALIDATE_FIXED_FILES"
 fi
 
 # =====================================================================
@@ -511,24 +504,24 @@ fi
 # terminal shapes match their expected patterns, so a future wording change fails here loudly
 # rather than silently degrading the counts to zero.
 # =====================================================================
-info "=== Case 7: summary-line format pinning ==="
+common_test_info "=== Case 7: summary-line format pinning ==="
 CASE7_DIR="$WORKDIR/case7_fixture"
 mkdir -p "$CASE7_DIR/plans"
 
 write_repairable_plan "$CASE7_DIR/plans/01_fixed.md"
 FIXED_LINE="$(bash "$VALIDATE_ARTIFACT_SRC" "$CASE7_DIR/plans/01_fixed.md" plan --fix 2>/dev/null | tail -1)"
 if [[ "$FIXED_LINE" =~ ^\[FIXED\]\ [0-9]+\ field\(s\)\ auto-repaired ]]; then
-  pass "Case 7: [FIXED] summary-line shape matches the pinned pattern"
+  common_test_pass "Case 7: [FIXED] summary-line shape matches the pinned pattern"
 else
-  fail "Case 7: [FIXED] summary-line shape drifted. Got: $FIXED_LINE"
+  common_test_fail "Case 7: [FIXED] summary-line shape drifted. Got: $FIXED_LINE"
 fi
 
 write_valid_plan "$CASE7_DIR/plans/02_pass.md"
 PASS_LINE="$(bash "$VALIDATE_ARTIFACT_SRC" "$CASE7_DIR/plans/02_pass.md" plan --fix 2>/dev/null | tail -1)"
 if [[ "$PASS_LINE" =~ ^\[PASS\]\  ]]; then
-  pass "Case 7: [PASS] summary-line shape matches the pinned pattern"
+  common_test_pass "Case 7: [PASS] summary-line shape matches the pinned pattern"
 else
-  fail "Case 7: [PASS] summary-line shape drifted. Got: $PASS_LINE"
+  common_test_fail "Case 7: [PASS] summary-line shape drifted. Got: $PASS_LINE"
 fi
 
 cat > "$CASE7_DIR/plans/03_fail.md" << 'EOF'
@@ -548,16 +541,16 @@ x
 EOF
 FAIL_LINE="$(bash "$VALIDATE_ARTIFACT_SRC" "$CASE7_DIR/plans/03_fail.md" plan 2>/dev/null | tail -1)"
 if [[ "$FAIL_LINE" =~ ^\[FAIL\]\ [0-9]+\ error\(s\) ]]; then
-  pass "Case 7: [FAIL] summary-line shape matches the pinned pattern"
+  common_test_pass "Case 7: [FAIL] summary-line shape matches the pinned pattern"
 else
-  fail "Case 7: [FAIL] summary-line shape drifted. Got: $FAIL_LINE"
+  common_test_fail "Case 7: [FAIL] summary-line shape drifted. Got: $FAIL_LINE"
 fi
 
 # =====================================================================
 # Case 8: events row -- the repaired direction appends exactly one artifact_auto_repair row with
 # the matching counts in its detail object, and the clean direction's row is category=milestone.
 # =====================================================================
-info "=== Case 8: events.jsonl row (command-gate-out.sh end to end) ==="
+common_test_info "=== Case 8: events.jsonl row (command-gate-out.sh end to end) ==="
 CASE8_ROOT="$WORKDIR/case8"
 build_fixture_repo "$CASE8_ROOT"
 write_repairable_plan "$CASE8_ROOT/specs/001_fixture_task/plans/01_test.md"
@@ -566,25 +559,25 @@ CASE8_EVENTS="$CASE8_ROOT/specs/events.jsonl"
 if [[ -f "$CASE8_EVENTS" ]]; then
   CASE8_ROW_COUNT=$(jq -c 'select(.event_type == "artifact_auto_repair")' "$CASE8_EVENTS" 2>/dev/null | wc -l | tr -d ' ')
   if [[ "$CASE8_ROW_COUNT" -eq 1 ]]; then
-    pass "Case 8: exactly one artifact_auto_repair events.jsonl row was appended"
+    common_test_pass "Case 8: exactly one artifact_auto_repair events.jsonl row was appended"
   else
-    fail "Case 8: expected exactly one artifact_auto_repair row, found $CASE8_ROW_COUNT"
+    common_test_fail "Case 8: expected exactly one artifact_auto_repair row, found $CASE8_ROW_COUNT"
   fi
   CASE8_ROW="$(jq -c 'select(.event_type == "artifact_auto_repair")' "$CASE8_EVENTS" 2>/dev/null | tail -1)"
   CASE8_CATEGORY="$(printf '%s' "$CASE8_ROW" | jq -r '.category' 2>/dev/null)"
   CASE8_FIXES="$(printf '%s' "$CASE8_ROW" | jq -r '.detail.fixes' 2>/dev/null)"
   if [[ "$CASE8_CATEGORY" == "deviation" ]]; then
-    pass "Case 8: repaired direction's events row has category=deviation"
+    common_test_pass "Case 8: repaired direction's events row has category=deviation"
   else
-    fail "Case 8: expected category=deviation, got '$CASE8_CATEGORY'"
+    common_test_fail "Case 8: expected category=deviation, got '$CASE8_CATEGORY'"
   fi
   if [[ "$CASE8_FIXES" -gt 0 ]] 2>/dev/null; then
-    pass "Case 8: events row's detail.fixes matches the nonzero repaired-field count"
+    common_test_pass "Case 8: events row's detail.fixes matches the nonzero repaired-field count"
   else
-    fail "Case 8: events row's detail.fixes was not a positive number: '$CASE8_FIXES'"
+    common_test_fail "Case 8: events row's detail.fixes was not a positive number: '$CASE8_FIXES'"
   fi
 else
-  fail "Case 8: specs/events.jsonl was not created"
+  common_test_fail "Case 8: specs/events.jsonl was not created"
 fi
 
 CASE8B_ROOT="$WORKDIR/case8b"
@@ -595,23 +588,23 @@ CASE8B_EVENTS="$CASE8B_ROOT/specs/events.jsonl"
 if [[ -f "$CASE8B_EVENTS" ]]; then
   CASE8B_CATEGORY="$(jq -r 'select(.event_type == "artifact_auto_repair") | .category' "$CASE8B_EVENTS" 2>/dev/null | tail -1)"
   if [[ "$CASE8B_CATEGORY" == "milestone" ]]; then
-    pass "Case 8: clean direction's events row has category=milestone"
+    common_test_pass "Case 8: clean direction's events row has category=milestone"
   else
-    fail "Case 8: expected clean-direction category=milestone, got '$CASE8B_CATEGORY'"
+    common_test_fail "Case 8: expected clean-direction category=milestone, got '$CASE8B_CATEGORY'"
   fi
 else
-  fail "Case 8: clean-direction specs/events.jsonl was not created"
+  common_test_fail "Case 8: clean-direction specs/events.jsonl was not created"
 fi
 
 # =====================================================================
 # Contamination guard: this suite must never leave a NEW mark on the actual repo's specs/ tree.
 # =====================================================================
-info "=== contamination guard ==="
+common_test_info "=== contamination guard ==="
 FINAL_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 if [[ "$FINAL_SPECS_STATUS" == "$BASELINE_SPECS_STATUS" ]]; then
-  pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
+  common_test_pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
 else
-  fail "real specs/ tree status changed during this suite (baseline vs. final differ) -- baseline:
+  common_test_fail "real specs/ tree status changed during this suite (baseline vs. final differ) -- baseline:
 $BASELINE_SPECS_STATUS
 -- final:
 $FINAL_SPECS_STATUS"

@@ -38,6 +38,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 LINT_SRC="$SCRIPT_DIR/../lint/lint-agent-contracts.sh"
 FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/no-task-references-bullet.md"
 ARTIFACTS_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/return-meta-artifacts-template.md"
@@ -49,9 +50,6 @@ MODIFIED_FILES_FRAGMENT_SRC="$SCRIPT_DIR/../../context/contracts/modified-files-
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$LINT_SRC" ]; then
   echo "ERROR: expected lint-agent-contracts.sh at $LINT_SRC" >&2
@@ -82,9 +80,7 @@ if [ ! -f "$MODIFIED_FILES_FRAGMENT_SRC" ]; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # Mirror the real repo layout the lint script expects, relative to the scratch REPO_ROOT.
 mkdir -p "$WORKDIR/agent-system/extensions/core/agents"
@@ -900,80 +896,80 @@ result="$(run_lint)"
 code="${result%%$'\x1e'*}"
 out="${result#*$'\x1e'}"
 
-info "lint exit code: $code"
+common_test_info "lint exit code: $code"
 
 # The scratch fixture set is deliberately non-compliant overall (rogue-key-agent and
 # no-model-agent are real violations), so the lint MUST exit 1.
 if [ "$code" -eq 1 ]; then
-  pass "lint exits 1 against a fixture tree with real violations"
+  common_test_pass "lint exits 1 against a fixture tree with real violations"
 else
-  fail "lint expected exit 1, got exit=$code"
+  common_test_fail "lint expected exit 1, got exit=$code"
 fi
 
 # Positive: rogue-key-agent.md fails Check A on the invalid key.
 if echo "$out" | grep -qF "rogue-key-agent.md: declares invalid key 'allowed-tools:'"; then
-  pass "positive: rogue-key-agent.md fails Check A (invalid allowed-tools: key)"
+  common_test_pass "positive: rogue-key-agent.md fails Check A (invalid allowed-tools: key)"
 else
-  fail "positive: expected Check A failure for rogue-key-agent.md, not found in output"
+  common_test_fail "positive: expected Check A failure for rogue-key-agent.md, not found in output"
 fi
 
 # Positive: no-model-agent.md fails Check B on missing model.
 if echo "$out" | grep -qF "no-model-agent.md: missing required 'model:' field"; then
-  pass "positive: no-model-agent.md fails Check B (missing model:)"
+  common_test_pass "positive: no-model-agent.md fails Check B (missing model:)"
 else
-  fail "positive: expected Check B failure for no-model-agent.md, not found in output"
+  common_test_fail "positive: expected Check B failure for no-model-agent.md, not found in output"
 fi
 
 # Positive: general-implementation-agent.md (fixture, no bullet) fails Check C.
 if echo "$out" | grep -qF "core/agents/general-implementation-agent.md: missing the no-task-references MUST-NOT bullet"; then
-  pass "positive: general-implementation-agent.md fixture fails Check C (missing bullet)"
+  common_test_pass "positive: general-implementation-agent.md fixture fails Check C (missing bullet)"
 else
-  fail "positive: expected Check C failure for general-implementation-agent.md, not found in output"
+  common_test_fail "positive: expected Check C failure for general-implementation-agent.md, not found in output"
 fi
 
 # Negative: README.md (no frontmatter) produces no Check A/B finding against it.
 if echo "$out" | grep -qF "README.md:"; then
-  fail "negative: README.md (frontmatter-less) was incorrectly treated as a dispatchable agent"
+  common_test_fail "negative: README.md (frontmatter-less) was incorrectly treated as a dispatchable agent"
 else
-  pass "negative: README.md (frontmatter-less) produces no finding (correctly excluded)"
+  common_test_pass "negative: README.md (frontmatter-less) produces no finding (correctly excluded)"
 fi
 
 # Negative: compliant-agent.md produces no FAIL line against it.
 if echo "$out" | grep -F "compliant-agent.md" | grep -q "FAIL"; then
-  fail "negative: compliant-agent.md unexpectedly failed a check"
+  common_test_fail "negative: compliant-agent.md unexpectedly failed a check"
 else
-  pass "negative: compliant-agent.md produces no FAIL against it"
+  common_test_pass "negative: compliant-agent.md produces no FAIL against it"
 fi
 
 # Positive: check-f-templateless-agent.md (no artifacts key at all) fails Check F.
 if echo "$out" | grep -qF "check-f-templateless-agent.md: missing an object-shaped artifacts array"; then
-  pass "positive: check-f-templateless-agent.md fails Check F (no artifacts template)"
+  common_test_pass "positive: check-f-templateless-agent.md fails Check F (no artifacts template)"
 else
-  fail "positive: expected Check F failure for check-f-templateless-agent.md, not found in output"
+  common_test_fail "positive: expected Check F failure for check-f-templateless-agent.md, not found in output"
 fi
 
 # Positive: check-f-barestring-agent.md (bare-string array, the malformed shape this task
 # closes) fails Check F.
 if echo "$out" | grep -qF "check-f-barestring-agent.md: missing an object-shaped artifacts array"; then
-  pass "positive: check-f-barestring-agent.md fails Check F (bare-string artifacts array)"
+  common_test_pass "positive: check-f-barestring-agent.md fails Check F (bare-string artifacts array)"
 else
-  fail "positive: expected Check F failure for check-f-barestring-agent.md, not found in output"
+  common_test_fail "positive: expected Check F failure for check-f-barestring-agent.md, not found in output"
 fi
 
 # Negative: check-f-conforming-agent.md (correct object-shaped template) passes Check F --
 # produces no FAIL line against it.
 if echo "$out" | grep -F "check-f-conforming-agent.md" | grep -q "FAIL"; then
-  fail "negative: check-f-conforming-agent.md unexpectedly failed a check"
+  common_test_fail "negative: check-f-conforming-agent.md unexpectedly failed a check"
 else
-  pass "negative: check-f-conforming-agent.md produces no FAIL against it"
+  common_test_pass "negative: check-f-conforming-agent.md produces no FAIL against it"
 fi
 
 # Positive: check-f-conforming-agent.md explicitly PASSES Check F (not just "no FAIL" -- a
 # genuine pass line naming it).
 if echo "$out" | grep -qF "check-f-conforming-agent.md: carries an object-shaped artifacts template"; then
-  pass "positive: check-f-conforming-agent.md explicitly passes Check F"
+  common_test_pass "positive: check-f-conforming-agent.md explicitly passes Check F"
 else
-  fail "positive: expected an explicit Check F PASS line for check-f-conforming-agent.md, not found in output"
+  common_test_fail "positive: expected an explicit Check F PASS line for check-f-conforming-agent.md, not found in output"
 fi
 
 # =====================================================================
@@ -982,61 +978,61 @@ fi
 
 # Positive: check-e-nostatus-agent.md (artifacts template, no status key) fails Check E.
 if echo "$out" | grep -qF "check-e-nostatus-agent.md: no conformant terminal status found"; then
-  pass "positive: check-e-nostatus-agent.md fails Check E (no status key at all)"
+  common_test_pass "positive: check-e-nostatus-agent.md fails Check E (no status key at all)"
 else
-  fail "positive: expected Check E failure for check-e-nostatus-agent.md, not found in output"
+  common_test_fail "positive: expected Check E failure for check-e-nostatus-agent.md, not found in output"
 fi
 
 # Positive: check-e-completed-agent.md (literal "status": "completed") fails Check E by name.
 if echo "$out" | grep -qF "check-e-completed-agent.md: carries a literal \"status\": \"completed\""; then
-  pass "positive: check-e-completed-agent.md fails Check E by name (forbidden completed value)"
+  common_test_pass "positive: check-e-completed-agent.md fails Check E by name (forbidden completed value)"
 else
-  fail "positive: expected Check E failure naming the forbidden completed value, not found in output"
+  common_test_fail "positive: expected Check E failure naming the forbidden completed value, not found in output"
 fi
 
 # Positive: check-e-inprogress-only-agent.md (only in_progress) fails Check E's presence detector.
 if echo "$out" | grep -qF "check-e-inprogress-only-agent.md: no conformant terminal status found"; then
-  pass "positive: check-e-inprogress-only-agent.md fails Check E (in_progress is not a terminal status)"
+  common_test_pass "positive: check-e-inprogress-only-agent.md fails Check E (in_progress is not a terminal status)"
 else
-  fail "positive: expected Check E failure for check-e-inprogress-only-agent.md, not found in output"
+  common_test_fail "positive: expected Check E failure for check-e-inprogress-only-agent.md, not found in output"
 fi
 
 # Positive: check-e-pipeplaceholder-agent.md (pipe-alternatives value) fails Check E's presence
 # detector -- an exact-match lookup never matches a pipe-joined string.
 if echo "$out" | grep -qF "check-e-pipeplaceholder-agent.md: no conformant terminal status found"; then
-  pass "positive: check-e-pipeplaceholder-agent.md fails Check E (pipe-alternatives placeholder is not a literal member)"
+  common_test_pass "positive: check-e-pipeplaceholder-agent.md fails Check E (pipe-alternatives placeholder is not a literal member)"
 else
-  fail "positive: expected Check E failure for check-e-pipeplaceholder-agent.md, not found in output"
+  common_test_fail "positive: expected Check E failure for check-e-pipeplaceholder-agent.md, not found in output"
 fi
 
 # Negative: check-e-falsepositive-guard-agent.md (conformant status + MUST-NOT prose containing
 # "completed") produces no FAIL line against it -- proves Detector B matches only the quoted
 # "status": "completed" pair, never the bare word in prose.
 if echo "$out" | grep -F "check-e-falsepositive-guard-agent.md" | grep -q "FAIL"; then
-  fail "negative: check-e-falsepositive-guard-agent.md unexpectedly failed a check (Detector B false-positived on MUST-NOT prose)"
+  common_test_fail "negative: check-e-falsepositive-guard-agent.md unexpectedly failed a check (Detector B false-positived on MUST-NOT prose)"
 else
-  pass "negative: check-e-falsepositive-guard-agent.md produces no FAIL against it (Detector B does not false-positive on prose)"
+  common_test_pass "negative: check-e-falsepositive-guard-agent.md produces no FAIL against it (Detector B does not false-positive on prose)"
 fi
 
 # Explicit positive: check-e-falsepositive-guard-agent.md passes Check E by name (not just "no
 # FAIL" -- a genuine pass line naming it).
 if echo "$out" | grep -qF "check-e-falsepositive-guard-agent.md: carries a conformant terminal status"; then
-  pass "positive: check-e-falsepositive-guard-agent.md explicitly passes Check E"
+  common_test_pass "positive: check-e-falsepositive-guard-agent.md explicitly passes Check E"
 else
-  fail "positive: expected an explicit Check E PASS line for check-e-falsepositive-guard-agent.md, not found in output"
+  common_test_fail "positive: expected an explicit Check E PASS line for check-e-falsepositive-guard-agent.md, not found in output"
 fi
 
 # Negative: meta-builder-agent.md fixture (Check E exclusion-list entry, no conformant status at
 # all) produces a named [INFO] skipped line, never a FAIL.
 if echo "$out" | grep -qF "Check E: agent-system/extensions/core/agents/meta-builder-agent.md is a recorded exclusion"; then
-  pass "negative: meta-builder-agent.md fixture produces a named Check E exclusion INFO line"
+  common_test_pass "negative: meta-builder-agent.md fixture produces a named Check E exclusion INFO line"
 else
-  fail "negative: expected a named Check E exclusion INFO line for meta-builder-agent.md, not found in output"
+  common_test_fail "negative: expected a named Check E exclusion INFO line for meta-builder-agent.md, not found in output"
 fi
 if echo "$out" | grep -F "meta-builder-agent.md" | grep -q "FAIL"; then
-  fail "negative: meta-builder-agent.md fixture (Check E exclusion) unexpectedly failed a check"
+  common_test_fail "negative: meta-builder-agent.md fixture (Check E exclusion) unexpectedly failed a check"
 else
-  pass "negative: meta-builder-agent.md fixture (Check E exclusion) produces no FAIL against it"
+  common_test_pass "negative: meta-builder-agent.md fixture (Check E exclusion) produces no FAIL against it"
 fi
 
 # =====================================================================
@@ -1045,30 +1041,30 @@ fi
 
 # (a) Positive: general-implementation-agent.md fixture (missing the bullet) fails Check G.
 if echo "$out" | grep -qF "core/agents/general-implementation-agent.md: missing the plan-level-Status ownership MUST-NOT bullet"; then
-  pass "(a) positive: general-implementation-agent.md fixture fails Check G (missing bullet)"
+  common_test_pass "(a) positive: general-implementation-agent.md fixture fails Check G (missing bullet)"
 else
-  fail "(a) positive: expected Check G failure for general-implementation-agent.md, not found in output"
+  common_test_fail "(a) positive: expected Check G failure for general-implementation-agent.md, not found in output"
 fi
 
 # (b) Negative: cslib-implementation-agent.md fixture (verbatim bullet) produces no FAIL, and
 # explicitly passes Check G by name.
 if echo "$out" | grep -F "cslib/agents/cslib-implementation-agent.md" | grep -q "FAIL"; then
-  fail "(b) negative: cslib-implementation-agent.md fixture unexpectedly failed a check"
+  common_test_fail "(b) negative: cslib-implementation-agent.md fixture unexpectedly failed a check"
 else
-  pass "(b) negative: cslib-implementation-agent.md fixture produces no FAIL against it"
+  common_test_pass "(b) negative: cslib-implementation-agent.md fixture produces no FAIL against it"
 fi
 if echo "$out" | grep -qF "cslib/agents/cslib-implementation-agent.md: carries the plan-level-Status ownership bullet"; then
-  pass "(b) positive: cslib-implementation-agent.md fixture explicitly passes Check G"
+  common_test_pass "(b) positive: cslib-implementation-agent.md fixture explicitly passes Check G"
 else
-  fail "(b) positive: expected an explicit Check G PASS line for cslib-implementation-agent.md, not found in output"
+  common_test_fail "(b) positive: expected an explicit Check G PASS line for cslib-implementation-agent.md, not found in output"
 fi
 
 # (c) Positive: lean-implementation-agent.md fixture (near-miss paraphrase, not the verbatim
 # bullet) still FAILs -- proves Check G compares against the fragment text, not a loose pattern.
 if echo "$out" | grep -qF "lean/agents/lean-implementation-agent.md: missing the plan-level-Status ownership MUST-NOT bullet"; then
-  pass "(c) positive: lean-implementation-agent.md near-miss paraphrase fixture fails Check G"
+  common_test_pass "(c) positive: lean-implementation-agent.md near-miss paraphrase fixture fails Check G"
 else
-  fail "(c) positive: expected Check G failure for lean-implementation-agent.md near-miss fixture, not found in output"
+  common_test_fail "(c) positive: expected Check G failure for lean-implementation-agent.md near-miss fixture, not found in output"
 fi
 
 # =====================================================================
@@ -1078,31 +1074,31 @@ fi
 # (a) Negative/positive: cslib-implementation-agent.md fixture (now carrying both bounded-wait
 # bullets) produces no FAIL at all, and explicitly passes Check H by name.
 if echo "$out" | grep -F "cslib/agents/cslib-implementation-agent.md" | grep -q "FAIL"; then
-  fail "(a) negative: cslib-implementation-agent.md fixture unexpectedly failed a check (Check H conforming fixture)"
+  common_test_fail "(a) negative: cslib-implementation-agent.md fixture unexpectedly failed a check (Check H conforming fixture)"
 else
-  pass "(a) negative: cslib-implementation-agent.md fixture produces no FAIL against it (Check H conforming fixture)"
+  common_test_pass "(a) negative: cslib-implementation-agent.md fixture produces no FAIL against it (Check H conforming fixture)"
 fi
 if echo "$out" | grep -qF "cslib/agents/cslib-implementation-agent.md: carries the bounded-wait contract bullet pair"; then
-  pass "(a) positive: cslib-implementation-agent.md fixture explicitly passes Check H"
+  common_test_pass "(a) positive: cslib-implementation-agent.md fixture explicitly passes Check H"
 else
-  fail "(a) positive: expected an explicit Check H PASS line for cslib-implementation-agent.md, not found in output"
+  common_test_fail "(a) positive: expected an explicit Check H PASS line for cslib-implementation-agent.md, not found in output"
 fi
 
 # (b) Positive: neovim-implementation-agent.md fixture (neither bounded-wait bullet) fails
 # Check H by name.
 if echo "$out" | grep -qF "nvim/agents/neovim-implementation-agent.md: missing the bounded-wait MUST/MUST-NOT bullet pair"; then
-  pass "(b) positive: neovim-implementation-agent.md fixture fails Check H (missing bullet pair)"
+  common_test_pass "(b) positive: neovim-implementation-agent.md fixture fails Check H (missing bullet pair)"
 else
-  fail "(b) positive: expected Check H failure for neovim-implementation-agent.md, not found in output"
+  common_test_fail "(b) positive: expected Check H failure for neovim-implementation-agent.md, not found in output"
 fi
 
 # (c) Positive: z3-implementation-agent.md fixture (near-miss paraphrase, not the verbatim
 # bullet pair) still FAILs -- proves Check H compares against the fragment text, not a loose
 # pattern.
 if echo "$out" | grep -qF "z3/agents/z3-implementation-agent.md: missing the bounded-wait MUST/MUST-NOT bullet pair"; then
-  pass "(c) positive: z3-implementation-agent.md near-miss paraphrase fixture fails Check H"
+  common_test_pass "(c) positive: z3-implementation-agent.md near-miss paraphrase fixture fails Check H"
 else
-  fail "(c) positive: expected Check H failure for z3-implementation-agent.md near-miss fixture, not found in output"
+  common_test_fail "(c) positive: expected Check H failure for z3-implementation-agent.md near-miss fixture, not found in output"
 fi
 
 # (d) In-scope assertion: lean-implementation-agent.md fixture (a real
@@ -1110,9 +1106,9 @@ fi
 # former Check H exclusion) carries neither bounded-wait bullet, so it FAILs Check H by name --
 # proving the check is not silently skipping this now-in-scope file.
 if echo "$out" | grep -qF "lean/agents/lean-implementation-agent.md: missing the bounded-wait MUST/MUST-NOT bullet pair"; then
-  pass "(d) in-scope: lean-implementation-agent.md fixture fails Check H (exclusion discharged, now in-scope)"
+  common_test_pass "(d) in-scope: lean-implementation-agent.md fixture fails Check H (exclusion discharged, now in-scope)"
 else
-  fail "(d) in-scope: expected Check H failure for lean-implementation-agent.md fixture (now in-scope, not excluded), not found in output"
+  common_test_fail "(d) in-scope: expected Check H failure for lean-implementation-agent.md fixture (now in-scope, not excluded), not found in output"
 fi
 
 # =====================================================================
@@ -1122,32 +1118,32 @@ fi
 # (a) Positive: z3-implementation-agent.md fixture (a real Check L in-scope path carrying
 # neither canonical line nor a "modified_files" key at all) fails Check L by name.
 if echo "$out" | grep -qF "z3/agents/z3-implementation-agent.md: missing the modified_files MUST-DO bullet pair"; then
-  pass "(a) positive: z3-implementation-agent.md fixture fails Check L (missing bullet pair)"
+  common_test_pass "(a) positive: z3-implementation-agent.md fixture fails Check L (missing bullet pair)"
 else
-  fail "(a) positive: expected Check L failure for z3-implementation-agent.md, not found in output"
+  common_test_fail "(a) positive: expected Check L failure for z3-implementation-agent.md, not found in output"
 fi
 
 # (b) Positive: lean-implementation-agent.md fixture (a real Check L in-scope path carrying a
 # near-miss paraphrase, not the verbatim bullet pair) still FAILs -- proves Check L compares
 # against the fragment text, not a loose pattern.
 if echo "$out" | grep -qF "lean/agents/lean-implementation-agent.md: missing the modified_files MUST-DO bullet pair"; then
-  pass "(b) positive: lean-implementation-agent.md near-miss paraphrase fixture fails Check L"
+  common_test_pass "(b) positive: lean-implementation-agent.md near-miss paraphrase fixture fails Check L"
 else
-  fail "(b) positive: expected Check L failure for lean-implementation-agent.md near-miss fixture, not found in output"
+  common_test_fail "(b) positive: expected Check L failure for lean-implementation-agent.md near-miss fixture, not found in output"
 fi
 
 # (c) Negative/positive: cslib-implementation-agent.md fixture (repaired to carry both canonical
 # lines plus a "modified_files" key) produces no FAIL at all, and explicitly passes Check L by
 # name.
 if echo "$out" | grep -F "cslib/agents/cslib-implementation-agent.md" | grep -q "FAIL"; then
-  fail "(c) negative: cslib-implementation-agent.md fixture unexpectedly failed a check (Check L repaired fixture)"
+  common_test_fail "(c) negative: cslib-implementation-agent.md fixture unexpectedly failed a check (Check L repaired fixture)"
 else
-  pass "(c) negative: cslib-implementation-agent.md fixture produces no FAIL against it (Check L repaired fixture)"
+  common_test_pass "(c) negative: cslib-implementation-agent.md fixture produces no FAIL against it (Check L repaired fixture)"
 fi
 if echo "$out" | grep -qF "cslib/agents/cslib-implementation-agent.md: carries the modified_files bullet pair"; then
-  pass "(c) positive: cslib-implementation-agent.md fixture explicitly passes Check L"
+  common_test_pass "(c) positive: cslib-implementation-agent.md fixture explicitly passes Check L"
 else
-  fail "(c) positive: expected an explicit Check L PASS line for cslib-implementation-agent.md, not found in output"
+  common_test_fail "(c) positive: expected an explicit Check L PASS line for cslib-implementation-agent.md, not found in output"
 fi
 
 # =====================================================================
@@ -1157,17 +1153,17 @@ fi
 # (a) Positive: nix-research-agent.md fixture (a real Check M in-scope path carrying neither
 # bounded-wait bullet) fails Check M by name.
 if echo "$out" | grep -qF "nix/agents/nix-research-agent.md: missing the bounded-wait research-agent MUST/MUST-NOT bullet pair"; then
-  pass "(a) positive: nix-research-agent.md fixture fails Check M (missing bullet pair)"
+  common_test_pass "(a) positive: nix-research-agent.md fixture fails Check M (missing bullet pair)"
 else
-  fail "(a) positive: expected Check M failure for nix-research-agent.md, not found in output"
+  common_test_fail "(a) positive: expected Check M failure for nix-research-agent.md, not found in output"
 fi
 
 # (b) Positive: rust-research-agent.md fixture (near-miss paraphrase, not the verbatim bullet
 # pair) still FAILs -- proves Check M compares against the fragment text, not a loose pattern.
 if echo "$out" | grep -qF "rust/agents/rust-research-agent.md: missing the bounded-wait research-agent MUST/MUST-NOT bullet pair"; then
-  pass "(b) positive: rust-research-agent.md near-miss paraphrase fixture fails Check M"
+  common_test_pass "(b) positive: rust-research-agent.md near-miss paraphrase fixture fails Check M"
 else
-  fail "(b) positive: expected Check M failure for rust-research-agent.md near-miss fixture, not found in output"
+  common_test_fail "(b) positive: expected Check M failure for rust-research-agent.md near-miss fixture, not found in output"
 fi
 
 # (c) Not-found assertions: the remaining 9 of the 11 BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS
@@ -1185,9 +1181,9 @@ for rel in \
   "web/agents/web-research-agent.md" \
   "z3/agents/z3-research-agent.md"; do
   if echo "$out" | grep -qF "$rel: in-scope research agent file not found"; then
-    pass "(c) not-found: $rel accounted for by an explicit Check M not-found line"
+    common_test_pass "(c) not-found: $rel accounted for by an explicit Check M not-found line"
   else
-    fail "(c) not-found: expected an explicit Check M not-found line for $rel, not found in output"
+    common_test_fail "(c) not-found: expected an explicit Check M not-found line for $rel, not found in output"
   fi
 done
 
@@ -1197,14 +1193,14 @@ done
 # enforced, not merely documented in the fragments' prose.
 # =====================================================================
 if echo "$out" | grep -qF "python/agents/python-implementation-agent.md: missing the no-task-references MUST-NOT bullet"; then
-  pass "line-wrap: python-implementation-agent.md's wrapped-but-correct Check C bullet FAILs by name"
+  common_test_pass "line-wrap: python-implementation-agent.md's wrapped-but-correct Check C bullet FAILs by name"
 else
-  fail "line-wrap: expected a Check C FAIL for python-implementation-agent.md's wrapped bullet, not found in output"
+  common_test_fail "line-wrap: expected a Check C FAIL for python-implementation-agent.md's wrapped bullet, not found in output"
 fi
 if echo "$out" | grep -qF "web/agents/web-implementation-agent.md: missing the plan-level-Status ownership MUST-NOT bullet"; then
-  pass "line-wrap: web-implementation-agent.md's wrapped-but-correct Check G bullet FAILs by name"
+  common_test_pass "line-wrap: web-implementation-agent.md's wrapped-but-correct Check G bullet FAILs by name"
 else
-  fail "line-wrap: expected a Check G FAIL for web-implementation-agent.md's wrapped bullet, not found in output"
+  common_test_fail "line-wrap: expected a Check G FAIL for web-implementation-agent.md's wrapped bullet, not found in output"
 fi
 
 # =====================================================================
@@ -1213,24 +1209,24 @@ fi
 # so these are fixtures named to the real array paths, not the real files themselves).
 # =====================================================================
 if echo "$out" | grep -qF "books/agents/books-implementation-agent.md: carries the no-task-references bullet"; then
-  pass "books: books-implementation-agent.md fixture explicitly passes Check C"
+  common_test_pass "books: books-implementation-agent.md fixture explicitly passes Check C"
 else
-  fail "books: expected an explicit Check C PASS line for books-implementation-agent.md, not found in output"
+  common_test_fail "books: expected an explicit Check C PASS line for books-implementation-agent.md, not found in output"
 fi
 if echo "$out" | grep -qF "books/agents/books-implementation-agent.md: carries the plan-level-Status ownership bullet"; then
-  pass "books: books-implementation-agent.md fixture explicitly passes Check G"
+  common_test_pass "books: books-implementation-agent.md fixture explicitly passes Check G"
 else
-  fail "books: expected an explicit Check G PASS line for books-implementation-agent.md, not found in output"
+  common_test_fail "books: expected an explicit Check G PASS line for books-implementation-agent.md, not found in output"
 fi
 if echo "$out" | grep -qF "books/agents/books-implementation-hard-agent.md: carries the no-task-references bullet"; then
-  pass "books: books-implementation-hard-agent.md fixture explicitly passes Check C"
+  common_test_pass "books: books-implementation-hard-agent.md fixture explicitly passes Check C"
 else
-  fail "books: expected an explicit Check C PASS line for books-implementation-hard-agent.md, not found in output"
+  common_test_fail "books: expected an explicit Check C PASS line for books-implementation-hard-agent.md, not found in output"
 fi
 if echo "$out" | grep -qF "books/agents/books-implementation-hard-agent.md: carries the plan-level-Status ownership bullet"; then
-  pass "books: books-implementation-hard-agent.md fixture explicitly passes Check G"
+  common_test_pass "books: books-implementation-hard-agent.md fixture explicitly passes Check G"
 else
-  fail "books: expected an explicit Check G PASS line for books-implementation-hard-agent.md, not found in output"
+  common_test_fail "books: expected an explicit Check G PASS line for books-implementation-hard-agent.md, not found in output"
 fi
 
 # =====================================================================
@@ -1240,53 +1236,53 @@ fi
 # (a) Positive: an unclassified *implementation*agent.md (in neither Check G's in-scope array
 # nor its recorded exclusions) FAILs Check N by name.
 if echo "$out" | grep -qF "core/agents/rogue-widget-implementation-agent.md: matches *implementation*agent.md but is in neither Check G's in-scope array nor its recorded exclusions"; then
-  pass "(a) positive: rogue-widget-implementation-agent.md fixture fails Check N's Check-G net"
+  common_test_pass "(a) positive: rogue-widget-implementation-agent.md fixture fails Check N's Check-G net"
 else
-  fail "(a) positive: expected a Check N failure for rogue-widget-implementation-agent.md against Check G's net, not found in output"
+  common_test_fail "(a) positive: expected a Check N failure for rogue-widget-implementation-agent.md against Check G's net, not found in output"
 fi
 
 # (a2) The same fixture also matches Check C's unconditional *implementation*agent.md subset
 # net and FAILs it too -- Check N applies both nets to every glob match, independently.
 if echo "$out" | grep -qF "core/agents/rogue-widget-implementation-agent.md: matches *implementation*agent.md but is not in Check C's in-scope array"; then
-  pass "(a2) positive: rogue-widget-implementation-agent.md fixture also fails Check N's Check-C net"
+  common_test_pass "(a2) positive: rogue-widget-implementation-agent.md fixture also fails Check N's Check-C net"
 else
-  fail "(a2) positive: expected a Check N failure for rogue-widget-implementation-agent.md against Check C's net, not found in output"
+  common_test_fail "(a2) positive: expected a Check N failure for rogue-widget-implementation-agent.md against Check C's net, not found in output"
 fi
 
 # (b) Positive: an unclassified *research*agent.md (in neither Check M's in-scope array nor its
 # recorded exclusions) FAILs Check N by name.
 if echo "$out" | grep -qF "core/agents/rogue-widget-research-agent.md: matches *research*agent.md but is in neither Check M's in-scope array nor its recorded exclusions"; then
-  pass "(b) positive: rogue-widget-research-agent.md fixture fails Check N's Check-M net"
+  common_test_pass "(b) positive: rogue-widget-research-agent.md fixture fails Check N's Check-M net"
 else
-  fail "(b) positive: expected a Check N failure for rogue-widget-research-agent.md against Check M's net, not found in output"
+  common_test_fail "(b) positive: expected a Check N failure for rogue-widget-research-agent.md against Check M's net, not found in output"
 fi
 
 # (c) Negative: pr-review-implementation-agent.md (a real CHECK_G_EXCLUDED_RELATIVE_PATHS entry)
 # produces no Check N FAIL against Check G's net, and explicitly PASSes via the recorded-
 # exclusions branch by name.
 if echo "$out" | grep -qF "cslib/agents/pr-review-implementation-agent.md: matches *implementation*agent.md but is in neither"; then
-  fail "(c) negative: pr-review-implementation-agent.md unexpectedly failed Check N's Check-G net (should be a recorded exclusion)"
+  common_test_fail "(c) negative: pr-review-implementation-agent.md unexpectedly failed Check N's Check-G net (should be a recorded exclusion)"
 else
-  pass "(c) negative: pr-review-implementation-agent.md fixture produces no Check N FAIL against Check G's net"
+  common_test_pass "(c) negative: pr-review-implementation-agent.md fixture produces no Check N FAIL against Check G's net"
 fi
 if echo "$out" | grep -qF "cslib/agents/pr-review-implementation-agent.md: accounted for in Check G's recorded exclusions"; then
-  pass "(c) positive: pr-review-implementation-agent.md fixture explicitly passes Check N via Check G's recorded exclusions"
+  common_test_pass "(c) positive: pr-review-implementation-agent.md fixture explicitly passes Check N via Check G's recorded exclusions"
 else
-  fail "(c) positive: expected an explicit Check N exclusions-PASS line for pr-review-implementation-agent.md, not found in output"
+  common_test_fail "(c) positive: expected an explicit Check N exclusions-PASS line for pr-review-implementation-agent.md, not found in output"
 fi
 
 # (d) Negative: pr-review-research-agent.md (a real CHECK_M_EXCLUDED_RELATIVE_PATHS entry)
 # produces no Check N FAIL against Check M's net, and explicitly PASSes via the recorded-
 # exclusions branch by name.
 if echo "$out" | grep -qF "cslib/agents/pr-review-research-agent.md: matches *research*agent.md but is in neither"; then
-  fail "(d) negative: pr-review-research-agent.md unexpectedly failed Check N's Check-M net (should be a recorded exclusion)"
+  common_test_fail "(d) negative: pr-review-research-agent.md unexpectedly failed Check N's Check-M net (should be a recorded exclusion)"
 else
-  pass "(d) negative: pr-review-research-agent.md fixture produces no Check N FAIL against Check M's net"
+  common_test_pass "(d) negative: pr-review-research-agent.md fixture produces no Check N FAIL against Check M's net"
 fi
 if echo "$out" | grep -qF "cslib/agents/pr-review-research-agent.md: accounted for in Check M's recorded exclusions"; then
-  pass "(d) positive: pr-review-research-agent.md fixture explicitly passes Check N via Check M's recorded exclusions"
+  common_test_pass "(d) positive: pr-review-research-agent.md fixture explicitly passes Check N via Check M's recorded exclusions"
 else
-  fail "(d) positive: expected an explicit Check N exclusions-PASS line for pr-review-research-agent.md, not found in output"
+  common_test_fail "(d) positive: expected an explicit Check N exclusions-PASS line for pr-review-research-agent.md, not found in output"
 fi
 
 # =====================================================================
@@ -1312,33 +1308,33 @@ frag_code=$?
 rm -rf "$FRAGDIR"
 
 if [ "$frag_code" -eq 1 ] && echo "$frag_out" | grep -qF "canonical fragment not found"; then
-  pass "fragment-missing: Check C fails loudly by name when the fragment file is absent"
+  common_test_pass "fragment-missing: Check C fails loudly by name when the fragment file is absent"
 else
-  fail "fragment-missing: expected exit 1 + named fragment-missing failure, got exit=$frag_code"
+  common_test_fail "fragment-missing: expected exit 1 + named fragment-missing failure, got exit=$frag_code"
 fi
 
 # (d) Fragment-missing fixture: Check G must ALSO fail loudly by name (never a silent pass) when
 # plan-status-ownership.md specifically is absent from the same bare scratch tree.
 if echo "$frag_out" | grep -qF "Check G: canonical fragment not found"; then
-  pass "(d) fragment-missing: Check G fails loudly by name when plan-status-ownership.md is absent"
+  common_test_pass "(d) fragment-missing: Check G fails loudly by name when plan-status-ownership.md is absent"
 else
-  fail "(d) fragment-missing: expected a named Check G fragment-missing failure, not found in output"
+  common_test_fail "(d) fragment-missing: expected a named Check G fragment-missing failure, not found in output"
 fi
 
 # (e) Fragment-missing fixture: Check H must ALSO fail loudly by name (never a silent pass) when
 # bounded-build-waiter.md specifically is absent from the same bare scratch tree.
 if echo "$frag_out" | grep -qF "Check H: canonical fragment not found"; then
-  pass "(e) fragment-missing: Check H fails loudly by name when bounded-build-waiter.md is absent"
+  common_test_pass "(e) fragment-missing: Check H fails loudly by name when bounded-build-waiter.md is absent"
 else
-  fail "(e) fragment-missing: expected a named Check H fragment-missing failure, not found in output"
+  common_test_fail "(e) fragment-missing: expected a named Check H fragment-missing failure, not found in output"
 fi
 
 # (f) Fragment-missing fixture: Check L must ALSO fail loudly by name (never a silent pass) when
 # modified-files-bullet.md specifically is absent from the same bare scratch tree.
 if echo "$frag_out" | grep -qF "Check L: canonical fragment not found"; then
-  pass "(f) fragment-missing: Check L fails loudly by name when modified-files-bullet.md is absent"
+  common_test_pass "(f) fragment-missing: Check L fails loudly by name when modified-files-bullet.md is absent"
 else
-  fail "(f) fragment-missing: expected a named Check L fragment-missing failure, not found in output"
+  common_test_fail "(f) fragment-missing: expected a named Check L fragment-missing failure, not found in output"
 fi
 
 # =====================================================================
@@ -1347,17 +1343,17 @@ fi
 help_out="$(bash "$LINT_SRC" --help 2>&1)"
 help_code=$?
 if [ "$help_code" -eq 0 ] && echo "$help_out" | grep -qF "Usage: lint-agent-contracts.sh"; then
-  pass "--help: exits 0 and prints usage"
+  common_test_pass "--help: exits 0 and prints usage"
 else
-  fail "--help: expected exit 0 + usage text, got exit=$help_code"
+  common_test_fail "--help: expected exit 0 + usage text, got exit=$help_code"
 fi
 
 bash "$LINT_SRC" --bogus-flag >/dev/null 2>&1
 unknown_code=$?
 if [ "$unknown_code" -eq 2 ]; then
-  pass "unknown argument: exits 2"
+  common_test_pass "unknown argument: exits 2"
 else
-  fail "unknown argument: expected exit 2, got exit=$unknown_code"
+  common_test_fail "unknown argument: expected exit 2, got exit=$unknown_code"
 fi
 
 # =====================================================================

@@ -38,6 +38,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 TOOL_SRC="$SCRIPT_DIR/../orchestrate-triage-classify.sh"
 GUARD_SRC="$SCRIPT_DIR/../deploy-root-guard.sh"
 COMMON_SRC="$SCRIPT_DIR/../lib/common.sh"
@@ -47,9 +48,6 @@ TASK_LOOKUP_LIB_SRC="$SCRIPT_DIR/../lib/task-lookup-lib.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$TOOL_SRC" ]; then
   echo "ERROR: expected orchestrate-triage-classify.sh at $TOOL_SRC" >&2
@@ -81,9 +79,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/specs"
 cp "$TOOL_SRC" "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
@@ -109,9 +105,9 @@ probe_exit=$?
 probe_group="$(echo "$probe_out" | jq -r '.group' 2>/dev/null)"
 
 if [ "$probe_exit" -eq 0 ] && [ "$probe_group" = "research" ]; then
-  pass "sandbox shape: \$WORKDIR/.claude/scripts/ satisfies deploy-root-guard.sh, PROJECT_ROOT == \$WORKDIR (no STATE_FILE override needed)"
+  common_test_pass "sandbox shape: \$WORKDIR/.claude/scripts/ satisfies deploy-root-guard.sh, PROJECT_ROOT == \$WORKDIR (no STATE_FILE override needed)"
 else
-  fail "sandbox shape: expected exit 0 and group=research for the not_started probe task (research-first default, no --effort), got exit=$probe_exit output=$probe_out"
+  common_test_fail "sandbox shape: expected exit 0 and group=research for the not_started probe task (research-first default, no --effort), got exit=$probe_exit output=$probe_out"
   echo ""
   echo "Results: ${PASSED} passed, ${FAILED} failed"
   echo "ERROR: sandbox probe failed; aborting before building fixtures (per Rollback/Contingency: escalate rather than route around the friction)." >&2
@@ -184,9 +180,9 @@ check_fixture() {
   got_state="$(echo "$out" | jq -r '.handoff_state' 2>/dev/null)"
   got_group="$(echo "$out" | jq -r '.group' 2>/dev/null)"
   if [ "$got_state" = "$expected_state" ] && [ "$got_group" = "$expected_group" ]; then
-    pass "$label (engine=$engine): handoff_state=$got_state group=$got_group"
+    common_test_pass "$label (engine=$engine): handoff_state=$got_state group=$got_group"
   else
-    fail "$label (engine=$engine): expected handoff_state=$expected_state group=$expected_group, got handoff_state=$got_state group=$got_group (raw: $out)"
+    common_test_fail "$label (engine=$engine): expected handoff_state=$expected_state group=$expected_group, got handoff_state=$got_state group=$got_group (raw: $out)"
   fi
 }
 
@@ -206,9 +202,9 @@ check_fixture_effort() {
   got_state="$(echo "$out" | jq -r '.handoff_state' 2>/dev/null)"
   got_group="$(echo "$out" | jq -r '.group' 2>/dev/null)"
   if [ "$got_state" = "$expected_state" ] && [ "$got_group" = "$expected_group" ]; then
-    pass "$label (effort=${effort:-none}, engine=$engine): handoff_state=$got_state group=$got_group"
+    common_test_pass "$label (effort=${effort:-none}, engine=$engine): handoff_state=$got_state group=$got_group"
   else
-    fail "$label (effort=${effort:-none}, engine=$engine): expected handoff_state=$expected_state group=$expected_group, got handoff_state=$got_state group=$got_group (raw: $out)"
+    common_test_fail "$label (effort=${effort:-none}, engine=$engine): expected handoff_state=$expected_state group=$expected_group, got handoff_state=$got_state group=$got_group (raw: $out)"
   fi
 }
 
@@ -318,9 +314,9 @@ check_fixture "mt" 111 "not_applicable" "hold" \
 hold_out="$(bash "$TOOL" single 111 2>&1)"
 hold_reason_text="$(echo "$hold_out" | jq -r '.reason' 2>/dev/null)"
 if echo "$hold_reason_text" | grep -q "Awaiting upstream API decision"; then
-  pass "hold status reason contains the task's own hold_reason text"
+  common_test_pass "hold status reason contains the task's own hold_reason text"
 else
-  fail "hold status reason does not contain hold_reason text (got: $hold_reason_text)"
+  common_test_fail "hold status reason does not contain hold_reason text (got: $hold_reason_text)"
 fi
 
 # =====================================================================
@@ -456,9 +452,9 @@ check_fixture_effort "fast" "mt" 112 "not_applicable" "research" \
 invalid_out="$(bash "$TOOL" --effort bogus single 112 2>&1)"
 invalid_exit=$?
 if [ "$invalid_exit" -eq 2 ] && echo "$invalid_out" | grep -qF -- "--effort must be 'fast' or 'hard'"; then
-  pass "--effort bogus -> exit 2 with loud stderr line"
+  common_test_pass "--effort bogus -> exit 2 with loud stderr line"
 else
-  fail "--effort bogus -> expected exit 2 with '--effort must be fast or hard' message, got exit=$invalid_exit output=$invalid_out"
+  common_test_fail "--effort bogus -> expected exit 2 with '--effort must be fast or hard' message, got exit=$invalid_exit output=$invalid_out"
 fi
 
 # =====================================================================
@@ -476,9 +472,9 @@ check_status_group() {
   got_status="$(echo "$out" | jq -r '.status' 2>/dev/null)"
   got_group="$(echo "$out" | jq -r '.group' 2>/dev/null)"
   if [ "$got_status" = "$expected_status" ] && [ "$got_group" = "$expected_group" ]; then
-    pass "$label (engine=$engine): status=$got_status group=$got_group"
+    common_test_pass "$label (engine=$engine): status=$got_status group=$got_group"
   else
-    fail "$label (engine=$engine): expected status=$expected_status group=$expected_group, got status=$got_status group=$got_group (raw: $out)"
+    common_test_fail "$label (engine=$engine): expected status=$expected_status group=$expected_group, got status=$got_status group=$got_group (raw: $out)"
   fi
 }
 
@@ -522,9 +518,9 @@ case3_single="$(bash "$TOOL" single 903 2>&1)"
 case3_group="$(echo "$case3_single" | jq -r '.group' 2>/dev/null)"
 case3_reason="$(echo "$case3_single" | jq -r '.reason' 2>/dev/null)"
 if [ "$case3_group" = "skip" ] && [[ "$case3_reason" == *"not found in state.json"* ]]; then
-  pass "candidate in neither active_projects nor the archive still classifies as skip, not found in state.json (null-entry branch preserved)"
+  common_test_pass "candidate in neither active_projects nor the archive still classifies as skip, not found in state.json (null-entry branch preserved)"
 else
-  fail "expected group=skip with a 'not found in state.json' reason for a candidate in neither store, got group=$case3_group reason='$case3_reason' (raw: $case3_single)"
+  common_test_fail "expected group=skip with a 'not found in state.json' reason for a candidate in neither store, got group=$case3_group reason='$case3_reason' (raw: $case3_single)"
 fi
 
 # Case 4: candidate present in BOTH stores -- governed by its ACTIVE entry (active wins). The
@@ -577,9 +573,9 @@ case5_exit=$?
 case5_status="$(echo "$case5_out" | jq -r '.status' 2>/dev/null)"
 case5_group="$(echo "$case5_out" | jq -r '.group' 2>/dev/null)"
 if [ "$case5_exit" -eq 0 ] && [ "$case5_status" = "completed" ] && [ "$case5_group" = "terminal" ]; then
-  pass "Case 5: an archive well past MAX_ARG_STRLEN (${archive_bytes} bytes flattened) still classifies terminal/completed, not an 'Argument list too long' failure"
+  common_test_pass "Case 5: an archive well past MAX_ARG_STRLEN (${archive_bytes} bytes flattened) still classifies terminal/completed, not an 'Argument list too long' failure"
 else
-  fail "Case 5: expected exit=0 status=completed group=terminal against a ${archive_bytes}-byte archive, got exit=$case5_exit status=$case5_status group=$case5_group (raw: $case5_out)"
+  common_test_fail "Case 5: expected exit=0 status=completed group=terminal against a ${archive_bytes}-byte archive, got exit=$case5_exit status=$case5_status group=$case5_group (raw: $case5_out)"
 fi
 
 case5_mt_out="$(bash "$TOOL" mt 9500 2>&1)"
@@ -587,9 +583,9 @@ case5_mt_exit=$?
 case5_mt_status="$(echo "$case5_mt_out" | jq -r '.status' 2>/dev/null)"
 case5_mt_group="$(echo "$case5_mt_out" | jq -r '.group' 2>/dev/null)"
 if [ "$case5_mt_exit" -eq 0 ] && [ "$case5_mt_status" = "completed" ] && [ "$case5_mt_group" = "terminal" ]; then
-  pass "Case 5: cross-engine agreement (mt) against the same oversized archive"
+  common_test_pass "Case 5: cross-engine agreement (mt) against the same oversized archive"
 else
-  fail "Case 5 (mt): expected exit=0 status=completed group=terminal, got exit=$case5_mt_exit status=$case5_mt_status group=$case5_mt_group (raw: $case5_mt_out)"
+  common_test_fail "Case 5 (mt): expected exit=0 status=completed group=terminal, got exit=$case5_mt_exit status=$case5_mt_status group=$case5_mt_group (raw: $case5_mt_out)"
 fi
 
 # =====================================================================

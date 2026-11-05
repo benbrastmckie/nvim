@@ -39,16 +39,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 LINT_SRC="$SCRIPT_DIR/../check-record-versioning.sh"
 LIB_SRC="$SCRIPT_DIR/../lib/record-version-patterns.sh"
 HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-no-record-versioning.sh"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 # shellcheck disable=SC2329
-info() { echo "[INFO] $1"; }
 
 if [[ ! -f "$LINT_SRC" ]]; then
   echo "ERROR: expected check-record-versioning.sh at $LINT_SRC" >&2
@@ -71,9 +69,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 2
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # Fixture: a consumer-repo-shaped layout. Deliberately NO agent-system/extensions (beyond the
@@ -180,9 +176,9 @@ git -C "$FIXTURE" commit -q -m "fixture: add clean file"
 out1="$WORKDIR/case1.txt"
 code1="$(run_lint "docs/clean.md" "$out1")"
 if [[ "$code1" -eq 0 ]] && grep -qE '0 BLOCKING, 0 ADVISORY' "$out1"; then
-  pass "clean tree: exit 0, both counters 0"
+  common_test_pass "clean tree: exit 0, both counters 0"
 else
-  fail "clean tree: expected exit 0 with 0 BLOCKING, 0 ADVISORY, got exit=$code1; output:
+  common_test_fail "clean tree: expected exit 0 with 0 BLOCKING, 0 ADVISORY, got exit=$code1; output:
 $(cat "$out1")"
 fi
 
@@ -192,21 +188,21 @@ fi
 out="$WORKDIR/case_full.txt"
 code="$(run_lint "" "$out")"
 if [[ "$code" -eq 1 ]] && grep -qE '^  docs/notes\.md:[0-9]+: BLOCKING:' "$out"; then
-  pass "blocking finding: exit 1, finding line names docs/notes.md and is labeled BLOCKING"
+  common_test_pass "blocking finding: exit 1, finding line names docs/notes.md and is labeled BLOCKING"
 else
-  fail "blocking finding not found as expected (exit=$code); output:
+  common_test_fail "blocking finding not found as expected (exit=$code); output:
 $(cat "$out")"
 fi
 if grep -qE '^  code/operators\.py:[0-9]+: BLOCKING:' "$out"; then
-  pass "blocking finding in a source file (code/operators.py) is also labeled BLOCKING"
+  common_test_pass "blocking finding in a source file (code/operators.py) is also labeled BLOCKING"
 else
-  fail "source-dir BLOCKING finding not found; output:
+  common_test_fail "source-dir BLOCKING finding not found; output:
 $(cat "$out")"
 fi
 if grep -qE '^  README\.md:[0-9]+: BLOCKING:' "$out"; then
-  pass "Status-line BLOCKING finding in README.md found (path-class-agnostic branch)"
+  common_test_pass "Status-line BLOCKING finding in README.md found (path-class-agnostic branch)"
 else
-  fail "README.md BLOCKING finding not found; output:
+  common_test_fail "README.md BLOCKING finding not found; output:
 $(cat "$out")"
 fi
 
@@ -215,17 +211,17 @@ fi
 # assertion in this file: it is the one that proves the tier split.
 # =====================================================================
 if grep -qE '^  \.github/workflow\.yml:[0-9]+: ADVISORY:' "$out"; then
-  pass "advisory finding in .github/workflow.yml is labeled ADVISORY (not BLOCKING)"
+  common_test_pass "advisory finding in .github/workflow.yml is labeled ADVISORY (not BLOCKING)"
 else
-  fail "expected ADVISORY finding for .github/workflow.yml; output:
+  common_test_fail "expected ADVISORY finding for .github/workflow.yml; output:
 $(cat "$out")"
 fi
 out_adv="$WORKDIR/case_advisory_only.txt"
 code_adv="$(run_lint ".github/workflow.yml" "$out_adv")"
 if [[ "$code_adv" -eq 0 ]] && grep -qE '0 BLOCKING, [1-9][0-9]* ADVISORY' "$out_adv"; then
-  pass "advisory-only scope exits 0 with a nonzero ADVISORY count (tier split proven)"
+  common_test_pass "advisory-only scope exits 0 with a nonzero ADVISORY count (tier split proven)"
 else
-  fail "advisory-only scope expected exit 0 with nonzero ADVISORY count, got exit=$code_adv; output:
+  common_test_fail "advisory-only scope expected exit 0 with nonzero ADVISORY count, got exit=$code_adv; output:
 $(cat "$out_adv")"
 fi
 
@@ -233,36 +229,36 @@ fi
 # Case 4: marker-exempted content (version-ok:begin/end) is NOT found.
 # =====================================================================
 if grep -q 'docs/marked.md' "$out"; then
-  fail "version-ok-marked finding was scanned (should be stripped)"
+  common_test_fail "version-ok-marked finding was scanned (should be stripped)"
 else
-  pass "version-ok-marked content correctly stripped"
+  common_test_pass "version-ok-marked content correctly stripped"
 fi
 
 # =====================================================================
 # Case 5: specs/** path exemption holds regardless of content.
 # =====================================================================
 if grep -q 'specs/007_example_task' "$out"; then
-  fail "specs/** content was scanned (should be exempt)"
+  common_test_fail "specs/** content was scanned (should be exempt)"
 else
-  pass "specs/** content correctly exempt"
+  common_test_pass "specs/** content correctly exempt"
 fi
 
 # =====================================================================
 # Case 6: durable-axis content produces no finding at all (not even ADVISORY).
 # =====================================================================
 if grep -q 'docs/durable-axis.md' "$out"; then
-  fail "durable-axis content was scanned as a finding (should be stripped before matching)"
+  common_test_fail "durable-axis content was scanned as a finding (should be stripped before matching)"
 else
-  pass "durable-axis content (semver pin, @vN pin, CI cache-key segment) correctly stripped"
+  common_test_pass "durable-axis content (semver pin, @vN pin, CI cache-key segment) correctly stripped"
 fi
 
 # =====================================================================
 # Case 7: gitignored file carrying a finding is NOT found (git ls-files exclusion).
 # =====================================================================
 if grep -q 'ignored/scratch.md' "$out"; then
-  fail "gitignored finding was scanned (git ls-files should exclude it)"
+  common_test_fail "gitignored finding was scanned (git ls-files should exclude it)"
 else
-  pass "gitignored finding correctly excluded"
+  common_test_pass "gitignored finding correctly excluded"
 fi
 
 # =====================================================================
@@ -271,9 +267,9 @@ fi
 out8="$WORKDIR/case8.txt"
 code8="$(run_lint "docs" "$out8")"
 if [[ "$code8" -eq 1 ]] && grep -qE '^  docs/notes\.md:[0-9]+: BLOCKING:' "$out8"; then
-  pass "PATH_SCOPE=docs finds the docs/ BLOCKING finding, exit 1 (never 2)"
+  common_test_pass "PATH_SCOPE=docs finds the docs/ BLOCKING finding, exit 1 (never 2)"
 else
-  fail "PATH_SCOPE=docs expected exit 1 with docs/notes.md finding, got exit=$code8; output:
+  common_test_fail "PATH_SCOPE=docs expected exit 1 with docs/notes.md finding, got exit=$code8; output:
 $(cat "$out8")"
 fi
 
@@ -283,9 +279,9 @@ fi
 out9="$WORKDIR/case9.txt"
 code9="$(run_lint "nonexistent-scope-xyz" "$out9")"
 if [[ "$code9" -eq 0 ]] && grep -q '\[SKIP\]' "$out9"; then
-  pass "PATH_SCOPE naming a non-existent path prints [SKIP] and exits 0"
+  common_test_pass "PATH_SCOPE naming a non-existent path prints [SKIP] and exits 0"
 else
-  fail "PATH_SCOPE nonexistent-scope-xyz expected exit 0 + [SKIP], got exit=$code9; output:
+  common_test_fail "PATH_SCOPE nonexistent-scope-xyz expected exit 0 + [SKIP], got exit=$code9; output:
 $(cat "$out9")"
 fi
 
@@ -295,9 +291,9 @@ fi
 out10="$WORKDIR/case10.txt"
 code10="$(run_lint "README.md" "$out10")"
 if [[ "$code10" -eq 1 ]] && grep -qE '^  README\.md:[0-9]+: BLOCKING:' "$out10" && ! grep -q '\[SKIP\]' "$out10"; then
-  pass "PATH_SCOPE naming a single file is scanned (not skipped)"
+  common_test_pass "PATH_SCOPE naming a single file is scanned (not skipped)"
 else
-  fail "PATH_SCOPE=README.md expected exit 1, finding, no [SKIP], got exit=$code10; output:
+  common_test_fail "PATH_SCOPE=README.md expected exit 1, finding, no [SKIP], got exit=$code10; output:
 $(cat "$out10")"
 fi
 
@@ -307,9 +303,9 @@ fi
 out11="$WORKDIR/case11.txt"
 code11="$(run_lint "--bogus-flag" "$out11")"
 if [[ "$code11" -eq 2 ]]; then
-  pass "unknown flag exits 2"
+  common_test_pass "unknown flag exits 2"
 else
-  fail "unknown flag expected exit 2, got exit=$code11; output:
+  common_test_fail "unknown flag expected exit 2, got exit=$code11; output:
 $(cat "$out11")"
 fi
 
@@ -318,9 +314,9 @@ fi
 # regardless of tier label.
 # =====================================================================
 if grep -E '^  [^:]+:[0-9]+: (BLOCKING|ADVISORY):' "$out" >/dev/null; then
-  pass "per-finding lines match ^  [^:]+:[0-9]+: (BLOCKING|ADVISORY): "
+  common_test_pass "per-finding lines match ^  [^:]+:[0-9]+: (BLOCKING|ADVISORY): "
 else
-  fail "no line in default-scan output matched the tier-labeled finding regex"
+  common_test_fail "no line in default-scan output matched the tier-labeled finding regex"
 fi
 
 # =====================================================================
@@ -329,9 +325,9 @@ fi
 out13="$WORKDIR/case13.txt"
 code13="$(run_lint "--quiet" "$out13")"
 if [[ "$code13" -eq 1 ]] && ! grep -q '^  docs/notes.md' "$out13" && grep -q '^FAIL:' "$out13"; then
-  pass "--quiet suppresses per-finding lines but still prints the FAIL summary line"
+  common_test_pass "--quiet suppresses per-finding lines but still prints the FAIL summary line"
 else
-  fail "--quiet expected exit 1, no per-finding lines, a FAIL summary line; got exit=$code13; output:
+  common_test_fail "--quiet expected exit 1, no per-finding lines, a FAIL summary line; got exit=$code13; output:
 $(cat "$out13")"
 fi
 
@@ -368,9 +364,9 @@ out14="$WORKDIR/case14.txt"
 ( cd "$STALE_FIXTURE" && REPO_ROOT="$STALE_FIXTURE" bash "$LINT_SRC" ) > "$out14" 2>&1
 code14=$?
 if [[ "$code14" -eq 2 ]] && grep -q 'missing required function' "$out14"; then
-  pass "stale library (missing rv_grep_blocking) fails loudly (exit 2), never a false PASS"
+  common_test_pass "stale library (missing rv_grep_blocking) fails loudly (exit 2), never a false PASS"
 else
-  fail "stale library expected exit 2 naming the missing function, got exit=$code14; output:
+  common_test_fail "stale library expected exit 2 naming the missing function, got exit=$code14; output:
 $(cat "$out14")"
 fi
 
@@ -415,11 +411,11 @@ for rel in "${!AGREEMENT_FIXTURES[@]}"; do
   hook_blocks "$rel" "$content" && hook_verdict=1
   if [[ "$lint_verdict" -ne "$hook_verdict" ]]; then
     agreement_ok=0
-    fail "lint/hook DISAGREE on $rel (lint_found=$lint_verdict hook_blocks=$hook_verdict)"
+    common_test_fail "lint/hook DISAGREE on $rel (lint_found=$lint_verdict hook_blocks=$hook_verdict)"
   fi
 done
 if [[ "$agreement_ok" -eq 1 ]]; then
-  pass "lint and hook agree on every BLOCKING-tier fixture file's in-scope verdict"
+  common_test_pass "lint and hook agree on every BLOCKING-tier fixture file's in-scope verdict"
 fi
 
 # =====================================================================

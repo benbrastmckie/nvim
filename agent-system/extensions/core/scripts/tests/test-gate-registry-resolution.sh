@@ -32,6 +32,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LIB="$CORE_DIR/lib/gate-registry-lib.sh"
 REAL_DATA="$CORE_DIR/gate-registry.data"
@@ -58,12 +59,8 @@ source "$COMMON_LIB"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ─── Case 1-7: load the REAL registry and confirm the documented shape ──────────────────────────
 gate_registry_load "$REAL_DATA"
@@ -71,37 +68,37 @@ gate_registry_load "$REAL_DATA"
 ids="$(gate_registry_ids)"
 expected_ids="$(seq 1 24 | tr '\n' ' ' | sed 's/ $//')"
 if [ "$ids" = "$expected_ids " ] || [ "$ids" = "$expected_ids" ]; then
-  pass "case1: gate_registry_ids returns the real registry's 24 migrated ids, ascending (1-24, gate 24 added for the dead-command-recommendation lint)"
+  common_test_pass "case1: gate_registry_ids returns the real registry's 24 migrated ids, ascending (1-24, gate 24 added for the dead-command-recommendation lint)"
 else
-  fail "case1: unexpected ids from the real registry (got: '$ids')"
+  common_test_fail "case1: unexpected ids from the real registry (got: '$ids')"
 fi
 
 if [ "$(gate_registry_field 3 invoke)" = "gate3_run" ]; then
-  pass "case2: gate_registry_field resolves gate 3's invoke function correctly"
+  common_test_pass "case2: gate_registry_field resolves gate 3's invoke function correctly"
 else
-  fail "case2: gate 3 invoke mismatch (got: '$(gate_registry_field 3 invoke)')"
+  common_test_fail "case2: gate 3 invoke mismatch (got: '$(gate_registry_field 3 invoke)')"
 fi
 
 if [ "$(gate_registry_field 8 serialized)" = "true" ] && [ "$(gate_registry_field 1 serialized)" = "false" ]; then
-  pass "case3: gate_registry_field resolves the serialized flag correctly (gate8=true, gate1=false)"
+  common_test_pass "case3: gate_registry_field resolves the serialized flag correctly (gate8=true, gate1=false)"
 else
-  fail "case3: serialized flag mismatch (gate8='$(gate_registry_field 8 serialized)' gate1='$(gate_registry_field 1 serialized)')"
+  common_test_fail "case3: serialized flag mismatch (gate8='$(gate_registry_field 8 serialized)' gate1='$(gate_registry_field 1 serialized)')"
 fi
 
 if [ "$(gate_registry_field 3 requires_source_store)" = "true" ] && [ "$(gate_registry_field 1 requires_source_store)" = "false" ]; then
-  pass "case4: gate_registry_field resolves requires_source_store correctly (gate3=true, gate1=false)"
+  common_test_pass "case4: gate_registry_field resolves requires_source_store correctly (gate3=true, gate1=false)"
 else
-  fail "case4: requires_source_store mismatch"
+  common_test_fail "case4: requires_source_store mismatch"
 fi
 
 timeout8="$(gate_registry_field 8 timeout_s)"
 case "$timeout8" in
-  ''|*[!0-9]*) fail "case5: gate 8's timeout_s is not a positive integer (got: '$timeout8')" ;;
+  ''|*[!0-9]*) common_test_fail "case5: gate 8's timeout_s is not a positive integer (got: '$timeout8')" ;;
   *)
     if [ "$timeout8" -gt 0 ]; then
-      pass "case5: gate 8's timeout_s is a positive integer ($timeout8)"
+      common_test_pass "case5: gate 8's timeout_s is a positive integer ($timeout8)"
     else
-      fail "case5: gate 8's timeout_s is not > 0 (got: $timeout8)"
+      common_test_fail "case5: gate 8's timeout_s is not > 0 (got: $timeout8)"
     fi
     ;;
 esac
@@ -124,18 +121,18 @@ for id in $(gate_registry_ids); do
   esac
 done
 if ! $deps_leaked && ! $fields_shifted; then
-  pass "case6: the '-' empty-dependency placeholder normalizes to empty, and no field shifted into cost_class's slot (TSV-collapse regression pin)"
+  common_test_pass "case6: the '-' empty-dependency placeholder normalizes to empty, and no field shifted into cost_class's slot (TSV-collapse regression pin)"
 else
-  fail "case6: TSV-collapse regression -- deps_leaked=$deps_leaked fields_shifted=$fields_shifted"
+  common_test_fail "case6: TSV-collapse regression -- deps_leaked=$deps_leaked fields_shifted=$fields_shifted"
 fi
 
 # Case 7 -- gate_registry_field returns empty (not an error, no abort) for an unknown id/field.
 unk_id="$(gate_registry_field 9999 invoke)"
 unk_field="$(gate_registry_field 1 not_a_real_field)"
 if [ -z "$unk_id" ] && [ -z "$unk_field" ]; then
-  pass "case7: an unknown id or field resolves to empty, not an error"
+  common_test_pass "case7: an unknown id or field resolves to empty, not an error"
 else
-  fail "case7: expected empty for unknown id/field (got id='$unk_id' field='$unk_field')"
+  common_test_fail "case7: expected empty for unknown id/field (got id='$unk_id' field='$unk_field')"
 fi
 
 # ─── Case 8: gate_registry_execute calls the function directly (in-process, not a subshell) ────
@@ -146,18 +143,18 @@ printf '1\tprobe gate\ttest_probe_fn\t-\tfalse\t30\tfree\tfalse\n' > "$SYNTH1"
 gate_registry_load "$SYNTH1"
 gate_registry_execute 1
 if [ "$TEST_MUTATION_PROBE" = "mutated" ]; then
-  pass "case8: gate_registry_execute calls the registered function in-process (mutation observed by caller)"
+  common_test_pass "case8: gate_registry_execute calls the registered function in-process (mutation observed by caller)"
 else
-  fail "case8: gate_registry_execute did not call the function in-process (TEST_MUTATION_PROBE='$TEST_MUTATION_PROBE')"
+  common_test_fail "case8: gate_registry_execute did not call the function in-process (TEST_MUTATION_PROBE='$TEST_MUTATION_PROBE')"
 fi
 
 # ─── Case 9: an id with no registered function (or a registry that was never loaded for that id)
 # is a silent no-op, never an error / abort. ─────────────────────────────────────────────────────
 gate_registry_execute 9999
 if [ $? -eq 0 ]; then
-  pass "case9: gate_registry_execute on an unregistered id is a silent no-op (no abort)"
+  common_test_pass "case9: gate_registry_execute on an unregistered id is a silent no-op (no abort)"
 else
-  fail "case9: gate_registry_execute on an unregistered id did not return 0"
+  common_test_fail "case9: gate_registry_execute on an unregistered id did not return 0"
 fi
 
 # ─── Case 10: a malformed (non-numeric) id row is skipped during load, not aborted, and does not
@@ -167,9 +164,9 @@ printf 'abc\tbad row\tsomefn\t-\tfalse\t30\tfree\tfalse\n2\tgood row\ttest_probe
 gate_registry_load "$SYNTH2"
 ids2="$(gate_registry_ids)"
 if [ "$ids2" = "2" ] || [ "$ids2" = "2 " ]; then
-  pass "case10: a malformed (non-numeric) id row is skipped during load, leaving only the valid row"
+  common_test_pass "case10: a malformed (non-numeric) id row is skipped during load, leaving only the valid row"
 else
-  fail "case10: expected only id 2 after skipping the malformed row (got: '$ids2')"
+  common_test_fail "case10: expected only id 2 after skipping the malformed row (got: '$ids2')"
 fi
 
 # ─── Case 11-14: gate_registry_exec_bounded (Phase 6, "Uniform Bounded Timeouts Per Gate and
@@ -194,9 +191,9 @@ rc11=$?
 [ -s "$STATE11" ] && source "$STATE11"
 if [ "$rc11" -eq 0 ] && [ "$TEST_CHECKS" -eq 4 ] && [ "${#TEST_FINDINGS[@]}" -eq 2 ] \
    && [ "$(cat "$OUT11")" = "fast gate stdout" ] && [ "$(cat "$ERR11")" = "fast gate stderr" ]; then
-  pass "case11: gate_registry_exec_bounded reconciles scalar + array mutations across the subshell boundary on a clean finish (rc=$rc11, CHECKS=$TEST_CHECKS, findings=${#TEST_FINDINGS[@]})"
+  common_test_pass "case11: gate_registry_exec_bounded reconciles scalar + array mutations across the subshell boundary on a clean finish (rc=$rc11, CHECKS=$TEST_CHECKS, findings=${#TEST_FINDINGS[@]})"
 else
-  fail "case11: reconciliation after a clean finish was wrong (rc=$rc11 CHECKS=$TEST_CHECKS findings=${#TEST_FINDINGS[@]} out='$(cat "$OUT11" 2>/dev/null)' err='$(cat "$ERR11" 2>/dev/null)')"
+  common_test_fail "case11: reconciliation after a clean finish was wrong (rc=$rc11 CHECKS=$TEST_CHECKS findings=${#TEST_FINDINGS[@]} out='$(cat "$OUT11" 2>/dev/null)' err='$(cat "$ERR11" 2>/dev/null)')"
 fi
 
 # Case 12: an empty (undeclared) timeout_s calls the function DIRECTLY, same process, no
@@ -213,9 +210,9 @@ gate_registry_exec_bounded direct_gate_fn "" "$OUT12" "$ERR12" "$STATE12" DIRECT
 rc12=$?
 if [ "$rc12" -eq 0 ] && [ "$DIRECT_PROBE" -eq 9 ] && [ "$(cat "$DIRECT_STDOUT_CAPTURE")" = "direct gate stdout" ] \
    && [ ! -s "$OUT12" ]; then
-  pass "case12: an empty timeout_s runs the function directly in-process (no fork, no capture file written)"
+  common_test_pass "case12: an empty timeout_s runs the function directly in-process (no fork, no capture file written)"
 else
-  fail "case12: empty-timeout direct-call path regressed (rc=$rc12 DIRECT_PROBE=$DIRECT_PROBE stdout='$(cat "$DIRECT_STDOUT_CAPTURE" 2>/dev/null)')"
+  common_test_fail "case12: empty-timeout direct-call path regressed (rc=$rc12 DIRECT_PROBE=$DIRECT_PROBE stdout='$(cat "$DIRECT_STDOUT_CAPTURE" 2>/dev/null)')"
 fi
 
 # Case 13: a stalling function under a short bound times out (rc=124), finishes within the
@@ -241,9 +238,9 @@ if [ -n "$stalled_pid13" ] && kill -0 "$stalled_pid13" 2>/dev/null; then
   leftover13="pid $stalled_pid13 still alive"
 fi
 if [ "$rc13" -eq 124 ] && [ "$ms13" -lt 6000 ] && [ -n "$stalled_pid13" ] && [ -z "$leftover13" ]; then
-  pass "case13: a stalling function times out (rc=124) within margin (${ms13}ms) with no leftover descendant process (checked exact pid $stalled_pid13)"
+  common_test_pass "case13: a stalling function times out (rc=124) within margin (${ms13}ms) with no leftover descendant process (checked exact pid $stalled_pid13)"
 else
-  fail "case13: stalled-gate timeout did not behave as expected (rc=$rc13, elapsed=${ms13}ms, stalled_pid='$stalled_pid13', leftover='$leftover13')"
+  common_test_fail "case13: stalled-gate timeout did not behave as expected (rc=$rc13, elapsed=${ms13}ms, stalled_pid='$stalled_pid13', leftover='$leftover13')"
 fi
 
 # Case 14: the REAL migrated registry's own declared timeout_s values are all enforced-ready
@@ -259,9 +256,9 @@ for id in $(gate_registry_ids); do
   esac
 done
 if $all_bounded; then
-  pass "case14: every one of the real registry's 24 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
+  common_test_pass "case14: every one of the real registry's 24 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
 else
-  fail "case14: gate id(s)$unbounded_ids have no enforceable timeout_s"
+  common_test_fail "case14: gate id(s)$unbounded_ids have no enforceable timeout_s"
 fi
 
 # ─── Case 15-21: gate_registry_exec_concurrent_batch (Phase 7, "Gate-Level Concurrency
@@ -295,11 +292,11 @@ gate_registry_load "$SYNTH15"
 OUT15="$WORKDIR/out15"; mkdir -p "$OUT15"
 gate_registry_exec_concurrent_batch 2 "$OUT15"
 if grep -q "fn2-VIOLATION" "$TRACE15"; then
-  fail "case15: a dependent id started before its declared prerequisite completed" "$(cat "$TRACE15")"
+  common_test_fail "case15: a dependent id started before its declared prerequisite completed" "$(cat "$TRACE15")"
 elif grep -q "fn2-ok" "$TRACE15"; then
-  pass "case15: a dependent id (gate2, depends on gate1) never starts before its prerequisite completes, under worker cap 2"
+  common_test_pass "case15: a dependent id (gate2, depends on gate1) never starts before its prerequisite completes, under worker cap 2"
 else
-  fail "case15: gate2 never ran at all" "$(cat "$TRACE15")"
+  common_test_fail "case15: gate2 never ran at all" "$(cat "$TRACE15")"
 fi
 
 # Case 16: the registry's serialized class (gate8 in the real data; a synthetic id here) runs
@@ -327,9 +324,9 @@ for id in 2 3; do
   fi
 done
 if ! $overlap; then
-  pass "case16: the serialized-class id (gate1 here) runs alone, strictly before any pool id starts -- no temporal overlap"
+  common_test_pass "case16: the serialized-class id (gate1 here) runs alone, strictly before any pool id starts -- no temporal overlap"
 else
-  fail "case16: a pool id started before the serialized id finished" "$(cat "$TIMES16")"
+  common_test_fail "case16: a pool id started before the serialized id finished" "$(cat "$TIMES16")"
 fi
 
 # Case 17: the worker cap is actually enforced -- with 6 pool ids and cap 2, the number of
@@ -371,11 +368,11 @@ OUT17="$WORKDIR/out17"; mkdir -p "$OUT17"
 gate_registry_exec_concurrent_batch 2 "$OUT17"
 maxseen="$(cat "$MAXSEEN17")"
 if [ "$maxseen" -eq 2 ]; then
-  pass "case17: worker cap 2 is both enforced and genuinely exercised -- peak concurrently-active count observed was exactly $maxseen"
+  common_test_pass "case17: worker cap 2 is both enforced and genuinely exercised -- peak concurrently-active count observed was exactly $maxseen"
 elif [ "$maxseen" -lt 2 ]; then
-  fail "case17: concurrency was never exercised (peak observed was $maxseen, want exactly 2) -- cap enforcement is unproven, not merely unviolated"
+  common_test_fail "case17: concurrency was never exercised (peak observed was $maxseen, want exactly 2) -- cap enforcement is unproven, not merely unviolated"
 else
-  fail "case17: worker cap 2 was exceeded -- peak concurrently-active count was $maxseen"
+  common_test_fail "case17: worker cap 2 was exceeded -- peak concurrently-active count was $maxseen"
 fi
 
 # Case 18: delta reconciliation sums scalars and unions array contributions correctly across
@@ -398,9 +395,9 @@ FINDINGS18=()
 OUT18="$WORKDIR/out18"; mkdir -p "$OUT18"
 gate_registry_exec_concurrent_batch 3 "$OUT18" CHECKS18 FINDINGS18
 if [ "$CHECKS18" -eq 6 ] && [ "${#FINDINGS18[@]}" -eq 6 ]; then
-  pass "case18: 6 concurrently-run ids (cap 3) correctly sum CHECKS to 6 and union all 6 findings (CHECKS18=$CHECKS18, findings=${#FINDINGS18[@]})"
+  common_test_pass "case18: 6 concurrently-run ids (cap 3) correctly sum CHECKS to 6 and union all 6 findings (CHECKS18=$CHECKS18, findings=${#FINDINGS18[@]})"
 else
-  fail "case18: delta reconciliation lost contributions -- CHECKS18=$CHECKS18 (want 6), findings=${#FINDINGS18[@]} (want 6): ${FINDINGS18[*]:-<empty>}"
+  common_test_fail "case18: delta reconciliation lost contributions -- CHECKS18=$CHECKS18 (want 6), findings=${#FINDINGS18[@]} (want 6): ${FINDINGS18[*]:-<empty>}"
 fi
 
 # Case 19: determinism -- the SAME synthetic registry and vars, run at worker counts 1, 2, and 4,
@@ -422,9 +419,9 @@ d1="$(det_run 1)"
 d2="$(det_run 2)"
 d4="$(det_run 4)"
 if [ "$d1" = "$d2" ] && [ "$d2" = "$d4" ]; then
-  pass "case19: identical CHECKS sum and findings set at worker counts 1, 2, and 4 ($d1)"
+  common_test_pass "case19: identical CHECKS sum and findings set at worker counts 1, 2, and 4 ($d1)"
 else
-  fail "case19: non-deterministic across worker counts -- jobs=1:[$d1] jobs=2:[$d2] jobs=4:[$d4]"
+  common_test_fail "case19: non-deterministic across worker counts -- jobs=1:[$d1] jobs=2:[$d2] jobs=4:[$d4]"
 fi
 
 # Case 20: regression pin for the real bug caught live during this phase's own implementation --
@@ -445,9 +442,9 @@ OUT20B="$WORKDIR/out20b"; mkdir -p "$OUT20B"
 gate_registry_exec_concurrent_batch 2 "$OUT20B" CHECKS20 FINDINGS20
 round2_ok=$([ "$CHECKS20" -eq 6 ] && [ "${#FINDINGS20[@]}" -eq 6 ] && echo true || echo false)
 if [ "$round1_ok" = "true" ] && [ "$round2_ok" = "true" ]; then
-  pass "case20: a second call to gate_registry_exec_concurrent_batch within the same process reconciles correctly (round1 CHECKS20=6 ok, round2 CHECKS20=$CHECKS20 findings=${#FINDINGS20[@]} ok)"
+  common_test_pass "case20: a second call to gate_registry_exec_concurrent_batch within the same process reconciles correctly (round1 CHECKS20=6 ok, round2 CHECKS20=$CHECKS20 findings=${#FINDINGS20[@]} ok)"
 else
-  fail "case20: second-call corruption regressed -- round1_ok=$round1_ok round2_ok=$round2_ok CHECKS20=$CHECKS20 findings=${#FINDINGS20[@]}"
+  common_test_fail "case20: second-call corruption regressed -- round1_ok=$round1_ok round2_ok=$round2_ok CHECKS20=$CHECKS20 findings=${#FINDINGS20[@]}"
 fi
 
 # Case 21: a timed-out id (rc=124) under concurrency is reported via its rc.$id file and is NOT
@@ -467,9 +464,9 @@ OUT21="$WORKDIR/out21"; mkdir -p "$OUT21"
 gate_registry_exec_concurrent_batch 2 "$OUT21" CHECKS21
 rc21_1="$(cat "$OUT21/rc.1" 2>/dev/null)"
 if [ "$rc21_1" = "124" ] && [ "$CHECKS21" -eq 1 ]; then
-  pass "case21: a stalled id under concurrency reports rc=124 via its rc file and its own (never-dumped) state is correctly excluded from reconciliation (CHECKS21=$CHECKS21, only the fast id's own contribution)"
+  common_test_pass "case21: a stalled id under concurrency reports rc=124 via its rc file and its own (never-dumped) state is correctly excluded from reconciliation (CHECKS21=$CHECKS21, only the fast id's own contribution)"
 else
-  fail "case21: timeout/reconciliation interaction regressed -- rc.1=$rc21_1 CHECKS21=$CHECKS21 (want rc=124, CHECKS21=1)"
+  common_test_fail "case21: timeout/reconciliation interaction regressed -- rc.1=$rc21_1 CHECKS21=$CHECKS21 (want rc=124, CHECKS21=1)"
 fi
 
 # ─── Case 22-25: Phase 9 ("Shared Corpus Enumeration") plumbing ────────────────────────────────
@@ -512,25 +509,25 @@ CORPUS22="$(gate_registry_shared_corpus_build "$SYNTH22_ROOT")"
 corpus22_lines="$(tr '\0' '\n' < "$CORPUS22" | sort)"
 expected22_lines="$(printf 'agent-system/extensions/fakeext/scripts/clean.sh\nagent-system/extensions/fakeext/scripts/dirty.sh')"
 if [ "$corpus22_lines" = "$expected22_lines" ]; then
-  pass "case22: gate_registry_shared_corpus_build enumerates exactly the tracked agent-system/extensions subtree (2 files), excluding the out-of-subtree docs/ file"
+  common_test_pass "case22: gate_registry_shared_corpus_build enumerates exactly the tracked agent-system/extensions subtree (2 files), excluding the out-of-subtree docs/ file"
 else
-  fail "case22: shared-corpus producer scope regressed" "got: [$corpus22_lines] want: [$expected22_lines]"
+  common_test_fail "case22: shared-corpus producer scope regressed" "got: [$corpus22_lines] want: [$expected22_lines]"
 fi
 
 GATE_SHARED_CORPUS_FILE="$CORPUS22" GATE_SHARED_CORPUS_ROOT="$SYNTH22_ROOT"
 export GATE_SHARED_CORPUS_FILE GATE_SHARED_CORPUS_ROOT
 if common_shared_corpus_available; then
-  pass "case23: common_shared_corpus_available reports true once GATE_SHARED_CORPUS_FILE/_ROOT are exported and the corpus file is readable"
+  common_test_pass "case23: common_shared_corpus_available reports true once GATE_SHARED_CORPUS_FILE/_ROOT are exported and the corpus file is readable"
 else
-  fail "case23: common_shared_corpus_available reported unavailable with both variables exported and the file readable"
+  common_test_fail "case23: common_shared_corpus_available reported unavailable with both variables exported and the file readable"
 fi
 
 filtered23="$(common_shared_corpus_files '*.sh' | tr '\0' '\n' | sort)"
 expected23="$(printf '%s\n%s' "$SYNTH22_ROOT/agent-system/extensions/fakeext/scripts/clean.sh" "$SYNTH22_ROOT/agent-system/extensions/fakeext/scripts/dirty.sh")"
 if [ "$filtered23" = "$expected23" ]; then
-  pass "case23b: common_shared_corpus_files '*.sh' returns both entries as absolute paths prefixed with GATE_SHARED_CORPUS_ROOT"
+  common_test_pass "case23b: common_shared_corpus_files '*.sh' returns both entries as absolute paths prefixed with GATE_SHARED_CORPUS_ROOT"
 else
-  fail "case23b: common_shared_corpus_files filtering regressed" "got: [$filtered23] want: [$expected23]"
+  common_test_fail "case23b: common_shared_corpus_files filtering regressed" "got: [$filtered23] want: [$expected23]"
 fi
 
 # Case 24: the seeded violation (dirty.sh) is actually detected end-to-end when lint-shellcheck.sh
@@ -542,9 +539,9 @@ if command -v shellcheck >/dev/null 2>&1; then
   sc_out="$(bash "$SHELLCHECK_LINT" 2>&1)"
   sc_rc=$?
   if [ "$sc_rc" -eq 1 ] && printf '%s' "$sc_out" | grep -q 'dirty\.sh'; then
-    pass "case24: lint-shellcheck.sh, invoked with no scan-path argument and the shared-corpus env vars exported, detects the seeded dirty.sh violation via the shared-corpus fast path (rc=1)"
+    common_test_pass "case24: lint-shellcheck.sh, invoked with no scan-path argument and the shared-corpus env vars exported, detects the seeded dirty.sh violation via the shared-corpus fast path (rc=1)"
   else
-    fail "case24: shared-corpus consumer path did not detect the seeded violation" "rc=$sc_rc out=$sc_out"
+    common_test_fail "case24: shared-corpus consumer path did not detect the seeded violation" "rc=$sc_rc out=$sc_out"
   fi
 else
   echo "[INFO] case24: skipped -- shellcheck not on PATH"
@@ -565,9 +562,9 @@ if command -v shellcheck >/dev/null 2>&1; then
   sc_out25="$(bash "$SHELLCHECK_LINT" "$SYNTH22_ROOT/agent-system/extensions" 2>&1)"
   sc_rc25=$?
   if [ "$sc_rc25" -eq 1 ] && printf '%s' "$sc_out25" | grep -q 'dirty\.sh'; then
-    pass "case25: the same seeded violation is detected via the pre-existing find-based explicit-path fallback (shared-corpus env vars unset, rc=1)"
+    common_test_pass "case25: the same seeded violation is detected via the pre-existing find-based explicit-path fallback (shared-corpus env vars unset, rc=1)"
   else
-    fail "case25: explicit-path fallback regressed on the same fixture" "rc=$sc_rc25 out=$sc_out25"
+    common_test_fail "case25: explicit-path fallback regressed on the same fixture" "rc=$sc_rc25 out=$sc_out25"
   fi
 else
   echo "[INFO] case25: skipped -- shellcheck not on PATH"
@@ -584,18 +581,18 @@ gate_registry_load "$REAL_DATA"
 
 # Case 26: a real nine-field row's input_corpus round-trips through the loader and accessor.
 if [ "$(gate_registry_field 2 input_corpus)" = ".claude/settings.json" ]; then
-  pass "case26: gate_registry_field resolves gate 2's input_corpus correctly (nine-field round-trip)"
+  common_test_pass "case26: gate_registry_field resolves gate 2's input_corpus correctly (nine-field round-trip)"
 else
-  fail "case26: gate 2 input_corpus mismatch (got: '$(gate_registry_field 2 input_corpus)')"
+  common_test_fail "case26: gate 2 input_corpus mismatch (got: '$(gate_registry_field 2 input_corpus)')"
 fi
 
 # Case 27: the "-" placeholder (gate 14, declared '-' deliberately -- see this task's Phase 2
 # planning note) normalizes to a truly empty string, mirroring the dependencies field's own
 # normalization and for the identical IFS=$'\t' empty-field-collapse reason.
 if [ "$(gate_registry_field 14 input_corpus)" = "" ]; then
-  pass "case27: the '-' input_corpus placeholder (gate 14) normalizes to empty, not the literal '-'"
+  common_test_pass "case27: the '-' input_corpus placeholder (gate 14) normalizes to empty, not the literal '-'"
 else
-  fail "case27: expected empty input_corpus for gate 14 (got: '$(gate_registry_field 14 input_corpus)')"
+  common_test_fail "case27: expected empty input_corpus for gate 14 (got: '$(gate_registry_field 14 input_corpus)')"
 fi
 
 # Case 28: a synthetic registry built by DROPPING the 9th field from an otherwise-valid row (7
@@ -605,9 +602,9 @@ SYNTH26="$WORKDIR/synth26-eightfield.data"
 awk -F'\t' 'BEGIN{OFS="\t"} /^1\t/{NF=8} {print}' "$REAL_DATA" > "$SYNTH26"
 out28="$(bash "$LINT_SCRIPT" "$SYNTH26" 2>&1)"; rc28=$?
 if [ "$rc28" -eq 1 ] && echo "$out28" | grep -q "row has 7 tab(s), expected exactly 8"; then
-  pass "case28: lint-gate-registry.sh loudly rejects a legacy 8-field (7-tab) row rather than silently mis-parsing it"
+  common_test_pass "case28: lint-gate-registry.sh loudly rejects a legacy 8-field (7-tab) row rather than silently mis-parsing it"
 else
-  fail "case28: expected a loud field-count rejection (rc=$rc28)" "$out28"
+  common_test_fail "case28: expected a loud field-count rejection (rc=$rc28)" "$out28"
 fi
 
 # Case 29: a synthetic registry whose input_corpus field is blank (not '-') is rejected -- blank
@@ -616,9 +613,9 @@ SYNTH27="$WORKDIR/synth27-blankcorpus.data"
 awk -F'\t' 'BEGIN{OFS="\t"} /^2\t/{$9=""} {print}' "$REAL_DATA" > "$SYNTH27"
 out29="$(bash "$LINT_SCRIPT" "$SYNTH27" 2>&1)"; rc29=$?
 if [ "$rc29" -eq 1 ] && echo "$out29" | grep -q "input_corpus is empty"; then
-  pass "case29: lint-gate-registry.sh rejects a blank (non-'-') input_corpus field"
+  common_test_pass "case29: lint-gate-registry.sh rejects a blank (non-'-') input_corpus field"
 else
-  fail "case29: expected a blank-corpus rejection (rc=$rc29)" "$out29"
+  common_test_fail "case29: expected a blank-corpus rejection (rc=$rc29)" "$out29"
 fi
 
 # Case 30: a synthetic registry with an unparseable input_corpus entry (disallowed characters) is
@@ -627,18 +624,18 @@ SYNTH28="$WORKDIR/synth28-badentry.data"
 awk -F'\t' 'BEGIN{OFS="\t"} /^2\t/{$9="some|bad;entry"} {print}' "$REAL_DATA" > "$SYNTH28"
 out30="$(bash "$LINT_SCRIPT" "$SYNTH28" 2>&1)"; rc30=$?
 if [ "$rc30" -eq 1 ] && echo "$out30" | grep -q "does not match any grammar shape"; then
-  pass "case30: lint-gate-registry.sh rejects an input_corpus entry that does not parse against the grammar"
+  common_test_pass "case30: lint-gate-registry.sh rejects an input_corpus entry that does not parse against the grammar"
 else
-  fail "case30: expected an unparseable-entry rejection (rc=$rc30)" "$out30"
+  common_test_fail "case30: expected an unparseable-entry rejection (rc=$rc30)" "$out30"
 fi
 
 # Case 31: the real, populated gate-registry.data itself passes the lint cleanly end to end
 # (all 23 rows, nine fields, grammar-conformant corpora) -- the positive control for cases 28-30.
 out31="$(bash "$LINT_SCRIPT" "$REAL_DATA" 2>&1)"; rc31=$?
 if [ "$rc31" -eq 0 ]; then
-  pass "case31: lint-gate-registry.sh passes cleanly on the real, populated gate-registry.data"
+  common_test_pass "case31: lint-gate-registry.sh passes cleanly on the real, populated gate-registry.data"
 else
-  fail "case31: expected the real registry to pass the lint (rc=$rc31)" "$out31"
+  common_test_fail "case31: expected the real registry to pass the lint (rc=$rc31)" "$out31"
 fi
 
 # Restore the real registry for any downstream consumer of this same shell (defensive; this

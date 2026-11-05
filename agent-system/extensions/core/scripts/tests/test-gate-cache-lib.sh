@@ -34,6 +34,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LIB="$CORE_DIR/lib/gate-cache-lib.sh"
 REGISTRY_LIB="$CORE_DIR/lib/gate-registry-lib.sh"
@@ -58,12 +59,8 @@ source "$LIB"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 gate_registry_load "$REAL_DATA"
 # gate_cache_implementation_digest/composite_key resolve verify-deploy.sh relative to a ROOT
@@ -89,9 +86,9 @@ if [ -f "$settings_backup" ]; then
   d_after="$(gate_cache_corpus_digest "$(gate_registry_field 2 input_corpus)" "$ROOT")"
   if [ "$d_before" = "$d_after" ] && [ "$d_before" != "$GATE_CACHE_SENTINEL" ] \
      && [ "$d_before" != "$GATE_CACHE_EMPTY_CORPUS_DIGEST" ]; then
-    pass "case1: touch invariance on an UNTRACKED (gitignored .claude/) corpus file -- digest unchanged, and it is a real digest, not a sentinel"
+    common_test_pass "case1: touch invariance on an UNTRACKED (gitignored .claude/) corpus file -- digest unchanged, and it is a real digest, not a sentinel"
   else
-    fail "case1: touch changed the digest, or it was a sentinel/empty-constant (before=$d_before after=$d_after)"
+    common_test_fail "case1: touch changed the digest, or it was a sentinel/empty-constant (before=$d_before after=$d_after)"
   fi
   cp "$settings_backup" "$ROOT/.claude/settings.json"
 else
@@ -108,9 +105,9 @@ if [ -f "$settings_backup" ]; then
   cp "$settings_backup" "$ROOT/.claude/settings.json"
   d_restored="$(gate_cache_corpus_digest "$(gate_registry_field 2 input_corpus)" "$ROOT")"
   if [ "$d_before2" != "$d_changed" ] && [ "$d_before2" = "$d_restored" ]; then
-    pass "case2: a one-byte content change changes the corpus digest; restoring the exact original content restores the exact original digest"
+    common_test_pass "case2: a one-byte content change changes the corpus digest; restoring the exact original content restores the exact original digest"
   else
-    fail "case2: content-change detection or restoration failed (before=$d_before2 changed=$d_changed restored=$d_restored)"
+    common_test_fail "case2: content-change detection or restoration failed (before=$d_before2 changed=$d_changed restored=$d_restored)"
   fi
 fi
 rm -f "$settings_backup"
@@ -120,18 +117,18 @@ rm -f "$settings_backup"
 corpus14="$(gate_registry_field 14 input_corpus)"
 d14="$(gate_cache_corpus_digest "$corpus14" "$ROOT")"
 if [ "$d14" = "$GATE_CACHE_SENTINEL" ]; then
-  pass "case3: a corpus of '-' (gate 14) returns GATE_CACHE_SENTINEL, not a real digest or the empty-corpus constant"
+  common_test_pass "case3: a corpus of '-' (gate 14) returns GATE_CACHE_SENTINEL, not a real digest or the empty-corpus constant"
 else
-  fail "case3: expected GATE_CACHE_SENTINEL for gate 14's undeclared corpus (got: $d14)"
+  common_test_fail "case3: expected GATE_CACHE_SENTINEL for gate 14's undeclared corpus (got: $d14)"
 fi
 
 # Case 4: an unresolvable corpus entry (a double comma producing a genuinely empty sub-entry)
 # also returns the sentinel.
 d_unresolvable="$(gate_cache_corpus_digest "@extensions,,specs/state.json" "$ROOT")"
 if [ "$d_unresolvable" = "$GATE_CACHE_SENTINEL" ]; then
-  pass "case4: an unresolvable corpus entry (empty sub-entry from a double comma) returns GATE_CACHE_SENTINEL"
+  common_test_pass "case4: an unresolvable corpus entry (empty sub-entry from a double comma) returns GATE_CACHE_SENTINEL"
 else
-  fail "case4: expected GATE_CACHE_SENTINEL for an unresolvable entry (got: $d_unresolvable)"
+  common_test_fail "case4: expected GATE_CACHE_SENTINEL for an unresolvable entry (got: $d_unresolvable)"
 fi
 
 # Case 5: a declared corpus that currently matches zero paths (a glob with no matches today)
@@ -139,9 +136,9 @@ fi
 # stay distinguishable from "not declared."
 d_zero="$(gate_cache_corpus_digest "nonexistent-dir-xyz/**/*.nope" "$ROOT")"
 if [ "$d_zero" = "$GATE_CACHE_EMPTY_CORPUS_DIGEST" ]; then
-  pass "case5: a declared corpus matching zero paths today digests to the fixed empty-corpus constant, not the sentinel"
+  common_test_pass "case5: a declared corpus matching zero paths today digests to the fixed empty-corpus constant, not the sentinel"
 else
-  fail "case5: expected GATE_CACHE_EMPTY_CORPUS_DIGEST for a zero-match declared corpus (got: $d_zero)"
+  common_test_fail "case5: expected GATE_CACHE_EMPTY_CORPUS_DIGEST for a zero-match declared corpus (got: $d_zero)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -168,9 +165,9 @@ echo "new" > "$SYNTH/agent-system/extensions/fakeext/skills/x/SKILL2.md"
 (cd "$SYNTH" && git add -A >/dev/null 2>&1)
 d_added="$(gate_cache_corpus_digest "@extensions" "$SYNTH")"
 if [ "$d_orig" != "$d_added" ]; then
-  pass "case6: adding a file to the declared corpus changes the digest"
+  common_test_pass "case6: adding a file to the declared corpus changes the digest"
 else
-  fail "case6: adding a file did not change the digest"
+  common_test_fail "case6: adding a file did not change the digest"
 fi
 
 # Case 7: deleting it again returns to the ORIGINAL digest exactly (true content addressing).
@@ -178,9 +175,9 @@ rm "$SYNTH/agent-system/extensions/fakeext/skills/x/SKILL2.md"
 (cd "$SYNTH" && git add -A >/dev/null 2>&1)
 d_deleted="$(gate_cache_corpus_digest "@extensions" "$SYNTH")"
 if [ "$d_deleted" = "$d_orig" ]; then
-  pass "case7: deleting the added file returns to the exact original digest"
+  common_test_pass "case7: deleting the added file returns to the exact original digest"
 else
-  fail "case7: delete did not restore the original digest (orig=$d_orig deleted=$d_deleted)"
+  common_test_fail "case7: delete did not restore the original digest (orig=$d_orig deleted=$d_deleted)"
 fi
 
 # Case 8: renaming the original file changes the digest (even though its CONTENT is unchanged --
@@ -189,9 +186,9 @@ mv "$SYNTH/agent-system/extensions/fakeext/skills/x/SKILL.md" "$SYNTH/agent-syst
 (cd "$SYNTH" && git add -A >/dev/null 2>&1)
 d_renamed="$(gate_cache_corpus_digest "@extensions" "$SYNTH")"
 if [ "$d_renamed" != "$d_orig" ]; then
-  pass "case8: renaming a corpus file (content unchanged) changes the digest"
+  common_test_pass "case8: renaming a corpus file (content unchanged) changes the digest"
 else
-  fail "case8: rename was not detected"
+  common_test_fail "case8: rename was not detected"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -202,9 +199,9 @@ fi
 i1="$(gate_cache_implementation_digest 6 "$ROOT" "$REAL_DATA")"
 i2="$(gate_cache_implementation_digest 6 "$ROOT" "$REAL_DATA")"
 if [ "$i1" = "$i2" ] && [ "$i1" != "$GATE_CACHE_SENTINEL" ]; then
-  pass "case9: implementation digest is deterministic across repeated computation (gate 6)"
+  common_test_pass "case9: implementation digest is deterministic across repeated computation (gate 6)"
 else
-  fail "case9: implementation digest was not deterministic or was a sentinel (i1=$i1 i2=$i2)"
+  common_test_fail "case9: implementation digest was not deterministic or was a sentinel (i1=$i1 i2=$i2)"
 fi
 
 # Case 10: a registry-row edit (gate 6's timeout_s) changes the implementation digest, with
@@ -213,9 +210,9 @@ mod_registry="$WORKDIR/mod-registry.data"
 awk -F'\t' 'BEGIN{OFS="\t"} $1==6{$6=$6+1} {print}' "$REAL_DATA" > "$mod_registry"
 i_rowchanged="$(gate_cache_implementation_digest 6 "$ROOT" "$mod_registry")"
 if [ "$i1" != "$i_rowchanged" ]; then
-  pass "case10: a registry-row edit (gate 6's timeout_s) changes the implementation digest"
+  common_test_pass "case10: a registry-row edit (gate 6's timeout_s) changes the implementation digest"
 else
-  fail "case10: registry-row edit did not change the implementation digest"
+  common_test_fail "case10: registry-row edit did not change the implementation digest"
 fi
 
 # Case 11: a sourced-library edit changes the implementation digest for a gate whose invoked
@@ -232,9 +229,9 @@ if [ -n "$anylib" ] && [ -f "$anylib" ]; then
   cp "$lib_backup" "$anylib"
   rm -f "$lib_backup"
   if [ "$i_before_lib" != "$i_after_lib" ]; then
-    pass "case11: perturbing a file under scripts/lib/ changes gate 6's implementation digest (component 3: bounded sourced-library closure)"
+    common_test_pass "case11: perturbing a file under scripts/lib/ changes gate 6's implementation digest (component 3: bounded sourced-library closure)"
   else
-    fail "case11: a scripts/lib/ perturbation did not change the implementation digest"
+    common_test_fail "case11: a scripts/lib/ perturbation did not change the implementation digest"
   fi
 else
   echo "[INFO] case11 skipped: could not locate a scripts/lib/*.sh file to perturb"
@@ -260,9 +257,9 @@ i_body_before="$(gate_cache_implementation_digest 99 "$synth_root" "$REAL_DATA")
 sed -i 's/original body/CHANGED body/' "$synth_vd_dir/verify-deploy.sh"
 i_body_after="$(gate_cache_implementation_digest 99 "$synth_root" "$REAL_DATA")"
 if [ "$i_body_before" != "$i_body_after" ] && [ "$i_body_before" != "$GATE_CACHE_SENTINEL" ]; then
-  pass "case12: a change to the invoke function body itself changes the implementation digest (component 1), against a synthetic verify-deploy.sh"
+  common_test_pass "case12: a change to the invoke function body itself changes the implementation digest (component 1), against a synthetic verify-deploy.sh"
 else
-  fail "case12: invoke-body change was not detected, or the before-digest was a sentinel (before=$i_body_before after=$i_body_after)"
+  common_test_fail "case12: invoke-body change was not detected, or the before-digest was a sentinel (before=$i_body_before after=$i_body_after)"
 fi
 
 # Case 13: a target-mode change (source-store vs deployed -- component 5) changes the digest,
@@ -277,9 +274,9 @@ rmdir_target="$WORKDIR/no-extensions-root"
 mkdir -p "$rmdir_target/.claude"
 mode_b="$(gate_cache_target_mode "$rmdir_target")"
 if [ "$mode_a" = "source-store" ] && [ "$mode_b" = "deployed" ]; then
-  pass "case13: gate_cache_target_mode correctly discriminates source-store (agent-system/extensions present) from deployed"
+  common_test_pass "case13: gate_cache_target_mode correctly discriminates source-store (agent-system/extensions present) from deployed"
 else
-  fail "case13: target-mode discrimination failed (mode_a=$mode_a mode_b=$mode_b)"
+  common_test_fail "case13: target-mode discrimination failed (mode_a=$mode_a mode_b=$mode_b)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -308,9 +305,9 @@ k_nogit="$(PATH="$FAKEBIN:$PATH" bash -c "
   gate_cache_composite_key 6 '$ROOT' '$REAL_DATA'
 ")"
 if [ "$d_nogit" = "$GATE_CACHE_SENTINEL" ] && [ "$i_nogit" = "$GATE_CACHE_SENTINEL" ] && [ "$k_nogit" = "$GATE_CACHE_SENTINEL" ]; then
-  pass "case14: an unavailable git binary returns GATE_CACHE_SENTINEL from the corpus digest, implementation digest, and composite key alike"
+  common_test_pass "case14: an unavailable git binary returns GATE_CACHE_SENTINEL from the corpus digest, implementation digest, and composite key alike"
 else
-  fail "case14: missing-git did not produce the sentinel from all three (corpus=$d_nogit impl=$i_nogit key=$k_nogit)"
+  common_test_fail "case14: missing-git did not produce the sentinel from all three (corpus=$d_nogit impl=$i_nogit key=$k_nogit)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -321,9 +318,9 @@ fi
 k1="$(gate_cache_composite_key 6 "$ROOT" "$REAL_DATA")"
 k2="$(gate_cache_composite_key 6 "$ROOT" "$REAL_DATA")"
 if [ "$k1" = "$k2" ] && [ "$k1" != "$GATE_CACHE_SENTINEL" ]; then
-  pass "case15: composite key is deterministic across repeated sequential computation (gate 6)"
+  common_test_pass "case15: composite key is deterministic across repeated sequential computation (gate 6)"
 else
-  fail "case15: composite key was not deterministic (k1=$k1 k2=$k2)"
+  common_test_fail "case15: composite key was not deterministic (k1=$k1 k2=$k2)"
 fi
 
 # Case 16: four concurrent (background, parallel-process) computations of the same gate's
@@ -337,9 +334,9 @@ done
 wait
 uniq_count="$(sort -u "$CONC_OUT" | wc -l)"
 if [ "$uniq_count" -eq 1 ] && grep -qF "$k1" "$CONC_OUT"; then
-  pass "case16: four concurrently-computed composite keys for the same gate all agree with each other and with the sequential result"
+  common_test_pass "case16: four concurrently-computed composite keys for the same gate all agree with each other and with the sequential result"
 else
-  fail "case16: concurrent computation produced disagreeing results (unique count: $uniq_count)" "$(cat "$CONC_OUT")"
+  common_test_fail "case16: concurrent computation produced disagreeing results (unique count: $uniq_count)" "$(cat "$CONC_OUT")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -353,24 +350,24 @@ mkdir -p "$STORE_ROOT/specs"
 # Case 17: cold read is a miss, write then produces a warm hit with the exact key and a
 # non-empty timestamp, and invalidate returns it to a miss.
 if gate_cache_entry_read 8 "$STORE_ROOT"; then
-  fail "case17a: expected a cold miss for gate 8, got a hit (key=$GATE_CACHE_ENTRY_KEY)"
+  common_test_fail "case17a: expected a cold miss for gate 8, got a hit (key=$GATE_CACHE_ENTRY_KEY)"
 else
-  pass "case17a: cold read is a miss before any entry is written"
+  common_test_pass "case17a: cold read is a miss before any entry is written"
 fi
 gate_cache_entry_write 8 "$STORE_ROOT" "deadbeef0000111122223333444455556666777"
 if gate_cache_entry_read 8 "$STORE_ROOT" && [ "$GATE_CACHE_ENTRY_KEY" = "deadbeef0000111122223333444455556666777" ] && [ -n "$GATE_CACHE_ENTRY_TIMESTAMP" ]; then
-  pass "case17b: warm read after a write returns the exact written key and a non-empty timestamp"
+  common_test_pass "case17b: warm read after a write returns the exact written key and a non-empty timestamp"
 else
-  fail "case17b: warm read did not round-trip (key=$GATE_CACHE_ENTRY_KEY ts=$GATE_CACHE_ENTRY_TIMESTAMP)"
+  common_test_fail "case17b: warm read did not round-trip (key=$GATE_CACHE_ENTRY_KEY ts=$GATE_CACHE_ENTRY_TIMESTAMP)"
 fi
 gate_cache_entry_invalidate 8 "$STORE_ROOT"
 if gate_cache_entry_read 8 "$STORE_ROOT"; then
-  fail "case17c: expected a miss after invalidate, got a hit"
+  common_test_fail "case17c: expected a miss after invalidate, got a hit"
 else
-  pass "case17c: invalidate returns the entry to a miss; a second invalidate (already-absent) is a silent no-op"
+  common_test_pass "case17c: invalidate returns the entry to a miss; a second invalidate (already-absent) is a silent no-op"
 fi
 gate_cache_entry_invalidate 8 "$STORE_ROOT"  # no-op, must not error (set -uo pipefail would abort on a real failure)
-pass "case17d: invalidating an already-absent entry is a silent no-op, not an error"
+common_test_pass "case17d: invalidating an already-absent entry is a silent no-op, not an error"
 
 # Case 18: a write's entry file never appears via a partial/renamed-temp artifact -- the ONLY
 # file ever observed at the real entry path is either absent or a complete, valid write. Proven
@@ -379,56 +376,56 @@ pass "case17d: invalidating an already-absent entry is a silent no-op, not an er
 gate_cache_entry_write 9 "$STORE_ROOT" "cafef00d0000111122223333444455556666888"
 tmp_leftovers="$(find "$(gate_cache_store_dir "$STORE_ROOT")" -maxdepth 1 -name '.gate9.json.tmp.*' 2>/dev/null | wc -l)"
 if [ -f "$(gate_cache_entry_path 9 "$STORE_ROOT")" ] && [ "$tmp_leftovers" -eq 0 ]; then
-  pass "case18: a successful write leaves no temp artifact behind, only the final entry file"
+  common_test_pass "case18: a successful write leaves no temp artifact behind, only the final entry file"
 else
-  fail "case18: expected the real entry file with zero temp leftovers (leftovers=$tmp_leftovers)"
+  common_test_fail "case18: expected the real entry file with zero temp leftovers (leftovers=$tmp_leftovers)"
 fi
 
 # Case 19: a format_version mismatch degrades to a miss (never a false hit), even though the
 # key and verdict fields are otherwise well-formed.
 printf '%s' '{"gate_id":"10","format_version":999,"key":"abc","verdict":"green","timestamp":"2020-01-01T00:00:00Z"}' > "$(gate_cache_entry_path 10 "$STORE_ROOT")"
 if gate_cache_entry_read 10 "$STORE_ROOT"; then
-  fail "case19: expected a miss on format_version mismatch, got a hit"
+  common_test_fail "case19: expected a miss on format_version mismatch, got a hit"
 else
-  pass "case19: a format_version mismatch degrades to a miss, never a false hit"
+  common_test_pass "case19: a format_version mismatch degrades to a miss, never a false hit"
 fi
 
 # Case 20: a truncated/corrupted JSON entry degrades to a miss.
 printf '%s' '{"gate_id":"11","format_vers' > "$(gate_cache_entry_path 11 "$STORE_ROOT")"
 if gate_cache_entry_read 11 "$STORE_ROOT"; then
-  fail "case20: expected a miss on corrupted JSON, got a hit"
+  common_test_fail "case20: expected a miss on corrupted JSON, got a hit"
 else
-  pass "case20: a truncated/corrupted entry degrades to a miss, never a false hit"
+  common_test_pass "case20: a truncated/corrupted entry degrades to a miss, never a false hit"
 fi
 
 # Case 21: a gate_id field that does not match the id requested (a mislabeled or hand-edited
 # entry) degrades to a miss -- read must not trust the filename alone.
 printf '%s' '{"gate_id":"999","format_version":1,"key":"abc","verdict":"green","timestamp":"2020-01-01T00:00:00Z"}' > "$(gate_cache_entry_path 12 "$STORE_ROOT")"
 if gate_cache_entry_read 12 "$STORE_ROOT"; then
-  fail "case21: expected a miss on a gate_id field mismatch, got a hit"
+  common_test_fail "case21: expected a miss on a gate_id field mismatch, got a hit"
 else
-  pass "case21: an entry whose own gate_id field does not match the requested id degrades to a miss"
+  common_test_pass "case21: an entry whose own gate_id field does not match the requested id degrades to a miss"
 fi
 
 # Case 22: a non-green verdict (e.g. a hand-edited or future "warn"/"fail" entry) degrades to a
 # miss -- only a verdict of exactly "green" is ever trusted.
 printf '%s' '{"gate_id":"15","format_version":1,"key":"abc","verdict":"warn","timestamp":"2020-01-01T00:00:00Z"}' > "$(gate_cache_entry_path 15 "$STORE_ROOT")"
 if gate_cache_entry_read 15 "$STORE_ROOT"; then
-  fail "case22: expected a miss on a non-green verdict, got a hit"
+  common_test_fail "case22: expected a miss on a non-green verdict, got a hit"
 else
-  pass "case22: a non-green verdict degrades to a miss"
+  common_test_pass "case22: a non-green verdict degrades to a miss"
 fi
 
 # Case 23: gate_cache_entry_write never writes a sentinel key -- it must refuse (return nonzero,
 # write nothing) rather than persist an entry a reader could mistake for a real digest.
 rm -f "$(gate_cache_entry_path 16 "$STORE_ROOT")"
 if gate_cache_entry_write 16 "$STORE_ROOT" "$GATE_CACHE_SENTINEL"; then
-  fail "case23: gate_cache_entry_write accepted the sentinel as a key (should have refused)"
+  common_test_fail "case23: gate_cache_entry_write accepted the sentinel as a key (should have refused)"
 else
   if [ ! -f "$(gate_cache_entry_path 16 "$STORE_ROOT")" ]; then
-    pass "case23: gate_cache_entry_write refuses to persist the sentinel as a key, and writes nothing"
+    common_test_pass "case23: gate_cache_entry_write refuses to persist the sentinel as a key, and writes nothing"
   else
-    fail "case23: refused the sentinel but still left a file on disk"
+    common_test_fail "case23: refused the sentinel but still left a file on disk"
   fi
 fi
 
@@ -446,9 +443,9 @@ for _gid in 17 18 19 20; do
   fi
 done
 if $conc_ok; then
-  pass "case24: four concurrent writes to distinct gate ids under the same store directory all land correctly, with no cross-contamination"
+  common_test_pass "case24: four concurrent writes to distinct gate ids under the same store directory all land correctly, with no cross-contamination"
 else
-  fail "case24: a concurrent write to one gate id corrupted or lost another's entry"
+  common_test_fail "case24: a concurrent write to one gate id corrupted or lost another's entry"
 fi
 
 # Case 25: the store directory survives a simulated "deploy-headless.sh wipe" of .claude/ --
@@ -456,10 +453,10 @@ fi
 # "/.claude/" as a path component.
 case "$(gate_cache_store_dir "$STORE_ROOT")" in
   */.claude/*|*/.claude)
-    fail "case25: the cache store resolves under .claude/, which deploy-headless.sh regenerates before every run that matters"
+    common_test_fail "case25: the cache store resolves under .claude/, which deploy-headless.sh regenerates before every run that matters"
     ;;
   *)
-    pass "case25: the cache store resolves outside .claude/, surviving a deploy-headless.sh regeneration by construction"
+    common_test_pass "case25: the cache store resolves outside .claude/, surviving a deploy-headless.sh regeneration by construction"
     ;;
 esac
 

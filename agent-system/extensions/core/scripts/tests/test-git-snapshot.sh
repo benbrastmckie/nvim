@@ -24,6 +24,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # This single relative path resolves to agent-system/extensions/core/scripts/ in source-store
 # mode and to .claude/scripts/ in deployed mode, with no branching.
 SNAPSHOT="$SCRIPT_DIR/../git-snapshot.sh"
@@ -31,9 +32,6 @@ SNAPSHOT="$SCRIPT_DIR/../git-snapshot.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 if [ ! -f "$SNAPSHOT" ]; then
   echo "ERROR: expected git-snapshot.sh at $SNAPSHOT" >&2
@@ -45,9 +43,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # Fixture directory number. An arbitrary, sacrificial number used only inside a throwaway
 # mktemp -d fixture repo -- never a citation of this repository's own specs/ directory.
@@ -125,9 +121,9 @@ in_scope_dirty="$(git -C "$fixture_repo" status --porcelain -- in-scope/tracked.
 outside_dirty="$(git -C "$fixture_repo" status --porcelain -- outside/unrelated.txt)"
 rm -rf "$fixture_repo"
 if [ -n "$fixture_status" ] && [ -n "$in_scope_dirty" ] && [ -n "$outside_dirty" ]; then
-  pass "fixture self-check: make_scoped_repo produces a genuinely dirty tree, both in- and out-of-scope"
+  common_test_pass "fixture self-check: make_scoped_repo produces a genuinely dirty tree, both in- and out-of-scope"
 else
-  fail "fixture self-check: make_scoped_repo did not produce the expected dirty tree (status='$fixture_status') -- every later case would pass or fail for the wrong reason"
+  common_test_fail "fixture self-check: make_scoped_repo did not produce the expected dirty tree (status='$fixture_status') -- every later case would pass or fail for the wrong reason"
 fi
 
 # =====================================================================
@@ -144,9 +140,9 @@ rm -rf "$core_repo"
 if [ "$core_code" -ne 0 ] \
    && [ -n "$core_outside_status" ] \
    && printf '%s' "$core_output" | grep -q "outside/unrelated.txt"; then
-  pass "core: default mode refuses and preserves the out-of-scope tracked path, naming it"
+  common_test_pass "core: default mode refuses and preserves the out-of-scope tracked path, naming it"
 else
-  fail "core: default mode must refuse (non-zero exit), leave outside/unrelated.txt dirty, and name it on output -- got exit=$core_code outside_status='$core_outside_status'"
+  common_test_fail "core: default mode must refuse (non-zero exit), leave outside/unrelated.txt dirty, and name it on output -- got exit=$core_code outside_status='$core_outside_status'"
 fi
 
 # =====================================================================
@@ -165,9 +161,9 @@ control_marker_existed="no"
 rm -rf "$control_repo"
 
 if [ "$control_code" -eq 0 ] && [ -z "$control_original_status" ] && [ "$control_marker_existed" = "yes" ]; then
-  pass "negative control: all-in-scope dirty tree still snapshots successfully (reverted, marker written)"
+  common_test_pass "negative control: all-in-scope dirty tree still snapshots successfully (reverted, marker written)"
 else
-  fail "negative control: all-in-scope dirty tree must still snapshot successfully -- got exit=$control_code original_status='$control_original_status' marker=$control_marker_existed"
+  common_test_fail "negative control: all-in-scope dirty tree must still snapshot successfully -- got exit=$control_code original_status='$control_original_status' marker=$control_marker_existed"
 fi
 
 # =====================================================================
@@ -184,9 +180,9 @@ norevert_after="$(git -C "$norevert_repo" status --porcelain -- in-scope/tracked
 rm -rf "$norevert_repo"
 
 if [ "$norevert_code" -eq 0 ] && [ "$norevert_before" = "$norevert_after" ]; then
-  pass "--no-revert: never guarded, tree left exactly as found on an out-of-scope dirty tree"
+  common_test_pass "--no-revert: never guarded, tree left exactly as found on an out-of-scope dirty tree"
 else
-  fail "--no-revert: expected exit 0 and an unchanged tree -- got exit=$norevert_code before='$norevert_before' after='$norevert_after'"
+  common_test_fail "--no-revert: expected exit 0 and an unchanged tree -- got exit=$norevert_code before='$norevert_before' after='$norevert_after'"
 fi
 
 # =====================================================================
@@ -220,9 +216,9 @@ if [ "$lock_code" -eq 0 ] \
    && [ "$lock_patch_count" -ge 1 ] \
    && [ "$lock_marker_exists" = "yes" ] \
    && [ "$lock_marker_stash_ref" = "NONE" ]; then
-  pass "held index.lock: --no-revert degrades with a named stash warning (not silence), exit 0, patch+marker written, STASH_REF=NONE"
+  common_test_pass "held index.lock: --no-revert degrades with a named stash warning (not silence), exit 0, patch+marker written, STASH_REF=NONE"
 else
-  fail "held index.lock: expected exit 0, a named stash warning (not silence), a written patch, and STASH_REF=NONE in the marker -- got exit=$lock_code patch_count=$lock_patch_count marker_exists=$lock_marker_exists stash_ref='$lock_marker_stash_ref' output='$lock_output'"
+  common_test_fail "held index.lock: expected exit 0, a named stash warning (not silence), a written patch, and STASH_REF=NONE in the marker -- got exit=$lock_code patch_count=$lock_patch_count marker_exists=$lock_marker_exists stash_ref='$lock_marker_stash_ref' output='$lock_output'"
 fi
 
 # =====================================================================
@@ -242,9 +238,9 @@ rm -rf "$unlocked_repo"
 if [ "$unlocked_code" -eq 0 ] \
    && printf '%s' "$unlocked_stash_ref" | grep -qE '^stash@\{[0-9]+\}$' \
    && printf '%s' "$unlocked_output" | grep -q "snapshot complete"; then
-  pass "unlocked negative control: --no-revert still succeeds, records a real stash ref, unchanged stdout report"
+  common_test_pass "unlocked negative control: --no-revert still succeeds, records a real stash ref, unchanged stdout report"
 else
-  fail "unlocked negative control: expected exit 0, a real stash@{N} ref, and the unchanged success report -- got exit=$unlocked_code stash_ref='$unlocked_stash_ref' output='$unlocked_output'"
+  common_test_fail "unlocked negative control: expected exit 0, a real stash@{N} ref, and the unchanged success report -- got exit=$unlocked_code stash_ref='$unlocked_stash_ref' output='$unlocked_output'"
 fi
 
 # =====================================================================
@@ -278,13 +274,13 @@ sigpipe_stash_ref=""
 rm -rf "$sigpipe_repo"
 
 if [ "$sigpipe_prior_count" -lt 1500 ]; then
-  fail "SIGPIPE fixture: expected >=1500 pre-existing stash entries to reliably exceed the pipe buffer, got $sigpipe_prior_count -- fixture setup did not reproduce the precondition"
+  common_test_fail "SIGPIPE fixture: expected >=1500 pre-existing stash entries to reliably exceed the pipe buffer, got $sigpipe_prior_count -- fixture setup did not reproduce the precondition"
 elif [ "$sigpipe_code" -eq 0 ] \
    && printf '%s' "$sigpipe_stash_ref" | grep -qE '^stash@\{[0-9]+\}$' \
    && ! printf '%s' "$sigpipe_output" | grep -qi "unbound variable"; then
-  pass "SIGPIPE: large stash list ($sigpipe_prior_count prior entries) parses correctly with no abort and no silence"
+  common_test_pass "SIGPIPE: large stash list ($sigpipe_prior_count prior entries) parses correctly with no abort and no silence"
 else
-  fail "SIGPIPE: expected exit 0 and a correctly parsed stash@{N} against a $sigpipe_prior_count-entry stash list -- got exit=$sigpipe_code stash_ref='$sigpipe_stash_ref' output='$sigpipe_output'"
+  common_test_fail "SIGPIPE: expected exit 0 and a correctly parsed stash@{N} against a $sigpipe_prior_count-entry stash list -- got exit=$sigpipe_code stash_ref='$sigpipe_stash_ref' output='$sigpipe_output'"
 fi
 
 # =====================================================================

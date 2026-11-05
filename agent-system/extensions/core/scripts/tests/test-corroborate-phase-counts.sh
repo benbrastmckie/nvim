@@ -19,16 +19,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SKILL_BASE_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/skill-base.sh"
@@ -76,13 +74,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # skill_corroborate_phase_counts no longer invokes the handoff schema validator at all (see
 # Fixture H below) -- that check moved to scripts/orchestrate-cycle-postflight.sh's
@@ -128,36 +121,36 @@ cpc_out_a="$(skill_corroborate_phase_counts 968 "$fixture_a_plan" "[test]" "$fix
 cpc_rc_a=$?
 
 if [[ "$cpc_rc_a" -eq 0 ]]; then
-  pass "Fixture A: skill_corroborate_phase_counts returns 0 (corroborated) for an all-closed plan"
+  common_test_pass "Fixture A: skill_corroborate_phase_counts returns 0 (corroborated) for an all-closed plan"
 else
-  fail "Fixture A: expected return 0, got $cpc_rc_a"
+  common_test_fail "Fixture A: expected return 0, got $cpc_rc_a"
 fi
 
 parse_cpc_output "$cpc_out_a"
 if [[ "$CPC_VERIFIED" == "true" && "$CPC_COMPLETED" == "3" && "$CPC_TOTAL" == "3" ]]; then
-  pass "Fixture A: output is phases_completed=3 phases_total=3 plan_markers_verified=true"
+  common_test_pass "Fixture A: output is phases_completed=3 phases_total=3 plan_markers_verified=true"
 else
-  fail "Fixture A: unexpected output ($cpc_out_a)"
+  common_test_fail "Fixture A: unexpected output ($cpc_out_a)"
 fi
 
 if grep -q "\[UNVERIFIED PHASES CORROBORATED\]" "$WORKDIR/fixture-a.stderr"; then
-  pass "Fixture A: [UNVERIFIED PHASES CORROBORATED] banner emitted"
+  common_test_pass "Fixture A: [UNVERIFIED PHASES CORROBORATED] banner emitted"
 else
-  fail "Fixture A: banner not found in stderr"
+  common_test_fail "Fixture A: banner not found in stderr"
 fi
 
 if skill_gate_completion_claim 968 "$CPC_COMPLETED" "$CPC_TOTAL" "$CPC_VERIFIED" "[test]" 2>>"$WORKDIR/fixture-a.stderr"; then
-  pass "Fixture A: skill_gate_completion_claim ALLOWS completion on the corroborated output"
+  common_test_pass "Fixture A: skill_gate_completion_claim ALLOWS completion on the corroborated output"
 else
-  fail "Fixture A: gate refused despite corroborated evidence"
+  common_test_fail "Fixture A: gate refused despite corroborated evidence"
 fi
 # Verification arm (1): a linear, all-[COMPLETED] plan with a matching complete handoff --
 # ALLOWED, emitting the case 2/3 label exactly as today (the widened trigger does not change this
 # shape's outcome or label).
 if grep -q "COMPLETION-CLAIM GATE case 2/3" "$WORKDIR/fixture-a.stderr"; then
-  pass "Fixture A (arm 1): the case 2/3 label is emitted for a linear, fully-complete plan"
+  common_test_pass "Fixture A (arm 1): the case 2/3 label is emitted for a linear, fully-complete plan"
 else
-  fail "Fixture A (arm 1): expected the case 2/3 label on stderr, got: $(cat "$WORKDIR/fixture-a.stderr")"
+  common_test_fail "Fixture A (arm 1): expected the case 2/3 label on stderr, got: $(cat "$WORKDIR/fixture-a.stderr")"
 fi
 
 # =====================================================================
@@ -175,22 +168,22 @@ cpc_out_b="$(skill_corroborate_phase_counts 968 "$fixture_b_plan" "[test]" 2>"$W
 cpc_rc_b=$?
 
 if [[ "$cpc_rc_b" -eq 1 ]]; then
-  pass "Fixture B: skill_corroborate_phase_counts returns 1 (not corroborated) for a partial plan"
+  common_test_pass "Fixture B: skill_corroborate_phase_counts returns 1 (not corroborated) for a partial plan"
 else
-  fail "Fixture B: expected return 1, got $cpc_rc_b"
+  common_test_fail "Fixture B: expected return 1, got $cpc_rc_b"
 fi
 
 parse_cpc_output "$cpc_out_b"
 if [[ "$CPC_VERIFIED" == "absent" ]]; then
-  pass "Fixture B: plan_markers_verified stays absent"
+  common_test_pass "Fixture B: plan_markers_verified stays absent"
 else
-  fail "Fixture B: expected plan_markers_verified=absent, got $CPC_VERIFIED"
+  common_test_fail "Fixture B: expected plan_markers_verified=absent, got $CPC_VERIFIED"
 fi
 
 if skill_gate_completion_claim 968 0 0 "$CPC_VERIFIED" "[test]" 2>>"$WORKDIR/fixture-b.stderr"; then
-  fail "Fixture B: gate ALLOWED completion for a partial plan (should REFUSE)"
+  common_test_fail "Fixture B: gate ALLOWED completion for a partial plan (should REFUSE)"
 else
-  pass "Fixture B: gate REFUSES completion for a partial plan (accounting absent, no corroboration)"
+  common_test_pass "Fixture B: gate REFUSES completion for a partial plan (accounting absent, no corroboration)"
 fi
 
 # =====================================================================
@@ -208,28 +201,28 @@ cpc_out_c="$(skill_corroborate_phase_counts 968 "$fixture_c_plan" "[test]" 2>"$W
 cpc_rc_c=$?
 
 if [[ "$cpc_rc_c" -eq 1 ]]; then
-  pass "Fixture C: skill_corroborate_phase_counts returns 1 (not corroborated) for a heading-less-conforming plan"
+  common_test_pass "Fixture C: skill_corroborate_phase_counts returns 1 (not corroborated) for a heading-less-conforming plan"
 else
-  fail "Fixture C: expected return 1, got $cpc_rc_c"
+  common_test_fail "Fixture C: expected return 1, got $cpc_rc_c"
 fi
 
 parse_cpc_output "$cpc_out_c"
 if [[ "$CPC_VERIFIED" == "absent" ]]; then
-  pass "Fixture C: plan_markers_verified stays absent"
+  common_test_pass "Fixture C: plan_markers_verified stays absent"
 else
-  fail "Fixture C: expected plan_markers_verified=absent, got $CPC_VERIFIED"
+  common_test_fail "Fixture C: expected plan_markers_verified=absent, got $CPC_VERIFIED"
 fi
 
 if grep -q "NON-CONFORMING PHASE HEADING" "$WORKDIR/fixture-c.stderr"; then
-  pass "Fixture C: non-conforming warning emitted"
+  common_test_pass "Fixture C: non-conforming warning emitted"
 else
-  fail "Fixture C: expected a NON-CONFORMING PHASE HEADING warning in stderr"
+  common_test_fail "Fixture C: expected a NON-CONFORMING PHASE HEADING warning in stderr"
 fi
 
 if skill_gate_completion_claim 968 0 0 "$CPC_VERIFIED" "[test]" 2>>"$WORKDIR/fixture-c.stderr"; then
-  fail "Fixture C: gate ALLOWED completion for a non-conforming-headings plan (should REFUSE)"
+  common_test_fail "Fixture C: gate ALLOWED completion for a non-conforming-headings plan (should REFUSE)"
 else
-  pass "Fixture C: gate REFUSES completion for a non-conforming-headings plan"
+  common_test_pass "Fixture C: gate REFUSES completion for a non-conforming-headings plan"
 fi
 
 # =====================================================================
@@ -246,15 +239,15 @@ cpc_out_d="$(skill_corroborate_phase_counts 968 "$fixture_d_plan" "[test]" 2>"$W
 cpc_rc_d=$?
 
 if [[ "$cpc_rc_d" -eq 0 ]]; then
-  pass "Fixture D: COMPLETED WITH EXCLUSIONS counts as closed -- corroborated"
+  common_test_pass "Fixture D: COMPLETED WITH EXCLUSIONS counts as closed -- corroborated"
 else
-  fail "Fixture D: expected return 0, got $cpc_rc_d"
+  common_test_fail "Fixture D: expected return 0, got $cpc_rc_d"
 fi
 parse_cpc_output "$cpc_out_d"
 if [[ "$CPC_VERIFIED" == "true" && "$CPC_COMPLETED" == "2" && "$CPC_TOTAL" == "2" ]]; then
-  pass "Fixture D: output is phases_completed=2 phases_total=2 plan_markers_verified=true"
+  common_test_pass "Fixture D: output is phases_completed=2 phases_total=2 plan_markers_verified=true"
 else
-  fail "Fixture D: unexpected output ($cpc_out_d)"
+  common_test_fail "Fixture D: unexpected output ($cpc_out_d)"
 fi
 
 # =====================================================================
@@ -273,15 +266,15 @@ cpc_out_e="$(skill_corroborate_phase_counts 968 "$fixture_e_plan" "[test]" 2>"$W
 cpc_rc_e=$?
 
 if [[ "$cpc_rc_e" -eq 1 ]]; then
-  pass "Fixture E: a single non-conforming heading blocks corroboration for the whole plan"
+  common_test_pass "Fixture E: a single non-conforming heading blocks corroboration for the whole plan"
 else
-  fail "Fixture E: expected return 1, got $cpc_rc_e"
+  common_test_fail "Fixture E: expected return 1, got $cpc_rc_e"
 fi
 parse_cpc_output "$cpc_out_e"
 if [[ "$CPC_VERIFIED" == "absent" ]]; then
-  pass "Fixture E: plan_markers_verified stays absent"
+  common_test_pass "Fixture E: plan_markers_verified stays absent"
 else
-  fail "Fixture E: expected plan_markers_verified=absent, got $CPC_VERIFIED"
+  common_test_fail "Fixture E: expected plan_markers_verified=absent, got $CPC_VERIFIED"
 fi
 
 # =====================================================================
@@ -290,9 +283,9 @@ fi
 # refuse) is untouched and cannot be overridden by a plan_markers_verified=true value.
 # =====================================================================
 if skill_gate_completion_claim 968 3 5 "true" "[test]" 2>"$WORKDIR/fixture-f.stderr"; then
-  fail "Fixture F: gate ALLOWED completion with phases_total=5 phases_completed=3 (Case 1 must always refuse)"
+  common_test_fail "Fixture F: gate ALLOWED completion with phases_total=5 phases_completed=3 (Case 1 must always refuse)"
 else
-  pass "Fixture F: gate REFUSES completion when phase accounting is present and incomplete, even with plan_markers_verified=true"
+  common_test_pass "Fixture F: gate REFUSES completion when phase accounting is present and incomplete, even with plan_markers_verified=true"
 fi
 
 # =====================================================================
@@ -301,23 +294,23 @@ fi
 cpc_out_g="$(skill_corroborate_phase_counts 968 "" "[test]" 2>"$WORKDIR/fixture-g.stderr")"
 cpc_rc_g=$?
 if [[ "$cpc_rc_g" -eq 1 ]]; then
-  pass "Fixture G: empty plan_path returns 1 (not corroborated), no crash"
+  common_test_pass "Fixture G: empty plan_path returns 1 (not corroborated), no crash"
 else
-  fail "Fixture G: expected return 1, got $cpc_rc_g"
+  common_test_fail "Fixture G: expected return 1, got $cpc_rc_g"
 fi
 parse_cpc_output "$cpc_out_g"
 if [[ "$CPC_VERIFIED" == "absent" ]]; then
-  pass "Fixture G: plan_markers_verified stays absent for an empty plan path"
+  common_test_pass "Fixture G: plan_markers_verified stays absent for an empty plan path"
 else
-  fail "Fixture G: expected plan_markers_verified=absent, got $CPC_VERIFIED"
+  common_test_fail "Fixture G: expected plan_markers_verified=absent, got $CPC_VERIFIED"
 fi
 
 skill_corroborate_phase_counts 968 "$WORKDIR/does-not-exist.md" "[test]" >/dev/null 2>"$WORKDIR/fixture-g2.stderr"
 cpc_rc_g2=$?
 if [[ "$cpc_rc_g2" -eq 1 ]]; then
-  pass "Fixture G: missing (non-empty but nonexistent) plan_path returns 1, no crash"
+  common_test_pass "Fixture G: missing (non-empty but nonexistent) plan_path returns 1, no crash"
 else
-  fail "Fixture G: expected return 1 for a nonexistent plan path, got $cpc_rc_g2"
+  common_test_fail "Fixture G: expected return 1 for a nonexistent plan path, got $cpc_rc_g2"
 fi
 
 # =====================================================================
@@ -344,20 +337,20 @@ EOF
 cpc_out_h="$(skill_corroborate_phase_counts 968 "$fixture_h_plan" "[test]" "$fixture_h_handoff" 2>"$WORKDIR/fixture-h.stderr")"
 cpc_rc_h=$?
 if [[ "$cpc_rc_h" -eq 0 ]]; then
-  pass "Fixture H: function returns its own verdict (0, corroborated); the handoff_path argument is accepted-and-ignored"
+  common_test_pass "Fixture H: function returns its own verdict (0, corroborated); the handoff_path argument is accepted-and-ignored"
 else
-  fail "Fixture H: expected return 0, got $cpc_rc_h"
+  common_test_fail "Fixture H: expected return 0, got $cpc_rc_h"
 fi
 parse_cpc_output "$cpc_out_h"
 if [[ "$CPC_VERIFIED" == "true" && "$CPC_COMPLETED" == "1" && "$CPC_TOTAL" == "1" ]]; then
-  pass "Fixture H: output unaffected by the (now-removed) handoff validation call"
+  common_test_pass "Fixture H: output unaffected by the (now-removed) handoff validation call"
 else
-  fail "Fixture H: unexpected output ($cpc_out_h)"
+  common_test_fail "Fixture H: unexpected output ($cpc_out_h)"
 fi
 if grep -q "HANDOFF VALIDATION" "$WORKDIR/fixture-h.stderr" 2>/dev/null; then
-  fail "Fixture H: function's stderr unexpectedly mentions HANDOFF VALIDATION -- it should no longer invoke validate-handoff.sh at all"
+  common_test_fail "Fixture H: function's stderr unexpectedly mentions HANDOFF VALIDATION -- it should no longer invoke validate-handoff.sh at all"
 else
-  pass "Fixture H: function never invokes validate-handoff.sh (no HANDOFF VALIDATION mention on its stderr)"
+  common_test_pass "Fixture H: function never invokes validate-handoff.sh (no HANDOFF VALIDATION mention on its stderr)"
 fi
 
 # =====================================================================
@@ -439,24 +432,24 @@ EOF
 corroborate_and_gate "$fixture_i_plan" 4 7 "[test]" "$WORKDIR/fixture-i.stderr"
 
 if [[ "$COG_VERIFIED" == "true" && "$COG_COMPLETED" == "7" && "$COG_TOTAL" == "7" ]]; then
-  pass "Fixture I: the branched-plan incident shape corroborates to 7/7 through skill_corroborate_phase_counts (no new field)"
+  common_test_pass "Fixture I: the branched-plan incident shape corroborates to 7/7 through skill_corroborate_phase_counts (no new field)"
 else
-  fail "Fixture I: expected 7/7 verified=true, got completed=$COG_COMPLETED total=$COG_TOTAL verified=$COG_VERIFIED"
+  common_test_fail "Fixture I: expected 7/7 verified=true, got completed=$COG_COMPLETED total=$COG_TOTAL verified=$COG_VERIFIED"
 fi
 if [[ "$COG_GATE_RC" -eq 0 ]]; then
-  pass "Fixture I: skill_gate_completion_claim ALLOWS completion on the corrected 7/7 count"
+  common_test_pass "Fixture I: skill_gate_completion_claim ALLOWS completion on the corrected 7/7 count"
 else
-  fail "Fixture I: gate refused despite the corroborated 7/7 count"
+  common_test_fail "Fixture I: gate refused despite the corroborated 7/7 count"
 fi
 if grep -q "COMPLETION-CLAIM GATE case 2/3" "$WORKDIR/fixture-i.stderr"; then
-  pass "Fixture I: the case 2/3 label is emitted (arm 2's caller-level label assertion)"
+  common_test_pass "Fixture I: the case 2/3 label is emitted (arm 2's caller-level label assertion)"
 else
-  fail "Fixture I: expected the case 2/3 label on stderr, got: $(cat "$WORKDIR/fixture-i.stderr")"
+  common_test_fail "Fixture I: expected the case 2/3 label on stderr, got: $(cat "$WORKDIR/fixture-i.stderr")"
 fi
 if grep -q "\[UNVERIFIED PHASES CORROBORATED\].*7/7 phases closed" "$WORKDIR/fixture-i.stderr"; then
-  pass "Fixture I: the corroboration banner names 7/7 phases closed"
+  common_test_pass "Fixture I: the corroboration banner names 7/7 phases closed"
 else
-  fail "Fixture I: expected the 7/7 corroboration banner, got: $(cat "$WORKDIR/fixture-i.stderr")"
+  common_test_fail "Fixture I: expected the 7/7 corroboration banner, got: $(cat "$WORKDIR/fixture-i.stderr")"
 fi
 
 # =====================================================================
@@ -483,24 +476,24 @@ EOF
 corroborate_and_gate "$fixture_j_plan" 4 7 "[test]" "$WORKDIR/fixture-j.stderr"
 
 if [[ "$COG_COMPLETED" == "4" && "$COG_TOTAL" == "7" ]]; then
-  pass "Fixture J: a bare shortfall leaves the handoff's own counts (4/7) untouched -- phases_total NOT zeroed"
+  common_test_pass "Fixture J: a bare shortfall leaves the handoff's own counts (4/7) untouched -- phases_total NOT zeroed"
 else
-  fail "Fixture J: expected the handoff's own 4/7 to survive untouched, got completed=$COG_COMPLETED total=$COG_TOTAL"
+  common_test_fail "Fixture J: expected the handoff's own 4/7 to survive untouched, got completed=$COG_COMPLETED total=$COG_TOTAL"
 fi
 if [[ "$COG_GATE_RC" -ne 0 ]]; then
-  pass "Fixture J: skill_gate_completion_claim REFUSES on the genuine shortfall"
+  common_test_pass "Fixture J: skill_gate_completion_claim REFUSES on the genuine shortfall"
 else
-  fail "Fixture J: gate unexpectedly ALLOWED a genuine 4/7 shortfall"
+  common_test_fail "Fixture J: gate unexpectedly ALLOWED a genuine 4/7 shortfall"
 fi
 if grep -q "COMPLETION-CLAIM GATE case 1/3" "$WORKDIR/fixture-j.stderr"; then
-  pass "Fixture J: the case 1/3 label is emitted -- refused as an ordinary Case 1, not reclassified"
+  common_test_pass "Fixture J: the case 1/3 label is emitted -- refused as an ordinary Case 1, not reclassified"
 else
-  fail "Fixture J: expected the case 1/3 label on stderr, got: $(cat "$WORKDIR/fixture-j.stderr")"
+  common_test_fail "Fixture J: expected the case 1/3 label on stderr, got: $(cat "$WORKDIR/fixture-j.stderr")"
 fi
 if [[ "$COG_TOTAL" -eq 0 && "$COG_VERIFIED" != "true" ]]; then
-  fail "Fixture J: the caller's own defect-recording predicate (phases_total==0 && plan_markers_verified!=true) would WRONGLY fire -- false-positive META_MISSING_AFTER_NARRATION risk"
+  common_test_fail "Fixture J: the caller's own defect-recording predicate (phases_total==0 && plan_markers_verified!=true) would WRONGLY fire -- false-positive META_MISSING_AFTER_NARRATION risk"
 else
-  pass "Fixture J: the caller's own defect-recording predicate does not fire (phases_total=$COG_TOTAL, plan_markers_verified=$COG_VERIFIED) -- no false-positive defect record"
+  common_test_pass "Fixture J: the caller's own defect-recording predicate does not fire (phases_total=$COG_TOTAL, plan_markers_verified=$COG_VERIFIED) -- no false-positive defect record"
 fi
 
 # =====================================================================
@@ -513,19 +506,19 @@ fi
 corroborate_and_gate "$fixture_j_plan" 0 0 "[test]" "$WORKDIR/fixture-k.stderr"
 
 if [[ "$COG_GATE_RC" -ne 0 ]]; then
-  pass "Fixture K: skill_gate_completion_claim REFUSES an under-reported 0/0 against an incomplete plan"
+  common_test_pass "Fixture K: skill_gate_completion_claim REFUSES an under-reported 0/0 against an incomplete plan"
 else
-  fail "Fixture K: gate unexpectedly ALLOWED an under-reported 0/0"
+  common_test_fail "Fixture K: gate unexpectedly ALLOWED an under-reported 0/0"
 fi
 if grep -q "COMPLETION-CLAIM GATE case 3/3" "$WORKDIR/fixture-k.stderr"; then
-  pass "Fixture K: the case 3/3 label is emitted"
+  common_test_pass "Fixture K: the case 3/3 label is emitted"
 else
-  fail "Fixture K: expected the case 3/3 label on stderr, got: $(cat "$WORKDIR/fixture-k.stderr")"
+  common_test_fail "Fixture K: expected the case 3/3 label on stderr, got: $(cat "$WORKDIR/fixture-k.stderr")"
 fi
 if [[ "$COG_TOTAL" -eq 0 && "$COG_VERIFIED" != "true" ]]; then
-  pass "Fixture K: the caller's own defect-recording predicate DOES fire (phases_total=0, plan_markers_verified=$COG_VERIFIED) -- unchanged pre-existing behavior"
+  common_test_pass "Fixture K: the caller's own defect-recording predicate DOES fire (phases_total=0, plan_markers_verified=$COG_VERIFIED) -- unchanged pre-existing behavior"
 else
-  fail "Fixture K: expected the defect-recording predicate to fire for an under-reported 0/0, got phases_total=$COG_TOTAL plan_markers_verified=$COG_VERIFIED"
+  common_test_fail "Fixture K: expected the defect-recording predicate to fire for an under-reported 0/0, got phases_total=$COG_TOTAL plan_markers_verified=$COG_VERIFIED"
 fi
 
 # =====================================================================

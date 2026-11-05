@@ -29,10 +29,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/issue-record.sh"
@@ -112,9 +110,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ] && rm -rf "$TOP_WORKDIR"; }
@@ -158,11 +153,11 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   doc="$scratch/$ISSUES_REL"
   if run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
       --kind issue --class "tooling bug or gap" --severity minor >/dev/null 2>&1; then
-    fail "(a) missing-what-happened: expected nonzero exit, got exit 0"
+    common_test_fail "(a) missing-what-happened: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(a) missing-what-happened: issues.jsonl was created (must not write on a validation failure)"
+    common_test_fail "(a) missing-what-happened: issues.jsonl was created (must not write on a validation failure)"
   else
-    pass "(a) missing-what-happened: exited nonzero and wrote nothing"
+    common_test_pass "(a) missing-what-happened: exited nonzero and wrote nothing"
   fi
 }
 
@@ -175,11 +170,11 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   if run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
       --kind issue --class "tooling bug or gap" --severity minor --what-happened "" \
       >/dev/null 2>&1; then
-    fail "(b) empty-what-happened: expected nonzero exit, got exit 0"
+    common_test_fail "(b) empty-what-happened: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(b) empty-what-happened: issues.jsonl was created (must not write on a validation failure)"
+    common_test_fail "(b) empty-what-happened: issues.jsonl was created (must not write on a validation failure)"
   else
-    pass "(b) empty-what-happened: exited nonzero and wrote nothing"
+    common_test_pass "(b) empty-what-happened: exited nonzero and wrote nothing"
   fi
 }
 
@@ -192,11 +187,11 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   if run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
       --kind bogus --class "tooling bug or gap" --severity minor \
       --what-happened "test" >/dev/null 2>&1; then
-    fail "(c) invalid-kind: expected nonzero exit, got exit 0"
+    common_test_fail "(c) invalid-kind: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(c) invalid-kind: issues.jsonl was created (must not write on a validation failure)"
+    common_test_fail "(c) invalid-kind: issues.jsonl was created (must not write on a validation failure)"
   else
-    pass "(c) invalid-kind: exited nonzero and wrote nothing"
+    common_test_pass "(c) invalid-kind: exited nonzero and wrote nothing"
   fi
 }
 
@@ -209,11 +204,11 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   if run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
       --kind issue --class "tooling bug or gap" --severity minor \
       --what-happened "test" --tags-json '{not valid json' >/dev/null 2>&1; then
-    fail "(d) malformed-tags-json: expected nonzero exit, got exit 0"
+    common_test_fail "(d) malformed-tags-json: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(d) malformed-tags-json: issues.jsonl was created (must not write on a validation failure)"
+    common_test_fail "(d) malformed-tags-json: issues.jsonl was created (must not write on a validation failure)"
   else
-    pass "(d) malformed-tags-json: exited nonzero and wrote nothing"
+    common_test_pass "(d) malformed-tags-json: exited nonzero and wrote nothing"
   fi
 }
 
@@ -226,11 +221,11 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   if run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
       --kind issue --class "tooling bug or gap" --severity catastrophic \
       --what-happened "test" >/dev/null 2>&1; then
-    fail "(e) invalid-severity: expected nonzero exit, got exit 0"
+    common_test_fail "(e) invalid-severity: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(e) invalid-severity: issues.jsonl was created (must not write on a validation failure)"
+    common_test_fail "(e) invalid-severity: issues.jsonl was created (must not write on a validation failure)"
   else
-    pass "(e) invalid-severity: exited nonzero and wrote nothing"
+    common_test_pass "(e) invalid-severity: exited nonzero and wrote nothing"
   fi
 }
 
@@ -249,9 +244,9 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
     --kind issue --class "tooling bug or gap" --severity minor --what-happened "" >/dev/null 2>&1
   after="$(md5sum "$doc")"
   if [ "$before" = "$after" ]; then
-    pass "(f) byte-identical-on-refusal: a refused call after a valid entry leaves the file byte-for-byte unchanged"
+    common_test_pass "(f) byte-identical-on-refusal: a refused call after a valid entry leaves the file byte-for-byte unchanged"
   else
-    fail "(f) byte-identical-on-refusal: file changed on a refused call (before=$before after=$after)"
+    common_test_fail "(f) byte-identical-on-refusal: file changed on a refused call (before=$before after=$after)"
   fi
 }
 
@@ -285,9 +280,9 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
     done < "$doc"
   fi
   if [ "$ok" = "true" ] && [ "$line_count" -eq "$N" ] && [ "$bad_lines" -eq 0 ]; then
-    pass "(g) concurrency: $N parallel appends yield exactly $N well-formed lines"
+    common_test_pass "(g) concurrency: $N parallel appends yield exactly $N well-formed lines"
   else
-    fail "(g) concurrency: expected $N well-formed lines, got line_count=$line_count bad_lines=$bad_lines ok=$ok"
+    common_test_fail "(g) concurrency: expected $N well-formed lines, got line_count=$line_count bad_lines=$bad_lines ok=$ok"
   fi
 }
 
@@ -307,9 +302,9 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   if [ "$exit_code" -eq 0 ] \
     && jq -e '.class == "a brand new never-before-seen class"' <<<"$(tail -1 "$doc")" >/dev/null 2>&1 \
     && printf '%s' "$stderr_out" | grep -qi "warning.*class"; then
-    pass "(h) unknown-class: exits 0, appends the class verbatim, warns on stderr"
+    common_test_pass "(h) unknown-class: exits 0, appends the class verbatim, warns on stderr"
   else
-    fail "(h) unknown-class: exit_code=$exit_code stderr=[$stderr_out]"
+    common_test_fail "(h) unknown-class: exit_code=$exit_code stderr=[$stderr_out]"
   fi
 }
 
@@ -334,9 +329,9 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   ) || caller_exit=$?
 
   if [ "$direct_exit" -ne 0 ] && [ "$caller_exit" -eq 0 ]; then
-    pass "(i) non-fatal-failure: direct exit nonzero (direct_exit=$direct_exit), documented non-fatal form leaves caller exit 0"
+    common_test_pass "(i) non-fatal-failure: direct exit nonzero (direct_exit=$direct_exit), documented non-fatal form leaves caller exit 0"
   else
-    fail "(i) non-fatal-failure: direct_exit=$direct_exit caller_exit=$caller_exit"
+    common_test_fail "(i) non-fatal-failure: direct_exit=$direct_exit caller_exit=$caller_exit"
   fi
 }
 
@@ -350,12 +345,12 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
       --kind win --class "orchestration defect" --severity none \
       --what-happened "a win entry" >/dev/null 2>&1; then
     if jq -e '.kind == "win"' <<<"$(tail -1 "$doc")" >/dev/null 2>&1; then
-      pass "(j) win-entry: a kind=win entry is accepted and appended"
+      common_test_pass "(j) win-entry: a kind=win entry is accepted and appended"
     else
-      fail "(j) win-entry: appended but kind != win: $(tail -1 "$doc")"
+      common_test_fail "(j) win-entry: appended but kind != win: $(tail -1 "$doc")"
     fi
   else
-    fail "(j) win-entry: expected exit 0, got nonzero"
+    common_test_fail "(j) win-entry: expected exit 0, got nonzero"
   fi
 }
 
@@ -370,12 +365,12 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
       --kind issue --class "environment" --severity minor \
       --what-happened "task-number resolution test" >/dev/null 2>&1; then
     if [ -f "$doc" ] && jq -e '.task_dir == "specs/001_demo_task"' <<<"$(tail -1 "$doc")" >/dev/null 2>&1; then
-      pass "(k) task-number-resolution: --task 1 resolves to specs/001_demo_task"
+      common_test_pass "(k) task-number-resolution: --task 1 resolves to specs/001_demo_task"
     else
-      fail "(k) task-number-resolution: resolved but task_dir field wrong or file missing"
+      common_test_fail "(k) task-number-resolution: resolved but task_dir field wrong or file missing"
     fi
   else
-    fail "(k) task-number-resolution: expected exit 0, got nonzero"
+    common_test_fail "(k) task-number-resolution: expected exit 0, got nonzero"
   fi
 }
 
@@ -388,11 +383,11 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   if run_ir "$scratch" --task 999 \
       --kind issue --class "environment" --severity minor \
       --what-happened "should refuse" >/dev/null 2>&1; then
-    fail "(l) unresolvable-task: expected nonzero exit, got exit 0"
+    common_test_fail "(l) unresolvable-task: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(l) unresolvable-task: issues.jsonl was created for an unresolvable task"
+    common_test_fail "(l) unresolvable-task: issues.jsonl was created for an unresolvable task"
   else
-    pass "(l) unresolvable-task: exited nonzero and wrote nothing"
+    common_test_pass "(l) unresolvable-task: exited nonzero and wrote nothing"
   fi
 }
 
@@ -404,9 +399,9 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   if run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" --task 1 \
       --kind issue --class "environment" --severity minor \
       --what-happened "should refuse" >/dev/null 2>&1; then
-    fail "(m) mutually-exclusive-task-args: expected nonzero exit, got exit 0"
+    common_test_fail "(m) mutually-exclusive-task-args: expected nonzero exit, got exit 0"
   else
-    pass "(m) mutually-exclusive-task-args: exited nonzero when both --task-dir and --task given"
+    common_test_pass "(m) mutually-exclusive-task-args: exited nonzero when both --task-dir and --task given"
   fi
 }
 
@@ -419,11 +414,11 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
   if run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
       --kind issue --class "environment" --severity minor --what-happened "test" \
       --cost-value 5 >/dev/null 2>&1; then
-    fail "(n) cost-value-without-unit: expected nonzero exit, got exit 0"
+    common_test_fail "(n) cost-value-without-unit: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(n) cost-value-without-unit: issues.jsonl was created"
+    common_test_fail "(n) cost-value-without-unit: issues.jsonl was created"
   else
-    pass "(n) cost-value-without-unit: exited nonzero and wrote nothing"
+    common_test_pass "(n) cost-value-without-unit: exited nonzero and wrote nothing"
   fi
 }
 
@@ -446,9 +441,9 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
       and .estimated_cost.unit == "minutes" and .resolution == "fixed_inline"
       and .suggested_channel == "fix_now" and .tags.a == 1
       and .session_id == "sess_1000000000_aaaaaa"' <<<"$entry" >/dev/null 2>&1; then
-    pass "(o) full-field: all optional fields populate correctly and the line parses"
+    common_test_pass "(o) full-field: all optional fields populate correctly and the line parses"
   else
-    fail "(o) full-field: $entry"
+    common_test_fail "(o) full-field: $entry"
   fi
 }
 

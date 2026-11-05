@@ -33,10 +33,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
@@ -71,15 +69,12 @@ STATUSVOC_SRC="$(resolve_dep lib/status-vocabulary.sh)" || exit 2
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-info "Under test (source-store-first): $RI_SRC"
-info "Dependency (deploy-first): $GTO_SRC"
-info "Dependency (deploy-first): $GUARD_SRC"
-info "Dependency (deploy-first): $COMMON_SRC"
-info "Dependency (deploy-first): $STATUSVOC_SRC"
+common_test_info "Under test (source-store-first): $RI_SRC"
+common_test_info "Dependency (deploy-first): $GTO_SRC"
+common_test_info "Dependency (deploy-first): $GUARD_SRC"
+common_test_info "Dependency (deploy-first): $COMMON_SRC"
+common_test_info "Dependency (deploy-first): $STATUSVOC_SRC"
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${TOP_WORKDIR:-}" && -d "$TOP_WORKDIR" ]] && rm -rf "$TOP_WORKDIR"; }
@@ -227,69 +222,69 @@ print_out="$(run_ri "$scratch1" --print 2>"$scratch1/stderr.txt")"
 print_rc=$?
 
 if [[ "$print_rc" -eq 0 ]]; then
-  pass "--print exits 0"
+  common_test_pass "--print exits 0"
 else
-  fail "--print exits 0 (got $print_rc)"
+  common_test_fail "--print exits 0 (got $print_rc)"
 fi
 
 if grep -qE '^1 ready' <<<"$print_out"; then
-  pass "token derivation: item 1 (no deps) renders ready"
+  common_test_pass "token derivation: item 1 (no deps) renders ready"
 else
-  fail "token derivation: item 1 (no deps) should render ready"
+  common_test_fail "token derivation: item 1 (no deps) should render ready"
 fi
 
 if grep -qE '^2 blocked:1 ' <<<"$print_out"; then
-  pass "token derivation: item 2 (dep on item 1) renders blocked:1"
+  common_test_pass "token derivation: item 2 (dep on item 1) renders blocked:1"
 else
-  fail "token derivation: item 2 (dep on item 1) should render blocked:1"
+  common_test_fail "token derivation: item 2 (dep on item 1) should render blocked:1"
 fi
 
 if grep -qE '^3 blocked:1,2 ' <<<"$print_out"; then
-  pass "token derivation: item 3 (deps on items 1,2) renders blocked:1,2"
+  common_test_pass "token derivation: item 3 (deps on items 1,2) renders blocked:1,2"
 else
-  fail "token derivation: item 3 (deps on items 1,2) should render blocked:1,2"
+  common_test_fail "token derivation: item 3 (deps on items 1,2) should render blocked:1,2"
 fi
 
 if grep -qE '^4 IN FLIGHT ' <<<"$print_out"; then
-  pass "token derivation: item 4 (implementing) renders IN FLIGHT"
+  common_test_pass "token derivation: item 4 (implementing) renders IN FLIGHT"
 else
-  fail "token derivation: item 4 (implementing) should render IN FLIGHT"
+  common_test_fail "token derivation: item 4 (implementing) should render IN FLIGHT"
 fi
 
 if grep -qE '^5 HOLD ' <<<"$print_out"; then
-  pass "token derivation: item 5 (hold) renders HOLD"
+  common_test_pass "token derivation: item 5 (hold) renders HOLD"
 else
-  fail "token derivation: item 5 (hold) should render HOLD"
+  common_test_fail "token derivation: item 5 (hold) should render HOLD"
 fi
 
 if grep -qE '^6 ' <<<"$print_out"; then
-  fail "terminal exclusion: item 6 (completed) must not appear as an item line"
+  common_test_fail "terminal exclusion: item 6 (completed) must not appear as an item line"
 else
-  pass "terminal exclusion: item 6 (completed) is absent from --print output"
+  common_test_pass "terminal exclusion: item 6 (completed) is absent from --print output"
 fi
 
 if grep -qE '^7 ready' <<<"$print_out"; then
-  pass "terminal-dependency-reads-ready: item 7 (only dep is terminal item 6) renders ready"
+  common_test_pass "terminal-dependency-reads-ready: item 7 (only dep is terminal item 6) renders ready"
 else
-  fail "terminal-dependency-reads-ready: item 7 should render ready, not blocked"
+  common_test_fail "terminal-dependency-reads-ready: item 7 should render ready, not blocked"
 fi
 
 if grep -q '\*\*Beta topic undeclared (1)\*\*' <<<"$print_out"; then
-  pass "topic append-extras: undeclared topic 'beta-topic-undeclared' gets its own block"
+  common_test_pass "topic append-extras: undeclared topic 'beta-topic-undeclared' gets its own block"
 else
-  fail "topic append-extras: expected a 'Beta topic undeclared (1)' block in --print output"
+  common_test_fail "topic append-extras: expected a 'Beta topic undeclared (1)' block in --print output"
 fi
 
 if grep -qE "WARNING:.*beta-topic-undeclared" "$scratch1/stderr.txt"; then
-  pass "topic append-extras: one-time stderr warning names the undeclared topic"
+  common_test_pass "topic append-extras: one-time stderr warning names the undeclared topic"
 else
-  fail "topic append-extras: expected a stderr warning naming beta-topic-undeclared"
+  common_test_fail "topic append-extras: expected a stderr warning naming beta-topic-undeclared"
 fi
 
 if grep -qE '^<!-- roadmap-generation mode=print tasks=7 topics=2 runs=0 pruned=0 retained=0 -->$' "$scratch1/stderr.txt"; then
-  pass "stderr marker present and correct for --print"
+  common_test_pass "stderr marker present and correct for --print"
 else
-  fail "stderr marker missing or incorrect for --print ($(cat "$scratch1/stderr.txt"))"
+  common_test_fail "stderr marker missing or incorrect for --print ($(cat "$scratch1/stderr.txt"))"
 fi
 
 # ─── Case group 1b: failure-path diagnosability -- an injected failure (malformed --state JSON,
@@ -302,27 +297,27 @@ run_ri "$scratch1b" --regenerate >/dev/null 2>"$scratch1b/stderr-fail.txt"
 fail_rc=$?
 
 if [[ "$fail_rc" -ne 0 ]]; then
-  pass "injected failure (malformed --state JSON): exits non-zero"
+  common_test_pass "injected failure (malformed --state JSON): exits non-zero"
 else
-  fail "injected failure (malformed --state JSON): should exit non-zero (got $fail_rc)"
+  common_test_fail "injected failure (malformed --state JSON): should exit non-zero (got $fail_rc)"
 fi
 
 if grep -qE '^ERROR: roadmap-integration\.sh failed \(mode=regenerate\) at line [0-9]+: exit status [0-9]+$' "$scratch1b/stderr-fail.txt"; then
-  pass "injected failure: named ERROR: line present, naming the mode"
+  common_test_pass "injected failure: named ERROR: line present, naming the mode"
 else
-  fail "injected failure: expected a named ERROR: line ($(cat "$scratch1b/stderr-fail.txt"))"
+  common_test_fail "injected failure: expected a named ERROR: line ($(cat "$scratch1b/stderr-fail.txt"))"
 fi
 
 if grep -qE '^<!-- roadmap-generation mode=regenerate ' "$scratch1b/stderr-fail.txt"; then
-  pass "injected failure: stderr marker still present (the always-present promise holds on failure)"
+  common_test_pass "injected failure: stderr marker still present (the always-present promise holds on failure)"
 else
-  fail "injected failure: expected the stderr marker even though the run failed ($(cat "$scratch1b/stderr-fail.txt"))"
+  common_test_fail "injected failure: expected the stderr marker even though the run failed ($(cat "$scratch1b/stderr-fail.txt"))"
 fi
 
 if [[ "$(grep -cE '^ERROR: roadmap-integration\.sh failed' "$scratch1b/stderr-fail.txt")" -eq 1 ]]; then
-  pass "injected failure: ERROR: line is emitted exactly once"
+  common_test_pass "injected failure: ERROR: line is emitted exactly once"
 else
-  fail "injected failure: ERROR: line should be emitted exactly once ($(cat "$scratch1b/stderr-fail.txt"))"
+  common_test_fail "injected failure: ERROR: line should be emitted exactly once ($(cat "$scratch1b/stderr-fail.txt"))"
 fi
 
 # ─── Case group 2: --regenerate retention (authored sections, annotation, EXT-BLOCKED,
@@ -339,9 +334,9 @@ for section in "## Goal" "## Gate state" "## Checks before and after every call"
   run_ri "$scratch2" --regenerate >/dev/null 2>"$scratch2/stderr-regen.txt"
   after="$(section_body "$scratch2/specs/ROADMAP.md" "$section")"
   if [[ "$before" == "$after" ]]; then
-    pass "authored section byte-identical across --regenerate: $section"
+    common_test_pass "authored section byte-identical across --regenerate: $section"
   else
-    fail "authored section CHANGED across --regenerate: $section"
+    common_test_fail "authored section CHANGED across --regenerate: $section"
   fi
   # Restore the fixture for the next section's before/after comparison.
   write_roadmap_fixture "$scratch2"
@@ -349,29 +344,29 @@ done
 
 run_ri "$scratch2" --regenerate >/dev/null 2>/dev/null
 if grep -qE '^1 ready.*<- fixture-annotation$' "$scratch2/specs/ROADMAP.md"; then
-  pass "authored <- annotation suffix survives --regenerate"
+  common_test_pass "authored <- annotation suffix survives --regenerate"
 else
-  fail "authored <- annotation suffix did not survive --regenerate"
+  common_test_fail "authored <- annotation suffix did not survive --regenerate"
 fi
 
 if grep -qE '^2 EXT-BLOCKED' "$scratch2/specs/ROADMAP.md"; then
-  pass "authored EXT-BLOCKED token survives --regenerate"
+  common_test_pass "authored EXT-BLOCKED token survives --regenerate"
 else
-  fail "authored EXT-BLOCKED token did not survive --regenerate"
+  common_test_fail "authored EXT-BLOCKED token did not survive --regenerate"
 fi
 
 if grep -q "Trailer note" "$scratch2/specs/ROADMAP.md"; then
-  pass "Open work trailer paragraph survives --regenerate"
+  common_test_pass "Open work trailer paragraph survives --regenerate"
 else
-  fail "Open work trailer paragraph did not survive --regenerate"
+  common_test_fail "Open work trailer paragraph did not survive --regenerate"
 fi
 
 cp "$scratch2/specs/ROADMAP.md" "$scratch2/specs/ROADMAP.round1.md"
 run_ri "$scratch2" --regenerate >/dev/null 2>/dev/null
 if diff -q "$scratch2/specs/ROADMAP.round1.md" "$scratch2/specs/ROADMAP.md" >/dev/null; then
-  pass "--regenerate is idempotent (second run byte-identical)"
+  common_test_pass "--regenerate is idempotent (second run byte-identical)"
 else
-  fail "--regenerate is NOT idempotent (second run differs)"
+  common_test_fail "--regenerate is NOT idempotent (second run differs)"
 fi
 
 write_roadmap_fixture "$scratch2"
@@ -379,15 +374,15 @@ sum_before="$(sha256sum "$scratch2/specs/ROADMAP.md" | awk '{print $1}')"
 run_ri "$scratch2" --regenerate --dry-run >/dev/null 2>/dev/null
 sum_after="$(sha256sum "$scratch2/specs/ROADMAP.md" | awk '{print $1}')"
 if [[ "$sum_before" == "$sum_after" ]]; then
-  pass "--regenerate --dry-run writes nothing"
+  common_test_pass "--regenerate --dry-run writes nothing"
 else
-  fail "--regenerate --dry-run modified the file"
+  common_test_fail "--regenerate --dry-run modified the file"
 fi
 
 if grep -qE '^<!-- roadmap-generation mode=regenerate tasks=7 topics=2' "$scratch2/stderr-regen.txt"; then
-  pass "stderr marker present and correct for --regenerate"
+  common_test_pass "stderr marker present and correct for --regenerate"
 else
-  fail "stderr marker missing or incorrect for --regenerate ($(cat "$scratch2/stderr-regen.txt"))"
+  common_test_fail "stderr marker missing or incorrect for --regenerate ($(cat "$scratch2/stderr-regen.txt"))"
 fi
 
 # ─── Case group 3: --prune drops an all-terminal Run line, --dry-run writes nothing,
@@ -399,15 +394,15 @@ write_roadmap_fixture "$scratch3"
 
 run_ri "$scratch3" --prune >/dev/null 2>"$scratch3/stderr-prune.txt"
 if grep -q '/orchestrate 6' "$scratch3/specs/ROADMAP.md"; then
-  fail "--prune should have dropped the all-terminal '/orchestrate 6' Run line"
+  common_test_fail "--prune should have dropped the all-terminal '/orchestrate 6' Run line"
 else
-  pass "--prune drops a Run line naming only a terminal item"
+  common_test_pass "--prune drops a Run line naming only a terminal item"
 fi
 
 if grep -qE '^/orchestrate 1\s' "$scratch3/specs/ROADMAP.md"; then
-  pass "--prune leaves an unaffected Run line (item 1, non-terminal) in place"
+  common_test_pass "--prune leaves an unaffected Run line (item 1, non-terminal) in place"
 else
-  fail "--prune should have left the '/orchestrate 1' Run line in place"
+  common_test_fail "--prune should have left the '/orchestrate 1' Run line in place"
 fi
 
 write_roadmap_fixture "$scratch3"
@@ -415,9 +410,9 @@ sum_before="$(sha256sum "$scratch3/specs/ROADMAP.md" | awk '{print $1}')"
 run_ri "$scratch3" --prune --dry-run >/dev/null 2>/dev/null
 sum_after="$(sha256sum "$scratch3/specs/ROADMAP.md" | awk '{print $1}')"
 if [[ "$sum_before" == "$sum_after" ]]; then
-  pass "--prune --dry-run writes nothing"
+  common_test_pass "--prune --dry-run writes nothing"
 else
-  fail "--prune --dry-run modified the file"
+  common_test_fail "--prune --dry-run modified the file"
 fi
 
 scratch4="$(build_scratch)"
@@ -427,12 +422,12 @@ run_ri "$scratch4" --regenerate >/dev/null 2>"$scratch4/stderr-absent.txt"
 absent_rc=$?
 if [[ "$absent_rc" -eq 0 ]]; then
   if [[ ! -f "$scratch4/specs/ROADMAP.md" ]]; then
-    pass "--regenerate against an absent --roadmap target is a supported no-op (exit 0, no file created)"
+    common_test_pass "--regenerate against an absent --roadmap target is a supported no-op (exit 0, no file created)"
   else
-    fail "--regenerate against an absent --roadmap target should not create one"
+    common_test_fail "--regenerate against an absent --roadmap target should not create one"
   fi
 else
-  fail "--regenerate against an absent --roadmap target should exit 0, not crash (got $absent_rc)"
+  common_test_fail "--regenerate against an absent --roadmap target should exit 0, not crash (got $absent_rc)"
 fi
 
 # ─── Case group 3b: --prune flag-bearing Run lines -- a trailing CLI flag segment (e.g.
@@ -528,38 +523,38 @@ for survivor in \
   '/orchestrate 1,abc --hard   # unparseable id fail-safe'
 do
   if grep -qFx "$survivor" "$scratch3b/specs/ROADMAP.md"; then
-    pass "classic --prune flag coverage: exact survivor retained: ${survivor:0:50}..."
+    common_test_pass "classic --prune flag coverage: exact survivor retained: ${survivor:0:50}..."
   else
-    fail "classic --prune flag coverage: MISSING exact survivor: ${survivor:0:50}..."
+    common_test_fail "classic --prune flag coverage: MISSING exact survivor: ${survivor:0:50}..."
   fi
 done
 
 if grep -qFx '/orchestrate 6   # names only a terminal item' "$scratch3b/specs/ROADMAP.md"; then
-  fail "classic --prune flag coverage: all-terminal unflagged line should have been dropped"
+  common_test_fail "classic --prune flag coverage: all-terminal unflagged line should have been dropped"
 else
-  pass "classic --prune flag coverage: all-terminal unflagged line absent"
+  common_test_pass "classic --prune flag coverage: all-terminal unflagged line absent"
 fi
 
 if grep -qFx '/orchestrate 6 --hard   # all-terminal flagged line' "$scratch3b/specs/ROADMAP.md"; then
-  fail "classic --prune flag coverage: all-terminal FLAGGED line should have been dropped, not merely the id"
+  common_test_fail "classic --prune flag coverage: all-terminal FLAGGED line should have been dropped, not merely the id"
 else
-  pass "classic --prune flag coverage: all-terminal flagged line absent (flag presence does not rescue it)"
+  common_test_pass "classic --prune flag coverage: all-terminal flagged line absent (flag presence does not rescue it)"
 fi
 
 if grep -qFx '/orchestrate 1,6 --hard   # mixed active and terminal' "$scratch3b/specs/ROADMAP.md"; then
-  fail "classic --prune flag coverage: mixed active/terminal flagged line should have been rewritten, not left verbatim"
+  common_test_fail "classic --prune flag coverage: mixed active/terminal flagged line should have been rewritten, not left verbatim"
 fi
 
 if grep -qE '^<!-- roadmap-generation mode=prune tasks=7 topics=2 runs=0 pruned=3 retained=0 -->$' "$scratch3b/stderr-prune-flags.txt"; then
-  pass "classic --prune flag coverage: pruned=3 marker matches hand-computed expectation (2 all-terminal lines + 1 dropped id from the mixed line)"
+  common_test_pass "classic --prune flag coverage: pruned=3 marker matches hand-computed expectation (2 all-terminal lines + 1 dropped id from the mixed line)"
 else
-  fail "classic --prune flag coverage: pruned=/retained= marker did not match hand-computed expectation ($(cat "$scratch3b/stderr-prune-flags.txt"))"
+  common_test_fail "classic --prune flag coverage: pruned=/retained= marker did not match hand-computed expectation ($(cat "$scratch3b/stderr-prune-flags.txt"))"
 fi
 
 if grep -qF "unparseable task id [abc]" "$scratch3b/stderr-prune-flags.txt"; then
-  pass "classic --prune flag coverage: fail-safe guard names the unparseable id on stderr"
+  common_test_pass "classic --prune flag coverage: fail-safe guard names the unparseable id on stderr"
 else
-  fail "classic --prune flag coverage: fail-safe guard did not emit the expected stderr warning"
+  common_test_fail "classic --prune flag coverage: fail-safe guard did not emit the expected stderr warning"
 fi
 
 # ─── Case group 4: layout detection / permanent destructive-overwrite refusal (Phase 2) ────────
@@ -639,24 +634,24 @@ unknown_regen_rc=$?
 sum_after="$(sha256sum "$scratch5/specs/ROADMAP.md" | awk '{print $1}')"
 
 if [[ "$unknown_regen_rc" -ne 0 ]]; then
-  pass "unknown vocabulary: --regenerate exits non-zero"
+  common_test_pass "unknown vocabulary: --regenerate exits non-zero"
 else
-  fail "unknown vocabulary: --regenerate should exit non-zero (got $unknown_regen_rc)"
+  common_test_fail "unknown vocabulary: --regenerate should exit non-zero (got $unknown_regen_rc)"
 fi
 if [[ "$sum_before" == "$sum_after" ]]; then
-  pass "unknown vocabulary: --regenerate writes nothing"
+  common_test_pass "unknown vocabulary: --regenerate writes nothing"
 else
-  fail "unknown vocabulary: --regenerate modified the file"
+  common_test_fail "unknown vocabulary: --regenerate modified the file"
 fi
 if grep -qE '^ERROR: --regenerate refuses to write' "$scratch5/stderr-unknown-regen.txt"; then
-  pass "unknown vocabulary: --regenerate names a refusal reason on stderr"
+  common_test_pass "unknown vocabulary: --regenerate names a refusal reason on stderr"
 else
-  fail "unknown vocabulary: expected a named refusal reason ($(cat "$scratch5/stderr-unknown-regen.txt"))"
+  common_test_fail "unknown vocabulary: expected a named refusal reason ($(cat "$scratch5/stderr-unknown-regen.txt"))"
 fi
 if grep -qE '^<!-- roadmap-generation mode=regenerate ' "$scratch5/stderr-unknown-regen.txt"; then
-  pass "unknown vocabulary: --regenerate still emits the stderr marker on refusal"
+  common_test_pass "unknown vocabulary: --regenerate still emits the stderr marker on refusal"
 else
-  fail "unknown vocabulary: expected the stderr marker even on refusal"
+  common_test_fail "unknown vocabulary: expected the stderr marker even on refusal"
 fi
 
 write_unknown_vocabulary_fixture "$scratch5"
@@ -666,19 +661,19 @@ unknown_prune_rc=$?
 sum_after="$(sha256sum "$scratch5/specs/ROADMAP.md" | awk '{print $1}')"
 
 if [[ "$unknown_prune_rc" -ne 0 ]]; then
-  pass "unknown vocabulary: --prune exits non-zero"
+  common_test_pass "unknown vocabulary: --prune exits non-zero"
 else
-  fail "unknown vocabulary: --prune should exit non-zero (got $unknown_prune_rc)"
+  common_test_fail "unknown vocabulary: --prune should exit non-zero (got $unknown_prune_rc)"
 fi
 if [[ "$sum_before" == "$sum_after" ]]; then
-  pass "unknown vocabulary: --prune writes nothing"
+  common_test_pass "unknown vocabulary: --prune writes nothing"
 else
-  fail "unknown vocabulary: --prune modified the file (the destructive-overwrite near-miss)"
+  common_test_fail "unknown vocabulary: --prune modified the file (the destructive-overwrite near-miss)"
 fi
 if grep -qE '^ERROR: --prune refuses to write' "$scratch5/stderr-unknown-prune.txt"; then
-  pass "unknown vocabulary: --prune names a refusal reason on stderr"
+  common_test_pass "unknown vocabulary: --prune names a refusal reason on stderr"
 else
-  fail "unknown vocabulary: expected a named refusal reason ($(cat "$scratch5/stderr-unknown-prune.txt"))"
+  common_test_fail "unknown vocabulary: expected a named refusal reason ($(cat "$scratch5/stderr-unknown-prune.txt"))"
 fi
 
 scratch6="$(build_scratch)"
@@ -692,9 +687,9 @@ write_stage_vocabulary_fixture "$scratch6"
 run_ri "$scratch6" --regenerate >/dev/null 2>"$scratch6/stderr-stage-regen.txt"
 stage_regen_rc=$?
 if [[ "$stage_regen_rc" -eq 0 ]]; then
-  pass "stage layout: --regenerate now succeeds (round-trip support, Phase 4)"
+  common_test_pass "stage layout: --regenerate now succeeds (round-trip support, Phase 4)"
 else
-  fail "stage layout: --regenerate should succeed (got $stage_regen_rc; $(cat "$scratch6/stderr-stage-regen.txt"))"
+  common_test_fail "stage layout: --regenerate should succeed (got $stage_regen_rc; $(cat "$scratch6/stderr-stage-regen.txt"))"
 fi
 
 for needle in \
@@ -709,9 +704,9 @@ for needle in \
   'Fixture related prose, authored, must survive byte-identical.'
 do
   if grep -qF "$needle" "$scratch6/specs/ROADMAP.md"; then
-    pass "stage layout round-trip: retained verbatim: ${needle:0:40}..."
+    common_test_pass "stage layout round-trip: retained verbatim: ${needle:0:40}..."
   else
-    fail "stage layout round-trip: MISSING after --regenerate: ${needle:0:40}..."
+    common_test_fail "stage layout round-trip: MISSING after --regenerate: ${needle:0:40}..."
   fi
 done
 
@@ -720,29 +715,29 @@ if grep -qE '^## Stage 1 -- First Stage$' "$scratch6/specs/ROADMAP.md" \
   && grep -qE '^## Not scoped as tasks$' "$scratch6/specs/ROADMAP.md" \
   && grep -qE '^## Maintenance$' "$scratch6/specs/ROADMAP.md" \
   && grep -qE '^## Related$' "$scratch6/specs/ROADMAP.md"; then
-  pass "stage layout round-trip: every section header retained verbatim"
+  common_test_pass "stage layout round-trip: every section header retained verbatim"
 else
-  fail "stage layout round-trip: a section header was dropped or altered"
+  common_test_fail "stage layout round-trip: a section header was dropped or altered"
 fi
 
 if grep -q '\*\*Coverage appendix (uncovered tasks)\*\*:' "$scratch6/specs/ROADMAP.md"; then
-  pass "stage layout round-trip: coverage appendix rendered under the run-order section"
+  common_test_pass "stage layout round-trip: coverage appendix rendered under the run-order section"
 else
-  fail "stage layout round-trip: expected a coverage appendix for uncovered ready items 7/8"
+  common_test_fail "stage layout round-trip: expected a coverage appendix for uncovered ready items 7/8"
 fi
 
 cp "$scratch6/specs/ROADMAP.md" "$scratch6/specs/ROADMAP.round1.md"
 run_ri "$scratch6" --regenerate >/dev/null 2>/dev/null
 if diff -q "$scratch6/specs/ROADMAP.round1.md" "$scratch6/specs/ROADMAP.md" >/dev/null; then
-  pass "stage layout round-trip: --regenerate is idempotent (second run byte-identical)"
+  common_test_pass "stage layout round-trip: --regenerate is idempotent (second run byte-identical)"
 else
-  fail "stage layout round-trip: --regenerate is NOT idempotent (second run differs)"
+  common_test_fail "stage layout round-trip: --regenerate is NOT idempotent (second run differs)"
 fi
 
 if [[ "$(grep -c '\*\*Coverage appendix (uncovered tasks)\*\*:' "$scratch6/specs/ROADMAP.md")" -eq 1 ]]; then
-  pass "stage layout round-trip: coverage appendix replaced, not accumulated, across two runs"
+  common_test_pass "stage layout round-trip: coverage appendix replaced, not accumulated, across two runs"
 else
-  fail "stage layout round-trip: coverage appendix should appear exactly once after two runs"
+  common_test_fail "stage layout round-trip: coverage appendix should appear exactly once after two runs"
 fi
 
 write_stage_vocabulary_fixture "$scratch6"
@@ -750,9 +745,9 @@ sum_before="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
 run_ri "$scratch6" --regenerate --dry-run >/dev/null 2>/dev/null
 sum_after="$(sha256sum "$scratch6/specs/ROADMAP.md" | awk '{print $1}')"
 if [[ "$sum_before" == "$sum_after" ]]; then
-  pass "stage layout round-trip: --regenerate --dry-run writes nothing"
+  common_test_pass "stage layout round-trip: --regenerate --dry-run writes nothing"
 else
-  fail "stage layout round-trip: --regenerate --dry-run modified the file"
+  common_test_fail "stage layout round-trip: --regenerate --dry-run modified the file"
 fi
 
 # ─── Phase 5: --prune now handles the stage layout for real (dropping only all-terminal Run
@@ -780,28 +775,28 @@ write_stage_vocabulary_fixture "$scratch10"
 run_ri "$scratch10" --prune >/dev/null 2>"$scratch10/stderr-stage-prune.txt"
 stage_prune_rc=$?
 if [[ "$stage_prune_rc" -eq 0 ]]; then
-  pass "stage layout: --prune now succeeds (Phase 5 round-trip support)"
+  common_test_pass "stage layout: --prune now succeeds (Phase 5 round-trip support)"
 else
-  fail "stage layout: --prune should succeed (got $stage_prune_rc; $(cat "$scratch10/stderr-stage-prune.txt"))"
+  common_test_fail "stage layout: --prune should succeed (got $stage_prune_rc; $(cat "$scratch10/stderr-stage-prune.txt"))"
 fi
 
 if grep -qE '^/orchestrate 1\s' "$scratch10/specs/ROADMAP.md"; then
-  fail "stage layout --prune: should have dropped the all-terminal '/orchestrate 1' Run line"
+  common_test_fail "stage layout --prune: should have dropped the all-terminal '/orchestrate 1' Run line"
 else
-  pass "stage layout --prune: drops a Run line naming only a terminal item"
+  common_test_pass "stage layout --prune: drops a Run line naming only a terminal item"
 fi
 
 if grep -qF '/orchestrate 2,3' "$scratch10/specs/ROADMAP.md"; then
-  pass "stage layout --prune: leaves an unaffected Run line (items 2,3, non-terminal) in place"
+  common_test_pass "stage layout --prune: leaves an unaffected Run line (items 2,3, non-terminal) in place"
 else
-  fail "stage layout --prune: should have left the '/orchestrate 2,3' Run line in place"
+  common_test_fail "stage layout --prune: should have left the '/orchestrate 2,3' Run line in place"
 fi
 
 if grep -qF '# Stage 1 -- first stage, fixture comment line' "$scratch10/specs/ROADMAP.md" \
   && grep -qF '# Stage 2 -- second stage, fixture comment line' "$scratch10/specs/ROADMAP.md"; then
-  pass "stage layout --prune: in-fence '# Stage N' comment lines survive intact"
+  common_test_pass "stage layout --prune: in-fence '# Stage N' comment lines survive intact"
 else
-  fail "stage layout --prune: an in-fence '# Stage N' comment line was dropped or altered"
+  common_test_fail "stage layout --prune: an in-fence '# Stage N' comment line was dropped or altered"
 fi
 
 for needle in \
@@ -812,9 +807,9 @@ for needle in \
   'Fixture related prose, authored, must survive byte-identical.'
 do
   if grep -qF "$needle" "$scratch10/specs/ROADMAP.md"; then
-    pass "stage layout --prune: retained verbatim: ${needle:0:40}..."
+    common_test_pass "stage layout --prune: retained verbatim: ${needle:0:40}..."
   else
-    fail "stage layout --prune: MISSING after --prune: ${needle:0:40}..."
+    common_test_fail "stage layout --prune: MISSING after --prune: ${needle:0:40}..."
   fi
 done
 
@@ -823,9 +818,9 @@ sum_before="$(sha256sum "$scratch10/specs/ROADMAP.md" | awk '{print $1}')"
 run_ri "$scratch10" --prune --dry-run >/dev/null 2>/dev/null
 sum_after="$(sha256sum "$scratch10/specs/ROADMAP.md" | awk '{print $1}')"
 if [[ "$sum_before" == "$sum_after" ]]; then
-  pass "stage layout --prune --dry-run writes nothing"
+  common_test_pass "stage layout --prune --dry-run writes nothing"
 else
-  fail "stage layout --prune --dry-run modified the file"
+  common_test_fail "stage layout --prune --dry-run modified the file"
 fi
 
 # ─── Phase 5b: --prune flag-bearing Run lines, stage layout -- mirrors Case group 3b's
@@ -897,45 +892,45 @@ for survivor in \
   '/orchestrate 2,abc --hard   # unparseable id fail-safe'
 do
   if grep -qFx "$survivor" "$scratch10b/specs/ROADMAP.md"; then
-    pass "stage layout --prune flag coverage: exact survivor retained: ${survivor:0:50}..."
+    common_test_pass "stage layout --prune flag coverage: exact survivor retained: ${survivor:0:50}..."
   else
-    fail "stage layout --prune flag coverage: MISSING exact survivor: ${survivor:0:50}..."
+    common_test_fail "stage layout --prune flag coverage: MISSING exact survivor: ${survivor:0:50}..."
   fi
 done
 
 if grep -qFx '/orchestrate 1   # fixture rationale for item 1' "$scratch10b/specs/ROADMAP.md"; then
-  fail "stage layout --prune flag coverage: all-terminal unflagged line should have been dropped"
+  common_test_fail "stage layout --prune flag coverage: all-terminal unflagged line should have been dropped"
 else
-  pass "stage layout --prune flag coverage: all-terminal unflagged line absent"
+  common_test_pass "stage layout --prune flag coverage: all-terminal unflagged line absent"
 fi
 
 if grep -qFx '/orchestrate 1 --hard   # all-terminal flagged line' "$scratch10b/specs/ROADMAP.md"; then
-  fail "stage layout --prune flag coverage: all-terminal FLAGGED line should have been dropped, not merely the id"
+  common_test_fail "stage layout --prune flag coverage: all-terminal FLAGGED line should have been dropped, not merely the id"
 else
-  pass "stage layout --prune flag coverage: all-terminal flagged line absent (flag presence does not rescue it)"
+  common_test_pass "stage layout --prune flag coverage: all-terminal flagged line absent (flag presence does not rescue it)"
 fi
 
 if grep -qFx '/orchestrate 1,2 --hard   # mixed active and terminal' "$scratch10b/specs/ROADMAP.md"; then
-  fail "stage layout --prune flag coverage: mixed active/terminal flagged line should have been rewritten, not left verbatim"
+  common_test_fail "stage layout --prune flag coverage: mixed active/terminal flagged line should have been rewritten, not left verbatim"
 fi
 
 if grep -qF '# Stage 1 -- first stage, fixture comment line' "$scratch10b/specs/ROADMAP.md" \
   && grep -qF '# Stage 2 -- second stage, fixture comment line' "$scratch10b/specs/ROADMAP.md"; then
-  pass "stage layout --prune flag coverage: in-fence '# Stage N' comment lines survive intact"
+  common_test_pass "stage layout --prune flag coverage: in-fence '# Stage N' comment lines survive intact"
 else
-  fail "stage layout --prune flag coverage: an in-fence '# Stage N' comment line was dropped or altered"
+  common_test_fail "stage layout --prune flag coverage: an in-fence '# Stage N' comment line was dropped or altered"
 fi
 
 if grep -qE '^<!-- roadmap-generation mode=prune tasks=2 topics=1 runs=0 pruned=3 retained=0 -->$' "$scratch10b/stderr-stage-prune-flags.txt"; then
-  pass "stage layout --prune flag coverage: pruned=3 marker matches hand-computed expectation (2 all-terminal lines + 1 dropped id from the mixed line)"
+  common_test_pass "stage layout --prune flag coverage: pruned=3 marker matches hand-computed expectation (2 all-terminal lines + 1 dropped id from the mixed line)"
 else
-  fail "stage layout --prune flag coverage: pruned=/retained= marker did not match hand-computed expectation ($(cat "$scratch10b/stderr-stage-prune-flags.txt"))"
+  common_test_fail "stage layout --prune flag coverage: pruned=/retained= marker did not match hand-computed expectation ($(cat "$scratch10b/stderr-stage-prune-flags.txt"))"
 fi
 
 if grep -qF "unparseable task id [abc]" "$scratch10b/stderr-stage-prune-flags.txt"; then
-  pass "stage layout --prune flag coverage: fail-safe guard names the unparseable id on stderr"
+  common_test_pass "stage layout --prune flag coverage: fail-safe guard names the unparseable id on stderr"
 else
-  fail "stage layout --prune flag coverage: fail-safe guard did not emit the expected stderr warning"
+  common_test_fail "stage layout --prune flag coverage: fail-safe guard did not emit the expected stderr warning"
 fi
 
 scratch7="$(build_scratch)"
@@ -944,9 +939,9 @@ write_roadmap_fixture "$scratch7"
 run_ri "$scratch7" --regenerate >/dev/null 2>/dev/null
 classic_rc=$?
 if [[ "$classic_rc" -eq 0 ]]; then
-  pass "classic vocabulary still classifies 'classic' and still succeeds after the Phase 2 gate"
+  common_test_pass "classic vocabulary still classifies 'classic' and still succeeds after the Phase 2 gate"
 else
-  fail "classic vocabulary should still succeed after the Phase 2 gate (got $classic_rc)"
+  common_test_fail "classic vocabulary should still succeed after the Phase 2 gate (got $classic_rc)"
 fi
 
 # Smoke check (read-only): this repository's own real specs/ROADMAP.md classifies as classic.
@@ -960,12 +955,12 @@ if [[ -f "$REAL_ROADMAP" ]]; then
   run_ri "$scratch8" --regenerate --dry-run >/dev/null 2>"$scratch8/stderr-real-smoke.txt"
   real_smoke_rc=$?
   if [[ "$real_smoke_rc" -eq 0 ]]; then
-    pass "smoke check: this repository's real specs/ROADMAP.md (scratch copy) classifies classic"
+    common_test_pass "smoke check: this repository's real specs/ROADMAP.md (scratch copy) classifies classic"
   else
-    fail "smoke check: this repository's real specs/ROADMAP.md (scratch copy) should classify classic (got $real_smoke_rc; $(cat "$scratch8/stderr-real-smoke.txt"))"
+    common_test_fail "smoke check: this repository's real specs/ROADMAP.md (scratch copy) should classify classic (got $real_smoke_rc; $(cat "$scratch8/stderr-real-smoke.txt"))"
   fi
 else
-  info "smoke check skipped: no real specs/ROADMAP.md present"
+  common_test_info "smoke check skipped: no real specs/ROADMAP.md present"
 fi
 
 # ─── Case group 5: no-match-as-error pipeline regression (Phase 3) ────────────────────────────
@@ -1025,16 +1020,16 @@ write_roadmap_fixture_empty_next "$scratch9"
 run_ri "$scratch9" --regenerate --dry-run >/dev/null 2>"$scratch9/stderr-empty-next.txt"
 empty_next_rc=$?
 if [[ "$empty_next_rc" -eq 0 ]]; then
-  pass "crash reproduction FIXED: --regenerate against a classic fixture with an empty ## Next body exits 0"
+  common_test_pass "crash reproduction FIXED: --regenerate against a classic fixture with an empty ## Next body exits 0"
 else
-  fail "crash reproduction: --regenerate against a classic fixture with an empty ## Next body should exit 0 (got $empty_next_rc; $(cat "$scratch9/stderr-empty-next.txt"))"
+  common_test_fail "crash reproduction: --regenerate against a classic fixture with an empty ## Next body should exit 0 (got $empty_next_rc; $(cat "$scratch9/stderr-empty-next.txt"))"
 fi
 
 run_ri "$scratch9" --regenerate >/dev/null 2>/dev/null
 if grep -q '\*\*Coverage appendix (uncovered tasks)\*\*:' "$scratch9/specs/ROADMAP.md"; then
-  pass "crash reproduction: coverage appendix is rendered for all ready tasks when ## Next starts empty"
+  common_test_pass "crash reproduction: coverage appendix is rendered for all ready tasks when ## Next starts empty"
 else
-  fail "crash reproduction: expected a coverage appendix once ## Next's Run lines are all absent"
+  common_test_fail "crash reproduction: expected a coverage appendix once ## Next's Run lines are all absent"
 fi
 
 # ─── Live-tree isolation guard ─────────────────────────────────────────────────────────────
@@ -1045,9 +1040,9 @@ REAL_STATE_SUM_AFTER=""
 [[ -f "$REAL_STATE" ]] && REAL_STATE_SUM_AFTER="$(sha256sum "$REAL_STATE" | awk '{print $1}')"
 
 if [[ "$REAL_ROADMAP_SUM_BEFORE" == "$REAL_ROADMAP_SUM_AFTER" && "$REAL_STATE_SUM_BEFORE" == "$REAL_STATE_SUM_AFTER" ]]; then
-  pass "live-tree isolation: real specs/ROADMAP.md and specs/state.json untouched"
+  common_test_pass "live-tree isolation: real specs/ROADMAP.md and specs/state.json untouched"
 else
-  fail "live-tree isolation: real specs/ROADMAP.md or specs/state.json CHANGED during this suite"
+  common_test_fail "live-tree isolation: real specs/ROADMAP.md or specs/state.json CHANGED during this suite"
 fi
 
 echo

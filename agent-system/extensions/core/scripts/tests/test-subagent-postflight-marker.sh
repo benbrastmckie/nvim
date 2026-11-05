@@ -31,6 +31,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # This single relative path resolves to agent-system/extensions/core/hooks/ in source-store mode
 # and to .claude/hooks/ in deployed mode, with no branching -- see plan Phase 1/3.
 POSTFLIGHT_HOOK="$SCRIPT_DIR/../../hooks/subagent-postflight.sh"
@@ -43,9 +44,6 @@ COMMON_LIB_SRC="$SCRIPT_DIR/../lib/common.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 for f in "$POSTFLIGHT_HOOK" "$EVENTS_HOOK_SRC" "$EVENTS_APPEND_SRC" "$DEPLOY_ROOT_GUARD_SRC" "$COMMON_LIB_SRC"; do
   if [ ! -f "$f" ]; then
@@ -59,9 +57,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # =====================================================================
 # subagent-postflight.sh fixtures
@@ -99,9 +95,9 @@ echo '{"reason":"self-check reason","cc_session_id":"cc-self-check-901"}' > "$se
 self_check_out="$(run_postflight "$self_check_dir" "cc-self-check-901")"
 rm -rf "$self_check_dir"
 if echo "$self_check_out" | jq -e '.decision == "block"' >/dev/null 2>&1; then
-  pass "fixture self-check: hook reaches the block branch for a correlated well-formed marker"
+  common_test_pass "fixture self-check: hook reaches the block branch for a correlated well-formed marker"
 else
-  fail "fixture self-check: expected a block decision, got: $self_check_out"
+  common_test_fail "fixture self-check: expected a block decision, got: $self_check_out"
 fi
 
 # =====================================================================
@@ -112,9 +108,9 @@ echo '{"reason":"custom pending reason","cc_session_id":"cc-902"}' > "$d/specs/9
 out="$(run_postflight "$d" "cc-902")"
 rm -rf "$d"
 if echo "$out" | jq -e '.reason == "custom pending reason"' >/dev/null 2>&1; then
-  pass "case (a): well-formed .reason passes through unchanged"
+  common_test_pass "case (a): well-formed .reason passes through unchanged"
 else
-  fail "case (a): expected reason 'custom pending reason', got: $out"
+  common_test_fail "case (a): expected reason 'custom pending reason', got: $out"
 fi
 
 # =====================================================================
@@ -126,9 +122,9 @@ echo '{"cc_session_id":"cc-903"}' > "$d/specs/903_test/.postflight-pending"
 out="$(run_postflight "$d" "cc-903")"
 rm -rf "$d"
 if echo "$out" | jq -e '.reason == "Postflight operations pending"' >/dev/null 2>&1; then
-  pass "case (b): missing .reason falls back to the default (AC 2)"
+  common_test_pass "case (b): missing .reason falls back to the default (AC 2)"
 else
-  fail "case (b): expected default reason, got: $out"
+  common_test_fail "case (b): expected default reason, got: $out"
 fi
 
 # =====================================================================
@@ -149,14 +145,14 @@ out="$(run_postflight "$d" "cc-904-does-not-matter")"
 after_c="$(cat "$d/specs/904_test/.postflight-pending" 2>/dev/null)"
 rm -rf "$d"
 if [ "$out" = "{}" ]; then
-  pass "case (c): an uncorrelatable (non-JSON) marker is never selected -- fail-safe {} (AC 1, revised)"
+  common_test_pass "case (c): an uncorrelatable (non-JSON) marker is never selected -- fail-safe {} (AC 1, revised)"
 else
-  fail "case (c): expected {} for an uncorrelatable malformed marker, got: $out"
+  common_test_fail "case (c): expected {} for an uncorrelatable malformed marker, got: $out"
 fi
 if [ "$before_c" = "$after_c" ]; then
-  pass "case (c): the malformed marker is left byte-identical on disk (not deleted, not mutated)"
+  common_test_pass "case (c): the malformed marker is left byte-identical on disk (not deleted, not mutated)"
 else
-  fail "case (c): malformed marker was mutated or removed -- before=[$before_c] after=[$after_c]"
+  common_test_fail "case (c): malformed marker was mutated or removed -- before=[$before_c] after=[$after_c]"
 fi
 
 # =====================================================================
@@ -169,14 +165,14 @@ jq -n '{reason: "line one\nwith \"quotes\" and \\backslash", cc_session_id: "cc-
 out="$(run_postflight "$d" "cc-905")"
 rm -rf "$d"
 if ! echo "$out" | jq empty >/dev/null 2>&1; then
-  fail "case (d): stdout is not valid JSON: $out"
+  common_test_fail "case (d): stdout is not valid JSON: $out"
 else
   roundtrip="$(echo "$out" | jq -r '.reason')"
   expected="$(printf 'line one\nwith "quotes" and \\backslash')"
   if [ "$roundtrip" = "$expected" ]; then
-    pass "case (d): quote/backslash/newline reason round-trips through valid JSON (AC 3)"
+    common_test_pass "case (d): quote/backslash/newline reason round-trips through valid JSON (AC 3)"
   else
-    fail "case (d): round-trip mismatch. Expected: $(printf '%q' "$expected") Got: $(printf '%q' "$roundtrip")"
+    common_test_fail "case (d): round-trip mismatch. Expected: $(printf '%q' "$expected") Got: $(printf '%q' "$roundtrip")"
   fi
 fi
 
@@ -198,14 +194,14 @@ marker_survived=0
 [ -f "$d/specs/906_test/.postflight-pending" ] && marker_survived=1
 rm -rf "$d"
 if [ "$out" = "{}" ]; then
-  pass "case (e): an uncorrelatable malformed marker with a pre-existing loop guard still allows the stop"
+  common_test_pass "case (e): an uncorrelatable malformed marker with a pre-existing loop guard still allows the stop"
 else
-  fail "case (e): expected {} (stop allowed), got: $out"
+  common_test_fail "case (e): expected {} (stop allowed), got: $out"
 fi
 if [ "$guard_survived" = "1" ] && [ "$marker_survived" = "1" ]; then
-  pass "case (e): neither the malformed marker nor its loop guard is touched by a session that cannot correlate it"
+  common_test_pass "case (e): neither the malformed marker nor its loop guard is touched by a session that cannot correlate it"
 else
-  fail "case (e): expected both the malformed marker and its loop guard to survive untouched (guard_survived=$guard_survived marker_survived=$marker_survived)"
+  common_test_fail "case (e): expected both the malformed marker and its loop guard to survive untouched (guard_survived=$guard_survived marker_survived=$marker_survived)"
 fi
 
 # =====================================================================
@@ -227,19 +223,19 @@ foreign_guard_created_f=0
 [ -f "$d/specs/951_foreign/.postflight-loop-guard" ] && foreign_guard_created_f=1
 rm -rf "$d"
 if echo "$out" | jq -e '.decision == "block" and .reason == "owned reason"' >/dev/null 2>&1; then
-  pass "case (f): block decision comes from the correlated marker, not the foreign one"
+  common_test_pass "case (f): block decision comes from the correlated marker, not the foreign one"
 else
-  fail "case (f): expected block decision with reason 'owned reason', got: $out"
+  common_test_fail "case (f): expected block decision with reason 'owned reason', got: $out"
 fi
 if [ "$foreign_before_f" = "$foreign_after_f" ]; then
-  pass "case (f): the foreign marker is byte-identical after the run"
+  common_test_pass "case (f): the foreign marker is byte-identical after the run"
 else
-  fail "case (f): the foreign marker was mutated -- before=[$foreign_before_f] after=[$foreign_after_f]"
+  common_test_fail "case (f): the foreign marker was mutated -- before=[$foreign_before_f] after=[$foreign_after_f]"
 fi
 if [ "$foreign_guard_created_f" = "0" ]; then
-  pass "case (f): no loop guard was created in the foreign task dir"
+  common_test_pass "case (f): no loop guard was created in the foreign task dir"
 else
-  fail "case (f): a loop guard was unexpectedly created in the foreign task dir"
+  common_test_fail "case (f): a loop guard was unexpectedly created in the foreign task dir"
 fi
 
 # =====================================================================
@@ -264,19 +260,19 @@ foreign_survived_g=0
 cap_line_g="$(grep -c 'CAP-REACHED DELETE:' "$d/.agent-logs/subagent-postflight.log" 2>/dev/null || echo 0)"
 rm -rf "$d"
 if [ "$out" = "{}" ] && [ "$owned_marker_survived_g" = "0" ] && [ "$owned_guard_survived_g" = "0" ]; then
-  pass "case (g): the correlated marker and its loop guard are deleted at the cap"
+  common_test_pass "case (g): the correlated marker and its loop guard are deleted at the cap"
 else
-  fail "case (g): expected the correlated marker+guard to be deleted at the cap, got out=$out owned_marker_survived=$owned_marker_survived_g owned_guard_survived=$owned_guard_survived_g"
+  common_test_fail "case (g): expected the correlated marker+guard to be deleted at the cap, got out=$out owned_marker_survived=$owned_marker_survived_g owned_guard_survived=$owned_guard_survived_g"
 fi
 if [ "$foreign_survived_g" = "1" ]; then
-  pass "case (g): the foreign marker survives the correlated session's cap-reached deletion"
+  common_test_pass "case (g): the foreign marker survives the correlated session's cap-reached deletion"
 else
-  fail "case (g): the foreign marker was deleted by a cap-reached cleanup it does not own"
+  common_test_fail "case (g): the foreign marker was deleted by a cap-reached cleanup it does not own"
 fi
 if [ "$cap_line_g" = "1" ]; then
-  pass "case (g): exactly one CAP-REACHED DELETE: line is logged"
+  common_test_pass "case (g): exactly one CAP-REACHED DELETE: line is logged"
 else
-  fail "case (g): expected exactly one CAP-REACHED DELETE: log line, got $cap_line_g"
+  common_test_fail "case (g): expected exactly one CAP-REACHED DELETE: log line, got $cap_line_g"
 fi
 
 # =====================================================================
@@ -290,14 +286,14 @@ out="$(run_postflight "$d" "cc-some-active-session")"
 after_h="$(cat "$d/specs/954_test/.postflight-pending" 2>/dev/null)"
 rm -rf "$d"
 if [ "$out" = "{}" ]; then
-  pass "case (h): a legacy marker with no cc_session_id key is never selected -- fail-safe {}"
+  common_test_pass "case (h): a legacy marker with no cc_session_id key is never selected -- fail-safe {}"
 else
-  fail "case (h): expected {} for a legacy marker with no cc_session_id key, got: $out"
+  common_test_fail "case (h): expected {} for a legacy marker with no cc_session_id key, got: $out"
 fi
 if [ "$before_h" = "$after_h" ]; then
-  pass "case (h): the legacy marker is left byte-identical on disk"
+  common_test_pass "case (h): the legacy marker is left byte-identical on disk"
 else
-  fail "case (h): the legacy marker was mutated or removed -- before=[$before_h] after=[$after_h]"
+  common_test_fail "case (h): the legacy marker was mutated or removed -- before=[$before_h] after=[$after_h]"
 fi
 
 # =====================================================================
@@ -346,9 +342,9 @@ fi
 if [ "$events_out" = "{}" ] && [ "$event_count" = "1" ] \
   && jq -e '.category == "deviation" and (.session_id | test("^sess_[0-9]+_[a-zA-Z0-9]+$")) and .event_type == "malformed_postflight_marker"' \
        "$events_root/specs/events.jsonl" >/dev/null 2>&1; then
-  pass "events companion: malformed marker + matching state.json -> exactly one deviation event (AC 4)"
+  common_test_pass "events companion: malformed marker + matching state.json -> exactly one deviation event (AC 4)"
 else
-  fail "events companion: expected exactly one deviation event and {} stdout. stdout=$events_out count=$event_count"
+  common_test_fail "events companion: expected exactly one deviation event and {} stdout. stdout=$events_out count=$event_count"
 fi
 rm -rf "$events_root"
 
@@ -360,9 +356,9 @@ printf 'session_id=sess_1\nskill=foo\n' > "$events_root2/specs/908_test/.postfli
 jq -n '{active_projects: []}' > "$events_root2/specs/state.json"
 events_out2="$(run_events_hook "$events_root2" "agent1" "$events_root2" "cc-uuid-1")"
 if [ "$events_out2" = "{}" ] && [ ! -f "$events_root2/specs/events.jsonl" ]; then
-  pass "events companion: no matching state.json entry -> no event, clean {} exit"
+  common_test_pass "events companion: no matching state.json entry -> no event, clean {} exit"
 else
-  fail "events companion: expected no event and {} stdout with no matching state.json entry. stdout=$events_out2"
+  common_test_fail "events companion: expected no event and {} stdout with no matching state.json entry. stdout=$events_out2"
 fi
 rm -rf "$events_root2"
 
@@ -384,9 +380,9 @@ fi
 if [ "$events_out3" = "{}" ] && [ "$event_count3" = "1" ] \
   && jq -e '.event_type == "subagent_stop" and .session_id == "sess_owned_955" and .cc_session_id == "cc-owned-955"' \
        "$events_root3/specs/events.jsonl" >/dev/null 2>&1; then
-  pass "events companion: cross-session correlation -- exactly one event, correlated session_id, matching cc_session_id"
+  common_test_pass "events companion: cross-session correlation -- exactly one event, correlated session_id, matching cc_session_id"
 else
-  fail "events companion: expected exactly one correlated subagent_stop event. stdout=$events_out3 count=$event_count3"
+  common_test_fail "events companion: expected exactly one correlated subagent_stop event. stdout=$events_out3 count=$event_count3"
 fi
 rm -rf "$events_root3"
 
@@ -398,9 +394,9 @@ jq -n '{cc_session_id:"cc-owned-957",session_id:"sess_owned_957",skill:"skill-a"
   > "$events_root4/specs/957_owned/.postflight-pending"
 events_out4="$(run_events_hook "$events_root4" "agent1" "$events_root4" "cc-nomatch")"
 if [ "$events_out4" = "{}" ] && [ ! -f "$events_root4/specs/events.jsonl" ]; then
-  pass "events companion: cross-session no-match -> zero lines appended, clean {} exit (fail-safe)"
+  common_test_pass "events companion: cross-session no-match -> zero lines appended, clean {} exit (fail-safe)"
 else
-  fail "events companion: expected no event and {} stdout on cross-session no-match. stdout=$events_out4"
+  common_test_fail "events companion: expected no event and {} stdout on cross-session no-match. stdout=$events_out4"
 fi
 rm -rf "$events_root4"
 

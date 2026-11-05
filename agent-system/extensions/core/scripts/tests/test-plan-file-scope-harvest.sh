@@ -52,6 +52,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 HARVESTER="$SCRIPT_DIR/../plan-file-scope-harvest.sh"
 
 if [[ ! -f "$HARVESTER" ]]; then
@@ -67,15 +68,10 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-info "Driving harvester at: $HARVESTER"
+common_test_info "Driving harvester at: $HARVESTER"
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # make_fake_repo: mktemps a directory carrying scripts/check-module-invariants.sh and
 # scripts/typst-sync-check.sh stub files (capability gate OPEN) plus a specs/ subdirectory for
@@ -101,16 +97,16 @@ assert_json_array_eq() {
   # $1 = actual JSON, $2 = expected JSON (both as compact arrays), $3 = case label
   local actual="$1" expected="$2" label="$3"
   if ! echo "$actual" | jq -e 'type == "array"' >/dev/null 2>&1; then
-    fail "$label: output is not a valid JSON array: $actual"
+    common_test_fail "$label: output is not a valid JSON array: $actual"
     return
   fi
   local norm_actual norm_expected
   norm_actual="$(echo "$actual" | jq -c 'sort')"
   norm_expected="$(echo "$expected" | jq -c 'sort')"
   if [[ "$norm_actual" == "$norm_expected" ]]; then
-    pass "$label: harvested set matches expected ($norm_expected)"
+    common_test_pass "$label: harvested set matches expected ($norm_expected)"
   else
-    fail "$label: expected $norm_expected, got $norm_actual"
+    common_test_fail "$label: expected $norm_expected, got $norm_actual"
   fi
 }
 
@@ -128,7 +124,7 @@ EOF
 OUT_1="$(bash "$HARVESTER" "$FIXTURE_1")"
 EXIT_1=$?
 assert_json_array_eq "$OUT_1" '["scripts/foo.sh"]' "Case 1 (colon-outside-bold)"
-if [[ "$EXIT_1" -eq 0 ]]; then pass "Case 1: exit code 0"; else fail "Case 1: expected exit 0, got $EXIT_1"; fi
+if [[ "$EXIT_1" -eq 0 ]]; then common_test_pass "Case 1: exit code 0"; else common_test_fail "Case 1: expected exit 0, got $EXIT_1"; fi
 
 # ── Case 2: colon-inside-bold punctuation form ───────────────────────────────────────────────
 FIXTURE_2="$WORKDIR/case2.md"
@@ -158,9 +154,9 @@ EOF
 OUT_3="$(bash "$HARVESTER" "$FIXTURE_3")"
 assert_json_array_eq "$OUT_3" '["path/to/file.md"]' "Case 3 (description discarded)"
 if echo "$OUT_3" | grep -qF ' - '; then
-  fail "Case 3: description fragment leaked into harvested output: $OUT_3"
+  common_test_fail "Case 3: description fragment leaked into harvested output: $OUT_3"
 else
-  pass "Case 3: no description fragment in harvested output"
+  common_test_pass "Case 3: no description fragment in harvested output"
 fi
 
 # ── Case 4: indented wrapped continuation line contributes nothing ──────────────────────────
@@ -194,9 +190,9 @@ OUT_5="$(bash "$HARVESTER" "$FIXTURE_5")"
 EXIT_5=$?
 assert_json_array_eq "$OUT_5" '[]' "Case 5 (prose sentinel)"
 if [[ "$EXIT_5" -eq 0 ]]; then
-  pass "Case 5: prose sentinel does not cause a non-zero exit"
+  common_test_pass "Case 5: prose sentinel does not cause a non-zero exit"
 else
-  fail "Case 5: expected exit 0 for a harmless prose sentinel, got $EXIT_5"
+  common_test_fail "Case 5: expected exit 0 for a harmless prose sentinel, got $EXIT_5"
 fi
 
 # ── Case 6: multi-phase union and dedup ──────────────────────────────────────────────────────
@@ -226,9 +222,9 @@ OUT_6="$(bash "$HARVESTER" "$FIXTURE_6")"
 assert_json_array_eq "$OUT_6" '["scripts/shared.sh","scripts/only-in-phase-1.sh","scripts/only-in-phase-2.sh"]' "Case 6 (multi-phase union/dedup)"
 DUP_COUNT="$(echo "$OUT_6" | jq '[.[] | select(. == "scripts/shared.sh")] | length')"
 if [[ "$DUP_COUNT" == "1" ]]; then
-  pass "Case 6: shared path deduplicated to a single entry"
+  common_test_pass "Case 6: shared path deduplicated to a single entry"
 else
-  fail "Case 6: expected shared path to appear exactly once, got count=$DUP_COUNT"
+  common_test_fail "Case 6: expected shared path to appear exactly once, got count=$DUP_COUNT"
 fi
 
 # ── Case 7: zero "Files to modify" occurrences returns [] with exit 0 ───────────────────────
@@ -243,9 +239,9 @@ OUT_7="$(bash "$HARVESTER" "$FIXTURE_7")"
 EXIT_7=$?
 assert_json_array_eq "$OUT_7" '[]' "Case 7 (no Files to modify field at all)"
 if [[ "$EXIT_7" -eq 0 ]]; then
-  pass "Case 7: exit code 0 for the no-field case"
+  common_test_pass "Case 7: exit code 0 for the no-field case"
 else
-  fail "Case 7: expected exit 0, got $EXIT_7"
+  common_test_fail "Case 7: expected exit 0, got $EXIT_7"
 fi
 
 # ── Case 10: list-item-wrapped field form, indented entries, no bleed into next field ────────
@@ -268,14 +264,14 @@ OUT_10="$(bash "$HARVESTER" "$FIXTURE_10")"
 EXIT_10=$?
 assert_json_array_eq "$OUT_10" '["scripts/tests/curl-stub.sh","scripts/tests/generate-test-fixtures.py","scripts/tests/fixtures/"]' "Case 10 (list-item-wrapped field form)"
 if [[ "$EXIT_10" -eq 0 ]]; then
-  pass "Case 10: exit code 0"
+  common_test_pass "Case 10: exit code 0"
 else
-  fail "Case 10: expected exit 0, got $EXIT_10"
+  common_test_fail "Case 10: expected exit 0, got $EXIT_10"
 fi
 if echo "$OUT_10" | grep -qi "bash -n\|Scratch driver"; then
-  fail "Case 10: the following Verification field's indented sub-bullets leaked into the harvest: $OUT_10"
+  common_test_fail "Case 10: the following Verification field's indented sub-bullets leaked into the harvest: $OUT_10"
 else
-  pass "Case 10: the following Verification field's indented sub-bullets did not leak into the harvest"
+  common_test_pass "Case 10: the following Verification field's indented sub-bullets did not leak into the harvest"
 fi
 
 # ── Case 11: capability gate closed (bare repo) == no root at all ───────────────────────────
@@ -304,9 +300,9 @@ assert_json_array_eq "$OUT_11_BARE" '["FormalSystem/Foo.lean"]' "Case 11 (capabi
 norm_bare="$(echo "$OUT_11_BARE" | jq -c 'sort')"
 norm_noroot="$(echo "$OUT_11_NOROOT" | jq -c 'sort')"
 if [[ "$norm_bare" == "$norm_noroot" ]]; then
-  pass "Case 11: capability-gate-closed output matches no-root output"
+  common_test_pass "Case 11: capability-gate-closed output matches no-root output"
 else
-  fail "Case 11: capability-gate-closed ($norm_bare) differs from no-root ($norm_noroot)"
+  common_test_fail "Case 11: capability-gate-closed ($norm_bare) differs from no-root ($norm_noroot)"
 fi
 rm -rf "$BARE_REPO"
 
@@ -317,9 +313,9 @@ OUT_12="$(cd "$WORKDIR" && PLAN_FILE_SCOPE_HARVEST_ROOT="/nonexistent-root-$$" b
 EXIT_12=$?
 assert_json_array_eq "$OUT_12" '["FormalSystem/Foo.lean"]' "Case 12 (nonexistent PLAN_FILE_SCOPE_HARVEST_ROOT falls back)"
 if [[ "$EXIT_12" -eq 0 ]]; then
-  pass "Case 12: exit code 0 on unresolvable override root"
+  common_test_pass "Case 12: exit code 0 on unresolvable override root"
 else
-  fail "Case 12: expected exit 0, got $EXIT_12"
+  common_test_fail "Case 12: expected exit 0, got $EXIT_12"
 fi
 
 # ── Case 13: status.typ appended when present under a capable fake repo ─────────────────────
@@ -532,18 +528,18 @@ rm -rf "$FAKE_REPO_21"
 bash "$HARVESTER" "$WORKDIR/does-not-exist.md" >/dev/null 2>&1
 EXIT_8=$?
 if [[ "$EXIT_8" -ne 0 ]]; then
-  pass "Case 8: nonexistent plan file argument exits non-zero ($EXIT_8)"
+  common_test_pass "Case 8: nonexistent plan file argument exits non-zero ($EXIT_8)"
 else
-  fail "Case 8: expected non-zero exit for a nonexistent plan file, got 0"
+  common_test_fail "Case 8: expected non-zero exit for a nonexistent plan file, got 0"
 fi
 
 # ── Case 9: missing argument (usage error) exits non-zero ───────────────────────────────────
 bash "$HARVESTER" >/dev/null 2>&1
 EXIT_9=$?
 if [[ "$EXIT_9" -ne 0 ]]; then
-  pass "Case 9: missing positional argument exits non-zero ($EXIT_9)"
+  common_test_pass "Case 9: missing positional argument exits non-zero ($EXIT_9)"
 else
-  fail "Case 9: expected non-zero exit for a missing argument, got 0"
+  common_test_fail "Case 9: expected non-zero exit for a missing argument, got 0"
 fi
 
 # ── Case 22: a backticked slashless reserved token (the whole-tree-claim sentinel) harvests

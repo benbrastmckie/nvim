@@ -29,15 +29,13 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. Resolve via the
 # git worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 CHECKER_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/check-deploy-freshness.sh"
@@ -107,16 +105,11 @@ fi
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
-info "Using checker: $CHECKER"
-info "Using library: $LIB"
+common_test_info "Using checker: $CHECKER"
+common_test_info "Using library: $LIB"
 
 # --- Fixture: throwaway source-store stand-in with a committed "ext" subdirectory ---
 SOURCE_REPO="$WORKDIR/source-repo"
@@ -172,14 +165,14 @@ OUT_STALE="$(run_checker "$CONSUMER_STALE" 2>&1)"
 RC_STALE=$?
 WARN_COUNT_STALE=$(printf '%s\n' "$OUT_STALE" | grep -c '^WARN:')
 if [[ "$RC_STALE" -eq 0 && "$WARN_COUNT_STALE" -eq 1 && "$OUT_STALE" == *"'ext'"* ]]; then
-  pass "STALE: exactly one WARN naming the extension, exit 0"
+  common_test_pass "STALE: exactly one WARN naming the extension, exit 0"
 else
-  fail "STALE: expected exactly one WARN naming 'ext' and exit 0, got rc=$RC_STALE warn_count=$WARN_COUNT_STALE output=<<<$OUT_STALE>>>"
+  common_test_fail "STALE: expected exactly one WARN naming 'ext' and exit 0, got rc=$RC_STALE warn_count=$WARN_COUNT_STALE output=<<<$OUT_STALE>>>"
 fi
 if [[ "$OUT_STALE" == *"deploy-headless.sh"* ]]; then
-  pass "STALE: WARN names the regeneration remedy"
+  common_test_pass "STALE: WARN names the regeneration remedy"
 else
-  fail "STALE: WARN did not name deploy-headless.sh remedy: <<<$OUT_STALE>>>"
+  common_test_fail "STALE: WARN did not name deploy-headless.sh remedy: <<<$OUT_STALE>>>"
 fi
 
 # =====================================================================
@@ -190,9 +183,9 @@ write_state "$CONSUMER_FRESH" "$EXT_DIR" "$HEAD_V1"
 OUT_FRESH="$(run_checker "$CONSUMER_FRESH" 2>&1)"
 RC_FRESH=$?
 if [[ "$RC_FRESH" -eq 0 && -z "$OUT_FRESH" ]]; then
-  pass "FRESH: no output, exit 0"
+  common_test_pass "FRESH: no output, exit 0"
 else
-  fail "FRESH: expected silence and exit 0, got rc=$RC_FRESH output=<<<$OUT_FRESH>>>"
+  common_test_fail "FRESH: expected silence and exit 0, got rc=$RC_FRESH output=<<<$OUT_FRESH>>>"
 fi
 
 # =====================================================================
@@ -203,9 +196,9 @@ write_state "$CONSUMER_MISSING" "$EXT_DIR" "" true
 OUT_MISSING="$(run_checker "$CONSUMER_MISSING" 2>&1)"
 RC_MISSING=$?
 if [[ "$RC_MISSING" -eq 0 && -z "$OUT_MISSING" ]]; then
-  pass "MISSING FIELD: no output, exit 0"
+  common_test_pass "MISSING FIELD: no output, exit 0"
 else
-  fail "MISSING FIELD: expected silence and exit 0, got rc=$RC_MISSING output=<<<$OUT_MISSING>>>"
+  common_test_fail "MISSING FIELD: expected silence and exit 0, got rc=$RC_MISSING output=<<<$OUT_MISSING>>>"
 fi
 
 # =====================================================================
@@ -218,9 +211,9 @@ write_state "$CONSUMER_NONGIT" "$NONGIT_DIR" "deadbeef"
 OUT_NONGIT="$(run_checker "$CONSUMER_NONGIT" 2>&1)"
 RC_NONGIT=$?
 if [[ "$RC_NONGIT" -eq 0 && -z "$OUT_NONGIT" ]]; then
-  pass "UNVERIFIABLE (non-git source_dir): no output, exit 0"
+  common_test_pass "UNVERIFIABLE (non-git source_dir): no output, exit 0"
 else
-  fail "UNVERIFIABLE (non-git source_dir): expected silence and exit 0, got rc=$RC_NONGIT output=<<<$OUT_NONGIT>>>"
+  common_test_fail "UNVERIFIABLE (non-git source_dir): expected silence and exit 0, got rc=$RC_NONGIT output=<<<$OUT_NONGIT>>>"
 fi
 
 # =====================================================================
@@ -231,9 +224,9 @@ write_state "$CONSUMER_NOPATH" "$WORKDIR/does-not-exist-xyz" "deadbeef"
 OUT_NOPATH="$(run_checker "$CONSUMER_NOPATH" 2>&1)"
 RC_NOPATH=$?
 if [[ "$RC_NOPATH" -eq 0 && -z "$OUT_NOPATH" ]]; then
-  pass "UNVERIFIABLE (nonexistent source_dir): no output, exit 0"
+  common_test_pass "UNVERIFIABLE (nonexistent source_dir): no output, exit 0"
 else
-  fail "UNVERIFIABLE (nonexistent source_dir): expected silence and exit 0, got rc=$RC_NOPATH output=<<<$OUT_NOPATH>>>"
+  common_test_fail "UNVERIFIABLE (nonexistent source_dir): expected silence and exit 0, got rc=$RC_NOPATH output=<<<$OUT_NOPATH>>>"
 fi
 
 # =====================================================================
@@ -248,9 +241,9 @@ write_state "$CONSUMER_SCOPING" "$EXT_DIR" "$HEAD_V1"
 OUT_SCOPING="$(run_checker "$CONSUMER_SCOPING" 2>&1)"
 RC_SCOPING=$?
 if [[ "$RC_SCOPING" -eq 0 && -z "$OUT_SCOPING" ]]; then
-  pass "SCOPING: change outside ext/ subdirectory produces no output (path-scoped, not whole-repo HEAD)"
+  common_test_pass "SCOPING: change outside ext/ subdirectory produces no output (path-scoped, not whole-repo HEAD)"
 else
-  fail "SCOPING: expected silence after unrelated commit, got rc=$RC_SCOPING output=<<<$OUT_SCOPING>>>"
+  common_test_fail "SCOPING: expected silence after unrelated commit, got rc=$RC_SCOPING output=<<<$OUT_SCOPING>>>"
 fi
 
 # =====================================================================
@@ -332,8 +325,8 @@ EOF
 
 while IFS= read -r line; do
   case "$line" in
-    LIBPASS*) pass "${line#LIBPASS }" ;;
-    LIBFAIL*) fail "${line#LIBFAIL }" ;;
+    LIBPASS*) common_test_pass "${line#LIBPASS }" ;;
+    LIBFAIL*) common_test_fail "${line#LIBFAIL }" ;;
     *) : ;;
   esac
 done < "$WORKDIR/partial-lib-direct.out"
@@ -344,9 +337,9 @@ OUT_PARTIAL="$(run_checker "$CONSUMER_PARTIAL" 2>&1)"
 RC_PARTIAL=$?
 WARN_COUNT_PARTIAL=$(printf '%s\n' "$OUT_PARTIAL" | grep -c '^WARN:')
 if [[ "$RC_PARTIAL" -eq 0 && "$WARN_COUNT_PARTIAL" -eq 1 && "$OUT_PARTIAL" == *"'extA'"* && "$OUT_PARTIAL" != *"'extB'"* ]]; then
-  pass "partial (checker subprocess): exactly one WARN naming 'extA', no mention of 'extB', exit 0"
+  common_test_pass "partial (checker subprocess): exactly one WARN naming 'extA', no mention of 'extB', exit 0"
 else
-  fail "partial (checker subprocess): expected exactly one WARN naming 'extA' only, got rc=$RC_PARTIAL warn_count=$WARN_COUNT_PARTIAL output=<<<$OUT_PARTIAL>>>"
+  common_test_fail "partial (checker subprocess): expected exactly one WARN naming 'extA' only, got rc=$RC_PARTIAL warn_count=$WARN_COUNT_PARTIAL output=<<<$OUT_PARTIAL>>>"
 fi
 
 # =====================================================================
@@ -418,8 +411,8 @@ fi
 
 while IFS= read -r line; do
   case "$line" in
-    LIBPASS*) pass "${line#LIBPASS }" ;;
-    LIBFAIL*) fail "${line#LIBFAIL }" ;;
+    LIBPASS*) common_test_pass "${line#LIBPASS }" ;;
+    LIBFAIL*) common_test_fail "${line#LIBFAIL }" ;;
     *) : ;;
   esac
 done < "$WORKDIR/lib-direct.out"
@@ -438,30 +431,30 @@ for i in 1 2 3 4; do
   run_checker "$CONSUMER_STREAK" > "$WORKDIR/streak-run-${i}.out" 2>&1
 done
 if [[ -f "$STREAK_FILE" ]] && [[ "$(jq -r '.streak' "$STREAK_FILE" 2>/dev/null)" == "4" ]]; then
-  pass "streak counter: 4 consecutive stale runs -> streak=4, no escalated banner yet"
+  common_test_pass "streak counter: 4 consecutive stale runs -> streak=4, no escalated banner yet"
 else
-  fail "streak counter: expected streak=4 after 4 runs, got <<<$(cat "$STREAK_FILE" 2>/dev/null || echo MISSING)>>>"
+  common_test_fail "streak counter: expected streak=4 after 4 runs, got <<<$(cat "$STREAK_FILE" 2>/dev/null || echo MISSING)>>>"
 fi
 if ! grep -q "consecutive" "$WORKDIR/streak-run-4.out"; then
-  pass "streak counter: no escalated banner below threshold (streak=4 < 5)"
+  common_test_pass "streak counter: no escalated banner below threshold (streak=4 < 5)"
 else
-  fail "streak counter: escalated banner appeared before threshold: <<<$(cat "$WORKDIR/streak-run-4.out")>>>"
+  common_test_fail "streak counter: escalated banner appeared before threshold: <<<$(cat "$WORKDIR/streak-run-4.out")>>>"
 fi
 
 run_checker "$CONSUMER_STREAK" > "$WORKDIR/streak-run-5.out" 2>&1
 if [[ "$(jq -r '.streak' "$STREAK_FILE" 2>/dev/null)" == "5" ]] && grep -q "5 consecutive" "$WORKDIR/streak-run-5.out"; then
-  pass "streak counter: 5th consecutive stale run -> escalated banner naming the count"
+  common_test_pass "streak counter: 5th consecutive stale run -> escalated banner naming the count"
 else
-  fail "streak counter: expected streak=5 and escalated banner on run 5, got <<<$(cat "$WORKDIR/streak-run-5.out")>>>"
+  common_test_fail "streak counter: expected streak=5 and escalated banner on run 5, got <<<$(cat "$WORKDIR/streak-run-5.out")>>>"
 fi
 
 # Reset-on-fresh: switch the fixture to the recorded-matches-current (fresh) state.
 write_state "$CONSUMER_STREAK" "$EXT_DIR" "$HEAD_V1"
 run_checker "$CONSUMER_STREAK" > "$WORKDIR/streak-run-fresh.out" 2>&1
 if [[ ! -f "$STREAK_FILE" ]]; then
-  pass "streak counter: reset (file removed) on a fresh run"
+  common_test_pass "streak counter: reset (file removed) on a fresh run"
 else
-  fail "streak counter: expected streak file removed after fresh run, still present: $(cat "$STREAK_FILE")"
+  common_test_fail "streak counter: expected streak file removed after fresh run, still present: $(cat "$STREAK_FILE")"
 fi
 
 # Cap at 999: pre-seed the counter above the cap and confirm one more stale run clamps it.
@@ -470,9 +463,9 @@ mkdir -p "$CONSUMER_STREAK/specs"
 echo '{"streak": 999, "extensions": ["ext"], "updated": "2020-01-01T00:00:00Z"}' > "$STREAK_FILE"
 run_checker "$CONSUMER_STREAK" > /dev/null 2>&1
 if [[ "$(jq -r '.streak' "$STREAK_FILE" 2>/dev/null)" == "999" ]]; then
-  pass "streak counter: capped at 999, does not grow unbounded"
+  common_test_pass "streak counter: capped at 999, does not grow unbounded"
 else
-  fail "streak counter: expected cap held at 999, got <<<$(cat "$STREAK_FILE")>>>"
+  common_test_fail "streak counter: expected cap held at 999, got <<<$(cat "$STREAK_FILE")>>>"
 fi
 rm -f "$STREAK_FILE"
 
@@ -482,9 +475,9 @@ write_state "$CONSUMER_STREAK_NOSPECS" "$EXT_DIR" "00000000000000000000000000000
 run_checker "$CONSUMER_STREAK_NOSPECS" > /dev/null 2>&1
 RC_NOSPECS=$?
 if [[ "$RC_NOSPECS" -eq 0 ]] && [[ ! -d "$CONSUMER_STREAK_NOSPECS/specs" ]]; then
-  pass "streak counter: silent skip when specs/ does not exist (no dir created, exit 0)"
+  common_test_pass "streak counter: silent skip when specs/ does not exist (no dir created, exit 0)"
 else
-  fail "streak counter: expected exit 0 and no specs/ dir created, got rc=$RC_NOSPECS dir_exists=$([[ -d "$CONSUMER_STREAK_NOSPECS/specs" ]] && echo yes || echo no)"
+  common_test_fail "streak counter: expected exit 0 and no specs/ dir created, got rc=$RC_NOSPECS dir_exists=$([[ -d "$CONSUMER_STREAK_NOSPECS/specs" ]] && echo yes || echo no)"
 fi
 
 echo ""

@@ -60,15 +60,13 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 SRC_SCRIPTS_DIR="$SCRIPT_DIR/.."
 SCRIPT_UNDER_TEST="claude-refresh.sh"
 
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 # install_neutral_notify_stubs DIR
 # Installs a neutral notify-send + systemd-run pair into DIR (prepended onto $PATH by the caller),
@@ -133,21 +131,21 @@ cp "$SRC_SCRIPTS_DIR/$SCRIPT_UNDER_TEST" "$WORKDIR/$SCRIPT_UNDER_TEST"
 # main() being defined is expected; what matters is that it was NOT invoked by the `source`
 # above. Verified implicitly: main() unconditionally calls exit before this line, in every
 # code path, so reaching this line at all already proves sourcing had no side effects.
-pass "sourcing $SCRIPT_UNDER_TEST defined functions without executing main() (this line was reached)"
+common_test_pass "sourcing $SCRIPT_UNDER_TEST defined functions without executing main() (this line was reached)"
 
 # =====================================================================
 # Assertion (a): system-slice cgroup exclusion
 # =====================================================================
 if is_system_slice_cgroup "0::/system.slice/earlyoom.service"; then
-  pass "is_system_slice_cgroup: a /system.slice/ cgroup is excluded (earlyoom.service)"
+  common_test_pass "is_system_slice_cgroup: a /system.slice/ cgroup is excluded (earlyoom.service)"
 else
-  fail "is_system_slice_cgroup: a /system.slice/ cgroup was NOT excluded (earlyoom.service)"
+  common_test_fail "is_system_slice_cgroup: a /system.slice/ cgroup was NOT excluded (earlyoom.service)"
 fi
 
 if is_system_slice_cgroup "0::/user.slice/user-1000.slice/user@1000.service/app.slice/app-org.wezfurlong.wezterm.scope"; then
-  fail "is_system_slice_cgroup: a real user-session cgroup was incorrectly excluded"
+  common_test_fail "is_system_slice_cgroup: a real user-session cgroup was incorrectly excluded"
 else
-  pass "is_system_slice_cgroup: a real user-session cgroup is NOT excluded"
+  common_test_pass "is_system_slice_cgroup: a real user-session cgroup is NOT excluded"
 fi
 
 # =====================================================================
@@ -157,16 +155,16 @@ fi
 # regex flag, but comm is "earlyoom", not a Claude executable.
 EARLYOOM_ARGS='/nix/store/xxxx-earlyoom-1.9.0/bin/earlyoom -m10 -n -r3600 -s10 --avoid ^(gnome-shell|Xwayland|niri)$ --prefer ^(lean|lake|claude|node|npm|opencode)$'
 if is_claude_executable_comm "earlyoom" "$EARLYOOM_ARGS"; then
-  fail "is_claude_executable_comm: earlyoom (argv mentions 'claude') was incorrectly accepted as a Claude executable"
+  common_test_fail "is_claude_executable_comm: earlyoom (argv mentions 'claude') was incorrectly accepted as a Claude executable"
 else
-  pass "is_claude_executable_comm: earlyoom (argv mentions 'claude') is rejected by the comm predicate"
+  common_test_pass "is_claude_executable_comm: earlyoom (argv mentions 'claude') is rejected by the comm predicate"
 fi
 
 # A genuine claude CLI process must still be accepted.
 if is_claude_executable_comm "claude" "claude --dangerously-skip-permissions"; then
-  pass "is_claude_executable_comm: a genuine 'claude' comm is accepted"
+  common_test_pass "is_claude_executable_comm: a genuine 'claude' comm is accepted"
 else
-  fail "is_claude_executable_comm: a genuine 'claude' comm was incorrectly rejected"
+  common_test_fail "is_claude_executable_comm: a genuine 'claude' comm was incorrectly rejected"
 fi
 
 # =====================================================================
@@ -205,15 +203,15 @@ INHIBITOR_ARGS_ALIVE="systemd-inhibit --what=sleep:idle --who=claude-code --why=
 INHIBITOR_ARGS_DEAD="systemd-inhibit --what=sleep:idle --who=claude-code --why=Claude Code session --mode=block tail --pid=${DEAD_PID_LITERAL} -f /dev/null"
 
 if is_live_inhibitor_target "$INHIBITOR_ARGS_ALIVE"; then
-  pass "is_live_inhibitor_target: excludes an inhibitor whose target (pid $ALIVE_PID_LITERAL) is alive"
+  common_test_pass "is_live_inhibitor_target: excludes an inhibitor whose target (pid $ALIVE_PID_LITERAL) is alive"
 else
-  fail "is_live_inhibitor_target: did NOT exclude an inhibitor whose target (pid $ALIVE_PID_LITERAL) is alive"
+  common_test_fail "is_live_inhibitor_target: did NOT exclude an inhibitor whose target (pid $ALIVE_PID_LITERAL) is alive"
 fi
 
 if is_live_inhibitor_target "$INHIBITOR_ARGS_DEAD"; then
-  fail "is_live_inhibitor_target: incorrectly excludes an inhibitor whose target (pid $DEAD_PID_LITERAL) is dead -- tautological check"
+  common_test_fail "is_live_inhibitor_target: incorrectly excludes an inhibitor whose target (pid $DEAD_PID_LITERAL) is dead -- tautological check"
 else
-  pass "is_live_inhibitor_target: does not exclude an inhibitor once its target (pid $DEAD_PID_LITERAL) is dead -- genuine liveness test"
+  common_test_pass "is_live_inhibitor_target: does not exclude an inhibitor once its target (pid $DEAD_PID_LITERAL) is dead -- genuine liveness test"
 fi
 
 # Restore the production seam definition immediately -- the override above must not leak
@@ -225,9 +223,9 @@ _pid_is_alive() {
 
 # A row with no --pid=<N> at all must never be treated as a live inhibitor.
 if is_live_inhibitor_target "systemd-inhibit --what=sleep:idle --who=someone --mode=block sleep infinity"; then
-  fail "is_live_inhibitor_target: incorrectly matched a systemd-inhibit row with no --pid=<N> target"
+  common_test_fail "is_live_inhibitor_target: incorrectly matched a systemd-inhibit row with no --pid=<N> target"
 else
-  pass "is_live_inhibitor_target: a systemd-inhibit row with no --pid=<N> target is not treated as a live inhibitor"
+  common_test_pass "is_live_inhibitor_target: a systemd-inhibit row with no --pid=<N> target is not treated as a live inhibitor"
 fi
 
 # =====================================================================
@@ -238,9 +236,9 @@ fi
 # positive (the refresh script's own transient subshells).
 SELF_PATH_ARGS="bash agent-system/extensions/core/scripts/claude-refresh.sh"
 if is_claude_executable_comm "bash" "$SELF_PATH_ARGS"; then
-  fail "is_claude_executable_comm: a bash-comm row mentioning the script's own path was incorrectly accepted"
+  common_test_fail "is_claude_executable_comm: a bash-comm row mentioning the script's own path was incorrectly accepted"
 else
-  pass "is_claude_executable_comm: a bash-comm row mentioning the script's own path is rejected by the comm predicate"
+  common_test_pass "is_claude_executable_comm: a bash-comm row mentioning the script's own path is rejected by the comm predicate"
 fi
 
 # (d-2) Direct end-to-end case for the $$/ppid zero-query self-exclusion: run the fixed
@@ -264,7 +262,7 @@ fi
 REAL_PS_BIN="$(command -v ps)"
 if [ -z "$REAL_PS_BIN" ]; then
   echo "ERROR: cannot resolve the real 'ps' binary needed to build the self-exclusion (d-2) fixture" >&2
-  fail "self-exclusion (d-2): real ps binary not found -- cannot construct fixture"
+  common_test_fail "self-exclusion (d-2): real ps binary not found -- cannot construct fixture"
   REAL_PS_BIN=""
 fi
 
@@ -343,10 +341,10 @@ FAKE_PS_EOF
   SELF_EXCLUSION_OUT="$(PATH="$FAKE_BIN_DIR:$PATH" bash "$WORKDIR/$SCRIPT_UNDER_TEST" 2>&1)"
 
   if echo "$SELF_EXCLUSION_OUT" | grep -q "$CONTROL_PID"; then
-    pass "self-exclusion (d-2): the control row (different pid) is reported as an orphan"
+    common_test_pass "self-exclusion (d-2): the control row (different pid) is reported as an orphan"
   else
-    fail "self-exclusion (d-2): the control row (different pid) was NOT reported -- harness defect, not a real assertion"
-    info "output was: $SELF_EXCLUSION_OUT"
+    common_test_fail "self-exclusion (d-2): the control row (different pid) was NOT reported -- harness defect, not a real assertion"
+    common_test_info "output was: $SELF_EXCLUSION_OUT"
   fi
 
   # The self-row's PID varies per run (it is the subprocess's own pid); we cannot grep for a
@@ -354,13 +352,13 @@ FAKE_PS_EOF
   # (the control row only) rather than 2, which is the direct, real behavioral proof that the
   # self-referencing row was excluded.
   if echo "$SELF_EXCLUSION_OUT" | grep -q "^Found 1 orphaned"; then
-    pass "self-exclusion (d-2): exactly one orphan reported (self row excluded, control row kept)"
+    common_test_pass "self-exclusion (d-2): exactly one orphan reported (self row excluded, control row kept)"
   elif echo "$SELF_EXCLUSION_OUT" | grep -q "^Found 2 orphaned"; then
-    fail "self-exclusion (d-2): two orphans reported -- the script's own self row was NOT excluded"
-    info "output was: $SELF_EXCLUSION_OUT"
+    common_test_fail "self-exclusion (d-2): two orphans reported -- the script's own self row was NOT excluded"
+    common_test_info "output was: $SELF_EXCLUSION_OUT"
   else
-    fail "self-exclusion (d-2): unexpected output shape from the self-exclusion harness run"
-    info "output was: $SELF_EXCLUSION_OUT"
+    common_test_fail "self-exclusion (d-2): unexpected output shape from the self-exclusion harness run"
+    common_test_info "output was: $SELF_EXCLUSION_OUT"
   fi
 fi
 
@@ -379,26 +377,26 @@ printf 'Name:\tworker\nVmSwap:\t   12345 kB\n' > "$FAKE_PROC_DIR/70001/status"
 PROC_ROOT="$FAKE_PROC_DIR"
 KNOWN_SWAP="$(get_vmswap_kb 70001)"
 if [ "$KNOWN_SWAP" = "12345" ]; then
-  pass "get_vmswap_kb: known VmSwap value fixture returns 12345"
+  common_test_pass "get_vmswap_kb: known VmSwap value fixture returns 12345"
 else
-  fail "get_vmswap_kb: known VmSwap value fixture returned '$KNOWN_SWAP', expected 12345"
+  common_test_fail "get_vmswap_kb: known VmSwap value fixture returned '$KNOWN_SWAP', expected 12345"
 fi
 
 # Case: absent line -- no-swap-configured host must render cleanly, not error.
 printf 'Name:\tworker\n' > "$FAKE_PROC_DIR/70002/status"
 ABSENT_SWAP="$(get_vmswap_kb 70002)"
 if [ "$ABSENT_SWAP" = "0" ]; then
-  pass "get_vmswap_kb: status file with no VmSwap line returns 0, not an error"
+  common_test_pass "get_vmswap_kb: status file with no VmSwap line returns 0, not an error"
 else
-  fail "get_vmswap_kb: absent-line fixture returned '$ABSENT_SWAP', expected 0"
+  common_test_fail "get_vmswap_kb: absent-line fixture returned '$ABSENT_SWAP', expected 0"
 fi
 
 # Case: missing file -- candidate exited between snapshot and read; must not error or abort.
 MISSING_SWAP="$(get_vmswap_kb 70099)"
 if [ "$MISSING_SWAP" = "0" ]; then
-  pass "get_vmswap_kb: nonexistent PID path returns 0, not an error"
+  common_test_pass "get_vmswap_kb: nonexistent PID path returns 0, not an error"
 else
-  fail "get_vmswap_kb: missing-file fixture returned '$MISSING_SWAP', expected 0"
+  common_test_fail "get_vmswap_kb: missing-file fixture returned '$MISSING_SWAP', expected 0"
 fi
 
 unset PROC_ROOT
@@ -412,9 +410,9 @@ printf 'Pss_Anon:\t      500 kB\nSwapPss:\t      200 kB\nPss_File:\t    50000 kB
 PROC_ROOT="$PSS_FAKE_PROC_DIR"
 PSS_KNOWN="$(get_pss_reclaimable_kb 71001 1000)"
 if [ "$PSS_KNOWN" = "700|50000|0" ]; then
-  pass "get_pss_reclaimable_kb: known Pss_Anon/SwapPss/Pss_File fixture returns '700|50000|0'"
+  common_test_pass "get_pss_reclaimable_kb: known Pss_Anon/SwapPss/Pss_File fixture returns '700|50000|0'"
 else
-  fail "get_pss_reclaimable_kb: known-value fixture returned '$PSS_KNOWN', expected '700|50000|0'"
+  common_test_fail "get_pss_reclaimable_kb: known-value fixture returned '$PSS_KNOWN', expected '700|50000|0'"
 fi
 unset PROC_ROOT
 
@@ -424,9 +422,9 @@ printf 'Name:\tworker\nVmSwap:\t    300 kB\n' > "$PSS_FAKE_PROC_DIR/71002/status
 PROC_ROOT="$PSS_FAKE_PROC_DIR"
 PSS_FALLBACK_I="$(get_pss_reclaimable_kb 71002 1000)"
 if [ "$PSS_FALLBACK_I" = "1300|0|1" ]; then
-  pass "get_pss_reclaimable_kb: fallback (i) absent smaps_rollup -> rss+VmSwap, approximate=1"
+  common_test_pass "get_pss_reclaimable_kb: fallback (i) absent smaps_rollup -> rss+VmSwap, approximate=1"
 else
-  fail "get_pss_reclaimable_kb: fallback (i) returned '$PSS_FALLBACK_I', expected '1300|0|1'"
+  common_test_fail "get_pss_reclaimable_kb: fallback (i) returned '$PSS_FALLBACK_I', expected '1300|0|1'"
 fi
 unset PROC_ROOT
 
@@ -437,9 +435,9 @@ printf 'Name:\tworker\nVmSwap:\t    400 kB\n' > "$PSS_FAKE_PROC_DIR/71003/status
 PROC_ROOT="$PSS_FAKE_PROC_DIR"
 PSS_FALLBACK_II="$(get_pss_reclaimable_kb 71003 1000)"
 if [ "$PSS_FALLBACK_II" = "1400|0|1" ]; then
-  pass "get_pss_reclaimable_kb: fallback (ii) smaps_rollup missing SwapPss -> rss+VmSwap, approximate=1"
+  common_test_pass "get_pss_reclaimable_kb: fallback (ii) smaps_rollup missing SwapPss -> rss+VmSwap, approximate=1"
 else
-  fail "get_pss_reclaimable_kb: fallback (ii) returned '$PSS_FALLBACK_II', expected '1400|0|1'"
+  common_test_fail "get_pss_reclaimable_kb: fallback (ii) returned '$PSS_FALLBACK_II', expected '1400|0|1'"
 fi
 unset PROC_ROOT
 
@@ -447,9 +445,9 @@ unset PROC_ROOT
 PROC_ROOT="$PSS_FAKE_PROC_DIR"
 PSS_FALLBACK_III="$(get_pss_reclaimable_kb 71099 0)"
 if [ "$PSS_FALLBACK_III" = "0|0|1" ]; then
-  pass "get_pss_reclaimable_kb: fallback (iii) nonexistent PID path returns '0|0|1', not an error"
+  common_test_pass "get_pss_reclaimable_kb: fallback (iii) nonexistent PID path returns '0|0|1', not an error"
 else
-  fail "get_pss_reclaimable_kb: fallback (iii) returned '$PSS_FALLBACK_III', expected '0|0|1'"
+  common_test_fail "get_pss_reclaimable_kb: fallback (iii) returned '$PSS_FALLBACK_III', expected '0|0|1'"
 fi
 unset PROC_ROOT
 
@@ -483,35 +481,35 @@ for dpid in 72001 72002 72003; do
   DEDUP_SUM_RECLAIM=$((DEDUP_SUM_RECLAIM + dreclaim))
   DEDUP_SUM_SHARED=$((DEDUP_SUM_SHARED + dshared))
   if [ "$dapprox" != "0" ]; then
-    fail "get_pss_reclaimable_kb: de-dup worker $dpid unexpectedly approximate"
+    common_test_fail "get_pss_reclaimable_kb: de-dup worker $dpid unexpectedly approximate"
   fi
 done
 unset PROC_ROOT
 
 if [ "$DEDUP_SUM_RECLAIM" = "1200" ]; then
-  pass "get_pss_reclaimable_kb: de-dup -- summed reclaimable across 3 workers equals sum(Pss_Anon+SwapPss) = 1200"
+  common_test_pass "get_pss_reclaimable_kb: de-dup -- summed reclaimable across 3 workers equals sum(Pss_Anon+SwapPss) = 1200"
 else
-  fail "get_pss_reclaimable_kb: de-dup summed reclaimable was '$DEDUP_SUM_RECLAIM', expected 1200"
+  common_test_fail "get_pss_reclaimable_kb: de-dup summed reclaimable was '$DEDUP_SUM_RECLAIM', expected 1200"
 fi
 
 if [ "$DEDUP_SUM_RECLAIM" -lt "$DEDUP_SUM_RSS" ]; then
-  pass "get_pss_reclaimable_kb: de-dup -- PSS reclaimable ($DEDUP_SUM_RECLAIM) is strictly less than the pre-fix RSS sum ($DEDUP_SUM_RSS), proving the shared pages are no longer triple-counted"
+  common_test_pass "get_pss_reclaimable_kb: de-dup -- PSS reclaimable ($DEDUP_SUM_RECLAIM) is strictly less than the pre-fix RSS sum ($DEDUP_SUM_RSS), proving the shared pages are no longer triple-counted"
 else
-  fail "get_pss_reclaimable_kb: de-dup reclaimable ($DEDUP_SUM_RECLAIM) was not strictly less than the pre-fix RSS sum ($DEDUP_SUM_RSS)"
+  common_test_fail "get_pss_reclaimable_kb: de-dup reclaimable ($DEDUP_SUM_RECLAIM) was not strictly less than the pre-fix RSS sum ($DEDUP_SUM_RSS)"
 fi
 
 if [ "$DEDUP_SUM_SHARED" = "150000" ]; then
-  pass "get_pss_reclaimable_kb: de-dup -- shared-cache figure (150000 kB) is reported, and separately from reclaimable"
+  common_test_pass "get_pss_reclaimable_kb: de-dup -- shared-cache figure (150000 kB) is reported, and separately from reclaimable"
 else
-  fail "get_pss_reclaimable_kb: de-dup summed shared cache was '$DEDUP_SUM_SHARED', expected 150000"
+  common_test_fail "get_pss_reclaimable_kb: de-dup summed shared cache was '$DEDUP_SUM_SHARED', expected 150000"
 fi
 
 # Case: formatting -- closes a pre-existing format_memory coverage gap noted in research.
 FORMATTED="$(format_memory 12345)"
 if [ "$FORMATTED" = "12.0 MB" ]; then
-  pass "format_memory: 12345 KB formats to '12.0 MB'"
+  common_test_pass "format_memory: 12345 KB formats to '12.0 MB'"
 else
-  fail "format_memory: 12345 KB formatted to '$FORMATTED', expected '12.0 MB'"
+  common_test_fail "format_memory: 12345 KB formatted to '$FORMATTED', expected '12.0 MB'"
 fi
 
 # Case: output shape -- assert on full --dry-run output (not only the isolated helper) that
@@ -561,24 +559,24 @@ printf 'Name:\tclaude\nVmSwap:\t 1258291 kB\n' > "$SWAP_FAKE_PROC_DIR/$SWAP_ROW_
 SWAP_OUT="$(PATH="$SWAP_FAKE_BIN_DIR:$PATH" PROC_ROOT="$SWAP_FAKE_PROC_DIR" bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
 if echo "$SWAP_OUT" | grep -qE '^PID[[:space:]]+Memory[[:space:]]+Reclaimable[[:space:]]+Shared cache[[:space:]]+Age[[:space:]]+Command'; then
-  pass "--dry-run output shape: table header carries Memory, Reclaimable, and Shared cache columns"
+  common_test_pass "--dry-run output shape: table header carries Memory, Reclaimable, and Shared cache columns"
 else
-  fail "--dry-run output shape: table header missing expected Memory/Reclaimable/Shared cache columns"
-  info "output was: $SWAP_OUT"
+  common_test_fail "--dry-run output shape: table header missing expected Memory/Reclaimable/Shared cache columns"
+  common_test_info "output was: $SWAP_OUT"
 fi
 
 if echo "$SWAP_OUT" | grep -q "$SWAP_ROW_PID" && echo "$SWAP_OUT" | grep -qE '2\.0 MB[[:space:]]+~1\.2 GB[[:space:]]+0 KB'; then
-  pass "--dry-run output shape: row shows RSS 2.0 MB alongside approximate reclaimable ~1.2 GB and 0 KB shared cache (fallback path, no field-count mismatch)"
+  common_test_pass "--dry-run output shape: row shows RSS 2.0 MB alongside approximate reclaimable ~1.2 GB and 0 KB shared cache (fallback path, no field-count mismatch)"
 else
-  fail "--dry-run output shape: expected row with RSS 2.0 MB, approximate reclaimable ~1.2 GB, and 0 KB shared cache not found"
-  info "output was: $SWAP_OUT"
+  common_test_fail "--dry-run output shape: expected row with RSS 2.0 MB, approximate reclaimable ~1.2 GB, and 0 KB shared cache not found"
+  common_test_info "output was: $SWAP_OUT"
 fi
 
 if echo "$SWAP_OUT" | grep -qE 'Total memory that can be reclaimed:.*\(shared cache:.*not counted\)'; then
-  pass "--dry-run output shape: totals line shows the new 'shared cache ... not counted' format"
+  common_test_pass "--dry-run output shape: totals line shows the new 'shared cache ... not counted' format"
 else
-  fail "--dry-run output shape: totals line missing the 'shared cache ... not counted' format"
-  info "output was: $SWAP_OUT"
+  common_test_fail "--dry-run output shape: totals line missing the 'shared cache ... not counted' format"
+  common_test_info "output was: $SWAP_OUT"
 fi
 
 # --- Lean pass PSS output-shape case: own dedicated 3-row tree (root, server, 1 worker) ---
@@ -661,24 +659,24 @@ printf '{"%s:123456": {"cputime_ticks": 700, "last_active": %s, "last_seen": %s}
 PSS_LEAN_OUT="$(PATH="$PSS_LEAN_BIN_DIR:$PATH" PROC_ROOT="$PSS_LEAN_PROC_DIR" LEAN_TREE_STATE_DIR="$PSS_LEAN_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
 if echo "$PSS_LEAN_OUT" | grep -qE 'PID[[:space:]]+Role[[:space:]]+Memory[[:space:]]+Reclaimable[[:space:]]+Shared cache[[:space:]]+Age'; then
-  pass "Lean PSS (e): tree member table carries Reclaimable and Shared cache columns"
+  common_test_pass "Lean PSS (e): tree member table carries Reclaimable and Shared cache columns"
 else
-  fail "Lean PSS (e): tree member table missing Reclaimable/Shared cache columns"
-  info "output was: $PSS_LEAN_OUT"
+  common_test_fail "Lean PSS (e): tree member table missing Reclaimable/Shared cache columns"
+  common_test_info "output was: $PSS_LEAN_OUT"
 fi
 
 if echo "$PSS_LEAN_OUT" | grep -q "$PSS_LEAN_WORKER" && echo "$PSS_LEAN_OUT" | grep -qE '500 KB[[:space:]]+58\.5 MB'; then
-  pass "Lean PSS (e): worker row shows de-duplicated reclaimable (500 KB) and shared cache (58.5 MB), never the shared mapping folded in"
+  common_test_pass "Lean PSS (e): worker row shows de-duplicated reclaimable (500 KB) and shared cache (58.5 MB), never the shared mapping folded in"
 else
-  fail "Lean PSS (e): expected worker row with reclaimable 500 KB and shared cache 58.5 MB not found"
-  info "output was: $PSS_LEAN_OUT"
+  common_test_fail "Lean PSS (e): expected worker row with reclaimable 500 KB and shared cache 58.5 MB not found"
+  common_test_info "output was: $PSS_LEAN_OUT"
 fi
 
 if echo "$PSS_LEAN_OUT" | grep -qE 'Total memory that can be reclaimed: 1\.5 MB \(shared cache: 175\.7 MB, not counted\) across 1 eligible'; then
-  pass "Lean PSS (e): totals line sums reclaimable to 1.5 MB (sum of Pss_Anon across 3 members, well past the overridden 1 MB floor) with 175.7 MB shared cache reported separately -- the pre-fix RSS+VmSwap sum would have been strictly larger"
+  common_test_pass "Lean PSS (e): totals line sums reclaimable to 1.5 MB (sum of Pss_Anon across 3 members, well past the overridden 1 MB floor) with 175.7 MB shared cache reported separately -- the pre-fix RSS+VmSwap sum would have been strictly larger"
 else
-  fail "Lean PSS (e): totals line did not show the expected de-duplicated 1.5 MB reclaimable / 175.7 MB shared cache figures across 1 eligible tree"
-  info "output was: $PSS_LEAN_OUT"
+  common_test_fail "Lean PSS (e): totals line did not show the expected de-duplicated 1.5 MB reclaimable / 175.7 MB shared cache figures across 1 eligible tree"
+  common_test_info "output was: $PSS_LEAN_OUT"
 fi
 
 # --- Fallback-label output case: same fixture, smaps_rollup removed -- approximate marker must
@@ -693,17 +691,17 @@ printf 'Name:\tlean\nVmSwap:\t    100 kB\n' > "$PSS_LEAN_PROC_DIR/$PSS_LEAN_WORK
 PSS_LEAN_FALLBACK_OUT="$(PATH="$PSS_LEAN_BIN_DIR:$PATH" PROC_ROOT="$PSS_LEAN_PROC_DIR" LEAN_TREE_STATE_DIR="$PSS_LEAN_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
 if echo "$PSS_LEAN_FALLBACK_OUT" | grep -q "$PSS_LEAN_WORKER" && echo "$PSS_LEAN_FALLBACK_OUT" | grep -qE '~[0-9.]+ (KB|MB|GB)'; then
-  pass "Lean PSS (e) fallback: approximate '~' marker is visible in rendered output when smaps_rollup is absent"
+  common_test_pass "Lean PSS (e) fallback: approximate '~' marker is visible in rendered output when smaps_rollup is absent"
 else
-  fail "Lean PSS (e) fallback: no approximate '~' marker found in rendered output"
-  info "output was: $PSS_LEAN_FALLBACK_OUT"
+  common_test_fail "Lean PSS (e) fallback: no approximate '~' marker found in rendered output"
+  common_test_info "output was: $PSS_LEAN_FALLBACK_OUT"
 fi
 
 if echo "$PSS_LEAN_FALLBACK_OUT" | grep -qE 'Total memory that can be reclaimed:.*\(shared cache: 0 KB, not counted\)'; then
-  pass "Lean PSS (e) fallback: shared cache correctly reports 0 KB (unknown, not computed) when smaps_rollup is absent"
+  common_test_pass "Lean PSS (e) fallback: shared cache correctly reports 0 KB (unknown, not computed) when smaps_rollup is absent"
 else
-  fail "Lean PSS (e) fallback: totals line did not show '0 KB' shared cache for the fallback path"
-  info "output was: $PSS_LEAN_FALLBACK_OUT"
+  common_test_fail "Lean PSS (e) fallback: totals line did not show '0 KB' shared cache for the fallback path"
+  common_test_info "output was: $PSS_LEAN_FALLBACK_OUT"
 fi
 
 # =====================================================================
@@ -723,123 +721,123 @@ LEAN_DEFUNCT_COMM="lean <defunct>"
 
 # --- Each predicate matches its own form ---
 if is_lean_serve_comm "lake" "$LAKE_SERVE_ARGS"; then
-  pass "is_lean_serve_comm: matches its own form (lake serve)"
+  common_test_pass "is_lean_serve_comm: matches its own form (lake serve)"
 else
-  fail "is_lean_serve_comm: did NOT match its own form (lake serve)"
+  common_test_fail "is_lean_serve_comm: did NOT match its own form (lake serve)"
 fi
 
 if is_lean_server_comm "lean" "$LEAN_SERVER_ARGS"; then
-  pass "is_lean_server_comm: matches its own form (lean --server)"
+  common_test_pass "is_lean_server_comm: matches its own form (lean --server)"
 else
-  fail "is_lean_server_comm: did NOT match its own form (lean --server)"
+  common_test_fail "is_lean_server_comm: did NOT match its own form (lean --server)"
 fi
 
 if is_lean_worker_comm "lean" "$LEAN_WORKER_ARGS"; then
-  pass "is_lean_worker_comm: matches its own form (lean --worker)"
+  common_test_pass "is_lean_worker_comm: matches its own form (lean --worker)"
 else
-  fail "is_lean_worker_comm: did NOT match its own form (lean --worker)"
+  common_test_fail "is_lean_worker_comm: did NOT match its own form (lean --worker)"
 fi
 
 # --- Mutual exclusivity: each predicate rejects the OTHER two Lean forms ---
 if is_lean_serve_comm "lean" "$LEAN_SERVER_ARGS"; then
-  fail "is_lean_serve_comm: incorrectly matched a lean --server row (comm mismatch)"
+  common_test_fail "is_lean_serve_comm: incorrectly matched a lean --server row (comm mismatch)"
 else
-  pass "is_lean_serve_comm: rejects lean --server (comm mismatch)"
+  common_test_pass "is_lean_serve_comm: rejects lean --server (comm mismatch)"
 fi
 if is_lean_serve_comm "lean" "$LEAN_WORKER_ARGS"; then
-  fail "is_lean_serve_comm: incorrectly matched a lean --worker row (comm mismatch)"
+  common_test_fail "is_lean_serve_comm: incorrectly matched a lean --worker row (comm mismatch)"
 else
-  pass "is_lean_serve_comm: rejects lean --worker (comm mismatch)"
+  common_test_pass "is_lean_serve_comm: rejects lean --worker (comm mismatch)"
 fi
 
 if is_lean_server_comm "lake" "$LAKE_SERVE_ARGS"; then
-  fail "is_lean_server_comm: incorrectly matched a lake serve row (comm mismatch)"
+  common_test_fail "is_lean_server_comm: incorrectly matched a lake serve row (comm mismatch)"
 else
-  pass "is_lean_server_comm: rejects lake serve (comm mismatch)"
+  common_test_pass "is_lean_server_comm: rejects lake serve (comm mismatch)"
 fi
 if is_lean_server_comm "lean" "$LEAN_WORKER_ARGS"; then
-  fail "is_lean_server_comm: incorrectly matched a lean --worker row (args mismatch)"
+  common_test_fail "is_lean_server_comm: incorrectly matched a lean --worker row (args mismatch)"
 else
-  pass "is_lean_server_comm: rejects lean --worker (args mismatch)"
+  common_test_pass "is_lean_server_comm: rejects lean --worker (args mismatch)"
 fi
 
 if is_lean_worker_comm "lake" "$LAKE_SERVE_ARGS"; then
-  fail "is_lean_worker_comm: incorrectly matched a lake serve row (comm mismatch)"
+  common_test_fail "is_lean_worker_comm: incorrectly matched a lake serve row (comm mismatch)"
 else
-  pass "is_lean_worker_comm: rejects lake serve (comm mismatch)"
+  common_test_pass "is_lean_worker_comm: rejects lake serve (comm mismatch)"
 fi
 if is_lean_worker_comm "lean" "$LEAN_SERVER_ARGS"; then
-  fail "is_lean_worker_comm: incorrectly matched a lean --server row (args mismatch)"
+  common_test_fail "is_lean_worker_comm: incorrectly matched a lean --server row (args mismatch)"
 else
-  pass "is_lean_worker_comm: rejects lean --server (args mismatch)"
+  common_test_pass "is_lean_worker_comm: rejects lean --server (args mismatch)"
 fi
 
 # --- Lean predicates reject every Claude comm the existing suite exercises ---
 for lean_fn in is_lean_serve_comm is_lean_server_comm is_lean_worker_comm; do
   if "$lean_fn" "claude" "claude --dangerously-skip-permissions"; then
-    fail "$lean_fn: incorrectly matched a genuine 'claude' comm row"
+    common_test_fail "$lean_fn: incorrectly matched a genuine 'claude' comm row"
   else
-    pass "$lean_fn: rejects a genuine 'claude' comm row"
+    common_test_pass "$lean_fn: rejects a genuine 'claude' comm row"
   fi
 
   if "$lean_fn" "node" "$EARLYOOM_ARGS"; then
-    fail "$lean_fn: incorrectly matched a node/claude-code-style argv row"
+    common_test_fail "$lean_fn: incorrectly matched a node/claude-code-style argv row"
   else
-    pass "$lean_fn: rejects a node/claude-code-style argv row"
+    common_test_pass "$lean_fn: rejects a node/claude-code-style argv row"
   fi
 
   if "$lean_fn" "bash" "$SELF_PATH_ARGS"; then
-    fail "$lean_fn: incorrectly matched a bash row mentioning the refresh script's own path"
+    common_test_fail "$lean_fn: incorrectly matched a bash row mentioning the refresh script's own path"
   else
-    pass "$lean_fn: rejects a bash row mentioning the refresh script's own path"
+    common_test_pass "$lean_fn: rejects a bash row mentioning the refresh script's own path"
   fi
 done
 
 # --- Reverse direction: is_claude_executable_comm rejects all three Lean rows ---
 if is_claude_executable_comm "lake" "$LAKE_SERVE_ARGS"; then
-  fail "is_claude_executable_comm: incorrectly accepted a lake serve row"
+  common_test_fail "is_claude_executable_comm: incorrectly accepted a lake serve row"
 else
-  pass "is_claude_executable_comm: rejects a lake serve row"
+  common_test_pass "is_claude_executable_comm: rejects a lake serve row"
 fi
 if is_claude_executable_comm "lean" "$LEAN_SERVER_ARGS"; then
-  fail "is_claude_executable_comm: incorrectly accepted a lean --server row"
+  common_test_fail "is_claude_executable_comm: incorrectly accepted a lean --server row"
 else
-  pass "is_claude_executable_comm: rejects a lean --server row"
+  common_test_pass "is_claude_executable_comm: rejects a lean --server row"
 fi
 if is_claude_executable_comm "lean" "$LEAN_WORKER_ARGS"; then
-  fail "is_claude_executable_comm: incorrectly accepted a lean --worker row"
+  common_test_fail "is_claude_executable_comm: incorrectly accepted a lean --worker row"
 else
-  pass "is_claude_executable_comm: rejects a lean --worker row"
+  common_test_pass "is_claude_executable_comm: rejects a lean --worker row"
 fi
 
 # --- Zombie rows: deliberate, tested exclusion (comm rendered "lake <defunct>"/"lean <defunct>"
 # by ps; an exact `case` match on "lake"/"lean" never matches these strings) ---
 if is_lean_serve_comm "$LAKE_DEFUNCT_COMM" "[lake] <defunct>"; then
-  fail "is_lean_serve_comm: incorrectly matched a zombie 'lake <defunct>' row"
+  common_test_fail "is_lean_serve_comm: incorrectly matched a zombie 'lake <defunct>' row"
 else
-  pass "is_lean_serve_comm: rejects a zombie 'lake <defunct>' row (deliberate exclusion)"
+  common_test_pass "is_lean_serve_comm: rejects a zombie 'lake <defunct>' row (deliberate exclusion)"
 fi
 if is_lean_server_comm "$LEAN_DEFUNCT_COMM" "[lean] <defunct>"; then
-  fail "is_lean_server_comm: incorrectly matched a zombie 'lean <defunct>' row"
+  common_test_fail "is_lean_server_comm: incorrectly matched a zombie 'lean <defunct>' row"
 else
-  pass "is_lean_server_comm: rejects a zombie 'lean <defunct>' row (deliberate exclusion)"
+  common_test_pass "is_lean_server_comm: rejects a zombie 'lean <defunct>' row (deliberate exclusion)"
 fi
 if is_lean_worker_comm "$LEAN_DEFUNCT_COMM" "[lean] <defunct>"; then
-  fail "is_lean_worker_comm: incorrectly matched a zombie 'lean <defunct>' row"
+  common_test_fail "is_lean_worker_comm: incorrectly matched a zombie 'lean <defunct>' row"
 else
-  pass "is_lean_worker_comm: rejects a zombie 'lean <defunct>' row (deliberate exclusion)"
+  common_test_pass "is_lean_worker_comm: rejects a zombie 'lean <defunct>' row (deliberate exclusion)"
 fi
 
 # --- is_lean_serve_comm rejects other `lake` subcommands ---
 if is_lean_serve_comm "lake" "$LAKE_BUILD_ARGS"; then
-  fail "is_lean_serve_comm: incorrectly matched 'lake build'"
+  common_test_fail "is_lean_serve_comm: incorrectly matched 'lake build'"
 else
-  pass "is_lean_serve_comm: rejects 'lake build'"
+  common_test_pass "is_lean_serve_comm: rejects 'lake build'"
 fi
 if is_lean_serve_comm "lake" "$LAKE_EXE_CACHE_ARGS"; then
-  fail "is_lean_serve_comm: incorrectly matched 'lake exe cache get'"
+  common_test_fail "is_lean_serve_comm: incorrectly matched 'lake exe cache get'"
 else
-  pass "is_lean_serve_comm: rejects 'lake exe cache get'"
+  common_test_pass "is_lean_serve_comm: rejects 'lake exe cache get'"
 fi
 
 # =====================================================================
@@ -977,32 +975,32 @@ for lean_pid in "$LEAN_TREE_ROOT" "$LEAN_TREE_SERVER" "$LEAN_TREE_WORKER1" "$LEA
   fi
 done
 if $LEAN_DRY_RUN_OK && echo "$LEAN_DRY_RUN_OUT" | grep -q "Found 1 Lean LSP process tree"; then
-  pass "Lean tree (g): --dry-run lists all five synthetic PIDs and the tree count"
+  common_test_pass "Lean tree (g): --dry-run lists all five synthetic PIDs and the tree count"
 else
-  fail "Lean tree (g): --dry-run did not list all five synthetic PIDs / tree count"
-  info "output was: $LEAN_DRY_RUN_OUT"
+  common_test_fail "Lean tree (g): --dry-run did not list all five synthetic PIDs / tree count"
+  common_test_info "output was: $LEAN_DRY_RUN_OUT"
 fi
 
 if echo "$LEAN_DRY_RUN_OUT" | grep -q "Total memory that can be reclaimed"; then
-  pass "Lean tree (g): --dry-run shows a total reclaimable memory figure"
+  common_test_pass "Lean tree (g): --dry-run shows a total reclaimable memory figure"
 else
-  fail "Lean tree (g): --dry-run did not show a total reclaimable memory figure"
-  info "output was: $LEAN_DRY_RUN_OUT"
+  common_test_fail "Lean tree (g): --dry-run did not show a total reclaimable memory figure"
+  common_test_info "output was: $LEAN_DRY_RUN_OUT"
 fi
 
 if [ ! -s "$KILL_LOG_FILE" ]; then
-  pass "Lean tree (g): dry-run-clean -- fake-kill log is empty (nothing terminated)"
+  common_test_pass "Lean tree (g): dry-run-clean -- fake-kill log is empty (nothing terminated)"
 else
-  fail "Lean tree (g): dry-run-clean VIOLATED -- fake-kill log is non-empty after --dry-run"
-  info "kill log was: $(cat "$KILL_LOG_FILE")"
+  common_test_fail "Lean tree (g): dry-run-clean VIOLATED -- fake-kill log is non-empty after --dry-run"
+  common_test_info "kill log was: $(cat "$KILL_LOG_FILE")"
 fi
 
 # --- Claude pass unaffected by the presence of Lean rows in its own snapshot ---
 if echo "$LEAN_DRY_RUN_OUT" | grep -q "No orphaned processes found."; then
-  pass "Lean tree (g): Claude pass's own --dry-run output is unaffected by Lean rows in its snapshot"
+  common_test_pass "Lean tree (g): Claude pass's own --dry-run output is unaffected by Lean rows in its snapshot"
 else
-  fail "Lean tree (g): Claude pass's --dry-run output was affected by the presence of Lean rows"
-  info "output was: $LEAN_DRY_RUN_OUT"
+  common_test_fail "Lean tree (g): Claude pass's --dry-run output was affected by the presence of Lean rows"
+  common_test_info "output was: $LEAN_DRY_RUN_OUT"
 fi
 
 # --- ORDERING assertion: --force terminates workers before server before root (log sequence) ---
@@ -1039,14 +1037,14 @@ if [ -s "$KILL_LOG_FILE" ]; then
      && [ -n "$server_line" ] && [ -n "$root_line" ] \
      && [ "$worker1_line" -lt "$server_line" ] && [ "$worker2_line" -lt "$server_line" ] \
      && [ "$worker3_line" -lt "$server_line" ] && [ "$server_line" -lt "$root_line" ]; then
-    pass "Lean tree (g): --force ORDERING -- all workers precede server, server precedes root (log sequence)"
+    common_test_pass "Lean tree (g): --force ORDERING -- all workers precede server, server precedes root (log sequence)"
   else
-    fail "Lean tree (g): --force ORDERING violated or log incomplete"
-    info "kill log was: $(cat "$KILL_LOG_FILE")"
+    common_test_fail "Lean tree (g): --force ORDERING violated or log incomplete"
+    common_test_info "kill log was: $(cat "$KILL_LOG_FILE")"
   fi
 else
-  fail "Lean tree (g): --force produced an empty fake-kill log -- harness defect, not a real assertion"
-  info "output was: $LEAN_FORCE_OUT"
+  common_test_fail "Lean tree (g): --force produced an empty fake-kill log -- harness defect, not a real assertion"
+  common_test_info "output was: $LEAN_FORCE_OUT"
 fi
 
 unset PROC_ROOT KILL_LOG_FILE
@@ -1067,9 +1065,9 @@ printf '74001 (lean) S 1 74001 74001 0 -1 4194304 100 0 0 0 500 300 0 0 20 0 1 0
 PROC_ROOT="$STAT_FAKE_PROC_DIR"
 STAT_NORMAL="$(read_proc_stat_fields 74001)"
 if [ "$STAT_NORMAL" = "999999|500|300" ]; then
-  pass "read_proc_stat_fields: normal fixture row returns 'starttime|utime|stime' = '999999|500|300'"
+  common_test_pass "read_proc_stat_fields: normal fixture row returns 'starttime|utime|stime' = '999999|500|300'"
 else
-  fail "read_proc_stat_fields: normal fixture row returned '$STAT_NORMAL', expected '999999|500|300'"
+  common_test_fail "read_proc_stat_fields: normal fixture row returned '$STAT_NORMAL', expected '999999|500|300'"
 fi
 
 # comm deliberately contains a space AND a parenthesis -- per `man proc`, comm can contain any
@@ -1078,9 +1076,9 @@ fi
 printf '74002 (lean (worker) x) S 1 74002 74002 0 -1 4194304 100 0 0 0 1234 567 0 0 20 0 1 0 555555 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 17 0 0 0 0 0 0 0 0 0 0 0 0 0\n' > "$STAT_FAKE_PROC_DIR/74002/stat"
 STAT_GOTCHA="$(read_proc_stat_fields 74002)"
 if [ "$STAT_GOTCHA" = "555555|1234|567" ]; then
-  pass "read_proc_stat_fields: comm containing a space and a parenthesis still parses correctly from the LAST ')'"
+  common_test_pass "read_proc_stat_fields: comm containing a space and a parenthesis still parses correctly from the LAST ')'"
 else
-  fail "read_proc_stat_fields: comm-gotcha fixture returned '$STAT_GOTCHA', expected '555555|1234|567'"
+  common_test_fail "read_proc_stat_fields: comm-gotcha fixture returned '$STAT_GOTCHA', expected '555555|1234|567'"
 fi
 
 # Non-vacuousness for the comm-gotcha case: a naive `awk '{print $22}'` whitespace split would
@@ -1088,26 +1086,26 @@ fi
 # test can actually fail against that naive approach, not only against the correct parser.
 NAIVE_FIELD22="$(awk '{print $22}' "$STAT_FAKE_PROC_DIR/74002/stat")"
 if [ "$NAIVE_FIELD22" != "555555" ]; then
-  pass "read_proc_stat_fields: non-vacuousness -- a naive whitespace-split \$22 ('$NAIVE_FIELD22') does NOT equal the correct starttime, confirming the comm-gotcha fixture would catch a regression to naive splitting"
+  common_test_pass "read_proc_stat_fields: non-vacuousness -- a naive whitespace-split \$22 ('$NAIVE_FIELD22') does NOT equal the correct starttime, confirming the comm-gotcha fixture would catch a regression to naive splitting"
 else
-  fail "read_proc_stat_fields: non-vacuousness check inconclusive -- naive \$22 happened to equal the correct starttime"
+  common_test_fail "read_proc_stat_fields: non-vacuousness check inconclusive -- naive \$22 happened to equal the correct starttime"
 fi
 
 # Malformed row: too few remainder fields -- must return empty, never a partial/guessed result.
 printf '74003 (x) S\n' > "$STAT_FAKE_PROC_DIR/74003/stat"
 STAT_MALFORMED="$(read_proc_stat_fields 74003)"
 if [ -z "$STAT_MALFORMED" ]; then
-  pass "read_proc_stat_fields: malformed row (too few fields) returns empty, not a partial result"
+  common_test_pass "read_proc_stat_fields: malformed row (too few fields) returns empty, not a partial result"
 else
-  fail "read_proc_stat_fields: malformed row returned '$STAT_MALFORMED', expected empty"
+  common_test_fail "read_proc_stat_fields: malformed row returned '$STAT_MALFORMED', expected empty"
 fi
 
 # Unreadable/missing path.
 STAT_MISSING="$(read_proc_stat_fields 74099)"
 if [ -z "$STAT_MISSING" ]; then
-  pass "read_proc_stat_fields: nonexistent PID path returns empty, not an error"
+  common_test_pass "read_proc_stat_fields: nonexistent PID path returns empty, not an error"
 else
-  fail "read_proc_stat_fields: missing-file fixture returned '$STAT_MISSING', expected empty"
+  common_test_fail "read_proc_stat_fields: missing-file fixture returned '$STAT_MISSING', expected empty"
 fi
 unset PROC_ROOT
 
@@ -1122,9 +1120,9 @@ CPU_STATE_KEYS=("75001:111111")
 CPU_STATE_CPUTICKS=(1000)
 update_lean_tree_cpu_state
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
-  pass "update_lean_tree_cpu_state: first sighting is NOT idle (idle_min = 0)"
+  common_test_pass "update_lean_tree_cpu_state: first sighting is NOT idle (idle_min = 0)"
 else
-  fail "update_lean_tree_cpu_state: first sighting returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+  common_test_fail "update_lean_tree_cpu_state: first sighting returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
 fi
 
 # Unchanged cputime, but with last_active backdated directly in the state file (simulating real
@@ -1135,9 +1133,9 @@ CPU_STATE_KEYS=("75001:111111")
 CPU_STATE_CPUTICKS=(1000)
 update_lean_tree_cpu_state
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "30" ]; then
-  pass "update_lean_tree_cpu_state: unchanged cputime accrues idle_for from the backdated last_active (30 min)"
+  common_test_pass "update_lean_tree_cpu_state: unchanged cputime accrues idle_for from the backdated last_active (30 min)"
 else
-  fail "update_lean_tree_cpu_state: unchanged-cputime case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 30"
+  common_test_fail "update_lean_tree_cpu_state: unchanged-cputime case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 30"
 fi
 
 # Increased cputime resets last_active to now (idle_min back to 0), even though the prior
@@ -1146,9 +1144,9 @@ CPU_STATE_KEYS=("75001:111111")
 CPU_STATE_CPUTICKS=(1500)
 update_lean_tree_cpu_state
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
-  pass "update_lean_tree_cpu_state: increased cputime resets idle_for to 0"
+  common_test_pass "update_lean_tree_cpu_state: increased cputime resets idle_for to 0"
 else
-  fail "update_lean_tree_cpu_state: increased-cputime case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+  common_test_fail "update_lean_tree_cpu_state: increased-cputime case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
 fi
 
 # Non-vacuousness: if a first sighting were wrongly treated as idle, the very first case above
@@ -1162,9 +1160,9 @@ CPU_STATE_KEYS=("75001:999999999")  # different starttime -- guaranteed no prior
 CPU_STATE_CPUTICKS=(1000)
 update_lean_tree_cpu_state
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
-  pass "update_lean_tree_cpu_state: non-vacuousness -- a key with no matching prior state reads idle_min=0 (confirms the 'unchanged cputime accrues idle_for' case above is genuinely exercising the match, not a vacuous always-idle default)"
+  common_test_pass "update_lean_tree_cpu_state: non-vacuousness -- a key with no matching prior state reads idle_min=0 (confirms the 'unchanged cputime accrues idle_for' case above is genuinely exercising the match, not a vacuous always-idle default)"
 else
-  fail "update_lean_tree_cpu_state: non-vacuousness check returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+  common_test_fail "update_lean_tree_cpu_state: non-vacuousness check returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
 fi
 
 # --- PID-reuse case: same root pid, different starttime -> treated as a brand-new tree ---
@@ -1173,9 +1171,9 @@ CPU_STATE_KEYS=("76001:222222")  # same pid 76001, DIFFERENT starttime
 CPU_STATE_CPUTICKS=(50)
 update_lean_tree_cpu_state
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
-  pass "update_lean_tree_cpu_state: PID reuse (same pid, different starttime) is a brand-new tree, never inheriting the old entry's idle history"
+  common_test_pass "update_lean_tree_cpu_state: PID reuse (same pid, different starttime) is a brand-new tree, never inheriting the old entry's idle history"
 else
-  fail "update_lean_tree_cpu_state: PID-reuse case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0 (should not inherit old-key history)"
+  common_test_fail "update_lean_tree_cpu_state: PID-reuse case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0 (should not inherit old-key history)"
 fi
 
 # --- Pruning: a tree absent from the current run's CPU_STATE_KEYS is removed from the state file ---
@@ -1186,10 +1184,10 @@ CPU_STATE_CPUTICKS=(10)
 update_lean_tree_cpu_state
 PRUNE_CHECK="$(jq -r 'has("77002:1")' "$LEAN_TREE_STATE_FILE" 2>/dev/null)"
 if [ "$PRUNE_CHECK" = "false" ] && jq -e 'has("77001:1")' "$LEAN_TREE_STATE_FILE" >/dev/null 2>&1; then
-  pass "update_lean_tree_cpu_state: a tree absent from this run's keys is pruned from the state file, while a present key is kept"
+  common_test_pass "update_lean_tree_cpu_state: a tree absent from this run's keys is pruned from the state file, while a present key is kept"
 else
-  fail "update_lean_tree_cpu_state: pruning did not behave as expected"
-  info "state file was: $(cat "$LEAN_TREE_STATE_FILE")"
+  common_test_fail "update_lean_tree_cpu_state: pruning did not behave as expected"
+  common_test_info "state file was: $(cat "$LEAN_TREE_STATE_FILE")"
 fi
 
 # --- State-file tolerance: missing, empty, and syntactically invalid JSON are all first sighting ---
@@ -1198,9 +1196,9 @@ CPU_STATE_KEYS=("78001:1")
 CPU_STATE_CPUTICKS=(5)
 update_lean_tree_cpu_state
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
-  pass "update_lean_tree_cpu_state: missing state file treated as first sighting (never idle)"
+  common_test_pass "update_lean_tree_cpu_state: missing state file treated as first sighting (never idle)"
 else
-  fail "update_lean_tree_cpu_state: missing-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+  common_test_fail "update_lean_tree_cpu_state: missing-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
 fi
 
 : > "$LEAN_TREE_STATE_FILE"
@@ -1208,9 +1206,9 @@ CPU_STATE_KEYS=("78001:1")
 CPU_STATE_CPUTICKS=(5)
 update_lean_tree_cpu_state
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ]; then
-  pass "update_lean_tree_cpu_state: empty state file treated as first sighting (never idle)"
+  common_test_pass "update_lean_tree_cpu_state: empty state file treated as first sighting (never idle)"
 else
-  fail "update_lean_tree_cpu_state: empty-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
+  common_test_fail "update_lean_tree_cpu_state: empty-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}', expected 0"
 fi
 
 printf 'not valid json {' > "$LEAN_TREE_STATE_FILE"
@@ -1221,18 +1219,18 @@ CPU_STATE_KEYS=("78001:1")
 CPU_STATE_CPUTICKS=(5)
 CORRUPT_STDERR="$(update_lean_tree_cpu_state 2>&1 1>/dev/null)"
 if [ "${CPU_STATE_IDLE_MIN[0]}" = "0" ] && echo "$CORRUPT_STDERR" | grep -qi "failed JSON validation"; then
-  pass "update_lean_tree_cpu_state: syntactically invalid JSON treated as first sighting (never idle), with an audible warning logged"
+  common_test_pass "update_lean_tree_cpu_state: syntactically invalid JSON treated as first sighting (never idle), with an audible warning logged"
 else
-  fail "update_lean_tree_cpu_state: corrupt-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}' / stderr='$CORRUPT_STDERR', expected idle_min=0 and a warning"
+  common_test_fail "update_lean_tree_cpu_state: corrupt-file case returned idle_min='${CPU_STATE_IDLE_MIN[0]}' / stderr='$CORRUPT_STDERR', expected idle_min=0 and a warning"
 fi
 
 # --- Atomic-write cleanliness: no stray tmp file remains in the state dir after a write ---
 STRAY_TMP_COUNT="$(find "$STATE_MACHINE_DIR" -maxdepth 1 -name '.lean-trees.json.*' | wc -l | tr -d ' ')"
 if [ "$STRAY_TMP_COUNT" = "0" ]; then
-  pass "write_lean_tree_state: no stray mktemp tmp file remains in the state dir after writes"
+  common_test_pass "write_lean_tree_state: no stray mktemp tmp file remains in the state dir after writes"
 else
-  fail "write_lean_tree_state: found $STRAY_TMP_COUNT stray tmp file(s) in the state dir"
-  info "dir listing: $(ls -la "$STATE_MACHINE_DIR")"
+  common_test_fail "write_lean_tree_state: found $STRAY_TMP_COUNT stray tmp file(s) in the state dir"
+  common_test_info "dir listing: $(ls -la "$STATE_MACHINE_DIR")"
 fi
 unset LEAN_TREE_STATE_DIR LEAN_TREE_STATE_FILE
 
@@ -1289,10 +1287,10 @@ printf '{"%s:55555": {"cputime_ticks": 150, "last_active": %s, "last_seen": %s}}
 printf 'Pss_Anon:\t     1000 kB\nSwapPss:\t        0 kB\nPss_File:\t        0 kB\n' > "$FLOOR_PROC_DIR/$FLOOR_ROOT/smaps_rollup"
 FLOOR_BELOW_OUT="$(PATH="$FLOOR_BIN_DIR:$PATH" PROC_ROOT="$FLOOR_PROC_DIR" LEAN_TREE_STATE_DIR="$FLOOR_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 if echo "$FLOOR_BELOW_OUT" | grep -q "idle, cheap, kept" && echo "$FLOOR_BELOW_OUT" | grep -q "0 eligible"; then
-  pass "Floor gate: reclaimable (1000 KB) just below a 1024 KB floor renders 'idle, cheap, kept', 0 eligible"
+  common_test_pass "Floor gate: reclaimable (1000 KB) just below a 1024 KB floor renders 'idle, cheap, kept', 0 eligible"
 else
-  fail "Floor gate: below-floor case did not render as 'idle, cheap, kept' / 0 eligible"
-  info "output was: $FLOOR_BELOW_OUT"
+  common_test_fail "Floor gate: below-floor case did not render as 'idle, cheap, kept' / 0 eligible"
+  common_test_info "output was: $FLOOR_BELOW_OUT"
 fi
 
 FLOOR_BELOW_KILL_LOG="$WORKDIR/floor-below-kill.log"
@@ -1311,21 +1309,21 @@ FLOOR_BELOW_FORCE_OUT="$(bash -c '
   main --force
 ' _ "$FLOOR_BIN_DIR" "$FLOOR_PROC_DIR" "$FLOOR_STATE_DIR" 1 1 "$FLOOR_BELOW_KILL_LOG" "$WORKDIR/$SCRIPT_UNDER_TEST" 2>&1)"
 if [ ! -s "$FLOOR_BELOW_KILL_LOG" ]; then
-  pass "Floor gate: below-floor tree is NEVER terminated, even under --force"
+  common_test_pass "Floor gate: below-floor tree is NEVER terminated, even under --force"
 else
-  fail "Floor gate: below-floor tree was terminated under --force (VIOLATION)"
-  info "kill log: $(cat "$FLOOR_BELOW_KILL_LOG")"
-  info "output was: $FLOOR_BELOW_FORCE_OUT"
+  common_test_fail "Floor gate: below-floor tree was terminated under --force (VIOLATION)"
+  common_test_info "kill log: $(cat "$FLOOR_BELOW_KILL_LOG")"
+  common_test_info "output was: $FLOOR_BELOW_FORCE_OUT"
 fi
 
 # Side 2: the SAME tree, reclaimable just ABOVE the 1024 KB floor -- now eligible.
 printf 'Pss_Anon:\t     1100 kB\nSwapPss:\t        0 kB\nPss_File:\t        0 kB\n' > "$FLOOR_PROC_DIR/$FLOOR_ROOT/smaps_rollup"
 FLOOR_ABOVE_OUT="$(PATH="$FLOOR_BIN_DIR:$PATH" PROC_ROOT="$FLOOR_PROC_DIR" LEAN_TREE_STATE_DIR="$FLOOR_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 if echo "$FLOOR_ABOVE_OUT" | grep -q -- "-- eligible:" && echo "$FLOOR_ABOVE_OUT" | grep -q "1 eligible"; then
-  pass "Floor gate: reclaimable (1100 KB) just above a 1024 KB floor renders eligible, 1 eligible tree"
+  common_test_pass "Floor gate: reclaimable (1100 KB) just above a 1024 KB floor renders eligible, 1 eligible tree"
 else
-  fail "Floor gate: above-floor case did not render as eligible"
-  info "output was: $FLOOR_ABOVE_OUT"
+  common_test_fail "Floor gate: above-floor case did not render as eligible"
+  common_test_info "output was: $FLOOR_ABOVE_OUT"
 fi
 
 unset PROC_ROOT
@@ -1482,10 +1480,10 @@ printf 'default' > "$PROMPT_NOTIFY_OUT"
 PROMPT_KILL_OUT="$(run_prompt_fixture)"
 
 if echo "$PROMPT_KILL_OUT" | grep -q "Terminated Lean tree root pid $PROMPT_ROOT (starttime $PROMPT_STARTTIME): 0 terminated, 0 failed."; then
-  pass "Prompt path (g3): notify-send 'default' re-invokes --lean-tree=${PROMPT_KEY} --force"
+  common_test_pass "Prompt path (g3): notify-send 'default' re-invokes --lean-tree=${PROMPT_KEY} --force"
 else
-  fail "Prompt path (g3): Kill outcome did not re-invoke --lean-tree targeted termination"
-  info "output was: $PROMPT_KILL_OUT"
+  common_test_fail "Prompt path (g3): Kill outcome did not re-invoke --lean-tree targeted termination"
+  common_test_info "output was: $PROMPT_KILL_OUT"
 fi
 
 W1_LINE=$(echo "$PROMPT_KILL_OUT" | grep -n "PID $PROMPT_WORKER1: already gone" | tail -1 | cut -d: -f1)
@@ -1494,29 +1492,29 @@ SRV_LINE=$(echo "$PROMPT_KILL_OUT" | grep -n "PID $PROMPT_SERVER: already gone" 
 ROOT_LINE=$(echo "$PROMPT_KILL_OUT" | grep -n "PID $PROMPT_ROOT: already gone" | head -1 | cut -d: -f1)
 if [ -n "$W1_LINE" ] && [ -n "$W2_LINE" ] && [ -n "$SRV_LINE" ] && [ -n "$ROOT_LINE" ] \
    && [ "$W1_LINE" -lt "$SRV_LINE" ] && [ "$W2_LINE" -lt "$SRV_LINE" ] && [ "$SRV_LINE" -lt "$ROOT_LINE" ]; then
-  pass "Prompt path (g3): Kill outcome attempts termination in ORDER workers -> server -> root (proven via terminate_pid()'s own 'already gone' log sequence on these fictional pids, never a real signal)"
+  common_test_pass "Prompt path (g3): Kill outcome attempts termination in ORDER workers -> server -> root (proven via terminate_pid()'s own 'already gone' log sequence on these fictional pids, never a real signal)"
 else
-  fail "Prompt path (g3): Kill-outcome termination ordering violated or incomplete"
-  info "output was: $PROMPT_KILL_OUT"
+  common_test_fail "Prompt path (g3): Kill-outcome termination ordering violated or incomplete"
+  common_test_info "output was: $PROMPT_KILL_OUT"
 fi
 
 if grep -qE "unit=claude-refresh-prompt-${PROMPT_ROOT}-${PROMPT_STARTTIME}" "$PROMPT_SYSTEMD_LOG"; then
-  pass "Prompt path (g3): unit-name case -- recorded --unit= value matches claude-refresh-prompt-<rootpid>-<starttime>"
+  common_test_pass "Prompt path (g3): unit-name case -- recorded --unit= value matches claude-refresh-prompt-<rootpid>-<starttime>"
 else
-  fail "Prompt path (g3): unit name not found in systemd-run argv log"
-  info "log was: $(cat "$PROMPT_SYSTEMD_LOG")"
+  common_test_fail "Prompt path (g3): unit name not found in systemd-run argv log"
+  common_test_info "log was: $(cat "$PROMPT_SYSTEMD_LOG")"
 fi
 if grep -qE 'claude-.*\.scope' "$PROMPT_SYSTEMD_LOG"; then
-  fail "Prompt path (g3): unit name unexpectedly matches claude-*.scope (would be stopped by claude-session-reaper)"
+  common_test_fail "Prompt path (g3): unit name unexpectedly matches claude-*.scope (would be stopped by claude-session-reaper)"
 else
-  pass "Prompt path (g3): unit name never matches claude-*.scope"
+  common_test_pass "Prompt path (g3): unit name never matches claude-*.scope"
 fi
 
 PROMPT_PROMPTED_AFTER_KILL="$(jq -r --arg k "$PROMPT_KEY" '.[$k].prompted // "absent"' "$PROMPT_STATE_DIR/lean-trees.json")"
 if [ "$PROMPT_PROMPTED_AFTER_KILL" != "true" ]; then
-  pass "Prompt path (g3): Kill outcome clears the 'prompted' marker after the termination attempt"
+  common_test_pass "Prompt path (g3): Kill outcome clears the 'prompted' marker after the termination attempt"
 else
-  fail "Prompt path (g3): 'prompted' marker still true after Kill outcome"
+  common_test_fail "Prompt path (g3): 'prompted' marker still true after Kill outcome"
 fi
 
 # --- Keep-path cases: stub prints nothing / another string / exits nonzero ---
@@ -1544,10 +1542,10 @@ for keep_case in "empty:" "other:some-other-action" "nonzero-exit:"; do
   KEEP_OUT="$(run_prompt_fixture)"
 
   if echo "$KEEP_OUT" | grep -q "already gone" || echo "$KEEP_OUT" | grep -q "Terminated Lean tree"; then
-    fail "Prompt path (g3) Keep ($keep_label): unexpectedly signaled a termination"
-    info "output was: $KEEP_OUT"
+    common_test_fail "Prompt path (g3) Keep ($keep_label): unexpectedly signaled a termination"
+    common_test_info "output was: $KEEP_OUT"
   else
-    pass "Prompt path (g3) Keep ($keep_label): signals nothing"
+    common_test_pass "Prompt path (g3) Keep ($keep_label): signals nothing"
   fi
 
   # NOTE: deliberately NOT `.prompted // "absent"` -- jq's `//` alternative operator treats
@@ -1556,9 +1554,9 @@ for keep_case in "empty:" "other:some-other-action" "nonzero-exit:"; do
   KEEP_SNOOZE="$(jq -r --arg k "$PROMPT_KEY" 'if .[$k].snooze_until == null then "absent" else (.[$k].snooze_until | tostring) end' "$PROMPT_STATE_DIR/lean-trees.json")"
   KEEP_PROMPTED="$(jq -r --arg k "$PROMPT_KEY" 'if .[$k].prompted == null then "absent" else (.[$k].prompted | tostring) end' "$PROMPT_STATE_DIR/lean-trees.json")"
   if [[ "$KEEP_SNOOZE" =~ ^[0-9]+$ ]] && [ "$KEEP_PROMPTED" = "false" ]; then
-    pass "Prompt path (g3) Keep ($keep_label): records snooze_until and clears prompted"
+    common_test_pass "Prompt path (g3) Keep ($keep_label): records snooze_until and clears prompted"
   else
-    fail "Prompt path (g3) Keep ($keep_label): expected snooze_until set and prompted=false, got snooze='$KEEP_SNOOZE' prompted='$KEEP_PROMPTED'"
+    common_test_fail "Prompt path (g3) Keep ($keep_label): expected snooze_until set and prompted=false, got snooze='$KEEP_SNOOZE' prompted='$KEEP_PROMPTED'"
   fi
 done
 
@@ -1573,9 +1571,9 @@ FIRST_RUN_LOG_LINES=$(count_prompt_launches)
 run_prompt_fixture > /dev/null 2>&1   # second run: still inside the snooze window
 SECOND_RUN_LOG_LINES=$(count_prompt_launches)
 if [ "$SECOND_RUN_LOG_LINES" = "$FIRST_RUN_LOG_LINES" ]; then
-  pass "Prompt path (g3): snooze dedupe -- a second run inside the window launches no second prompt"
+  common_test_pass "Prompt path (g3): snooze dedupe -- a second run inside the window launches no second prompt"
 else
-  fail "Prompt path (g3): snooze dedupe failed -- prompt-launch count grew from $FIRST_RUN_LOG_LINES to $SECOND_RUN_LOG_LINES"
+  common_test_fail "Prompt path (g3): snooze dedupe failed -- prompt-launch count grew from $FIRST_RUN_LOG_LINES to $SECOND_RUN_LOG_LINES"
 fi
 
 # Force the snooze window to have already expired, then run again -- must prompt once more.
@@ -1585,9 +1583,9 @@ mv "$PROMPT_STATE_DIR/lean-trees.json.tmp" "$PROMPT_STATE_DIR/lean-trees.json"
 run_prompt_fixture > /dev/null 2>&1
 THIRD_RUN_LOG_LINES=$(count_prompt_launches)
 if [ "$THIRD_RUN_LOG_LINES" -gt "$SECOND_RUN_LOG_LINES" ]; then
-  pass "Prompt path (g3): a run after the snooze window expires prompts again"
+  common_test_pass "Prompt path (g3): a run after the snooze window expires prompts again"
 else
-  fail "Prompt path (g3): expired-snooze run did not prompt again ($THIRD_RUN_LOG_LINES vs $SECOND_RUN_LOG_LINES lines)"
+  common_test_fail "Prompt path (g3): expired-snooze run did not prompt again ($THIRD_RUN_LOG_LINES vs $SECOND_RUN_LOG_LINES lines)"
 fi
 
 # --- Degrade cases: notify-send / systemd-run / DBus each missing in turn ---
@@ -1625,10 +1623,10 @@ reseed_prompt_state
 : > "$PROMPT_SYSTEMD_LOG"
 DEGRADE_NOTIFY_OUT="$(PATH="$PROMPT_DEGRADE_BIN_DIR:$PROMPT_MIRROR_NO_NOTIFY" PROC_ROOT="$PROMPT_PROC_DIR" LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 if echo "$DEGRADE_NOTIFY_OUT" | grep -q "notify-send unavailable -- prompt path is log-only" && [ "$(count_prompt_launches)" = "0" ]; then
-  pass "Prompt path (g3) degrade: notify-send absent -> log-only, no prompt launched"
+  common_test_pass "Prompt path (g3) degrade: notify-send absent -> log-only, no prompt launched"
 else
-  fail "Prompt path (g3) degrade: notify-send-absent case did not degrade as expected"
-  info "output was: $DEGRADE_NOTIFY_OUT"
+  common_test_fail "Prompt path (g3) degrade: notify-send-absent case did not degrade as expected"
+  common_test_info "output was: $DEGRADE_NOTIFY_OUT"
 fi
 
 cp "$PROMPT_BIN_DIR/notify-send" "$PROMPT_DEGRADE_BIN_DIR/notify-send"
@@ -1640,10 +1638,10 @@ printf '' > "$PROMPT_NOTIFY_OUT"
 rm -f "$PROMPT_NOTIFY_EXIT"
 DEGRADE_SYSTEMD_OUT="$(PATH="$PROMPT_DEGRADE_BIN_DIR:$PROMPT_MIRROR_NO_SYSTEMD_RUN" PROC_ROOT="$PROMPT_PROC_DIR" LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 if echo "$DEGRADE_SYSTEMD_OUT" | grep -q "systemd-run unavailable" && [ "$(count_prompt_launches)" = "0" ]; then
-  pass "Prompt path (g3) degrade: systemd-run absent -> log-only, no prompt launched"
+  common_test_pass "Prompt path (g3) degrade: systemd-run absent -> log-only, no prompt launched"
 else
-  fail "Prompt path (g3) degrade: systemd-run-absent case did not degrade as expected"
-  info "output was: $DEGRADE_SYSTEMD_OUT"
+  common_test_fail "Prompt path (g3) degrade: systemd-run-absent case did not degrade as expected"
+  common_test_info "output was: $DEGRADE_SYSTEMD_OUT"
 fi
 
 cp "$PROMPT_BIN_DIR/systemd-run" "$PROMPT_DEGRADE_BIN_DIR/systemd-run"
@@ -1653,10 +1651,10 @@ reseed_prompt_state
 : > "$PROMPT_SYSTEMD_LOG"
 DEGRADE_DBUS_OUT="$(env -u DBUS_SESSION_BUS_ADDRESS PATH="$PROMPT_DEGRADE_BIN_DIR:$PROMPT_MIRROR_NO_DBUS" PROC_ROOT="$PROMPT_PROC_DIR" LEAN_TREE_STATE_DIR="$PROMPT_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 if echo "$DEGRADE_DBUS_OUT" | grep -q "no DBus session bus available" && [ "$(count_prompt_launches)" = "0" ]; then
-  pass "Prompt path (g3) degrade: DBus session bus absent -> log-only, no prompt launched"
+  common_test_pass "Prompt path (g3) degrade: DBus session bus absent -> log-only, no prompt launched"
 else
-  fail "Prompt path (g3) degrade: DBus-absent case did not degrade as expected"
-  info "output was: $DEGRADE_DBUS_OUT"
+  common_test_fail "Prompt path (g3) degrade: DBus-absent case did not degrade as expected"
+  common_test_info "output was: $DEGRADE_DBUS_OUT"
 fi
 
 # --- Re-verification refusal cases: direct isolated calls to run_lean_tree_targeted_termination ---
@@ -1680,9 +1678,9 @@ else
   REFUSAL_I_RC=$?
 fi
 if [ "$REFUSAL_I_RC" -ne 0 ] && echo "$REFUSAL_I_STDERR" | grep -q "starttime mismatch"; then
-  pass "Prompt path (g3) refusal (i): starttime mismatch (PID reuse) refuses with a named reason, signals nothing"
+  common_test_pass "Prompt path (g3) refusal (i): starttime mismatch (PID reuse) refuses with a named reason, signals nothing"
 else
-  fail "Prompt path (g3) refusal (i): expected a starttime-mismatch refusal, got rc=$REFUSAL_I_RC stderr='$REFUSAL_I_STDERR'"
+  common_test_fail "Prompt path (g3) refusal (i): expected a starttime-mismatch refusal, got rc=$REFUSAL_I_RC stderr='$REFUSAL_I_STDERR'"
 fi
 
 # (ii) cputime grew since the state snapshot -- no longer idle.
@@ -1694,9 +1692,9 @@ else
   REFUSAL_II_RC=$?
 fi
 if [ "$REFUSAL_II_RC" -ne 0 ] && echo "$REFUSAL_II_STDERR" | grep -q "no longer eligible"; then
-  pass "Prompt path (g3) refusal (ii): cputime grew since the snapshot (regained activity) refuses with a named reason, signals nothing"
+  common_test_pass "Prompt path (g3) refusal (ii): cputime grew since the snapshot (regained activity) refuses with a named reason, signals nothing"
 else
-  fail "Prompt path (g3) refusal (ii): expected a no-longer-eligible refusal, got rc=$REFUSAL_II_RC stderr='$REFUSAL_II_STDERR'"
+  common_test_fail "Prompt path (g3) refusal (ii): expected a no-longer-eligible refusal, got rc=$REFUSAL_II_RC stderr='$REFUSAL_II_STDERR'"
 fi
 
 # (iii) reclaimable dropped below the floor (re-verified with a high floor override).
@@ -1709,9 +1707,9 @@ else
   REFUSAL_III_RC=$?
 fi
 if [ "$REFUSAL_III_RC" -ne 0 ] && echo "$REFUSAL_III_STDERR" | grep -q "no longer eligible"; then
-  pass "Prompt path (g3) refusal (iii): reclaimable dropped below the floor refuses with a named reason, signals nothing"
+  common_test_pass "Prompt path (g3) refusal (iii): reclaimable dropped below the floor refuses with a named reason, signals nothing"
 else
-  fail "Prompt path (g3) refusal (iii): expected a no-longer-eligible (floor) refusal, got rc=$REFUSAL_III_RC stderr='$REFUSAL_III_STDERR'"
+  common_test_fail "Prompt path (g3) refusal (iii): expected a no-longer-eligible (floor) refusal, got rc=$REFUSAL_III_RC stderr='$REFUSAL_III_STDERR'"
 fi
 unset PROC_ROOT LEAN_TREE_STATE_DIR LEAN_LSP_IDLE_THRESHOLD_MIN LEAN_LSP_MEM_FLOOR_MB
 
@@ -1773,11 +1771,11 @@ printf '%s (lake) S 1 %s %s 0 -1 4194304 100 0 0 0 200 0 0 0 20 0 1 0 55555 0 0 
 ACTIVE_RUN2_OUT="$(SYSTEMD_RUN_LOG="$ACTIVE_SYSTEMD_LOG" PATH="$ACTIVE_BIN_DIR:$PATH" PROC_ROOT="$ACTIVE_PROC_DIR" LEAN_TREE_STATE_DIR="$ACTIVE_STATE_DIR" LEAN_LSP_IDLE_THRESHOLD_MIN=1 LEAN_LSP_MEM_FLOOR_MB=1 bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
 if echo "$ACTIVE_RUN2_OUT" | grep -q "0 eligible" && [ ! -s "$ACTIVE_SYSTEMD_LOG" ]; then
-  pass "Prompt path (g3) acceptance bar: a 5h-old tree whose cputime grows between runs is never eligible, and is never prompted"
+  common_test_pass "Prompt path (g3) acceptance bar: a 5h-old tree whose cputime grows between runs is never eligible, and is never prompted"
 else
-  fail "Prompt path (g3) acceptance bar: active-tree case was unexpectedly eligible or prompted"
-  info "output was: $ACTIVE_RUN2_OUT"
-  info "systemd-run log was: $(cat "$ACTIVE_SYSTEMD_LOG")"
+  common_test_fail "Prompt path (g3) acceptance bar: active-tree case was unexpectedly eligible or prompted"
+  common_test_info "output was: $ACTIVE_RUN2_OUT"
+  common_test_info "systemd-run log was: $(cat "$ACTIVE_SYSTEMD_LOG")"
 fi
 
 unset SYSTEMD_RUN_LOG NOTIFY_OUTPUT_FILE NOTIFY_EXIT_FILE PROC_ROOT
@@ -1787,20 +1785,20 @@ unset SYSTEMD_RUN_LOG NOTIFY_OUTPUT_FILE NOTIFY_EXIT_FILE PROC_ROOT
 # =====================================================================
 # Unit-level: zombie_row_is_defunct must accept Z/Z+ and reject every live state code.
 if zombie_row_is_defunct "Z"; then
-  pass "zombie_row_is_defunct: accepts 'Z'"
+  common_test_pass "zombie_row_is_defunct: accepts 'Z'"
 else
-  fail "zombie_row_is_defunct: rejected 'Z'"
+  common_test_fail "zombie_row_is_defunct: rejected 'Z'"
 fi
 if zombie_row_is_defunct "Z+"; then
-  pass "zombie_row_is_defunct: accepts 'Z+'"
+  common_test_pass "zombie_row_is_defunct: accepts 'Z+'"
 else
-  fail "zombie_row_is_defunct: rejected 'Z+'"
+  common_test_fail "zombie_row_is_defunct: rejected 'Z+'"
 fi
 for live_stat in S R D T I S+ Ss Rl; do
   if zombie_row_is_defunct "$live_stat"; then
-    fail "zombie_row_is_defunct: incorrectly accepted live state '$live_stat'"
+    common_test_fail "zombie_row_is_defunct: incorrectly accepted live state '$live_stat'"
   else
-    pass "zombie_row_is_defunct: rejects live state '$live_stat'"
+    common_test_pass "zombie_row_is_defunct: rejects live state '$live_stat'"
   fi
 done
 
@@ -1862,38 +1860,38 @@ ZOMBIE_DRY_OUT="$(PATH="$ZOMBIE_FAKE_BIN_DIR:$PATH" CLAUDE_JSON_PATH="$WORKDIR/n
 ZOMBIE_FORCE_OUT="$(PATH="$ZOMBIE_FAKE_BIN_DIR:$PATH" CLAUDE_JSON_PATH="$WORKDIR/nonexistent-claude.json" bash "$WORKDIR/$SCRIPT_UNDER_TEST" --force 2>&1)"
 
 if echo "$ZOMBIE_DRY_OUT" | grep -q "Found 3 unreaped child process(es) across 2 parent(s)."; then
-  pass "Zombie pass (h): reports 3 zombies across 2 parents (grouping by ppid correct)"
+  common_test_pass "Zombie pass (h): reports 3 zombies across 2 parents (grouping by ppid correct)"
 else
-  fail "Zombie pass (h): did not report 3 zombies across 2 parents"
-  info "output was: $ZOMBIE_DRY_OUT"
+  common_test_fail "Zombie pass (h): did not report 3 zombies across 2 parents"
+  common_test_info "output was: $ZOMBIE_DRY_OUT"
 fi
 
 if echo "$ZOMBIE_DRY_OUT" | grep -q "Parent: speech-dispatch (PID $ZOMBIE_PARENT1)" \
    && echo "$ZOMBIE_DRY_OUT" | grep -q "Parent: python3.13 (PID $ZOMBIE_PARENT2)"; then
-  pass "Zombie pass (h): resolves each parent's comm from the shared snapshot"
+  common_test_pass "Zombie pass (h): resolves each parent's comm from the shared snapshot"
 else
-  fail "Zombie pass (h): did not resolve parent comm names correctly"
-  info "output was: $ZOMBIE_DRY_OUT"
+  common_test_fail "Zombie pass (h): did not resolve parent comm names correctly"
+  common_test_info "output was: $ZOMBIE_DRY_OUT"
 fi
 
 if echo "$ZOMBIE_DRY_OUT" | grep -q "$ZOMBIE_CHILD1" && echo "$ZOMBIE_DRY_OUT" | grep -q "$ZOMBIE_CHILD2" \
    && echo "$ZOMBIE_DRY_OUT" | grep -q "$ZOMBIE_CHILD3"; then
-  pass "Zombie pass (h): all three zombie child PIDs appear in the report"
+  common_test_pass "Zombie pass (h): all three zombie child PIDs appear in the report"
 else
-  fail "Zombie pass (h): one or more zombie child PIDs missing from the report"
-  info "output was: $ZOMBIE_DRY_OUT"
+  common_test_fail "Zombie pass (h): one or more zombie child PIDs missing from the report"
+  common_test_info "output was: $ZOMBIE_DRY_OUT"
 fi
 
 if echo "$ZOMBIE_DRY_OUT" | grep -qE "^  ${ZOMBIE_PARENT1}[[:space:]]"; then
-  fail "Zombie pass (h): the LIVE parent PID ($ZOMBIE_PARENT1) was incorrectly listed as a zombie child row"
+  common_test_fail "Zombie pass (h): the LIVE parent PID ($ZOMBIE_PARENT1) was incorrectly listed as a zombie child row"
 else
-  pass "Zombie pass (h): the live parent PID is never listed as a zombie child row (Z vs live discrimination)"
+  common_test_pass "Zombie pass (h): the live parent PID is never listed as a zombie child row (Z vs live discrimination)"
 fi
 
 if echo "$ZOMBIE_DRY_OUT" | grep -q "Zombie memory cost: 0"; then
-  pass "Zombie pass (h): reports zombie memory cost as explicitly zero"
+  common_test_pass "Zombie pass (h): reports zombie memory cost as explicitly zero"
 else
-  fail "Zombie pass (h): did not report the explicit zero-memory-cost line"
+  common_test_fail "Zombie pass (h): did not report the explicit zero-memory-cost line"
 fi
 
 # --dry-run vs --force: identical apart from the [DRY RUN] banner (its own two lines). Removing
@@ -1904,11 +1902,11 @@ fi
 ZOMBIE_DRY_STRIPPED="$(echo "$ZOMBIE_DRY_OUT" | grep -v '\[DRY RUN\]' | grep -v "can only be reaped by its own parent" | cat -s)"
 ZOMBIE_FORCE_SQUEEZED="$(echo "$ZOMBIE_FORCE_OUT" | cat -s)"
 if [ "$ZOMBIE_DRY_STRIPPED" = "$ZOMBIE_FORCE_SQUEEZED" ]; then
-  pass "Zombie pass (h): --dry-run and --force output identical modulo the DRY RUN banner"
+  common_test_pass "Zombie pass (h): --dry-run and --force output identical modulo the DRY RUN banner"
 else
-  fail "Zombie pass (h): --dry-run and --force output diverged beyond the DRY RUN banner"
-  info "dry (stripped) was: $ZOMBIE_DRY_STRIPPED"
-  info "force was: $ZOMBIE_FORCE_SQUEEZED"
+  common_test_fail "Zombie pass (h): --dry-run and --force output diverged beyond the DRY RUN banner"
+  common_test_info "dry (stripped) was: $ZOMBIE_DRY_STRIPPED"
+  common_test_info "force was: $ZOMBIE_FORCE_SQUEEZED"
 fi
 
 # =====================================================================
@@ -1997,55 +1995,55 @@ MCP_OUT_NOCHROME="$(PATH="$MCP_FAKE_BIN_DIR:$PATH" PROC_ROOT="$MCP_PROC_DIR" CLA
 #   unknown-server: 0 procs, 0 sessions, 0 KB
 #   total: 7400+6700+0=14100 KB -> mb=14100/1024=13, frac=(14100%1024)*10/1024=7 -> "13.7 MB"
 if echo "$MCP_OUT_NOCHROME" | grep -qE '^playwright[[:space:]]+2[[:space:]]+4[[:space:]]+7\.2 MB[[:space:]]+no evidence of use'; then
-  pass "MCP pass (i): playwright row -- 2 sessions, 4 procs, 7.2 MB, flagged 'no evidence of use'"
+  common_test_pass "MCP pass (i): playwright row -- 2 sessions, 4 procs, 7.2 MB, flagged 'no evidence of use'"
 else
-  fail "MCP pass (i): playwright row did not match expected session/proc/memory/evidence arithmetic"
-  info "output was: $MCP_OUT_NOCHROME"
+  common_test_fail "MCP pass (i): playwright row did not match expected session/proc/memory/evidence arithmetic"
+  common_test_info "output was: $MCP_OUT_NOCHROME"
 fi
 
 if echo "$MCP_OUT_NOCHROME" | grep -qE '^lean-lsp[[:space:]]+2[[:space:]]+2[[:space:]]+6\.5 MB[[:space:]]+in use'; then
-  pass "MCP pass (i): lean-lsp row -- 2 sessions, 2 procs, 6.5 MB, 'in use' (lake-serve tree present)"
+  common_test_pass "MCP pass (i): lean-lsp row -- 2 sessions, 2 procs, 6.5 MB, 'in use' (lake-serve tree present)"
 else
-  fail "MCP pass (i): lean-lsp row did not match expected session/proc/memory/evidence arithmetic"
-  info "output was: $MCP_OUT_NOCHROME"
+  common_test_fail "MCP pass (i): lean-lsp row did not match expected session/proc/memory/evidence arithmetic"
+  common_test_info "output was: $MCP_OUT_NOCHROME"
 fi
 
 if echo "$MCP_OUT_NOCHROME" | grep -qE '^unknown-server[[:space:]]+0[[:space:]]+0[[:space:]]+0 KB[[:space:]]+no use signal available'; then
-  pass "MCP pass (i): unrecognized server key reports 'no use signal available', never 'unused'"
+  common_test_pass "MCP pass (i): unrecognized server key reports 'no use signal available', never 'unused'"
 else
-  fail "MCP pass (i): unrecognized server key did not report the 'no use signal available' outcome"
-  info "output was: $MCP_OUT_NOCHROME"
+  common_test_fail "MCP pass (i): unrecognized server key did not report the 'no use signal available' outcome"
+  common_test_info "output was: $MCP_OUT_NOCHROME"
 fi
 
 if echo "$MCP_OUT_NOCHROME" | grep -q "Total MCP server memory: 13.7 MB"; then
-  pass "MCP pass (i): total memory sums all three servers correctly (13.7 MB)"
+  common_test_pass "MCP pass (i): total memory sums all three servers correctly (13.7 MB)"
 else
-  fail "MCP pass (i): total memory did not match expected sum"
-  info "output was: $MCP_OUT_NOCHROME"
+  common_test_fail "MCP pass (i): total memory did not match expected sum"
+  common_test_info "output was: $MCP_OUT_NOCHROME"
 fi
 
 ADVISORY_PARAGRAPH_COUNT="$(echo "$MCP_OUT_NOCHROME" | grep -c "no live evidence of use")"
 if [ "$ADVISORY_PARAGRAPH_COUNT" -eq 1 ]; then
-  pass "MCP pass (i): exactly one advisory paragraph emitted (only playwright flagged)"
+  common_test_pass "MCP pass (i): exactly one advisory paragraph emitted (only playwright flagged)"
 else
-  fail "MCP pass (i): expected exactly one advisory paragraph, found $ADVISORY_PARAGRAPH_COUNT"
-  info "output was: $MCP_OUT_NOCHROME"
+  common_test_fail "MCP pass (i): expected exactly one advisory paragraph, found $ADVISORY_PARAGRAPH_COUNT"
+  common_test_info "output was: $MCP_OUT_NOCHROME"
 fi
 
 # Run 2: chromium IS present -- playwright's evidence-of-use flips to "in use", no advisory at all.
 MCP_OUT_CHROME="$(PATH="$MCP_FAKE_BIN_DIR:$PATH" PROC_ROOT="$MCP_PROC_DIR" CLAUDE_JSON_PATH="$CLAUDE_JSON_FIXTURE" FAKE_HAS_CHROMIUM=true bash "$WORKDIR/$SCRIPT_UNDER_TEST" --dry-run 2>&1)"
 
 if echo "$MCP_OUT_CHROME" | grep -qE '^playwright[[:space:]]+2[[:space:]]+4[[:space:]]+7\.2 MB[[:space:]]+in use'; then
-  pass "MCP pass (i): evidence discriminator flips to 'in use' when a chromium-like row is present"
+  common_test_pass "MCP pass (i): evidence discriminator flips to 'in use' when a chromium-like row is present"
 else
-  fail "MCP pass (i): playwright was not reclassified 'in use' with chromium present"
-  info "output was: $MCP_OUT_CHROME"
+  common_test_fail "MCP pass (i): playwright was not reclassified 'in use' with chromium present"
+  common_test_info "output was: $MCP_OUT_CHROME"
 fi
 
 if echo "$MCP_OUT_CHROME" | grep -q "Scoping advisory"; then
-  fail "MCP pass (i): a scoping advisory was emitted even though no server was flagged"
+  common_test_fail "MCP pass (i): a scoping advisory was emitted even though no server was flagged"
 else
-  pass "MCP pass (i): no scoping advisory is emitted when no server is flagged"
+  common_test_pass "MCP pass (i): no scoping advisory is emitted when no server is flagged"
 fi
 
 # =====================================================================
@@ -2057,31 +2055,31 @@ ZOMBIE_BODY="$(sed -n '/^ZOMBIE_SNAPSHOT_PS_FIELDS=/,/^MCP_SNAPSHOT_PS_FIELDS=/p
 MCP_BODY="$(sed -n '/^MCP_SNAPSHOT_PS_FIELDS=/,/^main() {/p' "$WORKDIR/$SCRIPT_UNDER_TEST")"
 
 if echo "$ZOMBIE_BODY" | grep -qE '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid'; then
-  fail "Structural (j): zombie pass block contains a kill/terminate_pid reference"
-  info "matched: $(echo "$ZOMBIE_BODY" | grep -E '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid')"
+  common_test_fail "Structural (j): zombie pass block contains a kill/terminate_pid reference"
+  common_test_info "matched: $(echo "$ZOMBIE_BODY" | grep -E '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid')"
 else
-  pass "Structural (j): zombie pass block (constant + predicate + run_zombie_pass) contains zero kill/terminate_pid references"
+  common_test_pass "Structural (j): zombie pass block (constant + predicate + run_zombie_pass) contains zero kill/terminate_pid references"
 fi
 
 if echo "$MCP_BODY" | grep -qE '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid'; then
-  fail "Structural (j): MCP fan-out pass block contains a kill/terminate_pid reference"
-  info "matched: $(echo "$MCP_BODY" | grep -E '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid')"
+  common_test_fail "Structural (j): MCP fan-out pass block contains a kill/terminate_pid reference"
+  common_test_info "matched: $(echo "$MCP_BODY" | grep -E '(^|[^_a-zA-Z])kill([^_a-zA-Z]|$)|terminate_pid')"
 else
-  pass "Structural (j): MCP fan-out pass block (constants + predicates + run_mcp_fanout_pass) contains zero kill/terminate_pid references"
+  common_test_pass "Structural (j): MCP fan-out pass block (constants + predicates + run_mcp_fanout_pass) contains zero kill/terminate_pid references"
 fi
 
 # Advisory text content, reusing the MCP_OUT_NOCHROME captured output from assertion (i) above --
 # this IS the emitted advisory text the acceptance bar requires be grepped.
 if echo "$MCP_OUT_NOCHROME" | grep -qE 'cannot access project-scoped|subagents cannot'; then
-  fail "Advisory text (j): contains banned subagent-barrier phrasing"
+  common_test_fail "Advisory text (j): contains banned subagent-barrier phrasing"
 else
-  pass "Advisory text (j): contains no subagent-barrier phrasing"
+  common_test_pass "Advisory text (j): contains no subagent-barrier phrasing"
 fi
 
 if echo "$MCP_OUT_NOCHROME" | grep -qi 'workspace trust'; then
-  pass "Advisory text (j): mentions workspace trust"
+  common_test_pass "Advisory text (j): mentions workspace trust"
 else
-  fail "Advisory text (j): does not mention workspace trust"
+  common_test_fail "Advisory text (j): does not mention workspace trust"
 fi
 
 # =====================================================================
@@ -2090,89 +2088,89 @@ fi
 # Unit-level: is_shell_comm, build_waiter_family, build_waiter_row_is_idle, and both outcomes of
 # build_self_exclusion_set are called directly (no fake ps needed for these).
 if is_shell_comm "bash"; then
-  pass "is_shell_comm: accepts 'bash'"
+  common_test_pass "is_shell_comm: accepts 'bash'"
 else
-  fail "is_shell_comm: rejected 'bash'"
+  common_test_fail "is_shell_comm: rejected 'bash'"
 fi
 if is_shell_comm "sh"; then
-  pass "is_shell_comm: accepts 'sh'"
+  common_test_pass "is_shell_comm: accepts 'sh'"
 else
-  fail "is_shell_comm: rejected 'sh'"
+  common_test_fail "is_shell_comm: rejected 'sh'"
 fi
 if is_shell_comm "nvim"; then
-  fail "is_shell_comm: incorrectly accepted 'nvim'"
+  common_test_fail "is_shell_comm: incorrectly accepted 'nvim'"
 else
-  pass "is_shell_comm: rejects 'nvim'"
+  common_test_pass "is_shell_comm: rejects 'nvim'"
 fi
 
 FAMILY_A_ARGS="timeout 3000 bash -c while kill -0 \"\$1\" 2>/dev/null; do sleep 10; done _ 555555"
 build_waiter_family "$FAMILY_A_ARGS"
 if [ "$BUILD_WAITER_FAMILY" = "A" ] && [ "$BUILD_WAITER_EMBEDDED_PID" = "555555" ]; then
-  pass "build_waiter_family: classifies the canonical bounded-build-waiter idiom as Family A and extracts the embedded pid"
+  common_test_pass "build_waiter_family: classifies the canonical bounded-build-waiter idiom as Family A and extracts the embedded pid"
 else
-  fail "build_waiter_family: did not classify the canonical idiom as Family A with embedded pid 555555 (got family='$BUILD_WAITER_FAMILY' pid='$BUILD_WAITER_EMBEDDED_PID')"
+  common_test_fail "build_waiter_family: did not classify the canonical idiom as Family A with embedded pid 555555 (got family='$BUILD_WAITER_FAMILY' pid='$BUILD_WAITER_EMBEDDED_PID')"
 fi
 
 FAMILY_A_BAD_TAIL_ARGS="timeout 3000 bash -c while kill -0 \"\$1\" 2>/dev/null; do sleep 10; done _ abc"
 build_waiter_family "$FAMILY_A_BAD_TAIL_ARGS"
 if [ -z "$BUILD_WAITER_FAMILY" ]; then
-  pass "build_waiter_family: a Family A-shaped argv with a non-numeric trailing token classifies as neither (fails closed)"
+  common_test_pass "build_waiter_family: a Family A-shaped argv with a non-numeric trailing token classifies as neither (fails closed)"
 else
-  fail "build_waiter_family: a non-numeric trailing token was misclassified as family '$BUILD_WAITER_FAMILY'"
+  common_test_fail "build_waiter_family: a non-numeric trailing token was misclassified as family '$BUILD_WAITER_FAMILY'"
 fi
 
 FAMILY_B_ARGS='until grep -q "^EXIT=" /tmp/somelog; do sleep 10; done'
 build_waiter_family "$FAMILY_B_ARGS"
 if [ "$BUILD_WAITER_FAMILY" = "B" ] && [ -z "$BUILD_WAITER_EMBEDDED_PID" ]; then
-  pass "build_waiter_family: classifies a legacy 'until grep -q' sentinel poll as Family B with no embedded pid"
+  common_test_pass "build_waiter_family: classifies a legacy 'until grep -q' sentinel poll as Family B with no embedded pid"
 else
-  fail "build_waiter_family: did not classify the sentinel poll as Family B (got family='$BUILD_WAITER_FAMILY' pid='$BUILD_WAITER_EMBEDDED_PID')"
+  common_test_fail "build_waiter_family: did not classify the sentinel poll as Family B (got family='$BUILD_WAITER_FAMILY' pid='$BUILD_WAITER_EMBEDDED_PID')"
 fi
 
 FAMILY_B_SELFMATCH_ARGS='until ! ps aux | grep -q "[b]ash check.sh"; do sleep 8; done'
 build_waiter_family "$FAMILY_B_SELFMATCH_ARGS"
 if [ "$BUILD_WAITER_FAMILY" = "B" ]; then
-  pass "build_waiter_family: classifies the legacy self-match 'ps aux | grep' poll (the incident class this pass reaps) as Family B"
+  common_test_pass "build_waiter_family: classifies the legacy self-match 'ps aux | grep' poll (the incident class this pass reaps) as Family B"
 else
-  fail "build_waiter_family: did not classify the legacy self-match poll as Family B (got family='$BUILD_WAITER_FAMILY')"
+  common_test_fail "build_waiter_family: did not classify the legacy self-match poll as Family B (got family='$BUILD_WAITER_FAMILY')"
 fi
 
 NEITHER_ARGS='vim --headless -c "some unrelated command"'
 build_waiter_family "$NEITHER_ARGS"
 if [ -z "$BUILD_WAITER_FAMILY" ]; then
-  pass "build_waiter_family: an unrelated argv classifies as neither family"
+  common_test_pass "build_waiter_family: an unrelated argv classifies as neither family"
 else
-  fail "build_waiter_family: an unrelated argv was misclassified as family '$BUILD_WAITER_FAMILY'"
+  common_test_fail "build_waiter_family: an unrelated argv was misclassified as family '$BUILD_WAITER_FAMILY'"
 fi
 
 if build_waiter_row_is_idle 3600 "0.0" 60; then
-  pass "build_waiter_row_is_idle: idle (pcpu 0, etimes past a 60-minute threshold) is TRUE"
+  common_test_pass "build_waiter_row_is_idle: idle (pcpu 0, etimes past a 60-minute threshold) is TRUE"
 else
-  fail "build_waiter_row_is_idle: an idle row (pcpu 0, etimes 3600s past a 60min threshold) was NOT reported idle"
+  common_test_fail "build_waiter_row_is_idle: an idle row (pcpu 0, etimes 3600s past a 60min threshold) was NOT reported idle"
 fi
 if build_waiter_row_is_idle 30 "0.0" 60; then
-  fail "build_waiter_row_is_idle: a row younger than the threshold was incorrectly reported idle"
+  common_test_fail "build_waiter_row_is_idle: a row younger than the threshold was incorrectly reported idle"
 else
-  pass "build_waiter_row_is_idle: a row younger than the threshold is NOT idle"
+  common_test_pass "build_waiter_row_is_idle: a row younger than the threshold is NOT idle"
 fi
 if build_waiter_row_is_idle 3600 "2.0" 60; then
-  fail "build_waiter_row_is_idle: a busy row (pcpu 2.0) was incorrectly reported idle"
+  common_test_fail "build_waiter_row_is_idle: a busy row (pcpu 2.0) was incorrectly reported idle"
 else
-  pass "build_waiter_row_is_idle: a busy row (pcpu 2.0) is NOT idle"
+  common_test_pass "build_waiter_row_is_idle: a busy row (pcpu 2.0) is NOT idle"
 fi
 
 # Fail-closed unit assertion: a snapshot string with no $$ row must make build_self_exclusion_set
 # return non-zero and leave both output globals empty.
 NO_SELF_SNAPSHOT="999001 1 999001 $CURRENT_UID 100 0.0 0::/user.slice/x bash foo"
 if build_self_exclusion_set "$NO_SELF_SNAPSHOT"; then
-  fail "build_self_exclusion_set: incorrectly succeeded against a snapshot with no \$\$ row"
+  common_test_fail "build_self_exclusion_set: incorrectly succeeded against a snapshot with no \$\$ row"
 else
-  pass "build_self_exclusion_set: fails closed (returns non-zero) when the \$\$ row is absent"
+  common_test_pass "build_self_exclusion_set: fails closed (returns non-zero) when the \$\$ row is absent"
 fi
 if [ -z "$BUILD_WAITER_SELF_PGID" ] && [ -z "$BUILD_WAITER_ANCESTOR_PIDS" ]; then
-  pass "build_self_exclusion_set: both output globals are left empty on the fail-closed path"
+  common_test_pass "build_self_exclusion_set: both output globals are left empty on the fail-closed path"
 else
-  fail "build_self_exclusion_set: an output global was populated despite the \$\$ row being absent"
+  common_test_fail "build_self_exclusion_set: an output global was populated despite the \$\$ row being absent"
 fi
 
 # Success-path unit assertion: a synthetic two-row snapshot ($$ and its fabricated parent) proves
@@ -2185,12 +2183,12 @@ if build_self_exclusion_set "$SELF_TEST_SNAPSHOT"; then
   if [ "$BUILD_WAITER_SELF_PGID" = "$SELF_TEST_PGID" ] \
      && [[ " $BUILD_WAITER_ANCESTOR_PIDS " == *" $$ "* ]] \
      && [[ " $BUILD_WAITER_ANCESTOR_PIDS " == *" $SELF_TEST_PARENT_PID "* ]]; then
-    pass "build_self_exclusion_set: resolves its own pgid and walks the ancestor chain (\$\$ and its parent) from a synthetic snapshot"
+    common_test_pass "build_self_exclusion_set: resolves its own pgid and walks the ancestor chain (\$\$ and its parent) from a synthetic snapshot"
   else
-    fail "build_self_exclusion_set: pgid or ancestor chain incorrect (pgid='$BUILD_WAITER_SELF_PGID' ancestors='$BUILD_WAITER_ANCESTOR_PIDS')"
+    common_test_fail "build_self_exclusion_set: pgid or ancestor chain incorrect (pgid='$BUILD_WAITER_SELF_PGID' ancestors='$BUILD_WAITER_ANCESTOR_PIDS')"
   fi
 else
-  fail "build_self_exclusion_set: unexpectedly failed against a snapshot containing the \$\$ row"
+  common_test_fail "build_self_exclusion_set: unexpectedly failed against a snapshot containing the \$\$ row"
 fi
 
 # =====================================================================
@@ -2337,41 +2335,41 @@ BUILD_WAITER_DRY_OUT="$(bash -c '
 ' _ "$BUILD_WAITER_FAKE_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$BUILD_WAITER_KILL_LOG" "$WORKDIR/$SCRIPT_UNDER_TEST" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
 
 if echo "$BUILD_WAITER_DRY_OUT" | grep -q "WARNING: this script's own process row"; then
-  fail "Build-waiter pass (k): harness defect -- the fail-closed warning fired unexpectedly (self-pid resolution failed in the fixture)"
-  info "output was: $BUILD_WAITER_DRY_OUT"
+  common_test_fail "Build-waiter pass (k): harness defect -- the fail-closed warning fired unexpectedly (self-pid resolution failed in the fixture)"
+  common_test_info "output was: $BUILD_WAITER_DRY_OUT"
 else
-  pass "Build-waiter pass (k): self-row resolution succeeded in the fixture (no spurious fail-closed warning)"
+  common_test_pass "Build-waiter pass (k): self-row resolution succeeded in the fixture (no spurious fail-closed warning)"
 fi
 
 if [ -s "$BUILD_WAITER_KILL_LOG" ]; then
-  fail "Build-waiter pass (k): --dry-run terminated something (fake-kill log non-empty)"
-  info "kill log was: $(cat "$BUILD_WAITER_KILL_LOG")"
+  common_test_fail "Build-waiter pass (k): --dry-run terminated something (fake-kill log non-empty)"
+  common_test_info "kill log was: $(cat "$BUILD_WAITER_KILL_LOG")"
 else
-  pass "Build-waiter pass (k): --dry-run terminates nothing (fake-kill log stays empty)"
+  common_test_pass "Build-waiter pass (k): --dry-run terminates nothing (fake-kill log stays empty)"
 fi
 
 if echo "$BUILD_WAITER_DRY_OUT" | grep -q "Found 3 orphaned build-waiter poll loop(s):"; then
-  pass "Build-waiter pass (k): --dry-run reports exactly 3 candidates"
+  common_test_pass "Build-waiter pass (k): --dry-run reports exactly 3 candidates"
 else
-  fail "Build-waiter pass (k): --dry-run did not report exactly 3 candidates"
-  info "output was: $BUILD_WAITER_DRY_OUT"
+  common_test_fail "Build-waiter pass (k): --dry-run did not report exactly 3 candidates"
+  common_test_info "output was: $BUILD_WAITER_DRY_OUT"
 fi
 
 for expected_pid in 931001 931003 931005; do
   if echo "$BUILD_WAITER_DRY_OUT" | grep -qE "^${expected_pid}[[:space:]]"; then
-    pass "Build-waiter pass (k): candidate $expected_pid appears in the --dry-run report"
+    common_test_pass "Build-waiter pass (k): candidate $expected_pid appears in the --dry-run report"
   else
-    fail "Build-waiter pass (k): candidate $expected_pid missing from the --dry-run report"
-    info "output was: $BUILD_WAITER_DRY_OUT"
+    common_test_fail "Build-waiter pass (k): candidate $expected_pid missing from the --dry-run report"
+    common_test_info "output was: $BUILD_WAITER_DRY_OUT"
   fi
 done
 
 for excluded_pid in 931002 931004 931006 931007 931008 931009 931011 931012; do
   if echo "$BUILD_WAITER_DRY_OUT" | grep -qE "^${excluded_pid}[[:space:]]"; then
-    fail "Build-waiter pass (k): excluded pid $excluded_pid incorrectly appeared as a candidate"
-    info "output was: $BUILD_WAITER_DRY_OUT"
+    common_test_fail "Build-waiter pass (k): excluded pid $excluded_pid incorrectly appeared as a candidate"
+    common_test_info "output was: $BUILD_WAITER_DRY_OUT"
   else
-    pass "Build-waiter pass (k): excluded pid $excluded_pid correctly absent from the candidate report"
+    common_test_pass "Build-waiter pass (k): excluded pid $excluded_pid correctly absent from the candidate report"
   fi
 done
 
@@ -2394,17 +2392,17 @@ BUILD_WAITER_NOFLAG_OUT="$(bash -c '
 NOFLAG_KILL_LOG_CONTENT="$(cat "$BUILD_WAITER_KILL_LOG")"
 NOFLAG_PIDS="$(echo "$NOFLAG_KILL_LOG_CONTENT" | grep -oE '[0-9]+$' | sort -u)"
 if echo "$NOFLAG_PIDS" | grep -qx 931001 && echo "$NOFLAG_PIDS" | grep -qx 931003 && echo "$NOFLAG_PIDS" | grep -qx 931005; then
-  pass "Build-waiter pass (k): no-flag invocation terminates all three expected candidates (age-threshold-only gate reaps without --force)"
+  common_test_pass "Build-waiter pass (k): no-flag invocation terminates all three expected candidates (age-threshold-only gate reaps without --force)"
 else
-  fail "Build-waiter pass (k): no-flag invocation did not terminate all three expected candidates"
-  info "kill log was: $NOFLAG_KILL_LOG_CONTENT"
-  info "no-flag output was: $BUILD_WAITER_NOFLAG_OUT"
+  common_test_fail "Build-waiter pass (k): no-flag invocation did not terminate all three expected candidates"
+  common_test_info "kill log was: $NOFLAG_KILL_LOG_CONTENT"
+  common_test_info "no-flag output was: $BUILD_WAITER_NOFLAG_OUT"
 fi
 NOFLAG_UNEXPECTED="$(echo "$NOFLAG_PIDS" | grep -vE '^(931001|931003|931005)$' || true)"
 if [ -z "$NOFLAG_UNEXPECTED" ]; then
-  pass "Build-waiter pass (k): no-flag invocation signals exactly the three expected candidates, nothing else"
+  common_test_pass "Build-waiter pass (k): no-flag invocation signals exactly the three expected candidates, nothing else"
 else
-  fail "Build-waiter pass (k): no-flag invocation signaled unexpected pid(s): $NOFLAG_UNEXPECTED"
+  common_test_fail "Build-waiter pass (k): no-flag invocation signaled unexpected pid(s): $NOFLAG_UNEXPECTED"
 fi
 
 # --force: the candidate set must be identical to the no-flag run (this pass ignores $FORCE
@@ -2425,12 +2423,12 @@ BUILD_WAITER_FORCE_OUT="$(bash -c '
 
 FORCE_PIDS="$(cat "$BUILD_WAITER_KILL_LOG" | grep -oE '[0-9]+$' | sort -u)"
 if [ "$FORCE_PIDS" = "$NOFLAG_PIDS" ] && [ -n "$FORCE_PIDS" ]; then
-  pass "Build-waiter pass (k): --force terminates the identical candidate set as the no-flag invocation"
+  common_test_pass "Build-waiter pass (k): --force terminates the identical candidate set as the no-flag invocation"
 else
-  fail "Build-waiter pass (k): --force candidate set diverged from the no-flag candidate set"
-  info "no-flag pids: $NOFLAG_PIDS"
-  info "force pids: $FORCE_PIDS"
-  info "force output was: $BUILD_WAITER_FORCE_OUT"
+  common_test_fail "Build-waiter pass (k): --force candidate set diverged from the no-flag candidate set"
+  common_test_info "no-flag pids: $NOFLAG_PIDS"
+  common_test_info "force pids: $FORCE_PIDS"
+  common_test_info "force output was: $BUILD_WAITER_FORCE_OUT"
 fi
 
 # Fail-closed end-to-end: a fake ps that never emits a $$ row for the build-waiter field spec.
@@ -2463,16 +2461,16 @@ BUILD_WAITER_NOSELF_OUT="$(bash -c '
 ' _ "$BUILD_WAITER_NOSELF_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$BUILD_WAITER_KILL_LOG" "$WORKDIR/$SCRIPT_UNDER_TEST" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
 
 if echo "$BUILD_WAITER_NOSELF_OUT" | grep -q "WARNING: this script's own process row was not found"; then
-  pass "Build-waiter pass (k): fail-closed -- a missing \$\$ row produces the warning line"
+  common_test_pass "Build-waiter pass (k): fail-closed -- a missing \$\$ row produces the warning line"
 else
-  fail "Build-waiter pass (k): the fail-closed warning did not appear when the \$\$ row is absent"
-  info "output was: $BUILD_WAITER_NOSELF_OUT"
+  common_test_fail "Build-waiter pass (k): the fail-closed warning did not appear when the \$\$ row is absent"
+  common_test_info "output was: $BUILD_WAITER_NOSELF_OUT"
 fi
 if [ -s "$BUILD_WAITER_KILL_LOG" ]; then
-  fail "Build-waiter pass (k): the fail-closed path unexpectedly signaled a process (kill log non-empty)"
-  info "kill log was: $(cat "$BUILD_WAITER_KILL_LOG")"
+  common_test_fail "Build-waiter pass (k): the fail-closed path unexpectedly signaled a process (kill log non-empty)"
+  common_test_info "kill log was: $(cat "$BUILD_WAITER_KILL_LOG")"
 else
-  pass "Build-waiter pass (k): the fail-closed path signals nothing (kill log empty), even under --force"
+  common_test_pass "Build-waiter pass (k): the fail-closed path signals nothing (kill log empty), even under --force"
 fi
 
 # =====================================================================
@@ -2480,10 +2478,10 @@ fi
 # =====================================================================
 BUILD_WAITER_BODY="$(sed -n '/^BUILD_WAITER_SNAPSHOT_PS_FIELDS=/,/^# --- Unreaped-child/p' "$WORKDIR/$SCRIPT_UNDER_TEST")"
 if echo "$BUILD_WAITER_BODY" | grep -qE 'pgrep|ps aux'; then
-  fail "Structural (k): build-waiter pass block contains a pgrep/ps-aux reference"
-  info "matched: $(echo "$BUILD_WAITER_BODY" | grep -E 'pgrep|ps aux')"
+  common_test_fail "Structural (k): build-waiter pass block contains a pgrep/ps-aux reference"
+  common_test_info "matched: $(echo "$BUILD_WAITER_BODY" | grep -E 'pgrep|ps aux')"
 else
-  pass "Structural (k): build-waiter pass block (constants, predicates, run_build_waiter_pass) contains no pgrep/ps-aux reference"
+  common_test_pass "Structural (k): build-waiter pass block (constants, predicates, run_build_waiter_pass) contains no pgrep/ps-aux reference"
 fi
 
 # =====================================================================
@@ -2511,10 +2509,10 @@ BUILD_WAITER_MUTANT_PGID_OUT="$(bash -c '
 ' _ "$BUILD_WAITER_FAKE_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$WORKDIR/mutant-pgid-kill.log" "$BUILD_WAITER_MUTANT_PGID" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
 
 if echo "$BUILD_WAITER_MUTANT_PGID_OUT" | grep -qE "^931009[[:space:]]"; then
-  pass "Mutation check (k): removing the pgid-exclusion clause makes the pgid-collision row 931009 wrongly selected (RED confirmed -- the clause is load-bearing)"
+  common_test_pass "Mutation check (k): removing the pgid-exclusion clause makes the pgid-collision row 931009 wrongly selected (RED confirmed -- the clause is load-bearing)"
 else
-  fail "Mutation check (k): row 931009 was still excluded after removing the pgid-exclusion clause -- mutation had no observable effect"
-  info "output was: $BUILD_WAITER_MUTANT_PGID_OUT"
+  common_test_fail "Mutation check (k): row 931009 was still excluded after removing the pgid-exclusion clause -- mutation had no observable effect"
+  common_test_info "output was: $BUILD_WAITER_MUTANT_PGID_OUT"
 fi
 
 BUILD_WAITER_MUTANT_ANCESTOR="$WORKDIR/mutant-buildwaiter-ancestor.sh"
@@ -2534,10 +2532,10 @@ BUILD_WAITER_MUTANT_ANCESTOR_OUT="$(bash -c '
 ' _ "$BUILD_WAITER_FAKE_BIN_DIR" "$BUILD_WAITER_FAKE_KILL_DIR" 1 2 "$WORKDIR/mutant-ancestor-kill.log" "$BUILD_WAITER_MUTANT_ANCESTOR" "$BUILD_WAITER_NOCLAUDE_JSON" 2>&1)"
 
 if echo "$BUILD_WAITER_MUTANT_ANCESTOR_OUT" | grep -q "Found 4 orphaned build-waiter poll loop(s):"; then
-  pass "Mutation check (k): removing the ancestor-chain exclusion makes the ancestor-of-\$\$ row wrongly selected (RED confirmed -- the clause is load-bearing)"
+  common_test_pass "Mutation check (k): removing the ancestor-chain exclusion makes the ancestor-of-\$\$ row wrongly selected (RED confirmed -- the clause is load-bearing)"
 else
-  fail "Mutation check (k): candidate count did not increase to 4 after removing the ancestor-chain exclusion -- mutation had no observable effect"
-  info "output was: $BUILD_WAITER_MUTANT_ANCESTOR_OUT"
+  common_test_fail "Mutation check (k): candidate count did not increase to 4 after removing the ancestor-chain exclusion -- mutation had no observable effect"
+  common_test_info "output was: $BUILD_WAITER_MUTANT_ANCESTOR_OUT"
 fi
 
 # =====================================================================
@@ -2550,7 +2548,7 @@ fi
 # vacuously pass. The pinned commit remains resolvable indefinitely (ordinary git history is
 # never garbage-collected while reachable from any ref), so this is a stable, permanent
 # mutation-check anchor, not a fragile one-time convenience.
-info "Mutation check: confirming the suite is not vacuous against the pre-fix script"
+common_test_info "Mutation check: confirming the suite is not vacuous against the pre-fix script"
 PREFIX_COMMIT="7e79b2695"
 PREFIX_SCRIPT="$WORKDIR/prefix.sh"
 if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core/scripts/$SCRIPT_UNDER_TEST" > "$PREFIX_SCRIPT" 2>/dev/null; then
@@ -2604,14 +2602,14 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
   fi
 
   if [ "${#MISSING_IN_PREFIX[@]}" -eq 38 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 39 ]; then
-    pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the thirty-eight predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
-    info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
+    common_test_pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the thirty-eight predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+    common_test_info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 39 markers absent"
+    common_test_fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 39 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2
-  fail "mutation check: could not obtain pre-fix script from commit $PREFIX_COMMIT"
+  common_test_fail "mutation check: could not obtain pre-fix script from commit $PREFIX_COMMIT"
 fi
 
 # =====================================================================

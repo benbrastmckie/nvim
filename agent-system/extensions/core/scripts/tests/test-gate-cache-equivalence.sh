@@ -71,6 +71,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$CORE_DIR/../../.." && pwd)"
 VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
@@ -101,8 +102,6 @@ gate_registry_load "$REGISTRY_DATA"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); [ -n "${2:-}" ] && echo "$2"; }
 
 WORKDIR="$(mktemp -d)"
 WT="$WORKDIR/fixture"
@@ -217,9 +216,9 @@ for g in $CACHEABLE_GATES; do
   [ -f "$CACHE_DIR/gate${g}.json" ] && warm_count=$((warm_count + 1))
 done
 if [ "$cold_rc" -eq 0 ] && [ "$warm_count" -eq 18 ]; then
-  pass "cold baseline: all 18 cache-eligible gates in the tested set went clean and warm (18/18 entries written), and gate 4 (permanently uncacheable in this fixture, see header) also passed clean"
+  common_test_pass "cold baseline: all 18 cache-eligible gates in the tested set went clean and warm (18/18 entries written), and gate 4 (permanently uncacheable in this fixture, see header) also passed clean"
 else
-  fail "cold baseline: expected rc=0 and 18 warm entries, got rc=$cold_rc warm=$warm_count" "$cold_out"
+  common_test_fail "cold baseline: expected rc=0 and 18 warm entries, got rc=$cold_rc warm=$warm_count" "$cold_out"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -233,9 +232,9 @@ neg_checks="$(checks_count_of "$neg_out")"
 # -- see header) -- so the fully-warm expectation is 18 skips plus gate 4's own 1 real check,
 # not 0 checks.
 if [ "$neg_rc" -eq 0 ] && [ "${neg_skip:-0}" -eq 18 ] && [ "${neg_checks:-0}" -eq 1 ]; then
-  pass "negative case: no change -> all 18 cache-eligible gates skip, only gate 4's own 1 real check runs, exit 0"
+  common_test_pass "negative case: no change -> all 18 cache-eligible gates skip, only gate 4's own 1 real check runs, exit 0"
 else
-  fail "negative case: expected skip=18 checks=1 rc=0, got skip=${neg_skip:-?} checks=${neg_checks:-?} rc=$neg_rc" "$neg_out"
+  common_test_fail "negative case: expected skip=18 checks=1 rc=0, got skip=${neg_skip:-?} checks=${neg_checks:-?} rc=$neg_rc" "$neg_out"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -245,9 +244,9 @@ find "$WT" -type f -not -path '*/.git/*' -exec touch {} + 2>/dev/null
 touch_out="$(run_vd --skip-unchanged --only-gate "$IFACE_GATES")"
 touch_skip="$(skip_count_of "$touch_out")"
 if [ "${touch_skip:-0}" -eq 18 ]; then
-  pass "mtime independence: touching every file in the fixture leaves the skip count at 18/18"
+  common_test_pass "mtime independence: touching every file in the fixture leaves the skip count at 18/18"
 else
-  fail "mtime independence: expected skip=18 after a whole-fixture touch, got skip=${touch_skip:-?}" "$touch_out"
+  common_test_fail "mtime independence: expected skip=18 after a whole-fixture touch, got skip=${touch_skip:-?}" "$touch_out"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -256,9 +255,9 @@ fi
 j1_out="$(run_vd --skip-unchanged --jobs 1 --only-gate "$IFACE_GATES" | grep -E '^\[verify-deploy\]')"
 j4_out="$(run_vd --skip-unchanged --jobs 4 --only-gate "$IFACE_GATES" | grep -E '^\[verify-deploy\]')"
 if [ "$j1_out" = "$j4_out" ]; then
-  pass "determinism: identical [verify-deploy] summary line at --jobs 1 and --jobs 4 on the skip path"
+  common_test_pass "determinism: identical [verify-deploy] summary line at --jobs 1 and --jobs 4 on the skip path"
 else
-  fail "determinism: --jobs 1 and --jobs 4 disagreed on the skip path" "jobs1: $j1_out
+  common_test_fail "determinism: --jobs 1 and --jobs 4 disagreed on the skip path" "jobs1: $j1_out
 jobs4: $j4_out"
 fi
 
@@ -300,9 +299,9 @@ for g in $MECH_LOOP_GATES; do
   run_vd --skip-unchanged --only-gate "$g" >/dev/null 2>&1 || true
 done
 if [ -z "$mech_fail_ids" ]; then
-  pass "per-gate corpus-violation re-run: all 17 MECH_LOOP_GATES gates re-run (not SKIP-CACHED) when the last path in their own resolved corpus changes by one byte (gate 22 covered separately by Case G22)"
+  common_test_pass "per-gate corpus-violation re-run: all 17 MECH_LOOP_GATES gates re-run (not SKIP-CACHED) when the last path in their own resolved corpus changes by one byte (gate 22 covered separately by Case G22)"
 else
-  fail "per-gate corpus-violation re-run: unexpected outcome for: $mech_fail_ids"
+  common_test_fail "per-gate corpus-violation re-run: unexpected outcome for: $mech_fail_ids"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -320,13 +319,13 @@ if [ -f "$g1_target" ]; then
   g1_out="$(run_vd --skip-unchanged --only-gate 1)"
   cp "$g1_backup" "$g1_target"
   if grep -q 'FAIL' <<< "$g1_out" && grep -q 'events-append.sh' <<< "$g1_out"; then
-    pass "Case G1: deleting a declared gate-1 corpus file forces a re-run that reports the missing file"
+    common_test_pass "Case G1: deleting a declared gate-1 corpus file forces a re-run that reports the missing file"
   else
-    fail "Case G1: expected a FAIL naming events-append.sh" "$g1_out"
+    common_test_fail "Case G1: expected a FAIL naming events-append.sh" "$g1_out"
   fi
   run_vd --skip-unchanged --only-gate 1 >/dev/null 2>&1 || true
 else
-  fail "Case G1: fixture is missing $g1_target"
+  common_test_fail "Case G1: fixture is missing $g1_target"
 fi
 
 # Case G2 (literal JSON file, structured content): strip settings.json's .hooks object.
@@ -337,9 +336,9 @@ jq '.hooks = {}' "$g2_backup" > "$g2_target"
 g2_out="$(run_vd --skip-unchanged --only-gate 2)"
 cp "$g2_backup" "$g2_target"
 if grep -q 'NOT registered' <<< "$g2_out"; then
-  pass "Case G2: clearing settings.json's .hooks forces a re-run that reports the missing registrations"
+  common_test_pass "Case G2: clearing settings.json's .hooks forces a re-run that reports the missing registrations"
 else
-  fail "Case G2: expected 'NOT registered' findings" "$g2_out"
+  common_test_fail "Case G2: expected 'NOT registered' findings" "$g2_out"
 fi
 run_vd --skip-unchanged --only-gate 2 >/dev/null 2>&1 || true
 
@@ -362,12 +361,12 @@ if [ -f "$g4_target" ]; then
   cp "$g4_backup" "$g4_target"
   key4="$(gate_cache_composite_key 4 "$WT" "$FIXTURE_REGISTRY")"
   if grep -q 'FAIL' <<< "$g4_out" && [ "$key4" = "$GATE_CACHE_SENTINEL" ]; then
-    pass "Case G4: gate 4 reports a seeded task-reference violation, and its composite key is confirmed CANNOT_COMPUTE (worktree .git-file limitation; fail-open, never a false skip)"
+    common_test_pass "Case G4: gate 4 reports a seeded task-reference violation, and its composite key is confirmed CANNOT_COMPUTE (worktree .git-file limitation; fail-open, never a false skip)"
   else
-    fail "Case G4: expected a FAIL and a CANNOT_COMPUTE key" "$g4_out (key=$key4)"
+    common_test_fail "Case G4: expected a FAIL and a CANNOT_COMPUTE key" "$g4_out (key=$key4)"
   fi
 else
-  fail "Case G4: fixture is missing $g4_target"
+  common_test_fail "Case G4: fixture is missing $g4_target"
 fi
 
 # Case G6 (@extensions, structured frontmatter): strip the required model: field from one agent.
@@ -386,13 +385,13 @@ if [ -n "$g6_target" ] && [ -f "$g6_target" ]; then
   g6_out="$(run_vd --skip-unchanged --findings --only-gate 6)"
   cp "$g6_backup" "$g6_target"
   if grep -q "missing required 'model:' field" <<< "$g6_out"; then
-    pass "Case G6: removing an agent's model: field forces a re-run that reports the missing field"
+    common_test_pass "Case G6: removing an agent's model: field forces a re-run that reports the missing field"
   else
-    fail "Case G6: expected a missing-model: finding for $g6_target" "$g6_out"
+    common_test_fail "Case G6: expected a missing-model: finding for $g6_target" "$g6_out"
   fi
   run_vd --skip-unchanged --only-gate 6 >/dev/null 2>&1 || true
 else
-  fail "Case G6: no agent .md file found under $WT/agent-system/extensions/core/agents"
+  common_test_fail "Case G6: no agent .md file found under $WT/agent-system/extensions/core/agents"
 fi
 
 # Case G10 (literal path pair, JSON schema content): corrupt specs/state.json's JSON syntax.
@@ -404,13 +403,13 @@ if [ -f "$g10_target" ]; then
   g10_out="$(run_vd --skip-unchanged --only-gate 10)"
   cp "$g10_backup" "$g10_target"
   if grep -qE 'FAIL' <<< "$g10_out"; then
-    pass "Case G10: corrupting specs/state.json's JSON forces a re-run that reports the schema failure"
+    common_test_pass "Case G10: corrupting specs/state.json's JSON forces a re-run that reports the schema failure"
   else
-    fail "Case G10: expected a FAIL for corrupted state.json" "$g10_out"
+    common_test_fail "Case G10: expected a FAIL for corrupted state.json" "$g10_out"
   fi
   run_vd --skip-unchanged --only-gate 10 >/dev/null 2>&1 || true
 else
-  fail "Case G10: fixture is missing $g10_target"
+  common_test_fail "Case G10: fixture is missing $g10_target"
 fi
 
 # Case G22 (glob **/*.sh, real shellcheck -- the one genuinely slow real case in this suite,
@@ -423,13 +422,13 @@ if [ -f "$g22_target" ]; then
   g22_out="$(run_vd --skip-unchanged --only-gate 22)"
   cp "$g22_backup" "$g22_target"
   if grep -qE 'FAIL' <<< "$g22_out"; then
-    pass "Case G22: an unguarded 'cd' (SC2164) forces a re-run that reports a real shellcheck finding"
+    common_test_pass "Case G22: an unguarded 'cd' (SC2164) forces a re-run that reports a real shellcheck finding"
   else
-    fail "Case G22: expected shellcheck to FAIL on the seeded SC2164 line" "$g22_out"
+    common_test_fail "Case G22: expected shellcheck to FAIL on the seeded SC2164 line" "$g22_out"
   fi
   run_vd --skip-unchanged --only-gate 22 >/dev/null 2>&1 || true
 else
-  fail "Case G22: fixture is missing $g22_target"
+  common_test_fail "Case G22: fixture is missing $g22_target"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -470,9 +469,9 @@ for g in $MECH_LOOP_GATES; do
   run_vd --skip-unchanged --only-gate "$g" >/dev/null 2>&1 || true
 done
 if [ -z "$row_fail_ids" ]; then
-  pass "registry-row sensitivity: all 17 MECH_LOOP_GATES gates re-run when their own registry row changes by one byte (gate 22 excluded -- see MECH_LOOP_GATES's own declaration)"
+  common_test_pass "registry-row sensitivity: all 17 MECH_LOOP_GATES gates re-run when their own registry row changes by one byte (gate 22 excluded -- see MECH_LOOP_GATES's own declaration)"
 else
-  fail "registry-row sensitivity: unexpected outcome for: $row_fail_ids"
+  common_test_fail "registry-row sensitivity: unexpected outcome for: $row_fail_ids"
 fi
 
 # Invoke-function-body change, invoked-script change, sourced-library change: representative
@@ -493,9 +492,9 @@ other_component_case() {
   out="$(run_vd --skip-unchanged --only-gate "$gid")"
   cp "$backup" "$file"
   if grep -q "SKIP-CACHED" <<< "$out"; then
-    fail "$label: gate $gid still SKIP-CACHED after the seeded change" "$out"
+    common_test_fail "$label: gate $gid still SKIP-CACHED after the seeded change" "$out"
   else
-    pass "$label: gate $gid re-runs when $file changes"
+    common_test_pass "$label: gate $gid re-runs when $file changes"
   fi
   run_vd --skip-unchanged --only-gate "$gid" >/dev/null 2>&1 || true
 }
@@ -510,9 +509,9 @@ sed -i '0,/^gate1_run() {/{/^gate1_run() {/a\
 vd_body_out="$(run_vd --skip-unchanged --only-gate 1)"
 cp "$WORKDIR/vd-backup.sh" "$FIXTURE_VD"
 if grep -q "SKIP-CACHED" <<< "$vd_body_out"; then
-  fail "invoke-function-body sensitivity (gate 1): still SKIP-CACHED after editing gate1_run()'s body" "$vd_body_out"
+  common_test_fail "invoke-function-body sensitivity (gate 1): still SKIP-CACHED after editing gate1_run()'s body" "$vd_body_out"
 else
-  pass "invoke-function-body sensitivity (gate 1): re-runs when gate1_run()'s own body changes"
+  common_test_pass "invoke-function-body sensitivity (gate 1): re-runs when gate1_run()'s own body changes"
 fi
 run_vd --skip-unchanged --only-gate 1 >/dev/null 2>&1 || true
 
@@ -557,9 +556,9 @@ other_skip_findings="$(grep -E '^FINDING' <<< "$skip_seq_out" | grep -v '^FINDIN
 other_full1_findings="$(grep -E '^FINDING' <<< "$full1_out" | grep -v '^FINDING gate2' | sort -u)"
 if [ -n "$skip_seq_findings" ] && [ "$skip_seq_findings" = "$full2_findings" ] \
   && [ "$other_skip_findings" = "$other_full1_findings" ]; then
-  pass "realistic-sequence equivalence: the skip-path run's gate2 findings match a full run's exactly, and every other gate's findings are unaffected"
+  common_test_pass "realistic-sequence equivalence: the skip-path run's gate2 findings match a full run's exactly, and every other gate's findings are unaffected"
 else
-  fail "realistic-sequence equivalence: finding-set mismatch between the skip path and a full run" \
+  common_test_fail "realistic-sequence equivalence: finding-set mismatch between the skip path and a full run" \
     "skip-seq gate2: $skip_seq_findings
 full2 gate2: $full2_findings
 skip-seq others vs full1 others differ: $([ "$other_skip_findings" = "$other_full1_findings" ] && echo no || echo yes)"
@@ -601,9 +600,9 @@ for g in 3 16 20; do
   fi
 done
 if [ -z "$lib_fail_ids" ]; then
-  pass "library-level composite-key proof (gates 3, 16, 20): each gate's real corpus declaration resolves to a computable, non-sentinel key that changes on a one-byte corpus edit"
+  common_test_pass "library-level composite-key proof (gates 3, 16, 20): each gate's real corpus declaration resolves to a computable, non-sentinel key that changes on a one-byte corpus edit"
 else
-  fail "library-level composite-key proof: unexpected outcome for: $lib_fail_ids"
+  common_test_fail "library-level composite-key proof: unexpected outcome for: $lib_fail_ids"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

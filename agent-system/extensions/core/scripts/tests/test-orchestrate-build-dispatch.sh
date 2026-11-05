@@ -33,10 +33,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 resolve_candidate() {
   local desc="$1"; shift
@@ -82,13 +80,8 @@ CYCLE_PLAN_SRC="$(resolve_candidate "orchestrate-cycle-plan.sh" \
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 FIXTURE="$WORKDIR/fixture-repo"
 TASK_NUM=999
@@ -185,28 +178,28 @@ run_sut() {
 assert_contains() {
   local haystack="$1" needle="$2" label="$3"
   if printf '%s' "$haystack" | grep -qF -- "$needle"; then
-    pass "$label"
+    common_test_pass "$label"
   else
-    fail "$label (expected to find: $needle)"
+    common_test_fail "$label (expected to find: $needle)"
   fi
 }
 
 assert_not_contains() {
   local haystack="$1" needle="$2" label="$3"
   if printf '%s' "$haystack" | grep -qF -- "$needle"; then
-    fail "$label (unexpectedly found: $needle)"
+    common_test_fail "$label (unexpectedly found: $needle)"
   else
-    pass "$label"
+    common_test_pass "$label"
   fi
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 1: Parity -- research phase, --clean (memory suppressed), no --lit, no --hard
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 1: research phase parity (--clean, no --lit, no --hard)"
+common_test_info "Group 1: research phase parity (--clean, no --lit, no --hard)"
 run_sut research --clean --seq 1 --dispatch-start-ts 1234567890
 if [ "$LAST_EXIT" -eq 0 ] && [ -n "$LAST_DISPATCH_FILE" ] && [ -f "$LAST_DISPATCH_FILE" ]; then
-  pass "research: SUT exits 0 and dispatch file exists"
+  common_test_pass "research: SUT exits 0 and dispatch file exists"
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "task_number: 999" "research: task_number present"
   assert_contains "$content" "phase: research" "research: phase present"
@@ -231,19 +224,19 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -n "$LAST_DISPATCH_FILE" ] && [ -f "$LAST_DISPATC
   assert_not_contains "$content" "Reasoning-depth guidance" "research (no --fast/--hard): effort note suppressed"
   assert_not_contains "$content" "revision_sentinel" "research: revision_sentinel line absent (implement-only)"
   if echo "$LAST_STDOUT" | jq -e '.model == ""' >/dev/null 2>&1; then
-    pass "research: model is empty string (never the literal \"null\") when --model unset"
+    common_test_pass "research: model is empty string (never the literal \"null\") when --model unset"
   else
-    fail "research: model field wrong shape: $LAST_STDOUT"
+    common_test_fail "research: model field wrong shape: $LAST_STDOUT"
   fi
 else
-  fail "research: SUT did not exit 0 / dispatch file missing (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "research: SUT did not exit 0 / dispatch file missing (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 2: Parity -- research phase, memory ON (no --clean), --lit ON (SUBINDEX_PRESENT stub),
 # --fast, --model opus
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 2: research phase, memory+lit+effort+model all active"
+common_test_info "Group 2: research phase, memory+lit+effort+model all active"
 STUB_LIT_DIRECTIVE="SUBINDEX_PRESENT" run_sut research --seq 2 --lit --fast --model opus --focus "test focus"
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
@@ -254,43 +247,43 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "Reasoning-depth guidance: this dispatch runs in --fast mode." "research (--fast): effort note present"
   assert_contains "$content" "User focus: test focus" "research: focus_prompt threaded into prompt text"
   if echo "$LAST_STDOUT" | jq -e '.model == "opus"' >/dev/null 2>&1; then
-    pass "research: --model opus passes through unchanged"
+    common_test_pass "research: --model opus passes through unchanged"
   else
-    fail "research: model pass-through wrong: $LAST_STDOUT"
+    common_test_fail "research: model pass-through wrong: $LAST_STDOUT"
   fi
 else
-  fail "research (memory+lit+effort+model): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "research (memory+lit+effort+model): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 3: Headless assertion -- AUTONOMOUS_GLOBAL directive never attempts an interactive prompt
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 3: headless lit resolution (AUTONOMOUS_GLOBAL, orchestrator_mode always true)"
+common_test_info "Group 3: headless lit resolution (AUTONOMOUS_GLOBAL, orchestrator_mode always true)"
 STUB_LIT_DIRECTIVE="AUTONOMOUS_GLOBAL" run_sut research --clean --seq 3 --lit
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
-  pass "research (AUTONOMOUS_GLOBAL): SUT completes without attempting an interactive prompt"
+  common_test_pass "research (AUTONOMOUS_GLOBAL): SUT completes without attempting an interactive prompt"
   assert_contains "$LAST_STDERR" "[lit:auto]" "research (AUTONOMOUS_GLOBAL): [lit:auto] notice emitted, not a prompt"
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "<literature-briefing>" "research (AUTONOMOUS_GLOBAL): lit block still injected via the deterministic default"
 else
-  fail "research (AUTONOMOUS_GLOBAL): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "research (AUTONOMOUS_GLOBAL): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # GLOBAL_MISSING: no literature available at all -- must degrade to empty lit_context with a
 # visible (non-prompting) notice, never a crash.
 STUB_LIT_DIRECTIVE="GLOBAL_MISSING" run_sut research --clean --seq 3b --lit
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
-  pass "research (GLOBAL_MISSING): SUT completes cleanly, no crash"
+  common_test_pass "research (GLOBAL_MISSING): SUT completes cleanly, no crash"
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content" "<literature-briefing>" "research (GLOBAL_MISSING): lit block stays empty (no empty tag pair emitted)"
 else
-  fail "research (GLOBAL_MISSING): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "research (GLOBAL_MISSING): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 4: Parity -- plan phase (mode=prev artifact round, research_artifact path)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 4: plan phase parity"
+common_test_info "Group 4: plan phase parity"
 run_sut plan --clean --seq 4
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
@@ -301,13 +294,13 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/formats/issue-log.md" "plan: Issue Log points at the format doc"
   assert_not_contains "$content" "revision_sentinel" "plan: revision_sentinel line absent (implement-only)"
 else
-  fail "plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 5: Parity -- implement phase, no continuation, no territory
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 5: implement phase parity (no continuation, no territory)"
+common_test_info "Group 5: implement phase parity (no continuation, no territory)"
 run_sut implement --clean --seq 5
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
@@ -316,22 +309,22 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/patterns/plan-revision-notification.md" "implement: revision_sentinel pointer prose names the pattern file"
   assert_contains "$content" "## Continuation" "implement: continuation section present"
   if grep -A4 "## Continuation" "$LAST_DISPATCH_FILE" | grep -q "^null$"; then
-    pass "implement: continuation is null when no handoff file exists"
+    common_test_pass "implement: continuation is null when no handoff file exists"
   else
-    fail "implement: expected null continuation, got: $(grep -A4 '## Continuation' "$LAST_DISPATCH_FILE")"
+    common_test_fail "implement: expected null continuation, got: $(grep -A4 '## Continuation' "$LAST_DISPATCH_FILE")"
   fi
   assert_not_contains "$content" "## Territory" "implement (no --territory): territory section absent"
   assert_contains "$content" "## Issue Log" "implement: Issue Log section present (unconditional)"
   assert_contains "$content" "context/formats/issue-log.md" "implement: Issue Log points at the format doc"
 else
-  fail "implement (no continuation): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (no continuation): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 6: Parity -- implement phase, continuation present (both accepted forms), --hard +
 # --territory (territory.md appended, phase mission's hard_contracts_block)
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 6: implement phase, continuation (flat form) + --hard + --territory"
+common_test_info "Group 6: implement phase, continuation (flat form) + --hard + --territory"
 cat > "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json" <<'EOF'
 {"continuation_path": "/abs/path/to/predecessor-handoff.json", "blockers": []}
 EOF
@@ -348,10 +341,10 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/contracts/anti-analysis.md" "implement (--hard): anti-analysis.md present (core_contracts baseline)"
   assert_contains "$content" "context/contracts/recovery.md" "implement (--hard): recovery.md present (core_contracts baseline)"
 else
-  fail "implement (continuation flat + hard + territory): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (continuation flat + hard + territory): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
-info "Group 6b: implement phase, continuation (deprecated nested form)"
+common_test_info "Group 6b: implement phase, continuation (deprecated nested form)"
 cat > "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json" <<'EOF'
 {"continuation_context": {"handoff_path": "/abs/path/to/nested-handoff.json"}, "blockers": []}
 EOF
@@ -360,7 +353,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "/abs/path/to/nested-handoff.json" "implement: continuation (deprecated nested form) still accepted"
 else
-  fail "implement (continuation nested form): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (continuation nested form): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 rm -f "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json"
 
@@ -368,7 +361,7 @@ rm -f "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json"
 # Group 6c: --phase-number (hard mode's per-phase dispatch, H1) -- Phase Mission section, and
 # absence from every base-mode / no-flag call.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 6c: --phase-number adds a Phase Mission section; absent without the flag"
+common_test_info "Group 6c: --phase-number adds a Phase Mission section; absent without the flag"
 cat > "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json" <<'EOF'
 {"status": "partial", "phases_completed": 2, "phases_total": 5, "blockers": []}
 EOF
@@ -379,7 +372,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "Implement phase 3 only" "phase-number: mission names the exact phase number"
   assert_contains "$content" "PHASES COMPLETED: 2 of 5" "phase-number: phases_completed/phases_total read from the handoff"
 else
-  fail "phase-number: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "phase-number: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # No handoff at all (first cycle for this task) -- defaults to 0 of 0, matching single-task
@@ -390,7 +383,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "PHASES COMPLETED: 0 of 0" "phase-number: absent handoff defaults phases_completed/phases_total to 0/0"
 else
-  fail "phase-number (no handoff): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "phase-number (no handoff): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Base-mode / no-flag call: never emits a Phase Mission section.
@@ -399,7 +392,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content" "## Phase Mission" "phase-number: absent from a call with no --phase-number"
 else
-  fail "phase-number (absent flag): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "phase-number (absent flag): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 rm -f "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json"
 
@@ -409,16 +402,16 @@ rm -f "$FIXTURE/${TASK_DIR_REL}/.orchestrator-handoff.json"
 # orchestrate-triage-classify.sh source the same library file (scripts/lib/continuation-pointer-lib.sh)
 # rather than each carrying their own inline jq.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 7: anti-drift -- shared continuation-pointer-lib.sh, not hand-copied jq"
+common_test_info "Group 7: anti-drift -- shared continuation-pointer-lib.sh, not hand-copied jq"
 if grep -q "continuation-pointer-lib.sh" "$SUT"; then
-  pass "orchestrate-build-dispatch.sh sources the shared continuation-pointer-lib.sh"
+  common_test_pass "orchestrate-build-dispatch.sh sources the shared continuation-pointer-lib.sh"
 else
-  fail "orchestrate-build-dispatch.sh does not reference continuation-pointer-lib.sh -- drift risk"
+  common_test_fail "orchestrate-build-dispatch.sh does not reference continuation-pointer-lib.sh -- drift risk"
 fi
 if grep -q "continuation-pointer-lib.sh" "$TRIAGE_CLASSIFY"; then
-  pass "orchestrate-triage-classify.sh sources the shared continuation-pointer-lib.sh"
+  common_test_pass "orchestrate-triage-classify.sh sources the shared continuation-pointer-lib.sh"
 else
-  fail "orchestrate-triage-classify.sh does not reference continuation-pointer-lib.sh -- drift risk"
+  common_test_fail "orchestrate-triage-classify.sh does not reference continuation-pointer-lib.sh -- drift risk"
 fi
 # shellcheck disable=SC1090
 source "$CONT_LIB"
@@ -426,21 +419,21 @@ tmp_handoff="$(mktemp)"
 echo '{"continuation_path": "/x/y.json", "blockers": []}' > "$tmp_handoff"
 lib_result="$(resolve_continuation_pointer "$tmp_handoff")"
 if [ "$lib_result" = '{"handoff_path":"/x/y.json","orchestrator_mode":true}' ]; then
-  pass "shared helper resolve_continuation_pointer normalizes the flat form correctly (single implementation both scripts call)"
+  common_test_pass "shared helper resolve_continuation_pointer normalizes the flat form correctly (single implementation both scripts call)"
 else
-  fail "shared helper resolve_continuation_pointer returned unexpected shape: $lib_result"
+  common_test_fail "shared helper resolve_continuation_pointer returned unexpected shape: $lib_result"
 fi
 rm -f "$tmp_handoff"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 8: Negative -- --model unset never emits the literal string "null"
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 8: negative -- model emptiness, not the string null"
+common_test_info "Group 8: negative -- model emptiness, not the string null"
 run_sut research --clean --seq 8
 if echo "$LAST_STDOUT" | jq -e '.model == "" and (.model != "null")' >/dev/null 2>&1; then
-  pass "model field is empty string, never the literal \"null\", when --model is unset"
+  common_test_pass "model field is empty string, never the literal \"null\", when --model is unset"
 else
-  fail "model field shape wrong: $LAST_STDOUT"
+  common_test_fail "model field shape wrong: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -448,14 +441,14 @@ fi
 # line ONLY when --compare is passed; a no-flag dispatch file is byte-identical to one built
 # without this flag's support at all.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 9: --compare emits compare_flag: true ONLY when passed (byte-identity otherwise)"
+common_test_info "Group 9: --compare emits compare_flag: true ONLY when passed (byte-identity otherwise)"
 run_sut implement --clean --seq 9 --dispatch-start-ts 1234567890
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_no_compare="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content_no_compare" "compare_flag:" "implement (no --compare): compare_flag line absent"
   cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-compare.md"
 else
-  fail "implement (no --compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (no --compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut implement --clean --seq 9 --dispatch-start-ts 1234567890 --compare
@@ -463,17 +456,17 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_compare="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content_compare" "- compare_flag: true" "implement (--compare): compare_flag: true line present"
   if diff -q "$WORKDIR/dispatch-no-compare.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
-    fail "implement (--compare): expected a diff against the no-flag dispatch file, got none"
+    common_test_fail "implement (--compare): expected a diff against the no-flag dispatch file, got none"
   else
     diff_line_count="$(diff "$WORKDIR/dispatch-no-compare.md" "$LAST_DISPATCH_FILE" | grep -c '^>')"
     if [ "$diff_line_count" -eq 1 ]; then
-      pass "implement (--compare): differs from the no-flag dispatch file by exactly one added line"
+      common_test_pass "implement (--compare): differs from the no-flag dispatch file by exactly one added line"
     else
-      fail "implement (--compare): expected exactly 1 added line vs. no-flag dispatch file, got $diff_line_count"
+      common_test_fail "implement (--compare): expected exactly 1 added line vs. no-flag dispatch file, got $diff_line_count"
     fi
   fi
 else
-  fail "implement (--compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (--compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # The SUT itself is phase-agnostic for --compare (it just records whatever it was told) --
@@ -487,14 +480,14 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_research_compare="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content_research_compare" "- compare_flag: true" "research (--compare passed explicitly): SUT itself is phase-agnostic and still records compare_flag: true (implement-only scoping is a caller-side decision, tested in orchestrate-cycle-plan.sh's own suite)"
 else
-  fail "research (--compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "research (--compare): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 10: .decisions.json read path -- absent (byte-identical), present-and-empty (no section),
 # present-with-entries (## Prior Decisions section emitted, content faithful).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 10: .decisions.json read path"
+common_test_info "Group 10: .decisions.json read path"
 
 DECISIONS_FILE="$FIXTURE/${TASK_DIR_REL}/.decisions.json"
 
@@ -507,7 +500,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_not_contains "$content_absent" "## Prior Decisions" "decisions absent: no Prior Decisions section"
   cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-decisions.md"
 else
-  fail "decisions absent: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "decisions absent: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case B: present-and-empty file -- still no section, and still byte-identical to the absent case
@@ -518,12 +511,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_empty="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content_empty" "## Prior Decisions" "decisions present-and-empty: no Prior Decisions section"
   if diff -q "$WORKDIR/dispatch-no-decisions.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
-    pass "decisions present-and-empty: byte-identical to the absent-file dispatch"
+    common_test_pass "decisions present-and-empty: byte-identical to the absent-file dispatch"
   else
-    fail "decisions present-and-empty: expected byte-identical output to the absent-file dispatch, got a diff"
+    common_test_fail "decisions present-and-empty: expected byte-identical output to the absent-file dispatch, got a diff"
   fi
 else
-  fail "decisions present-and-empty: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "decisions present-and-empty: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case C: present-with-entries -- ## Prior Decisions section emitted, content faithful to the
@@ -551,7 +544,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   # negative assertion rather than merely implied by the absence of a failure.
   assert_not_contains "$content_entries" "POTENTIALLY SUPERSEDED" "VERIFY item 4: an entry lacking description_fingerprint renders unmarked"
 else
-  fail "decisions present-with-entries: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "decisions present-with-entries: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # VERIFY item 1: an entry whose description_fingerprint matches the fixture's CURRENT description
@@ -578,12 +571,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_not_contains "$content_matching" "POTENTIALLY SUPERSEDED" "VERIFY item 1: matching-fingerprint entry renders with no marker"
   assert_contains "$content_matching" "Treat these as settled — do not" "VERIFY item 1: unconditional intro present"
   if diff -q <(printf '%s\n' "$content_entries") <(printf '%s\n' "$content_matching") >/dev/null 2>&1; then
-    pass "VERIFY item 1: matching-fingerprint dispatch is diff -q identical to the no-fingerprint (Case C) dispatch"
+    common_test_pass "VERIFY item 1: matching-fingerprint dispatch is diff -q identical to the no-fingerprint (Case C) dispatch"
   else
-    fail "VERIFY item 1: expected byte-identical rendering to Case C, got a diff"
+    common_test_fail "VERIFY item 1: expected byte-identical rendering to Case C, got a diff"
   fi
 else
-  fail "VERIFY item 1: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "VERIFY item 1: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # VERIFY item 2: an entry's description_fingerprint was computed against an EARLIER description;
@@ -645,12 +638,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   # any_superseded is true) -- "since this answer was recorded" is unique to the per-entry line.
   marker_count="$(grep -c "since this answer was recorded" "$LAST_DISPATCH_FILE")"
   if [ "$marker_count" -eq 1 ]; then
-    pass "VERIFY item 2: exactly one per-entry POTENTIALLY SUPERSEDED marker (the matching second entry is unmarked)"
+    common_test_pass "VERIFY item 2: exactly one per-entry POTENTIALLY SUPERSEDED marker (the matching second entry is unmarked)"
   else
-    fail "VERIFY item 2: expected exactly 1 per-entry marker occurrence, got $marker_count"
+    common_test_fail "VERIFY item 2: expected exactly 1 per-entry marker occurrence, got $marker_count"
   fi
 else
-  fail "VERIFY item 2: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "VERIFY item 2: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Restore the original single-description fixture state for any suite appended after this one
@@ -667,7 +660,7 @@ rm -f "$DECISIONS_FILE"
 # this pins that `.[0].path` already resolves correctly by construction; change code only if
 # this fails).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 11: existing_plan_path/revision_reason rendering, newest-report pin"
+common_test_info "Group 11: existing_plan_path/revision_reason rendering, newest-report pin"
 
 # Case A: plan phase WITH an existing plan (the fixture's default state already seeds
 # ${TASK_DIR_REL}/plans/01_fixture-plan.md) -- both new lines render, using the exact field
@@ -678,7 +671,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "existing_plan_path: ${TASK_DIR_REL}/plans/01_fixture-plan.md" "plan (existing plan present): existing_plan_path renders with the newest plan's path"
   assert_contains "$content" "revision_reason: forced --plan round" "plan (existing plan present): revision_reason renders"
 else
-  fail "plan (existing plan present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "plan (existing plan present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case B: plan phase with NO existing plan -- neither line renders (the ordinary planner-agent
@@ -690,7 +683,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_not_contains "$content" "existing_plan_path" "plan (no plan present): existing_plan_path line absent"
   assert_not_contains "$content" "revision_reason" "plan (no plan present): revision_reason line absent"
 else
-  fail "plan (no plan present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "plan (no plan present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 mv "$WORKDIR/01_fixture-plan.md.setaside" "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
 
@@ -722,7 +715,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "research_artifact: ${TASK_DIR_REL}/reports/02_fixture-report-round2.md" "plan dispatch after two research rounds names the NEWEST report (round 2, not round 1)"
   assert_not_contains "$content" "01_fixture-report.md" "plan dispatch after two research rounds does NOT name the superseded round-1 report"
 else
-  fail "newest-report pin: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "newest-report pin: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 # Restore the original single-report fixture state for any suite appended after this one.
 build_fixture
@@ -735,7 +728,7 @@ build_fixture
 # test for the SEPARATE injection/gating logic in orchestrate-build-dispatch.sh's own Stage 3.5,
 # not the underlying comparison algorithm again.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 12: <deploy-freshness-context> injection (stale vs. clean)"
+common_test_info "Group 12: <deploy-freshness-context> injection (stale vs. clean)"
 
 # build_stale_extensions_json <fixture_root>: fabricates a `.claude-extensions.json` at the
 # fixture root recording a "fixtureext" entry whose source_dir/source_git_head pair is
@@ -774,7 +767,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "Do NOT hand-patch" "stale fixture: hand-patch prohibition present"
   assert_contains "$content" "deploy-headless.sh" "stale fixture: redeploy remedy present"
 else
-  fail "Group 12 stale case: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Group 12 stale case: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 # Snapshot the CONTENT to a separate file -- both run_sut calls in this group use the same
 # task/seq, so the dispatch file path itself is reused and overwritten by the next call; only a
@@ -794,17 +787,17 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
       <(sed -E 's/dispatch_seq: [0-9]+//' "$STALE_DISPATCH_FILE") \
       <(sed -E 's/dispatch_seq: [0-9]+//' "$LAST_DISPATCH_FILE") \
       >/dev/null 2>&1; then
-    fail "clean fixture: dispatch file unexpectedly byte-identical to the stale one (the block never rendered any content in either case -- fixture broken)"
+    common_test_fail "clean fixture: dispatch file unexpectedly byte-identical to the stale one (the block never rendered any content in either case -- fixture broken)"
   else
     diff_line_count=$(diff <(sed -E 's/dispatch_seq: [0-9]+//' "$STALE_DISPATCH_FILE") <(sed -E 's/dispatch_seq: [0-9]+//' "$LAST_DISPATCH_FILE") | grep -c '^[<>]')
     if [ "$diff_line_count" -eq 7 ]; then
-      pass "clean fixture: differs from the stale build by EXACTLY the 6-line injected block plus its blank-line separator (7 changed lines), nothing else"
+      common_test_pass "clean fixture: differs from the stale build by EXACTLY the 6-line injected block plus its blank-line separator (7 changed lines), nothing else"
     else
-      fail "clean fixture: expected exactly 7 changed lines vs. the stale build (the block + separator), got $diff_line_count -- see $STALE_DISPATCH_FILE vs $LAST_DISPATCH_FILE"
+      common_test_fail "clean fixture: expected exactly 7 changed lines vs. the stale build (the block + separator), got $diff_line_count -- see $STALE_DISPATCH_FILE vs $LAST_DISPATCH_FILE"
     fi
   fi
 else
-  fail "Group 12 clean case: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Group 12 clean case: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Restore the original single-report fixture state (no .claude-extensions.json) for any suite
@@ -820,7 +813,7 @@ build_fixture
 # is already pulled in elsewhere (hard_mode=true AND phase=implement), and a call with no
 # --territory at all stays byte-identical to a pre-this-feature build (no pointer, no section).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 13: base-mode --territory pointer to context/contracts/territory.md"
+common_test_info "Group 13: base-mode --territory pointer to context/contracts/territory.md"
 
 sibling_territory_json='{"concurrent_siblings":[{"task_number":42,"phase":"implement","file_scope":null,"scope_declared":false,"scope_granularity":"undeclared","entries":[],"note":"No file_scope declared for this task -- it may touch any file in the repository."}],"concurrency_note":"test sibling note"}'
 
@@ -834,7 +827,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "Read context/contracts/territory.md (Cross-Task Territory section) before editing any file." "Case A: territory.md pointer present"
   assert_not_contains "$content" "<hard-mode-contracts>" "Case A: <hard-mode-contracts> absent in base mode"
 else
-  fail "Case A: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Case A: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case B: hard mode, research phase, --territory set -- hard_contracts_block IS rendered (research
@@ -847,7 +840,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "<hard-mode-contracts>" "Case B: hard-contracts block present (research's own core_contracts)"
   assert_contains "$content" "Read context/contracts/territory.md (Cross-Task Territory section) before editing any file." "Case B: pointer present (research's core_contracts never lists territory.md)"
 else
-  fail "Case B: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Case B: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case C: hard mode, implement phase, --territory set -- the ONE case where territory.md is
@@ -861,7 +854,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/contracts/territory.md" "Case C: territory.md listed via core_contracts"
   assert_not_contains "$content" "Read context/contracts/territory.md (Cross-Task Territory section) before editing any file." "Case C: standalone pointer sentence absent (already covered by core_contracts)"
 else
-  fail "Case C: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Case C: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case D (regression guard): no --territory at all -- byte-identical to Group 5's no-territory
@@ -872,7 +865,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_not_contains "$content" "## Territory" "Case D (no --territory): territory section absent"
   assert_not_contains "$content" "context/contracts/territory.md" "Case D (no --territory): no territory.md reference anywhere"
 else
-  fail "Case D: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Case D: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -882,7 +875,7 @@ fi
 # Contract": it must appear across the full base/--hard x research/plan/implement matrix, exactly
 # once per dispatch file, and ahead of "## User-Decision Contract".
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 14: wait-discipline pointer present in every dispatch"
+common_test_info "Group 14: wait-discipline pointer present in every dispatch"
 
 # Base mode: research, plan, implement.
 run_sut research --clean --seq 14a
@@ -892,7 +885,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/patterns/external-process-wait.md" "base research: pointer to external-process-wait.md present"
   assert_contains "$content" "context/patterns/bounded-build-waiter.md" "base research: pointer to bounded-build-waiter.md present"
 else
-  fail "base research: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "base research: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut plan --clean --seq 14b
@@ -902,7 +895,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/patterns/external-process-wait.md" "base plan: pointer to external-process-wait.md present"
   assert_contains "$content" "context/patterns/bounded-build-waiter.md" "base plan: pointer to bounded-build-waiter.md present"
 else
-  fail "base plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "base plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut implement --clean --seq 14c
@@ -912,7 +905,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/patterns/external-process-wait.md" "base implement: pointer to external-process-wait.md present"
   assert_contains "$content" "context/patterns/bounded-build-waiter.md" "base implement: pointer to bounded-build-waiter.md present"
 else
-  fail "base implement: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "base implement: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Hard mode: research, plan, implement.
@@ -923,7 +916,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/patterns/external-process-wait.md" "hard research: pointer to external-process-wait.md present"
   assert_contains "$content" "context/patterns/bounded-build-waiter.md" "hard research: pointer to bounded-build-waiter.md present"
 else
-  fail "hard research: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "hard research: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut plan --clean --hard --seq 14e
@@ -933,7 +926,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content" "context/patterns/external-process-wait.md" "hard plan: pointer to external-process-wait.md present"
   assert_contains "$content" "context/patterns/bounded-build-waiter.md" "hard plan: pointer to bounded-build-waiter.md present"
 else
-  fail "hard plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "hard plan: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut implement --clean --hard --seq 14f
@@ -948,16 +941,16 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   # of conditionally-rendered sections.
   occurrence_count="$(grep -c "context/patterns/external-process-wait.md" "$LAST_DISPATCH_FILE")"
   if [ "$occurrence_count" -eq 1 ]; then
-    pass "hard implement: external-process-wait.md pointer appears exactly once"
+    common_test_pass "hard implement: external-process-wait.md pointer appears exactly once"
   else
-    fail "hard implement: expected exactly 1 occurrence of the pointer, got $occurrence_count"
+    common_test_fail "hard implement: expected exactly 1 occurrence of the pointer, got $occurrence_count"
   fi
 
   bbw_occurrence_count="$(grep -c "context/patterns/bounded-build-waiter.md" "$LAST_DISPATCH_FILE")"
   if [ "$bbw_occurrence_count" -eq 1 ]; then
-    pass "hard implement: bounded-build-waiter.md pointer appears exactly once"
+    common_test_pass "hard implement: bounded-build-waiter.md pointer appears exactly once"
   else
-    fail "hard implement: expected exactly 1 occurrence of the pointer, got $bbw_occurrence_count"
+    common_test_fail "hard implement: expected exactly 1 occurrence of the pointer, got $bbw_occurrence_count"
   fi
 
   # Ordering guard: "## Wait Discipline" precedes "## User-Decision Contract" (both are
@@ -966,12 +959,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   wait_line="$(grep -n "^## Wait Discipline$" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)"
   decision_line="$(grep -n "^## User-Decision Contract$" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)"
   if [ -n "$wait_line" ] && [ -n "$decision_line" ] && [ "$wait_line" -lt "$decision_line" ]; then
-    pass "hard implement: Wait Discipline section precedes User-Decision Contract"
+    common_test_pass "hard implement: Wait Discipline section precedes User-Decision Contract"
   else
-    fail "hard implement: expected Wait Discipline ($wait_line) before User-Decision Contract ($decision_line)"
+    common_test_fail "hard implement: expected Wait Discipline ($wait_line) before User-Decision Contract ($decision_line)"
   fi
 else
-  fail "hard implement: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "hard implement: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -983,7 +976,7 @@ fi
 # so this suite stays independent of lean-mcp-preflight-check.sh's own reachability/registration
 # logic, which test-lean-mcp-preflight-check.sh already covers.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 15: <lean-readiness-context> injection (absent/present/non-lean4-task_type/failing-probe)"
+common_test_info "Group 15: <lean-readiness-context> injection (absent/present/non-lean4-task_type/failing-probe)"
 
 LEAN_STUB_MARKER="STUB_LEAN_READINESS_MARKER_G15"
 
@@ -1023,7 +1016,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content" "<lean-readiness-context>" "Case 1 (no lakefile): <lean-readiness-context> block absent"
 else
-  fail "Group 15 Case 1: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Group 15 Case 1: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case 2 (present): a lakefile exists and the stub probe emits a known block on --dispatch-block.
@@ -1037,12 +1030,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   readiness_line=$(grep -n "<lean-readiness-context>" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)
   wait_line=$(grep -n "^## Wait Discipline" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)
   if [ -n "$readiness_line" ] && [ -n "$wait_line" ] && [ "$readiness_line" -lt "$wait_line" ]; then
-    pass "Case 2: <lean-readiness-context> ($readiness_line) precedes ## Wait Discipline ($wait_line)"
+    common_test_pass "Case 2: <lean-readiness-context> ($readiness_line) precedes ## Wait Discipline ($wait_line)"
   else
-    fail "Case 2: expected <lean-readiness-context> before ## Wait Discipline; got readiness_line=$readiness_line wait_line=$wait_line"
+    common_test_fail "Case 2: expected <lean-readiness-context> before ## Wait Discipline; got readiness_line=$readiness_line wait_line=$wait_line"
   fi
 else
-  fail "Group 15 Case 2: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Group 15 Case 2: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case 3 (non-lean4 task_type, "formal"): the SAME lakefile + stub probe from Case 2, but the
@@ -1058,7 +1051,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "$LEAN_STUB_BLOCK" "Case 3 (task_type=formal): block present -- regression guard for the motivating incident"
 else
-  fail "Group 15 Case 3: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Group 15 Case 3: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 cp "$WORKDIR/g15-state-backup.json" "$FIXTURE/specs/state.json"
 
@@ -1070,9 +1063,9 @@ run_sut implement --seq 15
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content" "<lean-readiness-context>" "Case 4 (failing probe, exit 1): block absent"
-  pass "Case 4 (failing probe, exit 1): dispatch build still exits 0 (WARN-never-BLOCK contract holds even for a broken probe)"
+  common_test_pass "Case 4 (failing probe, exit 1): dispatch build still exits 0 (WARN-never-BLOCK contract holds even for a broken probe)"
 else
-  fail "Group 15 Case 4: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR) -- a failing probe must never break the dispatch build"
+  common_test_fail "Group 15 Case 4: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR) -- a failing probe must never break the dispatch build"
 fi
 
 # Restore the original fixture state (no lakefile, no probe script, original task_type) for any
@@ -1089,7 +1082,7 @@ rm -f "$WORKDIR/g15-state-backup.json"
 # throwaway git repo + bare remote for the guard half (hooks/guard-git-push.sh has no dependency
 # on dispatch files at all -- that decoupling is exactly the property under test).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 16: two-cycle push-consent non-inheritance"
+common_test_info "Group 16: two-cycle push-consent non-inheritance"
 
 GUARD_HOOK="$SCRIPT_DIR/../../hooks/guard-git-push.sh"
 
@@ -1116,7 +1109,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_g16" "## Prior Decisions" "two-cycle: cycle N+1 dispatch renders Prior Decisions"
   assert_contains "$content_g16" "Grant via /please push origin feature-x" "two-cycle: the exact /please line the human was told is rendered verbatim into cycle N+1's dispatch"
 else
-  fail "two-cycle: SUT did not exit 0 building cycle N+1's dispatch (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "two-cycle: SUT did not exit 0 building cycle N+1's dispatch (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Now prove that inheriting this text grants nothing: a fresh git repo + bare remote, matching
@@ -1142,16 +1135,16 @@ export PUSH_GRANT_KEY_PATH="$WORKDIR/g16-push-grant.key"
 export PUSH_GRANT_DIR="specs/.push-grant"
 
 if [ -d "${G16_REPO}/specs/.push-grant" ] && [ -n "$(find "${G16_REPO}/specs/.push-grant" -maxdepth 1 -name 'grant-*.kv' 2>/dev/null)" ]; then
-  fail "two-cycle: a grant file unexpectedly exists before any mint was performed"
+  common_test_fail "two-cycle: a grant file unexpectedly exists before any mint was performed"
 else
-  pass "two-cycle: no grant file exists in cycle N+1's state (cycle N's push never happened)"
+  common_test_pass "two-cycle: no grant file exists in cycle N+1's state (cycle N's push never happened)"
 fi
 
 g16_code="$( ( cd "$G16_REPO" && jq -n --arg c "git push origin feature-x" '{tool_name:"Bash", tool_input:{command:$c}}' | bash "$GUARD_HOOK" ) >/dev/null 2>/dev/null; echo $? )"
 if [ "$g16_code" -eq 2 ]; then
-  pass "two-cycle: guard-git-push.sh blocks the exact push the inherited Prior Decisions text names -- the inherited text authorizes nothing"
+  common_test_pass "two-cycle: guard-git-push.sh blocks the exact push the inherited Prior Decisions text names -- the inherited text authorizes nothing"
 else
-  fail "two-cycle: expected exit 2 (blocked), got $g16_code -- the inherited decision text would otherwise be standing authorization, exactly the forbidden inference"
+  common_test_fail "two-cycle: expected exit 2 (blocked), got $g16_code -- the inherited decision text would otherwise be standing authorization, exactly the forbidden inference"
 fi
 
 # Sanity: the SAME (remote, ref) DOES succeed once a real /please mint happens, proving the
@@ -1160,9 +1153,9 @@ MINT_HOOK="$SCRIPT_DIR/../../hooks/please-grant.sh"
 ( cd "$G16_REPO" && jq -n --arg p "/please push origin feature-x" '{prompt:$p}' | bash "$MINT_HOOK" ) >/dev/null 2>&1
 g16_code_minted="$( ( cd "$G16_REPO" && jq -n --arg c "git push origin feature-x" '{tool_name:"Bash", tool_input:{command:$c}}' | bash "$GUARD_HOOK" ) >/dev/null 2>/dev/null; echo $? )"
 if [ "$g16_code_minted" -eq 0 ]; then
-  pass "two-cycle: non-vacuity check -- the SAME push succeeds once a real /please mint happens"
+  common_test_pass "two-cycle: non-vacuity check -- the SAME push succeeds once a real /please mint happens"
 else
-  fail "two-cycle: non-vacuity check failed -- expected exit 0 after a real mint, got $g16_code_minted"
+  common_test_fail "two-cycle: non-vacuity check failed -- expected exit 0 after a real mint, got $g16_code_minted"
 fi
 
 unset PUSH_GRANT_KEY_PATH PUSH_GRANT_DIR
@@ -1176,14 +1169,14 @@ rm -f "$DECISIONS_FILE"
 # phase-agnosticism: it records whatever it is told, and implement-only scoping is the caller's
 # job (asserted in orchestrate-cycle-plan.sh's own suite, not here).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 17: --gate emits gate_flag: true ONLY when passed (byte-identity otherwise)"
+common_test_info "Group 17: --gate emits gate_flag: true ONLY when passed (byte-identity otherwise)"
 run_sut implement --clean --seq 17 --dispatch-start-ts 1234567890
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_no_gate="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content_no_gate" "gate_flag:" "implement (no --gate): gate_flag line absent"
   cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-gate.md"
 else
-  fail "implement (no --gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (no --gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut implement --clean --seq 17 --dispatch-start-ts 1234567890 --gate
@@ -1191,17 +1184,17 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_gate="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content_gate" "- gate_flag: true" "implement (--gate): gate_flag: true line present"
   if diff -q "$WORKDIR/dispatch-no-gate.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
-    fail "implement (--gate): expected a diff against the no-flag dispatch file, got none"
+    common_test_fail "implement (--gate): expected a diff against the no-flag dispatch file, got none"
   else
     gate_diff_line_count="$(diff "$WORKDIR/dispatch-no-gate.md" "$LAST_DISPATCH_FILE" | grep -c '^>')"
     if [ "$gate_diff_line_count" -eq 1 ]; then
-      pass "implement (--gate): differs from the no-flag dispatch file by exactly one added line"
+      common_test_pass "implement (--gate): differs from the no-flag dispatch file by exactly one added line"
     else
-      fail "implement (--gate): expected exactly 1 added line vs. no-flag dispatch file, got $gate_diff_line_count"
+      common_test_fail "implement (--gate): expected exactly 1 added line vs. no-flag dispatch file, got $gate_diff_line_count"
     fi
   fi
 else
-  fail "implement (--gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (--gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # The SUT itself is phase-agnostic for --gate, exactly as for --compare: implement-only scoping
@@ -1213,7 +1206,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_research_gate="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content_research_gate" "- gate_flag: true" "research (--gate passed explicitly): SUT itself is phase-agnostic and still records gate_flag: true (implement-only scoping is a caller-side decision, tested in orchestrate-cycle-plan.sh's own suite)"
 else
-  fail "research (--gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "research (--gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # --gate composes with --compare without interference: both lines present, and the two-flag
@@ -1225,12 +1218,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_both" "- gate_flag: true" "implement (--compare --gate): gate_flag: true present"
   both_diff_line_count="$(diff "$WORKDIR/dispatch-no-gate.md" "$LAST_DISPATCH_FILE" | grep -c '^>')"
   if [ "$both_diff_line_count" -eq 2 ]; then
-    pass "implement (--compare --gate): differs from the no-flag dispatch file by exactly two added lines"
+    common_test_pass "implement (--compare --gate): differs from the no-flag dispatch file by exactly two added lines"
   else
-    fail "implement (--compare --gate): expected exactly 2 added lines vs. no-flag dispatch file, got $both_diff_line_count"
+    common_test_fail "implement (--compare --gate): expected exactly 2 added lines vs. no-flag dispatch file, got $both_diff_line_count"
   fi
 else
-  fail "implement (--compare --gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (--compare --gate): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 rm -f "$WORKDIR/dispatch-no-gate.md"
@@ -1241,12 +1234,12 @@ rm -f "$WORKDIR/dispatch-no-gate.md"
 # OWN REAL normalizer (byte-extracted from orchestrate-cycle-plan.sh, same idiom as that script's
 # own test suite's Group 27 Case A), never a hand-reimplemented stand-in.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 18: revision_sentinel hash-stability across a plan edit"
+common_test_info "Group 18: revision_sentinel hash-stability across a plan edit"
 g18_hash_fn=$(sed -n '/^cycle_plan_dispatch_hash() {/,/^}/p' "$CYCLE_PLAN_SRC")
 if [ -n "$g18_hash_fn" ]; then
-  pass "Group 18: cycle_plan_dispatch_hash() found in orchestrate-cycle-plan.sh"
+  common_test_pass "Group 18: cycle_plan_dispatch_hash() found in orchestrate-cycle-plan.sh"
 else
-  fail "Group 18: could not extract cycle_plan_dispatch_hash() from $CYCLE_PLAN_SRC"
+  common_test_fail "Group 18: could not extract cycle_plan_dispatch_hash() from $CYCLE_PLAN_SRC"
 fi
 
 run_sut implement --clean --seq 18 --dispatch-start-ts 1111111111
@@ -1254,7 +1247,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   g18_f1="$WORKDIR/g18-dispatch-1.md"
   cp "$LAST_DISPATCH_FILE" "$g18_f1"
 else
-  fail "Group 18: first implement build did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Group 18: first implement build did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Edit the plan file's content between the two builds -- the hazard this task's design note
@@ -1267,24 +1260,24 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   g18_f2="$WORKDIR/g18-dispatch-2.md"
   cp "$LAST_DISPATCH_FILE" "$g18_f2"
 else
-  fail "Group 18: second implement build did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Group 18: second implement build did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 if [ -n "${g18_f1:-}" ] && [ -n "${g18_f2:-}" ] && [ -n "$g18_hash_fn" ]; then
   g18_h1=$(bash -c "$g18_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g18_f1")
   g18_h2=$(bash -c "$g18_hash_fn"$'\n''cycle_plan_dispatch_hash "$1"' _ "$g18_f2")
   if [ -n "$g18_h1" ] && [ "$g18_h1" = "$g18_h2" ]; then
-    pass "Group 18: implement dispatch hashes equal across a plan-content edit and differing dispatch_seq/dispatch_start_ts (revision_sentinel added no per-cycle-varying content)"
+    common_test_pass "Group 18: implement dispatch hashes equal across a plan-content edit and differing dispatch_seq/dispatch_start_ts (revision_sentinel added no per-cycle-varying content)"
   else
-    fail "Group 18: implement dispatch hashes differ (h1=$g18_h1 h2=$g18_h2) -- revision_sentinel or its pointer prose may have introduced per-cycle-varying content"
+    common_test_fail "Group 18: implement dispatch hashes differ (h1=$g18_h1 h2=$g18_h2) -- revision_sentinel or its pointer prose may have introduced per-cycle-varying content"
   fi
   if grep -nE 'mtime|sha256|date \+%s|stat ' "$g18_f1" >/dev/null 2>&1; then
-    fail "Group 18: implement dispatch body contains mtime/sha256/date/stat-derived content"
+    common_test_fail "Group 18: implement dispatch body contains mtime/sha256/date/stat-derived content"
   else
-    pass "Group 18: implement dispatch body contains no mtime/sha256/date/stat-derived content"
+    common_test_pass "Group 18: implement dispatch body contains no mtime/sha256/date/stat-derived content"
   fi
 else
-  fail "Group 18: could not compute hashes (missing a build or the extracted function)"
+  common_test_fail "Group 18: could not compute hashes (missing a build or the extracted function)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1293,14 +1286,14 @@ fi
 # present on research/plan emits nothing (the section is nested inside this SUT's own
 # `if [ "$phase" = "implement" ]` block, so non-implement phases never even consult the flag).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 19: --batch-gate-deferral emits '## Batch Gate Deferral' ONLY on implement (byte-identity otherwise)"
+common_test_info "Group 19: --batch-gate-deferral emits '## Batch Gate Deferral' ONLY on implement (byte-identity otherwise)"
 run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_no_bgd="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content_no_bgd" "Batch Gate Deferral" "implement (no --batch-gate-deferral): section absent"
   cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-bgd.md"
 else
-  fail "implement (no --batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (no --batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890 --batch-gate-deferral
@@ -1310,12 +1303,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_bgd" "run-all.sh" "implement (--batch-gate-deferral): names a concrete run-all.sh narrowing invocation"
   assert_contains "$content_bgd" "--only-gate" "implement (--batch-gate-deferral): names a concrete verify-deploy.sh --only-gate narrowing invocation"
   if diff -q "$WORKDIR/dispatch-no-bgd.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
-    fail "implement (--batch-gate-deferral): expected a diff against the no-flag dispatch file, got none"
+    common_test_fail "implement (--batch-gate-deferral): expected a diff against the no-flag dispatch file, got none"
   else
-    pass "implement (--batch-gate-deferral): differs from the no-flag dispatch file"
+    common_test_pass "implement (--batch-gate-deferral): differs from the no-flag dispatch file"
   fi
 else
-  fail "implement (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # research/plan: this SUT nests the whole batch-gate-deferral emission inside its own
@@ -1326,7 +1319,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_research_bgd="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content_research_bgd" "Batch Gate Deferral" "research (--batch-gate-deferral passed explicitly): section absent (flag is implement-only by construction, not by caller-side scoping)"
 else
-  fail "research (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "research (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut plan --clean --seq 19 --batch-gate-deferral
@@ -1334,7 +1327,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_plan_bgd="$(cat "$LAST_DISPATCH_FILE")"
   assert_not_contains "$content_plan_bgd" "Batch Gate Deferral" "plan (--batch-gate-deferral passed explicitly): section absent (flag is implement-only by construction)"
 else
-  fail "plan (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "plan (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -1345,7 +1338,7 @@ fi
 # pins max-prefix over file-count (a sequence gap); Case D pins the self-healing behaviour when
 # the stored counter has fallen behind what a prior advance-site `// 1` write left on disk.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 20: artifact-round resolution (absent field, gap, behind-counter)"
+common_test_info "Group 20: artifact-round resolution (absent field, gap, behind-counter)"
 
 # Ground the on-disk scan this group exercises on a known-clean baseline: this function's own
 # unconditional normalization reads the ENTIRE reports/plans/summaries tree (unlike the old
@@ -1381,7 +1374,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "artifact_number: 2" "Case A (absent field, 01 present): research derives round 2, not round 1"
 else
-  fail "Case A (absent field, 01 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Case A (absent field, 01 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case B: same absent-field fixture -- plan (mode=prev) must share the pre-supplied report's
@@ -1391,7 +1384,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "artifact_number: 1" "Case B (absent field, 01 present): plan derives round 1 (shares research's round)"
 else
-  fail "Case B (absent field, 01 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Case B (absent field, 01 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # Case C (max-prefix, not count): additionally create a gap file (03, with 02 absent). A
@@ -1402,7 +1395,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "artifact_number: 4" "Case C (gap: 01,03 present): research derives round 4 (max-prefix+1), not round 3 (file count)"
 else
-  fail "Case C (gap: 01,03 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Case C (gap: 01,03 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 rm -f "$FIXTURE/${TASK_DIR_REL}/reports/03_fixture-report-gap.md"
 
@@ -1432,7 +1425,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content" "artifact_number: 2" "Case D (counter behind disk: next=1, 02 present): plan derives round 2, self-healing the stale counter"
 else
-  fail "Case D (counter behind disk: next=1, 02 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "Case D (counter behind disk: next=1, 02 present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 rm -f "$FIXTURE/${TASK_DIR_REL}/reports/02_fixture-report-round2.md"
 
@@ -1447,7 +1440,7 @@ build_fixture
 # it in once per dispatched task regardless of phase -- see that flag's own header comment in the
 # SUT for why).
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Group 21: --pending-gate-finding emits '## Outstanding Gate Finding' (byte-identity when absent, phase-agnostic when present)"
+common_test_info "Group 21: --pending-gate-finding emits '## Outstanding Gate Finding' (byte-identity when absent, phase-agnostic when present)"
 
 run_sut implement --clean --seq 21 --dispatch-start-ts 1234567890
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
@@ -1455,7 +1448,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_not_contains "$content_no_pgf" "Outstanding Gate Finding" "implement (no --pending-gate-finding): section absent"
   cp "$LAST_DISPATCH_FILE" "$WORKDIR/dispatch-no-pgf.md"
 else
-  fail "implement (no --pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (no --pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 PGF_TEXT="FINDING gate20 context/foo.md exceeds its declared ceiling"
@@ -1466,12 +1459,12 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_pgf" "$PGF_TEXT" "implement (--pending-gate-finding): finding text rendered verbatim"
   assert_contains "$content_pgf" "must be closed" "implement (--pending-gate-finding): section states the finding must be closed before completion"
   if diff -q "$WORKDIR/dispatch-no-pgf.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
-    fail "implement (--pending-gate-finding): expected a diff against the no-flag dispatch file, got none"
+    common_test_fail "implement (--pending-gate-finding): expected a diff against the no-flag dispatch file, got none"
   else
-    pass "implement (--pending-gate-finding): differs from the no-flag dispatch file"
+    common_test_pass "implement (--pending-gate-finding): differs from the no-flag dispatch file"
   fi
 else
-  fail "implement (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "implement (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # research/plan: unlike --batch-gate-deferral, this flag's section is NOT scoped to implement by
@@ -1484,7 +1477,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_research_pgf" "## Outstanding Gate Finding" "research (--pending-gate-finding): section present (phase-agnostic)"
   assert_contains "$content_research_pgf" "$PGF_TEXT" "research (--pending-gate-finding): finding text rendered verbatim"
 else
-  fail "research (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "research (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 run_sut plan --clean --seq 21 --pending-gate-finding "$PGF_TEXT"
@@ -1493,7 +1486,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_plan_pgf" "## Outstanding Gate Finding" "plan (--pending-gate-finding): section present (phase-agnostic)"
   assert_contains "$content_plan_pgf" "$PGF_TEXT" "plan (--pending-gate-finding): finding text rendered verbatim"
 else
-  fail "plan (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+  common_test_fail "plan (--pending-gate-finding): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

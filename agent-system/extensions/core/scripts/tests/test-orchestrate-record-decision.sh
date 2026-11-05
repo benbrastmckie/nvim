@@ -32,10 +32,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/orchestrate-record-decision.sh"
@@ -115,9 +113,6 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ] && rm -rf "$TOP_WORKDIR"; }
@@ -193,16 +188,16 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   scratch="$(build_scratch)"
   doc="$scratch/$DECISIONS_REL"
   if [ -f "$doc" ]; then
-    fail "(a) lazy-creation: .decisions.json unexpectedly pre-exists in fresh scratch"
+    common_test_fail "(a) lazy-creation: .decisions.json unexpectedly pre-exists in fresh scratch"
   elif run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
       --question "Q1" --answer "A1" >/dev/null 2>&1; then
     if [ -f "$doc" ] && jq -e 'type == "array" and length == 1' "$doc" >/dev/null 2>&1; then
-      pass "(a) lazy-creation: first append creates a bare top-level array with 1 entry"
+      common_test_pass "(a) lazy-creation: first append creates a bare top-level array with 1 entry"
     else
-      fail "(a) lazy-creation: .decisions.json missing or not a bare array after first append"
+      common_test_fail "(a) lazy-creation: .decisions.json missing or not a bare array after first append"
     fi
   else
-    fail "(a) lazy-creation: append exited non-zero on a fresh scratch root"
+    common_test_fail "(a) lazy-creation: append exited non-zero on a fresh scratch root"
   fi
 }
 
@@ -220,9 +215,9 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   entry1_after="$(jq -c '.[0]' "$doc")"
   count="$(jq 'length' "$doc")"
   if [ "$count" -eq 2 ] && [ "$entry1_before" = "$entry1_after" ]; then
-    pass "(b) additive-append: second append yields 2 entries; entry 1 byte-identical"
+    common_test_pass "(b) additive-append: second append yields 2 entries; entry 1 byte-identical"
   else
-    fail "(b) additive-append: count=$count entry1_before=$entry1_before entry1_after=$entry1_after"
+    common_test_fail "(b) additive-append: count=$count entry1_before=$entry1_before entry1_after=$entry1_after"
   fi
 }
 
@@ -237,9 +232,9 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   if jq -e '.[0] | (has("question") and has("answer") and has("cycle") and has("timestamp"))' "$doc" >/dev/null 2>&1 \
     && jq -e '.[0].cycle | type == "number"' "$doc" >/dev/null 2>&1 \
     && jq -e '.[0].timestamp | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")' "$doc" >/dev/null 2>&1; then
-    pass "(c) shape-conformance: all 4 fields present, cycle is a JSON number, timestamp is ISO 8601 UTC"
+    common_test_pass "(c) shape-conformance: all 4 fields present, cycle is a JSON number, timestamp is ISO 8601 UTC"
   else
-    fail "(c) shape-conformance: $(cat "$doc")"
+    common_test_fail "(c) shape-conformance: $(cat "$doc")"
   fi
 }
 
@@ -256,9 +251,9 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
     --question "Q" --answer "A" >/dev/null 2>&1
   actual_fp="$(jq -r '.[0].description_fingerprint // "MISSING"' "$doc")"
   if [ "$actual_fp" = "$expected_fp" ] && [[ "$actual_fp" =~ ^[0-9a-f]{64}$ ]]; then
-    pass "(c1) digest-equality: description_fingerprint is a 64-hex digest matching an independently computed sha256sum"
+    common_test_pass "(c1) digest-equality: description_fingerprint is a 64-hex digest matching an independently computed sha256sum"
   else
-    fail "(c1) digest-equality: expected '$expected_fp', got '$actual_fp'"
+    common_test_fail "(c1) digest-equality: expected '$expected_fp', got '$actual_fp'"
   fi
 }
 
@@ -272,12 +267,12 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   if run_ord_no_sha256sum "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
       --question "Q" --answer "A" >/dev/null 2>&1; then
     if jq -e '.[0] | (has("description_fingerprint") | not)' "$doc" >/dev/null 2>&1; then
-      pass "(c2) sha256sum-unavailable: description_fingerprint is omitted entirely and the append still exits 0"
+      common_test_pass "(c2) sha256sum-unavailable: description_fingerprint is omitted entirely and the append still exits 0"
     else
-      fail "(c2) sha256sum-unavailable: field unexpectedly present or empty: $(jq -c '.[0]' "$doc" 2>/dev/null)"
+      common_test_fail "(c2) sha256sum-unavailable: field unexpectedly present or empty: $(jq -c '.[0]' "$doc" 2>/dev/null)"
     fi
   else
-    fail "(c2) sha256sum-unavailable: expected exit 0 (graceful degrade), got nonzero"
+    common_test_fail "(c2) sha256sum-unavailable: expected exit 0 (graceful degrade), got nonzero"
   fi
 }
 
@@ -302,12 +297,12 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
     count="$(jq 'length' "$doc")"
     unique_count="$(jq '[.[].question] | unique | length' "$doc")"
     if [ "$count" -eq "$N" ] && [ "$unique_count" -eq "$N" ]; then
-      pass "(d) concurrency: $N parallel appends yield exactly $N unique entries"
+      common_test_pass "(d) concurrency: $N parallel appends yield exactly $N unique entries"
     else
-      fail "(d) concurrency: expected $N entries with $N unique questions, got count=$count unique=$unique_count"
+      common_test_fail "(d) concurrency: expected $N entries with $N unique questions, got count=$count unique=$unique_count"
     fi
   else
-    fail "(d) concurrency: one or more invocations failed, or the document no longer parses"
+    common_test_fail "(d) concurrency: one or more invocations failed, or the document no longer parses"
   fi
 }
 
@@ -322,13 +317,13 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   before="$(md5sum "$doc")"
   if run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
       --question "Q" --answer "A" >/dev/null 2>&1; then
-    fail "(e) object-wrapper-refusal: expected nonzero exit, got exit 0"
+    common_test_fail "(e) object-wrapper-refusal: expected nonzero exit, got exit 0"
   else
     after="$(md5sum "$doc")"
     if [ "$before" = "$after" ]; then
-      pass "(e) object-wrapper-refusal: a {\"decisions\": [...]} file is refused and left byte-identical"
+      common_test_pass "(e) object-wrapper-refusal: a {\"decisions\": [...]} file is refused and left byte-identical"
     else
-      fail "(e) object-wrapper-refusal: refused but the target file changed"
+      common_test_fail "(e) object-wrapper-refusal: refused but the target file changed"
     fi
   fi
 }
@@ -341,11 +336,11 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   doc="$scratch/$DECISIONS_REL"
   if run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
       --question "Q" >/dev/null 2>&1; then
-    fail "(f) missing-argument: expected nonzero exit, got exit 0"
+    common_test_fail "(f) missing-argument: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(f) missing-argument: .decisions.json was created (must not write on a validation failure)"
+    common_test_fail "(f) missing-argument: .decisions.json was created (must not write on a validation failure)"
   else
-    pass "(f) missing-argument: exited nonzero and wrote nothing"
+    common_test_pass "(f) missing-argument: exited nonzero and wrote nothing"
   fi
 }
 
@@ -357,11 +352,11 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   doc="$scratch/$DECISIONS_REL"
   if run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle not-a-number \
       --question "Q" --answer "A" >/dev/null 2>&1; then
-    fail "(g) non-integer-cycle: expected nonzero exit, got exit 0"
+    common_test_fail "(g) non-integer-cycle: expected nonzero exit, got exit 0"
   elif [ -f "$doc" ]; then
-    fail "(g) non-integer-cycle: .decisions.json was created (must not write on a validation failure)"
+    common_test_fail "(g) non-integer-cycle: .decisions.json was created (must not write on a validation failure)"
   else
-    pass "(g) non-integer-cycle: exited nonzero and wrote nothing"
+    common_test_pass "(g) non-integer-cycle: exited nonzero and wrote nothing"
   fi
 }
 
@@ -395,9 +390,9 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
     && printf '%s' "$rendered" | grep -q "Answer: Use the existing one" \
     && printf '%s' "$rendered" | grep -q "Answered in cycle 5" \
     && ! printf '%s' "$rendered" | grep -q "POTENTIALLY SUPERSEDED"; then
-    pass "(h) reader-compat: orchestrate-build-dispatch.sh's own (marker-aware) jq expression renders the written file, unmarked for a matching fingerprint"
+    common_test_pass "(h) reader-compat: orchestrate-build-dispatch.sh's own (marker-aware) jq expression renders the written file, unmarked for a matching fingerprint"
   else
-    fail "(h) reader-compat: count=$decisions_count rendered=[$rendered]"
+    common_test_fail "(h) reader-compat: count=$decisions_count rendered=[$rendered]"
   fi
 }
 
@@ -408,9 +403,9 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
   scratch="$(build_scratch)"
   if run_ord "$scratch" --task 999 --session sess_1000000000_aaaaaa --cycle 1 \
       --question "Q" --answer "A" >/dev/null 2>&1; then
-    fail "unresolvable-task: expected nonzero exit, got exit 0"
+    common_test_fail "unresolvable-task: expected nonzero exit, got exit 0"
   else
-    pass "unresolvable-task: exited nonzero when the task number resolves to no entry"
+    common_test_pass "unresolvable-task: exited nonzero when the task number resolves to no entry"
   fi
 }
 

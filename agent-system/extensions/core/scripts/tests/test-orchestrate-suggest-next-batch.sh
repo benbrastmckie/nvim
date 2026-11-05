@@ -35,10 +35,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 SCRIPT_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/orchestrate-suggest-next-batch.sh"
@@ -121,9 +119,6 @@ SCHEMA_DOC="$(resolve_one "batch-admit-schema.md" "${SCHEMA_DOC_CANDIDATES[@]}")
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ] && rm -rf "$TOP_WORKDIR"; }
@@ -213,9 +208,9 @@ SID="sess_test_$$_suggest"
     && echo "$out" | grep -q 'task 1: admit' \
     && echo "$out" | grep -q 'task 2: admit' \
     && echo "$out" | grep -q 'task 3: admit'; then
-    pass "(a) happy path: a clean disjoint ready set admits wholesale, every member shown as admit"
+    common_test_pass "(a) happy path: a clean disjoint ready set admits wholesale, every member shown as admit"
   else
-    fail "(a) happy path: rc=$rc -- $out"
+    common_test_fail "(a) happy path: rc=$rc -- $out"
   fi
 }
 
@@ -235,9 +230,9 @@ SID="sess_test_$$_suggest"
   if [ "$rc" -eq 0 ] && [ "$no_joint_pair" = true ] \
     && echo "$out" | grep -q '10, then 11' \
     && echo "$out" | grep -q -- '--depends-on-add=\[10\]'; then
-    pass "(b.1) pre-edge: colliding pair renders as an ordered sequence with the --depends-on-add command, never an unordered joint line"
+    common_test_pass "(b.1) pre-edge: colliding pair renders as an ordered sequence with the --depends-on-add command, never an unordered joint line"
   else
-    fail "(b.1) pre-edge: rc=$rc no_joint_pair=$no_joint_pair -- $out"
+    common_test_fail "(b.1) pre-edge: rc=$rc no_joint_pair=$no_joint_pair -- $out"
   fi
 }
 {
@@ -250,15 +245,15 @@ SID="sess_test_$$_suggest"
     && echo "$out" | grep -q 'edge written' \
     && echo "$out" | grep -q 'task 10: admit' \
     && echo "$out" | grep -q 'task 11: admit'; then
-    pass "(b.2) --write-edges: edge written and a real re-probe flips both members to admit"
+    common_test_pass "(b.2) --write-edges: edge written and a real re-probe flips both members to admit"
   else
-    fail "(b.2) --write-edges: rc=$rc -- $out"
+    common_test_fail "(b.2) --write-edges: rc=$rc -- $out"
   fi
   dep_check=$(jq -c '.active_projects[] | select(.project_number==11) | .dependencies' "$scratch/specs/state.json")
   if [ "$dep_check" = "[10]" ]; then
-    pass "(b.3) --write-edges: the edge was actually written to scratch state.json (task 11 depends on [10])"
+    common_test_pass "(b.3) --write-edges: the edge was actually written to scratch state.json (task 11 depends on [10])"
   else
-    fail "(b.3) --write-edges: expected task 11 dependencies [10], got $dep_check"
+    common_test_fail "(b.3) --write-edges: expected task 11 dependencies [10], got $dep_check"
   fi
 }
 
@@ -277,15 +272,15 @@ SID="sess_test_$$_suggest"
   out_a="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
   out_b="$(run_suggest "$scratch" --alternatives --session-id "$SID")"
   if echo "$out_a" | grep -q 'task 30: admit' && echo "$out_a" | grep -q 'task 31: admit'; then
-    pass "(c.1) Mode A (queue-unaware) proposes the obvious batch, which includes the queue-covered tasks"
+    common_test_pass "(c.1) Mode A (queue-unaware) proposes the obvious batch, which includes the queue-covered tasks"
   else
-    fail "(c.1) Mode A did not propose tasks 30/31 as expected -- $out_a"
+    common_test_fail "(c.1) Mode A did not propose tasks 30/31 as expected -- $out_a"
   fi
   if ! echo "$out_b" | grep -q 'task 30' && ! echo "$out_b" | grep -q 'task 31' \
     && echo "$out_b" | grep -q 'task 32: admit' && echo "$out_b" | grep -q 'task 33: admit'; then
-    pass "(c.2) Mode B excludes the live-queue-covered tasks (30,31) and surfaces a disjoint set (32,33) instead"
+    common_test_pass "(c.2) Mode B excludes the live-queue-covered tasks (30,31) and surfaces a disjoint set (32,33) instead"
   else
-    fail "(c.2) Mode B did not surface the expected disjoint alternative -- $out_b"
+    common_test_fail "(c.2) Mode B did not surface the expected disjoint alternative -- $out_b"
   fi
 }
 
@@ -306,9 +301,9 @@ SID="sess_test_$$_suggest"
   out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
   rc=$?
   if [ "$rc" -eq 0 ] && echo "$out" | grep -q 'task 20: admit' && ! echo "$out" | grep -q 'task 21: admit'; then
-    pass "(d) absent-file_scope: the designated (lowest-numbered) absent-scope candidate admits; the other defers and is dropped this round, not forced through"
+    common_test_pass "(d) absent-file_scope: the designated (lowest-numbered) absent-scope candidate admits; the other defers and is dropped this round, not forced through"
   else
-    fail "(d) absent-file_scope: rc=$rc -- $out"
+    common_test_fail "(d) absent-file_scope: rc=$rc -- $out"
   fi
 }
 
@@ -325,9 +320,9 @@ SID="sess_test_$$_suggest"
   out="$(run_suggest "$scratch" --next-batch --session-id "$SID" --max-tasks 2)"
   rc=$?
   if [ "$rc" -eq 0 ] && echo "$out" | grep -q '40, then 41' && ! echo "$out" | grep -q 'task 42'; then
-    pass "(e) truncation precedence: the territory-mandatory pair (40,41) is fully represented; the trimmed singleton (42) never appears"
+    common_test_pass "(e) truncation precedence: the territory-mandatory pair (40,41) is fully represented; the trimmed singleton (42) never appears"
   else
-    fail "(e) truncation precedence: rc=$rc -- $out"
+    common_test_fail "(e) truncation precedence: rc=$rc -- $out"
   fi
 }
 
@@ -344,16 +339,16 @@ SID="sess_test_$$_suggest"
   path_prefix_hits=$(grep -cE 'dirname.*basename|startswith\(.*\)\s*and' "$SCRIPT_UNDER_TEST" || true)
   path_prefix_hits=${path_prefix_hits:-0}
   if [ "$forked_refs" = "0" ] && [ "$path_prefix_hits" = "0" ]; then
-    pass "(f.1) no-forked-predicate: zero overlap-library/jq-def/path-prefix references in the new script's own source"
+    common_test_pass "(f.1) no-forked-predicate: zero overlap-library/jq-def/path-prefix references in the new script's own source"
   else
-    fail "(f.1) no-forked-predicate: forked_refs=$forked_refs path_prefix_hits=$path_prefix_hits"
+    common_test_fail "(f.1) no-forked-predicate: forked_refs=$forked_refs path_prefix_hits=$path_prefix_hits"
   fi
 
   schema_section=$(awk '/^## Complete JSON Schema/{flag=1; next} /^## /{flag=0} flag' "$SCHEMA_DOC")
   if ! echo "$schema_section" | grep -q 'orchestrate-suggest-next-batch'; then
-    pass "(f.2) no-forked-predicate: the real schema document's own Complete JSON Schema section carries no reference to the new script (consumer-list-only, never schema-widening)"
+    common_test_pass "(f.2) no-forked-predicate: the real schema document's own Complete JSON Schema section carries no reference to the new script (consumer-list-only, never schema-widening)"
   else
-    fail "(f.2) no-forked-predicate: Complete JSON Schema section unexpectedly references orchestrate-suggest-next-batch.sh"
+    common_test_fail "(f.2) no-forked-predicate: Complete JSON Schema section unexpectedly references orchestrate-suggest-next-batch.sh"
   fi
 }
 
@@ -369,9 +364,9 @@ SID="sess_test_$$_suggest"
   out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
   rc=$?
   if [ "$rc" -eq 0 ] && echo "$out" | grep -q 'probe-invocation cap'; then
-    pass "(g) probe-invocation cap: reaching the cap is rendered explicitly and exits 0, never a silent truncation"
+    common_test_pass "(g) probe-invocation cap: reaching the cap is rendered explicitly and exits 0, never a silent truncation"
   else
-    fail "(g) probe-invocation cap: rc=$rc -- $out"
+    common_test_fail "(g) probe-invocation cap: rc=$rc -- $out"
   fi
 }
 

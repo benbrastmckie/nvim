@@ -31,29 +31,11 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 SRC_SCRIPTS_DIR="$SCRIPT_DIR/.."
-
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
 
 PASSED=0
 FAILED=0
-
-pass() {
-  echo -e "${GREEN}[PASS]${NC} $1"
-  PASSED=$((PASSED + 1))
-}
-
-fail() {
-  echo -e "${RED}[FAIL]${NC} $1"
-  FAILED=$((FAILED + 1))
-}
-
-info() {
-  echo -e "${YELLOW}[INFO]${NC} $1"
-}
 
 # --- Loud-skip discipline: verify all required scripts exist before running anything. ---
 REQUIRED_SCRIPTS=(orchestrate-batch-admit.sh deploy-root-guard.sh task-lock.sh lib/file-scope-overlap.sh lib/common.sh lib/task-lookup-lib.sh)
@@ -113,7 +95,7 @@ cat > "$STATE_FILE" << EOF
 }
 EOF
 
-info "Fixture built at $TMPROOT (A=$NUM_A B=$NUM_B C=$NUM_C D=$NUM_D)"
+common_test_info "Fixture built at $TMPROOT (A=$NUM_A B=$NUM_B C=$NUM_C D=$NUM_D)"
 
 # =============================================================================
 # Case 1: the reported chain. A admits (no lower-numbered collision). C defers on A
@@ -130,17 +112,17 @@ v1_c=$(echo "$out1" | jq -c "select(.task_number == $NUM_C)")
 v1_d=$(echo "$out1" | jq -c "select(.task_number == $NUM_D)")
 
 c1_ok=true
-[ "$(echo "$v1_a" | jq -r '.decision')" = "admit" ] || { c1_ok=false; info "1: A did not admit: $v1_a"; }
-[ "$(echo "$v1_b" | jq -r '.decision')" = "admit" ] || { c1_ok=false; info "1: B did not admit: $v1_b"; }
-[ "$(echo "$v1_c" | jq -r '.decision')" = "defer" ] || { c1_ok=false; info "1: C did not defer: $v1_c"; }
-[ "$(echo "$v1_c" | jq -r '.defer_reason // empty')" = "file_scope_collision" ] || { c1_ok=false; info "1: C's defer_reason was not file_scope_collision: $v1_c"; }
-[ "$(echo "$v1_c" | jq -r '.collision_scope // empty')" = "in_batch" ] || { c1_ok=false; info "1: C's collision_scope was not in_batch: $v1_c"; }
-[ "$(echo "$v1_c" | jq -r '.colliding_task_number // empty')" = "$NUM_A" ] || { c1_ok=false; info "1: C's colliding_task_number was not A ($NUM_A): $v1_c"; }
-[ "$(echo "$v1_d" | jq -r '.decision')" = "admit" ] || { c1_ok=false; info "1: D did not admit despite its only collision (C) being itself deferred this cycle -- this is the reported defect: $v1_d"; }
+[ "$(echo "$v1_a" | jq -r '.decision')" = "admit" ] || { c1_ok=false; common_test_info "1: A did not admit: $v1_a"; }
+[ "$(echo "$v1_b" | jq -r '.decision')" = "admit" ] || { c1_ok=false; common_test_info "1: B did not admit: $v1_b"; }
+[ "$(echo "$v1_c" | jq -r '.decision')" = "defer" ] || { c1_ok=false; common_test_info "1: C did not defer: $v1_c"; }
+[ "$(echo "$v1_c" | jq -r '.defer_reason // empty')" = "file_scope_collision" ] || { c1_ok=false; common_test_info "1: C's defer_reason was not file_scope_collision: $v1_c"; }
+[ "$(echo "$v1_c" | jq -r '.collision_scope // empty')" = "in_batch" ] || { c1_ok=false; common_test_info "1: C's collision_scope was not in_batch: $v1_c"; }
+[ "$(echo "$v1_c" | jq -r '.colliding_task_number // empty')" = "$NUM_A" ] || { c1_ok=false; common_test_info "1: C's colliding_task_number was not A ($NUM_A): $v1_c"; }
+[ "$(echo "$v1_d" | jq -r '.decision')" = "admit" ] || { c1_ok=false; common_test_info "1: D did not admit despite its only collision (C) being itself deferred this cycle -- this is the reported defect: $v1_d"; }
 if [ "$c1_ok" = true ]; then
-  pass "1: A admits, C defers on A (in_batch), D admits despite overlapping only the deferring C"
+  common_test_pass "1: A admits, C defers on A (in_batch), D admits despite overlapping only the deferring C"
 else
-  fail "1: reported A/C/D chain case failed (see INFO lines above)"
+  common_test_fail "1: reported A/C/D chain case failed (see INFO lines above)"
 fi
 
 # =============================================================================
@@ -153,11 +135,11 @@ out2=$("$BA" --invocation-count 4 "$NUM_D" "$NUM_C" "$NUM_A" "$NUM_B" 2>/dev/nul
 seq2=$(echo "$out2" | jq -r '.task_number' | paste -sd, -)
 expected_seq2="$NUM_D,$NUM_C,$NUM_A,$NUM_B"
 c2_ok=true
-[ "$seq2" = "$expected_seq2" ] || { c2_ok=false; info "2: emitted task_number sequence was '$seq2', expected '$expected_seq2'"; }
+[ "$seq2" = "$expected_seq2" ] || { c2_ok=false; common_test_info "2: emitted task_number sequence was '$seq2', expected '$expected_seq2'"; }
 if [ "$c2_ok" = true ]; then
-  pass "2: NDJSON emission preserves caller-argument order for out-of-ascending-order arguments (D C A B)"
+  common_test_pass "2: NDJSON emission preserves caller-argument order for out-of-ascending-order arguments (D C A B)"
 else
-  fail "2: output-ordering contract case failed (see INFO lines above)"
+  common_test_fail "2: output-ordering contract case failed (see INFO lines above)"
 fi
 
 # =============================================================================
@@ -193,24 +175,24 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
     v3_c=$(echo "$out3" | jq -c "select(.task_number == $NUM_C_SM)")
 
     c3_ok=true
-    [ "$(echo "$v3_a" | jq -r '.decision')" = "admit" ] || { c3_ok=false; info "3: designated self-modifying A_sm did not admit: $v3_a"; }
-    [ "$(echo "$v3_b" | jq -r '.decision')" = "defer" ] || { c3_ok=false; info "3: non-designated self-modifying B_sm did not defer: $v3_b"; }
-    [ "$(echo "$v3_b" | jq -r '.defer_reason // empty')" = "self_modifying" ] || { c3_ok=false; info "3: B_sm's defer_reason was not self_modifying: $v3_b"; }
-    [ "$(echo "$v3_c" | jq -r '.decision')" = "admit" ] || { c3_ok=false; info "3: C_sm did not admit despite overlapping only the deferring (self_modifying) B_sm -- narrowing must be uniform across defer reasons: $v3_c"; }
+    [ "$(echo "$v3_a" | jq -r '.decision')" = "admit" ] || { c3_ok=false; common_test_info "3: designated self-modifying A_sm did not admit: $v3_a"; }
+    [ "$(echo "$v3_b" | jq -r '.decision')" = "defer" ] || { c3_ok=false; common_test_info "3: non-designated self-modifying B_sm did not defer: $v3_b"; }
+    [ "$(echo "$v3_b" | jq -r '.defer_reason // empty')" = "self_modifying" ] || { c3_ok=false; common_test_info "3: B_sm's defer_reason was not self_modifying: $v3_b"; }
+    [ "$(echo "$v3_c" | jq -r '.decision')" = "admit" ] || { c3_ok=false; common_test_info "3: C_sm did not admit despite overlapping only the deferring (self_modifying) B_sm -- narrowing must be uniform across defer reasons: $v3_c"; }
     if [ "$c3_ok" = true ]; then
-      pass "3: a self_modifying-caused defer also keeps a lower-numbered in-batch peer out of the admitted set"
+      common_test_pass "3: a self_modifying-caused defer also keeps a lower-numbered in-batch peer out of the admitted set"
     else
-      fail "3: defer-reason-symmetry case failed (see INFO lines above)"
+      common_test_fail "3: defer-reason-symmetry case failed (see INFO lines above)"
     fi
 
     jq --argjson na "$NUM_A_SM" --argjson nb "$NUM_B_SM" --argjson nc "$NUM_C_SM" \
       '.active_projects |= map(select(.project_number != $na and .project_number != $nb and .project_number != $nc))' \
       "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
   else
-    info "3: SKIPPED -- orchestrator-critical-paths.json present but empty scope_roots/critical_paths"
+    common_test_info "3: SKIPPED -- orchestrator-critical-paths.json present but empty scope_roots/critical_paths"
   fi
 else
-  info "3: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
+  common_test_info "3: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
 fi
 
 # =============================================================================
@@ -261,16 +243,16 @@ ia_stray_collision_fields=$(echo "$out_ia" | jq -r 'select(.decision == "defer")
 ia_designated_mismatch=$(echo "$out_ia" | jq -r --argjson expect "$NUM_IA1" 'select(.decision == "defer") | select((.designated_absent_candidate // -1) != $expect) | .task_number' | grep -c . || true)
 
 ia_ok=true
-[ "$ia_admit_count" = "1" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: expected 1 admit, got $ia_admit_count (out: $out_ia)"; }
-[ "$ia_defer_count" = "7" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: expected 7 defers, got $ia_defer_count (out: $out_ia)"; }
-[ "$ia_admit_task" = "$NUM_IA1" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: expected the lowest-numbered candidate ($NUM_IA1) to admit, got '$ia_admit_task' (out: $out_ia)"; }
-[ "$ia_wrong_reason" = "0" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: $ia_wrong_reason defer(s) lacked defer_reason == absent_file_scope (out: $out_ia)"; }
-[ "$ia_stray_collision_fields" = "0" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: $ia_stray_collision_fields defer(s) carried a file_scope_collision-only field (out: $out_ia)"; }
-[ "$ia_designated_mismatch" = "0" ] || { ia_ok=false; info "IN-BATCH-ABSENCE: $ia_designated_mismatch defer(s) named the wrong designated_absent_candidate (expected $NUM_IA1) (out: $out_ia)"; }
+[ "$ia_admit_count" = "1" ] || { ia_ok=false; common_test_info "IN-BATCH-ABSENCE: expected 1 admit, got $ia_admit_count (out: $out_ia)"; }
+[ "$ia_defer_count" = "7" ] || { ia_ok=false; common_test_info "IN-BATCH-ABSENCE: expected 7 defers, got $ia_defer_count (out: $out_ia)"; }
+[ "$ia_admit_task" = "$NUM_IA1" ] || { ia_ok=false; common_test_info "IN-BATCH-ABSENCE: expected the lowest-numbered candidate ($NUM_IA1) to admit, got '$ia_admit_task' (out: $out_ia)"; }
+[ "$ia_wrong_reason" = "0" ] || { ia_ok=false; common_test_info "IN-BATCH-ABSENCE: $ia_wrong_reason defer(s) lacked defer_reason == absent_file_scope (out: $out_ia)"; }
+[ "$ia_stray_collision_fields" = "0" ] || { ia_ok=false; common_test_info "IN-BATCH-ABSENCE: $ia_stray_collision_fields defer(s) carried a file_scope_collision-only field (out: $out_ia)"; }
+[ "$ia_designated_mismatch" = "0" ] || { ia_ok=false; common_test_info "IN-BATCH-ABSENCE: $ia_designated_mismatch defer(s) named the wrong designated_absent_candidate (expected $NUM_IA1) (out: $out_ia)"; }
 if [ "$ia_ok" = true ]; then
-  pass "IN-BATCH-ABSENCE: lowest-numbered absent-scope candidate admits, the other 7 defer with absent_file_scope (the Logos/Verification 8-task incident)"
+  common_test_pass "IN-BATCH-ABSENCE: lowest-numbered absent-scope candidate admits, the other 7 defer with absent_file_scope (the Logos/Verification 8-task incident)"
 else
-  fail "IN-BATCH-ABSENCE: target-posture assertion failed -- EXPECTED until Phase 3 lands the absent_file_scope defer_reason (see INFO lines above)"
+  common_test_fail "IN-BATCH-ABSENCE: target-posture assertion failed -- EXPECTED until Phase 3 lands the absent_file_scope defer_reason (see INFO lines above)"
 fi
 
 jq --argjson n1 "$NUM_IA1" --argjson n2 "$NUM_IA2" --argjson n3 "$NUM_IA3" --argjson n4 "$NUM_IA4" \
@@ -308,13 +290,13 @@ out_cba=$("$BA" --invocation-count 1 "$NUM_CBA" 2>/dev/null)
 v_cba=$(echo "$out_cba" | jq -c "select(.task_number == $NUM_CBA)")
 
 cba_ok=true
-[ "$(echo "$v_cba" | jq -r '.decision')" = "admit" ] || { cba_ok=false; info "CROSS-BATCH-ABSENCE: candidate did not admit: $v_cba"; }
-[ "$(echo "$v_cba" | jq -r '.absent_scope_advisory.scope_state // "MISSING"')" = "missing_key" ] || { cba_ok=false; info "CROSS-BATCH-ABSENCE: absent_scope_advisory.scope_state was not \"missing_key\": $v_cba"; }
-[ "$(echo "$v_cba" | jq -r 'has("defer_reason")')" = "false" ] || { cba_ok=false; info "CROSS-BATCH-ABSENCE: unexpectedly carries defer_reason (this ruling never blocks cross-batch absence): $v_cba"; }
+[ "$(echo "$v_cba" | jq -r '.decision')" = "admit" ] || { cba_ok=false; common_test_info "CROSS-BATCH-ABSENCE: candidate did not admit: $v_cba"; }
+[ "$(echo "$v_cba" | jq -r '.absent_scope_advisory.scope_state // "MISSING"')" = "missing_key" ] || { cba_ok=false; common_test_info "CROSS-BATCH-ABSENCE: absent_scope_advisory.scope_state was not \"missing_key\": $v_cba"; }
+[ "$(echo "$v_cba" | jq -r 'has("defer_reason")')" = "false" ] || { cba_ok=false; common_test_info "CROSS-BATCH-ABSENCE: unexpectedly carries defer_reason (this ruling never blocks cross-batch absence): $v_cba"; }
 if [ "$cba_ok" = true ]; then
-  pass "CROSS-BATCH-ABSENCE: absent-scope candidate admits (deliberate advisory-only ruling) carrying absent_scope_advisory naming the missing_key sub-state (the BimodalLogic cross-batch incident)"
+  common_test_pass "CROSS-BATCH-ABSENCE: absent-scope candidate admits (deliberate advisory-only ruling) carrying absent_scope_advisory naming the missing_key sub-state (the BimodalLogic cross-batch incident)"
 else
-  fail "CROSS-BATCH-ABSENCE: target-posture assertion failed -- EXPECTED until Phase 2 lands the absent_scope_advisory field (see INFO lines above)"
+  common_test_fail "CROSS-BATCH-ABSENCE: target-posture assertion failed -- EXPECTED until Phase 2 lands the absent_scope_advisory field (see INFO lines above)"
 fi
 
 jq --argjson nc "$NUM_CBA" --argjson no "$NUM_CBA_OTHER" \
@@ -359,15 +341,15 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
     v_scs=$(echo "$out_scs" | jq -c "select(.task_number == $NUM_SCS_CAND)")
 
     scs_ok=true
-    [ "$(echo "$v_scs" | jq -r '.decision')" = "admit" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: did not admit: $v_scs"; }
-    [ "$(echo "$v_scs" | jq -r '.self_modifying')" = "true" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: self_modifying was not true: $v_scs"; }
-    [ "$(echo "$v_scs" | jq -r '.cross_session_hazard.session_id // "MISSING"')" = "$FOREIGN_SID" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: cross_session_hazard.session_id did not name the foreign session ($FOREIGN_SID): $v_scs"; }
-    [ "$(echo "$v_scs" | jq -r '.cross_session_hazard.overlapping_path // "MISSING"')" = "$crit_path_scs" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: cross_session_hazard.overlapping_path did not name $crit_path_scs: $v_scs"; }
-    [ "$(echo "$v_scs" | jq -r 'has("defer_reason")')" = "false" ] || { scs_ok=false; info "SOLO-SELF-MOD-CROSS-SESSION: unexpectedly carries defer_reason (a solo self-modifying candidate must never defer): $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r '.decision')" = "admit" ] || { scs_ok=false; common_test_info "SOLO-SELF-MOD-CROSS-SESSION: did not admit: $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r '.self_modifying')" = "true" ] || { scs_ok=false; common_test_info "SOLO-SELF-MOD-CROSS-SESSION: self_modifying was not true: $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r '.cross_session_hazard.session_id // "MISSING"')" = "$FOREIGN_SID" ] || { scs_ok=false; common_test_info "SOLO-SELF-MOD-CROSS-SESSION: cross_session_hazard.session_id did not name the foreign session ($FOREIGN_SID): $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r '.cross_session_hazard.overlapping_path // "MISSING"')" = "$crit_path_scs" ] || { scs_ok=false; common_test_info "SOLO-SELF-MOD-CROSS-SESSION: cross_session_hazard.overlapping_path did not name $crit_path_scs: $v_scs"; }
+    [ "$(echo "$v_scs" | jq -r 'has("defer_reason")')" = "false" ] || { scs_ok=false; common_test_info "SOLO-SELF-MOD-CROSS-SESSION: unexpectedly carries defer_reason (a solo self-modifying candidate must never defer): $v_scs"; }
     if [ "$scs_ok" = true ]; then
-      pass "SOLO-SELF-MOD-CROSS-SESSION: solo self-modifying candidate admits carrying cross_session_hazard naming the foreign session's overlapping covered scope (the cross-session-blindness probe)"
+      common_test_pass "SOLO-SELF-MOD-CROSS-SESSION: solo self-modifying candidate admits carrying cross_session_hazard naming the foreign session's overlapping covered scope (the cross-session-blindness probe)"
     else
-      fail "SOLO-SELF-MOD-CROSS-SESSION: target-posture assertion failed -- EXPECTED until Phase 4 lands the cross_session_hazard field (see INFO lines above)"
+      common_test_fail "SOLO-SELF-MOD-CROSS-SESSION: target-posture assertion failed -- EXPECTED until Phase 4 lands the cross_session_hazard field (see INFO lines above)"
     fi
 
     rm -f "$TMPROOT/specs/.sessions/${OWN_SID}.json" "$TMPROOT/specs/.sessions/${FOREIGN_SID}.json" 2>/dev/null || true
@@ -399,12 +381,12 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
     v_scs_neg=$(echo "$out_scs_neg" | jq -c "select(.task_number == $NUM_SCS_NEG_CAND)")
 
     scs_neg_ok=true
-    [ "$(echo "$v_scs_neg" | jq -r '.decision')" = "admit" ] || { scs_neg_ok=false; info "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: did not admit: $v_scs_neg"; }
-    [ "$(echo "$v_scs_neg" | jq -r 'has("cross_session_hazard")')" = "false" ] || { scs_neg_ok=false; info "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: unexpectedly carries cross_session_hazard with no overlapping foreign session: $v_scs_neg"; }
+    [ "$(echo "$v_scs_neg" | jq -r '.decision')" = "admit" ] || { scs_neg_ok=false; common_test_info "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: did not admit: $v_scs_neg"; }
+    [ "$(echo "$v_scs_neg" | jq -r 'has("cross_session_hazard")')" = "false" ] || { scs_neg_ok=false; common_test_info "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: unexpectedly carries cross_session_hazard with no overlapping foreign session: $v_scs_neg"; }
     if [ "$scs_neg_ok" = true ]; then
-      pass "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: no cross_session_hazard when the foreign session's covered scope does not overlap"
+      common_test_pass "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: no cross_session_hazard when the foreign session's covered scope does not overlap"
     else
-      fail "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: negative-case assertion failed (see INFO lines above)"
+      common_test_fail "SOLO-SELF-MOD-NO-CROSS-SESSION-OVERLAP: negative-case assertion failed (see INFO lines above)"
     fi
 
     rm -f "$TMPROOT/specs/.sessions/${NEG_OWN_SID}.json" "$TMPROOT/specs/.sessions/${NEG_FOREIGN_SID}.json" 2>/dev/null || true
@@ -435,16 +417,16 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
     v_scs_deg=$(echo "$out_scs_deg" | jq -c "select(.task_number == $NUM_SCS_DEG_CAND)")
 
     scs_deg_ok=true
-    [ "$(echo "$v_scs_deg" | jq -r '.decision')" = "admit" ] || { scs_deg_ok=false; info "SOLO-SELF-MOD-SESSION-ID-OMITTED: did not admit: $v_scs_deg"; }
-    [ "$(echo "$v_scs_deg" | jq -r 'has("cross_session_hazard")')" = "false" ] || { scs_deg_ok=false; info "SOLO-SELF-MOD-SESSION-ID-OMITTED: unexpectedly carries cross_session_hazard with --session-id omitted: $v_scs_deg"; }
+    [ "$(echo "$v_scs_deg" | jq -r '.decision')" = "admit" ] || { scs_deg_ok=false; common_test_info "SOLO-SELF-MOD-SESSION-ID-OMITTED: did not admit: $v_scs_deg"; }
+    [ "$(echo "$v_scs_deg" | jq -r 'has("cross_session_hazard")')" = "false" ] || { scs_deg_ok=false; common_test_info "SOLO-SELF-MOD-SESSION-ID-OMITTED: unexpectedly carries cross_session_hazard with --session-id omitted: $v_scs_deg"; }
     case "$scs_deg_stderr" in
       *"--session-id not supplied"*) ;;
-      *) scs_deg_ok=false; info "SOLO-SELF-MOD-SESSION-ID-OMITTED: D6 loud stderr line did not fire: $scs_deg_stderr" ;;
+      *) scs_deg_ok=false; common_test_info "SOLO-SELF-MOD-SESSION-ID-OMITTED: D6 loud stderr line did not fire: $scs_deg_stderr" ;;
     esac
     if [ "$scs_deg_ok" = true ]; then
-      pass "SOLO-SELF-MOD-SESSION-ID-OMITTED: --session-id omitted still fires the D6 degradation line and carries no cross_session_hazard"
+      common_test_pass "SOLO-SELF-MOD-SESSION-ID-OMITTED: --session-id omitted still fires the D6 degradation line and carries no cross_session_hazard"
     else
-      fail "SOLO-SELF-MOD-SESSION-ID-OMITTED: degradation-case assertion failed (see INFO lines above)"
+      common_test_fail "SOLO-SELF-MOD-SESSION-ID-OMITTED: degradation-case assertion failed (see INFO lines above)"
     fi
 
     rm -f "$TMPROOT/specs/.sessions/${DEG_FOREIGN_SID}.json" 2>/dev/null || true
@@ -452,10 +434,10 @@ if [ -f "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json" ];
       '.active_projects |= map(select(.project_number != $ncand and .project_number != $nforeign))' \
       "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
   else
-    info "SOLO-SELF-MOD-CROSS-SESSION: SKIPPED -- orchestrator-critical-paths.json present but empty scope_roots/critical_paths"
+    common_test_info "SOLO-SELF-MOD-CROSS-SESSION: SKIPPED -- orchestrator-critical-paths.json present but empty scope_roots/critical_paths"
   fi
 else
-  info "SOLO-SELF-MOD-CROSS-SESSION: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
+  common_test_info "SOLO-SELF-MOD-CROSS-SESSION: SKIPPED -- orchestrator-critical-paths.json not found in fixture tree"
 fi
 
 # =============================================================================
@@ -481,11 +463,11 @@ out_pea=$("$BA" --invocation-count 2 --phase-map "${NUM_PEA}:plan" "$NUM_PEA" "$
 v_pea=$(echo "$out_pea" | jq -c "select(.task_number == $NUM_PEA)")
 
 pea_ok=true
-[ "$(echo "$v_pea" | jq -r '.decision')" = "admit" ] || { pea_ok=false; info "PHASE-EXEMPT-ABSENCE: candidate did not admit: $v_pea"; }
+[ "$(echo "$v_pea" | jq -r '.decision')" = "admit" ] || { pea_ok=false; common_test_info "PHASE-EXEMPT-ABSENCE: candidate did not admit: $v_pea"; }
 if [ "$pea_ok" = true ]; then
-  pass "PHASE-EXEMPT-ABSENCE: an absent-scope candidate mapped to the plan phase group still admits (forward-looking false-positive guard)"
+  common_test_pass "PHASE-EXEMPT-ABSENCE: an absent-scope candidate mapped to the plan phase group still admits (forward-looking false-positive guard)"
 else
-  fail "PHASE-EXEMPT-ABSENCE: false-positive guard failed (see INFO lines above)"
+  common_test_fail "PHASE-EXEMPT-ABSENCE: false-positive guard failed (see INFO lines above)"
 fi
 
 jq --argjson np "$NUM_PEA" --argjson np2 "$NUM_PEA2" \
@@ -510,12 +492,12 @@ out_solo_absent=$("$BA" --invocation-count 1 "$NUM_SOLO_ABSENT" 2>/dev/null)
 v_solo_absent=$(echo "$out_solo_absent" | jq -c "select(.task_number == $NUM_SOLO_ABSENT)")
 
 solo_absent_ok=true
-[ "$(echo "$v_solo_absent" | jq -r '.decision')" = "admit" ] || { solo_absent_ok=false; info "SOLO-ABSENT-SCOPE-NON-REGRESSION: candidate did not admit: $v_solo_absent"; }
-[ "$(echo "$v_solo_absent" | jq -r 'has("defer_reason")')" = "false" ] || { solo_absent_ok=false; info "SOLO-ABSENT-SCOPE-NON-REGRESSION: unexpectedly carries defer_reason: $v_solo_absent"; }
+[ "$(echo "$v_solo_absent" | jq -r '.decision')" = "admit" ] || { solo_absent_ok=false; common_test_info "SOLO-ABSENT-SCOPE-NON-REGRESSION: candidate did not admit: $v_solo_absent"; }
+[ "$(echo "$v_solo_absent" | jq -r 'has("defer_reason")')" = "false" ] || { solo_absent_ok=false; common_test_info "SOLO-ABSENT-SCOPE-NON-REGRESSION: unexpectedly carries defer_reason: $v_solo_absent"; }
 if [ "$solo_absent_ok" = true ]; then
-  pass "SOLO-ABSENT-SCOPE-NON-REGRESSION: a solo (invocation-count 1) absent-scope candidate always admits"
+  common_test_pass "SOLO-ABSENT-SCOPE-NON-REGRESSION: a solo (invocation-count 1) absent-scope candidate always admits"
 else
-  fail "SOLO-ABSENT-SCOPE-NON-REGRESSION: non-regression assertion failed (see INFO lines above)"
+  common_test_fail "SOLO-ABSENT-SCOPE-NON-REGRESSION: non-regression assertion failed (see INFO lines above)"
 fi
 
 jq --argjson ns "$NUM_SOLO_ABSENT" \
@@ -532,11 +514,11 @@ schema_ok=true
 # Bumped to v7 in the phase that introduced the whole_tree_claim defer_reason -- see this
 # script's own Version History for why that was a version bump, not an additive field (the same
 # reasoning recorded for the earlier v6 bump that introduced absent_file_scope).
-[ "$(echo "$out_schema" | jq -r '."$schema"')" = "orchestrate-batch-admit-v7" ] || { schema_ok=false; info "SCHEMA-LITERAL: schema was not v7: $out_schema"; }
+[ "$(echo "$out_schema" | jq -r '."$schema"')" = "orchestrate-batch-admit-v7" ] || { schema_ok=false; common_test_info "SCHEMA-LITERAL: schema was not v7: $out_schema"; }
 if [ "$schema_ok" = true ]; then
-  pass "SCHEMA-LITERAL: \$schema reads orchestrate-batch-admit-v7"
+  common_test_pass "SCHEMA-LITERAL: \$schema reads orchestrate-batch-admit-v7"
 else
-  fail "SCHEMA-LITERAL: schema-literal pin failed (see INFO lines above)"
+  common_test_fail "SCHEMA-LITERAL: schema-literal pin failed (see INFO lines above)"
 fi
 
 # =============================================================================
@@ -579,16 +561,16 @@ v_wtc_1=$(echo "$out_wtc" | jq -c "select(.task_number == $NUM_WT1)")
 v_wtc_2=$(echo "$out_wtc" | jq -c "select(.task_number == $NUM_WT2)")
 
 wtc_ok=true
-[ "$(echo "$v_wtc_1" | jq -r '.decision')" = "admit" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: lower-numbered candidate did not admit: $v_wtc_1"; }
-[ "$(echo "$v_wtc_2" | jq -r '.decision')" = "defer" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: higher-numbered candidate did not defer: $v_wtc_2"; }
-[ "$(echo "$v_wtc_2" | jq -r '.defer_reason // empty')" = "whole_tree_claim" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: higher-numbered candidate's defer_reason was not whole_tree_claim: $v_wtc_2"; }
-[ "$(echo "$v_wtc_2" | jq -r '.collision_scope // empty')" = "in_batch" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: collision_scope was not in_batch: $v_wtc_2"; }
-[ "$(echo "$v_wtc_2" | jq -r '.colliding_task_number // empty')" = "$NUM_WT1" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: colliding_task_number was not the lower-numbered peer ($NUM_WT1): $v_wtc_2"; }
-[ "$(echo "$v_wtc_2" | jq -r '.claim_sentinel // empty')" = "__WHOLE_TREE__" ] || { wtc_ok=false; info "WHOLE-TREE-CODISPATCH: claim_sentinel was not __WHOLE_TREE__: $v_wtc_2"; }
+[ "$(echo "$v_wtc_1" | jq -r '.decision')" = "admit" ] || { wtc_ok=false; common_test_info "WHOLE-TREE-CODISPATCH: lower-numbered candidate did not admit: $v_wtc_1"; }
+[ "$(echo "$v_wtc_2" | jq -r '.decision')" = "defer" ] || { wtc_ok=false; common_test_info "WHOLE-TREE-CODISPATCH: higher-numbered candidate did not defer: $v_wtc_2"; }
+[ "$(echo "$v_wtc_2" | jq -r '.defer_reason // empty')" = "whole_tree_claim" ] || { wtc_ok=false; common_test_info "WHOLE-TREE-CODISPATCH: higher-numbered candidate's defer_reason was not whole_tree_claim: $v_wtc_2"; }
+[ "$(echo "$v_wtc_2" | jq -r '.collision_scope // empty')" = "in_batch" ] || { wtc_ok=false; common_test_info "WHOLE-TREE-CODISPATCH: collision_scope was not in_batch: $v_wtc_2"; }
+[ "$(echo "$v_wtc_2" | jq -r '.colliding_task_number // empty')" = "$NUM_WT1" ] || { wtc_ok=false; common_test_info "WHOLE-TREE-CODISPATCH: colliding_task_number was not the lower-numbered peer ($NUM_WT1): $v_wtc_2"; }
+[ "$(echo "$v_wtc_2" | jq -r '.claim_sentinel // empty')" = "__WHOLE_TREE__" ] || { wtc_ok=false; common_test_info "WHOLE-TREE-CODISPATCH: claim_sentinel was not __WHOLE_TREE__: $v_wtc_2"; }
 if [ "$wtc_ok" = true ]; then
-  pass "WHOLE-TREE-CODISPATCH: two disjoint-scope sentinel-carrying candidates are not co-admitted (the whole-tree regeneration hazard this task exists to close)"
+  common_test_pass "WHOLE-TREE-CODISPATCH: two disjoint-scope sentinel-carrying candidates are not co-admitted (the whole-tree regeneration hazard this task exists to close)"
 else
-  fail "WHOLE-TREE-CODISPATCH: target-posture assertion failed -- EXPECTED until Phase 4 lands the whole_tree_claim defer_reason (see INFO lines above)"
+  common_test_fail "WHOLE-TREE-CODISPATCH: target-posture assertion failed -- EXPECTED until Phase 4 lands the whole_tree_claim defer_reason (see INFO lines above)"
 fi
 
 jq --argjson n1 "$NUM_WT1" --argjson n2 "$NUM_WT2" \
@@ -619,12 +601,12 @@ out_wtp=$("$BA" --invocation-count 2 --phase-map "${NUM_WTP2}:plan" "$NUM_WTP1" 
 v_wtp_2=$(echo "$out_wtp" | jq -c "select(.task_number == $NUM_WTP2)")
 
 wtp_ok=true
-[ "$(echo "$v_wtp_2" | jq -r '.decision')" = "admit" ] || { wtp_ok=false; info "WHOLE-TREE-PHASE-EXEMPT: phase-mapped candidate did not admit: $v_wtp_2"; }
-[ "$(echo "$v_wtp_2" | jq -r '.whole_tree_claim // false')" = "true" ] || { wtp_ok=false; info "WHOLE-TREE-PHASE-EXEMPT: whole_tree_claim field was not true on the admitted verdict: $v_wtp_2"; }
+[ "$(echo "$v_wtp_2" | jq -r '.decision')" = "admit" ] || { wtp_ok=false; common_test_info "WHOLE-TREE-PHASE-EXEMPT: phase-mapped candidate did not admit: $v_wtp_2"; }
+[ "$(echo "$v_wtp_2" | jq -r '.whole_tree_claim // false')" = "true" ] || { wtp_ok=false; common_test_info "WHOLE-TREE-PHASE-EXEMPT: whole_tree_claim field was not true on the admitted verdict: $v_wtp_2"; }
 if [ "$wtp_ok" = true ]; then
-  pass "WHOLE-TREE-PHASE-EXEMPT: a sentinel-carrying candidate mapped to the plan phase admits, carrying whole_tree_claim: true (hazard stays visible when not deferred)"
+  common_test_pass "WHOLE-TREE-PHASE-EXEMPT: a sentinel-carrying candidate mapped to the plan phase admits, carrying whole_tree_claim: true (hazard stays visible when not deferred)"
 else
-  fail "WHOLE-TREE-PHASE-EXEMPT: target-posture assertion failed -- EXPECTED until Phase 4 lands the whole_tree_claim field (see INFO lines above)"
+  common_test_fail "WHOLE-TREE-PHASE-EXEMPT: target-posture assertion failed -- EXPECTED until Phase 4 lands the whole_tree_claim field (see INFO lines above)"
 fi
 
 jq --argjson n1 "$NUM_WTP1" --argjson n2 "$NUM_WTP2" \
@@ -653,13 +635,13 @@ v_wtn_1=$(echo "$out_wtn" | jq -c "select(.task_number == $NUM_WTN1)")
 v_wtn_2=$(echo "$out_wtn" | jq -c "select(.task_number == $NUM_WTN2)")
 
 wtn_ok=true
-[ "$(echo "$v_wtn_1" | jq -r '.decision')" = "admit" ] || { wtn_ok=false; info "WHOLE-TREE-NO-SENTINEL: lower-numbered candidate did not admit: $v_wtn_1"; }
-[ "$(echo "$v_wtn_2" | jq -r '.decision')" = "admit" ] || { wtn_ok=false; info "WHOLE-TREE-NO-SENTINEL: higher-numbered candidate did not admit: $v_wtn_2"; }
-[ "$(echo "$v_wtn_2" | jq -r 'has("whole_tree_claim")')" = "false" ] || { wtn_ok=false; info "WHOLE-TREE-NO-SENTINEL: unexpectedly carries whole_tree_claim with no sentinel declared: $v_wtn_2"; }
+[ "$(echo "$v_wtn_1" | jq -r '.decision')" = "admit" ] || { wtn_ok=false; common_test_info "WHOLE-TREE-NO-SENTINEL: lower-numbered candidate did not admit: $v_wtn_1"; }
+[ "$(echo "$v_wtn_2" | jq -r '.decision')" = "admit" ] || { wtn_ok=false; common_test_info "WHOLE-TREE-NO-SENTINEL: higher-numbered candidate did not admit: $v_wtn_2"; }
+[ "$(echo "$v_wtn_2" | jq -r 'has("whole_tree_claim")')" = "false" ] || { wtn_ok=false; common_test_info "WHOLE-TREE-NO-SENTINEL: unexpectedly carries whole_tree_claim with no sentinel declared: $v_wtn_2"; }
 if [ "$wtn_ok" = true ]; then
-  pass "WHOLE-TREE-NO-SENTINEL: a disjoint-scope pair with no sentinel declared both admit (the new dimension never fires on an ordinary task)"
+  common_test_pass "WHOLE-TREE-NO-SENTINEL: a disjoint-scope pair with no sentinel declared both admit (the new dimension never fires on an ordinary task)"
 else
-  fail "WHOLE-TREE-NO-SENTINEL: control-case assertion failed (see INFO lines above)"
+  common_test_fail "WHOLE-TREE-NO-SENTINEL: control-case assertion failed (see INFO lines above)"
 fi
 
 jq --argjson n1 "$NUM_WTN1" --argjson n2 "$NUM_WTN2" \
@@ -689,13 +671,13 @@ v_wti_1=$(echo "$out_wti" | jq -c "select(.task_number == $NUM_WTI1)")
 v_wti_2=$(echo "$out_wti" | jq -c "select(.task_number == $NUM_WTI2)")
 
 wti_ok=true
-[ "$(echo "$v_wti_1" | jq -r '.decision')" = "admit" ] || { wti_ok=false; info "WHOLE-TREE-INERT-PATH: sentinel-holding candidate did not admit: $v_wti_1"; }
-[ "$(echo "$v_wti_2" | jq -r '.decision')" = "admit" ] || { wti_ok=false; info "WHOLE-TREE-INERT-PATH: real-path-only candidate did not admit: $v_wti_2"; }
-[ "$(echo "$v_wti_2" | jq -r '.defer_reason // empty')" != "file_scope_collision" ] || { wti_ok=false; info "WHOLE-TREE-INERT-PATH: a slashless sentinel on the peer incorrectly produced a file_scope_collision: $v_wti_2"; }
+[ "$(echo "$v_wti_1" | jq -r '.decision')" = "admit" ] || { wti_ok=false; common_test_info "WHOLE-TREE-INERT-PATH: sentinel-holding candidate did not admit: $v_wti_1"; }
+[ "$(echo "$v_wti_2" | jq -r '.decision')" = "admit" ] || { wti_ok=false; common_test_info "WHOLE-TREE-INERT-PATH: real-path-only candidate did not admit: $v_wti_2"; }
+[ "$(echo "$v_wti_2" | jq -r '.defer_reason // empty')" != "file_scope_collision" ] || { wti_ok=false; common_test_info "WHOLE-TREE-INERT-PATH: a slashless sentinel on the peer incorrectly produced a file_scope_collision: $v_wti_2"; }
 if [ "$wti_ok" = true ]; then
-  pass "WHOLE-TREE-INERT-PATH: the reserved sentinel is inert against a peer's disjoint real path under scopes_overlap_first (no false-positive collision)"
+  common_test_pass "WHOLE-TREE-INERT-PATH: the reserved sentinel is inert against a peer's disjoint real path under scopes_overlap_first (no false-positive collision)"
 else
-  fail "WHOLE-TREE-INERT-PATH: inertness assertion failed (see INFO lines above)"
+  common_test_fail "WHOLE-TREE-INERT-PATH: inertness assertion failed (see INFO lines above)"
 fi
 
 jq --argjson n1 "$NUM_WTI1" --argjson n2 "$NUM_WTI2" \

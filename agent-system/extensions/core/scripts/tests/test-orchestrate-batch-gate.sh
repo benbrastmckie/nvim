@@ -16,6 +16,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 SUT_SRC="$CORE_DIR/orchestrate-batch-gate.sh"
 GVEL_LIB="$CORE_DIR/lib/gate-verdict-extract-lib.sh"
@@ -33,13 +34,8 @@ source "$GVEL_LIB"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 # ─── Sandbox: a deployed-shaped scripts/ tree ($WORKDIR/.claude/scripts/) so deploy-root-guard.sh
 # (sourced by the SUT) does not refuse the invocation -- mirrors test-orchestrate-cycle-plan.sh's
@@ -107,20 +103,20 @@ write_state() {
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 1: usage errors -- no arguments, and missing --state-file target.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 1: usage-error/degenerate paths"
+common_test_info "Case 1: usage-error/degenerate paths"
 setup_sandbox
 run_sut
 if [ "$LAST_EXIT" -eq 2 ] && echo "$LAST_STDERR" | grep -qi "usage"; then
-  pass "Case 1: no arguments exits 2 with a usage message"
+  common_test_pass "Case 1: no arguments exits 2 with a usage message"
 else
-  fail "Case 1: expected exit 2 + usage message with no arguments, got exit=$LAST_EXIT stderr=$LAST_STDERR"
+  common_test_fail "Case 1: expected exit 2 + usage message with no arguments, got exit=$LAST_EXIT stderr=$LAST_STDERR"
 fi
 
 run_sut --session sess_test --state-file "$WORKDIR/sandbox/specs/.orchestration/does-not-exist.json"
 if [ "$LAST_EXIT" -eq 2 ] && echo "$LAST_STDERR" | grep -qi "not found"; then
-  pass "Case 1: a missing --state-file target exits 2 with a clear error"
+  common_test_pass "Case 1: a missing --state-file target exits 2 with a clear error"
 else
-  fail "Case 1: expected exit 2 for a missing --state-file target, got exit=$LAST_EXIT stderr=$LAST_STDERR"
+  common_test_fail "Case 1: expected exit 2 for a missing --state-file target, got exit=$LAST_EXIT stderr=$LAST_STDERR"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -128,32 +124,32 @@ fi
 # .implement_agents) yields exit 0 and no `batch_gate` key written, and never even invokes the
 # (absent, in this case) verify-deploy.sh.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 2: no-implement no-op"
+common_test_info "Case 2: no-implement no-op"
 setup_sandbox
 write_state <<'EOF'
 {"task_numbers": [901, 902], "implement_agents": {}, "invocation_modified_files": {}}
 EOF
 run_sut --session sess_test --state-file "$STATE_FILE"
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case 2: no-implement fixture exits 0"
+  common_test_pass "Case 2: no-implement fixture exits 0"
 else
-  fail "Case 2: expected exit 0, got exit=$LAST_EXIT stderr=$LAST_STDERR"
+  common_test_fail "Case 2: expected exit 0, got exit=$LAST_EXIT stderr=$LAST_STDERR"
 fi
 if jq -e 'has("batch_gate") | not' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 2: no batch_gate key written on the no-implement no-op path"
+  common_test_pass "Case 2: no batch_gate key written on the no-implement no-op path"
 else
-  fail "Case 2: unexpected batch_gate key written: $(cat "$STATE_FILE")"
+  common_test_fail "Case 2: unexpected batch_gate key written: $(cat "$STATE_FILE")"
 fi
 if echo "$LAST_STDERR" | grep -qi "no-op"; then
-  pass "Case 2: a no-op explanatory line is printed"
+  common_test_pass "Case 2: a no-op explanatory line is printed"
 else
-  fail "Case 2: expected a no-op explanatory line on stderr, got: $LAST_STDERR"
+  common_test_fail "Case 2: expected a no-op explanatory line on stderr, got: $LAST_STDERR"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 3: a finding attributed to exactly one of two candidate tasks.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 3: a finding attributed to exactly one of two candidate tasks"
+common_test_info "Case 3: a finding attributed to exactly one of two candidate tasks"
 setup_sandbox
 write_state <<'EOF'
 {
@@ -170,31 +166,31 @@ write_fake_verify_two_call 1 \
   "FINDING gate8 test-foo.sh failure referencing agent-system/extensions/core/scripts/foo.sh"
 run_sut --session sess_test --state-file "$STATE_FILE"
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case 3: exits 0"
+  common_test_pass "Case 3: exits 0"
 else
-  fail "Case 3: expected exit 0, got exit=$LAST_EXIT stderr=$LAST_STDERR"
+  common_test_fail "Case 3: expected exit 0, got exit=$LAST_EXIT stderr=$LAST_STDERR"
 fi
 if jq -e '.batch_gate.attributed["903"] | length == 1' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 3: the finding is attributed to candidate #903 (whose modified_files names foo.sh)"
+  common_test_pass "Case 3: the finding is attributed to candidate #903 (whose modified_files names foo.sh)"
 else
-  fail "Case 3: expected exactly one finding attributed to candidate #903: $(cat "$STATE_FILE")"
+  common_test_fail "Case 3: expected exactly one finding attributed to candidate #903: $(cat "$STATE_FILE")"
 fi
 if jq -e '(.batch_gate.attributed["904"] // []) | length == 0' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 3: the finding is NOT also attributed to candidate #904"
+  common_test_pass "Case 3: the finding is NOT also attributed to candidate #904"
 else
-  fail "Case 3: expected no finding attributed to candidate #904: $(cat "$STATE_FILE")"
+  common_test_fail "Case 3: expected no finding attributed to candidate #904: $(cat "$STATE_FILE")"
 fi
 if jq -e '.batch_gate.unattributed | length == 0' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 3: the finding is not also recorded as unattributed (it was claimed by candidate #903)"
+  common_test_pass "Case 3: the finding is not also recorded as unattributed (it was claimed by candidate #903)"
 else
-  fail "Case 3: expected an empty unattributed set: $(cat "$STATE_FILE")"
+  common_test_fail "Case 3: expected an empty unattributed set: $(cat "$STATE_FILE")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 4: a finding attributable to NEITHER candidate lands in the unattributed set, never
 # dropped and never pinned on one arbitrary candidate.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 4: a finding attributable to neither candidate lands in the unattributed set"
+common_test_info "Case 4: a finding attributable to neither candidate lands in the unattributed set"
 setup_sandbox
 write_state <<'EOF'
 {
@@ -211,21 +207,21 @@ write_fake_verify_two_call 1 \
   "FINDING gate8 test-gamma.sh failure referencing agent-system/extensions/core/scripts/gamma.sh"
 run_sut --session sess_test --state-file "$STATE_FILE"
 if jq -e '.batch_gate.unattributed | length == 1' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 4: the finding lands in the batch-level unattributed set"
+  common_test_pass "Case 4: the finding lands in the batch-level unattributed set"
 else
-  fail "Case 4: expected exactly one unattributed finding: $(cat "$STATE_FILE")"
+  common_test_fail "Case 4: expected exactly one unattributed finding: $(cat "$STATE_FILE")"
 fi
 if jq -e '(.batch_gate.attributed | to_entries | map(.value) | flatten | length) == 0' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 4: the finding is not pinned on either candidate"
+  common_test_pass "Case 4: the finding is not pinned on either candidate"
 else
-  fail "Case 4: expected no per-candidate attribution: $(cat "$STATE_FILE")"
+  common_test_fail "Case 4: expected no per-candidate attribution: $(cat "$STATE_FILE")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 5: an identifier-free finding is never cleared -- it stays in the unattributed (blocking)
 # set even though no candidate's modified_files could possibly match it.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 5: an identifier-free finding is never cleared"
+common_test_info "Case 5: an identifier-free finding is never cleared"
 setup_sandbox
 write_state <<'EOF'
 {
@@ -239,14 +235,14 @@ write_fake_verify_two_call 1 \
   "FINDING gate14 some advisory prose with no file identifier at all"
 run_sut --session sess_test --state-file "$STATE_FILE"
 if jq -e '.batch_gate.unattributed | length == 1' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 5: the identifier-free finding lands in the unattributed set (never cleared)"
+  common_test_pass "Case 5: the identifier-free finding lands in the unattributed set (never cleared)"
 else
-  fail "Case 5: expected the identifier-free finding to remain unattributed: $(cat "$STATE_FILE")"
+  common_test_fail "Case 5: expected the identifier-free finding to remain unattributed: $(cat "$STATE_FILE")"
 fi
 if jq -e '(.batch_gate.attributed["907"] // []) | length == 0' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 5: the identifier-free finding is not attributed to candidate #907 either"
+  common_test_pass "Case 5: the identifier-free finding is not attributed to candidate #907 either"
 else
-  fail "Case 5: expected no attribution for the identifier-free finding: $(cat "$STATE_FILE")"
+  common_test_fail "Case 5: expected no attribution for the identifier-free finding: $(cat "$STATE_FILE")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -254,7 +250,7 @@ fi
 # present on the first capture, absent on the second -- and never appears in confirmed_findings,
 # the attributed map, or the unattributed set.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 6: a non-reproducing candidate finding is dropped by confirmation"
+common_test_info "Case 6: a non-reproducing candidate finding is dropped by confirmation"
 setup_sandbox
 write_state <<'EOF'
 {
@@ -268,30 +264,30 @@ write_fake_verify_two_call 1 \
   ""
 run_sut --session sess_test --state-file "$STATE_FILE"
 if [ "$LAST_EXIT" -eq 0 ]; then
-  pass "Case 6: exits 0"
+  common_test_pass "Case 6: exits 0"
 else
-  fail "Case 6: expected exit 0, got exit=$LAST_EXIT stderr=$LAST_STDERR"
+  common_test_fail "Case 6: expected exit 0, got exit=$LAST_EXIT stderr=$LAST_STDERR"
 fi
 if jq -e '.batch_gate.confirmed_findings | length == 0' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 6: the flaky candidate is absent from confirmed_findings"
+  common_test_pass "Case 6: the flaky candidate is absent from confirmed_findings"
 else
-  fail "Case 6: expected an empty confirmed_findings set: $(cat "$STATE_FILE")"
+  common_test_fail "Case 6: expected an empty confirmed_findings set: $(cat "$STATE_FILE")"
 fi
 if jq -e '.batch_gate.unattributed | length == 0' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 6: the flaky candidate does not land in the unattributed set either"
+  common_test_pass "Case 6: the flaky candidate does not land in the unattributed set either"
 else
-  fail "Case 6: expected an empty unattributed set: $(cat "$STATE_FILE")"
+  common_test_fail "Case 6: expected an empty unattributed set: $(cat "$STATE_FILE")"
 fi
 if echo "$LAST_STDERR" | grep -qi "flaky"; then
-  pass "Case 6: a flaky-drop notice is printed"
+  common_test_pass "Case 6: a flaky-drop notice is printed"
 else
-  fail "Case 6: expected a flaky-drop notice on stderr, got: $LAST_STDERR"
+  common_test_fail "Case 6: expected a flaky-drop notice on stderr, got: $LAST_STDERR"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 7: batch_gate record shape -- every required field present with the right JSON type.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 7: batch_gate record shape"
+common_test_info "Case 7: batch_gate record shape"
 setup_sandbox
 write_state <<'EOF'
 {
@@ -311,16 +307,16 @@ if jq -e '
     (.batch_gate.attributed | type) == "object" and
     (.batch_gate.unattributed | type) == "array"
   ' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 7: batch_gate record carries ran_at, gate_exit_code, confirmed_findings, attributed, unattributed with the expected JSON types"
+  common_test_pass "Case 7: batch_gate record carries ran_at, gate_exit_code, confirmed_findings, attributed, unattributed with the expected JSON types"
 else
-  fail "Case 7: batch_gate record shape mismatch: $(cat "$STATE_FILE")"
+  common_test_fail "Case 7: batch_gate record shape mismatch: $(cat "$STATE_FILE")"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 8: a clean shared run (0 findings, 2nd call never even needed) records gate_exit_code 0
 # and empty confirmed_findings/attributed/unattributed.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 8: a clean shared run records gate_exit_code 0 with empty findings sets"
+common_test_info "Case 8: a clean shared run records gate_exit_code 0 with empty findings sets"
 setup_sandbox
 write_state <<'EOF'
 {
@@ -332,21 +328,21 @@ EOF
 write_fake_verify_two_call 0 "" ""
 run_sut --session sess_test --state-file "$STATE_FILE"
 if jq -e '.batch_gate.gate_exit_code == 0 and (.batch_gate.confirmed_findings | length == 0) and (.batch_gate.unattributed | length == 0)' "$STATE_FILE" >/dev/null 2>&1; then
-  pass "Case 8: clean run recorded with gate_exit_code 0 and empty findings sets"
+  common_test_pass "Case 8: clean run recorded with gate_exit_code 0 and empty findings sets"
 else
-  fail "Case 8: expected a clean batch_gate record: $(cat "$STATE_FILE")"
+  common_test_fail "Case 8: expected a clean batch_gate record: $(cat "$STATE_FILE")"
 fi
 _call_count="$(cat "${VERIFY_STUB}.callcount" 2>/dev/null || echo 0)"
 if [ "$_call_count" -eq 1 ]; then
-  pass "Case 8: verify-deploy.sh was called exactly once (no confirmation call needed on a clean first capture)"
+  common_test_pass "Case 8: verify-deploy.sh was called exactly once (no confirmation call needed on a clean first capture)"
 else
-  fail "Case 8: expected exactly one verify-deploy.sh call on a clean first capture, got $_call_count"
+  common_test_fail "Case 8: expected exactly one verify-deploy.sh call on a clean first capture, got $_call_count"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Case 9: --dry-run computes and prints the same summary but writes nothing to --state-file.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 9: --dry-run writes nothing to --state-file"
+common_test_info "Case 9: --dry-run writes nothing to --state-file"
 setup_sandbox
 write_state <<'EOF'
 {
@@ -362,14 +358,14 @@ state_before="$(cat "$STATE_FILE")"
 run_sut --session sess_test --state-file "$STATE_FILE" --dry-run
 state_after="$(cat "$STATE_FILE")"
 if [ "$state_before" = "$state_after" ]; then
-  pass "Case 9: --dry-run leaves --state-file byte-unchanged"
+  common_test_pass "Case 9: --dry-run leaves --state-file byte-unchanged"
 else
-  fail "Case 9: --dry-run unexpectedly modified --state-file: before='$state_before' after='$state_after'"
+  common_test_fail "Case 9: --dry-run unexpectedly modified --state-file: before='$state_before' after='$state_after'"
 fi
 if echo "$LAST_STDOUT" | jq -e '.gate_exit_code == 1' >/dev/null 2>&1; then
-  pass "Case 9: --dry-run still prints the computed record to stdout"
+  common_test_pass "Case 9: --dry-run still prints the computed record to stdout"
 else
-  fail "Case 9: expected the computed batch_gate record on stdout, got: $LAST_STDOUT"
+  common_test_fail "Case 9: expected the computed batch_gate record on stdout, got: $LAST_STDOUT"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -382,35 +378,35 @@ fi
 # line-initial [FAIL] selected; a [PASS] line quoting [FAIL] in its message NOT selected; an
 # indented fixture-internal [FAIL] NOT selected; an SGR-prefixed [FAIL] selected after stripping.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-info "Case 10: gate-verdict-extract-lib.sh selection contract (re-pinned for this consumer)"
+common_test_info "Case 10: gate-verdict-extract-lib.sh selection contract (re-pinned for this consumer)"
 
 gvel_out_a="$(verify_deploy_extract_verdict_lines '[FAIL]' '[FAIL] /path/test-real.sh')"
 if [ "$gvel_out_a" = "/path/test-real.sh" ]; then
-  pass "Case 10a: a line-initial [FAIL] <path> row is selected"
+  common_test_pass "Case 10a: a line-initial [FAIL] <path> row is selected"
 else
-  fail "Case 10a: line-initial [FAIL] row mismatch (got: '$gvel_out_a')"
+  common_test_fail "Case 10a: line-initial [FAIL] row mismatch (got: '$gvel_out_a')"
 fi
 
 gvel_out_b="$(verify_deploy_extract_verdict_lines '[FAIL]' '[PASS] case3: exactly one [FAIL] line for X under hard mode')"
 if [ -z "$gvel_out_b" ]; then
-  pass "Case 10b: a [PASS] line quoting [FAIL] in its message is NOT selected"
+  common_test_pass "Case 10b: a [PASS] line quoting [FAIL] in its message is NOT selected"
 else
-  fail "Case 10b: [PASS]-quoting-[FAIL] line wrongly selected (got: '$gvel_out_b')"
+  common_test_fail "Case 10b: [PASS]-quoting-[FAIL] line wrongly selected (got: '$gvel_out_b')"
 fi
 
 gvel_out_c="$(verify_deploy_extract_verdict_lines '[FAIL]' '    [FAIL] baseline fixture is not clean (rc=1, ...)')"
 if [ -z "$gvel_out_c" ]; then
-  pass "Case 10c: an indented fixture-internal [FAIL] line is NOT selected"
+  common_test_pass "Case 10c: an indented fixture-internal [FAIL] line is NOT selected"
 else
-  fail "Case 10c: indented fixture-internal line wrongly selected (got: '$gvel_out_c')"
+  common_test_fail "Case 10c: indented fixture-internal line wrongly selected (got: '$gvel_out_c')"
 fi
 
 gvel_sgr=$'\x1b[31m[FAIL]\x1b[0m lint-lifecycle-status-var: 3 violation(s) across 10 file(s)'
 gvel_out_d="$(verify_deploy_extract_verdict_lines '[FAIL]' "$gvel_sgr")"
 if [ "$gvel_out_d" = "lint-lifecycle-status-var: 3 violation(s) across 10 file(s)" ]; then
-  pass "Case 10d: an SGR-prefixed [FAIL] row is selected after stripping"
+  common_test_pass "Case 10d: an SGR-prefixed [FAIL] row is selected after stripping"
 else
-  fail "Case 10d: SGR-prefixed [FAIL] row mismatch (got: '$gvel_out_d')"
+  common_test_fail "Case 10d: SGR-prefixed [FAIL] row mismatch (got: '$gvel_out_d')"
 fi
 
 echo ""

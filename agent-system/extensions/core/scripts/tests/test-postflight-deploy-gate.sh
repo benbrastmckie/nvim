@@ -32,10 +32,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
@@ -92,16 +90,11 @@ done
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [[ -n "${WORKDIR:-}" && -d "$WORKDIR" ]] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
-info "Under test (source-store-first): $UTS_SRC"
-info "Under test (source-store-first): $FRESHNESS_LIB_SRC"
+common_test_info "Under test (source-store-first): $UTS_SRC"
+common_test_info "Under test (source-store-first): $FRESHNESS_LIB_SRC"
 
 # ─── build_fixture_repo <root>: isolated repo shape -- SOURCE-STORE copies of the two files
 # under test, DEPLOY-TREE copies of everything else ─────────────────────────────────────────
@@ -178,7 +171,7 @@ task_status() { jq -r '.active_projects[0].status' "$FIXTURE_ROOT/specs/state.js
 # =====================================================================
 # Case 1: overlap + STALE -> exit 6, state.json unchanged, no plan-file stamp
 # =====================================================================
-info "=== Case 1: overlap + stale -> exit 6 ==="
+common_test_info "=== Case 1: overlap + stale -> exit 6 ==="
 FIXTURE_ROOT="$WORKDIR/case1"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -193,25 +186,25 @@ UTS postflight 1 implement sess_test_c1 >"$WORKDIR/c1.out" 2>"$WORKDIR/c1.err"
 C1_EXIT=$?
 after_status="$(task_status)"
 if [[ "$C1_EXIT" -eq 6 ]]; then
-  pass "overlap+stale exits 6"
+  common_test_pass "overlap+stale exits 6"
 else
-  fail "overlap+stale expected exit 6, got $C1_EXIT (see $WORKDIR/c1.err)"
+  common_test_fail "overlap+stale expected exit 6, got $C1_EXIT (see $WORKDIR/c1.err)"
 fi
 if [[ "$before_status" == "$after_status" && "$after_status" == "implementing" ]]; then
-  pass "overlap+stale leaves state.json status unchanged (implementing)"
+  common_test_pass "overlap+stale leaves state.json status unchanged (implementing)"
 else
-  fail "overlap+stale changed status: before=$before_status after=$after_status"
+  common_test_fail "overlap+stale changed status: before=$before_status after=$after_status"
 fi
 if grep -q "refusing postflight implement" "$WORKDIR/c1.err"; then
-  pass "overlap+stale prints the refusal message"
+  common_test_pass "overlap+stale prints the refusal message"
 else
-  fail "overlap+stale did not print the expected refusal message (see $WORKDIR/c1.err)"
+  common_test_fail "overlap+stale did not print the expected refusal message (see $WORKDIR/c1.err)"
 fi
 
 # =====================================================================
 # Case 2: overlap + FRESH -> exit 0, transition applied
 # =====================================================================
-info "=== Case 2: overlap + fresh -> exit 0, transition applied ==="
+common_test_info "=== Case 2: overlap + fresh -> exit 0, transition applied ==="
 FIXTURE_ROOT="$WORKDIR/case2"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -220,21 +213,21 @@ write_return_meta "$FIXTURE_ROOT" '["agent-system/extensions/core/scripts/foo.sh
 UTS postflight 1 implement sess_test_c2 >"$WORKDIR/c2.out" 2>"$WORKDIR/c2.err"
 C2_EXIT=$?
 if [[ "$C2_EXIT" -eq 0 ]]; then
-  pass "overlap+fresh exits 0"
+  common_test_pass "overlap+fresh exits 0"
 else
-  fail "overlap+fresh expected exit 0, got $C2_EXIT (see $WORKDIR/c2.err)"
+  common_test_fail "overlap+fresh expected exit 0, got $C2_EXIT (see $WORKDIR/c2.err)"
 fi
 st="$(task_status)"
 if [[ "$st" == "completed" ]]; then
-  pass "overlap+fresh applies the transition (implementing -> completed)"
+  common_test_pass "overlap+fresh applies the transition (implementing -> completed)"
 else
-  fail "overlap+fresh expected status 'completed', got '$st'"
+  common_test_fail "overlap+fresh expected status 'completed', got '$st'"
 fi
 
 # =====================================================================
 # Case 3: no overlap -> exit 0
 # =====================================================================
-info "=== Case 3: no overlap -> exit 0 ==="
+common_test_info "=== Case 3: no overlap -> exit 0 ==="
 FIXTURE_ROOT="$WORKDIR/case3"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -243,20 +236,20 @@ write_return_meta "$FIXTURE_ROOT" '["specs/001_fixture_task/plans/01_plan.md"]'
 UTS postflight 1 implement sess_test_c3 >"$WORKDIR/c3.out" 2>"$WORKDIR/c3.err"
 C3_EXIT=$?
 if [[ "$C3_EXIT" -eq 0 ]]; then
-  pass "no overlap exits 0"
+  common_test_pass "no overlap exits 0"
 else
-  fail "no overlap expected exit 0, got $C3_EXIT (see $WORKDIR/c3.err)"
+  common_test_fail "no overlap expected exit 0, got $C3_EXIT (see $WORKDIR/c3.err)"
 fi
 if grep -q "not applicable" "$WORKDIR/c3.err"; then
-  pass "no overlap logs the not-applicable branch"
+  common_test_pass "no overlap logs the not-applicable branch"
 else
-  fail "no overlap did not log the expected not-applicable note (see $WORKDIR/c3.err)"
+  common_test_fail "no overlap did not log the expected not-applicable note (see $WORKDIR/c3.err)"
 fi
 
 # =====================================================================
 # Case 4: missing .return-meta.json -> exit 0 with the inconclusive note
 # =====================================================================
-info "=== Case 4: missing .return-meta.json -> inconclusive ==="
+common_test_info "=== Case 4: missing .return-meta.json -> inconclusive ==="
 FIXTURE_ROOT="$WORKDIR/case4"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -265,20 +258,20 @@ build_source_and_extensions "$FIXTURE_ROOT"
 UTS postflight 1 implement sess_test_c4 >"$WORKDIR/c4.out" 2>"$WORKDIR/c4.err"
 C4_EXIT=$?
 if [[ "$C4_EXIT" -eq 0 ]]; then
-  pass "missing .return-meta.json exits 0"
+  common_test_pass "missing .return-meta.json exits 0"
 else
-  fail "missing .return-meta.json expected exit 0, got $C4_EXIT (see $WORKDIR/c4.err)"
+  common_test_fail "missing .return-meta.json expected exit 0, got $C4_EXIT (see $WORKDIR/c4.err)"
 fi
 if grep -q "no .return-meta.json resolved -- inconclusive" "$WORKDIR/c4.err"; then
-  pass "missing .return-meta.json logs the inconclusive note"
+  common_test_pass "missing .return-meta.json logs the inconclusive note"
 else
-  fail "missing .return-meta.json did not log the expected note (see $WORKDIR/c4.err)"
+  common_test_fail "missing .return-meta.json did not log the expected note (see $WORKDIR/c4.err)"
 fi
 
 # =====================================================================
 # Case 5: missing freshness library -> exit 0 with the loud D4 note
 # =====================================================================
-info "=== Case 5: missing freshness library -> inconclusive (D4) ==="
+common_test_info "=== Case 5: missing freshness library -> inconclusive (D4) ==="
 FIXTURE_ROOT="$WORKDIR/case5"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -288,26 +281,26 @@ rm -f "$FIXTURE_ROOT/.claude/scripts/lib/deploy-freshness-lib.sh"
 UTS postflight 1 implement sess_test_c5 >"$WORKDIR/c5.out" 2>"$WORKDIR/c5.err"
 C5_EXIT=$?
 if [[ "$C5_EXIT" -eq 0 ]]; then
-  pass "missing freshness library exits 0 (D4: never a hard exit)"
+  common_test_pass "missing freshness library exits 0 (D4: never a hard exit)"
 else
-  fail "missing freshness library expected exit 0, got $C5_EXIT (see $WORKDIR/c5.err)"
+  common_test_fail "missing freshness library expected exit 0, got $C5_EXIT (see $WORKDIR/c5.err)"
 fi
 if grep -q "deploy-freshness-lib.sh not found -- inconclusive" "$WORKDIR/c5.err"; then
-  pass "missing freshness library logs the loud D4 note"
+  common_test_pass "missing freshness library logs the loud D4 note"
 else
-  fail "missing freshness library did not log the expected note (see $WORKDIR/c5.err)"
+  common_test_fail "missing freshness library did not log the expected note (see $WORKDIR/c5.err)"
 fi
 st="$(task_status)"
 if [[ "$st" == "completed" ]]; then
-  pass "missing freshness library still allows the transition to proceed (pass-through)"
+  common_test_pass "missing freshness library still allows the transition to proceed (pass-through)"
 else
-  fail "missing freshness library expected status 'completed' (pass-through), got '$st'"
+  common_test_fail "missing freshness library expected status 'completed' (pass-through), got '$st'"
 fi
 
 # =====================================================================
 # Case 6: --dry-run + stale -> exit 0 with the preview line, no write
 # =====================================================================
-info "=== Case 6: --dry-run + stale -> exit 0 with preview ==="
+common_test_info "=== Case 6: --dry-run + stale -> exit 0 with preview ==="
 FIXTURE_ROOT="$WORKDIR/case6"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -321,25 +314,25 @@ UTS --dry-run postflight 1 implement sess_test_c6 >"$WORKDIR/c6.out" 2>"$WORKDIR
 C6_EXIT=$?
 after_status="$(task_status)"
 if [[ "$C6_EXIT" -eq 0 ]]; then
-  pass "--dry-run + stale exits 0"
+  common_test_pass "--dry-run + stale exits 0"
 else
-  fail "--dry-run + stale expected exit 0, got $C6_EXIT (see $WORKDIR/c6.err)"
+  common_test_fail "--dry-run + stale expected exit 0, got $C6_EXIT (see $WORKDIR/c6.err)"
 fi
 if grep -q "\[dry-run\] Deploy-check would block this transition" "$WORKDIR/c6.out"; then
-  pass "--dry-run + stale prints the preview line"
+  common_test_pass "--dry-run + stale prints the preview line"
 else
-  fail "--dry-run + stale did not print the expected preview line (see $WORKDIR/c6.out)"
+  common_test_fail "--dry-run + stale did not print the expected preview line (see $WORKDIR/c6.out)"
 fi
 if [[ "$before_status" == "$after_status" ]]; then
-  pass "--dry-run + stale writes nothing to state.json"
+  common_test_pass "--dry-run + stale writes nothing to state.json"
 else
-  fail "--dry-run + stale unexpectedly changed status: before=$before_status after=$after_status"
+  common_test_fail "--dry-run + stale unexpectedly changed status: before=$before_status after=$after_status"
 fi
 
 # =====================================================================
 # Case 7: postflight ... research -> the gate does not fire at all
 # =====================================================================
-info "=== Case 7: postflight research -> gate does not fire ==="
+common_test_info "=== Case 7: postflight research -> gate does not fire ==="
 FIXTURE_ROOT="$WORKDIR/case7"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -351,14 +344,14 @@ git -C "$SRC_REPO" commit -q -m "v2"
 UTS postflight 1 research sess_test_c7 >"$WORKDIR/c7.out" 2>"$WORKDIR/c7.err"
 C7_EXIT=$?
 if [[ "$C7_EXIT" -eq 0 ]]; then
-  pass "postflight research exits 0"
+  common_test_pass "postflight research exits 0"
 else
-  fail "postflight research expected exit 0, got $C7_EXIT (see $WORKDIR/c7.err)"
+  common_test_fail "postflight research expected exit 0, got $C7_EXIT (see $WORKDIR/c7.err)"
 fi
 if grep -q "deploy-check" "$WORKDIR/c7.err" "$WORKDIR/c7.out" 2>/dev/null; then
-  fail "postflight research unexpectedly mentions [deploy-check] -- the gate must not fire for non-implement targets (see $WORKDIR/c7.err)"
+  common_test_fail "postflight research unexpectedly mentions [deploy-check] -- the gate must not fire for non-implement targets (see $WORKDIR/c7.err)"
 else
-  pass "postflight research: the deploy-check gate does not fire at all"
+  common_test_pass "postflight research: the deploy-check gate does not fire at all"
 fi
 
 # =====================================================================
@@ -371,7 +364,7 @@ fi
 # than latching a refusal -- the property the widened checkpoint predicate (this task's own
 # orchestrate-cycle-plan.sh change) depends on to converge on the cycle AFTER a refusal.
 # =====================================================================
-info "=== Case 8: refusal-then-recovery -- a stale-then-fresh sequence on the same task ==="
+common_test_info "=== Case 8: refusal-then-recovery -- a stale-then-fresh sequence on the same task ==="
 FIXTURE_ROOT="$WORKDIR/case8"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -384,14 +377,14 @@ UTS postflight 1 implement sess_test_c8a >"$WORKDIR/c8a.out" 2>"$WORKDIR/c8a.err
 C8A_EXIT=$?
 c8_status_after_refusal="$(task_status)"
 if [[ "$C8A_EXIT" -eq 6 ]]; then
-  pass "refusal-then-recovery: the first call refuses (exit 6), same as Case 1"
+  common_test_pass "refusal-then-recovery: the first call refuses (exit 6), same as Case 1"
 else
-  fail "refusal-then-recovery: expected exit 6 on the first (stale) call, got $C8A_EXIT (see $WORKDIR/c8a.err)"
+  common_test_fail "refusal-then-recovery: expected exit 6 on the first (stale) call, got $C8A_EXIT (see $WORKDIR/c8a.err)"
 fi
 if [[ "$c8_status_after_refusal" == "implementing" ]]; then
-  pass "refusal-then-recovery: state.json status unchanged (still implementing) after the refusal"
+  common_test_pass "refusal-then-recovery: state.json status unchanged (still implementing) after the refusal"
 else
-  fail "refusal-then-recovery: expected status 'implementing' after the refusal, got '$c8_status_after_refusal'"
+  common_test_fail "refusal-then-recovery: expected status 'implementing' after the refusal, got '$c8_status_after_refusal'"
 fi
 
 # Simulate the checkpoint's own redeploy landing: record the source repo's now-current HEAD in
@@ -405,14 +398,14 @@ UTS postflight 1 implement sess_test_c8b >"$WORKDIR/c8b.out" 2>"$WORKDIR/c8b.err
 C8B_EXIT=$?
 c8_status_after_recovery="$(task_status)"
 if [[ "$C8B_EXIT" -eq 0 ]]; then
-  pass "refusal-then-recovery: the second call (after the recorded head is synced) exits 0"
+  common_test_pass "refusal-then-recovery: the second call (after the recorded head is synced) exits 0"
 else
-  fail "refusal-then-recovery: expected exit 0 on the second (fresh) call, got $C8B_EXIT (see $WORKDIR/c8b.err)"
+  common_test_fail "refusal-then-recovery: expected exit 0 on the second (fresh) call, got $C8B_EXIT (see $WORKDIR/c8b.err)"
 fi
 if [[ "$c8_status_after_recovery" == "completed" ]]; then
-  pass "refusal-then-recovery: the transition applies on the second call -- the gate is not sticky"
+  common_test_pass "refusal-then-recovery: the transition applies on the second call -- the gate is not sticky"
 else
-  fail "refusal-then-recovery: expected status 'completed' after the second call, got '$c8_status_after_recovery'"
+  common_test_fail "refusal-then-recovery: expected status 'completed' after the second call, got '$c8_status_after_recovery'"
 fi
 
 # =====================================================================
@@ -429,7 +422,7 @@ write_return_meta_dp() {
 EOF
 }
 
-info "=== Case 9: successful completion write clears the deploy_pending marker ==="
+common_test_info "=== Case 9: successful completion write clears the deploy_pending marker ==="
 FIXTURE_ROOT="$WORKDIR/case9"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -440,28 +433,28 @@ UTS postflight 1 implement sess_test_c9 >"$WORKDIR/c9.out" 2>"$WORKDIR/c9.err"
 C9_EXIT=$?
 c9_meta="$FIXTURE_ROOT/specs/001_fixture_task/.return-meta.json"
 if [[ "$C9_EXIT" -eq 0 ]]; then
-  pass "marker-clearing: a successful completion write (fresh extension) exits 0"
+  common_test_pass "marker-clearing: a successful completion write (fresh extension) exits 0"
 else
-  fail "marker-clearing: expected exit 0, got $C9_EXIT (see $WORKDIR/c9.err)"
+  common_test_fail "marker-clearing: expected exit 0, got $C9_EXIT (see $WORKDIR/c9.err)"
 fi
 st="$(task_status)"
 if [[ "$st" == "completed" ]]; then
-  pass "marker-clearing: the transition still applies (implementing -> completed)"
+  common_test_pass "marker-clearing: the transition still applies (implementing -> completed)"
 else
-  fail "marker-clearing: expected status 'completed', got '$st'"
+  common_test_fail "marker-clearing: expected status 'completed', got '$st'"
 fi
 c9_dp="$(jq -r '.deploy_pending // "absent"' "$c9_meta" 2>/dev/null)"
 c9_dpr="$(jq -r '.deploy_pending_reason // "absent"' "$c9_meta" 2>/dev/null)"
 if [[ "$c9_dp" == "absent" && "$c9_dpr" == "absent" ]]; then
-  pass "marker-clearing: deploy_pending and deploy_pending_reason are both absent after success"
+  common_test_pass "marker-clearing: deploy_pending and deploy_pending_reason are both absent after success"
 else
-  fail "marker-clearing: expected both keys absent, got deploy_pending='$c9_dp' deploy_pending_reason='$c9_dpr'"
+  common_test_fail "marker-clearing: expected both keys absent, got deploy_pending='$c9_dp' deploy_pending_reason='$c9_dpr'"
 fi
 c9_roadmap="$(jq -c '.roadmap_items' "$c9_meta" 2>/dev/null)"
 if [[ "$c9_roadmap" == '["keep me"]' ]]; then
-  pass "marker-clearing: an unrelated key (roadmap_items) is preserved byte-identical"
+  common_test_pass "marker-clearing: an unrelated key (roadmap_items) is preserved byte-identical"
 else
-  fail "marker-clearing: unrelated key roadmap_items was disturbed, got '$c9_roadmap'"
+  common_test_fail "marker-clearing: unrelated key roadmap_items was disturbed, got '$c9_roadmap'"
 fi
 
 # =====================================================================
@@ -469,7 +462,7 @@ fi
 # a pre-existing deploy_pending marker (as if this were a second refusal in a row) is left
 # untouched.
 # =====================================================================
-info "=== Case 10: an exit-6 refusal leaves a pre-existing marker untouched ==="
+common_test_info "=== Case 10: an exit-6 refusal leaves a pre-existing marker untouched ==="
 FIXTURE_ROOT="$WORKDIR/case10"
 build_fixture_repo "$FIXTURE_ROOT"
 build_source_and_extensions "$FIXTURE_ROOT"
@@ -484,15 +477,15 @@ UTS postflight 1 implement sess_test_c10 >"$WORKDIR/c10.out" 2>"$WORKDIR/c10.err
 C10_EXIT=$?
 c10_meta="$FIXTURE_ROOT/specs/001_fixture_task/.return-meta.json"
 if [[ "$C10_EXIT" -eq 6 ]]; then
-  pass "refusal-preserves-marker: the refused call exits 6"
+  common_test_pass "refusal-preserves-marker: the refused call exits 6"
 else
-  fail "refusal-preserves-marker: expected exit 6, got $C10_EXIT (see $WORKDIR/c10.err)"
+  common_test_fail "refusal-preserves-marker: expected exit 6, got $C10_EXIT (see $WORKDIR/c10.err)"
 fi
 c10_dp="$(jq -r '.deploy_pending // "absent"' "$c10_meta" 2>/dev/null)"
 if [[ "$c10_dp" == "true" ]]; then
-  pass "refusal-preserves-marker: deploy_pending remains true after a refusal (never cleared by a refusal)"
+  common_test_pass "refusal-preserves-marker: deploy_pending remains true after a refusal (never cleared by a refusal)"
 else
-  fail "refusal-preserves-marker: expected deploy_pending to remain 'true', got '$c10_dp'"
+  common_test_fail "refusal-preserves-marker: expected deploy_pending to remain 'true', got '$c10_dp'"
 fi
 
 # =====================================================================
@@ -501,18 +494,18 @@ fi
 # the mechanical enforcement of the check-only contract (research constraint 3), run as a test
 # rather than relying on reviewer memory.
 # =====================================================================
-info "=== Contract: check-only (no deploy-headless/verify-deploy references) ==="
+common_test_info "=== Contract: check-only (no deploy-headless/verify-deploy references) ==="
 DH_COUNT="$(grep -c 'deploy-headless' "$UTS_SRC" || true)"
 VD_COUNT="$(grep -c 'verify-deploy' "$UTS_SRC" || true)"
 if [[ "${DH_COUNT:-0}" -eq 0 ]]; then
-  pass "update-task-status.sh contains zero 'deploy-headless' references"
+  common_test_pass "update-task-status.sh contains zero 'deploy-headless' references"
 else
-  fail "update-task-status.sh contains ${DH_COUNT} 'deploy-headless' reference(s) -- check-only contract violated"
+  common_test_fail "update-task-status.sh contains ${DH_COUNT} 'deploy-headless' reference(s) -- check-only contract violated"
 fi
 if [[ "${VD_COUNT:-0}" -eq 0 ]]; then
-  pass "update-task-status.sh contains zero 'verify-deploy' references"
+  common_test_pass "update-task-status.sh contains zero 'verify-deploy' references"
 else
-  fail "update-task-status.sh contains ${VD_COUNT} 'verify-deploy' reference(s) -- check-only contract violated"
+  common_test_fail "update-task-status.sh contains ${VD_COUNT} 'verify-deploy' reference(s) -- check-only contract violated"
 fi
 
 echo ""

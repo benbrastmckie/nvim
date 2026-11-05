@@ -23,14 +23,12 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 SRC_SCRIPTS_DIR="$SCRIPT_DIR/.."
 
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 # --- Loud-skip discipline: verify every required script exists before running anything. ---
 REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh lib/common.sh lib/task-lookup-lib.sh)
@@ -111,7 +109,7 @@ run_phase_commit() {
 # mirroring test-git-commit-scoped.sh's own V8 fixture technique) -- must exit 6, name the missing
 # path, and must NOT name the other, landed path.
 # =====================================================================
-info "=== Case 1: N-vs-N-1 acceptance fixture ==="
+common_test_info "=== Case 1: N-vs-N-1 acceptance fixture ==="
 
 repo1="$(build_repo)"
 write_progress "$repo1" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","src/b.txt"]}]'
@@ -133,30 +131,30 @@ rc1=$?
 after1=$(git -C "$repo1" rev-list --count HEAD)
 
 if [ "$rc1" -eq 6 ]; then
-  pass "Case 1: exit code is 6"
+  common_test_pass "Case 1: exit code is 6"
 else
-  fail "Case 1: expected exit 6, got $rc1. Output:
+  common_test_fail "Case 1: expected exit 6, got $rc1. Output:
 $out1"
 fi
 
 if echo "$out1" | grep -qF "src/b.txt"; then
-  pass "Case 1: the missing path (src/b.txt) is named in the output"
+  common_test_pass "Case 1: the missing path (src/b.txt) is named in the output"
 else
-  fail "Case 1: src/b.txt not named in output:
+  common_test_fail "Case 1: src/b.txt not named in output:
 $out1"
 fi
 
 if ! echo "$out1" | grep -A5 "files_touched path(s)" | grep -qF "src/a.txt"; then
-  pass "Case 1: the other, correctly-landed path (src/a.txt) is NOT named among the dirty paths"
+  common_test_pass "Case 1: the other, correctly-landed path (src/a.txt) is NOT named among the dirty paths"
 else
-  fail "Case 1: src/a.txt was wrongly named among the dirty paths:
+  common_test_fail "Case 1: src/a.txt was wrongly named among the dirty paths:
 $out1"
 fi
 
 if [ "$after1" -eq $((before1 + 1)) ]; then
-  pass "Case 1: the commit is still created despite the incompleteness"
+  common_test_pass "Case 1: the commit is still created despite the incompleteness"
 else
-  fail "Case 1: expected HEAD to advance by 1; before=$before1 after=$after1"
+  common_test_fail "Case 1: expected HEAD to advance by 1; before=$before1 after=$after1"
 fi
 
 rm -f "$repo1/.git/hooks/pre-commit"
@@ -165,7 +163,7 @@ rm -f "$repo1/.git/hooks/pre-commit"
 # Case 2 (derivation fixture): the derived pathspec is the union of every objective's
 # files_touched plus the fixed task-directory scope, deduplicated -- no hand-typed list required.
 # =====================================================================
-info "=== Case 2: derivation is the union of every objective, deduplicated ==="
+common_test_info "=== Case 2: derivation is the union of every objective, deduplicated ==="
 
 repo2="$(build_repo)"
 write_progress "$repo2" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","src/b.txt"]},{"id":2,"status":"done","files_touched":["src/b.txt","src/c.txt"]}]'
@@ -183,16 +181,16 @@ if [ "$rc2" -eq 0 ] && [ "$after2" -eq $((before2 + 1)) ] \
   && echo "$show2" | grep -qF "src/a.txt" \
   && echo "$show2" | grep -qF "src/b.txt" \
   && echo "$show2" | grep -qF "src/c.txt"; then
-  pass "Case 2: the commit carries the deduplicated union of every objective's files_touched (a, b, and c each land exactly once)"
+  common_test_pass "Case 2: the commit carries the deduplicated union of every objective's files_touched (a, b, and c each land exactly once)"
 else
-  fail "Case 2: expected rc=0, HEAD+1, a/b/c all present; got rc=$rc2 before=$before2 after=$after2 show='$show2' out=$out2"
+  common_test_fail "Case 2: expected rc=0, HEAD+1, a/b/c all present; got rc=$rc2 before=$before2 after=$after2 show='$show2' out=$out2"
 fi
 
 # =====================================================================
 # Case 3 (--objective fixture): --objective narrows derivation to the named objective only,
 # matching the existing per-objective green-substep behavior it replaces.
 # =====================================================================
-info "=== Case 3: --objective narrows derivation to one objective ==="
+common_test_info "=== Case 3: --objective narrows derivation to one objective ==="
 
 repo3="$(build_repo)"
 write_progress "$repo3" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt"]},{"id":2,"status":"in_progress","files_touched":["src/b.txt"]}]'
@@ -204,23 +202,23 @@ rc3=$?
 show3="$(git -C "$repo3" show --name-only --format= HEAD)"
 
 if [ "$rc3" -eq 0 ] && echo "$show3" | grep -qF "src/a.txt" && ! echo "$show3" | grep -qF "src/b.txt"; then
-  pass "Case 3: --objective 1 stages only objective 1's files_touched (a, not b)"
+  common_test_pass "Case 3: --objective 1 stages only objective 1's files_touched (a, not b)"
 else
-  fail "Case 3: expected rc=0, a present, b absent; got rc=$rc3 show='$show3' out=$out3"
+  common_test_fail "Case 3: expected rc=0, a present, b absent; got rc=$rc3 show='$show3' out=$out3"
 fi
 
 status3="$(git -C "$repo3" status --porcelain -- src/b.txt)"
 if [ -n "$status3" ]; then
-  pass "Case 3: src/b.txt (objective 2's own file) is correctly left uncommitted"
+  common_test_pass "Case 3: src/b.txt (objective 2's own file) is correctly left uncommitted"
 else
-  fail "Case 3: src/b.txt should have been left modified/uncommitted"
+  common_test_fail "Case 3: src/b.txt should have been left modified/uncommitted"
 fi
 
 # =====================================================================
 # Case 4 (fail-open: missing progress file) -- warns, skips the check, commits the fixed scope,
 # returns the inner exit code.
 # =====================================================================
-info "=== Case 4: fail-open on a missing progress file ==="
+common_test_info "=== Case 4: fail-open on a missing progress file ==="
 
 repo4="$(build_repo)"
 # No progress file written for phase 1 at all.
@@ -230,30 +228,30 @@ out4="$(run_phase_commit "$repo4" --task 999 --project probe --phase 1 --message
 rc4=$?
 
 if [ "$rc4" -eq 0 ]; then
-  pass "Case 4: exits 0 (the inner commit succeeded against the fixed scope alone)"
+  common_test_pass "Case 4: exits 0 (the inner commit succeeded against the fixed scope alone)"
 else
-  fail "Case 4: expected exit 0; got $rc4. Output:
+  common_test_fail "Case 4: expected exit 0; got $rc4. Output:
 $out4"
 fi
 
 if echo "$out4" | grep -q "WARNING.*progress file not found"; then
-  pass "Case 4: a loud warning names the missing progress file"
+  common_test_pass "Case 4: a loud warning names the missing progress file"
 else
-  fail "Case 4: no missing-progress-file warning in output:
+  common_test_fail "Case 4: no missing-progress-file warning in output:
 $out4"
 fi
 
 if ! echo "$out4" | grep -q "completeness check failed"; then
-  pass "Case 4: the completeness check is skipped (no ERROR line)"
+  common_test_pass "Case 4: the completeness check is skipped (no ERROR line)"
 else
-  fail "Case 4: the completeness check should have been skipped:
+  common_test_fail "Case 4: the completeness check should have been skipped:
 $out4"
 fi
 
 # =====================================================================
 # Case 5 (fail-open: malformed JSON) -- same contract as Case 4.
 # =====================================================================
-info "=== Case 5: fail-open on malformed progress-file JSON ==="
+common_test_info "=== Case 5: fail-open on malformed progress-file JSON ==="
 
 repo5="$(build_repo)"
 echo "{not valid json" > "$repo5/specs/999_probe/progress/phase-1-progress.json"
@@ -263,15 +261,15 @@ out5="$(run_phase_commit "$repo5" --task 999 --project probe --phase 1 --message
 rc5=$?
 
 if [ "$rc5" -eq 0 ] && echo "$out5" | grep -q "WARNING.*not valid JSON" && ! echo "$out5" | grep -q "completeness check failed"; then
-  pass "Case 5: malformed JSON warns, falls back to the fixed scope, skips the check, exits 0"
+  common_test_pass "Case 5: malformed JSON warns, falls back to the fixed scope, skips the check, exits 0"
 else
-  fail "Case 5: expected rc=0, a 'not valid JSON' warning, no completeness-check failure; got rc=$rc5 out=$out5"
+  common_test_fail "Case 5: expected rc=0, a 'not valid JSON' warning, no completeness-check failure; got rc=$rc5 out=$out5"
 fi
 
 # =====================================================================
 # Case 6 (fail-open: empty files_touched) -- a verification-only objective with nothing touched.
 # =====================================================================
-info "=== Case 6: fail-open on an empty files_touched set ==="
+common_test_info "=== Case 6: fail-open on an empty files_touched set ==="
 
 repo6="$(build_repo)"
 write_progress "$repo6" 1 '[{"id":1,"status":"done","files_touched":[]}]'
@@ -281,16 +279,16 @@ out6="$(run_phase_commit "$repo6" --task 999 --project probe --phase 1 --message
 rc6=$?
 
 if [ "$rc6" -eq 0 ] && echo "$out6" | grep -q "WARNING.*nothing to derive" && ! echo "$out6" | grep -q "completeness check failed"; then
-  pass "Case 6: an empty files_touched set warns, skips the check, exits 0"
+  common_test_pass "Case 6: an empty files_touched set warns, skips the check, exits 0"
 else
-  fail "Case 6: expected rc=0, a 'nothing to derive' warning, no completeness-check failure; got rc=$rc6 out=$out6"
+  common_test_fail "Case 6: expected rc=0, a 'nothing to derive' warning, no completeness-check failure; got rc=$rc6 out=$out6"
 fi
 
 # =====================================================================
 # Case 7 (containment-port fixture): a files_touched path NOT contained in the task's declared
 # file_scope is dropped with a warning, and the commit still lands (minus that one path).
 # =====================================================================
-info "=== Case 7: an uncontained path is dropped with a warning ==="
+common_test_info "=== Case 7: an uncontained path is dropped with a warning ==="
 
 repo7="$(build_repo)"
 mkdir -p "$repo7/other"
@@ -307,23 +305,23 @@ show7="$(git -C "$repo7" show --name-only --format= HEAD)"
 
 if [ "$rc7" -eq 0 ] && echo "$out7" | grep -q "WARNING.*dropping out-of-scope path 'other/outside.txt'" \
   && echo "$show7" | grep -qF "src/a.txt" && ! echo "$show7" | grep -qF "other/outside.txt"; then
-  pass "Case 7: other/outside.txt is dropped with a warning; src/a.txt still lands; exit 0"
+  common_test_pass "Case 7: other/outside.txt is dropped with a warning; src/a.txt still lands; exit 0"
 else
-  fail "Case 7: expected rc=0, a drop warning for other/outside.txt, src/a.txt committed, outside.txt not; got rc=$rc7 show='$show7' out=$out7"
+  common_test_fail "Case 7: expected rc=0, a drop warning for other/outside.txt, src/a.txt committed, outside.txt not; got rc=$rc7 show='$show7' out=$out7"
 fi
 
 status7="$(git -C "$repo7" status --porcelain -- other/outside.txt)"
 if [ -n "$status7" ]; then
-  pass "Case 7: the dropped path is left uncommitted on disk for manual review"
+  common_test_pass "Case 7: the dropped path is left uncommitted on disk for manual review"
 else
-  fail "Case 7: the dropped path should remain modified/uncommitted"
+  common_test_fail "Case 7: the dropped path should remain modified/uncommitted"
 fi
 
 # =====================================================================
 # Case 8 (containment fail-open: missing file_scope) -- proceeds exactly as if the check were
 # absent when the task's state.json entry carries no file_scope at all.
 # =====================================================================
-info "=== Case 8: containment check fails open on a missing file_scope ==="
+common_test_info "=== Case 8: containment check fails open on a missing file_scope ==="
 
 repo8="$(build_repo)"
 cat > "$repo8/specs/state.json" <<'STATE_EOF'
@@ -343,9 +341,9 @@ rc8=$?
 show8="$(git -C "$repo8" show --name-only --format= HEAD)"
 
 if [ "$rc8" -eq 0 ] && echo "$show8" | grep -qF "other/anything.txt" && ! echo "$out8" | grep -q "dropping out-of-scope"; then
-  pass "Case 8: a missing file_scope fails open -- the path commits without being dropped"
+  common_test_pass "Case 8: a missing file_scope fails open -- the path commits without being dropped"
 else
-  fail "Case 8: expected rc=0, other/anything.txt committed, no drop warning; got rc=$rc8 show='$show8' out=$out8"
+  common_test_fail "Case 8: expected rc=0, other/anything.txt committed, no drop warning; got rc=$rc8 show='$show8' out=$out8"
 fi
 
 # =====================================================================
@@ -353,7 +351,7 @@ fi
 # is returned verbatim, not rewritten to 6. Uses the V4 "nothing to commit" case: no change at
 # all under a declared files_touched path.
 # =====================================================================
-info "=== Case 9: a benign inner non-zero exit code passes through unchanged ==="
+common_test_info "=== Case 9: a benign inner non-zero exit code passes through unchanged ==="
 
 repo9="$(build_repo)"
 write_progress "$repo9" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt"]}]'
@@ -367,9 +365,9 @@ out9="$(run_phase_commit "$repo9" --task 999 --project probe --phase 1 --message
 rc9=$?
 
 if [ "$rc9" -eq 1 ] && ! echo "$out9" | grep -q "completeness check failed"; then
-  pass "Case 9: the benign 'nothing to commit' inner code (1) passes through unchanged, no completeness-check failure (src/a.txt was already clean before the commit attempt)"
+  common_test_pass "Case 9: the benign 'nothing to commit' inner code (1) passes through unchanged, no completeness-check failure (src/a.txt was already clean before the commit attempt)"
 else
-  fail "Case 9: expected rc=1 (nothing to commit), no completeness-check failure; got rc=$rc9 out=$out9"
+  common_test_fail "Case 9: expected rc=1 (nothing to commit), no completeness-check failure; got rc=$rc9 out=$out9"
 fi
 
 # Case 10/11 below reuse the same synthetic fixture task identifier as every other case in this
@@ -381,7 +379,7 @@ fi
 # file_scope (src/a.txt, src/b.txt, src/c.txt), so containment under test is attributable only
 # to the new deep-glob branch.
 # =====================================================================
-info "=== Case 10: a /** file_scope entry contains a direct child and a deep descendant ==="
+common_test_info "=== Case 10: a /** file_scope entry contains a direct child and a deep descendant ==="
 
 repo10="$(build_repo)"
 cat > "$repo10/specs/state.json" <<'STATE_EOF'
@@ -405,9 +403,9 @@ show10="$(git -C "$repo10" show --name-only --format= HEAD)"
 if [ "$rc10" -eq 0 ] && ! echo "$out10" | grep -q "dropping out-of-scope" \
   && echo "$show10" | grep -qF "other/widget-area/direct.txt" \
   && echo "$show10" | grep -qF "other/widget-area/deep/deeper/nested.txt"; then
-  pass "Case 10: a /** file_scope entry contains both a direct child and a deeply nested descendant -- both land, no drop warning, exit 0"
+  common_test_pass "Case 10: a /** file_scope entry contains both a direct child and a deeply nested descendant -- both land, no drop warning, exit 0"
 else
-  fail "Case 10: expected rc=0, both direct.txt and nested.txt committed, no drop warning; got rc=$rc10 show='$show10' out=$out10"
+  common_test_fail "Case 10: expected rc=0, both direct.txt and nested.txt committed, no drop warning; got rc=$rc10 show='$show10' out=$out10"
 fi
 
 # =====================================================================
@@ -415,7 +413,7 @@ fi
 # vs other/widget-area/) -- the non-widening proof. The sibling is dropped with the existing
 # warning and left uncommitted on disk; the in-scope descendant still lands.
 # =====================================================================
-info "=== Case 11: a /** file_scope entry does NOT contain a same-prefix sibling ==="
+common_test_info "=== Case 11: a /** file_scope entry does NOT contain a same-prefix sibling ==="
 
 repo11="$(build_repo)"
 cat > "$repo11/specs/state.json" <<'STATE_EOF'
@@ -438,16 +436,16 @@ show11="$(git -C "$repo11" show --name-only --format= HEAD)"
 
 if [ "$rc11" -eq 0 ] && echo "$out11" | grep -q "WARNING.*dropping out-of-scope path 'other/widget-area-sibling/x.txt'" \
   && echo "$show11" | grep -qF "other/widget-area/direct.txt" && ! echo "$show11" | grep -qF "other/widget-area-sibling/x.txt"; then
-  pass "Case 11: other/widget-area-sibling/x.txt (same-prefix sibling outside the base's '/' boundary) is dropped with a warning; other/widget-area/direct.txt still lands; exit 0"
+  common_test_pass "Case 11: other/widget-area-sibling/x.txt (same-prefix sibling outside the base's '/' boundary) is dropped with a warning; other/widget-area/direct.txt still lands; exit 0"
 else
-  fail "Case 11: expected rc=0, a drop warning for other/widget-area-sibling/x.txt, direct.txt committed, x.txt not; got rc=$rc11 show='$show11' out=$out11"
+  common_test_fail "Case 11: expected rc=0, a drop warning for other/widget-area-sibling/x.txt, direct.txt committed, x.txt not; got rc=$rc11 show='$show11' out=$out11"
 fi
 
 status11="$(git -C "$repo11" status --porcelain -- other/widget-area-sibling/x.txt)"
 if [ -n "$status11" ]; then
-  pass "Case 11: the dropped same-prefix-sibling path is left uncommitted on disk for manual review"
+  common_test_pass "Case 11: the dropped same-prefix-sibling path is left uncommitted on disk for manual review"
 else
-  fail "Case 11: the dropped path should remain modified/uncommitted"
+  common_test_fail "Case 11: the dropped path should remain modified/uncommitted"
 fi
 
 # task-ref-ok:end

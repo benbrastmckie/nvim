@@ -48,6 +48,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # REPO_ROOT must be DISCOVERED, not computed by a fixed number of `..` hops. This suite is run
 # from two different layouts with different depths: the source store
@@ -90,13 +91,8 @@ source "$BASELINE_LIB"
 
 PASSED=0
 FAILED=0
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 FIXTURE="$WORKDIR/target"
 mkdir -p "$FIXTURE/agent-system/extensions"
@@ -136,7 +132,7 @@ if [ "$fixture_sh_count" -eq 0 ]; then
   echo "ERROR: fixture index has zero tracked agent-system/extensions/*.sh files after 'git add -A && git commit' -- Gate 22 (lint-shellcheck.sh) would exit 2 with \"no *.sh files found to scan\" and verify-deploy.sh would report that as a FAIL. This means the staging step above did not populate the index (e.g. an unexpected .gitignore exclusion or a reverted 'git add')." >&2
   exit 2
 fi
-info "fixture index populated: ${fixture_sh_count} tracked *.sh files under agent-system/extensions/"
+common_test_info "fixture index populated: ${fixture_sh_count} tracked *.sh files under agent-system/extensions/"
 
 ORCH_MD="$FIXTURE/agent-system/extensions/core/commands/orchestrate.md"
 SKILL_MD="$FIXTURE/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
@@ -201,9 +197,9 @@ baseline_out="$(ORCHESTRATOR_BUDGET_GATE_MODE=warn bash "$VERIFY_DEPLOY" --skip-
 baseline_rc=$?
 baseline_gate20_lines="$(printf '%s\n' "$baseline_out" | grep -c '^FINDING gate20 ')"
 if [ "$baseline_rc" -eq 0 ] && [ "$baseline_gate20_lines" -le 1 ]; then
-  pass "baseline fixture is clean (exit 0, at most one pre-existing per-file ceiling WARN)"
+  common_test_pass "baseline fixture is clean (exit 0, at most one pre-existing per-file ceiling WARN)"
 else
-  fail "baseline fixture is not clean (rc=$baseline_rc, gate20 finding lines=$baseline_gate20_lines) -- fixture setup is broken; later cases are unreliable" \
+  common_test_fail "baseline fixture is not clean (rc=$baseline_rc, gate20 finding lines=$baseline_gate20_lines) -- fixture setup is broken; later cases are unreliable" \
        "$(printf '%s\n' "$baseline_out" | tail -20)"
 fi
 
@@ -234,7 +230,7 @@ if [ -n "$current_eager" ] && [ "$current_eager" -le "$baseline_bytes" ]; then
   pad_file "$CLAUDE_MD_FIXTURE" "$pad_bytes"
   eager_pad_applied=true
 else
-  fail "could not compute a safe eager-load pad amount (current_eager='$current_eager', baseline_bytes='$baseline_bytes')"
+  common_test_fail "could not compute a safe eager-load pad amount (current_eager='$current_eager', baseline_bytes='$baseline_bytes')"
 fi
 
 runB_out="$(run_gate20 warn)"
@@ -246,18 +242,18 @@ case1_warn_lines="$(printf '%s\n' "$runB_out" | grep -c '\[WARN\] commands/orche
 case1_gate20_findings="$(printf '%s\n' "$runB_out" | grep '^FINDING gate20 ' | grep -c 'orchestrate.md')"
 case1_digit_free=1
 printf '%s\n' "$runB_out" | grep '^FINDING gate20 ' | grep 'orchestrate.md' | sed -E 's/^FINDING gate20 //' | grep -q '[0-9]' && case1_digit_free=0
-[ "$case1_warn_lines" -eq 1 ] && pass "case1: exactly one [WARN] line for commands/orchestrate.md" || fail "case1: expected exactly one [WARN] line for commands/orchestrate.md, found $case1_warn_lines"
-[ "$case1_gate20_findings" -eq 1 ] && pass "case1: exactly one FINDING gate20 line for commands/orchestrate.md" || fail "case1: expected exactly one FINDING gate20 line for commands/orchestrate.md, found $case1_gate20_findings"
-[ "$case1_digit_free" -eq 1 ] && pass "case1: gate20 finding text is digit-free" || fail "case1: gate20 finding text contains a digit (redeploy-checkpoint hazard)"
+[ "$case1_warn_lines" -eq 1 ] && common_test_pass "case1: exactly one [WARN] line for commands/orchestrate.md" || common_test_fail "case1: expected exactly one [WARN] line for commands/orchestrate.md, found $case1_warn_lines"
+[ "$case1_gate20_findings" -eq 1 ] && common_test_pass "case1: exactly one FINDING gate20 line for commands/orchestrate.md" || common_test_fail "case1: expected exactly one FINDING gate20 line for commands/orchestrate.md, found $case1_gate20_findings"
+[ "$case1_digit_free" -eq 1 ] && common_test_pass "case1: gate20 finding text is digit-free" || common_test_fail "case1: gate20 finding text contains a digit (redeploy-checkpoint hazard)"
 
 # --- case 2 assertions (skills/skill-orchestrate/SKILL.md) ---
 case2_warn_lines="$(printf '%s\n' "$runB_out" | grep -c '\[WARN\] skills/skill-orchestrate/SKILL.md')"
 case2_gate20_findings="$(printf '%s\n' "$runB_out" | grep '^FINDING gate20 ' | grep -c 'SKILL.md')"
 case2_digit_free=1
 printf '%s\n' "$runB_out" | grep '^FINDING gate20 ' | grep 'SKILL.md' | sed -E 's/^FINDING gate20 //' | grep -q '[0-9]' && case2_digit_free=0
-[ "$case2_warn_lines" -eq 1 ] && pass "case2: exactly one [WARN] line for skills/skill-orchestrate/SKILL.md" || fail "case2: expected exactly one [WARN] line for SKILL.md, found $case2_warn_lines"
-[ "$case2_gate20_findings" -eq 1 ] && pass "case2: exactly one FINDING gate20 line for SKILL.md" || fail "case2: expected exactly one FINDING gate20 line for SKILL.md, found $case2_gate20_findings"
-[ "$case2_digit_free" -eq 1 ] && pass "case2: SKILL.md gate20 finding text is digit-free" || fail "case2: SKILL.md gate20 finding text contains a digit"
+[ "$case2_warn_lines" -eq 1 ] && common_test_pass "case2: exactly one [WARN] line for skills/skill-orchestrate/SKILL.md" || common_test_fail "case2: expected exactly one [WARN] line for SKILL.md, found $case2_warn_lines"
+[ "$case2_gate20_findings" -eq 1 ] && common_test_pass "case2: exactly one FINDING gate20 line for SKILL.md" || common_test_fail "case2: expected exactly one FINDING gate20 line for SKILL.md, found $case2_gate20_findings"
+[ "$case2_digit_free" -eq 1 ] && common_test_pass "case2: SKILL.md gate20 finding text is digit-free" || common_test_fail "case2: SKILL.md gate20 finding text contains a digit"
 
 # --- case 5 assertions (eager-load total over baseline) ---
 if [ "$eager_pad_applied" = "true" ]; then
@@ -265,17 +261,17 @@ if [ "$eager_pad_applied" = "true" ]; then
   case5_gate20_findings="$(printf '%s\n' "$runB_out" | grep '^FINDING gate20 ' | grep -c 'eager-load total over baseline')"
   case5_digit_free=1
   printf '%s\n' "$runB_out" | grep '^FINDING gate20 ' | grep 'eager-load' | sed -E 's/^FINDING gate20 //' | grep -q '[0-9]' && case5_digit_free=0
-  [ "$case5_fail_lines" -eq 1 ] && pass "case5: exactly one [FAIL] line for eager-load total" || fail "case5: expected exactly one [FAIL] line for eager-load total, found $case5_fail_lines"
-  [ "$case5_gate20_findings" -eq 1 ] && pass "case5: exactly one FINDING gate20 line for eager-load-over-baseline" || fail "case5: expected exactly one FINDING gate20 line for eager-load-over-baseline, found $case5_gate20_findings"
-  [ "$case5_digit_free" -eq 1 ] && pass "case5: eager-load-over-baseline finding text is digit-free" || fail "case5: eager-load-over-baseline finding text contains a digit"
+  [ "$case5_fail_lines" -eq 1 ] && common_test_pass "case5: exactly one [FAIL] line for eager-load total" || common_test_fail "case5: expected exactly one [FAIL] line for eager-load total, found $case5_fail_lines"
+  [ "$case5_gate20_findings" -eq 1 ] && common_test_pass "case5: exactly one FINDING gate20 line for eager-load-over-baseline" || common_test_fail "case5: expected exactly one FINDING gate20 line for eager-load-over-baseline, found $case5_gate20_findings"
+  [ "$case5_digit_free" -eq 1 ] && common_test_pass "case5: eager-load-over-baseline finding text is digit-free" || common_test_fail "case5: eager-load-over-baseline finding text contains a digit"
 fi
 # Sub-check B (eager-load) is fail()-tier unconditionally, independent of gate mode -- so runB's
 # overall exit must already be non-zero from the eager-load FAIL alone, even though the two
 # per-file ceilings are still only WARN at this (default warn) mode.
 if [ "$runB_rc" -ne 0 ]; then
-  pass "case5: eager-load-over-baseline yields a non-zero exit (fail() tier, unconditional)"
+  common_test_pass "case5: eager-load-over-baseline yields a non-zero exit (fail() tier, unconditional)"
 else
-  fail "case5: eager-load-over-baseline did not yield a non-zero exit (runB_rc=$runB_rc)"
+  common_test_fail "case5: eager-load-over-baseline did not yield a non-zero exit (runB_rc=$runB_rc)"
 fi
 restore_file "$CLAUDE_MD_ORIG" "$CLAUDE_MD_FIXTURE"
 
@@ -289,14 +285,14 @@ case3_out="$(run_gate20 hard)"
 case3_rc=$?
 case3_fail_lines="$(printf '%s\n' "$case3_out" | grep -c '\[FAIL\] commands/orchestrate.md')"
 if [ "$case3_rc" -ne 0 ]; then
-  pass "case3: ORCHESTRATOR_BUDGET_GATE_MODE=hard yields a non-zero exit on the over-ceiling fixture ($case3_rc)"
+  common_test_pass "case3: ORCHESTRATOR_BUDGET_GATE_MODE=hard yields a non-zero exit on the over-ceiling fixture ($case3_rc)"
 else
-  fail "case3: ORCHESTRATOR_BUDGET_GATE_MODE=hard did not yield a non-zero exit"
+  common_test_fail "case3: ORCHESTRATOR_BUDGET_GATE_MODE=hard did not yield a non-zero exit"
 fi
 if [ "$case3_fail_lines" -eq 1 ]; then
-  pass "case3: exactly one [FAIL] line for commands/orchestrate.md under hard mode"
+  common_test_pass "case3: exactly one [FAIL] line for commands/orchestrate.md under hard mode"
 else
-  fail "case3: expected exactly one [FAIL] line for commands/orchestrate.md under hard mode, found $case3_fail_lines"
+  common_test_fail "case3: expected exactly one [FAIL] line for commands/orchestrate.md under hard mode, found $case3_fail_lines"
 fi
 
 # =====================================================================
@@ -320,9 +316,9 @@ pad_file "$ORCH_MD" 777
 post_findings="$(ORCHESTRATOR_BUDGET_GATE_MODE=warn deploy_findings_snapshot "$VERIFY_DEPLOY" --skip-slow --only-gate 20 "$FIXTURE")"
 new_findings="$(deploy_baseline_new_findings "$pre_findings" "$post_findings")"
 if [ -z "$new_findings" ]; then
-  pass "case4: a byte-count drift on the still-over-ceiling file introduces no new finding (deploy_baseline_new_findings empty)"
+  common_test_pass "case4: a byte-count drift on the still-over-ceiling file introduces no new finding (deploy_baseline_new_findings empty)"
 else
-  fail "case4: byte-count drift introduced a NEW finding -- this would spuriously trip the redeploy checkpoint" \
+  common_test_fail "case4: byte-count drift introduced a NEW finding -- this would spuriously trip the redeploy checkpoint" \
        "$new_findings"
 fi
 restore_file "$ORCH_MD_ORIG" "$ORCH_MD"
@@ -332,12 +328,12 @@ restore_file "$SKILL_MD_ORIG" "$SKILL_MD"
 # Assert no stray files were written under the real specs/ during this suite.
 # =====================================================================
 if git -C "$REPO_ROOT" status --porcelain -- specs/ 2>/dev/null | grep -q .; then
-  info "note: specs/ has pre-existing uncommitted changes unrelated to this suite (not asserted against)"
+  common_test_info "note: specs/ has pre-existing uncommitted changes unrelated to this suite (not asserted against)"
 fi
 if [ -n "${WORKDIR:-}" ] && [ ! -d "$WORKDIR" ]; then
-  fail "WORKDIR unexpectedly missing before cleanup"
+  common_test_fail "WORKDIR unexpectedly missing before cleanup"
 else
-  pass "all fixture I/O confined to \$WORKDIR (mktemp -d), nothing under real specs/"
+  common_test_pass "all fixture I/O confined to \$WORKDIR (mktemp -d), nothing under real specs/"
 fi
 
 echo ""

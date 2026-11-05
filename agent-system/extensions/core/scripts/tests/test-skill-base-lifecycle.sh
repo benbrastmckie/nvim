@@ -37,16 +37,14 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this suite supports: the
 # source-store copy (agent-system/extensions/core/scripts/tests/) and the deployed copy
 # (.claude/scripts/tests/), which sit at different depths below the repo root. A single
 # fixed levels-up count cannot be correct for both depths at once, so resolve via the git
 # worktree root first (depth-independent) and only fall back to the fixed-depth guess
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 # ─── candidate resolution: deployed tree first, source-store fallback ─────────────────────────
 resolve_candidate() {
@@ -113,13 +111,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 ORIG_PWD="$(pwd)"
 
@@ -210,39 +203,39 @@ EOF
 # Group 1: skill_gate_completion_claim -- pure logic, no I/O. All three cases plus the
 # non-integer-input sanitization guard.
 # =====================================================================
-info "=== skill_gate_completion_claim ==="
+common_test_info "=== skill_gate_completion_claim ==="
 
 if skill_gate_completion_claim 900 3 3 "absent" "[test]" 2>/tmp/sgcc-out.$$; then
-  pass "Case 2: phases_completed >= phases_total (3/3) -> ALLOW (return 0)"
+  common_test_pass "Case 2: phases_completed >= phases_total (3/3) -> ALLOW (return 0)"
 else
-  fail "Case 2: phases_completed >= phases_total (3/3) -> expected ALLOW, got REFUSE"
+  common_test_fail "Case 2: phases_completed >= phases_total (3/3) -> expected ALLOW, got REFUSE"
 fi
 rm -f /tmp/sgcc-out.$$
 
 if skill_gate_completion_claim 901 2 3 "absent" "[test]" 2>/dev/null; then
-  fail "Case 1: phases_completed < phases_total (2/3) -> expected REFUSE, got ALLOW"
+  common_test_fail "Case 1: phases_completed < phases_total (2/3) -> expected REFUSE, got ALLOW"
 else
-  pass "Case 1: phases_completed < phases_total (2/3) -> REFUSE (return 1)"
+  common_test_pass "Case 1: phases_completed < phases_total (2/3) -> REFUSE (return 1)"
 fi
 
 if skill_gate_completion_claim 902 0 0 "true" "[test]" 2>/dev/null; then
-  pass "Case 3 corroborated: phases_total=0, plan_markers_verified=true -> ALLOW (return 0)"
+  common_test_pass "Case 3 corroborated: phases_total=0, plan_markers_verified=true -> ALLOW (return 0)"
 else
-  fail "Case 3 corroborated: phases_total=0, plan_markers_verified=true -> expected ALLOW, got REFUSE"
+  common_test_fail "Case 3 corroborated: phases_total=0, plan_markers_verified=true -> expected ALLOW, got REFUSE"
 fi
 
 if skill_gate_completion_claim 903 0 0 "false" "[test]" 2>/dev/null; then
-  fail "Case 3 uncorroborated: phases_total=0, plan_markers_verified=false -> expected REFUSE, got ALLOW"
+  common_test_fail "Case 3 uncorroborated: phases_total=0, plan_markers_verified=false -> expected REFUSE, got ALLOW"
 else
-  pass "Case 3 uncorroborated: phases_total=0, plan_markers_verified=false -> REFUSE (return 1)"
+  common_test_pass "Case 3 uncorroborated: phases_total=0, plan_markers_verified=false -> REFUSE (return 1)"
 fi
 
 # Failing-input case: non-integer phases_completed/phases_total must sanitize to 0 (fail closed
 # to Case 3), never crash the -ge/-gt arithmetic under set -e.
 if skill_gate_completion_claim 904 "not-a-number" "also-not-a-number" "false" "[test]" 2>/dev/null; then
-  fail "Non-integer inputs sanitize to 0/0, plan_markers_verified=false -> expected REFUSE, got ALLOW"
+  common_test_fail "Non-integer inputs sanitize to 0/0, plan_markers_verified=false -> expected REFUSE, got ALLOW"
 else
-  pass "Non-integer inputs sanitize to 0/0 (fail closed to Case 3) without an arithmetic crash"
+  common_test_pass "Non-integer inputs sanitize to 0/0 (fail closed to Case 3) without an arithmetic crash"
 fi
 
 # =====================================================================
@@ -255,7 +248,7 @@ fi
 # A positive control below asserts .return-meta.json survives, so a future re-narrowing or
 # re-widening of this contract surfaces here immediately instead of silently drifting.
 # =====================================================================
-info "=== skill_cleanup ==="
+common_test_info "=== skill_cleanup ==="
 
 CLEANUP_TASK_DIR="$WORKDIR/specs/002_cleanup_fixture"
 mkdir -p "$CLEANUP_TASK_DIR"
@@ -265,25 +258,25 @@ touch "$CLEANUP_TASK_DIR/.postflight-pending" \
 ( cd "$WORKDIR" && skill_cleanup "002" "cleanup_fixture" )
 if [[ ! -f "$CLEANUP_TASK_DIR/.postflight-pending" ]] && \
    [[ ! -f "$CLEANUP_TASK_DIR/.postflight-loop-guard" ]]; then
-  pass "skill_cleanup removes both lifecycle temp files (.postflight-pending, .postflight-loop-guard)"
+  common_test_pass "skill_cleanup removes both lifecycle temp files (.postflight-pending, .postflight-loop-guard)"
 else
-  fail "skill_cleanup left at least one lifecycle temp file behind"
+  common_test_fail "skill_cleanup left at least one lifecycle temp file behind"
 fi
 
 # Positive control: .return-meta.json is NOT deleted by skill_cleanup -- ownership of its
 # deletion belongs to the calling command's own last step (see the quoted contract above).
 if [[ -f "$CLEANUP_TASK_DIR/.return-meta.json" ]]; then
-  pass "Positive control: skill_cleanup does not delete .return-meta.json (ownership stays with the caller)"
+  common_test_pass "Positive control: skill_cleanup does not delete .return-meta.json (ownership stays with the caller)"
 else
-  fail "Positive control: .return-meta.json was deleted by skill_cleanup -- contract regression"
+  common_test_fail "Positive control: .return-meta.json was deleted by skill_cleanup -- contract regression"
 fi
 
 # Failing/degenerate-input case: calling again on an already-clean directory must not error
 # (rm -f ... || true is exactly this contract).
 if ( cd "$WORKDIR" && skill_cleanup "002" "cleanup_fixture" ); then
-  pass "skill_cleanup on an already-clean directory is a silent no-op (no error)"
+  common_test_pass "skill_cleanup on an already-clean directory is a silent no-op (no error)"
 else
-  fail "skill_cleanup on an already-clean directory unexpectedly returned nonzero"
+  common_test_fail "skill_cleanup on an already-clean directory unexpectedly returned nonzero"
 fi
 
 # =====================================================================
@@ -297,7 +290,7 @@ fi
 # real-cwd assumption above -- isolated via a `cd` into a fixture dir, never touching the real
 # repo's .claude/.
 # =====================================================================
-info "=== skill_lifecycle_notify ==="
+common_test_info "=== skill_lifecycle_notify ==="
 
 LIFECYCLE_FIXTURE_DIR="$WORKDIR/lifecycle_fixture"
 mkdir -p "$LIFECYCLE_FIXTURE_DIR/.claude/scripts"
@@ -314,17 +307,17 @@ chmod +x "$LIFECYCLE_FIXTURE_DIR/.claude/scripts/lifecycle-notify.sh"
 LIFECYCLE_EMPTY_STDERR="$WORKDIR/lifecycle-empty-stderr.$$"
 if ( cd "$LIFECYCLE_FIXTURE_DIR" && skill_lifecycle_notify "" ) 2>"$LIFECYCLE_EMPTY_STDERR"; then
   if grep -qi "skill_lifecycle_notify" "$LIFECYCLE_EMPTY_STDERR"; then
-    pass "skill_lifecycle_notify \"\" warns on stderr naming the function, and returns success"
+    common_test_pass "skill_lifecycle_notify \"\" warns on stderr naming the function, and returns success"
   else
-    fail "skill_lifecycle_notify \"\" returned success but the stderr warning did not name the function"
+    common_test_fail "skill_lifecycle_notify \"\" returned success but the stderr warning did not name the function"
   fi
 else
-  fail "skill_lifecycle_notify \"\" unexpectedly returned nonzero (breaks the never-blocking contract)"
+  common_test_fail "skill_lifecycle_notify \"\" unexpectedly returned nonzero (breaks the never-blocking contract)"
 fi
 if [[ -f "$LIFECYCLE_EMPTY_MARKER" ]]; then
-  fail "skill_lifecycle_notify \"\" invoked lifecycle-notify.sh despite the empty-argument guard"
+  common_test_fail "skill_lifecycle_notify \"\" invoked lifecycle-notify.sh despite the empty-argument guard"
 else
-  pass "skill_lifecycle_notify \"\" does not invoke lifecycle-notify.sh (guard short-circuits before the call)"
+  common_test_pass "skill_lifecycle_notify \"\" does not invoke lifecycle-notify.sh (guard short-circuits before the call)"
 fi
 rm -f "$LIFECYCLE_EMPTY_STDERR"
 
@@ -345,9 +338,9 @@ while [[ ! -f "$LIFECYCLE_REAL_MARKER" ]] && [[ "$lifecycle_wait_iter" -lt 20 ]]
   lifecycle_wait_iter=$((lifecycle_wait_iter + 1))
 done
 if [[ -f "$LIFECYCLE_REAL_MARKER" ]] && [[ "$(cat "$LIFECYCLE_REAL_MARKER")" == "researched" ]]; then
-  pass "skill_lifecycle_notify \"researched\" still invokes lifecycle-notify.sh with the status argument (non-empty path unregressed)"
+  common_test_pass "skill_lifecycle_notify \"researched\" still invokes lifecycle-notify.sh with the status argument (non-empty path unregressed)"
 else
-  fail "skill_lifecycle_notify \"researched\" did not invoke lifecycle-notify.sh as expected"
+  common_test_fail "skill_lifecycle_notify \"researched\" did not invoke lifecycle-notify.sh as expected"
 fi
 
 # =====================================================================
@@ -355,7 +348,7 @@ fi
 # plus a generate-todo.sh regen. Isolated via SKILL_REPO_ROOT override; never touches the real
 # specs/ tree.
 # =====================================================================
-info "=== skill_link_artifacts ==="
+common_test_info "=== skill_link_artifacts ==="
 
 LINK_ROOT="$WORKDIR/link-fixture"
 build_fixture_repo "$LINK_ROOT"
@@ -374,18 +367,18 @@ LINK_EXIT=$?
 if [[ "$LINK_EXIT" -eq 0 ]]; then
   registered=$(jq -r '.active_projects[0].artifacts // [] | length' "$LINK_ROOT/specs/state.json" 2>/dev/null)
   if [[ "$registered" == "1" ]]; then
-    pass "skill_link_artifacts registers exactly one artifact entry in state.json"
+    common_test_pass "skill_link_artifacts registers exactly one artifact entry in state.json"
   else
-    fail "skill_link_artifacts: expected 1 artifact entry, found '$registered' (see $WORKDIR/link-stderr.log)"
+    common_test_fail "skill_link_artifacts: expected 1 artifact entry, found '$registered' (see $WORKDIR/link-stderr.log)"
   fi
   path_written=$(jq -r '.active_projects[0].artifacts[0].path // ""' "$LINK_ROOT/specs/state.json" 2>/dev/null)
   if [[ "$path_written" == "specs/001_fixture_task/summaries/01_fixture-summary.md" ]]; then
-    pass "skill_link_artifacts writes the exact artifact path"
+    common_test_pass "skill_link_artifacts writes the exact artifact path"
   else
-    fail "skill_link_artifacts: path mismatch, got '$path_written'"
+    common_test_fail "skill_link_artifacts: path mismatch, got '$path_written'"
   fi
 else
-  fail "skill_link_artifacts exited $LINK_EXIT (see $WORKDIR/link-stderr.log)"
+  common_test_fail "skill_link_artifacts exited $LINK_EXIT (see $WORKDIR/link-stderr.log)"
 fi
 
 # Failing-input case: empty artifact_path is a documented no-op guard (the `[ -n "$artifact_path" ]`
@@ -394,9 +387,9 @@ BEFORE_COUNT=$(jq -r '.active_projects[0].artifacts // [] | length' "$LINK_ROOT/
 SKILL_REPO_ROOT="$LINK_ROOT" skill_link_artifacts 1 "" "summary" "" "'**Summary**'" "'**Description**'" "sess_test_link" 2>/dev/null
 AFTER_COUNT=$(jq -r '.active_projects[0].artifacts // [] | length' "$LINK_ROOT/specs/state.json" 2>/dev/null)
 if [[ "$BEFORE_COUNT" == "$AFTER_COUNT" ]]; then
-  pass "skill_link_artifacts with an empty artifact_path is a no-op (artifact count unchanged: $BEFORE_COUNT)"
+  common_test_pass "skill_link_artifacts with an empty artifact_path is a no-op (artifact count unchanged: $BEFORE_COUNT)"
 else
-  fail "skill_link_artifacts with an empty artifact_path unexpectedly changed artifact count ($BEFORE_COUNT -> $AFTER_COUNT)"
+  common_test_fail "skill_link_artifacts with an empty artifact_path unexpectedly changed artifact count ($BEFORE_COUNT -> $AFTER_COUNT)"
 fi
 
 # =====================================================================
@@ -407,7 +400,7 @@ fi
 # roadmap-integration.sh or any other retired roadmap machinery -- this suite calls the
 # function directly with literal arguments.
 # =====================================================================
-info "=== skill_propagate_completion_summary ==="
+common_test_info "=== skill_propagate_completion_summary ==="
 
 PROP_ROOT="$WORKDIR/propagate-fixture"
 build_fixture_repo "$PROP_ROOT"
@@ -421,18 +414,18 @@ PROPAGATE_A_EXIT=$?
 if [[ "$PROPAGATE_A_EXIT" -eq 0 ]]; then
   summary_written=$(jq -r '.active_projects[0].completion_summary // ""' "$PROP_ROOT/specs/state.json" 2>/dev/null)
   if [[ "$summary_written" == "Fixture completion summary A" ]]; then
-    pass "skill_propagate_completion_summary (non-meta): writes the exact completion_summary string"
+    common_test_pass "skill_propagate_completion_summary (non-meta): writes the exact completion_summary string"
   else
-    fail "skill_propagate_completion_summary (non-meta): completion_summary mismatch, got '$summary_written' (see $WORKDIR/propagate-a-stderr.log)"
+    common_test_fail "skill_propagate_completion_summary (non-meta): completion_summary mismatch, got '$summary_written' (see $WORKDIR/propagate-a-stderr.log)"
   fi
   items_written=$(jq -c '.active_projects[0].roadmap_items // null' "$PROP_ROOT/specs/state.json" 2>/dev/null)
   if [[ "$items_written" == '["Close fixture roadmap item A"]' ]]; then
-    pass "skill_propagate_completion_summary (non-meta): writes roadmap_items verbatim (content and length)"
+    common_test_pass "skill_propagate_completion_summary (non-meta): writes roadmap_items verbatim (content and length)"
   else
-    fail "skill_propagate_completion_summary (non-meta): roadmap_items mismatch, got '$items_written' (see $WORKDIR/propagate-a-stderr.log)"
+    common_test_fail "skill_propagate_completion_summary (non-meta): roadmap_items mismatch, got '$items_written' (see $WORKDIR/propagate-a-stderr.log)"
   fi
 else
-  fail "skill_propagate_completion_summary (non-meta) exited $PROPAGATE_A_EXIT (see $WORKDIR/propagate-a-stderr.log)"
+  common_test_fail "skill_propagate_completion_summary (non-meta) exited $PROPAGATE_A_EXIT (see $WORKDIR/propagate-a-stderr.log)"
 fi
 
 # Case B: meta suppression. Same completion_summary and same non-empty roadmap_items as Case A,
@@ -449,18 +442,18 @@ PROPAGATE_B_EXIT=$?
 if [[ "$PROPAGATE_B_EXIT" -eq 0 ]]; then
   summary_written=$(jq -r '.active_projects[0].completion_summary // ""' "$PROP_ROOT_META/specs/state.json" 2>/dev/null)
   if [[ "$summary_written" == "Fixture completion summary B" ]]; then
-    pass "skill_propagate_completion_summary (meta): completion_summary is written despite task_type=meta"
+    common_test_pass "skill_propagate_completion_summary (meta): completion_summary is written despite task_type=meta"
   else
-    fail "skill_propagate_completion_summary (meta): completion_summary mismatch, got '$summary_written' (see $WORKDIR/propagate-b-stderr.log)"
+    common_test_fail "skill_propagate_completion_summary (meta): completion_summary mismatch, got '$summary_written' (see $WORKDIR/propagate-b-stderr.log)"
   fi
   has_items=$(jq -r '.active_projects[0] | has("roadmap_items")' "$PROP_ROOT_META/specs/state.json" 2>/dev/null)
   if [[ "$has_items" == "false" ]]; then
-    pass "skill_propagate_completion_summary (meta): roadmap_items key is absent (task_type=meta suppresses the write regardless of fixture task_type)"
+    common_test_pass "skill_propagate_completion_summary (meta): roadmap_items key is absent (task_type=meta suppresses the write regardless of fixture task_type)"
   else
-    fail "skill_propagate_completion_summary (meta): roadmap_items key unexpectedly present (has(\"roadmap_items\")=$has_items, see $WORKDIR/propagate-b-stderr.log)"
+    common_test_fail "skill_propagate_completion_summary (meta): roadmap_items key unexpectedly present (has(\"roadmap_items\")=$has_items, see $WORKDIR/propagate-b-stderr.log)"
   fi
 else
-  fail "skill_propagate_completion_summary (meta) exited $PROPAGATE_B_EXIT (see $WORKDIR/propagate-b-stderr.log)"
+  common_test_fail "skill_propagate_completion_summary (meta) exited $PROPAGATE_B_EXIT (see $WORKDIR/propagate-b-stderr.log)"
 fi
 
 # Case C: empty-guard regression. Non-meta calls with roadmap_items="[]" and roadmap_items=""
@@ -476,12 +469,12 @@ if [[ "$PROPAGATE_C1_EXIT" -eq 0 ]]; then
   summary_written=$(jq -r '.active_projects[0].completion_summary // ""' "$PROP_ROOT_EMPTYARR/specs/state.json" 2>/dev/null)
   has_items=$(jq -r '.active_projects[0] | has("roadmap_items")' "$PROP_ROOT_EMPTYARR/specs/state.json" 2>/dev/null)
   if [[ "$summary_written" == "Fixture completion summary C1" && "$has_items" == "false" ]]; then
-    pass "skill_propagate_completion_summary (non-meta, roadmap_items=[]): completion_summary written, roadmap_items stays absent"
+    common_test_pass "skill_propagate_completion_summary (non-meta, roadmap_items=[]): completion_summary written, roadmap_items stays absent"
   else
-    fail "skill_propagate_completion_summary (non-meta, roadmap_items=[]): expected summary written + roadmap_items absent, got summary='$summary_written' has_items=$has_items (see $WORKDIR/propagate-c1-stderr.log)"
+    common_test_fail "skill_propagate_completion_summary (non-meta, roadmap_items=[]): expected summary written + roadmap_items absent, got summary='$summary_written' has_items=$has_items (see $WORKDIR/propagate-c1-stderr.log)"
   fi
 else
-  fail "skill_propagate_completion_summary (non-meta, roadmap_items=[]) exited $PROPAGATE_C1_EXIT (see $WORKDIR/propagate-c1-stderr.log)"
+  common_test_fail "skill_propagate_completion_summary (non-meta, roadmap_items=[]) exited $PROPAGATE_C1_EXIT (see $WORKDIR/propagate-c1-stderr.log)"
 fi
 
 PROP_ROOT_EMPTYSTR="$WORKDIR/propagate-fixture-emptystr"
@@ -495,36 +488,36 @@ if [[ "$PROPAGATE_C2_EXIT" -eq 0 ]]; then
   summary_written=$(jq -r '.active_projects[0].completion_summary // ""' "$PROP_ROOT_EMPTYSTR/specs/state.json" 2>/dev/null)
   has_items=$(jq -r '.active_projects[0] | has("roadmap_items")' "$PROP_ROOT_EMPTYSTR/specs/state.json" 2>/dev/null)
   if [[ "$summary_written" == "Fixture completion summary C2" && "$has_items" == "false" ]]; then
-    pass "skill_propagate_completion_summary (non-meta, roadmap_items=\"\"): completion_summary written, roadmap_items stays absent"
+    common_test_pass "skill_propagate_completion_summary (non-meta, roadmap_items=\"\"): completion_summary written, roadmap_items stays absent"
   else
-    fail "skill_propagate_completion_summary (non-meta, roadmap_items=\"\"): expected summary written + roadmap_items absent, got summary='$summary_written' has_items=$has_items (see $WORKDIR/propagate-c2-stderr.log)"
+    common_test_fail "skill_propagate_completion_summary (non-meta, roadmap_items=\"\"): expected summary written + roadmap_items absent, got summary='$summary_written' has_items=$has_items (see $WORKDIR/propagate-c2-stderr.log)"
   fi
 else
-  fail "skill_propagate_completion_summary (non-meta, roadmap_items=\"\") exited $PROPAGATE_C2_EXIT (see $WORKDIR/propagate-c2-stderr.log)"
+  common_test_fail "skill_propagate_completion_summary (non-meta, roadmap_items=\"\") exited $PROPAGATE_C2_EXIT (see $WORKDIR/propagate-c2-stderr.log)"
 fi
 
 # =====================================================================
 # Group 4: skill_preflight_update / skill_postflight_update -- hardcode the bare relative path
 # .claude/scripts/update-task-status.sh, so this group cd's into a full fixture repo.
 # =====================================================================
-info "=== skill_preflight_update / skill_postflight_update ==="
+common_test_info "=== skill_preflight_update / skill_postflight_update ==="
 
 LIFECYCLE_ROOT="$WORKDIR/lifecycle-fixture"
 build_fixture_repo "$LIFECYCLE_ROOT"
 
-cd "$LIFECYCLE_ROOT" || { fail "could not cd into lifecycle fixture repo"; }
+cd "$LIFECYCLE_ROOT" || { common_test_fail "could not cd into lifecycle fixture repo"; }
 
 skill_preflight_update 1 "plan" "sess_test_preflight" 2>"$WORKDIR/preflight-stderr.log"
 PREFLIGHT_EXIT=$?
 if [[ "$PREFLIGHT_EXIT" -eq 0 ]]; then
   new_status=$(jq -r '.active_projects[0].status' "$LIFECYCLE_ROOT/specs/state.json" 2>/dev/null)
   if [[ "$new_status" == "planning" ]]; then
-    pass "skill_preflight_update transitions researched -> planning for a plan preflight"
+    common_test_pass "skill_preflight_update transitions researched -> planning for a plan preflight"
   else
-    fail "skill_preflight_update: expected status 'planning', got '$new_status' (see $WORKDIR/preflight-stderr.log)"
+    common_test_fail "skill_preflight_update: expected status 'planning', got '$new_status' (see $WORKDIR/preflight-stderr.log)"
   fi
 else
-  fail "skill_preflight_update exited $PREFLIGHT_EXIT (see $WORKDIR/preflight-stderr.log)"
+  common_test_fail "skill_preflight_update exited $PREFLIGHT_EXIT (see $WORKDIR/preflight-stderr.log)"
 fi
 
 skill_postflight_update 1 "plan" "sess_test_preflight" "planned" 2>"$WORKDIR/postflight-stderr.log"
@@ -532,12 +525,12 @@ POSTFLIGHT_EXIT=$?
 if [[ "$POSTFLIGHT_EXIT" -eq 0 ]]; then
   new_status=$(jq -r '.active_projects[0].status' "$LIFECYCLE_ROOT/specs/state.json" 2>/dev/null)
   if [[ "$new_status" == "planned" ]]; then
-    pass "skill_postflight_update transitions planning -> planned on a successful plan postflight"
+    common_test_pass "skill_postflight_update transitions planning -> planned on a successful plan postflight"
   else
-    fail "skill_postflight_update: expected status 'planned', got '$new_status' (see $WORKDIR/postflight-stderr.log)"
+    common_test_fail "skill_postflight_update: expected status 'planned', got '$new_status' (see $WORKDIR/postflight-stderr.log)"
   fi
 else
-  fail "skill_postflight_update exited $POSTFLIGHT_EXIT (see $WORKDIR/postflight-stderr.log)"
+  common_test_fail "skill_postflight_update exited $POSTFLIGHT_EXIT (see $WORKDIR/postflight-stderr.log)"
 fi
 
 # Failing/degenerate-input case: a non-success status must SKIP the update-task-status.sh call
@@ -547,9 +540,9 @@ BEFORE_STATUS=$(jq -r '.active_projects[0].status' "$LIFECYCLE_ROOT/specs/state.
 skill_postflight_update 1 "plan" "sess_test_preflight" "blocked" 2>/dev/null
 AFTER_STATUS=$(jq -r '.active_projects[0].status' "$LIFECYCLE_ROOT/specs/state.json" 2>/dev/null)
 if [[ "$BEFORE_STATUS" == "$AFTER_STATUS" ]]; then
-  pass "skill_postflight_update with a non-success status ('blocked') skips the status write (unchanged: $AFTER_STATUS)"
+  common_test_pass "skill_postflight_update with a non-success status ('blocked') skips the status write (unchanged: $AFTER_STATUS)"
 else
-  fail "skill_postflight_update with a non-success status unexpectedly changed state.json ($BEFORE_STATUS -> $AFTER_STATUS)"
+  common_test_fail "skill_postflight_update with a non-success status unexpectedly changed state.json ($BEFORE_STATUS -> $AFTER_STATUS)"
 fi
 
 cd "$ORIG_PWD" || true
@@ -562,7 +555,7 @@ cd "$ORIG_PWD" || true
 # that matters for real /orchestrate plan-postflight runs, distinct from and in addition to
 # orchestrator-postflight.sh's own branch.
 # =====================================================================
-info "=== skill_postflight_update (plan-branch file_scope harvest) ==="
+common_test_info "=== skill_postflight_update (plan-branch file_scope harvest) ==="
 
 HARVEST_ROOT="$WORKDIR/harvest-fixture"
 build_fixture_repo "$HARVEST_ROOT"
@@ -578,43 +571,43 @@ cat > "$HARVEST_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md" << 'PLANEO
 - ok
 PLANEOF
 
-cd "$HARVEST_ROOT" || { fail "could not cd into harvest fixture repo"; }
+cd "$HARVEST_ROOT" || { common_test_fail "could not cd into harvest fixture repo"; }
 skill_postflight_update 1 "plan" "sess_test_harvest" "planned" "" "specs/001_fixture_task" \
   2>"$WORKDIR/harvest-postflight-stderr.log"
 HARVEST_POSTFLIGHT_EXIT=$?
 HARVEST_FILE_SCOPE="$(jq -c '.active_projects[0].file_scope' "$HARVEST_ROOT/specs/state.json" 2>/dev/null)"
 if [[ "$HARVEST_POSTFLIGHT_EXIT" -eq 0 ]]; then
-  pass "skill_postflight_update (plan, with a real plan file): exits 0"
+  common_test_pass "skill_postflight_update (plan, with a real plan file): exits 0"
 else
-  fail "skill_postflight_update (plan, with a real plan file) exited $HARVEST_POSTFLIGHT_EXIT (see $WORKDIR/harvest-postflight-stderr.log)"
+  common_test_fail "skill_postflight_update (plan, with a real plan file) exited $HARVEST_POSTFLIGHT_EXIT (see $WORKDIR/harvest-postflight-stderr.log)"
 fi
 if [[ "$(echo "$HARVEST_FILE_SCOPE" | jq -c 'sort')" == '["scripts/harvested-one.sh","scripts/harvested-two.sh"]' ]]; then
-  pass "skill_postflight_update (plan): file_scope harvested from the plan's Files to modify field ($HARVEST_FILE_SCOPE)"
+  common_test_pass "skill_postflight_update (plan): file_scope harvested from the plan's Files to modify field ($HARVEST_FILE_SCOPE)"
 else
-  fail "skill_postflight_update (plan): expected file_scope [\"scripts/harvested-one.sh\",\"scripts/harvested-two.sh\"], got '$HARVEST_FILE_SCOPE' (see $WORKDIR/harvest-postflight-stderr.log)"
+  common_test_fail "skill_postflight_update (plan): expected file_scope [\"scripts/harvested-one.sh\",\"scripts/harvested-two.sh\"], got '$HARVEST_FILE_SCOPE' (see $WORKDIR/harvest-postflight-stderr.log)"
 fi
 # The harvested widening (null -> two paths, delta 2) must surface through THIS live caller's
 # own stderr, proving the notice reaches an operator via skill_postflight_update itself, not
 # only through a direct update-task-status.sh invocation (see test-update-task-status.sh's
 # Case 11 for that narrower coverage).
 if grep -q '\[file-scope\].*2 new path' "$WORKDIR/harvest-postflight-stderr.log"; then
-  pass "skill_postflight_update (plan): [file-scope] notice naming a count of 2 surfaces on the live plan-postflight path"
+  common_test_pass "skill_postflight_update (plan): [file-scope] notice naming a count of 2 surfaces on the live plan-postflight path"
 else
-  fail "skill_postflight_update (plan): expected a [file-scope] notice naming a count of 2 (see $WORKDIR/harvest-postflight-stderr.log)"
+  common_test_fail "skill_postflight_update (plan): expected a [file-scope] notice naming a count of 2 (see $WORKDIR/harvest-postflight-stderr.log)"
 fi
 cd "$ORIG_PWD" || true
 
 # --- Degenerate case: no plans/ directory at all -- file_scope stays absent/null, never [] ----
 NOPLAN_ROOT="$WORKDIR/harvest-noplan-fixture"
 build_fixture_repo "$NOPLAN_ROOT"
-cd "$NOPLAN_ROOT" || { fail "could not cd into no-plan harvest fixture repo"; }
+cd "$NOPLAN_ROOT" || { common_test_fail "could not cd into no-plan harvest fixture repo"; }
 skill_postflight_update 1 "plan" "sess_test_harvest_noplan" "planned" "" "specs/001_fixture_task" \
   2>"$WORKDIR/harvest-noplan-postflight-stderr.log"
 NOPLAN_FILE_SCOPE="$(jq -c '.active_projects[0].file_scope' "$NOPLAN_ROOT/specs/state.json" 2>/dev/null)"
 if [[ "$NOPLAN_FILE_SCOPE" == "null" ]]; then
-  pass "skill_postflight_update (plan, no plans/ dir): file_scope stays absent (null), no bogus [] written"
+  common_test_pass "skill_postflight_update (plan, no plans/ dir): file_scope stays absent (null), no bogus [] written"
 else
-  fail "skill_postflight_update (plan, no plans/ dir): expected file_scope null, got '$NOPLAN_FILE_SCOPE' (see $WORKDIR/harvest-noplan-postflight-stderr.log)"
+  common_test_fail "skill_postflight_update (plan, no plans/ dir): expected file_scope null, got '$NOPLAN_FILE_SCOPE' (see $WORKDIR/harvest-noplan-postflight-stderr.log)"
 fi
 cd "$ORIG_PWD" || true
 
@@ -627,7 +620,7 @@ cd "$ORIG_PWD" || true
 # library is already defined process-wide in THIS suite's own shell from the top-of-file source
 # and removing a fixture's on-disk copy cannot undefine an already-defined shell function).
 # =====================================================================
-info "=== skill_preflight_update (deploy-freshness surface) ==="
+common_test_info "=== skill_preflight_update (deploy-freshness surface) ==="
 
 # --- Case: WARN present, naming the stale extension, AND the rest of the call still runs
 # (status write + reaches the same trailing lifecycle-event code as the clean path) ------------
@@ -643,27 +636,27 @@ build_deploy_gate_source_repo "$FRESHNESS_WARN_ROOT"
 # overridden per-call here exactly like Group 3's skill_link_artifacts calls above -- omitting
 # this override would silently check the REAL repo's own .claude-extensions.json instead of the
 # fixture's fabricated one.
-cd "$FRESHNESS_WARN_ROOT" || fail "could not cd into freshness-warn fixture repo"
+cd "$FRESHNESS_WARN_ROOT" || common_test_fail "could not cd into freshness-warn fixture repo"
 SKILL_REPO_ROOT="$FRESHNESS_WARN_ROOT" skill_preflight_update 1 "plan" "sess_test_freshness_warn" 2>"$WORKDIR/freshness-warn-stderr.log"
 FRESHNESS_WARN_EXIT=$?
 FRESHNESS_WARN_STDERR="$(cat "$WORKDIR/freshness-warn-stderr.log")"
 cd "$ORIG_PWD" || true
 
 if [[ "$FRESHNESS_WARN_EXIT" -eq 0 ]]; then
-  pass "skill_preflight_update (stale 'core' extension): still returns 0"
+  common_test_pass "skill_preflight_update (stale 'core' extension): still returns 0"
 else
-  fail "skill_preflight_update (stale 'core' extension): unexpectedly exited $FRESHNESS_WARN_EXIT"
+  common_test_fail "skill_preflight_update (stale 'core' extension): unexpectedly exited $FRESHNESS_WARN_EXIT"
 fi
 if printf '%s' "$FRESHNESS_WARN_STDERR" | grep -qi "deployed .claude/ tree is STALE.*extension(s): core"; then
-  pass "skill_preflight_update (stale 'core' extension): emits the named WARN block on stderr"
+  common_test_pass "skill_preflight_update (stale 'core' extension): emits the named WARN block on stderr"
 else
-  fail "skill_preflight_update (stale 'core' extension): expected a WARN naming 'core', got: $FRESHNESS_WARN_STDERR"
+  common_test_fail "skill_preflight_update (stale 'core' extension): expected a WARN naming 'core', got: $FRESHNESS_WARN_STDERR"
 fi
 FRESHNESS_WARN_STATUS="$(jq -r '.active_projects[0].status' "$FRESHNESS_WARN_ROOT/specs/state.json" 2>/dev/null)"
 if [[ "$FRESHNESS_WARN_STATUS" == "planning" ]]; then
-  pass "skill_preflight_update (stale 'core' extension): status write still ran (researched -> planning) alongside the WARN"
+  common_test_pass "skill_preflight_update (stale 'core' extension): status write still ran (researched -> planning) alongside the WARN"
 else
-  fail "skill_preflight_update (stale 'core' extension): expected status write to still reach 'planning', got '$FRESHNESS_WARN_STATUS'"
+  common_test_fail "skill_preflight_update (stale 'core' extension): expected status write to still reach 'planning', got '$FRESHNESS_WARN_STATUS'"
 fi
 # _events_append_observable's own stderr WARNING is one-time-per-process (a module-level
 # _EVENTS_APPEND_OBSERVABLE_WARNED guard -- see skill-base.sh's own comment on that function), so
@@ -672,9 +665,9 @@ fi
 # unconditional sentinel-log append (gated only on "kind" being non-empty, never on the
 # one-time-warned flag) is the reliable proxy that execution actually reached this trailing call.
 if [[ -f "$FRESHNESS_WARN_ROOT/.claude/tmp/events-append-observable.log" ]]; then
-  pass "skill_preflight_update (stale 'core' extension): execution still reaches the trailing lifecycle-event call (same as the clean path)"
+  common_test_pass "skill_preflight_update (stale 'core' extension): execution still reaches the trailing lifecycle-event call (same as the clean path)"
 else
-  fail "skill_preflight_update (stale 'core' extension): did not reach the trailing lifecycle-event call -- the WARN may have short-circuited the rest of the function"
+  common_test_fail "skill_preflight_update (stale 'core' extension): did not reach the trailing lifecycle-event call -- the WARN may have short-circuited the rest of the function"
 fi
 
 # --- Case: silence when there is no .claude-extensions.json at all (CANNOTVERIFY must never
@@ -684,19 +677,19 @@ build_fixture_repo "$FRESHNESS_NOEXT_ROOT"
 # build_fixture_repo deliberately never writes a .claude-extensions.json; confirm that hypothesis
 # rather than assuming it, since a silent future change to that helper would invalidate this case.
 if [[ -f "$FRESHNESS_NOEXT_ROOT/.claude-extensions.json" ]]; then
-  fail "freshness silence case: fixture setup assumption broken -- build_fixture_repo now writes .claude-extensions.json"
+  common_test_fail "freshness silence case: fixture setup assumption broken -- build_fixture_repo now writes .claude-extensions.json"
 fi
 
-cd "$FRESHNESS_NOEXT_ROOT" || fail "could not cd into freshness-noext fixture repo"
+cd "$FRESHNESS_NOEXT_ROOT" || common_test_fail "could not cd into freshness-noext fixture repo"
 SKILL_REPO_ROOT="$FRESHNESS_NOEXT_ROOT" skill_preflight_update 1 "plan" "sess_test_freshness_noext" 2>"$WORKDIR/freshness-noext-stderr.log"
 FRESHNESS_NOEXT_EXIT=$?
 FRESHNESS_NOEXT_STDERR="$(cat "$WORKDIR/freshness-noext-stderr.log")"
 cd "$ORIG_PWD" || true
 
 if [[ "$FRESHNESS_NOEXT_EXIT" -eq 0 ]] && ! printf '%s' "$FRESHNESS_NOEXT_STDERR" | grep -qi "deployed .claude/ tree is STALE"; then
-  pass "skill_preflight_update (no .claude-extensions.json): silent on the freshness surface, still returns 0 (CANNOTVERIFY never reads as an alarm)"
+  common_test_pass "skill_preflight_update (no .claude-extensions.json): silent on the freshness surface, still returns 0 (CANNOTVERIFY never reads as an alarm)"
 else
-  fail "skill_preflight_update (no .claude-extensions.json): expected silence and exit 0, got rc=$FRESHNESS_NOEXT_EXIT stderr=$FRESHNESS_NOEXT_STDERR"
+  common_test_fail "skill_preflight_update (no .claude-extensions.json): expected silence and exit 0, got rc=$FRESHNESS_NOEXT_EXIT stderr=$FRESHNESS_NOEXT_STDERR"
 fi
 
 # --- Case: no-abort when the library is not resolvable at either candidate path. Must run in a
@@ -726,9 +719,9 @@ else
   NOLIB_RC=$?
 fi
 if [[ "$NOLIB_RC" -eq 0 ]] && grep -q "SUBPROCESS_REACHED_END" "$NOLIB_STDOUT_FILE"; then
-  pass "skill_preflight_update under set -e with the freshness library unresolvable at either candidate path: does not abort the caller"
+  common_test_pass "skill_preflight_update under set -e with the freshness library unresolvable at either candidate path: does not abort the caller"
 else
-  fail "skill_preflight_update under set -e with the freshness library unresolvable: caller aborted (rc=$NOLIB_RC); see $WORKDIR/freshness-nolib-stderr.log"
+  common_test_fail "skill_preflight_update under set -e with the freshness library unresolvable: caller aborted (rc=$NOLIB_RC); see $WORKDIR/freshness-nolib-stderr.log"
 fi
 
 # --- Assert no code path added for this surface writes specs/.freshness-warn-streak.json (that
@@ -742,9 +735,9 @@ for _fr in "$FRESHNESS_WARN_ROOT" "$FRESHNESS_NOEXT_ROOT" "$FRESHNESS_NOLIB_ROOT
   fi
 done
 if [[ "$STREAK_TOUCHED" == "false" ]]; then
-  pass "skill_preflight_update's deploy-freshness surface never writes specs/.freshness-warn-streak.json"
+  common_test_pass "skill_preflight_update's deploy-freshness surface never writes specs/.freshness-warn-streak.json"
 else
-  fail "skill_preflight_update's deploy-freshness surface unexpectedly wrote specs/.freshness-warn-streak.json in at least one fixture"
+  common_test_fail "skill_preflight_update's deploy-freshness surface unexpectedly wrote specs/.freshness-warn-streak.json in at least one fixture"
 fi
 
 # =====================================================================
@@ -756,7 +749,7 @@ fi
 # it (skill_postflight_update hardcodes the bare relative path, same discipline as the plain
 # Group 4 cases above), and restores $ORIG_PWD afterward. No SKILL_REPO_ROOT override is used.
 # =====================================================================
-info "=== skill_postflight_update (exit-6 deploy-pending annotation) ==="
+common_test_info "=== skill_postflight_update (exit-6 deploy-pending annotation) ==="
 
 # --- Primary case: 6th positional supplied, TASK_DIR unset (the /orchestrate condition) ---
 DEPLOY_GATE_ROOT="$WORKDIR/deploy-gate-fixture"
@@ -764,7 +757,7 @@ build_fixture_repo "$DEPLOY_GATE_ROOT"
 build_deploy_gate_source_repo "$DEPLOY_GATE_ROOT"
 write_deploy_gate_return_meta "$DEPLOY_GATE_ROOT"
 
-cd "$DEPLOY_GATE_ROOT" || { fail "could not cd into deploy-gate fixture repo (primary case)"; }
+cd "$DEPLOY_GATE_ROOT" || { common_test_fail "could not cd into deploy-gate fixture repo (primary case)"; }
 unset TASK_DIR
 skill_postflight_update 1 "implement" "sess_test_deploygate_primary" "implemented" "" \
   "specs/001_fixture_task" 2>"$WORKDIR/deploygate-primary-stderr.log"
@@ -772,21 +765,21 @@ DG_PRIMARY_EXIT=$?
 cd "$ORIG_PWD" || true
 
 if [[ "$DG_PRIMARY_EXIT" -eq 6 ]]; then
-  pass "Primary case: exit-6 deploy-pending refusal reached (6th arg supplied, TASK_DIR unset)"
+  common_test_pass "Primary case: exit-6 deploy-pending refusal reached (6th arg supplied, TASK_DIR unset)"
 else
-  fail "Primary case: expected exit 6, got $DG_PRIMARY_EXIT (see $WORKDIR/deploygate-primary-stderr.log)"
+  common_test_fail "Primary case: expected exit 6, got $DG_PRIMARY_EXIT (see $WORKDIR/deploygate-primary-stderr.log)"
 fi
 DG_PRIMARY_PENDING="$(jq -r '.deploy_pending // "MISSING"' "$DEPLOY_GATE_ROOT/specs/001_fixture_task/.return-meta.json" 2>/dev/null)"
 if [[ "$DG_PRIMARY_PENDING" == "true" ]]; then
-  pass "Primary case: .return-meta.json gains deploy_pending == true"
+  common_test_pass "Primary case: .return-meta.json gains deploy_pending == true"
 else
-  fail "Primary case: expected deploy_pending == true, got '$DG_PRIMARY_PENDING'"
+  common_test_fail "Primary case: expected deploy_pending == true, got '$DG_PRIMARY_PENDING'"
 fi
 DG_PRIMARY_REASON="$(jq -r '.deploy_pending_reason // "MISSING"' "$DEPLOY_GATE_ROOT/specs/001_fixture_task/.return-meta.json" 2>/dev/null)"
 if [[ -n "$DG_PRIMARY_REASON" && "$DG_PRIMARY_REASON" != "MISSING" && "$DG_PRIMARY_REASON" != "null" ]]; then
-  pass "Primary case: deploy_pending_reason is a non-null, non-empty string"
+  common_test_pass "Primary case: deploy_pending_reason is a non-null, non-empty string"
 else
-  fail "Primary case: deploy_pending_reason missing/null/empty (got '$DG_PRIMARY_REASON')"
+  common_test_fail "Primary case: deploy_pending_reason missing/null/empty (got '$DG_PRIMARY_REASON')"
 fi
 
 # --- Regression-guard case: 6th arg omitted, TASK_DIR exported (the legacy skill-context path) ---
@@ -795,7 +788,7 @@ build_fixture_repo "$DEPLOY_GATE_ROOT2"
 build_deploy_gate_source_repo "$DEPLOY_GATE_ROOT2"
 write_deploy_gate_return_meta "$DEPLOY_GATE_ROOT2"
 
-cd "$DEPLOY_GATE_ROOT2" || { fail "could not cd into deploy-gate fixture repo (legacy case)"; }
+cd "$DEPLOY_GATE_ROOT2" || { common_test_fail "could not cd into deploy-gate fixture repo (legacy case)"; }
 export TASK_DIR="specs/001_fixture_task"
 skill_postflight_update 1 "implement" "sess_test_deploygate_legacy" "implemented" \
   2>"$WORKDIR/deploygate-legacy-stderr.log"
@@ -804,15 +797,15 @@ unset TASK_DIR
 cd "$ORIG_PWD" || true
 
 if [[ "$DG_LEGACY_EXIT" -eq 6 ]]; then
-  pass "Regression-guard case: exit-6 reached with 6th arg omitted, TASK_DIR exported (legacy path)"
+  common_test_pass "Regression-guard case: exit-6 reached with 6th arg omitted, TASK_DIR exported (legacy path)"
 else
-  fail "Regression-guard case: expected exit 6, got $DG_LEGACY_EXIT (see $WORKDIR/deploygate-legacy-stderr.log)"
+  common_test_fail "Regression-guard case: expected exit 6, got $DG_LEGACY_EXIT (see $WORKDIR/deploygate-legacy-stderr.log)"
 fi
 DG_LEGACY_PENDING="$(jq -r '.deploy_pending // "MISSING"' "$DEPLOY_GATE_ROOT2/specs/001_fixture_task/.return-meta.json" 2>/dev/null)"
 if [[ "$DG_LEGACY_PENDING" == "true" ]]; then
-  pass "Regression-guard case: the default \${6:-\${TASK_DIR:-}} default still reaches the annotation block"
+  common_test_pass "Regression-guard case: the default \${6:-\${TASK_DIR:-}} default still reaches the annotation block"
 else
-  fail "Regression-guard case: expected deploy_pending == true, got '$DG_LEGACY_PENDING'"
+  common_test_fail "Regression-guard case: expected deploy_pending == true, got '$DG_LEGACY_PENDING'"
 fi
 
 # --- Non-blocking case: neither the 6th argument nor TASK_DIR is set -- still returns 6, never
@@ -822,7 +815,7 @@ build_fixture_repo "$DEPLOY_GATE_ROOT3"
 build_deploy_gate_source_repo "$DEPLOY_GATE_ROOT3"
 write_deploy_gate_return_meta "$DEPLOY_GATE_ROOT3"
 
-cd "$DEPLOY_GATE_ROOT3" || { fail "could not cd into deploy-gate fixture repo (non-blocking case)"; }
+cd "$DEPLOY_GATE_ROOT3" || { common_test_fail "could not cd into deploy-gate fixture repo (non-blocking case)"; }
 unset TASK_DIR
 skill_postflight_update 1 "implement" "sess_test_deploygate_noannotation" "implemented" \
   2>"$WORKDIR/deploygate-noannotation-stderr.log"
@@ -830,9 +823,9 @@ DG_NOANNOTATION_EXIT=$?
 cd "$ORIG_PWD" || true
 
 if [[ "$DG_NOANNOTATION_EXIT" -eq 6 ]]; then
-  pass "Non-blocking case: still returns 6 with neither the 6th argument nor TASK_DIR set (no crash)"
+  common_test_pass "Non-blocking case: still returns 6 with neither the 6th argument nor TASK_DIR set (no crash)"
 else
-  fail "Non-blocking case: expected exit 6, got $DG_NOANNOTATION_EXIT (see $WORKDIR/deploygate-noannotation-stderr.log)"
+  common_test_fail "Non-blocking case: expected exit 6, got $DG_NOANNOTATION_EXIT (see $WORKDIR/deploygate-noannotation-stderr.log)"
 fi
 
 # =====================================================================
@@ -844,7 +837,7 @@ fi
 # preflight phase auto-advance convenience that plan deletes. Uses its own fixture root, isolated
 # from the "plan"-target cases above.
 # =====================================================================
-info "=== skill_preflight_update (target_status=implement, with a real plan file) ==="
+common_test_info "=== skill_preflight_update (target_status=implement, with a real plan file) ==="
 
 IMPLEMENT_ROOT="$WORKDIR/lifecycle-implement-fixture"
 build_fixture_repo "$IMPLEMENT_ROOT"
@@ -869,7 +862,7 @@ PLANEOF
 IMPLEMENT_PLAN="$IMPLEMENT_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md"
 BEFORE_IMPLEMENT_HEADINGS="$(grep -E '^### Phase ' "$IMPLEMENT_PLAN")"
 
-cd "$IMPLEMENT_ROOT" || { fail "could not cd into implement-target fixture repo"; }
+cd "$IMPLEMENT_ROOT" || { common_test_fail "could not cd into implement-target fixture repo"; }
 skill_preflight_update 1 "implement" "sess_test_implement" 2>"$WORKDIR/implement-preflight-stderr.log"
 IMPLEMENT_PREFLIGHT_EXIT=$?
 cd "$ORIG_PWD" || true
@@ -877,18 +870,18 @@ cd "$ORIG_PWD" || true
 AFTER_IMPLEMENT_HEADINGS="$(grep -E '^### Phase ' "$IMPLEMENT_PLAN")"
 
 if [[ "$BEFORE_IMPLEMENT_HEADINGS" == "$AFTER_IMPLEMENT_HEADINGS" ]]; then
-  pass "skill_preflight_update (implement) leaves plan phase headings byte-identical (no dispatch, no advance)"
+  common_test_pass "skill_preflight_update (implement) leaves plan phase headings byte-identical (no dispatch, no advance)"
 else
-  fail "skill_preflight_update (implement) changed phase headings unexpectedly -- before:
+  common_test_fail "skill_preflight_update (implement) changed phase headings unexpectedly -- before:
 $BEFORE_IMPLEMENT_HEADINGS
 -- after:
 $AFTER_IMPLEMENT_HEADINGS"
 fi
 
 if grep -q '\[IN PROGRESS\]' "$IMPLEMENT_PLAN"; then
-  fail "skill_preflight_update (implement) left a phase heading marked [IN PROGRESS] -- the deleted auto-advance regressed"
+  common_test_fail "skill_preflight_update (implement) left a phase heading marked [IN PROGRESS] -- the deleted auto-advance regressed"
 else
-  pass "no phase heading contains [IN PROGRESS] after skill_preflight_update (implement)"
+  common_test_pass "no phase heading contains [IN PROGRESS] after skill_preflight_update (implement)"
 fi
 
 # Positive control (required): proves the wrapper actually reached update_plan_file()'s
@@ -898,17 +891,17 @@ fi
 if [[ "$IMPLEMENT_PREFLIGHT_EXIT" -eq 0 ]]; then
   new_implement_status=$(jq -r '.active_projects[0].status' "$IMPLEMENT_ROOT/specs/state.json" 2>/dev/null)
   if [[ "$new_implement_status" == "implementing" ]]; then
-    pass "Positive control: skill_preflight_update (implement) moved state.json status to 'implementing'"
+    common_test_pass "Positive control: skill_preflight_update (implement) moved state.json status to 'implementing'"
   else
-    fail "Positive control: expected state.json status 'implementing', got '$new_implement_status' (see $WORKDIR/implement-preflight-stderr.log)"
+    common_test_fail "Positive control: expected state.json status 'implementing', got '$new_implement_status' (see $WORKDIR/implement-preflight-stderr.log)"
   fi
 else
-  fail "skill_preflight_update (implement) exited $IMPLEMENT_PREFLIGHT_EXIT (see $WORKDIR/implement-preflight-stderr.log)"
+  common_test_fail "skill_preflight_update (implement) exited $IMPLEMENT_PREFLIGHT_EXIT (see $WORKDIR/implement-preflight-stderr.log)"
 fi
 if grep -qE '^- \*\*Status\*\*: \[IMPLEMENTING\]' "$IMPLEMENT_PLAN"; then
-  pass "Positive control: plan-level Status line flipped to [IMPLEMENTING] (update_plan_file() was entered, plan file was found)"
+  common_test_pass "Positive control: plan-level Status line flipped to [IMPLEMENTING] (update_plan_file() was entered, plan file was found)"
 else
-  fail "Positive control: plan-level Status line did not flip to [IMPLEMENTING] -- the byte-identity assertions above would be vacuous"
+  common_test_fail "Positive control: plan-level Status line did not flip to [IMPLEMENTING] -- the byte-identity assertions above would be vacuous"
 fi
 
 # =====================================================================
@@ -928,12 +921,12 @@ fi
 # level), so the suite-level SKILL_BASE-sourced functions used by every other group above remain
 # completely untouched.
 # =====================================================================
-info "=== skill_get_extension_dir / skill_run_extension_hook (source-store-first) ==="
+common_test_info "=== skill_get_extension_dir / skill_run_extension_hook (source-store-first) ==="
 
 HOOK_SKILL_BASE="$(resolve_candidate "skill-base.sh (source-store-first, for the hook mechanism group)" \
   "$SCRIPT_DIR/../skill-base.sh" \
   "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
-info "Group 5 exercises: $HOOK_SKILL_BASE"
+common_test_info "Group 5 exercises: $HOOK_SKILL_BASE"
 
 # ─── fixture: a real object-schema .claude-extensions.json joined with per-extension manifests ──
 HOOK_ROOT="$WORKDIR/hook-fixture"
@@ -999,65 +992,65 @@ run_hook_case() {
 # --- resolver hit ---------------------------------------------------------------------------
 RESOLVER_HIT=$(run_resolver_case "$HOOK_ROOT" "hookfixturetype")
 if [[ "$RESOLVER_HIT" == ".claude/extensions/fixtureext" ]]; then
-  pass "skill_get_extension_dir resolves a matching active task_type to its extension dir"
+  common_test_pass "skill_get_extension_dir resolves a matching active task_type to its extension dir"
 else
-  fail "skill_get_extension_dir (hit): expected '.claude/extensions/fixtureext', got '$RESOLVER_HIT'"
+  common_test_fail "skill_get_extension_dir (hit): expected '.claude/extensions/fixtureext', got '$RESOLVER_HIT'"
 fi
 
 # --- resolver miss: unknown task_type -------------------------------------------------------
 RESOLVER_MISS=$(run_resolver_case "$HOOK_ROOT" "no-such-type")
 if [[ -z "$RESOLVER_MISS" ]]; then
-  pass "skill_get_extension_dir returns empty for an unknown task_type"
+  common_test_pass "skill_get_extension_dir returns empty for an unknown task_type"
 else
-  fail "skill_get_extension_dir (miss): expected empty, got '$RESOLVER_MISS'"
+  common_test_fail "skill_get_extension_dir (miss): expected empty, got '$RESOLVER_MISS'"
 fi
 
 # --- resolver miss: extension present but status != active ---------------------------------
 RESOLVER_INACTIVE=$(run_resolver_case "$HOOK_ROOT" "inactivetype")
 if [[ -z "$RESOLVER_INACTIVE" ]]; then
-  pass "skill_get_extension_dir does not match an extension whose status is not active"
+  common_test_pass "skill_get_extension_dir does not match an extension whose status is not active"
 else
-  fail "skill_get_extension_dir (inactive): expected empty, got '$RESOLVER_INACTIVE'"
+  common_test_fail "skill_get_extension_dir (inactive): expected empty, got '$RESOLVER_INACTIVE'"
 fi
 
 # --- resolver safety: no .claude-extensions.json at all -------------------------------------
 RESOLVER_NOEXT=$(run_resolver_case "$HOOK_NOEXT_ROOT" "hookfixturetype")
 RESOLVER_NOEXT_RC=$?
 if [[ -z "$RESOLVER_NOEXT" && "$RESOLVER_NOEXT_RC" -eq 0 ]]; then
-  pass "skill_get_extension_dir with no .claude-extensions.json at all returns empty and exits 0"
+  common_test_pass "skill_get_extension_dir with no .claude-extensions.json at all returns empty and exits 0"
 else
-  fail "skill_get_extension_dir (no extensions.json): expected empty/exit 0, got '$RESOLVER_NOEXT' / rc=$RESOLVER_NOEXT_RC"
+  common_test_fail "skill_get_extension_dir (no extensions.json): expected empty/exit 0, got '$RESOLVER_NOEXT' / rc=$RESOLVER_NOEXT_RC"
 fi
 
 # --- hook fires: bare filename form ---------------------------------------------------------
 rm -f "$WORKDIR/hook-sentinel-fired"
 HOOK_FIRE=$(run_hook_case "$HOOK_ROOT" "preflight" 1 hookfixturetype specs/001_x sess_test implement)
 if [[ -f "$WORKDIR/hook-sentinel-fired" ]] && [[ "$HOOK_FIRE" == "RC=0;STATUS=ran;NAME=preflight;PATH=.claude/scripts/hook-sentinel.sh;FUNC_RC=0" ]]; then
-  pass "skill_run_extension_hook fires a declared hook (bare filename form), RC=0, STATUS=ran"
+  common_test_pass "skill_run_extension_hook fires a declared hook (bare filename form), RC=0, STATUS=ran"
 else
-  fail "skill_run_extension_hook (hook fires, bare form): sentinel-written=$( [[ -f "$WORKDIR/hook-sentinel-fired" ]] && echo yes || echo no), got '$HOOK_FIRE'"
+  common_test_fail "skill_run_extension_hook (hook fires, bare form): sentinel-written=$( [[ -f "$WORKDIR/hook-sentinel-fired" ]] && echo yes || echo no), got '$HOOK_FIRE'"
 fi
 
 # --- prefixed-path tolerance: scripts/<name>.sh form resolves identically -------------------
 rm -f "$WORKDIR/hook-sentinel-fired"
 HOOK_FIRE_PREFIXED=$(run_hook_case "$HOOK_ROOT" "postflight" 1 hookfixturetype specs/001_x sess_test implement)
 if [[ -f "$WORKDIR/hook-sentinel-fired" ]] && [[ "$HOOK_FIRE_PREFIXED" == "RC=0;STATUS=ran;NAME=postflight;PATH=.claude/scripts/hook-sentinel.sh;FUNC_RC=0" ]]; then
-  pass "skill_run_extension_hook resolves the scripts/-prefixed manifest form identically (nix/nvim's actual form)"
+  common_test_pass "skill_run_extension_hook resolves the scripts/-prefixed manifest form identically (nix/nvim's actual form)"
 else
-  fail "skill_run_extension_hook (prefixed-path tolerance): sentinel-written=$( [[ -f "$WORKDIR/hook-sentinel-fired" ]] && echo yes || echo no), got '$HOOK_FIRE_PREFIXED'"
+  common_test_fail "skill_run_extension_hook (prefixed-path tolerance): sentinel-written=$( [[ -f "$WORKDIR/hook-sentinel-fired" ]] && echo yes || echo no), got '$HOOK_FIRE_PREFIXED'"
 fi
 
 # --- rc observable: non-zero hook exit, function still returns 0 ---------------------------
 HOOK_BADRC=$(run_hook_case "$HOOK_ROOT" "context_injection" 1 hookfixturetype specs/001_x sess_test implement)
 if [[ "$HOOK_BADRC" == "RC=7;STATUS=ran;NAME=context_injection;PATH=.claude/scripts/hook-badrc.sh;FUNC_RC=0" ]]; then
-  pass "skill_run_extension_hook makes a non-zero hook exit observable (RC=7) while the function itself still returns 0"
+  common_test_pass "skill_run_extension_hook makes a non-zero hook exit observable (RC=7) while the function itself still returns 0"
 else
-  fail "skill_run_extension_hook (rc observable): got '$HOOK_BADRC'"
+  common_test_fail "skill_run_extension_hook (rc observable): got '$HOOK_BADRC'"
 fi
 if grep -q "WARNING.*exited non-zero" "$WORKDIR/hook-case-stdout.log" 2>/dev/null; then
-  pass "skill_run_extension_hook prints the existing non-blocking WARNING on a non-zero exit"
+  common_test_pass "skill_run_extension_hook prints the existing non-blocking WARNING on a non-zero exit"
 else
-  fail "skill_run_extension_hook (rc observable): expected non-blocking WARNING on stdout, got: $(cat "$WORKDIR/hook-case-stdout.log" 2>/dev/null)"
+  common_test_fail "skill_run_extension_hook (rc observable): expected non-blocking WARNING on stdout, got: $(cat "$WORKDIR/hook-case-stdout.log" 2>/dev/null)"
 fi
 
 # --- loud skip + reset discipline: a declared hook resolving to a missing/non-executable script
@@ -1065,14 +1058,14 @@ fi
 # so this ALSO proves a subsequent skipped invocation does not leak the prior run's RC=7. -----
 HOOK_LOUDSKIP=$(run_hook_case "$HOOK_ROOT" "verification" 1 hookfixturetype specs/001_x sess_test implement)
 if [[ "$HOOK_LOUDSKIP" == "RC=;STATUS=skipped_not_executable;NAME=verification;PATH=.claude/scripts/does-not-exist.sh;FUNC_RC=0" ]]; then
-  pass "skill_run_extension_hook resets RC/STATUS on a subsequent skipped invocation (no leak of the prior RC=7); STATUS=skipped_not_executable"
+  common_test_pass "skill_run_extension_hook resets RC/STATUS on a subsequent skipped invocation (no leak of the prior RC=7); STATUS=skipped_not_executable"
 else
-  fail "skill_run_extension_hook (loud skip / reset discipline): got '$HOOK_LOUDSKIP'"
+  common_test_fail "skill_run_extension_hook (loud skip / reset discipline): got '$HOOK_LOUDSKIP'"
 fi
 if grep -q "^NOTE:.*hook skipped" "$WORKDIR/hook-case-stderr.log" 2>/dev/null; then
-  pass "skill_run_extension_hook emits a loud one-line NOTE on stderr for a missing/non-executable resolved hook"
+  common_test_pass "skill_run_extension_hook emits a loud one-line NOTE on stderr for a missing/non-executable resolved hook"
 else
-  fail "skill_run_extension_hook (loud skip): expected a NOTE on stderr, got: $(cat "$WORKDIR/hook-case-stderr.log" 2>/dev/null)"
+  common_test_fail "skill_run_extension_hook (loud skip): expected a NOTE on stderr, got: $(cat "$WORKDIR/hook-case-stderr.log" 2>/dev/null)"
 fi
 
 # =====================================================================
@@ -1085,12 +1078,12 @@ fi
 # fresh inside its OWN subshell (never at suite level), so the suite-level SKILL_BASE-sourced
 # functions used by every other group above remain completely untouched.
 # =====================================================================
-info "=== skill_read_artifact_number (source-store-first) ==="
+common_test_info "=== skill_read_artifact_number (source-store-first) ==="
 
 ARTIFACT_SKILL_BASE="$(resolve_candidate "skill-base.sh (source-store-first, for the artifact-round group)" \
   "$SCRIPT_DIR/../skill-base.sh" \
   "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
-info "Group 6 exercises: $ARTIFACT_SKILL_BASE"
+common_test_info "Group 6 exercises: $ARTIFACT_SKILL_BASE"
 
 # ─── subshell helper: source ARTIFACT_SKILL_BASE fresh each time, cd into the fixture root so
 # the function's bare-relative `specs/state.json` read and its TASK_DIR-or-reconstructed scan
@@ -1120,14 +1113,14 @@ EOF
 ARN_A_CURRENT="$(run_artifact_case "$ARN_ROOT_A" 1 "001" "artifact_fixture" "current")"
 ARN_A_PREV="$(run_artifact_case "$ARN_ROOT_A" 1 "001" "artifact_fixture" "prev")"
 if [[ "$ARN_A_CURRENT" == "2 02" ]]; then
-  pass "skill_read_artifact_number (absent field, 01 present, current): ARTIFACT_NUMBER=2, ARTIFACT_PADDED=02"
+  common_test_pass "skill_read_artifact_number (absent field, 01 present, current): ARTIFACT_NUMBER=2, ARTIFACT_PADDED=02"
 else
-  fail "skill_read_artifact_number (absent field, 01 present, current): got '$ARN_A_CURRENT', expected '2 02'"
+  common_test_fail "skill_read_artifact_number (absent field, 01 present, current): got '$ARN_A_CURRENT', expected '2 02'"
 fi
 if [[ "$ARN_A_PREV" == "1 01" ]]; then
-  pass "skill_read_artifact_number (absent field, 01 present, prev): ARTIFACT_NUMBER=1, ARTIFACT_PADDED=01"
+  common_test_pass "skill_read_artifact_number (absent field, 01 present, prev): ARTIFACT_NUMBER=1, ARTIFACT_PADDED=01"
 else
-  fail "skill_read_artifact_number (absent field, 01 present, prev): got '$ARN_A_PREV', expected '1 01'"
+  common_test_fail "skill_read_artifact_number (absent field, 01 present, prev): got '$ARN_A_PREV', expected '1 01'"
 fi
 
 # --- absent field, empty task directory -> 1 / 1 (no behaviour change for a fresh task) -----
@@ -1139,9 +1132,9 @@ EOF
 ARN_B_CURRENT="$(run_artifact_case "$ARN_ROOT_B" 2 "002" "empty_fixture" "current")"
 ARN_B_PREV="$(run_artifact_case "$ARN_ROOT_B" 2 "002" "empty_fixture" "prev")"
 if [[ "$ARN_B_CURRENT" == "1 01" && "$ARN_B_PREV" == "1 01" ]]; then
-  pass "skill_read_artifact_number (absent field, empty task dir): both modes resolve 1 / 01"
+  common_test_pass "skill_read_artifact_number (absent field, empty task dir): both modes resolve 1 / 01"
 else
-  fail "skill_read_artifact_number (absent field, empty task dir): got current='$ARN_B_CURRENT' prev='$ARN_B_PREV', expected '1 01' / '1 01'"
+  common_test_fail "skill_read_artifact_number (absent field, empty task dir): got current='$ARN_B_CURRENT' prev='$ARN_B_PREV', expected '1 01' / '1 01'"
 fi
 
 # --- counter-present regression pin: next_artifact_number=2, reports/01_*.md present ---------
@@ -1155,9 +1148,9 @@ EOF
 ARN_C_CURRENT="$(run_artifact_case "$ARN_ROOT_C" 3 "003" "counter_fixture" "current")"
 ARN_C_PREV="$(run_artifact_case "$ARN_ROOT_C" 3 "003" "counter_fixture" "prev")"
 if [[ "$ARN_C_CURRENT" == "2 02" && "$ARN_C_PREV" == "1 01" ]]; then
-  pass "skill_read_artifact_number (counter-present pin: next=2, 01 present): current=2/02, prev=1/01 unchanged"
+  common_test_pass "skill_read_artifact_number (counter-present pin: next=2, 01 present): current=2/02, prev=1/01 unchanged"
 else
-  fail "skill_read_artifact_number (counter-present pin): got current='$ARN_C_CURRENT' prev='$ARN_C_PREV', expected '2 02' / '1 01'"
+  common_test_fail "skill_read_artifact_number (counter-present pin): got current='$ARN_C_CURRENT' prev='$ARN_C_PREV', expected '2 02' / '1 01'"
 fi
 
 # --- max-prefix, not count: absent field, reports/01_*.md and reports/03_*.md (a gap) -> 4 / 3
@@ -1171,9 +1164,9 @@ EOF
 ARN_D_CURRENT="$(run_artifact_case "$ARN_ROOT_D" 4 "004" "gap_fixture" "current")"
 ARN_D_PREV="$(run_artifact_case "$ARN_ROOT_D" 4 "004" "gap_fixture" "prev")"
 if [[ "$ARN_D_CURRENT" == "4 04" && "$ARN_D_PREV" == "3 03" ]]; then
-  pass "skill_read_artifact_number (gap: 01,03 present): current=4/04, prev=3/03 (max-prefix+1, not file count)"
+  common_test_pass "skill_read_artifact_number (gap: 01,03 present): current=4/04, prev=3/03 (max-prefix+1, not file count)"
 else
-  fail "skill_read_artifact_number (gap): got current='$ARN_D_CURRENT' prev='$ARN_D_PREV', expected '4 04' / '3 03'"
+  common_test_fail "skill_read_artifact_number (gap): got current='$ARN_D_CURRENT' prev='$ARN_D_PREV', expected '4 04' / '3 03'"
 fi
 
 # --- self-healing counter: next_artifact_number=1 (behind disk), reports/02_*.md present -> 3 / 2
@@ -1186,9 +1179,9 @@ EOF
 ARN_E_CURRENT="$(run_artifact_case "$ARN_ROOT_E" 5 "005" "behind_fixture" "current")"
 ARN_E_PREV="$(run_artifact_case "$ARN_ROOT_E" 5 "005" "behind_fixture" "prev")"
 if [[ "$ARN_E_CURRENT" == "3 03" && "$ARN_E_PREV" == "2 02" ]]; then
-  pass "skill_read_artifact_number (counter behind disk: next=1, 02 present): current=3/03, prev=2/02 (self-healing)"
+  common_test_pass "skill_read_artifact_number (counter behind disk: next=1, 02 present): current=3/03, prev=2/02 (self-healing)"
 else
-  fail "skill_read_artifact_number (counter behind disk): got current='$ARN_E_CURRENT' prev='$ARN_E_PREV', expected '3 03' / '2 02'"
+  common_test_fail "skill_read_artifact_number (counter behind disk): got current='$ARN_E_CURRENT' prev='$ARN_E_PREV', expected '3 03' / '2 02'"
 fi
 
 # --- archive-aware: ambient TASK_DIR honoured as the scan root rather than the reconstructed
@@ -1206,9 +1199,9 @@ cat > "$ARN_ROOT_F/specs/archive/state.json" << 'EOF'
 EOF
 ARN_F_CURRENT="$(run_artifact_case "$ARN_ROOT_F" 6 "006" "archived_fixture" "current" "specs/archive/006_archived_fixture")"
 if [[ "$ARN_F_CURRENT" == "2 02" ]]; then
-  pass "skill_read_artifact_number (archive-aware): honours ambient TASK_DIR (specs/archive/...) as the scan root, resolving 2/02 against the archived report, not an active-only reconstruction"
+  common_test_pass "skill_read_artifact_number (archive-aware): honours ambient TASK_DIR (specs/archive/...) as the scan root, resolving 2/02 against the archived report, not an active-only reconstruction"
 else
-  fail "skill_read_artifact_number (archive-aware): got '$ARN_F_CURRENT', expected '2 02'"
+  common_test_fail "skill_read_artifact_number (archive-aware): got '$ARN_F_CURRENT', expected '2 02'"
 fi
 
 # =====================================================================
@@ -1216,12 +1209,12 @@ fi
 # specs/ tree relative to the pre-suite baseline, no matter which group ran. Delta check, not an
 # absolute-emptiness check -- see the BASELINE_SPECS_STATUS comment above for why.
 # =====================================================================
-info "=== contamination guard ==="
+common_test_info "=== contamination guard ==="
 FINAL_SPECS_STATUS="$(cd "$REPO_ROOT" && git status --short specs/ 2>/dev/null)"
 if [[ "$FINAL_SPECS_STATUS" == "$BASELINE_SPECS_STATUS" ]]; then
-  pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
+  common_test_pass "real specs/ tree status is unchanged relative to this suite's pre-run baseline"
 else
-  fail "real specs/ tree status changed during this suite (baseline vs. final differ) -- baseline:
+  common_test_fail "real specs/ tree status changed during this suite (baseline vs. final differ) -- baseline:
 $BASELINE_SPECS_STATUS
 -- final:
 $FINAL_SPECS_STATUS"

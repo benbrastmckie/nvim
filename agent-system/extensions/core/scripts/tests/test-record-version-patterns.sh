@@ -32,10 +32,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 LIB_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/lib/record-version-patterns.sh"
@@ -61,10 +59,7 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
 # shellcheck disable=SC2329
-info() { echo "[INFO] $1"; }
 
 # =====================================================================
 # Helper: run a single line through the full consumer pipeline (durable-axis strip, then marker
@@ -87,25 +82,25 @@ advisory_fires() {
 assert_blocking() {
   local label="$1" line="$2" path="${3:-fixture.md}"
   if blocking_fires "$line" "$path"; then
-    pass "BLOCKING positive: $label"
+    common_test_pass "BLOCKING positive: $label"
   else
-    fail "BLOCKING positive: $label -- expected a match, got none for: $line"
+    common_test_fail "BLOCKING positive: $label -- expected a match, got none for: $line"
   fi
 }
 assert_not_blocking() {
   local label="$1" line="$2" path="${3:-fixture.md}"
   if blocking_fires "$line" "$path"; then
-    fail "BLOCKING negative: $label -- unexpectedly matched: $line"
+    common_test_fail "BLOCKING negative: $label -- unexpectedly matched: $line"
   else
-    pass "BLOCKING negative: $label"
+    common_test_pass "BLOCKING negative: $label"
   fi
 }
 assert_advisory() {
   local label="$1" line="$2" path="${3:-fixture.md}"
   if advisory_fires "$line" "$path"; then
-    pass "ADVISORY positive: $label"
+    common_test_pass "ADVISORY positive: $label"
   else
-    fail "ADVISORY positive: $label -- expected a match, got none for: $line"
+    common_test_fail "ADVISORY positive: $label -- expected a match, got none for: $line"
   fi
 }
 
@@ -222,19 +217,19 @@ assert_advisory "bare past-tense: withdrawn" "The proposal is withdrawn, and the
 # is_exempt_path: path-level exemption (taxonomy zone 1).
 # =====================================================================
 if is_exempt_path "specs/280_example/reports/01.md"; then
-  pass "is_exempt_path: specs/** path returns 0 (exempt)"
+  common_test_pass "is_exempt_path: specs/** path returns 0 (exempt)"
 else
-  fail "is_exempt_path: specs/** path unexpectedly returned non-zero"
+  common_test_fail "is_exempt_path: specs/** path unexpectedly returned non-zero"
 fi
 if is_exempt_path "nested/specs/sub/file.md"; then
-  pass "is_exempt_path: nested */specs/* path returns 0 (exempt)"
+  common_test_pass "is_exempt_path: nested */specs/* path returns 0 (exempt)"
 else
-  fail "is_exempt_path: nested */specs/* path unexpectedly returned non-zero"
+  common_test_fail "is_exempt_path: nested */specs/* path unexpectedly returned non-zero"
 fi
 if is_exempt_path "agent-system/extensions/core/rules/foo.md"; then
-  fail "is_exempt_path: non-specs path unexpectedly returned 0 (exempt)"
+  common_test_fail "is_exempt_path: non-specs path unexpectedly returned 0 (exempt)"
 else
-  pass "is_exempt_path: non-specs path returns 1 (not exempt)"
+  common_test_pass "is_exempt_path: non-specs path returns 1 (not exempt)"
 fi
 
 # =====================================================================
@@ -245,17 +240,17 @@ fi
 block_form_input=$'keep this line\nversion-ok:begin durable-axis example, category 3a\nThe widget convention (v2)\nversion-ok:end\nkeep this line too\n'
 block_form_output="$(printf '%s' "$block_form_input" | strip_exempt_regions)"
 if [[ "$block_form_output" == $'keep this line\n\n\n\nkeep this line too' ]]; then
-  pass "strip_exempt_regions: block form blanks the marked region, keeps surrounding lines and line count"
+  common_test_pass "strip_exempt_regions: block form blanks the marked region, keeps surrounding lines and line count"
 else
-  fail "strip_exempt_regions: block form -- unexpected output: $block_form_output"
+  common_test_fail "strip_exempt_regions: block form -- unexpected output: $block_form_output"
 fi
 
 inline_form_input=$'keep this line\nThe widget convention (v2)  version-ok inline example, category 1\nkeep this line too\n'
 inline_form_output="$(printf '%s' "$inline_form_input" | strip_exempt_regions)"
 if [[ "$inline_form_output" == $'keep this line\n\nkeep this line too' ]]; then
-  pass "strip_exempt_regions: inline form blanks only the marked line"
+  common_test_pass "strip_exempt_regions: inline form blanks only the marked line"
 else
-  fail "strip_exempt_regions: inline form -- unexpected output: $inline_form_output"
+  common_test_fail "strip_exempt_regions: inline form -- unexpected output: $inline_form_output"
 fi
 
 # =====================================================================
@@ -265,15 +260,15 @@ durable_input=$'Lean v4.31.0 is the pinned toolchain.\nactions/checkout@v4 runs 
 durable_output="$(printf '%s' "$durable_input" | strip_durable_axis_lines)"
 durable_line_count="$(printf '%s\n' "$durable_output" | grep -c . || true)"
 if [[ "$durable_line_count" -eq 1 ]] && echo "$durable_output" | grep -qF "an ordinary sentence"; then
-  pass "strip_durable_axis_lines: drops all 4 durable-axis shapes, keeps the unrelated line"
+  common_test_pass "strip_durable_axis_lines: drops all 4 durable-axis shapes, keeps the unrelated line"
 else
-  fail "strip_durable_axis_lines: expected 1 surviving line, got: $durable_output"
+  common_test_fail "strip_durable_axis_lines: expected 1 surviving line, got: $durable_output"
 fi
 durable_total_lines="$(printf '%s\n' "$durable_output" | wc -l)"
 if [[ "$durable_total_lines" -eq 5 ]]; then
-  pass "strip_durable_axis_lines: blanks in place -- total line count unchanged (5 in, 5 out)"
+  common_test_pass "strip_durable_axis_lines: blanks in place -- total line count unchanged (5 in, 5 out)"
 else
-  fail "strip_durable_axis_lines: expected 5 total lines (position-preserving blank), got: $durable_total_lines"
+  common_test_fail "strip_durable_axis_lines: expected 5 total lines (position-preserving blank), got: $durable_total_lines"
 fi
 
 # =====================================================================
@@ -284,28 +279,28 @@ fi
 blank_preservation_input=$'Lean v4.31.0 is the pinned toolchain.\n## The widget convention (v2)\n'
 blank_preservation_output="$(printf '%s' "$blank_preservation_input" | strip_durable_axis_lines | strip_exempt_regions | rv_grep_blocking "fixture.md")"
 if printf '%s\n' "$blank_preservation_output" | grep -qE '^2:'; then
-  pass "blank-preservation: a finding after a blanked durable-axis line reports its REAL line number (2, not 1)"
+  common_test_pass "blank-preservation: a finding after a blanked durable-axis line reports its REAL line number (2, not 1)"
 else
-  fail "blank-preservation: expected a finding at line 2, got: $blank_preservation_output"
+  common_test_fail "blank-preservation: expected a finding at line 2, got: $blank_preservation_output"
 fi
 
 # =====================================================================
 # rv_is_markdown_path: the single place the markdown/non-markdown path class is decided.
 # =====================================================================
 if rv_is_markdown_path "docs/README.md"; then
-  pass "rv_is_markdown_path: *.md path returns 0 (markdown)"
+  common_test_pass "rv_is_markdown_path: *.md path returns 0 (markdown)"
 else
-  fail "rv_is_markdown_path: *.md path unexpectedly returned non-zero"
+  common_test_fail "rv_is_markdown_path: *.md path unexpectedly returned non-zero"
 fi
 if rv_is_markdown_path "notes.markdown"; then
-  pass "rv_is_markdown_path: *.markdown path returns 0 (markdown)"
+  common_test_pass "rv_is_markdown_path: *.markdown path returns 0 (markdown)"
 else
-  fail "rv_is_markdown_path: *.markdown path unexpectedly returned non-zero"
+  common_test_fail "rv_is_markdown_path: *.markdown path unexpectedly returned non-zero"
 fi
 if rv_is_markdown_path "scripts/check-record-versioning.sh"; then
-  fail "rv_is_markdown_path: *.sh path unexpectedly returned 0 (markdown)"
+  common_test_fail "rv_is_markdown_path: *.sh path unexpectedly returned 0 (markdown)"
 else
-  pass "rv_is_markdown_path: *.sh path returns 1 (not markdown)"
+  common_test_pass "rv_is_markdown_path: *.sh path returns 1 (not markdown)"
 fi
 
 # =====================================================================
@@ -319,19 +314,19 @@ rv_advisory_fires() {
   printf '%s\n' "$1" | strip_durable_axis_lines | strip_exempt_regions | rv_grep_advisory "fixture.md" | grep -q .
 }
 if rv_blocking_fires "## The widget convention (v2)"; then
-  pass "rv_grep_blocking: agrees with the direct-ERE BLOCKING positive"
+  common_test_pass "rv_grep_blocking: agrees with the direct-ERE BLOCKING positive"
 else
-  fail "rv_grep_blocking: expected a match for the page-level label fixture, got none"
+  common_test_fail "rv_grep_blocking: expected a match for the page-level label fixture, got none"
 fi
 if rv_blocking_fires "Stay on v4.31.0; Mathlib confined to Aeneas bridge packages."; then
-  fail "rv_grep_blocking: unexpectedly matched a durable-axis real negative"
+  common_test_fail "rv_grep_blocking: unexpectedly matched a durable-axis real negative"
 else
-  pass "rv_grep_blocking: agrees with the direct-ERE BLOCKING negative"
+  common_test_pass "rv_grep_blocking: agrees with the direct-ERE BLOCKING negative"
 fi
 if rv_advisory_fires "This option is no longer supported."; then
-  pass "rv_grep_advisory: agrees with the direct-ERE ADVISORY positive"
+  common_test_pass "rv_grep_advisory: agrees with the direct-ERE ADVISORY positive"
 else
-  fail "rv_grep_advisory: expected a match for the bare past-tense fixture, got none"
+  common_test_fail "rv_grep_advisory: expected a match for the bare past-tense fixture, got none"
 fi
 
 # =====================================================================
@@ -343,15 +338,15 @@ fi
 # =====================================================================
 if printf '%s\n' "the --task flag (V5 contended-path lease) and used to resolve" \
      | strip_durable_axis_lines | strip_exempt_regions | rv_grep_blocking "fixture.sh" >/dev/null; then
-  fail "rv_grep_blocking: non-markdown path with NO findings unexpectedly exited 0"
+  common_test_fail "rv_grep_blocking: non-markdown path with NO findings unexpectedly exited 0"
 else
-  pass "rv_grep_blocking: non-markdown path with no findings exits 1 (not merely empty output)"
+  common_test_pass "rv_grep_blocking: non-markdown path with no findings exits 1 (not merely empty output)"
 fi
 if printf '%s\n' "This record supersedes v1 of the convention entirely." \
      | strip_durable_axis_lines | strip_exempt_regions | rv_grep_blocking "fixture.sh" >/dev/null; then
-  pass "rv_grep_blocking: non-markdown path WITH a finding exits 0"
+  common_test_pass "rv_grep_blocking: non-markdown path WITH a finding exits 0"
 else
-  fail "rv_grep_blocking: non-markdown path with a real finding unexpectedly exited non-zero"
+  common_test_fail "rv_grep_blocking: non-markdown path with a real finding unexpectedly exited non-zero"
 fi
 
 # =====================================================================
@@ -359,14 +354,14 @@ fi
 # defining their own).
 # =====================================================================
 if [[ -n "${RV_BLOCKING_ERE:-}" ]]; then
-  pass "RV_BLOCKING_ERE is exported and non-empty"
+  common_test_pass "RV_BLOCKING_ERE is exported and non-empty"
 else
-  fail "RV_BLOCKING_ERE is missing or empty"
+  common_test_fail "RV_BLOCKING_ERE is missing or empty"
 fi
 if [[ -n "${RV_ADVISORY_ERE:-}" ]]; then
-  pass "RV_ADVISORY_ERE is exported and non-empty"
+  common_test_pass "RV_ADVISORY_ERE is exported and non-empty"
 else
-  fail "RV_ADVISORY_ERE is missing or empty"
+  common_test_fail "RV_ADVISORY_ERE is missing or empty"
 fi
 
 # =====================================================================

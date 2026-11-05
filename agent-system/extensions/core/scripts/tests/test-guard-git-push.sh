@@ -23,6 +23,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 # Resolves to agent-system/extensions/core/{hooks,scripts}/ in source-store mode and to
 # .claude/{hooks,scripts}/ in deployed mode, with no branching -- same convention as
 # test-guard-destructive-git.sh.
@@ -33,9 +34,6 @@ LIB="$SCRIPT_DIR/../../scripts/lib/push-grant-lib.sh"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 for f in "$HOOK" "$WRAPPER" "$LIB"; do
   if [ ! -f "$f" ]; then
@@ -49,9 +47,7 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 export PUSH_GRANT_KEY_PATH="${WORKDIR}/push-grant.key"
 export PUSH_GRANT_DIR="specs/.push-grant"
@@ -144,9 +140,9 @@ self_repo="$(make_push_fixture)"
 self_branch="$(git -C "$self_repo" rev-parse --abbrev-ref HEAD)"
 self_remote="$(git -C "$self_repo" remote get-url origin 2>/dev/null)"
 if [ "$self_branch" = "feature-x" ] && [ -n "$self_remote" ]; then
-  pass "fixture self-check: repo has a bare 'origin' remote and a non-default working branch ($self_branch)"
+  common_test_pass "fixture self-check: repo has a bare 'origin' remote and a non-default working branch ($self_branch)"
 else
-  fail "fixture self-check: expected branch=feature-x with an origin remote, got branch='$self_branch' remote='$self_remote'"
+  common_test_fail "fixture self-check: expected branch=feature-x with an origin remote, got branch='$self_branch' remote='$self_remote'"
 fi
 rm -rf "$self_repo"
 
@@ -166,13 +162,13 @@ for cmd in \
   err="$( ( cd "$repo" && jq -n --arg c "$cmd" '{tool_name:"Bash", tool_input: {command: $c}}' | bash "$HOOK" ) 2>&1 >/dev/null )"
   rm -rf "$repo"
   if [ "$code" -eq 2 ]; then
-    pass "no-grant block: '$cmd' blocked (exit 2)"
+    common_test_pass "no-grant block: '$cmd' blocked (exit 2)"
   else
-    fail "no-grant block: '$cmd' expected exit 2, got $code"
+    common_test_fail "no-grant block: '$cmd' expected exit 2, got $code"
   fi
   case "$err" in
-    *"/please"*"git-push-granted.sh"*) pass "no-grant block: '$cmd' stderr names /please and the wrapper" ;;
-    *) fail "no-grant block: '$cmd' stderr did not name /please and the wrapper -- got: $err" ;;
+    *"/please"*"git-push-granted.sh"*) common_test_pass "no-grant block: '$cmd' stderr names /please and the wrapper" ;;
+    *) common_test_fail "no-grant block: '$cmd' stderr did not name /please and the wrapper -- got: $err" ;;
   esac
 done
 
@@ -183,9 +179,9 @@ repo="$(make_push_fixture)"
 code="$(run_hook_in "$repo" "git status")"
 rm -rf "$repo"
 if [ "$code" -eq 0 ]; then
-  pass "unchanged-default: 'git status' (non-push) passes through (exit 0)"
+  common_test_pass "unchanged-default: 'git status' (non-push) passes through (exit 0)"
 else
-  fail "unchanged-default: 'git status' expected exit 0, got $code"
+  common_test_fail "unchanged-default: 'git status' expected exit 0, got $code"
 fi
 
 # =====================================================================
@@ -214,21 +210,21 @@ with open(path, "w") as f:
 PYEOF
 code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
-[ "$code" -eq 2 ] && pass "invalidation: expired grant (700s old) blocked" || fail "invalidation: expired grant expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "invalidation: expired grant (700s old) blocked" || common_test_fail "invalidation: expired grant expected exit 2, got $code"
 
 # wrong branch
 repo="$(make_push_fixture)"
 mint_grant_in "$repo" push_branch origin other-branch 0 "x" please
 code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
-[ "$code" -eq 2 ] && pass "invalidation: wrong branch blocked" || fail "invalidation: wrong branch expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "invalidation: wrong branch blocked" || common_test_fail "invalidation: wrong branch expected exit 2, got $code"
 
 # wrong remote
 repo="$(make_push_fixture)"
 mint_grant_in "$repo" push_branch upstream feature-x 0 "x" please
 code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
-[ "$code" -eq 2 ] && pass "invalidation: wrong remote blocked" || fail "invalidation: wrong remote expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "invalidation: wrong remote blocked" || common_test_fail "invalidation: wrong remote expected exit 2, got $code"
 
 # HEAD moved since mint
 repo="$(make_push_fixture)"
@@ -238,14 +234,14 @@ git -C "$repo" add tracked.txt
 git -C "$repo" commit -q -m "moved HEAD"
 code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
-[ "$code" -eq 2 ] && pass "invalidation: HEAD moved since mint blocked" || fail "invalidation: HEAD moved expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "invalidation: HEAD moved since mint blocked" || common_test_fail "invalidation: HEAD moved expected exit 2, got $code"
 
 # force-vs-non-force mismatch (grant is non-force, request is --force-with-lease)
 repo="$(make_push_fixture)"
 mint_grant_in "$repo" push_branch origin feature-x 0 "x" please
 code="$(run_hook_in "$repo" "git push origin feature-x --force-with-lease")"
 rm -rf "$repo"
-[ "$code" -eq 2 ] && pass "invalidation: force-vs-non-force mismatch blocked" || fail "invalidation: force mismatch expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "invalidation: force-vs-non-force mismatch blocked" || common_test_fail "invalidation: force mismatch expected exit 2, got $code"
 
 # already-consumed
 repo="$(make_push_fixture)"
@@ -254,9 +250,9 @@ first_code="$(run_hook_in "$repo" "git push origin feature-x")"
 second_code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
 if [ "$first_code" -eq 0 ] && [ "$second_code" -eq 2 ]; then
-  pass "invalidation: already-consumed grant blocked on second attempt"
+  common_test_pass "invalidation: already-consumed grant blocked on second attempt"
 else
-  fail "invalidation: already-consumed expected first=0 second=2, got first=$first_code second=$second_code"
+  common_test_fail "invalidation: already-consumed expected first=0 second=2, got first=$first_code second=$second_code"
 fi
 
 # =====================================================================
@@ -271,9 +267,9 @@ assert_excluded_with_grant() {
   remaining="$(grant_count_in "$repo")"
   rm -rf "$repo"
   if [ "$code" -eq 2 ] && [ "$remaining" -eq 1 ]; then
-    pass "$label: excluded (exit 2), grant left unconsumed"
+    common_test_pass "$label: excluded (exit 2), grant left unconsumed"
   else
-    fail "$label: expected exit 2 with grant untouched, got exit=$code remaining-grants=$remaining"
+    common_test_fail "$label: expected exit 2 with grant untouched, got exit=$code remaining-grants=$remaining"
   fi
 }
 
@@ -304,15 +300,15 @@ remaining="$(grant_count_in "$repo")"
 events_line="$(tail -n1 "${repo}/specs/events.jsonl" 2>/dev/null)"
 rm -rf "$repo"
 if [ "$wrapper_code" -eq 0 ] && [ "$remote_sha" = "$local_sha" ] && [ "$remaining" -eq 0 ]; then
-  pass "success: wrapper pushed to fixture remote, remote ref moved, grant consumed"
+  common_test_pass "success: wrapper pushed to fixture remote, remote ref moved, grant consumed"
 else
-  fail "success: expected wrapper exit 0 + remote moved + grant gone, got exit=$wrapper_code remote_sha=$remote_sha local_sha=$local_sha remaining=$remaining (out: $wrapper_out)"
+  common_test_fail "success: expected wrapper exit 0 + remote moved + grant gone, got exit=$wrapper_code remote_sha=$remote_sha local_sha=$local_sha remaining=$remaining (out: $wrapper_out)"
 fi
 case "$events_line" in
   *'"push_grant_consumed"'*'"remote":"origin"'*'"ref":"feature-x"'*)
-    pass "success: one push_grant_consumed audit event appended with remote/ref" ;;
+    common_test_pass "success: one push_grant_consumed audit event appended with remote/ref" ;;
   *)
-    fail "success: expected a push_grant_consumed audit line, got: $events_line" ;;
+    common_test_fail "success: expected a push_grant_consumed audit line, got: $events_line" ;;
 esac
 
 # =====================================================================
@@ -338,15 +334,15 @@ porcelain_after2="$(cd "$repo" && git status --porcelain)"
 events_line2="$(tail -n1 "${repo}/specs/events.jsonl" 2>/dev/null)"
 rm -rf "$repo"
 if [ "$wrapper_code2" -eq 0 ] && [ -z "$porcelain_after2" ]; then
-  pass "regression: wrapper push against a committed specs/events.jsonl leaves git status --porcelain empty (no sweep commit required)"
+  common_test_pass "regression: wrapper push against a committed specs/events.jsonl leaves git status --porcelain empty (no sweep commit required)"
 else
-  fail "regression: expected wrapper exit 0 and a clean tree, got exit=$wrapper_code2 porcelain=[$porcelain_after2] (out: $wrapper_out2)"
+  common_test_fail "regression: expected wrapper exit 0 and a clean tree, got exit=$wrapper_code2 porcelain=[$porcelain_after2] (out: $wrapper_out2)"
 fi
 case "$events_line2" in
   *'"push_grant_consumed"'*)
-    pass "regression: push_grant_consumed record still reaches specs/events.jsonl after flush" ;;
+    common_test_pass "regression: push_grant_consumed record still reaches specs/events.jsonl after flush" ;;
   *)
-    fail "regression: expected a push_grant_consumed line after flush, got: $events_line2" ;;
+    common_test_fail "regression: expected a push_grant_consumed line after flush, got: $events_line2" ;;
 esac
 
 # =====================================================================
@@ -365,9 +361,9 @@ events_after_first_flush="$(cat "${repo}/specs/events.jsonl")"
 events_after_second_flush="$(cat "${repo}/specs/events.jsonl")"
 rm -rf "$repo"
 if [ "$events_after_first_flush" = "$events_after_second_flush" ]; then
-  pass "flush-idempotence: a second pg_audit_flush on an empty buffer leaves specs/events.jsonl unchanged"
+  common_test_pass "flush-idempotence: a second pg_audit_flush on an empty buffer leaves specs/events.jsonl unchanged"
 else
-  fail "flush-idempotence: expected unchanged events.jsonl across two flushes, first=[$events_after_first_flush] second=[$events_after_second_flush]"
+  common_test_fail "flush-idempotence: expected unchanged events.jsonl across two flushes, first=[$events_after_first_flush] second=[$events_after_second_flush]"
 fi
 
 # =====================================================================
@@ -382,7 +378,7 @@ assert_malformed_blocks() {
   "$mutate_fn" "$grant_file"
   code="$(run_hook_in "$repo" "git push origin feature-x")"
   rm -rf "$repo"
-  [ "$code" -eq 2 ] && pass "fail-safe: $label blocked" || fail "fail-safe: $label expected exit 2, got $code"
+  [ "$code" -eq 2 ] && common_test_pass "fail-safe: $label blocked" || common_test_fail "fail-safe: $label expected exit 2, got $code"
 }
 
 mutate_truncate() { head -c 20 "$1" > "${1}.tmp" && mv "${1}.tmp" "$1"; }
@@ -402,7 +398,7 @@ mv "$PUSH_GRANT_KEY_PATH" "${PUSH_GRANT_KEY_PATH}.hidden"
 code="$(run_hook_in "$repo" "git push origin feature-x")"
 mv "${PUSH_GRANT_KEY_PATH}.hidden" "$PUSH_GRANT_KEY_PATH"
 rm -rf "$repo"
-[ "$code" -eq 2 ] && pass "fail-safe: key file absent blocked" || fail "fail-safe: key file absent expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "fail-safe: key file absent blocked" || common_test_fail "fail-safe: key file absent expected exit 2, got $code"
 
 # key file mode 0644
 repo="$(make_push_fixture)"
@@ -411,7 +407,7 @@ chmod 644 "$PUSH_GRANT_KEY_PATH"
 code="$(run_hook_in "$repo" "git push origin feature-x")"
 chmod 600 "$PUSH_GRANT_KEY_PATH"
 rm -rf "$repo"
-[ "$code" -eq 2 ] && pass "fail-safe: key file mode 0644 blocked" || fail "fail-safe: key file mode 0644 expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "fail-safe: key file mode 0644 blocked" || common_test_fail "fail-safe: key file mode 0644 expected exit 2, got $code"
 
 # =====================================================================
 # Single-use case: re-write the consumed grant's exact bytes back to disk
@@ -425,9 +421,9 @@ printf '%s\n' "$grant_bytes" > "$grant_file"
 second_code="$(run_hook_in "$repo" "git push origin feature-x")"
 rm -rf "$repo"
 if [ "$first_code" -eq 0 ] && [ "$second_code" -eq 2 ]; then
-  pass "single-use: re-writing the consumed grant's exact bytes back does not re-authorize"
+  common_test_pass "single-use: re-writing the consumed grant's exact bytes back does not re-authorize"
 else
-  fail "single-use: expected first=0 second=2, got first=$first_code second=$second_code"
+  common_test_fail "single-use: expected first=0 second=2, got first=$first_code second=$second_code"
 fi
 
 # =====================================================================
@@ -435,19 +431,19 @@ fi
 # =====================================================================
 repo="$(make_push_fixture)"
 code="$(run_hook_write_in "$repo" "specs/.push-grant/grant-fake.kv")"
-[ "$code" -eq 2 ] && pass "tamper: Write to grant dir blocked" || fail "tamper: Write to grant dir expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "tamper: Write to grant dir blocked" || common_test_fail "tamper: Write to grant dir expected exit 2, got $code"
 
 code="$( ( cd "$repo" && jq -n --arg fp "specs/.push-grant/grant-fake.kv" '{tool_name:"Edit", tool_input:{file_path:$fp}}' | bash "$HOOK" ) >/dev/null 2>/dev/null; echo $? )"
-[ "$code" -eq 2 ] && pass "tamper: Edit to grant dir blocked" || fail "tamper: Edit to grant dir expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "tamper: Edit to grant dir blocked" || common_test_fail "tamper: Edit to grant dir expected exit 2, got $code"
 
 code="$( ( cd "$repo" && jq -n --arg fp "$PUSH_GRANT_KEY_PATH" '{tool_name:"Write", tool_input:{file_path:$fp}}' | bash "$HOOK" ) >/dev/null 2>/dev/null; echo $? )"
-[ "$code" -eq 2 ] && pass "tamper: Write to key path blocked" || fail "tamper: Write to key path expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "tamper: Write to key path blocked" || common_test_fail "tamper: Write to key path expected exit 2, got $code"
 
 code="$(run_hook_in "$repo" "echo fake > specs/.push-grant/grant-fake.kv")"
-[ "$code" -eq 2 ] && pass "tamper: Bash redirect into grant dir blocked" || fail "tamper: Bash redirect into grant dir expected exit 2, got $code"
+[ "$code" -eq 2 ] && common_test_pass "tamper: Bash redirect into grant dir blocked" || common_test_fail "tamper: Bash redirect into grant dir expected exit 2, got $code"
 
 code="$(run_hook_write_in "$repo" "unrelated-file.txt")"
-[ "$code" -eq 0 ] && pass "tamper: Write to an unrelated file passes through" || fail "tamper: Write to unrelated file expected exit 0, got $code"
+[ "$code" -eq 0 ] && common_test_pass "tamper: Write to an unrelated file passes through" || common_test_fail "tamper: Write to unrelated file expected exit 0, got $code"
 rm -rf "$repo"
 
 # =====================================================================
@@ -464,9 +460,9 @@ tag_code="$(run_hook_in "$tag_repo" "git push origin v1.0.0")"
 tag_remaining="$(grant_count_in "$tag_repo")"
 rm -rf "$tag_repo"
 if [ "$tag_code" -eq 0 ] && [ "$tag_remaining" -eq 0 ]; then
-  pass "tag classification: bare 'git push origin v1.0.0' (a local tag) matches its push_tag grant"
+  common_test_pass "tag classification: bare 'git push origin v1.0.0' (a local tag) matches its push_tag grant"
 else
-  fail "tag classification: expected exit=0 and grant consumed, got exit=$tag_code remaining=$tag_remaining"
+  common_test_fail "tag classification: expected exit=0 and grant consumed, got exit=$tag_code remaining=$tag_remaining"
 fi
 
 # =====================================================================
@@ -480,9 +476,9 @@ merge_code="$(run_hook_in "$merge_repo" "git push -u origin HEAD")"
 merge_remaining="$(grant_count_in "$merge_repo")"
 rm -rf "$merge_repo"
 if [ "$merge_code" -eq 0 ] && [ "$merge_remaining" -eq 0 ]; then
-  pass "/merge call site: 'git push -u origin HEAD' matches a merge-sourced grant via HEAD resolution"
+  common_test_pass "/merge call site: 'git push -u origin HEAD' matches a merge-sourced grant via HEAD resolution"
 else
-  fail "/merge call site: expected exit=0 and grant consumed, got exit=$merge_code remaining=$merge_remaining"
+  common_test_fail "/merge call site: expected exit=0 and grant consumed, got exit=$merge_code remaining=$merge_remaining"
 fi
 
 # =====================================================================

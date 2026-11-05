@@ -22,10 +22,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 VALIDATE_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/validate-artifact.sh"
@@ -89,13 +87,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 checksum() { md5sum "$1" | cut -d' ' -f1; }
 
@@ -285,13 +278,13 @@ EOF
 # ─── Status-grammar: conforming ──────────────────────────────────────────────────────────────
 f=$(make_plan_fixture '- **Status**: [IMPLEMENTING]')
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "[PASS]"; then pass "conforming Status line: [PASS]"; else fail "conforming Status line did not PASS: $out"; fi
-if echo "$out" | grep -q "plan-level Status line"; then fail "conforming Status line raised a grammar error: $out"; else pass "conforming Status line raises no grammar error"; fi
+if echo "$out" | grep -qF "[PASS]"; then common_test_pass "conforming Status line: [PASS]"; else common_test_fail "conforming Status line did not PASS: $out"; fi
+if echo "$out" | grep -q "plan-level Status line"; then common_test_fail "conforming Status line raised a grammar error: $out"; else common_test_pass "conforming Status line raises no grammar error"; fi
 
 # ─── Status-grammar: conforming + trailing annotation ───────────────────────────────────────
 f=$(make_plan_fixture '- **Status**: [IMPLEMENTING] (resumed; Phases 1R-10R closed)')
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "[PASS]"; then pass "trailing-annotation Status line: [PASS]"; else fail "trailing-annotation Status line did not PASS: $out"; fi
+if echo "$out" | grep -qF "[PASS]"; then common_test_pass "trailing-annotation Status line: [PASS]"; else common_test_fail "trailing-annotation Status line did not PASS: $out"; fi
 
 # ─── Status-grammar: M1 (no Status line at all) ─────────────────────────────────────────────
 f=$(mktemp --tmpdir="$WORKDIR" plan-m1-XXXXXX.md)
@@ -300,68 +293,68 @@ cat > "$f" <<'EOF'
 no status line here
 EOF
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "plan-level Status line not found"; then pass "M1: plan-level Status line not found error"; else fail "M1 missing expected error: $out"; fi
+if echo "$out" | grep -qF "plan-level Status line not found"; then common_test_pass "M1: plan-level Status line not found error"; else common_test_fail "M1 missing expected error: $out"; fi
 
 # ─── Status-grammar: M2 (no bracket pair) ───────────────────────────────────────────────────
 f=$(make_plan_fixture '- **Status**: COMPLETED')
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "plan-level Status line has no [STATUS] bracket pair"; then pass "M2: no bracket pair error"; else fail "M2 missing expected error: $out"; fi
-if echo "$out" | grep -qF "[FAIL]"; then pass "M2: overall [FAIL]"; else fail "M2 did not FAIL overall: $out"; fi
+if echo "$out" | grep -qF "plan-level Status line has no [STATUS] bracket pair"; then common_test_pass "M2: no bracket pair error"; else common_test_fail "M2 missing expected error: $out"; fi
+if echo "$out" | grep -qF "[FAIL]"; then common_test_pass "M2: overall [FAIL]"; else common_test_fail "M2 did not FAIL overall: $out"; fi
 
 # ─── Status-grammar: M3 (text between prefix and bracket) ──────────────────────────────────
 f=$(make_plan_fixture '- **Status**: see [NOTE]')
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "plan-level Status line has unexpected text between the prefix and the bracket"; then pass "M3: unexpected-text error"; else fail "M3 missing expected error: $out"; fi
+if echo "$out" | grep -qF "plan-level Status line has unexpected text between the prefix and the bracket"; then common_test_pass "M3: unexpected-text error"; else common_test_fail "M3 missing expected error: $out"; fi
 
 # ─── --fix non-participation: M2 fixture untouched, error still reported ───────────────────
 f=$(make_plan_fixture '- **Status**: COMPLETED')
 before=$(checksum "$f")
 out=$("$VALIDATE" "$f" plan --fix 2>&1)
 after=$(checksum "$f")
-if [[ "$before" == "$after" ]]; then pass "--fix leaves M2 Status line byte-identical"; else fail "--fix mutated the M2 fixture"; fi
-if echo "$out" | grep -qF "plan-level Status line has no [STATUS] bracket pair"; then pass "--fix still reports the M2 grammar error"; else fail "--fix suppressed the M2 grammar error: $out"; fi
+if [[ "$before" == "$after" ]]; then common_test_pass "--fix leaves M2 Status line byte-identical"; else common_test_fail "--fix mutated the M2 fixture"; fi
+if echo "$out" | grep -qF "plan-level Status line has no [STATUS] bracket pair"; then common_test_pass "--fix still reports the M2 grammar error"; else common_test_fail "--fix suppressed the M2 grammar error: $out"; fi
 
 # ─── Files to modify (a): phase block with no header at all -- draws the per-phase warning ──
 f=$(make_two_phase_ftm_fixture '')
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "Phase 1 missing **Files to modify** field"; then pass "FTM(a): no-header phase draws the per-phase warning"; else fail "FTM(a) missing expected warning: $out"; fi
-if echo "$out" | grep -qF "Every phase omits the **Files to modify** field"; then fail "FTM(a): no-header-on-one-phase incorrectly raised the whole-plan error: $out"; else pass "FTM(a): no whole-plan error raised"; fi
-if echo "$out" | grep -qF "[PASS]"; then pass "FTM(a): overall [PASS] in default mode (warning alone)"; else fail "FTM(a) did not PASS overall in default mode: $out"; fi
+if echo "$out" | grep -qF "Phase 1 missing **Files to modify** field"; then common_test_pass "FTM(a): no-header phase draws the per-phase warning"; else common_test_fail "FTM(a) missing expected warning: $out"; fi
+if echo "$out" | grep -qF "Every phase omits the **Files to modify** field"; then common_test_fail "FTM(a): no-header-on-one-phase incorrectly raised the whole-plan error: $out"; else common_test_pass "FTM(a): no whole-plan error raised"; fi
+if echo "$out" | grep -qF "[PASS]"; then common_test_pass "FTM(a): overall [PASS] in default mode (warning alone)"; else common_test_fail "FTM(a) did not PASS overall in default mode: $out"; fi
 
 # ─── Files to modify (b): header present with only a "- none planned" prose sentinel -- NO finding
 f=$(make_two_phase_ftm_fixture $'\n\n**Files to modify**:\n- none planned - pure verification phase')
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "missing **Files to modify** field"; then fail "FTM(b): sentinel-only header incorrectly drew a missing-field finding: $out"; else pass "FTM(b): sentinel-only header draws no finding"; fi
-if echo "$out" | grep -qF "Every phase omits"; then fail "FTM(b) incorrectly raised the whole-plan error: $out"; else pass "FTM(b): no whole-plan error"; fi
+if echo "$out" | grep -qF "missing **Files to modify** field"; then common_test_fail "FTM(b): sentinel-only header incorrectly drew a missing-field finding: $out"; else common_test_pass "FTM(b): sentinel-only header draws no finding"; fi
+if echo "$out" | grep -qF "Every phase omits"; then common_test_fail "FTM(b) incorrectly raised the whole-plan error: $out"; else common_test_pass "FTM(b): no whole-plan error"; fi
 # The fixture's Phase 2 anchor path is the only real entry; Phase 1's sentinel line must
 # contribute zero paths of its own (the harvester's unchanged []-contributes-nothing contract for
 # a sentinel-only block), so the harvest is exactly the one-element anchor array, never more.
 harvest_before=$(bash "$SCRIPT_DIR/../plan-file-scope-harvest.sh" "$f" 2>&1 | tr -d '[:space:]')
-if [[ "$harvest_before" == '["path/to/anchor.ext"]' ]]; then pass "FTM(b): sentinel-only Phase 1 contributes zero paths to the harvest (unchanged contract)"; else fail "FTM(b): harvester output unexpectedly diverged: $harvest_before"; fi
+if [[ "$harvest_before" == '["path/to/anchor.ext"]' ]]; then common_test_pass "FTM(b): sentinel-only Phase 1 contributes zero paths to the harvest (unchanged contract)"; else common_test_fail "FTM(b): harvester output unexpectedly diverged: $harvest_before"; fi
 
 # ─── Files to modify (c): header present with at least one backtick-path entry -- NO finding ──
 f=$(make_two_phase_ftm_fixture $'\n\n**Files to modify**:\n- `some/real/path.ext`')
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "missing **Files to modify** field"; then fail "FTM(c): header-with-path incorrectly drew a missing-field finding: $out"; else pass "FTM(c): header-with-path draws no finding"; fi
-if echo "$out" | grep -qF "Every phase omits"; then fail "FTM(c) incorrectly raised the whole-plan error: $out"; else pass "FTM(c): no whole-plan error"; fi
+if echo "$out" | grep -qF "missing **Files to modify** field"; then common_test_fail "FTM(c): header-with-path incorrectly drew a missing-field finding: $out"; else common_test_pass "FTM(c): header-with-path draws no finding"; fi
+if echo "$out" | grep -qF "Every phase omits"; then common_test_fail "FTM(c) incorrectly raised the whole-plan error: $out"; else common_test_pass "FTM(c): no whole-plan error"; fi
 
 # ─── Files to modify (d): every phase omits the field -- whole-plan log_error ───────────────
 f=$(make_whole_plan_ftm_omit_fixture)
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "Every phase omits the **Files to modify** field"; then pass "FTM(d): whole-plan omission raises the whole-plan error"; else fail "FTM(d) missing expected whole-plan error: $out"; fi
-if echo "$out" | grep -qF "[FAIL]"; then pass "FTM(d): overall [FAIL] (error, not just warning)"; else fail "FTM(d) did not FAIL overall: $out"; fi
+if echo "$out" | grep -qF "Every phase omits the **Files to modify** field"; then common_test_pass "FTM(d): whole-plan omission raises the whole-plan error"; else common_test_fail "FTM(d) missing expected whole-plan error: $out"; fi
+if echo "$out" | grep -qF "[FAIL]"; then common_test_pass "FTM(d): overall [FAIL] (error, not just warning)"; else common_test_fail "FTM(d) did not FAIL overall: $out"; fi
 rc=0; "$VALIDATE" "$f" plan >/dev/null 2>&1 || rc=$?
-if [[ $rc -ne 0 ]]; then pass "FTM(d): non-zero exit in default mode"; else fail "FTM(d): exit 0 despite whole-plan error"; fi
+if [[ $rc -ne 0 ]]; then common_test_pass "FTM(d): non-zero exit in default mode"; else common_test_fail "FTM(d): exit 0 despite whole-plan error"; fi
 
 # ─── Files to modify (e): mixed plan (one phase omits, another declares) -- warning, NOT error ──
 f=$(make_two_phase_ftm_fixture '')
 out=$("$VALIDATE" "$f" plan 2>&1)
-if echo "$out" | grep -qF "Phase 1 missing **Files to modify** field"; then pass "FTM(e): mixed plan draws the per-phase warning"; else fail "FTM(e) missing expected warning: $out"; fi
-if echo "$out" | grep -qF "Every phase omits"; then fail "FTM(e): mixed plan incorrectly raised the whole-plan error: $out"; else pass "FTM(e): mixed plan raises no whole-plan error"; fi
+if echo "$out" | grep -qF "Phase 1 missing **Files to modify** field"; then common_test_pass "FTM(e): mixed plan draws the per-phase warning"; else common_test_fail "FTM(e) missing expected warning: $out"; fi
+if echo "$out" | grep -qF "Every phase omits"; then common_test_fail "FTM(e): mixed plan incorrectly raised the whole-plan error: $out"; else common_test_pass "FTM(e): mixed plan raises no whole-plan error"; fi
 rc=0; "$VALIDATE" "$f" plan >/dev/null 2>&1 || rc=$?
-if [[ $rc -eq 0 ]]; then pass "FTM(e): default-mode exit 0 (warning alone does not fail the gate)"; else fail "FTM(e): unexpected non-zero exit in default mode: rc=$rc"; fi
+if [[ $rc -eq 0 ]]; then common_test_pass "FTM(e): default-mode exit 0 (warning alone does not fail the gate)"; else common_test_fail "FTM(e): unexpected non-zero exit in default mode: rc=$rc"; fi
 rc=0; "$VALIDATE" "$f" plan --strict >/dev/null 2>&1 || rc=$?
-if [[ $rc -ne 0 ]]; then pass "FTM(e): --strict escalates the per-phase warning to a non-zero exit"; else fail "FTM(e): --strict did not escalate: rc=$rc"; fi
+if [[ $rc -ne 0 ]]; then common_test_pass "FTM(e): --strict escalates the per-phase warning to a non-zero exit"; else common_test_fail "FTM(e): --strict did not escalate: rc=$rc"; fi
 
 # ─── Report-heading: near-miss-only FAILs ───────────────────────────────────────────────────
 f=$(make_report_fixture '
@@ -371,7 +364,7 @@ x
 ## Context Extension Recommendations
 x')
 out=$("$VALIDATE" "$f" report 2>&1)
-if echo "$out" | grep -qF "Missing required section: ## Recommendations"; then pass "near-miss headings alone: Missing required section error"; else fail "near-miss case did not report missing Recommendations: $out"; fi
+if echo "$out" | grep -qF "Missing required section: ## Recommendations"; then common_test_pass "near-miss headings alone: Missing required section error"; else common_test_fail "near-miss case did not report missing Recommendations: $out"; fi
 
 # ─── Report-heading: conforming (## Recommendations added) PASSes ──────────────────────────
 f=$(make_report_fixture '
@@ -384,21 +377,21 @@ x
 ## Recommendations
 x')
 out=$("$VALIDATE" "$f" report 2>&1)
-if echo "$out" | grep -qF "[PASS]"; then pass "conforming report (## Recommendations added): [PASS]"; else fail "conforming report did not PASS: $out"; fi
+if echo "$out" | grep -qF "[PASS]"; then common_test_pass "conforming report (## Recommendations added): [PASS]"; else common_test_fail "conforming report did not PASS: $out"; fi
 
 # ─── Report-heading: ## Context Extension Recommendations ALONE still FAILs ─────────────────
 f=$(make_report_fixture '
 ## Context Extension Recommendations
 x')
 out=$("$VALIDATE" "$f" report 2>&1)
-if echo "$out" | grep -qF "Missing required section: ## Recommendations"; then pass "Context Extension Recommendations alone still FAILs (no false pass)"; else fail "Context Extension Recommendations alone incorrectly satisfied Recommendations: $out"; fi
+if echo "$out" | grep -qF "Missing required section: ## Recommendations"; then common_test_pass "Context Extension Recommendations alone still FAILs (no false pass)"; else common_test_fail "Context Extension Recommendations alone incorrectly satisfied Recommendations: $out"; fi
 
 # ─── Depth tolerance: only conforming heading is ### Recommendations (nested) -- PASSes ────
 f=$(make_report_fixture '
 ### Recommendations
 x')
 out=$("$VALIDATE" "$f" report 2>&1)
-if echo "$out" | grep -qF "[PASS]"; then pass "depth-tolerant ### Recommendations satisfies the any-depth check"; else fail "depth-tolerant nested heading did not PASS: $out"; fi
+if echo "$out" | grep -qF "[PASS]"; then common_test_pass "depth-tolerant ### Recommendations satisfies the any-depth check"; else common_test_fail "depth-tolerant nested heading did not PASS: $out"; fi
 
 # ─── Cross-script conformance guard: plan-status-line.sh vs update-plan-status.sh ──────────
 # For each of the five Status-grammar shapes, build a throwaway specs/{NNN}_{slug}/plans/
@@ -425,15 +418,15 @@ check_conformance() {
   local rc=$?
   if [[ "$shape" == "OK" ]]; then
     if [[ $rc -eq 0 ]]; then
-      pass "conformance guard ($label): both accept (library=OK, update-plan-status.sh rc=0)"
+      common_test_pass "conformance guard ($label): both accept (library=OK, update-plan-status.sh rc=0)"
     else
-      fail "conformance guard ($label): library says OK but update-plan-status.sh rejected (rc=$rc): $(cat "$WORKDIR/conf-err.log")"
+      common_test_fail "conformance guard ($label): library says OK but update-plan-status.sh rejected (rc=$rc): $(cat "$WORKDIR/conf-err.log")"
     fi
   else
     if [[ $rc -ne 0 ]]; then
-      pass "conformance guard ($label): both reject (library=$shape, update-plan-status.sh rc=$rc)"
+      common_test_pass "conformance guard ($label): both reject (library=$shape, update-plan-status.sh rc=$rc)"
     else
-      fail "conformance guard ($label): library says $shape but update-plan-status.sh accepted (rc=0)"
+      common_test_fail "conformance guard ($label): library says $shape but update-plan-status.sh accepted (rc=0)"
     fi
   fi
   rm -f "$WORKDIR/conf-err.log"
@@ -446,7 +439,7 @@ check_conformance "M2"      $'# Plan\n- **Status**: COMPLETED'
 check_conformance "M3"      $'# Plan\n- **Status**: see [NOTE]'
 
 echo ""
-info "Target scripts: $VALIDATE ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"
+common_test_info "Target scripts: $VALIDATE ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"
 echo "PASSED: $PASSED"
 echo "FAILED: $FAILED"
 

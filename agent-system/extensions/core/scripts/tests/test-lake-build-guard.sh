@@ -6,9 +6,12 @@
 # idiom, 1 for positive-direction memory-pressure detection, 2 for the killed-holder terminal-
 # record guarantee, 5 for the `result` subcommand's verdict/orphan reporting, 3 for the
 # --expect-pid/--expect-scope ownership assertions, and 2 for the STATUS line and its
-# documentation), plus a non-vacuousness (mutation) section spanning mutations A-K. Running the
-# suite reports 47 [PASS] lines: the 34 numbered cases (case 12 splits into 12a/12b and case 27
-# into 27a/27b, so 36 case-level passes) plus the 11 mutation checks. The script under test is
+# documentation), plus three named tests (Test C: cross-tree replay refusal; Test D/E: the
+# stale-scratch-file fix, where a file named on the lake argument vector -- e.g. `env lean
+# /tmp/scratch.lean` -- changes content between argv-identical invocations), plus a
+# non-vacuousness (mutation) section spanning mutations A-L. Running the suite reports 51 [PASS]
+# lines: the 34 numbered cases (case 12 splits into 12a/12b and case 27 into 27a/27b, so 36
+# case-level passes) plus Test C/D/E (3) plus the 12 mutation checks. The script under test is
 # invoked as a REAL
 # SUBPROCESS throughout (never sourced): its behavior depends on genuine flock() semantics,
 # process substitution, and PATH-resolved external commands (`lake`, `flock`, optionally
@@ -43,6 +46,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../lib/common.sh"
 SRC_SCRIPTS_DIR="$SCRIPT_DIR/.."
 SCRIPT_UNDER_TEST="lake-build-guard.sh"
 GUARD="$SRC_SCRIPTS_DIR/$SCRIPT_UNDER_TEST"
@@ -50,9 +54,6 @@ GUARD="$SRC_SCRIPTS_DIR/$SCRIPT_UNDER_TEST"
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
 # --- Loud-skip discipline: verify the required script exists and is executable before running
 # anything. A missing/non-executable script under test is a loud exit 1, never a silent skip. ---
@@ -221,11 +222,11 @@ grep -v '^lake-build-guard: STATUS:' "$WORKDIR/c1_guard.err" > "$WORKDIR/c1_guar
 if diff -q "$WORKDIR/c1_direct.out" "$WORKDIR/c1_guard.out" >/dev/null \
    && diff -q "$WORKDIR/c1_direct.err" "$WORKDIR/c1_guard_stripped.err" >/dev/null \
    && [ "$DIRECT_RC" = "$GUARD_RC" ] && [ "$GUARD_RC" = "0" ]; then
-  pass "case 1: silent and transparent when clean (stdout/stderr/exit byte-identical to direct fake lake, modulo the one documented STATUS line)"
+  common_test_pass "case 1: silent and transparent when clean (stdout/stderr/exit byte-identical to direct fake lake, modulo the one documented STATUS line)"
 else
-  fail "case 1: clean-path transparency mismatch (direct_rc=$DIRECT_RC guard_rc=$GUARD_RC)"
-  info "diff stdout: $(diff "$WORKDIR/c1_direct.out" "$WORKDIR/c1_guard.out" 2>&1)"
-  info "diff stderr: $(diff "$WORKDIR/c1_direct.err" "$WORKDIR/c1_guard_stripped.err" 2>&1)"
+  common_test_fail "case 1: clean-path transparency mismatch (direct_rc=$DIRECT_RC guard_rc=$GUARD_RC)"
+  common_test_info "diff stdout: $(diff "$WORKDIR/c1_direct.out" "$WORKDIR/c1_guard.out" 2>&1)"
+  common_test_info "diff stderr: $(diff "$WORKDIR/c1_direct.err" "$WORKDIR/c1_guard_stripped.err" 2>&1)"
 fi
 
 # =====================================================================================
@@ -237,9 +238,9 @@ build_fixture "$CASE2_ROOT"
 RC=0
 FAKE_LAKE_EXIT=7 run_guard "$CASE2_ROOT" build build > /dev/null 2>&1 || RC=$?
 if [ "$RC" = "7" ]; then
-  pass "case 2: exit-code passthrough (fake lake exit 7 -> guard exit 7)"
+  common_test_pass "case 2: exit-code passthrough (fake lake exit 7 -> guard exit 7)"
 else
-  fail "case 2: expected guard exit 7, got $RC"
+  common_test_fail "case 2: expected guard exit 7, got $RC"
 fi
 
 # =====================================================================================
@@ -255,10 +256,10 @@ GUARD_RC=$?
 GUARD_COMBINED="$(printf '%s\n' "$GUARD_COMBINED_RAW" | grep -v '^lake-build-guard: STATUS:')"
 
 if [ "$DIRECT_COMBINED" = "$GUARD_COMBINED" ] && [ "$GUARD_RC" = "0" ]; then
-  pass "case 3: command substitution (\$(guard build 2>&1) equals \$(fake_lake 2>&1) modulo the one documented STATUS line, matching \$?)"
+  common_test_pass "case 3: command substitution (\$(guard build 2>&1) equals \$(fake_lake 2>&1) modulo the one documented STATUS line, matching \$?)"
 else
-  fail "case 3: command-substitution mismatch (guard_rc=$GUARD_RC)"
-  info "direct=[$DIRECT_COMBINED] guard=[$GUARD_COMBINED]"
+  common_test_fail "case 3: command-substitution mismatch (guard_rc=$GUARD_RC)"
+  common_test_info "direct=[$DIRECT_COMBINED] guard=[$GUARD_COMBINED]"
 fi
 
 # =====================================================================================
@@ -282,10 +283,10 @@ A_RC=$?
 INVOCATIONS4="$(wc -l < "$COUNTER4" | tr -d ' ')"
 if [ "$INVOCATIONS4" = "1" ] && [ "$A_RC" = "0" ] && [ "$B_RC" = "0" ] \
    && diff -q "$WORKDIR/c4_a.out" "$WORKDIR/c4_b.out" >/dev/null; then
-  pass "case 4: no duplicate build (exactly 1 fake-lake invocation for 2 overlapping guard invocations; B replayed A's output)"
+  common_test_pass "case 4: no duplicate build (exactly 1 fake-lake invocation for 2 overlapping guard invocations; B replayed A's output)"
 else
-  fail "case 4: expected exactly 1 invocation with matching A/B output; invocations=$INVOCATIONS4 a_rc=$A_RC b_rc=$B_RC"
-  info "a.out=$(cat "$WORKDIR/c4_a.out" 2>/dev/null) b.out=$(cat "$WORKDIR/c4_b.out" 2>/dev/null)"
+  common_test_fail "case 4: expected exactly 1 invocation with matching A/B output; invocations=$INVOCATIONS4 a_rc=$A_RC b_rc=$B_RC"
+  common_test_info "a.out=$(cat "$WORKDIR/c4_a.out" 2>/dev/null) b.out=$(cat "$WORKDIR/c4_b.out" 2>/dev/null)"
 fi
 
 # =====================================================================================
@@ -308,9 +309,9 @@ FAKE_LAKE_COUNTER="$COUNTER5" run_guard "$CASE5_ROOT" build build > /dev/null 2>
 AFTER_B5="$(wc -l < "$COUNTER5" | tr -d ' ')"
 
 if [ "$AFTER_A5" = "1" ] && [ "$AFTER_B5" = "2" ]; then
-  pass "case 5: a real content edit between runs defeats sharing (second run built rather than shared)"
+  common_test_pass "case 5: a real content edit between runs defeats sharing (second run built rather than shared)"
 else
-  fail "case 5: expected invocation count 1 then 2; got $AFTER_A5 then $AFTER_B5"
+  common_test_fail "case 5: expected invocation count 1 then 2; got $AFTER_A5 then $AFTER_B5"
 fi
 
 # =====================================================================================
@@ -339,9 +340,9 @@ RC6=$?
 INVOCATIONS6="$(wc -l < "$COUNTER6" | tr -d ' ')"
 
 if [ "$INVOCATIONS6" = "1" ] && [ "$RC6" = "0" ]; then
-  pass "case 6: a hand-written in_flight record naming a dead PID is never shared (a real build ran)"
+  common_test_pass "case 6: a hand-written in_flight record naming a dead PID is never shared (a real build ran)"
 else
-  fail "case 6: expected exactly 1 real build and exit 0; invocations=$INVOCATIONS6 rc=$RC6"
+  common_test_fail "case 6: expected exactly 1 real build and exit 0; invocations=$INVOCATIONS6 rc=$RC6"
 fi
 
 # =====================================================================================
@@ -359,10 +360,10 @@ EOF
 
 CASE7_OUT="$("$GUARD" status --dir "$CASE7_PARENT/pkg/sub/deep" --verbose 2>&1)"
 if echo "$CASE7_OUT" | grep -q "lock path: $CASE7_PARENT/pkg/\.lake/build-guard\.lock"; then
-  pass "case 7: lock derivation resolves to the nearest package's .lake/, not the parent's or the git root's"
+  common_test_pass "case 7: lock derivation resolves to the nearest package's .lake/, not the parent's or the git root's"
 else
-  fail "case 7: expected lock path under $CASE7_PARENT/pkg/.lake/"
-  info "output was: $CASE7_OUT"
+  common_test_fail "case 7: expected lock path under $CASE7_PARENT/pkg/.lake/"
+  common_test_info "output was: $CASE7_OUT"
 fi
 
 # =====================================================================================
@@ -374,9 +375,9 @@ build_fixture "$CASE8_ROOT"
 CASE8_OUT="$(bash -c "exec -a 'wrapper-that-mentions-lake-build-in-its-own-argv' bash -c '\"$GUARD\" status --dir \"$CASE8_ROOT\"'" 2>&1)"
 CASE8_RC=$?
 if [ "$CASE8_RC" = "0" ] && [ -z "$CASE8_OUT" ]; then
-  pass "case 8: no self-match (wrapper argv containing the literal string 'lake build' still yields exit 0, no output)"
+  common_test_pass "case 8: no self-match (wrapper argv containing the literal string 'lake build' still yields exit 0, no output)"
 else
-  fail "case 8: expected exit 0 and no output; got rc=$CASE8_RC output=[$CASE8_OUT]"
+  common_test_fail "case 8: expected exit 0 and no output; got rc=$CASE8_RC output=[$CASE8_OUT]"
 fi
 
 # =====================================================================================
@@ -400,9 +401,9 @@ kill "$LEAN_PID" 2>/dev/null || true
 wait "$LEAN_PID" 2>/dev/null || true
 
 if [ "$CASE9_RC" = "0" ] && [ -z "$CASE9_OUT" ]; then
-  pass "case 9: an ambient long-lived lean --worker process does not cause status to report a false in-flight build"
+  common_test_pass "case 9: an ambient long-lived lean --worker process does not cause status to report a false in-flight build"
 else
-  fail "case 9: expected exit 0 and no output; got rc=$CASE9_RC output=[$CASE9_OUT]"
+  common_test_fail "case 9: expected exit 0 and no output; got rc=$CASE9_RC output=[$CASE9_OUT]"
 fi
 
 # =====================================================================================
@@ -428,9 +429,9 @@ CASE10_OUT="$(PATH="$CASE10_ROOT/bin:$ISOBIN" "$GUARD" build --dir "$CASE10_ROOT
 CASE10_ERR="$(cat "$WORKDIR/c10.err")"
 
 if [ "$CASE10_RC" = "0" ] && [ "$CASE10_OUT" = "STDOUT_MARKER" ] && [ -n "$CASE10_ERR" ]; then
-  pass "case 10: cgroup degradation (systemd-run absent -> visible stderr notice AND a successful unbounded build with intact output)"
+  common_test_pass "case 10: cgroup degradation (systemd-run absent -> visible stderr notice AND a successful unbounded build with intact output)"
 else
-  fail "case 10: expected exit 0, intact stdout, and a non-empty stderr notice; rc=$CASE10_RC out=[$CASE10_OUT] err=[$CASE10_ERR]"
+  common_test_fail "case 10: expected exit 0, intact stdout, and a non-empty stderr notice; rc=$CASE10_RC out=[$CASE10_OUT] err=[$CASE10_ERR]"
 fi
 
 # =====================================================================================
@@ -444,26 +445,26 @@ LAKE_BUILD_GUARD_PSI_PATH="$WORKDIR/does-not-exist-psi" \
   run_guard "$CASE11_ROOT" preflight > /dev/null 2>&1 || CASE11_RC=$?
 
 if [ "$CASE11_RC" = "0" ]; then
-  pass "case 11: PSI path pointed at a nonexistent file does not crash; falls back to the meminfo-only signal and the build proceeds"
+  common_test_pass "case 11: PSI path pointed at a nonexistent file does not crash; falls back to the meminfo-only signal and the build proceeds"
 else
-  fail "case 11: expected preflight exit 0 with PSI path unavailable, got rc=$CASE11_RC"
+  common_test_fail "case 11: expected preflight exit 0 with PSI path unavailable, got rc=$CASE11_RC"
 fi
 
 # =====================================================================================
 # Case 12: no hardcoded project path or memory byte constant
 # =====================================================================================
 if grep -nE '/home/|/Projects/|/run/current-system' "$GUARD" > "$WORKDIR/c12_paths.txt"; then
-  fail "case 12: found an absolute home/project/system path literal in the script"
-  info "matches: $(cat "$WORKDIR/c12_paths.txt")"
+  common_test_fail "case 12: found an absolute home/project/system path literal in the script"
+  common_test_info "matches: $(cat "$WORKDIR/c12_paths.txt")"
 else
-  pass "case 12a: no absolute home/project/system path literal found in the script"
+  common_test_pass "case 12a: no absolute home/project/system path literal found in the script"
 fi
 
 if grep -nE '[0-9]+(GB|MB|G|M)\b' "$GUARD" > "$WORKDIR/c12_bytes.txt"; then
-  fail "case 12: found an absolute memory byte constant in the script"
-  info "matches: $(cat "$WORKDIR/c12_bytes.txt")"
+  common_test_fail "case 12: found an absolute memory byte constant in the script"
+  common_test_info "matches: $(cat "$WORKDIR/c12_bytes.txt")"
 else
-  pass "case 12b: no absolute memory byte constant found in the script (MemoryHigh/MemoryMax are systemd percentage strings)"
+  common_test_pass "case 12b: no absolute memory byte constant found in the script (MemoryHigh/MemoryMax are systemd percentage strings)"
 fi
 
 # =====================================================================================
@@ -478,9 +479,9 @@ LEAN_NUM_THREADS_COMMENT_LINES="$(grep -E 'LEAN_NUM_THREADS' "$GUARD" | grep -cE
 if [ -z "$LEAN_NUM_THREADS_ASSIGNMENTS" ] && [ -z "$LEAN_NUM_THREADS_EXPORTS" ] \
    && [ "$LEAN_NUM_THREADS_TOTAL_LINES" -gt 0 ] \
    && [ "$LEAN_NUM_THREADS_TOTAL_LINES" = "$LEAN_NUM_THREADS_COMMENT_LINES" ]; then
-  pass "case 13: LEAN_NUM_THREADS appears only in comment lines ($LEAN_NUM_THREADS_TOTAL_LINES occurrence(s)) documenting it as a falsified non-lever, never assigned or exported"
+  common_test_pass "case 13: LEAN_NUM_THREADS appears only in comment lines ($LEAN_NUM_THREADS_TOTAL_LINES occurrence(s)) documenting it as a falsified non-lever, never assigned or exported"
 else
-  fail "case 13: LEAN_NUM_THREADS regression -- total_lines=$LEAN_NUM_THREADS_TOTAL_LINES comment_lines=$LEAN_NUM_THREADS_COMMENT_LINES assignments=[$LEAN_NUM_THREADS_ASSIGNMENTS] exports=[$LEAN_NUM_THREADS_EXPORTS]"
+  common_test_fail "case 13: LEAN_NUM_THREADS regression -- total_lines=$LEAN_NUM_THREADS_TOTAL_LINES comment_lines=$LEAN_NUM_THREADS_COMMENT_LINES assignments=[$LEAN_NUM_THREADS_ASSIGNMENTS] exports=[$LEAN_NUM_THREADS_EXPORTS]"
 fi
 
 # =====================================================================================
@@ -496,9 +497,9 @@ FAKE_LAKE_COUNTER="$COUNTER14" run_guard "$CASE14_ROOT" build -- garbagecmd TARG
 INVOCATIONS14="$(wc -l < "$COUNTER14" | tr -d ' ')"
 
 if [ "$RC14" = "77" ] && [ "$INVOCATIONS14" = "0" ]; then
-  pass "case 14: unrecognized subcommand via the -- path exits 77 with zero fake-lake invocations (Defect A)"
+  common_test_pass "case 14: unrecognized subcommand via the -- path exits 77 with zero fake-lake invocations (Defect A)"
 else
-  fail "case 14: expected exit 77 and 0 invocations; got rc=$RC14 invocations=$INVOCATIONS14"
+  common_test_fail "case 14: expected exit 77 and 0 invocations; got rc=$RC14 invocations=$INVOCATIONS14"
 fi
 
 # =====================================================================================
@@ -515,9 +516,9 @@ FAKE_LAKE_COUNTER="$COUNTER15" run_guard "$CASE15_ROOT" build garbagecmd TARGET 
 INVOCATIONS15="$(wc -l < "$COUNTER15" | tr -d ' ')"
 
 if [ "$RC15" = "77" ] && [ "$INVOCATIONS15" = "0" ]; then
-  pass "case 15: unrecognized subcommand via the bare catch-all path exits 77 with zero fake-lake invocations (the case a --)-only fix would miss)"
+  common_test_pass "case 15: unrecognized subcommand via the bare catch-all path exits 77 with zero fake-lake invocations (the case a --)-only fix would miss)"
 else
-  fail "case 15: expected exit 77 and 0 invocations; got rc=$RC15 invocations=$INVOCATIONS15"
+  common_test_fail "case 15: expected exit 77 and 0 invocations; got rc=$RC15 invocations=$INVOCATIONS15"
 fi
 
 # =====================================================================================
@@ -534,9 +535,9 @@ FAKE_LAKE_COUNTER="$COUNTER16" run_guard "$CASE16_ROOT" build > /dev/null 2>&1 |
 INVOCATIONS16="$(wc -l < "$COUNTER16" | tr -d ' ')"
 
 if [ "$RC16" = "77" ] && [ "$INVOCATIONS16" = "0" ]; then
-  pass "case 16: build with no lake arguments exits 77 with zero fake-lake invocations (Decision 2)"
+  common_test_pass "case 16: build with no lake arguments exits 77 with zero fake-lake invocations (Decision 2)"
 else
-  fail "case 16: expected exit 77 and 0 invocations; got rc=$RC16 invocations=$INVOCATIONS16"
+  common_test_fail "case 16: expected exit 77 and 0 invocations; got rc=$RC16 invocations=$INVOCATIONS16"
 fi
 
 # =====================================================================================
@@ -549,9 +550,9 @@ build_fixture "$CASE17_ROOT"
 RC17=0
 FAKE_LAKE_EXIT=7 run_guard "$CASE17_ROOT" build -- build TARGET > /dev/null 2>&1 || RC17=$?
 if [ "$RC17" = "7" ]; then
-  pass "case 17: exit-code passthrough survives subcommand validation (-- build TARGET, FAKE_LAKE_EXIT=7 -> guard exit 7)"
+  common_test_pass "case 17: exit-code passthrough survives subcommand validation (-- build TARGET, FAKE_LAKE_EXIT=7 -> guard exit 7)"
 else
-  fail "case 17: expected guard exit 7, got $RC17"
+  common_test_fail "case 17: expected guard exit 7, got $RC17"
 fi
 
 # =====================================================================================
@@ -569,9 +570,9 @@ FAKE_LAKE_COUNTER="$COUNTER18" run_guard "$CASE18_ROOT" build build > /dev/null 
 INVOCATIONS18="$(wc -l < "$COUNTER18" | tr -d ' ')"
 
 if [ "$INVOCATIONS18" = "2" ]; then
-  pass "case 18: a scoped build followed by an unchanged-tree full build produces 2 real fake-lake invocations (Defect B: sharing keyed on scope, not staleness alone)"
+  common_test_pass "case 18: a scoped build followed by an unchanged-tree full build produces 2 real fake-lake invocations (Defect B: sharing keyed on scope, not staleness alone)"
 else
-  fail "case 18: expected 2 invocations, got $INVOCATIONS18"
+  common_test_fail "case 18: expected 2 invocations, got $INVOCATIONS18"
 fi
 
 # =====================================================================================
@@ -588,9 +589,9 @@ FAKE_LAKE_COUNTER="$COUNTER19" run_guard "$CASE19_ROOT" build build > /dev/null 
 INVOCATIONS19="$(wc -l < "$COUNTER19" | tr -d ' ')"
 
 if [ "$INVOCATIONS19" = "1" ]; then
-  pass "case 19: an identical full build over an unchanged tree still shares (1 invocation) -- the sharing optimization survives scope-keying, it is not disabled"
+  common_test_pass "case 19: an identical full build over an unchanged tree still shares (1 invocation) -- the sharing optimization survives scope-keying, it is not disabled"
 else
-  fail "case 19: expected 1 invocation, got $INVOCATIONS19"
+  common_test_fail "case 19: expected 1 invocation, got $INVOCATIONS19"
 fi
 
 # =====================================================================================
@@ -605,9 +606,9 @@ REPLAY_ERR20="$(run_guard "$CASE20_ROOT" build build 2>&1 1>/dev/null)"
 
 if ! printf '%s' "$FRESH_ERR20" | grep -q 'lake-build-guard: REPLAY:' \
    && printf '%s' "$REPLAY_ERR20" | grep -q 'lake-build-guard: REPLAY:'; then
-  pass "case 20: a replayed run emits the lake-build-guard: REPLAY: marker on stderr without --no-share, and a fresh run does not"
+  common_test_pass "case 20: a replayed run emits the lake-build-guard: REPLAY: marker on stderr without --no-share, and a fresh run does not"
 else
-  fail "case 20: expected marker absent on the fresh run and present on the replay; fresh=[$FRESH_ERR20] replay=[$REPLAY_ERR20]"
+  common_test_fail "case 20: expected marker absent on the fresh run and present on the replay; fresh=[$FRESH_ERR20] replay=[$REPLAY_ERR20]"
 fi
 
 # =====================================================================================
@@ -616,9 +617,9 @@ fi
 # =====================================================================================
 HELP_OUT21="$("$GUARD" --help 2>&1)"
 if printf '%s' "$HELP_OUT21" | grep -q 'kill -0' && printf '%s' "$HELP_OUT21" | grep -q 'pgrep'; then
-  pass "case 21: --help output documents the kill -0 wait idiom and the pgrep -f self-match pitfall"
+  common_test_pass "case 21: --help output documents the kill -0 wait idiom and the pgrep -f self-match pitfall"
 else
-  fail "case 21: expected --help output to contain both 'kill -0' and 'pgrep'; got=[$HELP_OUT21]"
+  common_test_fail "case 21: expected --help output to contain both 'kill -0' and 'pgrep'; got=[$HELP_OUT21]"
 fi
 
 # =====================================================================================
@@ -641,7 +642,7 @@ CASE22_MEM_AVAIL_THRESH="$(grep -oE '^MEM_AVAILABLE_RATIO_THRESHOLD=[0-9]+' "$GU
 CASE22_SWAP_USED_THRESH="$(grep -oE '^SWAP_USED_RATIO_THRESHOLD=[0-9]+' "$GUARD" | cut -d= -f2)"
 
 if [ -z "$CASE22_MEM_AVAIL_THRESH" ] || [ -z "$CASE22_SWAP_USED_THRESH" ]; then
-  fail "case 22: could not read MEM_AVAILABLE_RATIO_THRESHOLD / SWAP_USED_RATIO_THRESHOLD out of $GUARD"
+  common_test_fail "case 22: could not read MEM_AVAILABLE_RATIO_THRESHOLD / SWAP_USED_RATIO_THRESHOLD out of $GUARD"
 else
   CASE22_ROOT="$WORKDIR/case22"
   build_fixture "$CASE22_ROOT"
@@ -672,9 +673,9 @@ EOF
   if [ "$CASE22_RC" = "11" ] \
      && printf '%s' "$CASE22_ERR" | grep -qF "MemAvailable/MemTotal = ${CASE22_AVAIL_RATIO_TARGET}% is below threshold ${CASE22_MEM_AVAIL_THRESH}%" \
      && printf '%s' "$CASE22_ERR" | grep -qF "swap-in-use = ${CASE22_SWAP_RATIO_TARGET}% of SwapTotal exceeds threshold ${CASE22_SWAP_USED_THRESH}%"; then
-    pass "case 22: positive direction -- a pressured meminfo fixture, overriding LAKE_BUILD_GUARD_MEMINFO_PATH on this single invocation only, makes preflight exit 11 and report both the MemAvailable and swap-in-use reasons"
+    common_test_pass "case 22: positive direction -- a pressured meminfo fixture, overriding LAKE_BUILD_GUARD_MEMINFO_PATH on this single invocation only, makes preflight exit 11 and report both the MemAvailable and swap-in-use reasons"
   else
-    fail "case 22: expected preflight exit 11 with both the MemAvailable and swap-in-use reasons; got rc=$CASE22_RC err=[$CASE22_ERR]"
+    common_test_fail "case 22: expected preflight exit 11 with both the MemAvailable and swap-in-use reasons; got rc=$CASE22_RC err=[$CASE22_ERR]"
   fi
 fi
 
@@ -721,9 +722,9 @@ CASE23_ABORT_REASON="$(read_result_field abort_reason "$CASE23_RESULT" 2>/dev/nu
 
 if [ "$CASE23_OK" = "true" ] && [ "$CASE23_STATE" = "aborted" ] && [ -n "$CASE23_EXIT_STATUS" ] \
    && [ "$CASE23_ABORT_REASON" = "TERM" ]; then
-  pass "case 23: a holder killed with SIGTERM (to its own process group) leaves a terminal aborted record (state=aborted, exit_status=$CASE23_EXIT_STATUS, abort_reason=TERM) rather than a permanently-stuck in_flight one"
+  common_test_pass "case 23: a holder killed with SIGTERM (to its own process group) leaves a terminal aborted record (state=aborted, exit_status=$CASE23_EXIT_STATUS, abort_reason=TERM) rather than a permanently-stuck in_flight one"
 else
-  fail "case 23: expected a terminal aborted record after SIGTERM; ok=$CASE23_OK state=$CASE23_STATE exit_status=[$CASE23_EXIT_STATUS] abort_reason=[$CASE23_ABORT_REASON] holder_pid=[$CASE23_HOLDER_PID]"
+  common_test_fail "case 23: expected a terminal aborted record after SIGTERM; ok=$CASE23_OK state=$CASE23_STATE exit_status=[$CASE23_EXIT_STATUS] abort_reason=[$CASE23_ABORT_REASON] holder_pid=[$CASE23_HOLDER_PID]"
 fi
 
 # =====================================================================================
@@ -740,9 +741,9 @@ CASE24_INVOCATIONS="$(wc -l < "$CASE24_COUNTER" | tr -d ' ')"
 
 if [ "$CASE24_RC" = "0" ] && [ "$CASE24_INVOCATIONS" = "1" ] \
    && ! printf '%s' "$CASE24_ERR" | grep -q 'lake-build-guard: REPLAY:'; then
-  pass "case 24: a build against the same root after case 23's kill does not block and runs a real build (1 fake-lake invocation, no REPLAY marker) -- an aborted record is never shared"
+  common_test_pass "case 24: a build against the same root after case 23's kill does not block and runs a real build (1 fake-lake invocation, no REPLAY marker) -- an aborted record is never shared"
 else
-  fail "case 24: expected exit 0, exactly 1 real invocation, and no REPLAY marker; rc=$CASE24_RC invocations=$CASE24_INVOCATIONS err=[$CASE24_ERR]"
+  common_test_fail "case 24: expected exit 0, exactly 1 real invocation, and no REPLAY marker; rc=$CASE24_RC invocations=$CASE24_INVOCATIONS err=[$CASE24_ERR]"
 fi
 
 # =====================================================================================
@@ -755,9 +756,9 @@ CASE25_RC=0
 run_guard "$CASE25_ROOT" result > /dev/null 2>&1 || CASE25_RC=$?
 
 if [ "$CASE25_RC" = "23" ]; then
-  pass "case 25: result against a project with no record present exits 23 (no record)"
+  common_test_pass "case 25: result against a project with no record present exits 23 (no record)"
 else
-  fail "case 25: expected exit 23, got $CASE25_RC"
+  common_test_fail "case 25: expected exit 23, got $CASE25_RC"
 fi
 
 # =====================================================================================
@@ -792,9 +793,9 @@ kill "$CASE26_LOCKHOLDER_PID" 2>/dev/null || true
 wait "$CASE26_LOCKHOLDER_PID" 2>/dev/null || true
 
 if [ "$CASE26_RC" = "21" ] && printf '%s' "$CASE26_OUT" | grep -q '^state=in_flight'; then
-  pass "case 26: result against an in_flight record whose lock is currently held (a build genuinely still running) exits 21 and reports state=in_flight"
+  common_test_pass "case 26: result against an in_flight record whose lock is currently held (a build genuinely still running) exits 21 and reports state=in_flight"
 else
-  fail "case 26: expected exit 21 with state=in_flight; got rc=$CASE26_RC out=[$CASE26_OUT]"
+  common_test_fail "case 26: expected exit 21 with state=in_flight; got rc=$CASE26_RC out=[$CASE26_OUT]"
 fi
 
 # =====================================================================================
@@ -823,9 +824,9 @@ CASE27A_RC=0
 CASE27A_OUT="$(run_guard "$CASE27A_ROOT" result 2>&1)" || CASE27A_RC=$?
 
 if [ "$CASE27A_RC" = "22" ] && printf '%s' "$CASE27A_OUT" | grep -q '^state=orphaned'; then
-  pass "case 27a: an in_flight record whose lock is free (holder died untrappably) is reported as state=orphaned and exits 22, never trusted as a live build"
+  common_test_pass "case 27a: an in_flight record whose lock is free (holder died untrappably) is reported as state=orphaned and exits 22, never trusted as a live build"
 else
-  fail "case 27a: expected exit 22 with state=orphaned; got rc=$CASE27A_RC out=[$CASE27A_OUT]"
+  common_test_fail "case 27a: expected exit 22 with state=orphaned; got rc=$CASE27A_RC out=[$CASE27A_OUT]"
 fi
 
 # 27b: a hand-written state=aborted record (already terminal, from a trapped kill) exits 22 and
@@ -852,9 +853,9 @@ CASE27B_OUT="$(run_guard "$CASE27B_ROOT" result 2>&1)" || CASE27B_RC=$?
 
 if [ "$CASE27B_RC" = "22" ] && printf '%s' "$CASE27B_OUT" | grep -q '^state=aborted' \
    && printf '%s' "$CASE27B_OUT" | grep -q '^abort_reason=TERM'; then
-  pass "case 27b: a hand-written state=aborted record is reported verbatim (state=aborted, abort_reason=TERM) and exits 22"
+  common_test_pass "case 27b: a hand-written state=aborted record is reported verbatim (state=aborted, abort_reason=TERM) and exits 22"
 else
-  fail "case 27b: expected exit 22 with state=aborted and abort_reason=TERM; got rc=$CASE27B_RC out=[$CASE27B_OUT]"
+  common_test_fail "case 27b: expected exit 22 with state=aborted and abort_reason=TERM; got rc=$CASE27B_RC out=[$CASE27B_OUT]"
 fi
 
 # =====================================================================================
@@ -870,9 +871,9 @@ CASE28_OUT="$(run_guard "$CASE28_ROOT" result 2>&1)" || CASE28_RC=$?
 
 if [ "$CASE28_RC" = "0" ] && printf '%s' "$CASE28_OUT" | grep -q '^state=complete' \
    && printf '%s' "$CASE28_OUT" | grep -q '^exit_status=0'; then
-  pass "case 28: a real passing build's verdict (state=complete, exit_status=0) is reachable via result's own exit code (0), with no pipeline and no text parsing"
+  common_test_pass "case 28: a real passing build's verdict (state=complete, exit_status=0) is reachable via result's own exit code (0), with no pipeline and no text parsing"
 else
-  fail "case 28: expected exit 0 with state=complete and exit_status=0; got rc=$CASE28_RC out=[$CASE28_OUT]"
+  common_test_fail "case 28: expected exit 0 with state=complete and exit_status=0; got rc=$CASE28_RC out=[$CASE28_OUT]"
 fi
 
 # =====================================================================================
@@ -892,9 +893,9 @@ CASE29_OUT="$(run_guard "$CASE29_ROOT" result 2>&1)" || CASE29_RC=$?
 
 if [ "$CASE29_RC" = "20" ] && printf '%s' "$CASE29_OUT" | grep -q '^state=complete' \
    && printf '%s' "$CASE29_OUT" | grep -q '^exit_status=5'; then
-  pass "case 29: a real failing build's verdict (state=complete, exit_status=5) is reachable via result's own exit code (20), with the real exit code visible on stdout -- no pipeline, no text parsing"
+  common_test_pass "case 29: a real failing build's verdict (state=complete, exit_status=5) is reachable via result's own exit code (20), with the real exit code visible on stdout -- no pipeline, no text parsing"
 else
-  fail "case 29: expected exit 20 with state=complete and exit_status=5; got rc=$CASE29_RC out=[$CASE29_OUT]"
+  common_test_fail "case 29: expected exit 20 with state=complete and exit_status=5; got rc=$CASE29_RC out=[$CASE29_OUT]"
 fi
 
 # =====================================================================================
@@ -909,9 +910,9 @@ CASE30_OUT="$(run_guard "$CASE30_ROOT" result --expect-pid 1 2>/dev/null)" || CA
 CASE30_ERR="$(run_guard "$CASE30_ROOT" result --expect-pid 1 2>&1 1>/dev/null)"
 
 if [ "$CASE30_RC" = "24" ] && [ -z "$CASE30_OUT" ] && printf '%s' "$CASE30_ERR" | grep -q 'not the expected pid 1'; then
-  pass "case 30: --expect-pid mismatch (an obviously-wrong pid) refuses with exit 24, a stderr explanation, and no verdict lines on stdout"
+  common_test_pass "case 30: --expect-pid mismatch (an obviously-wrong pid) refuses with exit 24, a stderr explanation, and no verdict lines on stdout"
 else
-  fail "case 30: expected exit 24, empty stdout, and a mismatch message; rc=$CASE30_RC out=[$CASE30_OUT] err=[$CASE30_ERR]"
+  common_test_fail "case 30: expected exit 24, empty stdout, and a mismatch message; rc=$CASE30_RC out=[$CASE30_OUT] err=[$CASE30_ERR]"
 fi
 
 # =====================================================================================
@@ -925,9 +926,9 @@ CASE31_RC=0
 run_guard "$CASE31_ROOT" result --expect-scope -- build Foo.Bar > /dev/null 2>&1 || CASE31_RC=$?
 
 if [ "$CASE31_RC" = "24" ]; then
-  pass "case 31: --expect-scope -- build Foo.Bar against a record built with a plain 'build' refuses with exit 24 (differently-scoped, never reports a sibling's verdict)"
+  common_test_pass "case 31: --expect-scope -- build Foo.Bar against a record built with a plain 'build' refuses with exit 24 (differently-scoped, never reports a sibling's verdict)"
 else
-  fail "case 31: expected exit 24, got $CASE31_RC"
+  common_test_fail "case 31: expected exit 24, got $CASE31_RC"
 fi
 
 # =====================================================================================
@@ -943,9 +944,9 @@ CASE32_RC=0
 run_guard "$CASE32_ROOT" result --expect-scope -- build > /dev/null 2>&1 || CASE32_RC=$?
 
 if [ "$CASE32_RC" = "0" ]; then
-  pass "case 32: a matching --expect-scope -- build against a record built with 'build' reports the real verdict (exit 0), not a refusal"
+  common_test_pass "case 32: a matching --expect-scope -- build against a record built with 'build' reports the real verdict (exit 0), not a refusal"
 else
-  fail "case 32: expected exit 0, got $CASE32_RC"
+  common_test_fail "case 32: expected exit 0, got $CASE32_RC"
 fi
 
 # =====================================================================================
@@ -981,9 +982,9 @@ if [ "$FRESH_OUT33_COUNT" = "1" ] && [ "$CASE33_CAPTURE_STATUS_COUNT" = "0" ] \
    && diff -q "$WORKDIR/c33_fresh.stdout" "$CASE33_STDOUT_CAPTURE" >/dev/null 2>&1 \
    && diff -q "$WORKDIR/c33_fresh.stderr" "$CASE33_STDERR_CAPTURE" >/dev/null 2>&1 \
    && [ "$REPLAY_STATUS_COUNT33" = "0" ]; then
-  pass "case 33: fresh build stderr contains exactly one lake-build-guard: STATUS: exit_status=0 line; capture files contain no STATUS:; a subsequent replay's captured output stays byte-identical and its own stderr has no STATUS: line"
+  common_test_pass "case 33: fresh build stderr contains exactly one lake-build-guard: STATUS: exit_status=0 line; capture files contain no STATUS:; a subsequent replay's captured output stays byte-identical and its own stderr has no STATUS: line"
 else
-  fail "case 33: expected exactly 1 fresh STATUS line, 0 in capture files, 0 on replay, and byte-identical replayed captures; fresh_count=$FRESH_OUT33_COUNT capture_count=$CASE33_CAPTURE_STATUS_COUNT replay_count=$REPLAY_STATUS_COUNT33"
+  common_test_fail "case 33: expected exactly 1 fresh STATUS line, 0 in capture files, 0 on replay, and byte-identical replayed captures; fresh_count=$FRESH_OUT33_COUNT capture_count=$CASE33_CAPTURE_STATUS_COUNT replay_count=$REPLAY_STATUS_COUNT33"
 fi
 
 # =====================================================================================
@@ -999,9 +1000,9 @@ if printf '%s' "$HELP_OUT34" | grep -q 'build-guard.result' \
    && printf '%s' "$HELP_OUT34" | grep -q -- '--expect-pid' \
    && printf '%s' "$HELP_OUT34" | grep -q -- '--expect-scope' \
    && printf '%s' "$HELP_OUT34" | grep -qi 'pipeline'; then
-  pass "case 34: --help documents all four capture paths, the result mode, --expect-pid/--expect-scope, and the never-a-pipeline rule"
+  common_test_pass "case 34: --help documents all four capture paths, the result mode, --expect-pid/--expect-scope, and the never-a-pipeline rule"
 else
-  fail "case 34: expected --help output to name build-guard.result/.stdout/.stderr/.log, the result mode, --expect-pid, --expect-scope, and 'pipeline'; got=[$HELP_OUT34]"
+  common_test_fail "case 34: expected --help output to name build-guard.result/.stdout/.stderr/.log, the result mode, --expect-pid, --expect-scope, and 'pipeline'; got=[$HELP_OUT34]"
 fi
 
 # =====================================================================================
@@ -1052,9 +1053,60 @@ INVOCATIONSC="$(wc -l < "$COUNTERC" | tr -d ' ')"
 if [ "$INVOCATIONSC" = "2" ] \
    && grep -q 'lake-build-guard: STATUS:' "$TESTC_ERR" \
    && ! grep -q 'lake-build-guard: REPLAY:' "$TESTC_ERR"; then
-  pass "Test C: a real build occurs in root2 despite a raw full cp -al hardlink clone of root1 at the same scope (2 invocations, STATUS marker present, REPLAY marker absent) -- cross-tree replay is refused, pinning the incidental fingerprint path-embedding protection"
+  common_test_pass "Test C: a real build occurs in root2 despite a raw full cp -al hardlink clone of root1 at the same scope (2 invocations, STATUS marker present, REPLAY marker absent) -- cross-tree replay is refused, pinning the incidental fingerprint path-embedding protection"
 else
-  fail "Test C: expected a real build in root2 (2 invocations, STATUS present, REPLAY absent); got invocations=$INVOCATIONSC stderr=[$(cat "$TESTC_ERR")]"
+  common_test_fail "Test C: expected a real build in root2 (2 invocations, STATUS present, REPLAY absent); got invocations=$INVOCATIONSC stderr=[$(cat "$TESTC_ERR")]"
+fi
+
+# =====================================================================================
+# Test D: stale-scratch-file fix -- a scratch file named on the lake argument vector (e.g.
+# `env lean /path/to/scratch.lean`) typically lives OUTSIDE the project root entirely, so
+# compute_fingerprint()'s tree scan never observes an edit to it. Before the fix, an unchanged
+# argv across two invocations always replayed the first build's result regardless of the
+# scratch file's own content -- a corrected scratch file could be served a stale failing result
+# from before the correction. Deliberately places the scratch file outside TESTD_ROOT to prove
+# the fix does not depend on the file happening to fall inside the fingerprinted tree.
+# =====================================================================================
+TESTD_ROOT="$WORKDIR/testd_root"
+build_fixture "$TESTD_ROOT"
+TESTD_SCRATCH="$WORKDIR/testd_scratch.lean"
+echo "end Generic -- broken" > "$TESTD_SCRATCH"
+
+COUNTERD="$WORKDIR/testd_counter"
+: > "$COUNTERD"
+
+FAKE_LAKE_COUNTER="$COUNTERD" run_guard "$TESTD_ROOT" build -- env lean "$TESTD_SCRATCH" > /dev/null 2>&1
+echo "def Generic := 1 -- corrected" > "$TESTD_SCRATCH"
+FAKE_LAKE_COUNTER="$COUNTERD" run_guard "$TESTD_ROOT" build -- env lean "$TESTD_SCRATCH" > /dev/null 2>&1
+INVOCATIONSD="$(wc -l < "$COUNTERD" | tr -d ' ')"
+
+if [ "$INVOCATIONSD" = "2" ]; then
+  common_test_pass "Test D: a scratch file's content edit between two argv-identical 'env lean' invocations defeats sharing (2 real invocations, no stale replay) even though the scratch file lives outside the fingerprinted project tree"
+else
+  common_test_fail "Test D: expected 2 invocations (no stale replay of the pre-correction result), got $INVOCATIONSD"
+fi
+
+# =====================================================================================
+# Test E: Test D's companion -- an IDENTICAL 'env lean' invocation against an unchanged scratch
+# file still shares (1 invocation), proving the Test D fix only defeats sharing on an actual
+# content change and does not disable sharing for this argument shape outright.
+# =====================================================================================
+TESTE_ROOT="$WORKDIR/teste_root"
+build_fixture "$TESTE_ROOT"
+TESTE_SCRATCH="$WORKDIR/teste_scratch.lean"
+echo "def Generic := 1 -- unchanged" > "$TESTE_SCRATCH"
+
+COUNTERE="$WORKDIR/teste_counter"
+: > "$COUNTERE"
+
+FAKE_LAKE_COUNTER="$COUNTERE" run_guard "$TESTE_ROOT" build -- env lean "$TESTE_SCRATCH" > /dev/null 2>&1
+FAKE_LAKE_COUNTER="$COUNTERE" run_guard "$TESTE_ROOT" build -- env lean "$TESTE_SCRATCH" > /dev/null 2>&1
+INVOCATIONSE="$(wc -l < "$COUNTERE" | tr -d ' ')"
+
+if [ "$INVOCATIONSE" = "1" ]; then
+  common_test_pass "Test E: an identical 'env lean' invocation against an unchanged scratch file still shares (1 invocation) -- Test D's fix does not disable sharing for this argument shape outright"
+else
+  common_test_fail "Test E: expected 1 invocation (sharing should still apply), got $INVOCATIONSE"
 fi
 
 # =====================================================================================
@@ -1069,7 +1121,7 @@ fi
 # "pre-fix" script to diff against (this is a brand-new script, not a regression fix to an
 # existing one, so there is no historical commit to pin the way test-claude-refresh-matcher.sh
 # does); non-vacuousness for those is established by direct inspection instead, recorded below.
-info "Non-vacuousness: applying a targeted mutation to a scratch copy for the two cases the plan calls out by name"
+common_test_info "Non-vacuousness: applying a targeted mutation to a scratch copy for the two cases the plan calls out by name"
 
 MUTANT_DIR="$WORKDIR/mutants"
 mkdir -p "$MUTANT_DIR"
@@ -1088,12 +1140,12 @@ if command -v systemd-run >/dev/null 2>&1 && systemd-run --user --scope --quiet 
   build_fixture "$MUTANT_ROOT"
   MUTANT_ERR="$(PATH="$MUTANT_ROOT/bin:$PATH" "$MUTANT_QUIET" build --dir "$MUTANT_ROOT" --memory-bound build 2>&1 1>/dev/null)"
   if [ -n "$MUTANT_ERR" ]; then
-    pass "mutation A: removing --quiet from the systemd-run wrapper introduces systemd status chatter on stderr (confirms case 1/10's --quiet requirement is load-bearing, not vacuous)"
+    common_test_pass "mutation A: removing --quiet from the systemd-run wrapper introduces systemd status chatter on stderr (confirms case 1/10's --quiet requirement is load-bearing, not vacuous)"
   else
-    fail "mutation A: removing --quiet did not introduce any stderr chatter on this machine -- inconclusive, but recorded rather than silently skipped"
+    common_test_fail "mutation A: removing --quiet did not introduce any stderr chatter on this machine -- inconclusive, but recorded rather than silently skipped"
   fi
 else
-  info "mutation A skipped: systemd-run --user --scope is unavailable on this machine (no user cgroup delegation) -- case 10 already covers this environment via the degradation path"
+  common_test_info "mutation A skipped: systemd-run --user --scope is unavailable on this machine (no user cgroup delegation) -- case 10 already covers this environment via the degradation path"
 fi
 
 # --- Mutation B: remove the flock -n short-circuit (force every acquisition through -w) ->
@@ -1120,9 +1172,9 @@ wait "$MUTANT4_A"
 MUTANT4_INVOCATIONS="$(wc -l < "$MUTANT4_COUNTER" | tr -d ' ')"
 
 if [ "$MUTANT4_INVOCATIONS" != "1" ]; then
-  pass "mutation B: disabling flock serialization breaks case 4's single-invocation guarantee ($MUTANT4_INVOCATIONS invocations instead of 1) -- confirms case 4 is not vacuously green"
+  common_test_pass "mutation B: disabling flock serialization breaks case 4's single-invocation guarantee ($MUTANT4_INVOCATIONS invocations instead of 1) -- confirms case 4 is not vacuously green"
 else
-  fail "mutation B: disabling flock still produced exactly 1 invocation -- inconclusive (unexpected timing), recorded rather than silently skipped"
+  common_test_fail "mutation B: disabling flock still produced exactly 1 invocation -- inconclusive (unexpected timing), recorded rather than silently skipped"
 fi
 
 # --- Mutation C (Defect A): disable validate_build_subcommand() entirely (same
@@ -1144,9 +1196,9 @@ FAKE_LAKE_COUNTER="$MUTANTC_COUNTER" \
 MUTANTC_INVOCATIONS="$(wc -l < "$MUTANTC_COUNTER" | tr -d ' ')"
 
 if [ "$MUTANTC_RC" = "0" ] && [ "$MUTANTC_INVOCATIONS" = "1" ]; then
-  pass "mutation C: disabling subcommand validation reintroduces Defect A -- an unrecognized subcommand now reaches the fake lake (which exits 0) and the guard reports a false pass, breaking cases 14/15 -- confirms they are not vacuously green"
+  common_test_pass "mutation C: disabling subcommand validation reintroduces Defect A -- an unrecognized subcommand now reaches the fake lake (which exits 0) and the guard reports a false pass, breaking cases 14/15 -- confirms they are not vacuously green"
 else
-  fail "mutation C: disabling subcommand validation did not produce the expected false pass -- inconclusive (rc=$MUTANTC_RC invocations=$MUTANTC_INVOCATIONS), recorded rather than silently skipped"
+  common_test_fail "mutation C: disabling subcommand validation did not produce the expected false pass -- inconclusive (rc=$MUTANTC_RC invocations=$MUTANTC_INVOCATIONS), recorded rather than silently skipped"
 fi
 
 # --- Mutation D (Defect B): remove the scope_key comparison from decide_sharing() (force it
@@ -1183,9 +1235,9 @@ FAKE_LAKE_COUNTER="$MUTANTD2_COUNTER" \
 MUTANTD2_INVOCATIONS="$(wc -l < "$MUTANTD2_COUNTER" | tr -d ' ')"
 
 if [ "$MUTANTD_INVOCATIONS" = "1" ] && [ "$MUTANTD2_INVOCATIONS" = "1" ]; then
-  pass "mutation D: disabling the scope_key comparison reintroduces Defect B -- a scoped-then-full sequence now wrongly shares (1 invocation instead of 2, breaking case 18), while the identical-full-build sequence still shares (1 invocation, case 19 unaffected) -- confirms case 18 is load-bearing and did not simply disable sharing"
+  common_test_pass "mutation D: disabling the scope_key comparison reintroduces Defect B -- a scoped-then-full sequence now wrongly shares (1 invocation instead of 2, breaking case 18), while the identical-full-build sequence still shares (1 invocation, case 19 unaffected) -- confirms case 18 is load-bearing and did not simply disable sharing"
 else
-  fail "mutation D: unexpected invocation counts -- scoped-then-full=$MUTANTD_INVOCATIONS (want 1, i.e. wrongly shared) full-then-full=$MUTANTD2_INVOCATIONS (want 1) -- inconclusive, recorded rather than silently skipped"
+  common_test_fail "mutation D: unexpected invocation counts -- scoped-then-full=$MUTANTD_INVOCATIONS (want 1, i.e. wrongly shared) full-then-full=$MUTANTD2_INVOCATIONS (want 1) -- inconclusive, recorded rather than silently skipped"
 fi
 
 # --- Mutation E (replay notice): remove the REPLAY: stderr line from cmd_build()'s replay branch
@@ -1201,9 +1253,9 @@ PATH="$MUTANTE_ROOT/bin:$PATH" "$MUTANT_NOREPLAY" build --dir "$MUTANTE_ROOT" bu
 MUTANTE_REPLAY_ERR="$(PATH="$MUTANTE_ROOT/bin:$PATH" "$MUTANT_NOREPLAY" build --dir "$MUTANTE_ROOT" build 2>&1 1>/dev/null)"
 
 if ! printf '%s' "$MUTANTE_REPLAY_ERR" | grep -q 'lake-build-guard: REPLAY:'; then
-  pass "mutation E: removing the REPLAY: stderr line silences a genuine replay -- confirms case 20's marker assertion is load-bearing, not vacuous"
+  common_test_pass "mutation E: removing the REPLAY: stderr line silences a genuine replay -- confirms case 20's marker assertion is load-bearing, not vacuous"
 else
-  fail "mutation E: the REPLAY: marker still appeared after removing its emission line -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+  common_test_fail "mutation E: the REPLAY: marker still appeared after removing its emission line -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
 fi
 
 # --- Mutation F (positive-direction non-vacuousness): neuter check_memory_pressure() so it
@@ -1216,7 +1268,7 @@ sed 's/^check_memory_pressure() {/check_memory_pressure() { PRESSURE_REASONS=();
 chmod +x "$MUTANT_NOPRESSURE"
 
 if [ -z "${CASE22_MEM_AVAIL_THRESH:-}" ] || [ -z "${CASE22_SWAP_USED_THRESH:-}" ] || [ -z "${MEMINFO_FIXTURE_PRESSURED:-}" ]; then
-  fail "mutation F: case 22's pressured fixture is unavailable -- inconclusive, recorded rather than silently skipped"
+  common_test_fail "mutation F: case 22's pressured fixture is unavailable -- inconclusive, recorded rather than silently skipped"
 else
   MUTANTF_ROOT="$WORKDIR/mutant_nopressure_fixture"
   build_fixture "$MUTANTF_ROOT"
@@ -1227,9 +1279,9 @@ else
   MUTANTF_ERR="$(cat "$WORKDIR/mutantf.err")"
 
   if [ "$MUTANTF_RC" = "0" ] && [ -z "$MUTANTF_ERR" ]; then
-    pass "mutation F: neutering check_memory_pressure() to always report no pressure makes the SAME pressured fixture that made case 22 fire now pass silently (exit 0, no reasons) -- confirms case 22 is not vacuously green"
+    common_test_pass "mutation F: neutering check_memory_pressure() to always report no pressure makes the SAME pressured fixture that made case 22 fire now pass silently (exit 0, no reasons) -- confirms case 22 is not vacuously green"
   else
-    fail "mutation F: expected preflight exit 0 with no output against the neutered guard; got rc=$MUTANTF_RC err=[$MUTANTF_ERR] -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+    common_test_fail "mutation F: expected preflight exit 0 with no output against the neutered guard; got rc=$MUTANTF_RC err=[$MUTANTF_ERR] -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
   fi
 fi
 
@@ -1262,9 +1314,9 @@ fi
 MUTANTG_STATE="$(read_result_field state "$MUTANTG_RESULT" 2>/dev/null || true)"
 
 if [ "$MUTANTG_STATE" = "in_flight" ]; then
-  pass "mutation G: removing the trap-install lines from run_as_holder() leaves a killed holder's record permanently at state=in_flight -- confirms case 23's terminal-record assertion is load-bearing, not vacuous"
+  common_test_pass "mutation G: removing the trap-install lines from run_as_holder() leaves a killed holder's record permanently at state=in_flight -- confirms case 23's terminal-record assertion is load-bearing, not vacuous"
 else
-  fail "mutation G: expected the record to stay in_flight after removing the trap install; got state=[$MUTANTG_STATE] -- inconclusive (sed pattern did not match, or holder pid was never captured), recorded rather than silently skipped"
+  common_test_fail "mutation G: expected the record to stay in_flight after removing the trap install; got state=[$MUTANTG_STATE] -- inconclusive (sed pattern did not match, or holder pid was never captured), recorded rather than silently skipped"
 fi
 
 # --- Mutation H (idempotency guard): neutralize the _RECORD_FINALIZED=true / trap-clear pair that
@@ -1290,9 +1342,9 @@ MUTANTH_STATE="$(read_result_field state "$MUTANTH_RESULT" 2>/dev/null || true)"
 # mutation corrupts BOTH the record (state=aborted instead of complete) AND the guard's own exit
 # code (1 instead of the original build's 0), a strictly stronger signal that the guard is broken.
 if [ "$MUTANTH_RC" = "1" ] && [ "$MUTANTH_STATE" = "aborted" ]; then
-  pass "mutation H: neutralizing the _RECORD_FINALIZED idempotency guard turns an ordinary successful (exit 0) build into state=aborted with a corrupted exit code (rc=1) -- the still-armed EXIT trap re-finalizes on the process's own normal exit -- confirms the idempotency guard is load-bearing, not vacuous"
+  common_test_pass "mutation H: neutralizing the _RECORD_FINALIZED idempotency guard turns an ordinary successful (exit 0) build into state=aborted with a corrupted exit code (rc=1) -- the still-armed EXIT trap re-finalizes on the process's own normal exit -- confirms the idempotency guard is load-bearing, not vacuous"
 else
-  fail "mutation H: expected rc=1 with state=aborted after neutralizing the idempotency guard; got rc=$MUTANTH_RC state=[$MUTANTH_STATE] -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+  common_test_fail "mutation H: expected rc=1 with state=aborted after neutralizing the idempotency guard; got rc=$MUTANTH_RC state=[$MUTANTH_STATE] -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
 fi
 
 # --- Mutation I (result verdict): force cmd_result() to always exit 0 (same function-shadowing
@@ -1311,9 +1363,9 @@ MUTANTI_RC=0
 PATH="$MUTANTI_ROOT/bin:$PATH" "$MUTANT_NORESULT" result --dir "$MUTANTI_ROOT" > /dev/null 2>&1 || MUTANTI_RC=$?
 
 if [ "$MUTANTI_RC" = "0" ]; then
-  pass "mutation I: forcing cmd_result() to always report exit 0 turns case 29's real failing build (exit_status=5) into a false pass -- confirms case 29's terminal-nonzero assertion is load-bearing, not vacuous"
+  common_test_pass "mutation I: forcing cmd_result() to always report exit 0 turns case 29's real failing build (exit_status=5) into a false pass -- confirms case 29's terminal-nonzero assertion is load-bearing, not vacuous"
 else
-  fail "mutation I: expected the neutered cmd_result() to report exit 0 unconditionally; got rc=$MUTANTI_RC -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+  common_test_fail "mutation I: expected the neutered cmd_result() to report exit 0 unconditionally; got rc=$MUTANTI_RC -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
 fi
 
 # --- Mutation J (ownership assertion): neutralize cmd_result()'s --expect-scope comparison
@@ -1333,9 +1385,9 @@ PATH="$MUTANTJ_ROOT/bin:$PATH" "$MUTANT_NOEXPECTSCOPE" result --dir "$MUTANTJ_RO
   > /dev/null 2>&1 || MUTANTJ_RC=$?
 
 if [ "$MUTANTJ_RC" = "0" ]; then
-  pass "mutation J: neutralizing cmd_result()'s --expect-scope comparison makes a differently-scoped vector (build Foo.Bar against a record built with 'build') wrongly report a match (exit 0) instead of refusing -- confirms case 31's mismatch-refusal assertion is load-bearing, not vacuous"
+  common_test_pass "mutation J: neutralizing cmd_result()'s --expect-scope comparison makes a differently-scoped vector (build Foo.Bar against a record built with 'build') wrongly report a match (exit 0) instead of refusing -- confirms case 31's mismatch-refusal assertion is load-bearing, not vacuous"
 else
-  fail "mutation J: expected the neutered comparison to always report a match (exit 0); got rc=$MUTANTJ_RC -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
+  common_test_fail "mutation J: expected the neutered comparison to always report a match (exit 0); got rc=$MUTANTJ_RC -- inconclusive (sed pattern did not match), recorded rather than silently skipped"
 fi
 
 # --- Mutation K (STATUS line): remove the STATUS emission line from run_as_holder() -> case 33's
@@ -1349,25 +1401,70 @@ build_fixture "$MUTANTK_ROOT"
 MUTANTK_ERR="$(PATH="$MUTANTK_ROOT/bin:$PATH" "$MUTANT_NOSTATUS" build --dir "$MUTANTK_ROOT" build 2>&1 1>/dev/null)"
 
 if ! printf '%s' "$MUTANTK_ERR" | grep -q 'lake-build-guard: STATUS:'; then
-  pass "mutation K: removing the STATUS emission line silences a fresh build's status token entirely -- confirms case 33's assertion is load-bearing, not vacuous"
+  common_test_pass "mutation K: removing the STATUS emission line silences a fresh build's status token entirely -- confirms case 33's assertion is load-bearing, not vacuous"
 else
-  fail "mutation K: the STATUS line still appeared after removing its emission lines -- inconclusive (sed pattern did not match both call sites), recorded rather than silently skipped"
+  common_test_fail "mutation K: the STATUS line still appeared after removing its emission lines -- inconclusive (sed pattern did not match both call sites), recorded rather than silently skipped"
+fi
+
+# --- Mutation L (stale-scratch-file fix): neuter compute_scope_key()'s file-content fold (delete
+# the `for a in "$@"; do ... done` loop entirely, reverting to the pre-fix argv-only hash) ->
+# Test D's "scratch-file edit defeats sharing" assertion must go RED
+# (invocation count stays at 1, the pre-correction result gets replayed), while Test E's
+# "identical invocation still shares" stays green -- confirms Test D is load-bearing and did not
+# simply disable sharing for this argument shape outright.
+MUTANT_NOCONTENTSCOPE="$MUTANT_DIR/no-content-scope.sh"
+sed '/for a in "\$@"; do/,/^      done$/d' "$GUARD" > "$MUTANT_NOCONTENTSCOPE"
+chmod +x "$MUTANT_NOCONTENTSCOPE"
+
+MUTANTL_ROOT="$WORKDIR/mutant_nocontentscope_fixture"
+build_fixture "$MUTANTL_ROOT"
+MUTANTL_SCRATCH="$WORKDIR/mutantl_scratch.lean"
+echo "end Generic -- broken" > "$MUTANTL_SCRATCH"
+MUTANTL_COUNTER="$WORKDIR/mutantl_counter"
+: > "$MUTANTL_COUNTER"
+FAKE_LAKE_COUNTER="$MUTANTL_COUNTER" PATH="$MUTANTL_ROOT/bin:$PATH" \
+  "$MUTANT_NOCONTENTSCOPE" build --dir "$MUTANTL_ROOT" -- env lean "$MUTANTL_SCRATCH" \
+  > /dev/null 2>&1
+echo "def Generic := 1 -- corrected" > "$MUTANTL_SCRATCH"
+FAKE_LAKE_COUNTER="$MUTANTL_COUNTER" PATH="$MUTANTL_ROOT/bin:$PATH" \
+  "$MUTANT_NOCONTENTSCOPE" build --dir "$MUTANTL_ROOT" -- env lean "$MUTANTL_SCRATCH" \
+  > /dev/null 2>&1
+MUTANTL_INVOCATIONS="$(wc -l < "$MUTANTL_COUNTER" | tr -d ' ')"
+
+MUTANTL2_ROOT="$WORKDIR/mutant_nocontentscope_fixture2"
+build_fixture "$MUTANTL2_ROOT"
+MUTANTL2_SCRATCH="$WORKDIR/mutantl2_scratch.lean"
+echo "def Generic := 1 -- unchanged" > "$MUTANTL2_SCRATCH"
+MUTANTL2_COUNTER="$WORKDIR/mutantl2_counter"
+: > "$MUTANTL2_COUNTER"
+FAKE_LAKE_COUNTER="$MUTANTL2_COUNTER" PATH="$MUTANTL2_ROOT/bin:$PATH" \
+  "$MUTANT_NOCONTENTSCOPE" build --dir "$MUTANTL2_ROOT" -- env lean "$MUTANTL2_SCRATCH" \
+  > /dev/null 2>&1
+FAKE_LAKE_COUNTER="$MUTANTL2_COUNTER" PATH="$MUTANTL2_ROOT/bin:$PATH" \
+  "$MUTANT_NOCONTENTSCOPE" build --dir "$MUTANTL2_ROOT" -- env lean "$MUTANTL2_SCRATCH" \
+  > /dev/null 2>&1
+MUTANTL2_INVOCATIONS="$(wc -l < "$MUTANTL2_COUNTER" | tr -d ' ')"
+
+if [ "$MUTANTL_INVOCATIONS" = "1" ] && [ "$MUTANTL2_INVOCATIONS" = "1" ]; then
+  common_test_pass "mutation L: neutering compute_scope_key()'s file-content fold reintroduces the stale-scratch-file defect -- an edited scratch file is now wrongly replayed (1 invocation instead of 2, breaking Test D), while the identical-invocation case still shares (1 invocation, Test E unaffected) -- confirms Test D is load-bearing and did not simply disable sharing"
+else
+  common_test_fail "mutation L: unexpected invocation counts -- edited-scratch=$MUTANTL_INVOCATIONS (want 1, i.e. wrongly shared) unchanged-scratch=$MUTANTL2_INVOCATIONS (want 1) -- inconclusive, recorded rather than silently skipped"
 fi
 
 # --- Remaining cases' non-vacuousness, established by direct inspection (documented, not
 # separately scripted, per the plan's "state briefly how it fails" instruction): ---
-info "mutation reasoning (cases 2,3,5,6,7,8,9,11,12,13,16,21 -- by inspection, not separately scripted):"
-info "  case 2: removing 'return \"\$rc\"' from run_lake_foreground (hardcoding 'return 0' instead) breaks the exit-7 assertion directly."
-info "  case 3: any code path that echoes guard-emitted text to stdout/stderr on the clean path breaks the byte-equality assertion."
-info "  case 5: removing the post_fp/current_fp comparison in decide_sharing() (always returning 0) breaks case 5 by sharing a stale result -- invocation count would stay at 1."
-info "  case 6: removing the 'state == complete' check in decide_sharing() breaks case 6 the same way -- an abandoned in_flight record would be shared, invocation count would stay at 1."
-info "  case 7: replacing resolve_project_root()'s upward walk with 'git rev-parse --show-toplevel' breaks case 7 -- it would resolve to the git root, not the nested package."
-info "  case 8/9: reintroducing any pgrep-lean or pgrep -f 'lake build' style scan in cmd_status breaks cases 8 and 9 by matching the wrapper argv / the fake lean worker."
-info "  case 11: removing the '[ -r ... ]' guard before reading LAKE_BUILD_GUARD_PSI_PATH breaks case 11 with a crash/nonzero exit instead of a graceful fallback."
-info "  case 12: hardcoding a byte figure (e.g. MemoryHigh=6G) or an absolute path breaks the grep-based assertions directly."
-info "  case 13: assigning or exporting LEAN_NUM_THREADS anywhere breaks case 13's comment-only invariant directly."
-info "  case 16: removing the empty-lake_args check from validate_build_subcommand() (returning 0 unconditionally for a zero-length vector) breaks case 16 -- a zero-arg 'build' would reach lake instead of exiting 77."
-info "  case 21: deleting the 'kill -0'/'pgrep' WAITING subsection from print_help()'s heredoc breaks case 21's grep-based assertion directly."
+common_test_info "mutation reasoning (cases 2,3,5,6,7,8,9,11,12,13,16,21 -- by inspection, not separately scripted):"
+common_test_info "  case 2: removing 'return \"\$rc\"' from run_lake_foreground (hardcoding 'return 0' instead) breaks the exit-7 assertion directly."
+common_test_info "  case 3: any code path that echoes guard-emitted text to stdout/stderr on the clean path breaks the byte-equality assertion."
+common_test_info "  case 5: removing the post_fp/current_fp comparison in decide_sharing() (always returning 0) breaks case 5 by sharing a stale result -- invocation count would stay at 1."
+common_test_info "  case 6: removing the 'state == complete' check in decide_sharing() breaks case 6 the same way -- an abandoned in_flight record would be shared, invocation count would stay at 1."
+common_test_info "  case 7: replacing resolve_project_root()'s upward walk with 'git rev-parse --show-toplevel' breaks case 7 -- it would resolve to the git root, not the nested package."
+common_test_info "  case 8/9: reintroducing any pgrep-lean or pgrep -f 'lake build' style scan in cmd_status breaks cases 8 and 9 by matching the wrapper argv / the fake lean worker."
+common_test_info "  case 11: removing the '[ -r ... ]' guard before reading LAKE_BUILD_GUARD_PSI_PATH breaks case 11 with a crash/nonzero exit instead of a graceful fallback."
+common_test_info "  case 12: hardcoding a byte figure (e.g. MemoryHigh=6G) or an absolute path breaks the grep-based assertions directly."
+common_test_info "  case 13: assigning or exporting LEAN_NUM_THREADS anywhere breaks case 13's comment-only invariant directly."
+common_test_info "  case 16: removing the empty-lake_args check from validate_build_subcommand() (returning 0 unconditionally for a zero-length vector) breaks case 16 -- a zero-arg 'build' would reach lake instead of exiting 77."
+common_test_info "  case 21: deleting the 'kill -0'/'pgrep' WAITING subsection from print_help()'s heredoc breaks case 21's grep-based assertion directly."
 
 # =====================================================================================
 # Summary

@@ -37,10 +37,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
-if [[ -z "$REPO_ROOT" ]]; then
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-fi
+source "$SCRIPT_DIR/../lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 TOOL_CANDIDATES=(
   "$REPO_ROOT/.claude/scripts/context-reachability.sh"
@@ -69,13 +67,8 @@ fi
 PASSED=0
 FAILED=0
 
-pass() { echo "[PASS] $1"; PASSED=$((PASSED + 1)); }
-fail() { echo "[FAIL] $1"; FAILED=$((FAILED + 1)); }
-info() { echo "[INFO] $1"; }
 
-WORKDIR="$(mktemp -d)"
-cleanup() { [ -n "${WORKDIR:-}" ] && [ -d "$WORKDIR" ] && rm -rf "$WORKDIR"; }
-trap cleanup EXIT
+common_test_workdir_init
 
 mk_git_fixture() {
   local dir="$1"
@@ -101,9 +94,9 @@ ENUM_OUT="$(bash "$TOOL" --root "$ENUM_DIR" 2>"$WORKDIR/enum_stderr")"
 enum_count="$(echo "$ENUM_OUT" | jq -r '.candidate_count')"
 enum_paths="$(echo "$ENUM_OUT" | jq -r '.files[].path')"
 if [ "$enum_count" = "1" ] && [ "$enum_paths" = "agent-system/extensions/core/context/ctx.md" ]; then
-  pass "enumeration: candidate_count == 1, only the context .md enumerated"
+  common_test_pass "enumeration: candidate_count == 1, only the context .md enumerated"
 else
-  fail "enumeration: count=$enum_count paths=[$enum_paths] (expected 1, ctx.md only); stderr: $(cat "$WORKDIR/enum_stderr")"
+  common_test_fail "enumeration: count=$enum_count paths=[$enum_paths] (expected 1, ctx.md only); stderr: $(cat "$WORKDIR/enum_stderr")"
 fi
 
 # =====================================================================
@@ -121,9 +114,9 @@ S1_OUT="$(bash "$TOOL" --root "$S1_DIR" 2>"$WORKDIR/s1_stderr")"
 s1_reachable_filename="$(echo "$S1_OUT" | jq -r '.files[0].reachable_by_filename')"
 s1_styles="$(echo "$S1_OUT" | jq -r '.files[0].reachable_styles | join(",")')"
 if [ "$s1_reachable_filename" = "true" ] && [[ "$s1_styles" == *"filename"* ]]; then
-  pass "style 1: outside-context referrer naming the basename yields reachable_by_filename and 'filename' in styles"
+  common_test_pass "style 1: outside-context referrer naming the basename yields reachable_by_filename and 'filename' in styles"
 else
-  fail "style 1: reachable_by_filename=$s1_reachable_filename styles=[$s1_styles]; stderr: $(cat "$WORKDIR/s1_stderr")"
+  common_test_fail "style 1: reachable_by_filename=$s1_reachable_filename styles=[$s1_styles]; stderr: $(cat "$WORKDIR/s1_stderr")"
 fi
 
 # =====================================================================
@@ -141,9 +134,9 @@ S2P_OUT="$(bash "$TOOL" --root "$S2P_DIR" 2>"$WORKDIR/s2p_stderr")"
 s2p_reachable="$(echo "$S2P_OUT" | jq -r '.files[0].reachable')"
 s2p_styles="$(echo "$S2P_OUT" | jq -c '.files[0].reachable_styles')"
 if [ "$s2p_reachable" = "true" ] && [ "$s2p_styles" = '["directory"]' ]; then
-  pass "style 2 (present-shape): directory-only reference yields reachable_styles == [\"directory\"] exactly"
+  common_test_pass "style 2 (present-shape): directory-only reference yields reachable_styles == [\"directory\"] exactly"
 else
-  fail "style 2 (present-shape): reachable=$s2p_reachable styles=$s2p_styles (expected true, [\"directory\"]); stderr: $(cat "$WORKDIR/s2p_stderr")"
+  common_test_fail "style 2 (present-shape): reachable=$s2p_reachable styles=$s2p_styles (expected true, [\"directory\"]); stderr: $(cat "$WORKDIR/s2p_stderr")"
 fi
 
 # =====================================================================
@@ -169,9 +162,9 @@ s2f_candidate="$(echo "$S2F_OUT" | jq -r '.files[] | select(.path | test("zzzcat
 s2f_reachable="$(echo "$s2f_candidate" | jq -r '.reachable')"
 s2f_styles="$(echo "$s2f_candidate" | jq -c '.reachable_styles | sort')"
 if [ "$s2f_reachable" = "true" ] && [ "$s2f_styles" = '["directory","filename"]' ]; then
-  pass "style 2 (founder-shape): prefix-mismatched directory reference PLUS a context-file basename mention yields BOTH styles"
+  common_test_pass "style 2 (founder-shape): prefix-mismatched directory reference PLUS a context-file basename mention yields BOTH styles"
 else
-  fail "style 2 (founder-shape): reachable=$s2f_reachable styles=$s2f_styles (expected true, [\"directory\",\"filename\"]); stderr: $(cat "$WORKDIR/s2f_stderr")"
+  common_test_fail "style 2 (founder-shape): reachable=$s2f_reachable styles=$s2f_styles (expected true, [\"directory\",\"filename\"]); stderr: $(cat "$WORKDIR/s2f_stderr")"
 fi
 
 # =====================================================================
@@ -202,15 +195,15 @@ s3_only_styles="$(echo "$S3_OUT" | jq -c '.files[] | select(.path | test("onlyin
 # own requirement is that "index" appears among reachable_styles, not that it appears alone;
 # assert containment, not exclusivity.
 if [ "$s3_only_index" = "true" ] && [[ "$s3_only_styles" == *'"index"'* ]]; then
-  pass "style 3: non-empty load_when entry yields reachable_by_index and 'index' in styles"
+  common_test_pass "style 3: non-empty load_when entry yields reachable_by_index and 'index' in styles"
 else
-  fail "style 3: onlyindex.md reachable_by_index=$s3_only_index styles=$s3_only_styles; stderr: $(cat "$WORKDIR/s3_stderr")"
+  common_test_fail "style 3: onlyindex.md reachable_by_index=$s3_only_index styles=$s3_only_styles; stderr: $(cat "$WORKDIR/s3_stderr")"
 fi
 s3_no_index="$(echo "$S3_OUT" | jq -r '.files[] | select(.path | test("noindex.md")) | .reachable_by_index')"
 if [ "$s3_no_index" = "false" ]; then
-  pass "style 3: empty-load_when sibling (no always:true) does NOT report reachable_by_index"
+  common_test_pass "style 3: empty-load_when sibling (no always:true) does NOT report reachable_by_index"
 else
-  fail "style 3: noindex.md reachable_by_index=$s3_no_index (expected false)"
+  common_test_fail "style 3: noindex.md reachable_by_index=$s3_no_index (expected false)"
 fi
 
 # =====================================================================
@@ -227,9 +220,9 @@ ORPHAN_OUT="$(bash "$TOOL" --root "$ORPHAN_DIR" 2>"$WORKDIR/orphan_stderr")"
 orphan_reachable="$(echo "$ORPHAN_OUT" | jq -r '.files[0].reachable')"
 orphan_finding="$(echo "$ORPHAN_OUT" | jq -r '.files[0].zero_reference_finding')"
 if [ "$orphan_reachable" = "false" ] && [ "$orphan_finding" = "true" ]; then
-  pass "genuine orphan: reachable == false, zero_reference_finding == true"
+  common_test_pass "genuine orphan: reachable == false, zero_reference_finding == true"
 else
-  fail "genuine orphan: reachable=$orphan_reachable zero_reference_finding=$orphan_finding; stderr: $(cat "$WORKDIR/orphan_stderr")"
+  common_test_fail "genuine orphan: reachable=$orphan_reachable zero_reference_finding=$orphan_finding; stderr: $(cat "$WORKDIR/orphan_stderr")"
 fi
 
 set +e
@@ -237,9 +230,9 @@ bash "$TOOL" --root "$ORPHAN_DIR" --check >/dev/null 2>"$WORKDIR/orphan_check_st
 orphan_check_exit=$?
 set -e 2>/dev/null || true
 if [ "$orphan_check_exit" -eq 1 ]; then
-  pass "genuine orphan: --check exits non-zero (1) on the orphaned fixture"
+  common_test_pass "genuine orphan: --check exits non-zero (1) on the orphaned fixture"
 else
-  fail "genuine orphan: --check exited $orphan_check_exit (expected 1)"
+  common_test_fail "genuine orphan: --check exited $orphan_check_exit (expected 1)"
 fi
 
 # =====================================================================
@@ -258,12 +251,12 @@ if EAGER_OUT="$(bash "$TOOL" --root "$EAGER_DIR" 2>"$WORKDIR/eager_stderr")"; th
   eager_summary_count="$(echo "$EAGER_OUT" | jq -r '.summary.eager_count')"
   lazy_summary_count="$(echo "$EAGER_OUT" | jq -r '.summary.lazy_count')"
   if [ "$eager_val" = "null" ] && [ "$eager_summary_count" = "null" ] && [ "$lazy_summary_count" = "null" ]; then
-    pass "eager degradation: no CLAUDE.md chain -> eager:null and summary eager_count/lazy_count:null, exit 0"
+    common_test_pass "eager degradation: no CLAUDE.md chain -> eager:null and summary eager_count/lazy_count:null, exit 0"
   else
-    fail "eager degradation: eager=$eager_val summary.eager_count=$eager_summary_count summary.lazy_count=$lazy_summary_count (expected null/null/null)"
+    common_test_fail "eager degradation: eager=$eager_val summary.eager_count=$eager_summary_count summary.lazy_count=$lazy_summary_count (expected null/null/null)"
   fi
 else
-  fail "eager degradation: context-reachability.sh exited non-zero; stderr: $(cat "$WORKDIR/eager_stderr")"
+  common_test_fail "eager degradation: context-reachability.sh exited non-zero; stderr: $(cat "$WORKDIR/eager_stderr")"
 fi
 
 # =====================================================================
@@ -279,9 +272,9 @@ git -C "$DECOY_DIR" commit -q -m init
 
 DECOY_OUT="$(bash "$TOOL" --root "$DECOY_DIR" 2>"$WORKDIR/decoy_stderr")"
 if echo "$DECOY_OUT" | grep -q "decoy-should-not-appear"; then
-  fail "no .claude/** reads: decoy path leaked into probe output"
+  common_test_fail "no .claude/** reads: decoy path leaked into probe output"
 else
-  pass "no .claude/** reads: decoy .claude/context/** path never appears in probe output"
+  common_test_pass "no .claude/** reads: decoy .claude/context/** path never appears in probe output"
 fi
 
 # =====================================================================
@@ -290,9 +283,9 @@ fi
 REPRO_RUN1="$(bash "$TOOL" --root "$S2F_DIR" 2>/dev/null | jq 'del(.generated_at)')"
 REPRO_RUN2="$(bash "$TOOL" --root "$S2F_DIR" 2>/dev/null | jq 'del(.generated_at)')"
 if [ "$REPRO_RUN1" = "$REPRO_RUN2" ]; then
-  pass "reproducibility: two consecutive runs on the same fixture are identical modulo generated_at"
+  common_test_pass "reproducibility: two consecutive runs on the same fixture are identical modulo generated_at"
 else
-  fail "reproducibility: two consecutive runs diverged"
+  common_test_fail "reproducibility: two consecutive runs diverged"
 fi
 
 # =====================================================================
@@ -302,9 +295,9 @@ before_manifest="$(find "$S2F_DIR" -type f | sort)"
 bash "$TOOL" --root "$S2F_DIR" >/dev/null 2>"$WORKDIR/nofx_stderr"
 after_manifest="$(find "$S2F_DIR" -type f | sort)"
 if [ "$before_manifest" = "$after_manifest" ]; then
-  pass "no side effects: fixture root file manifest unchanged across a run"
+  common_test_pass "no side effects: fixture root file manifest unchanged across a run"
 else
-  fail "no side effects: fixture root file manifest changed"
+  common_test_fail "no side effects: fixture root file manifest changed"
 fi
 
 # =====================================================================
@@ -317,12 +310,12 @@ if DEGEN_OUT="$(bash "$TOOL" --root "$DEGENERATE_DIR" 2>"$WORKDIR/degen_stderr")
   degen_files_len="$(echo "$DEGEN_OUT" | jq -r '.files | length')"
   degen_summary="$(echo "$DEGEN_OUT" | jq -c '.summary')"
   if [ "$degen_count" = "0" ] && [ "$degen_files_len" = "0" ] && [ "$degen_summary" = "null" ]; then
-    pass "degenerate root: candidate_count 0, files [], summary null"
+    common_test_pass "degenerate root: candidate_count 0, files [], summary null"
   else
-    fail "degenerate root: count=$degen_count files_len=$degen_files_len summary=$degen_summary"
+    common_test_fail "degenerate root: count=$degen_count files_len=$degen_files_len summary=$degen_summary"
   fi
 else
-  fail "degenerate root: context-reachability.sh exited non-zero; stderr: $(cat "$WORKDIR/degen_stderr")"
+  common_test_fail "degenerate root: context-reachability.sh exited non-zero; stderr: $(cat "$WORKDIR/degen_stderr")"
 fi
 
 # =====================================================================
@@ -333,9 +326,9 @@ bash "$TOOL" --root >/dev/null 2>"$WORKDIR/usage_stderr"
 usage_exit=$?
 set -e 2>/dev/null || true
 if [ "$usage_exit" -eq 1 ]; then
-  pass "usage error: --root with no argument exits 1"
+  common_test_pass "usage error: --root with no argument exits 1"
 else
-  fail "usage error: --root with no argument exited $usage_exit (expected 1)"
+  common_test_fail "usage error: --root with no argument exited $usage_exit (expected 1)"
 fi
 
 # =====================================================================
@@ -360,15 +353,15 @@ if [ -d "$PRESENT_DIR" ] && [ -d "$FOUNDER_DIR" ]; then
         | .path
       ] | join(", ")')"
     if [ "$covered_total" -ge 39 ] && [ -z "$not_covered" ]; then
-      pass "live-tree regression property: $covered_total present+founder template files report reachable:true with 'directory' in styles (floor 39)"
+      common_test_pass "live-tree regression property: $covered_total present+founder template files report reachable:true with 'directory' in styles (floor 39)"
     else
-      fail "live-tree regression property: covered_total=$covered_total (expected >= 39), uncovered=[$not_covered]; stderr: $(cat "$WORKDIR/live_stderr")"
+      common_test_fail "live-tree regression property: covered_total=$covered_total (expected >= 39), uncovered=[$not_covered]; stderr: $(cat "$WORKDIR/live_stderr")"
     fi
   else
-    fail "live-tree regression property: context-reachability.sh exited $live_rc against the live repo root; stderr: $(cat "$WORKDIR/live_stderr")"
+    common_test_fail "live-tree regression property: context-reachability.sh exited $live_rc against the live repo root; stderr: $(cat "$WORKDIR/live_stderr")"
   fi
 else
-  info "live-tree regression property: present/founder template directories not found under $REPO_ROOT -- skipping (not a failure)"
+  common_test_info "live-tree regression property: present/founder template directories not found under $REPO_ROOT -- skipping (not a failure)"
 fi
 
 echo ""
