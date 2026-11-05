@@ -337,6 +337,7 @@
       "tests/test-run-all-failure-reporting.sh",
       "tests/test-run-all-parallel.sh",
       "tests/test-run-all-selection.sh",
+      "tests/test-run-all-shared-fixture.sh",
       "tests/test-run-task-observers.sh",
       "tests/test-runtime-file-tracking.sh",
       "tests/test-script-inventory.sh",
