@@ -2761,6 +2761,7 @@ DUPLICATE CHECK PERFORMED. Three neighbours were read in full and rejected as ab
 - **Dependencies**: None
 - **Parent**: Task 328
 - **Plan**: [429_script_inventory_undercounts_untracked_files/plans/01_untracked-corpus-enumeration.md]
+- **Summary**: [429_script_inventory_undercounts_untracked_files/summaries/01_untracked-corpus-enumeration-summary.md]
 
 **Description**: scripts/script-inventory.sh enumerates the corpus via git ls-files, so its --size-line output (and its full JSON output) sees only TRACKED files. A newly created, not-yet-staged file is invisible to the probe, silently undercounting a phase's NET-PROD / NET-TEST delta until git add is run.
 

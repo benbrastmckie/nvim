@@ -1,10 +1,62 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/429_script_inventory_undercounts_untracked_files/summaries/01_untracked-corpus-enumeration-summary.md",
+      "summary": "All 4 plan phases complete: script-inventory.sh now unions tracked and untracked-but-not-ignored in-corpus files, discloses the untracked contribution via untracked=N/untracked_count/untracked_paths/tracked, a git-fixture regression test pins the behaviour, documentation and the deployed tree are updated, and the task 328 baseline-recapture finding is recorded."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed script-inventory.sh's tracked-only enumeration to union tracked and untracked-but-not-ignored in-corpus files across all counted figures, disclosed the untracked contribution on stdout (untracked=N, untracked_count/untracked_paths, per-script tracked), added a git-fixture regression test with two negative controls, updated documentation, and redeployed with verification confirming no drift."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/script-inventory.sh",
+    "agent-system/extensions/core/scripts/tests/test-script-inventory.sh",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "specs/429_script_inventory_undercounts_untracked_files/summaries/01_untracked-corpus-enumeration-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a test suite's own TOOL/subject-under-test resolution prefers a deployed copy over the source-store sibling (the 'deploy-tree-first/source-store-fallback' convention used by test-assess-repo-health.sh and test-script-inventory.sh), a phase that edits the source store but has not yet redeployed cannot get a meaningful pass/fail from the suite's normal invocation for assertions exercising the new code. Resolve by running a scratch copy of the test file (in the session scratchpad, never under .claude/** or the repo) with its TOOL/SCRIPT_CANDIDATES resolution hardcoded to the absolute source-store path, rather than hand-copying the fix into the deployed tree (which violates source-store-deploy-boundary.md) or running the full redeploy early (which can pull concurrent sibling tasks' uncommitted source-store edits into the shared deployed tree before they are ready).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/429_script_inventory_undercounts_untracked_files/summaries/01_untracked-corpus-enumeration-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy-first-resolution",
+        "source-store",
+        "test-harness",
+        "scratch-verification",
+        "pre-redeploy"
+      ]
+    },
+    {
+      "content": "Never use a bare '>' shell redirect as part of a fallback/recovery command chain (e.g. 'git show HEAD:path > path' to restore a file) without first confirming the git command will succeed. The redirect opens and truncates its target file before the command executing (git show here) is even run, so if that command fails (e.g. the path is untracked/gitignored and absent from HEAD), the target is left empty/truncated rather than unchanged. When restoring a file's prior content, retrieve the content to a variable or a separate temp file first, verify it is non-empty/correct, and only then write it to the final destination.",
+      "category": "PATTERN",
+      "source_artifact": "specs/429_script_inventory_undercounts_untracked_files/summaries/01_untracked-corpus-enumeration-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "shell-redirect",
+        "truncation-hazard",
+        "recovery",
+        "git-show",
+        "bash-pitfall"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793838084_ef69bd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   },
-  "dispatch_seq": 17
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
