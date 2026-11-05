@@ -24,7 +24,8 @@
       "typst-element-lint.sh",
       "tests/test-typst-element-lint.sh",
       "chapter-quality-check.sh",
-      "tests/test-chapter-quality-check.sh"
+      "tests/test-chapter-quality-check.sh",
+      "lib/typst-scan-lib.sh"
     ],
     "hooks": []
   },
