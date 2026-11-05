@@ -193,7 +193,11 @@ padded_num=$(printf "%03d" "$task_number")
 task_dir="specs/${padded_num}_${project_name}"
 progress_file="${task_dir}/progress/phase-${phase_number}-progress.json"
 
-# --- Fixed scope: always staged, never tested by the Containment Self-Check below. ---
+# --- Fixed scope: always staged, never tested by the Containment Self-Check below. This is a
+# DIFFERENT construct from that check's own file_scope_arr engine-written-state splice further
+# down -- this seed is unconditional and untested (these paths are staged regardless of any
+# task's declared file_scope), while the splice below only widens what the Self-Check itself
+# ADMITS when testing files_touched; the two are not duplicates of each other. ---
 stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
 [ -n "$plan_path" ] && stage_paths+=("$plan_path")
 
@@ -241,6 +245,30 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
     done < <(printf '%s' "$file_scope_json" | jq -r '.[]?' 2>/dev/null || true)
 
     if [ "${#file_scope_arr[@]}" -gt 0 ]; then
+      # Engine-written-state allowlist (the third of three Containment sites -- see
+      # git-staging-scope.md's "Three Containment sites, not one"): widen file_scope_arr from
+      # the shared source scripts/lib/engine-written-state-paths-lib.sh, the same library Sites
+      # 1 (orchestrate-cycle-postflight.sh) and 3 (git-commit-scoped.sh) already consult, rather
+      # than hand-copying the literal list a third time. Placed INSIDE this non-empty guard so
+      # the fail-open posture above is unchanged: a task with no declared file_scope still skips
+      # this whole check, never acquiring a four-member scope it never declared. Decision 2's
+      # fallback: a source/resolution failure splices the hardcoded two-literal pair instead, so
+      # a library failure reproduces today's (zero-allowlist) behavior's nearest safe neighbor
+      # rather than silently widening or narrowing in an unreviewed way.
+      engine_written_paths_json=""
+      # shellcheck disable=SC1091
+      if source "${SCRIPT_DIR}/lib/engine-written-state-paths-lib.sh" 2>/dev/null; then
+        engine_written_paths_json="$(engine_written_state_paths 2>/dev/null)" || engine_written_paths_json=""
+      fi
+      if [ -n "$engine_written_paths_json" ] \
+         && echo "$engine_written_paths_json" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
+        while IFS= read -r ewp; do
+          [ -n "$ewp" ] && file_scope_arr+=("$ewp")
+        done < <(echo "$engine_written_paths_json" | jq -r '.[]?' 2>/dev/null)
+      else
+        file_scope_arr+=("specs/TODO.md" "specs/state.json")
+      fi
+
       # is_contained <path> -- exact match, directory/glob ancestor in either direction, or a
       # literal trailing-/** entry's deep-glob prefix (the base directory itself, its direct
       # children, and every deeper descendant -- nothing outside it).

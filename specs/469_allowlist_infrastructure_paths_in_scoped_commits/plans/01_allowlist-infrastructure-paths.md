@@ -379,26 +379,27 @@ pre-existing, unrelated defect.
 
 ---
 
-### Phase 4: Add Site 2's Net-New Splice (git-commit-phase.sh) [NOT STARTED]
+### Phase 4: Add Site 2's Net-New Splice (git-commit-phase.sh) [COMPLETED]
 
 **Goal**: The phase-commit Containment Self-Check admits engine-written state paths it would
 drop today, closing the third site.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/git-commit-phase.sh` immediately before editing (siblings #430/#446
-      declare it).
-- [ ] After `file_scope_arr` is populated from `specs/state.json` and before `is_contained()` is
+- [x] Re-read `scripts/git-commit-phase.sh` immediately before editing (siblings #430/#446
+      declare it). *(completed: no foreign collision observed)*
+- [x] After `file_scope_arr` is populated from `specs/state.json` and before `is_contained()` is
       defined, append `engine_written_state_paths`'s entries to `file_scope_arr`, with the same
-      defensive source guard and the same Decision 2 fallback as Sites 1 and 3.
-- [ ] Place the splice INSIDE the existing `if [ "${#file_scope_arr[@]}" -gt 0 ]` guard, so the
+      defensive source guard and the same Decision 2 fallback as Sites 1 and 3. *(completed)*
+- [x] Place the splice INSIDE the existing `if [ "${#file_scope_arr[@]}" -gt 0 ]` guard, so the
       fail-open posture is unchanged: a task with no declared `file_scope` still skips the check
-      entirely rather than acquiring a four-member scope it never declared.
-- [ ] Leave the fixed `stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")` seed at
+      entirely rather than acquiring a four-member scope it never declared. *(completed, pinned
+      by Case 14)*
+- [x] Leave the fixed `stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")` seed at
       `scripts/git-commit-phase.sh:196` untouched (Non-Goal), and add a one-line comment
       distinguishing the untested seed from the newly-spliced tested scope, so a future reader
-      does not read the two as duplicates.
-- [ ] Add fixtures to `scripts/tests/test-git-commit-phase.sh`, following its existing
+      does not read the two as duplicates. *(completed)*
+- [x] Add fixtures to `scripts/tests/test-git-commit-phase.sh`, following its existing
       Case-N convention and its existing containment fixtures (Case 7's uncontained-path drop,
       Case 8's fail-open, Case 10/11's deep-glob coverage):
       - **Positive**: a progress file whose `files_touched` names `specs/events.jsonl` (and
@@ -409,6 +410,11 @@ drop today, closing the third site.
         commit STILL lands minus that path.
       - **Fail-open preserved**: a task entry with no `file_scope` still skips the check entirely
         (extend or re-assert Case 8 rather than replacing it).
+      *(completed: Case 13 (positive + paired negative, one fixture) and Case 14 (fail-open
+      re-assertion with an engine-written-state path present) added; all 24 suite assertions
+      pass. Confirmed Case 13's negative assertion is a genuine, non-tautological guard by
+      temporarily widening the library to return exactly `["other/outside.txt"]` and observing
+      it go red (14 of 24 failing), then restored and verified byte-identical via `diff`.)*
 
 **Timing**: 0.75 hours
 

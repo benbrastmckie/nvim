@@ -31,7 +31,7 @@ FAILED=0
 
 
 # --- Loud-skip discipline: verify every required script exists before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh lib/common.sh lib/task-lookup-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -62,7 +62,7 @@ build_repo() {
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     mkdir -p "$repo/.claude/scripts/$(dirname "$f")"
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   cat > "$repo/.gitignore" <<'GITIGNORE_EOF'
@@ -479,6 +479,86 @@ if [ "$rc12" -eq 0 ] && ! echo "$out12" | grep -q "dropping out-of-scope" \
   common_test_pass "Case 12: a trailing-slash file_scope entry ('other/widget-area/') contains its direct child -- no drop warning, exit 0"
 else
   common_test_fail "Case 12: expected rc=0, direct.txt committed, no drop warning; got rc=$rc12 show='$show12' out=$out12"
+fi
+
+# =====================================================================
+# Case 13 (positive admission + paired negative, the non-regression guard): specs/events.jsonl
+# and specs/errors.json are admitted via the shared engine-written-state-paths-lib.sh widening
+# -- neither is in the declared file_scope -- with NO "dropping out-of-scope path" warning for
+# either, both present in the commit. In the SAME fixture, Case 7's genuinely out-of-scope
+# other/outside.txt is STILL dropped, STILL warned with the same message text, and the commit
+# STILL lands minus that path -- proving the admission is not a blanket pass.
+# =====================================================================
+common_test_info "=== Case 13: specs/events.jsonl and specs/errors.json are admitted; a genuine excursion is still dropped ==="
+
+repo13="$(build_repo)"
+mkdir -p "$repo13/other"
+echo "out of scope" > "$repo13/other/outside.txt"
+echo '{"event":"baseline"}' > "$repo13/specs/events.jsonl"
+echo '{"errors":[]}' > "$repo13/specs/errors.json"
+git -C "$repo13" add other/outside.txt specs/events.jsonl specs/errors.json
+git -C "$repo13" commit -q -m "seed out-of-scope file and baseline engine-written-state files"
+write_progress "$repo13" 1 '[{"id":1,"status":"done","files_touched":["specs/events.jsonl","specs/errors.json","other/outside.txt"]}]'
+echo "mod outside" > "$repo13/other/outside.txt"
+echo '{"event":"appended"}' >> "$repo13/specs/events.jsonl"
+echo '{"errors":[{"id":1}]}' > "$repo13/specs/errors.json"
+
+out13="$(run_phase_commit "$repo13" --task 999 --project probe --phase 1 --message "case13" --session sess_13 2>&1)"
+rc13=$?
+show13="$(git -C "$repo13" show --name-only --format= HEAD)"
+
+if [ "$rc13" -eq 0 ] \
+  && ! echo "$out13" | grep -q "dropping out-of-scope path 'specs/events.jsonl'" \
+  && ! echo "$out13" | grep -q "dropping out-of-scope path 'specs/errors.json'" \
+  && echo "$show13" | grep -qF "specs/events.jsonl" \
+  && echo "$show13" | grep -qF "specs/errors.json"; then
+  common_test_pass "Case 13: specs/events.jsonl and specs/errors.json are admitted via the shared library widening -- no drop warning for either, both committed"
+else
+  common_test_fail "Case 13: expected rc=0, events.jsonl and errors.json committed with no drop warning; got rc=$rc13 show='$show13' out=$out13"
+fi
+
+if echo "$out13" | grep -q "WARNING.*dropping out-of-scope path 'other/outside.txt'" \
+  && ! echo "$show13" | grep -qF "other/outside.txt"; then
+  common_test_pass "Case 13 (paired negative): other/outside.txt is STILL dropped with the same warning, in the SAME run that admits the engine-written-state files -- non-regression proof"
+else
+  common_test_fail "Case 13 (paired negative): expected other/outside.txt to still be dropped with a warning; got show='$show13' out=$out13"
+fi
+
+status13="$(git -C "$repo13" status --porcelain -- other/outside.txt)"
+if [ -n "$status13" ]; then
+  common_test_pass "Case 13 (paired negative): the dropped path is left uncommitted on disk for manual review, exactly as Case 7 pins"
+else
+  common_test_fail "Case 13 (paired negative): the dropped path should remain modified/uncommitted"
+fi
+
+# =====================================================================
+# Case 14 (fail-open preserved, extending Case 8): a task entry with no file_scope still skips
+# the Containment Self-Check entirely, even when files_touched names an engine-written-state
+# path -- the shared-library splice lives INSIDE the non-empty file_scope_arr guard and must
+# never fire when that guard itself is never entered.
+# =====================================================================
+common_test_info "=== Case 14: fail-open (no file_scope) is unaffected by the engine-written-state splice ==="
+
+repo14="$(build_repo)"
+cat > "$repo14/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe"}]}
+STATE_EOF
+git -C "$repo14" add specs/state.json
+git -C "$repo14" commit -q -m "remove file_scope"
+echo '{"event":"baseline"}' > "$repo14/specs/events.jsonl"
+git -C "$repo14" add specs/events.jsonl
+git -C "$repo14" commit -q -m "seed baseline specs/events.jsonl"
+write_progress "$repo14" 1 '[{"id":1,"status":"done","files_touched":["specs/events.jsonl"]}]'
+echo '{"event":"dirtied"}' >> "$repo14/specs/events.jsonl"
+
+out14="$(run_phase_commit "$repo14" --task 999 --project probe --phase 1 --message "case14" --session sess_14 2>&1)"
+rc14=$?
+show14="$(git -C "$repo14" show --name-only --format= HEAD)"
+
+if [ "$rc14" -eq 0 ] && echo "$show14" | grep -qF "specs/events.jsonl" && ! echo "$out14" | grep -q "dropping out-of-scope"; then
+  common_test_pass "Case 14: a missing file_scope fails open -- specs/events.jsonl commits without being dropped, and without the splice ever running"
+else
+  common_test_fail "Case 14: expected rc=0, specs/events.jsonl committed, no drop warning; got rc=$rc14 show='$show14' out=$out14"
 fi
 
 # task-ref-ok:end
