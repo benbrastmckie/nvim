@@ -36,9 +36,9 @@ documentation-only: no script, no hook. It merges into `.claude/CLAUDE.md`, whic
 into every agent dispatch (subagents included), so the instruction reaches every implementation
 agent without any new executable surface.
 
-**Gap 3 -- subagent orientation -- closed by documentation, not a hook.** The dispatch that
-produced this extension named `scripts/sapience-context.sh` (a manifest `hooks.context_injection`
-entry) as a deliverable. That mechanism cannot work for an extension declaring no `task_type`:
+**Gap 3 -- subagent orientation -- closed by documentation, not a hook.** A manifest
+`hooks.context_injection` entry naming a new per-dispatch script was considered and dropped. That
+mechanism cannot work for an extension declaring no `task_type`:
 `skill_get_extension_dir()` in `skill-base.sh` resolves lifecycle hooks by exact `task_type`
 string equality, and no task will ever carry `task_type: "sapience"`. This extension ships no
 hook and no script for gap 3. Instead, `context/project/sapience/domain/subagent-orientation.md`

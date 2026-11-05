@@ -11,7 +11,7 @@
     {"id": 5, "description": "Verify each merge target independently in deployed tree", "status": "done", "files_touched": []},
     {"id": 6, "description": "Confirm gap-1 fix additive (51 total allow entries unchanged, 4 sapience grants present)", "status": "done", "files_touched": []},
     {"id": 7, "description": "Run complete gate set -- deferred to batch stage per Batch Gate Deferral directive; ran scoped --only-gate 2,3,4,5,13,20 instead, all 12 checks PASS", "status": "done", "files_touched": []},
-    {"id": 8, "description": "Confirm check-extension-docs.sh clean for sapience", "status": "done", "files_touched": []}
+    {"id": 8, "description": "Confirm check-extension-docs.sh clean for sapience; fix README.md literal sapience-context.sh mention and trim EXTENSION.md for the eager-load budget", "status": "done", "files_touched": ["agent-system/extensions/sapience/README.md", "agent-system/extensions/sapience/EXTENSION.md"]}
   ],
   "current_objective": 8,
   "approaches_tried": [
