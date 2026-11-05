@@ -498,8 +498,8 @@ if start_idx is not None:
     # Only a BULLETED line's own LEADING IDENTIFIER RUN contributes names (see the accepted-
     # surface documentation above this function). A non-bulleted line -- preamble prose before
     # the first bullet, prose between bullets, or a wrapped continuation line -- never matches
-    # BULLET_RE and so is never scanned at all, which subsumes the preamble exclusion without a
-    # separate seen_bullet flag: there is no longer any code path that scans a non-bulleted line.
+    # BULLET_RE and so is never scanned at all: the single per-line bullet check below is the
+    # entire gate, covering the preamble case too without a dedicated flag for it.
     for line in block:
         bullet_m = BULLET_RE.match(line)
         if not bullet_m:
