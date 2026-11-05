@@ -1,10 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md",
+      "summary": "Added lint-extension-readme-table.sh as gate 26, wired it into verify-deploy.sh's gate registry, added a five-case fixture suite, repaired the one live table drift, and redeployed; all six plan phases closed (Phase 6 COMPLETED WITH EXCLUSIONS for seven pre-existing, independently-tracked test failures unrelated to this task)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh as gate 26 in verify-deploy.sh's gate registry, with a five-case fixture suite, manifest declaration, and the missing sapience table row repaired. Full redeploy reached RESULT=landed_verify_clean; gates 1-26 all individually pass. Phase 6 closed COMPLETED WITH EXCLUSIONS for seven pre-existing, independently-tracked run-all.sh failures unrelated to this task's changes."
+  },
+  "modified_files": [
+    "agent-system/extensions/README.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/gate-registry.data",
+    "agent-system/extensions/core/scripts/lint/lint-extension-readme-table.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A fixture-building test suite that seals a synthetic .claude/scripts/lib/ tree via a hardcoded file-copy allowlist (e.g. REQUIRED_LIB_SCRIPTS=(...)) will silently go stale whenever a new shared library is added to the real lib/ directory -- nothing mechanically keeps the allowlist in sync. Symptom: 'state-write.sh: line N: .../lib/<new-lib>.sh: No such file or directory' inside the fixture, reproducing identically in total isolation. Before attributing such a failure to in-flight changes, grep the failing suite for its own hardcoded lib-copy array and check whether the missing library predates the current dispatch (git log --format=%ct on the library file vs. dispatch_start_ts).",
+      "category": "PATTERN",
+      "source_artifact": "specs/471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["fixture", "lib-copy-allowlist", "stale-fixture", "test-isolation", "run-all.sh"]
+    },
+    {
+      "content": "For a lint that bidirectionally diffs a markdown table's first column against a real directory set, give it a single optional positional ROOT argument (reading <root>/README.md and enumerating <root>/*/ from that same root) rather than two independent path flags. This single-root input contract makes a regression suite trivial: one mktemp scratch directory, varying only its README table rows and subdirectory set, covers every case (clean, missing row, extra row, an exemption case) with one fixture helper.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lint-design", "fixture-helper", "single-root-input", "bidirectional-diff", "markdown-table-lint"]
+    },
+    {
+      "content": "Adding a new gate to a dynamically-dispatched gate registry (gate_registry_ids + \"gate${id}_run\" lookup) requires only a gate-registry.data row plus the new gate<N>_run function -- no call-site list to edit. But it DOES require bumping hardcoded gate-count/max-id assertions in sibling regression suites that pin the registry's exact shape (e.g. test-gate-registry-resolution.sh's expected-id-count and live-max/one-past-max probes, test-verify-deploy-gate-selection.sh's out-of-range probe and `seq 1 N` loop). This is expected, recurring maintenance on every gate addition, not scope creep, and should be anticipated rather than discovered as a surprise test failure.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["gate-registry", "verify-deploy.sh", "gate-addition-checklist", "hardcoded-test-assertions"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793897002_11e720",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

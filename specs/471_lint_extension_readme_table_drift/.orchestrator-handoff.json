@@ -1,22 +1,16 @@
 {
-  "status": "planned",
-  "task_number": 471,
-  "phases_completed": 0,
-  "phases_total": 6,
-  "summary": "Wrote a 6-phase plan for the new lint-extension-readme-table.sh gate. Independently re-confirmed two dispatch facts: outcome #3's --only-gate 1-23 cap no longer exists (verify-deploy.sh derives the bound from gate_registry_ids; 23 is only a degraded-registry fallback), so that outcome collapses to a recorded confirmation plus two stale prose nits; and the dispatch's 'table is CORRECT right now' claim is false -- the sapience extension directory has no Available Extensions row, which Phase 1 repairs as a precondition for outcome #5's full-green requirement. Current max gate id is 25, so the new gate is 26, re-enumerated fresh at implementation time; gate dispatch is dynamic via gate_registry_ids so a registry row plus gate26_run is the complete wiring.",
-  "blockers": [],
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "Added lint-extension-readme-table.sh as gate 26 in verify-deploy.sh's gate registry, with a five-case fixture suite and manifest declaration, repaired the one live Available Extensions table drift (missing sapience row), and redeployed to RESULT=landed_verify_clean. All six plan phases closed; Phase 6 closed COMPLETED WITH EXCLUSIONS for seven pre-existing run-all.sh failures already tracked by other open records and unrelated to this task's changes.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/471_lint_extension_readme_table_drift/plans/01_lint-extension-readme-table.md",
-      "summary": "6-phase plan: preconditions + sapience row repair, author the lint, author the 5-case fixture suite, register gate 26 and clear stale gate-count prose, sync core's manifest, redeploy and run the full gate set."
+      "type": "summary",
+      "path": "specs/471_lint_extension_readme_table_drift/summaries/01_lint-extension-readme-table-summary.md",
+      "summary": "Implementation summary: new lint wired as gate 26, fixture suite, manifest sync, table repair, redeploy, and the Phase 6 Reasoned Exclusions evidence trail."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1793897002_11e720_471",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 2
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": []
 }
