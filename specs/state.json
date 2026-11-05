@@ -1897,9 +1897,9 @@
           "type": "plan"
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_literature-search-self-dedup-summary.md",
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md",
           "type": "summary",
-          "summary": "Phase 11 close: collapsed literature-search.sh's 172 self-internal duplicate blocks (peers=0) into a new file-local Python module and an in-process fallback retry replacing a duplicate heredoc, NET-PROD -363, duplicate-block count 172 -> 0, Phase 12 scoped as the next step."
+          "summary": "Phase 12 close: added cost_per_assertion_ms to the size probe, classified all 157 deployed/merged suites as unit or integration in a new declarative data file, added a lint enforcing a unit-class suite cannot spawn the three heavyweight tools (riding gate 8's existing discovery, zero gate-registry changes), and wrote its both-polarity fixture suite. NET-PROD +273, NET-TEST +339, both pre-declared net-positive. Phase 13 scoped as the next step."
         }
       ],
       "next_artifact_number": 4,

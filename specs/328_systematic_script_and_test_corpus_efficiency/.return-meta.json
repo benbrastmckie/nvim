@@ -1,10 +1,64 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 26,
+  "partial_progress": {
+    "stage": "phase_complete_more_remain",
+    "details": "Phase 12 (Classify Every Suite and Enforce the Unit/Integration Boundary) closed [COMPLETED]. Added cost_per_assertion_ms to script-inventory.sh's --size-line probe; classified all 157 suites discovered in the DEPLOYED/merged tests/ directory (not just core's own 139) as unit or integration in a new declarative data file (116 unit, 41 integration); added lint-unit-integration-boundary.sh enforcing that a unit-class suite cannot spawn deploy-headless.sh/verify-deploy.sh/run-all.sh, plus a coverage-gap check and a malformed-row check; wrote its both-polarity fixture suite (8 cases/15 assertions). Rode gate 8's existing full-battery discovery for enforcement rather than adding or extending a gate-registry.data row (deviation, recorded in the plan and progress file). Both net deltas net-positive as pre-declared: NET-PROD +273, NET-TEST +339. Full redeploy + full verify-deploy.sh battery green (26/26 gates, 39 checks, 0 failures) both before and after this phase's edits. 8 of 20 plan phases remain [NOT STARTED] (Phase 13 next). Clean phase boundary, not a context-exhaustion handoff.",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-12-handoff-20261105T192141Z.md",
+    "phases_completed": 12,
+    "phases_total": 20
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md",
+      "summary": "Phase 12 close: added cost_per_assertion_ms to the size probe, classified all 157 deployed/merged suites as unit or integration in a new declarative data file, added a lint enforcing a unit-class suite cannot spawn the three heavyweight tools (riding gate 8's existing discovery, zero gate-registry changes), and wrote its both-polarity fixture suite. NET-PROD +273, NET-TEST +339, both pre-declared net-positive. Phase 13 scoped as the next step."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-12-handoff-20261105T192141Z.md",
+      "summary": "Phase 12 close: classification scope corrected mid-phase to the deployed/merged 157-suite corpus, the gate-riding deviation reasoning, and what NOT to assume about core-only suite counts for the next dispatch."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed Phase 12: added a cost-per-assertion figure to the standing size probe, classified all 157 suites in the deployed/merged test corpus as unit or integration in a new declarative data file, added lint-unit-integration-boundary.sh (riding gate 8's existing discovery with zero gate-registry.data changes) plus its 15-assertion fixture suite. NET-PROD +273, NET-TEST +339, both pre-declared net-positive. Full gate battery green before and after."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lint/lint-unit-integration-boundary.sh",
+    "agent-system/extensions/core/scripts/script-inventory.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-script-inventory.sh",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-12-handoff-20261105T192141Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl",
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-12-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a repo deploys a multi-extension source store into one flat consumer tree (each extension's own scripts/tests/*.sh merged into one shared .claude/scripts/tests/ directory), a lint or data file enumerating 'every discovered test suite' must be checked against the DEPLOYED/merged corpus, not any single extension's own source-store directory -- the merged set is what a test-runner (e.g. run-all.sh) actually discovers and runs in production, and a source-store-only enumeration will systematically undercount by exactly the suites contributed by every OTHER extension. Catch this early by running the new lint's own fixture-test case against the deployed tree, not just the source-store path, before declaring the classification complete.",
+      "category": "PATTERN",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-merge", "multi-extension-corpus", "test-discovery-scope", "source-store-vs-deployed", "suite-classification"]
+    },
+    {
+      "content": "A corpus-wide lint whose enforcement target is itself part of the test corpus (e.g. 'no unit-class suite may spawn the full test runner') can ride an existing full-battery test-runner gate with ZERO changes to a declarative gate registry: simply add the lint's own fixture suite as a normal discovered test-*.sh file, and the existing full-suite-runner gate executes it on every invocation automatically. This is a stronger form of a 'no new gate row' constraint than extending an existing numbered gate function with a second check -- it requires no gate-registry/dispatcher edit at all, matching a pre-existing lint-without-a-gate-row precedent if one already exists in the corpus (check for it before assuming a new row is needed).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_unit-integration-boundary-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["gate-registry", "ride-existing-gate", "fixture-suite-as-enforcement", "no-new-gate-row", "test-runner-discovery"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793904029_00a39c",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 12,
+    "phases_total": 20
   }
 }
