@@ -355,13 +355,22 @@ one sentence, never an essay:
       read-through.
     - **(b) A source-store, non-`specs/**` markdown edit** (a `context/`, `rules/`, `agents/`, or
       similar file under the resolved source store). A gate subset remains the right answer —
-      ordinarily `--only-gate 3,4` (doc-lint and task-reference lint) — but the invocation MUST
-      name an explicit `TARGET` pointing at the resolved `source_dir`, never the bare
-      no-argument form: `verify-deploy.sh`'s `TARGET` defaults to `$(pwd)`, which for any
-      ordinary dispatch is the CONSUMER repo root, not the source store, so the no-argument form
-      silently runs both gates' SKIP branch there and checks nothing. Copy-pasteable shape
-      (resolve `<source_dir>` from `.claude-extensions.json`):
-      `bash <source_dir>/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <source_dir>`.
+      ordinarily `--only-gate 3,4` (doc-lint and task-reference lint) — but the invocation's
+      `TARGET` MUST be a repository root that already holds a deployed `.claude/` tree AND the
+      `agent-system/extensions` source store simultaneously: `--only-gate 3,4 <source_dir>` (the
+      resolved `source_dir` passed as `TARGET`) CANNOT work, because a source-store directory has
+      no `.claude/` subdirectory and gate0 exits 2 before gate selection is even consulted. See
+      `verify-deploy.sh`'s own `TARGET_REPO CONTRACT` header paragraph for the authority behind
+      this requirement — this file is a consumer of that contract, not a second copy of it. The
+      no-argument form (`TARGET` defaulting to `$(pwd)`) is correspondingly two-faced rather than
+      uniformly unsafe: for an ordinary deploy-consumer dispatch, `$(pwd)` is the consumer repo
+      root, which lacks `agent-system/extensions`, so both gates silently SKIP and nothing is
+      checked; but when run FROM the source-store repository's own root, `$(pwd)` there is
+      simultaneously the deploy consumer and the source store, so it is itself a valid,
+      non-skipping `TARGET` — the no-argument form is unsafe only outside that repository.
+      Copy-pasteable shape, with `TARGET` the source-store repository's own root (resolve that
+      root as the directory containing `.claude-extensions.json`, not `<source_dir>` itself):
+      `bash <repo_root>/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>`.
     - **(c) A deploy-consumer-tree path with no mapped suite** (the touched file lives in a
       consumer repo's own tree, not the source store — e.g. a repo-specific doc outside
       `specs/**`). Doc-lint (gate 3) still correctly SKIPs there by design — it has nothing to
@@ -732,6 +741,18 @@ consumer, so a task whose contingency branch has already run and will never revi
 is held open forever. `[PARTIAL]` is equally wrong here — nothing about the bypassed phases is
 resumable or in progress; they were decided against, not interrupted.
 
+**A decision gate that is already `[BLOCKED]` at plan-authoring time** is a distinct case from
+the worked example above, whose gate executes and is measured while the plan runs. A gate
+blocked before any phase executes has no consistent position under the final-phase
+transitive-dependency rule above: an executable phase cannot depend on a phase that will never
+complete, so such a gate MUST be exempt from the literal depends-on edge that rule would
+otherwise impose. Place the gate in wave 1 with `Depends on: none`, alongside the plan's first
+executable phase, rather than threading a dependency edge through it. In exchange, the final
+phase MUST re-observe the blocked gate's own measurement by name inside its own verification
+criteria, and the Dependency Analysis wave-table note MUST state this re-observation explicitly
+— together these two MUSTs keep the gate's decision load-bearing on the final phase's own
+verification despite its exemption from the depends-on edge.
+
 ## Status Marker Requirements
 - Use markers exactly as defined in status-markers.md.
 - Every phase starts as `[NOT STARTED]` and progresses through valid transitions.
@@ -761,6 +782,19 @@ vocabularies at two distinct grains, and their divergence is intentional, not an
   resumable; `[COMPLETED WITH EXCLUSIONS]` = every remaining item was decided, justified, and will
   not be revisited. See status-markers.md's `[COMPLETED WITH EXCLUSIONS]` subsection for the full
   admission test and `## Reasoned Exclusions` above for its required record format.
+
+**Ownership of the plan-level Status field.** The plan-level `- **Status**:` field above is
+owned by `update-plan-status.sh`, invoked from `update-task-status.sh` postflight — never by a
+phase's own checklist, verification criteria, or other phase-body prose. No `**Tasks**:` item and
+no `**Verification**:` criterion may instruct a writer to hand-set this field; an implementation
+agent that refuses such an instruction, per `context/contracts/plan-status-ownership.md`, is
+acting correctly, and the defect lies in authoring the instruction at all. When a plan is
+expected to come to rest at `[BLOCKED]`, write that expectation into the relevant phase heading
+instead — mark it `[BLOCKED]` (see "Decision gates and contingency branches" above for a plan
+containing a pre-decided `[BLOCKED]` gate), or close any bypassed phase `[COMPLETED WITH
+EXCLUSIONS]` with its own `#### Reasoned Exclusions` record — and let the implementer's own
+return (`.return-meta.json` status, the handoff's `blockers[]`) carry the outcome forward for
+postflight to stamp onto this field.
 
 #### Trailing annotations on the plan-level Status line
 

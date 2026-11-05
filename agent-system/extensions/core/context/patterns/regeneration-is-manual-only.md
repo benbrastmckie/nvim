@@ -886,7 +886,11 @@ narrow boundary, not an oversight: `audit-deletion-references.sh`,
 the same conditional-bypass shape (`[[ -n "${REPO_ROOT:-}" ]] || . deploy-root-guard.sh`) but do
 not opt in; each still requires an explicit `REPO_ROOT=$(pwd)` override for a deliberate
 source-store invocation. `verify-deploy.sh` carries no such guard at all and sits outside this
-contract entirely -- see its own header for why.
+contract entirely -- see its own header for why -- because it resolves its `TARGET` from an
+explicit argument (or `$(pwd)`) rather than from this section's own-location mechanism, and that
+argument's required shape (a repository root holding a deployed `.claude/` tree, not a
+source-store directory) is a separate contract documented in full in that same header's
+`TARGET_REPO CONTRACT` paragraph.
 
 ## Related Documentation
 

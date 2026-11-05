@@ -264,7 +264,7 @@ diffed against the Phase 1 baseline capture.
 
 ---
 
-### Phase 3: Companion Documents — Pointer Clause and the Corrected Origin-Site Invocation [NOT STARTED]
+### Phase 3: Companion Documents — Pointer Clause and the Corrected Origin-Site Invocation [COMPLETED]
 
 **Goal**: `regeneration-is-manual-only.md`'s existing pointer names *which* contract the header
 holds (outcome 4, decided as header-alone-plus-pointer), and `plan-format.md`'s copy-pasteable
@@ -272,34 +272,41 @@ sub-case (b) shape stops prescribing an invocation that cannot run.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`
-      lines 880-892 immediately before editing.
-- [ ] Widen the existing sentence at line ~888 ("`verify-deploy.sh` carries no such guard at all
+- [x] Re-read `agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md`
+      lines 880-892 immediately before editing. *(completed)*
+- [x] Widen the existing sentence at line ~888 ("`verify-deploy.sh` carries no such guard at all
       and sits outside this contract entirely -- see its own header for why.") by one clause, so
       it states that the script resolves TARGET from an explicit argument rather than this
       section's own-location mechanism, and that the argument's **required shape** is a separate
       contract documented in its own header. Add no new section and no duplicate prose — this
-      section stays a pointer.
-- [ ] Re-read `agent-system/extensions/core/context/formats/plan-format.md` lines 344-372
-      immediately before editing.
-- [ ] Correct sub-case (b) of the `__FULL_SWEEP__` case:
+      section stays a pointer. *(completed: one `verify-deploy.sh` mention confirmed in the
+      Root-Resolution Guard section)*
+- [x] Re-read `agent-system/extensions/core/context/formats/plan-format.md` lines 344-372
+      immediately before editing. *(completed)*
+- [x] Correct sub-case (b) of the `__FULL_SWEEP__` case:
       - Replace the copy-pasteable shape at line ~364,
         `bash <source_dir>/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <source_dir>`,
         with a shape whose TARGET is the **repo root** of the source-store repository (the only
         directory holding both a deployed `.claude/` and `agent-system/extensions`).
+        *(completed: new shape is `bash <repo_root>/.claude/scripts/verify-deploy.sh --skip-slow
+        --only-gate 3,4 <repo_root>`)*
       - Correct the accompanying claim that the no-argument form "silently runs both gates' SKIP
         branch there and checks nothing". That is true for a pure deploy-consumer repo, but false
         in the source-store repo, where `$(pwd)` at the repo root is itself a valid TARGET for
-        both gates. State the distinction rather than deleting the warning.
+        both gates. State the distinction rather than deleting the warning. *(completed)*
       - Add a short cross-reference to `verify-deploy.sh`'s own `TARGET_REPO CONTRACT` header
         paragraph (landed in Phase 1) as the authority, keeping this file a consumer of that
-        contract rather than a second copy of it.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
-      resync `index-entries.json`'s `line_count` for both edited markdown files.
-- [ ] Inspect `git diff -- agent-system/extensions/core/index-entries.json`. If it contains hunks
+        contract rather than a second copy of it. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
+      resync `index-entries.json`'s `line_count` for both edited markdown files. *(completed: run
+      as `REPO_ROOT=$(pwd) bash ...` since the source-store invocation requires the explicit
+      override per regeneration-is-manual-only.md's Root-Resolution Guard)*
+- [x] Inspect `git diff -- agent-system/extensions/core/index-entries.json`. If it contains hunks
       beyond the two `line_count` values for the files this phase edited, leave that file
       unstaged, record the condition via `issue-record.sh`, and note it in the handoff — Phase 4's
-      redeploy runs the generator again, so the sync is not lost.
+      redeploy runs the generator again, so the sync is not lost. *(completed: 6 of 8 regenerated
+      entries were pre-existing foreign uncommitted diffs; left entirely unstaged and recorded via
+      issue-record.sh)*
 
 **Timing**: 0.75 hours
 
