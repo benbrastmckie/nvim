@@ -112,12 +112,12 @@ it reads `0.1.0` — owner action, never an agent's. Nothing depends on it.
 and `specs/TODO.md`, which every task writes, so it overlaps everything.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 483,485,488
+/orchestrate 483,485,488,489
 ```
 
 ## Open work
 
-**Core agent system (31)**
+**Core agent system (32)**
 ```
 328 IN FLIGHT       systematic_script_and_test_corpus_efficiency
 313 blocked:328,401 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
@@ -150,6 +150,7 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 473 ready           Strip record-versioning language from the boundary-owned architecture docs
 478 ready           Make lint Check J fail on a missing handoff-writer section instead of skippin...
 485 ready           Recapture corpus baselines under the corrected inventory probe
+489 ready           Derive gate-count expectations in sibling test suites from the live gate regi...
 ```
 
 **Extensions (7)**
