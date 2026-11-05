@@ -466,6 +466,10 @@ text = open(plan_path, encoding="utf-8").read()
 lines = text.split("\n")
 
 IDENT = os.environ["LEAN_IDENT_PATTERN"]
+# SHARED FRAGILITY: lean-plan-compliance-check.sh's own Goals-block `sed` range reader applies
+# the same colon-optional widening independently (not shared code -- Python regex here, POSIX
+# `sed` there). The two readers must not drift apart on which Goals-header shapes they accept;
+# see the comment at that script's own `sed` call for its half of this cross-reference.
 START_RE = re.compile(r'^-?\s?\*\*Goals\*\*')
 END_RE = re.compile(r'^-?\s?\*\*[^G]')
 BULLET_RE = re.compile(r'^\s*-\s*')
@@ -475,6 +479,11 @@ TOKEN_RE = re.compile(r"`(" + IDENT + r")`")
 # `and`. See the accepted-surface documentation above extract_goal_names() for the full rule.
 LEADING_RUN_RE = re.compile(r"^(?:`" + IDENT + r"`|[\s,/]|and\b)+")
 
+# SHARED FRAGILITY: lean-plan-compliance-check.sh carries its own, independently maintained
+# bash-side LEAN_KEYWORDS list mirroring this one (not shared code across the two
+# languages/implementations). A keyword added or removed here should be considered for that
+# list too; see the comment at that script's own LEAN_KEYWORDS for its half of this
+# cross-reference.
 LEAN_KEYWORDS = {
     "theorem", "lemma", "def", "abbrev", "instance", "structure", "class", "inductive", "axiom",
     "sorry", "by", "let", "fun", "do", "match", "with", "where", "have", "show", "suffices",

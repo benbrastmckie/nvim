@@ -618,6 +618,36 @@ theorem comm (n m : Nat) : n + m = m + n := sorry
   Challenge module — this section is the sole source of import context for the assembled module,
   distinct from (and not automatically inherited from) any other file in the target project.
 
+## Goal Polarity (optional, lean/lean4 plans)
+
+An optional plan-level metadata line, consumed by `lean-plan-compliance-check.sh`'s Final
+Verification Stage spot-check (the step that extracts the backticked identifiers named under
+`- **Goals**:` and greps the resolved Lean source roots for a matching declaration):
+
+```
+- **Goal Polarity**: refutation
+```
+
+**Default (field absent)**: every existing plan, and every plan that does not need this field,
+is completely unaffected — the spot-check's default behaviour is unchanged: every named
+identifier MUST be present (declared) in the resolved source roots, exactly as documented for
+`## Lean Challenge Statements` above.
+
+**`refutation`**: declares that this plan's Goals name identifiers that must be ABSENT from the
+tree, not present — a refutation task, where success means no weakened substitute for the named
+identifier(s) was published anywhere. The spot-check inverts accordingly: every named identifier
+absent from the resolved source roots is `passed`; any one present is `failed`, naming it. Use
+this value only when every identifier named under `- **Goals**:` shares this same polarity.
+
+**Mixed-polarity ruling**: a plan whose Goals block genuinely mixes identifiers that must exist
+with identifiers that must be absent cannot be expressed by this single global field — declare an
+explicit non-`refutation` value (e.g. `mixed`) rather than leaving the field absent (which would
+wrongly apply must-exist semantics to an identifier that must be absent, or leaving it at
+`refutation` would wrongly apply must-be-absent semantics to one that must exist). The
+spot-check's response to any explicitly declared, non-`refutation` value is to record
+`compliance_check: "skipped"` with a stated reason, rather than guessing — the honest outcome a
+human previously had to reach by hand, now reached mechanically.
+
 ## Reasoned Exclusions (format)
 
 Present whenever a phase heading carries `[COMPLETED WITH EXCLUSIONS]` (see
