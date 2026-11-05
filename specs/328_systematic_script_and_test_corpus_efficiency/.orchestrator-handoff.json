@@ -1,20 +1,20 @@
 {
-  "dispatch_seq": 20,
+  "dispatch_seq": 21,
   "status": "partial",
-  "phases_completed": 8,
+  "phases_completed": 9,
   "phases_total": 20,
-  "summary": "Closed Phase 8 (Harness Migration Tranche C -- Complete the Corpus): migrated all 56 remaining suites in agent-system/extensions/core/scripts/tests/ onto lib/common.sh's shared test harness, including the corpus's two largest suites, closing the core extension's entire test-harness migration with zero reasoned exemptions needed. Also collapsed the REPO_ROOT-fallback and WORKDIR/cleanup/trap boilerplate patterns (not just pass/fail/info), and opportunistically fixed two pre-existing SC2034 shellcheck findings left by an earlier phase. NET-TEST -188 for this phase; cumulative NET-TEST across phases 3-8 is -291 against the Phase 1 baseline. Verification: full repo-wide run-all.sh (167 suites) green except 8 pre-existing, already-triaged failures (2 known-expected, 6 confirmed unrelated to this phase via a standalone pre-edit recheck); every touched suite's own Passed/Failed tally is byte-identical across three before/after captures. Found and recovered from a RECURRING commit-pipeline defect in git-commit-phase.sh's containment self-check (the same trailing-slash file_scope double-slash-glob bug Phase 7 already hit) via an explicit follow-up commit; recorded as an issue with a fix recommendation, not fixed here (outside this task's file_scope). 12 of 20 plan phases remain, starting with Phase 9 (install/uninstall pair deduplication).",
+  "summary": "Closed Phase 9 (Deduplicate the Extension Install/Uninstall Pair): extracted install-extension.sh/uninstall-extension.sh's mutual duplication into a new lib/extension-install-lib.sh (validation/logging preamble plus generic extlib_install_symlinks/extlib_remove_symlinks helpers covering all six per-type symlink loops), after first writing the pair's first-ever characterization test (17 cases, since has_test was false for both) and verifying it green before and after the refactor. Deliberately preserved a genuine pre-existing behavioral discrepancy (install_agents never checked an existing symlink's target, unlike install_commands/install_skills) rather than normalizing it away. NET-PROD -70 (a header-only-extraction first attempt landed +13 with no later phase to pay it back, so the extraction was widened to the symlink-loop bodies, the larger duplicate mass); duplicate-block count for the pair dropped 35/35 -> 6/6. NET-TEST +274 (the new characterization suite, a one-time required cost). Verification: run-all.sh --only for the new suite (17/17), full-corpus shellcheck clean (0 findings/415 files), manifest-sync suite green after registering the new lib and test in manifest.json. Per the phase's own declared local tier, no full redeploy/gate battery was run (deferred to Phase 20's full tier). Hit the SAME recurring git-commit-phase.sh double-slash containment bug that already hit Phases 7 and 8's closing commits (dropped the new test file and manifest.json from the phase-closing commit); recovered via the established follow-up-commit pattern. 11 of 20 plan phases remain, starting with Phase 10 (typst script pair deduplication).",
   "blockers": [],
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_harness-migration-tranche-c-summary.md",
-      "summary": "Phase 8 close: all 56 remaining suites migrated onto the shared test harness (closing the core extension's harness migration), NET-TEST -188, a recurring commit-pipeline defect routed around, Phase 9 scoped as the next step."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_install-uninstall-dedup-summary.md",
+      "summary": "Phase 9 close: extracted install-extension.sh/uninstall-extension.sh's mutual duplication into lib/extension-install-lib.sh after writing a new characterization test, NET-PROD -70, a recurring commit-pipeline defect routed around, Phase 10 scoped as the next step."
     },
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-8-handoff-20261105T025305Z.md",
-      "summary": "Phase 8 close: migration method (mechanical script + 4 hand-migrated exceptions + boilerplate collapse), NET-TEST figure, verification methodology finding, and Phase 9's scope."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-9-handoff-20261105T031308Z.md",
+      "summary": "Phase 9 close: extraction design iteration (header-only attempt landed net-positive, widened to the symlink loops to reach -70), preserved install_agents target-check discrepancy, and Phase 10's scope."
     }
   ]
 }

@@ -1,10 +1,69 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 21,
+  "partial_progress": {
+    "stage": "phase_complete_more_remain",
+    "details": "Phase 9 (Deduplicate the Extension Install/Uninstall Pair) closed [COMPLETED]: extracted the mutual duplication between install-extension.sh and uninstall-extension.sh into a new shared lib/extension-install-lib.sh, after first writing a 17-case characterization test (neither script had any prior coverage). NET-PROD -70 for this phase (231 insertions, 301 deletions across the three touched production files); duplicate-block count for the pair dropped 35/35 -> 6/6. NET-TEST +274 (the wholly new characterization suite, a one-time required cost, not a duplication-deepening positive-net). 11 of 20 plan phases remain [NOT STARTED] (Phase 10 next). Clean phase boundary, not a context-exhaustion handoff.",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-9-handoff-20261105T031308Z.md",
+    "phases_completed": 9,
+    "phases_total": 20
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_install-uninstall-dedup-summary.md",
+      "summary": "Phase 9 close: extracted install-extension.sh/uninstall-extension.sh's mutual duplication into lib/extension-install-lib.sh after writing a new characterization test, NET-PROD -70, a recurring commit-pipeline defect routed around via a follow-up commit, Phase 10 scoped as the next step."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-9-handoff-20261105T031308Z.md",
+      "summary": "Phase 9 close: extraction design iteration (header-only attempt landed net-positive, widened to the symlink loops to reach -70), preserved install_agents target-check discrepancy, and Phase 10's scope."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Deduplicated install-extension.sh/uninstall-extension.sh via a new shared lib/extension-install-lib.sh (validation/logging preamble plus generic install/remove symlink-loop helpers), after writing the pair's first-ever characterization test (17 cases, green before and after the refactor). NET-PROD -70; duplicate-block count 35/35 -> 6/6. Full repo-wide shellcheck clean; manifest.json updated and manifest-sync suite green."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/install-extension.sh",
+    "agent-system/extensions/core/scripts/lib/extension-install-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-install-uninstall-extension.sh",
+    "agent-system/extensions/core/scripts/uninstall-extension.sh",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-9-handoff-20261105T031308Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl",
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-9-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_install-uninstall-dedup-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When extracting a shared helper library out of a mutual duplicate-block pair, extracting only the validation/logging preamble (the smallest, lowest-risk shared surface) can land a net-POSITIVE line count with no later phase queued to absorb/pay it back -- unlike a precedent extraction with further migrations queued, a one-off pair has nowhere for that positive net to go. Check git diff --numstat immediately after the first extraction attempt; if positive and there is no follow-on migration phase to justify carrying it forward, widen the extraction to the actual LARGER duplicate mass (often repeated loop/control-flow bodies, not just the header) before committing, rather than accepting or reverting.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_install-uninstall-dedup-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["net-deletion", "shared-lib-extraction", "duplicate-blocks", "net-positive-justification"]
+    },
+    {
+      "content": "When extracting parallel loop bodies (e.g. install vs. remove, or N near-identical per-type handlers) into one generic parameterized helper, explicitly audit for PRE-EXISTING behavioral discrepancies between the copies before unifying them -- e.g. one copy may skip a validation check the others perform. Preserve the discrepancy via an explicit per-call-site parameter rather than silently normalizing to the stricter (or looser) behavior, since normalizing is an observable behavior change the extraction itself was not chartered to make. A characterization test written before the extraction is what surfaces these discrepancies safely.",
+      "category": "PATTERN",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_install-uninstall-dedup-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["characterization-test", "behavioral-discrepancy", "refactor-safety", "parameterized-extraction"]
+    },
+    {
+      "content": "git-commit-phase.sh's Phase-Commit Containment Self-Check has a recurring double-slash bug: when a file_scope entry already ends in a trailing slash (e.g. 'agent-system/extensions/core/scripts/tests/'), the containment test appends '/*' to form 'tests//*', which never matches a real single-slash descendant path, causing legitimate in-scope files to be dropped from the phase-closing commit. This has now hit three consecutive phases in the same task. Recovery: a follow-up commit via git-commit-scoped.sh (called directly, bypassing the buggy wrapper) naming exactly the dropped paths -- never widen the phase commit's pathspec to work around it. The underlying fix (strip a trailing '/' from the file_scope entry before appending '/*' in is_contained()) has not yet been applied upstream.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_install-uninstall-dedup-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git-commit-phase", "containment-bug", "trailing-slash", "follow-up-commit", "file-scope"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793838084_ef69bd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 9,
+    "phases_total": 20
   }
 }
