@@ -622,6 +622,9 @@ into FINDING rows alongside genuine failures — inflating a true 4-failing-suit
 "confirmed findings," including a `[PASS]` row, so a FINDING row could no longer be trusted to
 denote an actual failure.
 
+Mechanically enforced by `scripts/lint/lint-verdict-extraction-anchoring.sh` (gate 25 in
+`scripts/gate-registry.data`).
+
 ## Measurement discipline: a cost claim is only as good as its load average
 
 Any wall-clock cost figure cited as justification for a prioritization or scheduling decision

@@ -433,29 +433,36 @@ for a defect in this phase's own work.
 
 ---
 
-### Phase 4: Prose pointer and manifest declaration [NOT STARTED]
+### Phase 4: Prose pointer and manifest declaration [COMPLETED]
 
 **Goal**: The prose contract names its own mechanical enforcer, and both new scripts are declared
 for deployment.
 
 **Tasks**:
 
-- [ ] Re-read `context/standards/shell-script-testing.md`'s "Verdict-line extraction contract
+- [x] Re-read `context/standards/shell-script-testing.md`'s "Verdict-line extraction contract
       (producer/consumer)" section immediately before editing (a sibling task sequenced after
-      this one also edits this file).
-- [ ] Append one sentence to the **end of that section only**, naming the new lint and its gate
+      this one also edits this file). *(completed)*
+- [x] Append one sentence to the **end of that section only**, naming the new lint and its gate
       id — e.g. "Mechanically enforced by `scripts/lint/lint-verdict-extraction-anchoring.sh`
       (gate 25 in `scripts/gate-registry.data`)." Do not restructure the section, do not touch
-      the adjacent "Measurement discipline" section, and do not add a second paragraph.
-- [ ] `git add` the two new files from Phases 1 and 2 so `sync-manifest-scripts.sh`'s
-      `git ls-files` enumeration can see them.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` and confirm
-      it reports exactly the two new scripts as undeclared.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` and confirm
+      the adjacent "Measurement discipline" section, and do not add a second paragraph. *(completed)*
+- [x] `git add` the two new files from Phases 1 and 2 so `sync-manifest-scripts.sh`'s
+      `git ls-files` enumeration can see them. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` and confirm
+      it reports exactly the two new scripts as undeclared. *(completed: core reported exactly
+      those 2; --check also reported 6 unrelated pre-existing missing entries in the lean
+      extension, out of this task's file_scope -- recorded as an issue, see Phase 4 notes)*
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` and confirm
       the resulting `core/manifest.json` diff adds exactly `lint/lint-verdict-extraction-anchoring.sh`
-      and `tests/test-lint-verdict-extraction-anchoring.sh` and nothing else.
-- [ ] Confirm no task-number reference and no record-versioning language entered any file under
-      `agent-system/**` in this phase's diff.
+      and `tests/test-lint-verdict-extraction-anchoring.sh` and nothing else. *(completed; the
+      same --write run also wrote the 6 unrelated lean entries into
+      agent-system/extensions/lean/manifest.json -- left uncommitted/unstaged by this task since
+      it has no per-extension scoping flag and lean/manifest.json is outside this task's
+      file_scope)*
+- [x] Confirm no task-number reference and no record-versioning language entered any file under
+      `agent-system/**` in this phase's diff. *(completed: confirmed via gate 4 (task-reference
+      lint) PASS and a manual grep of the added diff lines)*
 
 **Timing**: 0.5 hours
 
