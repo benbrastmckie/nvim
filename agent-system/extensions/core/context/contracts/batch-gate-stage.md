@@ -83,6 +83,24 @@ was added):
    shape for a function whose JOB is to positively enumerate the unattributed set, including
    identifier-free lines.
 
+## Finding Severity: `FINDING ` vs. `WARN-FINDING `
+
+The evidence pipeline's `deploy_findings_snapshot` (`scripts/lib/deploy-baseline-lib.sh`) filters
+`verify-deploy.sh --findings` output with `grep '^FINDING '`, so only BLOCKING findings ever
+reach this stage's capture/confirm/attribute pipeline. A gate's deliberately non-escalating
+notice — today, only gate16's `routing_hard`/`routing_agents_hard` migration nudge, emitted via
+`warn_advisory()` rather than `fail()`/`warn()` — begins with the literal token `WARN-FINDING `
+instead, which that same `grep '^FINDING '` filter does not match. Such a notice is therefore
+invisible to this stage's evidence base by construction: it never becomes a batch-level
+unattributed finding, never blocks the batch, and the manifest key it reports on is never
+touched to achieve that (the migration-nudge gate keeps running, keeps warning on stderr, and
+keeps declaring the same thing it always has). An ordinary `warn()` call (e.g. gate20's per-file
+budget-ceiling check) still emits a plain `FINDING ` line and is still tracked by this stage like
+any other finding, attributed or not — only a notice that is both non-blocking AND
+perpetually-unattributable (no task's `modified_files` could ever plausibly have caused it)
+needs the `WARN-FINDING ` treatment. See `verify-deploy.sh`'s own `warn()`/`warn_advisory()`
+header comments for the full rationale.
+
 ## Single-Capture Distinction
 
 `context/patterns/batch-orchestration-guardrails.md` records a REJECTED design that shared one

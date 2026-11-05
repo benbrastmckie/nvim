@@ -381,6 +381,55 @@ else
   common_test_fail "case(q): VERIFY_DEPLOY_NESTED=1 (${ms_nested}ms) was FASTER than unguarded --jobs 4 (${ms_unguarded}ms) -- the nested guard may not be forcing sequential execution"
 fi
 
+# =====================================================================
+# Case (r): gate16's WARN-level finding (routing_hard/routing_agents_hard) stays on the
+# non-blocking `WARN-FINDING ` channel instead of escalating into the blocking `^FINDING `
+# channel the batch-gate stage's deploy_findings_snapshot filters on with `grep '^FINDING '`.
+# FIXTURE_RICH's real-copy lean/manifest.json genuinely declares routing_agents_hard, so this
+# exercises warn_advisory()'s real call site, not a synthetic fixture. Four sub-assertions,
+# matching this task's own Defect 5 acceptance evidence:
+#   (a) --findings --quiet emits NO ^FINDING gate16 line;
+#   (b) the [WARN] stderr line is still emitted (unconditional, not gated by --quiet);
+#   (c) the exit code is unchanged (0 -- warn_advisory() never increments FAILURES);
+#   (d) a real fail()-level finding from another gate (gate4 against FIXTURE_CHEAP, which has no
+#       deployed check-task-references.sh) still appears on ^FINDING, proving the `grep
+#       '^FINDING '` filter still passes a genuine blocking finding through unaffected.
+# =====================================================================
+gate16_stdout="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_RICH" 2>/dev/null)"
+gate16_rc=$?
+gate16_stderr="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_RICH" 2>&1 1>/dev/null)"
+
+if ! printf '%s\n' "$gate16_stdout" | grep -q '^FINDING gate16'; then
+  common_test_pass "case(r-a): gate16's routing_hard/routing_agents_hard notice emits no ^FINDING gate16 line"
+else
+  common_test_fail "case(r-a): expected no ^FINDING gate16 line, found one" "$gate16_stdout"
+fi
+
+if printf '%s\n' "$gate16_stdout" | grep -q '^WARN-FINDING gate16'; then
+  common_test_pass "case(r-a2): gate16's notice is still present on the non-blocking WARN-FINDING channel"
+else
+  common_test_fail "case(r-a2): expected a ^WARN-FINDING gate16 line, found none" "$gate16_stdout"
+fi
+
+if printf '%s\n' "$gate16_stderr" | grep -q '\[WARN\].*routing_hard/routing_agents_hard'; then
+  common_test_pass "case(r-b): the [WARN] stderr line is still emitted (unconditional, not gated by --quiet)"
+else
+  common_test_fail "case(r-b): expected a [WARN] stderr line naming routing_hard/routing_agents_hard" "$gate16_stderr"
+fi
+
+if [ "$gate16_rc" -eq 0 ]; then
+  common_test_pass "case(r-c): exit code unchanged (0) -- warn_advisory() never flips the exit code"
+else
+  common_test_fail "case(r-c): expected exit 0, got $gate16_rc" "$gate16_stdout"
+fi
+
+gate4_findings_out="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 4 --findings --quiet "$FIXTURE_CHEAP" 2>/dev/null)"
+if printf '%s\n' "$gate4_findings_out" | grep -q '^FINDING gate4'; then
+  common_test_pass "case(r-d): a real fail()-level finding from another gate (gate4) still appears on ^FINDING, unaffected by gate16's channel split"
+else
+  common_test_fail "case(r-d): expected a ^FINDING gate4 line against FIXTURE_CHEAP" "$gate4_findings_out"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

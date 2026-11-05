@@ -159,23 +159,39 @@
 #   Emits a normalized, one-per-line, machine-diffable findings set across all eighteen gates
 #   (gate0 through gate17) plus a gate0 "could not run" sentinel, printed to stdout after the
 #   final narrative PASS/FAIL line (including on a passing run, where an empty set is a valid,
-#   meaningful result). Every finding line begins with the literal token `FINDING ` followed by a
-#   gate label (`gate0`..`gate17`); the automated consumer is expected to invoke
+#   meaningful result). Every BLOCKING finding line begins with the literal token `FINDING `
+#   followed by a gate label (`gate0`..`gate17`); the automated consumer is expected to invoke
 #   `verify-deploy.sh --findings --quiet`, filter with `grep '^FINDING ' | sort -u`, and diff two
 #   such captures rather than compare exit codes alone -- see the Checkpoint subsection above for
 #   why exit-code-only comparison masks a newly-introduced finding hiding inside an
 #   already-failing gate. This mode is purely additive: with --findings absent, default-mode
 #   narrative output and exit codes are byte-for-byte unchanged.
 #
+#   A SEPARATE, NON-BLOCKING CHANNEL: a `warn_advisory()`-level notice (today, only gate16's
+#   routing_hard/routing_agents_hard migration nudge) begins with the literal token
+#   `WARN-FINDING ` instead -- deliberately NOT matched by the `^FINDING ` consumer filter above,
+#   so it never escalates into the blocking findings set that filter feeds a batch-gate consumer.
+#   It is still printed under --findings (visible to a human reader or a future severity-aware
+#   reader) and still drives every one of `warn()`'s other effects (the `[WARN]` stderr
+#   narrative, the CHECKS increment, and GATE_DIRTY_LIST's cache-ineligibility side effect) --
+#   only its escalation into the BLOCKING channel changes. An ordinary `warn()` call (e.g.
+#   gate20's per-file budget-ceiling check) still emits a plain `FINDING ` line and stays
+#   batch-attributable, exactly as before -- the two functions are kept deliberately separate so
+#   that intention stays explicit at each call site. See `warn_advisory()`'s own header comment
+#   below for the full rationale and why this is not the gate-silencing a declared-manifest-key
+#   deletion would be.
+#
 # Gate selection (--only-gate N[,M,...], additive-only):
-#   Runs only the named gate(s) (1-23) instead of the full battery. Absent this flag, GATES_FILTER
-#   is empty and every gate runs -- byte-for-byte the same as before this flag existed. A caller
-#   that only needs to exercise one gate (e.g. a test suite targeting gate 20) can pay for that one
-#   gate instead of all twenty-three; see context/standards/shell-script-testing.md for the intended
-#   test-fast-path use and the standing rule that at least one full-battery invocation must remain
-#   somewhere in the suite. gate0 (argument/target validation, before any gate runs) is never
-#   filterable -- it always runs. An invalid gate id (non-numeric or outside 1-23) exits 2 and,
-#   under --findings, emits a `FINDING gate0` line.
+#   Runs only the named gate(s) (1-<max>, <max> derived from the live gate registry rather than a
+#   hardcoded literal -- see the --only-gate case branch below) instead of the full battery.
+#   Absent this flag, GATES_FILTER is empty and every gate runs -- byte-for-byte the same as
+#   before this flag existed. A caller that only needs to exercise one gate (e.g. a test suite
+#   targeting gate 20) can pay for that one gate instead of the full set; see
+#   context/standards/shell-script-testing.md for the intended test-fast-path use and the
+#   standing rule that at least one full-battery invocation must remain somewhere in the suite.
+#   gate0 (argument/target validation, before any gate runs) is never filterable -- it always
+#   runs. An invalid gate id (non-numeric or outside 1-<max>) exits 2 and, under --findings,
+#   emits a `FINDING gate0` line.
 #
 #   Zero-check-under-filter (additive-only, unreachable with --only-gate absent): if every gate
 #   named by --only-gate SKIPped (its own source-store-only guard, e.g. gate 3) or was deferred
@@ -326,24 +342,35 @@ while [ $# -gt 0 ]; do
         [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate requires a gate id"
         exit 2
       fi
-      # Validate every comma-separated token is a plain integer in 1-23 before accepting any of
-      # them -- a partially-valid list must refuse loudly, not silently run a subset.
+      # Validate every comma-separated token is a plain integer in 1-<max> before accepting any
+      # of them -- a partially-valid list must refuse loudly, not silently run a subset. <max> is
+      # derived from the live registry (gate_registry_load has already run above) rather than a
+      # fourth hardcoded literal, so this bound cannot go stale again the next time a gate is
+      # added. Explicit fallback: a missing/degraded registry library yields an empty
+      # gate_registry_ids (its own degrade-safe stub, line ~260 above), which must not silently
+      # reject or silently accept every id -- fall back to the last-known literal bound (23)
+      # rather than leaving the derived max at 0.
+      _only_gate_max_id=0
+      for _vd_known_gate_id in $(gate_registry_ids); do
+        [ "$_vd_known_gate_id" -gt "$_only_gate_max_id" ] 2>/dev/null && _only_gate_max_id="$_vd_known_gate_id"
+      done
+      [ "$_only_gate_max_id" -eq 0 ] 2>/dev/null && _only_gate_max_id=23
       IFS=',' read -r -a _only_gate_tokens <<< "$2"
       for _only_gate_tok in "${_only_gate_tokens[@]}"; do
         case "$_only_gate_tok" in
           ''|*[!0-9]*)
-            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-23)" >&2
+            echo "ERROR: --only-gate: invalid gate id '$_only_gate_tok' (must be a number 1-$_only_gate_max_id)" >&2
             [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate invalid gate id '$_only_gate_tok'"
             exit 2
             ;;
         esac
-        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt 23 ]; then
-          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-23)" >&2
+        if [ "$_only_gate_tok" -lt 1 ] || [ "$_only_gate_tok" -gt "$_only_gate_max_id" ]; then
+          echo "ERROR: --only-gate: gate id '$_only_gate_tok' is out of range (must be 1-$_only_gate_max_id)" >&2
           [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --only-gate gate id '$_only_gate_tok' out of range"
           exit 2
         fi
       done
-      unset _only_gate_tok
+      unset _only_gate_tok _vd_known_gate_id _only_gate_max_id
       GATES_FILTER="$2"; shift 2
       ;;
     --max-cost)
@@ -592,13 +619,21 @@ fail() {
   return 0
 }
 
-# warn(): a WARN-level cousin of fail() for gate16's non-blocking migration notice. Increments
-# CHECKS but NEVER FAILURES -- a warning must never flip the verifier's exit code. Echoes to
-# stderr the same way fail() does, and appends to FINDINGS_LIST when FINDINGS mode is on.
-# Appends to GATE_DIRTY_LIST UNCONDITIONALLY (not gated by $FINDINGS) -- that array is pure
+# warn(): a WARN-level cousin of fail() for a gate whose notice must never flip the verifier's
+# exit code, but should still be TRACKED on the ordinary `FINDING ` channel (e.g. gate20's
+# per-file budget-ceiling check in its default ORCHESTRATOR_BUDGET_GATE_MODE=warn mode: the
+# finding names a specific file a task's own modified_files can match, so it stays
+# batch-attributable even though it never fails the run). Increments CHECKS but NEVER FAILURES.
+# Echoes to stderr the same way fail() does, and appends to FINDINGS_LIST when FINDINGS mode is
+# on. Appends to GATE_DIRTY_LIST UNCONDITIONALLY (not gated by $FINDINGS) -- that array is pure
 # internal --skip-unchanged bookkeeping, never part of the public findings interface, so a warn
 # must disqualify a gate from cache-write eligibility regardless of whether --findings was
 # passed on this particular invocation.
+#
+# NOT the right function for a notice that must never escalate into the blocking findings
+# channel at all (e.g. an unattributable, perpetually-recurring migration nudge) -- see
+# warn_advisory() below for that case, and its header comment for why the two are kept separate
+# rather than unified behind one severity parameter.
 warn() {
   CHECKS=$((CHECKS + 1))
   GATE_RAN_LIST+=("$CURRENT_GATE")
@@ -610,6 +645,46 @@ warn() {
       [ -n "$3" ] && FINDINGS_LIST+=("FINDING $CURRENT_GATE $3")
     else
       FINDINGS_LIST+=("FINDING $CURRENT_GATE $1")
+    fi
+  fi
+  return 0
+}
+
+# warn_advisory(): identical to warn() in every effect (the [WARN] stderr narrative, the CHECKS
+# increment, and the GATE_DIRTY_LIST cache-ineligibility side effect) EXCEPT the findings-mode
+# line prefix: "WARN-FINDING " instead of "FINDING ", a token the documented consumer filter
+# `grep '^FINDING '` (deploy-baseline-lib.sh's deploy_findings_snapshot, reached from
+# orchestrate-batch-gate.sh) does not match. Use this, never plain warn(), for a notice that must
+# NEVER escalate into the batch-blocking findings channel -- today, only gate16's
+# routing_hard/routing_agents_hard migration nudge, which is unattributable to any one task and
+# would otherwise block every batch perpetually until an unrelated, deferred migration lands.
+#
+# Deliberately a SEPARATE function rather than a shared severity parameter on warn(): warn()'s
+# other caller (gate20's per-file budget-ceiling check) relies on today's FINDING-based tracking
+# to stay batch-attributable (the finding names a specific file a task's own modified_files can
+# match), even though that WARN never fails the run either -- collapsing both callers onto one
+# severity-parameterized function would make it too easy to flip gate20's attributability by
+# accident while touching gate16. Giving the non-escalating case its own name keeps the two
+# intentions separable at every call site.
+#
+# This is NOT the gate-silencing the source-store boundary task's defect record forbids: that
+# refers specifically to deleting the manifest declaration (e.g. extensions/lean/manifest.json's
+# routing_agents_hard key) to make gate16 stop noticing. Here the manifest keeps declaring
+# routing_agents_hard, gate16_run() keeps running and keeps emitting its [WARN] stderr narrative,
+# its CHECKS increment, and its GATE_DIRTY_LIST cache-ineligibility side effect -- all unchanged.
+# Only the escalation of a deliberately non-blocking warning into the batch-blocking `^FINDING `
+# channel changes.
+warn_advisory() {
+  CHECKS=$((CHECKS + 1))
+  GATE_RAN_LIST+=("$CURRENT_GATE")
+  GATE_DIRTY_LIST+=("$CURRENT_GATE")
+  echo "  [WARN] $1" >&2
+  [ -n "${2:-}" ] && echo "         $2" >&2
+  if [ "$FINDINGS" = "true" ]; then
+    if [ $# -ge 3 ]; then
+      [ -n "$3" ] && FINDINGS_LIST+=("WARN-FINDING $CURRENT_GATE $3")
+    else
+      FINDINGS_LIST+=("WARN-FINDING $CURRENT_GATE $1")
     fi
   fi
   return 0
@@ -1426,7 +1501,7 @@ for gate16_manifest in "$CLAUDE_DIR"/extensions/*/manifest.json; do
   gate16_declares=$(jq -r '(has("routing_hard") or has("routing_agents_hard"))' "$gate16_manifest" 2>/dev/null)
   if [ "$gate16_declares" = "true" ]; then
     gate16_hits=$((gate16_hits + 1))
-    warn "${gate16_ext:-$gate16_manifest} still declares routing_hard/routing_agents_hard" \
+    warn_advisory "${gate16_ext:-$gate16_manifest} still declares routing_hard/routing_agents_hard" \
          "slated for outright removal once the dependent hard-mode work lands -- NOT a migration to hard_contracts, which is unrelated (it resolves injected contract files, not skill or agent names; see context/guides/manifest-routing-schema.md)"
   fi
 done
@@ -1779,6 +1854,34 @@ else
       while IFS= read -r dead_command_lint_line; do
         FINDINGS_LIST+=("FINDING gate24 $dead_command_lint_line")
       done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$dead_command_lint_output")
+    fi
+  fi
+fi
+
+say ""
+fi
+}
+
+gate25_run() {
+if gate_selected 25; then
+say "25. Verdict-extraction anchoring lint (lint-verdict-extraction-anchoring.sh)"
+CURRENT_GATE="gate25"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- verdict-extraction anchoring lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-verdict-extraction-anchoring.sh" ]; then
+  fail "lint-verdict-extraction-anchoring.sh not found in source store"
+else
+  verdict_extraction_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-verdict-extraction-anchoring.sh" --verbose 2>&1)
+  verdict_extraction_lint_status=$?
+  if [ "$verdict_extraction_lint_status" -eq 0 ]; then
+    pass "verdict-extraction anchoring lint reports no unanchored or SGR-blind verdict-extraction sites"
+  else
+    fail "verdict-extraction anchoring lint reported an unanchored or SGR-blind verdict-extraction site" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-verdict-extraction-anchoring.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r verdict_extraction_lint_line; do
+        FINDINGS_LIST+=("FINDING gate25 $verdict_extraction_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$verdict_extraction_lint_output")
     fi
   fi
 fi
