@@ -448,6 +448,39 @@ else
   common_test_fail "Case 11: the dropped path should remain modified/uncommitted"
 fi
 
+# =====================================================================
+# Case 12 (trailing-slash containment fixture): a file_scope entry declared with a trailing
+# slash ("other/widget-area/") must contain its children exactly as the slash-free form
+# ("other/widget-area") does -- pinning the doubled-slash glob defect where "$entry/*" on an
+# already-slash-terminated entry composed "//*" and matched nothing, silently dropping every
+# path under that scope entry.
+# =====================================================================
+common_test_info "=== Case 12: a trailing-slash file_scope entry contains its children ==="
+
+repo12="$(build_repo)"
+cat > "$repo12/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["other/widget-area/"]}]}
+STATE_EOF
+git -C "$repo12" add specs/state.json
+git -C "$repo12" commit -q -m "declare trailing-slash file_scope"
+mkdir -p "$repo12/other/widget-area"
+echo "direct child" > "$repo12/other/widget-area/direct.txt"
+git -C "$repo12" add other/widget-area/direct.txt
+git -C "$repo12" commit -q -m "seed widget-area fixture"
+write_progress "$repo12" 1 '[{"id":1,"status":"done","files_touched":["other/widget-area/direct.txt"]}]'
+echo "modified direct" > "$repo12/other/widget-area/direct.txt"
+
+out12="$(run_phase_commit "$repo12" --task 999 --project probe --phase 1 --message "case12" --session sess_12 2>&1)"
+rc12=$?
+show12="$(git -C "$repo12" show --name-only --format= HEAD)"
+
+if [ "$rc12" -eq 0 ] && ! echo "$out12" | grep -q "dropping out-of-scope" \
+  && echo "$show12" | grep -qF "other/widget-area/direct.txt"; then
+  common_test_pass "Case 12: a trailing-slash file_scope entry ('other/widget-area/') contains its direct child -- no drop warning, exit 0"
+else
+  common_test_fail "Case 12: expected rc=0, direct.txt committed, no drop warning; got rc=$rc12 show='$show12' out=$out12"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================

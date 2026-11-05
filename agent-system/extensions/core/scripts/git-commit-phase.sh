@@ -247,6 +247,16 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
       is_contained() {
         local path="$1" entry entry_base
         for entry in "${file_scope_arr[@]}"; do
+          # Normalize a trailing-slash directory entry ("dir/", or "dir//") down to "dir"
+          # before composing any glob below. Left un-normalized, "$entry/*" on an entry that
+          # already ends in "/" composes a doubled "//*" suffix, which never matches a real
+          # single-slash child path in bash case-pattern matching -- every file under that
+          # scope entry is then wrongly judged out-of-scope and dropped. A literal "/**"
+          # suffix is untouched here (it never ends in a bare "/"), and the lone "/" entry is
+          # left alone rather than reduced to an empty string.
+          while [ "${entry%/}" != "$entry" ] && [ -n "${entry%/}" ]; do
+            entry="${entry%/}"
+          done
           [ "$path" = "$entry" ] && return 0
           # Entry ends in a literal "/**": the quoted case pattern below can never match it, so
           # strip the literal suffix and test prefix containment against the stripped base.
