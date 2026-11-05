@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Author the four-case fixture suite",
+  "started_at": "2026-11-05T00:25:00Z",
+  "last_updated": "2026-11-05T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-lint-extension-readme-table.sh with common_test helpers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]},
+    {"id": 2, "description": "Fixture helper writing synthetic extensions root", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]},
+    {"id": 3, "description": "Case 1 clean table", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]},
+    {"id": 4, "description": "Case 2 missing row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]},
+    {"id": 5, "description": "Case 3 extra row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]},
+    {"id": 6, "description": "Case 4 core exemption visible under --verbose", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]},
+    {"id": 7, "description": "Environment-error case: no README.md", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]},
+    {"id": 8, "description": "common_test_pass/fail/info, PASSED/FAILED tally, exit 0/1/2, no repo mutation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]},
+    {"id": 9, "description": "chmod +x", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification": {
+    "direct_run": "9 passed, 0 failed",
+    "lint_shellcheck": "exit 0, 0 findings",
+    "run_all_only": "1 passed, 0 failed, 1 total (suite selected, not skipped)",
+    "git_status_clean_outside_mktemp": "confirmed: only the suite file itself is untracked; no stray fixture artifacts"
+  }
+}

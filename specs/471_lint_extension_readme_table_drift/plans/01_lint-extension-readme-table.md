@@ -257,38 +257,38 @@ lint against the real corpus.
 
 ---
 
-### Phase 3: Author the four-case fixture suite [NOT STARTED]
+### Phase 3: Author the four-case fixture suite [COMPLETED]
 
 **Goal**: A regression suite asserting the lint's behavior on synthetic fixtures for all four cases
 outcome #4 names, independent of whether the live corpus is clean.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh`,
       modeled on `tests/test-lint-dead-command-recommendations.sh`: `set -uo pipefail`, source
       `../lib/common.sh`, resolve `REPO_ROOT` via `common_test_repo_root "$SCRIPT_DIR"`, resolve the
       lint under test via `common_test_resolve_candidate` (deployed copy first, source-store
-      fallback), and initialize a `mktemp`-scoped workdir via `common_test_workdir_init`.
-- [ ] Build a fixture helper that writes a synthetic extensions root into `$WORKDIR`: a `README.md`
+      fallback), and initialize a `mktemp`-scoped workdir via `common_test_workdir_init`. *(completed)*
+- [x] Build a fixture helper that writes a synthetic extensions root into `$WORKDIR`: a `README.md`
       carrying a `## Available Extensions` heading and table, plus subdirectories matching whatever
       the case needs (including a `core/` subdirectory in every fixture, so the exemption is
-      exercised by construction).
-- [ ] Case 1 -- clean table: directories `core`, `alpha`, `beta`; rows for `alpha` and `beta`. Assert
-      the lint exits 0.
-- [ ] Case 2 -- missing row: directories `core`, `alpha`, `beta`; row for `alpha` only. Assert the
-      lint exits non-zero and names `beta` on a `[VIOLATION]`-tagged line.
-- [ ] Case 3 -- extra row: directories `core`, `alpha`; rows for `alpha` and `ghost`. Assert the
-      lint exits non-zero and names `ghost` on a `[VIOLATION]`-tagged line.
-- [ ] Case 4 -- `core` exemption: directories `core`, `alpha`; row for `alpha` only, deliberately
+      exercised by construction). *(completed: write_fixture)*
+- [x] Case 1 -- clean table: directories `core`, `alpha`, `beta`; rows for `alpha` and `beta`. Assert
+      the lint exits 0. *(completed)*
+- [x] Case 2 -- missing row: directories `core`, `alpha`, `beta`; row for `alpha` only. Assert the
+      lint exits non-zero and names `beta` on a `[VIOLATION]`-tagged line. *(completed)*
+- [x] Case 3 -- extra row: directories `core`, `alpha`; rows for `alpha` and `ghost`. Assert the
+      lint exits non-zero and names `ghost` on a `[VIOLATION]`-tagged line. *(completed)*
+- [x] Case 4 -- `core` exemption: directories `core`, `alpha`; row for `alpha` only, deliberately
       with no `core` row. Assert the lint exits 0, and assert under `--verbose` that `core` is
       reported `[EXEMPT]` rather than silently absent from the output -- the exemption must be
-      visible, not accidental.
-- [ ] Add an environment-error case: a root with no `README.md`, asserting exit 2 rather than a
-      silent 0.
-- [ ] Use `common_test_pass`/`common_test_fail`/`common_test_info` throughout, tally
+      visible, not accidental. *(completed)*
+- [x] Add an environment-error case: a root with no `README.md`, asserting exit 2 rather than a
+      silent 0. *(completed)*
+- [x] Use `common_test_pass`/`common_test_fail`/`common_test_info` throughout, tally
       `PASSED`/`FAILED`, exit `0` all-pass / `1` any-fail / `2` environment error. Never mutate the
-      repository.
-- [ ] `chmod +x` the new suite.
+      repository. *(completed)*
+- [x] `chmod +x` the new suite. *(completed)*
 
 **Timing**: 1.5 hours
 
