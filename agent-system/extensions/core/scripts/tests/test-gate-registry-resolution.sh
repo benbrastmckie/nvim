@@ -66,9 +66,9 @@ common_test_workdir_init
 gate_registry_load "$REAL_DATA"
 
 ids="$(gate_registry_ids)"
-expected_ids="$(seq 1 24 | tr '\n' ' ' | sed 's/ $//')"
+expected_ids="$(seq 1 25 | tr '\n' ' ' | sed 's/ $//')"
 if [ "$ids" = "$expected_ids " ] || [ "$ids" = "$expected_ids" ]; then
-  common_test_pass "case1: gate_registry_ids returns the real registry's 24 migrated ids, ascending (1-24, gate 24 added for the dead-command-recommendation lint)"
+  common_test_pass "case1: gate_registry_ids returns the real registry's 25 migrated ids, ascending (1-25, gate 25 added for the verdict-extraction anchoring lint)"
 else
   common_test_fail "case1: unexpected ids from the real registry (got: '$ids')"
 fi
@@ -256,13 +256,13 @@ for id in $(gate_registry_ids); do
   esac
 done
 if $all_bounded; then
-  common_test_pass "case14: every one of the real registry's 24 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
+  common_test_pass "case14: every one of the real registry's 25 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
 else
   common_test_fail "case14: gate id(s)$unbounded_ids have no enforceable timeout_s"
 fi
 
 # ─── Case 15-21: gate_registry_exec_concurrent_batch (Phase 7, "Gate-Level Concurrency
-# Scheduler"). Each case builds its own synthetic registry so the real 23-gate registry (whose
+# Scheduler"). Each case builds its own synthetic registry so the real 25-gate registry (whose
 # real functions do real, slow, external work) is never exercised here -- that proof is the
 # live, real-corpus before/after byte-diff this task's own implementation summary records
 # separately, not this suite's job. ──────────────────────────────────────────────────────────────
@@ -630,12 +630,49 @@ else
 fi
 
 # Case 31: the real, populated gate-registry.data itself passes the lint cleanly end to end
-# (all 23 rows, nine fields, grammar-conformant corpora) -- the positive control for cases 28-30.
+# (all 25 rows, nine fields, grammar-conformant corpora) -- the positive control for cases 28-30.
 out31="$(bash "$LINT_SCRIPT" "$REAL_DATA" 2>&1)"; rc31=$?
 if [ "$rc31" -eq 0 ]; then
   common_test_pass "case31: lint-gate-registry.sh passes cleanly on the real, populated gate-registry.data"
 else
   common_test_fail "case31: expected the real registry to pass the lint (rc=$rc31)" "$out31"
+fi
+
+# ─── Case 32-34: verify-deploy.sh's --only-gate bound is derived from THIS live registry, not a
+# fourth hardcoded literal. Placed here, not in test-verify-deploy-gate-selection.sh, which a
+# concurrent sibling task declares in its own file_scope this same cycle. REPO_ROOT here is the
+# whole repo checkout (four levels above $CORE_DIR, which is .../agent-system/extensions/core/
+# scripts) -- this repo dogfoods its own deploy, so REPO_ROOT carries both agent-system/extensions
+# (the source store) and .claude/ (a real deploy tree) at once, making it a valid explicit
+# source-store TARGET for verify-deploy.sh without needing a synthetic fixture tree. ─────────────
+REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
+VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
+
+# Case 32: --only-gate 25 (the current live max) is accepted and selects exactly gate 25.
+out32="$(bash "$VERIFY_DEPLOY" --only-gate 25 "$REPO_ROOT" 2>&1)"; rc32=$?
+if [ "$rc32" -eq 0 ] && echo "$out32" | grep -q "^25\. "; then
+  common_test_pass "case32: --only-gate 25 is accepted against an explicit source-store TARGET and selects gate 25"
+else
+  common_test_fail "case32: expected --only-gate 25 to be accepted and select gate 25 (rc=$rc32)" "$out32"
+fi
+
+# Case 33: an id ABOVE the live max (26, one past the real registry's current ceiling) is still
+# refused with exit 2 and the documented out-of-range error text -- the derived bound must not
+# silently widen into "accept anything".
+out33="$(bash "$VERIFY_DEPLOY" --only-gate 26 "$REPO_ROOT" 2>&1)"; rc33=$?
+if [ "$rc33" -eq 2 ] && echo "$out33" | grep -q "ERROR: --only-gate: gate id '26' is out of range"; then
+  common_test_pass "case33: --only-gate 26 (above the live max) is still refused with exit 2"
+else
+  common_test_fail "case33: expected --only-gate 26 to be refused with exit 2 and the out-of-range message (rc=$rc33)" "$out33"
+fi
+
+# Case 34: a non-numeric token is still refused with exit 2 -- the derivation must not change
+# the non-numeric rejection path at all.
+out34="$(bash "$VERIFY_DEPLOY" --only-gate abc "$REPO_ROOT" 2>&1)"; rc34=$?
+if [ "$rc34" -eq 2 ] && echo "$out34" | grep -q "ERROR: --only-gate: invalid gate id 'abc'"; then
+  common_test_pass "case34: --only-gate abc (non-numeric) is still refused with exit 2"
+else
+  common_test_fail "case34: expected --only-gate abc to be refused with exit 2 and the invalid-id message (rc=$rc34)" "$out34"
 fi
 
 # Restore the real registry for any downstream consumer of this same shell (defensive; this

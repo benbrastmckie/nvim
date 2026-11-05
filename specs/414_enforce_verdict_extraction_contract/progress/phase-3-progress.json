@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Register gate 25 and fix the --only-gate range bound",
+  "started_at": "2026-11-05T01:05:00Z",
+  "last_updated": "2026-11-05T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read verify-deploy.sh; add gate25_run and registry-derived --only-gate bound with explicit fallback", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Add registry row 25; bump test-gate-registry-resolution.sh counts/comments; add cases 32-34 for the derived bound", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data", "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.verification",
+      "description": "run-all.sh --only test-gate-registry-resolution.sh,test-verify-deploy-gate-selection.sh,test-gate-cache-equivalence.sh passes",
+      "type": "altered",
+      "reason": "test-verify-deploy-gate-selection.sh's case(c) hardcodes gate id 24 as expected-invalid, which this phase's correct fix makes valid again; that file is a concurrent sibling's file_scope and this plan explicitly directs not to edit it. Closed via Reasoned Exclusions in the plan phase body rather than silently claimed as passing.",
+      "annotation": "see #### Reasoned Exclusions under Phase 3"
+    }
+  ]
+}

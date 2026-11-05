@@ -313,49 +313,54 @@ references either yet.
 
 ---
 
-### Phase 3: Register gate 25 and fix the `--only-gate` range bound [NOT STARTED]
+### Phase 3: Register gate 25 and fix the `--only-gate` range bound [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Gate 25 runs as part of the battery, is individually selectable via `--only-gate 25`,
 and the registry lint plus the registry-resolution suite accept the new row.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/verify-deploy.sh` immediately before editing (a concurrent sibling task
-      declares this file in its own `file_scope` this same cycle).
-- [ ] Add row 25 to `scripts/gate-registry.data`, TAB-separated, 9 fields, cloning gate 24's
+- [x] Re-read `scripts/verify-deploy.sh` immediately before editing (a concurrent sibling task
+      declares this file in its own `file_scope` this same cycle). *(completed: re-read revealed
+      a pre-existing uncommitted foreign hunk already in this file -- see Reasoned Exclusions
+      below)*
+- [x] Add row 25 to `scripts/gate-registry.data`, TAB-separated, 9 fields, cloning gate 24's
       field values where they apply: `id=25`;
       `name=Verdict-extraction anchoring lint (lint-verdict-extraction-anchoring.sh)`;
       `invoke=gate25_run`; `dependencies=-`; `requires_source_store=true`; `timeout_s=30`;
       `cost_class=free`; `serialized=false`; and an `input_corpus` naming the same narrow corpus
       the lint scans, as repo-relative literal paths plus one glob (not `@extensions`, not
       `@repo`):
-      `agent-system/extensions/core/scripts/verify-deploy.sh,agent-system/extensions/core/scripts/lib/gate-verdict-extract-lib.sh,agent-system/extensions/core/scripts/lint/*.sh`.
-- [ ] Add `gate25_run()` to `scripts/verify-deploy.sh`, cloning `gate24_run`'s shape exactly:
+      `agent-system/extensions/core/scripts/verify-deploy.sh,agent-system/extensions/core/scripts/lib/gate-verdict-extract-lib.sh,agent-system/extensions/core/scripts/lint/*.sh`. *(completed)*
+- [x] Add `gate25_run()` to `scripts/verify-deploy.sh`, cloning `gate24_run`'s shape exactly:
       `gate_selected 25` guard, `say "25. ..."`, `CURRENT_GATE="gate25"`, the
       `[ ! -d "$TARGET/agent-system/extensions" ]` deploy-consumer SKIP branch, the
       lint-not-found `fail` branch, a `--verbose` invocation capturing output and status, `pass`
       on 0, and on non-zero a `fail` plus — under `--findings` — a
       `while ... done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$output")` loop
-      appending `FINDING gate25 ...` rows.
-- [ ] Replace the three hardcoded `23` occurrences in the `--only-gate` case branch (the
+      appending `FINDING gate25 ...` rows. *(completed)*
+- [x] Replace the three hardcoded `23` occurrences in the `--only-gate` case branch (the
       invalid-token error message, the `-gt 23` numeric comparison, and the out-of-range error
       message) with a bound derived from the live registry. `gate_registry_load` has already run
       by the time this block is parsed, so the max of `gate_registry_ids`' ascending output is
-      available.
-- [ ] Give that derivation an explicit fallback for the degraded case: the file's own degrade-safe
+      available. *(completed: also updated two adjacent header-comment mentions of "1-23" for
+      consistency, since they sit directly above the now-dynamic code)*
+- [x] Give that derivation an explicit fallback for the degraded case: the file's own degrade-safe
       stub makes `gate_registry_ids` emit nothing when the library is unavailable, which must not
       silently reject every gate id or accept any. Choose and comment the fallback behavior
-      explicitly rather than leaving it implicit.
-- [ ] Update `scripts/tests/test-gate-registry-resolution.sh`: `seq 1 24` -> `seq 1 25`; the two
+      explicitly rather than leaving it implicit. *(completed: falls back to the literal 23;
+      verified live by temporarily renaming gate-registry-lib.sh)*
+- [x] Update `scripts/tests/test-gate-registry-resolution.sh`: `seq 1 24` -> `seq 1 25`; the two
       assertion messages naming "24 migrated ids"/"24 migrated gates" -> 25, with the first
       naming what gate 25 is (mirroring how that message currently names gate 24); and correct
-      the already-stale "the real 23-gate registry" comment to "25-gate registry".
-- [ ] Add assertions to `test-gate-registry-resolution.sh` covering the new derived bound:
+      the already-stale "the real 23-gate registry" comment to "25-gate registry". *(completed;
+      also corrected a third, separately-stale "all 23 rows" mention in case31's comment to 25)*
+- [x] Add assertions to `test-gate-registry-resolution.sh` covering the new derived bound:
       `--only-gate 25` is accepted, an id above the live max is still refused with exit 2, and a
       non-numeric token is still refused. Put these here rather than in
       `test-verify-deploy-gate-selection.sh`, which a concurrent sibling task declares in its own
-      `file_scope`.
-- [ ] Stage only this task's own hunks with an explicit file list; never a directory or glob add.
+      `file_scope`. *(completed: cases 32-34)*
+- [x] Stage only this task's own hunks with an explicit file list; never a directory or glob add. *(completed)*
 
 **Timing**: 1 hour
 
@@ -400,8 +405,31 @@ plus a live `--only-gate 25` selection, and not by any single-module check.
 - The degraded path: with the registry library made unavailable, `--only-gate` behaves per the
   explicitly chosen fallback rather than rejecting every id silently.
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-gate-registry-resolution.sh,test-verify-deploy-gate-selection.sh,test-gate-cache-equivalence.sh`
-  passes.
+  passes. *(see Reasoned Exclusions below: 2 of 3 suites report a failure on this live run, one
+  already EXPECTED/pre-existing per run-all.sh's own baseline, one NEW but foreseen and excluded
+  per the record below)*
 - `git status --short` confirms no file outside this phase's declared list was staged.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-verify-deploy-gate-selection.sh` case(c)'s assertion that `--only-gate 24` is invalid | That suite's `invalid_cases=("abc" "0" "24" "1,abc" "1,99")` array hardcodes `24` as an expected-invalid gate id -- an assertion that encoded the exact stale-bound bug this phase fixes (the plan's own research already identified, live-verified, that gate 24 was wrongly rejected before this fix). This phase's Risk table and Task list explicitly direct NOT to edit `test-verify-deploy-gate-selection.sh` (a concurrent sibling task, 328/`systematic_script_and_test_corpus_efficiency`, status `implementing`, declares it in its own `file_scope`), and instead to add the new-bound coverage to `test-gate-registry-resolution.sh` (done: cases 32-34, all passing). Decision: accept this one foreseen, correctly-caused failure in a file outside this task's edit authority rather than cross a declared territory boundary; record it for the owning sibling task to reconcile (it need only delete `"24"` from that array once it rebases onto this change). All five `[COMPLETED WITH EXCLUSIONS]` admission conditions hold: this is a deliberate decision (not a stuck attempt); tightly scoped to this one named assertion; the reason is stated; it is evidenced (next column); and no residual work remains within *this* task's own plan -- the follow-up belongs to a different task's territory, settled at planning time, not an ad hoc call made now. | Live run: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-gate-registry-resolution.sh,test-verify-deploy-gate-selection.sh,test-gate-cache-equivalence.sh` reports `[FAIL] .../test-verify-deploy-gate-selection.sh` with exactly one failing case: `case(c): --only-gate 24 expected exit 2, got 0`, all 20 other cases PASS; run-all.sh labels this suite `(NEW)`. Confirmed independently: `bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate 24` now selects and PASSes gate 24 (the intended, correct behavior). Recorded via `issue-record.sh` (class contract-drift, severity costly) for the sibling task. |
+| `test-gate-cache-equivalence.sh`'s failure on the same live run | A `TIMEOUT: ... exceeded the 600s per-suite bound` under this invocation's host load (every individual case shown up to the cutoff is PASS). run-all.sh's own output labels this suite `(EXPECTED)` -- its pre-existing-failures baseline mechanism, independent of this task, already recognizes it as a known, not-newly-introduced condition. Not a `[COMPLETED WITH EXCLUSIONS]` item requiring its own justification (no decision was made to exclude it -- it is already excluded by the standing baseline), noted here only so the live-run evidence above is read correctly as "1 NEW, 1 already-EXPECTED," not "2 regressions from this phase." | Same live run's output: `[run-all] Failing suites (2): .../test-gate-cache-equivalence.sh (EXPECTED)  .../test-verify-deploy-gate-selection.sh (NEW)`. |
+
+**Correct `TARGET` argument used for live verification above**: this phase's own verification
+bullets above write the explicit-TARGET invocations as `... agent-system/extensions/core`
+(matching this plan's Phase 4/5 wording), but that literal positional argument errors --
+`ERROR: no deploy tree at .../agent-system/extensions/core/.claude -- nothing to verify` --
+because `agent-system/extensions/core` has no `.claude/` subtree of its own; only the repo root
+does. This repository dogfoods its own deploy (the repo root carries both `agent-system/
+extensions/` and a real, current `.claude/` at the same path), so the correct explicit
+source-store `TARGET` here is the repo root itself (equivalently, the bare/no-argument form run
+from the repo root, or `.`) -- confirmed working for every `--only-gate` invocation actually run
+above. This is a pre-existing `TARGET`-contract documentation ambiguity, already tracked
+separately (task 470, `clarify_verify_deploy_target_contract`, status `planned`) and out of this
+task's scope to fix; noted here only so a future reader does not mistake the literal plan text
+for a defect in this phase's own work.
 
 ---
 

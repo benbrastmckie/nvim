@@ -144,3 +144,4 @@
 22	Shellcheck lint (lint-shellcheck.sh)	gate22_run	-	true	170	slow	false	**/*.sh
 23	Directory-pathspec boundary lint (lint-directory-pathspec-boundary.sh)	gate23_run	-	true	30	moderate	false	@extensions
 24	Dead-command-recommendation lint (lint-dead-command-recommendations.sh)	gate24_run	-	true	30	free	false	@extensions
+25	Verdict-extraction anchoring lint (lint-verdict-extraction-anchoring.sh)	gate25_run	-	true	30	free	false	agent-system/extensions/core/scripts/verify-deploy.sh,agent-system/extensions/core/scripts/lib/gate-verdict-extract-lib.sh,agent-system/extensions/core/scripts/lint/*.sh
