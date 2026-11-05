@@ -1,0 +1,59 @@
+{
+  "entries": [
+    {
+      "path": "project/sapience/README.md",
+      "domain": "project",
+      "subdomain": "sapience",
+      "topics": ["sapience", "navigation", "index"],
+      "keywords": ["sapience", "vault", "on-demand", "index"],
+      "summary": "Navigation index for the Sapience extension's domain notes, all read-on-demand with no eager load hook",
+      "line_count": 17,
+      "load_when": {},
+      "on_demand": true
+    },
+    {
+      "path": "project/sapience/domain/vault-model.md",
+      "domain": "project",
+      "subdomain": "sapience",
+      "topics": ["sapience", "vault-model", "mcp", "cli"],
+      "keywords": ["app.spnc.ai", "mcp.py", "sf1", "sapience_ask", "briefing-text", "statusline"],
+      "summary": "Hosted vault model, the MCP thin client, and mcp.py's exact CLI mode inventory (no --search, no --ask)",
+      "line_count": 38,
+      "load_when": {},
+      "on_demand": true
+    },
+    {
+      "path": "project/sapience/domain/review-gate-boundary.md",
+      "domain": "project",
+      "subdomain": "sapience",
+      "topics": ["sapience", "review-gate", "permissions", "staging"],
+      "keywords": ["auto_approve", "sapience_remember", "sapience_wrapup", "sapience_handoff", "sapience_adddoc", "settings-fragment"],
+      "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools, and the repository-scoped permission-grant tradeoff",
+      "line_count": 55,
+      "load_when": {},
+      "on_demand": true
+    },
+    {
+      "path": "project/sapience/domain/transcript-filter-ceiling.md",
+      "domain": "project",
+      "subdomain": "sapience",
+      "topics": ["sapience", "transcript-filter", "orchestration"],
+      "keywords": ["source_skip", "harness-started", "subagent", "SAPIENCE_INCLUDE_HEADLESS", "upload.py"],
+      "summary": "source_skip() classification mechanics in upload.py and why orchestrated/subagent work cannot reach the vault except by explicit tool call",
+      "line_count": 43,
+      "load_when": {},
+      "on_demand": true
+    },
+    {
+      "path": "project/sapience/domain/subagent-orientation.md",
+      "domain": "project",
+      "subdomain": "sapience",
+      "topics": ["sapience", "subagent-orientation", "context-injection", "lifecycle-hooks"],
+      "keywords": ["skill_get_extension_dir", "skill-base.sh", "task_type", "context_injection", "post-task-observers"],
+      "summary": "Why a manifest context_injection hook cannot fire for a task_type-less extension, with the checkable skill-base.sh citation, and the deliberate session-level-plus-on-demand alternative",
+      "line_count": 72,
+      "load_when": {},
+      "on_demand": true
+    }
+  ]
+}

@@ -364,7 +364,7 @@ deployed-tree doc-lint is phase 5's.
 
 ---
 
-### Phase 4: Index Entries [NOT STARTED]
+### Phase 4: Index Entries [COMPLETED]
 
 **Goal**: Write `index-entries.json` so all five context files are reachable from
 `.claude/context/index.json`, schema-conformant, with accurate `line_count` values and the
@@ -372,26 +372,29 @@ deployed-tree doc-lint is phase 5's.
 
 **Tasks**:
 
-- [ ] Write `agent-system/extensions/sapience/index-entries.json` with one entry per context file,
+- [x] Write `agent-system/extensions/sapience/index-entries.json` with one entry per context file,
       modeled on `agent-system/extensions/memory/index-entries.json`'s shape. Each entry carries the
       four schema-required keys (`path`, `domain`, `summary`, `line_count`) plus `subdomain`,
       `topics`, and `keywords`. `path` is relative to the extension's `context/` directory (e.g.
       `project/sapience/domain/vault-model.md`); `domain` is `project`; `subdomain` is `sapience`.
-- [ ] Set `load_when` to an empty object and set `on_demand: true` on every entry. This is the
+      *(completed)*
+- [x] Set `load_when` to an empty object and set `on_demand: true` on every entry. This is the
       schema's documented use of the marker: these entries are deliberately reachable only by
       grep/explicit Read, and an all-hooks-empty entry WITHOUT the marker is reported as dead by
       `validate-context-budgets.sh`'s Dead Entry Check. Leave `load_when.agents` empty — an entry
       listed in `agents[]` is auto-loaded at agent spawn regardless of any tier label, which would
-      silently make this reference material eager.
-- [ ] Assert no forbidden key appears in any entry: `description`, `tags`, and `tier` are absent
-      from the entry shape by design and `additionalProperties` is `false`.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` to
+      silently make this reference material eager. *(completed)*
+- [x] Assert no forbidden key appears in any entry: `description`, `tags`, and `tier` are absent
+      from the entry shape by design and `additionalProperties` is `false`. *(completed: verified via jq -e)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` to
       census `line_count` accuracy. If any sapience entry is wrong, run the same script with
       `--write` and then stage ONLY `agent-system/extensions/sapience/index-entries.json` with an
       explicit file-list `git add --` — the script rewrites every extension's source
       `index-entries.json`, so a pre-existing stale count elsewhere must not be swept into this
-      task's commit.
-- [ ] Re-run `--check` and confirm it reports no correction needed for any sapience entry.
+      task's commit. *(completed: run via deployed .claude/scripts/ copy per its own
+      deployed-tree requirement; all 5 sapience entries exact, no --write needed)*
+- [x] Re-run `--check` and confirm it reports no correction needed for any sapience entry.
+      *(completed: 5 entries, 5 exact, 0 mismatch)*
 
 **Timing**: 0.5 hours
 

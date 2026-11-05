@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "Index Entries",
+  "started_at": "2026-11-05T16:15:00Z",
+  "last_updated": "2026-11-05T16:22:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write index-entries.json with five on-demand entries", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 2, "description": "Verify line_count accuracy via generate-context-line-counts.sh --check", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
