@@ -98,13 +98,17 @@ it reads `0.1.0` — owner action, never an agent's. Nothing depends on it.
 
 **One scope worth narrowing first**: the mis-sited-records migration declares `specs/state.json`
 and `specs/TODO.md`, which every task writes, so it overlaps everything.
+**Coverage appendix (uncovered tasks)**:
+```
+/orchestrate 482
+```
 
 ## Open work
 
-**Core agent system (34)**
+**Core agent system (33)**
 ```
+328 IN FLIGHT       systematic_script_and_test_corpus_efficiency
 313 blocked:328,401 Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
-328 blocked:429     systematic_script_and_test_corpus_efficiency
 360 blocked:328,385,428,446  Evidence discipline for report and plan artifacts, in three phases: ...
 369 blocked:29      Orphan sweep for deployed entries removed from the source store: the deploy a...
 421 blocked:402     retarget_distill_meta_as_evidence_consumer
@@ -128,7 +132,6 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 338 ready           sweep_task_support_file_tracked_or_ignored
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
 423 ready           Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (mea...
-429 ready           script_inventory_undercounts_untracked_files
 435 ready           Reword architectural and phase-versus-command prose naming the three deleted ...
 456 ready           tag_version_gate_unpassable_for_private_manifest
 459 ready           Design cross-record traceability; verdict on CHANGE_LOG retirement
@@ -139,7 +142,7 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 478 ready           Make lint Check J fail on a missing handoff-writer section instead of skippin...
 ```
 
-**Extensions (6)**
+**Extensions (7)**
 ```
 342 HOLD            Refactor the books extension's context corpus against the settled convention:...
 29 blocked:22       Generate .mcp.json from extension manifests, then register obsidian-memory th...
@@ -147,6 +150,7 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 457 blocked:446,455 Repo-specific content has leaked into the shared agent-system source store
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 408 ready           Gate the formal extension's mandatory Mathlib-lookup step on an actual Lean t...
+482 ready           create_sapience_extension
 ```
 
 **Literature (2)**
