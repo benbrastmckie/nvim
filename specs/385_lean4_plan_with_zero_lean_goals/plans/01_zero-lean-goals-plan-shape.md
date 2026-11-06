@@ -191,35 +191,39 @@ is named directly rather than via `run-all.sh --only`).
 
 ---
 
-### Phase 2: plan-format.md Zero-Goal Section Shape [NOT STARTED]
+### Phase 2: plan-format.md Zero-Goal Section Shape [COMPLETED]
 
 **Goal**: State the sanctioned shape for a lean/lean4 plan with zero Lean goals at the
 `## Lean Challenge Statements` section (acceptance (a)).
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/plan-format.md` immediately before
-      editing.
-- [ ] Insert a new `### Zero Lean Goals (no theorem deliverable)` subsection after the existing
+- [x] Re-read `agent-system/extensions/core/context/formats/plan-format.md` immediately before
+      editing. *(completed)*
+- [x] Insert a new `### Zero Lean Goals (no theorem deliverable)` subsection after the existing
       bullet list under `## Lean Challenge Statements (format, lean/lean4 plans only)` (after the
       `import` lines bullet) and before `## Goal Polarity (optional, lean/lean4 plans)`, stating:
       gating stays binary on `task_type` (such a plan still carries the section); the section MUST
       contain the verbatim marker line `<!-- lean-challenge-statements:none -->` and no
       ```` ```lean ```` fenced blocks, with surrounding rationale prose permitted; `- **Goals**:`
       MUST name zero identifiers; the rationale MUST be recorded under the plan's `## Decisions`.
-- [ ] In the same subsection, state the three contrasts explicitly: a merely-empty section (no
+      *(completed)*
+- [x] In the same subsection, state the three contrasts explicitly: a merely-empty section (no
       blocks, no marker) is malformed and still fails loudly with `71`; omitting the section
       entirely is NOT equivalent (it means a pre-R1-feature legacy plan and still routes to the
       R2 git-baseline fallback); and the marker is a deliberate opt-out, never a default.
-- [ ] Add a pointer from the subsection to
+      *(completed)*
+- [x] Add a pointer from the subsection to
       `context/project/lean4/domain/challenge-snapshot.md`'s Exit-Code Vocabulary (for `72`) and
-      its Zero-Goal Marker subsection (for the mechanics).
-- [ ] Append a minimal pointer clause to numbered-section list entry `6.` ("**Lean Challenge
+      its Zero-Goal Marker subsection (for the mechanics). *(completed)*
+- [x] Append a minimal pointer clause to numbered-section list entry `6.` ("**Lean Challenge
       Statements** (lean/lean4 plans only) ... see below") naming the zero-Lean-goals case — a
-      pointer only, no restated rules.
-- [ ] Confirm the identifier-set cross-validation bullet's hard requirement is left intact (the
+      pointer only, no restated rules. *(completed)*
+- [x] Confirm the identifier-set cross-validation bullet's hard requirement is left intact (the
       zero-goal case satisfies it vacuously with both sets empty; no carve-out text is added to
-      that bullet).
-- [ ] Confirm no task-number reference is introduced anywhere in the added text.
+      that bullet). *(completed: confirmed by reading — the "`The identifier set declared here
+      MUST equal...`" bullet is unmodified)*
+- [x] Confirm no task-number reference is introduced anywhere in the added text. *(completed:
+      confirmed by reading the new subsection and the entry-6 pointer clause)*
 
 **Timing**: 0.5 hours
 

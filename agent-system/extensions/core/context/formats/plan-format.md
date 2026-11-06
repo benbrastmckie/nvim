@@ -68,7 +68,7 @@ reintroduced, not as a description of live behavior.
 3. **Risks & Mitigations** – bullets.
 4. **Implementation Phases** – under `## Implementation Phases`, preceded by a **Dependency Analysis** wave table (see below), with each phase at level `###` and including a status marker at the end of the heading.
 5. **Planned Strategic Sorries** (hard-mode skeleton plans only) – under `## Planned Strategic Sorries`, present only when `plan_metadata.skeleton: true`; see below.
-6. **Lean Challenge Statements** (lean/lean4 plans only) – under `## Lean Challenge Statements`, present only when the plan's `task_type` is `lean`/`lean4`; see below.
+6. **Lean Challenge Statements** (lean/lean4 plans only) – under `## Lean Challenge Statements`, present only when the plan's `task_type` is `lean`/`lean4`; see below (including the zero-Lean-goals marker shape for a plan with no theorem deliverable).
 7. **Testing & Validation** – bullets/tests to run.
 8. **Artifacts & Outputs** – enumerate expected outputs with paths.
 9. **Rollback/Contingency** – brief plan if changes must be reverted.
@@ -626,6 +626,34 @@ theorem comm (n m : Nat) : n + m = m + n := sorry
 - Include whatever `import` lines each fenced block needs to type-check standalone as an isolated
   Challenge module — this section is the sole source of import context for the assembled module,
   distinct from (and not automatically inherited from) any other file in the target project.
+
+### Zero Lean Goals (no theorem deliverable)
+
+Gating stays binary on `task_type`: a lean/lean4 plan with no theorem deliverable still carries
+the `## Lean Challenge Statements` section — it is never omitted on the strength of having
+nothing to prove. To declare zero goals, the section MUST contain the verbatim marker line
+
+```
+<!-- lean-challenge-statements:none -->
+```
+
+and no ```` ```lean ```` fenced blocks; surrounding rationale prose is permitted around the
+marker. `- **Goals**:` MUST name zero identifiers in this case — a marker alongside a non-empty
+`- **Goals**:` list is a self-inconsistency, not a valid zero-goal declaration. The rationale for
+why the plan has no theorem deliverable MUST be recorded under the plan's `## Decisions` section.
+
+Three contrasts distinguish this shape from its neighbors:
+
+- A merely-empty section — present, with no fenced blocks and no marker — is malformed, not a
+  zero-goal declaration, and still fails loudly (`lean-challenge-snapshot.sh` exits `71`).
+- Omitting the section entirely is NOT equivalent to declaring zero goals: an absent section
+  means a pre-R1-feature legacy plan, and the snapshot tool still falls back to its R2
+  git-baseline route rather than recognizing a deliberate no-op.
+- The marker is a deliberate, explicit opt-out — never a default a plan falls into by leaving the
+  section empty or unwritten.
+
+See `context/project/lean4/domain/challenge-snapshot.md`'s Exit-Code Vocabulary table for exit
+code `72` and its Zero-Goal Marker subsection for the full recognition mechanics.
 
 ## Goal Polarity (optional, lean/lean4 plans)
 

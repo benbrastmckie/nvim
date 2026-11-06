@@ -1,0 +1,56 @@
+{
+  "phase": 2,
+  "phase_name": "plan-format.md Zero-Goal Section Shape",
+  "started_at": "2026-11-05T00:15:00Z",
+  "last_updated": "2026-11-05T00:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Insert ### Zero Lean Goals (no theorem deliverable) subsection with gating, marker requirement, Goals-must-be-empty requirement, and Decisions-recording requirement",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/plan-format.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "State three contrasts (merely-empty vs malformed-71, omitted-section vs R2-fallback, marker is opt-out not default)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/plan-format.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add pointer to challenge-snapshot.md Exit-Code Vocabulary and Zero-Goal Marker subsection",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/plan-format.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Append pointer clause to numbered-section list entry 6",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/plan-format.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Sync index-entries.json line_count for plan-format.md entry (required by doc-lint gate 3)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "gate 3 (check-extension-docs.sh) was re-run with --skip-slow --only-gate 3,4 and confirmed PASS for the 'core' extension's own doc-lint (plan-format.md line_count synced); the suite's overall gate-3 FAIL is attributable solely to the 'lean' extension's EXPECTED, pre-anticipated deployed-script content drift from Phase 1's source-store edit to lean-challenge-snapshot.sh, which Phase 5's redeploy resolves -- not a regression introduced by this phase. Gate 4 (task-reference lint) passed cleanly.",
+    "index-entries.json carried TWO unrelated, pre-existing uncommitted line_count corrections (formats/progress-file.md: 268, patterns/metadata-file-return.md: 143) belonging to other in-flight work, not this task. Only the plan-format.md line_count hunk (882->910) was staged into this phase's commit; the other two were left exactly as found in the working tree (not committed, not reverted)."
+  ]
+}
