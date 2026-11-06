@@ -222,54 +222,28 @@ Root `specs/literature/index.json` uses an enriched entry schema with the follow
 | `zotero_path` | string\|null | No | Absolute path to source PDF in Zotero storage — set by import pipeline |
 | `project_tags` | string[]\|null | No | Zotero collection names used as project tags — set by import pipeline |
 
-### Complete entry example (flat paper, Zotero-imported)
+### Complete entry example (flat paper / chunked-section, Zotero-imported)
+
+The base field shape (every field except the four Zotero-only ones below) is identical to
+`context/guides/literature-organization.md` § "Complete entry example (flat paper)" (for a
+flat paper) and § "Complete entry example (section of a chunked book)" (for a chunked section) —
+re-read those for the full base-field values. This legacy per-project index wraps that same
+entry shape in a `{"token_budget": ..., "entries": [...]}` envelope and adds four Zotero-only
+fields, all nullable (`null` when the entry was not Zotero-imported): `bib_key`, `zotero_key`,
+`zotero_path`, `project_tags`. Delta example for the flat-paper case:
 
 ```json
 {
   "token_budget": 4000,
   "entries": [
     {
-      "id": "smith2023_proplogic",
-      "path": "Smith_2023_PropositionalLogic.md",
-      "token_count": 1850,
-      "keywords": ["propositional", "logic", "syntax", "semantics", "proof"],
-      "summary": "Introduces propositional logic with natural deduction and truth tables.",
-      "authors": ["Alice Smith"],
-      "title": "Propositional Logic: A Modern Introduction",
-      "year": 2023,
-      "doc_type": "paper",
-      "source_format": "pdf",
-      "parent_doc": null,
-      "page_range": null,
+      "...": "...base fields exactly as the anchor's flat-paper example...",
       "bib_key": "smith2023_proplogic",
       "zotero_key": "ABCD1234",
       "zotero_path": "/home/user/Zotero/storage/ABCD1234/Smith_2023.pdf",
       "project_tags": ["Modal Logic", "Formal Methods"]
     }
   ]
-}
-```
-
-### Complete entry example (chunked book section)
-
-```json
-{
-  "id": "brastmckie2024_bimodal_sec02",
-  "path": "Brastmckie_2024_BimodalLogic/section02_syntax.md",
-  "token_count": 2100,
-  "keywords": ["bimodal", "syntax", "formula", "operator", "modal"],
-  "summary": "Defines the formal syntax of bimodal logic with operator precedence rules.",
-  "authors": ["Benjamin Brastmckie"],
-  "title": "BimodalLogic - Section 2: Syntax",
-  "year": 2024,
-  "doc_type": "section",
-  "source_format": "pdf",
-  "parent_doc": "brastmckie2024_bimodal",
-  "page_range": "15-47",
-  "bib_key": null,
-  "zotero_key": null,
-  "zotero_path": null,
-  "project_tags": null
 }
 ```
 

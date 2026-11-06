@@ -1,0 +1,10 @@
+### Stage 0: Initialize Early Metadata
+
+**CRITICAL**: Create metadata file BEFORE any substantive work.
+
+1. Ensure task directory exists:
+   ```bash
+   mkdir -p "specs/{NNN}_{SLUG}"
+   ```
+
+2. Write initial metadata with agent_type: "formal-research-agent"

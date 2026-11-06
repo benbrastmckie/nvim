@@ -1,0 +1,23 @@
+### Stage 0: Initialize Early Metadata
+
+**CRITICAL**: Create metadata file BEFORE any substantive work.
+
+```bash
+mkdir -p "$(dirname "$metadata_file_path")"
+cat > "$metadata_file_path" << 'EOF'
+{
+  "status": "in_progress",
+  "started_at": "{ISO8601 timestamp}",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Agent started, parsing delegation context"
+  }
+}
+EOF
+```
+
+> **Remove `partial_progress` on the final write.** This stub is correct only while `status` is
+> `in_progress`/`partial`. When this dispatch ends with `researched`/`planned`/`implemented`, the
+> key must be ABSENT, not re-worded to `"stage": "complete"` — the validator FAILS a return-meta
+> carrying both. See `context/formats/return-metadata-file.md`'s `partial_progress` section.

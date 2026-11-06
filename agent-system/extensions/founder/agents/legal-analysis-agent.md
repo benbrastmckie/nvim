@@ -72,22 +72,12 @@ Load these on-demand using @-references:
 
 ### Stage 0: Initialize Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work.
-
-```bash
-mkdir -p "$(dirname "$metadata_file_path")"
-cat > "$metadata_file_path" << 'EOF'
-{
-  "status": "in_progress",
-  "started_at": "{ISO8601 timestamp}",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "initializing",
-    "details": "Agent started, parsing delegation context"
-  }
-}
-EOF
-```
+**CRITICAL**: Create metadata file BEFORE any substantive work. See
+`context/patterns/early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" for the full
+procedure and JSON shape (also reproduced as a copy-paste template under that file's "Agent
+Integration Template" heading), and `context/formats/return-metadata-file.md` §
+"partial_progress (optional)" for the final-write removal obligation. Write to
+`$metadata_file_path`; initial `partial_progress.details`: "Agent started, parsing delegation context".
 
 ### Stage 1: Parse Delegation Context
 

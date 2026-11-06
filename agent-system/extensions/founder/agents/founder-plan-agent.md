@@ -55,29 +55,12 @@ Load these on-demand using @-references:
 
 ### Stage 0: Initialize Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work.
-
-```bash
-metadata_file="$metadata_file_path"
-mkdir -p "$(dirname "$metadata_file")"
-cat > "$metadata_file" << 'EOF'
-{
-  "status": "in_progress",
-  "started_at": "{ISO8601 timestamp}",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "initializing",
-    "details": "Agent started, parsing delegation context"
-  }
-}
-EOF
-```
-
-> **Remove `partial_progress` on the final write.** This stub is correct only while `status` is
-> `in_progress`/`partial`. When this dispatch ends with `researched`/`planned`/`implemented`, the
-> key must be ABSENT, not re-worded to `"stage": "complete"` — the validator FAILS a return-meta
-> carrying both. See `context/formats/return-metadata-file.md`'s `partial_progress` section.
-
+**CRITICAL**: Create metadata file BEFORE any substantive work. See
+`context/patterns/early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" for the full
+procedure and JSON shape (also reproduced as a copy-paste template under that file's "Agent
+Integration Template" heading), and `context/formats/return-metadata-file.md` §
+"partial_progress (optional)" for the final-write removal obligation. Write to
+`$metadata_file_path`; initial `partial_progress.details`: "Agent started, parsing delegation context".
 
 ### Stage 1: Parse Delegation Context
 

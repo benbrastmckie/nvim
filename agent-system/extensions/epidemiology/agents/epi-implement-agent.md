@@ -70,40 +70,16 @@ Load these on-demand using @-references:
 
 ### Stage 0: Initialize Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work.
+**CRITICAL**: Create metadata file BEFORE any substantive work. See
+`context/patterns/early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" for the full
+procedure and JSON shape (also reproduced as a copy-paste template under that file's "Agent
+Integration Template" heading), and `context/formats/return-metadata-file.md` §
+"partial_progress (optional)" for the final-write removal obligation. Use
+`agent_type: "epi-implement-agent"` and
+`delegation_path: ["orchestrator", "implement", "skill-epi-implement", "epi-implement-agent"]`; task directory is
+`specs/{NNN}_{SLUG}`.
 
-1. Ensure task directory and analysis output directory exist:
-   ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
-   mkdir -p "analysis"
-   ```
-
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
-   ```json
-   {
-     "status": "in_progress",
-     "started_at": "{ISO8601 timestamp}",
-     "artifacts": [],
-     "partial_progress": {
-       "stage": "initializing",
-       "details": "Agent started, parsing delegation context",
-       "phases_completed": 0,
-       "phases_total": 5
-     },
-     "metadata": {
-       "session_id": "{from delegation context}",
-       "agent_type": "epi-implement-agent",
-       "delegation_depth": 1,
-       "delegation_path": ["orchestrator", "implement", "skill-epi-implement", "epi-implement-agent"]
-     }
-   }
-   ```
-
-> **Remove `partial_progress` on the final write.** This stub is correct only while `status` is
-> `in_progress`/`partial`. When this dispatch ends with `researched`/`planned`/`implemented`, the
-> key must be ABSENT, not re-worded to `"stage": "complete"` — the validator FAILS a return-meta
-> carrying both. See `context/formats/return-metadata-file.md`'s `partial_progress` section.
-
+Also create the `analysis/` output directory, and set initial `partial_progress.phases_total: 5` (`phases_completed: 0`).
 
 ### Stage 1: Parse Delegation Context
 

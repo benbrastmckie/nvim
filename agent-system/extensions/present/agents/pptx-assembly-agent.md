@@ -48,31 +48,14 @@ Load these on-demand using @-references:
 
 ### Stage 0: Initialize Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work.
-
-1. Ensure task directory exists:
-   ```bash
-   mkdir -p "specs/{NNN}_{SLUG}"
-   ```
-
-2. Write initial metadata to `specs/{NNN}_{SLUG}/.return-meta.json`:
-   ```json
-   {
-     "status": "in_progress",
-     "started_at": "{ISO8601 timestamp}",
-     "artifacts": [],
-     "partial_progress": {
-       "stage": "initializing",
-       "details": "Agent started, parsing delegation context"
-     },
-     "metadata": {
-       "session_id": "{from delegation context}",
-       "agent_type": "pptx-assembly-agent",
-       "delegation_depth": 1,
-       "delegation_path": ["orchestrator", "slides", "skill-slides", "pptx-assembly-agent"]
-     }
-   }
-   ```
+**CRITICAL**: Create metadata file BEFORE any substantive work. See
+`context/patterns/early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" for the full
+procedure and JSON shape (also reproduced as a copy-paste template under that file's "Agent
+Integration Template" heading), and `context/formats/return-metadata-file.md` §
+"partial_progress (optional)" for the final-write removal obligation. Use
+`agent_type: "pptx-assembly-agent"` and
+`delegation_path: ["orchestrator", "slides", "skill-slides", "pptx-assembly-agent"]`; task directory is
+`specs/{NNN}_{SLUG}`.
 
 ### Stage 1: Parse Delegation Context
 

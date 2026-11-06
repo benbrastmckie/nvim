@@ -160,42 +160,16 @@ Annotate the corresponding checklist item inline:
 
 ## Stage 0: Initialize Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work.
+**CRITICAL**: Create metadata file BEFORE any substantive work. See
+`context/patterns/early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" for the full
+procedure and JSON shape (also reproduced as a copy-paste template under that file's "Agent
+Integration Template" heading), and `context/formats/return-metadata-file.md` §
+"partial_progress (optional)" for the final-write removal obligation. Use
+`agent_type: "cslib-implementation-agent"` and
+`delegation_path: ["orchestrator", "implement", "skill-cslib-implementation"]`; task directory is
+`specs/{N}_{SLUG}`.
 
-1. Ensure task directory exists:
-   ```bash
-   mkdir -p "specs/{N}_{SLUG}"
-   ```
-
-2. Write initial metadata to `specs/{N}_{SLUG}/.return-meta.json`:
-   ```json
-   {
-     "status": "in_progress",
-     "started_at": "{ISO8601 timestamp}",
-     "artifacts": [],
-     "partial_progress": {
-       "stage": "initializing",
-       "details": "Agent started, parsing delegation context",
-       "lint_count_start": null,
-       "lint_count_current": null,
-       "phases_completed": 0
-     },
-     "metadata": {
-       "session_id": "{from delegation context}",
-       "agent_type": "cslib-implementation-agent",
-       "delegation_depth": 1,
-       "delegation_path": ["orchestrator", "implement", "skill-cslib-implementation"]
-     }
-   }
-   ```
-
-> **Remove `partial_progress` on the final write.** This stub is correct only while `status` is
-> `in_progress`/`partial`. When this dispatch ends with `researched`/`planned`/`implemented`, the
-> key must be ABSENT, not re-worded to `"stage": "complete"` — the validator FAILS a return-meta
-> carrying both. See `context/formats/return-metadata-file.md`'s `partial_progress` section.
-
-
-   For lint-fix tasks, update `lint_count_start` after the Lint-Count Preflight (see below), and `lint_count_current` after each batch of edits.
+Initial `partial_progress` also carries `lint_count_start: null`, `lint_count_current: null`, and `phases_completed: 0`; for lint-fix tasks, update `lint_count_start` after the Lint-Count Preflight (see below) and `lint_count_current` after each batch of edits.
 
 ## Write-First Metadata Pattern
 

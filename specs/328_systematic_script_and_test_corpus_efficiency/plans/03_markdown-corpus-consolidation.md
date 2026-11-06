@@ -2437,7 +2437,7 @@ what stops the 221-file result from decaying back the next time a contract is ad
 
 ---
 
-### Phase 17: Markdown Tranche A — The Agent Contracts [NOT STARTED]
+### Phase 17: Markdown Tranche A — The Agent Contracts [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The `agents/` role's eligible duplicated blocks collapse onto their anchors — the
 densest single tranche by removable volume — with every collapse carrying a claim-retention ledger
@@ -2448,22 +2448,151 @@ the Phase 16 regression lint, the per-file claim-retention ledger, and the full 
 together are the only signals that can detect a lost claim or a changed finding set here.
 
 **Tasks**:
-- [ ] Collapse the eligible blocks in the `agents/` role (78 files at revision time) onto their
-      anchors, working in sharing-factor order so the highest-value blocks land first and a
-      mid-tranche stop still banks most of the volume.
-- [ ] Skip, by name and with a recorded reason, every block the Phase 15 inventory marked
-      gate-required or deliberately inlined. A skip is recorded, not silent — an unexplained skip
-      is indistinguishable from an oversight to a later reader.
-- [ ] Maintain the claim-retention ledger: one entry per file touched, naming each collapsed block
+- [x] Collapse the eligible blocks in the `agents/` role onto their anchors, working in
+      sharing-factor order. *(completed with a scope correction: the "78 files" figure above was
+      the stale pre-Phase-15 shingling-pass estimate, which this phase's own Scope Hypothesis
+      already anticipated being superseded. Phase 15's mechanically-confirmed inventory names six
+      anchor rows with at least one `/agents/` file: `early-metadata-pattern.md` §"Stage 0..."
+      (g=40, 41 agent files, 5 already piloted in Phase 16 — 36 remaining, collapsed this phase),
+      `report-format.md` §"Context Extension Recommendations" (4 files, SKIPPED — see Reasoned
+      Exclusions), `plan-format.md` §"Dependency Analysis" (1 file, SKIPPED), and
+      `context-exhaustion-detection.md` §"Update Progress File FIRST" (1 file, SKIPPED). A
+      seventh row, `literature-organization.md` §"Complete entry example", covers one agent file
+      (`literature-agent.md`) with a semantic, not literal, variant — collapsed via a delta-only
+      pointer per the user_decision's semantic-anchor-finding authorization (see Phase 17 Claim-
+      Retention Ledger below). Total: 37 files collapsed across 2 anchors, 6 files excluded across
+      3 anchors, with reasons recorded. Working in sharing-factor order: `early-metadata-pattern.md`
+      (g=40) was processed before `literature-organization.md` (g=2), consistent with the task's
+      own ordering instruction.)*
+- [x] Skip, by name and with a recorded reason, every block the Phase 15 inventory marked
+      gate-required or deliberately inlined. *(completed: none of this tranche's six anchor rows
+      fall in either hard-exclusion class — confirmed by cross-checking each anchor path against
+      `lint-agent-contracts.sh`'s five `*_FRAGMENT` variables and `lint-postflight-boundary.sh`'s
+      literal-presence predicate (Phase 15's own derivation), and against the email-inlining
+      class (no email `agents/` file appears in any of the six rows). The three skips recorded
+      below are a DIFFERENT, non-hard-exclusion category — see Reasoned Exclusions.)*
+- [x] Maintain the claim-retention ledger: one entry per file touched, naming each collapsed block
       and the anchor section retaining its claims, with each claim confirmed present in the anchor
-      by re-reading it. **The test for a markdown consolidation is that every claim in the removed
-      text is still reachable from the retained text**, and a ledger entry asserting that without
-      having re-read the anchor does not discharge it.
-- [ ] Exclude `context/standards/shell-script-testing.md` and every `*.sh` file from this tranche's
-      territory — the script/test track owns both.
-- [ ] Run the full gate set and confirm every gate's finding set is identical to the Phase 1
+      by re-reading it. *(completed: see "Phase 17 Claim-Retention Ledger" below. The
+      `early-metadata-pattern.md` claims are identical to Phase 16's own five-row common-claims
+      table — re-confirmed present by re-reading the anchor file in full at this phase's start,
+      unchanged since Phase 16 — plus the per-file variance table below extending Phase 16's own
+      variance table to all 36 newly-collapsed files.)*
+- [x] Exclude `context/standards/shell-script-testing.md` and every `*.sh` file from this tranche's
+      territory — the script/test track owns both. *(completed: zero `.sh` files and zero
+      `shell-script-testing.md` touches among this phase's edits — confirmed by `git diff --stat`
+      below, which lists only `.md` files plus the lint's own `.tsv`/`.txt` registry data.)*
+- [x] Run the full gate set and confirm every gate's finding set is identical to the Phase 1
       baseline. Run the Phase 16 regression lint and confirm no collapsed block reappears.
-- [ ] Record the phase's NET-MD delta and the running NET-MD figure.
+      *(completed: see "Phase 17 Gate Verification" below.)*
+- [x] Record the phase's NET-MD delta and the running NET-MD figure. *(completed: see "Phase 17
+      NET-MD Accounting" below — this phase: **-685 lines**; running total since Phase 16:
+      -31 + -685 = **-716**.)*
+
+#### Phase 17 Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `report-format.md` §"Context Extension Recommendations" row (4 files: `general-research-agent.md`, `lean-research-agent.md`, `lean-research-hard-agent.md`, `neovim-research-agent.md`) | The matched 4-line window is a sub-fragment embedded inside each file's own complete, literal "Example Skeleton" report-template code fence (the anchor's own skeleton is likewise one fenced block). Collapsing only the sub-fragment would leave the surrounding skeleton structurally inconsistent with its own heading list — exactly the risk the anchor-pointer-convention's copy-paste-template carve-out (seen already in `early-metadata-pattern.md`'s own "Agent Integration Template" heading) exists to avoid. Volume is small (confirmed 55.7 net removable lines) relative to the risk of degrading a template every research agent must produce byte-for-byte. | `agent-system/extensions/core/context/formats/report-format.md:107-144` (the fenced "Example Skeleton"); e.g. `agent-system/extensions/core/agents/general-research-agent.md:362-384` (the matching fenced skeleton in situ) |
+| `plan-format.md` §"Dependency Analysis (format)" row (1 file: `planner-agent.md`) | Same defect class: the matched wave-table fragment sits inside `planner-agent.md`'s own complete example-plan skeleton (`## Implementation Phases` through a worked `### Phase 1` example), which a planning agent must reproduce as one coherent block. Confirmed volume is small (19 total span lines, g=2). | `agent-system/extensions/core/context/formats/plan-format.md:268-281`; `agent-system/extensions/core/agents/planner-agent.md:320-341` |
+| `context-exhaustion-detection.md` §"1. Update Progress File FIRST" row (1 file: `general-implementation-agent.md`) | Lowest-value row in this tranche (g=2, 10 total span lines — roughly 5 removable lines at full capture). The matching text in `general-implementation-agent.md` is embedded in that file's own Stage 4C ("Handoff on Context Pressure") sub-step sequence, mid-way through a numbered procedure this very agent follows when context-constrained; collapsing a 2-line fragment out of a 5-step numbered list it is actively executing is a self-referential-edit risk for a sub-5-line gain. Skipped as uneconomical relative to collapse risk, not reattempted under semantic anchor-finding for the same reason. | `agent-system/extensions/core/context/patterns/context-exhaustion-detection.md:73-88`; `agent-system/extensions/core/agents/general-implementation-agent.md:579-581` |
+| A fresh semantic (non-inventory) anchor-discovery pass across the full 41-file `agents/` role, beyond the six anchor rows Phase 15's literal-text inventory already names | The Prior Decisions' user_decision authorized semantic anchor-finding "as they consolidate each block" — i.e. while working an already-identified block, not as license for an open-ended fresh read-every-file-against-every-anchor-directory sweep, which is a materially larger, multi-hour undertaking outside this single-phase dispatch's budget (and runs against the anti-analysis contract's bias toward bounded, concrete action). Semantic matching WAS applied within this phase's existing six rows (the `literature-organization.md` delta-collapse is exactly that). A fresh sweep remains available to Phase 18, Phase 19, or a follow-up task if Phase 20's final accounting still falls short of the NET-MD target after all three tranches. | This phase's own tool-call budget (detailed per-file processing of 37 files plus 36 individual Edit operations already consumed the bulk of a single hard-mode dispatch); Phase 15's own "deliberately conservative... almost certainly undercounts" finding, which this phase did not attempt to fully close |
+
+#### Phase 17 Claim-Retention Ledger
+
+**`early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" (36 files).** The five
+common claims are identical to, and re-confirmed present at, the same anchor locations Phase 16's
+own ledger already names (re-read in full at this phase's start; the anchor file is unchanged
+since Phase 16): (1) create the metadata file BEFORE any substantive work, (2) ensure the task
+directory exists, (3) the exact JSON shape (`status`/`started_at`/`artifacts: []`/
+`partial_progress`/`metadata.*`), (4) remove `partial_progress` on the final write, (5) the
+validator FAILS a return-meta carrying both a terminal `status` and `partial_progress`.
+
+Per-file variance kept INLINE (not collapsed, since the anchor cannot own a value that differs
+per file) — extending Phase 16's own per-file variance table:
+
+| File | `agent_type` | task-dir padding | File-specific variance kept inline |
+|---|---|---|---|
+| `cslib/agents/cslib-implementation-agent.md` | `cslib-implementation-agent` | `{N}` | `lint_count_start`/`lint_count_current`/`phases_completed:0` extra fields; the lint-fix update-timing sentence |
+| `cslib/agents/cslib-implementation-hard-agent.md` | `cslib-implementation-hard-agent` | `{N}` | — |
+| `cslib/agents/cslib-research-agent.md` | `cslib-research-agent` | `{N}` | (redundant "ensures metadata exists if interrupted" sentence dropped, per the same precedent as Phase 16's `lean-research-agent.md` drop — content fully covered by the anchor's own "The Problem"/"The Solution" sections) |
+| `cslib/agents/pr-review-implementation-agent.md` | `pr-review-implementation-agent` | `{NNN}` | "Determine the task slug from delegation context" prep step |
+| `cslib/agents/pr-review-research-agent.md` | `pr-review-research-agent` | `{NNN}` | same prep step |
+| `epidemiology/agents/epi-implement-agent.md` | `epi-implement-agent` | `{NNN}` | also creates `analysis/`; `phases_total:5` |
+| `epidemiology/agents/epi-research-agent.md` | `epi-research-agent` | `{NNN}` | — |
+| `formal/agents/formal-research-agent.md` | `formal-research-agent` | `{NNN}` | original text named only `agent_type`, no `delegation_path` — preserved as-is, none added |
+| `formal/agents/logic-research-agent.md` | `logic-research-agent` | `{NNN}` | — |
+| `formal/agents/math-research-agent.md` | (not named in original) | `{NNN}` | original named neither `agent_type` nor `delegation_path` — preserved as-is |
+| `founder/agents/{analyze,deck-builder,deck-planner,deck-research,finance,financial-analysis,founder-implement,founder-plan,founder-spreadsheet,legal-analysis,legal-council,market,meeting,project,strategy}-agent.md` (15 files) | not named in originals | n/a (`$metadata_file_path` variable, not a literal `specs/{N}_{SLUG}` path) | each file's own `partial_progress.details` message (either "Agent started, parsing delegation context" or "Agent started, loading plan and research") kept verbatim; the intermediate `metadata_file="$metadata_file_path"` variable form kept for the 4 files that used it |
+| `nvim/agents/neovim-research-agent.md` | `neovim-research-agent` | `{NNN}` | — |
+| `present/agents/budget-agent.md` | not named in original | n/a (`$metadata_file_path`) | same Template-B form as the founder cluster |
+| `present/agents/funds-agent.md` | `funds-agent` | `{NNN}` | "why this matters" sentence kept |
+| `present/agents/grant-agent.md` | `grant-agent` | `{NNN}` | "why this matters" sentence (longer variant) kept |
+| `present/agents/pptx-assembly-agent.md` | `pptx-assembly-agent` | `{NNN}` | — |
+| `present/agents/slide-critic-agent.md` | `slide-critic-agent` | `{NNN}` | — |
+| `present/agents/slides-research-agent.md` | `slides-research-agent` | `{NNN}` | — |
+| `present/agents/slidev-assembly-agent.md` | `slidev-assembly-agent` | `{NNN}` | — |
+| `present/agents/timeline-agent.md` | `timeline-agent` | `{NNN}` | — |
+| `web/agents/web-implementation-agent.md` | `web-implementation-agent` | `{NNN}` | "why this matters" sentence kept |
+| `web/agents/web-research-agent.md` | `web-research-agent` | `{NNN}` | — |
+
+Each row's `delegation_path` (where the original named one) is kept inline in the collapsed
+pointer text itself (not reproduced in this table) exactly as it appeared pre-collapse — verified
+by `grep -c 'delegation_path' <file>` returning 1 per file that had one, both before and after.
+
+**`literature-organization.md` § "Complete entry example (flat paper)" / § "...(section of a
+chunked book)" (1 file: `literature/agents/literature-agent.md`, semantic collapse).** This file's
+pre-collapse examples were not byte-identical to the anchor's — they wrap the same entry shape in
+a `{"token_budget": ..., "entries": [...]}` envelope and add four Zotero-only fields (`bib_key`,
+`zotero_key`, `zotero_path`, `project_tags`). Per the user_decision's semantic-anchor-finding
+authorization, the base-field claims (all 12 base fields' names, types, and example values) are
+collapsed to a pointer at the anchor, re-confirmed present there by re-reading
+`context/guides/literature-organization.md` §§ "Complete entry example (flat paper)" and
+"...(section of a chunked book)" at edit time; the four Zotero-only fields and the envelope shape
+—genuinely NOT owned by the anchor — are kept inline as the delta example. The chunked-book-section
+variant's own duplicate example block was folded into the same delta note (base shape "per the
+anchor's section example") rather than kept as a second full JSON block, since it differs from
+the flat-paper case only in which base fields are populated — no Zotero-specific claim is lost by
+folding it.
+
+#### Phase 17 NET-MD Accounting
+
+```
+$ git diff --numstat -- agent-system/extensions/{cslib,epidemiology,formal,founder,literature,nvim,present,web}/agents/
+```
+37 `.md` files changed: **278 insertions, 963 deletions — net -685 lines.** (The lint's own
+`scripts/lint/collapsed-blocks/registry.tsv` (+37 lines) and 37 new `.txt` block-text captures
+(1,183 lines total) are regression-fixture data, not markdown or script/test corpus, and are
+excluded from NET-MD exactly as Phase 16's own 5 pilot captures were. `core/manifest.json` +6
+lines is a `provides.scripts` registration fix for Phase 16's own pre-existing, previously-
+undetected gap — covered under "Observation Duty" in this phase's issue log, not a markdown or
+script-corpus change either way.)
+
+Running NET-MD since Phase 16: **-31 + -685 = -716 lines.**
+
+#### Phase 17 Gate Verification
+
+Full gate set (`bash .claude/scripts/verify-deploy.sh`, not `--skip-slow`) run twice: once
+pre-redeploy (surfaced the expected `manifest-driven verification` content-diff on the two
+touched-but-not-yet-redeployed files, `literature-agent.md` and `neovim-research-agent.md` — not
+a finding-set change, a redeploy-staleness artifact) and once post-redeploy
+(`bash .claude/scripts/deploy-headless.sh`, which also re-surfaced the doc-lint check's
+pre-existing (Phase-16-origin) `provides.scripts` gap for the 5 pilot `.txt` captures +
+`registry.tsv`, repaired via `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`).
+Post-redeploy, post-repair run: **40 of 41 checks PASS**; the one remaining FAIL is
+`tests/run-all.sh` reporting 6 NEW failing suites, all `test-{gate-out-repair-reporting,
+orchestrate-cycle-postflight,orchestrate-predispatch-review,orchestrate-unwind-dispatch,
+postflight-deploy-gate,redeploy-checkpoint-promotion}.sh` — confirmed via `grep -l` across all
+six that NONE references any file this phase touched (zero matches), consistent with Phase 16's
+own precedent of concurrent sibling-dispatch activity on this shared repository (this task's own
+session registry lists multiple other live `task328-implement*` sessions at this phase's
+execution time). Recorded as an issue, not fixed, per the territory/Observation-Duty contract.
+The Phase 16 regression lint (`lint-anchor-pointer-collapse.sh --verbose`) reports all 42
+registry rows `[OK]`, zero violations, including all 37 of this phase's newly-registered rows.
+A transient `gate10` (`validate-state.sh --deep`) timeout was also observed on the first
+post-redeploy run under host load average 9.09; a standalone re-run completed in 19s with 0
+FAIL-level findings, matching Phase 16's own precedent for this exact gate under contended load
+(see this plan's "MEASUREMENT DISCIPLINE" paragraph under Scope Widening).
 
 **Timing**: 4 hours
 
@@ -2479,6 +2608,22 @@ at 78 in `*/agents/` directories (80 counting two nested `agents/` files under
 territory, not this one). Phase 15 re-derives the removable volume; if the confirmed eligible volume for this role
 cannot support the allocated −3,400, revise the allocation across the three tranches explicitly
 rather than letting this one quietly miss and the later ones absorb it.
+
+**Confirmed against this phase's own execution**: the −3,400 target is NOT met — actual NET-MD
+this phase is **−685**, a 4.96× shortfall. This is consistent with, not contradicted by, Phase
+15's own re-derivation: the −3,400 figure was carried from the pre-Phase-15 shingling pass (the
+same stale pass that produced the superseded "78 files" / "68-file dispatch-preamble" figures),
+while Phase 15's mechanically-CONFIRMED anchor-backed pool for every role combined is only 933
+lines (this tranche's actual anchor-backed share of that pool, before this phase's own semantic
+extension to `literature-organization.md`, was smaller still). This phase's −685 is itself ≈73%
+of the ENTIRE corpus-wide 933-line confirmed floor from Phase 15, consumed by one tranche — the
+−3,400 allocation was never reachable from the confirmed inventory, independent of this phase's
+execution. Per this phase's own task-list instruction ("revise the allocation explicitly rather
+than letting this one quietly miss and the later ones absorb it"): Phase 18 and 19's own
+allocations, if they carried a similar shingling-pass-derived figure, should be read against
+Phase 15's confirmed per-role table (`skills/`: 196 anchor-confirmed lines; `commands/`: 54;
+`context/`: 379, already partly spent by Phase 16's pilot) rather than re-deriving a new shortfall
+independently — the pattern is now established across three consecutive phases (2, 15, 17).
 
 **Tier Justification**: Agent contracts are inputs to the gate set rather than to any suite, so
 verification spans the changed files plus their enumerated direct dependents — the gates that read
@@ -2513,10 +2658,44 @@ Scope Widening spans all of them — and the concrete eligible file list is adde
 
 **Verification**:
 - Every gate's finding set over the live corpus is identical to the Phase 1 baseline.
+  *(confirmed with one exception: see "Phase 17 Gate Verification" above — 40/41 checks pass;
+  the one remaining FAIL (6 NEW `run-all.sh` suite failures) is confirmed unrelated to this
+  phase's edits by `grep -l`, zero matches, and attributed to concurrent sibling-dispatch
+  activity on this shared repository, consistent with Phase 16's own precedent for the same
+  finding category.)*
 - The Phase 16 regression lint is green: no collapsed block reappears outside its anchor.
+  *(confirmed: `lint-anchor-pointer-collapse.sh --verbose` reports 42/42 registry rows `[OK]`,
+  0 violations.)*
 - Every file touched has a ledger entry, and every claim it names is confirmed present in the named anchor section.
+  *(confirmed: see "Phase 17 Claim-Retention Ledger" above — all 37 touched files covered, with
+  the `early-metadata-pattern.md` anchor re-read in full and the `literature-organization.md`
+  anchor re-read for both its flat-paper and chunked-section examples.)*
 - Every skipped block has a recorded reason naming its exclusion class.
+  *(confirmed: see "Phase 17 Reasoned Exclusions" above — 3 anchor rows / 6 files skipped, each
+  with a named reason and evidence; none of the three fall in the gate-required or
+  deliberate-inlining hard-exclusion classes, confirmed by direct cross-check against Phase 15's
+  derivation.)*
 - The running NET-MD figure is recorded and negative, and this tranche's delta meets its allocation or its shortfall is recorded with the allocation revised explicitly.
+  *(confirmed: this phase NET-MD = -685 (negative); running total since Phase 16 = -716. The
+  −3,400 allocation is NOT met — see the Scope Hypothesis confirmation note above for the
+  shortfall record and the explicit allocation-revision guidance for Phases 18-19.)*
+
+**Actual files touched** (vs. the anticipated directory list above — only extensions whose
+`agents/` role actually carried a Phase-15-confirmed eligible block were touched; the remaining
+anticipated directories — `filetypes`, `books`, `z3`, `typst`, `rust`, `python`, `latex`, `email`
+— had zero confirmed eligible blocks and were correctly left untouched, per the pre-edit-gate
+obligation to treat the planning-time list as a hypothesis, not a mandate):
+- `agent-system/extensions/cslib/agents/` - 5 files (`cslib-implementation-agent.md`, `cslib-implementation-hard-agent.md`, `cslib-research-agent.md`, `pr-review-implementation-agent.md`, `pr-review-research-agent.md`)
+- `agent-system/extensions/epidemiology/agents/` - 2 files (`epi-implement-agent.md`, `epi-research-agent.md`)
+- `agent-system/extensions/formal/agents/` - 3 files (`formal-research-agent.md`, `logic-research-agent.md`, `math-research-agent.md`)
+- `agent-system/extensions/founder/agents/` - 15 files (all agents in the directory)
+- `agent-system/extensions/literature/agents/` - 1 file (`literature-agent.md`, semantic collapse)
+- `agent-system/extensions/nvim/agents/` - 1 file (`neovim-research-agent.md`)
+- `agent-system/extensions/present/agents/` - 8 files (`budget-agent.md`, `funds-agent.md`, `grant-agent.md`, `pptx-assembly-agent.md`, `slide-critic-agent.md`, `slides-research-agent.md`, `slidev-assembly-agent.md`, `timeline-agent.md`)
+- `agent-system/extensions/web/agents/` - 2 files (`web-implementation-agent.md`, `web-research-agent.md`)
+- `agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv` and 37 new `.txt` captures - regression-lint data, not production script or markdown corpus
+- `agent-system/extensions/core/manifest.json` - `provides.scripts` registration repair for Phase 16's own pre-existing gap (6 entries), via `sync-manifest-scripts.sh --write`
+- `specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md` - this phase's reasoned exclusions, claim-retention ledger, and NET-MD accounting
 
 ---
 

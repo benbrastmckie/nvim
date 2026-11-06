@@ -136,32 +136,14 @@ Same as base cslib-implementation-agent. Use Edit tool for all phase marker upda
 
 ## Stage 0: Initialize Early Metadata
 
-**CRITICAL**: Create metadata file BEFORE any substantive work.
-
-Write initial metadata to `specs/{N}_{SLUG}/.return-meta.json`:
-```json
-{
-  "status": "in_progress",
-  "started_at": "{ISO8601 timestamp}",
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "initializing",
-    "details": "Agent started, parsing delegation context"
-  },
-  "metadata": {
-    "session_id": "{from delegation context}",
-    "agent_type": "cslib-implementation-hard-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "cslib-implementation-hard-agent"]
-  }
-}
-```
-
-> **Remove `partial_progress` on the final write.** This stub is correct only while `status` is
-> `in_progress`/`partial`. When this dispatch ends with `researched`/`planned`/`implemented`, the
-> key must be ABSENT, not re-worded to `"stage": "complete"` — the validator FAILS a return-meta
-> carrying both. See `context/formats/return-metadata-file.md`'s `partial_progress` section.
-
+**CRITICAL**: Create metadata file BEFORE any substantive work. See
+`context/patterns/early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" for the full
+procedure and JSON shape (also reproduced as a copy-paste template under that file's "Agent
+Integration Template" heading), and `context/formats/return-metadata-file.md` §
+"partial_progress (optional)" for the final-write removal obligation. Use
+`agent_type: "cslib-implementation-hard-agent"` and
+`delegation_path: ["orchestrator", "implement", "cslib-implementation-hard-agent"]`; task directory is
+`specs/{N}_{SLUG}`.
 
 ## Execution Flow
 
