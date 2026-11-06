@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 7,
-  "summary": "Wrote a 7-phase plan deriving every gate-count expectation from gate-registry.data instead of integers: a gate_registry_max_id accessor single-sourced with verify-deploy.sh's --only-gate bound, converted assertions in both named suites with paired negative controls, two cross-source drift guards (reported bound == derived max; no-flag header set == derived id set, both directions), and a path-mirrored copied-store fixture that registers a throwaway gate 27 to prove both suites stay green with zero edits. Planning found three further same-class sites the description's 'sole remaining place' framing missed (crash-net seq 1 23 silently under-covering gates 24-26, measure-gate-costs.sh's default gate list, and three stale prose counts), folded into Phase 3. No research artifact existed; the description carried the defect, file inventory and acceptance bar, so Stage 1.5 planned directly rather than requesting research.",
+  "status": "implemented",
+  "dispatch_seq": 10,
+  "summary": "Converted every hardcoded gate-count assertion in test-gate-registry-resolution.sh and test-verify-deploy-gate-selection.sh (plus the crash-net suite and measure-gate-costs.sh) to derive from the live gate registry via a new gate_registry_max_id accessor. Added two cross-source drift guards (G1, G2) and a permanent throwaway-gate fixture proof in both suites via a new gate_store_fixture_build library. Directly fixed a real regression that materialized mid-dispatch (a sibling task registered a real gate 27, which made one assertion go genuinely red) and confirmed the fix in the final covering run. Redeployed via deploy-headless.sh; the deploy landed successfully with all 9 declared file_scope files confirmed byte-identical, but the full-battery check carries two documented, confirmed-unrelated exclusions.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/489_derive_gate_count_expectations_from_registry/summaries/01_registry-derived-gate-count-expectations-summary.md",
+      "summary": "Full implementation summary covering all 7 phases, decisions, deviations, verification, and follow-ups."
+    },
+    {
       "type": "plan",
       "path": "specs/489_derive_gate_count_expectations_from_registry/plans/01_registry-derived-gate-count-expectations.md",
-      "summary": "7-phase plan: registry-derived gate-count expectations, two drift guards, fixture-store throwaway-gate proof, full battery plus redeploy."
+      "summary": "7-phase plan, all phases closed [COMPLETED] or [COMPLETED WITH EXCLUSIONS] with per-phase evidence recorded inline."
     }
   ],
-  "dispatch_seq": 6
+  "phases_completed": 7,
+  "phases_total": 7
 }
