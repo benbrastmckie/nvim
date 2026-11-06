@@ -1,33 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 445,
-  "session_id": "sess_1793990805_500dd7_445",
-  "dispatch_seq": 9,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/445_gate8_expected_vs_new_failure_distinction/reports/01_gate8-expected-new-distinction.md",
-      "summary": "Finds that tests/run-all.sh already ships a complete --fail-on-new flag plus known-failures.txt manifest (the exact expected/NEW accounting the task asks for), and verify-deploy.sh already has a warn_advisory() primitive that is excluded from deploy_findings_snapshot's FINDING-line filter. Recommends a minimal three-way branch in gate8_run() (pass/warn_advisory/fail) requiring no code change to run-all.sh or deploy-baseline-lib.sh. Confirms task 411's gate-registry refactor is complete, so no coordination/sequencing block remains. Re-verifies all four named consumers: two are structurally unaffected (Gate 8 deferred under --skip-slow), one (orchestrate-batch-gate.sh) is the exact consumer the measured evidence describes and is fixed by the recommended design, and verify-deploy.sh's own direct-invocation output is the primary consumer named in the dispatch's evidence."
+      "type": "plan",
+      "path": "specs/445_gate8_expected_vs_new_failure_distinction/plans/01_gate8-expected-new-distinction.md",
+      "summary": "Five-phase, four-wave plan giving Gate 8 a three-way verdict branch (pass / warn_advisory / fail) driven by run-all.sh's existing --fail-on-new accounting; states the chosen all-expected semantics (exits zero, distinguishable on three channels) and justifies it against six consumers, four named in the dispatch plus the gate cache and the zero-check-under-filter branch."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1793990805_500dd7_445",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 4,
+    "dependency_waves": [[1], [2], [3, 4], [5]]
+  },
+  "task_number": 445,
+  "dispatch_seq": 11,
   "memory_candidates": [
     {
-      "content": "verify-deploy.sh has a warn_advisory() function (alongside pass()/fail()/warn()) that increments CHECKS but never FAILURES, prints a [WARN] narrative, and -- when findings mode is on -- writes a 'WARN-FINDING <gate> ...' line instead of 'FINDING <gate> ...'. deploy_findings_snapshot() (lib/deploy-baseline-lib.sh) filters strictly on grep '^FINDING ', so a WARN-FINDING line is invisible to every consumer that chokepoints through that function (orchestrate-batch-gate.sh, orchestrate-cycle-plan.sh's redeploy checkpoint, command-gate-out.sh). This is the sanctioned primitive for 'a gate check that must stay visible and trackable but must never become batch-blocking' -- use it instead of inventing a new severity channel.",
-      "category": "PATTERN",
-      "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/reports/01_gate8-expected-new-distinction.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["warn_advisory", "verify-deploy", "FINDING", "deploy_findings_snapshot", "gate-registry"]
-    },
-    {
-      "content": "tests/run-all.sh already has a mature expected-vs-NEW failure accounting system: a committed, advisory, basename-keyed tests/known-failures.txt manifest (format: basename|category|reason|owner), classification of each failing suite as EXPECTED or NEW, an unconditional (not --quiet-suppressed) annotated end-of-run roster and tally line (e.g. '158 passed, 1 failed (1 expected, 0 NEW), 0 skipped, 159 total'), and an opt-in --fail-on-new flag that exits 0 when every failure is EXPECTED. The roster deliberately contains zero occurrences of the literal token '[FAIL]' to avoid double-counting against the anchored [FAIL]-line extraction other tooling (verify-deploy.sh's Gate 8) uses. A caller wanting NEW-vs-EXPECTED-aware behavior should pass --fail-on-new rather than re-deriving the classification from known-failures.txt independently.",
-      "category": "CONFIG",
-      "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/reports/01_gate8-expected-new-distinction.md",
+      "content": "When changing the SEVERITY of a verify-deploy.sh gate's verdict (fail -> warn_advisory, or either -> pass), the consumer set to re-verify is larger than the deploy_findings_snapshot callers a task description typically names. Two further consumers read the verdict's severity side effects rather than its FINDING lines: (1) the --skip-unchanged gate cache -- pass() makes a gate cache-write-ELIGIBLE while fail()/warn()/warn_advisory() all append to GATE_DIRTY_LIST and invalidate, so demoting a failing gate to pass() silently caches a warm PASS over a genuinely failing corpus; (2) the zero-check-under-filter branch -- a --only-gate N selection whose every named gate SKIPs produces CHECKS=0 and exit 2 ('the run attested to nothing'), so a severity change that stops incrementing CHECKS converts a real verdict into an exit-2 error. warn_advisory() is the only non-blocking primitive that preserves both (increments CHECKS, appends to GATE_DIRTY_LIST), which is why it, not pass(), is the correct instrument for 'visible but never batch-blocking'.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/plans/01_gate8-expected-new-distinction.md",
       "confidence": 0.85,
-      "suggested_keywords": ["run-all.sh", "known-failures.txt", "fail-on-new", "test-suite", "expected-failure"]
+      "suggested_keywords": ["verify-deploy", "gate-severity", "skip-unchanged", "GATE_DIRTY_LIST", "warn_advisory", "zero-check-under-filter"]
     }
   ],
-  "next_steps": "Run /orchestrate 445 to create implementation plan"
+  "next_steps": "Run /orchestrate 445 to execute the plan"
 }

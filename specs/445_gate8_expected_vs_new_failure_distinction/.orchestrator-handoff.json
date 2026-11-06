@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Created a five-phase, four-wave implementation plan for Gate 8's expected-versus-new failure distinction. The design is consumer-side only: pass run-all.sh's existing --fail-on-new flag and branch three ways (pass / warn_advisory / fail), requiring zero code change to tests/run-all.sh or lib/deploy-baseline-lib.sh. The plan states the chosen semantics explicitly (an all-expected run exits zero but stays distinguishable via a [WARN] narrative, a WARN-FINDING line invisible to deploy_findings_snapshot's '^FINDING ' filter, and a GATE_DIRTY_LIST cache-invalidation append) and justifies it against six consumers, two of which the dispatch did not name.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/445_gate8_expected_vs_new_failure_distinction/plans/01_gate8-expected-new-distinction.md",
+      "summary": "Five-phase plan: Gate 8 three-way branch; fixture suite with four cases plus non-vacuousness probes; consumer re-verification and the baseline-skew answer; documentation convergence; redeploy and full gate set."
+    }
+  ],
+  "dispatch_seq": 11
+}
