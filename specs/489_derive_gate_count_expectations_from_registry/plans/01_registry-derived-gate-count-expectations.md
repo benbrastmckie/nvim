@@ -193,25 +193,27 @@ manifest row, and shellcheck.
 
 ---
 
-### Phase 2: Single-Source `verify-deploy.sh`'s `--only-gate` Bound [NOT STARTED]
+### Phase 2: Single-Source `verify-deploy.sh`'s `--only-gate` Bound [COMPLETED]
 
 **Goal**: Make `verify-deploy.sh`'s bound and the suites' expectation read the same function, so
 Phase 4's guard pins a shared derivation rather than two coincidentally-equal loops.
 
 **Tasks**:
-- [ ] Replace the inline max loop at `verify-deploy.sh:381-384` with a call to
+- [x] Replace the inline max loop at `verify-deploy.sh:381-384` with a call to
       `gate_registry_max_id`, keeping the `_only_gate_max_id` variable name and the surrounding
-      control flow.
-- [ ] Add the degrade-safe stub line (`declare -F gate_registry_max_id >/dev/null 2>&1 || gate_registry_max_id() { :; }`)
+      control flow. *(completed)*
+- [x] Add the degrade-safe stub line (`declare -F gate_registry_max_id >/dev/null 2>&1 || gate_registry_max_id() { :; }`)
       beside the existing `gate_registry_ids`/`gate_registry_load`/`gate_registry_field` stubs so a
-      missing library still degrades rather than aborting.
-- [ ] Preserve the `[ "$_only_gate_max_id" -eq 0 ] && _only_gate_max_id=23` fallback verbatim and
+      missing library still degrades rather than aborting. *(completed)*
+- [x] Preserve the `[ "$_only_gate_max_id" -eq 0 ] && _only_gate_max_id=23` fallback verbatim and
       extend its comment to state that this literal is reachable **only** when
       `lib/gate-registry-lib.sh` is absent, where no derivation is possible, and is therefore not a
-      count that drifts with the registry.
-- [ ] Leave both error message strings byte-identical (`ERROR: --only-gate: invalid gate id '%s'
+      count that drifts with the registry. *(completed)*
+- [x] Leave both error message strings byte-identical (`ERROR: --only-gate: invalid gate id '%s'
       (must be a number 1-%s)` and `… is out of range (must be 1-%s)`), and leave the `unset` line
-      covering the loop variable consistent with whatever variables survive.
+      covering the loop variable consistent with whatever variables survive. *(completed: verified
+      via git diff that no hunk touches either ERROR: --only-gate line; unset now drops the
+      retired loop variable `_vd_known_gate_id`)*
 
 **Timing**: 0.5 hours
 

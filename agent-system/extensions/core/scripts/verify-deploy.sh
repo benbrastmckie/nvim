@@ -290,6 +290,7 @@ declare -F gate_registry_shared_corpus_build >/dev/null 2>&1 && _VD_GREG_LIB_LOA
 declare -F gate_registry_ids >/dev/null 2>&1 || gate_registry_ids() { :; }
 declare -F gate_registry_load >/dev/null 2>&1 || gate_registry_load() { :; }
 declare -F gate_registry_field >/dev/null 2>&1 || gate_registry_field() { :; }
+declare -F gate_registry_max_id >/dev/null 2>&1 || gate_registry_max_id() { :; }
 # A missing lib degrades gate_registry_exec_bounded to an unbounded direct call -- same
 # degrade-safe posture as the other three: a gate still runs, it is just not timeout-bounded,
 # never a hard script failure over an absent sourced lib.
@@ -372,16 +373,19 @@ while [ $# -gt 0 ]; do
       fi
       # Validate every comma-separated token is a plain integer in 1-<max> before accepting any
       # of them -- a partially-valid list must refuse loudly, not silently run a subset. <max> is
-      # derived from the live registry (gate_registry_load has already run above) rather than a
-      # fourth hardcoded literal, so this bound cannot go stale again the next time a gate is
-      # added. Explicit fallback: a missing/degraded registry library yields an empty
-      # gate_registry_ids (its own degrade-safe stub, line ~260 above), which must not silently
-      # reject or silently accept every id -- fall back to the last-known literal bound (23)
-      # rather than leaving the derived max at 0.
-      _only_gate_max_id=0
-      for _vd_known_gate_id in $(gate_registry_ids); do
-        [ "$_vd_known_gate_id" -gt "$_only_gate_max_id" ] 2>/dev/null && _only_gate_max_id="$_vd_known_gate_id"
-      done
+      # derived from the live registry via gate_registry_max_id (single-sourced with
+      # gate_registry_ids -- both read the same loaded _GREG_IDS, gate_registry_load has already
+      # run above), so this bound cannot go stale again the next time a gate is added. Explicit
+      # fallback: a missing/degraded registry library yields an empty gate_registry_max_id (its
+      # own degrade-safe stub, line ~292 above), which must not silently reject or silently
+      # accept every id -- fall back to the last-known literal bound (23) rather than leaving the
+      # derived max at 0. This literal is reachable ONLY when lib/gate-registry-lib.sh itself is
+      # absent, where no derivation of any kind is possible; it is therefore a last-known-good
+      # constant for a missing-library degrade path, not a count that drifts with the registry,
+      # and is deliberately left as-is rather than narrowed into a refusal (a behavioural change
+      # to the degrade path, out of this task's scope).
+      _only_gate_max_id="$(gate_registry_max_id)"
+      [ -z "$_only_gate_max_id" ] 2>/dev/null && _only_gate_max_id=0
       [ "$_only_gate_max_id" -eq 0 ] 2>/dev/null && _only_gate_max_id=23
       IFS=',' read -r -a _only_gate_tokens <<< "$2"
       for _only_gate_tok in "${_only_gate_tokens[@]}"; do
@@ -398,7 +402,7 @@ while [ $# -gt 0 ]; do
           exit 2
         fi
       done
-      unset _only_gate_tok _vd_known_gate_id _only_gate_max_id
+      unset _only_gate_tok _only_gate_max_id
       GATES_FILTER="$2"; shift 2
       ;;
     --max-cost)

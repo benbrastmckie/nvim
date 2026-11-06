@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Single-Source verify-deploy.sh's --only-gate Bound",
+  "started_at": "2026-11-06T21:55:00Z",
+  "last_updated": "2026-11-06T22:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace inline max loop with gate_registry_max_id call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Add degrade-safe stub for gate_registry_max_id", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Preserve 23 fallback verbatim with extended comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Keep error message strings byte-identical", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "note": "Verified --only-gate 27 accepted (live max, post task-418's real gate-27 registration), --only-gate 28 refused with byte-identical error text, --only-gate abc refused. git diff confirms no hunk touches either ERROR: --only-gate line. 28-suite resolver-selected covering run: 24 passed, 4 failed (2 pre-existing EXPECTED baseline flakes unrelated to any task-489 file, 1 unrelated classification-gap failure, 1 failure in test-verify-deploy-gate-selection.sh case(c) that is the live materialization of this task's own defect -- task 418 registered a real gate 27 concurrently, making Suite B's still-unconverted hardcoded '27' probe stale; confirmed not caused by this phase's edit; will be fixed by Phase 5)."
+}
