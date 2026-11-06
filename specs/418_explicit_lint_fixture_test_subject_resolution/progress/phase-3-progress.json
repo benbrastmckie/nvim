@@ -1,0 +1,36 @@
+{
+  "phase": 3,
+  "phase_name": "Migrate Group A -- the 20 Shared-Helper Callers",
+  "started_at": "2026-11-06T22:00:00Z",
+  "last_updated": "2026-11-06T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive Group A and migrate all 20 shared-helper callers to common_test_resolve_subject plus common_test_declare_subject", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-audit-task-proposals.sh",
+      "agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh",
+      "agent-system/extensions/core/scripts/tests/test-install-uninstall-extension.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-anchor-pointer-collapse.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-verdict-extraction-anchoring.sh",
+      "agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh",
+      "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
+      "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh",
+      "agent-system/extensions/core/scripts/tests/test-validate-task-creation-audit.sh"
+    ]},
+    {"id": 2, "description": "Shrink gate-27 lint's Layer-2 allowlist by this batch's 20 entries, adding two permanent exemptions (test-common-lib.sh's own regression-suite use, already in place from Phase 1; test-task-type-detect.sh's REAL_EXT_ROOT non-subject lookup)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "leave stale 'common_test_resolve_candidate' token in two structural-model doc comments (test-audit-task-proposals.sh, test-validate-task-creation-audit.sh) unchanged", "result": "failed", "reason": "gate-27's Layer-1 check 4 is file-level (not call-site), so the comment's mere mention of the token plus an unrelated '.claude/scripts' literal elsewhere in the same file tripped a false VIOLATION; fixed by rewording the comment to describe the resolver without using either literal function-name token"},
+    {"approach": "reword the same two comments to say 'common_test_resolve_subject' instead", "result": "failed", "reason": "this merely moved the file-level over-count to check 3 (resolve_subject call count vs declare_subject call count), since the comment's extra mention of common_test_resolve_subject was not paired with an extra declare_subject; fixed by describing the resolver generically ('the explicit mode-selectable subject resolver in lib/common.sh') with neither literal token"}
+  ],
+  "handoff_count": 0
+}

@@ -270,29 +270,29 @@ not-yet-migrated suite, so the unmigrated remainder can never be read as already
 
 ---
 
-### Phase 3: Migrate Group A — the 20 Shared-Helper Callers [IN PROGRESS]
+### Phase 3: Migrate Group A — the 20 Shared-Helper Callers [COMPLETED]
 
 **Goal**: Convert every `common_test_resolve_candidate` subject lookup to the explicit-mode form
 plus a mandatory declaration, preserving each call site's existing effective order exactly.
 
 **Tasks**:
-- [ ] Re-derive Group A: `grep -l 'common_test_resolve_candidate' scripts/tests/*.sh`.
-- [ ] For each file, for each subject-resolution call site: determine the existing effective order
+- [x] Re-derive Group A: `grep -l 'common_test_resolve_candidate' scripts/tests/*.sh`. *(completed)*
+- [x] For each file, for each subject-resolution call site: determine the existing effective order *(completed)*
       from the literal argument order, then rewrite as `common_test_resolve_subject` with the
       mode that reproduces it — `deployed` or `deploy-tree-first` where the deployed candidate is
       first, `source-store` where the source-store candidate is first.
-- [ ] Explicitly migrate `test-gate-out-derived-staleness.sh` and
+- [x] Explicitly migrate `test-gate-out-derived-staleness.sh` and *(completed)*
       `test-install-uninstall-extension.sh` to `mode=source-store`, and record their before/after
       resolved paths in the phase's verification notes — these are the two confirmed
       non-default-order callers.
-- [ ] Add a `common_test_declare_subject` call immediately after each resolution, once per
+- [x] Add a `common_test_declare_subject` call immediately after each resolution, once per *(completed)*
       resolved subject (suites with several subjects declare each one).
-- [ ] Leave non-subject uses of `common_test_resolve_candidate` (file-existence checks unrelated
+- [x] Leave non-subject uses of `common_test_resolve_candidate` (file-existence checks unrelated *(completed: test-task-type-detect.sh's REAL_EXT_ROOT lookup stays on the old helper, recorded as a permanent gate-27 allowlist exemption rather than only a commit-message note, since the lint's file-level check 4 could not otherwise distinguish it from the migrated call in the same file)*
       to the deployed/source-store duality) on the old helper, and note each one in the commit
       message so a later reader does not read it as a missed migration.
-- [ ] Remove each migrated file from the lint's Layer-2 allowlist in the same commit, so the
+- [x] Remove each migrated file from the lint's Layer-2 allowlist in the same commit, so the *(completed)*
       roster visibly shrinks by exactly this batch.
-- [ ] **Territory**: `test-lint-dead-command-recommendations.sh` is in sibling task 512's declared
+- [x] **Territory**: `test-lint-dead-command-recommendations.sh` is in sibling task 512's declared *(completed: no foreign uncommitted modification was present; migrated cleanly)*
       file_scope. Re-read it immediately before editing; if it carries a foreign uncommitted
       modification, STOP and report rather than proceeding.
 
