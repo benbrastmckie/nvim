@@ -123,7 +123,7 @@ next_project_number: 505
 
 ### Agent System
 
-419 [PLANNED] — Extend the state-writer boundary lint to the Python JSON...
+419 [IMPLEMENTING] — Extend the state-writer boundary lint to the Python JSON...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
     └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
@@ -4533,7 +4533,7 @@ Sequenced after the concurrent-gate-coordination task because both edit context/
 ---
 
 ### 419. Extend the state-writer boundary lint to the Python JSON re-serialization channel
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 275, Task 411

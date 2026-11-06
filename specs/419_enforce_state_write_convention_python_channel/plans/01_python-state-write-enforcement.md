@@ -1,7 +1,7 @@
 # Implementation Plan: Task #419
 
 - **Task**: 419 - Extend the state-writer boundary lint to the Python/ad hoc JSON re-serialization channel
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/419_enforce_state_write_convention_python_channel/reports/01_python-state-write-lint-extension.md
@@ -126,35 +126,35 @@ No roadmap context was provided to this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Shared pattern library and lint extension [NOT STARTED]
+### Phase 1: Shared pattern library and lint extension [COMPLETED]
 
 **Goal**: The Python channel is mechanically detected by gate 12's lint, with the predicate living
 in one library both this lint and the later hook consume.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/state-writer-boundary-patterns-lib.sh`
+- [x] Create `agent-system/extensions/core/scripts/lib/state-writer-boundary-patterns-lib.sh`
       exporting (a) the candidate limb `open\([^)]*state\.json`, (b) a write-capable-mode
       predicate accepting `w`, `a`, `r+`, `w+`, `a+`, `x` and rejecting bare/no-mode and plain
       `r`/`rb`, and (c) a single function that takes one line of text and returns
       violation/exempt-read-only/no-match. Header states the dual-consumer role and names both
-      consumers, mirroring `scripts/lib/task-reference-patterns.sh`'s structure.
-- [ ] Source the new library from `lint-state-writer-boundary.sh` and append the library's
+      consumers, mirroring `scripts/lib/task-reference-patterns.sh`'s structure. *(completed)*
+- [x] Source the new library from `lint-state-writer-boundary.sh` and append the library's
       candidate limb to `CANDIDATE_PATTERN` (append only — every existing limb stays
-      byte-identical).
-- [ ] Add one new `classify_line` branch, before the final catch-all, delegating to the library's
+      byte-identical). *(completed)*
+- [x] Add one new `classify_line` branch, before the final catch-all, delegating to the library's
       function: write-capable mode -> `VIOLATION`; no write-capable mode -> `EXEMPT:` naming
       read-only as the reason. Carry the inline comment explaining that the `with open(...) as f:`
       idiom's second line (`json.dump(obj, f)`) carries neither token and falls under the already
-      documented cross-line limitation.
-- [ ] Extend the lint's bottom-of-run `Fix:` echo block to name `--arg`/`--argjson` passthrough
+      documented cross-line limitation. *(completed)*
+- [x] Extend the lint's bottom-of-run `Fix:` echo block to name `--arg`/`--argjson` passthrough
       and to state that the acquire -> stage -> transform -> validate -> mv -> release sequence is
       the only sanctioned path regardless of escaping choices. One shared addition to the existing
-      uniform message, not a second shape-specific message.
-- [ ] Add an `EXCLUDED_FILES` entry for the new library with its reason stated inline (it holds
-      the detection pattern itself, as the lint's own entry already does).
-- [ ] Update the lint's `KNOWN LIMITATION` and `DETECTION MODEL` header paragraphs to name the
-      Python channel alongside the jq one.
-- [ ] Add `lib/state-writer-boundary-patterns-lib.sh` to `manifest.json`'s `provides.scripts`.
+      uniform message, not a second shape-specific message. *(completed)*
+- [x] Add an `EXCLUDED_FILES` entry for the new library with its reason stated inline (it holds
+      the detection pattern itself, as the lint's own entry already does). *(completed)*
+- [x] Update the lint's `KNOWN LIMITATION` and `DETECTION MODEL` header paragraphs to name the
+      Python channel alongside the jq one. *(completed)*
+- [x] Add `lib/state-writer-boundary-patterns-lib.sh` to `manifest.json`'s `provides.scripts`. *(completed)*
 
 **Timing**: 1.25 hours
 

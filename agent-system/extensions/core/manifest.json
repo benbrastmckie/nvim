@@ -144,6 +144,7 @@
       "lib/return-meta-artifacts-lib.sh",
       "lib/return-meta-status-vocabulary.sh",
       "lib/runtime-file-patterns.sh",
+      "lib/state-writer-boundary-patterns-lib.sh",
       "lib/stash-provenance-lib.sh",
       "lib/status-vocabulary.sh",
       "lib/suite-selection-lib.sh",

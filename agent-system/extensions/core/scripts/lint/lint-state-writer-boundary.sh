@@ -24,22 +24,35 @@
 #     where the path is only resolved at runtime; nothing in the source text names `state.json`
 #     or a `.tmp` staging path, so no regex can see it.
 #   - A write assembled across more than the one-or-two adjacent lines the heuristics below read
-#     (a filter built into a variable on line 10 and redirected on line 40).
+#     (a filter built into a variable on line 10 and redirected on line 40). This applies
+#     verbatim to the Python channel below: the `with open(...) as f:` idiom's `json.dump(obj,
+#     f)` second line carries neither an `open(` token nor a mode literal, so it is invisible to
+#     this lint; only the `open()` line itself is seen.
 #   - A write performed by a helper the lint has no reason to suspect, or by any non-.md/.sh
-#     artifact.
+#     artifact. A live Bash-tool `python3 -c "..."` invocation that never lands as a file under
+#     the scanned tree is exactly this case -- see
+#     hooks/validate-no-python-state-write.sh for the companion write-time guard that covers
+#     that shape instead.
 # This lint is a guardrail against regression and recurrence of the literal anti-pattern text. It
 # is NOT a proof of absence of every possible hand-rolled state write. Treat a clean run as "the
 # known bad shape is not present", never as "all state writes go through state-write.sh".
 #
 # DETECTION MODEL
 # ---------------
-# Two layers, applied in order to every line matching the broad candidate pattern:
+# Two layers, applied in order to every line matching the broad candidate pattern, covering BOTH
+# the jq-shaped channel (hand-rolled `jq ... > tmp && mv`) and the Python/interpreter
+# re-serialization channel (a write-capable `open()` call on a state.json target, consumed by
+# `json.dump`/`json.dumps`/`json.load`):
 #
 #   Layer 1 (structural, line shape): classifies each candidate line by the shape of the write.
 #     A redirect whose target is /dev/null is a read-only existence check, not a write. A bare
 #     `mv` onto a state.json target is a violation only when its SOURCE looks like a staging path
 #     (contains a tmp component or a .tmp suffix) -- a `mv .../archive/state.json .../state.json`
-#     file relocation is not a staged read-modify-write and is exempt by shape.
+#     file relocation is not a staged read-modify-write and is exempt by shape. A Python
+#     `open()` call on a state.json target is a violation when its own mode argument is
+#     write-capable (`w`, `a`, `r+`, `w+`, `a+`, `x`) regardless of whether `ensure_ascii` is
+#     passed -- see scripts/lib/state-writer-boundary-patterns-lib.sh for the full rationale and
+#     the shared predicate both this lint and the companion hook consume.
 #
 #   Layer 2 (file-level allowlist): a short, explicitly-reasoned list of files that legitimately
 #     contain the pattern text. Every entry carries its reason inline below; there are no bare
@@ -104,6 +117,12 @@ if [[ ! -f "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh" ]]; then
 fi
 # shellcheck source=../lib/lint-corpus-scan-lib.sh
 source "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh"
+if [[ ! -f "${SCRIPT_DIR}/../lib/state-writer-boundary-patterns-lib.sh" ]]; then
+    echo "ERROR: shared library not found at ${SCRIPT_DIR}/../lib/state-writer-boundary-patterns-lib.sh" >&2
+    exit 2
+fi
+# shellcheck source=../lib/state-writer-boundary-patterns-lib.sh
+source "${SCRIPT_DIR}/../lib/state-writer-boundary-patterns-lib.sh"
 
 # Root resolution. common_repo_root <dir> 3 is correct for the DEPLOYED copy
 # (.claude/scripts/lint/), but this script also runs directly from the source store
@@ -155,8 +174,11 @@ fi
 # staging variant observed in the source store (specs/tmp/state.json, specs/state.json.tmp,
 # /tmp/state.tmp, and a bare tmp.json), plus every bare `mv` onto a state.json target so the
 # second line of a multi-line stage-then-move sequence is seen even when the redirect lives on
-# the preceding line.
-CANDIDATE_PATTERN='mv .*state\.json|state\.json[[:space:]]*>|>[[:space:]]*[^[:space:]]*state\.tmp|>[[:space:]]*[^[:space:]]*state\.json\.tmp'
+# the preceding line. The final limb, $STATE_WRITER_PY_CANDIDATE_LIMB, is sourced from
+# state-writer-boundary-patterns-lib.sh (the Python/interpreter re-serialization channel) rather
+# than written out here -- see that library's header for the full rationale. Every jq-shaped
+# limb above it stays byte-identical to before this limb was appended.
+CANDIDATE_PATTERN="mv .*state\\.json|state\\.json[[:space:]]*>|>[[:space:]]*[^[:space:]]*state\\.tmp|>[[:space:]]*[^[:space:]]*state\\.json\\.tmp|${STATE_WRITER_PY_CANDIDATE_LIMB}"
 
 # ---------------------------------------------------------------------------
 # Layer 2: file-level allowlist
@@ -175,6 +197,11 @@ EXCLUDED_FILES=(
     # lint fails on itself.
     "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh"
     "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"
+
+    # The Python-channel detection predicate itself (candidate limb and classify function),
+    # sourced by this lint. Holds the `open\([^)]*state\.json` pattern text by necessity, same
+    # reason as this lint's own entry above.
+    "agent-system/extensions/core/scripts/lib/state-writer-boundary-patterns-lib.sh"
 
     # Same reason, for hooks/validate-task-creation-audit.sh's own fixture suite: its negative-
     # polarity cases deliberately feed the hand-rolled stage-then-mv / direct-overwrite anti-
@@ -262,6 +289,18 @@ classify_line() {
             printf 'EXEMPT: bare `mv` file relocation (source %s is not a staging path)\n' "$src"
             return 0
         fi
+    fi
+
+    # Python/interpreter re-serialization channel: a write-capable `open()` call on a
+    # state.json target. Delegates to the shared library's predicate, sourced above, so this
+    # lint and the companion write-time hook agree byte-for-byte on what counts as a violation.
+    # Note the known cross-line gap this inherits unchanged: the `with open(...) as f:` idiom's
+    # second line (`json.dump(obj, f)`) carries neither an `open(` token nor a mode literal, so
+    # it is invisible to this check -- only the `open()` line itself is seen, exactly as the
+    # module header's KNOWN LIMITATION section states.
+    if [[ "$text" =~ open\([^\)]*state\.json ]]; then
+        state_writer_py_classify_line "$text"
+        return 0
     fi
 
     printf 'EXEMPT: no staged read-modify-write shape\n'
@@ -354,6 +393,9 @@ echo "Candidate lines exempted: $EXEMPTED"
 echo "Total violations: $VIOLATIONS"
 echo -e "${RED}Found $VIOLATIONS hand-rolled state.json write(s). See above for details.${NC}"
 echo ""
-echo "Fix: route the write through scripts/state-write.sh (see its header for the contract)."
+echo "Fix: route the write through scripts/state-write.sh, passing your jq filter plus any"
+echo "--arg/--argjson bindings, rather than a hand-rolled jq-stage-then-mv sequence or a Python"
+echo "json.load/json.dump in-place write (with or without ensure_ascii=False -- both bypass"
+echo "state-write.sh's acquire -> stage -> transform -> validate -> mv -> release sequence)."
 echo "Edit the source store under agent-system/extensions/ -- .claude/ is a generated artifact."
 exit 1
