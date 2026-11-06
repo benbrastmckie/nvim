@@ -1,5 +1,5 @@
 ---
-next_project_number: 505
+next_project_number: 510
 ---
 
 # TODO
@@ -11,11 +11,11 @@ next_project_number: 505
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,444,446,448,458,463,472,474,475,476,492,497 | 369,383,397,409,412,418,423,430,431,435,445,459,491 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 360,390,399,402,436,438,451,454,455,461,484,500 | 313,391,398,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 360,390,399,402,436,438,451,454,455,461,484,500,507 | 313,391,398,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 5 | 450,480,487,501 | 420,435,449,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 5 | 450,480,487,501,508,509 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 6 | 496 | 450,487,488 | extensions |
 | 7 | 498 | 496 | extensions |
 | 8 | 499 | 497,498 | extensions |
@@ -58,6 +58,8 @@ next_project_number: 505
 493 [NOT STARTED] — Fix plan-format.md Tier Justification: a suite entry point...
 502 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
+505 [NOT STARTED] — Make covering-suite selection resolve a non-core extension's...
+506 [NOT STARTED] — Stop the bounded-waiter hook refusing a write whose prose...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -96,6 +98,8 @@ next_project_number: 505
     └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
       └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
         └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
+        └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
+509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
 
@@ -118,6 +122,7 @@ next_project_number: 505
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
   └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
+507 [NOT STARTED] — Re-adjudicate the declined pre-postflight-sweep deploy...
 
 ### Agent System
 
@@ -131,6 +136,253 @@ next_project_number: 505
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 509. Make a redeploy phase declarable without polluting file_scope, and bar a pre-redeploy phase from asserting a deployed-vs-source drift gate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: Task 446, Task 452
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation that drove seven tasks to completion, session sess_1793947646_0784d9. User-approved at the lead level and dispatched to the meta builder for task creation only. All three citing entries come from one task, which hit both halves of this defect inside a single plan.
+
+CITATIONS -- specs/494_phase_commit_task_own_artifact_scope_carveout/issues.jsonl:
+  {task 494, iss_1793948939447_o36RLL} -- class "scope declaration", severity minor, plan phase. Half (i).
+  {task 494, iss_1793959179573_3BHjT4} -- class "gate collision", severity minor, implement phase. Half (ii).
+  {task 494, iss_1793961716350_rmdGtR} -- class "gate collision", severity minor, implement phase. Supporting evidence for half (ii); its Batch-Gate-Deferral half belongs to an existing record, named under TERRITORY below.
+
+SEVERITY: minor per the entries. Both halves are plan-format and harvest-contract gaps, not script bugs -- state them as such and resist the pull toward a code fix that pins a rule nobody wrote down.
+
+=== HALF (i): AN HONEST REDEPLOY PHASE POLLUTES ITS OWN file_scope ===
+
+As recorded: "The redeploy phase must declare the regenerated deployed .claude/** paths in its Files to modify block for honesty, which makes them land in this task's harvested file_scope alongside the __WHOLE_TREE__ sentinel. A future consumer of that file_scope could misread those three .claude/** entries as declared hand-edit targets, which rules/source-store-deploy-boundary.md forbids. Confirmed by a harvest dry-run: file_scope ends up carrying both the source-store triple and its deployed mirror."
+
+The bind is real in both directions and must not be resolved by making the declaration dishonest. A redeploy phase genuinely does change those paths, and a Files-to-modify block that omits them understates what the phase does. But file_scope is simultaneously the phase-commit containment input and the batch-admission territory contract between concurrently dispatched tasks, and a deployed .claude/** path appearing there reads as a declared hand-edit target -- the exact thing the source-store/deploy boundary rule forbids.
+
+THE ASK for half (i) -- decide and implement one rule, recording the reasoning:
+  (1) Distinguish the two kinds of entry at the harvest, so a deploy-OUTPUT path is recorded as such rather than as a declared edit target. Weigh what every downstream consumer does with the field before choosing a representation; a shape change to file_scope is not free.
+  (2) Keep file_scope as a flat list of hand-edit targets only, and give the redeploy phase a different, stated way to be honest about its regenerated output -- for instance declaring the deploy as its product in prose while the Files-to-modify block names only the source-store paths and the sentinel, with the convention written down so the next author does not re-derive it from a refusal.
+  (3) Rule that the __WHOLE_TREE__ sentinel already carries this and the enumerated .claude/** paths are redundant -- if so, say so in the plan format AND make the harvest drop them, so honesty and the field's meaning stop pulling against each other.
+Whichever is chosen, the rule must be stated where a plan author reads it before writing a redeploy phase, not only where a harvest implementer reads it.
+
+=== HALF (ii): A PRE-REDEPLOY PHASE CANNOT ASSERT A DRIFT GATE ===
+
+As recorded: "Phase 3's own verification criterion demanded a clean verify-deploy.sh --skip-slow --only-gate 3,4 pass, but gate 3 (doc-lint) structurally cannot pass until Phase 4's redeploy: it reports deployed-vs-source drift for Phase 1/2's already-committed, not-yet-deployed script changes, plus an index-entries.json line-count mismatch for this phase's own doc edit whose fix script refuses to run outside a deployed tree. Gate 4 (task-reference lint) passes cleanly now. Deferred to Phase 4's redeploy and full gate run, recorded as a deviation in the phase-3 progress file and annotated in the plan."
+
+This is a SELF-DEFEATING criterion, not a flaky gate: the phase's own committed-but-not-yet-deployed work is what makes the gate red, so the criterion is unsatisfiable by construction for every phase that precedes the plan's own redeploy phase. A plan can be internally correct in every other respect and still contain a criterion no implementer can discharge, which forces a recorded deviation on a phase that in fact passed everything it could.
+
+WHY THE EXISTING BASELINE-RELATIVE RECORD DOES NOT COVER IT: the open record baseline_relative_gate_criteria requires a baseline-relative verdict, and its WHEN clause binds "whenever a phase's verification criterion invokes a gate whose scope exceeds the phase's edit scope AND that gate is not green at the task's starting commit". Verified by direct read of that record at creation time. Here the gate may well be green at the starting commit -- it goes red BECAUSE of this task's own in-flight, correctly-committed, not-yet-deployed changes. The trigger is different, so the rule does not reach the case. This half is the SIBLING rule, to be sited beside it rather than folded into it, and this record must be read against whatever that record actually lands rather than against its description.
+
+THE ASK for half (ii) -- add the sibling rule to plan-format.md, sited with the baseline-relative criterion rule and the existing rule on naming a tool's entry point in verification criteria, and propagate it to the planner's own contract. The rule must state at least:
+  - WHEN it binds: a phase whose verification criterion invokes a gate that compares the deployed tree against the source store, where the same plan contains a later redeploy phase.
+  - WHAT the criterion must say instead: a verdict the phase can actually discharge -- its own scoped suites, plus the drift gate deferred by name to the redeploy phase -- never an absolute clean pass on a drift gate that the phase's own undeployed work makes red.
+  - WHERE the drift gate IS legitimately asserted: at or after the redeploy phase, which is also the phase that can run a fix script requiring a deployed tree.
+  - That a deferral stated up front in the plan is not a deviation. The cited incident had to record a deviation for a phase that passed everything it could, which mislabels a correct outcome.
+
+HARD CONSTRAINTS:
+- Do not weaken gate 3. It reported real drift correctly; the defect is a criterion that demanded an impossible result from it.
+- Do not make the plan format longer than it has to be. It is already a long standard whose requirements compete for an author's attention -- site the new rule as a sibling of the existing criterion rules and reuse their framing instead of restating it.
+- Any mechanical enforcement is a ruling to make, not an assumption: decide whether validate-artifact.sh can flag a pre-redeploy drift-gate criterion without false-flagging the legitimate post-redeploy assertion, and record the ruling either way. An advisory rule is an acceptable outcome if a check would misfire.
+- Half (i) must not be resolved by making a declaration dishonest, and must not silently change what any existing file_scope consumer receives.
+
+VERIFY: for half (i), a harvest dry-run over a plan containing a redeploy phase, pinned in tests/test-plan-file-scope-harvest.sh, showing the chosen representation and showing that a non-redeploy plan's harvest is byte-for-byte unchanged. For half (ii), the documentary check plus whatever validate-artifact.sh ruling lands; if a check is built, pin both the flagged pre-redeploy case and the unflagged post-redeploy case.
+
+TERRITORY EDGES -- both declared files are SHARED FILE TERRITORY, so edges are declared rather than raced:
+- close_the_plan_to_file_scope_reconciliation_gap declares plan-file-scope-harvest.sh, its test, and plan-format.md, and owns the plan-to-file_scope reconciliation this record's half (i) modifies. Filed as a dependency.
+- baseline_relative_gate_criteria declares plan-format.md and planner-agent.md and owns the criterion-rule section half (ii) extends. Filed as a dependency.
+- Also declaring plan-format.md, with no edge filed because the sections are disjoint -- re-check at plan time and add an edge if they have converged (plan_cross_phase_line_budget_consistency also declares validate-artifact.sh): plan_format_tier_justification_fixes, plan_cross_phase_line_budget_consistency, validate_carried_unverified_names_a_source, cross_task_traceability_and_changelog_verdict, and lean_goals_block_harvest_contract.
+- hoist_batch_gate_deferral_directive owns the third citation's other half -- the conflict between a plan's literal instruction to run the full gate set and a dispatch-level deferral directive added after the plan was authored. That half is NOT this record's subject; it is cited here only as corroborating evidence that this plan's gate criteria were unsatisfiable as written.
+
+MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_lifecycle_command_prose_per_class declares whole directory prefixes (core/agents/, core/commands/, core/context/, core/hooks/, core/index-entries.json, core/manifest.json) and contain_deliberate_break_source_mutations declares core/scripts/tests/ and core/scripts/lint/ as prefixes, so the directory-prefix overlap predicate reports both against most agent-system records, including every record created in this batch. No dependency edge is filed, matching how the rest of this backlog treats those two blanket declarations. Re-check at admission time and file an edge if either has narrowed to a concrete file this record also touches.
+
+---
+
+### 508. Rule on where shared extension metadata belongs in the containment allowlist, and narrow the repo-wide sync tools' writes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: Task 486
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation that drove seven tasks to completion, session sess_1793947646_0784d9. User-approved at the lead level and dispatched to the meta builder for task creation only. This was the single largest recurring class in that batch -- eleven entries across three tasks -- and it is invisible from any one task's log, visible only once aggregated.
+
+CITATIONS -- eleven entries, all class "scope excursion", severity minor:
+  specs/385_lean4_plan_with_zero_lean_goals/issues.jsonl:
+    {task 385, iss_1793950513319_uMXkii} -- agent-system/extensions/core/index-entries.json dropped from a phase commit
+    {task 385, iss_1793950708481_Uk6joN}
+    {task 385, iss_1793952380113_ikARDl} -- agent-system/extensions/lean/index-entries.json dropped
+    {task 385, iss_1793952380242_kYKfUz}
+    {task 385, iss_1793952413096_GGYyJS} -- agent-system/extensions/lean/manifest.json dropped by git-commit-scoped.sh
+    {task 385, iss_1793952413197_lRqjJy}
+  specs/401_cross_repo_source_store_gate_blindness/issues.jsonl:
+    {task 401, iss_1793953195611_UFJK9U} -- agent-system/extensions/core/index-entries.json dropped
+  specs/029_generate_mcp_json_from_extension_manifests/issues.jsonl:
+    {task 29, iss_1793951224816_tSSXWU} -- agent-system/extensions/core/index-entries.json dropped
+    {task 29, iss_1793951224948_ISWwb2}
+    {task 29, iss_1793951677110_EGKmHv} -- agent-system/extensions/memory/index-entries.json dropped
+    {task 29, iss_1793951759427_sMN8fo} -- the provenance half, quoted below
+
+SEVERITY: costly in aggregate, though each entry is minor. RECURRING across three independent tasks within one batch.
+
+=== SCOPE NOTE: THIS RECORD IS THE UNCOVERED REMAINDER ===
+
+A duplicate check was performed against the open backlog at creation time, using the ownership map an existing record (cycle_postflight_containment_parity) already states for this problem family. That map is accurate and is reproduced here so this record is not re-litigated:
+- feed_undeclared_implement_paths_into_file_scope owns the GENERAL in-dispatch file_scope extension channel.
+- manifest_registration_dropped_from_phase_commit owns the EXTENSION-MANIFEST half, including the option of treating the touched extension's own manifest.json as implicitly in scope when the same phase adds a file under that extension's scripts/ tree. Its three options -- implicit widening, a pre-commit obligation, or subsumption by the general mechanism -- are the vocabulary this record's half (1) must choose from rather than reinvent.
+- close_the_plan_to_file_scope_reconciliation_gap owns the plan-to-file_scope harvest reconciliation and makes a containment drop non-advisory.
+- collapse_perpath_scope_excursion_issue_rows_into_o owns the per-path issue-row fan-out that inflates these counts.
+- cycle_postflight_containment_parity owns the cycle-postflight site and the recovery commit.
+- The completed record phase_commit_task_own_artifact_scope_carveout landed the ADJACENT case -- admitting a task's own artifact directory as an implicit containment member, as a per-site splice.
+- The completed record allowlist_infrastructure_paths_in_scoped_commits landed the shared engine-written-state allowlist that the three containment sites consult.
+
+What is NOT owned by any of the above, and is this record's subject:
+
+HALF (1) -- WHERE DOES SHARED EXTENSION METADATA BELONG? The dominant path in the citations above is index-entries.json, in three different extensions, NOT manifest.json. The manifest half's narrow option is keyed on a phase adding a file under that extension's scripts/ tree; index-entries.json is written by scripts/generate-context-line-counts.sh --write as a repo-wide line_count sync over CONTEXT files, so that key does not reach it. The obvious candidate home is the engine-written-state allowlist, and the question is genuinely open because that library's own admission bar appears to refuse it. Verified by direct read of agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh at creation time, the bar requires a candidate to be BOTH (a) engine-written on behalf of every/many tasks, not authored by one task's own dispatch, AND (b) never legitimately declarable in any one task's own file_scope. Shared extension metadata satisfies (a) and appears to FAIL (b): a task that adds a context file or a script legitimately declares that extension's index-entries.json or manifest.json in its own file_scope, and several open records do exactly that. The same header's rejected-candidates list refuses task-owned specs/ paths on precisely this reasoning. So decide, with the reasoning recorded:
+  (1a) Admit agent-system/extensions/*/index-entries.json (and manifest.json, if the manifest-half record's ruling has not already placed it) to the allowlist, and AMEND the stated admission bar to say why a path that is sometimes legitimately declared still belongs -- do not add a member while leaving a bar that forbids it, which would leave the next author with a contradictory rule.
+  (1b) Leave the allowlist alone and resolve this at the sync tool instead: have the tool declare what it touched so the obligation surfaces before the commit rather than as a drop.
+  (1c) Rule that the general in-dispatch extension channel subsumes it, record that explicitly, and close half (1) rather than leaving it open.
+Read the manifest-half record's ruling first if it has landed; this record's half (1) must agree with it or state why it diverges.
+
+HALF (2) -- THE PROVENANCE HAZARD, unowned by anything above. Quoted from {task 29, iss_1793951759427_sMN8fo}: a commit "staged the WHOLE agent-system/extensions/core/index-entries.json file via a jq-rewrite-then-commit, which incidentally also committed three unrelated line_count corrections (plan-format.md 882->910, progress-file.md 270->268, metadata-file-return.md 147->143) that reflected OTHER agents' edits to those files, not mine. Verified all three values are objectively correct (wc -l matches). No content harm; only a provenance/attribution imprecision -- those corrections landed in this task's commit instead of their own authors'." The entry's own lesson: "never jq-rewrite-and-commit an entire shared index file while other writers may be concurrently dirtying unrelated entries in it; prefer a narrower, single-entry jq filter applied immediately before commit." Verified at creation time by direct read: generate-context-line-counts.sh --write "rewrite[s] each index-entries.json in place with corrected line_count values", iterating every extension directory, with no flag to narrow which extension or which entries it writes. sync-manifest-scripts.sh --write is NOT whole-document -- its own header documents a deliberately surgical, line-oriented rewrite of the provides.scripts array block only, precisely to avoid reformatting two manifests that are not jq-canonical elsewhere in the file -- but it too iterates every extension directory with no narrowing flag, so a per-task invocation can still insert entries into an extension a concurrent sibling owns. Two further consequences of the same driver were observed in the same batch and are recorded here as context: one task had to hand-revert foreign hunks a repo-wide tool wrote into a concurrent sibling's territory, and another had a sibling's foreign hunk swept into its own commit anyway.
+  THE ASK for half (2): give the repo-wide --write sync tools a narrowing mode -- correct and write only the entries the caller names (or only the entries whose source files the caller touched) -- so a per-task invocation cannot rewrite, stage, or sweep a concurrent sibling's unrelated entries. The unnarrowed whole-corpus --write stays available for a deliberate repo-wide sweep run on its own. Apply the same narrowing to sync-manifest-scripts.sh --write, whose per-block rewrite is already surgical but whose extension iteration is not narrowed; keep its surgical line-oriented mechanics intact rather than replacing them with a jq round-trip.
+
+HARD CONSTRAINTS:
+- Do NOT weaken the containment predicate for a genuine excursion. Drop-and-warn for an out-of-territory source edit is correct and must survive intact, pinned by a test.
+- Do NOT make any containment check fatal. Fail-open on a missing, empty, or malformed file_scope must stay.
+- Preserve the allowlist library's fail-open posture: a failed source, or an empty/unparseable result, must never narrow a site's admitted scope below today's hardcoded two-literal fallback.
+- The library is sourced, never executed; keep it setting no shell options a caller inherits.
+- --check mode of both sync tools must keep reporting the whole corpus. Narrowing is a --write concern only; a narrowed check would hide real drift.
+- If half (1) lands as (1a), do not hand-copy the literal path list into any consumer; the library is the one place the set is defined.
+
+VERIFY: extend tests/test-engine-written-state-paths-lib.sh for the chosen half-(1) ruling and for the unchanged fail-open fallback. For half (2), pin: a narrowed --write correcting only the named entry and leaving a concurrently-wrong sibling entry untouched; an unnarrowed --write still correcting the whole corpus; --check unchanged in both modes; and a malformed narrowing argument refused rather than silently widening to the whole corpus. generate-context-line-counts.sh has no dedicated suite today -- create one, or extend the nearest existing suite and say which, rather than leaving half (2) unpinned.
+
+TERRITORY: this record deliberately declares the allowlist library and the two sync tools, NOT git-commit-phase.sh or git-commit-scoped.sh -- those two files are declared by five other open records between them, and the completed allowlist record already wired all three containment sites to consult the library, so the library is the available lever. If the chosen ruling turns out to require editing a containment site directly, declare the edge to the records holding it and widen the declaration then; do not race it.
+
+DEPENDENCY EDGE: manifest_registration_dropped_from_phase_commit. Its ruling is the direct input to half (1), and a divergent answer here would leave two incompatible rules for one mechanism.
+
+MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_lifecycle_command_prose_per_class declares whole directory prefixes (core/agents/, core/commands/, core/context/, core/hooks/, core/index-entries.json, core/manifest.json) and contain_deliberate_break_source_mutations declares core/scripts/tests/ and core/scripts/lint/ as prefixes, so the directory-prefix overlap predicate reports both against most agent-system records, including every record created in this batch. No dependency edge is filed, matching how the rest of this backlog treats those two blanket declarations. Re-check at admission time and file an edge if either has narrowed to a concrete file this record also touches.
+
+---
+
+### 507. Re-adjudicate the declined pre-postflight-sweep deploy trigger against a measured whole-cycle gate cost
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 418, Task 420
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation that drove seven tasks to completion, session sess_1793947646_0784d9. User-approved at the lead level and dispatched to the meta builder for task creation only.
+
+VISIBLE HINT OVERRIDE, recorded so a future reader can audit it: the citing entry's own suggested_channel is fix_now. The orchestrate lead overrode it to the agent-system channel and said so to the user when seeking approval. The reason is that there is no local fix to make -- the gate behaved correctly, the work was correct and complete, and the Inter-Cycle Redeploy Checkpoint discharged the deferral exactly as documented. What remains is a recorded cost/benefit trade to re-examine, not a bug to repair.
+
+CITATIONS -- {task 419, iss_1793958119931_beLFwQ} in specs/419_enforce_state_write_convention_python_channel/issues.jsonl (class "stale deploy or source-store boundary", severity costly, implement phase, resolution worked_around).
+
+SEVERITY: costly. One full extra orchestration cycle per affected batch.
+
+MEASURED EVIDENCE, as recorded: a postflight completion write was refused by the completion-deploy gate with exit 6, because the deployed .claude/ tree was stale relative to the source store at completion time. The work itself was correct and complete. The status landed one cycle later, when orchestrate-cycle-plan.sh's Inter-Cycle Redeploy Checkpoint deployed and auto-reconciled it -- observed working exactly as documented, commit 7f3cf35b1. The batch this occurred in drove seven tasks through to completion, and one whole cycle of it existed only to discharge the gate.
+
+THE DURABLE ANCHOR TO AMEND: context/patterns/batch-orchestration-guardrails.md already carries a subsection titled "A Pre-Postflight-Sweep Deploy Trigger: Evaluated, Intentionally Not Built", which records this exact trade as considered and declined. Verified present by direct read at creation time. Its four recorded grounds are: (a) the concurrency objection narrows at the Move 2/Move 3 boundary, since Move 3 runs only after every Move 2 Agent call has returned, leaving only the cross-session mutex race that both existing trigger sites already accept; (b) the structural cost of a third genuine caller of the deploy/regeneration script -- a caller that scripts/tests/test-lint-deploy-caller-wrap.sh mechanically asserts does not exist, and which would require re-threading the baseline-relative branches, confirmation/attribution filters, idempotence guard and durable ledger onto a new call site; (c) the bounded cost being removed, characterized there as "one additional, largely empty cycle round trip"; (d) the verdict -- judged SAFE at that boundary, left unimplemented on cost/benefit grounds. The subsection closes by asking that "A later pass re-examining this question should re-derive this reasoning rather than re-propose the trigger without it." This task IS that later pass.
+
+THE ASK -- this is an ADJUDICATION, not a build order:
+(1) Re-derive each of the four recorded grounds against the current tree, not against the record. Ground (b) in particular names a specific mechanical assertion and a specific set of branches to re-thread; confirm that the caller-wrap assertion and each named mechanism still exist and still have the shape the record assumes, and report any that have moved.
+(2) Price ground (c) against the measured evidence above. The record characterizes the removed cost as "one additional, largely empty cycle round trip" -- a qualitative estimate made before this measurement existed. State what a cycle of a seven-task batch actually costs, how often the gate fires (derive the frequency from the orchestration logs and the issue corpus rather than asserting it), and whether a largely-empty cycle is still a fair description.
+(3) Rule: either REAFFIRM the existing decision with the new figure cited in the subsection, or SUPERSEDE it. Preserve the existing reasoning in either case -- an amendment note recording that this decision was amended, dated, is the sanctioned form (rules/no-record-versioning-in-deliverables.md exempts exactly that, and forbids rewriting the subsection as a draft lineage). Do not delete the four grounds; a future reader must be able to see what was weighed.
+
+IF THE RULING IS SUPERSEDE: the implementation is NOT in this task's scope and this task must not attempt it. The trigger's call site would land in orchestrate-cycle-plan.sh and would have to widen test-lint-deploy-caller-wrap.sh's asserted caller set -- territory declared by four other open records. Record the ruling, name the implementation targets and the mechanisms needing re-threading, and the follow-on implementation record is created from the ruling.
+
+HARD CONSTRAINTS:
+- Do not weaken or bypass the completion-deploy gate. It refused correctly; a stale deployed tree at completion time is a real condition and the gate is the thing that catches it.
+- Do not remove or duplicate the Inter-Cycle Redeploy Checkpoint. It worked as documented, and the deferral path it provides is the current, functioning answer.
+- Any figure this task's artifacts quote must name its source. The frequency claim in (2) must be derived and shown, not asserted.
+
+VERIFY: the deliverable is a ruling in prose, so verification is documentary -- the amended subsection states the ruling, cites the measured figure with its source, retains the four original grounds, and carries a dated amendment note if the decision changed. Run the documentation gates over the touched file rather than claiming a code-level check this task does not make.
+
+TERRITORY EDGES -- context/patterns/batch-orchestration-guardrails.md is SHARED FILE TERRITORY, so edges are declared rather than raced (that same document's own rule: shared territory is serialized with an edge, never a bare exclusion). Two open records declare it: explicit_lint_fixture_test_subject_resolution and warn_plan_size_exceeds_cycle_budget. The latter also declares orchestrate-cycle-plan.sh, which a supersede ruling would eventually touch. Both edges are filed as dependencies.
+
+MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_lifecycle_command_prose_per_class declares whole directory prefixes (core/agents/, core/commands/, core/context/, core/hooks/, core/index-entries.json, core/manifest.json) and contain_deliberate_break_source_mutations declares core/scripts/tests/ and core/scripts/lint/ as prefixes, so the directory-prefix overlap predicate reports both against most agent-system records, including every record created in this batch. No dependency edge is filed, matching how the rest of this backlog treats those two blanket declarations. Re-check at admission time and file an edge if either has narrowed to a concrete file this record also touches.
+
+---
+
+### 506. Stop the bounded-waiter hook refusing a write whose prose documents the anti-pattern the hook enforces
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation that drove seven tasks to completion, session sess_1793947646_0784d9. User-approved at the lead level and dispatched to the meta builder for task creation only.
+
+CITATIONS -- {task 415, iss_1793949006050_VDJRUK} in specs/415_exact_pid_process_check_standard/issues.jsonl (class "tooling friction", severity minor, plan phase, suggested_channel null).
+
+SEVERITY: minor per the entry, but self-reinforcing: the content class that trips the hook is exactly the content class that teaches the rule the hook enforces, so the obstruction recurs every time the standard is extended or restated.
+
+LIVE SYMPTOM, as recorded: writing a plan file via a Bash heredoc was refused by the PreToolUse hook hooks/validate-bounded-waiter.sh. The plan's PROSE quoted the process-name-match anti-pattern it was documenting, and the hook's textual shape detection fired on the heredoc command text. Worked around by using the Write tool instead. The same dispatch's implement phase -- authoring a standard whose whole subject is this anti-pattern -- had to be warned in advance to author with Write/Edit rather than a shell heredoc, and that hazard was carried as a risk row in the plan. The hook's own header already concedes the governing principle: "A false positive here is treated as worse than no hook."
+
+ROOT CAUSE (verified by direct read of the source store at creation time; line numbers move, re-derive before editing): the hook blocks on a three-leg conjunction over the raw Bash command text -- (a) an `until` or `while` keyword, (b) a `sleep` call, (c) a name-match liveness test. A heredoc that writes a document ABOUT the forbidden shape puts all three legs into the command text as data, not as a command the shell will run as control flow. A grep of the hook for heredoc, here-doc, prose, or comment handling returns nothing: there is no redirection-aware or quoted-data-aware exclusion anywhere in it, so the detector cannot presently distinguish a live waiter from a file being written that describes one.
+
+THE ASK -- close the false-positive surface without weakening the block on a live waiter. Decide and implement ONE coherent rule, recording the reasoning:
+(1) Make the detector heredoc-aware: strip heredoc bodies (and other data-only regions the hook can identify reliably, such as a single-quoted argument to a file-writing redirection) from the text the three-leg conjunction is tested against, then apply the existing conjunction unchanged to what remains. Weigh honestly: shell heredoc quoting has enough variants (<<, <<-, quoted vs unquoted delimiters, nested cases) that a parser pretending to be complete is its own hazard; a deliberately conservative stripper that bails to today's behaviour on anything it cannot parse confidently is the safer shape.
+(2) Narrow leg (a) or leg (b) so a data-bearing command cannot satisfy the conjunction -- for instance, requiring the loop keyword to appear in command position rather than anywhere in the text. Weigh against the hook's existing bare-word ruling, which is deliberately stricter than a flag-narrowed match and must not be silently relaxed.
+(3) Neither: declare that authoring documentation about this anti-pattern must use Write/Edit, and site that instruction where an agent reads it BEFORE it writes such a file rather than discovering it from a refusal. If this is the ruling, record it in the hook's own header AND in the pattern document the hook enforces, and make the refusal message say so explicitly, so the next author is redirected in one step instead of debugging the block.
+
+HARD CONSTRAINTS:
+- The hook must keep blocking a genuine live self-match waiter, pinned by a test. The motivating incident (a name-matching wait loop that matched its own command line and never resolved) must stay refused.
+- Keep the fail-OPEN posture on every internal error: a broken guard that blocks every Bash call in the repo is worse than no guard.
+- Keep blocking via exit code 2 plus a stderr message; never switch to permissionDecision deny, which is documented-buggy for allow-listed Bash tool calls.
+- Keep the hook registered BARE in settings.json: a `2>/dev/null || echo '{}'` wrapper converts exit 2 into exit 0 and silently disables the block.
+- Do not introduce a shared library between this hook and its pattern document; the header records that the drift path there is deliberately closed by duplication.
+
+VERIFY: extend agent-system/extensions/core/scripts/tests/test-validate-bounded-waiter.sh with fixtures pinning (a) a heredoc writing prose that quotes all three legs -- ALLOWED, (b) the motivating live waiter -- still BLOCKED, (c) a one-shot name-match conditional outside a loop -- still allowed, (d) a bare name-match and a bare process-list-pipe-grep -- still allowed, and (e) malformed or truncated heredoc input -- fails open to today's verdict rather than erroring.
+
+TERRITORY: hooks/validate-bounded-waiter.sh and tests/test-validate-bounded-waiter.sh are declared by no other open record -- this task holds them alone.
+
+ORDERING NOTE, NOT A DEPENDENCY: the open record same_turn_gate_runs_foreground delivers guidance prose into context/patterns/bounded-build-waiter.md and context/patterns/external-process-wait.md -- precisely the documentation class that trips this hook. No file overlap exists, so no dependency edge is filed; if both are admitted to one batch, land this one first, and until it lands, author that prose with Write/Edit.
+
+MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_lifecycle_command_prose_per_class declares whole directory prefixes (core/agents/, core/commands/, core/context/, core/hooks/, core/index-entries.json, core/manifest.json) and contain_deliberate_break_source_mutations declares core/scripts/tests/ and core/scripts/lint/ as prefixes, so the directory-prefix overlap predicate reports both against most agent-system records, including every record created in this batch. No dependency edge is filed, matching how the rest of this backlog treats those two blanket declarations. Re-check at admission time and file an edge if either has narrowed to a concrete file this record also touches.
+
+---
+
+### 505. Make covering-suite selection resolve a non-core extension's source-store scripts instead of escalating to a full sweep
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation that drove seven tasks to completion, session sess_1793947646_0784d9. User-approved at the lead level and dispatched to the meta builder for task creation only. The originating entry's own suggested_channel hint was agent_system; this routing agrees with the hint.
+
+CITATIONS -- {task 385, iss_1793948998156_m8PsvT} in specs/385_lean4_plan_with_zero_lean_goals/issues.jsonl (class "missing cheap verification tier", severity minor, plan phase, resolution worked_around, evidence_path agent-system/extensions/core/scripts/lib/suite-selection-lib.sh).
+
+SEVERITY: minor per the entry, but structurally broad: it affects covering-suite selection for every non-core extension, not one plan.
+
+LIVE SYMPTOM (verified by direct read of the source store at creation time; line numbers move, re-derive before editing): suite-selection-lib.sh maps touched paths against exactly ONE scripts tree -- agent-system/extensions/core/scripts when sourced from the source store, or the flat merged .claude/scripts tree when sourced from a deploy. Its own header states the limitation explicitly (around lines 41-47): "Extending the mapping to reason about a SOURCE-STORE path belonging to a different extension while still un-deployed is explicitly out of scope", justified at the time by a measurement that "0 of 19 non-core suites were found to match the deployed-vs-source hazard this library also classifies -- a core-only phenomenon today". The cited plan edited agent-system/extensions/lean/scripts/** in two separate phases; suite_selection_select returned the __FULL_SWEEP__ sentinel for those paths rather than naming the obvious paired suite test-lean-challenge-snapshot.sh. Worked around by hand-naming that suite's direct invocation as the covering check in each Tier Justification instead of a run-all.sh --only selection. Two separate tasks in the same batch hit this and applied the same hand workaround.
+
+WHY THE RECORDED OUT-OF-SCOPE NOTE DOES NOT DISPOSE OF IT: the note scopes out the deployed-vs-source CLASSIFICATION hazard for non-core suites (the source-only / source-first / deployed-first signal), and the 0-of-19 measurement is about that hazard. It does not establish that non-core source-store paths have no covering suite to select -- the cited incident is a direct counterexample, since test-lean-challenge-snapshot.sh is a real, named, cheap covering suite that the selector declined to name. Re-derive the 0-of-19 figure before relying on it; it is CARRIED-UNVERIFIED from the library header here.
+
+THE ASK -- make the mapping resolve a covering suite for a source-store path under agent-system/extensions/<ext>/scripts/** for any <ext>, not core alone, and decide explicitly what happens to the deployed-vs-source classification for those suites:
+(1) Extend the path-to-suite mapping to walk every extension's source scripts/ and tests/ tree, so a touched non-core script resolves to its own extension's paired suite. The deployed-flat case must keep behaving exactly as it does today (one merged tree, where core-only and whole-tree already coincide).
+(2) Rule on the classification half: either extend the source-only / source-first / deployed-first signal to non-core suites too, or state in the header WHY the classification legitimately stays core-only while the SELECTION does not, and re-measure the figure the current note rests on rather than carrying it forward unexamined.
+(3) Keep __FULL_SWEEP__ as the honest answer where no suite covers a path. The defect is a false sweep escalation for a path that DOES have a covering suite, never the sentinel itself.
+
+HARD CONSTRAINTS:
+- The library is sourced, never executed; it must keep setting no shell options a caller inherits and exporting nothing a caller must guess at.
+- Do not narrow what the selector admits today. A path that resolves to a suite now must resolve to the same suite after the change.
+- Preserve the deployed-mode dual behaviour documented in run-all.sh's own source-store/deployed note; do not fork that convention.
+
+VERIFY: extend agent-system/extensions/core/scripts/tests/test-run-all-selection.sh (the existing suite for this library -- there is no test-suite-selection-lib.sh) with fixtures pinning (a) a touched agent-system/extensions/<non-core-ext>/scripts/ path resolving to that extension's own paired suite, (b) a genuinely uncovered path still returning __FULL_SWEEP__, (c) deployed-mode selection unchanged, and (d) the chosen classification ruling. Run the suite from both a source-store and a deployed vantage point.
+
+TERRITORY: agent-system/extensions/core/scripts/lib/suite-selection-lib.sh and tests/test-run-all-selection.sh are declared by no other open record -- this task holds them alone.
+
+ORDERING NOTE, NOT A DEPENDENCY: the open record plan_format_tier_justification_fixes weighs requiring a plan author to RUN suite_selection_select and quote its actual output rather than asserting a covering suite. That requirement becomes materially better once this defect is fixed and materially worse before it -- mandating measurement from a selector that falsely escalates non-core paths would push authors toward full sweeps. No file overlap exists (that record declares only context/formats/plan-format.md), so no dependency edge is filed; if both are admitted to one batch, land this one first.
+
+MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_lifecycle_command_prose_per_class declares whole directory prefixes (core/agents/, core/commands/, core/context/, core/hooks/, core/index-entries.json, core/manifest.json) and contain_deliberate_break_source_mutations declares core/scripts/tests/ and core/scripts/lint/ as prefixes, so the directory-prefix overlap predicate reports both against most agent-system records, including every record created in this batch. No dependency edge is filed, matching how the rest of this backlog treats those two blanket declarations. Re-check at admission time and file an edge if either has narrowed to a concrete file this record also touches.
+
+---
 
 ### 504. Lean goals block harvest contract
 - **Effort**: medium
