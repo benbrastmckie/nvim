@@ -2271,7 +2271,9 @@
         "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_empty_section_no_marker.md",
         "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_zero_goal_marker.md",
         "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_zero_goal_marker_with_goals.md",
-        "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"
+        "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh",
+        "agent-system/extensions/lean/manifest.json",
+        "agent-system/extensions/lean/index-entries.json"
       ],
       "created": "2026-10-11T00:09:24Z",
       "last_updated": "2026-11-06T07:24:17Z",

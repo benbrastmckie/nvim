@@ -831,7 +831,7 @@
     },
     {
       "path": "project/lean4/domain/challenge-snapshot.md",
-      "line_count": 188,
+      "line_count": 221,
       "load_when": {
         "agents": [
           "lean-implementation-agent",
