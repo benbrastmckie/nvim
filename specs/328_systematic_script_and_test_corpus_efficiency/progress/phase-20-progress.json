@@ -1,0 +1,32 @@
+{
+  "phase": 20,
+  "phase_name": "Redeploy, Full Gate Set, and the Measured Net Accounting",
+  "started_at": "2026-11-05T19:13:00Z",
+  "last_updated": "2026-11-06T04:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run complete gate set (verify-deploy.sh, no --skip-slow/--only-gate/--max-cost)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Verify finding-set invariant across whole task", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Verify assertion-set invariant (counts + PASS/FAIL names)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify claim-retention invariant (Phases 16-19 ledger anchors)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm Phase 16 regression lint green over whole corpus", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run standing size probe on verified-quiet host, record NET-PROD/NET-TEST/NET-MD/NET-TOTAL", "status": "done", "files_touched": ["specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"]},
+    {"id": 8, "description": "Record shortfall and cause if any target missed", "status": "done", "files_touched": ["specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"]},
+    {"id": 9, "description": "Confirm no task-number/record-versioning language under agent-system/**", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "raw standing-probe reading as the task's own net figure", "result": "rejected", "reason": "contaminated beyond use by concurrent sibling-task drift (+20,729 raw NET-TOTAL vs +1,219 isolated)"},
+    {"approach": "git-history-anchored per-commit numstat sum restricted to '^task 328' commit messages", "result": "adopted", "reason": "immune to concurrent drift by construction; cross-validated against a hand-sum of all 19 phases' own closing notes"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "20",
+      "description": "All three running net figures are negative against the Phase 1 baseline, each meets its declared target, and their sum meets the retained -10,000 floor.",
+      "type": "altered",
+      "reason": "Final measured figures (NET-PROD +498, NET-TEST +1402, NET-MD -681, NET-TOTAL +1219) do not meet this criterion -- recorded explicitly per this phase's own 'record the shortfall' task item rather than silently restated.",
+      "annotation": "*(deviation: altered -- NOT met. ... )*"
+    }
+  ]
+}

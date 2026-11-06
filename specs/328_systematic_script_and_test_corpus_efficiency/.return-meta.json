@@ -1,72 +1,51 @@
 {
-  "status": "partial",
-  "dispatch_seq": 33,
-  "partial_progress": {
-    "stage": "phase_complete_more_remain",
-    "details": "Phase 19 (Markdown Tranche C -- Commands, Context, Docs and Rules) closed [COMPLETED WITH EXCLUSIONS]. Re-derived all 15 applicable Phase 15 anchor rows with commands/context/docs/rules participants live (5-line shingling + direct manual inspection of each matched window, not re-trusted from the inventory's recorded heading). Collapsed only 2: context/formats/progress-file.md and context/patterns/metadata-file-return.md, each onto a sibling schema file's File Location section. The other 13 applicable rows were reasoned-excluded with recorded Item/Reason/Evidence in the plan's Reasoned Exclusions subsection: mandatory command-structure.md section headings every command file must instantiate verbatim; complete worked YAML/JSON/bash examples a reader needs in place (thin-wrapper-skill.md, frontmatter.md, extension-development.md, subagent-continuation-loop.md, subagent-return.md, interactive-selection.md, git-staging-scope.md, task-review-mode.md, wrap-up.md, the AskUserQuestion topic-picker scaffold shared by task-recover-mode.md/task-sync-mode.md/task-expand-mode.md); a reference table that is itself the lookup content (anti-stop-patterns.md); and two files (cslib/lean adversarial-verification.md) that are deliberate, documented mirror/parity copies whose own text explains why they must stay content-identical (a deploy-merge collision safeguard and a lean-only-deploy standalone-availability requirement). rules/ (0 anchor-confirmed per Phase 15) spot-checked directly with 3 plausibly-similar pairs -- confirmed zero shared windows in all three. NET-MD this phase: -6 lines (5 insertions, 11 deletions across 2 .md files, via git diff --numstat). Running NET-MD since Phase 17: -843 + -6 = -849. Observation-Duty findings, both inherited from Phase 18, neither introduced by this phase: 34 of Phase 18's own new collapsed-block .txt captures were never added to core/manifest.json's provides.scripts (sync-manifest-scripts.sh enumerates via git ls-files, so the gap was invisible until files were staged), and 15 of its row7-*-SKILL.txt captures were missing their trailing newline relative to corpus convention. Both repaired (sync-manifest-scripts.sh --write; appended missing newlines) and recorded via issue-record.sh. Gate verification: deploy-headless.sh first run surfaced exactly the two inherited findings above (confirmed by the finding naming only files this phase never touched); after repair, deploy-headless.sh landed clean (RESULT=landed_verify_clean, verify-deploy.sh --skip-slow 40/40). lint-anchor-pointer-collapse.sh --verbose: 78/78 registry rows OK, 0 violations. Targeted suites (test-lint-anchor-pointer-collapse.sh, test-lint-postflight-boundary.sh, test-lint-agent-contracts.sh): 3/3 pass. Gate 8 (full battery) could not be exercised: the full (non-skip-slow) verify-deploy.sh run, launched under a bounded 540s background wait, exceeded that cap (exit 143) -- the same confirmed concurrent-session-contention finding Phases 16-18 each independently hit on this shared repository. Recorded non-fatally. Phase committed as e4e20dcea; the phase-end handoff was written AFTER that commit (an ordering slip against the normal 'handoff before closing commit' sequence) and remains uncommitted pending the next commit opportunity, per the no-second-provenance-only-commit rule. 1 of 20 plan phases remains (20: redeploy, full gate set, measured net accounting).",
-    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-19-handoff-20261106T030836Z.md",
-    "phases_completed": 19,
-    "phases_total": 20
-  },
+  "status": "implemented",
+  "dispatch_seq": 34,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-19-handoff-20261106T030836Z.md",
-      "summary": "Phase 19 close: only 2 of 15 applicable anchor rows were genuinely collapsible (-6 NET-MD) once inspected row-by-row; the other 13 are mandatory format headings, complete worked code examples, or deliberate documented mirror-copies, not restateable prose. Two Phase-18-inherited Observation-Duty defects (manifest registration gap, trailing-newline artifact) found and repaired. Gate verification clean apart from confirmed concurrent-session contention on gate 8 (substituted targeted-suite and direct-lint evidence, matching Phases 16-18's own precedent)."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-20-handoff-20261106T035545Z.md",
+      "summary": "Phase 20 close: full gate run (40/41 checks, 5 NEW suite failures root-caused to one foreign cause), final git-history-anchored net accounting (NET-TOTAL +1219, missing the -10,000 floor), and the operator decision this raises."
     }
   ],
   "completion_data": {
-    "completion_summary": "Closed Phase 19: of 15 applicable Phase-15-confirmed anchor rows touching commands/context/docs/rules, only 2 small File-Location prose blocks were genuinely collapsible (progress-file.md and metadata-file-return.md onto their sibling schema anchors); the other 13 were reasoned-excluded as mandatory format headings, complete worked code/JSON/bash examples, or deliberate mirror-copies. Net -6 markdown lines. Repaired two Phase-18-inherited defects (manifest provides.scripts gap, trailing-newline artifact) discovered via Observation Duty. Running NET-MD since Phase 17: -849. Gate-finding-set parity confirmed apart from gate 8 (confirmed concurrent-sibling contention, substituted evidence recorded)."
+    "completion_summary": "Closed the plan's final phase (20/20), [COMPLETED WITH EXCLUSIONS]: redeployed, ran the full gate set, verified the finding-set/assertion-set/claim-retention invariants, and performed the measured net accounting. Final figures (git-history-anchored, immune to heavy concurrent-sibling-task drift): NET-PROD +498, NET-TEST +1402, NET-MD -681, NET-TOTAL +1219 -- missing the retained -10,000 floor and landing net-positive overall, despite real, individually-verified negative net in Phases 6-11 and 16-19, because infrastructure-phase cost (declared net-positive in advance) exceeded realized payback."
   },
   "modified_files": [
-    "agent-system/extensions/core/context/formats/progress-file.md",
-    "agent-system/extensions/core/context/patterns/metadata-file-return.md",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row17-core-context-formats-progress-file.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row22-core-context-patterns-metadata-file-return.txt",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-books-skills-skill-books-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-cslib-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-pr-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-epidemiology-skills-skill-epi-implement-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-founder-skills-skill-deck-implement-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-founder-skills-skill-founder-implement-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-latex-skills-skill-latex-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-lean-skills-skill-lean-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-nix-skills-skill-nix-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-nvim-skills-skill-neovim-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-python-skills-skill-python-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-rust-skills-skill-rust-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-typst-skills-skill-typst-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-web-skills-skill-web-implementation-SKILL.txt",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-z3-skills-skill-z3-implementation-SKILL.txt",
-    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-19-progress.json",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-19-handoff-20261106T030836Z.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl"
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
   ],
   "memory_candidates": [
     {
-      "content": "When applying a semantic-anchor-finding authorization to a mechanical duplicate-block inventory, apply it in BOTH directions. A literal-text shingling test both under-counts genuine prose anchors (wording drift) AND over-counts collapse candidates: a matched window that is a mandatory format-schema heading (every instance of a file-type MUST carry it to be compliant), a complete worked YAML/JSON/bash example a reader needs in place, a reference table that IS the lookup content, or a deliberately-documented mirror/parity copy (kept content-identical for a stated deploy-mechanism or standalone-availability reason) is NOT genuinely collapsible even though it matches the mechanical test. Across one markdown-consolidation phase, 13 of 15 mechanically-flagged rows fell into one of these four classes; only 2 were genuine restateable prose. Check each matched window's actual surrounding context (is it inside a code fence? is it a schema the format itself requires? does the file's own prose explain why it must stay duplicated?) before collapsing, not just whether the text matches.",
-      "category": "PATTERN",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["anchor-pointer-convention", "markdown-consolidation", "reasoned-exclusion", "mirror-copy-exclusion", "deploy-merge-collision"]
-    },
-    {
-      "content": "A script that reconciles a manifest's declared file list against the filesystem (e.g. sync-manifest-scripts.sh) may enumerate 'files on disk' via `git ls-files` rather than a plain filesystem walk. A newly created file that is still untracked (not yet `git add`-ed) will NOT be seen as 'on disk' by such a script and will be silently skipped from its repair pass, even though the file genuinely exists. Stage new files with `git add` BEFORE running a git-ls-files-backed reconciliation/sync script, or its write-mode pass will miss them and a subsequent gate (e.g. a deployed-vs-source content-hash check) will fail on the untracked file once it is eventually staged elsewhere.",
+      "content": "When a task's own net-size contribution must be measured in a repo under heavy concurrent multi-task activity, a raw before/after corpus-wide instrument reading (e.g. a line-count probe) is unusable once concurrent sibling-task drift exceeds the task's own signal. The immune alternative: grep commit messages for the task's own marker (e.g. 'task N'), then for each matching commit run `git show --numstat <sha>` against its own parent (never against the task's first/last commit directly, which would include every interleaving foreign commit), restricted to the relevant path populations, and sum. Each commit's diff is inherently isolated from concurrent work by git's own commit model, so the sum is exact regardless of how many other tasks landed commits in the same window. Cross-validate against a hand-sum of each phase's own git-diff-based closing-note figure if available.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["sync-manifest-scripts", "git-ls-files", "untracked-file-gap", "provides-scripts", "manifest-reconciliation"]
+      "confidence": 0.9,
+      "suggested_keywords": ["net-accounting", "concurrent-drift", "git-numstat", "commit-isolated-diff", "corpus-size-measurement"]
+    },
+    {
+      "content": "A net-deletion acceptance criterion on a multi-phase refactor task can be defeated by its own internal structure even when every individual phase is honest: infrastructure/extraction phases that declare themselves net-positive in advance (promising a later phase will pay the cost back) can accumulate faster than the payback phases actually realize, especially when later phases keep adding further infrastructure (classification, selection, fixture-sharing) without a correspondingly scaled migration phase to absorb it. The fix is not to forbid net-positive phases (sometimes the only honest path to a shared, reusable mechanism) but to track a running total continuously and treat a growing positive total as a stop-and-reassess signal before authorizing the next infrastructure phase, rather than deferring all reconciliation to the task's final measurement phase.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["net-deletion", "refactor-budget", "infrastructure-cost", "payback-tracking", "consolidation-task"]
     }
   ],
+  "user_decision": {
+    "question": "Phase 20's final, git-history-anchored net accounting found this task's own measured contribution is NET-TOTAL +1,219 lines (NET-PROD +498, NET-TEST +1,402, NET-MD -681) -- missing the retained -10,000-line net-deletion floor by 11,219 lines and landing net-positive overall, even though Phases 6-11 and 16-19 each individually delivered real, verified negative net. The shortfall is caused by infrastructure phases (3, 4, 12, 13, 14, 16) whose declared-in-advance net-positive cost exceeded the realized payback from the migration/dedup phases that followed them. How should this task close?",
+    "options": [
+      "Accept the measured result as this task's final close (mark [COMPLETED WITH EXCLUSIONS] at the task level) and file a new, separately-chartered follow-up task to migrate the remaining unmigrated test suites onto the shared harness (the largest remaining realizable NET-TEST payback) and to fix the project-number-inuse.sh test-fixture gap found in gate 8",
+      "Charter an immediate continuation within this same task (a Phase 21+) to keep migrating suites until NET-TOTAL turns negative, rather than closing now",
+      "Revise the retained -10,000 floor itself, on the grounds that four independent measurement rounds (the dispatch's estimate, the Phase 2 derivation, Phase 15's -2,800 fallback, and now this -- now wrong-signed -- result) have each found it unreachable from the next-enumerated source of volume"
+    ],
+    "recommended": "Accept the measured result as this task's final close (mark [COMPLETED WITH EXCLUSIONS] at the task level) and file a new, separately-chartered follow-up task to migrate the remaining unmigrated test suites onto the shared harness (the largest remaining realizable NET-TEST payback) and to fix the project-number-inuse.sh test-fixture gap found in gate 8",
+    "blocking": false
+  },
   "metadata": {
     "session_id": "sess_1793920608_e862fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 19,
+    "phases_completed": 20,
     "phases_total": 20
   }
 }

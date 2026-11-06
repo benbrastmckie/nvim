@@ -1,15 +1,15 @@
 {
-  "dispatch_seq": 33,
-  "status": "partial",
-  "phases_completed": 19,
+  "dispatch_seq": 34,
+  "status": "implemented",
+  "phases_completed": 20,
   "phases_total": 20,
-  "summary": "Closed Phase 19 (Markdown Tranche C -- Commands, Context, Docs and Rules) [COMPLETED WITH EXCLUSIONS]. Of 15 applicable Phase-15-confirmed anchor rows touching commands/context/docs/rules, direct per-row live inspection (5-line shingling plus manual window comparison, not trusted from the inventory's recorded heading) found only 2 genuinely collapsible: progress-file.md and metadata-file-return.md, each onto a sibling schema file's File Location section. The other 13 are mandatory command-structure.md section headings, complete worked YAML/JSON/bash examples a reader needs in place, a reference table that is itself the lookup content, or two deliberate documented mirror/parity copies (cslib/lean adversarial-verification.md) whose own text explains why they must stay content-identical. rules/ spot-checked directly, confirmed zero shared windows. NET-MD this phase: -6 lines; running total since Phase 17: -849 (a ~350x shortfall against the plan's stale -2,100 target, consistent with -- and strengthening -- Phase 18's own warning to read this role's allocation against the ~482-line confirmed ceiling rather than the stale figure). Observation-Duty findings, both inherited from Phase 18 and repaired, not introduced by this phase: a core/manifest.json provides.scripts registration gap for Phase 18's own 34 new capture files (sync-manifest-scripts.sh enumerates via git ls-files, invisible until staged), and a trailing-newline artifact on 15 of Phase 18's row7-*-SKILL.txt captures. Gate verification: deploy-headless.sh landed clean after repair (RESULT=landed_verify_clean, verify-deploy.sh --skip-slow 40/40); lint-anchor-pointer-collapse.sh --verbose 78/78 OK; targeted suites 3/3 pass. Gate 8 (full battery) could not be exercised: the full verify-deploy.sh run exceeded its 540s bounded wait (exit 143) -- the same confirmed concurrent-session-contention finding Phases 16-18 each independently hit. Committed as e4e20dcea. Note: the phase-end handoff was written after that commit rather than before (an ordering slip), so it remains uncommitted pending the next commit opportunity rather than a prohibited second provenance-only commit. 1 of 20 plan phases remains: 20 (redeploy, full gate set, measured net accounting).",
+  "summary": "Closed Phase 20 (final phase) [COMPLETED WITH EXCLUSIONS]: redeployed, ran the full gate set (40/41 checks; gate 8 had 7 failing suites, 2 already-known and 5 newly root-caused to a single foreign, pre-existing cause with zero relation to this task), confirmed the finding-set, assertion-set, and claim-retention invariants, and performed the measured net accounting the task was chartered around. Final, git-history-anchored figures: NET-PROD +498, NET-TEST +1402, NET-MD -681, NET-TOTAL +1219 -- missing the retained -10,000 floor by 11,219 lines and landing net-positive overall despite real, verified negative net in Phases 6-11 and 16-19, because the infrastructure phases' declared-in-advance cost exceeded their realized payback. All 20 plan phases are now closed.",
   "blockers": [],
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-19-handoff-20261106T030836Z.md",
-      "summary": "Phase 19 close: only 2 of 15 applicable anchor rows were genuinely collapsible (-6 NET-MD); the other 13 are mandatory format headings, complete worked code examples, or deliberate documented mirror-copies. Two Phase-18-inherited Observation-Duty defects found and repaired. Gate verification clean apart from confirmed concurrent-session contention on gate 8."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-20-handoff-20261106T035545Z.md",
+      "summary": "Phase 20 close: full gate run (40/41 checks, 5 NEW suite failures root-caused to one foreign cause), final git-history-anchored net accounting (NET-TOTAL +1219, missing the -10,000 floor), and the operator decision this raises."
     }
   ]
 }
