@@ -1,0 +1,10 @@
+# registry.tsv - Collapsed-block registry consumed by lint-anchor-pointer-collapse.sh. See that
+# script's own header for the full format and the one-row-per-file rationale. A new row here is
+# a pure data edit: capture the file's exact removed text into a sibling .txt file, then append
+# one row naming (anchor_path, anchor_heading, file, block_file). Never edit the lint's code to
+# add coverage.
+agent-system/extensions/core/context/patterns/early-metadata-pattern.md	Stage 0: Initial Metadata Creation	agent-system/extensions/lean/agents/lean-implementation-agent.md	early-metadata-stage0-lean-implementation-agent.txt
+agent-system/extensions/core/context/patterns/early-metadata-pattern.md	Stage 0: Initial Metadata Creation	agent-system/extensions/lean/agents/lean-research-agent.md	early-metadata-stage0-lean-research-agent.txt
+agent-system/extensions/core/context/patterns/early-metadata-pattern.md	Stage 0: Initial Metadata Creation	agent-system/extensions/nix/agents/nix-implementation-agent.md	early-metadata-stage0-nix-implementation-agent.txt
+agent-system/extensions/core/context/patterns/early-metadata-pattern.md	Stage 0: Initial Metadata Creation	agent-system/extensions/nix/agents/nix-research-agent.md	early-metadata-stage0-nix-research-agent.txt
+agent-system/extensions/core/context/patterns/early-metadata-pattern.md	Stage 0: Initial Metadata Creation	agent-system/extensions/nvim/agents/neovim-implementation-agent.md	early-metadata-stage0-neovim-implementation-agent.txt

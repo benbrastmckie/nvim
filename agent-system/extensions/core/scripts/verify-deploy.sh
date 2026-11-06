@@ -1257,6 +1257,30 @@ else
   fi
 fi
 
+# Anchor-pointer collapse regression lint rides this gate rather than claiming a new gate row
+# (per context/standards/anchor-pointer-convention.md and this task's own no-new-gate-row
+# default): both checks are full-corpus markdown-content-presence lints over the source-store
+# repo, so no SKIP/invocation shape needs to differ from the gate's own existing posture.
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  : # Already reported SKIP above for this gate; nothing further to do here.
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-anchor-pointer-collapse.sh" ]; then
+  fail "lint-anchor-pointer-collapse.sh not found in source store"
+else
+  anchor_collapse_lint_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-anchor-pointer-collapse.sh" --verbose 2>&1)
+  anchor_collapse_lint_status=$?
+  if [ "$anchor_collapse_lint_status" -eq 0 ]; then
+    pass "anchor-pointer collapse regression lint reports no reintroduced blocks"
+  else
+    fail "anchor-pointer collapse regression lint reported failures" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-anchor-pointer-collapse.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r anchor_collapse_lint_line; do
+        FINDINGS_LIST+=("FINDING gate9 $anchor_collapse_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$anchor_collapse_lint_output")
+    fi
+  fi
+fi
+
 say ""
 
 fi

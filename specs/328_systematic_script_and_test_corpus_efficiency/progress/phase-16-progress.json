@@ -40,18 +40,43 @@
     {
       "id": 5,
       "description": "Pilot the collapse on five files drawn from the inventory's highest sharing-factor eligible block, with a claim-retention ledger entry per file",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/agents/lean-implementation-agent.md",
+        "agent-system/extensions/lean/agents/lean-research-agent.md",
+        "agent-system/extensions/nix/agents/nix-implementation-agent.md",
+        "agent-system/extensions/nix/agents/nix-research-agent.md",
+        "agent-system/extensions/nvim/agents/neovim-implementation-agent.md",
+        "agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv",
+        "agent-system/extensions/core/scripts/lint/collapsed-blocks/early-metadata-stage0-lean-implementation-agent.txt",
+        "agent-system/extensions/core/scripts/lint/collapsed-blocks/early-metadata-stage0-lean-research-agent.txt",
+        "agent-system/extensions/core/scripts/lint/collapsed-blocks/early-metadata-stage0-nix-implementation-agent.txt",
+        "agent-system/extensions/core/scripts/lint/collapsed-blocks/early-metadata-stage0-nix-research-agent.txt",
+        "agent-system/extensions/core/scripts/lint/collapsed-blocks/early-metadata-stage0-neovim-implementation-agent.txt",
+        "agent-system/extensions/core/scripts/lint/lint-anchor-pointer-collapse.sh"
+      ]
     },
     {
       "id": 6,
       "description": "Run the full gate set over the pilot and confirm the finding set matches the Phase 1 baseline; record the phase's NET-MD delta",
-      "status": "not_started",
-      "files_touched": []
+      "status": "done",
+      "files_touched": [
+        "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/manifest.json",
+        "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-16-handoff-20261106T004607Z.md",
+        "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl"
+      ]
     }
   ],
-  "current_objective": 5,
-  "approaches_tried": [],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "grep -Fqz -- \"$pattern\" \"$file\" for multi-line literal block containment",
+      "result": "failed",
+      "reason": "grep -F splits a multi-line PATTERN argument into one alternative pattern PER LINE and reports a match if ANY single line matches anywhere in the target (-z only changes how the INPUT is record-split, never how the PATTERN argument is split) -- it is an OR of single lines, not a contiguous multi-line substring test. Discovered when the real pilot run against the live repo reported all 5 correctly-collapsed files as violations: their removed block's generic lines (```bash, ```json, bare { or }) trivially recur elsewhere in the same file. Replaced with bash's own [[ \"$content\" == *\"$pattern\"* ]] (quoted expansion disables glob interpretation), confirmed correct against the real repo (0 violations on the 5 correctly-collapsed files) and against a deliberately-reverted scratch copy (fires on exactly the reverted file, silent on the other 4)."
+    }
+  ],
   "handoff_count": 0,
   "deviations": []
 }

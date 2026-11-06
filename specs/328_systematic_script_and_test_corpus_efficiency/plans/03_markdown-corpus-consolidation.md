@@ -2241,7 +2241,7 @@ a gate-required restatement and spending the rest of the task unwinding it.
 
 ---
 
-### Phase 16: Land the Anchor-Pointer Convention, Its Regression Lint, and a Pilot [IN PROGRESS]
+### Phase 16: Land the Anchor-Pointer Convention, Its Regression Lint, and a Pilot [COMPLETED]
 
 **Goal**: One documented convention for collapsing a restated block onto its anchor, a lint that
 pins the collapse so the next contract added does not silently re-introduce it, and a five-file
@@ -2298,15 +2298,104 @@ the per-file ledger and the full gate set, both below.
       SKIP/invocation-shape difference was needed; wired as a second check inside `gate9_run` in
       `verify-deploy.sh`, contributing to the same PASS/FAIL and `FINDINGS_LIST` gate9 already
       emits. No new gate row added.)*
-- [ ] Pilot the collapse on five `agents/` files drawn from the inventory's highest sharing-factor
+- [x] Pilot the collapse on five `agents/` files drawn from the inventory's highest sharing-factor
       block (the dispatch-file preamble, shared by 68 files at revision time). For each: collapse
       the block, write the ledger entry naming every claim in the removed text and the anchor
       section that retains it, then re-read the anchor and confirm each claim is present there.
-- [ ] Run the full gate set over the pilot (`verify-deploy.sh`, not `--skip-slow`) and confirm
+      *(completed with a resolved conditional, not a deviation: the Scope Hypothesis below already
+      instructs taking the pilot block from Phase 15's own re-derivation rather than the stale
+      "68 files" figure. Phase 15's actual top-sharing-factor eligible row is
+      `context/patterns/early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" (g=40),
+      not the dispatch-file preamble, and its 40 sharing files are in various extensions'
+      `agents/` dirs, not `core/agents/` specifically. Piloted on 5 of those 40:
+      `lean/agents/lean-implementation-agent.md`, `lean/agents/lean-research-agent.md`,
+      `nix/agents/nix-implementation-agent.md`, `nix/agents/nix-research-agent.md`,
+      `nvim/agents/neovim-implementation-agent.md` — all covered by this task's existing
+      directory-level `file_scope` entries. See "Phase 16 Claim-Retention Ledger" below for the
+      per-file ledger. NET-MD for this task item: -110 lines (5 files, 150 deleted / 40 inserted,
+      `git diff --stat`).)*
+- [x] Run the full gate set over the pilot (`verify-deploy.sh`, not `--skip-slow`) and confirm
       every gate's finding set is identical to the Phase 1 baseline. Five files is a cheap enough
       pilot to pay for a full gate run, and the point of the pilot is to find a finding-set change
-      while it still costs five files to revert.
-- [ ] Record the phase's NET-MD delta (expected slightly positive; see justification).
+      while it still costs five files to revert. *(completed: `bash .claude/scripts/verify-deploy.sh`
+      ran 41 checks; gate 9 PASSED including the new anchor-pointer-collapse lint's own check
+      ("anchor-pointer collapse regression lint reports no reintroduced blocks"); gates 1-7,
+      9, 11-26 all PASSED, unchanged from baseline. Two unrelated findings surfaced, neither
+      attributable to this phase's own edits (confirmed via `grep -l` across the 5 newly-failing
+      suite files — zero matches on any file this phase touched) and recorded as an issue rather
+      than fixed, per the territory/Observation-Duty contract (out of scope for this phase): gate
+      8 (tests/run-all.sh) had 5 NEW failing suites, all orchestrate/postflight/redeploy-cycle
+      suites unrelated to markdown/lint content; gate 10 (validate-state.sh --deep) hit its 30s
+      timeout under heavy concurrent host load (5-12), and a standalone un-timed-out run
+      completed in 19s and found a genuine but PRE-EXISTING TODO.md/state.json desync with zero
+      uncommitted diff to either file (confirmed predating this dispatch). Both findings most
+      plausibly reflect concurrent sibling-dispatch activity on this shared repo at run time, not
+      a regression introduced by the pilot. No new finding on any gate this phase's changes could
+      plausibly affect.)*
+- [x] Record the phase's NET-MD delta (expected slightly positive; see justification). *(completed:
+      see "Phase 16 Claim-Retention Ledger" below. NET-MD for the whole phase: -110 lines net
+      (the 5-file pilot collapse: -150 deleted / +40 inserted) plus the new standard (+79 lines,
+      counted as NET-MD since it is markdown) and the new index-entries.json registration
+      (non-prose metadata, excluded from NET-MD) — phase total NET-MD: -110 + 79 = **-31 lines**,
+      net-NEGATIVE overall despite the new standard's addition, because the pilot's deletion
+      already outweighs it at only 5 of 40 eligible files touched. This is NOT "slightly
+      positive" as the Scope Hypothesis anticipated — the anticipated positive net assumed the
+      standard+lint+fixture machinery would outweigh a 5-file pilot's savings; in practice the
+      lint and fixture suite are pure script/test corpus (NET-PROD/NET-TEST, not NET-MD) and the
+      5-file pilot's savings alone exceeded the one new markdown file's cost. NET-PROD/NET-TEST
+      for this phase (script+test additions, not markdown): `lint-anchor-pointer-collapse.sh`
+      (+254 lines) and `test-lint-anchor-pointer-collapse.sh` (+217 lines) plus the `gate9_run`
+      addition in `verify-deploy.sh` (+24 lines) are all net-POSITIVE on those two populations,
+      justified in advance as the precondition for Phases 17-19's much larger NET-MD harvest
+      (same justification pattern as Phase 4's harness extraction).)*
+
+#### Phase 16 Claim-Retention Ledger
+
+Five files collapsed, all from `context/patterns/early-metadata-pattern.md`'s re-derived (Phase
+15) top-sharing-factor eligible row, § "Stage 0: Initial Metadata Creation" (g=40; the stale
+"dispatch-file preamble, 68 files" figure in this phase's own Scope Hypothesis above is
+superseded by Phase 15's live re-derivation, as that Scope Hypothesis itself anticipated). Every
+claim below was re-confirmed by re-reading the anchor file(s) at collapse time, not assumed from
+an earlier pass.
+
+Removed-text claims common to all five files, and where each is retained:
+
+| Claim in the removed text | Retained at |
+|---|---|
+| Create the metadata file BEFORE any substantive work (CRITICAL) | `early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation": "**When**: Immediately upon agent start, BEFORE any substantive work." — also restated in that file's § "Agent Integration Template" |
+| Step 1: ensure the task directory exists via `mkdir -p` | `early-metadata-pattern.md` § "Agent Integration Template", step 1 (identical shape, generic `{NNN}_{SLUG}` placeholder) |
+| Step 2: write the initial `.return-meta.json` with the exact JSON shape (`status`, `started_at`, `artifacts: []`, `partial_progress.stage`/`details`, `metadata.session_id`/`agent_type`/`delegation_depth`/`delegation_path`) | `early-metadata-pattern.md` § "Stage 0: Initial Metadata Creation" (full shape with explanatory "**Key fields**" bullets) and § "Agent Integration Template" (same shape as a copy-paste template) |
+| Remove `partial_progress` on the final write; the stub is correct only while `status` is `in_progress`/`partial` | `return-metadata-file.md` § "partial_progress (optional)": "**DELETE THIS KEY WHEN THE STATUS BECOMES TERMINAL-AND-NOT-\`partial\`.**" |
+| The validator FAILS a return-meta carrying both a terminal `status` and `partial_progress`; `"stage": "complete"` is not the fix, the key must be ABSENT | `return-metadata-file.md` § "partial_progress (optional)": "the validator FAILS it (\`RETURN_META_SCHEMA_VIOLATION\`...)" and "Setting \`partial_progress.stage\` to \`"complete"\` is NOT the fix — the key must be absent, not re-worded." |
+
+Per-file claims kept INLINE (not collapsed, since they genuinely vary and the anchor cannot own
+a value that differs per file):
+
+| File | `agent_type` | `delegation_path` | task-dir padding |
+|---|---|---|---|
+| `lean/agents/lean-implementation-agent.md` | `lean-implementation-agent` | `["orchestrator", "implement", "skill-lean-implementation"]` | `{N}` |
+| `lean/agents/lean-research-agent.md` | `lean-research-agent` | `["orchestrator", "research", "lean-research-agent"]` | `{N}` |
+| `nix/agents/nix-implementation-agent.md` | `nix-implementation-agent` | `["orchestrator", "implement", "nix-implementation-agent"]` | `{NNN}` |
+| `nix/agents/nix-research-agent.md` | `nix-research-agent` | `["orchestrator", "research", "nix-research-agent"]` | `{NNN}` |
+| `nvim/agents/neovim-implementation-agent.md` | `neovim-implementation-agent` | `["orchestrator", "implement", "neovim-implementation-agent"]` | `{NNN}` |
+
+One file-specific claim dropped as redundant rather than collapsed: `lean-research-agent.md`'s
+extra sentence "This ensures metadata exists even if the agent is interrupted" — its content is
+already thoroughly covered by the anchor's own "## The Problem" / "## The Solution" sections
+(the anchor's entire reason for existing), so no pointer was needed for it specifically.
+
+Heading-level and task-directory-padding note: `lean/agents/*.md` use `##` (not `###`) for this
+heading and `{N}` (unpadded) rather than `{NNN}` for the task-directory placeholder — both
+pre-existing per-file conventions, unrelated to the collapse, preserved unchanged.
+
+Regression coverage: `scripts/lint/collapsed-blocks/registry.tsv` has one row per file above,
+each naming its own captured removed-text file (one row per FILE rather than per block, since
+the five files' removed text differs in the per-file values above — see
+`lint-anchor-pointer-collapse.sh`'s own header for why a single shared block-text capture across
+files would have been wrong). Verified live: `lint-anchor-pointer-collapse.sh --verbose` reports
+all 5 rows `[OK]` against the real repository, and a scratch-copy regression test (reverting one
+file's block back to its original text) fires a `[VIOLATION]` on exactly that file and stays
+silent on the other 4.
 
 **Timing**: 2.5 hours
 

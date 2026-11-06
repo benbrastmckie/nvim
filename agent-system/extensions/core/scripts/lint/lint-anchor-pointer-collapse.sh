@@ -53,10 +53,18 @@
 # MATCHING MODEL
 # ---------------
 # Exact byte-for-byte substring containment of the registered block text inside the candidate
-# file's full content, tested via `grep -Fqz` (NUL-separated records, so the whole file is one
-# record and a multi-line fixed-string pattern can match across its embedded newlines). This is
-# deliberately not a regex and not a line-oriented scan: the registered text is the literal
-# collapsed block, captured once at collapse time.
+# file's full content, tested with bash's own `[[ "$content" == *"$pattern"* ]]` (quoted
+# expansion disables glob interpretation, so this is a literal, not a glob/regex, containment
+# test; newlines inside both operands are ordinary characters to bash's string comparison).
+# Deliberately NOT `grep -F` in any form, including `-z`: `grep -F` with a PATTERN argument that
+# itself contains embedded newlines splits that argument into one alternative pattern PER LINE
+# and reports a match if ANY line matches ANYWHERE in the target (an OR of single lines), not a
+# single contiguous multi-line substring match -- `-z` changes how the INPUT is split into
+# records, never how a multi-line PATTERN argument is split. Measured false positive from this
+# exact mistake during this lint's own development: a 32-line collapsed block's generic lines
+# (`\`\`\`bash`, `\`\`\`json`, a bare `{` or `}`) trivially recur elsewhere in the very file the
+# block was removed from, so a `grep -Fqz` version of this check reported every correctly
+# collapsed file as a violation.
 #
 # Usage: lint-anchor-pointer-collapse.sh [--verbose] [--quiet] [--registry PATH]
 #
@@ -208,7 +216,9 @@ while IFS=$'\t' read -r anchor_path anchor_heading rel_file block_file; do
         exit 2
     fi
 
-    if grep -Fqz -- "$(cat "$abs_block_file")" "$abs_file" 2>/dev/null; then
+    block_text="$(cat "$abs_block_file")"
+    file_text="$(cat "$abs_file")"
+    if [[ "$file_text" == *"$block_text"* ]]; then
         echo -e "${RED}[VIOLATION]${NC} $rel_file: collapsed block reappeared verbatim -- see anchor $anchor_path § \"$anchor_heading\" instead of restating it here"
         ((VIOLATIONS++)) || true
     else
