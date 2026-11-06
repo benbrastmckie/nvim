@@ -190,31 +190,34 @@ the new library's shell surface.
 
 ---
 
-### Phase 2: Lint test cases for every named shape and control [NOT STARTED]
+### Phase 2: Lint test cases for every named shape and control [COMPLETED]
 
 **Goal**: Each shape the dispatch names is pinned flagged, and each legitimate writer it names is
 pinned not-flagged, against deliberately seeded fixtures so a lint extension matching nothing
 cannot pass as working.
 
 **Tasks**:
-- [ ] Add a fixture case asserting `json.dump(obj, open('specs/state.json', 'w'))` is flagged
-      (default `ensure_ascii`).
-- [ ] Add a fixture case asserting a write against a `state.json` target carrying an explicit
-      `ensure_ascii=False` is **also** flagged.
-- [ ] Add a fixture case for the two-line `with open(path, 'w') as f:` / `json.dump(obj, f)` idiom
+- [x] Add a fixture case asserting `json.dump(obj, open('specs/state.json', 'w'))` is flagged
+      (default `ensure_ascii`). *(completed)*
+- [x] Add a fixture case asserting a write against a `state.json` target carrying an explicit
+      `ensure_ascii=False` is **also** flagged. *(completed)*
+- [x] Add a fixture case for the two-line `with open(path, 'w') as f:` / `json.dump(obj, f)` idiom
       asserting the `open()` line is flagged, with a comment recording that the second line is
-      covered by the documented cross-line limitation rather than by this check.
-- [ ] Add fixture cases asserting `with open('specs/archive/state.json', 'a') as f:` and
-      `with open(f"{vault_root}/state.json", 'r+') as f:` are both flagged.
-- [ ] Add control cases asserting `with open('specs/state.json') as f:` (no mode) and
+      covered by the documented cross-line limitation rather than by this check. *(completed)*
+- [x] Add fixture cases asserting `with open('specs/archive/state.json', 'a') as f:` and
+      `with open(f"{vault_root}/state.json", 'r+') as f:` are both flagged. *(completed)*
+- [x] Add control cases asserting `with open('specs/state.json') as f:` (no mode) and
       `with open('specs/state.json', 'r') as f:` are NOT flagged, with the EXEMPT reason text
-      asserted so a future regression to "flag everything" is visible.
-- [ ] Add a control case running the lint directly against the three real literature-extension
-      script paths (not synthetic copies) and asserting exit 0.
-- [ ] Confirm the existing Case 2 (`state-write.sh` call not flagged) still covers the positive
-      polarity with no change needed; leave Cases 1-6 otherwise untouched.
-- [ ] Assert each new flagged case reports `file:line`, following Case 1's existing assertion
-      shape.
+      asserted so a future regression to "flag everything" is visible. *(completed)*
+- [x] Add a control case running the lint directly against the three real literature-extension
+      script paths (not synthetic copies) and asserting exit 0. *(completed: enumeration found 10
+      real tracked files via `git grep`, not 3 -- see Scope Hypothesis; a plain recursive `grep`
+      over the directory was rejected because it would sweep in the extension's own gitignored,
+      environment-local venv's vendored third-party packages)*
+- [x] Confirm the existing Case 2 (`state-write.sh` call not flagged) still covers the positive
+      polarity with no change needed; leave Cases 1-6 otherwise untouched. *(completed)*
+- [x] Assert each new flagged case reports `file:line`, following Case 1's existing assertion
+      shape. *(completed)*
 
 **Timing**: 1.25 hours
 

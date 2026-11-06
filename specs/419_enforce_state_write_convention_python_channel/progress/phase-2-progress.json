@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Lint test cases for every named shape and control",
+  "started_at": "2026-11-06T09:20:00Z",
+  "last_updated": "2026-11-06T09:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Default-ensure_ascii json.dump via open() flagged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 2, "description": "ensure_ascii=False still flagged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 3, "description": "Two-line with-open idiom open() line flagged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 4, "description": "Archive and vault-root targets flagged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 5, "description": "No-mode and explicit 'r' controls not flagged, EXEMPT reason asserted", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 6, "description": "Real literature-extension writer control case (git-grep enumerated)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 7, "description": "Negative control: revert Phase 1 branch, confirm new cases fail, restore", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "plain recursive grep over agent-system/extensions/literature for the real-writer control case", "result": "failed", "reason": "swept in the extension's gitignored venv's vendored third-party packages (34 files vs. 10 real); replaced with git grep (tracked files only)"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.6",
+      "description": "Add a control case running the lint directly against the three real literature-extension script paths",
+      "type": "altered",
+      "reason": "The Scope Hypothesis's assumed count of 3 was superseded by the plan's own instruction to confirm via live enumeration; the real tracked-file count is 10, not 3. Enumeration implemented via `git grep` rather than a plain recursive grep to avoid nondeterministically sweeping in the extension's own gitignored venv's vendored packages.",
+      "annotation": "*(completed: enumeration found 10 real tracked files via `git grep`, not 3 -- see Scope Hypothesis; a plain recursive `grep` over the directory was rejected because it would sweep in the extension's own gitignored, environment-local venv's vendored third-party packages)*"
+    }
+  ]
+}

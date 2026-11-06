@@ -161,6 +161,243 @@ $quiet_dirty_out"
 fi
 
 # =====================================================================
+# Case 7 (negative polarity): Python json.dump via open() with default ensure_ascii on a
+# state.json target -> flagged. This is the originating incident's shape: json.dump's own write
+# happens through the already-open file object, so only the open() line carries the target path.
+# =====================================================================
+common_test_info "=== negative case: json.dump via open() on state.json, default ensure_ascii ==="
+
+PY_DIR="$WORKDIR/py-default"
+mkdir -p "$PY_DIR"
+PY_FIXTURE="$PY_DIR/synthetic-py-default.sh"
+cat > "$PY_FIXTURE" << 'EOF'
+#!/usr/bin/env bash
+python3 -c "
+import json
+data = json.load(open('specs/state.json'))
+data['active_projects'][0]['file_scope'].append('new_file.py')
+json.dump(data, open('specs/state.json', 'w'))
+"
+EOF
+
+if bash "$LINT_SCRIPT" "$PY_DIR" >"$WORKDIR/py-default-out.txt" 2>&1; then
+  common_test_fail "lint exited 0 for a default-ensure_ascii json.dump write via open() on state.json (expected non-zero)"
+else
+  common_test_pass "lint exited non-zero for a default-ensure_ascii json.dump write via open() on state.json"
+fi
+
+if grep -q "synthetic-py-default.sh:6" "$WORKDIR/py-default-out.txt"; then
+  common_test_pass "lint reports the Python violation with file:line"
+else
+  common_test_fail "lint output did not name the violating file:line:
+$(cat "$WORKDIR/py-default-out.txt")"
+fi
+
+# =====================================================================
+# Case 8 (negative polarity): explicit ensure_ascii=False against a state.json target is ALSO
+# flagged -- ensure_ascii fixes only the escaping half of the hazard, not the unsynchronized
+# read-modify-write half, so this lint must not treat ensure_ascii=False as a clean bill.
+# =====================================================================
+common_test_info "=== negative case: json.dump with ensure_ascii=False on state.json (still flagged) ==="
+
+PY_EA_DIR="$WORKDIR/py-ensure-ascii-false"
+mkdir -p "$PY_EA_DIR"
+PY_EA_FIXTURE="$PY_EA_DIR/synthetic-py-ensure-ascii-false.sh"
+cat > "$PY_EA_FIXTURE" << 'EOF'
+#!/usr/bin/env bash
+python3 -c "
+import json
+data = json.load(open('specs/state.json'))
+json.dump(data, open('specs/state.json', 'w'), ensure_ascii=False)
+"
+EOF
+
+if bash "$LINT_SCRIPT" "$PY_EA_DIR" >"$WORKDIR/py-ea-out.txt" 2>&1; then
+  common_test_fail "lint exited 0 for an ensure_ascii=False json.dump write via open() on state.json (expected non-zero -- ensure_ascii does not fix the unsynchronized-write half of the hazard)"
+else
+  common_test_pass "lint exited non-zero for an ensure_ascii=False json.dump write via open() on state.json"
+fi
+
+if grep -q "synthetic-py-ensure-ascii-false.sh:5" "$WORKDIR/py-ea-out.txt"; then
+  common_test_pass "lint reports the ensure_ascii=False violation with file:line"
+else
+  common_test_fail "lint output did not name the violating file:line:
+$(cat "$WORKDIR/py-ea-out.txt")"
+fi
+
+# =====================================================================
+# Case 9 (negative polarity): the two-line `with open(path, 'w') as f:` / `json.dump(obj, f)`
+# idiom -- the open() line itself is flagged. The second line (`json.dump(obj, f)`) carries
+# neither an `open(` token nor a mode literal and is covered by the lint's documented cross-line
+# limitation, NOT by this check -- it is not separately asserted here.
+# =====================================================================
+common_test_info "=== negative case: two-line with-open idiom, open() line flagged ==="
+
+PY_WITH_DIR="$WORKDIR/py-with-idiom"
+mkdir -p "$PY_WITH_DIR"
+PY_WITH_FIXTURE="$PY_WITH_DIR/synthetic-py-with-idiom.sh"
+cat > "$PY_WITH_FIXTURE" << 'EOF'
+#!/usr/bin/env bash
+python3 -c "
+import json
+data = {'foo': 'bar'}
+with open('specs/state.json', 'w') as f:
+    json.dump(data, f)
+"
+EOF
+
+if bash "$LINT_SCRIPT" "$PY_WITH_DIR" >"$WORKDIR/py-with-out.txt" 2>&1; then
+  common_test_fail "lint exited 0 for the two-line with-open idiom's open() line (expected non-zero)"
+else
+  common_test_pass "lint exited non-zero for the two-line with-open idiom's open() line"
+fi
+
+if grep -q "synthetic-py-with-idiom.sh:5" "$WORKDIR/py-with-out.txt"; then
+  common_test_pass "lint reports the with-open idiom violation with file:line (the open() line, not the json.dump line)"
+else
+  common_test_fail "lint output did not name the violating file:line:
+$(cat "$WORKDIR/py-with-out.txt")"
+fi
+
+# =====================================================================
+# Case 10 (negative polarity): archive and vault-root targets are flagged via the same
+# state.json substring test the jq-shaped limbs already use -- no path-prefix special-casing.
+# =====================================================================
+common_test_info "=== negative case: archive target, write-capable append mode ==="
+
+PY_ARCHIVE_DIR="$WORKDIR/py-archive"
+mkdir -p "$PY_ARCHIVE_DIR"
+PY_ARCHIVE_FIXTURE="$PY_ARCHIVE_DIR/synthetic-py-archive.sh"
+cat > "$PY_ARCHIVE_FIXTURE" << 'EOF'
+#!/usr/bin/env bash
+python3 -c "
+import json
+with open('specs/archive/state.json', 'a') as f:
+    json.dump({'x': 1}, f)
+"
+EOF
+
+if bash "$LINT_SCRIPT" "$PY_ARCHIVE_DIR" >"$WORKDIR/py-archive-out.txt" 2>&1; then
+  common_test_fail "lint exited 0 for a write-capable open() on the archive state.json target (expected non-zero)"
+else
+  common_test_pass "lint exited non-zero for a write-capable open() on the archive state.json target"
+fi
+
+common_test_info "=== negative case: vault-root target, in-place r+ rewrite mode ==="
+
+PY_VAULT_DIR="$WORKDIR/py-vault"
+mkdir -p "$PY_VAULT_DIR"
+PY_VAULT_FIXTURE="$PY_VAULT_DIR/synthetic-py-vault.sh"
+cat > "$PY_VAULT_FIXTURE" << 'EOF'
+#!/usr/bin/env bash
+python3 -c "
+import json
+with open(f'{vault_root}/state.json', 'r+') as f:
+    data = json.load(f)
+    f.seek(0)
+    json.dump(data, f)
+"
+EOF
+
+if bash "$LINT_SCRIPT" "$PY_VAULT_DIR" >"$WORKDIR/py-vault-out.txt" 2>&1; then
+  common_test_fail "lint exited 0 for an in-place r+ open() on the vault-root state.json target (expected non-zero)"
+else
+  common_test_pass "lint exited non-zero for an in-place r+ open() on the vault-root state.json target"
+fi
+
+# =====================================================================
+# Case 11 (structural control): a read-only Python open() on state.json -- no mode, and
+# explicit 'r' -- is NOT flagged. --verbose asserts the EXEMPT reason text, so a future
+# regression to "flag everything" is visible rather than silently passing.
+# =====================================================================
+common_test_info "=== control case: read-only Python open() (no mode) ==="
+
+PY_RO_NOMODE_DIR="$WORKDIR/py-readonly-nomode"
+mkdir -p "$PY_RO_NOMODE_DIR"
+cat > "$PY_RO_NOMODE_DIR/synthetic-py-ro-nomode.sh" << 'EOF'
+#!/usr/bin/env bash
+python3 -c "
+import json
+with open('specs/state.json') as f:
+    data = json.load(f)
+"
+EOF
+
+if bash "$LINT_SCRIPT" "$PY_RO_NOMODE_DIR" >"$WORKDIR/py-ro-nomode-out.txt" 2>&1; then
+  common_test_pass "lint exited 0 for a no-mode (default read) Python open() on state.json"
+else
+  common_test_fail "lint flagged a no-mode read-only Python open() (should be exempt):
+$(cat "$WORKDIR/py-ro-nomode-out.txt")"
+fi
+
+if bash "$LINT_SCRIPT" --verbose "$PY_RO_NOMODE_DIR" 2>&1 | grep -q "read-only open()"; then
+  common_test_pass "--verbose names the read-only-open EXEMPT reason for the no-mode case"
+else
+  common_test_fail "--verbose did not name the read-only-open EXEMPT reason for the no-mode case"
+fi
+
+common_test_info "=== control case: read-only Python open() (explicit 'r') ==="
+
+PY_RO_RMODE_DIR="$WORKDIR/py-readonly-rmode"
+mkdir -p "$PY_RO_RMODE_DIR"
+cat > "$PY_RO_RMODE_DIR/synthetic-py-ro-rmode.sh" << 'EOF'
+#!/usr/bin/env bash
+python3 -c "
+import json
+with open('specs/state.json', 'r') as f:
+    data = json.load(f)
+"
+EOF
+
+if bash "$LINT_SCRIPT" "$PY_RO_RMODE_DIR" >"$WORKDIR/py-ro-rmode-out.txt" 2>&1; then
+  common_test_pass "lint exited 0 for an explicit 'r' Python open() on state.json"
+else
+  common_test_fail "lint flagged an explicit 'r' read-only Python open() (should be exempt):
+$(cat "$WORKDIR/py-ro-rmode-out.txt")"
+fi
+
+if bash "$LINT_SCRIPT" --verbose "$PY_RO_RMODE_DIR" 2>&1 | grep -q "read-only open()"; then
+  common_test_pass "--verbose names the read-only-open EXEMPT reason for the explicit 'r' case"
+else
+  common_test_fail "--verbose did not name the read-only-open EXEMPT reason for the explicit 'r' case"
+fi
+
+# =====================================================================
+# Case 12 (structural control): the lint run directly against the REAL literature-extension
+# Python JSON writer scripts (not synthetic copies) exits 0. The set is enumerated at run time
+# (per the plan's Scope Hypothesis) rather than hardcoded, so this case covers whatever the live
+# tree actually contains rather than an assumed fixed list of three names.
+# =====================================================================
+common_test_info "=== control case: real literature-extension Python JSON writers ==="
+
+LIT_DIR="$REPO_ROOT/agent-system/extensions/literature"
+if [[ -d "$LIT_DIR" ]]; then
+  # Enumerate via `git grep` over TRACKED files only, not a plain recursive grep. The
+  # literature extension bootstraps a local venv under scripts/literature-pyenv/ for its own
+  # tooling (gitignored -- see agent-system/.gitignore); a plain `grep -rl` over the directory
+  # would sweep in every vendored third-party package's own json.dump/json.dumps call (pymupdf,
+  # networkx, onnxruntime, ...), which is neither part of this source tree nor what "the
+  # literature extension's own Python JSON writers" means, and would make this control case's
+  # file set depend on whether that environment-local venv happens to exist. `git grep` reports
+  # only files git actually tracks, matching the research measurement's intent.
+  mapfile -t LIT_JSON_WRITERS < <(git -C "$REPO_ROOT" grep -l -E 'json\.dump|json\.dumps' -- \
+    'agent-system/extensions/literature' 2>/dev/null | sed "s#^#$REPO_ROOT/#")
+  if [[ "${#LIT_JSON_WRITERS[@]}" -eq 0 ]]; then
+    common_test_fail "found zero literature-extension Python JSON writers -- the enumeration itself is broken, not merely empty"
+  else
+    common_test_info "enumerated ${#LIT_JSON_WRITERS[@]} literature-extension Python JSON writer(s): ${LIT_JSON_WRITERS[*]}"
+    if bash "$LINT_SCRIPT" "${LIT_JSON_WRITERS[@]}" >"$WORKDIR/lit-real-out.txt" 2>&1; then
+      common_test_pass "lint exited 0 against all real literature-extension Python JSON writers"
+    else
+      common_test_fail "lint flagged a real literature-extension Python JSON writer (should be exempt by content):
+$(cat "$WORKDIR/lit-real-out.txt")"
+    fi
+  fi
+else
+  common_test_info "literature extension not present in this checkout -- skipping real-path control case"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""
