@@ -1,11 +1,22 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/478_ungate_lint_check_j_handoff_contract/plans/01_ungate-check-j-curated-list.md",
+      "summary": "4-phase plan replacing Check J's content gate with a fail-closed EXCLUDED-style curated array, a stale-exclusion detector, new fixture cases, and a full verification/redeploy sweep."
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793993117_98582a_478",
     "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 3.5,
+    "dependency_waves": 4
   },
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 478 to execute the plan",
   "dispatch_seq": 9
 }
