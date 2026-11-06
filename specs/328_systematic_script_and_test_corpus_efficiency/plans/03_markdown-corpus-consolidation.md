@@ -2699,7 +2699,7 @@ obligation to treat the planning-time list as a hypothesis, not a mandate):
 
 ---
 
-### Phase 18: Markdown Tranche B — The Skill Definitions [NOT STARTED]
+### Phase 18: Markdown Tranche B — The Skill Definitions [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The `skills/` role's eligible duplicated blocks collapse onto their anchors, following
 the pattern Phase 17 established.
@@ -2708,19 +2708,147 @@ the pattern Phase 17 established.
 gate set.
 
 **Tasks**:
-- [ ] Collapse the eligible blocks in the `skills/` role (93 files at revision time) onto their
-      anchors, in sharing-factor order.
-- [ ] Treat the skill-body preflight/postflight blocks with particular care: `skills/` carries the
+- [x] Collapse the eligible blocks in the `skills/` role (93 files at revision time) onto their
+      anchors, in sharing-factor order. *(completed with a scope correction: the "93 files" figure
+      was the stale pre-Phase-15 shingling-pass estimate, which this phase's own Scope Hypothesis
+      already anticipated being superseded. Phase 15's confirmed inventory names five anchor rows
+      with at least one `/skills/` file: `thin-wrapper-skill.md` §"3b. Self-Execution Fallback"
+      (g=20, 19 skills files, collapsed), `postflight-tool-restrictions.md` §"MUST NOT Section
+      Template" (g=16, 15 skills files, collapsed; the gate-checked heading line itself kept
+      verbatim), `interactive-selection.md` (g=5, 2 files, SKIPPED), `inline-status-update.md`
+      (g=4, 5 files, SKIPPED), and `subagent-continuation-loop.md` (g=3, 3 files, SKIPPED) — see
+      Reasoned Exclusions below. Total: 33 unique files collapsed across 2 anchors (one file,
+      `skill-epi-implement/SKILL.md`, collapsed under both rows), 10 file-occurrences across 3
+      anchor rows excluded with reasons recorded. Working in sharing-factor order: g=20 processed
+      before g=16, before the three excluded lower-g rows.)*
+- [x] Treat the skill-body preflight/postflight blocks with particular care: `skills/` carries the
       largest gate-required share of any role (≈1,782 of its ≈5,907 removable lines at revision
       time, roughly 30%), so the eligible set here is materially smaller than the raw duplication
-      figure suggests and the exclusion list is doing more work than in Phase 17.
-- [ ] Maintain the claim-retention ledger, one entry per file touched, with each claim confirmed
-      present in its anchor by re-reading it.
-- [ ] Exclude `context/standards/shell-script-testing.md` and every `*.sh` file from this tranche's
-      territory.
-- [ ] Run the full gate set and the Phase 16 regression lint; confirm the finding-set invariant and
-      that no collapsed block reappears.
-- [ ] Record the phase's NET-MD delta and the running NET-MD figure.
+      figure suggests and the exclusion list is doing more work than in Phase 17. *(completed: the
+      `postflight-tool-restrictions.md` collapse kept the literal `## MUST NOT (Postflight
+      Boundary)` heading line — the exact text `lint-postflight-boundary.sh`'s section-presence
+      predicate requires — and every file's own numbered MUST NOT list (the skill's own
+      domain-specific forbidden actions) unchanged in all 15 files; only the PROHIBITION clause,
+      allowed-operations list, and Reference line were collapsed, none of which is gate-checked
+      content. Confirmed by `lint-postflight-boundary.sh --verbose` reporting no missing-section
+      violations and `lint-agent-contracts.sh --verbose` reporting no failures, both post-edit.)*
+- [x] Maintain the claim-retention ledger, one entry per file touched, with each claim confirmed
+      present in its anchor by re-reading it. *(completed: see "Phase 18 Claim-Retention Ledger"
+      below.)*
+- [x] Exclude `context/standards/shell-script-testing.md` and every `*.sh` file from this tranche's
+      territory. *(completed: zero `.sh` files and zero `shell-script-testing.md` touches among
+      this phase's edits — confirmed by `git diff --stat` below, which lists only `.md` files plus
+      the lint's own `.tsv`/`.txt` registry data.)*
+- [x] Run the full gate set and the Phase 16 regression lint; confirm the finding-set invariant and
+      that no collapsed block reappears. *(completed: see "Phase 18 Gate Verification" below.)*
+- [x] Record the phase's NET-MD delta and the running NET-MD figure. *(completed: see "Phase 18
+      NET-MD Accounting" below — this phase: **-127 lines**; running total since Phase 17:
+      -716 + -127 = **-843**.)*
+
+#### Phase 18 Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `context/patterns/inline-status-update.md` §"Update state.json" row (5 files: `skill-spawn`, `skill-lean-research`, `skill-grant`, `skill-slides`, `skill-web-implementation`) | The matched text is the literal, necessarily-concrete `state-write.sh` jq-merge invocation each skill must carry inline to actually run its own preflight/postflight state transition — not restateable prose. Collapsing it to a pointer would leave the skill non-self-contained for its next reader/executor, the same risk class Phase 17 named for its embedded-in-template exclusions (`report-format.md`/`plan-format.md`). Confirmed small volume: this anchor's own top-10 net removable share is 28.2 lines, corpus-wide, not skills-only. | `agent-system/extensions/core/context/patterns/inline-status-update.md:53-69` (Implementation Preflight bash block); e.g. `agent-system/extensions/core/skills/skill-spawn/SKILL.md` (matching `bash .claude/scripts/state-write.sh` invocation in situ) |
+| `context/patterns/subagent-continuation-loop.md` §"Per-Continuation Git Commits" row (3 files: `skill-lean-implementation-hard`, `skill-lean-implementation`, `skill-web-implementation`) | Same defect class: the matched text is the literal `git-commit-scoped.sh --message "task ... complete implementation" --session ... --honest-index-rows ...` invocation each skill's own Git Commit stage must carry verbatim to remain runnable. Confirmed low volume — this row sits in the plan's own "17 further anchors" bucket (Phase 15 Re-Derivation) summing to 194.3 lines corpus-wide. | `agent-system/extensions/core/context/patterns/subagent-continuation-loop.md:128-138,147-152`; e.g. `agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md:305-328` (Stage 8 in situ) |
+| `context/standards/interactive-selection.md` row (anchor_heading recorded in the inventory as "AskUserQuestion Schema"; re-verified per this phase's own pre-edit check, the true matching location is §"Multi-Selection Pattern" under "## Selection Patterns" — a nearest-heading correction of exactly the kind Phase 15 flagged as possible) (2 files: `skill-fix-it`, `skill-grant`) | The matched lines are the generic `"question"/"header"/"multiSelect"/"options"` JSON scaffold embedded inside each file's own complete, literal worked AskUserQuestion example — the anchor's own "TODO Selection" example is likewise one complete JSON fence. Collapsing only the scaffold would leave the surrounding example structurally incomplete, the same "embedded in a complete copy-paste template" class Phase 17 named for `report-format.md`/`plan-format.md`. Confirmed small volume (g=5, 25 total span lines, not in the top-10 anchor table). | `agent-system/extensions/core/context/standards/interactive-selection.md:166-182` (Multi-Selection Pattern example); `agent-system/extensions/core/skills/skill-fix-it/SKILL.md:162-173` (matching JSON in situ, immediately paired with a second, non-matching ">20 items" variant of the same example that must stay structurally coherent with the first) |
+
+#### Phase 18 Claim-Retention Ledger
+
+**`thin-wrapper-skill.md` § "3b. Self-Execution Fallback" (19 files).** Confirmed by direct
+pre-edit comparison: all 19 files carried a byte-identical 487-character block (no per-file
+variance, unlike Phase 16/17's `early-metadata-pattern.md` collapse). Single claim: if the skill
+executor performed the work above WITHOUT using the Agent tool, it MUST write
+`.return-meta.json` now per `return-metadata-file.md`'s schema before proceeding to postflight;
+if it DID use the Agent tool, skip this stage. Re-confirmed present, verbatim, in the anchor's
+own fenced **Template** block by re-reading
+`agent-system/extensions/core/context/patterns/thin-wrapper-skill.md:103-113` in full at this
+phase's start.
+
+Files: `core/skills/skill-reviser`, `epidemiology/skills/{skill-epi-implement,
+skill-epi-research}`, `founder/skills/{skill-analyze,skill-deck-plan,skill-deck-research,
+skill-finance,skill-financial-analysis,skill-founder-spreadsheet,skill-legal,skill-market,
+skill-meeting,skill-project,skill-strategy}`, `present/skills/{skill-budget,skill-funds,
+skill-grant,skill-slides,skill-timeline}` (each path's `SKILL.md`).
+
+**`postflight-tool-restrictions.md` § "MUST NOT Section Template" (15 files).** The inventory's
+recorded anchor_heading, "MUST NOT (Postflight Boundary)", is the literal heading text
+`lint-postflight-boundary.sh`'s section-presence predicate requires verbatim in every delegating
+skill — kept unchanged in all 15 files below. The collapsed content is the template BODY one
+heading-level under it ("MUST NOT Section Template"), re-verified by re-reading
+`agent-system/extensions/core/context/standards/postflight-tool-restrictions.md`'s own template
+section in full at this phase's start. Two claims, re-confirmed present there: (1) the
+PROHIBITION clause — if the subagent returned partial/failed status, the lead skill must not
+continue, complete, or "fill in" its work; report the status and let the user re-run
+`/implement`; (2) the postflight-phase allowed-operations list — read metadata, update
+state.json/TODO.md, link artifacts, git commit, cleanup. Each file's own numbered MUST NOT list
+(items 1-N, the skill's own domain-specific forbidden actions) is NOT anchor content and was
+kept inline, unchanged, in every file.
+
+One file-specific variance kept inline rather than collapsed:
+`cslib/skills/skill-pr-implementation/SKILL.md`'s "Updating state.json via jq (using
+`pr_ready` status target)" detail — a genuine per-file fact (this skill's own non-standard status
+target, since it calls `postflight pr_ready` rather than `postflight implement`) the anchor does
+not and should not own, folded into that file's own pointer sentence rather than silently dropped.
+
+Files: `books/skills/skill-books-implementation`, `cslib/skills/{skill-cslib-implementation,
+skill-pr-implementation}`, `epidemiology/skills/skill-epi-implement`,
+`founder/skills/{skill-deck-implement,skill-founder-implement}`,
+`latex/skills/skill-latex-implementation`, `lean/skills/skill-lean-implementation`,
+`nix/skills/skill-nix-implementation`, `nvim/skills/skill-neovim-implementation`,
+`python/skills/skill-python-implementation`, `rust/skills/skill-rust-implementation`,
+`typst/skills/skill-typst-implementation`, `web/skills/skill-web-implementation`,
+`z3/skills/skill-z3-implementation` (each path's `SKILL.md`).
+
+#### Phase 18 NET-MD Accounting
+
+```
+$ git diff --numstat -- agent-system/extensions/*/skills/*/SKILL.md
+```
+33 `.md` files changed (19 from the `thin-wrapper-skill.md` collapse + 15 from the
+`postflight-tool-restrictions.md` collapse, minus 1 file — `skill-epi-implement/SKILL.md` —
+collapsed under both rows): **152 insertions, 279 deletions — net -127 lines.** (The lint's own
+`scripts/lint/collapsed-blocks/registry.tsv` (+34 lines) and 34 new `.txt` block-text captures
+are regression-fixture data, not markdown corpus, and are excluded from NET-MD exactly as Phases
+16 and 17's own captures were.)
+
+Running NET-MD since Phase 17: **-716 + -127 = -843.**
+
+#### Phase 18 Gate Verification
+
+Full gate set run twice via a bounded background waiter (`kill -0` liveness, 540s cap):
+pre-redeploy (`bash .claude/scripts/verify-deploy.sh --skip-slow`, 55s) surfaced exactly the
+expected staleness pair — gate 3 (`check-extension-docs.sh`, "deployed script content drift:
+scripts/lint/collapsed-blocks/registry.tsv") and gate 5 (manifest-driven verification, 5
+touched-but-not-yet-redeployed files: `skill-reviser/SKILL.md`, `registry.tsv`,
+`skill-lean-implementation/SKILL.md`, `skill-nix-implementation/SKILL.md`,
+`skill-neovim-implementation/SKILL.md`) — both the identical redeploy-staleness artifact class
+Phase 17 already documented, not a finding-set change. Redeployed
+(`bash .claude/scripts/deploy-headless.sh`, 65s, `RESULT=landed_verify_red` because its own
+inline fast-gate pass hit gate 10's transient timeout — see below). Post-redeploy
+`verify-deploy.sh --skip-slow`: gate 3 and gate 5 both clear; **39 of 40 non-gate-8 checks PASS**,
+the one FAIL being gate 10 (`validate-state.sh --deep`) exceeding its 30s timeout under
+contended host load (confirmed: `uptime` showed load climbing 6.2 → 8.7 across this phase's gate
+runs, and `ps aux` showed 3+ concurrent `run-all.sh`/`verify-deploy.sh` processes from sibling
+`task328-implement*` sessions actively running their own full batteries throughout) — a
+standalone, un-timed-out re-run of the same script completed in 18.9s with 0 failures (21 passed,
+13 warnings), matching Phase 16 and 17's own documented precedent for this identical gate under
+identical contention.
+
+**Gate 8 (`tests/run-all.sh`, full battery) could not be exercised directly**: two separate
+full (non-`--skip-slow`) `verify-deploy.sh` invocations — one before, one after redeploy — each
+exceeded the 540s bounded-wait cap without completing gate 8, consistent with the same confirmed
+sibling-contention finding (`ps aux` showed multiple sibling full-battery runs live throughout).
+Recorded as a non-fatal issue (`issue-record.sh`, class `concurrent-session-contention`), per
+this task's Observation Duty, rather than retried indefinitely or silently skipped. Substituted,
+narrower evidence instead: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only
+test-lint-anchor-pointer-collapse.sh,test-lint-postflight-boundary.sh,test-lint-agent-contracts.sh`
+— 3 passed, 0 failed; and a direct `lint-anchor-pointer-collapse.sh --verbose` invocation — **76
+of 76 registry rows `[OK]`, 0 violations**, including all 34 of this phase's newly-registered
+rows (19 from the `thin-wrapper-skill.md` collapse, 15 from the `postflight-tool-restrictions.md`
+collapse). `sync-manifest-scripts.sh --write` confirmed the core extension's `provides.scripts`
+coverage already extends to this phase's new registry-directory files (346 on disk, 346
+declared, 0 missing) — no repeat of Phase 17's own manifest-gap finding this time.
 
 **Timing**: 4 hours
 
@@ -2733,6 +2861,22 @@ lines and targets −2,600, carried from the revision-time pass. The gate-requir
 role is the highest in the corpus, so this is the allocation most likely to need revision; confirm
 against the Phase 15 inventory before starting and revise the three-tranche allocation explicitly
 if it cannot hold.
+
+**Confirmed against this phase's own execution**: the −2,600 target is NOT met — actual NET-MD
+this phase is **−127**, a ≈20× shortfall. Consistent with, not contradicted by, Phase 17's own
+guidance (recorded in its Scope Hypothesis confirmation note): Phase 15's mechanically-confirmed
+anchor-backed pool for the `skills/` role is only 196 lines corpus-wide, not the stale
+"≈4,091 eligible" figure this phase's own Scope Hypothesis carried forward from the pre-Phase-15
+shingling pass. This phase's -127 captures the two largest confirmed skills/ anchor rows
+(`thin-wrapper-skill.md` g=20, `postflight-tool-restrictions.md` g=16) at or near full
+per-occurrence capture; the three smaller rows (g=3-5, collectively a small fraction of the
+196-line ceiling) were reasoned-excluded above as literal-invocation content rather than
+restateable prose. Per Phase 17's own instruction to revise the allocation explicitly rather than
+let later phases quietly absorb the shortfall: Phase 19's own allocation, if carried from the same
+stale shingling pass, should be read against Phase 15's confirmed per-role table (`commands/`: 54
+anchor-confirmed lines; `context/`: 379, already partly spent by Phase 16's pilot; `docs/`: 49)
+rather than re-deriving a new shortfall independently — the pattern is now established across
+four consecutive phases (2, 15, 17, 18).
 
 **Tier Justification**: Skill definitions are read by the gate set and by `skill-base.sh`'s
 lifecycle, not by any suite directly, so verification spans the changed files plus their
@@ -2769,10 +2913,50 @@ starts.
 
 **Verification**:
 - Every gate's finding set over the live corpus is identical to the Phase 1 baseline.
+  *(confirmed with one exception: see "Phase 18 Gate Verification" above — 39/40 non-gate-8
+  checks pass post-redeploy; the one FAIL (gate 10 transient timeout) is confirmed clean via a
+  standalone 18.9s re-run, matching Phase 16/17's own documented precedent. Gate 8 itself could
+  not be exercised due to confirmed concurrent sibling-dispatch contention on this shared
+  repository; substituted targeted-suite and direct-lint evidence instead, per the Gate
+  Verification section's own detail.)*
 - The Phase 16 regression lint is green.
+  *(confirmed: `lint-anchor-pointer-collapse.sh --verbose` reports 76/76 registry rows `[OK]`,
+  0 violations.)*
 - Every file touched has a ledger entry with each named claim confirmed present in its anchor.
+  *(confirmed: see "Phase 18 Claim-Retention Ledger" above — all 33 touched files covered, with
+  both anchors re-read in full at this phase's start.)*
 - Every skipped block has a recorded reason naming its exclusion class.
+  *(confirmed: see "Phase 18 Reasoned Exclusions" above — 3 anchor rows / 10 file-occurrences
+  skipped, each with a named reason and evidence; all three fall in the same
+  "literal-invocation/embedded-in-template" class Phase 17 established, confirmed by direct
+  `comm`-based diffing against each anchor before any edit.)*
 - The running NET-MD figure is recorded and negative, and the tranche's delta meets its allocation or its shortfall is recorded with the allocation revised explicitly.
+  *(confirmed: this phase NET-MD = -127 (negative); running total since Phase 17 = -843. The
+  −2,600 allocation is NOT met — see the Scope Hypothesis confirmation note above for the
+  shortfall record and the explicit allocation-revision guidance for Phase 19.)*
+
+**Actual files touched** (vs. the anticipated directory list above — only extensions whose
+`skills/` role actually carried a Phase-15-confirmed eligible block were touched; the remaining
+anticipated directories — `filetypes`, `memory`, `formal`, `literature`, `approvals` — had zero
+confirmed eligible blocks and were correctly left untouched, per the pre-edit-gate obligation to
+treat the planning-time list as a hypothesis, not a mandate):
+- `agent-system/extensions/core/skills/skill-reviser/SKILL.md` - 1 file
+- `agent-system/extensions/books/skills/skill-books-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/cslib/skills/{skill-cslib-implementation,skill-pr-implementation}/SKILL.md` - 2 files
+- `agent-system/extensions/epidemiology/skills/{skill-epi-implement,skill-epi-research}/SKILL.md` - 2 files (skill-epi-implement collapsed under both anchors)
+- `agent-system/extensions/founder/skills/` - 13 files: `skill-analyze,skill-deck-plan,skill-deck-research,skill-finance,skill-financial-analysis,skill-founder-spreadsheet,skill-legal,skill-market,skill-meeting,skill-project,skill-strategy` (11, under thin-wrapper-skill.md) plus `skill-deck-implement,skill-founder-implement` (2, under postflight-tool-restrictions.md), no overlap
+- `agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/present/skills/{skill-budget,skill-funds,skill-grant,skill-slides,skill-timeline}/SKILL.md` - 5 files
+- `agent-system/extensions/python/skills/skill-python-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/rust/skills/skill-rust-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/web/skills/skill-web-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md` - 1 file
+- `agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv` and 34 new `.txt` captures - regression-lint data, not production script or markdown corpus
+- `specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md` - this phase's reasoned exclusions, claim-retention ledger, and NET-MD accounting
 
 ---
 

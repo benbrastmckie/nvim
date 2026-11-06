@@ -146,17 +146,12 @@ After the agent returns, this skill MUST NOT:
 7. **Run CI pipeline** - CI verification (lake test, lint, shake) is handled by the `/pr` command, not this skill
 8. **Call `postflight implement`** - This skill MUST use `postflight pr_ready` to set [PR READY]
 
-> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed status and let the user re-run `/implement` to resume.
-
-The postflight phase is LIMITED TO:
-- Reading agent metadata file
-- Updating state.json via jq (using `pr_ready` status target)
-- Updating TODO.md status marker via Edit
-- Linking artifacts in state.json
-- Git commit
-- Cleanup of temp/marker files
-
-Reference: @.claude/context/standards/postflight-tool-restrictions.md
+See `context/standards/postflight-tool-restrictions.md` § "MUST NOT Section Template"
+for the full PROHIBITION clause (the lead skill must not continue, complete, or "fill in" a
+partial/failed subagent's work; report the status and let the user re-run `/implement`) and the
+postflight-phase allowed-operations list (read metadata, TODO.md update, artifact linking, git
+commit, cleanup); this skill's own state.json update uses jq with the `pr_ready` status target,
+not `postflight implement`.
 
 ## Return Format
 

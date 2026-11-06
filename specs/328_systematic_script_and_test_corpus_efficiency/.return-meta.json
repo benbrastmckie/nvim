@@ -1,83 +1,13 @@
 {
-  "status": "partial",
-  "dispatch_seq": 31,
+  "status": "in_progress",
+  "dispatch_seq": 32,
   "partial_progress": {
-    "stage": "phase_complete_more_remain",
-    "details": "Phase 17 (Markdown Tranche A -- The Agent Contracts) closed [COMPLETED WITH EXCLUSIONS]. Collapsed 37 agent-contract .md files across 2 anchor rows: early-metadata-pattern.md Stage 0 (36 files -- all of Phase 15's confirmed row except the 5 already piloted in Phase 16) and literature-organization.md Complete entry example (1 file, literature-agent.md, via a semantic delta-collapse exercising the Prior Decisions' option-2 authorization -- base fields pointed at the anchor, the 4 Zotero-only fields and envelope shape kept inline since the anchor does not own them). Skipped 3 further anchor rows (6 files) with recorded Item/Reason/Evidence in the plan's new Reasoned Exclusions subsection: report-format.md (4 files) and plan-format.md (1 file), both because the matched fragment sits inside each file's own complete literal copy-paste example skeleton that must stay whole; context-exhaustion-detection.md (1 file, general-implementation-agent.md's own Stage 4C sub-step sequence), low volume (~5 removable lines) not justifying a self-referential edit risk. NET-MD this phase: -685 lines (278 insertions, 963 deletions across the 37 .md files, via git diff --numstat). Running NET-MD since Phase 16: -716. The plan's own '78 files'/'-3,400' Scope Hypothesis figures were carried from the pre-Phase-15 stale shingling pass (same pass Phase 16 already corrected for its own pilot) and were never reachable from Phase 15's confirmed inventory independent of this phase's execution -- recorded as a Scope Hypothesis confirmation note with explicit guidance for Phase 18/19 to read Phase 15's confirmed per-role table instead of re-deriving a fresh shortfall. Gate verification: full verify-deploy.sh run twice (pre- and post-redeploy); post-redeploy 40/41 checks PASS, the one remaining FAIL is tests/run-all.sh with 6 NEW failing suites (test-gate-out-repair-reporting.sh, test-orchestrate-cycle-postflight.sh, test-orchestrate-predispatch-review.sh, test-orchestrate-unwind-dispatch.sh, test-postflight-deploy-gate.sh, test-redeploy-checkpoint-promotion.sh), each confirmed via grep -l (zero matches) unrelated to any file this phase touched, attributed to concurrent sibling task328-implement* sessions active on this shared repo at execution time -- same finding category as Phase 16's own precedent. The Phase 16 regression lint (lint-anchor-pointer-collapse.sh --verbose) reports 42/42 registry rows OK, 0 violations, including all 37 of this phase's newly-registered rows. Also fixed, while here: a Phase-16-origin latent core/manifest.json provides.scripts gap (5 pilot .txt captures + registry.tsv never registered -- the check-extension-docs.sh doc-lint is git-ls-files-based so it never fired until this phase's gate run), confirmed pre-existing via exact count matching before this phase's own 37 new captures were staged, repaired via sync-manifest-scripts.sh --write (run twice: once for the pre-existing 6, once more after staging this phase's own 37 new files triggered the identical gap class for them). deploy-headless.sh landed clean post-fix (RESULT=landed_verify_clean, 40/40 fast checks). 3 of 20 plan phases remain (18-19: markdown tranches B/C; 20: redeploy, full gate set, measured net accounting).",
-    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-17-handoff-20261106T015507Z.md",
+    "stage": "phase_18_starting",
+    "details": "Phase 18 (Markdown Tranche B -- The Skill Definitions) dispatch started. Resuming from Phase 17's close (17 of 20 phases complete). Deriving Phase 18's concrete skills/ file set from the Phase 15 confirmed inventory (markdown-block-inventory.tsv) before any edit.",
     "phases_completed": 17,
     "phases_total": 20
   },
-  "artifacts": [
-    {
-      "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-17-handoff-20261106T015507Z.md",
-      "summary": "Phase 17 close: 37 agent-contract files collapsed onto 2 anchors (-685 NET-MD), 3 anchor rows (6 files) skipped with recorded reasons, Scope Hypothesis shortfall confirmed and allocation-revision guidance given for Phases 18-19, gate verification clean modulo confirmed concurrent-session noise, a Phase-16-origin manifest gap fixed."
-    }
-  ],
-  "completion_data": {
-    "completion_summary": "Closed Phase 17: collapsed 37 agent-contract markdown files onto 2 anchors (early-metadata-pattern.md Stage 0 across 36 files; literature-organization.md Complete entry example via a semantic delta-collapse on literature-agent.md), net -685 markdown lines, with a full claim-retention ledger, 3 anchor rows (6 files) reasoned-excluded, and gate-finding-set parity confirmed (40/41 checks; the one remaining FAIL is confirmed concurrent-session noise unrelated to this phase's edits). Running NET-MD since Phase 16: -716."
-  },
-  "modified_files": [
-    "agent-system/extensions/cslib/agents/cslib-implementation-agent.md",
-    "agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md",
-    "agent-system/extensions/cslib/agents/cslib-research-agent.md",
-    "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
-    "agent-system/extensions/cslib/agents/pr-review-research-agent.md",
-    "agent-system/extensions/epidemiology/agents/epi-implement-agent.md",
-    "agent-system/extensions/epidemiology/agents/epi-research-agent.md",
-    "agent-system/extensions/formal/agents/formal-research-agent.md",
-    "agent-system/extensions/formal/agents/logic-research-agent.md",
-    "agent-system/extensions/formal/agents/math-research-agent.md",
-    "agent-system/extensions/founder/agents/analyze-agent.md",
-    "agent-system/extensions/founder/agents/deck-builder-agent.md",
-    "agent-system/extensions/founder/agents/deck-planner-agent.md",
-    "agent-system/extensions/founder/agents/deck-research-agent.md",
-    "agent-system/extensions/founder/agents/finance-agent.md",
-    "agent-system/extensions/founder/agents/financial-analysis-agent.md",
-    "agent-system/extensions/founder/agents/founder-implement-agent.md",
-    "agent-system/extensions/founder/agents/founder-plan-agent.md",
-    "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
-    "agent-system/extensions/founder/agents/legal-analysis-agent.md",
-    "agent-system/extensions/founder/agents/legal-council-agent.md",
-    "agent-system/extensions/founder/agents/market-agent.md",
-    "agent-system/extensions/founder/agents/meeting-agent.md",
-    "agent-system/extensions/founder/agents/project-agent.md",
-    "agent-system/extensions/founder/agents/strategy-agent.md",
-    "agent-system/extensions/literature/agents/literature-agent.md",
-    "agent-system/extensions/nvim/agents/neovim-research-agent.md",
-    "agent-system/extensions/present/agents/budget-agent.md",
-    "agent-system/extensions/present/agents/funds-agent.md",
-    "agent-system/extensions/present/agents/grant-agent.md",
-    "agent-system/extensions/present/agents/pptx-assembly-agent.md",
-    "agent-system/extensions/present/agents/slide-critic-agent.md",
-    "agent-system/extensions/present/agents/slides-research-agent.md",
-    "agent-system/extensions/present/agents/slidev-assembly-agent.md",
-    "agent-system/extensions/present/agents/timeline-agent.md",
-    "agent-system/extensions/web/agents/web-implementation-agent.md",
-    "agent-system/extensions/web/agents/web-research-agent.md",
-    "agent-system/extensions/core/manifest.json",
-    "agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv",
-    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-17-handoff-20261106T015507Z.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl"
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a markdown-consolidation inventory names a duplicated block that is EMBEDDED inside a larger complete, literal copy-paste example/skeleton (e.g. a full report-template or plan-template fenced code block, where the matched duplicate is only a 2-5 line sub-fragment of a 20+ line skeleton), do not collapse the sub-fragment alone -- doing so leaves the surrounding template structurally incomplete/inconsistent relative to its own heading list, which defeats the template's purpose (an agent must be able to copy the whole skeleton verbatim). Recognize this as a THIRD exclusion class alongside gate-required and deliberately-inlined content: 'embedded in a complete copy-paste template.' Record it as a Reasoned Exclusion with the anchor's own fenced-block location as evidence, not as a silent skip.",
-      "category": "PATTERN",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["anchor-pointer-convention", "copy-paste-template-exclusion", "markdown-consolidation", "reasoned-exclusion", "collapse-risk"]
-    },
-    {
-      "content": "A doc-lint check that derives its 'files on disk' set from `git ls-files` (tracked files only) will not fire on a genuine gap until the affected files are actually tracked -- a prior phase's new data files (e.g. lint-registry capture files) can silently carry an undeclared-in-manifest gap for an arbitrary number of later commits/phases before anyone's gate run happens to re-trigger the check with those files already staged. When adding new files under any extension's scripts/ tree (even non-.sh data files like .txt/.tsv captures a registry-driven lint consumes), re-run the manifest-sync check/write tool (if one exists, e.g. sync-manifest-scripts.sh) immediately after `git add`-ing them, not just after writing them -- staging is the trigger, not authoring.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-ls-files-based-lint", "provides-scripts-gap", "stage-time-trigger", "manifest-sync", "latent-gap-detection"]
-    }
-  ],
+  "artifacts": [],
   "metadata": {
     "session_id": "sess_1793920608_e862fc",
     "agent_type": "general-implementation-agent",

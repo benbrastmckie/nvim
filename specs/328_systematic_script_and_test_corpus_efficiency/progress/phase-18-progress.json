@@ -1,0 +1,65 @@
+{
+  "phase": 18,
+  "phase_name": "Markdown Tranche B -- The Skill Definitions",
+  "started_at": "2026-11-06T02:00:03Z",
+  "last_updated": "2026-11-06T02:39:10Z",
+  "objectives": [
+    {"id": 1, "description": "Collapse thin-wrapper-skill.md row (g=20) skills/ files", "status": "done", "files_touched": [
+      "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+      "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
+      "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-analyze/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-deck-research/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-finance/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-financial-analysis/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-founder-spreadsheet/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-legal/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-market/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-meeting/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-project/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-strategy/SKILL.md",
+      "agent-system/extensions/present/skills/skill-budget/SKILL.md",
+      "agent-system/extensions/present/skills/skill-funds/SKILL.md",
+      "agent-system/extensions/present/skills/skill-grant/SKILL.md",
+      "agent-system/extensions/present/skills/skill-slides/SKILL.md",
+      "agent-system/extensions/present/skills/skill-timeline/SKILL.md"
+    ]},
+    {"id": 2, "description": "Collapse postflight-tool-restrictions.md row (g=16) skills/ files (heading retained)", "status": "done", "files_touched": [
+      "agent-system/extensions/books/skills/skill-books-implementation/SKILL.md",
+      "agent-system/extensions/cslib/skills/skill-cslib-implementation/SKILL.md",
+      "agent-system/extensions/cslib/skills/skill-pr-implementation/SKILL.md",
+      "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-deck-implement/SKILL.md",
+      "agent-system/extensions/founder/skills/skill-founder-implement/SKILL.md",
+      "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md",
+      "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+      "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
+      "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
+      "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md",
+      "agent-system/extensions/rust/skills/skill-rust-implementation/SKILL.md",
+      "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
+      "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+      "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md"
+    ]},
+    {"id": 3, "description": "Collapse interactive-selection.md row (g=5) skills/ files", "status": "excluded", "files_touched": []},
+    {"id": 4, "description": "Collapse inline-status-update.md row (g=4) skills/ files", "status": "excluded", "files_touched": []},
+    {"id": 5, "description": "Collapse subagent-continuation-loop.md row (g=3) skills/ files", "status": "excluded", "files_touched": []},
+    {"id": 6, "description": "Register all touched files in collapsed-blocks registry.tsv + block-text captures", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv"
+    ]},
+    {"id": 7, "description": "Run Phase 16 regression lint + full gate set; redeploy; confirm finding-set parity", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Record claim-retention ledger, Reasoned Exclusions, NET-MD accounting in plan; close phase", "status": "done", "files_touched": [
+      "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+      "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
+      "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl"
+    ]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "Full semantic sweep of row3 (thin-wrapper-skill.md) beyond the Stage 5b block", "result": "not_attempted", "reason": "diff/comm analysis showed only generic short JSON/bash fragments overlap beyond the byte-identical Stage 5b block (confirmed across all 19 files); not a coherent second claim worth collapsing"},
+    {"approach": "Collapse rows 4 (inline-status-update.md), 14 (subagent-continuation-loop.md), 17 (interactive-selection.md)", "result": "excluded", "reason": "matched text in each is a literal, necessarily-concrete bash/JSON invocation embedded in a complete copy-paste example/command the skill must carry inline to remain runnable -- same exclusion class Phase 17 established for report-format.md/plan-format.md"},
+    {"approach": "Full (non --skip-slow) verify-deploy.sh gate-8 battery, twice", "result": "failed", "reason": "both attempts exceeded a 540s bounded wait without completing gate 8; ps aux confirmed 3+ concurrent sibling task328-implement* sessions running their own full batteries throughout -- recorded as a non-fatal concurrent-session-contention issue, substituted with targeted-suite + direct-lint evidence instead"}
+  ],
+  "handoff_count": 0
+}

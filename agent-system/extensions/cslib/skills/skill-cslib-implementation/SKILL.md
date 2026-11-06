@@ -144,17 +144,11 @@ After the agent returns, this skill MUST NOT:
 4. **Grep for sorries** - Debt analysis is agent work
 5. **Write summary/reports** - Artifact creation is agent work
 
-> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed status and let the user re-run `/implement` to resume.
-
-The postflight phase is LIMITED TO:
-- Reading agent metadata file
-- Updating state.json via jq
-- Updating TODO.md status marker via Edit
-- Linking artifacts in state.json
-- Git commit
-- Cleanup of temp/marker files
-
-Reference: @.claude/context/standards/postflight-tool-restrictions.md
+See `context/standards/postflight-tool-restrictions.md` § "MUST NOT Section Template"
+for the full PROHIBITION clause (the lead skill must not continue, complete, or "fill in" a
+partial/failed subagent's work; report the status and let the user re-run `/implement`) and the
+postflight-phase allowed-operations list (read metadata, state.json/TODO.md updates, artifact
+linking, git commit, cleanup).
 
 ## Return Format
 

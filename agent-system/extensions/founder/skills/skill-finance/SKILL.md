@@ -176,12 +176,10 @@ The agent will:
 
 ### Stage 5b: Self-Execution Fallback
 
-**CRITICAL**: If you performed the work above WITHOUT using the Agent tool (i.e., you read files,
-wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
-`.return-meta.json` file now before proceeding to postflight. Use the schema from
-`return-metadata-file.md` with the appropriate status value for this operation.
-
-If you DID use the Agent tool, skip this stage -- the subagent already wrote the metadata.
+See `context/patterns/thin-wrapper-skill.md` § "3b. Self-Execution Fallback" for the full
+obligation: if you performed the work above WITHOUT using the Agent tool, write
+`.return-meta.json` now per `return-metadata-file.md`'s schema before proceeding to postflight.
+If you DID use the Agent tool, skip this stage.
 
 ---
 

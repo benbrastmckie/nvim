@@ -159,12 +159,10 @@ For phased plans, invoke subagent per-phase with phase context. Commit after eac
 
 ### Stage 5b: Self-Execution Fallback
 
-**CRITICAL**: If you performed the work above WITHOUT using the Agent tool (i.e., you read files,
-wrote artifacts, or updated metadata directly instead of spawning a subagent), you MUST write a
-`.return-meta.json` file now before proceeding to postflight. Use the schema from
-`return-metadata-file.md` with the appropriate status value for this operation.
-
-If you DID use the Agent tool, skip this stage -- the subagent already wrote the metadata.
+See `context/patterns/thin-wrapper-skill.md` § "3b. Self-Execution Fallback" for the full
+obligation: if you performed the work above WITHOUT using the Agent tool, write
+`.return-meta.json` now per `return-metadata-file.md`'s schema before proceeding to postflight.
+If you DID use the Agent tool, skip this stage.
 
 ---
 
@@ -308,17 +306,11 @@ After the agent returns -- whether with status implemented, partial, or failed -
 4. **Analyze or grep source** - Analysis is agent work
 5. **Write summary/reports** - Artifact creation is done by agent
 
-> **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed status and let the user re-run `/implement` to resume.
-
-The postflight phase is LIMITED TO:
-- Reading agent metadata file
-- Updating state.json via jq
-- Updating TODO.md status marker via Edit
-- Linking artifacts in state.json
-- Git commit
-- Cleanup of temp/marker files
-
-Reference: @.claude/context/standards/postflight-tool-restrictions.md
+See `context/standards/postflight-tool-restrictions.md` § "MUST NOT Section Template"
+for the full PROHIBITION clause (the lead skill must not continue, complete, or "fill in" a
+partial/failed subagent's work; report the status and let the user re-run `/implement`) and the
+postflight-phase allowed-operations list (read metadata, state.json/TODO.md updates, artifact
+linking, git commit, cleanup).
 
 ---
 
