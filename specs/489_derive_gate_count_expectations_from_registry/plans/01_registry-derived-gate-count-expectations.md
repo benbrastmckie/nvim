@@ -241,25 +241,29 @@ run via `run-all.sh --only`, which no cheaper single-module lint reaches.
 
 ---
 
-### Phase 3: Collateral Derivation — Crash Net, Cost Model, Stale Prose [NOT STARTED]
+### Phase 3: Collateral Derivation — Crash Net, Cost Model, Stale Prose [COMPLETED]
 
 **Goal**: Close the three same-class sites found during planning, so the crash net covers every
 registered gate and the cost model measures every registered gate.
 
 **Tasks**:
-- [ ] `tests/test-verify-deploy-gate-selection-crash-net.sh`: source
+- [x] `tests/test-verify-deploy-gate-selection-crash-net.sh`: source
       `../lib/gate-registry-lib.sh`, `gate_registry_load "$CORE_DIR/gate-registry.data"`, and
       replace `for n in $(seq 1 23)` with iteration over `$(gate_registry_ids)`. Make case (b)'s
-      pass message interpolate the derived count instead of stating `23`.
-- [ ] Record in that suite's header that gates 24-26 were **not** covered before this change (a
+      pass message interpolate the derived count instead of stating `23`. *(completed: verified
+      green, pass message now reads "all 27 registered gates (1 2 ... 27)" -- the live set, which
+      now includes sibling task 418's real gate 27)*
+- [x] Record in that suite's header that gates 24-26 were **not** covered before this change (a
       silent under-coverage, not a red failure) and that the id set is now registry-derived.
-- [ ] `measure-gate-costs.sh`: add the degrade-safe guarded source of `lib/gate-registry-lib.sh`
+      *(completed)*
+- [x] `measure-gate-costs.sh`: add the degrade-safe guarded source of `lib/gate-registry-lib.sh`
       (same idiom as `verify-deploy.sh`), `gate_registry_load`, and fill the default `GATE_LIST`
       from `gate_registry_ids`; keep `seq 1 23` only as the missing-library fallback with a warning
-      to stderr. Leave the explicit `--gate` path untouched.
-- [ ] Update the three stale prose counts: `lib/gate-registry-lib.sh:4`,
+      to stderr. Leave the explicit `--gate` path untouched. *(completed: verified default
+      GATE_LIST derives to 1..27 live; `--gate 24 --runs 2` explicit path still works unmodified)*
+- [x] Update the three stale prose counts: `lib/gate-registry-lib.sh:4`,
       `measure-gate-costs.sh:94`, `tests/test-gate-cache-equivalence.sh:6` — make each count-free
-      ("the registered gate set") rather than restating a number that will drift.
+      ("the registered gate set") rather than restating a number that will drift. *(completed)*
 
 **Timing**: 0.75 hours
 

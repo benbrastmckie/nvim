@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Collateral Derivation -- Crash Net, Cost Model, Stale Prose",
+  "started_at": "2026-11-06T22:10:00Z",
+  "last_updated": "2026-11-06T22:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Derive crash-net id set from gate_registry_ids", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh"]},
+    {"id": 2, "description": "Record under-coverage history and registry-derived note in crash-net header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh"]},
+    {"id": 3, "description": "Derive measure-gate-costs.sh default GATE_LIST from gate_registry_ids with degrade-safe fallback", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-gate-costs.sh"]},
+    {"id": 4, "description": "Update stale prose counts in gate-registry-lib.sh, measure-gate-costs.sh, test-gate-cache-equivalence.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/gate-registry-lib.sh", "agent-system/extensions/core/scripts/measure-gate-costs.sh", "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "note": "Re-ran the plan's scope-hypothesis greps before closing: confirmed exactly the two assertion sites and three prose sites named, no further site found (gate-registry.data's own stale '23-gate' comments at lines 29/74 are explicitly out of scope -- that file is a Non-Goal, not modified by this task). test-verify-deploy-gate-selection-crash-net.sh verified green end-to-end (144s), now covering all 27 live registered gates automatically. Negative control: a scratch registry copy missing gate 13's row correctly produces an id list excluding 13 (gate_registry_ids), proving the loop follows data not a literal. measure-gate-costs.sh: default GATE_LIST derivation verified to produce 1..27 live; explicit --gate 24 --runs 2 path verified unmodified and working (avg=9095ms, class=moderate). test-measure-gate-costs.sh (12/12), test-gate-cache-lib.sh (28/28), and verify-deploy.sh --only-gate 22 (shellcheck) all green."
+}

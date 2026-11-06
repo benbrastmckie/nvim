@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # measure-gate-costs.sh - Mechanical, idle-guarded, averaged per-gate cost measurement harness
-# for verify-deploy.sh's 23 gates, and the regeneration path for tests/suite-cost-hints.txt.
+# for verify-deploy.sh's registered gates, and the regeneration path for
+# tests/suite-cost-hints.txt.
 #
 # THIS IS A DECISION-GATE SCRIPT, not a convenience. Its output -- not any carried-forward prose
 # figure from this task's own research report or dispatch -- is what Phases 4-9's cost-class
@@ -91,8 +92,8 @@
 #                          regeneration). SKIPped suites (exec-bit regression) are omitted from
 #                          the hints file -- a 0ms "cost" for a suite that did not actually run
 #                          would misinform scheduling, not merely be imprecise.
-#   --skip-gate-measure    With --regen-hints, skip the 23-gate measurement pass entirely (useful
-#                          when only the suite-level hints need refreshing).
+#   --skip-gate-measure    With --regen-hints, skip the registered-gate measurement pass entirely
+#                          (useful when only the suite-level hints need refreshing).
 #
 # Exit codes:
 #   0  measurement(s) completed and written (the artifact MAY still carry ALL_VALID=false if
@@ -110,6 +111,20 @@ set -uo pipefail
 _MGC_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 . "${_MGC_SCRIPT_DIR}/lib/common.sh"
+
+# Degrade-safe guarded source of the gate registry library -- same idiom verify-deploy.sh itself
+# uses: a missing library degrades to a stub (empty gate_registry_ids/gate_registry_load) rather
+# than aborting this script, and the default GATE_LIST below falls back to the last-known literal
+# (seq 1 23) with a warning when the registry cannot be read, instead of silently measuring zero
+# gates.
+_MGC_GREG_LIB="${_MGC_SCRIPT_DIR}/lib/gate-registry-lib.sh"
+if [ -f "$_MGC_GREG_LIB" ]; then
+  # shellcheck source=lib/gate-registry-lib.sh
+  . "$_MGC_GREG_LIB"
+fi
+declare -F gate_registry_ids >/dev/null 2>&1 || gate_registry_ids() { :; }
+declare -F gate_registry_load >/dev/null 2>&1 || gate_registry_load() { :; }
+gate_registry_load "${_MGC_SCRIPT_DIR}/gate-registry.data" 2>/dev/null || true
 
 # TARGET defaults to the caller's own working directory -- deliberately NOT derived via
 # common_repo_root's fixed-levels-up walk, which cannot distinguish source-store depth
@@ -349,7 +364,14 @@ if ! $SKIP_GATE_MEASURE; then
     done
   else
     GATE_LIST=()
-    for _g in $(seq 1 23); do GATE_LIST+=("$_g"); done
+    _mgc_registry_ids="$(gate_registry_ids)"
+    if [ -n "$_mgc_registry_ids" ]; then
+      for _g in $_mgc_registry_ids; do GATE_LIST+=("$_g"); done
+    else
+      echo "WARNING: measure-gate-costs.sh: gate registry unavailable, falling back to the last-known literal gate set (1-23); this list will not reflect any gate registered after it was written" >&2
+      for _g in $(seq 1 23); do GATE_LIST+=("$_g"); done
+    fi
+    unset _mgc_registry_ids
   fi
 
   MGC_ALL_VALID_GATES=1

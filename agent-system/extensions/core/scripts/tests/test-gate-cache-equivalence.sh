@@ -3,7 +3,7 @@
 # the Skip Path") of the input-scoped gate invalidation task. Proves, at the REAL
 # verify-deploy.sh INTERFACE (not the gate-cache-lib.sh unit level -- test-gate-cache-lib.sh
 # already covers digest computation exhaustively for arbitrary declarations), that the
-# --skip-unchanged WIRING behaves correctly against the REAL 23-gate registry: a real change
+# --skip-unchanged WIRING behaves correctly against the REAL registered-gate registry: a real change
 # always forces a re-run, a seeded violation is always found, and a genuinely unchanged gate
 # always skips -- across repeated runs, worker counts, and an mtime-only touch.
 #

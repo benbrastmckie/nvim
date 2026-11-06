@@ -1,13 +1,21 @@
 #!/usr/bin/env bash
 # test-verify-deploy-gate-selection-crash-net.sh - Cross-gate-variable crash-regression net: every
-# registered gate id 1..23 runs STANDALONE (`--only-gate <n>`) against a real-copy fixture, and
+# registered gate id runs STANDALONE (`--only-gate <n>`) against a real-copy fixture, and
 # none of them crashes (unbound variable / command-not-found / unary-operator-expected).
 #
+# REGISTRY-DERIVED id set, not a literal: this suite used to iterate the literal `seq 1 23`,
+# which silently under-covered gates 24-26 the moment they were registered -- not a red failure,
+# just quietly-never-exercised ids, which is why it was absent from the hardcoded-assertion
+# inventory that motivated this conversion (the five OTHER broken assertions went loudly red
+# instead). The id set now comes from `gate_registry_ids` (same registry library
+# verify-deploy.sh's own --only-gate bound derives from), so registering a gate gives it crash-net
+# coverage automatically, with no suite edit.
+#
 # SPLIT OUT of test-verify-deploy-gate-selection.sh (re-aim gate-cost-model work, "Cut the Two
-# Verify-Deploy-Testing Stragglers" phase): this one case -- exercising all 23 gates for real,
-# standalone, against a real corpus -- measured at ~149.7s of a ~186s suite total (80% of the
-# suite's cost, dominated by a single real gate-3 run at ~114.7s), while every OTHER case in the
-# parent suite (now 17 of them) sums to roughly 33s. The assertion genuinely needs the full
+# Verify-Deploy-Testing Stragglers" phase): this one case -- exercising every registered gate for
+# real, standalone, against a real corpus -- measured at ~149.7s of a ~186s suite total (80% of
+# the suite's cost, dominated by a single real gate-3 run at ~114.7s), while every OTHER case in
+# the parent suite (now 17 of them) sums to roughly 33s. The assertion genuinely needs the full
 # battery (it is a crash net across every gate id, not a narrowable selection -- `--only-gate`
 # already narrows each individual call to one gate, so there is nothing further to narrow without
 # dropping gate coverage, which this task's Non-Goals forbid). Splitting it into its own suite
@@ -38,10 +46,12 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
+source "$SCRIPT_DIR/../lib/gate-registry-lib.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
 
 VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
+gate_registry_load "$CORE_DIR/gate-registry.data"
 
 if [ ! -f "$VERIFY_DEPLOY" ]; then
   echo "ERROR: expected $VERIFY_DEPLOY" >&2
@@ -77,11 +87,12 @@ run_vd() {
 }
 
 # =====================================================================
-# Case (b): every gate id 1..23 runs clean standalone against FIXTURE_RICH (cross-gate-variable
-# regression net) -- no unbound-variable / unset-path crash for any of them.
+# Case (b): every REGISTERED gate id runs clean standalone against FIXTURE_RICH
+# (cross-gate-variable regression net) -- no unbound-variable / unset-path crash for any of them.
 # =====================================================================
+registry_ids="$(gate_registry_ids)"
 case_b_all_clean=true
-for n in $(seq 1 23); do
+for n in $registry_ids; do
   gate_n_out="$(run_vd "$FIXTURE_RICH" --only-gate "$n")"
   gate_n_rc=$?
   if printf '%s\n' "$gate_n_out" | grep -qiE 'unbound variable|: command not found|unary operator expected'; then
@@ -89,7 +100,8 @@ for n in $(seq 1 23); do
     case_b_all_clean=false
   fi
 done
-[ "$case_b_all_clean" = "true" ] && common_test_pass "case(b): all 23 gates run clean standalone against the real-copy fixture (no cross-gate variable dependency)"
+registry_count="$(printf '%s\n' "$registry_ids" | wc -w | tr -d ' ')"
+[ "$case_b_all_clean" = "true" ] && common_test_pass "case(b): all $registry_count registered gates ($registry_ids) run clean standalone against the real-copy fixture (no cross-gate variable dependency)"
 
 # =====================================================================
 # Summary

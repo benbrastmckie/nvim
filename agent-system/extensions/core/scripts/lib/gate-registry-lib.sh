@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # gate-registry-lib.sh - Parses scripts/gate-registry.data and executes one gate by id.
 #
-# THIS IS A THIN INTERPRETER, DELIBERATELY. The declarative registry removes the 23-gate
+# THIS IS A THIN INTERPRETER, DELIBERATELY. The declarative registry removes the registered-gate
 # copy-pasted `if gate_selected N; then ... fi` BOILERPLATE from verify-deploy.sh's top level
 # (adding a migrated gate becomes a data-file row plus one `gateN_run` function, not a 40-line
 # inline block), but it does NOT attempt to generically re-derive each gate's own selection,
