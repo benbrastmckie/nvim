@@ -13,7 +13,7 @@ next_project_number: 518
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,431,445,446,448,458,463,472,475,492,497,516 | 369,383,397,409,412,418,430,435,459,491,493,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 360,390,399,402,436,438,439,444,451,455,461,474,476,484,500,507 | 313,391,398,420,423,431,435,445,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 360,390,399,402,436,438,439,444,451,455,461,474,476,484,500,507 | 313,391,398,420,423,431,435,445,446,448,458,515 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,454,457,462,479,481,486,517 | 360,390,402,435,439,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 5 | 450,480,487,501,508,509,513 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 6 | 496 | 450,487,488 | extensions |
@@ -54,6 +54,8 @@ next_project_number: 518
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
 515 [NOT STARTED] — Rebase the bounded-wait guidance on the measured...
+  └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
+    └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
   └─ 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
@@ -61,8 +63,7 @@ next_project_number: 518
     └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 431 [PLANNED] — Record the gate-enforced verbatim-duplication exclusion class...
-  └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
-    └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
+  └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the... (see above)
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
 445 [PLANNED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
@@ -3955,7 +3956,7 @@ have a BimodalLogic-local record created for it.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 328, Task 435, Task 439
+- **Dependencies**: Task 328, Task 435, Task 439, Task 515
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -4684,7 +4685,7 @@ Severity: minor-to-costly. Nothing is broken today -- gate16 WARNS and never fai
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 431
+- **Dependencies**: Task 431, Task 515
 
 **Description**: # Proposed task: audit cross-extension duplication of the bounded-wait agent contract
 
