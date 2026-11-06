@@ -58,8 +58,8 @@ next_project_number: 513
 493 [NOT STARTED] — Fix plan-format.md Tier Justification: a suite entry point...
 502 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
-505 [RESEARCHED] — Make covering-suite selection resolve a non-core extension's...
-506 [RESEARCHED] — Stop the bounded-waiter hook refusing a write whose prose...
+505 [PLANNING] — Make covering-suite selection resolve a non-core extension's...
+506 [PLANNING] — Stop the bounded-waiter hook refusing a write whose prose...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -76,7 +76,7 @@ next_project_number: 513
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
-483 [NOT STARTED] — Document that an extension lifecycle hook can never fire...
+483 [RESEARCHING] — Document that an extension lifecycle hook can never fire...
 495 [NOT STARTED] — Give the formal extension research agents the verbatim...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
@@ -114,7 +114,7 @@ next_project_number: 513
 
 ### Orchestrator
 
-409 [RESEARCHED] — Advise at admission when a task's declared file\_scope...
+409 [PLANNED] — Advise at admission when a task's declared file\_scope...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
@@ -126,12 +126,12 @@ next_project_number: 513
 
 ### Agent System
 
-418 [RESEARCHED] — Make the lint-fixture-test family subject resolution explicit...
+418 [PLANNING] — Make the lint-fixture-test family subject resolution explicit...
   └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
-488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
+488 [RESEARCHING] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
-512 [RESEARCHED] — verify-deploy gate 24 reports two findings against lines that...
+512 [PLANNING] — verify-deploy gate 24 reports two findings against lines that...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -142,7 +142,7 @@ next_project_number: 513
 
 ### 512. Builtin command exemption for dead command lint
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -346,7 +346,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 ---
 
 ### 506. Stop the bounded-waiter hook refusing a write whose prose documents the anti-pattern the hook enforces
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -387,7 +387,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 ---
 
 ### 505. Make covering-suite selection resolve a non-core extension's source-store scripts instead of escalating to a full sweep
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1532,7 +1532,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_d
 
 ### 488. Adjudicate where MCP write-tool permission grants belong: repo-scoped extension fragment vs. the server owner's own configuration
 - **Effort**: small
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -1735,7 +1735,7 @@ file_scope here overlaps #430, #446 and #469 on git-commit-phase.sh, git-commit-
 ---
 
 ### 483. Document that an extension lifecycle hook can never fire without a declared task_type
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -4924,7 +4924,7 @@ Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json 
 ---
 
 ### 418. Make the lint-fixture-test family subject resolution explicit and self-declaring
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 411, Task 415, Task 419
@@ -5286,11 +5286,12 @@ NON-GOALS: no change to the fingerprint computation itself (`stat` vs `hash` mod
 
 ### 409. Advise at admission when a task's declared file_scope already holds uncommitted changes
 - **Effort**: low
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 407, Task 378, Task 387, Task 401, Task 403
 - **Research**: [409_advise_on_dirty_file_scope_at_admission/reports/01_dirty-scope-advisory-research.md]
+- **Plan**: [409_advise_on_dirty_file_scope_at_admission/plans/01_dirty-scope-advisory-admission.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 409,
+  "phase": "plan",
+  "session_id": "sess_1793988163_b25d4a_409",
+  "dispatch_seq": 6,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase plan adding dirty_scope_advisory, a fourth additive non-blocking advisory, to the admission verdict: computed in orchestrate-batch-admit.sh from the candidate's own file_scope against git diff --name-only HEAD and merged at all 8 whole_tree_claim_frag sites, ledgered in orchestrate-cycle-plan.sh, rendered as Class J in orchestrate-predispatch-review.sh, with presence/absence regression cases in both dispatch-named suites behind a new git-repository TMPROOT fixture. Resolved the dispatch's two open questions: git-snapshot.sh needs no change (design precedent only, and git diff --name-only HEAD already covers staged paths so no --cached pass is needed), and doc convergence is two files, not three, because neither later sibling advisory appears in orchestrate-batch-results-template.md. Waves: [1], [2,3,4,5], [6]; 6.5h estimated; final phase declares the __WHOLE_TREE__ sentinel for the deploy-headless.sh redeploy.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/409_advise_on_dirty_file_scope_at_admission/plans/01_dirty-scope-advisory-admission.md",
+      "summary": "6-phase implementation plan for the dirty-worktree admission advisory, its ledger, its Class J rendering, regression coverage, two-doc convergence, and the final redeploy."
+    }
+  ]
+}

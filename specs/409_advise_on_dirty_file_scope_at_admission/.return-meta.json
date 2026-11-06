@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793988163_b25d4a_409",
-  "dispatch_seq": 1,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/409_advise_on_dirty_file_scope_at_admission/reports/01_dirty-scope-advisory-research.md",
-      "summary": "Maps the new dirty-worktree-vs-file_scope advisory onto the existing idle_overlap_advisory/absent_scope_advisory/cross_session_hazard pattern across orchestrate-batch-admit.sh, orchestrate-cycle-plan.sh, and orchestrate-predispatch-review.sh (Class J), reuses scopes_overlap_first() with no new jq logic, rules out any git-snapshot.sh code change, and flags the real gap: neither named regression suite's TMPROOT is an actual git repo today."
+      "type": "plan",
+      "path": "specs/409_advise_on_dirty_file_scope_at_admission/plans/01_dirty-scope-advisory-admission.md",
+      "summary": "6-phase plan adding an additive, non-blocking dirty_scope_advisory field to the admission verdict, its per-cycle ledger, a Class J pre-dispatch rendering, presence/absence regression coverage in both named suites, two-doc convergence, and a final redeploy to landed_verify_clean."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1793988163_b25d4a_409",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6.5,
+    "dependency_waves": [[1], [2, 3, 4, 5], [6]]
+  },
   "memory_candidates": [
     {
-      "content": "In orchestrate-batch-admit.sh's jq program (lib/file-scope-overlap.sh's spliced FILE_SCOPE_OVERLAP_JQ_DEFS), scopes_overlap_first(own_scope; other_scope) can double as a containment predicate for a single concrete path by passing [path] (or an array of concrete paths) as other_scope -- exact match or directory-prefix-ancestor in either direction already answers 'is this concrete path covered by this declared scope', with no new jq def needed. One accepted blind spot: glob-shaped scope entries are invisible to it (Class G already warns about this elsewhere).",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/409_advise_on_dirty_file_scope_at_admission/reports/01_dirty-scope-advisory-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["jq", "scopes_overlap_first", "file_scope", "containment", "orchestrate-batch-admit"]
-    },
-    {
-      "content": "Additive, decision-never-changing advisory fields on an orchestrate-batch-admit.sh verdict follow one converged 4-surface pattern: (1) bash-layer precompute once per invocation with a degrade-safe default (e.g. sessions_json, critical_expanded_json), (2) a jq fragment computed once from the candidate's own file_scope/relevant inputs and merged (+ $frag) into every verdict branch the fold can produce, (3) a mirrored *_ledger field in orchestrate-cycle-plan.sh's mt_state_file (declared in header comment, //= [] initializer, capture block inside the per-row read loop keyed on 'field != null'), (4) a new lettered Class in orchestrate-predispatch-review.sh (next unused letter; a field that never changes decision gets ONE rendering block with no deferred/admitted split, unlike C/D/H which split because their signal can also cause a defer).",
+      "content": "Adding an additive, decision-never-changing advisory field to the orchestrate admission verdict is a fixed five-surface checklist, not an open design problem. (1) Bash layer in orchestrate-batch-admit.sh: compute the input once per invocation next to sessions_json/critical_expanded_json, degrade-safe to a default [] on any failure, pass via --argjson. (2) jq layer: if the check depends only on the candidate's own file_scope, compute the fragment right where $c_scope is bound and merge it at every site '+ $whole_tree_claim_frag' already appears (currently 8), leaving it structurally absent on the three early-exit branches; if it depends on a cross-task or session comparison, scope it like cross_session_hazard instead. (3) orchestrate-cycle-plan.sh: a *_ledger field needs a mt_state_file header-comment entry, a '//= []' self-initializer, and a capture block in the per-row loop that fires regardless of decision. (4) orchestrate-predispatch-review.sh: allocate the next free Class letter; use Class I's single-block style (no deferred/admitted split) when the field never changes a decision, and write a zero-count line that cannot be misread as 'never tested'. (5) Docs: batch-admit-schema.md Field Definitions row plus a Version History note (additive fields take NO $schema bump), and batch-orchestration-guardrails.md's Blocking-vs-Advisory table row. Containment checks need no new jq def -- scopes_overlap_first from lib/file-scope-overlap.sh is already spliced in and answers 'does any foreign path fall inside this scope'. Reconstructing this costs a four-file archaeology pass each time.",
       "category": "PATTERN",
-      "source_artifact": "specs/409_advise_on_dirty_file_scope_at_admission/reports/01_dirty-scope-advisory-research.md",
+      "source_artifact": "specs/409_advise_on_dirty_file_scope_at_admission/plans/01_dirty-scope-advisory-admission.md",
       "confidence": 0.85,
-      "suggested_keywords": ["admission-advisory", "orchestrate-batch-admit", "orchestrate-cycle-plan", "orchestrate-predispatch-review", "ledger-pattern"]
-    },
-    {
-      "content": "common_repo_root() (lib/common.sh) is pure path arithmetic -- it walks up N directory levels from the script's own location, never calling 'git rev-parse'. Consequently, test suites that build an isolated $TMPROOT by copying scripts byte-for-byte (test-conflict-predicate.sh, test-four-tier-conflict.sh) resolve a valid PROJECT_ROOT inside $TMPROOT even though $TMPROOT is never an actual git repository (no 'git init' in either suite). Any new check that shells out to real git commands (e.g. 'git diff --name-only HEAD') will silently degrade to empty/failure inside these existing fixtures unless the fixture builder is extended with git init + a baseline commit.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/409_advise_on_dirty_file_scope_at_admission/reports/01_dirty-scope-advisory-research.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["test-conflict-predicate", "test-four-tier-conflict", "TMPROOT", "common_repo_root", "git-fixture-gap"]
+      "suggested_keywords": ["admission-advisory", "orchestrate-batch-admit", "additive-field", "file-scope-overlap", "predispatch-review-class", "ledger-convention"]
     }
   ],
-  "next_steps": "Run /orchestrate 409 to create implementation plan"
+  "next_steps": "Run /orchestrate 409 to execute the plan",
+  "dispatch_seq": 6
 }
