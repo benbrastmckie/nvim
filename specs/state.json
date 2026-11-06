@@ -2232,7 +2232,7 @@
     {
       "project_number": 385,
       "project_name": "lean4_plan_with_zero_lean_goals",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Define the sanctioned shape for a lean4-typed plan that commits to no theorem, and make lean-challenge-snapshot.sh distinguish it from a malformed one",
       "description": "SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).\n\nSCOPE SPANS TWO EXTENSIONS: `extensions/core/context/formats/plan-format.md` and\n`extensions/lean/scripts/lean-challenge-snapshot.sh` (+ its design record\n`extensions/lean/context/project/lean4/domain/challenge-snapshot.md`).\n\nEVIDENCE (re-verified 2026-10-10 against the source store; originating report task 757,\nissues.jsonl entry_id iss_1791673989121_pKYeau, class specification_gap, severity minor).\n\nA lean4-typed plan that proves nothing has no sanctioned shape, and both available shapes fail\nidentically:\n\n1. `plan-format.md` gates the section two ways, and neither admits the zero-theorem case. Its\n   numbered-section list says \"**Lean Challenge Statements** (lean/lean4 plans only) - under\n   `## Lean Challenge Statements`, present only when the plan's `task_type` is `lean`/`lean4`\",\n   and the `## Lean Challenge Statements (format, lean/lean4 plans only)` section repeats\n   \"Present only when the plan's `task_type` is `lean`/`lean4`\". Neither states what a lean4 plan\n   with zero Lean goals should do. A repo-wide search of plan-format.md and\n   challenge-snapshot.md for a zero-goal / no-theorem-deliverable / inapplicable clause returns\n   nothing.\n\n2. `lean-challenge-snapshot.sh` fails on both shapes with the SAME code. Section present but\n   carrying zero ```lean fenced blocks is `extract_r1` status 2, which the main resolution block\n   turns into a bare `exit 71`. Section absent entirely is `extract_r1` status 1, which falls\n   through to the R2 git-baseline fallback; the subsequent `if [ ! -s \"$GOALS_FILE\" ]` guard then\n   emits \"ERROR: no identifiers found under **Goals**: ... nothing to snapshot.\" and also\n   `exit 71`. The script's own header documents 71 as \"Config error\", so a deliberate\n   no-theorem-deliverable plan is indistinguishable from a malformed one.\n\nThe originating plan worked around this by omitting the section entirely, recording the reason in\nits Decisions, and marking `--compare` inapplicable to that task.\n\nGOAL. Decide and document the sanctioned shape for a lean/lean4-typed plan with no theorem\ndeliverable, and make `lean-challenge-snapshot.sh` agree with whatever is decided, so that such a\nplan is mechanically distinguishable from a malformed one. The shape itself is this task's design\nquestion and is deliberately NOT pre-decided here: an explicit \"omit the section and record why in\nDecisions\" clause in plan-format.md plus a distinct non-71 (possibly zero) exit for the\nzero-identifier case is one candidate; an explicit opt-out marker the script recognizes is\nanother; research picks the mechanism. Whatever is chosen must also settle what `--compare` and\nthe Comparator flow do for such a plan, and must keep the existing malformed-section detection\n(present-but-empty R1 section) a hard, loud failure -- the two cases must not collapse back into\none code.\n\nACCEPTANCE. (a) plan-format.md states the sanctioned shape for a lean/lean4 plan with zero Lean\ngoals, at the `## Lean Challenge Statements` section. (b) A fixture lean4 plan carrying zero Lean\ngoals in the sanctioned shape runs through lean-challenge-snapshot.sh with an outcome that is\ndistinguishable from exit 71, and the outcome is documented in the script's own exit-code header\nand in challenge-snapshot.md's \"Exit-Code Vocabulary\" section. (c) A fixture lean4 plan with a\npresent-but-empty `## Lean Challenge Statements` section still fails loudly. (d) The identifier-set\ncross-validation behaviour for ordinary lean4 plans is unchanged.",
@@ -2244,9 +2244,16 @@
         "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md"
       ],
       "created": "2026-10-11T00:09:24Z",
-      "last_updated": "2026-11-06T06:48:16Z",
-      "artifacts": [],
-      "session_id": "sess_1793947646_0784d9_385"
+      "last_updated": "2026-11-06T07:00:42Z",
+      "artifacts": [
+        {
+          "path": "specs/385_lean4_plan_with_zero_lean_goals/reports/01_zero-lean-goals-plan-shape.md",
+          "type": "report",
+          "summary": "Decides and documents the sanctioned shape for a lean4 plan with zero Lean goals: a recognized `<!-- lean-challenge-statements:none -->` marker inside a present-but-block-free '## Lean Challenge Statements' section, a new extract_r1 internal status 3, and a new dedicated exit code 72 in lean-challenge-snapshot.sh, distinct from the existing exit 71 malformed-section/config-error path. Settles --compare/Comparator disposition as a documentation-only change (existing challenge_missing advisory preflight already covers it). Identifies a pre-existing test-coverage gap for the present-but-empty-section hard-failure path."
+        }
+      ],
+      "session_id": "sess_1793947646_0784d9",
+      "next_artifact_number": 2
     },
     {
       "project_number": 390,

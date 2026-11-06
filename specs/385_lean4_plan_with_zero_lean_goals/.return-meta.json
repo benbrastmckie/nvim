@@ -1,0 +1,17 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1793947646_0784d9_385",
+  "dispatch_seq": 1,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/385_lean4_plan_with_zero_lean_goals/reports/01_zero-lean-goals-plan-shape.md",
+      "summary": "Decides and documents the sanctioned shape for a lean4 plan with zero Lean goals: a recognized `<!-- lean-challenge-statements:none -->` marker inside a present-but-block-free '## Lean Challenge Statements' section, a new extract_r1 internal status 3, and a new dedicated exit code 72 in lean-challenge-snapshot.sh, distinct from the existing exit 71 malformed-section/config-error path. Settles --compare/Comparator disposition as a documentation-only change (existing challenge_missing advisory preflight already covers it). Identifies a pre-existing test-coverage gap for the present-but-empty-section hard-failure path."
+    }
+  ],
+  "next_steps": "Run /orchestrate 385 to create implementation plan",
+  "memory_candidates": []
+}

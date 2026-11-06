@@ -104,7 +104,7 @@ next_project_number: 505
 
 ### Lean Extension
 
-385 [RESEARCHING] — Define the sanctioned shape for a lean4-typed plan that...
+385 [RESEARCHED] — Define the sanctioned shape for a lean4-typed plan that...
   └─ 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
     └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
@@ -6173,10 +6173,11 @@ two files where there is one.
 ---
 
 ### 385. Define the sanctioned shape for a lean4-typed plan that commits to no theorem, and make lean-challenge-snapshot.sh distinguish it from a malformed one
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
+- **Research**: [385_lean4_plan_with_zero_lean_goals/reports/01_zero-lean-goals-plan-shape.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one (never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
