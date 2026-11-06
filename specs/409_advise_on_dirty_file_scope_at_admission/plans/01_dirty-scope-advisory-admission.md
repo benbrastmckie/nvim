@@ -463,7 +463,7 @@ prescribes, plus
 
 ---
 
-### Phase 6: Redeploy and full gate set [NOT STARTED]
+### Phase 6: Redeploy and full gate set [IN PROGRESS]
 
 **Goal**: The deployed `.claude/` tree reflects every source-store change and the complete gate
 set is green.
