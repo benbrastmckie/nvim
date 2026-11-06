@@ -1,5 +1,5 @@
 ---
-next_project_number: 514
+next_project_number: 515
 ---
 
 # TODO
@@ -11,10 +11,10 @@ next_project_number: 514
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511,512 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,420,439,444,446,448,458,463,472,474,475,476,492,497 | 369,383,397,409,412,418,423,430,431,435,445,459,491 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 360,390,399,402,436,438,451,454,455,461,484,500,507 | 313,391,398,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511,512,514 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,420,431,445,446,448,458,463,472,475,492,497 | 369,383,397,409,412,418,430,435,459,491 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 360,390,399,402,436,438,439,444,451,455,461,474,476,484,500,507 | 313,391,398,420,423,431,435,445,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 421,449,452,454,457,462,479,481,486 | 360,390,402,435,439,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 5 | 450,480,487,501,508,509,513 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 6 | 496 | 450,487,488 | extensions |
 | 7 | 498 | 496 | extensions |
@@ -31,18 +31,11 @@ next_project_number: 514
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
-431 [PLANNED] — Record the gate-enforced verbatim-duplication exclusion class...
-  └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
-    └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
-  └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
 435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
-  └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
+  └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
   └─ 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
-445 [PLANNED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
-  └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
-  └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or... (see above)
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
@@ -65,6 +58,14 @@ next_project_number: 514
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
     └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
+431 [PLANNED] — Record the gate-enforced verbatim-duplication exclusion class...
+  └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
+    └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
+  └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
+444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
+445 [PLANNED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
+  └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts... (see above)
+  └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or... (see above)
 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory... (see above)
@@ -117,6 +118,7 @@ next_project_number: 514
 409 [IMPLEMENTING] — Advise at admission when a task's declared file\_scope...
 466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
+514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
@@ -140,6 +142,36 @@ next_project_number: 514
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 514. Convergence guard blind to zero-dispatch cycles
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage, Channel (b), of an orchestration run; user-approved task creation for a confirmed defect. Durable records: issue-log entry iss_1793992157216_ZCSwKL (class "orchestrator convergence guard blind spot", severity costly, resolution open) in specs/445_gate8_expected_vs_new_failure_distinction/issues.jsonl, and metadata.detected_defects[0] (class ORCHESTRATOR_CONVERGENCE_GUARD_BLIND_SPOT) in specs/.orchestration/.return-meta-multi-sess_1793990805_500dd7.json.
+
+DEFECT. In orchestrate-cycle-plan.sh, the block commented "Convergence guard" tests `${#probed_dispatch[@]} -eq 0 && ${#eligible_tasks[@]} -gt 0`; on the else branch it resets `.consecutive_no_dispatch_cycles` to 0, and only at a streak of 3 does it set stop_reason="convergence_guard". The predicate is wrong on two counts:
+
+(1) WRONG ARRAY. `probed_dispatch` is not the cycle's emitted dispatch set. It is the output of the read-only lock PROBE loop (`task-lock.sh check`), and it is then narrowed twice more -- first to `probed_dispatch_post_h1` (H1-refused candidates moved to blocked[]), then by the live per-task loop, whose only `out_dispatch_rows+=` site is at the very END of the loop body. Every `continue` before that point drops a task from the emitted `dispatch[]` while leaving it counted in `probed_dispatch`. Those downstream exclusion paths are: project_name unresolvable in state.json; "locked by another session at ACQUIRE time"; task-lock.sh acquire errored; orchestrate-build-dispatch.sh failed; identity-seq mismatch; and the identical-dispatch halt. The acquire-time lock failure is the dominant one and is structurally invisible to the guard, because the guard's evidence is the earlier read-only `check`.
+
+(2) WRONG SITING relative to its own stated purpose. The guard's stop_message blames "a tie-breaker defect ... or an unexpected file_scope_collision/session_active chain", but the admission defer that implements those (`if [ "${admit_decision[$t]:-defer}" = "defer" ]` -> out_deferred_rows, `continue`) runs ABOVE the guard and correctly leaves those tasks out of `probed_dispatch`. So the guard covers the class it names while being blind to the class that actually stalls a run.
+
+CONSEQUENCE: on any cycle where at least one candidate survives the probe but every survivor is excluded downstream, the else branch fires and resets the counter to 0 even though `dispatch[]` is emitted empty. The counter can never reach 3, so stop_reason="convergence_guard" is unreachable for this entire class of stall and the loop spins until an operator kills it.
+
+NOT COVERED ELSEWHERE: the no-eligible circuit breaker (stop_reason="no_eligible_stuck" / "max_cycles") is computed inside the eligibility loop from `any_stuck` and cannot cover this case -- in this class of stall the candidates ARE eligible and are excluded later, at admission/acquire. The identical-dispatch convergence guard is a different mechanism (it compares dispatch CONTENT across cycles and fires only once a dispatch has actually been built).
+
+OBSERVED EVIDENCE (session sess_1793990805_500dd7, batch 418,431,435,445). Cycles 3 and 4 were byte-identically zero-dispatch with no stop verdict emitted: #431 deferred on a __WHOLE_TREE__ file-scope collision with out-of-batch non-terminal #409; #445 deferred by the self-modification tie-breaker in favor of #418; #418 and #435 both locked by a concurrent live session. `consecutive_no_dispatch_cycles` still read 0 after cycle 4, and the script's own stderr reported "Contended-path manifest: 83 path(s) contended across 2 dispatched task(s) this cycle" -- that manifest is built over `probed_dispatch_post_h1`, so it is direct confirmation that 2 tasks were still counted as dispatching while `dispatch[]` emitted empty. The run had to be terminated by operator judgment.
+
+VERIFIED AT TASK CREATION: the guard block reads as described in the source store; the deployed copy .claude/scripts/orchestrate-cycle-plan.sh is byte-identical to the source-store copy (so the repository's current core/lean deploy staleness does not affect this file). `__WHOLE_TREE__` does not appear in orchestrate-cycle-plan.sh at all -- it lives in scripts/lib/file-scope-overlap.sh and reaches this script only through the upstream admission computation.
+
+REMEDY DIRECTIONS (to evaluate, not prescriptive). (a) Re-site the guard below the live per-task loop so it runs after every admission/acquire/build exclusion has had its say. (b) Or keep it where it is for the increment-side cheapness but change the predicate to count the finally-emitted `out_dispatch_rows`, so the counter reflects what the cycle actually dispatched. Either way: preserve the legitimate reset path (a cycle that genuinely dispatches must still clear the counter); decide deliberately whether an aux-only composition counts as a dispatch for this guard, and keep that decision consistent with the EXISTING deliberate exclusion of aux-only compositions from the plan_cache write guard (documented in this script's own header field-list comment and at the plan_cache write site) -- that exclusion is load-bearing and must not be broken as a side effect; refresh the now-misleading stop_message so it names the acquire-time and build-failure exclusions it would newly cover; and add regression coverage in tests/test-orchestrate-cycle-plan.sh for the specific shape "probe non-empty, emitted dispatch[] empty, counter must increment".
+
+SCOPE NOTE: the declared file_scope overlaps #420 (same 3 paths) and #487 (2 paths, orchestrate-cycle-plan.sh and its test suite). These are distinct defects, not duplicates; the overlap is a batching/serialization concern and the admission gate's file-scope collision deferral will serialize them mechanically at dispatch time.
+
+---
 
 ### 513. Mechanically detect a plan phase that closed without its own commit
 - **Status**: [NOT STARTED]
@@ -4363,7 +4395,7 @@ PARTS A AND B WERE DELIBERATELY COMBINED, not split: they are the two halves of 
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 414, Task 415
+- **Dependencies**: Task 414, Task 415, Task 418
 - **Parent**: Task 424
 - **Research**: [445_gate8_expected_vs_new_failure_distinction/reports/01_gate8-expected-new-distinction.md]
 - **Plan**: [445_gate8_expected_vs_new_failure_distinction/plans/01_gate8-expected-new-distinction.md]
@@ -4750,7 +4782,7 @@ No dependency edge on 467 or 468 is declared. The scope exclusion, not serializa
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 328
+- **Dependencies**: Task 328, Task 409
 - **Research**: [431_durable_record_for_gate_enforced_verbatim_fragments/reports/01_gate-enforced-fragment-duplication-record.md]
 - **Plan**: [431_durable_record_for_gate_enforced_verbatim_fragments/plans/01_gate-enforced-duplication-record.md]
 
