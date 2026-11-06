@@ -40,11 +40,11 @@ next_project_number: 515
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
-464 [NOT STARTED] — Make a plan's per-phase line estimates checkable against a...
-465 [RESEARCHED] — check-record-versioning.sh PATH\_SCOPE mode reports...
+464 [RESEARCHING] — Make a plan's per-phase line estimates checkable against a...
+465 [PLANNING] — check-record-versioning.sh PATH\_SCOPE mode reports...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
-478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
-489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
+478 [RESEARCHING] — Make lint Check J fail on a missing handoff-writer section...
+489 [PLANNING] — Derive gate-count expectations in sibling test suites from...
 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
@@ -76,7 +76,7 @@ next_project_number: 515
 342 [HOLD] — Refactor the books extension's context corpus against the...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
-408 [NOT STARTED] — Gate the formal extension's mandatory Mathlib-lookup step on...
+408 [RESEARCHED] — Gate the formal extension's mandatory Mathlib-lookup step on...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
 495 [NOT STARTED] — Give the formal extension research agents the verbatim...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
@@ -116,7 +116,7 @@ next_project_number: 515
 ### Orchestrator
 
 409 [IMPLEMENTING] — Advise at admission when a task's declared file\_scope...
-466 [RESEARCHED] — validate-wiring.sh reports Missing context file for context...
+466 [PLANNING] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
@@ -1733,7 +1733,7 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 
 ### 489. Derive gate-count expectations in sibling test suites from the live gate registry
 - **Effort**: small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2456,7 +2456,7 @@ An edge on validate_carried_unverified_names_a_source is declared because that t
 
 ### 478. Make lint Check J fail on a missing handoff-writer section instead of skipping the file
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2966,7 +2966,7 @@ CONCURRENT TERRITORY NOTE: open task #461 (v7_refuses_cached_untracking_pathspec
 
 ### 466. validate-wiring.sh reports Missing context file for context paths present on disk and in index.json
 - **Effort**: 3 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
@@ -3016,7 +3016,7 @@ Audited against the full backlog corpus before creation. The single mechanically
 
 ### 465. check-record-versioning.sh PATH_SCOPE mode reports false-clean on a file present on disk but not git-tracked
 - **Effort**: 2 hours
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328
@@ -3059,7 +3059,7 @@ Audited against the full backlog corpus before creation. The closed record recor
 ---
 
 ### 464. Make a plan's per-phase line estimates checkable against a line ceiling the same plan cites, so a plan cannot contradict its own arithmetic
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -5635,10 +5635,11 @@ rather than warning about what already has). Edges were declared instead of a me
 
 ### 408. Gate the formal extension's mandatory Mathlib-lookup step on an actual Lean target
 - **Effort**: low
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 359
+- **Research**: [408_gate_mathlib_lookup_on_lean_target/reports/01_gate-mathlib-lookup-surfaces.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/formal/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
