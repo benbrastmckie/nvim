@@ -23587,7 +23587,7 @@
     {
       "project_number": 489,
       "project_name": "derive_gate_count_expectations_from_registry",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Derive gate-count expectations in sibling test suites from the live gate registry",
       "description": "Make the gate-count expectations in two sibling test suites derive from the live gate registry instead of hardcoding integers, so that registering a new gate requires no edits to unrelated suites.\n\nCHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1793897002_11e720.\nCITATION: {task 471, iss_1793898478763_2WjvRL}, class \"test-fixture-drift\".\n\nTHE PROBLEM, VERIFIED: registering gate 26 broke five hardcoded assertions across two suites that are not about the new gate at all:\n  scripts/tests/test-gate-registry-resolution.sh -- case1 expected exactly 25 ids; case32 and case33 hardcoded 25 as the live max and 26 as one-past-max.\n  scripts/tests/test-verify-deploy-gate-selection.sh -- case (c) used 24 as an out-of-range probe id; case (d) iterated `seq 1 23`.\nAll five were mechanically bumped to the new live max (26) and one-past (27) to land that work. That fix-up is correct but not durable: the next gate registered repeats it exactly, and because neither suite is in a gate-adding task's natural file_scope, it also repeats the declared-scope widening that was needed to commit it.\n\nWHY IT MATTERS: verify-deploy.sh already dispatches gates dynamically via gate_registry_ids plus \"gate${id}_run\", so adding a gate needs only a gate-registry.data row and a gateN_run function -- no call-site list. These two test suites are the sole remaining place where a hardcoded gate count survives, which makes them a recurring, avoidable tax on every future gate and a standing source of spurious red.\n\n--- REQUIRED OUTCOMES ---\n\n1. Derive the live max gate id and the one-past-max probe id from gate_registry_ids (the same source verify-deploy.sh's own --only-gate bound already derives from) rather than writing integers into assertions. Do not merely move the integers into a variable initialised to a literal -- the value must come from the registry at test time.\n\n2. Preserve each assertion's intent. Case (c)'s out-of-range probe must still probe genuinely out-of-range, and case (d)'s enumeration must still cover exactly the real id set. A derived value that silently makes an assertion vacuous is a regression, not a fix: show for each converted assertion that it still fails when it should.\n\n3. Add a guard that the suites' own notion of the id set matches verify-deploy.sh's, so the two cannot drift apart in the other direction.\n\n4. Verify by registering a throwaway gate in a fixture (never in the real gate-registry.data) and confirming both suites stay green without edits.\n\nCONCURRENT TERRITORY NOTE: the creation-time proposal audit returned three mechanically-corroborated\nsubset-of-open verdicts, each sharing BOTH of this task's declared paths: record 328\n(systematic_script_and_test_corpus_efficiency, which declares the whole scripts/tests/ directory),\nrecord 435 (reword_dead_lifecycle_command_prose_per_class) and record 448\n(contain_deliberate_break_source_mutations). Records 418 and 414 additionally declare\nscripts/gate-registry.data. Serialize against all of these rather than co-scheduling in parallel;\nthe audit passed both its mechanical and semantic gates, so these are ordering constraints, not a\nduplication verdict.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. Never hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store. Redeploy afterwards via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean.",
@@ -23608,12 +23608,17 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-05T18:31:56Z",
-      "last_updated": "2026-11-06T20:26:14Z",
+      "last_updated": "2026-11-06T23:05:11Z",
       "artifacts": [
         {
           "path": "specs/489_derive_gate_count_expectations_from_registry/plans/01_registry-derived-gate-count-expectations.md",
           "type": "plan",
           "summary": "7-phase plan: registry-derived gate-count expectations, two drift guards, fixture-store throwaway-gate proof, full battery plus redeploy."
+        },
+        {
+          "path": "specs/489_derive_gate_count_expectations_from_registry/summaries/01_registry-derived-gate-count-expectations-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 7 phases, decisions, deviations, verification, and follow-ups."
         }
       ],
       "audit_verdict": {
@@ -24760,7 +24765,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1793993117_98582a"
+      "session_id": "sess_1793993117_98582a",
+      "completion_summary": "Converted every hardcoded gate-count assertion in test-gate-registry-resolution.sh and test-verify-deploy-gate-selection.sh (plus the crash-net suite and measure-gate-costs.sh) to derive from the live gate registry, added gate_registry_max_id and gate_store_fixture_build as reusable primitives, added two cross-source drift guards (G1, G2), and proved the acceptance bar mechanically via a throwaway-gate fixture case in both suites. Directly fixed a real regression (test-verify-deploy-gate-selection.sh's case (c) went red mid-dispatch when a sibling task registered a real gate 27) and confirmed the fix in the final covering run. Deployed with two documented, confirmed-unrelated exclusions (a pre-existing gate10 timeout flake and two memory-extension doc violations)."
     },
     {
       "project_number": 490,

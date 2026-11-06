@@ -28,28 +28,50 @@
       "category": "INSIGHT",
       "source_artifact": "specs/489_derive_gate_count_expectations_from_registry/summaries/01_registry-derived-gate-count-expectations-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["lint-gate-registry", "fixture-store", "self-relative-resolution", "verify-deploy", "BASH_SOURCE"]
+      "suggested_keywords": [
+        "lint-gate-registry",
+        "fixture-store",
+        "self-relative-resolution",
+        "verify-deploy",
+        "BASH_SOURCE"
+      ]
     },
     {
       "content": "When building a test fixture that invokes verify-deploy.sh's gate-dispatch path for a single synthetic/throwaway gate id (not a full repo scan), pass the REAL repo root as TARGET rather than the fixture store's own root -- verify-deploy.sh refuses any TARGET without an existing deployed .claude/ tree before it reaches gate dispatch at all, and a minimal fixture-store builder correctly does not fabricate one. The throwaway gate's own body needs only the fixture's self-relative-resolved verify-deploy.sh/lib/data to carry the fixture shape; TARGET itself only needs to pass the entry check.",
       "category": "PATTERN",
       "source_artifact": "specs/489_derive_gate_count_expectations_from_registry/summaries/01_registry-derived-gate-count-expectations-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy", "fixture-store", "gate-dispatch", "TARGET-argument", "throwaway-gate"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "fixture-store",
+        "gate-dispatch",
+        "TARGET-argument",
+        "throwaway-gate"
+      ]
     },
     {
       "content": "When converting a hardcoded test assertion to derive from a live data source, derive the expected value from a source INDEPENDENT of the function under test (e.g. a raw awk/grep re-read of the data file), never from the same accessor function the test is validating -- otherwise a broken accessor (bad sort, dropped entry) compares equal to itself and the assertion goes silently vacuous. Pair every such conversion with an explicit negative-control case demonstrating the comparison still discriminates (e.g. a synthetic copy with one entry removed).",
       "category": "TECHNIQUE",
       "source_artifact": "specs/489_derive_gate_count_expectations_from_registry/summaries/01_registry-derived-gate-count-expectations-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["test-non-vacuity", "independent-derivation", "negative-control", "registry-derived", "self-referential-test"]
+      "suggested_keywords": [
+        "test-non-vacuity",
+        "independent-derivation",
+        "negative-control",
+        "registry-derived",
+        "self-referential-test"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #489
 
 - **Task**: 489 - Derive gate-count expectations from the live gate registry
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.75 hours
 - **Dependencies**: Serialize behind records 328, 435, 448, 418, 414 (shared declared paths; see Risks)
 - **Research Inputs**: None (no research artifact; the dispatch description carries the verified defect, the file/line inventory, and the acceptance bar — planned directly from it plus first-hand codebase reads, per planner Stage 1.5)
