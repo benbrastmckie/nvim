@@ -1,7 +1,7 @@
 # Implementation Plan: Task #29
 
 - **Task**: 29 - Generate .mcp.json from extension manifests, then register obsidian-memory through it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: 22 (declared in state.json; not re-verified here)
 - **Research Inputs**: specs/029_generate_mcp_json_from_extension_manifests/reports/01_mcp-json-generation-mechanism.md

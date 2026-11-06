@@ -11,11 +11,11 @@ next_project_number: 505
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,338,342,383,397,401,408,410,412,415,419,423,431,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 313,369,384,398,409,418,430,439,445,458,463,472,474,475,492,497 | 29,383,397,401,412,415,419,431,435,459,491,494 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 391,399,420,436,444,446,448,454,476 | 313,369,398,409,418,423,430,435,439,445,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 360,390,402,438,451,455,461,484,500 | 313,391,420,435,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 5 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 338,342,369,383,397,401,408,410,412,415,419,423,431,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 313,384,391,398,409,418,430,439,445,458,463,472,474,475,492,497 | 369,383,397,401,412,415,419,431,435,459,491,494 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 390,399,402,420,436,444,446,448,454,476 | 313,391,398,409,418,423,430,435,439,445,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 360,421,438,451,455,461,481,484,500 | 313,390,402,420,435,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 5 | 449,452,457,462,479,486 | 360,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 6 | 450,480,487,501 | 420,435,449,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 7 | 496 | 450,487,488 | extensions |
 | 8 | 498 | 496 | extensions |
@@ -26,6 +26,7 @@ next_project_number: 505
 ### Core Agent System
 
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
@@ -59,7 +60,6 @@ next_project_number: 505
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
     └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
-369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
 445 [NOT STARTED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
@@ -72,7 +72,6 @@ next_project_number: 505
 
 ### Extensions
 
-29 [IMPLEMENTING] — Generate .mcp.json from extension manifests, then register...
 342 [HOLD] — Refactor the books extension's context corpus against the...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
@@ -7178,12 +7177,13 @@ that produces no finding.
 ---
 
 ### 29. Generate .mcp.json from extension manifests, then register obsidian-memory through it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 22
 - **Research**: [029_generate_mcp_json_from_extension_manifests/reports/01_mcp-json-generation-mechanism.md]
 - **Plan**: [029_generate_mcp_json_from_extension_manifests/plans/01_mcp-merge-target-mechanism.md]
+- **Summary**: [029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md]
 
 **Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is deploy-engine (lua merge-path) and manifest-surface work for extension MCP registration, unrelated to the orchestrate-engine collapse; the consolidation audit confirmed no overlap with the routing ladder it carries forward. Original description follows.Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
 

@@ -38,28 +38,50 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["jq", "byte-identity", "idempotent-deploy", "sort-keys", "merge-settings"]
+      "suggested_keywords": [
+        "jq",
+        "byte-identity",
+        "idempotent-deploy",
+        "sort-keys",
+        "merge-settings"
+      ]
     },
     {
       "content": "A load-call that OVERWRITES (rather than merges) its own previously-persisted merge-tracking data creates a latent 'load -> regenerate -> unload' retraction gap: a second load over already-present content produces a thinned tracked structure (deep_merge only tracks keys/items not already present), and since the persisted tracked data is replaced wholesale on each load, a later unload cannot retract entries that predate the most recent regenerate. This is a structural property of this repo's extension deploy engine (manager.load + state_mod.mark_loaded), shared by every merge-target branch (settings, mcp, ...), not specific to any one of them. A clean 'load -> unload' round trip with no intervening reload always retracts fully.",
       "category": "INSIGHT",
       "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["merge-tracking", "unload-retraction", "extension-deploy-engine", "state-persistence", "regenerate"]
+      "suggested_keywords": [
+        "merge-tracking",
+        "unload-retraction",
+        "extension-deploy-engine",
+        "state-persistence",
+        "regenerate"
+      ]
     },
     {
       "content": "sync-manifest-scripts.sh --write and generate-context-line-counts.sh --write are repo-wide tools with no per-extension scope flag: running either during a multi-task /orchestrate batch cycle can silently write into a concurrently-dispatched sibling task's own declared file_scope (observed: registering a new test script in one extension's manifest also wrote missing-entry rows into an unrelated extension's manifest that a sibling task was actively editing). Always run `git diff --stat` immediately after invoking either tool in a batch context, and manually revert any hunk outside this task's own declared file_scope before committing -- never re-run a narrowing flag, because neither tool has one.",
       "category": "PATTERN",
       "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["batch-orchestration", "territory", "sync-manifest-scripts", "generate-context-line-counts", "scope-excursion"]
+      "suggested_keywords": [
+        "batch-orchestration",
+        "territory",
+        "sync-manifest-scripts",
+        "generate-context-line-counts",
+        "scope-excursion"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }
