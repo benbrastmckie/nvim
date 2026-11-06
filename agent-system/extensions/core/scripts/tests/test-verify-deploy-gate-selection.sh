@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test-verify-deploy-gate-selection.sh - Regression suite for verify-deploy.sh's --only-gate
 # gate-selection flag (GATES_FILTER / gate_selected()): the additive, opt-in mechanism that lets a
-# caller run one gate (or a named set) instead of the full 23-gate battery.
+# caller run one gate (or a named set) instead of the full registered-gate battery.
 #
 # Structural model: test-verify-deploy-context-budget.sh (pass()/fail()/info() helpers, PASSED/
 # FAILED counters, mktemp WORKDIR with trap EXIT cleanup, real-copy rsync fixture, git-init).
@@ -22,16 +22,18 @@
 #     assertion and several later cases' --max-cost/--jobs selections. The "every gate id runs
 #     clean standalone" cross-gate-variable net lives in its own suite,
 #     test-verify-deploy-gate-selection-crash-net.sh (see that file's header): it is a genuine
-#     full-battery crash net across all 23 gates, split into its own schedulable unit rather than
+#     full-battery crash net across every registered gate, split into its own schedulable unit rather than
 #     narrowed, since there is nothing left to narrow without dropping gate coverage.
 #   - FIXTURE_CHEAP: a deploy-consumer-style fixture with NO agent-system/extensions directory
 #     (mirroring test-deploy-verify-wiring.sh's ANTI-RECURSION fixture) -- gates 3/5-13/15/17-20
 #     all [SKIP] unconditionally against it (their own "not the source store" branch), so a
-#     no-flag run still prints all 23 gate headers (case (d)) without paying full-battery cost.
+#     no-flag run still prints every registered gate's header (case (d)) without paying
+#     full-battery cost.
 #     NOTE: gate 4 is NOT in that SKIP list -- since gate 4's SKIP guard was removed, a no-flag
 #     run against FIXTURE_CHEAP now reaches gate 4's "check-task-references.sh not deployed" FAIL
 #     branch instead (FIXTURE_CHEAP's hand-built `.claude/scripts/` has no real scripts in it).
-#     Case (d) asserts only that all 23 gate headers appear, which still holds regardless.
+#     Case (d) asserts that exactly the registered gate set's headers appear (Guard G2, two-
+#     directional set equality), which still holds regardless.
 #   - FIXTURE_CONSUMER: a deploy-consumer shape (no agent-system/extensions, like FIXTURE_CHEAP)
 #     whose `.claude` is a SYMLINK to a real, fully deployed tree (same technique FIXTURE_RICH
 #     and test-verify-deploy-context-budget.sh's fixture already use for their own `.claude`) --
@@ -62,6 +64,19 @@ fi
 for bin in rsync git jq; do
   command -v "$bin" >/dev/null 2>&1 || { echo "ERROR: $bin required and not on PATH" >&2; exit 2; }
 done
+
+# shellcheck source=../lib/gate-registry-lib.sh
+source "$CORE_DIR/lib/gate-registry-lib.sh"
+gate_registry_load "$CORE_DIR/gate-registry.data"
+REGISTRY_IDS="$(gate_registry_ids)"
+REGISTRY_MAX="$(gate_registry_max_id)"
+# Sanity-pin the 1,99 and --only-gate 99 probes below: they are only genuinely out-of-range
+# while the registry stays under 99 ids. This fails loudly (not silently becomes vacuous) the
+# day the registry would ever reach that size.
+if [ "$REGISTRY_MAX" -ge 99 ]; then
+  echo "ERROR: REGISTRY_MAX ($REGISTRY_MAX) is no longer < 99 -- the '1,99' and '--only-gate 99' probes below depend on 99 staying out of range; update them" >&2
+  exit 2
+fi
 
 PASSED=0
 FAILED=0
@@ -127,7 +142,7 @@ else
        "$(printf '%s\n' "$only20_out" | grep -E '^[0-9]+\. ')"
 fi
 
-# The "every gate id 1..23 runs standalone against FIXTURE_RICH, no crash" net lives in its own
+# The "every registered gate id runs standalone against FIXTURE_RICH, no crash" net lives in its own
 # suite, test-verify-deploy-gate-selection-crash-net.sh: a genuine full-battery crash check
 # (~149.7s, dominated by a single real gate-3 run at ~114.7s) that `--only-gate` already narrows
 # to one gate per call, leaving nothing further to narrow without dropping gate coverage -- split
@@ -139,7 +154,8 @@ fi
 # Case (c): an invalid gate id exits 2 with a named error, and (under --findings) a FINDING gate0
 # line. No fixture needed -- validation happens before TARGET is resolved.
 # =====================================================================
-invalid_cases=("abc" "0" "27" "1,abc" "1,99")
+ONE_PAST_MAX="$((REGISTRY_MAX + 1))"
+invalid_cases=("abc" "0" "$ONE_PAST_MAX" "1,abc" "1,99")
 case_c_all_ok=true
 for bad in "${invalid_cases[@]}"; do
   bad_out="$(bash "$VERIFY_DEPLOY" --only-gate "$bad" 2>&1)"
@@ -156,6 +172,9 @@ for bad in "${invalid_cases[@]}"; do
 done
 [ "$case_c_all_ok" = "true" ] && common_test_pass "case(c): every invalid gate id (${invalid_cases[*]}) exits 2 with a named error"
 
+# 99 is a bare literal here, deliberately: it is protected by the REGISTRY_MAX < 99 guard near
+# the top of this file (exits 2 loudly if the registry ever reaches 99), so this probe stays
+# genuinely out-of-range rather than silently becoming valid.
 findings_bad_out="$(bash "$VERIFY_DEPLOY" --findings --only-gate 99 2>&1)"
 findings_bad_rc=$?
 if [ "$findings_bad_rc" -eq 2 ] && printf '%s\n' "$findings_bad_out" | grep -q '^FINDING gate0 '; then
@@ -165,19 +184,41 @@ else
 fi
 
 # =====================================================================
-# Case (d): with no --only-gate flag, all 26 gate numbers appear in the output -- the
-# "default unchanged" assertion. Uses FIXTURE_CHEAP so this stays fast (gates 3-13/15/17-20 all
-# [SKIP] instantly; only gates 1/2/14/16 do any real, cheap work).
+# Case (d) / Guard G2: with no --only-gate flag, the EXACT registered gate set's headers appear
+# in the output -- the "default unchanged" assertion, now TWO-DIRECTIONAL set equality rather
+# than one-directional coverage. Uses FIXTURE_CHEAP so this stays fast (gates 3-13/15/17-20 all
+# [SKIP] instantly; only gates 1/2/14/16 do any real, cheap work). Factored into a function
+# (noflag_header_set_check) so Phase 6's fixture-gate case can reuse the identical comparison
+# logic against a fixture store's own verify-deploy.sh, rather than keeping two copies that
+# could silently diverge.
 # =====================================================================
+noflag_header_set_check() {
+  # Usage: noflag_header_set_check <run_output> <expected_ids_space_separated>
+  local _out="$1" _expected="$2"
+  local _printed _missing=() _extra=()
+  _printed="$(printf '%s\n' "$_out" | grep -oE '^[0-9]+\. ' | tr -d '. ' | sort -n)"
+  local _printed_sorted _expected_sorted
+  _printed_sorted="$(printf '%s\n' "$_printed" | tr '\n' ' ' | sed 's/ $//')"
+  _expected_sorted="$(printf '%s\n' "$_expected" | tr ' ' '\n' | sort -n | tr '\n' ' ' | sed 's/ $//')"
+  for _id in $_expected_sorted; do
+    printf '%s\n' "$_printed" | grep -qx "$_id" || _missing+=("$_id")
+  done
+  for _id in $_printed; do
+    printf '%s\n' "$_expected_sorted" | tr ' ' '\n' | grep -qx "$_id" || _extra+=("$_id")
+  done
+  if [ "${#_missing[@]}" -eq 0 ] && [ "${#_extra[@]}" -eq 0 ]; then
+    echo "OK"
+  else
+    echo "MISSING:${_missing[*]:-none} EXTRA:${_extra[*]:-none}"
+  fi
+}
+
 noflag_out="$(run_vd "$FIXTURE_CHEAP")"
-noflag_missing=()
-for n in $(seq 1 26); do
-  printf '%s\n' "$noflag_out" | grep -q "^${n}\. " || noflag_missing+=("$n")
-done
-if [ "${#noflag_missing[@]}" -eq 0 ]; then
-  common_test_pass "case(d): no --only-gate flag -- all 26 gate headers appear (default unchanged)"
+noflag_g2_result="$(noflag_header_set_check "$noflag_out" "$REGISTRY_IDS")"
+if [ "$noflag_g2_result" = "OK" ]; then
+  common_test_pass "case(d)/G2: no --only-gate flag -- exactly the $(printf '%s\n' "$REGISTRY_IDS" | wc -w | tr -d ' ') registered gate headers appear, no fewer and no more (default unchanged, two-directional set equality)"
 else
-  common_test_fail "case(d): missing gate header(s) with no flag: ${noflag_missing[*]}"
+  common_test_fail "case(d)/G2: no --only-gate flag -- header set diverges from the registry ($noflag_g2_result)"
 fi
 
 # =====================================================================

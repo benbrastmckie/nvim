@@ -367,29 +367,35 @@ for bare `2[0-9]` literals before closing the phase and convert any further site
 
 ---
 
-### Phase 5: Convert `test-verify-deploy-gate-selection.sh` and Add the Header-Set Guard [NOT STARTED]
+### Phase 5: Convert `test-verify-deploy-gate-selection.sh` and Add the Header-Set Guard [COMPLETED]
 
 **Goal**: Suite B's out-of-range probe and full-battery enumeration follow the registry, and its
 case (d) becomes a two-directional set-equality guard against `verify-deploy.sh`'s own output.
 
 **Tasks**:
-- [ ] Source `../lib/gate-registry-lib.sh`, `gate_registry_load "$CORE_DIR/gate-registry.data"`,
+- [x] Source `../lib/gate-registry-lib.sh`, `gate_registry_load "$CORE_DIR/gate-registry.data"`,
       and derive `REGISTRY_IDS` (from `gate_registry_ids`) and `REGISTRY_MAX` (from
-      `gate_registry_max_id`) near the fixture setup.
-- [ ] case (c): replace the literal `27` in `invalid_cases` with `$((REGISTRY_MAX + 1))`, keeping
+      `gate_registry_max_id`) near the fixture setup. *(completed)*
+- [x] case (c): replace the literal `27` in `invalid_cases` with `$((REGISTRY_MAX + 1))`, keeping
       `abc`, `0`, `1,abc`, `1,99`. Add a one-line assertion that `REGISTRY_MAX -lt 99` so the
       `1,99` probe cannot silently become in-range; it fails loudly if the registry ever reaches
-      99.
-- [ ] case (c)'s `--findings --only-gate 99` sub-case: keep `99` but let the same `-lt 99`
-      assertion protect it, with a comment naming the dependency.
-- [ ] **Guard G2** — case (d) becomes set equality, not one-directional coverage: collect the
+      99. *(completed)*
+- [x] case (c)'s `--findings --only-gate 99` sub-case: keep `99` but let the same `-lt 99`
+      assertion protect it, with a comment naming the dependency. *(completed)*
+- [x] **Guard G2** — case (d) becomes set equality, not one-directional coverage: collect the
       header ids a no-flag run prints (`grep -oE '^[0-9]+\. ' | tr -d '. '`), sort both sides
       numerically, and assert the printed set equals `REGISTRY_IDS` exactly. Report missing **and**
       extra ids separately in the failure detail, so drift in either direction is named.
-- [ ] Make case (a)'s and case (d)'s pass messages interpolate the derived count.
-- [ ] Update the suite header: replace "full 23-gate battery", "all 23 gates", "all 23 gate
+      *(completed as a reusable `noflag_header_set_check` function, so Phase 6's fixture case can
+      invoke the identical comparison logic)*
+- [x] Make case (a)'s and case (d)'s pass messages interpolate the derived count. *(case (d)/G2's
+      pass message now interpolates the live count; case (a) has no count to interpolate -- it
+      names a single fixed gate id (20), not a total, so left as-is)*
+- [x] Update the suite header: replace "full 23-gate battery", "all 23 gates", "all 23 gate
       headers" and the per-fixture SKIP lists' counts with count-free phrasing referring to the
-      registered gate set.
+      registered gate set. *(completed; the per-fixture SKIP id ranges themselves, e.g.
+      "gates 3/5-13/15/17-20", name specific gate ids being skipped, not a total count, so left
+      unchanged)*
 
 **Timing**: 1.0 hours
 

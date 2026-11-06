@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Convert test-verify-deploy-gate-selection.sh and Add the Header-Set Guard",
+  "started_at": "2026-11-06T23:00:00Z",
+  "last_updated": "2026-11-06T23:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source gate-registry-lib.sh and derive REGISTRY_IDS/REGISTRY_MAX", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 2, "description": "case (c): derive out-of-range probe, add REGISTRY_MAX<99 guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 3, "description": "Guard G2: two-directional set equality for case (d)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 4, "description": "Update suite header prose to count-free phrasing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "5.1", "description": "Derive REGISTRY_MAX from gate_registry_max_id", "type": "altered", "reason": "Initially derived REGISTRY_MAX via shell parameter expansion (${REGISTRY_IDS##* }) on the space-separated id string instead of calling gate_registry_max_id directly; corrected to call gate_registry_max_id per the plan's literal wording once noticed, re-verified green (22/22) after the fix."}
+  ],
+  "note": "This phase fixed a REAL, currently-red failure on this branch: test-verify-deploy-gate-selection.sh's case (c) was failing ('--only-gate 27 expected exit 2, got 0') because sibling task 418 registered a real gate 27 during Phase 2 of this dispatch, making the suite's old hardcoded '27' probe genuinely in-range. Confirmed fixed: full suite now 22/22 green. Non-vacuity demonstrated: (1) temporarily inserting REGISTRY_MAX (27, in-range) into invalid_cases made case(c) go red ('expected exit 2, got 0'), then reverted with the real edit intact; (2) Guard G2's noflag_header_set_check function tested in isolation (not against the real suite, to avoid an expensive multi-minute re-run and avoid cascading REGISTRY_MAX corruption) with simulated printed output: removing an id from the expected set correctly reported it as EXTRA, and adding a phantom id correctly reported it as MISSING -- both directions confirmed discriminating. test-verify-deploy-gate-selection.sh run twice more after reverts, 22/22 both times. verify-deploy.sh --only-gate 22 (shellcheck) clean."
+}
