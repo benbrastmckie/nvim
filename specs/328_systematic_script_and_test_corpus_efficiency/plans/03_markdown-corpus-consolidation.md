@@ -1,7 +1,7 @@
 # Implementation Plan: Task #328
 
 - **Task**: 328 - Systematic top-to-bottom consolidation of the shell script and test corpus under `agent-system/extensions/**`
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 45 hours
 - **Dependencies**: None live. Tasks 170 and 411 are both `completed` in `specs/state.json` (verified at plan time); task 416 is `implementing` at 10/13 phases and is a *coordination* surface, not a dependency — see "The 416 Overlap" below. Task 431 declares `328` as its own blocker and is a *downstream consumer* surface, not a dependency of this plan — see "The 431 Edge" below.
 - **Research Inputs**: `specs/328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md`

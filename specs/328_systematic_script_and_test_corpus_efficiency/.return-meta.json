@@ -20,14 +20,26 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
       "confidence": 0.9,
-      "suggested_keywords": ["net-accounting", "concurrent-drift", "git-numstat", "commit-isolated-diff", "corpus-size-measurement"]
+      "suggested_keywords": [
+        "net-accounting",
+        "concurrent-drift",
+        "git-numstat",
+        "commit-isolated-diff",
+        "corpus-size-measurement"
+      ]
     },
     {
       "content": "A net-deletion acceptance criterion on a multi-phase refactor task can be defeated by its own internal structure even when every individual phase is honest: infrastructure/extraction phases that declare themselves net-positive in advance (promising a later phase will pay the cost back) can accumulate faster than the payback phases actually realize, especially when later phases keep adding further infrastructure (classification, selection, fixture-sharing) without a correspondingly scaled migration phase to absorb it. The fix is not to forbid net-positive phases (sometimes the only honest path to a shared, reusable mechanism) but to track a running total continuously and treat a growing positive total as a stop-and-reassess signal before authorizing the next infrastructure phase, rather than deferring all reconciliation to the task's final measurement phase.",
       "category": "INSIGHT",
       "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
       "confidence": 0.75,
-      "suggested_keywords": ["net-deletion", "refactor-budget", "infrastructure-cost", "payback-tracking", "consolidation-task"]
+      "suggested_keywords": [
+        "net-deletion",
+        "refactor-budget",
+        "infrastructure-cost",
+        "payback-tracking",
+        "consolidation-task"
+      ]
     }
   ],
   "user_decision": {
@@ -44,7 +56,11 @@
     "session_id": "sess_1793920608_e862fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 20,
     "phases_total": 20
   }
