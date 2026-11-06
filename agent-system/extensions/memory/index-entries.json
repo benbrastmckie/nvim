@@ -39,7 +39,7 @@
         "configuration"
       ],
       "summary": "MCP server setup for Obsidian memory vault",
-      "line_count": 247,
+      "line_count": 257,
       "load_when": {
         "commands": [
           "/learn"
@@ -62,7 +62,7 @@
         "mcp"
       ],
       "summary": "Troubleshooting guide for memory system issues",
-      "line_count": 253,
+      "line_count": 257,
       "load_when": {
         "commands": [
           "/learn",
