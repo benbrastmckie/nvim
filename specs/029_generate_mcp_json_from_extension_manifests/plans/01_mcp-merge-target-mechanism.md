@@ -303,53 +303,66 @@ and
 
 ---
 
-### Phase 3: Durable scratch-tree regression harness and empirical requirement check [NOT STARTED]
+### Phase 3: Durable scratch-tree regression harness and empirical requirement check [COMPLETED]
 
 **Goal**: a committed shell harness proves, end to end against a throwaway fixture, that all four
 requirements hold — and records the two latent risks' actual behavior rather than assuming it.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh`, modelled
+- [x] Create `agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh`, modelled
       structurally on `agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh`:
       `pass()`/`fail()`/`info()` helpers, PASSED/FAILED integer counters, a trap-based `mktemp -d`
       WORKDIR, exit 0 (all pass) / 1 (an assertion failed) / 2 (environment error, nvim absent).
       Source `../lib/common.sh` and resolve the repo root with `common_test_repo_root`, as that
-      harness does.
-- [ ] Inside the harness, build two scratch trees: a fixture source store at
+      harness does. *(completed: uses common.sh's common_test_pass/common_test_fail/common_test_info)*
+- [x] Inside the harness, build two scratch trees: a fixture source store at
       `$WORKDIR/src/agent-system/extensions/mcpfixture/` holding a minimal `manifest.json`
       (`name`/`version`/`description` plus `merge_targets.mcp` pointing at `mcp-fragment.json`
       with target `.mcp.json`) and an `mcp-fragment.json` declaring one trivial stdio server with
       an explicit `"type": "stdio"`; and a fixture project at `$WORKDIR/project`, `git init`-ed.
-- [ ] Drive the engine headlessly with the config override, not `deploy-headless.sh` (which would
+      *(completed)*
+- [x] Drive the engine headlessly with the config override, not `deploy-headless.sh` (which would
       resolve the real source store): one `nvim --headless -c "lua ..." -c "qa!"` invocation per
       step, building the manager as
       `require('neotex.plugins.ai.shared.extensions.init').create(require('neotex.plugins.ai.shared.extensions.config').claude('$WORKDIR/src'))`
       and calling `manager.load('mcpfixture', { project_dir = '$WORKDIR/project', confirm = false })`
       / `manager.unload(...)`. `config.claude(dir)` appends `/agent-system/extensions` to its
-      argument, which is why the fixture source store is nested that way.
-- [ ] Assertion A (generation): after the load, `$WORKDIR/project/.mcp.json` exists, is valid JSON
-      under `jq empty`, and its `.mcpServers["<fixture>"].type` is `"stdio"`.
-- [ ] Assertion B (idempotency, requirement c): copy the file, load again, and compare with `cmp` —
+      argument, which is why the fixture source store is nested that way. *(completed)*
+- [x] Assertion A (generation): after the load, `$WORKDIR/project/.mcp.json` exists, is valid JSON
+      under `jq empty`, and its `.mcpServers["<fixture>"].type` is `"stdio"`. *(completed)*
+- [x] Assertion B (idempotency, requirement c): copy the file, load again, and compare with `cmp` —
       byte-identical, not merely JSON-equal. On failure, apply the Risks-table contingency (add an
       optional `sort_keys` argument to `merge.lua`'s `M.write_json` and pass it from the `mcp`
-      branch only) and re-assert; if it passes, make no `merge.lua` edit at all.
-- [ ] Assertion C (hand-written survival, requirement d): plant a second, hand-written server entry
+      branch only) and re-assert; if it passes, make no `merge.lua` edit at all. *(completed:
+      RISK REPRODUCED on first measurement -- jq . is order-preserving, not sorting. Applied the
+      contingency: M.write_json/M.merge_settings gained an optional opts.sort_keys, passed only
+      from the mcp branch; re-asserted and now byte-identical)*
+- [x] Assertion C (hand-written survival, requirement d): plant a second, hand-written server entry
       into the fixture project's `.mcp.json` before a reload; after the reload both entries are
-      present and the hand-written one is unmodified.
-- [ ] Assertion D (retraction, requirement b): after `manager.unload`, the fixture's server is gone
+      present and the hand-written one is unmodified. *(completed)*
+- [x] Assertion D (retraction, requirement b): after `manager.unload`, the fixture's server is gone
       while the planted hand-written entry survives; after removing the hand-written entry and
       unloading again from a clean load, the file itself is removed (decision 6's cleanup).
-- [ ] Assertion E (the regenerate-then-unload risk): load, then re-run the load to simulate a
+      *(completed, tested on a plain load -> unload round trip with no intervening reload)*
+- [x] Assertion E (the regenerate-then-unload risk): load, then re-run the load to simulate a
       regenerate's re-merge, then unload, and assert retraction still happens. If it does not,
       report it as a pre-existing limitation of the shared `merge_settings` tracking path, assert
       the observed behavior so the harness documents it honestly, and do not expand scope.
-- [ ] Attempt the `claude mcp get <fixture-name>` check inside the fixture project and record what
+      *(completed: RISK REPRODUCED -- retraction does NOT happen after a load -> regenerate ->
+      unload sequence, because manager.load overwrites rather than merges the persisted tracked
+      data on every load call. Documented as a pre-existing limitation of the shared
+      merge_settings/state_mod.mark_loaded path, not introduced by mcp; scope not expanded. The
+      hand-written entry's survival is asserted regardless of which branch occurs)*
+- [x] Attempt the `claude mcp get <fixture-name>` check inside the fixture project and record what
       actually happens. A workspace-trust refusal is an acceptable, expected outcome: record the
       exact refusal and move on. Do not make this assertion fail the harness, and do not attempt to
-      bypass the trust gate.
-- [ ] Make the harness pass `shellcheck` (verify-deploy Gate 22) and `bash -n`.
-- [ ] Record each empirical outcome in the phase notes, including the two risk findings and the
-      `claude mcp get` result.
+      bypass the trust gate. *(completed: the claude CLI resolved the server with
+      "Scope: Project config (shared via .mcp.json)" and "Status: Pending approval (run `claude`
+      to approve)" -- a visible pending-trust status rather than an outright resolution failure)*
+- [x] Make the harness pass `shellcheck` (verify-deploy Gate 22) and `bash -n`. *(completed: 0
+      findings at the enforced -S warning severity via lint-shellcheck.sh --verbose; bash -n clean)*
+- [x] Record each empirical outcome in the phase notes, including the two risk findings and the
+      `claude mcp get` result. *(completed, see progress file notes)*
 
 **Timing**: 1.5 hours
 

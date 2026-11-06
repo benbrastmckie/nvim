@@ -72,15 +72,21 @@ end
 --- Write JSON file with pretty printing
 --- @param filepath string Path to JSON file
 --- @param data table Data to write
+--- @param opts table|nil Options. `sort_keys` (boolean, default false): use `jq -S .`
+---   (recursive key sort) instead of plain `jq .` (order-preserving only), so two writes of
+---   semantically-identical data are byte-identical under `cmp`. Opt-in only -- every existing
+---   caller keeps today's order-preserving behavior unless it explicitly asks for sorting.
 --- @return boolean success True if write succeeded
-function M.write_json(filepath, data)
+function M.write_json(filepath, data, opts)
+  opts = opts or {}
   local ok, encoded = pcall(vim.json.encode, data)
   if not ok then
     return false
   end
 
-  -- Try to pretty print with jq
-  local formatted = vim.fn.system('echo ' .. vim.fn.shellescape(encoded) .. ' | jq .', '')
+  -- Try to pretty print with jq; -S recursively sorts object keys when requested.
+  local jq_args = opts.sort_keys and 'jq -S .' or 'jq .'
+  local formatted = vim.fn.system('echo ' .. vim.fn.shellescape(encoded) .. ' | ' .. jq_args, '')
   if vim.v.shell_error ~= 0 then
     formatted = encoded
   end
@@ -428,9 +434,11 @@ end
 --- Merge settings fragment into target settings file
 --- @param target_path string Path to settings file
 --- @param fragment table Settings fragment to merge
+--- @param opts table|nil Options forwarded verbatim to `M.write_json` (e.g. `sort_keys`).
+---   Omitted by every caller that must preserve today's order-preserving write behavior.
 --- @return boolean success True if merge succeeded
 --- @return table|nil tracked Tracking data for unmerge
-function M.merge_settings(target_path, fragment)
+function M.merge_settings(target_path, fragment, opts)
   -- Ensure parent directory exists
   helpers.ensure_directory(vim.fn.fnamemodify(target_path, ":h"))
 
@@ -452,7 +460,7 @@ function M.merge_settings(target_path, fragment)
     return false, nil
   end
 
-  local success = M.write_json(target_path, target)
+  local success = M.write_json(target_path, target, opts)
   if not success then
     return false, nil
   end

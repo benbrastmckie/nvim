@@ -113,7 +113,11 @@ local function process_merge_targets(ext_manifest, source_dir, project_dir, conf
 
     local fragment = read_json(source_path)
     if fragment then
-      local success, tracked = merge_mod.merge_settings(target_path, fragment)
+      -- sort_keys = true: a second deploy must be byte-identical under `cmp` (requirement c).
+      -- jq's default `.` is order-preserving, not sorting, so two decode/re-encode round
+      -- trips of semantically-identical data are not guaranteed byte-stable without this.
+      -- Passed only from this branch (merge.lua's other callers keep today's behavior).
+      local success, tracked = merge_mod.merge_settings(target_path, fragment, { sort_keys = true })
       if success then
         merged_sections.mcp = tracked
       end

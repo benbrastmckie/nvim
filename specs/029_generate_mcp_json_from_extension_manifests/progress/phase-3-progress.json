@@ -1,0 +1,66 @@
+{
+  "phase": 3,
+  "phase_name": "Durable scratch-tree regression harness and empirical requirement check",
+  "started_at": "2026-11-06T07:58:00Z",
+  "last_updated": "2026-11-06T08:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create test-mcp-merge-target.sh modelled on test-deploy-orphans.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Build scratch source store + fixture project; drive engine headlessly",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Assertion A (generation) and B (idempotency, requirement c)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Assertion C (hand-written survival) and D (retraction)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Assertion E (regenerate-then-unload risk) and claude mcp get attempt",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh"]
+    },
+    {
+      "id": 6,
+      "description": "shellcheck/bash -n clean; record empirical outcomes",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh",
+        "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+        "lua/neotex/plugins/ai/shared/extensions/init.lua"
+      ]
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {
+      "approach": "Single continuous load/reload/plant/reload/unload sequence sharing one fixture project across all assertion groups",
+      "result": "failed",
+      "reason": "Chaining reloads before the plain-retraction check (Assertion D) caused persisted merge-tracking data to thin from an EARLIER reload (not the regenerate-then-unload scenario itself), so D failed for the wrong reason. Restructured into independent reset_project() groups so each assertion's preconditions are exactly what the plan specifies."
+    }
+  ],
+  "handoff_count": 0,
+  "notes": [
+    "EMPIRICAL RESULT -- requirement (c) byte-identity: Assertion B's RAW output was NOT byte-identical on first measurement (jq . is order-preserving, not sorting, as the Risks table anticipated). Applied the pre-approved contingency: M.write_json(filepath, data, opts) gained an optional opts.sort_keys (jq -S . instead of jq .), threaded through M.merge_settings(target_path, fragment, opts), and the mcp branch in init.lua passes { sort_keys = true }. No other caller passes opts, so settings.json/index.json writes are byte-unchanged. Re-ran: Assertion B now PASSES (byte-identical under cmp).",
+    "EMPIRICAL RESULT -- the regenerate-then-unload risk (Assertion E): REPRODUCES. A load -> force-reload (regenerate) -> unload sequence does NOT retract the fixture's server, because manager.load's persisted merged_sections.mcp is OVERWRITTEN (not merged) on every load call, and a reload over already-present content produces a thinned 'merged'-type tracked structure that unmerge_settings cannot use to remove the original new_object-tracked entries. This is the SAME pre-existing limitation of the shared merge_settings/state_mod.mark_loaded path the settings branch already has -- not introduced by mcp. Documented per the plan's explicit instruction (Risks table, row 1): recorded, not expanded in scope. A PLAIN load -> unload round trip (no intervening reload) retracts fully and correctly (Assertion D passes).",
+    "EMPIRICAL RESULT -- claude mcp get: the claude CLI IS present and the fixture server WAS resolvable: 'Scope: Project config (shared via .mcp.json)', 'Status: Pending approval (run `claude` to approve)' -- i.e. the workspace-trust gate manifested as a visible PENDING status rather than an outright refusal to resolve the server at all. Recorded verbatim for Phase 4's documentation.",
+    "find_orphans/orphan-detection: unaffected, confirmed in Phase 1 (no change needed).",
+    "Nothing was deployed into this repository: confirmed git status --short shows no .claude/ changes and no root .mcp.json after the full harness run.",
+    "bash -n and shellcheck (via the sanctioned lint-shellcheck.sh --verbose entry point, -S warning severity) are both clean for the new harness: 0 findings at warning severity (a few info/style-level SC1091/SC2329/SC2001 notes from bare shellcheck are below the enforced threshold).",
+    "run-all.sh --only test-mcp-merge-target.sh (note: basename INCLUDES the .sh extension for --only matching) discovers and runs the new suite standalone: 1 passed, 0 failed -- confirms Gate 8 wiring."
+  ]
+}
