@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/409_advise_on_dirty_file_scope_at_admission/plans/01_dirty-scope-advisory-admission.md",
-      "summary": "6-phase plan adding an additive, non-blocking dirty_scope_advisory field to the admission verdict, its per-cycle ledger, a Class J pre-dispatch rendering, presence/absence regression coverage in both named suites, two-doc convergence, and a final redeploy to landed_verify_clean."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1793988163_b25d4a_409",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6.5,
-    "dependency_waves": [[1], [2, 3, 4, 5], [6]]
+    "session_id": "sess_1793988163_b25d4a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "Adding an additive, decision-never-changing advisory field to the orchestrate admission verdict is a fixed five-surface checklist, not an open design problem. (1) Bash layer in orchestrate-batch-admit.sh: compute the input once per invocation next to sessions_json/critical_expanded_json, degrade-safe to a default [] on any failure, pass via --argjson. (2) jq layer: if the check depends only on the candidate's own file_scope, compute the fragment right where $c_scope is bound and merge it at every site '+ $whole_tree_claim_frag' already appears (currently 8), leaving it structurally absent on the three early-exit branches; if it depends on a cross-task or session comparison, scope it like cross_session_hazard instead. (3) orchestrate-cycle-plan.sh: a *_ledger field needs a mt_state_file header-comment entry, a '//= []' self-initializer, and a capture block in the per-row loop that fires regardless of decision. (4) orchestrate-predispatch-review.sh: allocate the next free Class letter; use Class I's single-block style (no deferred/admitted split) when the field never changes a decision, and write a zero-count line that cannot be misread as 'never tested'. (5) Docs: batch-admit-schema.md Field Definitions row plus a Version History note (additive fields take NO $schema bump), and batch-orchestration-guardrails.md's Blocking-vs-Advisory table row. Containment checks need no new jq def -- scopes_overlap_first from lib/file-scope-overlap.sh is already spliced in and answers 'does any foreign path fall inside this scope'. Reconstructing this costs a four-file archaeology pass each time.",
-      "category": "PATTERN",
-      "source_artifact": "specs/409_advise_on_dirty_file_scope_at_admission/plans/01_dirty-scope-advisory-admission.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["admission-advisory", "orchestrate-batch-admit", "additive-field", "file-scope-overlap", "predispatch-review-class", "ledger-convention"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 409 to execute the plan",
-  "dispatch_seq": 6
+  "dispatch_seq": 11
 }

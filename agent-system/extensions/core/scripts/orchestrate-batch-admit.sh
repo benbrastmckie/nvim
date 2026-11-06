@@ -277,6 +277,28 @@
 #                                     exemption at all). Any OTHER real-path collision is
 #                                     completely unaffected and still reports plain
 #                                     file_scope_collision.
+#   dirty_scope_advisory       object Present (NEW, additive, no-bump sibling to whole_tree_claim
+#                                     above) on every verdict for a candidate whose OWN
+#                                     file_scope intersects the currently dirty working tree
+#                                     (`git diff --name-only HEAD` over $PROJECT_ROOT, covering
+#                                     both staged and unstaged changes), regardless of decision
+#                                     or defer_reason -- the hazard stays visible even when not
+#                                     deferred, the same convention whole_tree_claim and
+#                                     self_modifying already use. Depends only on the candidate's
+#                                     own file_scope, like whole_tree_claim, so it applies
+#                                     uniformly; structurally absent on the three early-exit
+#                                     branches (unknown task, terminal status, absent
+#                                     file_scope), where $c_scope does not exist or is empty by
+#                                     construction, and absent whenever the intersection is
+#                                     empty. NEVER changes decision, defer_reason, or exit code --
+#                                     purely informational: it exists so an operator can commit a
+#                                     foreign hunk separately before an implement dispatch's
+#                                     whole-file staging sweeps it into that task's own commit.
+#                                     Nested keys: dirty_paths (array of strings, every
+#                                     intersecting path, not just the first) and reason (string,
+#                                     machine-templated, names the remedy). See
+#                                     docs/architecture/batch-admit-schema.md for the full field
+#                                     table and an example verdict.
 #
 # Admission Posture for an ABSENT file_scope (ruling, measured 2026-09-29; this is a decision
 # record, not a defect description — read alongside the defer_reason field above): an undeclared
@@ -709,6 +731,17 @@ else
   echo "WARNING: orchestrate-batch-admit.sh: --session-id not supplied; the session-registry contention input is SKIPPED for this invocation (no defer_reason: \"session_active\" verdict can fire). Without a caller session id, a just-registered session covering this candidate set would be seen as foreign and every candidate would self-block. Pass --session-id \"\$batch_session_id\" to enable it." >&2
 fi
 
+# --- resolve the dirty-working-tree input (dirty_scope_advisory, NEW, additive, no-bump sibling
+# to whole_tree_claim above): a plain `git diff --name-only HEAD` over $PROJECT_ROOT, mirroring
+# sessions_json's degrade-safe shape verbatim -- any failure (not a git repository, git not on
+# PATH, detached-HEAD edge case) degrades to an empty list rather than an error, since this field
+# is purely informational and must never block admission. `git diff --name-only HEAD` already
+# reports both staged and unstaged changes against HEAD, so no second `--cached` pass is needed.
+dirty_paths_json=$(git -C "$PROJECT_ROOT" diff --name-only HEAD 2>/dev/null | jq -R -s -c 'split("\n") | map(select(length > 0))' 2>/dev/null) || true
+if [ -z "$dirty_paths_json" ]; then
+  dirty_paths_json='[]'
+fi
+
 # Build the candidates JSON array (preserves input order, including duplicates if given).
 candidates_json="[$(printf '%s\n' "${task_args[@]}" | paste -sd, -)]" || true
 
@@ -729,6 +762,7 @@ if verdicts=$(jq -n -c \
   --argjson invocation_count "$invocation_count_arg" \
   --arg own_session_id "$session_id_arg" \
   --argjson sessions "$sessions_json" \
+  --argjson dirty_paths "$dirty_paths_json" \
   --arg phase_map_raw "$phase_map_arg" \
   "$FILE_SCOPE_OVERLAP_JQ_DEFS"'
 
@@ -742,6 +776,7 @@ if verdicts=$(jq -n -c \
   $invocation_count as $inv_count |
   $own_session_id as $own_sid |
   $sessions as $sess_list |
+  $dirty_paths as $dirty |
   ($phase_map_raw
    | if . == "" then {}
      else (split(",") | map(split(":")) | map({(.[0]): .[1]}) | add)
@@ -894,6 +929,31 @@ if verdicts=$(jq -n -c \
       # the collision scan above computes $hit, inspected for a sentinel-vs-sentinel match.
       ((($c_scope // []) | index(whole_tree_claim_sentinel)) != null) as $c_has_whole_tree_claim |
       (if $c_has_whole_tree_claim then {whole_tree_claim: true} else {} end) as $whole_tree_claim_frag |
+      # dirty_scope_advisory (NEW, additive, no-bump sibling to whole_tree_claim above): fires
+      # when this candidate own file_scope intersects the currently dirty working tree (the
+      # `$dirty` list bound at invocation level above), so an operator can commit a foreign hunk
+      # separately before an implement dispatch whole-file staging sweeps it into this task own
+      # commit. Depends only on $c_scope, like whole_tree_claim -- not a cross-task or
+      # cross-session comparison -- so it applies uniformly across every branch below, merged
+      # wherever $whole_tree_claim_frag already is. Collects EVERY intersecting dirty path (not
+      # just the first) via one scopes_overlap_first() call per dirty path: each call returns
+      # that single path when it overlaps $c_scope, or contributes nothing (`empty`) when it does
+      # not, so the surrounding array comprehension accumulates the full intersection in one pass.
+      # Never changes decision, defer_reason, or exit code -- purely informational.
+      ([ $dirty[] as $d | scopes_overlap_first($c_scope; [$d]) ]) as $dirty_scope_hits |
+      (if ($dirty_scope_hits | length) > 0 then
+         {
+           dirty_scope_advisory: {
+             dirty_paths: $dirty_scope_hits,
+             reason: ("candidate #" + ($c|tostring) + " own file_scope intersects " +
+                      ($dirty_scope_hits | length | tostring) +
+                      " uncommitted path(s) in the working tree (" +
+                      ($dirty_scope_hits | join(", ")) +
+                      "); commit the listed path(s) separately before this task own implement dispatch sweeps them into its commit")
+           }
+         }
+       else {} end
+      ) as $dirty_scope_frag |
       if ($sm_flag == true) then
         if ($phase_group == "research" or $phase_group == "plan") then
           # Phase-aware gate (D-phase, NEW): a research or plan dispatch touches only the own
@@ -907,7 +967,7 @@ if verdicts=$(jq -n -c \
             task_number: $c,
             decision: "admit",
             self_modifying: true
-          } + $cross_session_hazard_frag + $whole_tree_claim_frag
+          } + $cross_session_hazard_frag + $whole_tree_claim_frag + $dirty_scope_frag
         elif ($inv_count > 1 and $c != $designated_sm_candidate) then
           {
             "$schema": "orchestrate-batch-admit-v7",
@@ -918,14 +978,14 @@ if verdicts=$(jq -n -c \
             critical_path: $sm_hit.path,
             critical_label: $sm_hit.label,
             reason: ("candidate #" + ($c|tostring) + " file_scope names orchestrator-critical path \"" + $sm_hit.path + "\" (" + $sm_hit.label + "); deferred this wave/cycle in favor of designated self-modifying candidate #" + ($designated_sm_candidate|tostring) + " (lowest task number among the self-modifying candidates in this cycle) -- this is an ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($designated_sm_candidate|tostring) + " clears, or pass --allow-self-modifying to override")
-          } + $whole_tree_claim_frag
+          } + $whole_tree_claim_frag + $dirty_scope_frag
         else
           {
             "$schema": "orchestrate-batch-admit-v7",
             task_number: $c,
             decision: "admit",
             self_modifying: true
-          } + $cross_session_hazard_frag + $whole_tree_claim_frag
+          } + $cross_session_hazard_frag + $whole_tree_claim_frag + $dirty_scope_frag
         end
       else
         (
@@ -990,7 +1050,7 @@ if verdicts=$(jq -n -c \
           # this addition; this new flavor fires strictly where the predicate used to admit.
           session_contention($c_scope; $c; $own_sid; $all; $sess_list) as $sess_hit |
           if $sess_hit == null then
-            {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag + $whole_tree_claim_frag
+            {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag + $whole_tree_claim_frag + $dirty_scope_frag
           else
             {
               "$schema": "orchestrate-batch-admit-v7",
@@ -1005,7 +1065,7 @@ if verdicts=$(jq -n -c \
               reason: ("session " + $sess_hit.session_id + " (liveness: " + $sess_hit.liveness_reason +
                        ") covers non-terminal task #" + ($sess_hit.covered_task_number | tostring) +
                        " whose registered file_scope overlaps this candidate at " + $sess_hit.overlapping_path)
-            } + $idle_advisory_frag + $whole_tree_claim_frag
+            } + $idle_advisory_frag + $whole_tree_claim_frag + $dirty_scope_frag
           end
         elif ($hit.ov_path == whole_tree_claim_sentinel) then
           # Whole-tree-claim collision (Part A, NEW, v7): the deferral-direction selection logic
@@ -1026,7 +1086,7 @@ if verdicts=$(jq -n -c \
           # is already present via $whole_tree_claim_frag below (this hit is reachable only when
           # $c itself carries the sentinel, by the exact-match definition of scopes_overlap_first).
           if ($phase_group == "research" or $phase_group == "plan") then
-            {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag + $whole_tree_claim_frag
+            {"$schema": "orchestrate-batch-admit-v7", task_number: $c, decision: "admit", self_modifying: $sm_flag} + $idle_advisory_frag + $whole_tree_claim_frag + $dirty_scope_frag
           else
             {
               "$schema": "orchestrate-batch-admit-v7",
@@ -1041,7 +1101,7 @@ if verdicts=$(jq -n -c \
               reason: ("candidate #" + ($c|tostring) + " and " + (if $hit.scope_kind == "in_batch" then "in-batch" else "cross-batch" end) +
                        " non-terminal task #" + ($hit.other_num | tostring) +
                        " each declare a whole-tree regeneration phase (the reserved " + $hit.ov_path + " sentinel in their own file_scope); deferred this wave/cycle -- this is an ORDERING CONSTRAINT, not an exclusion: candidate #" + ($c|tostring) + " resolves in a later cycle, in sequence, once #" + ($hit.other_num|tostring) + " clears")
-            } + $idle_advisory_frag + $whole_tree_claim_frag
+            } + $idle_advisory_frag + $whole_tree_claim_frag + $dirty_scope_frag
           end
         else
           # corroborated_by (D2/v4): always names the state.json signal that produced this verdict;
@@ -1072,7 +1132,7 @@ if verdicts=$(jq -n -c \
             reason: ("file_scope overlap with non-terminal task #" + ($hit.other_num | tostring) +
                      " (" + (if $hit.scope_kind == "in_batch" then "in this batch" else "not in this batch" end) +
                      ") at " + $hit.ov_path + "; no dependencies[] edge between them")
-          } + $idle_advisory_frag + $whole_tree_claim_frag
+          } + $idle_advisory_frag + $whole_tree_claim_frag + $dirty_scope_frag
         end
       end
     end

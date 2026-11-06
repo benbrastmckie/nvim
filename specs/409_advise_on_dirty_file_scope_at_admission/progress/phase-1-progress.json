@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Compute and merge dirty_scope_advisory in orchestrate-batch-admit.sh",
+  "started_at": "2026-11-06T00:00:00Z",
+  "last_updated": "2026-11-06T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-resolve source_dir for core from .claude-extensions.json", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record pre-edit merge-site count of whole_tree_claim_frag (8, confirmed via grep -c)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add bash-layer dirty_paths input next to sessions_json/critical_expanded_json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 4, "description": "Pass dirty_paths_json as --argjson dirty_paths to jq -n call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 5, "description": "Bind $dirty_paths as $dirty at invocation-level binding block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 6, "description": "Compute $dirty_scope_frag after $c_scope binding, collecting every intersecting path via scopes_overlap_first per dirty path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 7, "description": "Merge + $dirty_scope_frag at every whole_tree_claim_frag site (8 sites)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 8, "description": "Extend header field-list comment with dirty_scope_advisory field description", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]},
+    {"id": 9, "description": "Assert post-edit count matches pre-edit count (8==8); confirm schema string unchanged (orchestrate-batch-admit-v7)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Used apostrophes (e.g. \"candidate's own\") inside jq-program comments/strings embedded in a single-quoted bash string", "result": "failed", "reason": "apostrophe terminates the outer single-quoted bash string literal, causing a bash syntax error; rewrote all such text to avoid apostrophes, matching the file's existing convention of apostrophe-free prose inside the embedded jq program"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "Manual probe confirmed true-positive (candidate 409, whose own file_scope includes the just-edited orchestrate-batch-admit.sh, fires dirty_scope_advisory naming that path) and true-negative (candidate 328, clean scope, has(\"dirty_scope_advisory\")==false) by temporarily installing the edited script into the deployed .claude/scripts/ tree (gitignored, disposable) and restoring the pristine copy afterward. decision/self_modifying/whole_tree_claim/exit code confirmed byte-for-byte identical pre- vs post-edit for both candidates. shellcheck (lint-shellcheck.sh) exits 0. bash -n syntax OK. Schema string orchestrate-batch-admit-v7 occurrence count unchanged (15 before and after -- the count includes both code and header-comment occurrences). Phase 1's --only suite run showed test-orchestrate-predispatch-review.sh and test-orchestrate-unwind-dispatch.sh failing; verified by re-running both against the pristine HEAD copy of orchestrate-batch-admit.sh that the same failures occur identically, so they are pre-existing and unrelated to this change (recorded in issue log). All other suites in the --only set passed, including test-conflict-predicate.sh and test-four-tier-conflict.sh (cases 2.5/2.6/12 unaffected)."
+}

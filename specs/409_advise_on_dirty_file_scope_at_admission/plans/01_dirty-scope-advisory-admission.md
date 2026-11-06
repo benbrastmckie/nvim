@@ -1,7 +1,7 @@
 # Implementation Plan: Task #409
 
 - **Task**: 409 - Advise on dirty file scope at admission
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: Ordered after the artifact-round task in this same batch, and after the
   whole-tree-regeneration scope-claim, cross-repo source-store gate-blindness, and
@@ -142,45 +142,48 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Compute and merge `dirty_scope_advisory` in `orchestrate-batch-admit.sh` [NOT STARTED]
+### Phase 1: Compute and merge `dirty_scope_advisory` in `orchestrate-batch-admit.sh` [COMPLETED]
 
 **Goal**: The admission verdict carries the new advisory on every shape in the self-modifying and
 ordinary branches, computed once per invocation from the candidate's own `file_scope` against the
 dirty working tree.
 
 **Tasks**:
-- [ ] Re-resolve `source_dir` for `core` from `/home/benjamin/.config/nvim/.claude-extensions.json`
+- [x] Re-resolve `source_dir` for `core` from `/home/benjamin/.config/nvim/.claude-extensions.json`
       (per-extension key, no top-level key) and confirm it is
-      `/home/benjamin/.config/nvim/agent-system/extensions/core`.
-- [ ] Record the pre-edit merge-site count: `grep -c '+ \$whole_tree_claim_frag' scripts/orchestrate-batch-admit.sh`
-      (expected 8 — confirm, do not assume).
-- [ ] Add the bash-layer input next to the existing `sessions_json` / `critical_expanded_json`
+      `/home/benjamin/.config/nvim/agent-system/extensions/core`. *(completed)*
+- [x] Record the pre-edit merge-site count: `grep -c '+ \$whole_tree_claim_frag' scripts/orchestrate-batch-admit.sh`
+      (expected 8 — confirm, do not assume). *(completed: confirmed exactly 8)*
+- [x] Add the bash-layer input next to the existing `sessions_json` / `critical_expanded_json`
       resolution (around `scripts/orchestrate-batch-admit.sh:698-710`): one
       `git -C "$PROJECT_ROOT" diff --name-only HEAD 2>/dev/null` piped through
       `jq -R -s -c 'split("\n") | map(select(length > 0))'`, defaulting to `[]` on any failure,
       mirroring `sessions_json`'s degrade-safe shape verbatim. `PROJECT_ROOT` is already resolved
-      via `common_repo_root` at `:565`.
-- [ ] Pass it to the single `jq -n` call as `--argjson dirty_paths "$dirty_paths_json"`, alongside
-      the existing `--argjson sessions` / `--argjson critical_expanded` arguments.
-- [ ] Bind `$dirty_paths as $dirty` at the invocation-level binding block, alongside
-      `$own_sid` / `$sess_list`.
-- [ ] Compute `$dirty_scope_frag` immediately after `($entry.file_scope) as $c_scope` is bound
+      via `common_repo_root` at `:565`. *(completed)*
+- [x] Pass it to the single `jq -n` call as `--argjson dirty_paths "$dirty_paths_json"`, alongside
+      the existing `--argjson sessions` / `--argjson critical_expanded` arguments. *(completed)*
+- [x] Bind `$dirty_paths as $dirty` at the invocation-level binding block, alongside
+      `$own_sid` / `$sess_list`. *(completed)*
+- [x] Compute `$dirty_scope_frag` immediately after `($entry.file_scope) as $c_scope` is bound
       (`:854`) and at the same point `$c_has_whole_tree_claim` is computed, collecting EVERY
       intersecting path via `scopes_overlap_first($c_scope; [.])` per dirty path (or an equivalent
       single-pass intersection), emitting `{}` when the list is empty and
       `{dirty_scope_advisory: {dirty_paths: [...], reason: "..."}}` otherwise. The `reason` follows
       the existing machine-templated-sentence convention and names the remedy: commit the listed
-      path(s) separately before this task's own commit sweeps them in.
-- [ ] Merge `+ $dirty_scope_frag` at every site where `+ $whole_tree_claim_frag` already appears,
+      path(s) separately before this task's own commit sweeps them in. *(completed: reason text
+      avoids apostrophes, since this text lands inside the single-quoted bash string holding the
+      embedded jq program — an apostrophe there would terminate that string early)*
+- [x] Merge `+ $dirty_scope_frag` at every site where `+ $whole_tree_claim_frag` already appears,
       and nowhere else — leaving it structurally absent on the three early-exit branches (unknown
       task, terminal status, absent `file_scope`), where `$c_scope` does not exist or is empty by
-      construction.
-- [ ] Extend the script's own header field-list comment (the block around `:195-212` documenting
+      construction. *(completed: all 8 sites, via sed on the exact `+ $whole_tree_claim_frag`
+      pattern, which matched only genuine merge sites and no comment line)*
+- [x] Extend the script's own header field-list comment (the block around `:195-212` documenting
       `idle_overlap_advisory` / `absent_scope_advisory` / `cross_session_hazard` /
-      `whole_tree_claim`) with the new field and its presence rule.
-- [ ] Assert the post-edit count of `+ $dirty_scope_frag` equals the recorded pre-edit
-      `whole_tree_claim_frag` count.
-- [ ] Confirm the `$schema` string is unchanged (`orchestrate-batch-admit-v7`).
+      `whole_tree_claim`) with the new field and its presence rule. *(completed)*
+- [x] Assert the post-edit count of `+ $dirty_scope_frag` equals the recorded pre-edit
+      `whole_tree_claim_frag` count. *(completed: both 8)*
+- [x] Confirm the `$schema` string is unchanged (`orchestrate-batch-admit-v7`). *(completed)*
 
 **Timing**: 1.5 hours
 
