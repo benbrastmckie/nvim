@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Reproduced the 41 'Missing context file' failures and root-caused them: all 41 come from the .opencode arm of a --all run, where the files genuinely do not exist (0 of 41 resolve), while --claude alone is green. The defect is not path resolution but unattributed reporting (the FAIL line omits the system tree and resolved path) plus a real data inconsistency in the committed .opencode/context/index.json, which lists 41 memory/nix/nvim entries never mirrored into that tree. The 4-phase plan fixes the message attribution, adds a both-directions fixture to the existing test-validate-wiring.sh harness, prunes the dangling entries, and redeploys under the full gate set.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/466_validate_wiring_missing_context_false_positive/plans/01_wiring-missing-context-attribution.md",
+      "summary": "4-phase plan with waves 1:[1,3] 2:[2] 3:[4]; Phase 4 declares __WHOLE_TREE__ for the redeploy."
+    }
+  ],
+  "dispatch_seq": 4
+}

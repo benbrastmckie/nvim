@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/466_validate_wiring_missing_context_false_positive/plans/01_wiring-missing-context-attribution.md",
+      "summary": "4-phase plan: tree-attributed missing-context reporting in validate-wiring.sh, a both-directions regression fixture, pruning 41 dangling .opencode index entries, and redeploy with the full gate set."
+    }
+  ],
+  "next_steps": "Run /orchestrate 466 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1793993117_98582a_466",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2.5,
+    "dependency_waves": 3
+  },
+  "memory_candidates": [],
+  "dispatch_seq": 4
+}

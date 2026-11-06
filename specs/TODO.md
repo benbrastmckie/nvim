@@ -116,7 +116,7 @@ next_project_number: 515
 ### Orchestrator
 
 409 [IMPLEMENTING] — Advise at admission when a task's declared file\_scope...
-466 [PLANNING] — validate-wiring.sh reports Missing context file for context...
+466 [PLANNED] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
@@ -2966,11 +2966,12 @@ CONCURRENT TERRITORY NOTE: open task #461 (v7_refuses_cached_untracking_pathspec
 
 ### 466. validate-wiring.sh reports Missing context file for context paths present on disk and in index.json
 - **Effort**: 3 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Parent**: Task 312
+- **Plan**: [466_validate_wiring_missing_context_false_positive/plans/01_wiring-missing-context-attribution.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
 
