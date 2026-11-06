@@ -40,7 +40,7 @@ next_project_number: 515
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
-464 [RESEARCHING] — Make a plan's per-phase line estimates checkable against a...
+464 [RESEARCHED] — Make a plan's per-phase line estimates checkable against a...
 465 [PLANNING] — check-record-versioning.sh PATH\_SCOPE mode reports...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [RESEARCHING] — Make lint Check J fail on a missing handoff-writer section...
@@ -3059,10 +3059,11 @@ Audited against the full backlog corpus before creation. The closed record recor
 ---
 
 ### 464. Make a plan's per-phase line estimates checkable against a line ceiling the same plan cites, so a plan cannot contradict its own arithmetic
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [464_plan_cross_phase_line_budget_consistency/reports/01_cross-phase-line-budget-consistency.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description, which lives under specs/**.
 
