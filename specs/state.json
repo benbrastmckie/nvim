@@ -1897,9 +1897,9 @@
           "summary": "Phase 15 close: re-derived markdown duplicate-block volume and exclusions, mechanically confirmed 933 of 13,053 eligible lines as anchor-backed, wrote markdown-block-inventory.tsv, raised the resulting NET-MD target shortfall as a user_decision."
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-17-handoff-20261106T015507Z.md",
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
           "type": "handoff",
-          "summary": "Phase 17 close: 37 agent-contract files collapsed onto 2 anchors (-685 NET-MD), 3 anchor rows (6 files) skipped with recorded reasons, Scope Hypothesis shortfall confirmed with allocation-revision guidance for Phases 18-19, gate verification clean modulo confirmed concurrent-session noise, a Phase-16-origin manifest gap fixed."
+          "summary": "Phase 18 close: 33 skill files collapsed onto 2 anchors (-127 NET-MD), 3 anchor rows (10 file-occurrences) skipped with recorded reasons, Scope Hypothesis shortfall confirmed with allocation-revision guidance for Phase 19, gate verification clean modulo confirmed concurrent-session contention on gate 8 (substituted with targeted-suite and direct-lint evidence)."
         }
       ],
       "next_artifact_number": 4,
