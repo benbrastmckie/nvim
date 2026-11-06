@@ -1,0 +1,9 @@
+[
+  {
+    "question": "Should task 275's per-repo file_scope ruling stand, or be amended to account for repositories sharing one source store (measured cross-repo collision: commit f49576632 edited agent-system/extensions/lean/** inside tasks 398/399's declared territory from a BimodalLogic-repo dispatch)?",
+    "answer": "Option A -- UPHOLD the per-repo ruling as written; document the cross-repo blind spot as an accepted, manually-detected risk in file-footprint-overlap.md's Non-Goals section (amendment note sited in task-lock.md's Orchestration-Queue CLI section, since task 275's own record was deleted on archival). Build no new mechanism: the colliding actor carried no task record in either repo, so a mechanism keyed on task records or dependencies[] would not have prevented it -- independently corroborated by a second, same-repo record-less dispatch that duplicated the same two tasks' work. NOTE: adopted autonomously on the research agent's own recommendation under /orchestrate's non-blocking user_decision contract (blocking=false); not an explicit owner ruling. Revise via /revise 401 to choose option B or C instead.",
+    "cycle": 1,
+    "timestamp": "2026-11-06T07:03:11Z",
+    "description_fingerprint": "75ca2ac5230ba9effe563aab08d728a974ffe277d891a243db748c3ccb59ebcb"
+  }
+]

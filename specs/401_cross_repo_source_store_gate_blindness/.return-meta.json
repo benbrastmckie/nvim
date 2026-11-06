@@ -1,42 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793947646_0784d9_401",
-  "dispatch_seq": 5,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/401_cross_repo_source_store_gate_blindness/reports/01_cross-repo-gate-blindness.md",
-      "summary": "Verifies the cross-repo source-store-collision counterexample (commits f49576632/4311617a2, tasks 398/399, four issue-log ids) and the mechanical gate blindness (orchestrate-predispatch-review.sh reads one repo's specs/state.json only; file-footprint-overlap.md's Non-Goals section has no cross-repo entry). Finds task 275's per-repo ruling reached [COMPLETED] without amendment, deferring the question to this record; finds two of 398/399's 'outstanding work' premises are now stale (a third, same-repo record-less channel (a) dispatch already repaired the index-entries.json leg). Frames the per-repo-vs-amend decision as a user_decision rather than deciding it; defers any Non-Goals text change and mechanism design to the plan phase pending the owner's answer."
+      "type": "plan",
+      "path": "specs/401_cross_repo_source_store_gate_blindness/plans/01_cross-repo-gate-blindness-adjudication.md",
+      "summary": "Three-phase documentation-only plan implementing the settled option-A adjudication: record the cross-repo counterexample, the verbatim upheld per-repo ruling, and the record-less-dispatch caveat in file-footprint-overlap.md's Non-Goals; state the single-repository scope in orchestrate-predispatch-review.sh's header; redeploy to RESULT=landed_verify_clean. No mechanism built."
     }
   ],
-  "user_decision": {
-    "question": "A measured incident (commit f49576632 editing agent-system/extensions/lean/** inside tasks 398/399's declared territory while both sat [NOT STARTED], from a BimodalLogic-repo dispatch with no visibility into this repo's task space) contradicts the premise behind task 275's ruling 'SCOPE -- RULED: PER-REPO... file_scope conflicts are inherently per-repo, so a global queue would carry no information the per-repo one lacks.' Task 275 has since completed implementing that ruling as written, explicitly declining to amend it and deferring this decision here. Should the per-repo scope ruling stand, or be amended to account for repositories sharing one source store?",
-    "options": [
-      "A. Uphold the per-repo ruling as written. Document the cross-repo blind spot as an accepted, manually-detected risk in file-footprint-overlap.md's Non-Goals section. Build no new mechanism -- partly because the colliding actor in the measured incident carried no task record in either repo, so a mechanism keyed on task records or dependencies[] would not have prevented it anyway (confirmed again by a second, same-repo record-less dispatch that independently duplicated/pre-empted the same two tasks' work three days later).",
-      "B. Amend the ruling: file_scope conflicts are NOT inherently per-repo when multiple repositories share one source store. Direct a follow-up task to design a cross-repo visibility mechanism (e.g. a source-store-scoped lock or registry spanning both repos' task spaces) at plan time, with explicit treatment of the record-less-dispatch case this report shows recurring.",
-      "C. Amend narrowly: per-repo remains the default, but any repository whose .claude/ tree is deployed FROM a shared source store must register against that store's own lock/registry when editing it -- scoped only to the source-store-sharing relationship that actually collided, not a general cross-repo mechanism."
-    ],
-    "recommended": "A. Uphold the per-repo ruling as written. Document the cross-repo blind spot as an accepted, manually-detected risk in file-footprint-overlap.md's Non-Goals section. Build no new mechanism -- partly because the colliding actor in the measured incident carried no task record in either repo, so a mechanism keyed on task records or dependencies[] would not have prevented it anyway (confirmed again by a second, same-repo record-less dispatch that independently duplicated/pre-empted the same two tasks' work three days later).",
-    "blocking": false
+  "metadata": {
+    "session_id": "sess_1793947646_0784d9_401",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2,
+    "dependency_waves": [[1], [2], [3]]
   },
   "memory_candidates": [
     {
-      "content": "This repo's cross-task collision gates (orchestrate-predispatch-review.sh, file-footprint-overlap.md and every consumer wired to it) are scoped to exactly one repository's specs/state.json by construction (STATE_FILE=$PROJECT_ROOT/specs/state.json via common_repo_root). When a second repository's .claude/ tree is deployed from this repo's agent-system/** source store (per .claude-extensions.json's source_dir), that second repo's task space is architecturally invisible to every overlap/dependency check here, and vice versa -- two correctly-sited task records in two repos can claim the same source-store file with zero detectable collision. Separately, a channel (a) conclusion-stage dispatch carries no task record at all in either repo's terms, so even a hypothetical cross-repo mechanism keyed on task records would not see it; this has been measured occurring at least three times against the same two-task territory (agent-system/extensions/lean/** paths claimed by tasks 398/399) within one week.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/401_cross_repo_source_store_gate_blindness/reports/01_cross-repo-gate-blindness.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["cross-repo", "source-store", "file-scope-overlap", "channel-a", "gate-blindness"]
-    },
-    {
-      "content": "When a task record is archived (/todo), its directory under specs/{NNN}_{SLUG}/ is deleted entirely -- only a short digest survives in specs/CHANGE_LOG.md. A prior task's text that says 'if this ruling is amended, record the amendment as a dated note in this task record' becomes unfulfillable once that task is archived: the full plan/report/summary files are gone, retrievable only via git history (git show <archive-commit>^:<path>). Route such an amendment instead to whichever durable, non-task artifact now carries the ruling's substance (e.g. a context/pattern doc the implementation produced or updated).",
+      "content": "When a settled decision (.decisions.json) names a file as the site for a deliverable but that path lies outside the task's declared file_scope AND inside a concurrently-dispatched sibling's declared file_scope, the correct planning move is to re-site the deliverable into a path already in declared scope rather than widen scope into the sibling's territory. Widening without a serializing dependencies[] edge is exactly the unordered overlap the batching guardrails forbid, and the planner cannot add edges. Check the siting premise too: a decision naming a site for an 'amendment note' usually owes that note only on the amend branch, so an UPHOLD outcome often dissolves the conflict entirely rather than requiring a trade-off. Verify sibling territory live against specs/state.json's file_scope at plan time, since the dispatch's concurrent_siblings payload and state.json can both be stale by the time the plan is implemented.",
       "category": "PATTERN",
-      "source_artifact": "specs/401_cross_repo_source_store_gate_blindness/reports/01_cross-repo-gate-blindness.md",
+      "source_artifact": "specs/401_cross_repo_source_store_gate_blindness/plans/01_cross-repo-gate-blindness-adjudication.md",
       "confidence": 0.75,
-      "suggested_keywords": ["task-archival", "amendment-note", "CHANGE_LOG", "record-versioning"]
+      "suggested_keywords": ["file-scope", "concurrent-siblings", "decision-siting", "planning-scope", "batching-guardrails"]
     }
   ],
-  "next_steps": "Run /orchestrate 401 to create implementation plan"
+  "next_steps": "Run /orchestrate 401 to execute the plan",
+  "dispatch_seq": 12
 }

@@ -127,7 +127,7 @@ next_project_number: 505
 
 ### Agent System
 
-401 [PLANNING] — Two repositories file against one source store with no...
+401 [PLANNED] — Two repositories file against one source store with no...
 415 [PLANNED] — Record exact-pid process checking as a parallelism-safety...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
     └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
@@ -5199,11 +5199,12 @@ The batched, dedup-aware, consolidation-biased consumer of this evidence is scop
 
 ### 401. Two repositories file against one source store with no cross-repo overlap or dependency visibility
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 387
 - **Research**: [401_cross_repo_source_store_gate_blindness/reports/01_cross-repo-gate-blindness.md]
+- **Plan**: [401_cross_repo_source_store_gate_blindness/plans/01_cross-repo-gate-blindness-adjudication.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

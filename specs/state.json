@@ -2401,7 +2401,7 @@
     {
       "project_number": 401,
       "project_name": "cross_repo_source_store_gate_blindness",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Two repositories file against one source store with no cross-repo overlap or dependency visibility",
@@ -2414,15 +2414,21 @@
           "path": "specs/401_cross_repo_source_store_gate_blindness/reports/01_cross-repo-gate-blindness.md",
           "type": "report",
           "summary": "Verifies the cross-repo source-store-collision counterexample (commits f49576632/4311617a2, tasks 398/399, four issue-log ids) and the mechanical gate blindness (orchestrate-predispatch-review.sh reads one repo's specs/state.json only; file-footprint-overlap.md's Non-Goals section has no cross-repo entry). Finds task 275's per-repo ruling reached [COMPLETED] without amendment, deferring the question to this record; finds two of 398/399's 'outstanding work' premises are now stale (a third, same-repo record-less channel (a) dispatch already repaired the index-entries.json leg). Frames the per-repo-vs-amend decision as a user_decision rather than deciding it; defers any Non-Goals text change and mechanism design to the plan phase pending the owner's answer."
+        },
+        {
+          "path": "specs/401_cross_repo_source_store_gate_blindness/plans/01_cross-repo-gate-blindness-adjudication.md",
+          "type": "plan",
+          "summary": "Three phases, 2 hours, waves [[1],[2],[3]]; tiers prose/prose/full with __WHOLE_TREE__ declared on the redeploy phase."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T01:50:10Z",
-      "last_updated": "2026-11-06T07:04:07Z",
+      "last_updated": "2026-11-06T07:23:18Z",
       "effort": "medium",
       "priority": null,
-      "session_id": "sess_1793947646_0784d9_401",
+      "session_id": "sess_1793947646_0784d9",
       "file_scope": [
+        "__WHOLE_TREE__",
         "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
         "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"
       ]
