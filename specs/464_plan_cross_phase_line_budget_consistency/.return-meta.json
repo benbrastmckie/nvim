@@ -1,6 +1,17 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/464_plan_cross_phase_line_budget_consistency/plans/01_cross-phase-ceiling-consistency.md",
+      "summary": "Four-phase plan landing a generalized cross-phase ceiling consistency rule in plan-format.md plus an advisory check in validate-artifact.sh, with regression fixtures and a redeploy."
+    }
+  ],
+  "next_steps": "Run /orchestrate 464 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 3.25,
+  "dependency_waves": 4,
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1793993117_98582a_464",
     "agent_type": "planner-agent",
