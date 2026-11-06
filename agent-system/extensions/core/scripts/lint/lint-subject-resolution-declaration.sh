@@ -318,8 +318,28 @@ violation_message() {
 # ---------------------------------------------------------------------------
 # Collect files to scan
 # ---------------------------------------------------------------------------
+# Deliberately NOT lint_corpus_scan_collect_files's shared-corpus-reuse path: that optimization
+# matches a PATTERN with [[ == ]] globbing against the WHOLE repo-wide corpus, where '*' spans
+# directory separators freely -- a bare '*.sh' pattern would silently widen this lint's scan to
+# every .sh file in the tree (confirmed live: running under verify-deploy.sh, where
+# GATE_SHARED_CORPUS_FILE/ROOT are exported, this scanned far beyond scripts/tests/ and produced
+# false violations from unrelated files elsewhere in the source store). This corpus is small and
+# flat, so a direct `find` is used unconditionally instead of chasing the shared-corpus path's
+# multi-segment-pattern caveat.
 FILES=()
-lint_corpus_scan_collect_files FILES "$CORE_TESTS" '*.sh' -- "${SCAN_PATHS[@]}" || exit 2
+for _subj_scan_path in "${SCAN_PATHS[@]}"; do
+    if [[ -d "$_subj_scan_path" ]]; then
+        while IFS= read -r _subj_found; do
+            [[ -n "$_subj_found" ]] && FILES+=("$_subj_found")
+        done < <(find "$_subj_scan_path" -type f -name '*.sh' 2>/dev/null | sort)
+    elif [[ -f "$_subj_scan_path" ]]; then
+        FILES+=("$_subj_scan_path")
+    else
+        echo "ERROR: scan path not found: $_subj_scan_path" >&2
+        exit 2
+    fi
+done
+unset _subj_scan_path _subj_found
 
 # ---------------------------------------------------------------------------
 # Main scan
