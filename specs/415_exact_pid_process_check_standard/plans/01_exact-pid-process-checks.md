@@ -1,7 +1,7 @@
 # Implementation Plan: Exact-PID Process Check Standard
 
 - **Task**: 415 - Record exact-pid process checking as a parallelism-safety suite-authoring standard, replacing broad process-name matching
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: Sequenced after the verdict-extraction enforcement work, whose edit to `context/standards/shell-script-testing.md` has already landed (its `## Verdict-line extraction contract (producer/consumer)` section is present in the source store at line 703). Rebase onto that landed edit; never revert it.
 - **Research Inputs**: specs/415_exact_pid_process_check_standard/reports/01_exact-pid-process-check-standard.md

@@ -22,21 +22,37 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/415_exact_pid_process_check_standard/summaries/01_exact-pid-process-checks-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["git-commit-scoped", "pathspec", "foreign-hunk", "scoped-staging", "concurrent-task"]
+      "suggested_keywords": [
+        "git-commit-scoped",
+        "pathspec",
+        "foreign-hunk",
+        "scoped-staging",
+        "concurrent-task"
+      ]
     },
     {
       "content": "The validate-bounded-waiter.sh PreToolUse Bash hook refuses a command that combines a `kill -0` liveness check with a `pgrep -f`/`ps | grep` name-match probe in the SAME Bash invocation, even for a one-shot, non-loop diagnostic purpose (e.g. proving a name-based check would have matched a deliberately-injected test fixture). Split such checks into separate Bash calls. The hook is Bash-specific: authoring the same literal anti-pattern text as prose via the Write/Edit tools (e.g. documenting the forbidden shape in a standards file) is NOT blocked -- only an actual Bash tool invocation containing the pattern is.",
       "category": "PATTERN",
       "source_artifact": "specs/415_exact_pid_process_check_standard/summaries/01_exact-pid-process-checks-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["validate-bounded-waiter", "pgrep", "kill -0", "PreToolUse hook", "diagnostic-probe"]
+      "suggested_keywords": [
+        "validate-bounded-waiter",
+        "pgrep",
+        "kill -0",
+        "PreToolUse hook",
+        "diagnostic-probe"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   }
