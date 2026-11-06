@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/reports/01_heredoc-aware-hook-detector.md",
+      "summary": "Recommends making validate-bounded-waiter.sh heredoc-aware (Option 1): strip heredoc body lines from the text tested by the existing three-leg conjunction via a conservative, self-contained awk pass, bailing to today's unstripped-text verdict on any ambiguity; rejects narrowing the conjunction (Option 2) and documentation-only (Option 3) as primary fixes."
+    }
+  ],
+  "dispatch_seq": 4,
+  "findings_count": 6,
+  "next_steps": "Run /orchestrate 506 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1793988163_b25d4a_506",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "A PreToolUse hook whose matcher is \"Bash\" and whose detector tests the raw tool_input.command string (not Write/Edit content) must treat heredoc bodies as data, not control flow -- a heredoc that documents a forbidden shell shape as prose satisfies a purely textual conjunction test just as literally as a live instance of that shape. Sibling hooks matched on Write|Edit (validate-no-task-references.sh, validate-no-record-versioning.sh) never hit this because their payload is already the complete target content with no embedded sub-document; it is specific to Bash-matcher textual-shape detectors.",
+      "category": "PATTERN",
+      "source_artifact": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/reports/01_heredoc-aware-hook-detector.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["preToolUse", "hook", "heredoc", "bash-matcher", "textual-detector", "false-positive"]
+    },
+    {
+      "content": "record-version-patterns.sh's strip_exempt_regions() is a reusable implementation SHAPE (not a shared library) for region-stripping before pattern-testing: a single awk pass that blanks lines between an open/close condition while passing every other line through unchanged. The same shape generalizes to stripping heredoc bodies (open = a <<DELIM/<<-DELIM opener not followed by a third '<', close = a line exactly/whitespace-stripped equal to DELIM) ahead of any textual conjunction test, as long as the stripper bails to the original unstripped text on anything it cannot parse confidently (multiple heredocs, non-identifier delimiter, unterminated body) rather than guessing.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/reports/01_heredoc-aware-hook-detector.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["awk", "heredoc", "region-stripping", "conservative-parser", "fail-open"]
+    }
+  ]
+}
