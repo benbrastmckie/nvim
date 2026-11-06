@@ -3009,7 +3009,7 @@
     {
       "project_number": 431,
       "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Record the gate-enforced verbatim-duplication exclusion class as durable agent-system context, derived from the lints own fragment paths",
       "topic": "core-agent-system",
@@ -3019,13 +3019,21 @@
       ],
       "file_scope": [
         "agent-system/extensions/core/context/standards/gate-enforced-duplication.md",
+        "agent-system/extensions/core/context/standards/gate-enforced-fragment-duplication.md",
         "agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md",
         "agent-system/extensions/core/index-entries.json"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/431_durable_record_for_gate_enforced_verbatim_fragments/reports/01_gate-enforced-fragment-duplication-record.md",
+          "type": "report",
+          "summary": "Resolves PLACEMENT for the gate-enforced verbatim-fragment-duplication exclusion-class record: recommends a new agent-system/extensions/core/context/standards/gate-enforced-fragment-duplication.md file (index-entries.json only indexes context/, ruling out a docs/ placement), re-derives the lint's current six fragment-path variables as live evidence the derivation-rule constraint must stand (a hardcoded list would already be stale), documents both enforcing gates' exact mechanics, and captures baseline gate output for the implement-phase before/after diff."
+        }
+      ],
       "created": "2026-10-16T23:40:01Z",
-      "last_updated": "2026-11-06T18:47:23Z",
-      "session_id": "sess_1793990805_500dd7_431"
+      "last_updated": "2026-11-06T18:55:42Z",
+      "session_id": "sess_1793990805_500dd7",
+      "next_artifact_number": 2
     },
     {
       "project_number": 435,
