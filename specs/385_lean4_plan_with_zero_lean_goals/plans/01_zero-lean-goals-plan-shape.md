@@ -258,31 +258,34 @@ the `prose` row's diff read-through.
 
 ---
 
-### Phase 3: challenge-snapshot.md Exit Code and Zero-Goal Marker Record [NOT STARTED]
+### Phase 3: challenge-snapshot.md Exit Code and Zero-Goal Marker Record [COMPLETED]
 
 **Goal**: Document exit `72`, the marker mechanics, and the settled `--compare`/Comparator
 disposition in the design record (acceptance (b)'s documentation half, plus Decision 7).
 
 **Tasks**:
-- [ ] Re-read
+- [x] Re-read
       `agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md`
-      immediately before editing.
-- [ ] Add a `72` row to the existing `## Exit-Code Vocabulary` table, between the `71` and `73`
+      immediately before editing. *(completed)*
+- [x] Add a `72` row to the existing `## Exit-Code Vocabulary` table, between the `71` and `73`
       rows, reading "Zero-goal plan — intentional, no Challenge produced (marker-recognized,
       `**Goals**:` also empty)" with "(new to this tool; no Comparator analogue)" in the Mirrors
-      column, worded identically to the script header's new entry from Phase 1.
-- [ ] Add a short `### Zero-Goal Marker` subsection directly after `### Fail-loud on partial
+      column, worded identically to the script header's new entry from Phase 1. *(completed)*
+- [x] Add a short `### Zero-Goal Marker` subsection directly after `### Fail-loud on partial
       resolution`, documenting: the verbatim marker line and its plain-substring matching; the
       "`**Goals**:` must also be empty" cross-check, and that marker-plus-non-empty-Goals is a
       hard `71` naming the inconsistency; that a merely-empty section without the marker stays a
       hard `71`; and that an absent section still means the R2 legacy route, not this case.
-- [ ] In that same subsection, record the settled `--compare`/Comparator disposition: a zero-goal
+      *(completed)*
+- [x] In that same subsection, record the settled `--compare`/Comparator disposition: a zero-goal
       plan never acquires `challenge/manifest.json`, so `lean-implementation-agent.md`'s existing
       advisory `challenge_missing` preflight verdict is the correct and intended outcome, and
       `--compare` is in effect inapplicable to such a plan — no code change, by decision.
-- [ ] Cross-reference `plan-format.md`'s `### Zero Lean Goals (no theorem deliverable)`
-      subsection as the authoring-side statement of the shape.
-- [ ] Confirm no task-number reference is introduced anywhere in the added text.
+      *(completed)*
+- [x] Cross-reference `plan-format.md`'s `### Zero Lean Goals (no theorem deliverable)`
+      subsection as the authoring-side statement of the shape. *(completed)*
+- [x] Confirm no task-number reference is introduced anywhere in the added text. *(completed:
+      confirmed by reading the new subsection and table row)*
 
 **Timing**: 0.5 hours
 

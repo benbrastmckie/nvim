@@ -85,6 +85,38 @@ failure naming the specific missing identifier. The script never emits a partial
 omitting an unresolvable name — Comparator would silently accept that as "no theorem named here
 to check," which is exactly the failure mode this task exists to prevent.
 
+### Zero-Goal Marker
+
+A lean/lean4 plan with no theorem deliverable declares that intentionally by placing the literal
+marker line
+
+```
+<!-- lean-challenge-statements:none -->
+```
+
+inside a *present* `## Lean Challenge Statements` section that contains no ```` ```lean ````
+fenced blocks (plain-substring match against the section text, after fenced-block extraction
+already confirmed the block count is zero). The authoring-side statement of this shape lives in
+`plan-format.md`'s `### Zero Lean Goals (no theorem deliverable)` subsection; this subsection
+documents the recognition and reporting mechanics on the tool side.
+
+- **`**Goals**:` must also be empty.** The marker alone is not sufficient: if `**Goals**:` names
+  one or more identifiers while the marker is present, that is a genuine self-inconsistency (the
+  plan claims zero goals via the marker while also naming goals to prove) and stays a hard `71`,
+  naming the offending identifier(s) — never the new `72`.
+- **A merely-empty section without the marker stays a hard `71`.** A `## Lean Challenge
+  Statements` section that is present but contains no fenced blocks AND no marker is malformed,
+  not a zero-goal declaration, and is reported identically to how it always has been.
+- **An absent section is a different case entirely.** A plan with no `## Lean Challenge
+  Statements` section at all is not recognized as zero-goal; it falls through to the R2
+  git-baseline legacy route exactly as before the marker was introduced.
+- **`--compare`/Comparator disposition (settled, no code change).** A zero-goal plan never
+  produces `specs/{NNN}_{SLUG}/challenge/manifest.json` — exit `72` is a side-effect-free early
+  exit before any manifest write, module assembly, or git commit. `lean-implementation-agent.md`'s
+  existing advisory `challenge_missing` preflight verdict (triggered by the manifest's absence) is
+  therefore already the correct and intended outcome for such a plan, and `--compare` is in effect
+  inapplicable to it by decision, not by omission.
+
 ## Manifest Schema
 
 `specs/{NNN}_{SLUG}/challenge/manifest.json`, read verbatim by the Comparator compare step:
@@ -119,6 +151,7 @@ the two tools share an operator-facing vocabulary rather than inventing a second
 | `64` | Usage error | `lean-comparator-run.sh`'s own `64` usage error |
 | `65` | Statement drift detected (`--check` mode only) | Comparator's `statement_mismatch` verdict |
 | `71` | Config error — identifier-set mismatch between `## Lean Challenge Statements` and `**Goals**:`, or an identifier resolvable by neither R1 nor R2 | Comparator's `config_error` verdict |
+| `72` | Zero-goal plan — intentional, no Challenge produced (marker-recognized, `**Goals**:` also empty) | (new to this tool; no Comparator analogue) |
 | `73` | Snapshot refused — status-gate refusal (regeneration attempted past `planned`, or an existing manifest without `--force`) | (new to this tool; no Comparator analogue — Comparator has no notion of a status gate) |
 
 ## Gate Strength: Advisory Only

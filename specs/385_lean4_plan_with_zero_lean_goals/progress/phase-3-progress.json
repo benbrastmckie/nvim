@@ -1,0 +1,56 @@
+{
+  "phase": 3,
+  "phase_name": "challenge-snapshot.md Exit Code and Zero-Goal Marker Record",
+  "started_at": "2026-11-05T00:30:00Z",
+  "last_updated": "2026-11-05T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add 72 row to Exit-Code Vocabulary table between 71 and 73",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add ### Zero-Goal Marker subsection after ### Fail-loud on partial resolution documenting marker mechanics, Goals-must-be-empty cross-check, malformed-section-71, absent-section-R2",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Record settled --compare/Comparator disposition in same subsection",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Cross-reference plan-format.md's Zero Lean Goals subsection",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Sync lean index-entries.json line_count for challenge-snapshot.md entry (required by doc-lint gate 3)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "agent-system/extensions/lean/index-entries.json carried ONE unrelated, pre-existing uncommitted line_count correction (project/lean4/domain/ladder-counter-observables.md: 233->330) belonging to other in-flight work, not this task (ladder-counter-observables.md was already 'M' at session start, before this dispatch began). Only the challenge-snapshot.md line_count hunk (188->221) was staged into this phase's commit; the other was left exactly as found in the working tree.",
+    "gate 3's remaining FAIL after this phase is still attributable solely to the lean extension's EXPECTED deployed-script content drift (Phase 1's source-store script edit, not yet redeployed), resolved by Phase 5. The 72 wording in this record and the script header agree in substance (both: zero-goal plan, marker-recognized, Goals also empty, intentional, no Challenge produced, no Comparator analogue) though phrased per each site's own convention per the plan's literal instruction."
+  ]
+}
