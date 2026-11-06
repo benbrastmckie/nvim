@@ -1,36 +1,22 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/505_suite_selection_non_core_extension_paths/reports/01_suite-selection-non-core-mapping.md",
-      "summary": "Root-caused the core-tree-only lookup in suite-selection-lib.sh, recommended per-touched-path extension resolution reusing run-all.sh's own core/manifest.json detection idiom, ruled to extend (not scope-document-away) the deployed-vs-source classification axis, and re-measured the header's carried 0-of-19 figure (found false: 5 of 25 real non-core suites carry a .claude reference)."
+      "type": "plan",
+      "path": "specs/505_suite_selection_non_core_extension_paths/plans/01_non-core-suite-selection-mapping.md",
+      "summary": "5-phase plan making suite-selection-lib.sh resolve covering suites for source-store paths under any extension, with the classification half extended and the carried figure re-derived."
     }
   ],
-  "next_steps": "Run /orchestrate 505 to create implementation plan",
-  "dispatch_seq": 3,
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1793988163_b25d4a_505",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6,
-    "issue_log_contribution": 1
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 4.75,
+    "dependency_waves": 5
   },
-  "memory_candidates": [
-    {
-      "content": "When a sourced shell library derives its own scripts/tests root once from its own file location (e.g. two dirs up from scripts/lib/foo-lib.sh), that root is fixed to whatever directory the library itself lives under -- it does NOT automatically generalize to a touched-path argument belonging to a different sibling directory (e.g. a different extension under agent-system/extensions/*). A path-to-suite or path-to-resource mapping library needs to resolve its roots PER CALL from the argument's own path content, not once at source time, whenever callers may pass paths outside the library's own directory. Reuse an existing sibling detection idiom (e.g. a manifest.json marker check) rather than inventing a second one.",
-      "category": "PATTERN",
-      "source_artifact": "specs/505_suite_selection_non_core_extension_paths/reports/01_suite-selection-non-core-mapping.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["suite-selection-lib", "source-store", "extension-aware", "path-resolution", "sourced-library-scope"]
-    },
-    {
-      "content": "A classification/heuristic function with a 'file not found -> default value X' fallback branch can silently manufacture a population-wide measurement of X (e.g. '0 of N suites show hazard Y') that is actually just the fallback firing for every input, not a genuine absence finding. Before trusting a carried-forward 'N of M' figure from a function with such a fallback, re-derive it directly (e.g. by grepping the real files for the signal) rather than assuming the function's own historical output was measuring what its header claims.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/505_suite_selection_non_core_extension_paths/reports/01_suite-selection-non-core-mapping.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["carried-unverified-figure", "fallback-masking", "re-measurement", "classification-function", "suite-selection-lib"]
-    }
-  ]
+  "next_steps": "Run /orchestrate 505 to execute the plan",
+  "dispatch_seq": 8
 }

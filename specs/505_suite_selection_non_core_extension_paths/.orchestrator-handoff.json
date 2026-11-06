@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a 5-phase implementation plan for making suite-selection-lib.sh resolve a covering suite for source-store paths under any extension, not core alone. Phase 1 adds per-touched-path extension-root resolution threaded through all three strata of _ssl_resolve_one; Phase 2 broadens suite_selection_classify's suite-file lookup across extensions (the ruling on the classification half: extend, not justify core-only); Phase 3 pins the four required behaviours in test-run-all-selection.sh; Phase 4 re-derives the carried 0-of-19 figure and rewrites the header notes; Phase 5 redeploys and runs the suite from both vantage points under the full gate set. The defect was confirmed live during planning: suite_selection_select on the lean path returns __FULL_SWEEP__ although its paired suite exists.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/505_suite_selection_non_core_extension_paths/plans/01_non-core-suite-selection-mapping.md",
+      "summary": "5-phase plan: extension-aware per-touched-path resolution, broadened classification lookup, four pinning test fixtures, header re-measurement, redeploy plus dual-vantage full-gate verification."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "dispatch_seq": 8,
+  "next_action_hint": "Dispatch implementation; Phase 1 is the only Wave 1 phase and the chain is strictly sequential."
+}
