@@ -1,15 +1,21 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 5,
-  "summary": "Authored a five-phase plan for recapturing the parent record's corpus baselines under the corrected probe. Established at plan time that the union fix landed 2026-11-04 16:42 (deployed 16:57), that the live untracked in-corpus contribution is currently 0, and that the parent's Phase-20 reading postdates the fix while its Phase-1 baseline (2026-10-16) predates it by ~19 days. The decisive structural finding carried into the plan: the parent's authoritative acceptance figure is a git-numstat sum over its own commits, which never consults the probe and cannot be moved by this correction in either direction.",
-  "blockers": [],
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 14,
+  "summary": "Recaptured the corrected-probe reading, dated and classified all 17 baseline/running-net figures in the parent record's two plan files by instrument, and bounded the Phase-1 baseline's untracked-at-capture exposure (narrowed to empty via a commit-log concurrency bracket). The correction is a null result: all three baseline populations confirmed sound, delta 0. The parent's authoritative acceptance figure (Instrument B, NET-TOTAL +1,219 against the retained -10,000 floor) was unaffected by construction and its verdict stands unchanged. Both parent plan files annotated with per-figure determinations; the Phase-20 Instrument A field-set ambiguity resolved via git ancestry evidence.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md",
+      "summary": "Null-result recapture of the corpus baselines; parent's acceptance verdict unchanged."
+    },
     {
       "type": "plan",
       "path": "specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md",
-      "summary": "Five-phase plan: capture the corrected reading of record, date and classify every recorded figure by instrument, bound the Phase-1 baseline's exposure and state the correction, apply the determinations to both parent plan files, then run the full gate set and close."
+      "summary": "Determination table, exposure bound, and this record's own outcome."
     }
   ],
-  "dispatch_seq": 7
+  "phases_completed": 5,
+  "phases_total": 5,
+  "blockers": []
 }

@@ -19006,7 +19006,7 @@
     {
       "project_number": 485,
       "project_name": "recapture_corpus_baselines_under_corrected_probe",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Recapture corpus baselines under the corrected inventory probe",
       "description": "SOURCE STORE IS THE EDIT TARGET for any agent-system change: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). This record's primary edit target, however, is this parent record's own plan files under specs/, which are exempt from the no-task-reference and no-record-versioning rules.\n\nGOAL. Recapture the corpus baseline figures that the parent record's net-deletion acceptance criterion is measured against, now that the measurement instrument has been corrected.\n\n=== WHY ===\nscripts/script-inventory.sh enumerated the corpus via `git ls-files` alone, so its --size-line and JSON output saw only TRACKED files. A newly created, not-yet-staged file was invisible to the probe. That has now been fixed: the enumeration unions tracked with untracked-but-not-ignored in-corpus files and discloses the contribution via a trailing `untracked=N` field on --size-line plus `untracked_count`/`untracked_paths` in JSON, pinned by a git-fixture regression case.\n\nTHE DIRECTION OF THE ERROR IS WHAT MATTERS. An enumeration blind to new untracked files systematically understates insertions, which biases a running insertions-minus-deletions figure in the FAVOURABLE direction -- it makes a phase look more net-negative than it actually was. That is the one direction of error a net-deletion acceptance criterion cannot tolerate, because it hides exactly the drift the criterion exists to catch.\n\n=== WHAT IS AFFECTED (verify before acting; figures drift) ===\nTwo plan files in the parent record's directory hold baseline figures captured under the old tracked-only behaviour:\n  - plans/01_corpus-consolidation-net-deletion.md\n  - plans/03_markdown-corpus-consolidation.md\nThe -10,000 non-test-line floor and the -8,100 markdown target are both stated against those baselines.\n\nThe finding was recorded by the record that fixed the probe, which deliberately did NOT edit these files: the parent was an active task at the time and those files were its own territory. Nothing has acted on the finding since. Re-derive which specific figures were captured under the old behaviour rather than assuming all of them were -- some may postdate the fix.\n\n=== SCOPE ===\n- Re-run script-inventory.sh against the current tree and record the corrected figures.\n- Determine, for each recorded baseline figure in the two plan files above, whether it was captured under the undercounting behaviour. State the finding either way, including for figures that turn out to be unaffected.\n- Where a baseline shifts, update it AND restate the running net figure derived from it, so the acceptance criterion is measured against a sound baseline.\n- Report the magnitude of the correction explicitly (old figure, new figure, delta). If the correction is immaterial -- the untracked contribution at capture time was zero or negligible -- say so plainly and close; a null result is a valid and useful outcome here, not a failure.\n\n=== ACCEPTANCE ===\n- Every baseline figure in the two named plan files is either confirmed sound or corrected, with the determination stated per figure.\n- The parent record's running net-deletion figure is restated against the corrected baseline.\n- The magnitude of the correction is reported (old, new, delta), including an explicit null result if that is what the measurement shows.",
@@ -19020,12 +19020,17 @@
         "specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md"
       ],
       "created": "2026-11-05T03:57:56Z",
-      "last_updated": "2026-11-06T07:04:23Z",
+      "last_updated": "2026-11-06T07:23:47Z",
       "artifacts": [
         {
           "path": "specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md",
           "type": "plan",
           "summary": "Five-phase plan: capture the corrected reading of record, date and classify every recorded figure by instrument, bound the Phase-1 baseline's exposure and state the correction, apply the determinations to both parent plan files, then run the full gate set and close."
+        },
+        {
+          "path": "specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md",
+          "type": "summary",
+          "summary": "Null-result recapture of the corpus baselines; parent's acceptance verdict unchanged."
         }
       ],
       "audit_verdict": {
@@ -20106,7 +20111,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1793947646_0784d9"
+      "session_id": "sess_1793947646_0784d9",
+      "completion_summary": "Recaptured the corpus baseline figures the parent record's net-deletion acceptance criterion is measured against. Determination: the correction is a null result (delta 0 for NET-PROD, NET-TEST and NET-MD baselines) — the parent's authoritative acceptance figure (Instrument B, NET-TOTAL +1,219 against the -10,000 floor) was never exposed to the probe's undercounting defect and remains unchanged. Both parent plan files annotated with per-figure determinations; the Phase-20 Instrument A field-set ambiguity was resolved via git ancestry evidence."
     },
     {
       "project_number": 486,

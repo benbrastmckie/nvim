@@ -1,7 +1,7 @@
 # Implementation Plan: Task #485
 
 - **Task**: 485 - Recapture the corpus baseline figures the net-deletion acceptance criterion is measured against, now that the measurement instrument has been corrected
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None live. The record that fixed the probe (`specs/429_script_inventory_undercounts_untracked_files`, `completed`) is an *input* whose summary carries the exposure measurement this plan consumes, not a blocker. The parent record (`specs/328_systematic_script_and_test_corpus_efficiency`) is `completed` as of commit `fd86bf491`, so its plan files are no longer another task's live territory — the condition that made 429 decline to edit them has lapsed.
 - **Research Inputs**: None. No research dispatch preceded this plan; the dispatch description carries the defect, the measured evidence, the affected-file list and the acceptance bar, and the remaining facts were established by direct reads of the probe, the two plan files, and git history at plan time (recorded under "Plan-Time Measurements" below). Prior measured evidence is drawn from `specs/429_script_inventory_undercounts_untracked_files/summaries/01_untracked-corpus-enumeration-summary.md`.

@@ -11,7 +11,7 @@ next_project_number: 505
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,338,342,383,385,397,401,408,410,412,415,419,423,431,435,437,453,456,459,464,465,466,473,477,478,483,485,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 29,338,342,383,385,397,401,408,410,412,415,419,423,431,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,430,439,445,458,463,472,474,475,492,497 | 29,383,397,401,412,415,419,431,435,459,491,494 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 391,399,420,436,444,446,448,454,476 | 313,369,385,398,409,418,423,430,435,439,445,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 360,390,402,438,451,455,461,484,500 | 313,385,391,420,435,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
@@ -46,7 +46,6 @@ next_project_number: 505
 465 [RESEARCHED] — check-record-versioning.sh PATH\_SCOPE mode reports...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
-485 [IMPLEMENTING] — Recapture corpus baselines under the corrected inventory probe
 489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
@@ -1359,12 +1358,13 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 ---
 
 ### 485. Recapture corpus baselines under the corrected inventory probe
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Parent**: Task 328
 - **Plan**: [485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md]
+- **Summary**: [485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET for any agent-system change: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). This record's primary edit target, however, is this parent record's own plan files under specs/, which are exempt from the no-task-reference and no-record-versioning rules.
 

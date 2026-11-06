@@ -1,10 +1,59 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 14,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md",
+      "summary": "Recaptured the corrected-probe reading, dated and classified all 17 figures recorded in the parent's two plan files by instrument, bounded the Phase-1 baseline's exposure (narrowed to empty), and applied the determination to both parent files. The correction is a null result: all three baseline populations confirmed sound, delta 0; the parent's acceptance verdict is unchanged."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Recaptured the corpus baseline figures the parent record's net-deletion acceptance criterion is measured against. Determination: the correction is a null result (delta 0 for NET-PROD, NET-TEST and NET-MD baselines) — the parent's authoritative acceptance figure (Instrument B, NET-TOTAL +1,219 against the -10,000 floor) was never exposed to the probe's undercounting defect and remains unchanged. Both parent plan files annotated with per-figure determinations; the Phase-20 Instrument A field-set ambiguity was resolved via git ancestry evidence."
+  },
+  "modified_files": [
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+    "specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md",
+    "specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a corpus-size probe is later found to undercount (e.g. tracked-only git ls-files enumeration blind to untracked files), bounding a frozen historical baseline's exposure retroactively is possible without the file itself ever being recoverable: enumerate the superset of files first-committed after the baseline's capture commit (git log --diff-filter=A), then narrow by checking for any OTHER commit (any task) within a tight time bracket around the exact capture instant. If no concurrent writer has any commit in that bracket, there is no evidence a second writer's uncommitted work existed on disk at that instant, and the narrowed untracked-at-capture set can be confirmed empty even when the raw superset is large.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git-diff-filter-A",
+        "retroactive-bound",
+        "untracked-exposure",
+        "baseline-recapture",
+        "concurrency-bracket"
+      ]
+    },
+    {
+      "content": "To resolve whether a recorded tool-output line came from a fixed or stale copy of a script when the line is missing an expected field, three corroborating checks settle it without re-running anything: (1) git merge-base --is-ancestor <fix-commit> <reading's-own-commit> confirms the fix was in history by that point; (2) the commit's own message (e.g. mentions 'redeploy') may directly state the copy was refreshed; (3) git show <commit>:<path> on the source file confirms the fix's code is literally present. All three agreeing settles 'fields trimmed when recorded' vs 'stale copy used' definitively.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "git-merge-base-ancestor",
+        "field-set-dating",
+        "stale-copy-detection",
+        "probe-version-corroboration"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
