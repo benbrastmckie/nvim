@@ -535,6 +535,77 @@ mutating the destination never mutates the source (the hardlink-sharing hazard
   `tests/test-run-all-selection.sh`'s Part 5 cases for the full regression coverage (known-value
   correctness against the real corpus, flag-level validation/composition against a fixture).
 
+### Exact-pid process checks: the parallelism-safety rule for leftover/liveness assertions
+
+**The rule**: a suite that checks for a leftover or still-running process MUST check the exact
+pid it itself spawned, captured at spawn time. A process-NAME match — the name-query utility
+invoked with a full-command-line flag, its kill counterpart invoked the same way, or `ps` piped
+to `grep` on a command pattern (`aux`, `-ef`, or `ax` form) — is never acceptable for this purpose
+inside the battery.
+
+**Why, stated as a mechanism rather than an incident**: under a parallel pool (`--jobs`, above),
+a sibling suite may legitimately be running a process with the same name at the same moment. A
+name-based check is therefore testing the state of the whole host, not the state of the suite
+that owns the assertion. A suite that asserts about the host is not parallelism-safe by
+construction, independently of whether a collision has yet actually been observed on any given
+run — the risk is structural, not probabilistic-and-rare.
+
+**The strictly worse adjacent case**: a name-based *kill* of a process inside a suite can
+terminate a sibling session's work outright, not merely misreport it. That failure mode has
+already been paid for once in this repository at the agent level (see
+`context/patterns/bounded-build-waiter.md` below) and must not be reintroduced at the suite
+level.
+
+**The portable shape, concretely enough to copy**: capture the spawned process's own pid at
+spawn time into a dedicated pidfile —
+
+```
+cmd & echo "$!" > "$PIDFILE"
+```
+
+— then test that exact pid's liveness directly against the pid read back from the pidfile:
+
+```
+pid="$(cat "$PIDFILE")"
+if kill -0 "$pid" 2>/dev/null; then
+  echo "still alive"
+fi
+```
+
+— and clean up only that pid and its own process-group children — never a name-matched set.
+`tests/test-gate-registry-resolution.sh` case13 is the
+already-landed worked example: it writes its stalled descendant's own pid to a dedicated file at
+spawn and checks only that exact pid's liveness this same way, which is exactly why it can run
+correctly alongside a sibling suite that happens to spawn an identically-named process of its
+own.
+
+**`LOAD_SENSITIVE_BASENAMES` is not a substitute for this**: the serialized set (above) exists
+for load sensitivity — a suite whose timing is unreliable under ambient host contention — not for
+check precision. Adding a suite to that set to paper over an imprecise, name-matched process
+check both slows the parallel pool for everyone and leaves the latent correctness bug in place;
+it treats a precision defect as if it were a scheduling concern.
+
+**Re-running the corpus audit** (deliberately no frozen count stated here — see this document's
+own re-run-don't-cite-frozen-numbers practice above): from `agent-system/extensions/core`, run
+
+```
+grep -rn --include='*.sh' -E 'pgrep[[:space:]]+-[a-zA-Z]*f' scripts/tests/ scripts/*.sh
+grep -rn --include='*.sh' -E 'pkill[[:space:]]+-[a-zA-Z]*f' scripts/tests/ scripts/*.sh
+grep -rn --include='*.sh' -E 'ps[[:space:]]+(aux|-ef|ax)[^|]*\|[[:space:]]*grep' scripts/tests/ scripts/*.sh
+grep -rln --include='*.sh' -E 'pgrep|pkill' scripts/tests/ scripts/*.sh
+```
+
+and classify every hit as a live violation or as non-violating (a comment, a fixture string fed
+to a different lint under test, or a classification-matcher fixture) from its own source line —
+never carry forward a previously-recorded count as current fact.
+
+**Related but distinct**: `context/patterns/bounded-build-waiter.md` documents the sibling
+agent-layer discipline against the same underlying mechanism — a polling shell that waits on a
+name match can self-match its own argv and never terminate. That hazard is a *self-match inside
+one actor's own wait loop*; this section's hazard is a *sibling-suite collision inside a shared
+parallel pool*. Same family of mistake, different actor and different failure shape — the two are
+cross-linked here deliberately rather than merged into one rule.
+
 ### Mapping a touched file to its suite: `scripts/lib/suite-selection-lib.sh`
 
 `--only` takes an exact, pre-resolved basename list -- it does not itself know which suites

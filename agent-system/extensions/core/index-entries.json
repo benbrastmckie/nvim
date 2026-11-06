@@ -1914,17 +1914,20 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 1022,
+      "line_count": 1093,
       "keywords": [
         "standards",
         "shell",
         "testing",
         "harness",
         "fixtures",
-        "bash"
+        "bash",
+        "pid",
+        "process-check"
       ],
       "topics": [
-        "quality"
+        "quality",
+        "parallelism-safety"
       ],
       "load_when": {
         "agents": [],

@@ -189,7 +189,7 @@ read-through, as the `__FULL_SWEEP__` sub-case (a) prescribes.
 
 ---
 
-### Phase 2: Add the parallelism-safety subsection and make it discoverable [NOT STARTED]
+### Phase 2: Add the parallelism-safety subsection and make it discoverable [IN PROGRESS]
 
 **Goal**: Land the rule in `context/standards/shell-script-testing.md`, inside the existing
 parallelism section rather than as an orphan, and update the standard's `index-entries.json`
