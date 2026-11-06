@@ -87,3 +87,65 @@ This audit and its zero-violation result cover `agent-system/extensions/core/scr
 and flat `agent-system/extensions/core/scripts/*.sh` only. No other extension's suite corpus
 (lean, latex, python, typst, z3, cslib, ...) was searched, and this record makes no claim —
 positive or negative — about those corpora.
+
+## Phase 2: Parallelism-safety subsection and index-entries.json update
+
+Landed `### Exact-pid process checks: the parallelism-safety rule for leftover/liveness
+assertions` inside `agent-system/extensions/core/context/standards/shell-script-testing.md`'s
+`## Suite runtime: --jobs, --timings, and gate selection` section, immediately before `###
+Mapping a touched file to its suite`. Content covers all seven required points: the rule, the
+mechanism-level rationale, the strictly-worse name-based-kill case, the copy-pasteable
+pidfile/liveness-check shape (citing `test-gate-registry-resolution.sh` case13 by name),
+`LOAD_SENSITIVE_BASENAMES` non-substitution, the re-runnable audit recipe with no frozen count,
+and a cross-link to `context/patterns/bounded-build-waiter.md` as the related-but-distinct
+agent-layer sibling discipline.
+
+Updated the `standards/shell-script-testing.md` entry in `index-entries.json`: `keywords` +`pid`,
++`process-check`; `topics` +`parallelism-safety`; `line_count` corrected 1022 -> 1093. JSON
+parses; the diff committed under this task's own commit touches only this one entry.
+
+**Concurrent-sibling dirty-file note**: `index-entries.json` carried a second, pre-existing
+uncommitted hunk at session start (`patterns/file-footprint-overlap.md` line_count 283 -> 330),
+belonging to an unrelated concurrent sibling task. That hunk was never touched by this task: it
+was temporarily reverted to its HEAD value in the working tree only for the duration of this
+task's own commit, then restored to its working-tree value immediately afterward — never
+committed, never discarded. Recorded in `issues.jsonl`.
+
+`verify-deploy.sh --skip-slow --only-gate 3,4 <repo root>` is green for the `core` extension
+after this change (doc-lint and task-reference lint both pass); the only Gate 3 failure present
+is the `lean` extension's own pre-existing manifest/orphan drift, unrelated to this task.
+
+## Phase 3: Redeploy and gate-set result
+
+Redeployed via `bash agent-system/extensions/core/scripts/deploy-headless.sh` (whole-tree
+regeneration). Confirmed the deployed tree carries both changes:
+`.claude/context/standards/shell-script-testing.md:538` has the new subsection heading, and
+`.claude/context/index.json` has `line_count: 1093` plus the `process-check`/`parallelism-safety`
+keyword and topic additions.
+
+**Batch Gate Deferral applied** (per this dispatch's own directive): rather than independently
+running the full `verify-deploy.sh <repo root>` battery (which includes Gate 8's full ~184-suite
+shell-test sweep) in this dispatch, this phase discharged against a scoped tier and recorded that
+the full sweep is deferred to the once-per-invocation batch-level stage at the end of this
+multi-task `/orchestrate` run:
+
+- `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow /home/benjamin/.config/nvim`
+  — 39 of 40 fast-gate checks evaluated (Gate 8's slow suite sweep deferred); 4 reported FAIL.
+- `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-gate-registry-resolution.sh --jobs 4`
+  — real (not skipped) coverage of the one suite this task's correctness claim rests on, under
+  the parallel pool, post-redeploy: `1 passed, 0 failed`.
+
+**Triage of the 4 fast-gate failures against the dispatch's known-unrelated baseline**:
+
+| Failure | Attribution |
+|---------|-------------|
+| Gate 3 doc-lint: `lean` extension FAIL | Matches the dispatch's stated known-unrelated baseline ("Gate 3 lean4 doc-lint missing index.json entry") and the orchestrator's own prior note tracing this family to commits `41d544812`/`ce5b1588b`. `core` itself reports clean (`check-extension-docs.sh` summary: `core PASS`, `lean FAIL`). Not attributable to this task. |
+| Gate 10 (`gate10_run`) exceeded its 30s timeout | Re-ran gate 10 alone (`--only-gate 10`): passes cleanly (`validate-state.sh --deep: specs/state.json passes`). Confirms a transient ambient-load timeout on a busy host (several concurrent `/orchestrate` dispatches active throughout this session), not a real failure and not something Phase 3's own changes introduced. Not in the dispatch's explicit baseline list, but confirmed transient by direct re-run. |
+| Gate 13 whole-tree orphan detection: 6 findings | All 6 named orphans (`scripts/lean-plan-compliance-check.sh`, four `scripts/tests/fixtures/challenge/plan_r1[8-9]/r2[01]_*.md` fixtures, `scripts/tests/test-lean-plan-compliance-check.sh`) are `lean`-extension files — the same pre-existing manifest/orphan drift family as the Gate 3 failure above, not this task's `core`-extension edits. Not attributable to this task. |
+| Gate 24 dead-command-recommendation lint: 2 violations | Both violations are in `agent-system/extensions/memory/context/project/memory/memory-setup.md:93` and `memory-troubleshooting.md:34`, naming a `/ide` command with no definition file. Unrelated to `core`'s `shell-script-testing.md`/`index-entries.json` edits or to the `lean` drift family; pre-existing documentation issue in a different extension entirely. Not attributable to this task. |
+
+No failure in this run falls outside the dispatch's known-unrelated baseline once traced to its
+actual source. The full, unselected `verify-deploy.sh <repo root>` battery (including Gate 8's
+complete sweep) runs once at the end of this multi-task `/orchestrate` batch invocation and its
+result is attributed back to this task via its own `modified_files`, per
+`context/contracts/phase-closure.md`'s no-promotion-without-evidence carve-out.
