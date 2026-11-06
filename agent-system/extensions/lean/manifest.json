@@ -81,7 +81,13 @@
       "setup-lean-mcp.sh",
       "verify-lean-mcp.sh",
       "install-lean-lsp-session-hook.sh",
-      "tests/test-lean-mcp-registration.sh"
+      "tests/test-lean-mcp-registration.sh",
+      "lean-plan-compliance-check.sh",
+      "tests/test-lean-plan-compliance-check.sh",
+      "tests/fixtures/challenge/plan_r18_paren_goals.md",
+      "tests/fixtures/challenge/plan_r19_multiline_paren_goals.md",
+      "tests/fixtures/challenge/plan_r20_non_goals_only.md",
+      "tests/fixtures/challenge/plan_r21_empty_goals.md"
     ],
     "hooks": [
       "lean-lsp-register-project.sh"

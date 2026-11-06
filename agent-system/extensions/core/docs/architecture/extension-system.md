@@ -703,7 +703,9 @@ file:
 This asymmetry exists because `settings.json`/`settings.local.json` hold project-specific
 permission grants (including MCP tool permissions) and hooks that must survive every extension
 operation -- unlike `.gitignore`, which is safe to keep in lockstep with the extension source.
-MCP server *registration* lives outside either file, in user-scope `~/.claude.json` -- see
+MCP server *registration* lives outside either file, on one of two surfaces: user-scope
+`~/.claude.json`, or project-scoped `.mcp.json` at the project root (populated via
+`merge_targets.mcp`, see the MCP Server Registration subsection above) -- see
 [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md).
 `manager.unload` (`init.lua`) mirrors the same install-once set (`loader_mod.
 INSTALL_ONCE_ROOT_FILES`) by excluding these two filenames from the files it deletes, so an
