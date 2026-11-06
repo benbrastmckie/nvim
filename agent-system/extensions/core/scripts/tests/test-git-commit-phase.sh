@@ -561,6 +561,174 @@ else
   common_test_fail "Case 14: expected rc=0, specs/events.jsonl committed, no drop warning; got rc=$rc14 show='$show14' out=$out14"
 fi
 
+# =====================================================================
+# Case 15 (acceptance: own-task-directory admission): a files_touched path under the committing
+# task's own resolved artifact directory (specs/999_probe/reports/01_probe-report.md) is NOT
+# named in the declared, non-empty file_scope (src/a.txt, src/b.txt, src/c.txt) yet lands in the
+# phase commit with no drop warning and zero recorded scope-excursion issues -- proving the
+# own-task-directory member spliced into the Containment Self-Check. Confirmed by direct probe
+# against the unmodified (pre-fix) script: the file still lands via the unconditional task_dir/
+# stage_paths seed even without this member, but a spurious drop warning fires and a spurious
+# "scope excursion" row is written to specs/999_probe/issues.jsonl -- that noise, not an actual
+# omission from the commit, is what this member eliminates.
+# =====================================================================
+common_test_info "=== Case 15: an own-task-directory path lands with no drop warning and no scope-excursion issue record ==="
+
+repo15="$(build_repo)"
+mkdir -p "$repo15/specs/999_probe/reports"
+echo "baseline report" > "$repo15/specs/999_probe/reports/01_probe-report.md"
+git -C "$repo15" add specs/999_probe/reports/01_probe-report.md
+git -C "$repo15" commit -q -m "seed baseline own-task-directory report"
+write_progress "$repo15" 1 '[{"id":1,"status":"done","files_touched":["specs/999_probe/reports/01_probe-report.md"]}]'
+echo "updated report" > "$repo15/specs/999_probe/reports/01_probe-report.md"
+
+out15="$(run_phase_commit "$repo15" --task 999 --project probe --phase 1 --message "case15" --session sess_15 2>&1)"
+rc15=$?
+show15="$(git -C "$repo15" show --name-only --format= HEAD)"
+
+if [ "$rc15" -eq 0 ] \
+  && ! echo "$out15" | grep -q "dropping out-of-scope path 'specs/999_probe/reports/01_probe-report.md'" \
+  && echo "$show15" | grep -qF "specs/999_probe/reports/01_probe-report.md"; then
+  common_test_pass "Case 15: the own-task-directory report lands with no drop warning"
+else
+  common_test_fail "Case 15: expected rc=0, own-task-directory report committed, no drop warning; got rc=$rc15 show='$show15' out=$out15"
+fi
+
+if [ ! -f "$repo15/specs/999_probe/issues.jsonl" ]; then
+  common_test_pass "Case 15: no issues.jsonl was written for this task -- zero scope-excursion issue records"
+elif ! grep -q "scope excursion" "$repo15/specs/999_probe/issues.jsonl" 2>/dev/null; then
+  common_test_pass "Case 15: issues.jsonl exists but carries no scope-excursion record"
+else
+  common_test_fail "Case 15: expected no scope-excursion issue record; got $(cat "$repo15/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+# =====================================================================
+# Case 16 (paired negative, Case 7/13's shape): in the SAME fixture run as an own-task-directory
+# artifact path, a genuinely out-of-territory source path (other/outside.txt) is STILL dropped,
+# STILL warned with the existing message text, STILL left modified/uncommitted on disk, and
+# STILL recorded as a scope-excursion issue -- proving the own-task-directory admission is not a
+# blanket pass.
+# =====================================================================
+common_test_info "=== Case 16: an own-task-directory path and a genuine excursion in the same run -- the excursion still drops ==="
+
+repo16="$(build_repo)"
+mkdir -p "$repo16/specs/999_probe/reports" "$repo16/other"
+echo "baseline report" > "$repo16/specs/999_probe/reports/01_probe-report.md"
+echo "out of scope" > "$repo16/other/outside.txt"
+git -C "$repo16" add specs/999_probe/reports/01_probe-report.md other/outside.txt
+git -C "$repo16" commit -q -m "seed own-task-directory report and out-of-scope file"
+write_progress "$repo16" 1 '[{"id":1,"status":"done","files_touched":["specs/999_probe/reports/01_probe-report.md","other/outside.txt"]}]'
+echo "updated report" > "$repo16/specs/999_probe/reports/01_probe-report.md"
+echo "mod outside" > "$repo16/other/outside.txt"
+
+out16="$(run_phase_commit "$repo16" --task 999 --project probe --phase 1 --message "case16" --session sess_16 2>&1)"
+rc16=$?
+show16="$(git -C "$repo16" show --name-only --format= HEAD)"
+
+if [ "$rc16" -eq 0 ] \
+  && ! echo "$out16" | grep -q "dropping out-of-scope path 'specs/999_probe/reports/01_probe-report.md'" \
+  && echo "$show16" | grep -qF "specs/999_probe/reports/01_probe-report.md" \
+  && echo "$out16" | grep -q "WARNING.*dropping out-of-scope path 'other/outside.txt'" \
+  && ! echo "$show16" | grep -qF "other/outside.txt"; then
+  common_test_pass "Case 16: the own-task-directory report lands with no drop warning; other/outside.txt is still dropped and warned"
+else
+  common_test_fail "Case 16: expected rc=0, own-dir report committed with no drop warning, outside.txt dropped and warned; got rc=$rc16 show='$show16' out=$out16"
+fi
+
+status16="$(git -C "$repo16" status --porcelain -- other/outside.txt)"
+if [ -n "$status16" ]; then
+  common_test_pass "Case 16: the dropped path is left uncommitted on disk for manual review"
+else
+  common_test_fail "Case 16: the dropped path should remain modified/uncommitted"
+fi
+
+if [ -f "$repo16/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo16/specs/999_probe/issues.jsonl" \
+  && grep -q "other/outside.txt" "$repo16/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 16: other/outside.txt is still recorded as a scope-excursion issue"
+else
+  common_test_fail "Case 16: expected a scope-excursion issue record naming other/outside.txt; got $(cat "$repo16/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+# =====================================================================
+# Case 17 (fail-open preserved across three "missing" shapes): an own-task-directory path commits
+# with no drop warning in each case, because the new splice sits INSIDE the non-empty
+# file_scope_arr guard and is never reached when that guard itself is never entered -- not
+# because the own-task-directory path happens to be contained some other way.
+# =====================================================================
+common_test_info "=== Case 17: fail-open is preserved for missing, empty, and malformed file_scope ==="
+
+# Case 17a: file_scope key entirely absent.
+repo17a="$(build_repo)"
+cat > "$repo17a/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe"}]}
+STATE_EOF
+git -C "$repo17a" add specs/state.json
+git -C "$repo17a" commit -q -m "remove file_scope"
+mkdir -p "$repo17a/specs/999_probe/reports"
+echo "baseline report" > "$repo17a/specs/999_probe/reports/01_probe-report.md"
+git -C "$repo17a" add specs/999_probe/reports/01_probe-report.md
+git -C "$repo17a" commit -q -m "seed own-task-directory report"
+write_progress "$repo17a" 1 '[{"id":1,"status":"done","files_touched":["specs/999_probe/reports/01_probe-report.md"]}]'
+echo "updated report" > "$repo17a/specs/999_probe/reports/01_probe-report.md"
+
+out17a="$(run_phase_commit "$repo17a" --task 999 --project probe --phase 1 --message "case17a" --session sess_17a 2>&1)"
+rc17a=$?
+show17a="$(git -C "$repo17a" show --name-only --format= HEAD)"
+
+if [ "$rc17a" -eq 0 ] && echo "$show17a" | grep -qF "specs/999_probe/reports/01_probe-report.md" && ! echo "$out17a" | grep -q "dropping out-of-scope"; then
+  common_test_pass "Case 17 (missing file_scope key): the own-task-directory report commits without being dropped"
+else
+  common_test_fail "Case 17 (missing file_scope key): expected rc=0, report committed, no drop warning; got rc=$rc17a show='$show17a' out=$out17a"
+fi
+
+# Case 17b: file_scope present but empty ([]).
+repo17b="$(build_repo)"
+cat > "$repo17b/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":[]}]}
+STATE_EOF
+git -C "$repo17b" add specs/state.json
+git -C "$repo17b" commit -q -m "empty file_scope"
+mkdir -p "$repo17b/specs/999_probe/reports"
+echo "baseline report" > "$repo17b/specs/999_probe/reports/01_probe-report.md"
+git -C "$repo17b" add specs/999_probe/reports/01_probe-report.md
+git -C "$repo17b" commit -q -m "seed own-task-directory report"
+write_progress "$repo17b" 1 '[{"id":1,"status":"done","files_touched":["specs/999_probe/reports/01_probe-report.md"]}]'
+echo "updated report" > "$repo17b/specs/999_probe/reports/01_probe-report.md"
+
+out17b="$(run_phase_commit "$repo17b" --task 999 --project probe --phase 1 --message "case17b" --session sess_17b 2>&1)"
+rc17b=$?
+show17b="$(git -C "$repo17b" show --name-only --format= HEAD)"
+
+if [ "$rc17b" -eq 0 ] && echo "$show17b" | grep -qF "specs/999_probe/reports/01_probe-report.md" && ! echo "$out17b" | grep -q "dropping out-of-scope"; then
+  common_test_pass "Case 17 (empty file_scope): the own-task-directory report commits without being dropped"
+else
+  common_test_fail "Case 17 (empty file_scope): expected rc=0, report committed, no drop warning; got rc=$rc17b show='$show17b' out=$out17b"
+fi
+
+# Case 17c: file_scope present but malformed (a bare string, not an array).
+repo17c="$(build_repo)"
+cat > "$repo17c/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":"not-an-array"}]}
+STATE_EOF
+git -C "$repo17c" add specs/state.json
+git -C "$repo17c" commit -q -m "malformed file_scope"
+mkdir -p "$repo17c/specs/999_probe/reports"
+echo "baseline report" > "$repo17c/specs/999_probe/reports/01_probe-report.md"
+git -C "$repo17c" add specs/999_probe/reports/01_probe-report.md
+git -C "$repo17c" commit -q -m "seed own-task-directory report"
+write_progress "$repo17c" 1 '[{"id":1,"status":"done","files_touched":["specs/999_probe/reports/01_probe-report.md"]}]'
+echo "updated report" > "$repo17c/specs/999_probe/reports/01_probe-report.md"
+
+out17c="$(run_phase_commit "$repo17c" --task 999 --project probe --phase 1 --message "case17c" --session sess_17c 2>&1)"
+rc17c=$?
+show17c="$(git -C "$repo17c" show --name-only --format= HEAD)"
+
+if [ "$rc17c" -eq 0 ] && echo "$show17c" | grep -qF "specs/999_probe/reports/01_probe-report.md" && ! echo "$out17c" | grep -q "dropping out-of-scope"; then
+  common_test_pass "Case 17 (malformed file_scope): the own-task-directory report commits without being dropped"
+else
+  common_test_fail "Case 17 (malformed file_scope): expected rc=0, report committed, no drop warning; got rc=$rc17c show='$show17c' out=$out17c"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================

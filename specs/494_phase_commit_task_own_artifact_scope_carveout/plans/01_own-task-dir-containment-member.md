@@ -185,47 +185,54 @@ changed predicate and its downstream caller.
 
 ---
 
-### Phase 2: Pin the member with acceptance, paired-negative, and fail-open fixtures [NOT STARTED]
+### Phase 2: Pin the member with acceptance, paired-negative, and fail-open fixtures [COMPLETED]
 
 **Goal**: three new regression cases in `test-git-commit-phase.sh` prove the own-directory
 admission, prove a genuine excursion still drops in the same run, and prove the new splice never
 runs outside the non-empty guard — all in the file's established house style.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` immediately
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` immediately
       before editing. Confirm the existing case numbering ends at Case 14, that `build_repo`'s
       declared `file_scope` is `["src/a.txt","src/b.txt","src/c.txt"]` (which already omits the
       probe task's own `specs/999_probe/` directory, so no fixture-scope change is needed), and
       that the file-wide `task-ref-ok:begin`/`:end` marker pair still encloses the case bodies —
-      append the new cases INSIDE that pair.
-- [ ] Add **Case 15 (acceptance)**: a `files_touched` entry under the probe task's own directory
+      append the new cases INSIDE that pair. *(completed)*
+- [x] Add **Case 15 (acceptance)**: a `files_touched` entry under the probe task's own directory
       (e.g. `specs/999_probe/reports/01_probe-report.md`, seeded and committed as a baseline,
       then modified) lands in the phase commit with exit 0, with NO
       `dropping out-of-scope path 'specs/999_probe/...'` warning, and with zero scope-excursion
       issue records — assert the absence by checking that no `scope excursion` row naming that
       path was written to the fixture repo's own issue log (locate the log the deployed
       `issue-record.sh` writes to inside the scratch repo; if the fixture repo has no such log
-      at all after the run, that absence is itself the assertion).
-- [ ] Add **Case 16 (paired negative, Case 13's shape)**: in the SAME fixture run as an
+      at all after the run, that absence is itself the assertion). *(completed)*
+- [x] Add **Case 16 (paired negative, Case 13's shape)**: in the SAME fixture run as an
       own-directory artifact path, a genuinely out-of-territory source path
       (`other/outside.txt`) is STILL dropped, STILL warned with the existing message text, STILL
       left modified/uncommitted on disk for manual review, and STILL recorded as a
-      `scope excursion` issue — proving the admission is not a blanket pass.
-- [ ] Add **Case 17 (fail-open, Cases 8/14's shape)**: with the probe task's `state.json` entry
+      `scope excursion` issue — proving the admission is not a blanket pass. *(completed)*
+- [x] Add **Case 17 (fail-open, Cases 8/14's shape)**: with the probe task's `state.json` entry
       carrying no `file_scope` at all, a `files_touched` path under the task's own directory
       commits with no drop warning and without the new splice ever running — proving the splice
       sits inside, not outside, the non-empty guard. Add the same assertion for an empty
       (`"file_scope": []`) and a malformed (non-array) `file_scope` value, so all three shapes of
-      "missing" the dispatch names are pinned.
-- [ ] Prove the fixtures are genuinely red without the fix, WITHOUT leaving an uncommittable red
+      "missing" the dispatch names are pinned. *(completed)*
+- [x] Prove the fixtures are genuinely red without the fix, WITHOUT leaving an uncommittable red
       state in the tree: copy the current `git-commit-phase.sh` to a scratch path, strip the new
       `file_scope_arr+=("${task_dir}/")` line from the copy with `sed`, point a one-off fixture
       run at that stripped copy, and confirm Case 15's own-directory path IS dropped there.
       Record the observed output in the phase's own notes. Delete the scratch copy afterwards.
-- [ ] Run `bash -n` and `shellcheck` on the edited test file.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-commit-phase.sh`
-      and confirm all cases 1-17 pass.
-- [ ] Commit this green sub-step.
+      *(completed: red-proof confirmed Cases 15 and 16 genuinely FAIL against the stripped copy
+      — see this phase's own progress-file note for the corrected effect: the report still lands
+      in HEAD via the unconditional `stage_paths` directory seed even pre-fix, so the provable
+      defect is a spurious drop warning plus a spurious scope-excursion issue-log entry, not an
+      actual silent omission from the commit in this configuration. Case 17 passed unchanged in
+      both configurations, confirming fail-open independence. Scratch copies deleted.)*
+- [x] Run `bash -n` and `shellcheck` on the edited test file. *(completed: both clean; the two
+      info-level notes are pre-existing and unchanged)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-commit-phase.sh`
+      and confirm all cases 1-17 pass. *(completed: 32 assertions passed, 0 failed)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 1.25 hours
 

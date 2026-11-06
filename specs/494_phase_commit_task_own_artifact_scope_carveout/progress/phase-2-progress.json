@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Pin the member with acceptance, paired-negative, and fail-open fixtures",
+  "started_at": "2026-11-06T09:51:00Z",
+  "last_updated": "2026-11-06T09:56:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Append Case 15 (own-directory acceptance), Case 16 (paired negative), and Case 17 (fail-open across missing/empty/malformed file_scope) to test-git-commit-phase.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Red-proof the new fixtures against a splice-stripped scratch copy; run bash -n/shellcheck and the full suite",
+      "status": "done",
+      "files_touched": [],
+      "note": "Red-proof against a splice-stripped scratch copy of git-commit-phase.sh showed Case 15 FAILED on both assertions (the drop warning fires, and a 'scope excursion' row is written to issues.jsonl) and Case 16 FAILED on its own-directory assertion, confirming both cases are genuinely red without the Phase 1 fix. Case 17 passed unchanged in both configurations, confirming the fail-open posture is independent of the new splice. IMPORTANT CORRECTION to the live-symptom framing: empirically, the own-task-directory report file still LANDS in HEAD even without the fix, because stage_paths' unconditional task_dir/ seed (line 201) already stages the whole directory recursively regardless of files_touched filtering. The pre-fix defect is therefore a spurious drop WARNING plus a spurious 'scope excursion' issue-log entry for a legitimate own-directory path -- noise and incorrect classification, not an actual silent omission from the commit in this configuration. This matches the acceptance criteria's own phrasing ('zero scope-excursion issue records emitted for it') and is recorded in Case 15/16's own code comments and will be carried into the Phase 3 doc record and the summary."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
