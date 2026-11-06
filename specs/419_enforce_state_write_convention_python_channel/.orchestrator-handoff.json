@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 11,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Created a 6-phase, ~7-hour implementation plan extending lint-state-writer-boundary.sh (gate 12) to the Python/interpreter re-serialization channel. Phases 1-3 extract a shared predicate library, add the candidate limb plus write-capable-mode classify branch, extend the remedy message, and pin every named shape, control case, and a corruption-reproduction fixture in the lint suite. Phases 4-5 add the companion PreToolUse Bash hook (the research-settled answer: the originating incident was an ad hoc interpreter call no content lint could see), its both-polarity test, fragment-surface registration, and the task-lock.md pointer sentence. Phase 6 redeploys and runs the full gate battery under an explicit source-store TARGET with gate 12's runtime measured.",
+  "summary": "Extended lint-state-writer-boundary.sh (gate 12) to the Python/interpreter re-serialization channel via a new shared predicate library, with full lint test coverage including an executed corruption-reproduction fixture. Added a companion write-time PreToolUse Bash hook (validate-no-python-state-write.sh) for the shape a content lint provably cannot see, registered it, and pointed task-lock.md's State-Write Convention at both mechanical enforcers. All 6 plan phases completed and committed; redeployed and confirmed via a scoped gate/suite run (full battery deferred to this batch's end-of-invocation stage per the dispatch file's Batch Gate Deferral directive).",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/419_enforce_state_write_convention_python_channel/plans/01_python-state-write-enforcement.md",
       "summary": "6-phase plan: shared pattern library plus lint extension, lint test cases, corruption reproduction fixture, write-time Bash hook plus test, hook registration plus prose pointer, redeploy plus full gate battery."
+    },
+    {
+      "type": "summary",
+      "path": "specs/419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md",
+      "summary": "All 6 plan phases completed: shared Python-channel detection library, lint test coverage, an executed corruption-reproduction fixture, a companion write-time Bash hook with its own test suite, hook registration plus a prose pointer, and a final redeploy with scoped gate verification (full battery deferred to the batch stage)."
     }
   ]
 }

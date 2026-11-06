@@ -1,10 +1,55 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md",
+      "summary": "All 6 plan phases completed: shared Python-channel detection library, lint test coverage, an executed corruption-reproduction fixture, a companion write-time Bash hook with its own test suite, hook registration plus a prose pointer, and a final redeploy with scoped gate verification (full battery deferred to the batch stage)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extended lint-state-writer-boundary.sh (gate 12) to the Python/interpreter re-serialization channel via a new shared predicate library, added a companion write-time Bash hook (validate-no-python-state-write.sh) for the shape a content lint cannot see, and pointed task-lock.md's State-Write Convention at both mechanical enforcers. All new test suites pass (28 + 11 cases) against the redeployed tree, with a negative control proving the cases exercise the new code."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/hooks/validate-no-python-state-write.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/scripts/lib/state-writer-boundary-patterns-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-no-python-state-write.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When extending a deploy-time content lint and a write-time PreToolUse hook to share one detection predicate, give them OPPOSITE fail-closed/fail-open polarities on a missing/unsourceable shared library: the lint should fail LOUD (exit 2 / error) since a silently-skipped gate check ships unenforced, while the hook should fail OPEN (exit 0, warn on stderr) since a broken write-time guard must never block every matching tool call in the session. Document this asymmetry explicitly in both files' headers rather than leaving it implicit -- it looks like an inconsistency unless the rationale is stated.",
+      "category": "PATTERN",
+      "source_artifact": "specs/419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["fail-open", "fail-closed", "write-time-hook", "deploy-gate", "shared-predicate-library"]
+    },
+    {
+      "content": "When a test case must enumerate 'every real file matching pattern X' under a directory for a control/regression assertion, use `git grep -l` (or otherwise scope to tracked files) rather than a plain recursive `grep -rl`. A plain grep is gitignore-unaware and will nondeterministically sweep in vendored/generated content (e.g. a bootstrapped local venv's site-packages) that happens to exist in the current environment, making the enumerated set -- and therefore the test's pass/fail outcome -- depend on incidental local state rather than the repository's actual tracked content. This bit in practice: a plain grep found 34 files (24 vendored third-party packages) where git grep found the correct 10.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-grep", "gitignore-aware-enumeration", "test-fixture-determinism", "vendored-dependencies", "control-case-design"]
+    },
+    {
+      "content": "A new shell script file created via a file-write tool (not `cp`/`touch` from an existing executable sibling) does not inherit the executable bit, and a deploy/sync step that copies files byte-for-byte will carry that missing bit into the deployed tree too. A test harness that directly executes suite files (rather than always invoking `bash <path>`) will then SKIP the new suite silently-but-loudly ('not executable (exec-bit regression?)') rather than running it or erroring hard. Always `chmod +x` a newly-created `scripts/tests/*.sh` (or any directly-executed script) in the source store before its first deploy, and re-run the suite discovery step afterward to confirm the file actually ran rather than trusting a clean exit code alone.",
+      "category": "CONFIG",
+      "source_artifact": "specs/419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["executable-bit", "chmod", "test-suite-discovery", "deploy-headless", "silent-skip"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
