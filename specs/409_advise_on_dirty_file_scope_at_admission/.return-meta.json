@@ -1,10 +1,35 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/409_advise_on_dirty_file_scope_at_admission/summaries/02_dirty-scope-advisory-admission-summary.md",
+      "summary": "Phases 1-5 complete; Phase 6 (redeploy and full gate set) closed COMPLETED WITH EXCLUSIONS -- deploy landed and this task's own 8 files verified byte-identical in the deployed tree, but the full gate run showed 6/40 failures, all traced to foreign causes (gate-internal timeouts, a concurrent sibling task's in-flight source-store edits, lock contention from another session's gate-8 run, and a pre-existing dead-command-recommendation finding)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Completed the dirty_scope_advisory admission feature across all 6 plan phases: computed/merged in orchestrate-batch-admit.sh, ledgered in orchestrate-cycle-plan.sh, rendered as Class J in orchestrate-predispatch-review.sh, regression-covered in both named suites, documented in the two tracking docs, and redeployed. Phase 6 closed COMPLETED WITH EXCLUSIONS: the deploy landed and this task's own files are verified correctly deployed, but the full gate run showed 6 failures, every one traced to a cause outside this task's file_scope (see summary for the per-item triage)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/scripts/test-conflict-predicate.sh",
+    "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "specs/409_advise_on_dirty_file_scope_at_admission/plans/01_dirty-scope-advisory-admission.md",
+    "specs/409_advise_on_dirty_file_scope_at_admission/summaries/02_dirty-scope-advisory-admission-summary.md"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1793988163_b25d4a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 11
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

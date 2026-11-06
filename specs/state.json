@@ -2538,7 +2538,7 @@
       "project_number": 409,
       "project_name": "advise_on_dirty_file_scope_at_admission",
       "title": "Advise at admission when a task's declared file_scope already holds uncommitted changes",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "effort": "low",
@@ -2562,7 +2562,7 @@
         }
       ],
       "created": "2026-10-14T22:54:47Z",
-      "last_updated": "2026-11-06T18:23:39Z",
+      "last_updated": "2026-11-06T22:09:42Z",
       "session_id": "sess_1793988163_b25d4a",
       "next_artifact_number": 2,
       "file_scope": [
