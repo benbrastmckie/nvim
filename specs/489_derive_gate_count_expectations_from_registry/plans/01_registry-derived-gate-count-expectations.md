@@ -495,23 +495,37 @@ plus `verify-deploy.sh --only-gate 5,13,22 .`.
 
 ---
 
-### Phase 7: Full Gate Battery and Redeploy [NOT STARTED]
+### Phase 7: Full Gate Battery and Redeploy [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Land the work with the complete gate set green and the deployed tree regenerated from the
 source store.
 
 **Tasks**:
-- [ ] Re-read every file in this task's `file_scope` immediately before the final commit (sibling
+- [x] Re-read every file in this task's `file_scope` immediately before the final commit (sibling
       tasks are live on this working tree this cycle) and confirm no foreign hunk is staged.
-- [ ] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh <repo-root>`
-      (full battery, gate 8 included, no `--skip-slow`, no `--only-gate`).
-- [ ] Redeploy via `deploy-headless.sh` using the bounded-wait idiom (`timeout 540`, Bash tool
-      timeout `600000`) and confirm `RESULT=landed_verify_clean`.
-- [ ] Confirm the deployed `.claude/scripts/lib/gate-store-fixture-lib.sh` exists post-deploy (the
-      manifest row from Phase 1 took effect) and that no orphan is reported.
-- [ ] Record the phase's issues/wins via `issue-record.sh`, including the discovery that the
+      *(completed: all 9 declared file_scope paths checked via `git status --porcelain`,
+      confirmed clean/already-committed, no foreign hunk)*
+- [x] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh <repo-root>`
+      (full battery, gate 8 included, no `--skip-slow`, no `--only-gate`). *(discharged per this
+      dispatch's own Batch Gate Deferral directive against the scoped resolver-selected 28-suite
+      set for verify-deploy.sh instead of an independent full-battery run -- the complete gate set
+      runs once for the whole batch and is attributed back via modified_files; see this phase's
+      Reasoned Exclusions below)*
+- [x] Redeploy via `deploy-headless.sh` using the bounded-wait idiom (`timeout 540`, Bash tool
+      timeout `600000`) and confirm `RESULT=landed_verify_clean`. *(completed with an exclusion:
+      deploy LANDED successfully -- all 9 of this task's file_scope files confirmed
+      byte-identical deployed-vs-source -- but deploy-headless.sh's own post-deploy full-battery
+      check returned `RESULT=landed_verify_red`, not clean, due to two findings both confirmed
+      unrelated to this task: gate10's pre-existing load-sensitive 30s timeout, and gate24's two
+      violations in the memory extension's docs (a dead `/ide` command reference) -- neither
+      touches any of this task's 9 declared files. See Reasoned Exclusions below.)*
+- [x] Confirm the deployed `.claude/scripts/lib/gate-store-fixture-lib.sh` exists post-deploy (the
+      manifest row from Phase 1 took effect) and that no orphan is reported. *(completed: file
+      exists and is byte-identical to source; gate 13 PASS)*
+- [x] Record the phase's issues/wins via `issue-record.sh`, including the discovery that the
       description's "sole remaining place" framing missed three further sites (class
-      `test-fixture-drift`).
+      `test-fixture-drift`). *(completed, plus a separate record for the gate10/gate24
+      unrelated-failure finding)*
 
 **Timing**: 1.0 hours
 
@@ -529,6 +543,13 @@ source store.
 - `deploy-headless.sh` reaches `RESULT=landed_verify_clean` within the bounded wait.
 - Gate 13 (orphan detection) and gate 5 (manifest parity + content-hash equality) both clean,
   proving the new library file is registered and deployed.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Independent full-battery `verify-deploy.sh <repo-root>` run (no flags) | This dispatch's own `.dispatch/10.md` carries a `## Batch Gate Deferral` section directing this final-phase, `full`-tier check to be discharged against a scoped resolver-selected invocation instead, since the complete gate set runs once for the whole `/orchestrate` batch and is attributed back to this task via `modified_files` | Ran `run-all.sh --only` against the full 28-suite resolver-selected set for `verify-deploy.sh` (the broadest relevant covering set, derived via `suite_selection_select`): 25 passed, 3 failed, all 3 pre-existing/unrelated (see next row and progress file) |
+| `deploy-headless.sh` reaching `RESULT=landed_verify_clean` | The deploy itself LANDED successfully (all 9 of this task's `file_scope` files confirmed byte-identical deployed-vs-source via `diff`); the post-deploy full-battery check returned `landed_verify_red` instead, but both of its 2 failures are confirmed unrelated to this task: gate10 is a pre-existing load-sensitive 30s timeout (same flake recorded in Phases 1/2/6's issue log; a standalone run elsewhere in this dispatch took 51.4s and passed), and gate24 names 2 violations entirely within `agent-system/extensions/memory/context/project/memory/{memory-setup.md,memory-troubleshooting.md}` (a dead `/ide` command reference) -- neither file is in this task's declared `file_scope` | `diff -q` byte-identical for all 9 files; `issue-record.sh` entries (class `test-fixture-drift`, phase implement, dispatch-seq 10) recording the gate10/gate24 detail; `verify-deploy.sh --only-gate 5,13 .` run independently post-deploy: both PASS |
 
 ## Testing & Validation
 
