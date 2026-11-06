@@ -1,5 +1,5 @@
 ---
-next_project_number: 510
+next_project_number: 512
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 510
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,444,446,448,458,463,472,474,475,476,492,497 | 369,383,397,409,412,418,423,430,431,435,445,459,491 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,451,454,455,461,484,500,507 | 313,391,398,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -129,6 +129,8 @@ next_project_number: 510
 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
   └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
+510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
+511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -136,6 +138,30 @@ next_project_number: 510
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 511. Enumeration grep sweeps gitignored venv
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+- **Parent**: Task 419
+
+**Description**: A plain recursive grep used to enumerate a corpus transiently swept in 24+ vendored third-party package files from the literature extension's gitignored, environment-local venv, inflating a measured scope hypothesis from 3 expected files to a count including files nothing tracks. The measurement was corrected by re-running under git grep, which respects gitignore. Establish the enumeration standard so the next measurement does not repeat it: prefer git grep, or an explicit prune of gitignored and vendored paths, wherever a count or file set is measured for a scope hypothesis, an audit-result table, or a verification criterion; and record where that rule lives so it is discoverable from the testing standard. Evidence: specs/419_enforce_state_write_convention_python_channel/issues.jsonl entry iss_1793956472656_kB4iUI.
+
+---
+
+### 510. Predispatch review test temp lib incomplete
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+- **Parent**: Task 401
+
+**Description**: test-orchestrate-predispatch-review.sh scenario 10 (the --repair write path) fails 2 of 34 assertions. The suite builds a throwaway temp .claude/scripts/lib/ holding only common.sh, task-lookup-lib.sh and file-scope-overlap.sh, but state-write.sh also sources lib/project-number-inuse.sh, which the fixture omits. Make the fixture's lib/ set complete, preferably by deriving it from what state-write.sh actually sources so it cannot drift again, and confirm scenario 10 goes green. Prior art: the closed record fix_test_fixtures_missing_task_lookup_lib fixed this same defect class in the same fixture for a different missing lib, so a derive-rather-than-enumerate fix is what stops a third recurrence. Evidence: specs/401_cross_repo_source_store_gate_blindness/issues.jsonl entry iss_1793953314830_G6QG5A, recorded while verifying the parent record's own covering suite; the failure is pre-existing and was not introduced by the parent's edits.
+
+---
 
 ### 509. Make a redeploy phase declarable without polluting file_scope, and bar a pre-redeploy phase from asserting a deployed-vs-source drift gate
 - **Status**: [NOT STARTED]
