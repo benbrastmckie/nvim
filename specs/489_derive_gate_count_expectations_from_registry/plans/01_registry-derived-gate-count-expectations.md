@@ -302,33 +302,39 @@ phase if a further site exists.
 
 ---
 
-### Phase 4: Convert `test-gate-registry-resolution.sh` and Add the Bound Guard [NOT STARTED]
+### Phase 4: Convert `test-gate-registry-resolution.sh` and Add the Bound Guard [COMPLETED]
 
 **Goal**: Suite A asserts nothing about gate counts from an integer, and gains the guard that its
 id set matches `verify-deploy.sh`'s own reported bound.
 
 **Tasks**:
-- [ ] Derive, near the top of the suite, `REGISTRY_IDS_EXPECTED` by an **independent** reader of
+- [x] Derive, near the top of the suite, `REGISTRY_IDS_EXPECTED` by an **independent** reader of
       the data file: `awk -F'\t' '$1 ~ /^[0-9]+$/ {print $1}' "$REAL_DATA" | sort -n | tr '\n' ' ' | sed 's/ $//'`,
       and `REGISTRY_MAX` as its last element. Comment explicitly that this must not be derived from
       `gate_registry_ids` — the loader is the thing under test and a self-comparison would be
-      vacuous.
-- [ ] case1: compare `gate_registry_ids` against `REGISTRY_IDS_EXPECTED`; make the pass message
-      interpolate the derived count and range rather than naming `26`.
-- [ ] case14: interpolate the derived count in the pass message (the loop already iterates
-      `gate_registry_ids`; only the message states a stale `25`).
-- [ ] case32: `--only-gate "$REGISTRY_MAX"` is accepted and prints `^${REGISTRY_MAX}\. `.
-- [ ] case33: `--only-gate "$((REGISTRY_MAX + 1))"` is refused with exit 2 and the out-of-range
-      message naming that same id.
-- [ ] **Guard G1 (new case)**: parse the bound out of `verify-deploy.sh`'s own out-of-range message
+      vacuous. *(completed)*
+- [x] case1: compare `gate_registry_ids` against `REGISTRY_IDS_EXPECTED`; make the pass message
+      interpolate the derived count and range rather than naming `26`. *(completed: live value is
+      now 27, since sibling task 418 registered a real gate 27 mid-dispatch)*
+- [x] case14: interpolate the derived count in the pass message (the loop already iterates
+      `gate_registry_ids`; only the message states a stale `25`). *(completed)*
+- [x] case32: `--only-gate "$REGISTRY_MAX"` is accepted and prints `^${REGISTRY_MAX}\. `.
+      *(completed)*
+- [x] case33: `--only-gate "$((REGISTRY_MAX + 1))"` is refused with exit 2 and the out-of-range
+      message naming that same id. *(completed)*
+- [x] **Guard G1 (new case)**: parse the bound out of `verify-deploy.sh`'s own out-of-range message
       (`must be 1-N`) from the case33 invocation and assert `N == REGISTRY_MAX`. This pins
       `verify-deploy.sh`'s notion of the id set to the suite's, catching a reinstated literal on
-      either side.
-- [ ] **Negative controls (new cases)**: a synthetic registry copy with gate 13's row removed must
+      either side. *(completed: verified red when a literal 26 was temporarily reinstated in
+      verify-deploy.sh, then reverted with an empty git diff)*
+- [x] **Negative controls (new cases)**: a synthetic registry copy with gate 13's row removed must
       make the case1 comparison report a mismatch; a `REGISTRY_MAX`-derived `--only-gate` probe
       built from that same synthetic max must still be refused by the real `verify-deploy.sh`.
       Assert the detection, not the failure, so these cases are green while proving non-vacuity.
-- [ ] Update the suite header's coverage list and remove its own stale counts.
+      *(completed as case1-NC, two assertions: the id-set mismatch detection, and a probe built
+      from the synthetic registry's own derived max+1 still refused by the real verify-deploy.sh)*
+- [x] Update the suite header's coverage list and remove its own stale counts. *(completed, plus
+      a stale "25 rows" count at case31's comment made count-free during the required re-grep)*
 
 **Timing**: 1.25 hours
 

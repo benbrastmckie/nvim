@@ -25,6 +25,17 @@
 #     SECOND call to the batch function within one process (a bare `MAP=()` reset of an
 #     associative scratch array, after `unset` had destroyed its `-A` type, silently recreated
 #     it as an indexed array on the second call, corrupting a later string-keyed lookup).
+#   - Case 1, case14, case32, case33 derive their gate-count expectations from
+#     REGISTRY_IDS_EXPECTED/REGISTRY_MAX, an INDEPENDENT awk read of the raw gate-registry.data
+#     (never from gate_registry_ids itself -- that would compare the function under test to
+#     itself and go silently vacuous). This replaces a prior hardcoded-integer form (count-free
+#     task): the five count-bearing sites here used to write the live gate count as a literal,
+#     which broke the moment any later task registered a new gate and required no code change of
+#     its own -- see this task's own plan Overview for the full defect history. Guard G1 (after
+#     case33) additionally pins verify-deploy.sh's own reported --only-gate bound to this same
+#     REGISTRY_MAX, in both directions, so the two derivations cannot silently drift apart.
+#     Case1-NC is the paired negative control proving the comparison is not vacuous (a synthetic
+#     registry missing gate 13 is detected as a different id set).
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the
 # library was not found).
@@ -36,6 +47,8 @@ source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LIB="$CORE_DIR/lib/gate-registry-lib.sh"
 REAL_DATA="$CORE_DIR/gate-registry.data"
+VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
+REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
 COMMON_LIB="$CORE_DIR/lib/common.sh"
 SHELLCHECK_LINT="$CORE_DIR/lint/lint-shellcheck.sh"
 
@@ -65,13 +78,55 @@ common_test_workdir_init
 # ─── Case 1-7: load the REAL registry and confirm the documented shape ──────────────────────────
 gate_registry_load "$REAL_DATA"
 
+# REGISTRY_IDS_EXPECTED/REGISTRY_MAX are derived by an INDEPENDENT reader of the raw data file --
+# never from gate_registry_ids itself. gate_registry_ids is the function under test in case1; if
+# its own expectation were derived from itself, a broken sort or a dropped id would compare
+# equal to itself and the assertion would go silently vacuous. awk here re-implements only the
+# "first TAB-separated field, numeric rows only" extraction, independent of the loader's own
+# parsing/sorting logic.
+REGISTRY_IDS_EXPECTED="$(awk -F'\t' '$1 ~ /^[0-9]+$/ {print $1}' "$REAL_DATA" | sort -n | tr '\n' ' ' | sed 's/ $//')"
+REGISTRY_MAX="${REGISTRY_IDS_EXPECTED##* }"
+REGISTRY_COUNT="$(printf '%s\n' "$REGISTRY_IDS_EXPECTED" | wc -w | tr -d ' ')"
+
 ids="$(gate_registry_ids)"
-expected_ids="$(seq 1 27 | tr '\n' ' ' | sed 's/ $//')"
-if [ "$ids" = "$expected_ids " ] || [ "$ids" = "$expected_ids" ]; then
-  common_test_pass "case1: gate_registry_ids returns the real registry's 27 migrated ids, ascending (1-27, gate 27 added for the subject-resolution declaration lint)"
+if [ "$ids" = "$REGISTRY_IDS_EXPECTED " ] || [ "$ids" = "$REGISTRY_IDS_EXPECTED" ]; then
+  common_test_pass "case1: gate_registry_ids returns the real registry's $REGISTRY_COUNT ids, ascending (1-$REGISTRY_MAX), matching an independent awk read of the same data file"
 else
-  common_test_fail "case1: unexpected ids from the real registry (got: '$ids')"
+  common_test_fail "case1: unexpected ids from the real registry (got: '$ids', expected: '$REGISTRY_IDS_EXPECTED')"
 fi
+
+# ─── Negative controls for case1's non-vacuity (new cases) ──────────────────────────────────────
+# A synthetic registry copy missing gate 13's row must make case1's own comparison LOGIC report
+# a mismatch when applied to it -- proving the comparison actually discriminates, not merely
+# that it happens to agree with itself on the untouched real file.
+NC_MISSING13_DATA="$WORKDIR/gate-registry-missing13.data"
+grep -v $'^13\t' "$REAL_DATA" > "$NC_MISSING13_DATA"
+nc_ids_expected="$(awk -F'\t' '$1 ~ /^[0-9]+$/ {print $1}' "$NC_MISSING13_DATA" | sort -n | tr '\n' ' ' | sed 's/ $//')"
+nc_max="${nc_ids_expected##* }"
+( gate_registry_load "$NC_MISSING13_DATA"; echo "$(gate_registry_ids)" > "$WORKDIR/nc13_ids.txt" )
+nc_ids_actual="$(cat "$WORKDIR/nc13_ids.txt")"
+if [ "$nc_ids_actual" = "$nc_ids_expected" ] && [ "$REGISTRY_IDS_EXPECTED" != "$nc_ids_expected" ]; then
+  common_test_pass "case1-NC: a synthetic registry missing gate 13 correctly reports a different id set than the real one, detected by the same comparison case1 uses (non-vacuity proof)"
+else
+  common_test_fail "case1-NC: expected the missing-13 synthetic set ('$nc_ids_expected') to differ from the real set ('$REGISTRY_IDS_EXPECTED') and match gate_registry_ids's own read ('$nc_ids_actual')"
+fi
+# Build a --only-gate probe from THAT SAME synthetic registry's own independently-derived max
+# (nc_max -- removing a middle id, 13, does not change the top id, so nc_max equals REGISTRY_MAX
+# here; this is expected, not a bug: the point is that the probe-construction mechanism itself,
+# exercised against a registry snapshot this suite built rather than the real one, still agrees
+# with the real verify-deploy.sh) and confirm the real verify-deploy.sh -- still loaded against
+# the real registered-gate registry -- refuses one past it (nc_max + 1) exactly as case33 does. A
+# mismatch here (e.g. if nc_max were derived from a broken reader and silently equalled the real
+# max minus 1) would catch the probe-construction logic disagreeing with verify-deploy.sh's own.
+nc_probe="$((nc_max + 1))"
+out_nc="$(bash "$VERIFY_DEPLOY" --only-gate "$nc_probe" "$REPO_ROOT" 2>&1)"; rc_nc=$?
+if [ "$rc_nc" -eq 2 ] && echo "$out_nc" | grep -q "ERROR: --only-gate: gate id '${nc_probe}' is out of range"; then
+  common_test_pass "case1-NC: a probe built from the synthetic registry's own derived max + 1 ($nc_probe) is still refused by the real verify-deploy.sh, confirming the probe-construction mechanism (not a hardcoded coincidence)"
+else
+  common_test_fail "case1-NC: expected --only-gate $nc_probe (synthetic max + 1) to be refused with exit 2 (rc=$rc_nc)" "$out_nc"
+fi
+# Restore the real registry immediately -- every case after this one assumes it is loaded.
+gate_registry_load "$REAL_DATA"
 
 if [ "$(gate_registry_field 3 invoke)" = "gate3_run" ]; then
   common_test_pass "case2: gate_registry_field resolves gate 3's invoke function correctly"
@@ -256,14 +311,14 @@ for id in $(gate_registry_ids); do
   esac
 done
 if $all_bounded; then
-  common_test_pass "case14: every one of the real registry's 25 migrated gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
+  common_test_pass "case14: every one of the real registry's $REGISTRY_COUNT gates declares a positive timeout_s (enforced, not a silent unbounded fallback)"
 else
   common_test_fail "case14: gate id(s)$unbounded_ids have no enforceable timeout_s"
 fi
 
 # ─── Case 15-21: gate_registry_exec_concurrent_batch (Phase 7, "Gate-Level Concurrency
-# Scheduler"). Each case builds its own synthetic registry so the real 25-gate registry (whose
-# real functions do real, slow, external work) is never exercised here -- that proof is the
+# Scheduler"). Each case builds its own synthetic registry so the real registered-gate registry
+# (whose real functions do real, slow, external work) is never exercised here -- that proof is the
 # live, real-corpus before/after byte-diff this task's own implementation summary records
 # separately, not this suite's job. ──────────────────────────────────────────────────────────────
 
@@ -630,7 +685,7 @@ else
 fi
 
 # Case 31: the real, populated gate-registry.data itself passes the lint cleanly end to end
-# (all 25 rows, nine fields, grammar-conformant corpora) -- the positive control for cases 28-30.
+# (every row, nine fields, grammar-conformant corpora) -- the positive control for cases 28-30.
 out31="$(bash "$LINT_SCRIPT" "$REAL_DATA" 2>&1)"; rc31=$?
 if [ "$rc31" -eq 0 ]; then
   common_test_pass "case31: lint-gate-registry.sh passes cleanly on the real, populated gate-registry.data"
@@ -644,26 +699,40 @@ fi
 # whole repo checkout (four levels above $CORE_DIR, which is .../agent-system/extensions/core/
 # scripts) -- this repo dogfoods its own deploy, so REPO_ROOT carries both agent-system/extensions
 # (the source store) and .claude/ (a real deploy tree) at once, making it a valid explicit
-# source-store TARGET for verify-deploy.sh without needing a synthetic fixture tree. ─────────────
-REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
-VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
+# source-store TARGET for verify-deploy.sh without needing a synthetic fixture tree. REPO_ROOT
+# and VERIFY_DEPLOY are defined once, near the top of this file (used by case1-NC too). ─────────
 
-# Case 32: --only-gate 27 (the current live max) is accepted and selects exactly gate 27.
-out32="$(bash "$VERIFY_DEPLOY" --only-gate 27 "$REPO_ROOT" 2>&1)"; rc32=$?
-if [ "$rc32" -eq 0 ] && echo "$out32" | grep -q "^27\. "; then
-  common_test_pass "case32: --only-gate 27 is accepted against an explicit source-store TARGET and selects gate 27"
+# Case 32: --only-gate <REGISTRY_MAX> (the current live max, independently derived above) is
+# accepted and selects exactly that gate.
+out32="$(bash "$VERIFY_DEPLOY" --only-gate "$REGISTRY_MAX" "$REPO_ROOT" 2>&1)"; rc32=$?
+if [ "$rc32" -eq 0 ] && echo "$out32" | grep -q "^${REGISTRY_MAX}\. "; then
+  common_test_pass "case32: --only-gate $REGISTRY_MAX is accepted against an explicit source-store TARGET and selects gate $REGISTRY_MAX"
 else
-  common_test_fail "case32: expected --only-gate 27 to be accepted and select gate 27 (rc=$rc32)" "$out32"
+  common_test_fail "case32: expected --only-gate $REGISTRY_MAX to be accepted and select gate $REGISTRY_MAX (rc=$rc32)" "$out32"
 fi
 
-# Case 33: an id ABOVE the live max (28, one past the real registry's current ceiling) is still
-# refused with exit 2 and the documented out-of-range error text -- the derived bound must not
-# silently widen into "accept anything".
-out33="$(bash "$VERIFY_DEPLOY" --only-gate 28 "$REPO_ROOT" 2>&1)"; rc33=$?
-if [ "$rc33" -eq 2 ] && echo "$out33" | grep -q "ERROR: --only-gate: gate id '28' is out of range"; then
-  common_test_pass "case33: --only-gate 28 (above the live max) is still refused with exit 2"
+# Case 33: an id ABOVE the live max (REGISTRY_MAX + 1, one past the real registry's current
+# ceiling) is still refused with exit 2 and the documented out-of-range error text -- the derived
+# bound must not silently widen into "accept anything".
+ONE_PAST_MAX="$((REGISTRY_MAX + 1))"
+out33="$(bash "$VERIFY_DEPLOY" --only-gate "$ONE_PAST_MAX" "$REPO_ROOT" 2>&1)"; rc33=$?
+if [ "$rc33" -eq 2 ] && echo "$out33" | grep -q "ERROR: --only-gate: gate id '${ONE_PAST_MAX}' is out of range"; then
+  common_test_pass "case33: --only-gate $ONE_PAST_MAX (above the live max) is still refused with exit 2"
 else
-  common_test_fail "case33: expected --only-gate 28 to be refused with exit 2 and the out-of-range message (rc=$rc33)" "$out33"
+  common_test_fail "case33: expected --only-gate $ONE_PAST_MAX to be refused with exit 2 and the out-of-range message (rc=$rc33)" "$out33"
+fi
+
+# Guard G1: pin verify-deploy.sh's OWN notion of the --only-gate bound to this suite's
+# independently-derived REGISTRY_MAX, in both directions. Parses the bound straight out of
+# case33's own out-of-range message text ("must be 1-N") rather than invoking verify-deploy.sh a
+# third time, so a reinstated literal on EITHER side (this suite's derivation, or
+# verify-deploy.sh's own) is caught: if verify-deploy.sh silently went back to a stale literal
+# bound, N here would diverge from REGISTRY_MAX and this case would go red.
+vd_reported_bound="$(echo "$out33" | grep -oE 'must be 1-[0-9]+' | grep -oE '[0-9]+$')"
+if [ -n "$vd_reported_bound" ] && [ "$vd_reported_bound" -eq "$REGISTRY_MAX" ]; then
+  common_test_pass "G1: verify-deploy.sh's own reported --only-gate bound ($vd_reported_bound) equals this suite's independently-derived REGISTRY_MAX ($REGISTRY_MAX)"
+else
+  common_test_fail "G1: verify-deploy.sh's reported bound ('$vd_reported_bound') does not equal REGISTRY_MAX ($REGISTRY_MAX) -- the two derivations have drifted apart"
 fi
 
 # Case 34: a non-numeric token is still refused with exit 2 -- the derivation must not change

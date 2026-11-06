@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Convert test-gate-registry-resolution.sh and Add the Bound Guard",
+  "started_at": "2026-11-06T22:30:00Z",
+  "last_updated": "2026-11-06T22:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Derive REGISTRY_IDS_EXPECTED/REGISTRY_MAX by independent awk read", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]},
+    {"id": 2, "description": "Convert case1/case14/case32/case33 to derived values", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]},
+    {"id": 3, "description": "Add Guard G1 (cross-check verify-deploy.sh's bound)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]},
+    {"id": 4, "description": "Add negative control cases (case1-NC)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]},
+    {"id": 5, "description": "Update suite header coverage list and stale counts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "case1-NC's second assertion originally asserted nc_max < REGISTRY_MAX after removing gate 13's row", "result": "failed", "reason": "removing a middle id (13) from a contiguous 1..N set never changes the max (27 unchanged); rewrote to build a probe from nc_max+1 and confirm it is still refused by the real verify-deploy.sh instead"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "note": "Suite verified at 38/38 passing. Non-vacuity demonstrated for both newly-derived mechanisms via scratch edit-then-revert on real files (confirmed empty git diff after each revert): (1) reversing gate_registry_load's sort to descending made case1 go red (got ids in descending order, mismatched independent ascending expectation); (2) temporarily reinstating a literal _only_gate_max_id=26 in verify-deploy.sh made both case32 and G1 go red (G1: 'reported bound (26) does not equal REGISTRY_MAX (27)'). Re-ran the plan's required post-edit grep for bare 2[0-9] literals: only case-number references and one stale 'all 25 rows' prose comment at case31 remained, both now handled (case numbers left as-is per the plan's own exception, the stale count made count-free). shellcheck (verify-deploy.sh --only-gate 22) clean."
+}
