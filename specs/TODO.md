@@ -1,5 +1,5 @@
 ---
-next_project_number: 515
+next_project_number: 518
 ---
 
 # TODO
@@ -11,10 +11,10 @@ next_project_number: 515
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511,512,514 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,420,431,445,446,448,458,463,472,475,492,497 | 369,383,397,409,412,418,430,435,459,491 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,420,431,445,446,448,458,463,472,475,492,497,516 | 369,383,397,409,412,418,430,435,459,491,493,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,439,444,451,455,461,474,476,484,500,507 | 313,391,398,420,423,431,435,445,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,449,452,454,457,462,479,481,486 | 360,390,402,435,439,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 4 | 421,449,452,454,457,462,479,481,486,517 | 360,390,402,435,439,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 5 | 450,480,487,501,508,509,513 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 6 | 496 | 450,487,488 | extensions |
 | 7 | 498 | 496 | extensions |
@@ -53,6 +53,8 @@ next_project_number: 515
 503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
+515 [NOT STARTED] — Rebase the bounded-wait guidance on the measured...
+  └─ 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -110,6 +112,7 @@ next_project_number: 515
 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
   └─ 463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
 504 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
+  └─ 516 [NOT STARTED] — Stop the Lean plan compliance check failing on...
 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
   └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 
@@ -129,7 +132,7 @@ next_project_number: 515
 
 ### Agent System
 
-418 [PLANNED] — Make the lint-fixture-test family subject resolution explicit...
+418 [IMPLEMENTING] — Make the lint-fixture-test family subject resolution explicit...
   └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [PLANNED] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
@@ -142,6 +145,175 @@ next_project_number: 515
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 517. Require a phase commit to regenerate and stage the derived surfaces it stales
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 455, Task 515
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` in THIS repository (never a deployed `.claude/**` tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see `rules/source-store-deploy-boundary.md`). Re-derive the store rather than trusting this note: `source_dir` lives PER-EXTENSION at `.extensions.<name>.source_dir` in a consumer repo's `<project-root>/.claude-extensions.json`, NOT as a top-level key. Edit at the path mirroring the deployed one, then REDEPLOY via `deploy-headless.sh`. No task-number references and no record-versioning language in any file landing under `agent-system/**`; both are permitted in this description and elsewhere in `specs/**`.
+
+ORIGIN: conclusion stage (channel b, agent-system changes) of an `/orchestrate` invocation over task 867 in `~/Projects/BimodalLogic`, session `sess_1793993028_251d86`, user-approved at the orchestrate-lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BimodalLogic, per the mis-siting correction under #390. The identifier 867 is a BimodalLogic number and does NOT resolve in this repository.
+
+CITATIONS -- FOUR RECORDED RECURRENCES across Phases 21, 22.1 and 22.2 of one task, each reproducible against the consumer repository where they were observed (all class `minor`):
+
+  for id in iss_1793914994233_yAr1ND iss_1793993819933_l3QK5V iss_1793996881076_bMWXPp; do
+    jq -c --arg id "$id" 'select(.entry_id==$id)' \
+      ~/Projects/BimodalLogic/specs/867_formalize_gabbay_separation_ztime/issues.jsonl
+  done
+
+========================================================================
+THE OBSERVATION, stated honestly: adding or editing a Lean module desynchronizes two sets of pinned counts -- the generated per-directory inventory blocks in `README.md`, `FormalSystem/README.md` and `FormalSystem/Metalogic/README.md` (reddening `check-module-invariants.sh`'s INV check until `--emit-inventory` is re-run), and the FormalSystem file/line counts pinned in `typst/generated/status.typ` (firing the pre-commit `typst-sync-check.sh --counts-only` gate). BOTH were repaired through their sanctioned entry points on each of the four occasions. NOTHING IS BROKEN IN EITHER SCRIPT and no work was wrong. This is a standing, predictable per-phase cost, and the deliverable is guidance, not a repair.
+
+=== THIS RECORD OWNS THE EXECUTION HALF ONLY. READ THIS BEFORE SCOPING ANYTHING ===
+There are two distinct halves to this friction and this repository already has an open record for the other one. Do not merge them and do not duplicate it.
+  - DECLARATION HALF (NOT THIS RECORD): whether the generated surfaces appear in a plan's declared `file_scope` / Files-to-modify rows at all. `scripts/plan-file-scope-harvest.sh` ALREADY carries a `Generated-surface appending` stage whose documented job is exactly this -- it appends the status-table typst file and every markdown README whose `<!-- BEGIN GENERATED: inventory -->` block covers a directory on the edited file's ancestor chain, gated behind a `generated_surfaces_available()` predicate so it stays inert in a repository carrying neither generator. #455 owns determining why that stage did not cover its own cited case, and #446 owns the plan-to-file_scope reconciliation gap beneath it. DO NOT EDIT `plan-file-scope-harvest.sh` OR ITS TEST FROM THIS RECORD.
+  - EXECUTION HALF (THIS RECORD): declaring a path does not regenerate the file at it. Even with the surfaces correctly declared, nothing in the phase-checkpoint or commit protocol tells the implementing agent to RE-RUN the generators and STAGE their output WITHIN the module-adding phase. That is the gap these four recurrences sit in, and the requested change is to that guidance.
+
+EVIDENCE THAT THE EXECUTION HALF IS GENUINELY UNCOVERED, re-derived at creation time (re-derive before editing; line numbers move):
+- `scripts/lib/derived-artifact-probe-lib.sh` is the single home of a repo-declared, build-free derived-artifact staleness probe, driven by a hand-authored `derived_artifact_probes` key in a consumer repo's `.claude-extensions.json` (`component`, `check_command`, `derived_output_dirs`). Its consumers are `orchestrate-cycle-postflight.sh` and `command-gate-out.sh` -- BOTH implement-POSTFLIGHT engines. The probe therefore runs only AFTER every phase commit of the plan has already landed, which is structurally too late to stop a phase commit from desynchronizing a pinned count.
+- The originating consumer repository's own `.claude-extensions.json` carries NO `derived_artifact_probes` key at all (verified absent at creation time with `jq -r '.derived_artifact_probes // "ABSENT"'`). So in the repository where all four recurrences happened, even the postflight probe never fired. Research must decide whether that absence is a separate consumer-repo gap to be recorded locally there, or evidence that the declaration mechanism is too obscure to be discovered -- and say which.
+- `context/checkpoints/checkpoint-commit.md`'s step 1 (`Determine Targeted Scope`) computes what to stage from the plan file and the agent's self-reported `modified_files`. A regenerated inventory block is in neither unless the generator has already been run, so the staging step cannot rescue an unrun generator.
+
+=== THE DECISION THIS RECORD OWES, with alternatives on their own merits ===
+  (a) A PHASE-LEVEL OBLIGATION IN THE COMMIT PROTOCOL. State in `checkpoints/checkpoint-commit.md` (and mirror into `agents/general-implementation-agent.md`'s phase-commit prose) that when a phase's own edits touch a declared derived-output surface, the phase MUST re-run that surface's sanctioned regeneration entry point and stage the result in the SAME phase commit. Most direct, and keeps the obligation where the staging decision is actually made -- but it is prose-only, so nothing detects a phase that skips it.
+  (b) HOIST THE EXISTING PROBE TO PHASE-COMMIT TIME. Call `derived-artifact-probe-lib.sh`'s probe from the phase-commit path as well as from implement-postflight, so a stale derived surface is flagged at the commit that staled it rather than at the end of the plan. Mechanical rather than prose, and reuses a built, tested mechanism instead of adding one -- but the probe is explicitly build-free and fail-open, it only DETECTS staleness, and it still requires a declaration the originating repository does not carry.
+  (c) BOTH, WITH (a) AS THE RULE AND (b) AS ITS BACKSTOP. Likely the right answer, but say so as a ruling with the cost acknowledged rather than defaulting into it.
+Whichever is chosen: the obligation must be expressed in terms of DECLARED derived surfaces, never by naming one repository's generator scripts in a core file. Core must not acquire knowledge of `check-module-invariants.sh` or `typst-sync-check.sh` beyond what `plan-file-scope-harvest.sh` already carries behind its availability predicate.
+
+=== HARD CONSTRAINTS ===
+- Stay INERT in a repository that declares no derived surfaces. A repository with no `derived_artifact_probes` key and no generator scripts must see no new obligation and no new failure.
+- Do NOT make this a reason to run a full build at every phase commit. The existing probe is deliberately build-free; preserve that property in anything added.
+- Do not reach across the repository boundary. The remedies specific to the originating repository -- its generator invocations, its `nolints.json`, its maintenance docs -- are not agent-system files. If the ruling concludes part of the answer belongs in a consumer-repo directive (including declaring `derived_artifact_probes` there), the correct outcome is to say so and have a record created in that repository, not to edit it from here.
+- Resist scope growth. This is the MINOR item of its batch, distinguished only by recurring four times. If the honest answer is "(a) alone, three sentences of prose", that is a complete and successful outcome.
+
+=== VERIFY ===
+- If (b) is chosen in any form: extend the probe library's own tests to pin that it is callable from the phase-commit path and that it stays fail-open and build-free. Pin the inert case -- a repository declaring no probes gets no new behaviour.
+- If (a) alone is chosen: pin that `scripts/lint/lint-contract-compliance.sh` (or whichever lint governs the checkpoint corpus) still passes, and that the new obligation does not self-trip any verbatim-fragment check.
+- Re-derive the four-recurrence claim from the cited entry ids rather than trusting the count in this description.
+- Use the scoped test narrowing, not the full aggregator, while other sessions are active.
+
+=== TERRITORY EDGES, declared with rationale rather than as bare numbers ===
+- #455 (`preflag_module_wiring_invariant_failures`, not_started): SEMANTIC predecessor and the declaration half described above. It shares NO files with this record, so this is an ordering edge, not a contention edge -- this record's guidance must agree with whatever #455 lands about which surfaces a plan declares. It in turn follows #446. Its own citation predates these four recurrences, which are evidence the friction persisted after it was filed.
+- The predecessor named in this record's `dependencies` alongside #455 shares `agents/general-implementation-agent.md`. SERIALIZATION-only, operator-liftable with `update-task-status.sh --depends-on-remove` if research confirms this record's change lands entirely in `checkpoints/checkpoint-commit.md`.
+- #513 (`phase_commit_boundary_mechanical_check`, not_started): NO EDGE, checked explicitly -- it declares `skill-base.sh`, `test-corroborate-phase-counts.sh` and `contracts/phase-closure.md`, none of which this record names. Adjacent in subject (it detects a phase that closed with NO commit; this record governs what a phase commit must CONTAIN). If research concludes `contracts/phase-closure.md` is the better home than `checkpoints/checkpoint-commit.md`, that creates a real contention with #513 -- declare the edge then rather than editing the file silently.
+- #430 (`feed_undeclared_implement_paths_into_file_scope`, not_started) shares `general-implementation-agent.md` and is adjacent from the undeclared-paths direction; keep wording consistent with whatever it lands.
+- #381 (`implement_postflight_derived_artifact_staleness`, completed) BUILT the probe this record considers hoisting -- read its artifacts first; its reasoning for siting the probe at postflight may contain the argument against (b). #336, #335 and #375 (all completed) previously worked phase-commit staging scope and completeness and are the nearest closed neighbours.
+
+DUPLICATE CHECK PERFORMED against the full open backlog and the closed corpus via `scripts/audit-task-proposals.sh` (verdict document recorded on this entry's own `audit_verdict` field). The matcher's `duplicate-of-open` verdicts here are Pass-2 semantic shortlist output with no mechanical corroboration and were ruled against. #455 is the real neighbour and is handled above by an explicit scope split plus an ordering edge rather than by absorption -- the declaration and execution halves are complementary, and closing one does not close the other.
+
+---
+
+### 516. Stop the Lean plan compliance check failing on not-yet-reached end-state deliverables
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: Task 504, Task 515, Task 493
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/lean/**` and `agent-system/extensions/core/**` in THIS repository (never a deployed `.claude/**` tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see `rules/source-store-deploy-boundary.md`). Re-derive the store rather than trusting this note: `source_dir` lives PER-EXTENSION at `.extensions.<name>.source_dir` in a consumer repo's `<project-root>/.claude-extensions.json`, NOT as a top-level key. Edit at the path mirroring the deployed one, then REDEPLOY via `deploy-headless.sh`. No task-number references and no record-versioning language in any file landing under `agent-system/**`; both are permitted in this description and elsewhere in `specs/**`.
+
+ORIGIN: conclusion stage (channel b, agent-system changes) of an `/orchestrate` invocation over task 867 in `~/Projects/BimodalLogic`, session `sess_1793993028_251d86`, user-approved at the orchestrate-lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BimodalLogic, per the mis-siting correction under #390. The identifier 867 is a BimodalLogic number and does NOT resolve in this repository.
+
+CITATION, reproducible against the consumer repository where it was observed -- `BimodalLogic:867:iss_1793993819916_UOHnrR` (class `costly`):
+
+  jq -c 'select(.entry_id=="iss_1793993819916_UOHnrR")' \
+    ~/Projects/BimodalLogic/specs/867_formalize_gabbay_separation_ztime/issues.jsonl
+
+========================================================================
+THE DEFECT, in one sentence: `scripts/lean-plan-compliance-check.sh` returns `COMPLIANCE_CHECK: failed` whenever a plan's MISSING list consists of the task's END-STATE DELIVERABLES -- declarations that only the plan's FINAL phases produce and that no earlier phase can possibly reach -- because its single global `**Goal Polarity**` field cannot express a plan-end-state goal, and so cannot distinguish "this declaration is missing because the plan diverged" from "this declaration is missing because its phase has not run yet".
+
+MEASURED, carried-unverified from the cited entry. At Phase 22.1 of 28 the ENTIRE missing list was `sepZ`, `sepZ_sepClauses`, `separationOver_ztime`, `trZ`, `openTruthAt_iff_trZ`, `openValidIn_ztime_iff_trZ`, `plusTruthAt_sepZ_iff` -- every one of them produced by Phases 25-26. The verdict was IDENTICAL against two different plan revisions of the same task, which is the evidence that this is a property of the script and not of either plan. A gate that is red by construction for 24 of a 28-phase plan's phases teaches implementers to ignore it, which is the real cost.
+
+=== VERIFY THE MECHANISM FIRST, do not trust this summary ===
+In the source store, `extensions/lean/scripts/lean-plan-compliance-check.sh` resolves `**Goal Polarity**` with a single `grep -oP` over the whole plan file, lowercases it, and then branches three ways (re-derive; line numbers move):
+- polarity set and NOT `refutation` -> `COMPLIANCE_CHECK: skipped`, with a message conceding that "a mixed or otherwise non-refutation polarity cannot be expressed by this single global field";
+- polarity `refutation` -> every harvested name must be ABSENT;
+- polarity absent (the default) -> MUST-EXIST: every harvested name must be PRESENT, and any `[MISSING]` fails the whole check.
+The field is therefore already admitted to be an inexpressive single global switch. This record is the third call on that inexpressiveness, after the keyword-exclusion and colon-optional narrowings the script's own header records -- which is itself evidence about where the contract belongs.
+
+=== THE DECISION THIS RECORD OWES, with alternatives recorded on their own merits ===
+  (a) PER-PHASE REACHABILITY. Teach the check which phase introduces each goal name, so a name whose introducing phase has not run is reported as `[PENDING]` and does not fail the check. Strongest verdict, and the only one that distinguishes real divergence from normal progress -- but it needs a per-goal phase attribution the plan format does not carry today, so it implies a `plan-format.md` change and a new authoring obligation on every Lean plan.
+  (b) A PLAN-END-STATE POLARITY VALUE. Add a third polarity (e.g. `end-state`) meaning "these names are expected only once the final phase lands", under which a MISSING list is reported but not failed before the plan is complete. Cheapest, and expressible in the existing single global field -- but it buys leniency by discarding the divergence signal for the whole plan, so a genuinely diverged plan also stops failing.
+  (c) GATE THE CHECK ON PLAN COMPLETION. Run the MUST-EXIST branch only at the plan's final phase and `skipped` before it. Preserves the signal exactly where it is sound and needs no format change -- but it means the check contributes nothing for most of a long plan's life, which may be the honest answer rather than a defect.
+Weigh (b) and (c) against the `skipped` precedent the script ALREADY sets for an inexpressible polarity: that precedent chose honest abstention over a wrong verdict, which is an argument for (c). Weigh (a) against the authoring cost it pushes onto every plan. Whichever is chosen, "strip the end-state names out of the Goals block" must NOT be the settled answer -- that is the same readability-destroying workaround pattern a sibling record already rejected for this script.
+
+=== SCOPE BOUNDARY, binding ===
+This record owns ONLY the phase-reachability-versus-divergence question. It does NOT own WHICH backticked tokens in the `**Goals**` block count as goal declarations -- that is #504's territory (over-broad harvest picking up prose binder names and pre-existing cross-referenced lemmas). The two are genuinely disjoint: narrowing the harvest to leading identifiers would NOT fix this defect, because every name in the measured missing list above IS a leading identifier and a genuine plan deliverable. #504 must land first (edge declared below) so this record reasons over a settled name set.
+
+=== VERIFICATION ===
+Extend `scripts/tests/test-lean-plan-compliance-check.sh` and the `scripts/tests/fixtures/challenge/` fixture set rather than replacing them. The minimum bar is a regression fixture that is a multi-phase plan whose Goals block declares end-state deliverables, evaluated at a non-final phase, which the check does NOT fail on -- plus a companion fixture of a genuinely DIVERGED plan at the same phase which it still DOES fail on. Without that second fixture the change is indistinguishable from disabling the check. The script's own header warns that two Goals-block readers must not drift apart on which header shapes they accept; find the second reader (`scripts/lean-challenge-snapshot.sh` is the likely one) before changing either.
+
+=== TERRITORY EDGES, declared with rationale rather than as bare numbers ===
+- #504 (`lean_goals_block_harvest_contract`, not_started): SEMANTIC predecessor, declares all three of this record's primary files. Owns the harvest contract this record's verdict logic sits downstream of. Not liftable.
+- #493 (`plan_format_tier_justification_fixes`, researching): declares `core/context/formats/plan-format.md`, which options (a) and (b) above would also edit. SERIALIZATION-only but currently IN FLIGHT -- reconcile by hand rather than assuming the file is free.
+- The predecessor named in this record's `dependencies` alongside those two shares `lean/agents/lean-implementation-agent.md` (the check's invocation site) and is SERIALIZATION-only, operator-liftable with `update-task-status.sh --depends-on-remove` if research confirms this record does not need to touch that agent file at all.
+- #813 and #824 (in the originating repository's numbering, migrated or not) own the Challenge block's precedence/snapshot-prerequisite rules and the fixture-dependent gate statement. Do not edit those contracts here.
+- #385 (`lean4_plan_with_zero_lean_goals`, completed) and #360 (`validate_carried_unverified_names_a_source`, not_started) are adjacent; read #385's artifacts, since a zero-goals plan and an all-pending-goals plan are near neighbours in this script's branch structure.
+
+DUPLICATE CHECK PERFORMED against the full open backlog and the closed corpus via `scripts/audit-task-proposals.sh` (verdict document recorded on this entry's own `audit_verdict` field). The matcher returned a large `duplicate-of-open` set with no mechanical corroboration -- Pass-2 semantic shortlist output, explicitly not a certified finding -- and it was ruled against: #504 is the one real neighbour and is handled above as a dependency plus an explicit scope boundary, not as absorption.
+
+---
+
+### 515. Rebase the bounded-wait guidance on the measured foreground-backgrounding ceiling
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` and `agent-system/extensions/lean/**` in THIS repository (never a deployed `.claude/**` tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see `rules/source-store-deploy-boundary.md`; a hand-authored file under `.claude/**` is silently wiped by the next regeneration, so the edit appears to succeed and has no lasting effect). Re-derive the store rather than trusting this note: `source_dir` lives PER-EXTENSION at `.extensions.<name>.source_dir` in a consumer repo's `<project-root>/.claude-extensions.json`, NOT as a top-level key, so a top-level `jq -r '.source_dir'` returning null must not be read as the key being absent. Edit at the path mirroring the deployed one, then REDEPLOY via `deploy-headless.sh`. No task-number references and no record-versioning language in any file landing under `agent-system/**` (`rules/no-task-references-in-deliverables.md`, `rules/no-record-versioning-in-deliverables.md`); both are permitted in this description and elsewhere in `specs/**`.
+
+ORIGIN: conclusion stage (channel b, agent-system changes) of an `/orchestrate` invocation over task 867 in `~/Projects/BimodalLogic`, session `sess_1793993028_251d86`, user-approved at the orchestrate-lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BimodalLogic: an agent-system change belongs in the repository that owns the source store, per the mis-siting correction recorded under this repo's #390 and the authoring hole under #391. The identifier 867 is a BimodalLogic number and does NOT resolve in this repository.
+
+CITATION, reproducible against the consumer repository where it was observed -- `BimodalLogic:867:iss_1793996881041_SDZX8Y` (class `costly`):
+
+  jq -c 'select(.entry_id=="iss_1793996881041_SDZX8Y")' \
+    ~/Projects/BimodalLogic/specs/867_formalize_gabbay_separation_ztime/issues.jsonl
+
+========================================================================
+THE DEFECT, in one sentence: the mandated single-call bounded-waiter idiom is built on a 600-second foreground Bash ceiling that this harness does not honour. The MEASURED behaviour is that a foreground Bash call is forcibly backgrounded once it exceeds roughly 180 seconds, REGARDLESS of the value passed in that call's own `timeout` parameter. The idiom therefore cannot complete in one call for a full `lake build` or a multi-gate sweep, and the guidance's central remedy -- "raise the Bash tool's own `timeout` parameter to `600000`" -- is inert.
+
+MEASURED CONSEQUENCE, carried-unverified from the cited entry and not re-measurable in this repository: this stalled dispatch 17 of the originating task in the very run that produced this record. The agent ended its turn on an unresolved background wait, landing Phase 22.1's commit but NONE of its wrap-up artifacts, and the orchestrator had to spend its one sanctioned stall re-prompt to recover. This failure mode will stall every long Lean dispatch the same way until the guidance is corrected.
+
+=== FIRST OBLIGATION: RE-MEASURE THE CEILING BEFORE EDITING ANYTHING ===
+The ~180s figure is CARRIED-UNVERIFIED from the cited issue entry. The whole deliverable is a numeric model, so research MUST establish the real number first-hand rather than transcribing it: issue a foreground Bash call of known duration with the tool `timeout` parameter raised well above it, and record at what elapsed time the harness takes the call away. Do this at several durations to find the actual boundary and to confirm the parameter is genuinely ignored rather than merely mis-set. If the measured boundary turns out to be the documented 600s after all, close this record as no-change with the measurement recorded -- that is a successful outcome here, not a failure. Record the harness version alongside the number, since this is a harness behaviour and not a property of this repository.
+
+=== WHAT THE GUIDANCE CURRENTLY SAYS (re-derive; line numbers move) ===
+- `context/patterns/external-process-wait.md` Rule 1 makes raising the tool `timeout` parameter to `600000` a REQUIRED step, calls the inner bound "inert unless this parameter is raised FROM that default", and carries a "Why 540 < 600" paragraph explaining a 60-second margin beneath a 600s ceiling. Its sub-case split (3a "fits under the 600s ceiling", 3b "cannot fit under the 600s ceiling at all") is defined entirely in terms of that ceiling.
+- `context/patterns/bounded-build-waiter.md`'s `### Sizing a Wait Near the Per-Call Ceiling` prescribes a sequence of separate bounded calls "each sized safely under the ceiling", and states that the tool-`timeout`-parameter pairing applies PER CALL, again at `600000`.
+- Both numbers are wrong if the measurement confirms ~180s, and so is the 3a/3b sub-case boundary derived from them: under a 180s ceiling, essentially every real `lake build` falls in 3b, which inverts which branch is the common case.
+
+=== THE WORKING REMEDY TO PROMOTE INTO THE GUIDANCE ===
+The re-prompted agent in the originating run resolved it this way, and it is the shape worth making canonical for the sub-ceiling-impossible case: detach the build writing a SENTINEL FILE on completion, then resolve it with repeated foreground polls each sized comfortably under the measured ceiling. Note this is NOT a return to the sentinel-poll antipattern `bounded-build-waiter.md`'s `## The Defect` section opens with: that defect was an UNBOUNDED `until grep -q` loop whose sentinel became unwritable when the guarded command died, and a name-matching liveness test that matched itself. A bounded sequence of short foreground polls that ALSO checks writer liveness by captured PID (`kill -0 "$pid"`) is a different construct. The record must say explicitly why the sentinel is safe here and how writer death is still detected, or it will read as licensing the very shape the file forbids.
+
+=== PROPAGATION OBLIGATION -- the expensive half of this record ===
+`bounded-build-waiter.md` is a GENERATED-COPY SOURCE, not an `@`-import: an `@`-reference inside an agent body does NOT auto-resolve when a subagent is spawned, so each in-scope agent body carries a LITERAL copy of the canonical bullet pair from the file's `### Copy this exact text` block, and `scripts/lint/lint-agent-contracts.sh` Check H keeps every copy in sync by comparing it against that source. Check K separately reads four anchor lines (`NOTIFICATION_PHRASE`, `BACKGROUND_PHRASE_1`, `BACKGROUND_PHRASE_2`, `PROHIBITIVE_MARKER_PATTERN`) from the file at runtime. A creation-time read counted 29 files under `agent-system/extensions/*/agents/` carrying the MUST bullet verbatim; re-derive the set rather than trusting that count:
+
+  cd agent-system/extensions && grep -rln 'bounded-build-waiter.md.*canonical idiom VERBATIM' --include='*.md' .
+  cd agent-system && grep -rln '600000' --include='*.md' extensions/
+
+IF the copied bullet text changes, every carrier must change in the SAME change and the lint must still pass. PREFER A CHANGE THAT LEAVES THE COPIED BULLET BYTE-IDENTICAL and say so explicitly if achieved -- the bullet forbids `run_in_background`/`Monitor` and turn-ending on an unresolved wait, none of which the numeric correction need touch. The 600000-bearing prose lives in the surrounding pattern files and in `lean/rules/lean4.md`, `lean/context/project/lean4/operations/long-builds.md`, `core/context/contracts/batch-gate-stage.md`, `core/context/patterns/batch-orchestration-guardrails.md`, `core/skills/skill-orchestrate/SKILL.md` and `core/agents/general-implementation-agent.md`; a correction confined to those is a far smaller change than a bullet rewrite.
+
+=== DO NOT RE-LITIGATE (each has a recorded ruling section in the file) ===
+- Hard variants do not inherit the contract; research agents are out of this mechanism's scope; Rule 5 does not propagate. Note them if relevant, do not fold them in.
+- Do NOT weaken the livelock protection detachment exists to provide: a killed Lean build caches no artifact, so retries restart at the same module. The correct shape keeps detachment and fixes the WAIT step.
+- Preserve the canonical idiom's liveness primitive: a captured `pid=$!` and `kill -0 "$pid"`, never `ps | grep` or `pgrep -f` (a PreToolUse hook, `hooks/validate-bounded-waiter.sh`, blocks the name-match-inside-a-loop conjunction, and `kill -0`'s presence grants no exemption).
+
+=== VERIFY ===
+- `scripts/lint/lint-agent-contracts.sh` passes, Checks H and K included. If the copied bullet is unchanged, PIN that it is byte-identical rather than asserting it.
+- `scripts/tests/test-lint-agent-contracts.sh`, `-heartbeat.sh`, `-handoff-section.sh`, `-await-notification.sh` and any `validate-bounded-waiter` test stay green.
+- The newly documented poll idiom is exercised end to end at least once against a real long command, not only described.
+- Use the scoped commit narrowing, not the full aggregator, while other sessions are active.
+
+=== TERRITORY EDGES, declared with rationale rather than as bare numbers ===
+- #454 (`same_turn_gate_runs_foreground`, not_started) declares EXACTLY this record's two pattern files. It is NOT a duplicate -- it adds a result-needed-this-turn criterion and a fourth shape to the Shape Taxonomy -- but its own prescribed remedy for "cannot fit the ceiling AND the result is needed this turn" is, in its words, "raise the timeout per the existing guidance", which this record establishes is inert. THIS RECORD MUST LAND FIRST so #454 reasons from a corrected premise; an edge has been added onto #454 making it follow this record.
+- #439 (`audit_cross_extension_bounded_wait_duplication`, not_started) shares `bounded-build-waiter.md` and `lint-agent-contracts.sh`. It rules on PROPAGATION ARCHITECTURE (one canonical source versus 29 literal copies), a different question from this record's numeric correction. An edge has been added onto #439 making it follow this record, so its audit operates on corrected text.
+- #412 (lean tier vocabulary, not_started) shares the two lean implementation agents; #409, #418, #420 share `batch-orchestration-guardrails.md`; #430 shares `general-implementation-agent.md`; #431 shares `lint-agent-contracts.sh`; #435 declares `core/context/` coarsely. All SERIALIZATION-only and operator-liftable with `update-task-status.sh --depends-on-remove` once an operator confirms the named files are not contested.
+- #376, #356, #392, #172, #236, #237, #345, #347, #354, #175 (all completed) previously touched this corpus. #392 in particular landed "the tool-timeout half of the bounded-wait idiom" -- the very instruction this record corrects -- so read its artifacts before concluding the 600000 figure was never deliberate.
+
+DUPLICATE CHECK PERFORMED against the full open backlog and the closed corpus via `scripts/audit-task-proposals.sh` (verdict document recorded on this entry's own `audit_verdict` field). The matcher's `duplicate-of-open` verdicts here are Pass-2 semantic shortlist output with no mechanical corroboration and were ruled NOT duplicates; #454 and #439 are the two real neighbours and are handled above as ordering obligations rather than absorption. No absorption candidate found.
+
+---
 
 ### 514. Convergence guard blind to zero-dispatch cycles
 - **Status**: [NOT STARTED]
@@ -5185,7 +5357,7 @@ Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json 
 ---
 
 ### 418. Make the lint-fixture-test family subject resolution explicit and self-declaring
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 411, Task 415, Task 419
