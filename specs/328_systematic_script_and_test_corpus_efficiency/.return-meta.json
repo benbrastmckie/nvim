@@ -1,19 +1,84 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 32,
   "partial_progress": {
-    "stage": "phase_18_starting",
-    "details": "Phase 18 (Markdown Tranche B -- The Skill Definitions) dispatch started. Resuming from Phase 17's close (17 of 20 phases complete). Deriving Phase 18's concrete skills/ file set from the Phase 15 confirmed inventory (markdown-block-inventory.tsv) before any edit.",
-    "phases_completed": 17,
+    "stage": "phase_complete_more_remain",
+    "details": "Phase 18 (Markdown Tranche B -- The Skill Definitions) closed [COMPLETED WITH EXCLUSIONS]. Collapsed 33 unique skill files across 2 anchor rows: thin-wrapper-skill.md Stage 3b Self-Execution Fallback (19 files, byte-identical 487-char block confirmed in every file before editing) and postflight-tool-restrictions.md MUST NOT Section Template (15 files, the gate-checked heading line kept verbatim, only the PROHIBITION clause/allowed-operations list/Reference line collapsed; one file, skill-epi-implement/SKILL.md, collapsed under both rows). Skipped 3 further anchor rows (10 file-occurrences) with recorded Item/Reason/Evidence in the plan's Reasoned Exclusions subsection: inline-status-update.md (5 files), subagent-continuation-loop.md (3 files), interactive-selection.md (2 files) -- all three excluded because the matched text is a literal, necessarily-concrete bash/JSON invocation embedded in a complete copy-paste example the skill must carry inline to remain runnable, the same exclusion class Phase 17 established for report-format.md/plan-format.md. NET-MD this phase: -127 lines (152 insertions, 279 deletions across 33 .md files, via git diff --numstat). Running NET-MD since Phase 17: -716 + -127 = -843. The plan's own '93 files'/'-2,600' Scope Hypothesis figures were carried from the pre-Phase-15 stale shingling pass and were never reachable from Phase 15's confirmed per-role table (196 anchor-confirmed skills/ lines) independent of this phase's execution -- recorded as a Scope Hypothesis confirmation note with explicit allocation-revision guidance for Phase 19. Gate verification: --skip-slow full gate run twice (pre- and post-redeploy); post-redeploy 39 of 41 checks clean (the sole FAIL, gate 10's transient 30s timeout under contended host load, confirmed clean via a standalone 18.9s re-run matching Phase 16/17's own precedent). Gate 8 (tests/run-all.sh full battery) could not be exercised directly: two full (non-skip-slow) verify-deploy.sh runs each exceeded a 540s bounded wait, with ps aux confirming 3+ concurrent sibling task328-implement* sessions running their own full batteries throughout -- recorded as a non-fatal concurrent-session-contention issue; substituted a targeted 3-suite run (test-lint-anchor-pointer-collapse.sh, test-lint-postflight-boundary.sh, test-lint-agent-contracts.sh, 3/3 pass) and a direct lint-anchor-pointer-collapse.sh --verbose invocation (76/76 registry rows OK, 0 violations, including all 34 of this phase's newly-registered rows). deploy-headless.sh landed (RESULT=landed_verify_red solely due to gate 10's transient timeout, not a regression). sync-manifest-scripts.sh --write confirmed no repeat of Phase 17's manifest-gap finding. 2 of 20 plan phases remain (19: markdown tranche C; 20: redeploy, full gate set, measured net accounting).",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
+    "phases_completed": 18,
     "phases_total": 20
   },
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
+      "summary": "Phase 18 close: 33 skill files collapsed onto 2 anchors (-127 NET-MD), 3 anchor rows (10 file-occurrences) skipped with recorded reasons, Scope Hypothesis shortfall confirmed with allocation-revision guidance for Phase 19, gate verification clean modulo confirmed concurrent-session contention on gate 8 (substituted with targeted-suite and direct-lint evidence)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed Phase 18: collapsed 33 unique skill-definition markdown files onto 2 anchors (thin-wrapper-skill.md's Self-Execution Fallback block, 19 files; postflight-tool-restrictions.md's MUST NOT Section Template, 15 files), net -127 markdown lines, with a full claim-retention ledger, 3 anchor rows (10 file-occurrences) reasoned-excluded as literal-invocation content, and gate-finding-set parity confirmed apart from gate 8 (confirmed concurrent-sibling contention, substituted evidence recorded). Running NET-MD since Phase 17: -843."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-implementation/SKILL.md",
+    "agent-system/extensions/cslib/skills/skill-cslib-implementation/SKILL.md",
+    "agent-system/extensions/cslib/skills/skill-pr-implementation/SKILL.md",
+    "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
+    "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-analyze/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-deck-implement/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-deck-research/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-finance/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-financial-analysis/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-founder-implement/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-founder-spreadsheet/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-legal/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-market/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-meeting/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-project/SKILL.md",
+    "agent-system/extensions/founder/skills/skill-strategy/SKILL.md",
+    "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md",
+    "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+    "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
+    "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
+    "agent-system/extensions/present/skills/skill-budget/SKILL.md",
+    "agent-system/extensions/present/skills/skill-funds/SKILL.md",
+    "agent-system/extensions/present/skills/skill-grant/SKILL.md",
+    "agent-system/extensions/present/skills/skill-slides/SKILL.md",
+    "agent-system/extensions/present/skills/skill-timeline/SKILL.md",
+    "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md",
+    "agent-system/extensions/rust/skills/skill-rust-implementation/SKILL.md",
+    "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
+    "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+    "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv",
+    "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When auditing a markdown-consolidation duplicate-block inventory, a matched window that is a literal, necessarily-concrete CLI invocation or JSON scaffold (a bash state-write.sh/git-commit-scoped.sh call with real flags, or a worked AskUserQuestion JSON example) is a THIRD exclusion class alongside gate-required and deliberately-inlined content: 'embedded in a complete copy-paste invocation/example.' Collapsing such a block to a cross-reference pointer removes the actually-runnable command from the file, making it non-self-contained for its next reader/executor, without the prose-restatement benefit a genuine explanatory block gets from the same treatment. Distinguish this from a genuinely collapsible block (e.g. a 'write this JSON schema, use the schema file for the full shape' explanation) by checking whether the matched text IS the executable artifact itself versus explanatory prose ABOUT how to produce one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["anchor-pointer-convention", "literal-invocation-exclusion", "markdown-consolidation", "reasoned-exclusion", "collapse-risk"]
+    },
+    {
+      "content": "verify-deploy.sh's full (non---skip-slow) battery includes gate 8 (tests/run-all.sh, the full shell-suite runner), which is the one gate bracketed by the repo-scoped specs/.gate-lock mutex. On a shared repo with multiple concurrent sibling dispatches (e.g. several orchestrate cycles of the same task running in parallel sessions), a full verify-deploy.sh invocation can hang well past a 500+s bounded wait waiting on that lock/contention, even though the mutex itself is documented as fail-open. Before retrying a hung full gate run, check `ps aux` for live sibling run-all.sh/verify-deploy.sh processes; if present, use --skip-slow (which skips gate 8 only, dropping run time from minutes to under a minute) plus a targeted `run-all.sh --only <relevant suites>` and a direct invocation of the specific lint(s) under test as substitute evidence, and record the gate-8 omission as a non-fatal concurrent-session-contention issue rather than retrying indefinitely.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["gate-lock-contention", "verify-deploy-skip-slow", "concurrent-sibling-dispatch", "bounded-wait", "gate8-run-all"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793920608_e862fc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 17,
+    "phases_completed": 18,
     "phases_total": 20
   }
 }
