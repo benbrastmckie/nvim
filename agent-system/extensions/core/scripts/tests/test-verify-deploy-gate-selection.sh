@@ -15,6 +15,13 @@
 # exists only in the source store until this task's Phase 7 redeploy (see
 # context/rules/source-store-deploy-boundary.md and this task's own plan Risks table).
 #
+# Case (s) is the durable answer to "registering a gate must not require editing this file": it
+# builds a THROWAWAY, path-mirrored fixture store (gate_store_fixture_build, a copy, never the
+# real scripts/gate-registry.data) carrying one extra synthetic gate id, and reuses
+# noflag_header_set_check -- the exact function case (d)/Guard G2 above already use -- against
+# the fixture store's own verify-deploy.sh. One comparison function serving both the real and
+# fixture cases is what proves the acceptance bar, not merely a passing assertion.
+#
 # Three fixtures, chosen for cost:
 #   - FIXTURE_RICH: a real-copy rsync of agent-system/extensions/ (same shape and rationale as
 #     test-verify-deploy-context-budget.sh's fixture) -- needed so gate 20's real per-file-ceiling
@@ -469,6 +476,34 @@ if printf '%s\n' "$gate4_findings_out" | grep -q '^FINDING gate4'; then
   common_test_pass "case(r-d): a real fail()-level finding from another gate (gate4) still appears on ^FINDING, unaffected by gate16's channel split"
 else
   common_test_fail "case(r-d): expected a ^FINDING gate4 line against FIXTURE_CHEAP" "$gate4_findings_out"
+fi
+
+# =====================================================================
+# Case (s): Throwaway-Gate Fixture Proof -- this suite's half of the acceptance bar. Build a
+# path-mirrored fixture store (Phase 1's gate_store_fixture_build) carrying one extra, synthetic
+# gate id (REGISTRY_MAX + 1, derived -- never a bare literal), and show a no-flag --skip-slow
+# run of the FIXTURE's own verify-deploy.sh against FIXTURE_CHEAP prints a header for every
+# fixture-registry id, including the extra one, under noflag_header_set_check -- the EXACT SAME
+# function G2 (case (d)) uses, so this case and case (d) cannot silently diverge.
+# =====================================================================
+source "$CORE_DIR/lib/gate-store-fixture-lib.sh"
+FIXTURE_EXTRA_ID="$((REGISTRY_MAX + 1))"
+FIXTURE_VD="$(gate_store_fixture_build "$WORKDIR/fixture-store" "$FIXTURE_EXTRA_ID" 'Throwaway fixture gate')"
+FIXTURE_DATA="$(dirname "$FIXTURE_VD")/gate-registry.data"
+fixture_registry_ids="$(awk -F'\t' '$1 ~ /^[0-9]+$/ {print $1}' "$FIXTURE_DATA" | sort -n | tr '\n' ' ' | sed 's/ $//')"
+
+fixture_noflag_out="$(bash "$FIXTURE_VD" --skip-slow "$FIXTURE_CHEAP" 2>&1)"
+fixture_g2_result="$(noflag_header_set_check "$fixture_noflag_out" "$fixture_registry_ids")"
+if [ "$fixture_g2_result" = "OK" ]; then
+  common_test_pass "case(s): a no-flag run of the fixture store's verify-deploy.sh prints exactly the fixture registry's id set (including gate $FIXTURE_EXTRA_ID), via the identical noflag_header_set_check G2 uses -- zero suite edit between the real and fixture cases"
+else
+  common_test_fail "case(s): fixture store header set diverges from the fixture registry ($fixture_g2_result)"
+fi
+# The real gate-registry.data is untouched.
+if [ "$(grep -c "^${FIXTURE_EXTRA_ID}	" "$CORE_DIR/gate-registry.data")" -eq 0 ]; then
+  common_test_pass "case(s): the real gate-registry.data has no row for gate $FIXTURE_EXTRA_ID -- the fixture store never touched it"
+else
+  common_test_fail "case(s): unexpectedly found a row for gate $FIXTURE_EXTRA_ID in the REAL gate-registry.data"
 fi
 
 echo ""

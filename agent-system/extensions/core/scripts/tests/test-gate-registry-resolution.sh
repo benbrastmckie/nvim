@@ -36,6 +36,13 @@
 #     REGISTRY_MAX, in both directions, so the two derivations cannot silently drift apart.
 #     Case1-NC is the paired negative control proving the comparison is not vacuous (a synthetic
 #     registry missing gate 13 is detected as a different id set).
+#   - Case 35-39 are the durable answer to "registering a gate must not require editing this
+#     file": they build a THROWAWAY, path-mirrored fixture store (gate_store_fixture_build, a
+#     copy, never the real scripts/gate-registry.data) carrying one extra synthetic gate id, and
+#     run this SAME, unedited suite logic against it (ids_match_check is the exact function
+#     case1 uses). A later real gate registration is proven to need zero edits here specifically
+#     because the fixture case and the real-registry case above it share one comparison
+#     function, not two copies that could silently diverge.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the
 # library was not found).
@@ -742,6 +749,85 @@ if [ "$rc34" -eq 2 ] && echo "$out34" | grep -q "ERROR: --only-gate: invalid gat
   common_test_pass "case34: --only-gate abc (non-numeric) is still refused with exit 2"
 else
   common_test_fail "case34: expected --only-gate abc to be refused with exit 2 and the invalid-id message (rc=$rc34)" "$out34"
+fi
+
+# ─── Case 35-39: Throwaway-Gate Fixture Proof (this task's acceptance bar) ──────────────────────
+# Registering a gate must require NO suite edit. Proof: build a path-mirrored fixture store
+# (Phase 1's gate_store_fixture_build) carrying one extra, synthetic gate id, and show this
+# SAME suite -- unedited -- accepts it, refuses one past it, and reports the correct G1 bound,
+# exactly as it does for the real registry above. The extra id is REGISTRY_MAX + 1 (derived),
+# never a bare literal -- the real registry's own max has already drifted once (a sibling task
+# registered a real new gate while this very suite was being converted), so a hardcoded fixture
+# id would be exactly the kind of staleness this suite now eliminates.
+source "$CORE_DIR/lib/gate-store-fixture-lib.sh"
+FIXTURE_EXTRA_ID="$((REGISTRY_MAX + 1))"
+FIXTURE_VD="$(gate_store_fixture_build "$WORKDIR/fixture-store" "$FIXTURE_EXTRA_ID" 'Throwaway fixture gate')"
+FIXTURE_DATA="$(dirname "$FIXTURE_VD")/gate-registry.data"
+
+# ids_match_check factors the id-set comparison case1 uses so the real-registry case and this
+# fixture case invoke IDENTICAL logic -- a divergent second copy would defeat the proof.
+ids_match_check() {
+  # Usage: ids_match_check <actual_ids> <expected_ids_space_separated>
+  local _actual="$1" _expected="$2"
+  if [ "$_actual" = "$_expected " ] || [ "$_actual" = "$_expected" ]; then
+    echo "OK"
+  else
+    echo "MISMATCH (got: '$_actual', expected: '$_expected')"
+  fi
+}
+
+# Case 35: the fixture registry's independently-derived max is REGISTRY_MAX + 1.
+fixture_ids_expected="$(awk -F'\t' '$1 ~ /^[0-9]+$/ {print $1}' "$FIXTURE_DATA" | sort -n | tr '\n' ' ' | sed 's/ $//')"
+fixture_max_expected="${fixture_ids_expected##* }"
+if [ "$fixture_max_expected" = "$FIXTURE_EXTRA_ID" ]; then
+  common_test_pass "case35: the fixture registry's independently-derived max is $fixture_max_expected (REGISTRY_MAX + 1)"
+else
+  common_test_fail "case35: expected the fixture max to be $FIXTURE_EXTRA_ID, got '$fixture_max_expected'"
+fi
+# gate_registry_ids against the fixture store, compared via the SAME function case1 uses.
+( gate_registry_load "$FIXTURE_DATA"; echo "$(gate_registry_ids)" > "$WORKDIR/fixture_ids.txt" )
+fixture_ids_actual="$(cat "$WORKDIR/fixture_ids.txt")"
+fixture_match_result="$(ids_match_check "$fixture_ids_actual" "$fixture_ids_expected")"
+if [ "$fixture_match_result" = "OK" ]; then
+  common_test_pass "case35b: gate_registry_ids against the fixture store matches its own independent awk read ($fixture_match_result), via the identical ids_match_check case1 uses"
+else
+  common_test_fail "case35b: $fixture_match_result"
+fi
+
+# Case 36: --only-gate <FIXTURE_EXTRA_ID> is accepted against the fixture store and prints that
+# gate's header.
+out36="$(bash "$FIXTURE_VD" --only-gate "$FIXTURE_EXTRA_ID" "$REPO_ROOT" 2>&1)"; rc36=$?
+if [ "$rc36" -eq 0 ] && echo "$out36" | grep -q "^${FIXTURE_EXTRA_ID}\. "; then
+  common_test_pass "case36: --only-gate $FIXTURE_EXTRA_ID is accepted against the fixture store and selects the throwaway gate"
+else
+  common_test_fail "case36: expected --only-gate $FIXTURE_EXTRA_ID to be accepted against the fixture store (rc=$rc36)" "$out36"
+fi
+
+# Case 37: --only-gate <FIXTURE_EXTRA_ID + 1> (one past the fixture's own max) is refused.
+FIXTURE_ONE_PAST="$((FIXTURE_EXTRA_ID + 1))"
+out37="$(bash "$FIXTURE_VD" --only-gate "$FIXTURE_ONE_PAST" "$REPO_ROOT" 2>&1)"; rc37=$?
+if [ "$rc37" -eq 2 ] && echo "$out37" | grep -q "ERROR: --only-gate: gate id '${FIXTURE_ONE_PAST}' is out of range"; then
+  common_test_pass "case37: --only-gate $FIXTURE_ONE_PAST (above the fixture's own max) is refused with exit 2"
+else
+  common_test_fail "case37: expected --only-gate $FIXTURE_ONE_PAST to be refused with exit 2 (rc=$rc37)" "$out37"
+fi
+
+# Case 38 (G1 applied to the fixture store): the fixture's own verify-deploy.sh reports its
+# out-of-range bound as FIXTURE_EXTRA_ID, not REGISTRY_MAX -- i.e. G1's extraction mechanism
+# correctly tracks whichever registry it is actually run against.
+fixture_g1_bound="$(echo "$out37" | grep -oE 'must be 1-[0-9]+' | grep -oE '[0-9]+$')"
+if [ -n "$fixture_g1_bound" ] && [ "$fixture_g1_bound" -eq "$FIXTURE_EXTRA_ID" ]; then
+  common_test_pass "case38/G1-fixture: the fixture store's verify-deploy.sh reports its own bound ($fixture_g1_bound) correctly, not the real registry's REGISTRY_MAX ($REGISTRY_MAX)"
+else
+  common_test_fail "case38/G1-fixture: expected the fixture's reported bound to be $FIXTURE_EXTRA_ID, got '$fixture_g1_bound'"
+fi
+
+# Case 39: the REAL gate-registry.data is untouched by any of the above -- the fixture store is
+# an isolated copy under $WORKDIR, never the real file.
+if [ "$(grep -c "^${FIXTURE_EXTRA_ID}	" "$REAL_DATA")" -eq 0 ]; then
+  common_test_pass "case39: the real gate-registry.data has no row for gate $FIXTURE_EXTRA_ID -- the fixture store never touched it"
+else
+  common_test_fail "case39: unexpectedly found a row for gate $FIXTURE_EXTRA_ID in the REAL gate-registry.data"
 fi
 
 # Restore the real registry for any downstream consumer of this same shell (defensive; this

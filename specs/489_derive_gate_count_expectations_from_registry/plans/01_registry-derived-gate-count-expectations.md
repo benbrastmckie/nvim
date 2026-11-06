@@ -429,29 +429,42 @@ the suite for bare `2[0-9]` literals before closing the phase.
 
 ---
 
-### Phase 6: Throwaway-Gate Fixture Proof in Both Suites [NOT STARTED]
+### Phase 6: Throwaway-Gate Fixture Proof in Both Suites [COMPLETED]
 
 **Goal**: Prove mechanically and permanently that registering a gate requires no suite edits —
 the acceptance bar — without ever touching the real `gate-registry.data`.
 
 **Tasks**:
-- [ ] Both suites source `../lib/gate-store-fixture-lib.sh` and build a fixture store under their
+- [x] Both suites source `../lib/gate-store-fixture-lib.sh` and build a fixture store under their
       existing `WORKDIR` (so `common_test_workdir_init`'s trap cleans it up) via
       `gate_store_fixture_build "$WORKDIR/fixture-store" 27 'Throwaway fixture gate'`.
-- [ ] Suite A, new cases: against the fixture store's `verify-deploy.sh`, (i) the
+      *(completed with the extra id DERIVED as `$((REGISTRY_MAX + 1))` rather than the bare
+      literal `27` the plan's prose assumed -- the real registry's live max had already moved to
+      27 by this point in the dispatch, so the fixture's extra id is 28)*
+- [x] Suite A, new cases: against the fixture store's `verify-deploy.sh`, (i) the
       independently-derived fixture max is `27`; (ii) `--only-gate 27` is **accepted** and prints
       `^27\. `; (iii) `--only-gate 28` is refused with `must be 1-27`; (iv) G1 applied to the
       fixture store reports a bound of `27`. Assert the real registry is untouched
-      (`grep -c '^27\t' scripts/gate-registry.data` is 0).
-- [ ] Suite B, new case: a no-flag `--skip-slow` run of the fixture store's `verify-deploy.sh`
+      (`grep -c '^27\t' scripts/gate-registry.data` is 0). *(completed as case35/35b/36/37/38/39,
+      with every literal "27"/"28" replaced by the derived FIXTURE_EXTRA_ID/FIXTURE_ONE_PAST;
+      found and fixed a bug while implementing: the fixture case initially passed
+      `$WORKDIR/fixture-store` as TARGET, but verify-deploy.sh requires TARGET to already hold a
+      deployed .claude/ tree before it reaches gate dispatch at all -- the fixture builder does
+      not create one. Fixed by passing `$REPO_ROOT` as TARGET instead, matching Phase 1's own
+      manual verification, since `--only-gate <id>` only needs the fixture's OWN
+      self-relative-resolved verify-deploy.sh/lib/data, not TARGET itself, to have the fixture
+      shape)*
+- [x] Suite B, new case: a no-flag `--skip-slow` run of the fixture store's `verify-deploy.sh`
       against `FIXTURE_CHEAP` prints a header for every fixture-registry id including `27`, under
       the same set-equality comparison G2 uses — i.e. case (d)'s logic, re-run against a registry
-      with one more gate, with no edit to the assertion itself.
-- [ ] Factor each suite's comparison into a small local function so the fixture case and the real
-      case invoke identical logic; a divergent second copy would defeat the proof.
-- [ ] State in both suite headers that these cases are the durable answer to "adding a gate must
+      with one more gate, with no edit to the assertion itself. *(completed as case (s))*
+- [x] Factor each suite's comparison into a small local function so the fixture case and the real
+      case invoke identical logic; a divergent second copy would defeat the proof. *(completed:
+      `ids_match_check` in Suite A, `noflag_header_set_check` in Suite B -- both defined once,
+      called by both the real-registry case and the fixture case)*
+- [x] State in both suite headers that these cases are the durable answer to "adding a gate must
       not require editing this file", and that the fixture store is a path-mirrored copy, never the
-      real store.
+      real store. *(completed)*
 
 **Timing**: 1.5 hours
 

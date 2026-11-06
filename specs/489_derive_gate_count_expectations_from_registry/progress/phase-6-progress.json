@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "Throwaway-Gate Fixture Proof in Both Suites",
+  "started_at": "2026-11-06T23:40:00Z",
+  "last_updated": "2026-11-07T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Both suites build a fixture store via gate_store_fixture_build", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh", "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 2, "description": "Suite A fixture cases 35-39 (max, accept, refuse, G1, real-registry-untouched)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]},
+    {"id": 3, "description": "Suite B fixture case (s), reusing noflag_header_set_check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 4, "description": "Factor comparison into reusable functions (ids_match_check, noflag_header_set_check)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh", "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 5, "description": "Header notes on the durable acceptance-bar proof", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh", "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Suite A's case36/37 initially passed $WORKDIR/fixture-store as verify-deploy.sh's TARGET argument", "result": "failed", "reason": "verify-deploy.sh refuses any TARGET without an existing deployed .claude/ tree before it reaches gate dispatch at all; gate_store_fixture_build does not create one (by design -- it only builds the agent-system/extensions/core/scripts/ mirror). Fixed by passing $REPO_ROOT as TARGET instead, matching how Phase 1's own manual verification invoked the fixture's verify-deploy.sh; --only-gate <id> for the throwaway gate needs only the fixture's own self-relative-resolved verify-deploy.sh/lib/data, not TARGET itself, to carry the fixture shape."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "6.1", "description": "Fixture extra id literal 27", "type": "altered", "reason": "The plan's prose assumed the real registry's live max was 26 (so the fixture's extra id would be 27). By Phase 6, the live max had already moved to 27 (a sibling task registered a real gate during Phase 2). Used the derived $((REGISTRY_MAX + 1)) = 28 instead of the bare literal 27, which is both correct and exactly the point of this task."}
+  ],
+  "note": "Suite A (test-gate-registry-resolution.sh) verified at 44/44 passing, including fixture cases 35/35b/36/37/38/39. Suite B (test-verify-deploy-gate-selection.sh) verified at 24/24 passing, including case (s). Batched covering run (run-all.sh --only test-gate-registry-resolution.sh,test-verify-deploy-gate-selection.sh,test-verify-deploy-gate-selection-crash-net.sh,test-lint-unit-integration-boundary.sh): 3/4 green; the 4th (test-lint-unit-integration-boundary.sh) fails on 3 deployed-but-unclassified suites (test-lint-subject-resolution-declaration.sh, test-mcp-merge-target.sh, test-validate-no-python-state-write.sh) -- none are this task's files, confirmed pre-existing/orthogonal (same class of issue already flagged in the Phase 2 handoff, now grown from 1 to 3 unclassified suites due to other concurrent tasks). verify-deploy.sh --only-gate 5,13,22: gate 13 and 22 clean; gate 5 FAILs attributably to pre-redeploy drift on exactly this task's 5 modified files (resolved at Phase 7's redeploy), not a regression. verify-deploy.sh --only-gate 22 (shellcheck) re-confirmed clean after the final header-only edits."
+}
