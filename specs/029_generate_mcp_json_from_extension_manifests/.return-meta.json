@@ -1,30 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/029_generate_mcp_json_from_extension_manifests/plans/01_mcp-merge-target-mechanism.md",
-      "summary": "6-phase, 6.5-hour plan for the merge_targets.mcp deploy-engine mechanism, its durable regression harness, core documentation, and the settled obsidian-memory resolution."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 16,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1793947646_0784d9_29",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6.5,
-    "dependency_waves": [[1, 2], [3, 4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a config file must hold both machine-generated and hand-written content, an additive deep-merge with per-producer tracked-unmerge is the correct idiom; a fully computed artifact regenerated wholesale is not. In this repo's extension deploy engine both idioms coexist in merge.lua: merge_settings/unmerge_settings only ever adds keys not already present and returns a tracked structure recording exactly what it added, persisted to the project-root state file so a later unload retracts only that producer's additions even across separate sessions. That single property delivers four requirements for free -- additive registration, per-producer retraction on unload, idempotent redeploy, and survival of hand-written user entries -- with no special casing. generate_opencode_json's computed-artifact idiom, by contrast, rebuilds the file from scratch on every change and therefore cannot preserve hand-written content at all, which is why it is gated behind a managed-marker file. Choose by asking whether any non-generated content can legitimately live in the target: if yes, additive-plus-tracked; if no, computed artifact.",
-      "category": "PATTERN",
-      "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/plans/01_mcp-merge-target-mechanism.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["deep-merge", "tracked-unmerge", "generated-config", "idempotent-deploy", "extension-manifest", "merge-targets"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 29 to execute the plan",
-  "dispatch_seq": 13
+    "session_id": "sess_1793947646_0784d9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }

@@ -557,6 +557,40 @@ local function verify_index_merge(extension_dir, target_dir)
   return false
 end
 
+--- Verify merged project-scoped .mcp.json has this extension's declared server(s)
+--- @param extension_dir string Extension source directory
+--- @param ext_manifest table Extension manifest (checked for merge_targets.mcp)
+--- @param project_dir string Target project root directory (not the .claude/ tree)
+--- @return boolean merged True if every declared server name is present in the target
+local function verify_mcp_merge(extension_dir, ext_manifest, project_dir)
+  if not ext_manifest or not ext_manifest.merge_targets or not ext_manifest.merge_targets.mcp then
+    -- No mcp target declared; nothing to verify.
+    return true
+  end
+
+  local mt_config = ext_manifest.merge_targets.mcp
+  local source_path = extension_dir .. "/" .. mt_config.source
+  local fragment = read_json(source_path)
+  if not fragment or not fragment.mcpServers then
+    -- Source fragment missing or malformed; can't verify, don't fail load over it.
+    return true
+  end
+
+  local target_path = project_dir .. "/" .. mt_config.target
+  local target = read_json(target_path)
+  if not target or not target.mcpServers then
+    return false
+  end
+
+  for server_name, _ in pairs(fragment.mcpServers) do
+    if target.mcpServers[server_name] == nil then
+      return false
+    end
+  end
+
+  return true
+end
+
 --- Verify that manifest.provides.agents matches the extension's opencode-agents.json fragment
 --- @param extension_dir string Extension source directory
 --- @param ext_manifest table Extension manifest
@@ -647,6 +681,7 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
     context = { passed = true },
     section = { passed = true },
     index = { passed = true },
+    mcp = { passed = true },
     opencode_json = { passed = true },
     -- Populated below by the manifest-driven parity + content-hash pass; declared here upfront
     -- for a stable report shape even before that pass runs.
@@ -747,6 +782,15 @@ function M.verify_extension(extension_name, extension_dir, target_dir, config, p
   if not index_ok then
     verification.index = { passed = false }
     table.insert(verification.errors, "Index entries not merged into context/index.json")
+  end
+
+  -- Verify MCP server merge (merge_targets.mcp -> project-root .mcp.json). target_dir is
+  -- the .claude/ (or .opencode/) tree, not the project root, so derive project_dir from it.
+  local project_dir = vim.fn.fnamemodify(target_dir, ":h")
+  local mcp_ok = verify_mcp_merge(extension_dir, manifest, project_dir)
+  if not mcp_ok then
+    verification.mcp = { passed = false }
+    table.insert(verification.errors, "MCP server(s) not merged into project .mcp.json")
   end
 
   -- Verify opencode.json fragment-to-manifest consistency (only for opencode targets)

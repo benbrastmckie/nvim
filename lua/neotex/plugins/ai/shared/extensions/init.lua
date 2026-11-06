@@ -102,6 +102,24 @@ local function process_merge_targets(ext_manifest, source_dir, project_dir, conf
     end
   end
 
+  -- Process MCP server registration (merge_targets.mcp): mirrors the settings branch
+  -- above exactly, reusing merge_mod.merge_settings's additive deep-merge so a
+  -- project-scoped .mcp.json gets the same add-on-load / tracked-retract-on-unload /
+  -- idempotent-redeploy / hand-written-survival properties the settings path already has.
+  if ext_manifest.merge_targets.mcp then
+    local mt_config = ext_manifest.merge_targets.mcp
+    local source_path = source_dir .. "/" .. mt_config.source
+    local target_path = project_dir .. "/" .. mt_config.target
+
+    local fragment = read_json(source_path)
+    if fragment then
+      local success, tracked = merge_mod.merge_settings(target_path, fragment)
+      if success then
+        merged_sections.mcp = tracked
+      end
+    end
+  end
+
   -- Process index.json entries
   if ext_manifest.merge_targets.index then
     local mt_config = ext_manifest.merge_targets.index
@@ -149,6 +167,30 @@ local function reverse_merge_targets(ext_manifest, merged_sections, project_dir,
     local mt_config = ext_manifest.merge_targets.settings
     local target_path = project_dir .. "/" .. mt_config.target
     merge_mod.unmerge_settings(target_path, merged_sections.settings)
+  end
+
+  -- Reverse MCP server registration
+  if merged_sections.mcp and ext_manifest.merge_targets and ext_manifest.merge_targets.mcp then
+    local mt_config = ext_manifest.merge_targets.mcp
+    local target_path = project_dir .. "/" .. mt_config.target
+    merge_mod.unmerge_settings(target_path, merged_sections.mcp)
+
+    -- Decision 6: unmerge_settings rewrites its target even when the result is {},
+    -- which would leave a residual empty .mcp.json at the project root after the
+    -- last extension unloads. Clean that up here (not in merge.lua) so the shared
+    -- `settings` path stays untouched. Guarded with pcall so a missing/unreadable
+    -- file is a harmless no-op.
+    local ok, remaining = pcall(read_json, target_path)
+    if ok and remaining ~= nil then
+      local is_empty = vim.tbl_isempty(remaining)
+      local only_empty_servers = not is_empty
+        and remaining.mcpServers ~= nil
+        and vim.tbl_isempty(remaining.mcpServers)
+        and vim.tbl_count(remaining) == 1
+      if is_empty or only_empty_servers then
+        pcall(vim.fn.delete, target_path)
+      end
+    end
   end
 
   -- Reverse index entries

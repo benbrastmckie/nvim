@@ -1,7 +1,7 @@
 # Implementation Plan: Task #29
 
 - **Task**: 29 - Generate .mcp.json from extension manifests, then register obsidian-memory through it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: 22 (declared in state.json; not re-verified here)
 - **Research Inputs**: specs/029_generate_mcp_json_from_extension_manifests/reports/01_mcp-json-generation-mechanism.md
@@ -166,37 +166,40 @@ These are planning judgment calls recorded here so the implementer does not re-l
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Deploy-engine `mcp` merge branch [NOT STARTED]
+### Phase 1: Deploy-engine `mcp` merge branch [COMPLETED]
 
 **Goal**: `merge_targets.mcp` is dispatched on load and retracted on unload, mirroring the
 `settings` branch, with a verifier that reports a declared-but-not-landed target.
 
 **Tasks**:
-- [ ] In `process_merge_targets()`, add an `mcp` branch immediately after the existing `settings`
+- [x] In `process_merge_targets()`, add an `mcp` branch immediately after the existing `settings`
       branch: read the fragment with the local `read_json`, call
       `merge_mod.merge_settings(target_path, fragment)` where
       `target_path = project_dir .. "/" .. mt_config.target`, and store the result as
-      `merged_sections.mcp`. Do not touch the `settings` or `index` branches.
-- [ ] In `reverse_merge_targets()`, add the matching branch guarded on
+      `merged_sections.mcp`. Do not touch the `settings` or `index` branches. *(completed)*
+- [x] In `reverse_merge_targets()`, add the matching branch guarded on
       `merged_sections.mcp and ext_manifest.merge_targets and ext_manifest.merge_targets.mcp`,
-      calling `merge_mod.unmerge_settings(target_path, merged_sections.mcp)`.
-- [ ] In that same reverse branch, implement decision 6's cleanup: after a successful unmerge,
+      calling `merge_mod.unmerge_settings(target_path, merged_sections.mcp)`. *(completed)*
+- [x] In that same reverse branch, implement decision 6's cleanup: after a successful unmerge,
       re-read the target and delete the file when it is empty or carries only an empty
       `mcpServers` object. Guard with `pcall`/existence checks so a missing file is a no-op.
-- [ ] Add `verify_mcp_merge(extension_dir, ext_manifest, project_dir)` to
+      *(completed)*
+- [x] Add `verify_mcp_merge(extension_dir, ext_manifest, project_dir)` to
       `lua/neotex/plugins/ai/shared/extensions/verify.lua`, modelled on `verify_index_merge`: when
       the manifest declares `merge_targets.mcp`, read the source fragment, read the target, and
       report a failure when a declared server name is absent from the target's `mcpServers`.
       Derive `project_dir` inside `verify_extension` as
       `vim.fn.fnamemodify(target_dir, ":h")` — `verify_extension` receives the `.claude/` tree, not
       the project root. Return pass immediately when the manifest declares no `mcp` target.
-- [ ] Wire the new verifier into `verify_extension` alongside the existing index check, pushing a
-      named error string into `verification.errors` on failure.
-- [ ] Confirm no change is needed in `verify.lua`'s orphan-detection helpers: `.mcp.json` lives
+      *(completed)*
+- [x] Wire the new verifier into `verify_extension` alongside the existing index check, pushing a
+      named error string into `verification.errors` on failure. *(completed)*
+- [x] Confirm no change is needed in `verify.lua`'s orphan-detection helpers: `.mcp.json` lives
       outside `target_dir`, so `find_orphans` never walks it. Record the confirmation in the
-      phase notes; make no edit if it holds.
-- [ ] Follow `.claude/rules/neovim-lua.md`: 2-space indent, LuaDoc comment on the new verifier,
-      locals not globals, `pcall` around optional reads.
+      phase notes; make no edit if it holds. *(completed: confirmed by reading find_orphans/
+      scan_directory_recursive -- only target_dir is walked; no edit made)*
+- [x] Follow `.claude/rules/neovim-lua.md`: 2-space indent, LuaDoc comment on the new verifier,
+      locals not globals, `pcall` around optional reads. *(completed)*
 
 **Timing**: 1 hour
 

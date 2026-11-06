@@ -1,0 +1,41 @@
+{
+  "phase": 1,
+  "phase_name": "Deploy-engine mcp merge branch",
+  "started_at": "2026-11-06T07:25:00Z",
+  "last_updated": "2026-11-06T07:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add mcp branch to process_merge_targets() mirroring settings branch",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]
+    },
+    {
+      "id": 2,
+      "description": "Add matching mcp branch to reverse_merge_targets() with decision-6 empty-file cleanup",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]
+    },
+    {
+      "id": 3,
+      "description": "Add verify_mcp_merge() to verify.lua and wire into verify_extension",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/verify.lua"]
+    },
+    {
+      "id": 4,
+      "description": "Confirm find_orphans needs no change (.mcp.json outside target_dir)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": [
+    "Scope hypothesis confirmed by grep: only shared/extensions/{init,manifest,verify,merge}.lua plus both manifest_spec.lua files reference merge_targets outside this change.",
+    "Module-load headless probe passed for init.lua and verify.lua.",
+    "merge_spec.lua baseline (pre-existing, untouched by this phase): 6 Success / 1 Fail -- the failing test ('converges a reconstruction of the REAL observed production duplicate shape...') is unrelated to merge_targets.mcp and merge.lua was not edited in this phase.",
+    "find_orphans confirmed unaffected: it only scans target_dir (the .claude//.opencode/ tree) via scan_directory_recursive(target_dir); .mcp.json lives at the project root, outside target_dir, so it is never walked. No edit made, per the plan's instruction to make none if it holds."
+  ]
+}
