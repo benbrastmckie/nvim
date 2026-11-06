@@ -79,3 +79,5 @@ agent-system/extensions/core/context/patterns/thin-wrapper-skill.md	3b. Self-Exe
 agent-system/extensions/core/context/patterns/thin-wrapper-skill.md	3b. Self-Execution Fallback	agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md	row3-epidemiology-skills-skill-epi-implement-SKILL.txt
 agent-system/extensions/core/context/patterns/thin-wrapper-skill.md	3b. Self-Execution Fallback	agent-system/extensions/founder/skills/skill-meeting/SKILL.md	row3-founder-skills-skill-meeting-SKILL.txt
 agent-system/extensions/core/context/patterns/thin-wrapper-skill.md	3b. Self-Execution Fallback	agent-system/extensions/founder/skills/skill-project/SKILL.md	row3-founder-skills-skill-project-SKILL.txt
+agent-system/extensions/core/context/formats/handoff-artifact.md	File Location	agent-system/extensions/core/context/formats/progress-file.md	row17-core-context-formats-progress-file.txt
+agent-system/extensions/core/context/formats/return-metadata-file.md	File Location	agent-system/extensions/core/context/patterns/metadata-file-return.md	row22-core-context-patterns-metadata-file-return.txt

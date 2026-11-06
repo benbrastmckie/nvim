@@ -1,0 +1,7 @@
+```
+specs/{NNN}_{SLUG}/.return-meta.json
+```
+
+Where:
+- `{N}` = Task number (unpadded)
+- `{SLUG}` = Task slug from state.json project_name

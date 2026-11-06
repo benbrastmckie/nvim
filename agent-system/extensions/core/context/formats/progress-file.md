@@ -14,10 +14,8 @@ Progress files enable incremental tracking of work within implementation phases.
 specs/{N}_{SLUG}/progress/phase-{P}-progress.json
 ```
 
-Where:
-- `{N}` = Task number (unpadded)
-- `{SLUG}` = Task slug in snake_case
-- `{P}` = Phase number (unpadded)
+`{N}`, `{SLUG}`, and `{P}` are as defined in `context/formats/handoff-artifact.md` §
+"File Location".
 
 Example: `specs/259_configure_feature/progress/phase-3-progress.json`
 

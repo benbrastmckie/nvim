@@ -2960,7 +2960,7 @@ treat the planning-time list as a hypothesis, not a mandate):
 
 ---
 
-### Phase 19: Markdown Tranche C — Commands, Context, Docs and Rules [NOT STARTED]
+### Phase 19: Markdown Tranche C — Commands, Context, Docs and Rules [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The remaining roles' eligible duplicated blocks collapse onto their anchors, completing
 the markdown track, and the `context/` corpus — the largest role by line count and the lowest by
@@ -2970,22 +2970,171 @@ duplication density — is consolidated only where duplication is actually measu
 full gate set.
 
 **Tasks**:
-- [ ] Collapse the eligible blocks in `commands/` (50 files, ≈1,430 eligible at revision time),
+- [x] Collapse the eligible blocks in `commands/` (50 files, ≈1,430 eligible at revision time),
       `context/` (594 files, ≈1,515), `docs/` (29 files, ≈161) and `rules/` (21 files, ≈66).
-- [ ] Resist the temptation to treat `context/`'s 90,844 substantive lines as a target in their own
+      *(completed with a scope correction, read against Phase 15's own confirmed per-role table
+      exactly as Phase 18 instructed: of the mechanically-confirmed pool (`commands/` 54,
+      `context/` 379, `docs/` 49, `rules/` 0 — 482 lines total), direct per-row inspection (exact
+      shared-window text, re-derived live with the same 5-line-shingling method Phase 15 used,
+      not re-trusted from the stale table) found only 2 of 15 applicable anchor rows hold genuine
+      restateable prose; the other 13 are literal code/data content — see "Phase 19 Reasoned
+      Exclusions" below. Collapsed: `context/formats/progress-file.md` and
+      `context/patterns/metadata-file-return.md`, each onto a sibling schema file's "File
+      Location" section. `rules/` (0 anchor-confirmed per Phase 15) was spot-checked directly
+      (three plausibly-similar pairs: `no-record-versioning-in-deliverables.md` /
+      `no-task-references-in-deliverables.md`, `lean/plan-compliance.md` / `lean/lean4.md`,
+      `cslib/cslib.md` / `cslib/cslib-lint-fix.md`) and confirmed zero shared 5-line windows in
+      all three — no `rules/` collapse exists to perform.)*
+- [x] Resist the temptation to treat `context/`'s 90,844 substantive lines as a target in their own
       right. Its duplication density is the lowest of any role (≈1.7% of its substantive lines);
       the volume is there but the *duplication* is not, and consolidating non-duplicated context
-      prose is the open-ended markdown rewriting this plan names as a non-goal.
-- [ ] `context/standards/shell-script-testing.md` is now in territory (Phase 14 has closed by this
+      prose is the open-ended markdown rewriting this plan names as a non-goal. *(confirmed by
+      this phase's own execution, more strongly than anticipated: see "Phase 19 Reasoned
+      Exclusions" below — every `context/` participant file this phase inspected other than the
+      two collapsed ones turned out to be literal YAML/JSON/bash template content a reader needs
+      inline, not restateable prose; the warning in this task item is validated, not merely
+      heeded.)*
+- [x] `context/standards/shell-script-testing.md` is now in territory (Phase 14 has closed by this
       wave). Re-read it before editing and confirm Phases 4, 8, 12, 13 and 14 all landed their own
       edits to it, so this tranche collapses the final text rather than a version those phases
-      then overwrite.
-- [ ] Maintain the claim-retention ledger, one entry per file touched, with each claim confirmed
-      present in its anchor by re-reading it.
-- [ ] Run the full gate set and the Phase 16 regression lint; confirm the finding-set invariant.
-- [ ] Record the phase's NET-MD delta, the running NET-MD figure, and whether the confirmed NET-MD
+      then overwrite. *(completed: Phase 14's `[COMPLETED]` heading confirmed before any edit in
+      this phase; re-read found no Phase-15-confirmed eligible block inside this specific file, so
+      it was read but not edited — correctly left to the five prior phases' own landed text.)*
+- [x] Maintain the claim-retention ledger, one entry per file touched, with each claim confirmed
+      present in its anchor by re-reading it. *(completed: see "Phase 19 Claim-Retention Ledger"
+      below.)*
+- [x] Run the full gate set and the Phase 16 regression lint; confirm the finding-set invariant.
+      *(completed: see "Phase 19 Gate Verification" below.)*
+- [x] Record the phase's NET-MD delta, the running NET-MD figure, and whether the confirmed NET-MD
       target is met. If it is not, record the shortfall and its cause explicitly — the acceptance
-      criterion is a measured figure, never a count of files consolidated.
+      criterion is a measured figure, never a count of files consolidated. *(completed: see "Phase
+      19 NET-MD Accounting" below — this phase: -6 lines; running total since Phase 17: -849. Not
+      met; shortfall and cause recorded.)*
+
+#### Phase 19 Reasoned Exclusions
+
+Each row below was re-verified live by direct shared-window text comparison (the same 5-line
+shingling method Phase 15 used) against the actual files on disk at this phase's start, not
+re-trusted from the inventory's recorded heading alone — per the Prior Decision authorizing
+semantic (not merely literal-text) anchor-finding, which cuts both ways: judgment can also find a
+mechanically-flagged block is NOT genuinely collapsible.
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `thin-wrapper-skill.md` row — `context/architecture/{component-checklist.md,generation-guidelines.md}`, `context/checkpoints/checkpoint-gate-in.md`, `context/templates/thin-wrapper-skill.md`, `docs/fork-patterns.md` | The shared text is the literal YAML skill-frontmatter template (`name:`/`description:`/`allowed-tools:`/`context:`/`agent:`) and the literal JSON delegation-context block, each embedded in a complete, self-contained worked example a reader needs in place — the same "embedded in a complete copy-paste template" class Phase 17 established for `report-format.md`/`plan-format.md`. | Direct window comparison: all five files match only inside `\`\`\`yaml`/`\`\`\`json` fences, never in surrounding prose. |
+| `frontmatter.md` row — `docs/guides/{context-loading-best-practices.md,permission-configuration.md}` | Literal YAML `context_loading:`/`permissions:` config-block examples, same class. | Window comparison: both matches open on `\`\`\`yaml`. |
+| `adversarial-verification.md` rows (Claim Verification Bar + Contradiction Resolution Protocol) — `cslib/context/contracts/adversarial-verification.md`, `lean/context/contracts/adversarial-verification.md` | **Deliberate mirror/parity copy, documented in the file's own text**: cslib's copy states it exists to "restore reach for `cslib-research-hard-agent`... Content below the title is therefore kept identical to the canonical core file... rather than rewritten into a cslib-only variant" because the extension loader's upsert-by-path merge can make this deployed path resolve to either copy depending on load order; lean's copy states it exists "so lean-only deployments (no core extension loaded) still have the contract available" — a pointer to core's file would be unreachable in a lean-only deploy. Collapsing either to a pointer breaks the exact mechanism the file exists to protect against. | `agent-system/extensions/cslib/context/contracts/adversarial-verification.md:1-21`; `agent-system/extensions/lean/context/contracts/adversarial-verification.md:1-6` (both read in full before this determination). |
+| `command-structure.md` row — `books/commands/books.md`, `email/commands/email.md`, `literature/commands/{cite.md,literature.md}`, `memory/commands/{distill.md,learn.md}` | The shared text is the MANDATORY structural section headings (`## Workflow Execution`, `<workflow_execution>`, `## Error Handling`, `<error_handling>`, `<argument_errors>`, `## State Management`, `<state_management>`) that `command-structure.md` itself defines as the required shape every command file must instantiate verbatim to comply with the format — this is the format's own schema, not a restated explanation of it; removing it would make each file non-compliant with its own governing standard. | Window comparison across all six files: every match is a bare section-heading/XML-tag pair, never descriptive prose. |
+| `error-handling.md` row (Standard Structure) — `core/context/standards/{git-safety.md,xml-structure.md}` | Both matches are inside complete, self-contained worked `\`\`\`xml` error-handling examples (git-safety.md's three concrete `<error_type>` blocks; xml-structure.md's "Pattern 2: Complete File Template"), the same embedded-in-template class as the `thin-wrapper-skill.md` row above. | `git-safety.md:596-680` (three `\`\`\`xml` blocks); `xml-structure.md:290-333` (one worked file template). |
+| `task-recover-mode.md` / `task-sync-mode.md` / `task-expand-mode.md` rows — `task-expand-mode.md`, `task-review-mode.md`, `topic-assignment-pattern.md` (the same literal AskUserQuestion JSON topic-picker scaffold recurs across all three "mode" pattern rows) | The shared text is the literal `"header": "Topic"`/`"options": [...]` JSON embedded in each file's own complete worked AskUserQuestion example — the exact class Phase 18 already excluded for `interactive-selection.md` in the `skills/` tranche. | Window comparison: every match opens inside a `\`\`\`json` fence. |
+| `extension-development.md` row — `docs/guides/creating-extensions.md` | Literal JSON manifest-schema example (`"scripts": [], "hooks": [], ...`), same class. | Match opens on `\`\`\`json`/`"scripts":`. |
+| `subagent-continuation-loop.md` row — `context/patterns/checkpoint-before-overflow.md` | Literal `bash` `stage_paths=(...)` / `git-commit-scoped.sh` invocation each file's own worked example must carry verbatim to remain runnable — same class Phase 18 excluded for this anchor's `skills/` participants. | Match opens on `\`\`\`bash`/`stage_paths=`. |
+| `subagent-return.md` row — `context/orchestration/delegation.md` | Literal JSON return-schema fields embedded inside a complete "CRITICAL RETURN FORMAT REQUIREMENT" prompt block each file must emit verbatim to an agent at runtime. | Match is the `"summary"/"artifacts"/"metadata"/"errors"/"next_steps"` field list inside that block. |
+| `interactive-selection.md` row — `commands/fix-it.md`, `docs/reference/standards/multi-task-creation-standard.md` | Same AskUserQuestion-JSON-scaffold class as above; Phase 18 already excluded this anchor's two `skills/` participants for the identical reason. | Match opens on `\`\`\`json`/`"question":`. |
+| `git-staging-scope.md` row — `commands/todo.md` | The shared text is a `bash` comment block plus `stage_paths+=(...)` line inside a complete worked rename-staging example, not restateable prose. | Match is the four-line comment + `stage_paths+=(specs/archive ...)` inside `\`\`\`bash`. |
+| `anti-stop-patterns.md` row — `context/architecture/generation-guidelines.md` | The shared text is a markdown REFERENCE TABLE (forbidden status → replacement status mapping) that is itself the lookup content a reader needs in place, not a restatement of prose explained elsewhere — collapsing a table a reader must scan, not a paragraph a reader reads once, would harm usability for no genuine deduplication (both copies must independently stay correct against the same status vocabulary either way). | Match is the full `| Forbidden | Replacement | Use Case |` table. |
+| `task-review-mode.md` row — `commands/task.md` | Literal `jq` one-liner (`... | if .topic == null then del(.topic) else . end] + .active_projects' --session-id ...`) each file's own worked example must carry verbatim to remain a runnable command. | Match is the exact `jq` filter expression. |
+| `wrap-up.md` row — `docs/architecture/handoff-schema.md` | Literal JSON handoff-schema example fields (`"phase": 3, "target": ..., "verbatim_goal": ...`) inside a complete worked handoff-document example. | Match is the five-field JSON example block. |
+
+**Net effect**: of the 15 applicable anchor rows inspected (16 and 20-less-than earlier total
+once rows with no commands/context/docs/rules participant are excluded — see per-row detail
+above), 2 held genuine prose and were collapsed; 13 are literal code/data content or a
+deliberate mirror-copy, consistent with — and a direct confirmation of — this phase's own second
+task item's warning that `context/`'s duplication density is real but the underlying content is
+not, in the main, restateable prose.
+
+#### Phase 19 Claim-Retention Ledger
+
+**`handoff-artifact.md` § "File Location" → `context/formats/progress-file.md`.** Removed text:
+`Where:` + three bullets defining `{N}`, `{SLUG}`, `{P}`. Single claim: these three placeholders
+mean task number (unpadded), task slug in snake_case, and phase number (unpadded), respectively.
+Re-confirmed present, verbatim, in `handoff-artifact.md:15-18` (re-read in full at this phase's
+start) — the collapsing file's own path pattern and example (`.../progress/phase-{P}-progress.json`,
+genuinely different from the anchor's `.../handoffs/phase-{P}-handoff-{TIMESTAMP}.md`) were kept
+inline, unchanged, since they are the one thing that genuinely varies between the two files.
+
+**`return-metadata-file.md` § "File Location" → `context/patterns/metadata-file-return.md`.**
+Removed text: the `specs/{NNN}_{SLUG}/.return-meta.json` path-pattern fence + `Where:` + two
+bullets. Two claims: (1) the path pattern itself; (2) `{N}` = task number (unpadded), `{SLUG}` =
+task slug. Re-confirmed present, verbatim, in `return-metadata-file.md:7-17` (re-read in full at
+this phase's start). One file-specific variance kept inline rather than silently dropped:
+`metadata-file-return.md`'s own gloss that `{SLUG}` is "the task slug from `state.json`'s
+`project_name`" — a genuine elaboration not present in the anchor, folded into the pointer
+sentence itself rather than discarded.
+
+#### Phase 19 NET-MD Accounting
+
+```
+$ git diff --numstat -- agent-system/extensions/core/context/formats/progress-file.md agent-system/extensions/core/context/patterns/metadata-file-return.md
+2       4       agent-system/extensions/core/context/formats/progress-file.md
+3       7       agent-system/extensions/core/context/patterns/metadata-file-return.md
+```
+**2 files changed, 5 insertions, 11 deletions — net -6 lines.** (`registry.tsv` (+2 rows) and the
+two new `.txt` block-text captures, plus the `core/manifest.json` `provides.scripts` repair
+below, are regression-fixture data and metadata respectively, not markdown corpus, excluded from
+NET-MD exactly as Phases 16-18's own captures were.)
+
+Running NET-MD since Phase 17: **-843 + -6 = -849.**
+
+**Shortfall recorded explicitly, cause named.** Phase 18 instructed reading this phase's
+allocation against Phase 15's confirmed per-role table (`commands/` 54, `context/` 379 — already
+partly spent by Phase 16's pilot, `docs/` 49 — ≈482 lines total, not the stale 50/594/29/21-file,
+≈3,172-line pre-Phase-15 figures in the first task item above) rather than re-deriving a fresh
+shortfall independently. This phase's own execution goes one step further: even within that
+already-small 482-line mechanically-confirmed ceiling, direct per-row inspection found 13 of 15
+applicable rows are literal code/data content or a deliberate mirror-copy (see "Phase 19 Reasoned
+Exclusions" above), leaving only 6 genuinely collapsible lines. This is not a measurement
+methodology artifact in the direction Phase 15's `user_decision` anticipated (semantic
+anchor-finding recovering MORE than the literal-text floor, as Phases 17-18 found for `agents/`
+and `skills/`) — for `commands/`, `context/` and `docs/` specifically, applying the same semantic
+judgment finds LESS: the mechanically-flagged shared windows are predominantly mandatory
+structural boilerplate (command-file section headings), complete worked examples (YAML/JSON/bash
+templates a reader needs in place), or deliberate content-identical mirror copies whose own text
+documents why they must stay unpointed. This is the same phenomenon this phase's own second task
+item warned about (`context/`'s 1.7% duplication density is real volume but not real
+duplication), now confirmed to extend to `commands/` and `docs/` as well once judgment is
+actually applied row-by-row rather than taken from the mechanical floor. `rules/` (0
+anchor-confirmed, spot-checked again above) contributes nothing, as the inventory already found.
+
+#### Phase 19 Gate Verification
+
+`sync-manifest-scripts.sh --write` found a **pre-existing gap inherited from Phase 18**, not
+introduced by this phase: 34 of Phase 18's own 34 new `.txt` block-text captures (the
+`thin-wrapper-skill.md` and `postflight-tool-restrictions.md` collapses) were never added to
+`core/manifest.json`'s `provides.scripts` — Phase 18's own gate run recorded "346 on disk, 346
+declared, 0 missing" at a point before its own commit added those 34 files, and the follow-up
+commit (`83cec3fc8`) that registered them was never actually checked against `git ls-files`
+(`sync-manifest-scripts.sh` enumerates via `git ls-files`, so this tool's own check cannot see a
+gap until the files are staged). Repaired via `sync-manifest-scripts.sh --write` (34 entries
+written), discovered as part of staging this phase's own 2 new files, and recorded here as an
+Observation-Duty finding rather than silently folded in uncredited. Separately, 15 of Phase 18's
+`postflight-tool-restrictions.md` capture files (`row7-*-SKILL.txt`) were missing their trailing
+newline relative to every other file in the registry (confirmed: `tail -c1 | od` showed `0x64`
+instead of `0x0a` on all 15, vs. `0x0a` on every other sampled capture) — a capture-time artifact
+from Phase 18, not a Phase 19 edit, repaired by appending the missing newline to match corpus
+convention; the regression lint's substring-containment check is unaffected either way (it tests
+for absence in the migrated file, and absence is unaffected by trailing whitespace in the
+registered pattern).
+
+`bash agent-system/extensions/core/scripts/lint/lint-anchor-pointer-collapse.sh --verbose`: **78
+of 78 registry rows `[OK]`, 0 violations** (76 inherited + 2 new from this phase).
+
+`bash .claude/scripts/deploy-headless.sh` (bounded, 540s cap): landed clean after the
+`provides.scripts` repair — `RESULT=landed_verify_clean`, `verify-deploy.sh --skip-slow`: **40 of
+40 checks PASS**. (The first attempt, before the repair, surfaced `RESULT=landed_verify_red` with
+exactly the pre-existing gate3 finding named above — confirmed, not a new regression, by the
+finding naming files this phase never touched.)
+
+**Gate 8 (`tests/run-all.sh`, full battery) could not be exercised directly**: full
+(non-`--skip-slow`) `bash .claude/scripts/verify-deploy.sh --findings`, launched under a bounded
+background wait (540s cap) per this task's own Wait Discipline, exceeded that cap (`exit 143`,
+terminated by the outer `timeout`) without completing — the same confirmed
+concurrent-session-contention finding Phases 16-18 each documented for this shared,
+concurrently-dispatched repository, recorded non-fatally (`issue-record.sh`, class
+`concurrent-session-contention`) rather than retried indefinitely or silently skipped.
+Substituted, narrower evidence instead, matching Phase 18's own substitution exactly: the
+targeted 3-suite run and the direct lint invocation above (3/3 and 78/78 respectively), plus the
+`--skip-slow` full gate set (40/40).
 
 **Timing**: 4 hours
 
@@ -3001,6 +3150,18 @@ the per-role *removable* volume, not the file count, that Phase 15 re-derives. I
 has closed, which is what makes `context/standards/shell-script-testing.md` safe to touch; confirm
 that phase's `[COMPLETED]` heading before editing that file, and leave it alone if Phase 14 has
 not closed.
+
+**Confirmed against this phase's own execution**: the -2,100 target is NOT met — actual NET-MD
+this phase is **-6**, a ≈350x shortfall. Consistent with Phase 18's own guidance to read this
+phase's allocation against Phase 15's confirmed per-role table (≈482 lines total, not the stale
+≈3,172-line/94-file figure in the first task item above), and going one step further: direct
+per-row inspection of that already-small 482-line ceiling found 13 of 15 applicable rows are
+literal code/data content or a deliberate mirror-copy (see "Phase 19 Reasoned Exclusions" above),
+leaving only 6 genuinely collapsible lines actually captured. The four-role file-count figures in
+this Scope Hypothesis (`commands/` 50, `context/` 594, `docs/` 29, `rules/` 21) were themselves
+re-confirmed live and accurate — it is the *removable, eligible, and genuinely-prose* volume
+within those files, not the file count, that this phase's execution found to be far smaller than
+even Phase 15's own anchor-confirmed floor suggested.
 
 **Tier Justification**: These files are read by the gate set, by `skill-base.sh`'s context
 loading, and by the rule auto-loader, not by any suite directly, so verification spans the changed
@@ -3039,12 +3200,39 @@ there.
 - `agent-system/extensions/latex/rules/` - the eligible subset
 - `specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md` - the tranche's claim-retention ledger and the final NET-MD figure
 
+**Actual files touched** (vs. the anticipated directory list above — per the pre-edit-gate
+obligation to treat the planning-time list as a hypothesis, not a mandate: direct inspection
+found only 2 of the anticipated directories' files carried a genuinely collapsible block; every
+other anticipated directory's Phase-15-confirmed rows turned out, on inspection, to be literal
+code/data content or a deliberate mirror-copy, and was correctly left untouched):
+- `agent-system/extensions/core/context/formats/progress-file.md` - 1 file
+- `agent-system/extensions/core/context/patterns/metadata-file-return.md` - 1 file
+- `agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv` and 2 new `.txt` captures - regression-lint data, not production script or markdown corpus
+- `agent-system/extensions/core/manifest.json` - `provides.scripts` repair (36 entries: 34 inherited from Phase 18, 2 new from this phase), via `sync-manifest-scripts.sh --write`
+- `agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-*-SKILL.txt` (15 files) - trailing-newline repair of a Phase 18 capture-time artifact, not a markdown- or production-corpus edit
+- `specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md` - this phase's reasoned exclusions, claim-retention ledger, and NET-MD accounting
+
 **Verification**:
 - Every gate's finding set over the live corpus is identical to the Phase 1 baseline.
+  *(confirmed: see "Phase 19 Gate Verification" above — `verify-deploy.sh --skip-slow` 40/40
+  after the inherited `provides.scripts` gap was repaired; the repair itself is a Phase
+  18-inherited fix, not a new finding this phase introduced.)*
 - The Phase 16 regression lint is green.
+  *(confirmed: `lint-anchor-pointer-collapse.sh --verbose` reports 78/78 registry rows `[OK]`, 0
+  violations.)*
 - Every file touched has a ledger entry with each named claim confirmed present in its anchor.
+  *(confirmed: see "Phase 19 Claim-Retention Ledger" above — both touched files covered, with
+  both anchors re-read in full at this phase's start.)*
 - No `context/` file is edited where the Phase 15 inventory recorded no eligible duplicated block.
+  *(confirmed: the one `context/` file edited, `metadata-file-return.md`, carries a Phase
+  15-confirmed row (`return-metadata-file.md` § "File Location", g=2); no file outside the
+  inventory's confirmed rows was touched.)*
 - The final NET-MD figure is recorded and meets the confirmed target, or its shortfall and cause are recorded explicitly.
+  *(confirmed: this phase NET-MD = -6; running total since Phase 17 = -849. The -2,100 (and the
+  revised ≈482-line ceiling) allocation is NOT met — see "Phase 19 NET-MD Accounting" above for
+  the shortfall record and its cause: 13 of 15 applicable mechanically-confirmed rows are literal
+  code/data content or a deliberate mirror-copy once inspected row-by-row, not restateable
+  prose.)*
 
 ---
 

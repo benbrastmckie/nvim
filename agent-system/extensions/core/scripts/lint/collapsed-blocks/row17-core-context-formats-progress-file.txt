@@ -1,0 +1,4 @@
+Where:
+- `{N}` = Task number (unpadded)
+- `{SLUG}` = Task slug in snake_case
+- `{P}` = Phase number (unpadded)

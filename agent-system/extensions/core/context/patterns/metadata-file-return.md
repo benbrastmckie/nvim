@@ -17,13 +17,9 @@ Agents write structured metadata to files instead of returning JSON to the conso
 
 ## File Location
 
-```
-specs/{NNN}_{SLUG}/.return-meta.json
-```
-
-Where:
-- `{N}` = Task number (unpadded)
-- `{SLUG}` = Task slug from state.json project_name
+See `context/formats/return-metadata-file.md` § "File Location" for the path pattern
+(`specs/{NNN}_{SLUG}/.return-meta.json`) and the `{N}`/`{SLUG}` placeholder definitions
+(here, `{SLUG}` is the task slug from `state.json`'s `project_name`).
 
 Example: `specs/259_prove_completeness/.return-meta.json`
 

@@ -1,0 +1,49 @@
+{
+  "phase": 19,
+  "phase_name": "Markdown Tranche C -- Commands, Context, Docs and Rules",
+  "started_at": "2026-11-05T22:49:18Z",
+  "last_updated": "2026-11-05T19:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive and inspect the 15 applicable Phase 15 anchor rows with commands/context/docs/rules participants", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Collapse handoff-artifact.md File Location row onto progress-file.md", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/formats/progress-file.md"
+    ]},
+    {"id": 3, "description": "Collapse return-metadata-file.md File Location row onto metadata-file-return.md", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/patterns/metadata-file-return.md"
+    ]},
+    {"id": 4, "description": "Register both collapses in the Phase 16 regression-lint registry", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row17-core-context-formats-progress-file.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row22-core-context-patterns-metadata-file-return.txt"
+    ]},
+    {"id": 5, "description": "Repair inherited Phase 18 provides.scripts gap and row7-* trailing-newline artifact (Observation Duty)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/manifest.json",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-books-skills-skill-books-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-cslib-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-pr-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-epidemiology-skills-skill-epi-implement-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-founder-skills-skill-deck-implement-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-founder-skills-skill-founder-implement-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-latex-skills-skill-latex-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-lean-skills-skill-lean-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-nix-skills-skill-nix-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-nvim-skills-skill-neovim-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-python-skills-skill-python-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-rust-skills-skill-rust-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-typst-skills-skill-typst-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-web-skills-skill-web-implementation-SKILL.txt",
+      "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-z3-skills-skill-z3-implementation-SKILL.txt"
+    ]},
+    {"id": 6, "description": "Run regression lint, targeted suites, deploy-headless.sh, and record ledger/exclusions/NET-MD in the plan", "status": "done", "files_touched": [
+      "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"
+    ]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Trust Phase 15's mechanically-confirmed per-role anchor-confirmed figures (commands 54, context 379, docs 49) as the recoverable ceiling and collapse all 15 applicable rows", "result": "superseded", "reason": "Direct per-row live re-derivation (5-line shingling + manual inspection of each matched window) found 13 of 15 applicable rows are literal code/data content (YAML/JSON/bash templates, mandatory command-structure headings) or a deliberate documented mirror-copy, not restateable prose -- only 2 rows (both small 'File Location' prose blocks) were genuinely collapsible."}
+  ],
+  "deviations": [
+    {"task_id": "19.1", "description": "Collapse the eligible blocks in commands/, context/, docs/ and rules/", "type": "altered", "reason": "Applying the semantic-anchor-finding authorization in both directions (judgment can exclude a mechanically-flagged block, not only recover an unflagged one) found 13 of 15 applicable rows ineligible on inspection; only 2 small prose rows were collapsed.", "annotation": "*(deviation: altered -- see Phase 19 Reasoned Exclusions in the plan)*"}
+  ],
+  "handoff_count": 0
+}
