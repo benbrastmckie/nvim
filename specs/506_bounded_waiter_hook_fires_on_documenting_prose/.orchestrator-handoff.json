@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a 3-phase plan adopting the research report's Option 1: a self-contained, conservative awk heredoc-body stripper inside validate-bounded-waiter.sh, feeding the three-leg conjunction unchanged, bailing to the unstripped command on anything it cannot parse confidently. Phase 1 lands the stripper, the header decision record, and 8 new fixtures as an atomic batch; Phase 2 adds a Write/Edit hint to the refusal message on the bail path only; Phase 3 redeploys and runs the full gate set. Options 2 and 3 are rejected with reasoning recorded in the plan and destined for the hook's own header; no shared library is introduced and the conjunction's own regexes are untouched.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/plans/01_heredoc-aware-waiter-detector.md",
+      "summary": "3-phase plan: heredoc-aware stripper plus fixtures, bail-path refusal hint, redeploy and full gate."
+    }
+  ],
+  "dispatch_seq": 9
+}

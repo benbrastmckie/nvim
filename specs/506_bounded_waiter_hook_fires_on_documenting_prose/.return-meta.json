@@ -1,35 +1,37 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/reports/01_heredoc-aware-hook-detector.md",
-      "summary": "Recommends making validate-bounded-waiter.sh heredoc-aware (Option 1): strip heredoc body lines from the text tested by the existing three-leg conjunction via a conservative, self-contained awk pass, bailing to today's unstripped-text verdict on any ambiguity; rejects narrowing the conjunction (Option 2) and documentation-only (Option 3) as primary fixes."
+      "type": "plan",
+      "path": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/plans/01_heredoc-aware-waiter-detector.md",
+      "summary": "3-phase plan adopting heredoc-aware stripping in validate-bounded-waiter.sh: conservative awk body-stripper plus header ruling and 8 new fixtures, a bail-path Write/Edit refusal hint, then redeploy and full gate."
     }
   ],
-  "dispatch_seq": 4,
-  "findings_count": 6,
-  "next_steps": "Run /orchestrate 506 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1793988163_b25d4a_506",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
   "memory_candidates": [
     {
-      "content": "A PreToolUse hook whose matcher is \"Bash\" and whose detector tests the raw tool_input.command string (not Write/Edit content) must treat heredoc bodies as data, not control flow -- a heredoc that documents a forbidden shell shape as prose satisfies a purely textual conjunction test just as literally as a live instance of that shape. Sibling hooks matched on Write|Edit (validate-no-task-references.sh, validate-no-record-versioning.sh) never hit this because their payload is already the complete target content with no embedded sub-document; it is specific to Bash-matcher textual-shape detectors.",
-      "category": "PATTERN",
-      "source_artifact": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/reports/01_heredoc-aware-hook-detector.md",
+      "content": "A PreToolUse hook registered with matcher \"Bash\" that detects a forbidden shape by pattern-matching the raw tool_input.command string cannot distinguish a heredoc BODY (inert data being written to a file) from live shell control flow, because tool_input.command preserves the literal multi-line script text. The consequence is self-reinforcing: documentation ABOUT the forbidden shape is exactly the content class the detector refuses, so the obstruction recurs every time the rule is extended or restated. Hooks matching Write|Edit never face this, since their payload is already the complete target content rather than a shell command containing an embedded sub-document -- which is why a hook family can accumulate several textual-shape hooks with no heredoc handling anywhere. The safe fix shape is a conservative region-stripper (blank heredoc body lines, then apply the unchanged detection conjunction to what remains) that bails to the unstripped text on anything it cannot parse confidently, so ambiguity never resolves toward allowing. Narrowing the detector to require the keyword in command position does NOT fix it: a quoted shell example genuinely sits in command position inside the body.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/plans/01_heredoc-aware-waiter-detector.md",
       "confidence": 0.85,
-      "suggested_keywords": ["preToolUse", "hook", "heredoc", "bash-matcher", "textual-detector", "false-positive"]
-    },
-    {
-      "content": "record-version-patterns.sh's strip_exempt_regions() is a reusable implementation SHAPE (not a shared library) for region-stripping before pattern-testing: a single awk pass that blanks lines between an open/close condition while passing every other line through unchanged. The same shape generalizes to stripping heredoc bodies (open = a <<DELIM/<<-DELIM opener not followed by a third '<', close = a line exactly/whitespace-stripped equal to DELIM) ahead of any textual conjunction test, as long as the stripper bails to the original unstripped text on anything it cannot parse confidently (multiple heredocs, non-identifier delimiter, unterminated body) rather than guessing.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/506_bounded_waiter_hook_fires_on_documenting_prose/reports/01_heredoc-aware-hook-detector.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["awk", "heredoc", "region-stripping", "conservative-parser", "fail-open"]
+      "suggested_keywords": [
+        "PreToolUse",
+        "Bash-matcher",
+        "heredoc",
+        "textual-shape-hook",
+        "false-positive",
+        "region-stripping"
+      ]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1793988163_b25d4a_506",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 3,
+    "dependency_waves": 3
+  },
+  "next_steps": "Run /orchestrate 506 to execute the plan",
+  "dispatch_seq": 9
 }
