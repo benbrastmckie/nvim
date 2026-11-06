@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Created a 5-phase implementation plan for the zero-Lean-goals plan shape, carrying out the research report's nine decisions verbatim: a substring-matched `<!-- lean-challenge-statements:none -->` marker, a new internal extract_r1 status 3, and a new dedicated exit code 72 in lean-challenge-snapshot.sh, kept distinct from the existing malformed-section 71. Waves: 1 = script change + the two markdown edits (plan-format.md, challenge-snapshot.md) in parallel; 2 = four net-new regression cases plus three fixtures (including the pre-existing coverage gap for the present-but-empty-section path); 3 = redeploy plus the full gate set, declared with the __WHOLE_TREE__ sentinel. validate-artifact.sh passes with 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/385_lean4_plan_with_zero_lean_goals/plans/01_zero-lean-goals-plan-shape.md",
+      "summary": "5-phase, 3.5-hour plan: marker recognition and exit 72 in lean-challenge-snapshot.sh, the sanctioned zero-goal shape in plan-format.md, the 72 row and Zero-Goal Marker subsection in challenge-snapshot.md, four net-new regression cases with three fixtures, and a redeploy plus full-gate closing phase."
+    }
+  ],
+  "dispatch_seq": 8
+}
