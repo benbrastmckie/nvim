@@ -1,7 +1,7 @@
 # Implementation Plan: Task #464
 
 - **Task**: 464 - Plan cross-phase line/scope budget consistency
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/464_plan_cross_phase_line_budget_consistency/reports/01_cross-phase-line-budget-consistency.md
@@ -136,45 +136,50 @@ the redeploy must observe all three.
 
 ---
 
-### Phase 1: State the Cross-Phase Ceiling Consistency Rule [NOT STARTED]
+### Phase 1: State the Cross-Phase Ceiling Consistency Rule [COMPLETED]
 
 **Goal**: `plan-format.md` carries the rule, sited once, phrased generally, with the (a)/(b)/(c)
 decision and the rejected options recorded.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/plan-format.md` immediately before
+- [x] Re-read `agent-system/extensions/core/context/formats/plan-format.md` immediately before
       editing (a sibling may have changed it) and re-derive the current line number of
-      `### Counts-are-hypotheses obligation`.
-- [ ] Insert a new `### Cross-phase ceiling consistency obligation` subsection immediately after
+      `### Counts-are-hypotheses obligation`. *(completed)*
+- [x] Insert a new `### Cross-phase ceiling consistency obligation` subsection immediately after
       `### Counts-are-hypotheses obligation` and before `### Enforcement level`, stating: when a
       plan cites a numeric ceiling for some quantity AND one or more phases carry a
       `**Scope Hypothesis:**` estimating that same quantity, the plan MUST NOT assert anywhere in
       its own prose (Goals & Non-Goals, Risks & Mitigations, Rollback/Contingency, or a phase
       block) that the quantity stays under or within that ceiling when the plan's own per-phase
-      estimates, summed against any stated starting baseline, already exceed it.
-- [ ] In the same subsection, state the positive obligation: where the author expects the quantity
+      estimates, summed against any stated starting baseline, already exceed it. *(completed)*
+- [x] In the same subsection, state the positive obligation: where the author expects the quantity
       to approach or cross the ceiling, the plan says so and names its own contingency (widening
       the ceiling via the governing limit's own sanctioned escape valve, splitting a phase, or
-      re-scoping) rather than asserting conformance its own numbers contradict.
-- [ ] State the relationship to the sibling obligation explicitly: `**Scope Hypothesis:**` governs
+      re-scoping) rather than asserting conformance its own numbers contradict. *(completed)*
+- [x] State the relationship to the sibling obligation explicitly: `**Scope Hypothesis:**` governs
       each estimate's forward-looking confirmation one phase at a time; this subsection governs
       the relation BETWEEN those estimates and a ceiling the same plan quotes. Neither discharges
-      the other.
-- [ ] Add exactly one parenthetical worked example using a line-count limit of the Lean
+      the other. *(completed)*
+- [x] Add exactly one parenthetical worked example using a line-count limit of the Lean
       `longFile` shape, written so the governing vocabulary stays generic (a numeric line ceiling
-      a plan cites) and the Lean linter name appears only inside the example.
-- [ ] Record the decision and the rejected alternatives in the same subsection, on their own
+      a plan cites) and the Lean linter name appears only inside the example. *(completed)*
+- [x] Record the decision and the rejected alternatives in the same subsection, on their own
       merits: a mechanical check in the existing validator, chosen because an authoring rule alone
       asks for the same arithmetic the incident shape already failed to do, and because an agent
       checklist item leaves no durable record, no counted residue and no promotion path.
-- [ ] Extend the `### Enforcement level` area with the new check's own advisory posture and a
+      *(completed)*
+- [x] Extend the `### Enforcement level` area with the new check's own advisory posture and a
       named promotion criterion in the same shape as the two existing ones: promote the warning to
       an error once a sweep of non-terminal plans under `specs/` shows zero plans would newly
-      fail, re-measured at that time rather than trusting a recorded count.
-- [ ] Verify by grep that the edit introduced no new `/research`, `/plan` or `/implement` slash
+      fail, re-measured at that time rather than trusting a recorded count. *(completed: new
+      `### Enforcement level (Cross-phase ceiling consistency)` subsection added; residue left as
+      "pending a corpus sweep recorded separately in this same document" for Phase 3 to fill in)*
+- [x] Verify by grep that the edit introduced no new `/research`, `/plan` or `/implement` slash
       command reference and that lines 3 and 417 are byte-identical to their pre-edit state.
-- [ ] Verify by grep that the added text contains no task-number reference and no
+      *(completed: both confirmed unchanged)*
+- [x] Verify by grep that the added text contains no task-number reference and no
       record-versioning language ("no longer", "previously", "formerly", "supersedes", "v1").
+      *(completed: no matches in the added diff hunks)*
 
 **Timing**: 1 hour
 

@@ -487,6 +487,49 @@ prose about a claim to confirm, not a structured file enumeration; the structure
 phase's file list is `Files to modify` (see "Consumers of this field" above), and
 `plan-file-scope-harvest.sh` reads only that field.
 
+### Cross-phase ceiling consistency obligation
+
+The obligation above governs each `**Scope Hypothesis**:` estimate on its own, pointed forward at
+implementation-time confirmation, one phase at a time. It does not govern the relation BETWEEN
+those estimates and a numeric ceiling the same plan cites for the same quantity. That relation is
+a plan-time arithmetic fact, checkable before any implementation begins, and this subsection
+closes that gap.
+
+When a plan cites a numeric ceiling for some quantity (a line count, a file count, a token
+budget, or any other countable dimension) AND one or more phases carry a `**Scope Hypothesis**:`
+estimating that same quantity, the plan MUST NOT assert anywhere in its own prose — Goals &
+Non-Goals, Risks & Mitigations, Rollback/Contingency, or a phase block — that the quantity stays
+under or within that ceiling when the plan's own per-phase estimates, summed against any stated
+starting baseline, already exceed it. A plan that cites a ceiling and separately estimates toward
+it must let its own arithmetic settle whether a conformance claim is true; it must never assert
+conformance that its own numbers contradict.
+
+Where the author expects the quantity to approach or cross the ceiling, the plan says so and
+names its own contingency — widening the ceiling via whatever escape valve governs that ceiling,
+splitting a phase, or re-scoping — rather than asserting conformance its own numbers contradict.
+
+This subsection and the counts-are-hypotheses obligation above are complementary, and neither
+discharges the other: `**Scope Hypothesis**:` governs each estimate's forward-looking
+confirmation one phase at a time, while this subsection governs the relation between those
+estimates and a ceiling the same plan quotes. A plan can satisfy one while violating the other.
+
+(Worked example, illustrative only — the governing vocabulary above is deliberately generic and
+names no linter: a plan citing a 1500-line ceiling from a Lean `longFile` linter, with per-phase
+line estimates of 110, 120, 95, 10, 90, 80, and 130 against a 959-line starting file, sums to
+roughly 1594 — past the cited ceiling — while the plan's Rollback/Contingency section asserts the
+file "stays well under 1500". That plan violates this obligation regardless of which linter or
+unit the ceiling happens to come from.)
+
+**Decision and rejected alternatives.** This obligation is enforced by a mechanical, advisory
+check added to `scripts/validate-artifact.sh`'s existing per-phase plan loop (see "Enforcement
+level" below), not by an authoring rule alone and not by a planner-agent checklist item. An
+authoring rule alone was rejected: the originating incident was an author failing to do the
+arithmetic, so a rule asking the same author to do the same arithmetic again, with nothing
+checking the result, has no backstop. A planner-agent checklist item was rejected: an agent
+prompt is far more volatile than a format document paired with a tested script, leaves no
+durable record that the check ran, produces no counted residue, and offers no promotion path to
+a stronger guarantee.
+
 ### Enforcement level
 
 Per-phase tier enforcement in `scripts/validate-artifact.sh` is **advisory-first**: a missing
@@ -498,6 +541,19 @@ the task that introduced this vocabulary. A separate, not-yet-built companion ch
 here for the same future execution: today's enforcement checks only the field's *presence*,
 never whether a phase declaring `full` actually reaches a full-gate invocation in its own task
 list — a plan-file content lint over that gap is a named future item, not yet built.
+
+### Enforcement level (Cross-phase ceiling consistency)
+
+The cross-phase ceiling consistency check added to `scripts/validate-artifact.sh`'s per-phase
+plan loop (see "Cross-phase ceiling consistency obligation" above) follows the same
+advisory-first pattern as the two enforcement subsections on this page: a detected contradiction
+emits a warning via `log_warn`, never an error, so default-mode validation exits 0 on the
+warning alone. `--strict` mode promotes it today through the same pre-existing
+`total_issues = errors + warnings` branch the other two checks already rely on; no new
+strictness logic is added for this check. **Promotion criterion**: promote the warning to an
+error once a default-mode sweep of every non-terminal plan under `specs/` shows zero plans newly
+warning. Measured residue at this check's authoring: pending a corpus sweep recorded separately
+in this same document; re-measure rather than trusting a stale count before promoting.
 
 ### Enforcement level (Files to modify)
 
