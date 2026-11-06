@@ -249,7 +249,7 @@ and note the delta in the progress file rather than the list transcribed above.
 
 ---
 
-### Phase 2: Gate the Four Research-Agent Contracts [NOT STARTED]
+### Phase 2: Gate the Four Research-Agent Contracts [IN PROGRESS]
 
 **Goal**: Every Mathlib-lookup obligation site in the four `agents/*.md` contracts points at the
 shared gate instead of mandating the step unconditionally, with domain-specific example queries
@@ -257,10 +257,11 @@ left inline.
 
 **Tasks**:
 
-- [ ] Re-read each file immediately before editing it (concurrent siblings are dispatched this
-      same cycle; see the Territory block).
-- [ ] `agents/logic-research-agent.md` — rewrite these surfaces (line numbers re-derived at
-      plan-authoring time; re-derive again before editing):
+- [x] Re-read each file immediately before editing it (concurrent siblings are dispatched this
+      same cycle; see the Territory block). *(completed)*
+- [x] `agents/logic-research-agent.md` — rewrite these surfaces (line numbers re-derived at
+      plan-authoring time; re-derive again before editing): *(completed: all 12 surfaces re-derived
+      via grep and gated; 8 gate-pointer references now present)*
   - L48-50: `### Mathlib Lookup MCP Tools` section intro gains the gate pointer sentence; the tool
     table (L52-57) and the `**Example queries**` block (L59-63) stay inline unchanged, since the
     queries are domain-specific.
