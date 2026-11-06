@@ -1,35 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793990805_500dd7_431",
-  "dispatch_seq": 8,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/431_durable_record_for_gate_enforced_verbatim_fragments/reports/01_gate-enforced-fragment-duplication-record.md",
-      "summary": "Resolves PLACEMENT for the gate-enforced verbatim-fragment-duplication exclusion-class record: recommends a new agent-system/extensions/core/context/standards/gate-enforced-fragment-duplication.md file (index-entries.json only indexes context/, ruling out a docs/ placement), re-derives the lint's current six fragment-path variables as live evidence the derivation-rule constraint must stand (a hardcoded list would already be stale), documents both enforcing gates' exact mechanics, and captures baseline gate output for the implement-phase before/after diff."
+      "type": "plan",
+      "path": "specs/431_durable_record_for_gate_enforced_verbatim_fragments/plans/01_gate-enforced-duplication-record.md",
+      "summary": "6-phase plan extending the existing exclusion-class record in context/standards/anchor-pointer-convention.md and closing its discovery-path gap with four independent hooks; no new context file is created."
     }
   ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/context/standards/gate-enforced-fragment-duplication.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's agent-system corpus, index-entries.json registers only context/-relative paths -- no docs/-prefixed path appears anywhere in its entries array. Any new discoverable record intended to be reachable via the context index must live under context/, not docs/, even when a docs/ file (e.g. docs/reference/standards/agent-frontmatter-standard.md) is topically closer to the subject matter.",
-      "category": "PATTERN",
-      "source_artifact": "specs/431_durable_record_for_gate_enforced_verbatim_fragments/reports/01_gate-enforced-fragment-duplication-record.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["index-entries", "context-index", "registration", "docs-vs-context", "discoverability"]
-    },
-    {
-      "content": "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh and lint-postflight-boundary.sh deliberately enforce verbatim markdown duplication at runtime: the former reads fragment-path variables (currently six: STANDARD_FILE, FRAGMENT_FILE, ARTIFACTS_TEMPLATE_FRAGMENT, PLAN_STATUS_OWNERSHIP_FRAGMENT, BOUNDED_WAIT_FRAGMENT, MODIFIED_FILES_FRAGMENT) and FAILs an in-scope agent contract lacking a verbatim copy; the latter asserts a literal heading via grep -qE '^## MUST NOT \\(Postflight Boundary\\)'. A corpus-dedup pass must derive the current exclusion set by reading these lints' own variables/regex at the time of the pass, never from a copied list, since the variable set has already grown once since it was first documented.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/431_durable_record_for_gate_enforced_verbatim_fragments/reports/01_gate-enforced-fragment-duplication-record.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["gate-enforced", "verbatim-duplication", "lint-agent-contracts", "lint-postflight-boundary", "derivation-rule"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 431 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1793990805_500dd7_431",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 3.5,
+    "dependency_waves": [[1], [2], [3, 4], [5], [6]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 431 to execute the plan",
+  "dispatch_seq": 10
 }

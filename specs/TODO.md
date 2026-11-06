@@ -1,5 +1,5 @@
 ---
-next_project_number: 513
+next_project_number: 514
 ---
 
 # TODO
@@ -15,7 +15,7 @@ next_project_number: 513
 | 2 | 384,391,398,420,439,444,446,448,458,463,472,474,475,476,492,497 | 369,383,397,409,412,418,423,430,431,435,445,459,491 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,451,454,455,461,484,500,507 | 313,391,398,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 5 | 450,480,487,501,508,509 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 5 | 450,480,487,501,508,509,513 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 6 | 496 | 450,487,488 | extensions |
 | 7 | 498 | 496 | extensions |
 | 8 | 499 | 497,498 | extensions |
@@ -31,7 +31,7 @@ next_project_number: 513
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
-431 [RESEARCHED] — Record the gate-enforced verbatim-duplication exclusion class...
+431 [PLANNED] — Record the gate-enforced verbatim-duplication exclusion class...
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
@@ -40,7 +40,7 @@ next_project_number: 513
   └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
   └─ 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
-445 [RESEARCHED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
+445 [PLANNING] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
   └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or... (see above)
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
@@ -121,6 +121,7 @@ next_project_number: 513
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
   └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
+  └─ 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
 507 [NOT STARTED] — Re-adjudicate the declined pre-postflight-sweep deploy...
 
@@ -139,6 +140,214 @@ next_project_number: 513
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 513. Mechanically detect a plan phase that closed without its own commit
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 418, Task 446, Task 449, Task 479
+
+**Description**: ONE gap: the phase-checkpoint protocol's one-commit-per-phase rule is a behavioral requirement
+with NO mechanical check anywhere. A phase can close without its own commit and nothing notices --
+the deviation surfaces only if the implementing agent volunteers it to its own issue log. The
+deliverable is the DETECTION, not a change to the rule.
+
+=== MEASURED EVIDENCE -- READ VERBATIM BEFORE COMPOSING ANYTHING ===
+
+CROSS-REPO CITATION, resolvable against the consumer repository where it was observed:
+`~/Projects/BimodalLogic/specs/867_formalize_gabbay_separation_ztime/issues.jsonl`, entry_id
+`iss_1793965680021_wzYrvU` (class `process`, severity `minor`, resolution `null`,
+`suggested_channel: null`). Reproduce with:
+
+  jq -c 'select(.entry_id=="iss_1793965680021_wzYrvU")' \
+    ~/Projects/BimodalLogic/specs/867_formalize_gabbay_separation_ztime/issues.jsonl
+
+Its `what_happened` field, verbatim:
+
+  "Phases 18 and 19 both land in ElimHard.lean and were committed together rather than one commit
+  per phase. Phase 18 was build-verified green on its own (scoped guarded build, exit 0) before
+  Phase 19 began, but no commit was fired at that boundary, so the two cannot now be separated
+  without rewriting the file. Deviation from the phase-checkpoint protocol's one-commit-per-phase
+  rule."
+
+SILENT is the operative word: Phase 18 was green on its own and a commit was owed at that
+boundary; none fired; no gate, script or postflight check registered anything.
+
+=== THE RULE THIS CHECKS ALREADY EXISTS AND IS NOT IN SCOPE TO CHANGE ===
+
+`context/standards/git-staging-scope.md`'s `### implement` section states it outright: "A plan
+phase closes with exactly one commit." `context/contracts/phase-closure.md`'s "Marker/commit
+synchrony is bidirectional" section states both directions of the companion marker requirement
+(promotion-on-commit, and no-promotion-without-evidence) and records that the over-claim incident
+"was caught only because the orchestrator cross-checked the marker count against the working
+tree" -- i.e. by an ad hoc human cross-check, not by a mechanism.
+
+THE OBSERVED SHAPE IS A THIRD ONE THAT NEITHER DIRECTION COVERS, and saying so is the point of
+this record. Promotion-on-commit requires a phase's marker promotion to ride in the same commit as
+that phase's final work; a commit carrying phase 18's promotion AND phase 19's work satisfies that
+sentence literally while still violating one-commit-per-phase. No existing contract sentence,
+script or test in this source store addresses phase COALESCING. Verified by reading the store:
+`skill_corroborate_phase_counts` counts phase headings only, and no script correlates a phase
+heading with the existence of that phase's own commit.
+
+=== RECURRENCE -- MEASURED IN THE CONSUMER REPO, RE-DERIVABLE, AND FAR BROADER THAN THE SELF-REPORT ===
+
+The deviation is routine rather than exceptional, and in its commonest form it self-declares in
+the commit message. Measured 2026-11-06 in `~/Projects/BimodalLogic` (NOT in this store -- this
+store's own history has its own, different population, and the check must be validated against
+both). Re-derive rather than trusting these figures:
+
+  git -C ~/Projects/BimodalLogic log --oneline --all --grep="phase [0-9]\+-[0-9]\+" | wc -l
+  git -C ~/Projects/BimodalLogic log --format=%s --all --grep="phase [0-9]\+-[0-9]\+" \
+    | grep -oE '^task [0-9]+' | sort -u | wc -l
+
+110 commits across 82 DISTINCT tasks carry a coalesced `phase N-M` message, against 6697 total
+`phase` commits -- about 1.6%. The originating entry's commit is `8bd45b6ea` ("task 867 phase
+18-19: ..."). Coalescing is not limited to adjacent pairs: `9c212620c` coalesces three phases
+(`phase 2-4`) and `0688a7a3c` coalesces five (`phase 2-6`). Exactly ONE of those 110 produced an
+issue-log entry -- the one cited above. The self-report is the outlier, not the violation. That is
+the whole argument for a mechanism, and the reason the per-instance `minor` severity must not be
+read as "rare".
+
+=== TWO SHAPES, AND AN HONEST STATEMENT OF WHAT A CHEAP CHECK CATCHES ===
+
+  SHAPE 1, DECLARED. The commit message itself names a range (`task {N} phase 18-19: ...`),
+  deviating from the `task {N} phase {P}: {phase_name}` convention in `rules/git-workflow.md`.
+  Detectable by reading messages alone -- the signal is already sitting in the data and nothing
+  reads it. All 110 measured instances are this shape.
+
+  SHAPE 2, UNDECLARED AND STRICTLY WORSE. A commit names ONE phase while carrying two phases'
+  work, or a phase marked `[COMPLETED]` has no `phase {P}` commit at all. A message scan cannot
+  see this; it needs the completed-phase markers in the plan cross-checked against the set of
+  per-phase commits for that task. Research MUST state which shapes the delivered check covers,
+  and MUST NOT let Shape 1 coverage be reported as coverage of the rule.
+
+A plausible economical design, TO BE CONFIRMED OR REJECTED RATHER THAN ASSUMED: the ingredients
+already exist and are already called at postflight. `skill_corroborate_phase_counts` (defined in
+`scripts/skill-base.sh`, tested by `scripts/tests/test-corroborate-phase-counts.sh`) already
+counts conforming phase headings in a plan, and `scripts/orchestrate-cycle-postflight.sh` already
+counts a task's commits in a dispatch window via `git log --since` scoped to the task directory
+(its `stall_commit_count` derivation). A per-phase commit-existence cross-check -- for every phase
+heading marked complete, assert a commit matching `task {N} phase {P}` exists -- reuses both and
+catches Shape 2 as well as Shape 1.
+
+=== WHERE THE CHECK BELONGS -- TO BE DECIDED, WITH THE TERRITORY CONSTRAINT STATED ===
+
+  (a) `skill_corroborate_phase_counts` in `scripts/skill-base.sh`. PREFERRED STARTING HYPOTHESIS:
+      it already owns plan-phase-heading accounting and already has a dedicated test suite, so the
+      check lands beside the data it needs.
+  (b) `scripts/orchestrate-cycle-postflight.sh`. The natural surfacing point, but the MOST
+      CONTENDED file in this store -- open records #472, #476 and #501 all claim it and its test
+      suite, and #501 already carries nine dependency edges. If research concludes a call-site
+      edit there is unavoidable, declare the edges on those contenders AT THAT POINT rather than
+      editing concurrently; per the batching guardrail an unordered overlap gets an edge, never a
+      bare exclusion. Prefer a design where the function's existing output line carries the new
+      finding so NO postflight edit is needed -- confirm whether that is possible before assuming
+      it.
+  (c) The phase-closure contract's own gate sequence. Prose only; carries no detection by itself,
+      so it is a complement to (a) or (b), never a substitute.
+
+Prefer the cheapest site that catches both shapes. A detection firing only at task postflight is
+still worth building even though it cannot un-coalesce an already-landed commit: the measured cost
+of the observed instance is irreversibility (the two phases "cannot now be separated without
+rewriting the file"), so the realistic value is a named, counted deviation the next dispatch and
+the operator can see -- NOT prevention. Do not design for a blocking refusal at the phase-commit
+boundary unless research shows it is as cheap AND cannot strand verified-green work; stranding
+green work is a worse failure than the deviation it would prevent.
+
+=== TERRITORY -- WHY THE DEPENDENCY EDGES EXIST ===
+
+This record's declared files are claimed by four open records, so it SEQUENCES rather than
+excludes (batching guardrail):
+  - `scripts/skill-base.sh` and `context/contracts/phase-closure.md` -- claimed by #446 (close the
+    plan-to-file_scope reconciliation gap and make a containment drop non-advisory).
+  - `scripts/tests/test-corroborate-phase-counts.sh` -- claimed by #418 (make the
+    lint-fixture-test family subject resolution explicit and self-declaring), which is `planned`
+    and will move that suite's fixture conventions; authoring a new case before that lands means
+    writing it twice.
+  - `context/contracts/phase-closure.md` -- additionally claimed by #449 (site the Batch Gate
+    Deferral directive where it is read before the phase's verification is launched) and #479
+    (require every task to name a landing target).
+Read each one's CURRENT text before editing a shared file; do not reintroduce or re-correct
+anything they fix. If the implementer finds the `phase-closure.md` edit can be deferred to a
+follow-up without losing the third-direction statement, the edges carried solely for that file
+(#449, #479) may be dropped at that point, with the reasoning recorded.
+
+=== THE NEAREST ADJACENT MECHANISM, AND WHY IT DOES NOT COVER THIS ===
+
+A closed record already surfaces a per-cycle scoped commit that was ATTEMPTED AND FAILED
+(`git-commit-scoped.sh` exiting a loud, attributable code at the cycle-postflight commit call
+site) into the dispatched task's own status. That is the opposite input: a commit that fired and
+returned an error, which the system already sees. This record's shape is a commit that was never
+attempted at all, so no exit code, no error and no issue entry exists to surface -- the boundary
+simply passed in silence. A reader who finds that record should not read it as coverage here.
+
+=== NON-GOALS ===
+
+(1) NO change to the one-commit-per-phase rule itself, in either
+    `context/standards/git-staging-scope.md` or `rules/git-workflow.md`. The rule is correct; it
+    is unchecked. Adding the check must not restate, relax or re-derive the rule.
+(2) No history rewrite to separate already-coalesced commits, in the originating task or in any of
+    the 81 other affected tasks in that repository. History rewrites are barred while other
+    writers are live (`rules/git-workflow.md`).
+(3) No retroactive issue-log backfill for the 109 unreported instances.
+(4) No change to the marker-promotion contract's two existing directions, and no change to the
+    `[PARTIAL]`/`[BLOCKED]` status machinery.
+(5) NOT the adjacent generated-surface question. The per-phase generated-surface regeneration
+    obligation and the Batch Gate Deferral narrowing are owned by #449, which already carries the
+    sibling citation from this same consumer-repo issue log (`{867,
+    iss_1793914994233_yAr1ND}`) in its FOLDED IN section. This record owns commit-boundary
+    ACCOUNTING only; do not write into #449's subject.
+
+=== ACCEPTANCE ===
+
+(1) A check exists that, given a task with a coalesced phase commit, names the deviation
+    mechanically -- without any agent self-report.
+(2) Run against `~/Projects/BimodalLogic`'s existing history, the check reports that repository's
+    measured population (re-derived at implementation time rather than trusted from this record),
+    and does NOT fire on a conforming `task {N} phase {P}:` commit nor on the sanctioned
+    per-objective substep form `task {N} phase {P}.{O}: {objective}`.
+(3) The delivered coverage is stated explicitly against Shape 1 and Shape 2, with any uncovered
+    shape named rather than left implied.
+(4) If a blocking refusal is introduced anywhere, the research record states why it cannot strand
+    verified-green work.
+(5) A case in the chosen site's existing test suite (EXTEND it, do not replace existing cases)
+    that fixtures a coalesced phase boundary and FAILS against the unmodified code before the fix
+    lands -- the suites are green while the gap is live, so a case that cannot fail first proves
+    nothing.
+(6) The deploy verification this store already requires reports clean afterwards.
+
+=== DELIVERABLE HYGIENE ===
+
+Every edited file lies outside `specs/**`, so its prose and any new message string must carry no
+task-number references (`rules/no-task-references-in-deliverables.md`) and no record-versioning
+language (`rules/no-record-versioning-in-deliverables.md`). Durable anchors that MAY be cited
+freely: the file names (`skill-base.sh`, `orchestrate-cycle-postflight.sh`, `phase-closure.md`,
+`git-staging-scope.md`), the function name `skill_corroborate_phase_counts`, the variable name
+`stall_commit_count`, the commit-message conventions `task {N} phase {P}: {phase_name}` and
+`task {N} phase {P}.{O}: {objective}`, and section headings. The originating task number, the
+issue entry_id, the adjacent record numbers, the specific commit shas and the measured counts may
+NOT appear in any deliverable -- they live in this record only.
+
+=== SITING NOTE -- WHY THIS RECORD IS HERE AND NOT IN THE CONSUMER REPO ===
+
+The defect was observed in `~/Projects/BimodalLogic`, but its edit targets resolve only under this
+source store. That consumer repository carries only a deployed, disposable `.claude/` tree
+regenerated from here (`rules/source-store-deploy-boundary.md`), and it already carries a
+frozen-record tracker counting 32 non-terminal `meta` records that name source-store paths and
+therefore cannot be worked there -- a dispatch picking one up there can read nothing it is meant
+to edit and commit nothing it manages to write. A sibling record filed there from this same issue
+log was abandoned on that exact ground, with its work folded into #449 here. This record is
+therefore filed at the store from the outset rather than filed there and migrated.
+
+=== PROVENANCE ===
+
+Raised by /orchestrate's conclusion stage, channel (b) agent-system changes, user-approved at the
+orchestrate-lead level for session `sess_1793989212_34b9e4` while orchestrating the originating
+task in the consumer repository. Originating entry cited verbatim above; it records
+`suggested_channel: null`, so the channel classification is the conclusion stage's own.
+
+---
 
 ### 512. Builtin command exemption for dead command lint
 - **Effort**: medium
@@ -4151,7 +4360,7 @@ PARTS A AND B WERE DELIBERATELY COMBINED, not split: they are the two halves of 
 
 ### 445. Gate8 expected vs new failure distinction
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 414, Task 415
@@ -4537,11 +4746,12 @@ No dependency edge on 467 or 468 is declared. The scope exclusion, not serializa
 ---
 
 ### 431. Record the gate-enforced verbatim-duplication exclusion class as durable agent-system context, derived from the lints own fragment paths
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328
 - **Research**: [431_durable_record_for_gate_enforced_verbatim_fragments/reports/01_gate-enforced-fragment-duplication-record.md]
+- **Plan**: [431_durable_record_for_gate_enforced_verbatim_fragments/plans/01_gate-enforced-duplication-record.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

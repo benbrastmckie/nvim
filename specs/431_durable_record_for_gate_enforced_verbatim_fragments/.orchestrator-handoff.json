@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase plan. A plan-time read of context/standards/anchor-pointer-convention.md found the constraint ALREADY has a durable, index-registered home: its '## The Two Hard Exclusion Classes' section states the exclusion class, the behaviour-change consequence, and the derivation rule verbatim, and names both enforcers. The research report had dismissed that file as documenting only itself, so its PLACEMENT decision (a new gate-enforced-fragment-duplication.md) is superseded: the plan extends the existing record instead of minting a second, drift-prone home for the derivation rule. The residual gap is the DISCOVERY PATH, which the plan closes with four independent hooks (index keywords, task-breakdown.md's planning surface, documentation-standards.md, and a pointer comment in each enforcing lint header - territory now free, the originating record is completed), plus a before/after finding-set diff of gates 6 and 9 against a freshly deployed tree.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/431_durable_record_for_gate_enforced_verbatim_fragments/plans/01_gate-enforced-duplication-record.md",
+      "summary": "6-phase plan extending the existing exclusion-class record in context/standards/anchor-pointer-convention.md and closing its discovery-path gap with four hooks; no new context file is created."
+    }
+  ],
+  "dispatch_seq": 10
+}
