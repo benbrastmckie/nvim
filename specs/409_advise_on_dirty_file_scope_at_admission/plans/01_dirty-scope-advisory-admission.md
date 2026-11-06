@@ -264,32 +264,37 @@ plus `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh agent-sy
 
 ---
 
-### Phase 3: Render the advisory as Class J in `orchestrate-predispatch-review.sh` [NOT STARTED]
+### Phase 3: Render the advisory as Class J in `orchestrate-predispatch-review.sh` [COMPLETED]
 
 **Goal**: The pre-dispatch review surfaces the advisory as its own lettered class, with an
 accurate zero-count line, and a regression scenario asserts the rendering.
 
 **Tasks**:
-- [ ] Re-read `scripts/orchestrate-predispatch-review.sh` immediately before editing.
-- [ ] Confirm J is still the next free letter (A, B, C, C-admitted, D, D-admitted, E, F, G, H,
-      H-admitted, I were taken at plan-authoring time).
-- [ ] Add a Class J entry to the header's class-inventory comment block (around `:10-70`).
-- [ ] Add a Class J extraction alongside Class I's (around `:600-611`):
+- [x] Re-read `scripts/orchestrate-predispatch-review.sh` immediately before editing. *(completed:
+      re-read; target files were clean, no foreign dirt present)*
+- [x] Confirm J is still the next free letter (A, B, C, C-admitted, D, D-admitted, E, F, G, H,
+      H-admitted, I were taken at plan-authoring time). *(completed: confirmed)*
+- [x] Add a Class J entry to the header's class-inventory comment block (around `:10-70`).
+      *(completed, also updated the "reports NINE classes" count to TEN)*
+- [x] Add a Class J extraction alongside Class I's (around `:600-611`):
       `select($v.dirty_scope_advisory != null)` with NO `decision` or `self_modifying` filter —
       the field is carried on admits and defers alike — relaying `task_number` and the advisory's
-      `dirty_paths` verbatim.
-- [ ] Add a `-- Class J: ... --` rendering section in Class I's single-block style (no
+      `dirty_paths` verbatim. *(completed)*
+- [x] Add a `-- Class J: ... --` rendering section in Class I's single-block style (no
       deferred/admitted split: this field never changes a decision, so there is no
       negative-conflation to guard against). Unlike Classes E and I, it needs **no**
       `$session_id_explicit` gate — it consumes no session-registry input — so it is
       unconditionally available like Classes C and D. Keep the existing `$admit_checked` degraded
-      guard.
-- [ ] Write the zero-count line so it cannot be read as "never tested": along the lines of
+      guard. *(completed)*
+- [x] Write the zero-count line so it cannot be read as "never tested": along the lines of
       `0 findings (no candidate's file_scope intersects the currently dirty working tree).`
-- [ ] Add a new Scenario to `scripts/tests/test-orchestrate-predispatch-review.sh` following the
+      *(completed; this text and the Class J rendering jq string were both written apostrophe-free
+      where they land inside a single-quoted bash/jq string span, per the lesson recorded in
+      Phase 1's handoff)*
+- [x] Add a new Scenario to `scripts/tests/test-orchestrate-predispatch-review.sh` following the
       existing synthetic-NDJSON convention (see its Scenario 2 fixture, around `:148-154`): a
       literal `{"decision":"admit", ..., "dirty_scope_advisory":{...}}` stub row, asserting the
-      Class J row renders and the zero-count line does NOT appear.
+      Class J row renders and the zero-count line does NOT appear. *(completed: Scenario 11)*
 
 **Timing**: 1 hour
 

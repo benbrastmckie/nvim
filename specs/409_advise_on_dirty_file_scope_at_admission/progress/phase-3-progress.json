@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "Render the advisory as Class J in orchestrate-predispatch-review.sh",
+  "started_at": "2026-11-06T00:30:00Z",
+  "last_updated": "2026-11-06T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-predispatch-review.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm J is next free letter", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add Class J header class-inventory entry, update NINE->TEN classes count", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 4, "description": "Add Class J extraction (no decision/self_modifying filter)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 5, "description": "Add Class J rendering section (no session_id_explicit gate, admit_checked guard kept)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 6, "description": "Write non-misreadable zero-count line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 7, "description": "Add Scenario 11 to test-orchestrate-predispatch-review.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Used apostrophes inside the Class J extraction block's jq comments (embedded single-quoted bash string, same hazard class as Phase 1)", "result": "failed", "reason": "same bash-syntax-error class as Phase 1; fixed by rewriting apostrophe-free"},
+    {"approach": "Scenario 11 zero-count-absence assertion used grep -qF \"0 findings (no candidate\" as a supposedly-unique substring", "result": "failed", "reason": "false positive: Class B's own pre-existing zero line also starts with that exact substring (\"0 findings (no candidate has a literal-null...\"), so the assertion always failed even when Class J rendered correctly. Fixed by narrowing to the substring \"file_scope intersects the currently dirty working tree).\", which is unique to Class J's zero line and avoids the apostrophe entirely."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash -n syntax OK on both edited files; lint-shellcheck.sh exits 0 on both. --only test-orchestrate-predispatch-review.sh run: new Scenario 11 passes all three assertions (exit 0, Class J row renders naming the candidate and path, zero-count line correctly absent). Scenario 10 (--repair D4 non-manufacture) fails identically (32 passed/2 failed) against both the edited files and the pristine HEAD copies of both orchestrate-predispatch-review.sh and the test file -- confirmed pre-existing and unrelated (same lib/project-number-inuse.sh fixture gap seen in Phases 1-2), recorded in the issue log."
+}

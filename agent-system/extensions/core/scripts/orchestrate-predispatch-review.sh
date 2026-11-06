@@ -4,7 +4,7 @@
 #
 # Purpose: reads specs/state.json directly — the only place raw, unfiltered dependencies[] is
 # still visible before commands/orchestrate.md's compact STAGE 0 multi-task block discards
-# out-of-batch edges to build its intra-batch-only dependency graph — and reports NINE classes of
+# out-of-batch edges to build its intra-batch-only dependency graph — and reports TEN classes of
 # pre-dispatch defect, by task number and path, BEFORE that discard happens:
 #
 #   Class A (dependency edge classification): every RAW dependencies[] entry on every candidate,
@@ -70,6 +70,12 @@
 #     on a self-modifying ADMIT verdict. No "I-admitted" split exists — unlike absent_scope_advisory,
 #     this field never has a corresponding defer-side shape to split from; every carrier is, by
 #     construction, an admit.
+#   Class J (dirty-worktree admission advisory, NEW): re-presents orchestrate-batch-admit.sh's
+#     additive dirty_scope_advisory field, carried on any verdict (admit or defer alike) whose
+#     candidate's OWN file_scope intersects the currently dirty working tree. Depends only on the
+#     candidate's own file_scope, like whole_tree_claim, so unlike Class I it needs no
+#     --session-id gate. No "J-admitted" split exists, for the same reason Class I has none: the
+#     field never changes a decision, so there is no deferred/admitted shape to split from.
 #
 # Single-repository scope: every class above is computed against exactly one repository's
 # specs/state.json, resolved via common_repo_root (see STATE_FILE below). When a second
@@ -609,6 +615,16 @@ if [ "$admit_checked" = true ]; then
          colliding_task_number: $v.cross_session_hazard.colliding_task_number,
          overlapping_path: $v.cross_session_hazard.overlapping_path,
          session_liveness_reason: $v.cross_session_hazard.session_liveness_reason}
+    ),
+    ( # Class J (NEW, dirty-worktree admission advisory): dirty_scope_advisory, carried on
+      # admits and defers alike -- unlike Class I above, this field depends only on the
+      # candidate own file_scope (like whole_tree_claim), never on decision, so there is no
+      # decision or self_modifying filter here at all, and no "J-admitted" split either (the
+      # field never has a differently-shaped defer-side counterpart to split from).
+      $verdicts[] as $v
+      | select($v.dirty_scope_advisory != null)
+      | {class: "J", task_number: $v.task_number,
+         dirty_paths: $v.dirty_scope_advisory.dirty_paths}
     )
     ' 2>&1) || true
 fi
@@ -865,6 +881,29 @@ else
     echo "0 findings (no self-modifying admit carries a live cross-session hazard)."
   else
     printf '%s\n' "$class_i_lines"
+  fi
+fi
+echo ""
+
+echo "-- Class J: Dirty-worktree admission advisory (NEW) --"
+if [ "$admit_checked" = false ]; then
+  echo "SKIPPED (degraded: $admit_degraded_reason)"
+else
+  # No $session_id_explicit gate (unlike Class I/E): this field consumes no session-registry
+  # input, so it is unconditionally available here, like Classes C and D.
+  class_j_lines=""
+  if [ -n "$cd_findings" ]; then
+    class_j_lines=$(printf '%s\n' "$cd_findings" | jq -r '
+      select(.class == "J")
+      | "#\(.task_number): own file_scope intersects the currently dirty working tree at \(.dirty_paths | join(", ")) -- commit the listed path(s) separately before this task implement dispatch sweeps them into its own commit"
+    ' 2>/dev/null) || true
+  fi
+  if [ -z "$class_j_lines" ]; then
+    # No "J-admitted" split (unlike Classes C/D/H): this field never changes a decision, so
+    # there is no deferred/admitted negative-conflation to guard against here, same as Class I.
+    echo "0 findings (no candidate's file_scope intersects the currently dirty working tree)."
+  else
+    printf '%s\n' "$class_j_lines"
   fi
 fi
 echo ""

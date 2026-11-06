@@ -458,6 +458,36 @@ else
   common_test_fail "scenario 10: expected candidate #3021's file_scope to become []; got: $repair_p3021_fs"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Scenario 11: Class J rendering -- an admit verdict carrying dirty_scope_advisory renders the
+# new row, and the zero-count line does NOT appear.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Scenario 11: admit carrying dirty_scope_advisory renders as Class J, not the zero-count line"
+setup_sandbox
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 2004, "project_name": "dirty_scope", "task_type": "meta", "status": "not_started", "description": "dirty scope advisory candidate #2004", "dependencies": [], "file_scope": ["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"]}]}
+EOF
+stub_admit <<'EOF'
+{"decision":"admit","task_number":2004,"self_modifying":false,"dirty_scope_advisory":{"dirty_paths":["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"],"reason":"fixture"}}
+EOF
+run_sut -- 2004
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  common_test_pass "scenario 11: SUT exits 0"
+else
+  common_test_fail "scenario 11: SUT exited $LAST_EXIT ($LAST_STDERR)"
+fi
+if echo "$LAST_STDOUT" | grep -qF "#2004: own file_scope intersects the currently dirty working tree at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"; then
+  common_test_pass "scenario 11: the Class J row is rendered"
+else
+  common_test_fail "scenario 11: expected a Class J row naming candidate #2004; got: $LAST_STDOUT"
+fi
+if echo "$LAST_STDOUT" | grep -qF "file_scope intersects the currently dirty working tree)."; then
+  common_test_fail "scenario 11: the zero-count line is present despite a real finding"
+else
+  common_test_pass "scenario 11: the zero-count line correctly does not appear"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"
