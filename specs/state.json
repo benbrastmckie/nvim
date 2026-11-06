@@ -1917,6 +1917,7 @@
         "agent-system/extensions/core/context/standards/",
         "agent-system/extensions/core/context/standards/shell-script-testing.md",
         "agent-system/extensions/core/docs/",
+        "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/rules/",
         "agent-system/extensions/core/scripts/gate-registry.data",

@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 807,
+      "line_count": 882,
       "keywords": [
         "format",
         "plan",
@@ -1060,7 +1060,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Discriminating an agent-system defect from ordinary task-work failure via a two-signal (schema violation + source-store attribution) predicate, plus the detection-point registry, recursion guard, dedup rule, and the live-cycle acceptance-criterion decision",
-      "line_count": 574,
+      "line_count": 578,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -1222,7 +1222,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Canonical Stage-N skeleton and shared-block map for lifecycle skills, including the two postflight shapes and division of labor with creating-skills.md",
-      "line_count": 345,
+      "line_count": 353,
       "keywords": [
         "patterns",
         "skill",
@@ -1867,6 +1867,28 @@
       }
     },
     {
+      "path": "standards/anchor-pointer-convention.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Collapsed-block pointer shape, the two hard exclusion classes, and the claim-retention ledger obligation for markdown consolidation",
+      "line_count": 79,
+      "keywords": [
+        "standards",
+        "anchor",
+        "markdown-consolidation",
+        "duplication"
+      ],
+      "topics": [
+        "documentation"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
       "path": "standards/postflight-tool-restrictions.md",
       "domain": "core",
       "subdomain": "standards",
@@ -1892,7 +1914,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 899,
+      "line_count": 1022,
       "keywords": [
         "standards",
         "shell",
@@ -2603,7 +2625,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Batch gate stage (Move 4): the once-per-invocation shared verify-deploy.sh gate run, with confirmation and per-task finding attribution, for a multi-task /orchestrate batch; single-task/bare-implement invariance; coexistence boundary with the conclusion stage",
-      "line_count": 132,
+      "line_count": 163,
       "keywords": [
         "batch-gate-stage",
         "move-4",
@@ -2770,7 +2792,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "States that <leader>al deployment/regeneration has no headless/CI equivalent -- vim.fn.confirm() is unconditional and execute_sync is unexported",
-      "line_count": 933,
+      "line_count": 937,
       "keywords": [
         "regeneration",
         "deploy",
@@ -3126,7 +3148,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1720,
+      "line_count": 1727,
       "keywords": [
         "task-lock",
         "concurrency",
@@ -3173,7 +3195,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 863,
+      "line_count": 884,
       "keywords": [
         "git-staging",
         "commit-scope",
