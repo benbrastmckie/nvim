@@ -381,6 +381,7 @@
       "tests/test-lint-verdict-extraction-anchoring.sh",
       "tests/test-manage-topics-create-order.sh",
       "tests/test-manifest-scripts-sync.sh",
+      "tests/test-mcp-merge-target.sh",
       "tests/test-measure-gate-costs.sh",
       "tests/test-mint-dispatch-seq.sh",
       "tests/test-orchestrate-batch-admit.sh",

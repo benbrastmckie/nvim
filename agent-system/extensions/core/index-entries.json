@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 882,
+      "line_count": 910,
       "keywords": [
         "format",
         "plan",
@@ -329,7 +329,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Progress tracking file format",
-      "line_count": 270,
+      "line_count": 268,
       "keywords": [
         "format",
         "progress",
@@ -498,7 +498,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Guide for creating new extensions",
-      "line_count": 319,
+      "line_count": 388,
       "keywords": [
         "guide",
         "extension",
@@ -1109,7 +1109,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Registration vs. permission ownership boundary for MCP servers",
-      "line_count": 436,
+      "line_count": 443,
       "keywords": [
         "mcp",
         "registration",
@@ -1131,7 +1131,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Metadata file return pattern for subagents",
-      "line_count": 147,
+      "line_count": 143,
       "keywords": [
         "patterns",
         "metadata",
