@@ -229,7 +229,7 @@ extend it rather than adding a duplicate bullet.
 
 ---
 
-### Phase 2: State the Single-Repository Scope at the Admission Review Script [NOT STARTED]
+### Phase 2: State the Single-Repository Scope at the Admission Review Script [COMPLETED]
 
 **Goal**: a reader of `orchestrate-predispatch-review.sh`'s header learns that all of its defect
 classes are computed against exactly one repository's `specs/state.json`, and is pointed at the
@@ -237,10 +237,10 @@ adjudication for the consequence.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh`'s header
+- [x] Re-read `agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh`'s header
       comment block, confirming the `STATE_FILE` assignment and its `common_repo_root`-resolved
-      `PROJECT_ROOT`.
-- [ ] Add one comment paragraph to the header, sited next to the existing paragraph stating that
+      `PROJECT_ROOT`. *(completed: STATE_FILE at line 169, PROJECT_ROOT at line 167)*
+- [x] Add one comment paragraph to the header, sited next to the existing paragraph stating that
       the script reads only `specs/state.json` directly (the natural home for a scope caveat about
       that same read). The paragraph states: every defect class above is computed against exactly
       one repository's `specs/state.json`, resolved via `common_repo_root`; when a second
@@ -248,16 +248,18 @@ adjudication for the consequence.
       `agent-system/**` source store, that second repository's task space is invisible here and
       vice versa, so two correctly-sited records in two repositories can claim the same
       source-store file with no edge and no finding in any class; this is an accepted,
-      manually-detected risk.
-- [ ] In the same paragraph, add the second half: a dispatch carrying no task record at all in
+      manually-detected risk. *(completed: sited after the Class I bullet, before "This is a
+      REVIEW stage")*
+- [x] In the same paragraph, add the second half: a dispatch carrying no task record at all in
       either repository's terms is outside every class here by construction, since all of them are
-      keyed on a candidate task number.
-- [ ] Point the paragraph at `context/patterns/file-footprint-overlap.md`'s `## Non-Goals` section
+      keyed on a candidate task number. *(completed)*
+- [x] Point the paragraph at `context/patterns/file-footprint-overlap.md`'s `## Non-Goals` section
       and the `### Cross-Repository Scope -- Adjudicated Limitation` subsection Phase 1 creates,
-      by section heading rather than by line number.
-- [ ] Confirm the edit is comment-only: no executable line changes, and the diff touches nothing
-      below the header block.
-- [ ] Re-read the diff against Authoring Constraints 1 and 2.
+      by section heading rather than by line number. *(completed)*
+- [x] Confirm the edit is comment-only: no executable line changes, and the diff touches nothing
+      below the header block. *(completed: `git diff` shows only `#`-prefixed added lines)*
+- [x] Re-read the diff against Authoring Constraints 1 and 2. *(completed: 0 task-reference
+      occurrences, no record-versioning phrasing)*
 
 **Timing**: 0.5 hours
 

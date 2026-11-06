@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "State the Single-Repository Scope at the Admission Review Script",
+  "started_at": "2026-11-06T08:21:00Z",
+  "last_updated": "2026-11-06T08:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-predispatch-review.sh header, STATE_FILE assignment", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add header comment paragraph: single-repository scope caveat", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 3, "description": "Add record-less dispatch exclusion sentence to same paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 4, "description": "Point paragraph at file-footprint-overlap.md Non-Goals / adjudication subsection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]},
+    {"id": 5, "description": "Confirm comment-only diff, re-read against authoring constraints", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Covering suite (test-orchestrate-predispatch-review.sh) reports 32/34 passing; the 2 failures (scenario 10, --repair path) are a pre-existing test-fixture gap (missing lib/project-number-inuse.sh in the test's temp tree, traced to commit 918c9a031, 2026-11-03) structurally unrelated to this phase's comment-only edit. Recorded as issue pre-existing-test-fixture-gap. bash -n and the task-reference/record-versioning checks both pass clean."
+}

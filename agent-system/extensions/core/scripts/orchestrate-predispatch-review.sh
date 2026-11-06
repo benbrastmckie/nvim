@@ -71,6 +71,18 @@
 #     this field never has a corresponding defer-side shape to split from; every carrier is, by
 #     construction, an admit.
 #
+# Single-repository scope: every class above is computed against exactly one repository's
+# specs/state.json, resolved via common_repo_root (see STATE_FILE below). When a second
+# repository's deployed .claude/ tree is produced from this repository's agent-system/**
+# source store, that second repository's task space is invisible here and vice versa — two
+# correctly-sited records in two repositories can claim the same source-store file with no
+# dependencies[] edge and no finding in any class above. A dispatch carrying no task record at
+# all in either repository's terms (an orchestrate conclusion-stage channel (a) dispatch that
+# implements directly from issue-log entries) is outside every class here by construction,
+# since all of them are keyed on a candidate task number. This is an accepted,
+# manually-detected risk, adjudicated in context/patterns/file-footprint-overlap.md's
+# `## Non-Goals` section, `### Cross-Repository Scope -- Adjudicated Limitation` subsection.
+#
 # This is a REVIEW stage, not a fifth admission gate: it never excludes, never defers, and never
 # writes to state.json on its default (report-only) path. Exclusion/deferral authority for
 # Classes C/D/H stays exactly where it already is — the existing runtime wave-split check at
