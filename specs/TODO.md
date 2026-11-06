@@ -128,7 +128,7 @@ next_project_number: 513
 
 418 [PLANNED] — Make the lint-fixture-test family subject resolution explicit...
   └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
-488 [PLANNING] — Adjudicate where MCP write-tool permission grants belong:...
+488 [PLANNED] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
 512 [PLANNED] — verify-deploy gate 24 reports two findings against lines that...
@@ -1535,12 +1535,13 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_d
 
 ### 488. Adjudicate where MCP write-tool permission grants belong: repo-scoped extension fragment vs. the server owner's own configuration
 - **Effort**: small
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Parent**: Task 482
 - **Research**: [488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md]
+- **Plan**: [488_mcp_write_tool_grant_ownership_scope/plans/01_mcp-ownership-scope-carveout.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). Re-derive every quoted clause from the source store, never from a deployed copy. No task-number references and no record-versioning language in any file landing under agent-system/** .
 

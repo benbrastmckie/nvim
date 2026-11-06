@@ -23425,29 +23425,37 @@
     {
       "project_number": 488,
       "project_name": "mcp_write_tool_grant_ownership_scope",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Adjudicate where MCP write-tool permission grants belong: repo-scoped extension fragment vs. the server owner's own configuration",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). Re-derive every quoted clause from the source store, never from a deployed copy. No task-number references and no record-versioning language in any file landing under agent-system/** .\n\nFINDING (recorded during the sapience extension build, issues.jsonl class scope-mismatch, severity minor): the sapience extension's settings-fragment.json grants four MCP write tools (sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc) at THIS repository's project scope. That closes the autonomous-dispatch permission blocker inside this repo and is correct for that purpose. But context/standards/mcp-server-ownership.md's own rule states that permission grants for a given MCP server belong with the entity that OWNS the server registration -- here ~/.dotfiles/config/claude/settings.json, whose keys are reset from the dotfiles repo by home.activation.claudeSettings on every home-manager switch. The two placements are in tension and the tension is currently unresolved rather than decided.\n\nNote the enforcement asymmetry that makes this non-obvious: the dotfiles copy is machine-wide and nix-enforced (so an extension CANNOT durably write it -- an edit there would be reverted on the next switch), while the repo-scoped fragment is the only placement an extension can actually own. A verdict of 'the repo-scoped fragment is correct' is therefore legitimate; it just has to be STATED rather than left as an apparent standards violation.\n\nDECIDE, do not assume: (a) whether mcp-server-ownership.md's rule should be amended to carve out the nix-enforced-settings case explicitly, or whether the sapience grant should move to ~/.dotfiles and the extension stop granting it; (b) whether a repo-scoped write-tool grant for a server the repo does not own needs any additional operator-visible disclosure. Reason about the security posture of the narrower-scope placement on its own merits, not only about which file the standard currently names.\n\nACCEPTANCE: mcp-server-ownership.md states a verdict covering the nix-enforced-settings case; the sapience extension's grant placement matches that verdict; verify-deploy.sh gate set green after redeploy.",
       "dependencies": [],
       "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
         "agent-system/extensions/core/context/standards/mcp-server-ownership.md",
-        "agent-system/extensions/sapience/settings-fragment.json",
-        "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md"
+        "agent-system/extensions/core/docs/guides/permission-configuration.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+        "agent-system/extensions/sapience/settings-fragment.json"
       ],
       "effort": "small",
       "topic": "agent-system",
       "created": "2026-11-05T17:44:17Z",
-      "last_updated": "2026-11-06T18:27:37Z",
+      "last_updated": "2026-11-06T18:31:33Z",
       "artifacts": [
         {
           "path": "specs/488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md",
           "type": "report",
           "summary": "Verdict: sapience extension's project-scoped grant of its four MCP write tools is a legitimate, deliberate narrower-than-registration-scope exception (bounds unreviewed personal-vault writes to one repo), not a standards violation; recommends amending mcp-server-ownership.md with an explicit carve-out naming this pattern rather than moving the grant to ~/.dotfiles."
+        },
+        {
+          "path": "specs/488_mcp_write_tool_grant_ownership_scope/plans/01_mcp-ownership-scope-carveout.md",
+          "type": "plan",
+          "summary": "3-phase plan: standard carve-out amendment + symmetric disclosure links + redeploy and full gate verification."
         }
       ],
       "parent_task": 482,
-      "session_id": "sess_1793989278_ed6452_488",
+      "session_id": "sess_1793989278_ed6452",
       "next_artifact_number": 2
     },
     {

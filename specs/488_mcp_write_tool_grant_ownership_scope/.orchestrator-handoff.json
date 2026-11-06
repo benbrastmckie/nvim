@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 3-phase plan implementing the research verdict: amend mcp-server-ownership.md with an explicit carve-out for a narrower-than-registration grant when the matching user-scope settings file is externally owned and nix-enforced, rather than moving the sapience grant to ~/.dotfiles. Phase 1 adds the carve-out subsection plus three same-file consistency repairs (forward pointer, Composition table fix column, Decision procedure step 3, which currently asserts project-scope registration is the only exception). Phase 2 makes the disclosure pointer symmetric across review-gate-boundary.md and permission-configuration.md. Phase 3 redeploys with the bounded-wait idiom and runs the full verify-deploy.sh gate set; settings-fragment.json is deliberately untouched.",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/488_mcp_write_tool_grant_ownership_scope/plans/01_mcp-ownership-scope-carveout.md",
+      "summary": "3-phase plan: standard carve-out amendment + symmetric disclosure links + redeploy and full gate verification."
+    }
+  ],
+  "dispatch_seq": 4
+}

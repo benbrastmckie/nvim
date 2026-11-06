@@ -1,39 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793989278_ed6452_488",
-  "dispatch_seq": 2,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md",
-      "summary": "Verdict: sapience extension's project-scoped grant of its four MCP write tools is a legitimate, deliberate narrower-than-registration-scope exception (bounds unreviewed personal-vault writes to one repo), not a standards violation; recommends amending mcp-server-ownership.md with an explicit carve-out naming this pattern rather than moving the grant to ~/.dotfiles."
+      "type": "plan",
+      "path": "specs/488_mcp_write_tool_grant_ownership_scope/plans/01_mcp-ownership-scope-carveout.md",
+      "summary": "3-phase plan amending mcp-server-ownership.md with an enforced-user-scope-settings carve-out, making the sapience disclosure pointer symmetric, and redeploying to a green gate set."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "Pattern: when an MCP server is registered at user scope by infrastructure the repo cannot durably edit (e.g. a home-manager-enforced ~/.claude/settings.json reset every switch), and that owning infrastructure has already drawn a safe/unsafe tool-tier line (granting read tools broadly, withholding mutating tools), an extension MAY grant the withheld tier at this repo's own project scope instead of attempting to widen the externally-owned grant. This is a narrower-than-registration-scope carve-out, distinct from the existing 'safe/unsafe split requires enumeration' carve-out (which leaves the unsafe tier perpetually prompting everywhere): here the unsafe tier is deliberately granted, but only in the one repo that opted in. Requires explicit enumeration (never a wildcard) and docs stating the tradeoff. Worked example: sapience extension's four MCP write tools (sapience_remember/wrapup/handoff/adddoc) granted at project scope while absent from the user-scope dotfiles grant.",
-      "category": "PATTERN",
-      "source_artifact": "specs/488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["mcp-server-ownership", "settings-scope", "sapience", "home-manager-enforced", "permission-carve-out"]
-    },
-    {
-      "content": "Technique: to verify a claim that a settings file is 'nix-enforced and reset every home-manager switch,' diff the deployed file (e.g. ~/.claude/settings.json) against the dotfiles source it's generated from (e.g. ~/.dotfiles/config/claude/settings.json) for the specific enforced keys named in the dotfiles module (e.g. modules/home/core/dotfiles.nix's enforced-key list). An exact match on those keys is direct evidence the file is reset, not merely an inference from documentation.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["home-manager", "settings-verification", "enforced-keys", "dotfiles"]
-    },
-    {
-      "content": "Insight: not every project-scope grant for a user-scope-registered server is load-bearing. The nix extension's settings-fragment.json grants mcp__nixos__nix/nix_versions at project scope, but those two tools are ALSO already granted at user scope in ~/.dotfiles/config/claude/settings.json -- so the project-scope copy is harmless duplication, not a gap-closer. Contrast with sapience, where the project-scope grant is the ONLY grant for those four tools anywhere. When auditing a scope-mismatch finding, check whether the user-scope grant already exists before concluding the narrower grant is filling a real gap.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["mcp-server-ownership", "nix-extension", "duplication-vs-gap", "scope-audit"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 488 to create implementation plan"
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 488 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1793989278_ed6452_488",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1.75,
+    "dependency_waves": 3
+  },
+  "dispatch_seq": 4
 }
