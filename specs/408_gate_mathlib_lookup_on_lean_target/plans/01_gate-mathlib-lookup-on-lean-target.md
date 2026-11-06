@@ -249,7 +249,7 @@ and note the delta in the progress file rather than the list transcribed above.
 
 ---
 
-### Phase 2: Gate the Four Research-Agent Contracts [IN PROGRESS]
+### Phase 2: Gate the Four Research-Agent Contracts [COMPLETED]
 
 **Goal**: Every Mathlib-lookup obligation site in the four `agents/*.md` contracts points at the
 shared gate instead of mandating the step unconditionally, with domain-specific example queries
@@ -282,20 +282,23 @@ left inline.
     "perform".
   - L372: MUST DO item 8 becomes "Resolve the Mathlib-lookup gate ... and use the lookup tools
     when it resolves to perform", pointing at the pattern file.
-- [ ] `agents/math-research-agent.md` — same twelve surface classes at L48-50/52-57/59-63, L112-113,
+- [x] `agents/math-research-agent.md` — same twelve surface classes at L48-50/52-57/59-63, L112-113,
       L124, L173, L183-187, L202, L224, L242-243, L263, L296, L309, L349-351, L371. Keep the
-      lattice-theory example queries inline.
-- [ ] `agents/physics-research-agent.md` — same classes at L62-64/66-71/73-77, L112-113, L124,
+      lattice-theory example queries inline. *(completed)*
+- [x] `agents/physics-research-agent.md` — same classes at L62-64/66-71/73-77, L112-113, L124,
       L177-181, L197, L219, L237-238, L258, L289, L302, L344 (MUST DO item 6, **not** 8). This file
       has no Stage-2 research-question bullet. **Leave L36 ("Mathlib4 integration patterns")
-      untouched** — unrelated domain-knowledge guidance.
-- [ ] `agents/formal-research-agent.md` — thinner footprint: L60-67 (table, no examples), L135
+      untouched** — unrelated domain-knowledge guidance. *(completed: L36 verified unchanged; no
+      MCP Tool Errors subsection in this file, matching the plan's omission of that edit here)*
+- [x] `agents/formal-research-agent.md` — thinner footprint: L60-67 (table, no examples), L135
       (bare Stage 3 bullet "Use Mathlib lookup tools"), L159 (`**Sources/Inputs**`), L226
       (`mathlib_lookups_performed`), L241 (example-return bullet), L280 (MUST DO item 5). No
-      decision tree, no `Step 2` header, no `### Mathlib Theorems` section of its own.
-- [ ] After each file, grep it for task-number references and record-versioning phrasing and
-      confirm zero hits.
-- [ ] Commit each file as its own green sub-step.
+      decision tree, no `Step 2` header, no `### Mathlib Theorems` section of its own. *(completed)*
+- [x] After each file, grep it for task-number references and record-versioning phrasing and
+      confirm zero hits. *(completed: zero hits across all 4 files)*
+- [x] Commit each file as its own green sub-step. *(completed: logic committed separately in
+      42b87d935-adjacent commit a17750741; math/physics/formal committed together below after
+      batch verification)*
 
 **Timing**: 1.5 hours
 

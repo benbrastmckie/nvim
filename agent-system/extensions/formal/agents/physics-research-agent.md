@@ -61,7 +61,10 @@ This agent has access to:
 
 ### Mathlib Lookup MCP Tools
 
-These tools enable theorem discovery in Mathlib without needing to write Lean code:
+These tools enable theorem discovery in Mathlib without needing to write Lean code. Whether this
+step is mandatory for the current task is resolved by the gate in
+`context/patterns/mathlib-lookup-gate.md` — see "Step 2: Mathlib Lookup" below for where the
+gate is actually resolved and the skip-and-log outcome when it does not apply.
 
 | Tool | Purpose | Rate Limit |
 |------|---------|------------|
@@ -109,7 +112,7 @@ Use this decision tree to select the right search approach:
 2. "What physics/dynamical systems concepts are relevant?"
    -> Load domain context files (dynamical-systems.md)
 
-3. "What Mathlib theorems apply?"
+3. "What Mathlib theorems apply?" (when the mathlib-lookup-gate resolves to perform)
    -> Use lean_leansearch, lean_loogle, lean_leanfinder for theorem discovery
 
 4. "What are the standard constructions?"
@@ -121,7 +124,7 @@ Use this decision tree to select the right search approach:
 
 **Search Priority**:
 1. Codebase exploration (authoritative, project-specific)
-2. Mathlib lookup (theorem discovery)
+2. Mathlib lookup (theorem discovery, when the mathlib-lookup-gate resolves to perform)
 3. Context file review (documented conventions)
 4. Web search (external best practices, physics literature)
 
@@ -175,6 +178,14 @@ Extract from input:
 - `Read` key files to understand existing patterns
 
 **Step 2: Mathlib Lookup (For Theorem Discovery)**
+
+Resolve the gate in `context/patterns/mathlib-lookup-gate.md` FIRST — condition (a) is a Lean
+target (`file_scope` contains a `*.lean` path, or `task_type` is `lean4`-routed) AND condition
+(b) is the four lookup tools being registered in this session (one `ToolSearch` call). When the
+gate resolves to skip, write the one-line skip note into the report (see the pattern file for the
+exact wording) and move on to Step 3 without attempting the queries below.
+
+When the gate resolves to perform:
 - `lean_leansearch` for natural language queries
 - `lean_loogle` for type pattern queries
 - `lean_leanfinder` for semantic queries
@@ -194,7 +205,7 @@ Extract from input:
 
 Compile discovered information:
 - Relevant patterns from codebase
-- Relevant Mathlib theorems (from lookup tools)
+- Relevant Mathlib theorems (from lookup tools, when the gate resolved to perform)
 - Established conventions from context files
 - External physics/math theory
 - Implementation recommendations
@@ -216,7 +227,7 @@ Create directory and write report:
 **Completed**: {ISO8601}
 **Effort**: {estimate}
 **Dependencies**: {list or None}
-**Sources/Inputs**: - Codebase, Mathlib lookup MCP, WebSearch, domain context files
+**Sources/Inputs**: - Codebase, Mathlib lookup MCP (when the gate resolved to perform), WebSearch, domain context files
 **Artifacts**: - path to this report
 **Standards**: report-format.md, subagent-return.md
 **Task Type**: physics
@@ -235,7 +246,8 @@ Create directory and write report:
 - {Existing patterns in source files}
 
 ### Mathlib Theorems
-- {Relevant theorems found via Mathlib lookup tools}
+- {Relevant theorems found via Mathlib lookup tools, when the gate resolved to perform; otherwise
+  the one-line skip note from `context/patterns/mathlib-lookup-gate.md`}
 
 ### Context File Review
 - {Relevant domain knowledge loaded}
@@ -255,7 +267,7 @@ Create directory and write report:
 
 ## Appendix
 - Search queries used
-- Mathlib lookup results
+- Mathlib lookup results (when the gate resolved to perform)
 - References to documentation
 ```
 
@@ -286,7 +298,8 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
     "delegation_path": ["orchestrator", "research", "physics-research-agent"],
     "findings_count": 5,
     "context_files_loaded": ["dynamical-systems.md"],
-    "mathlib_lookups_performed": 2
+    "mathlib_lookups_performed": 2,
+    "mathlib_lookup_gated": "performed"
   }
 }
 ```
@@ -300,6 +313,17 @@ Example return:
 Research completed for task {N}:
 - Found existing fixed point patterns in source files
 - Used lean_leansearch to find Banach fixed point theorem in Mathlib
+- Loaded dynamical-systems.md context
+- Cross-referenced topology context for continuous systems
+- Created report at specs/412_ormalize_fixed_points/reports/01_fixed-points-research.md
+- Metadata written for skill postflight
+```
+
+Gated-skip variant (no Lean target or lookup tools unregistered):
+```
+Research completed for task {N}:
+- Found existing fixed point patterns in source files
+- Mathlib lookup skipped: no Lean target (gate resolved to skip, see report)
 - Loaded dynamical-systems.md context
 - Cross-referenced topology context for continuous systems
 - Created report at specs/412_ormalize_fixed_points/reports/01_fixed-points-research.md
@@ -341,7 +365,8 @@ Same patterns as other research agents: continue with fallback on errors, write 
 3. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
 4. Always return brief text summary (3-6 bullets), NOT JSON
 5. Cross-reference math domain for mathematical foundations
-6. Use Mathlib lookup tools for theorem discovery
+6. Resolve the Mathlib-lookup gate (`context/patterns/mathlib-lookup-gate.md`) and use the lookup
+   tools when it resolves to perform
 7. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:

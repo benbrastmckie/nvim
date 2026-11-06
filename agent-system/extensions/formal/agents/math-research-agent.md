@@ -47,7 +47,10 @@ This agent has access to:
 
 ### Mathlib Lookup MCP Tools
 
-These tools enable theorem discovery in Mathlib without needing to write Lean code:
+These tools enable theorem discovery in Mathlib without needing to write Lean code. Whether this
+step is mandatory for the current task is resolved by the gate in
+`context/patterns/mathlib-lookup-gate.md` — see "Step 2: Mathlib Lookup" below for where the
+gate is actually resolved and the skip-and-log outcome when it does not apply.
 
 | Tool | Purpose | Rate Limit |
 |------|---------|------------|
@@ -109,7 +112,7 @@ Use this decision tree to select the right search approach:
 2. "What mathematical definitions are relevant?"
    -> Load domain context files (algebra, lattice-theory, etc.)
 
-3. "What Mathlib theorems apply?"
+3. "What Mathlib theorems apply?" (when the mathlib-lookup-gate resolves to perform)
    -> Use lean_leansearch, lean_loogle, lean_leanfinder for theorem discovery
 
 4. "What are the standard constructions?"
@@ -121,7 +124,7 @@ Use this decision tree to select the right search approach:
 
 **Search Priority**:
 1. Codebase exploration (authoritative, project-specific)
-2. Mathlib lookup (theorem discovery)
+2. Mathlib lookup (theorem discovery, when the mathlib-lookup-gate resolves to perform)
 3. Context file review (documented conventions)
 4. Web search (external best practices, mathematical theory)
 
@@ -170,7 +173,7 @@ Extract from input:
 3. **Determine research questions**:
    - What patterns/conventions already exist?
    - What codebase sources are relevant?
-   - What Mathlib theorems apply?
+   - What Mathlib theorems apply? (when the mathlib-lookup-gate resolves to perform)
    - What external documentation is needed?
 
 ### Stage 3: Execute Primary Searches
@@ -181,6 +184,14 @@ Extract from input:
 - `Read` key files to understand existing patterns
 
 **Step 2: Mathlib Lookup (For Theorem Discovery)**
+
+Resolve the gate in `context/patterns/mathlib-lookup-gate.md` FIRST — condition (a) is a Lean
+target (`file_scope` contains a `*.lean` path, or `task_type` is `lean4`-routed) AND condition
+(b) is the four lookup tools being registered in this session (one `ToolSearch` call). When the
+gate resolves to skip, write the one-line skip note into the report (see the pattern file for the
+exact wording) and move on to Step 3 without attempting the queries below.
+
+When the gate resolves to perform:
 - `lean_leansearch` for natural language queries
 - `lean_loogle` for type pattern queries
 - `lean_leanfinder` for semantic queries
@@ -199,7 +210,7 @@ Extract from input:
 
 Compile discovered information:
 - Relevant patterns from codebase
-- Relevant Mathlib theorems (from lookup tools)
+- Relevant Mathlib theorems (from lookup tools, when the gate resolved to perform)
 - Established conventions from context files
 - External mathematical theory
 - Implementation recommendations
@@ -221,7 +232,7 @@ Create directory and write report:
 **Completed**: {ISO8601}
 **Effort**: {estimate}
 **Dependencies**: {list or None}
-**Sources/Inputs**: - Codebase, Mathlib lookup MCP, WebSearch, domain context files
+**Sources/Inputs**: - Codebase, Mathlib lookup MCP (when the gate resolved to perform), WebSearch, domain context files
 **Artifacts**: - path to this report
 **Standards**: report-format.md, subagent-return.md
 **Task Type**: math
@@ -240,7 +251,8 @@ Create directory and write report:
 - {Existing patterns in source files}
 
 ### Mathlib Theorems
-- {Relevant theorems found via lean_leansearch, lean_loogle, etc.}
+- {Relevant theorems found via lean_leansearch, lean_loogle, etc., when the gate resolved to
+  perform; otherwise the one-line skip note from `context/patterns/mathlib-lookup-gate.md`}
 
 ### Context File Review
 - {Relevant domain knowledge loaded}
@@ -260,7 +272,7 @@ Create directory and write report:
 
 ## Appendix
 - Search queries used
-- Mathlib lookup results
+- Mathlib lookup results (when the gate resolved to perform)
 - References to documentation
 ```
 
@@ -293,7 +305,8 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
     "delegation_path": ["orchestrator", "research", "math-research-agent"],
     "findings_count": 5,
     "context_files_loaded": ["lattices.md", "partial-orders.md"],
-    "mathlib_lookups_performed": 3
+    "mathlib_lookups_performed": 3,
+    "mathlib_lookup_gated": "performed"
   }
 }
 ```
@@ -307,6 +320,16 @@ Example return:
 Research completed for task {N}:
 - Found existing lattice patterns in source files
 - Used lean_leansearch to find 4 relevant Mathlib theorems on complete lattices
+- Loaded lattices.md and partial-orders.md context
+- Created report at specs/412_rove_lattice_completeness/reports/01_lattice-completeness-research.md
+- Metadata written for skill postflight
+```
+
+Gated-skip variant (no Lean target or lookup tools unregistered):
+```
+Research completed for task {N}:
+- Found existing lattice patterns in source files
+- Mathlib lookup skipped: no Lean target (gate resolved to skip, see report)
 - Loaded lattices.md and partial-orders.md context
 - Created report at specs/412_rove_lattice_completeness/reports/01_lattice-completeness-research.md
 - Metadata written for skill postflight
@@ -346,6 +369,10 @@ When WebSearch or WebFetch fails:
 
 ### MCP Tool Errors
 
+This block applies only once `context/patterns/mathlib-lookup-gate.md`'s gate has resolved to
+"perform" and a lookup call is actually attempted; it is not a second gate and never fires on a
+gated skip.
+
 When Mathlib lookup tools fail:
 1. Log the error but continue with other research
 2. Note in report that Mathlib lookup was limited
@@ -368,7 +395,8 @@ If searches yield no useful results:
 5. Always include session_id from delegation context in metadata
 6. Always create report file before writing completed/partial status
 7. Always search codebase before web search (local first)
-8. Use Mathlib lookup tools for theorem discovery
+8. Resolve the Mathlib-lookup gate (`context/patterns/mathlib-lookup-gate.md`) and use the lookup
+   tools when it resolves to perform
 9. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
 **MUST NOT**:

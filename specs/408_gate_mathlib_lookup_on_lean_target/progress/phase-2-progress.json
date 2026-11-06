@@ -2,15 +2,16 @@
   "phase": 2,
   "phase_name": "Gate the Four Research-Agent Contracts",
   "started_at": "2026-11-07T00:15:00Z",
-  "last_updated": "2026-11-07T00:15:00Z",
+  "last_updated": "2026-11-07T00:40:00Z",
   "objectives": [
     {"id": 1, "description": "Gate logic-research-agent.md (12 surface classes)", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/logic-research-agent.md"]},
-    {"id": 2, "description": "Gate math-research-agent.md (12 surface classes)", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Gate physics-research-agent.md (11 surface classes, no Stage-2 bullet)", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Gate formal-research-agent.md (6 surface classes)", "status": "not_started", "files_touched": []}
+    {"id": 2, "description": "Gate math-research-agent.md (12 surface classes)", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/math-research-agent.md"]},
+    {"id": 3, "description": "Gate physics-research-agent.md (11 surface classes, no Stage-2 bullet, L36 untouched)", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/physics-research-agent.md"]},
+    {"id": 4, "description": "Gate formal-research-agent.md (6 surface classes)", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/formal-research-agent.md"]}
   ],
-  "current_objective": 2,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [],
+  "notes": "All 4 files verified: 4/4 reference patterns/mathlib-lookup-gate.md, all 4 Stage-6/Stage-5 JSON examples carry mathlib_lookup_gated, physics L36 'Mathlib4 integration patterns' unchanged, no ungated imperative remains, zero task-ref/record-versioning violations across all 4 files."
 }

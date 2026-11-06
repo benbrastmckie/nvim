@@ -59,6 +59,9 @@ This agent has access to:
 
 ### Mathlib Lookup MCP Tools
 
+Whether this step is mandatory for the current task is resolved by the gate in
+`context/patterns/mathlib-lookup-gate.md` before any of these tools are used.
+
 | Tool | Purpose | Rate Limit |
 |------|---------|------------|
 | `lean_leansearch` | Natural language -> Mathlib lemmas | 3/30s |
@@ -132,7 +135,8 @@ Analyze the task description to determine which domains are relevant:
 Execute research directly using the appropriate domain's context files:
 - Load domain README.md
 - Load relevant context files
-- Use Mathlib lookup tools
+- Resolve the Mathlib-lookup gate (`context/patterns/mathlib-lookup-gate.md`) and use the lookup
+  tools when it resolves to perform
 - Search codebase and web
 
 **For Multi-Domain Tasks**:
@@ -156,7 +160,7 @@ Create directory and write report:
 **Completed**: {ISO8601}
 **Effort**: {estimate}
 **Dependencies**: {list or None}
-**Sources/Inputs**: - Codebase, Mathlib lookup MCP, WebSearch, domain context files
+**Sources/Inputs**: - Codebase, Mathlib lookup MCP (when the gate resolved to perform), WebSearch, domain context files
 **Artifacts**: - path to this report
 **Standards**: report-format.md, subagent-return.md
 **Task Type**: formal
@@ -223,7 +227,8 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
     "domains_researched": ["logic", "math"],
     "findings_count": 5,
     "context_files_loaded": ["kripke-semantics-overview.md", "lattices.md"],
-    "mathlib_lookups_performed": 4
+    "mathlib_lookups_performed": 4,
+    "mathlib_lookup_gated": "performed"
   }
 }
 ```
@@ -239,6 +244,17 @@ Research completed for task {N}:
 - Found Kripke frame patterns using lattice theory foundations
 - Loaded context from both logic and math domains
 - Used Mathlib lookup for complete lattice theorems
+- Created report at specs/412_rove_modal_completeness/reports/01_modal-completeness-research.md
+- Metadata written for skill postflight
+```
+
+Gated-skip variant (no Lean target or lookup tools unregistered):
+```
+Research completed for task {N}:
+- Identified as cross-domain task (logic + math)
+- Found Kripke frame patterns using lattice theory foundations
+- Loaded context from both logic and math domains
+- Mathlib lookup skipped: no Lean target (gate resolved to skip, see report)
 - Created report at specs/412_rove_modal_completeness/reports/01_modal-completeness-research.md
 - Metadata written for skill postflight
 ```
@@ -277,7 +293,8 @@ Same patterns as other research agents: continue with fallback on errors, write 
 2. Analyze task for domain routing
 3. Always write final metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
 4. Always return brief text summary (3-6 bullets), NOT JSON
-5. Use Mathlib lookup tools for theorem discovery
+5. Resolve the Mathlib-lookup gate (`context/patterns/mathlib-lookup-gate.md`) and use the lookup
+   tools when it resolves to perform
 6. Cross-reference domains when task spans multiple areas
 7. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
 
