@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "summary": "Wrote a 3-phase plan for the exact-pid process-check standard, grounded in the research report's verified findings (origin fix live in test-gate-registry-resolution.sh case13, zero live corpus violations, mechanical lint declined on a 100%-exemption-rate finding, insertion point inside the standard's existing --jobs/serialized-set section). Phase 1 re-derives the audit live and reproduces the original collision shape on purpose with a mandatory non-vacuousness probe; Phase 2 lands the subsection and updates its index-entries.json entry; Phase 3 redeploys and runs the complete gate set with an explicit source-store TARGET. The verdict-extraction sibling's edit to the same file is already landed, so the plan directs a rebase-onto, not a revert.",
+  "status": "implemented",
+  "summary": "Implemented all 3 plan phases for task 415. Live-audited the corpus (zero violations across 8 classified non-violating hits), deliberately reproduced the original sibling-process collision against the already-fixed test-gate-registry-resolution.sh case13 with non-vacuousness evidence, and recorded the declined-mechanical-lint decision. Landed a new parallelism-safety subsection in shell-script-testing.md (inside the Suite runtime section, before the suite-selection-lib subsection) and updated its index-entries.json entry. Redeployed and triaged the gate set under the dispatch's Batch Gate Deferral directive; all 4 scoped-tier failures traced to pre-existing, unrelated causes (lean-extension manifest/orphan drift, a transient ambient-load timeout confirmed clean on re-run, and an unrelated memory-extension doc issue), none attributable to this task.",
   "blockers": [],
-  "phases_completed": 0,
+  "phases_completed": 3,
   "phases_total": 3,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/415_exact_pid_process_check_standard/plans/01_exact-pid-process-checks.md",
-      "summary": "3-phase implementation plan, 2 hours estimated, waves [[1],[2],[3]]."
+      "type": "summary",
+      "path": "specs/415_exact_pid_process_check_standard/summaries/01_exact-pid-process-checks-summary.md",
+      "summary": "Full 3-phase record: audit, collision reproduction, declination decision, the landed subsection and index update, and the gate-set triage."
     }
   ],
-  "dispatch_seq": 10
+  "dispatch_seq": 18
 }
