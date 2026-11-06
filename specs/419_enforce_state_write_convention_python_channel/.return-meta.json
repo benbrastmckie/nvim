@@ -27,29 +27,53 @@
       "category": "PATTERN",
       "source_artifact": "specs/419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["fail-open", "fail-closed", "write-time-hook", "deploy-gate", "shared-predicate-library"]
+      "suggested_keywords": [
+        "fail-open",
+        "fail-closed",
+        "write-time-hook",
+        "deploy-gate",
+        "shared-predicate-library"
+      ]
     },
     {
       "content": "When a test case must enumerate 'every real file matching pattern X' under a directory for a control/regression assertion, use `git grep -l` (or otherwise scope to tracked files) rather than a plain recursive `grep -rl`. A plain grep is gitignore-unaware and will nondeterministically sweep in vendored/generated content (e.g. a bootstrapped local venv's site-packages) that happens to exist in the current environment, making the enumerated set -- and therefore the test's pass/fail outcome -- depend on incidental local state rather than the repository's actual tracked content. This bit in practice: a plain grep found 34 files (24 vendored third-party packages) where git grep found the correct 10.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-grep", "gitignore-aware-enumeration", "test-fixture-determinism", "vendored-dependencies", "control-case-design"]
+      "suggested_keywords": [
+        "git-grep",
+        "gitignore-aware-enumeration",
+        "test-fixture-determinism",
+        "vendored-dependencies",
+        "control-case-design"
+      ]
     },
     {
       "content": "A new shell script file created via a file-write tool (not `cp`/`touch` from an existing executable sibling) does not inherit the executable bit, and a deploy/sync step that copies files byte-for-byte will carry that missing bit into the deployed tree too. A test harness that directly executes suite files (rather than always invoking `bash <path>`) will then SKIP the new suite silently-but-loudly ('not executable (exec-bit regression?)') rather than running it or erroring hard. Always `chmod +x` a newly-created `scripts/tests/*.sh` (or any directly-executed script) in the source store before its first deploy, and re-run the suite discovery step afterward to confirm the file actually ran rather than trusting a clean exit code alone.",
       "category": "CONFIG",
       "source_artifact": "specs/419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["executable-bit", "chmod", "test-suite-discovery", "deploy-headless", "silent-skip"]
+      "suggested_keywords": [
+        "executable-bit",
+        "chmod",
+        "test-suite-discovery",
+        "deploy-headless",
+        "silent-skip"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
