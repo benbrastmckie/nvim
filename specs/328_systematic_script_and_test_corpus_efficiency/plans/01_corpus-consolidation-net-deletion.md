@@ -142,6 +142,18 @@ block's earlier estimates (237/91,802 and 155 files with no line total) or the d
 report's figures, both superseded. The markdown baseline is read from the same probe line as the
 other two, so no fourth instrument is introduced.
 
+> **Baseline determination (recorded by a later record that recaptured this baseline under the
+> corrected probe).** `script-inventory.sh` was later found to enumerate its corpus from
+> `git ls-files` alone, blind to untracked-but-not-ignored in-corpus files, and was fixed to union
+> tracked with untracked and disclose the contribution via a trailing `untracked=N` field. This
+> baseline (232 scripts/90,568 lines; 160 suites/76,832 lines; 927 files/229,217 lines) was
+> captured before that fix, so it was tracked-only by construction. **Determination: all three
+> populations CONFIRMED SOUND, delta 0.** A `git log --diff-filter=A` sweep from this baseline's
+> own commit to the corrected-probe fix found no file plausibly untracked on disk at the exact
+> capture instant — the narrowing evidence (a 2.5-hour commit-log bracket showing no concurrent
+> sibling activity) rules out every candidate. No number in this baseline table or in the probe
+> lines below needs correction.
+
 **Interim figures, re-measured at revision time** (same instrument, same corpus definition):
 `scripts=233 lines=90661 test_suites=161 test_lines=77067 md_files=927 md_lines=229217` —
 NET-PROD +93 and NET-TEST +235 after Phase 3 (the extracted lib and its new regression suite,
@@ -178,6 +190,13 @@ tranche deliberately included the smallest suites in the corpus, several of whic
 `mktemp -d` workdir or no `REPO_ROOT` resolution at all — nothing to remove on those pieces; see
 Phase 6's own Scope Hypothesis confirmation note for the full accounting and the expectation that
 Phases 7-8's larger, not-smallness-selected tranches realize a higher per-suite span.
+
+> **Determination (interim readings above).** The four interim re-measurements above (revision
+> time, post-Phase-4, post-Phase-5, post-Phase-6) were all captured the same day as the Phase-1
+> baseline, before the corrected-probe fix, and so are tracked-only readings by the same
+> determination as the baseline. None of them is itself cited as an acceptance baseline or
+> target denominator — each is an interim drift-observation measured *against* the Phase-1
+> baseline, which is confirmed sound above. No correction applies to any of these four readings.
 
 Every phase below closes by recording its own delta against whichever of the three figures its
 territory touches, and against the one it belongs to in particular. **A phase whose net is

@@ -568,35 +568,44 @@ plus a read-through confirming every reported delta carries its old and new figu
 
 ---
 
-### Phase 4: Apply the Determinations to Both Parent Plan Files [NOT STARTED]
+### Phase 4: Apply the Determinations to Both Parent Plan Files [COMPLETED]
 
 **Goal**: Both parent plan files carry, per figure, either a confirmation that the figure is sound
 or the corrected figure; and the parent's running net-deletion figure is restated against the
 baseline the determination leaves standing, with each restated figure's instrument named.
 
 **Tasks**:
-- [ ] Re-read each parent plan file immediately before editing it, per the dispatch's territory
+- [x] Re-read each parent plan file immediately before editing it, per the dispatch's territory
       directive, and confirm no foreign modification has landed since Phase 2's enumeration. Record
       the confirmation. If a foreign commit or foreign uncommitted modification to either file is
-      observed, stop and report it rather than proceeding.
-- [ ] In `plans/01_corpus-consolidation-net-deletion.md`: annotate the Running Net Figures baseline
+      observed, stop and report it rather than proceeding. *(completed: no foreign modification;
+      see "This Record's Own Outcome" below)*
+- [x] In `plans/01_corpus-consolidation-net-deletion.md`: annotate the Running Net Figures baseline
       table and each recorded probe line with its determination. Where a figure is confirmed sound,
       say so against the evidence; where it shifts, give the corrected figure and keep the original
-      alongside it so the correction is auditable rather than silently overwritten.
-- [ ] In `plans/03_markdown-corpus-consolidation.md`: the same annotation pass, extended to the
+      alongside it so the correction is auditable rather than silently overwritten. *(completed: all
+      recorded figures confirmed sound, delta 0)*
+- [x] In `plans/03_markdown-corpus-consolidation.md`: the same annotation pass, extended to the
       Phase-20 Instrument A and Instrument B blocks. Instrument A's raw NET-TOTAL is restated
       against the corrected baseline if the baseline shifted; Instrument B is annotated with the
-      explicit statement that it is probe-independent and therefore unchanged.
-- [ ] Restate the parent's running net-deletion figure. Name, for each of NET-PROD, NET-TEST, NET-MD
+      explicit statement that it is probe-independent and therefore unchanged. *(completed: baseline
+      table, five interim readings, Scope Widening re-confirmation, Instrument A (ambiguity
+      resolved), and Instrument B (unaffected by construction) all annotated)*
+- [x] Restate the parent's running net-deletion figure. Name, for each of NET-PROD, NET-TEST, NET-MD
       and NET-TOTAL, the instrument the restated figure rests on, so a reader cannot mistake a
-      probe-delta figure for the acceptance figure or vice versa.
-- [ ] Where the correction is immaterial, state that plainly in both files — including the measured
+      probe-delta figure for the acceptance figure or vice versa. *(completed: "Running net-deletion
+      figure, restated against the corrected baseline" table in plans/03, 8 rows — 4 acceptance
+      (Instrument B) + 4 raw probe-delta (Instrument A), none moved)*
+- [x] Where the correction is immaterial, state that plainly in both files — including the measured
       order of magnitude against the −10,000 floor — rather than leaving the reader to infer
-      soundness from an absent correction.
-- [ ] Record this record's own outcome in this plan file: the correction's magnitude, whether it was
-      material, and the resulting disposition of the parent's acceptance determination.
-- [ ] Stage only the explicit file list this phase touched — never a directory or glob pathspec — and
-      review `git status --short` and `git diff --staged` before committing.
+      soundness from an absent correction. *(completed: stated in both files' determination notes
+      and in the restated-figure table's closing paragraph)*
+- [x] Record this record's own outcome in this plan file: the correction's magnitude, whether it was
+      material, and the resulting disposition of the parent's acceptance determination. *(completed:
+      see "This Record's Own Outcome (Phase 4)" section below)*
+- [x] Stage only the explicit file list this phase touched — never a directory or glob pathspec — and
+      review `git status --short` and `git diff --staged` before committing. *(completed via
+      git-commit-phase.sh's files_touched-derived scoped staging, reviewed below)*
 
 **Timing**: 1 hour
 
@@ -681,6 +690,54 @@ closed with the correction's magnitude and its disposition stated in the summary
 - [ ] `bash .claude/scripts/validate-artifact.sh <path> plan` passes for all three plan files.
 - [ ] Each parent plan file's phase-heading set is unchanged by this record's edits.
 - [ ] `bash .claude/scripts/verify-deploy.sh` runs green over the finished work.
+
+## This Record's Own Outcome (Phase 4)
+
+**Re-read confirmation.** Both parent plan files were re-read immediately before editing. The
+last commit touching `plans/01_corpus-consolidation-net-deletion.md` was its own Phase 6 commit
+(`30d75561a`, 2026-10-16 — the file was left at that point when the parent's revision superseded
+it with `plans/03`, per the plan's own recorded Non-Goal); the last touching
+`plans/03_markdown-corpus-consolidation.md` was the parent's own completion commit (`fd86bf491`,
+2026-11-05). `git status --porcelain` on the parent's directory showed no uncommitted modification
+to either plan file (only an unrelated pre-existing `.decisions.json` change, outside this
+record's scope). **No foreign modification had landed since Phase 2's enumeration.**
+
+**Correction magnitude: old figure, new figure, delta.**
+
+| Population | Old (recorded) | New (corrected) | Delta |
+|------------|-----------------|-------------------|-------|
+| NET-PROD baseline | 232 scripts, 90,568 lines | 232 scripts, 90,568 lines | 0 |
+| NET-TEST baseline | 160 suites, 76,832 lines | 160 suites, 76,832 lines | 0 |
+| NET-MD baseline | 927 files, 229,217 lines | 927 files, 229,217 lines | 0 |
+
+**The correction is immaterial — a null result.** No baseline figure in either parent plan file
+required a numeric change. The determination (Phase 2) found 17 recorded figures across both
+files; only the frozen Phase-1 baseline (and its byte-identical restatements) carried any genuine
+exposure to the undercounting defect, and Phase 3's bound — corroborated by a 2.5-hour commit-log
+bracket around the capture instant showing zero concurrent sibling activity — found the narrowed
+untracked-at-capture set to be empty. Every other figure either used an unexposed instrument,
+postdates the fix, or is immune by construction (Instrument B).
+
+**Disposition of the parent's acceptance determination: unchanged.** The parent's authoritative
+acceptance figure (Instrument B: NET-PROD +498, NET-TEST +1,402, NET-MD −681, NET-TOTAL +1,219,
+missing the retained −10,000 floor by 11,219 lines) is git-history-derived and was never capable
+of being moved by this correction regardless of its magnitude. With the correction confirmed null,
+even the probe-dependent Instrument A figure (raw NET-TOTAL +20,729, already disclaimed as not the
+acceptance figure) is unchanged. **The parent's verdict — none of the three retained targets met —
+stands exactly as recorded.**
+
+**Related findings, carried forward as follow-ups, not fixed here (out of this record's scope):**
+- The sibling probe `context-reachability.sh` was identified by the fixing record as carrying the
+  identical tracked-only enumeration defect. Not addressed here; belongs in its own record.
+- The parent's own Phase 3 closing note (`plans/01` / `plans/03`, "Net-Positive Justification
+  (declared retroactively...)") independently documented, in real time, the identical
+  `git ls-files`-based blind spot for an unstaged new file and instructed later phases to `git add`
+  before trusting the probe's own delta — i.e., the parent had already worked around the exact
+  defect class this record's probe fix formalizes, which is further corroborating evidence that the
+  running per-phase deltas (as opposed to the one frozen baseline) carry low residual risk.
+- The parent plan-level `- **Status**: [IMPLEMENTING]` marker on `plans/01` was observed to remain
+  unreconciled against the superseding `plans/03`'s `[COMPLETED]` — noted at this record's own plan
+  time as an out-of-scope status-hygiene matter, reported here again rather than fixed.
 
 ## Artifacts & Outputs
 

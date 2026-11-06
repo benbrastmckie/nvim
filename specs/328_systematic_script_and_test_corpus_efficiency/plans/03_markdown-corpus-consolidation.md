@@ -210,6 +210,18 @@ block's earlier estimates (237/91,802 and 155 files with no line total) or the d
 report's figures, both superseded. The markdown baseline is read from the same probe line as the
 other two, so no fourth instrument is introduced.
 
+> **Baseline determination (recorded by a later record that recaptured this baseline under the
+> corrected probe).** `script-inventory.sh` was later found to enumerate its corpus from
+> `git ls-files` alone, blind to untracked-but-not-ignored in-corpus files, and was fixed to union
+> tracked with untracked and disclose the contribution via a trailing `untracked=N` field. This
+> baseline (232 scripts/90,568 lines; 160 suites/76,832 lines; 927 files/229,217 lines) was
+> captured before that fix, so it was tracked-only by construction. **Determination: all three
+> populations CONFIRMED SOUND, delta 0.** A `git log --diff-filter=A` sweep from this baseline's
+> own commit to the corrected-probe fix found no file plausibly untracked on disk at the exact
+> capture instant — the narrowing evidence (a 2.5-hour commit-log bracket showing no concurrent
+> sibling activity) rules out every candidate. No number in this baseline table, in the Scope
+> Widening markdown re-confirmation below, or in the probe lines below needs correction.
+
 **Interim figures, re-measured at revision time** (same instrument, same corpus definition):
 `scripts=233 lines=90661 test_suites=161 test_lines=77067 md_files=927 md_lines=229217` —
 NET-PROD +93 and NET-TEST +235 after Phase 3 (the extracted lib and its new regression suite,
@@ -257,6 +269,14 @@ Phase-1 figures (90,568 / 76,832 / 229,217) remain the one baseline every net is
 against, and drift that is not this task's work is accounted for as drift, never absorbed into a
 new baseline that would hide it.
 
+> **Determination (interim readings above).** The five interim re-measurements above (revision
+> time, post-Phase-4, post-Phase-5, post-Phase-6, and this revision round's own re-measurement)
+> were all captured the same day as the Phase-1 baseline, before the corrected-probe fix, and so
+> are tracked-only readings by the same determination as the baseline. None is itself cited as an
+> acceptance baseline or target denominator — each is an interim drift-observation measured
+> *against* the Phase-1 baseline, which is confirmed sound above. No correction applies to any of
+> these five readings.
+
 **Final measurement, taken at Phase 20 close.** Two independent instruments, both reported rather
 than reconciled into one, because they measure different things and the gap between them IS a
 finding in its own right:
@@ -269,6 +289,17 @@ every phase since Phase 6 has documented that the live corpus is shared with a l
 number of concurrently-dispatched sibling tasks, and this reading sums their work together with
 this task's own. It is recorded because the phase's own task list requires it, not because it is
 the acceptance figure.
+
+> **Determination (Instrument A).** This reading postdates the corrected-probe fix (captured at
+> this phase's own close, roughly 27 hours after the deploy), and it is missing both the
+> `untracked=` and `cost_per_assertion_ms` trailing fields the probe carried by this instant —
+> which a later record investigated as a flagged ambiguity (stale copy vs. recorded-non-verbatim).
+> **Resolved union-based: `git merge-base --is-ancestor` confirms both fix commits are ancestors
+> of this phase's closing commit, the commit's own message records an explicit redeploy
+> immediately before this reading, and the source file at that commit contains both field's code
+> paths verbatim.** The two fields were trimmed when this reading was recorded in prose, not
+> evidence of a stale copy. This is immaterial regardless, since this figure is already disclaimed
+> above as not the acceptance figure.
 
 Instrument B — the mechanical, git-history-anchored sum of every commit whose message matches
 `^task 328` (77 commits, `git log --all --grep='^task 328' -i`), each commit's own
@@ -293,6 +324,34 @@ NET-TEST (test-*.sh):      insertions=9,767  deletions=8,365  net = +1,402
 NET-MD   (*.md):           insertions=727    deletions=1,408  net = -681
 NET-TOTAL:                                                     +1,219
 ```
+
+> **Determination (Instrument B).** Git-history-derived: never consults the probe's corpus
+> enumeration at all, each commit diffed against its own parent. **Unaffected by construction, not
+> merely by timing** — the corrected-probe fix cannot move this figure in either direction,
+> whether or not the Phase-1 baseline above had required a correction. This is the task's
+> authoritative acceptance figure, and it is restated unchanged below.
+
+**Running net-deletion figure, restated against the corrected baseline (a later record's
+recapture).** The Phase-1 baseline was confirmed sound with a delta of 0 against the
+corrected probe — the correction is a **null result**, so every figure below is unchanged in
+value; only the instrument each figure rests on is named explicitly here, so a probe-delta figure
+is never mistaken for the acceptance figure or vice versa:
+
+| Figure | Restated value | Instrument | Moved by the correction? |
+|--------|-----------------|------------|---------------------------|
+| NET-PROD (acceptance) | +498 | Instrument B (`git show --numstat` over 77 named commits) | No — unaffected by construction |
+| NET-TEST (acceptance) | +1,402 | Instrument B | No — unaffected by construction |
+| NET-MD (acceptance) | −681 | Instrument B | No — unaffected by construction |
+| NET-TOTAL (acceptance) | +1,219 | Instrument B (sum of the three) | No — unaffected by construction |
+| NET-PROD (raw probe-delta, not acceptance) | +6,999 | Instrument A (`script-inventory.sh --size-line`, live minus Phase-1 baseline) | No — baseline correction was 0 |
+| NET-TEST (raw probe-delta, not acceptance) | +10,703 | Instrument A | No — baseline correction was 0 |
+| NET-MD (raw probe-delta, not acceptance) | +3,027 | Instrument A | No — baseline correction was 0 |
+| NET-TOTAL (raw probe-delta, not acceptance) | +20,729 | Instrument A (sum of the three) | No — baseline correction was 0 |
+
+The correction's magnitude, order of magnitude against the retained −10,000 floor: **0 lines
+(null), three orders of magnitude below the floor even under the largest exposure this probe has
+ever directly measured (32 lines).** The task's acceptance determination — none of the three
+targets met, NET-TOTAL +1,219 against the −10,000 floor — is unchanged by this recapture.
 
 **None of the three retained targets are met, and two of the three figures are not merely short
 of target but positive — the task added lines to both the production-script and test-script
@@ -499,6 +558,9 @@ rather than from the description's prose.
 always comparable): every `*.md` file under `agent-system/extensions/**`, as enumerated by
 `script-inventory.sh --size-line`. Live figure, re-measured at revision time: **927 files,
 229,217 lines** — identical to the Phase 1 baseline, so the baseline needs no restatement.
+*(Determination: same pre-fix era as the Phase-1 baseline, confirmed sound — see the Running Net
+Figures section's baseline determination above. This is a corroborating re-read of the identical
+figure, not an independent capture requiring its own correction.)*
 
 **Whole-file duplication is zero.** All 927 files hashed: no two are byte-identical. The
 duplication is therefore intra-content — restated blocks inside otherwise distinct files, the same

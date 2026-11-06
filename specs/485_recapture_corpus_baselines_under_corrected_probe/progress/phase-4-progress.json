@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Apply the Determinations to Both Parent Plan Files",
+  "started_at": "2026-11-05T02:20:00Z",
+  "last_updated": "2026-11-05T03:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read both parent plan files, confirm no foreign modification", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Annotate plans/01 baseline table and probe lines with determination", "status": "done", "files_touched": ["specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md"]},
+    {"id": 3, "description": "Annotate plans/03 baseline table, probe lines, Scope Widening, Instrument A/B", "status": "done", "files_touched": ["specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"]},
+    {"id": 4, "description": "Restate the parent's running net-deletion figure with instrument named", "status": "done", "files_touched": ["specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"]},
+    {"id": 5, "description": "State the correction's immateriality plainly in both files", "status": "done", "files_touched": ["specs/328_systematic_script_and_test_corpus_efficiency/plans/01_corpus-consolidation-net-deletion.md", "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md"]},
+    {"id": 6, "description": "Record this record's own outcome in the 485 plan", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 7, "description": "Stage explicit file list, review status/diff before commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
