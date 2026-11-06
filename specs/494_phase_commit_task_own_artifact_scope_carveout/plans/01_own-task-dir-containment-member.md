@@ -1,7 +1,7 @@
 # Implementation Plan: Exempt a task's own artifact directory from the phase-commit containment predicate
 
 - **Task**: 494 - Exempt a task own artifact directory from the phase-commit containment predicate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None (this record is the predecessor; tasks 430 and 486 each depend on it)
 - **Research Inputs**: specs/494_phase_commit_task_own_artifact_scope_carveout/reports/01_phase-commit-own-task-dir-carveout.md

@@ -11,15 +11,14 @@ next_project_number: 505
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,420,430,439,444,448,458,463,472,474,475,476,492,497 | 369,383,397,409,412,418,423,431,435,445,459,491,494 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 390,399,402,436,446,451,454 | 313,391,398,420,430,435,439,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 360,421,438,455,461,462,481,484,500 | 313,390,402,435,446,448,451,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 5 | 449,452,457,479,486 | 360,435,444,448,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 6 | 450,480,487,501 | 420,435,449,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 7 | 496 | 450,487,488 | extensions |
-| 8 | 498 | 496 | extensions |
-| 9 | 499 | 497,498 | extensions |
+| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,420,439,444,446,448,458,463,472,474,475,476,492,497 | 369,383,397,409,412,418,423,430,431,435,445,459,491 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 360,390,399,402,436,438,451,454,455,461,484,500 | 313,391,398,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 5 | 450,480,487,501 | 420,435,449,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
+| 6 | 496 | 450,487,488 | extensions |
+| 7 | 498 | 496 | extensions |
+| 8 | 499 | 497,498 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -91,13 +90,12 @@ next_project_number: 505
 
 ### File Scope Lifecycle
 
-494 [IMPLEMENTING] — Exempt a task own artifact directory from the phase-commit...
-  └─ 430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
-    └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
-      └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
-      └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
-        └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
-          └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
+430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
+  └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
+    └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
+    └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
+      └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
+        └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
 
 ### Lean Extension
 
@@ -922,12 +920,13 @@ None of the four carries the verbatim-heading contract, the `^##+` matching rule
 ---
 
 ### 494. Exempt a task own artifact directory from the phase-commit containment predicate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
 - **Research**: [494_phase_commit_task_own_artifact_scope_carveout/reports/01_phase-commit-own-task-dir-carveout.md]
 - **Plan**: [494_phase_commit_task_own_artifact_scope_carveout/plans/01_own-task-dir-containment-member.md]
+- **Summary**: [494_phase_commit_task_own_artifact_scope_carveout/summaries/01_own-task-dir-containment-member-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one; note that file carries NO top-level source_dir, only per-extension entries. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
