@@ -1,7 +1,7 @@
 # Implementation Plan: Task #385
 
 - **Task**: 385 - Lean4 plan with zero Lean goals
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/385_lean4_plan_with_zero_lean_goals/reports/01_zero-lean-goals-plan-shape.md
@@ -118,25 +118,25 @@ exists but was not consulted and is not touched by this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Zero-Goal Recognition in lean-challenge-snapshot.sh [NOT STARTED]
+### Phase 1: Zero-Goal Recognition in lean-challenge-snapshot.sh [COMPLETED]
 
 **Goal**: Teach the script to recognize the marker and report it with a dedicated exit code `72`,
 without altering any other route's behaviour.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh` immediately
-      before editing (sibling-concurrency precaution).
-- [ ] In `extract_r1`'s embedded Python helper, at the existing `if not blocks:` branch: before
+- [x] Re-read `agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh` immediately
+      before editing (sibling-concurrency precaution). *(completed)*
+- [x] In `extract_r1`'s embedded Python helper, at the existing `if not blocks:` branch: before
       the current `sys.stderr.write(...)` / `sys.exit(2)`, test the already-extracted `section`
       text for the literal substring `lean-challenge-statements:none`. On a hit, `sys.exit(3)`
       writing nothing to the names/module output files. On a miss, leave the existing stderr
-      message and `sys.exit(2)` byte-for-byte unchanged.
-- [ ] Update `extract_r1`'s own exit-status comment block (the `#   0 / 1 / 2` list above the
-      function) with the new `3` row, matching the existing wording style.
-- [ ] In the main resolution block, add an `elif [ "$r1_status" -eq 3 ]; then ROUTE="zero-goal"`
+      message and `sys.exit(2)` byte-for-byte unchanged. *(completed)*
+- [x] Update `extract_r1`'s own exit-status comment block (the `#   0 / 1 / 2` list above the
+      function) with the new `3` row, matching the existing wording style. *(completed)*
+- [x] In the main resolution block, add an `elif [ "$r1_status" -eq 3 ]; then ROUTE="zero-goal"`
       arm between the existing `-eq 0` and `-eq 2` arms; leave the `-eq 2 -> exit 71` arm and the
-      trailing `else -> extract_r2 / ROUTE="git-baseline"` arm untouched.
-- [ ] Replace the unconditional `if [ ! -s "$GOALS_FILE" ]` guard with a three-way branch that
+      trailing `else -> extract_r2 / ROUTE="git-baseline"` arm untouched. *(completed)*
+- [x] Replace the unconditional `if [ ! -s "$GOALS_FILE" ]` guard with a three-way branch that
       preserves its position (still strictly before `cross_validate_identifiers`):
       (i) `ROUTE="zero-goal"` and `GOALS_FILE` empty -> print an explicit informational
       zero-goal message naming the plan file and the fact that no Challenge, module, manifest, or
@@ -144,12 +144,15 @@ without altering any other route's behaviour.
       `exit 71` with a message naming the inconsistency (marker claims no goals while `**Goals**:`
       names identifiers) and the offending identifiers; (iii) any other route with an empty
       `GOALS_FILE` -> today's exact `"ERROR: no identifiers found under **Goals**: ... nothing to
-      snapshot."` message and `exit 71`, verbatim.
-- [ ] Add `72` to the file-header `# Exit codes` block with the same wording the design record's
+      snapshot."` message and `exit 71`, verbatim. *(completed)*
+- [x] Add `72` to the file-header `# Exit codes` block with the same wording the design record's
       table will carry (Phase 3), keeping the header and the record in sync per the header's own
-      stated convention.
-- [ ] Confirm by reading that no `72` path can reach the status gate, the manifest write, the git
-      commit, or the `--dry-run` print block.
+      stated convention. *(completed)*
+- [x] Confirm by reading that no `72` path can reach the status gate, the manifest write, the git
+      commit, or the `--dry-run` print block. *(completed: confirmed — the zero-goal branch's
+      exit 72 fires strictly before cross_validate_identifiers, before THEOREM_NAMES assembly,
+      before the commit/manifest block, and before the --dry-run print block, which all sit
+      later in the file)*
 
 **Timing**: 1 hour
 

@@ -72,7 +72,7 @@ next_project_number: 505
 
 ### Extensions
 
-29 [PLANNED] — Generate .mcp.json from extension manifests, then register...
+29 [IMPLEMENTING] — Generate .mcp.json from extension manifests, then register...
 342 [HOLD] — Refactor the books extension's context corpus against the...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
@@ -103,7 +103,7 @@ next_project_number: 505
 
 ### Lean Extension
 
-385 [PLANNED] — Define the sanctioned shape for a lean4-typed plan that...
+385 [IMPLEMENTING] — Define the sanctioned shape for a lean4-typed plan that...
   └─ 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
     └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
@@ -6230,7 +6230,7 @@ two files where there is one.
 ---
 
 ### 385. Define the sanctioned shape for a lean4-typed plan that commits to no theorem, and make lean-challenge-snapshot.sh distinguish it from a malformed one
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -7178,7 +7178,7 @@ that produces no finding.
 ---
 
 ### 29. Generate .mcp.json from extension manifests, then register obsidian-memory through it
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 22

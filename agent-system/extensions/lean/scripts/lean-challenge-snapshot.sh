@@ -82,6 +82,9 @@
 #   71  Config error -- identifier-set mismatch between `## Lean Challenge Statements` and
 #       `**Goals**:`, or an identifier resolvable by neither R1 nor R2, or (in --check mode) a
 #       named identifier absent from the current working tree
+#   72  Zero-goal plan -- the `## Lean Challenge Statements` section carries the
+#       `<!-- lean-challenge-statements:none -->` marker and `**Goals**:` names no identifiers;
+#       intentional, no Challenge/module/manifest/commit produced (no Comparator analogue).
 #   73  Snapshot refused -- status-gate refusal (regeneration attempted past `planned`), or an
 #       existing manifest without --force
 #   74  --compile ran and the assembled module FAILED to compile. FATAL, never advisory -- unlike
@@ -543,6 +546,9 @@ PYEOF
 #   1  section absent entirely -> caller falls back to R2 (Phase 3)
 #   2  section present but contains zero ```lean fenced blocks -> hard error (malformed R1
 #      section is never silently treated as "R1 absent")
+#   3  section present, zero ```lean fenced blocks, and the zero-goal marker
+#      (`<!-- lean-challenge-statements:none -->`) found in the section text -> caller treats
+#      this as a deliberate no-op (ROUTE="zero-goal"), never a config error
 # ---------------------------------------------------------------------------
 extract_r1() {
   local plan_file="$1" names_out="$2" module_out="$3"
@@ -564,6 +570,8 @@ section = rest[: m2.start()] if m2 else rest
 
 blocks = re.findall(r'```lean\n(.*?)```', section, re.DOTALL)
 if not blocks:
+    if 'lean-challenge-statements:none' in section:
+        sys.exit(3)
     sys.stderr.write(
         "ERROR: '## Lean Challenge Statements' section is present but contains no ```lean "
         "fenced blocks -- a malformed R1 section is never treated as R1-absent.\n"
@@ -915,17 +923,36 @@ if [ "$r1_status" -eq 0 ]; then
   ROUTE="plan-declared"
 elif [ "$r1_status" -eq 2 ]; then
   exit 71
+elif [ "$r1_status" -eq 3 ]; then
+  ROUTE="zero-goal"
 else
   # R1 section entirely absent -> R2 fallback (Phase 3).
   extract_r2 "$PLAN_FILE" "$GOALS_FILE" "$NAMES_FILE" "$MODULE_FILE"
   ROUTE="git-baseline"
 fi
 
-# This guard fires unconditionally on BOTH the R1 (plan-declared) and R2 (git-baseline) routes
-# above, strictly before cross_validate_identifiers below -- an empty $GOALS_FILE can never
-# reach cross-validation and vacuously pass. Do not re-litigate the "vacuous pass" theory
-# without re-measuring both routes against both --check and snapshot mode first.
-if [ ! -s "$GOALS_FILE" ]; then
+# This guard fires unconditionally on EVERY route above, strictly before
+# cross_validate_identifiers below -- an empty $GOALS_FILE can never reach cross-validation and
+# vacuously pass. Do not re-litigate the "vacuous pass" theory without re-measuring every route
+# against both --check and snapshot mode first.
+#
+# ROUTE="zero-goal" (the `<!-- lean-challenge-statements:none -->` marker was recognized) gets
+# its own two-way branch: an empty $GOALS_FILE here is the deliberate, intentional no-op this
+# marker exists to express (exit 72, informational, no Challenge/module/manifest/commit); a
+# NON-empty $GOALS_FILE is a genuine self-inconsistency (the plan claims zero goals via the
+# marker while `**Goals**:` names identifiers) and stays a hard 71 naming the offending
+# identifiers. Every other route keeps today's exact unconditional message and exit 71,
+# byte-for-byte unchanged.
+if [ "$ROUTE" = "zero-goal" ]; then
+  if [ ! -s "$GOALS_FILE" ]; then
+    echo "# zero-goal: '## Lean Challenge Statements' carries the <!-- lean-challenge-statements:none --> marker and '**Goals**:' names no identifiers in $PLAN_FILE -- no Challenge, module, manifest, or commit produced." >&2
+    exit 72
+  else
+    offending=$(tr '\n' ',' < "$GOALS_FILE" | sed 's/,$//')
+    echo "ERROR: '## Lean Challenge Statements' carries the <!-- lean-challenge-statements:none --> marker but '**Goals**:' names identifiers ($offending) in $PLAN_FILE -- a zero-goal plan must leave '**Goals**:' empty too." >&2
+    exit 71
+  fi
+elif [ ! -s "$GOALS_FILE" ]; then
   echo "ERROR: no identifiers found under **Goals**: in $PLAN_FILE -- nothing to snapshot." >&2
   exit 71
 fi
