@@ -1,5 +1,5 @@
 ---
-next_project_number: 518
+next_project_number: 519
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 518
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,408,410,412,418,423,430,431,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,445,446,448,458,463,472,474,475,492,497,516 | 369,383,397,412,418,430,431,435,459,491,493,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 360,390,399,402,436,438,444,451,454,455,461,476,484,500,507 | 313,391,398,420,423,435,439,445,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 360,390,399,402,436,438,444,451,454,455,461,476,484,500,507,518 | 313,391,398,420,423,435,439,445,446,448,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486,517 | 360,390,402,435,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 5 | 450,480,487,501,508,509,513 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 6 | 496 | 450,487,488 | extensions |
@@ -128,6 +128,7 @@ next_project_number: 518
   └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
   └─ 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
+  └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 507 [NOT STARTED] — Re-adjudicate the declined pre-postflight-sweep deploy...
 
 ### Agent System
@@ -145,6 +146,113 @@ next_project_number: 518
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 518. State the blockers[] admission contract and continuation-on-partial requirement at every handoff-authoring site
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 472, Task 435
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+## Goal
+
+Every handoff-authoring site must state two facts it currently states nowhere: that the base orchestrate engine LENGTH-COUNTS `blockers[]` and therefore admits no non-blocking entry, and that a continuation pointer is required when `status = "partial"`. A resolved retrospective note placed in `blockers[]` must be recognizable as the defect it is at the moment of authoring, not after it has already stranded a task.
+
+## Provenance
+
+Observed in session sess_1793988163_b25d4a, 2026-11-06, on task 418 (explicit_lint_fixture_test_subject_resolution). Phases 1-3 completed cleanly, were committed, and verified green. The implement dispatch's wrap-up then wrote a handoff that hard-blocked the task from any further dispatch. The defect was in the ARTIFACT, not in the implementation:
+
+  1. The wrap-up placed an already-RESOLVED retrospective note into `blockers[]`. The note concerned transient API transport instability and its own text ended "No blocker prevents resuming phases 4-8 in a normal dispatch". Per docs/architecture/handoff-schema.md's `blockers` field definition, the base engine "only ever reads `blockers | length`, never individual" field content -- so a self-described non-blocker is structurally indistinguishable from a live one.
+  2. The same write omitted `continuation_path`, which the validator expects when status is `partial`.
+
+The orchestrator's own postflight independently raised HANDOFF_VALIDATION_FAILED and attributed it to agent-system/extensions/core/agents/general-implementation-agent.md.
+
+## The gate, and its asymmetry
+
+scripts/orchestrate-triage-classify.sh's `partial` branch (verified 2026-11-06, the `elif $status == "partial"` block) evaluates in this order:
+
+  - `if $cont` -> group "implement" (routes to implement EVEN WITH blockers present)
+  - `elif ($bc > 0)` -> group "needs_human"
+  - `else` -> group "implement"
+
+With `cont=false` and `bc=1`, only needs_human is reachable. Note the asymmetry the authoring sites never mention: a continuation pointer ALONE would have routed to implement with the blocker entry still present. Two independent omissions were each individually sufficient to avoid the strand, and the authoring instruction makes neither salient.
+
+## MEASURED SCOPE -- the gap is systemic, not one agent's
+
+The change request scoped this to general-implementation-agent.md. Measurement (2026-11-06) shows the gap is universal and the instruction is duplicated verbatim:
+
+  - 43 files under agent-system/extensions/*/ carry the identical boilerplate paragraph beginning "`summary` and `blockers` are BOTH required top-level fields." Enumerated: core/agents/{general-implementation,planner,reviser}-agent.md plus 40 extension agents across books, cslib, email, epidemiology, filetypes, founder, latex, lean, nix, nvim, present, python, rust, typst, web, z3.
+  - ZERO of them contain the string `continuation_path`. Verified by grep across every handoff-writing agent including general-research-agent.md.
+  - ZERO of them state that `blockers[]` is length-counted, or that an entry is admissible only when progress is genuinely prevented.
+  - What the paragraph DOES say is entirely about not OMITTING the fields: "`[]` is normal and expected on a clean researched/planned/implemented return. The handoff validator FAILS on either one missing, so write both every time." It is an anti-omission instruction with no admission criterion, which is the precise hole that admits a resolved note.
+
+## A CONTRADICTION in the shared hard-mode contract
+
+context/contracts/wrap-up.md (the H9 contract, `--hard`-only by its own header, loaded by ~48 agents) is the one place that discusses a blocker-bearing partial, and it instructs the exact shape that strands a task. Its "`blocked` vs. `partial`-with-`blockers`" subsection reads: "Use `partial` with a populated `blockers[]` entry AND NO `continuation_path` when some phases completed successfully but a specific remaining phase is blocked by a cause outside the agent's control".
+
+For the case that subsection describes -- a genuinely external, unclosable blocker -- needs_human is the INTENDED routing, and the subsection even says so ("stops same-run redispatch ... routes the task to a visible human-escalation row"). So this is not simply wrong. But it is the only prose an agent has to pattern-match against, it never states that the omission of the pointer is what does the routing, and it was not loaded at all in the observed run (standard mode never loads this file). An agent in standard mode has no guidance whatsoever; an agent in hard mode has guidance that reads as a template for "blockers plus no continuation".
+
+Also note: `summary` is the correct home for a resolved retrospective note. The engine does not count it.
+
+## WHAT TASK 472 ALREADY OWNS -- read before planning, do not re-litigate
+
+472 (handoff_validator_crash_and_defect_record_gap, not_started) is the sibling record and already owns two items that would otherwise be in scope here. This record is deliberately scoped to the DELTA.
+
+  - 472 acceptance item 3 owns "The blockers element shape is stated at the authoring site(s), alongside the existing `artifacts[]` object-shape sentence." That is element SHAPE -- object versus bare string. THIS record is about ADMISSION SEMANTICS: whether an entry belongs in the array at all. Both are holes in the same paragraph and the fixes land in the same sentences, which is why the dependency edge below exists.
+  - 472 acceptance item 4 owns "The Check 5 partial/continuation question has an explicit recorded verdict, and the validator, the schema document and the authoring instruction state the same thing", and its body instructs the implementer to establish whether the advisory WARN was a deliberate ruling. THE MECHANICAL-GUARD QUESTION FOR continuation-on-partial IS THEREFORE 472'S TO RULE ON, NOT THIS RECORD'S. Do not independently decide to make validate-handoff.sh's Check 5 blocking; read 472's landed verdict and conform the prose to it.
+  - 472 names only THREE authoring sites (core/agents/general-implementation-agent.md, lean/agents/lean-implementation-agent.md, lean/agents/lean-implementation-hard-agent.md). As scoped it would fix 3 of the 43 sites carrying the paragraph. The remaining 40 are this record's territory.
+  - 472 does NOT include context/contracts/wrap-up.md in its file_scope at all, so the contradiction above is unowned.
+
+## CANDIDATE APPROACHES -- weigh, do not assume
+
+Presented as candidates with tradeoffs. The plan must choose and record why.
+
+(A) PROSE AT EVERY SITE. Extend the existing boilerplate paragraph in all 43 files with an admission criterion ("an entry here asserts that progress is PREVENTED; the engine counts entries and does not read them, so a resolved or informational note belongs in `summary`") and a continuation-on-partial sentence.
+    + Reaches every authoring site, including standard mode where no contract file loads.
+    + Matches the precedent 472 cites: the closed record pin_handoff_artifacts_element_shape fixed the adjacent `artifacts[]` hole by pinning prose at the authoring sites.
+    - 43-file edit, which is the kind of duplicated-prose sweep that keeps recurring. 435 (reword_dead_lifecycle_command_prose_per_class) is already an in-flight sweep over this same corpus for a different reason.
+
+(B) CENTRALIZE, THEN POINT. Move the handoff-authoring paragraph into one shared context file loaded in BOTH modes (wrap-up.md cannot serve: it is `--hard`-only) and replace the 43 copies with a reference. context/contracts/phase-closure.md is already cited by wrap-up.md as "the universal recording site ... loaded in both modes" and is a candidate host.
+    + Removes the duplication that is the root cause of this class of gap recurring, and fixes the next such gap once instead of 43 times.
+    - Larger blast radius; changes what every handoff-writing agent loads. Must verify the host file is genuinely loaded on every handoff-writing dispatch (research, plan, implement, standard and hard) before relying on it -- an unverified assumption here silently removes the instruction from some sites.
+
+(C) MECHANICAL GUARD ON ADMISSION. Have validate-handoff.sh (or hooks/validate-handoff-location.sh, which already gates every handoff Write/Edit) reject a `blockers[]` entry that is self-evidently non-blocking, or require a continuation pointer whenever blockers are present on a `partial`.
+    + Catches the defect at write time regardless of what prose the agent loaded, which is the only approach that does not depend on the agent having read anything.
+    - "Self-evidently non-blocking" is not mechanically decidable from entry text; a guard would have to key on something coarser. The continuation-pointer half of this is 472's call per the note above. A guard that forces a continuation pointer whenever blockers exist would also break the legitimate external-blocker case wrap-up.md describes, where needs_human IS the wanted outcome.
+    NOTE the existing enforcement asymmetry worth stating in whichever direction is chosen: hooks/validate-handoff-location.sh rejects an ABSENT `blockers` key with exit 2 at write time, but nothing checks what an entry asserts.
+
+(D) COMPLEMENT, NOT ALTERNATIVE. (A or B) for the admission criterion, plus whatever 472 rules for the continuation pointer. Probably the intended shape, but the plan must say so explicitly rather than inherit it.
+
+Also in scope either way: resolve the wrap-up.md subsection so it states WHY the pointer's absence routes to human escalation, rather than presenting "blockers and no continuation_path" as a bare template.
+
+## Acceptance
+
+  1. Every handoff-authoring site reachable by a standard-mode implement dispatch states that `blockers[]` is length-counted by the engine and that an entry asserts progress is prevented, with `summary` named as the home for resolved or informational notes. "Every site" means all 43 measured files, or a verified-loaded shared host plus references, per the chosen approach.
+  2. The continuation-on-partial requirement is stated at the authoring sites, conforming to 472's recorded Check 5 verdict rather than re-deciding it.
+  3. context/contracts/wrap-up.md's "`blocked` vs. `partial`-with-`blockers`" subsection explains the routing consequence of omitting the continuation pointer instead of presenting the shape as a template.
+  4. A fixture test asserts the admission criterion is enforced, if and only if approach (C) is adopted for it; if the chosen approach is prose-only, record explicitly that no mechanical check is added and why.
+  5. The asymmetry is stated once at whichever site is authoritative: a continuation pointer routes a blocker-bearing partial to implement, its absence routes to human escalation.
+
+## Backlog reconciliation
+
+Audited against the full backlog corpus via audit-task-proposals.sh before creation. Recall-biased by design; returned covered-by-closed 73, duplicate-of-open 14, overlaps-open 3, scope-blind 41, subset-of-open 1. The discriminations that matter:
+
+  - 472 -- the sibling record. NOT a duplicate but a genuine partial overlap, handled by scoping this record to the delta and by the serializing edge. See the dedicated section above for the item-by-item split. If an operator prefers, the two could be merged; they were kept separate because 472 is a validator-crash-and-recorder-attribution record whose prose items are secondary, while this record's whole subject is the authoring contract across 43 sites.
+  - 435 -- shares the entire agent corpus (it declares core/agents/ and 16 extension agents/ directories wholesale) for an unrelated prose-rewording sweep. Concurrent edits to the same 43 files are a live conflict risk. Serializing edge declared. 472 declares the same edge for the same reason.
+  - 430, 446, 486, 515, 517 -- each shares only general-implementation-agent.md and concerns phase-commit staging, file_scope reconciliation, or rebase-wait guidance. Different subjects; rejected as covering. No edges declared: single-file overlap on a large file, and over-serializing on it would stall this record behind five unrelated records.
+  - 378 -- reviser-agent handoff contract contradiction, defect class HANDOFF_STALE_OR_ABSENT (a writer emitting NO handoff). This record is about a handoff that was written and admitted a bad entry. Rejected as covering; already an edge-predecessor of 472, so it is serialized transitively.
+
+Dependency edges are SERIALIZING, on shared file territory and on 472's Check 5 ruling:
+
+  - 472 -- shares the authoring sites and owns the element-shape and Check 5 items this record must conform to rather than duplicate. This is the one edge with a genuine logical component: acceptance item 2 cannot be discharged before 472's verdict lands.
+  - 435 -- shares the whole agent corpus for an unrelated sweep.
+
+## Why this is worth fixing
+
+The observed run lost nothing recoverable -- phases 1-3 were committed and green -- but the task could not be re-dispatched by any ordinary path, and the only thing wrong was two fields in a wrap-up artifact. The cost is paid by an operator diagnosing a strand by hand, and the trigger is an instruction paragraph that tells 43 agents to always write a field while telling none of them what the field means.
+
+---
 
 ### 517. Require a phase commit to regenerate and stage the derived surfaces it stales
 - **Status**: [NOT STARTED]
