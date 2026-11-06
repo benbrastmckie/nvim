@@ -53,6 +53,23 @@ describe("manifest", function()
       assert.is_nil(err)
     end)
 
+    it("should accept valid manifest with merge_targets.mcp", function()
+      local m = {
+        name = "test-ext",
+        version = "1.0.0",
+        description = "A test extension",
+        merge_targets = {
+          mcp = {
+            source = "mcp-fragment.json",
+            target = ".mcp.json",
+          },
+        },
+      }
+      local valid, err = manifest.validate(m)
+      assert.is_true(valid)
+      assert.is_nil(err)
+    end)
+
     it("should reject manifest without name", function()
       local m = {
         version = "1.0.0",
@@ -108,21 +125,21 @@ describe("manifest", function()
       assert.is_not_nil(err:match("Invalid provides category"))
     end)
 
-    it("should reject manifest with invalid merge_targets type", function()
+    it("should validate an unknown merge_targets key when source and target are present (the validator is deliberately open-set, not a closed enum -- see Decision 3 of the mcp-merge-target-mechanism plan)", function()
       local m = {
         name = "test-ext",
         version = "1.0.0",
         description = "A test extension",
         merge_targets = {
-          invalid_type = {
+          unknown_type = {
             source = "file.md",
             target = "target.md",
           },
         },
       }
       local valid, err = manifest.validate(m)
-      assert.is_false(valid)
-      assert.is_not_nil(err:match("Invalid merge_targets type"))
+      assert.is_true(valid)
+      assert.is_nil(err)
     end)
 
     it("should reject merge_targets without source", function()

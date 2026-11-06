@@ -1,0 +1,45 @@
+{
+  "phase": 2,
+  "phase_name": "Spec coverage for the new key and the .mcp.json merge shape",
+  "started_at": "2026-11-06T07:43:00Z",
+  "last_updated": "2026-11-06T07:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add positive mcp case to claude manifest_spec.lua",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua"]
+    },
+    {
+      "id": 2,
+      "description": "Rewrite the failing open-set-contract test per decision 4",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua"]
+    },
+    {
+      "id": 3,
+      "description": "Add .mcp.json fragment-shape describe block to merge_spec.lua covering requirements (a)-(d)",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]
+    },
+    {
+      "id": 4,
+      "description": "Run both spec files and confirm zero failures",
+      "status": "done",
+      "files_touched": [],
+      "note": "manifest_spec.lua: 18 Success / 0 Fail (baseline 16/1 confirmed, repaired, +1 new case). merge_spec.lua: 10 Success / 1 Fail -- the 1 failure is the SAME pre-existing, unrelated failure recorded in the Phase 1 handoff (a hook-dedupe test unrelated to merge_targets.mcp); all 4 new mcp requirement tests pass. Not fixed, per Phase 1 handoff guidance to avoid scope expansion."
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.4",
+      "description": "Run both spec files and confirm zero failures",
+      "type": "altered",
+      "reason": "merge_spec.lua carries one pre-existing failure unrelated to this task (confirmed unchanged before and after this phase's edits); the plan's verification bullet asserts zero failures across both files, which the pre-existing finding prevents literally. Recorded rather than expanding scope to fix the unrelated hook-dedupe test.",
+      "annotation": "*(deviation: altered -- merge_spec.lua retains 1 pre-existing, unrelated failure; the 4 new mcp requirement tests all pass)*"
+    }
+  ]
+}

@@ -416,3 +416,131 @@ describe("shared.extensions.merge hook identity dedupe", function()
     end
   )
 end)
+
+-- Coverage for the merge_targets.mcp mechanism: a project-scoped .mcp.json is merged and
+-- unmerged through the SAME M.merge_settings/M.unmerge_settings primitive the settings path
+-- already uses (see lua/neotex/plugins/ai/shared/extensions/init.lua's `mcp` branches). These
+-- specs assert the four requirements the mechanism must satisfy directly against that shared
+-- primitive, using the file's existing temp-path fixture conventions.
+describe("shared.extensions.merge .mcp.json fragment shape", function()
+  local scratch_dir
+  local target_path
+
+  before_each(function()
+    scratch_dir = vim.fn.tempname()
+    vim.fn.mkdir(scratch_dir, "p")
+    target_path = scratch_dir .. "/.mcp.json"
+  end)
+
+  after_each(function()
+    if scratch_dir and vim.fn.isdirectory(scratch_dir) == 1 then
+      vim.fn.delete(scratch_dir, "rf")
+    end
+  end)
+
+  it("requirement (a): a merged entry retains its explicit \"type\": \"stdio\" field verbatim", function()
+    local fragment = {
+      mcpServers = {
+        fixture = {
+          type = "stdio",
+          command = "node",
+          args = { "fixture-server.js" },
+        },
+      },
+    }
+
+    local ok = merge.merge_settings(target_path, fragment)
+    assert.is_true(ok)
+
+    local result = read_target(target_path)
+    assert.equals("stdio", result.mcpServers.fixture.type)
+    assert.equals("node", result.mcpServers.fixture.command)
+  end)
+
+  it("requirement (d): a hand-written mcpServers entry already in the target survives, unmodified, after the merge", function()
+    write_target(target_path, {
+      mcpServers = {
+        ["hand-written"] = {
+          type = "stdio",
+          command = "my-own-server",
+        },
+      },
+    })
+
+    local fragment = {
+      mcpServers = {
+        fixture = {
+          type = "stdio",
+          command = "node",
+          args = { "fixture-server.js" },
+        },
+      },
+    }
+
+    local ok = merge.merge_settings(target_path, fragment)
+    assert.is_true(ok)
+
+    local result = read_target(target_path)
+    assert.equals("stdio", result.mcpServers["hand-written"].type)
+    assert.equals("my-own-server", result.mcpServers["hand-written"].command)
+    assert.equals("stdio", result.mcpServers.fixture.type)
+  end)
+
+  it("requirement (c): merging the same fragment twice yields identical decoded content and the second merge's tracked result adds nothing new", function()
+    local fragment = {
+      mcpServers = {
+        fixture = {
+          type = "stdio",
+          command = "node",
+          args = { "fixture-server.js" },
+        },
+      },
+    }
+
+    local ok1 = merge.merge_settings(target_path, fragment)
+    assert.is_true(ok1)
+    local first = read_target(target_path)
+
+    local ok2, tracked2 = merge.merge_settings(target_path, fragment)
+    assert.is_true(ok2)
+    local second = read_target(target_path)
+
+    assert.are.same(first, second)
+    -- deep_merge only adds keys/items not already present, so re-merging an unchanged
+    -- fragment adds nothing new: unmerging the SECOND merge's tracked result must be a
+    -- true no-op (the file is unchanged), since nothing it tracked was actually new.
+    merge.unmerge_settings(target_path, tracked2)
+    local after_second_unmerge = read_target(target_path)
+    assert.are.same(second, after_second_unmerge)
+  end)
+
+  it("requirement (b): unmerge_settings with the first merge's tracked data removes the extension's own server and leaves the hand-written entry intact", function()
+    write_target(target_path, {
+      mcpServers = {
+        ["hand-written"] = {
+          type = "stdio",
+          command = "my-own-server",
+        },
+      },
+    })
+
+    local fragment = {
+      mcpServers = {
+        fixture = {
+          type = "stdio",
+          command = "node",
+          args = { "fixture-server.js" },
+        },
+      },
+    }
+
+    local ok, tracked = merge.merge_settings(target_path, fragment)
+    assert.is_true(ok)
+
+    merge.unmerge_settings(target_path, tracked)
+
+    local result = read_target(target_path)
+    assert.is_nil(result.mcpServers.fixture)
+    assert.equals("my-own-server", result.mcpServers["hand-written"].command)
+  end)
+end)

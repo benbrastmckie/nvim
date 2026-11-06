@@ -235,22 +235,22 @@ declares, so the covering check is a module-load probe plus the existing lua sui
 
 ---
 
-### Phase 2: Spec coverage for the new key and the `.mcp.json` merge shape [NOT STARTED]
+### Phase 2: Spec coverage for the new key and the `.mcp.json` merge shape [COMPLETED]
 
 **Goal**: the new key's validity and the merge primitive's four required properties are asserted by
 plenary specs, and the pre-existing failing manifest test is repaired.
 
 **Tasks**:
-- [ ] In `lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua`, add a positive case:
+- [x] In `lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua`, add a positive case:
       a manifest whose `merge_targets` carries
       `mcp = { source = "mcp-fragment.json", target = ".mcp.json" }` validates
-      (`valid == true`, `err == nil`).
-- [ ] Rewrite the failing `"should reject manifest with invalid merge_targets type"` test per
+      (`valid == true`, `err == nil`). *(completed)*
+- [x] Rewrite the failing `"should reject manifest with invalid merge_targets type"` test per
       decision 4: rename it to state the real contract (an unknown merge-target key with a valid
       `source` + `target` validates — the validator is deliberately open-set) and invert its
       assertions. Keep the two neighbouring `source is required` / `target is required` tests
-      exactly as they are; they assert behavior the validator does have.
-- [ ] In `lua/neotex/plugins/ai/shared/extensions/merge_spec.lua`, add a describe block for the
+      exactly as they are; they assert behavior the validator does have. *(completed)*
+- [x] In `lua/neotex/plugins/ai/shared/extensions/merge_spec.lua`, add a describe block for the
       `.mcp.json` fragment shape against `merge_settings`/`unmerge_settings`, using the file's
       existing temp-path fixture conventions. Four assertions, one per requirement:
       (a) a merged entry retains its explicit `"type": "stdio"` field verbatim;
@@ -259,8 +259,11 @@ plenary specs, and the pre-existing failing manifest test is repaired.
       (c) merging the same fragment twice into the same target yields identical decoded content and
       the second merge's `tracked` result adds nothing new;
       (d) `unmerge_settings` with the first merge's `tracked` data removes the extension's own
-      server and leaves the hand-written entry intact.
-- [ ] Run both spec files and confirm zero failures.
+      server and leaves the hand-written entry intact. *(completed)*
+- [x] Run both spec files and confirm zero failures. *(deviation: altered -- manifest_spec.lua is
+      18 Success / 0 Fail; merge_spec.lua is 10 Success / 1 Fail, where the 1 failure is the same
+      pre-existing, unrelated hook-dedupe test recorded in the Phase 1 handoff, unchanged by this
+      phase's edits. All 4 new mcp requirement tests pass)*
 
 **Timing**: 0.75 hours
 
