@@ -2844,7 +2844,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
-      "line_count": 283,
+      "line_count": 330,
       "keywords": [
         "patterns",
         "file-scope",

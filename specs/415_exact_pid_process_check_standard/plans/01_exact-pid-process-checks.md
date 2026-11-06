@@ -189,21 +189,22 @@ read-through, as the `__FULL_SWEEP__` sub-case (a) prescribes.
 
 ---
 
-### Phase 2: Add the parallelism-safety subsection and make it discoverable [IN PROGRESS]
+### Phase 2: Add the parallelism-safety subsection and make it discoverable [COMPLETED]
 
 **Goal**: Land the rule in `context/standards/shell-script-testing.md`, inside the existing
 parallelism section rather than as an orphan, and update the standard's `index-entries.json`
 entry so keyword-based context discovery reaches the new material.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/shell-script-testing.md`
+- [x] Re-read `agent-system/extensions/core/context/standards/shell-script-testing.md`
       immediately before editing (both this file and `index-entries.json` are already dirty in the
-      working tree; a sibling may have moved the insertion point)
-- [ ] Re-locate the insertion point by content, not by a cached line number: the end of the
+      working tree; a sibling may have moved the insertion point) *(completed)*
+- [x] Re-locate the insertion point by content, not by a cached line number: the end of the
       `## Suite runtime: --jobs, --timings, and gate selection` section's bullet list (currently
       ending with the `--class` / `--tag` / `--cost-class` bullet), immediately before
       `### Mapping a touched file to its suite: scripts/lib/suite-selection-lib.sh`
-- [ ] Insert a new `###` subsection (own heading, not folded into the bullet list) stating:
+      *(completed: insertion point unchanged from the plan's own anchor, confirmed by re-read)*
+- [x] Insert a new `###` subsection (own heading, not folded into the bullet list) stating:
       (a) the rule — a suite checking for a leftover or still-running process MUST check the exact
       pid it itself spawned, captured at spawn time, and a process-NAME match (either name-query
       utility with a command-line flag, or `ps` piped to `grep` on a command pattern) is never
@@ -228,17 +229,22 @@ entry so keyword-based context discovery reaches the new material.
       document's own re-run-don't-cite convention;
       (g) a cross-link to `context/patterns/bounded-build-waiter.md` as the sibling agent-layer
       discipline — same mechanism, different actor and hazard (self-match in a polling shell's own
-      argv) — explicitly related, never merged
-- [ ] Confirm the subsection reads as reachable from the section it sits in (its heading is
+      argv) — explicitly related, never merged *(completed: all seven content requirements (a)-(g)
+      present in the new subsection)*
+- [x] Confirm the subsection reads as reachable from the section it sits in (its heading is
       nested under `## Suite runtime`, and the serialized-set sentence ties it to that section's
-      own material) rather than as an appended orphan
-- [ ] Re-read `agent-system/extensions/core/index-entries.json`, then surgically update the
+      own material) rather than as an appended orphan *(completed)*
+- [x] Re-read `agent-system/extensions/core/index-entries.json`, then surgically update the
       `standards/shell-script-testing.md` entry only: add `pid` and `process-check` to
       `keywords`, add `parallelism-safety` to `topics`, and correct `line_count` to the file's new
       `wc -l`. Do not run `generate-context-line-counts.sh --write` (it rewrites every entry in
-      every extension, far outside this footprint)
-- [ ] Validate the JSON parses (`python3 -m json.tool` or `jq empty`) and that the diff touches
-      only that one entry
+      every extension, far outside this footprint) *(completed: line_count corrected to 1093)*
+- [x] Validate the JSON parses (`python3 -m json.tool` or `jq empty`) and that the diff touches
+      only that one entry *(completed: JSON parses; a second, pre-existing uncommitted foreign
+      hunk already dirty in this file before this phase started — patterns/file-footprint-overlap.md's
+      line_count, unrelated to this task — was temporarily isolated for the commit and restored
+      to the working tree immediately afterward, untouched and uncommitted, exactly as found;
+      see this phase's progress file objective 5 note)*
 
 **Timing**: 45 minutes
 
