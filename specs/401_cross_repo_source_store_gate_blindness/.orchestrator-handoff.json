@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Wrote a three-phase, documentation-only plan implementing the settled option-A adjudication: the per-repo file_scope ruling is upheld and no mechanism is built. Phase 1 records the counterexample, the verbatim ruling, the dated adjudication and the record-less-dispatch caveat in file-footprint-overlap.md's Non-Goals; Phase 2 adds a single-repository-scope paragraph to orchestrate-predispatch-review.sh's header; Phase 3 redeploys to RESULT=landed_verify_clean. The decision's named amendment site (context/patterns/task-lock.md) is deliberately excluded: an upheld ruling owes no amendment note, and that path is both outside this task's declared scope and inside concurrent sibling 419's.",
+  "summary": "Implemented the settled option-A adjudication across all three plan phases. Phase 1 added the cross-repository Non-Goals bullet and the Cross-Repository Scope -- Adjudicated Limitation subsection to file-footprint-overlap.md, carrying the counterexample, the verbatim upheld ruling, the dated adjudication, and the record-less-dispatch caveat. Phase 2 added a matching header-comment scope caveat to orchestrate-predispatch-review.sh (comment-only diff). Phase 3 redeployed; deploy-headless.sh reported RESULT=landed_verify_red on two consecutive runs, but all 4 failing checks were traced with evidence to causes outside this task's declared file_scope (lean-extension manifest/orphan drift from task 810, a validate-state.sh timing artifact, and a memory-extension dead-command-recommendation finding) -- closed [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record rather than [PARTIAL]. Both edited files are confirmed propagated into the deployed .claude/ tree.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/401_cross_repo_source_store_gate_blindness/summaries/01_cross-repo-gate-blindness-adjudication-summary.md",
+      "summary": "Documents the cross-repo gate-blindness adjudication implementation across all three phases, including the Phase 3 Reasoned Exclusions record."
+    },
+    {
       "type": "plan",
       "path": "specs/401_cross_repo_source_store_gate_blindness/plans/01_cross-repo-gate-blindness-adjudication.md",
-      "summary": "Three phases, 2 hours, waves [[1],[2],[3]]; tiers prose/prose/full with __WHOLE_TREE__ declared on the redeploy phase."
+      "summary": "All three phases closed: Phase 1 [COMPLETED], Phase 2 [COMPLETED], Phase 3 [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record for the 4 foreign-territory gate findings."
     }
   ],
-  "dispatch_seq": 12
+  "dispatch_seq": 17
 }

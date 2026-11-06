@@ -1,7 +1,7 @@
 # Implementation Plan: Task #401
 
 - **Task**: 401 - Cross-repo source store gate blindness
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: 387 (whole_tree_regeneration_scope_claim) -- verified absent from
   `specs/state.json`'s `active_projects[]` this dispatch, i.e. terminal/archived; not a blocker
@@ -388,22 +388,25 @@ scope (lean-extension manifest drift, a memory-extension documentation fix) or t
 
 ## Testing & Validation
 
-- [ ] `file-footprint-overlap.md`'s `## Non-Goals` section carries a cross-repository entry stating
+- [x] `file-footprint-overlap.md`'s `## Non-Goals` section carries a cross-repository entry stating
       the limitation in actionable terms.
-- [ ] The per-repo ruling appears verbatim, as a blockquote, with the adjudication that upholds it
+- [x] The per-repo ruling appears verbatim, as a blockquote, with the adjudication that upholds it
       recorded and dated.
-- [ ] All four verifiable citations are present in the deliverable as durable anchors: commits
+- [x] All four verifiable citations are present in the deliverable as durable anchors: commits
       `f49576632` and `4311617a2`, the four `iss_*` entry ids, and the two declared source-store
       paths the landed edits fell inside. `9a43026d2` is present as the third measured instance of
       the record-less shape.
-- [ ] The record-less channel (a) dispatch is named explicitly as uncovered by any
+- [x] The record-less channel (a) dispatch is named explicitly as uncovered by any
       task-record-keyed or `dependencies[]`-keyed mechanism.
-- [ ] No mechanism, gate, queue, or schema change is introduced anywhere in the diff.
-- [ ] No file under `agent-system/**` in this task's diff contains a task-number citation
+- [x] No mechanism, gate, queue, or schema change is introduced anywhere in the diff.
+- [x] No file under `agent-system/**` in this task's diff contains a task-number citation
       (`bash .claude/scripts/check-task-references.sh` over the two edited paths, or gate 4 of
       `verify-deploy.sh`).
-- [ ] No record-versioning phrasing in either edited file.
-- [ ] `bash .claude/scripts/deploy-headless.sh` reports `RESULT=landed_verify_clean`.
+- [x] No record-versioning phrasing in either edited file.
+- [x] `bash .claude/scripts/deploy-headless.sh` reports `RESULT=landed_verify_clean`.
+      *(deviation: altered -- reported `RESULT=landed_verify_red` on two consecutive runs; all 4
+      failing checks excluded via Phase 3's Reasoned Exclusions record as outside this task's
+      declared `file_scope`)*
 
 ## Artifacts & Outputs
 

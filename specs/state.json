@@ -2428,7 +2428,7 @@
     {
       "project_number": 401,
       "project_name": "cross_repo_source_store_gate_blindness",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Two repositories file against one source store with no cross-repo overlap or dependency visibility",
@@ -2446,11 +2446,16 @@
           "path": "specs/401_cross_repo_source_store_gate_blindness/plans/01_cross-repo-gate-blindness-adjudication.md",
           "type": "plan",
           "summary": "Three phases, 2 hours, waves [[1],[2],[3]]; tiers prose/prose/full with __WHOLE_TREE__ declared on the redeploy phase."
+        },
+        {
+          "path": "specs/401_cross_repo_source_store_gate_blindness/summaries/01_cross-repo-gate-blindness-adjudication-summary.md",
+          "type": "summary",
+          "summary": "Documents the cross-repo gate-blindness adjudication implementation across all three phases, including the Phase 3 Reasoned Exclusions record."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T01:50:10Z",
-      "last_updated": "2026-11-06T08:12:02Z",
+      "last_updated": "2026-11-06T08:35:38Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1793947646_0784d9",
@@ -2458,7 +2463,8 @@
         "__WHOLE_TREE__",
         "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
         "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh"
-      ]
+      ],
+      "completion_summary": "Added the cross-repository scope limitation to file-footprint-overlap.md's Non-Goals section (counterexample, verbatim per-repo ruling, dated adjudication, record-less-dispatch caveat) and a matching header-comment caveat to orchestrate-predispatch-review.sh; redeployed and confirmed both edits propagated into the deployed .claude/ tree."
     },
     {
       "project_number": 402,

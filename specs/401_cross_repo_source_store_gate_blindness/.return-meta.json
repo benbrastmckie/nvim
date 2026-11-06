@@ -1,10 +1,59 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/401_cross_repo_source_store_gate_blindness/summaries/01_cross-repo-gate-blindness-adjudication-summary.md",
+      "summary": "Documents the cross-repo gate-blindness adjudication: per-repo file_scope ruling upheld, Non-Goals entry and adjudication subsection added to file-footprint-overlap.md, scope caveat added to orchestrate-predispatch-review.sh's header, deployed tree regenerated. Phase 3 closed [COMPLETED WITH EXCLUSIONS] against 4 foreign-territory gate findings, each evidenced as outside this task's file_scope."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added the cross-repository scope limitation to file-footprint-overlap.md's Non-Goals section (counterexample, verbatim per-repo ruling, dated adjudication, record-less-dispatch caveat) and a matching header-comment caveat to orchestrate-predispatch-review.sh; redeployed and confirmed both edits propagated into the deployed .claude/ tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's final phase is a whole-tree redeploy (file_scope: __WHOLE_TREE__) and the dispatch file also carries a '## Batch Gate Deferral' section directing a scoped-gate substitute, the two can conflict: __WHOLE_TREE__ is structurally inert against any real path under both the Overlap and Containment predicates (file-footprint-overlap.md), so there is no coherent 'narrowing invocation covering the files this phase touched' when the phase's own footprint is declared as everything. Resolve by checking whether the plan's own phase text explicitly rejects the deferral's natural substitute (e.g. treats RESULT=landed_verify_skipped as 'not closed') and whether the orchestrator's dispatch-time chat message names this phase as the one expected to resolve a flagged staleness -- both are strong signals the planner/orchestrator intended this specific phase to run the real redeploy rather than be narrowed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/401_cross_repo_source_store_gate_blindness/summaries/01_cross-repo-gate-blindness-adjudication-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "whole-tree-redeploy",
+        "__WHOLE_TREE__",
+        "verification-tier-full",
+        "phase-closure"
+      ]
+    },
+    {
+      "content": "A context/index-entries.json line_count correction for a file this task edited is mechanically derived (wc -l) and is automatically re-applied by deploy-headless.sh's own internal generate-context-line-counts.sh --write pass on every deploy. If the index file itself is not inside the task's declared file_scope, git-commit-phase.sh's containment self-check will drop it from every phase commit (dropping, not blocking) -- this is expected and harmless; no need to force it into a commit or widen file_scope to capture it. Hand-correcting it once before the redeploy is optional (useful only to make an intermediate --only-gate 3,4 check pass before Phase 3 runs), since the final deploy regenerates it regardless.",
+      "category": "PATTERN",
+      "source_artifact": "specs/401_cross_repo_source_store_gate_blindness/summaries/01_cross-repo-gate-blindness-adjudication-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "containment-self-check",
+        "deploy-headless",
+        "file-scope"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
