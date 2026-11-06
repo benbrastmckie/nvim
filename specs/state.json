@@ -1888,11 +1888,6 @@
           "summary": "Re-measures every figure in the task 328 dispatch against the live corpus: confirms both blockers (170, 411) are discharged, finds the 'five-lint cluster' is mechanically a seven-script peer set (two untested), finds task 416 (which lists 328 as its own dependency) has already completed 10/13 phases resolving most of the dispatch's GAP-2 straggler content, confirms GAP 1 (no shared test harness) and most of GAP 3 (selection surface) remain open, and recommends a re-captured net-deletion baseline plus explicit coordination with task 416's remaining phases."
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md",
-          "type": "handoff",
-          "summary": "Phase 3 close: lint-corpus-scan-lib.sh extracted, two lints migrated, net-positive-in-isolation justification, measurement-methodology finding about git-ls-files-based probe undercounting untracked new files."
-        },
-        {
           "path": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
           "type": "plan"
         },
@@ -1900,6 +1895,11 @@
           "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
           "type": "summary",
           "summary": "Phase 15 close: re-derived markdown duplicate-block volume and exclusions, mechanically confirmed 933 of 13,053 eligible lines as anchor-backed, wrote markdown-block-inventory.tsv, raised the resulting NET-MD target shortfall as a user_decision."
+        },
+        {
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-16-handoff-20261106T004607Z.md",
+          "type": "handoff",
+          "summary": "Phase 16 close: anchor-pointer convention + lint + pilot landed; the grep -Fqz false-positive bug and fix; the two unrelated gate findings; what Phase 17-19 should and should not do next."
         }
       ],
       "next_artifact_number": 4,

@@ -6,7 +6,7 @@ next_project_number: 502
 
 ## Task Order
 
-*Updated 2026-11-05. Generated from state.json dependency graph.*
+*Updated 2026-11-06. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -6315,9 +6315,9 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 - **Topic**: core-agent-system
 - **Dependencies**: Task 170, Task 411, Task 429
 - **Research**: [328_systematic_script_and_test_corpus_efficiency/reports/01_corpus-consolidation-research.md]
-- **Handoff**: [328_systematic_script_and_test_corpus_efficiency/handoffs/phase-3-handoff-20261016T170923Z.md]
 - **Plan**: [328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md]
 - **Summary**: [328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md]
+- **Handoff**: [328_systematic_script_and_test_corpus_efficiency/handoffs/phase-16-handoff-20261106T004607Z.md]
 
 **Description**: Systematic top-to-bottom CONSOLIDATION of the shell script AND test corpus under agent-system/extensions/**, driven by script-inventory.sh's ranked output rather than by hand-filed point defects. Acceptance is a NET REDUCTION in corpus size, not merely a faster corpus. Supersedes and folds in the earlier point-defect efficiency tasks 307, 308 and 270.
 

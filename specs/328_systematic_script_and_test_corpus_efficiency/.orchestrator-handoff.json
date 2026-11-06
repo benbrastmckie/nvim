@@ -1,30 +1,15 @@
 {
-  "dispatch_seq": 29,
+  "dispatch_seq": 30,
   "status": "partial",
-  "phases_completed": 15,
+  "phases_completed": 16,
   "phases_total": 20,
-  "summary": "Closed Phase 15 (Classify the Markdown Duplicate-Block Inventory and Declare NET-MD) [COMPLETED]. Re-derived the markdown corpus's cross-file duplicated-block volume (17,135 total removable, confirming the 16,851 hypothesis within drift), the gate-required hard exclusion (3,982, confirming ~3,997 and discovering a fifth, previously-undocumented lint fragment MODIFIED_FILES_FRAGMENT), and the deliberate-inlining hard exclusion (12, replacing the ~102 hypothesis -- the inlined email content is adapted per-destination rather than verbatim duplicated). Of the 13,053-line eligible-upper-bound, mechanically confirmed only 933 lines (26 distinct anchors) as anchor-backed via a strict exact-5-gram test (an earlier looser per-line-presence test produced large false positives and was discarded). Wrote the 26-row confirmed inventory to markdown-block-inventory.tsv. The confirmed floor (933) falls 89% short of the -8,100 NET-MD target assumed in Scope Widening; raised as a user_decision (three options, this phase's own recommendation is option 2: authorize semantic rather than merely literal-text anchor-finding in Phases 17-19, since this phase's own evidence -- wrap-up.md confirms correctly, several Scope-Widening-named representative blocks do not surface -- points to wording drift, not absence of real anchors, as the dominant cause of the shortfall). Widened file_scope by 3 concrete paths not already covered by existing directory-level entries (134 of 137 touched files were already covered); used a direct state.json edit rather than update-task-status.sh --file-scope-add, which is restricted to postflight/research-or-plan and refused this mid-implement call. NET-MD delta: +0 (measurement-only phase, no markdown file outside specs/** edited). 5 of 20 plan phases remain, starting with Phase 16 (land the anchor-pointer convention, its regression lint, and a pilot) -- Phase 16 should read this handoff's user_decision before assuming -8,100 is still the live target.",
+  "summary": "Closed Phase 16 (Land the Anchor-Pointer Convention, Its Regression Lint, and a Pilot) [COMPLETED]. Landed context/standards/anchor-pointer-convention.md (new standard), a registry-driven regression lint (lint-anchor-pointer-collapse.sh, riding gate 9 -- no new gate row) with a 6-case fixture suite, and piloted the collapse on 5 agent files sharing early-metadata-pattern.md's re-derived top-sharing-factor eligible block (g=40, superseding the stale '68 files' Scope Hypothesis figure). Full claim-retention ledger recorded in the plan. Caught and fixed a real false-positive bug in the lint's own matching logic (grep -Fqz silently does an OR-of-single-lines match for a multi-line pattern, not contiguous substring containment) during this phase's own verification against the real repo -- replaced with bash's native [[ \"$content\" == *\"$pattern\"* ]]. Phase NET-MD: -31 (pilot -110, new standard +79); NET-PROD/NET-TEST net-positive this phase as a deliberate precondition for Phases 17-19's larger harvest. Full gate set run once: gate 9 PASSED (including the new lint); two unrelated findings (gate 8: 5 new-failing orchestrate/postflight suites; gate 10: a pre-existing TODO/state desync plus a host-load timeout), neither attributable to this phase's edits, recorded as issues rather than fixed (most plausibly concurrent sibling-dispatch contention on this shared repo). Also recorded: a necessary file_scope-widening commit swept in 3 unrelated-but-verified-correct pre-existing line_count corrections from the same shared file. 4 of 20 plan phases remain: 17-19 (markdown tranches A/B/C, already authorized for semantic rather than merely literal-text anchor-finding per the Phase-15 user_decision answered in a prior cycle) and 20 (redeploy, full gate set, measured net accounting).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "summary",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/summaries/03_markdown-duplicate-inventory-classification-summary.md",
-      "summary": "Phase 15 close: re-derived markdown duplicate-block volume and exclusions, mechanically confirmed 933 of 13,053 eligible lines as anchor-backed, wrote markdown-block-inventory.tsv, raised the resulting NET-MD target shortfall as a user_decision."
-    },
-    {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-15-handoff-20261105T233928Z.md",
-      "summary": "Phase 15 close: anchor-test methodology (and the discarded false-positive-prone first attempt), the file_scope-widening mechanism deviation, and the live user_decision Phase 16+ must read before assuming the original NET-MD target."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-16-handoff-20261106T004607Z.md",
+      "summary": "Phase 16 close: anchor-pointer convention + lint + pilot landed; the grep -Fqz false-positive bug and fix; the two unrelated gate findings; what Phase 17-19 should and should not do next."
     }
-  ],
-  "user_decision": {
-    "question": "Phase 15's mechanically-confirmed anchor-backed markdown pool is only 933 lines, an 89% shortfall against the plan's declared -8,100 NET-MD target (itself derived to meet the retained -10,000 NET-TOTAL floor). How should the markdown tranche phases (16-19) and the plan's declared target proceed?",
-    "options": [
-      "Accept the mechanically-confirmed 933-line floor and revise NET-MD/NET-TOTAL downward (NET-TOTAL becomes roughly -2,800, well short of the retained -10,000 floor -- the third consecutive measurement round to fall short from enumerated, confirmed volume)",
-      "Authorize Phases 17-19 to perform semantic (not merely literal-text) anchor-finding as they consolidate each block -- reading a candidate anchor doc and judging genuine conceptual ownership, not only exact-text recurrence -- which this phase's own evidence suggests would recover materially more of the 12,752-line eligible upper bound without authoring any new anchor document",
-      "Lower the retained -10,000 NET-TOTAL floor itself, since three independent measurement rounds (the script-cluster derivation, the markdown Scope Widening hypothesis, and now this phase's anchor-confirmation pass) have each found the floor unreachable from the next-enumerated source of volume"
-    ],
-    "recommended": "Authorize Phases 17-19 to perform semantic (not merely literal-text) anchor-finding as they consolidate each block -- reading a candidate anchor doc and judging genuine conceptual ownership, not only exact-text recurrence -- which this phase's own evidence suggests would recover materially more of the 12,752-line eligible upper bound without authoring any new anchor document",
-    "blocking": false
-  }
+  ]
 }
