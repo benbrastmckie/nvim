@@ -1,7 +1,7 @@
 # Implementation Plan: Task #385
 
 - **Task**: 385 - Lean4 plan with zero Lean goals
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/385_lean4_plan_with_zero_lean_goals/reports/01_zero-lean-goals-plan-shape.md

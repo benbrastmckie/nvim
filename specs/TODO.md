@@ -11,10 +11,10 @@ next_project_number: 505
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,338,342,383,385,397,401,408,410,412,415,419,423,431,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 29,338,342,383,397,401,408,410,412,415,419,423,431,435,437,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,430,439,445,458,463,472,474,475,492,497 | 29,383,397,401,412,415,419,431,435,459,491,494 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 391,399,420,436,444,446,448,454,476 | 313,369,385,398,409,418,423,430,435,439,445,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 360,390,402,438,451,455,461,484,500 | 313,385,391,420,435,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 391,399,420,436,444,446,448,454,476 | 313,369,398,409,418,423,430,435,439,445,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 360,390,402,438,451,455,461,484,500 | 313,391,420,435,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 5 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 6 | 450,480,487,501 | 420,435,449,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 7 | 496 | 450,487,488 | extensions |
@@ -103,15 +103,14 @@ next_project_number: 505
 
 ### Lean Extension
 
-385 [IMPLEMENTING] — Define the sanctioned shape for a lean4-typed plan that...
-  └─ 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
-    └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
   └─ 463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
 504 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
+451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
+  └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 
 ### Orchestrator
 
@@ -6230,7 +6229,7 @@ two files where there is one.
 ---
 
 ### 385. Define the sanctioned shape for a lean4-typed plan that commits to no theorem, and make lean-challenge-snapshot.sh distinguish it from a malformed one
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
