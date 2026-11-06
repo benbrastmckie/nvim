@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 3,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Created a three-phase, documentation-only implementation plan for the lifecycle-hook task_type prerequisite. Phase 1 inserts a new 'Prerequisite: A Declared task_type' subsection at the head of creating-extensions.md's Lifecycle Hooks section, carrying the prerequisite claim, the verbatim skill_get_extension_dir() gate expression, the per-domain nvim/nix framing, the core-only memory-retrieve.sh cross-cutting precedent, and a brief observer cross-reference. Phase 2 adds a pointer warning to extension-development.md's Resource-Only Extensions prose. Phase 3 redeploys and diffs the deployed copies against the source store under the full gate set, declaring the __WHOLE_TREE__ sentinel for the regeneration claim. No code changes; skill-base.sh stays read-only.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/483_document_hook_task_type_prerequisite/plans/01_hook-task-type-prerequisite.md",
+      "summary": "Three-phase documentation plan covering all eight acceptance criteria, with per-phase verification tiers (prose, prose, full)."
+    }
+  ]
+}
