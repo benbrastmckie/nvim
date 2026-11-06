@@ -1,7 +1,7 @@
 # Implementation Plan: Task #408
 
 - **Task**: 408 - Gate the formal extension's mandatory Mathlib-lookup step on an actual Lean target
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: Task 359
 - **Research Inputs**: specs/408_gate_mathlib_lookup_on_lean_target/reports/01_gate-mathlib-lookup-surfaces.md

@@ -30,21 +30,39 @@
       "category": "INSIGHT",
       "source_artifact": "specs/408_gate_mathlib_lookup_on_lean_target/summaries/01_gate-mathlib-lookup-on-lean-target-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["index-entries.json", "domain-enum", "check-extension-docs", "Rule T", "patterns-tier", "context-registration"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "domain-enum",
+        "check-extension-docs",
+        "Rule T",
+        "patterns-tier",
+        "context-registration"
+      ]
     },
     {
       "content": "deploy-headless.sh's internal verify-deploy.sh --skip-slow fast-gate pass includes gate10 (specs/state.json schema validation via validate-state.sh --deep), which carries a hard-coded internal 30s timeout. On a large state.json (500+ tasks) under concurrent session load, a direct standalone 'validate-state.sh --deep' run can legitimately take 33+ seconds and still pass cleanly -- the 30s gate10 wrapper timeout is a load-sensitive flake, not necessarily a content defect. Before treating a gate10 timeout as blocking, re-run validate-state.sh --deep directly (bypassing the wrapper's timeout) to distinguish a genuine schema failure from a timing margin issue.",
       "category": "INSIGHT",
       "source_artifact": "specs/408_gate_mathlib_lookup_on_lean_target/summaries/01_gate-mathlib-lookup-on-lean-target-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["gate10", "validate-state.sh", "deploy-headless", "timeout", "flake", "verify-deploy"]
+      "suggested_keywords": [
+        "gate10",
+        "validate-state.sh",
+        "deploy-headless",
+        "timeout",
+        "flake",
+        "verify-deploy"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
