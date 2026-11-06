@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase, 6.5-hour implementation plan for the merge_targets.mcp mechanism. Phases: deploy-engine mcp branch in shared/extensions/init.lua plus a verify.lua verifier; plenary spec coverage (including repair of a pre-existing RED manifest_spec test found at authoring time); a durable scratch-tree regression harness under core/scripts/tests modelled on test-deploy-orphans.sh; core docs covering the mechanism and its workspace-trust and already-running-session gotchas; the memory extension resolved per the settled Option 1 decision (drop the nonexistent npx package, document Claude Code's native /ide path); and a final full-gate phase. All four stated requirements map to explicit harness assertions, and no phase deploys against this repository.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/029_generate_mcp_json_from_extension_manifests/plans/01_mcp-merge-target-mechanism.md",
+      "summary": "6-phase plan for the merge_targets.mcp deploy-engine mechanism, its regression harness, documentation, and the settled obsidian-memory resolution."
+    }
+  ],
+  "dispatch_seq": 13
+}

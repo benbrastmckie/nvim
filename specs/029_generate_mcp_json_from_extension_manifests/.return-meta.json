@@ -1,53 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/029_generate_mcp_json_from_extension_manifests/reports/01_mcp-json-generation-mechanism.md",
-      "summary": "Design research for a merge_targets.mcp deploy-engine mechanism (mirroring the existing settings merge path) plus a verified finding that the absorbed obsidian-memory sub-task's declared npm package does not exist and the real plugin connects via Claude Code's native /ide integration, not .mcp.json."
-    }
-  ],
-  "next_steps": "Run /orchestrate 29 to create an implementation plan from this research.",
-  "proposed_file_scope": [
-    "agent-system/extensions/memory/mcp-fragment.json",
-    "agent-system/extensions/core/docs/architecture/extension-system.md",
-    "lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua",
-    "lua/neotex/plugins/ai/shared/extensions/manifest_spec.lua",
-    "lua/neotex/plugins/ai/shared/extensions/verify.lua"
-  ],
-  "user_decision": {
-    "question": "The memory extension's declared obsidian-memory server (npx -y @anthropic-ai/obsidian-claude-code-mcp@latest) names an npm package that does not exist (confirmed 404 on the npm registry). The real plugin by that project name connects to Claude Code only through the native /ide integration, not through .mcp.json/npx at all. How should the absorbed 'register obsidian-memory' half of this task be resolved?",
-    "options": [
-      "Drop the npx/.mcp.json wiring for obsidian-memory entirely; document Claude Code's native /ide integration as the real connection path in the memory extension README, and ship the merge_targets.mcp mechanism without a working obsidian-memory entry",
-      "Register a different, genuinely npm-published Obsidian MCP server (e.g. obsidian-mcp or @huangyihe/obsidian-mcp) under the obsidian-memory name instead, accepting its tool surface differs from what the task description assumed",
-      "Leave the obsidian-memory declaration as-is (non-functional) and only ship the generic merge_targets.mcp mechanism, deferring the obsidian fix to a follow-up task"
-    ],
-    "recommended": "Drop the npx/.mcp.json wiring for obsidian-memory entirely; document Claude Code's native /ide integration as the real connection path in the memory extension README, and ship the merge_targets.mcp mechanism without a working obsidian-memory entry",
-    "blocking": false
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo's extension deploy engine (lua/neotex/plugins/ai/shared/extensions/), merge_targets keys fall into two different idioms: 'settings' and 'index' are additive/tracked (merge_settings/unmerge_settings, append_index_entries/remove_index_entries_tracked) and preserve hand-written content; 'claudemd' and 'opencode_json' are fully computed artifacts regenerated wholesale on every load/unload (generate_claudemd/generate_opencode_json) and do NOT preserve hand-written content. A new merge_targets key should deliberately pick one idiom based on whether hand-edit preservation matters, not default to whichever is closer in the file.",
-      "category": "PATTERN",
-      "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/reports/01_mcp-json-generation-mechanism.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["merge_targets", "deploy-engine", "extensions", "idempotent-merge", "computed-artifact"]
-    },
-    {
-      "content": "Before trusting a manifest-declared MCP server command (npx package name, env var names) in this repo's extensions, verify the package actually exists (npm registry API, e.g. curl registry.npmjs.org/<pkg>) rather than assuming prior documentation is accurate. At least one existing declaration (obsidian-memory in the memory extension) named a non-existent @anthropic-ai npm package; the real project behind the name was an Obsidian plugin reachable only via Claude Code's native /ide integration, a completely different registration mechanism than .mcp.json/~/.claude.json.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/reports/01_mcp-json-generation-mechanism.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["mcp-server", "obsidian", "npm-verification", "fabricated-package", "claude-code-ide-integration"]
+      "type": "plan",
+      "path": "specs/029_generate_mcp_json_from_extension_manifests/plans/01_mcp-merge-target-mechanism.md",
+      "summary": "6-phase, 6.5-hour plan for the merge_targets.mcp deploy-engine mechanism, its durable regression harness, core documentation, and the settled obsidian-memory resolution."
     }
   ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9_29",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9,
-    "issue_log_contribution": 3
-  }
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6.5,
+    "dependency_waves": [[1, 2], [3, 4], [5], [6]]
+  },
+  "memory_candidates": [
+    {
+      "content": "When a config file must hold both machine-generated and hand-written content, an additive deep-merge with per-producer tracked-unmerge is the correct idiom; a fully computed artifact regenerated wholesale is not. In this repo's extension deploy engine both idioms coexist in merge.lua: merge_settings/unmerge_settings only ever adds keys not already present and returns a tracked structure recording exactly what it added, persisted to the project-root state file so a later unload retracts only that producer's additions even across separate sessions. That single property delivers four requirements for free -- additive registration, per-producer retraction on unload, idempotent redeploy, and survival of hand-written user entries -- with no special casing. generate_opencode_json's computed-artifact idiom, by contrast, rebuilds the file from scratch on every change and therefore cannot preserve hand-written content at all, which is why it is gated behind a managed-marker file. Choose by asking whether any non-generated content can legitimately live in the target: if yes, additive-plus-tracked; if no, computed artifact.",
+      "category": "PATTERN",
+      "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/plans/01_mcp-merge-target-mechanism.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["deep-merge", "tracked-unmerge", "generated-config", "idempotent-deploy", "extension-manifest", "merge-targets"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 29 to execute the plan",
+  "dispatch_seq": 13
 }

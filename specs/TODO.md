@@ -73,7 +73,7 @@ next_project_number: 505
 
 ### Extensions
 
-29 [PLANNING] — Generate .mcp.json from extension manifests, then register...
+29 [PLANNED] — Generate .mcp.json from extension manifests, then register...
 342 [HOLD] — Refactor the books extension's context corpus against the...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
@@ -7178,11 +7178,12 @@ that produces no finding.
 ---
 
 ### 29. Generate .mcp.json from extension manifests, then register obsidian-memory through it
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 22
 - **Research**: [029_generate_mcp_json_from_extension_manifests/reports/01_mcp-json-generation-mechanism.md]
+- **Plan**: [029_generate_mcp_json_from_extension_manifests/plans/01_mcp-merge-target-mechanism.md]
 
 **Description**: TOPIC CORRECTION (backlog streamline 2026-09-01): re-topiced core-agent-system -> extensions. This is deploy-engine (lua merge-path) and manifest-surface work for extension MCP registration, unrelated to the orchestrate-engine collapse; the consolidation audit confirmed no overlap with the routing ladder it carries forward. Original description follows.Build the deploy-engine mechanism that lets an extension declare an MCP server and have it actually registered, by generating a project-scoped .mcp.json.
 

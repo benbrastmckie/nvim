@@ -1,0 +1,9 @@
+[
+  {
+    "question": "The memory extension's declared obsidian-memory server (npx -y @anthropic-ai/obsidian-claude-code-mcp@latest) names an npm package that does not exist (confirmed 404 on the npm registry); the real plugin connects to Claude Code only through the native /ide integration, not .mcp.json/npx. How should the absorbed 'register obsidian-memory' half of this task be resolved?",
+    "answer": "Option 1 -- DROP the npx/.mcp.json wiring for obsidian-memory entirely; document Claude Code's native /ide integration as the real connection path in the memory extension README, and ship the generic merge_targets.mcp mechanism without a working obsidian-memory entry. NOTE: adopted autonomously on the research agent's own recommendation under /orchestrate's non-blocking user_decision contract (blocking=false); not an explicit owner ruling. Revise via /revise 29 to substitute a genuinely published Obsidian MCP server, or to defer the obsidian fix to a follow-up task, instead.",
+    "cycle": 1,
+    "timestamp": "2026-11-06T07:03:11Z",
+    "description_fingerprint": "5b95c80cd8fc855b2713eabd335211c66fcc7d61b21d804b811adf44720a2ce7"
+  }
+]
