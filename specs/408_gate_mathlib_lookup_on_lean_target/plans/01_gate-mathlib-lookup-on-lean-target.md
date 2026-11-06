@@ -406,29 +406,40 @@ what is actually present.
 
 ---
 
-### Phase 4: Redeploy and Full Gate Verification [NOT STARTED]
+### Phase 4: Redeploy and Full Gate Verification [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The repository is lint-clean and the deploy pipeline is green with all eleven files in
 place, and the gate is demonstrably consistent across all eight contract surfaces.
 
 **Tasks**:
 
-- [ ] Confirm no sibling `implement` dispatch is mid-flight. Task 489 declares `__WHOLE_TREE__` in
+- [x] Confirm no sibling `implement` dispatch is mid-flight. Task 489 declares `__WHOLE_TREE__` in
       its `file_scope`, so its implement dispatch and this phase's deploy must not run
       concurrently. If 489 is live, wait (bounded, per
       `context/patterns/bounded-build-waiter.md`) rather than regenerating the tree under it.
-- [ ] Cross-surface consistency check: all eight contract files reference
+      *(completed: state.json shows project_number 489 status=completed, not implementing; its
+      implementation commits (f98ed9c42, c4653d242, ae6678386) predate this dispatch's start, so
+      it was not concurrent)*
+- [x] Cross-surface consistency check: all eight contract files reference
       `patterns/mathlib-lookup-gate.md`, and none retains an ungated imperative form. This is the
       phase that actually discharges the task's "not one gated and three ungated copies" concern.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` and confirm
+      *(completed: 8/8 files confirmed via grep -l; no ungated imperative line remains in any of
+      the 8)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` and confirm
       `RESULT=landed_verify_clean`. Run it in the FOREGROUND with a bounded timeout, redirecting
-      output to a file and grepping that file for the `RESULT=` line.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (all gates, no
-      `--only-gate`, no `--skip-slow`).
-- [ ] Record in the summary that the deploy run is **hygiene verification of the repository's
+      output to a file and grepping that file for the `RESULT=` line. *(completed with exclusion:
+      RESULT=landed_verify_red, not clean -- see Reasoned Exclusions below; the deploy itself
+      landed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (all gates, no
+      `--only-gate`, no `--skip-slow`). *(deferred to the batch level per this dispatch's own
+      Batch Gate Deferral directive, never independently run at full depth in this dispatch; the
+      narrower gates 3/4 covering check from Phases 1-3 stayed green throughout, and
+      check-extension-docs.sh and check-task-references.sh were each separately confirmed green
+      standalone in this phase)*
+- [x] Record in the summary that the deploy run is **hygiene verification of the repository's
       currently active extensions** and does **not** deploy `formal` into `.claude/` here — there is
       no `.claude-extensions.json` entry for it. A green deploy is therefore not evidence that the
-      new pattern file reached any deployed tree.
+      new pattern file reached any deployed tree. *(completed; see summary artifact)*
 
 **Timing**: 0.75 hours
 
@@ -454,22 +465,43 @@ place, and the gate is demonstrably consistent across all eight contract surface
   equals 8
 - `bash .claude/scripts/check-task-references.sh` reports no violation under `agent-system/**`
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `deploy-headless.sh` reaching `RESULT=landed_verify_clean` | The deploy landed, but its internal `verify-deploy.sh --skip-slow` fast-gate pass reported 2 of 41 checks failed, both confirmed outside this task's `agent-system/extensions/formal/**` scope and pre-existing (not caused by, and not a concurrent sibling edit against, this task's own work). | (1) gate10 (`specs/state.json` schema validation, `validate-state.sh --deep`) hit its internal 30s wrapper timeout; a direct standalone run of `validate-state.sh --deep` completed in 33.358s real time with 21 passed, 13 unrelated warnings, 0 failed — a timing/load characteristic of the 519-task `state.json` under concurrent session load, not a content defect. (2) `lint-dead-command-recommendations.sh` reported 2 VIOLATIONs naming `/ide has no definition file` in `agent-system/extensions/memory/context/project/memory/memory-setup.md:93` and `memory-troubleshooting.md:34`; `git log` shows the most recent commit touching either file is `a146cba61` ("task 29 phase 5: resolve obsidian-memory per settled decision"), unrelated to and long predating this dispatch. Gates 3 (doc-lint) and 4 (task-reference lint) both independently PASS within the same run. |
+| Complete `verify-deploy.sh` gate set (no `--only-gate`, no `--skip-slow`) and the full `run-all.sh` Gate 8 battery | Deferred to the once-per-batch full-depth run per this dispatch's own `## Batch Gate Deferral` directive, never independently run at full depth inside this single-task dispatch. | This phase's own narrower covering check (`verify-deploy.sh --skip-slow --only-gate 3,4`) stayed green through Phases 1-3; `check-extension-docs.sh` and `check-task-references.sh` were each independently re-confirmed green standalone in this phase (see verification log). |
+
+Recorded via `issue-record.sh` (`--class "foreign test failure observed"`, `--severity minor`).
+Per the five-condition admission test in `context/standards/status-markers.md`: (1) decision, not
+abandonment — both items were investigated and deliberately excluded, not abandoned mid-attempt;
+(2) tightly scoped — exactly the 2 named checks, not "the rest of the phase"; (3) documented
+reason — stated per item above; (4) evidenced — command output and `git log` citations above;
+(5) no residual work for *this* task — task 408's own deliverable (the gate pattern plus all 8
+contract surfaces) is complete and verified, and nothing about these two pre-existing items
+requires action from task 408 specifically.
+
 ---
 
 ## Testing & Validation
 
-- [ ] The new pattern file exists, is registered in `manifest.json` `provides.context`, and is
+- [x] The new pattern file exists, is registered in `manifest.json` `provides.context`, and is
       indexed in `index-entries.json` with an accurate `line_count`
-- [ ] Condition (a) in the pattern file names the `file_scope`-contains-`*.lean` sub-signal FIRST
+- [x] Condition (a) in the pattern file names the `file_scope`-contains-`*.lean` sub-signal FIRST
       and does not reduce to a bare `task_type == "lean4"` check
-- [ ] Condition (b) is a single pre-step `ToolSearch` call, not a post-failure recovery
-- [ ] A skip is framed as an accepted degraded mode, never a `partial` status
-- [ ] All eight contract surfaces point at the shared pattern file (8/8, not 1/8)
-- [ ] All four agent contracts' Stage 6 JSON examples carry `mathlib_lookup_gated`
-- [ ] `physics-research-agent.md:36` is unchanged
-- [ ] No file under `agent-system/**` gained a task-number reference or record-versioning phrasing
-- [ ] `deploy-headless.sh` reaches `RESULT=landed_verify_clean`
-- [ ] The complete `verify-deploy.sh` gate set is green
+- [x] Condition (b) is a single pre-step `ToolSearch` call, not a post-failure recovery
+- [x] A skip is framed as an accepted degraded mode, never a `partial` status
+- [x] All eight contract surfaces point at the shared pattern file (8/8, not 1/8)
+- [x] All four agent contracts' Stage 6 JSON examples carry `mathlib_lookup_gated`
+- [x] `physics-research-agent.md:36` is unchanged
+- [x] No file under `agent-system/**` gained a task-number reference or record-versioning
+      phrasing *(confirmed via check-task-references.sh and check-record-versioning.sh, both
+      clean)*
+- [x] `deploy-headless.sh` reaches `RESULT=landed_verify_clean` *(excluded: reached
+      `RESULT=landed_verify_red` for 2 confirmed pre-existing, out-of-scope reasons — see Phase
+      4's Reasoned Exclusions)*
+- [x] The complete `verify-deploy.sh` gate set is green *(deferred to the batch level per this
+      dispatch's Batch Gate Deferral directive — see Phase 4's Reasoned Exclusions)*
 
 ## Artifacts & Outputs
 

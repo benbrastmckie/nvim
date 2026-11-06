@@ -1,0 +1,33 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and Full Gate Verification",
+  "started_at": "2026-11-07T01:10:00Z",
+  "last_updated": "2026-11-07T01:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no sibling __WHOLE_TREE__ implement dispatch is mid-flight", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Cross-surface consistency check across all 8 contract files", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run deploy-headless.sh, bounded foreground, grep RESULT=", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run/defer complete gate set per Batch Gate Deferral", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record hygiene-verification framing in summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "deploy-headless.sh reaches RESULT=landed_verify_clean",
+      "type": "altered",
+      "reason": "RESULT=landed_verify_red due to 2 confirmed pre-existing, out-of-scope failures (gate10 30s-timeout timing flake; lint-dead-command-recommendations.sh /ide finding in the unrelated memory extension). Closed via COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record in the plan.",
+      "annotation": "*(deviation: altered -- RESULT=landed_verify_red, excluded per Phase 4 Reasoned Exclusions)*"
+    },
+    {
+      "task_id": "4.4",
+      "description": "Run the complete verify-deploy.sh gate set (no --only-gate, no --skip-slow) and full run-all.sh Gate 8 battery",
+      "type": "deferred",
+      "reason": "This dispatch's own Batch Gate Deferral directive instructs discharging the full-tier phase against a scoped narrowing invocation instead; the full set runs once at the end of the whole /orchestrate batch.",
+      "annotation": "*(deviation: deferred to the batch-level full gate run)*"
+    }
+  ],
+  "notes": "Cross-surface tally 8/8. check-extension-docs.sh, check-task-references.sh, and check-record-versioning.sh all independently confirmed green standalone. gate10 confirmed as a timing flake via direct standalone validate-state.sh --deep run (33.358s, 0 failures). dead-command-recommendation lint's 2 violations confirmed pre-existing via git log (last touch a146cba61, unrelated to task 408). Both recorded via issue-record.sh."
+}
