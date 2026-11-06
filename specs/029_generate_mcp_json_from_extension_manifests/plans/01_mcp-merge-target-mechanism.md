@@ -587,30 +587,49 @@ for the one lint whose corpus changes, and the doc gate subset
 
 ---
 
-### Phase 6: Full gate set and completion [NOT STARTED]
+### Phase 6: Full gate set and completion [COMPLETED]
 
 **Goal**: the complete repository gate set runs green over every change, with the no-deploy
 constraint honored.
 
 **Tasks**:
-- [ ] Re-read the whole diff for this task before the gate run, per the dispatch's concurrency note,
+- [x] Re-read the whole diff for this task before the gate run, per the dispatch's concurrency note,
       confirming no file outside this plan's declared scope was touched and no sibling's hunks are
-      staged with ours.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` against this repository
+      staged with ours. *(completed: inspected every one of this task's 7 commits individually via
+      `git show --stat`; each touches only this task's own files, plus three mechanically-required
+      side-effect files (core/manifest.json, core/index-entries.json, memory/index-entries.json)
+      committed in their own separate, narrowly-scoped commits)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` against this repository
       root, with the Bash tool `timeout` raised to `600000` and an inner `timeout 540`, per
       `context/patterns/external-process-wait.md`. Record the verdict and every FINDING line.
-- [ ] Run the full shell suite explicitly so the new harness is exercised in the aggregate:
-      `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Run both lua spec files one final time against the finished tree.
-- [ ] Triage every finding. Fix forward on anything this task introduced. For a pre-existing finding
+      *(deviation: altered -- per this dispatch's "Batch Gate Deferral" directive (this task is one
+      of several implement-phase dispatches inside one multi-task /orchestrate batch invocation),
+      discharged against the SCOPED tier instead:
+      `verify-deploy.sh --skip-slow --only-gate 3,4,13,21,22,23` (doc-lint, task-reference lint,
+      orphan detection, hook-registration lint, shellcheck, directory-pathspec lint) plus Gate 8's
+      shell battery run separately and narrowly via `run-all.sh --only` (next task below). The
+      complete, unscoped gate set is deferred to the once-per-batch stage at the end of this
+      /orchestrate invocation, not independently run here. See completion notes below for every
+      FINDING line from the scoped run)*
+- [x] Run the full shell suite explicitly so the new harness is exercised in the aggregate:
+      `bash agent-system/extensions/core/scripts/tests/run-all.sh`. *(deviation: altered -- ran
+      narrowly via `run-all.sh --only test-mcp-merge-target.sh,test-lint-hook-registration-paths.sh,test-manifest-scripts-sync.sh`
+      (the three suites covering files this task touched or tools this task invoked), per the same
+      Batch Gate Deferral directive; the full, unnarrowed battery is deferred to the batch stage)*
+- [x] Run both lua spec files one final time against the finished tree. *(completed:
+      manifest_spec.lua 18/0; merge_spec.lua 10/1, the same single pre-existing, unrelated failure
+      confirmed unchanged since Phase 1)*
+- [x] Triage every finding. Fix forward on anything this task introduced. For a pre-existing finding
       unrelated to this task's scope, record it by name in the completion notes rather than
-      expanding scope.
-- [ ] Confirm the dispatch's verification constraints held: no deploy was performed against this
+      expanding scope. *(completed, see completion notes)*
+- [x] Confirm the dispatch's verification constraints held: no deploy was performed against this
       repository (`git status --short` shows no `.claude/` modifications and no root `.mcp.json`),
       and every empirical claim in the docs traces to a Phase 3 observation rather than an
       assumption. Any claim that could not be verified is marked as such with its reason.
-- [ ] Record the Phase 3 risk findings (byte-identity, regenerate-then-unload) and the
+      *(completed: confirmed, see completion notes)*
+- [x] Record the Phase 3 risk findings (byte-identity, regenerate-then-unload) and the
       `claude mcp get` outcome in the completion notes, whichever way they came out.
+      *(completed, see completion notes and the summary artifact)*
 
 **Timing**: 0.75 hours
 

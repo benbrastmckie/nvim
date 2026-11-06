@@ -1,13 +1,66 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 16,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md",
+      "summary": "6-phase implementation of the merge_targets.mcp deploy-engine mechanism, its regression harness, documentation, and the settled obsidian-memory resolution; all phases COMPLETED."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a merge_targets.mcp manifest key and deploy-engine dispatch branch (reusing the existing merge_settings/unmerge_settings primitive) so an extension can register a real MCP server into a project-scoped .mcp.json. Built a durable scratch-tree regression harness confirming all four requirements plus two empirical risk findings (byte-identity needed a sort_keys contingency; the regenerate-then-unload sequence reproduces a pre-existing, documented limitation). Documented the mechanism and its two user-visible gotchas, and resolved the absorbed obsidian-memory sub-task by removing its dead, fabricated server declaration and documenting Claude Code's native /ide integration as the real connection path."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/guides/extension-development.md",
+    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+    "agent-system/extensions/core/docs/architecture/extension-system.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+    "agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh",
+    "agent-system/extensions/memory/README.md",
+    "agent-system/extensions/memory/context/project/memory/memory-setup.md",
+    "agent-system/extensions/memory/context/project/memory/memory-troubleshooting.md",
+    "agent-system/extensions/memory/index-entries.json",
+    "agent-system/extensions/memory/manifest.json",
+    "agent-system/extensions/memory/settings-fragment.json",
+    "lua/neotex/plugins/ai/claude/extensions/manifest_spec.lua",
+    "lua/neotex/plugins/ai/shared/extensions/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua",
+    "lua/neotex/plugins/ai/shared/extensions/verify.lua",
+    "specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When reusing an existing additive-deep-merge primitive (merge_settings/unmerge_settings in this repo's extension deploy engine) for a NEW merge target, verify requirement (c) idempotency empirically rather than assuming it: jq .'s default behavior is order-preserving, not sorting, so a second deploy over already-merged content can fail a byte-identity check even though the content is semantically unchanged. The fix is an opt-in sort_keys flag threaded through write_json -> merge_settings, passed ONLY from the new branch, never changing any other caller's output format.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["jq", "byte-identity", "idempotent-deploy", "sort-keys", "merge-settings"]
+    },
+    {
+      "content": "A load-call that OVERWRITES (rather than merges) its own previously-persisted merge-tracking data creates a latent 'load -> regenerate -> unload' retraction gap: a second load over already-present content produces a thinned tracked structure (deep_merge only tracks keys/items not already present), and since the persisted tracked data is replaced wholesale on each load, a later unload cannot retract entries that predate the most recent regenerate. This is a structural property of this repo's extension deploy engine (manager.load + state_mod.mark_loaded), shared by every merge-target branch (settings, mcp, ...), not specific to any one of them. A clean 'load -> unload' round trip with no intervening reload always retracts fully.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["merge-tracking", "unload-retraction", "extension-deploy-engine", "state-persistence", "regenerate"]
+    },
+    {
+      "content": "sync-manifest-scripts.sh --write and generate-context-line-counts.sh --write are repo-wide tools with no per-extension scope flag: running either during a multi-task /orchestrate batch cycle can silently write into a concurrently-dispatched sibling task's own declared file_scope (observed: registering a new test script in one extension's manifest also wrote missing-entry rows into an unrelated extension's manifest that a sibling task was actively editing). Always run `git diff --stat` immediately after invoking either tool in a batch context, and manually revert any hunk outside this task's own declared file_scope before committing -- never re-run a narrowing flag, because neither tool has one.",
+      "category": "PATTERN",
+      "source_artifact": "specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["batch-orchestration", "territory", "sync-manifest-scripts", "generate-context-line-counts", "scope-excursion"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

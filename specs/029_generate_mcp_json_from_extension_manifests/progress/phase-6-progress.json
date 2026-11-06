@@ -1,0 +1,71 @@
+{
+  "phase": 6,
+  "phase_name": "Full gate set and completion",
+  "started_at": "2026-11-06T09:40:00Z",
+  "last_updated": "2026-11-06T10:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read whole diff, confirm scope containment",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Scoped gate run per Batch Gate Deferral directive (gates 3,4,13,21,22,23)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Scoped shell suite run (run-all.sh --only) and both lua specs",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Triage findings; confirm no-deploy constraint",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Write completion summary artifact",
+      "status": "done",
+      "files_touched": ["specs/029_generate_mcp_json_from_extension_manifests/summaries/01_mcp-merge-target-mechanism-summary.md"]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "This dispatch's own Batch Gate Deferral directive overrides the plan's full-tier verification for this specific dispatch: this task is one of several implement-phase dispatches inside one multi-task /orchestrate batch, and the complete gate set runs once for the whole batch at the end rather than independently per task.",
+      "annotation": "*(deviation: altered -- discharged against a scoped --only-gate invocation per the dispatch's Batch Gate Deferral directive)*"
+    },
+    {
+      "task_id": "6.3",
+      "description": "Run the full shell suite explicitly: bash agent-system/extensions/core/scripts/tests/run-all.sh",
+      "type": "altered",
+      "reason": "Same Batch Gate Deferral directive; ran run-all.sh --only narrowed to the three suites covering this task's own touched files/tools.",
+      "annotation": "*(deviation: altered -- discharged against a run-all.sh --only invocation per the Batch Gate Deferral directive)*"
+    }
+  ],
+  "notes": [
+    "SCOPED GATE RESULTS (verify-deploy.sh --skip-slow --only-gate 3,4,13,21,22,23): overall 2 of 7 checks failed.",
+    "  Gate 3 (doc-lint) FAIL -- two independent sources, BOTH out of this task's fix scope: (a) agent-system/extensions/lean's own pre-existing, concurrently-dispatched sibling task's findings (script-not-in-provides.scripts gaps for 9 lean fixture/script files, deployed-content-drift for two lean scripts), confirmed unchanged by this task throughout; (b) this task's OWN, EXPECTED, UNAVOIDABLE finding -- 'deployed script content drift: scripts/lint/lint-hook-registration-paths.sh' -- the direct and inevitable consequence of editing that source-store script's header comment while this dispatch's own no-deploy constraint (see below) forbids resyncing the deployed copy via deploy-headless.sh. [memory] and [core]'s provides.scripts check both report OK on their own merits.",
+    "  Gate 4 (task-reference lint) PASS.",
+    "  Gate 13 (whole-tree orphan detection) FAIL -- 6 findings, ALL agent-system/extensions/lean source-store files belonging to the concurrently-dispatched sibling task's own in-flight, undeclared work (scripts/lean-plan-compliance-check.sh and 5 fixture/test files). None are files this task touched or introduced.",
+    "  Gate 21 (hook-registration lint) PASS.",
+    "  Gate 22 (shellcheck, -S warning) PASS.",
+    "  Gate 23 (directory-pathspec boundary lint) PASS.",
+    "SCOPED SHELL SUITE RESULTS (run-all.sh --only test-mcp-merge-target.sh,test-lint-hook-registration-paths.sh,test-manifest-scripts-sync.sh): 2 passed, 1 failed. test-mcp-merge-target.sh: PASS (7/7 assertions). test-lint-hook-registration-paths.sh: PASS. test-manifest-scripts-sync.sh: FAIL -- reports the SAME 9 undeclared lean source-store files as Gate 13 above; this is the sibling task's own territory, not introduced by this task, and not fixed here per the territory contract.",
+    "FINAL LUA SPEC RESULTS: manifest_spec.lua 18 Success / 0 Fail. merge_spec.lua 10 Success / 1 Fail -- the single pre-existing, unrelated hook-dedupe test failure, confirmed unchanged across every phase of this task.",
+    "NO-DEPLOY CONSTRAINT CONFIRMED: git status --short shows no .claude/ modifications and no root .mcp.json exists, confirmed at the end of Phase 6.",
+    "EMPIRICAL CLAIMS TRACED TO PHASE 3 (none invented): requirement (c) byte-identity needed the sort_keys contingency (confirmed, applied); the regenerate-then-unload risk reproduces (confirmed, documented as a pre-existing limitation, not fixed); claude mcp get resolves the fixture server with a visible 'Status: Pending approval' rather than an outright refusal (confirmed, documented verbatim in extension-system.md).",
+    "SCOPE-EXCURSION ISSUE RECORDED (minor, non-blocking, via issue-record.sh): commit a39a9ff2d incidentally committed three unrelated-but-correct line_count corrections for plan-format.md/progress-file.md/metadata-file-return.md (other agents' edits, not mine) because it staged the whole already-dirty core/index-entries.json file via jq-rewrite-then-commit rather than a narrower single-entry filter. All three values verified correct (wc -l matches); no content harm, only a provenance/attribution imprecision."
+  ]
+}
