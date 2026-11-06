@@ -1,39 +1,11 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793993117_98582a_464",
-  "dispatch_seq": 2,
-  "findings_count": 6,
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/464_plan_cross_phase_line_budget_consistency/reports/01_cross-phase-line-budget-consistency.md",
-      "summary": "Confirms the cross-phase ceiling-consistency gap in plan-format.md, recommends adding one generalized subsection there plus one advisory-only heuristic check in validate-artifact.sh's existing per-phase loop (option b, no new field, no new script), with (a)-alone and (c)-alone recorded as rejected on their own merits."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "validate-artifact.sh's per-phase plan loop (~L303-343) already isolates each phase into a phase_block via mapfile over PHASE_HEADING_ERE line numbers plus sed -n ranges, then regex-extracts a field value from that block. Any new per-phase check (e.g. a numeric Scope Hypothesis estimate) should be a sibling regex read inside this same loop, not a new parsing pass or a new script.",
-      "category": "PATTERN",
-      "source_artifact": "specs/464_plan_cross_phase_line_budget_consistency/reports/01_cross-phase-line-budget-consistency.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["validate-artifact.sh", "phase_block", "plan-format", "advisory-first", "per-phase check"]
-    },
-    {
-      "content": "plan-format.md's advisory-first -> promotion-criterion pattern (Verification Tier, Files to modify) always pairs a log_warn in validate-artifact.sh with a named, measured promotion criterion recorded in plan-format.md's Enforcement level subsection (e.g. 'promote once no non-terminal plan under specs/ lacks the field', with the current residue counted). Any new plan-level advisory check should follow this exact shape rather than inventing a new enforcement convention.",
-      "category": "PATTERN",
-      "source_artifact": "specs/464_plan_cross_phase_line_budget_consistency/reports/01_cross-phase-line-budget-consistency.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["advisory-first", "promotion criterion", "validate-artifact.sh", "plan-format.md", "enforcement level"]
-    },
-    {
-      "content": "This repo's own live plans already cite numeric ceilings in free prose without any format-level support: specs/328.../plans/03_markdown-corpus-consolidation.md runs an ad hoc cumulative 'NET-MD accounting' narrative across phases, and specs/482_create_sapience_extension/plans/01_create-sapience-extension.md cites 'Rule U's 60-line ceiling' and asserts conformance against it. Useful precedent/evidence when generalizing any ceiling-citation rule beyond a single triggering (e.g. Lean longFile) incident.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/464_plan_cross_phase_line_budget_consistency/reports/01_cross-phase-line-budget-consistency.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["line ceiling", "NET-MD accounting", "plan-format", "ceiling citation", "generality"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 464 to create implementation plan"
+  "status": "in_progress",
+  "artifacts": [],
+  "metadata": {
+    "session_id": "sess_1793993117_98582a_464",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 8
 }
