@@ -46963,23 +46963,31 @@
     {
       "project_number": 512,
       "project_name": "builtin_command_exemption_for_dead_command_lint",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "verify-deploy gate 24 reports two findings against lines that are correct and must keep working: memory-setup.md and memory-troubleshooting.md each recommend Claude Code native /ide command to connect an Obsidian vault. The lint derives its valid-command set solely by enumerating agent-system/extensions/*/commands/<name>.md, so a host-provided built-in can never be valid and is flagged forever. Decide and implement the exemption mechanism. The constraint that makes this a task rather than a one-line fix: lint-dead-command-recommendations.sh own header documents zero-tolerance, no allowlist and nothing is ever hardcoded here as a deliberate decision with stated rationale, so any built-in allowlist must amend that recorded decision rather than quietly contradict it, and no authoritative set of Claude Code built-in commands exists anywhere in this repository to scope or maintain one against. Candidate approaches to weigh: amend the recorded policy and add a narrowly-scoped built-in set with a named maintenance owner; add an inline per-line exemption marker following the established task-ref-ok and version-ok substring-marker idiom, which keeps the lint free of any hardcoded list; or rule the findings permanently accepted and teach the gate to report them separately from genuine violations. Rewording the two documents to drop the Run /<name> recommendation shape was considered and rejected as the primary fix: it clears the finding without addressing the mechanism, and the next document that correctly recommends a built-in trips the same false positive. SCOPE BOUNDARY: this record owns the lint and its test suite only. The prose naming the three deleted lifecycle commands is owned by reword_dead_lifecycle_command_prose_per_class, which declares agent-system/extensions/memory/context/ in its own file_scope; that record also covers the separate, genuine defect at memory-setup.md where a numbered connection-test step recommends an unrunnable /research invocation with a --remember flag that does not exist. Do not edit those documents from here. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** never a deployed .claude/** tree. Evidence: the batch gate run of the orchestration that filed this record measured 25 confirmed verify-deploy findings, of which these two persisted after every other attributable finding was cleared.",
       "effort": "medium",
       "topic": "agent-system",
       "dependencies": [],
       "file_scope": [
+        ".claude/scripts/lint/lint-dead-command-recommendations.sh",
+        ".claude/scripts/tests/test-lint-dead-command-recommendations.sh",
+        "__WHOLE_TREE__",
         "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh",
         "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh"
       ],
       "created": "2026-11-06T17:56:02Z",
-      "last_updated": "2026-11-06T18:14:53Z",
+      "last_updated": "2026-11-06T18:23:12Z",
       "artifacts": [
         {
           "path": "specs/512_builtin_command_exemption_for_dead_command_lint/reports/01_builtin-command-exemption-mechanism.md",
           "type": "report",
           "summary": "Recommends a new builtin-cmd-ok inline substring marker (the task-ref-ok/version-ok precedent) in lint-dead-command-recommendations.sh's classify_line() to exempt the two correct /ide recommendations, over a maintained built-in allowlist or gate-side bucketing."
+        },
+        {
+          "path": "specs/512_builtin_command_exemption_for_dead_command_lint/plans/01_builtin-command-exemption-marker.md",
+          "type": "plan",
+          "summary": "Three-phase plan: builtin-cmd-ok marker in classify_line() plus header amendment, test Case 6 with negative control, redeploy and full-gate verification."
         }
       ],
       "audit_verdict": {
@@ -48183,7 +48191,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1793988163_b25d4a_512",
+      "session_id": "sess_1793988163_b25d4a",
       "next_artifact_number": 2
     }
   ],

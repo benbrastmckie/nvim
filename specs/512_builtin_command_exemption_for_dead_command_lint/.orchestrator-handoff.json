@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Planned the built-in command exemption as a generic inline `builtin-cmd-ok` substring marker in lint-dead-command-recommendations.sh's classify_line(), following the established task-ref-ok/version-ok idiom, with the no-allowlist decision amended in the lint's own header (no new standards doc, no command name hardcoded anywhere). Three phases: marker + header amendment, test Case 6 (positive plus negative control), then redeploy and full-gate verification. Two mechanical constraints drive the ordering: gate24_run invokes the source-store lint directly (no redeploy needed for the gate), but the test suite resolves the deployed copy first, so the new case is red until the redeploy lands. Honest caveat for postflight: this record's file_scope is the lint and its test suite only, so the two live gate-24 /ide findings at memory-setup.md:93 and memory-troubleshooting.md:34 will PERSIST after this task completes -- those lines belong to reword_dead_lifecycle_command_prose_per_class, whose own file_scope covers agent-system/extensions/memory/context/; Phase 1 therefore records the exact copy-pasteable marker string for that record's implementer.",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/512_builtin_command_exemption_for_dead_command_lint/plans/01_builtin-command-exemption-marker.md",
+      "summary": "Three-phase plan: builtin-cmd-ok marker in classify_line() plus header amendment, test Case 6 with negative control, redeploy and full-gate verification."
+    }
+  ],
+  "dispatch_seq": 10
+}

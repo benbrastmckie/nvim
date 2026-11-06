@@ -1,19 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/512_builtin_command_exemption_for_dead_command_lint/reports/01_builtin-command-exemption-mechanism.md",
-      "summary": "Recommends a new builtin-cmd-ok inline substring marker (the task-ref-ok/version-ok precedent) in lint-dead-command-recommendations.sh's classify_line() to exempt the two correct /ide recommendations, over a maintained built-in allowlist or gate-side bucketing."
+      "type": "plan",
+      "path": "specs/512_builtin_command_exemption_for_dead_command_lint/plans/01_builtin-command-exemption-marker.md",
+      "summary": "Three-phase plan adding a generic inline builtin-cmd-ok exemption marker to lint-dead-command-recommendations.sh, amending its no-allowlist header decision, extending its test suite, and redeploying."
     }
   ],
-  "next_steps": "Run /orchestrate 512 to create implementation plan",
+  "next_steps": "Run /orchestrate 512 to execute the plan",
   "metadata": {
     "session_id": "sess_1793988163_b25d4a_512",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 2
-  }
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1.5,
+    "dependency_waves": 3
+  },
+  "memory_candidates": [],
+  "dispatch_seq": 10
 }
