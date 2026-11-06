@@ -1,0 +1,35 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and full gate battery",
+  "started_at": "2026-11-06T11:00:00Z",
+  "last_updated": "2026-11-06T11:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy source store, confirm new files + hook registration present", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-no-python-state-write.sh"]},
+    {"id": 2, "description": "Measure gate 12 runtime", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Scoped gate run (verify-deploy.sh --only-gate 12), batch-deferred", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm gate 12 PASS not SKIP", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Scoped suite run (run-all.sh --only), batch-deferred", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Triage (N/A for scoped run, zero failures)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "run-all.sh --only on the newly-created test suite", "result": "failed", "reason": "deployed test-validate-no-python-state-write.sh lacked the executable bit (source-store file was never chmod +x'd); run-all.sh correctly SKIPped it with 'not executable (exec-bit regression?)' rather than silently passing"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.3",
+      "description": "Run the complete gate battery with an explicit source-store TARGET",
+      "type": "altered",
+      "reason": "Dispatch file's Batch Gate Deferral section directs this phase to discharge against a scoped tier (verify-deploy.sh --only-gate 12) rather than independently running the full battery, since this task is part of a multi-task /orchestrate batch invocation. The full battery runs once at the batch stage.",
+      "annotation": "*(DEFERRED to the batch stage per this dispatch's own Batch Gate Deferral directive -- ran the scoped `bash .claude/scripts/verify-deploy.sh --only-gate 12` instead, which PASSed; the full battery runs once for the whole multi-task batch invocation, not independently here)*"
+    },
+    {
+      "task_id": "6.5",
+      "description": "Run the full shell-suite battery: bash .../tests/run-all.sh",
+      "type": "altered",
+      "reason": "Same Batch Gate Deferral directive as 6.3.",
+      "annotation": "*(DEFERRED to the batch stage, same directive -- ran the scoped `run-all.sh --only test-lint-state-writer-boundary.sh,test-validate-no-python-state-write.sh` instead: 2 passed, 0 failed)*"
+    }
+  ]
+}

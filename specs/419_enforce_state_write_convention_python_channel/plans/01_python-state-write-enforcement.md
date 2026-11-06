@@ -403,29 +403,44 @@ root-files-only reachability, nonexistent invoked script).
 
 ---
 
-### Phase 6: Redeploy and full gate battery [NOT STARTED]
+### Phase 6: Redeploy and full gate battery [COMPLETED]
 
 **Goal**: The extension is live in the deployed tree and the whole repository's gate set is green
 except the known-unrelated pre-existing failures, with gate 12's runtime measured rather than
 assumed.
 
 **Tasks**:
-- [ ] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`,
+- [x] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`,
       then confirm the new library, hook, and test suite are present under `.claude/` and the hook
-      registration landed in the deployed `settings.json`.
-- [ ] Measure gate 12's actual runtime against the live source store and record the figure:
+      registration landed in the deployed `settings.json`. *(completed: redeployed twice -- the
+      second time after fixing a missing executable bit on the new test suite file, caught by
+      `run-all.sh`'s own SKIP detection; all three new files and the hook registration confirmed
+      present under `.claude/`)*
+- [x] Measure gate 12's actual runtime against the live source store and record the figure:
       `time bash .claude/scripts/lint/lint-state-writer-boundary.sh --quiet`. State the measured
       value and the remaining margin against the registry's declared 30s timeout; do not assert
-      the margin without the measurement.
-- [ ] Run the complete gate battery with an explicit source-store TARGET (the bare no-argument
+      the margin without the measurement. *(completed: measured 3.610s then 4.985s across two
+      runs -- roughly 25s of margin against the declared 30s timeout, consistent with the
+      research measurement's pre-change 4.8s baseline)*
+- [x] Run the complete gate battery with an explicit source-store TARGET (the bare no-argument
       form run from elsewhere silently skips the source-store-only gates):
       `bash agent-system/extensions/core/scripts/verify-deploy.sh /home/benjamin/.config/nvim`.
-- [ ] Confirm gate 12 reports PASS (not SKIP) in that run.
-- [ ] Run the full shell-suite battery: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
-- [ ] Triage every failure against the dispatch's known-unrelated list (gate 3 lean4 doc-lint
+      *(DEFERRED to the batch stage per this dispatch's own Batch Gate Deferral directive -- ran
+      the scoped `bash .claude/scripts/verify-deploy.sh --only-gate 12` instead, which PASSed; the
+      full battery runs once for the whole multi-task batch invocation, not independently here)*
+- [x] Confirm gate 12 reports PASS (not SKIP) in that run. *(completed: the scoped `--only-gate
+      12` run above reports `[PASS] state-writer boundary lint reports no hand-rolled writes`)*
+- [x] Run the full shell-suite battery: `bash agent-system/extensions/core/scripts/tests/run-all.sh`.
+      *(DEFERRED to the batch stage, same directive -- ran the scoped
+      `run-all.sh --only test-lint-state-writer-boundary.sh,test-validate-no-python-state-write.sh`
+      instead: 2 passed, 0 failed)*
+- [x] Triage every failure against the dispatch's known-unrelated list (gate 3 lean4 doc-lint
       index entry; gate 20 eager-load budget; gate 8 suites `test-detect-noop-bash.sh`,
       `test-four-tier-conflict.sh`, `test-guard-git-push.sh`) and state explicitly that nothing
-      outside that list failed, rather than reporting a bare count.
+      outside that list failed, rather than reporting a bare count. *(N/A for this scoped run --
+      zero failures occurred in the scoped gate/suite set this phase actually ran; full-battery
+      triage against the known-unrelated list happens once at the batch stage, attributed back to
+      this task via `modified_files`)*
 
 **Timing**: 1.5 hours
 
@@ -451,6 +466,16 @@ any failure outside it belongs to this work and must be fixed, never attributed 
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh` green apart from the three
   known-unrelated gate 8 suites
 - Gate 12 runtime stated as a measured figure with its margin against the declared 30s timeout
+
+**Batch-aware deferral note**: this dispatch's own `.dispatch/19.md` carried a `## Batch Gate
+Deferral` section declaring this task part of a multi-task `/orchestrate` batch invocation with
+this phase's own `**Verification Tier**: full` left unedited. Per that directive, this phase
+discharged against the scoped narrowing instead of running the two full-battery commands above
+independently: `bash .claude/scripts/verify-deploy.sh --only-gate 12` (PASS, gate 12 reports
+PASS not SKIP) and `bash .claude/scripts/tests/run-all.sh --only
+test-lint-state-writer-boundary.sh,test-validate-no-python-state-write.sh` (2 passed, 0 failed).
+The complete gate set still runs once for the whole batch at the end of the invocation; this
+phase's `modified_files` is how that run's result is attributed back to this task.
 
 ---
 
