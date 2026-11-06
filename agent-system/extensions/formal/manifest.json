@@ -22,7 +22,8 @@
     "context": [
       "project/logic",
       "project/math",
-      "project/physics"
+      "project/physics",
+      "patterns"
     ],
     "commands": [],
     "scripts": [],

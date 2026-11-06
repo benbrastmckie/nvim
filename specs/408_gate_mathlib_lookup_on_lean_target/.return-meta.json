@@ -1,37 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/408_gate_mathlib_lookup_on_lean_target/plans/01_gate-mathlib-lookup-on-lean-target.md",
-      "summary": "4-phase, 3-wave plan gating the formal extension's Mathlib-lookup step on a Lean target plus tool registration, via one registered shared pattern file that all 8 contract surfaces point at."
-    }
-  ],
-  "next_steps": "Run /orchestrate 408 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 4,
-  "dependency_waves": [[1], [2, 3], [4]],
-  "memory_candidates": [
-    {
-      "content": "When an extension adds a context file under a NEW tier directory (e.g. context/patterns/ in an extension whose manifest declares only project/<domain> entries), the file never propagates: loader.lua's M.copy_category is driven by manifest provides.context, and check-extension-docs.sh enforces both directions -- line 236-240 fails a declared entry missing on disk, and Rule L reports a deployed context file tracing to no provides.context entry. EXT_DIR defaults to $REPO_ROOT/agent-system/extensions, so these checks scan the SOURCE STORE and apply even to an extension with no .claude-extensions.json entry (undeployed). A top-level directory-name entry is the right shape (core already declares 'patterns'), and Rule L unions each extension's own files rather than overwriting, so multiple extensions may declare the same directory name. Ordering matters: create the directory/file FIRST, then append to provides.context, so no intermediate state is red. Any plan that adds a context file under a new tier therefore has a file set of N+2 (manifest.json and index-entries.json), not N.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/408_gate_mathlib_lookup_on_lean_target/plans/01_gate-mathlib-lookup-on-lean-target.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "provides.context",
-        "extension-manifest",
-        "check-extension-docs",
-        "context-tier",
-        "index-entries",
-        "source-store"
-      ]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 13,
   "metadata": {
-    "session_id": "sess_1793993117_98582a_408",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 7
+    "session_id": "sess_1793993117_98582a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

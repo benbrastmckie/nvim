@@ -1,7 +1,7 @@
 # Implementation Plan: Task #408
 
 - **Task**: 408 - Gate the formal extension's mandatory Mathlib-lookup step on an actual Lean target
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: Task 359
 - **Research Inputs**: specs/408_gate_mathlib_lookup_on_lean_target/reports/01_gate-mathlib-lookup-surfaces.md
@@ -141,18 +141,19 @@ existing, so they are genuinely parallelisable.
 
 ---
 
-### Phase 1: Author and Register the Shared Gate Pattern [NOT STARTED]
+### Phase 1: Author and Register the Shared Gate Pattern [COMPLETED]
 
 **Goal**: One registered source of truth for the gate definition, the skip-log wording, and the
 metadata field, so the eight contract surfaces can point at it instead of restating it.
 
 **Tasks**:
 
-- [ ] Re-read `.claude-extensions.json` and confirm `formal` still has no entry and no top-level
+- [x] Re-read `.claude-extensions.json` and confirm `formal` still has no entry and no top-level
       `source_dir`, so the edit target is `agent-system/extensions/formal/` (per
       `rules/source-store-deploy-boundary.md`). Record the resolution in the progress file.
-- [ ] Create directory `agent-system/extensions/formal/context/patterns/`.
-- [ ] Write `agent-system/extensions/formal/context/patterns/mathlib-lookup-gate.md` containing:
+      *(completed: re-confirmed via jq; extensions keys are approvals/core/email/lean/literature/memory/nix/nvim/sapience, no formal entry, no top-level source_dir)*
+- [x] Create directory `agent-system/extensions/formal/context/patterns/`. *(completed)*
+- [x] Write `agent-system/extensions/formal/context/patterns/mathlib-lookup-gate.md` containing:
   - **Condition (a), Lean-target signal** — true when EITHER the task's `file_scope` contains at
     least one `*.lean` path, OR the task's `task_type` names the `lean4` extension's routing
     value. State the `file_scope` branch FIRST and explicitly as the one that actually fires for
@@ -180,20 +181,25 @@ metadata field, so the eight contract surfaces can point at it instead of restat
     existing integer type.
   - **Relationship to the tool-failure block**: the failure-handling path applies only once the
     gate has resolved to "perform"; it is not a second gate.
-- [ ] Verify the new file contains no task-number reference and no record-versioning phrasing:
+- [x] Verify the new file contains no task-number reference and no record-versioning phrasing:
       `grep -n -iE 'task [0-9]|tasks [0-9]|\(task |no longer|previously|formerly|supersed|used to|v1\b' <new file>`
-      must return nothing.
-- [ ] Append `"patterns"` to `.provides.context` in
+      must return nothing. *(completed: zero hits)*
+- [x] Append `"patterns"` to `.provides.context` in
       `agent-system/extensions/formal/manifest.json` (file-first ordering means the declared entry
       already exists on disk, so `check-extension-docs.sh:236-240` cannot fail on an intermediate
-      state).
-- [ ] Add one entry to `agent-system/extensions/formal/index-entries.json` `.entries[]` matching
+      state). *(completed)*
+- [x] Add one entry to `agent-system/extensions/formal/index-entries.json` `.entries[]` matching
       the schema already in use there (`path`, `summary`, `line_count`, `load_when.agents`,
       `load_when.task_types`, `domain`, `subdomain`, optional `keywords`). `path` is
       `patterns/mathlib-lookup-gate.md`; `load_when.agents` lists all four research agents
       (`logic-research-agent`, `math-research-agent`, `physics-research-agent`,
       `formal-research-agent`); `load_when.task_types` lists `logic`, `math`, `physics`, `formal`.
       Set `line_count` to the file's actual `wc -l` output, measured after writing it.
+      *(completed: domain="core"/subdomain="patterns" following the only existing precedent for a
+      top-level `patterns/` tier -- core extension's own `patterns/*` entries -- since `domain`'s
+      enum is closed to core/project/system and formal's `project` value is reserved for the
+      logic/math/physics domain-knowledge tier, not this cross-cutting gate mechanism;
+      line_count=82 matches actual `wc -l`)*
 
 **Timing**: 1 hour
 

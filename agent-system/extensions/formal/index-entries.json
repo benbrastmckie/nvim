@@ -1132,6 +1132,41 @@
         "decidability",
         "pumping"
       ]
+    },
+    {
+      "path": "patterns/mathlib-lookup-gate.md",
+      "summary": "Gates the mandatory Mathlib-lookup step on a genuine Lean target plus lookup-tool registration, with a skip-log convention and a mathlib_lookup_gated metadata field",
+      "category": "pattern",
+      "line_count": 82,
+      "load_when": {
+        "agents": [
+          "logic-research-agent",
+          "math-research-agent",
+          "physics-research-agent",
+          "formal-research-agent"
+        ],
+        "task_types": [
+          "logic",
+          "math",
+          "physics",
+          "formal"
+        ]
+      },
+      "domain": "core",
+      "subdomain": "patterns",
+      "topics": [
+        "mathlib",
+        "gate",
+        "lean-target",
+        "tool-registration",
+        "skip-log"
+      ],
+      "keywords": [
+        "mathlib_lookup_gated",
+        "file_scope",
+        "ToolSearch",
+        "lean_leansearch"
+      ]
     }
   ]
 }
