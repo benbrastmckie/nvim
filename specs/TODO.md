@@ -5727,6 +5727,7 @@ NON-GOALS: no change to the fingerprint computation itself (`stat` vs `hash` mod
 - **Dependencies**: Task 407, Task 378, Task 387, Task 401, Task 403
 - **Research**: [409_advise_on_dirty_file_scope_at_admission/reports/01_dirty-scope-advisory-research.md]
 - **Plan**: [409_advise_on_dirty_file_scope_at_admission/plans/01_dirty-scope-advisory-admission.md]
+- **Summary**: [409_advise_on_dirty_file_scope_at_admission/summaries/02_dirty-scope-advisory-admission-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md) and no record-versioning language (rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
