@@ -1,0 +1,39 @@
+{
+  "phase": 4,
+  "phase_name": "Regression Cases and Fixtures",
+  "started_at": "2026-11-05T00:45:00Z",
+  "last_updated": "2026-11-05T01:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add three new fixtures: plan_zero_goal_marker.md, plan_zero_goal_marker_with_goals.md, plan_empty_section_no_marker.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_zero_goal_marker.md",
+        "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_zero_goal_marker_with_goals.md",
+        "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_empty_section_no_marker.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add cases Z1-Z4 to test-lean-challenge-snapshot.sh and extend header comment inventory",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Run full suite; confirm 33 pre-existing cases plus Z1-Z4 all pass; run and revert two deliberate mutations confirming Z1/Z4 go RED while R21 stays green",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Suite result: 37 passed, 0 failed, 0 skipped. Mutation 1 (removing the marker substring test from extract_r1) turned Z1 and Z4 RED (Z3 stayed green). Mutation 2 (removing the zero-goal arm of the GOALS_FILE branch) turned Z1 and Z4 RED while R21 stayed GREEN, confirming the new cases are not vacuous and R21's existing protection is undisturbed. Both mutations were reverted immediately; git diff on the script confirmed byte-identical to the Phase 1 commit afterward."
+  ]
+}

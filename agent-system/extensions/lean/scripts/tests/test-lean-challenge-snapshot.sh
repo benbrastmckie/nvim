@@ -51,6 +51,17 @@
 # but semantically identical statement is not (0, no false positive); an identifier missing from
 # the current tree is distinguishable (71) from a drift finding (65).
 #
+# (5) Zero Lean goals (Cases Z1-Z4): a plan with no theorem deliverable declares that via the
+# literal `<!-- lean-challenge-statements:none -->` marker inside a present, block-free
+# `## Lean Challenge Statements` section. Z1: the marker with an empty `**Goals**:` is a
+# deliberate no-op -- exit 72, an informational message, no manifest written. Z2: the marker
+# alongside a NON-empty `**Goals**:` is a self-inconsistency and stays a hard 71 naming the
+# offending identifier. Z3 (closing a pre-existing coverage gap): a present, block-free,
+# marker-free section is malformed and still hits `extract_r1`'s status-2 path, exit 71 with the
+# existing message -- acceptance (c). Z4: Z1's exit 72 and Z3's exit 71 are asserted distinct, so
+# a naive nonzero-means-failure classifier cannot collapse the deliberate no-op into the
+# malformed-section case -- the exact collapse this task exists to prevent.
+#
 # Anti-vacuous-test guard (Case AV1, carrying test-lean-comparator-run.sh's and
 # test-lean-sorry-census.sh's own discipline): a naive "exit code non-zero means bad" classifier
 # is asserted to DISAGREE with this tool's classification on the drift (65) vs config-error (71)
@@ -774,6 +785,62 @@ if [ "$rc" -eq 71 ] && echo "$out" | grep -qi "no identifiers found under \*\*Go
   pass "R21: a '**Goals**:' block with no conforming bullet still hits the unconditional empty-GOALS_FILE guard (exit 71), not a vacuous pass"
 else
   fail "R21: expected exit 71 ('no identifiers found'), got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case Z1: the zero-goal marker (`<!-- lean-challenge-statements:none -->`) inside a present,
+# block-free `## Lean Challenge Statements` section, with `**Goals**:` also naming zero
+# identifiers, is a deliberate no-op -- exit 72, an informational message, and no manifest.
+# ===========================================================================
+repo=$(make_repo "z1" 934 plan_zero_goal_marker.md)
+out=$(run_tool "$repo" 934 "$repo" --dry-run 2>&1)
+z1_rc=$?
+manifest="$repo/specs/934_proj/challenge/manifest.json"
+if [ "$z1_rc" -eq 72 ] && echo "$out" | grep -qi "zero-goal" && [ ! -e "$manifest" ]; then
+  pass "Z1: the zero-goal marker with empty '**Goals**:' exits 72 with an informational message and writes no manifest"
+else
+  fail "Z1: expected exit 72 with a zero-goal message and no manifest, got rc=$z1_rc: $out"
+fi
+
+# ===========================================================================
+# Case Z2: the zero-goal marker alongside a NON-empty `**Goals**:` is a self-inconsistency --
+# a plan cannot claim zero goals via the marker while also naming an identifier to prove.
+# ===========================================================================
+repo=$(make_repo "z2" 935 plan_zero_goal_marker_with_goals.md)
+out=$(run_tool "$repo" 935 "$repo" --dry-run 2>&1)
+rc=$?
+if [ "$rc" -eq 71 ] && echo "$out" | grep -q "comm"; then
+  pass "Z2: the zero-goal marker with a non-empty '**Goals**:' exits 71 naming the inconsistent identifier 'comm'"
+else
+  fail "Z2: expected exit 71 naming 'comm', got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case Z3 (regression, closes a pre-existing coverage gap): a present `## Lean Challenge
+# Statements` section with neither a fenced lean block nor the zero-goal marker is malformed --
+# it must still hit `extract_r1`'s status-2 path and the existing "present but contains no
+# ```lean fenced blocks" message, exit 71. This is the acceptance-(c) regression case; before
+# this task, no existing case drove this specific branch.
+# ===========================================================================
+repo=$(make_repo "z3" 936 plan_empty_section_no_marker.md)
+out=$(run_tool "$repo" 936 "$repo" --dry-run 2>&1)
+z3_rc=$?
+if [ "$z3_rc" -eq 71 ] && echo "$out" | grep -qi "present but contains no \`\`\`lean fenced blocks"; then
+  pass "Z3: a present, block-free, marker-free section still fails loudly (exit 71) with the malformed-section message"
+else
+  fail "Z3: expected exit 71 with the malformed-section message, got rc=$z3_rc: $out"
+fi
+
+# ===========================================================================
+# Case Z4: anti-vacuity assertion (mirrors AV1 below) -- Z1 (the deliberate zero-goal no-op) and
+# Z3 (the malformed section) must be DISTINCT non-zero exit codes, so a naive
+# nonzero-means-failure classifier cannot collapse the deliberate no-op into the malformed case --
+# exactly the failure mode this task exists to prevent.
+# ===========================================================================
+if [ "$z1_rc" -ne 0 ] && [ "$z3_rc" -ne 0 ] && [ "$z1_rc" != "$z3_rc" ]; then
+  pass "Z4: Z1's exit 72 and Z3's exit 71 are both non-zero AND distinct -- the deliberate no-op and the malformed section do not collapse into one code"
+else
+  fail "Z4: expected two distinct non-zero codes, got z1_rc=$z1_rc z3_rc=$z3_rc"
 fi
 
 # ===========================================================================

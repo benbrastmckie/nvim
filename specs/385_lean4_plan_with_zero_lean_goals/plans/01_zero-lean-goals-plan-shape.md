@@ -316,40 +316,42 @@ plus the `prose` row's diff read-through.
 
 ---
 
-### Phase 4: Regression Cases and Fixtures [NOT STARTED]
+### Phase 4: Regression Cases and Fixtures [COMPLETED]
 
 **Goal**: Prove acceptance (b) and (c) mechanically, and close the pre-existing coverage gap for
 the present-but-empty-section hard-failure path.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` and
-      list `fixtures/challenge/` immediately before editing.
-- [ ] Add fixture `fixtures/challenge/plan_zero_goal_marker.md`: `- **Type**: lean`, a
+- [x] Re-read `agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` and
+      list `fixtures/challenge/` immediately before editing. *(completed)*
+- [x] Add fixture `fixtures/challenge/plan_zero_goal_marker.md`: `- **Type**: lean`, a
       `## Goals & Non-Goals` block whose `**Goals**:` names zero identifiers, and a present
       `## Lean Challenge Statements` section containing rationale prose plus the verbatim marker
       line and no ```` ```lean ```` blocks. Model its header/metadata lines on
-      `plan_r21_empty_goals.md` so `make_repo`'s `{N}` substitution works unchanged.
-- [ ] Add fixture `fixtures/challenge/plan_zero_goal_marker_with_goals.md`: the same marker
+      `plan_r21_empty_goals.md` so `make_repo`'s `{N}` substitution works unchanged. *(completed)*
+- [x] Add fixture `fixtures/challenge/plan_zero_goal_marker_with_goals.md`: the same marker
       section but with a `**Goals**:` block naming one identifier (Decision 2's inconsistency
-      case).
-- [ ] Add fixture `fixtures/challenge/plan_empty_section_no_marker.md`: a non-empty `**Goals**:`
+      case). *(completed)*
+- [x] Add fixture `fixtures/challenge/plan_empty_section_no_marker.md`: a non-empty `**Goals**:`
       block and a present `## Lean Challenge Statements` section with neither blocks nor marker
-      (the currently-uncovered `extract_r1` status-`2` path).
-- [ ] Add case `Z1`: run the tool on the marker fixture with `--dry-run`; assert exit `72`, assert
+      (the currently-uncovered `extract_r1` status-`2` path). *(completed)*
+- [x] Add case `Z1`: run the tool on the marker fixture with `--dry-run`; assert exit `72`, assert
       the informational zero-goal message is present on the output, and assert no
-      `specs/*/challenge/manifest.json` was created in the throwaway repo.
-- [ ] Add case `Z2`: run on the marker-with-goals fixture; assert exit `71` and that the message
-      names the inconsistency and the offending identifier.
-- [ ] Add case `Z3`: run on the empty-section-no-marker fixture; assert exit `71` and that the
+      `specs/*/challenge/manifest.json` was created in the throwaway repo. *(completed)*
+- [x] Add case `Z2`: run on the marker-with-goals fixture; assert exit `71` and that the message
+      names the inconsistency and the offending identifier. *(completed)*
+- [x] Add case `Z3`: run on the empty-section-no-marker fixture; assert exit `71` and that the
       existing "present but contains no ```` ```lean ```` fenced blocks" message is emitted
-      (acceptance (c)).
-- [ ] Add a case `Z4` anti-vacuity assertion in the style of the existing `AV1`: assert
+      (acceptance (c)). *(completed)*
+- [x] Add a case `Z4` anti-vacuity assertion in the style of the existing `AV1`: assert
       `Z1`'s and `Z3`'s exit codes are both non-zero AND distinct, so a naive
       nonzero-means-failure classifier cannot tell the deliberate no-op from the malformed
-      section — the exact collapse this task exists to prevent.
-- [ ] Extend the suite's own header comment inventory to name the new `Z*` cases, matching the
-      existing R/M/C/AV grouping style.
-- [ ] Run the full suite and confirm every pre-existing case still passes.
+      section — the exact collapse this task exists to prevent. *(completed)*
+- [x] Extend the suite's own header comment inventory to name the new `Z*` cases, matching the
+      existing R/M/C/AV grouping style. *(completed)*
+- [x] Run the full suite and confirm every pre-existing case still passes. *(completed: 37 passed,
+      0 failed, 0 skipped — 33 pre-existing cases plus Z1-Z4; two deliberate temporary mutations
+      were also applied and reverted, confirming Z1/Z4 go RED under each while R21 stays green)*
 
 **Timing**: 1 hour
 
