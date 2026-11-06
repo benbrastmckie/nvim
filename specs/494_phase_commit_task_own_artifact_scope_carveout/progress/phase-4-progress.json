@@ -1,0 +1,33 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and close on the full gate set",
+  "started_at": "2026-11-06T10:03:00Z",
+  "last_updated": "2026-11-06T10:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run deploy-headless.sh to regenerate the deployed .claude/ tree; confirm the deployed copies carry the Phase 1-3 changes",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Discharge this phase's verification per the dispatch's Batch Gate Deferral directive (scoped tier), and triage the one full, unnarrowed run also executed",
+      "status": "done",
+      "files_touched": [],
+      "note": "Scoped verification (the batch-gate-deferral-compliant discharge): run-all.sh --only test-git-commit-phase.sh,test-git-commit-scoped.sh PASSED 2/2 on the deployed tree; verify-deploy.sh --skip-slow --only-gate 3,4 reported gate 4 PASS and gate 3's doc-lint reporting extension 'core' PASS (the only remaining FAIL is 'lean', pre-existing). A full, unnarrowed verify-deploy.sh run was ALSO executed (before re-reading the dispatch's Batch Gate Deferral directive) and reported 4 of 41 checks failing: doc-lint and whole-tree-orphan-detection both resolve entirely to the lean extension's pre-existing manifest/orphan drift (attributed to commits 41d544812 and ce5b1588b, confirmed via git log), dead-command-recommendation lint resolves to an unrelated memory-extension /ide doc reference, and the full shell suite battery (gate 8) reported 10 failing suites (2 EXPECTED by run-all.sh's own classification, 8 NEW) -- none of which is test-git-commit-phase.sh or test-git-commit-scoped.sh. The 8 NEW failures are all in orchestrator-lifecycle scripts entirely outside this task's file_scope; one (test-update-task-status.sh) explicitly reports the real specs/ tree changing mid-suite, consistent with concurrent sibling-task activity in this same orchestrate batch rather than a regression from this task's 3-file edit. Per the Batch Gate Deferral directive, full triage/fix of these 8 is the batch-level run's responsibility, not this dispatch's."
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.gate-set",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh with no --skip-slow and no --only-gate narrowing",
+      "type": "altered",
+      "reason": "The dispatch file's own Batch Gate Deferral section (not present when the plan was authored) supersedes the plan's literal instruction for this final full-tier phase: this dispatch is one of several implement-phase dispatches in one multi-task /orchestrate batch, and the complete gate set runs exactly once at the batch level rather than independently per task. Discharged this phase instead against the scoped tier the directive names.",
+      "annotation": "*(deviation: full gate run superseded by the dispatch's Batch Gate Deferral directive; scoped tier run instead, full set deferred to the batch-level run)*"
+    }
+  ]
+}

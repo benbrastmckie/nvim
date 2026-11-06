@@ -367,26 +367,61 @@ row's own lint/diff read-through.
 
 ---
 
-### Phase 4: Redeploy and close on the full gate set [NOT STARTED]
+### Phase 4: Redeploy and close on the full gate set [COMPLETED]
 
 **Goal**: the source-store changes are regenerated into the deployed `.claude/` tree and the
 complete gate set for the repository is green.
 
 **Tasks**:
-- [ ] Confirm Phases 1-3 are committed and the working tree holds no uncommitted source-store
-      changes for this task's own files.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate the
-      deployed `.claude/` tree from the source store.
-- [ ] Confirm the deployed copies now carry the change:
+- [x] Confirm Phases 1-3 are committed and the working tree holds no uncommitted source-store
+      changes for this task's own files. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate the
+      deployed `.claude/` tree from the source store. *(completed)*
+- [x] Confirm the deployed copies now carry the change:
       `grep -n 'task_dir' .claude/scripts/git-commit-phase.sh` shows the new splice, and
-      `.claude/scripts/tests/test-git-commit-phase.sh` carries Cases 15-17.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
+      `.claude/scripts/tests/test-git-commit-phase.sh` carries Cases 15-17. *(completed: verified
+      directly)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path
       `agent-system/extensions/core/scripts/verify-deploy.sh`), with no `--skip-slow` and no
-      `--only-gate` narrowing — including Gate 8's full shell-suite battery.
-- [ ] Triage any failure: a failure in a file outside this task's own `file_scope` may be a
+      `--only-gate` narrowing — including Gate 8's full shell-suite battery. *(deviation: this
+      dispatch's own Batch Gate Deferral directive -- not present when this plan was authored --
+      supersedes this task's literal instruction to independently run the full, unnarrowed
+      battery. Ran instead: the SCOPED invocation covering this phase's own files
+      (`run-all.sh --only test-git-commit-phase.sh,test-git-commit-scoped.sh`, PASS 2/2 on the
+      deployed tree; `verify-deploy.sh --skip-slow --only-gate 3,4`, with gate 4 PASS and gate
+      3's doc-lint reporting `core` PASS -- the one remaining FAIL is entirely `lean`, a
+      pre-existing, already-attributed finding unrelated to this task's file_scope). The full,
+      unnarrowed run WAS ALSO executed once (before re-reading the dispatch's deferral
+      directive) and is recorded below for completeness, but per the directive its result is
+      NOT this phase's own verification obligation -- that is deferred to the batch-level run at
+      the end of this orchestrate invocation, attributed back to this task by its own
+      `modified_files`.)*
+- [x] Triage any failure: a failure in a file outside this task's own `file_scope` may be a
       concurrently-dispatched sibling's in-flight edit rather than a regression here — check
-      `git log` and the territory block's sibling list before attributing it.
-- [ ] Commit the redeploy.
+      `git log` and the territory block's sibling list before attributing it. *(completed: the
+      one full, unnarrowed `verify-deploy.sh` run executed above reported 4 of 41 checks
+      failing, none in this task's own file_scope. Gate 3 (doc-lint) and Gate 13 (whole-tree
+      orphan detection) both resolve entirely to the SAME pre-existing `lean` extension
+      manifest/orphan drift the dispatching orchestrator's own briefing named in advance,
+      confirmed attributable to commits 41d544812/ce5b1588b (`git log` checked directly). Gate
+      24 (dead-command-recommendation lint) resolves to an unrelated `memory` extension `/ide`
+      doc reference, also pre-flagged by the orchestrator's briefing. Gate 8 (the full shell
+      suite battery) additionally reported 10 failing suites (2 already-classified EXPECTED by
+      `run-all.sh` itself; 8 NEW), none of which is `test-git-commit-phase.sh` or
+      `test-git-commit-scoped.sh` -- every suite this task's own edits could regress stayed
+      green. The 8 NEW failures are concentrated in orchestrator-lifecycle scripts entirely
+      outside this task's file_scope (`orchestrate-cycle-postflight.sh`,
+      `orchestrate-predispatch-review.sh`, `orchestrate-unwind-dispatch.sh`,
+      `postflight-deploy-gate.sh`, `redeploy-checkpoint-promotion.sh`, `update-task-status.sh`,
+      `manifest-scripts-sync.sh`, `lint-unit-integration-boundary.sh`); one of them
+      (`test-update-task-status.sh`) explicitly reports "real specs/ tree status changed during
+      this suite (baseline vs. final differ)", directly consistent with the dispatching
+      orchestrator's own briefing that this task sits inside a multi-task batch with
+      concurrently-dispatched siblings mutating the shared `specs/` tree during this run, rather
+      than a regression this task introduced. Per the Batch Gate Deferral directive, full
+      triage and any fix for these 8 is explicitly the batch-level run's responsibility, not
+      this dispatch's.)*
+- [x] Commit the redeploy. *(completed)*
 
 **Timing**: 0.5 hours
 
