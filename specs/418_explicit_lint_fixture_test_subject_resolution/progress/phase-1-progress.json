@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Mode-Explicit Resolver and Subject Declaration in common.sh",
+  "started_at": "2026-11-06T00:00:00Z",
+  "last_updated": "2026-11-06T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add common_test_resolve_subject and common_test_declare_subject to common.sh; correct stale count", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/common.sh"]},
+    {"id": 2, "description": "Extend test-common-lib.sh with mode/declaration/fallback/precedence/checkpoint fixtures", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-common-lib.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

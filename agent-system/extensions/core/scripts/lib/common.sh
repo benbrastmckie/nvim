@@ -22,8 +22,9 @@
 # FORBID LOCAL REDEFINITION: a consumer that sources this file MUST NOT define its own copy of
 # any function this library provides (common_repo_root, common_session_id,
 # common_timestamp_iso/_epoch/_date, common_log_error/_warn/_info, common_test_pass/_fail/_info,
-# common_test_repo_root, common_test_resolve_candidate, common_test_workdir_init,
-# common_shared_corpus_available, common_shared_corpus_files).
+# common_test_repo_root, common_test_resolve_candidate, common_test_resolve_subject,
+# common_test_declare_subject, common_test_workdir_init, common_shared_corpus_available,
+# common_shared_corpus_files).
 # A local redefinition silently shadows the shared implementation and defeats the single-source
 # guarantee this library exists to provide. In particular, a test suite that sources this file
 # MUST NOT also define its own `pass()`/`fail()`/`info()` -- call `common_test_pass`/
@@ -287,10 +288,12 @@ common_test_repo_root() {
 # common_test_resolve_candidate <desc> <candidate> [<candidate>...] -- echoes the first
 # <candidate> that exists as a regular file and returns 0; if none exist, prints an "ERROR: ...
 # not found at any of:" listing (one candidate per line) to stderr and returns 1. This is the
-# deploy-tree-first / source-store-fallback script-under-test lookup 22/121 core suites
-# hand-rolled inline as a local `resolve_candidate` function before this extraction. Never calls
-# `exit` -- the caller decides what a miss means for its own exit-code convention (every existing
-# caller does `... || exit 2`, the documented environment-error code).
+# deploy-tree-first / source-store-fallback script-under-test lookup 20/144 core suites call
+# directly (plus 12 more hand-duplicating the same shape as a local `resolve_candidate` function,
+# and 38 more via an inline `CANDIDATES`-array loop with no named function at all -- see
+# common_test_resolve_subject below, which gives all three shapes one explicit-mode home). Never
+# calls `exit` -- the caller decides what a miss means for its own exit-code convention (every
+# existing caller does `... || exit 2`, the documented environment-error code).
 common_test_resolve_candidate() {
   local _common_desc="$1"; shift
   local _common_candidate
@@ -309,6 +312,140 @@ common_test_resolve_candidate() {
   done
   unset _common_desc _common_candidate
   return 1
+}
+
+# common_test_resolve_subject <desc> <mode> <deployed_candidate> <source_store_candidate> --
+# mode-explicit sibling of common_test_resolve_candidate above, for a suite that must declare
+# WHICH of the deployed copy or the source-store copy it resolved, rather than relying on an
+# implicit candidate order. Modeled structurally on scripts/lib/gate-verdict-extract-lib.sh: one
+# job, explicit required parameters, a stated contract in this header, never calls `exit` (the
+# caller keeps its own `|| exit 2`).
+#
+# MODE VOCABULARY (exactly three recognized values; an empty string is treated as
+# "deploy-tree-first"):
+#   deployed            Resolve <deployed_candidate> only, or fail. A CORRECTNESS REQUIREMENT:
+#                        never overridden by CORE_TEST_SUBJECT_MODE.
+#   source-store         Resolve <source_store_candidate> only, or fail. A CORRECTNESS
+#                        REQUIREMENT: never overridden by CORE_TEST_SUBJECT_MODE.
+#   deploy-tree-first    Resolve <deployed_candidate> if it exists, else <source_store_candidate>.
+#                        A PREFERENCE, not a requirement -- this is the one case
+#                        CORE_TEST_SUBJECT_MODE can override (see PRECEDENCE below). This is the
+#                        default resolution order relied on by the Inter-Cycle Redeploy
+#                        Checkpoint's pre/post divergence signal (see
+#                        context/patterns/batch-orchestration-guardrails.md): a pre-redeploy run
+#                        resolves the stale deployed copy and a post-redeploy run resolves the
+#                        fresh one, and that asymmetry is the signal a global flip to
+#                        source-store-first would destroy.
+#
+# ENVIRONMENT OVERRIDE: CORE_TEST_SUBJECT_MODE, same unset-means-sane-default idiom as
+# VERIFY_DEPLOY_GATE8_JOBS. Unset means "deploy-tree-first".
+#
+# PRECEDENCE (settled once here, not re-derived per caller): a caller passing `deployed` or
+# `source-store` has stated a correctness requirement and is NEVER overridden by the
+# environment. A caller passing `deploy-tree-first` (or an empty mode) has stated a PREFERENCE,
+# and CORE_TEST_SUBJECT_MODE -- when set -- overrides exactly that case. This is what keeps a
+# hard-selected caller (e.g. a suite that must always resolve the source-store copy) correct
+# under any environment, while still giving the environment variable one real, single meaning.
+# An unrecognized mode value (whether caller-supplied or from CORE_TEST_SUBJECT_MODE) is
+# rejected loudly -- a message to stderr and a non-zero return -- NEVER a silent fallback to any
+# default.
+#
+# Echoes the resolved candidate path (exactly as given by the caller -- relative or absolute) on
+# stdout and returns 0 on success. On a miss, or on an unrecognized mode, prints an
+# "ERROR: ..." message to stderr and returns 1 -- the caller decides what that means for its own
+# exit-code convention, matching common_test_resolve_candidate's existing convention of never
+# calling `exit` itself.
+common_test_resolve_subject() {
+  local _common_desc="$1"
+  local _common_mode="${2:-}"
+  local _common_deployed="$3"
+  local _common_store="$4"
+  local _common_effective_mode="$_common_mode"
+
+  if [ -z "$_common_mode" ] || [ "$_common_mode" = "deploy-tree-first" ]; then
+    if [ -n "${CORE_TEST_SUBJECT_MODE:-}" ]; then
+      _common_effective_mode="$CORE_TEST_SUBJECT_MODE"
+    else
+      _common_effective_mode="deploy-tree-first"
+    fi
+  fi
+
+  case "$_common_effective_mode" in
+    deployed)
+      if [ -f "$_common_deployed" ]; then
+        printf '%s\n' "$_common_deployed"
+        unset _common_desc _common_mode _common_deployed _common_store _common_effective_mode
+        return 0
+      fi
+      echo "ERROR: $_common_desc not found (mode=deployed): $_common_deployed" >&2
+      ;;
+    source-store)
+      if [ -f "$_common_store" ]; then
+        printf '%s\n' "$_common_store"
+        unset _common_desc _common_mode _common_deployed _common_store _common_effective_mode
+        return 0
+      fi
+      echo "ERROR: $_common_desc not found (mode=source-store): $_common_store" >&2
+      ;;
+    deploy-tree-first)
+      if [ -f "$_common_deployed" ]; then
+        printf '%s\n' "$_common_deployed"
+        unset _common_desc _common_mode _common_deployed _common_store _common_effective_mode
+        return 0
+      elif [ -f "$_common_store" ]; then
+        printf '%s\n' "$_common_store"
+        unset _common_desc _common_mode _common_deployed _common_store _common_effective_mode
+        return 0
+      fi
+      echo "ERROR: $_common_desc not found (mode=deploy-tree-first) at either:" >&2
+      echo "  $_common_deployed" >&2
+      echo "  $_common_store" >&2
+      ;;
+    *)
+      echo "ERROR: $_common_desc: unrecognized subject-resolution mode '$_common_effective_mode' (expected deployed, source-store, or deploy-tree-first)" >&2
+      ;;
+  esac
+
+  unset _common_desc _common_mode _common_deployed _common_store _common_effective_mode
+  return 1
+}
+
+# common_test_declare_subject <resolved_path> -- prints the MANDATORY subject-declaration line
+# `[SUBJECT] <absolute path>` to stdout: line-initial token, exactly one space, then the
+# absolute path. Every suite that resolves a subject-under-test via common_test_resolve_subject
+# (or, for a not-yet-migrated caller, common_test_resolve_candidate) MUST call this immediately
+# after resolving, once per resolved subject, so a green run can never be read as "the stale
+# deployed copy happened to pass" -- the whole defect this pair of functions exists to close.
+# `[SUBJECT]` is deliberately disjoint from the four verdict anchors this codebase already
+# extracts on ([PASS]/[FAIL]/[INFO]/[VIOLATION]; see gate-verdict-extract-lib.sh), so it can
+# never be mistaken for one by an anchored extraction.
+#
+# Resolves <resolved_path> to absolute form internally (via `cd "$(dirname ...)" && pwd`) so a
+# caller passing a relative candidate still declares an absolute subject; falls back to echoing
+# <resolved_path> unchanged if the directory does not resolve. Never calls `exit`; always
+# returns 0.
+common_test_declare_subject() {
+  local _common_path="${1:-}"
+  local _common_dir _common_base _common_abs_dir
+
+  if [ -z "$_common_path" ]; then
+    echo "[SUBJECT] "
+    unset _common_path _common_dir _common_base _common_abs_dir
+    return 0
+  fi
+
+  _common_dir="$(dirname "$_common_path")"
+  _common_base="$(basename "$_common_path")"
+  _common_abs_dir="$(cd "$_common_dir" 2>/dev/null && pwd)"
+
+  if [ -n "$_common_abs_dir" ]; then
+    echo "[SUBJECT] ${_common_abs_dir}/${_common_base}"
+  else
+    echo "[SUBJECT] $_common_path"
+  fi
+
+  unset _common_path _common_dir _common_base _common_abs_dir
+  return 0
 }
 
 # common_test_workdir_init -- creates a `mktemp -d` scratch directory, assigns it to the

@@ -255,6 +255,161 @@ else
   common_test_fail "common_test_resolve_candidate (not found): rc=$resolve_rc, stderr='$resolve_err'"
 fi
 
+# ── common_test_resolve_subject / common_test_declare_subject ────────────────
+# Every mode fixture below is built over TWO DELIBERATELY DIFFERENT copies of a fake subject (one
+# exits 0, the other exits 1), confirmed by the two distinct exit codes asserted after resolution
+# -- a fixture over two identical copies could not distinguish a mode that silently resolved the
+# wrong one, so it would not count as evidence here.
+SUBJ_FIXTURE="$WORKDIR/subject-fixture"
+mkdir -p "$SUBJ_FIXTURE/dir1/deployed" "$SUBJ_FIXTURE/dir1/store" \
+         "$SUBJ_FIXTURE/dir2/deployed" "$SUBJ_FIXTURE/dir2/store"
+
+# Direction 1: deployed copy is STALE (exits 1), store copy is GOOD (exits 0).
+D1="$SUBJ_FIXTURE/dir1/deployed/subject.sh"
+S1="$SUBJ_FIXTURE/dir1/store/subject.sh"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$D1"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$S1"
+chmod +x "$D1" "$S1"
+
+# Direction 2 (the mirror image): deployed copy is GOOD (exits 0), store copy is STALE (exits 1).
+D2="$SUBJ_FIXTURE/dir2/deployed/subject.sh"
+S2="$SUBJ_FIXTURE/dir2/store/subject.sh"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$D2"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$S2"
+chmod +x "$D2" "$S2"
+
+# -- mode=deployed resolves the deployed copy, both directions --
+subj_resolved=$(common_test_resolve_subject "subject" "deployed" "$D1" "$S1")
+bash "$subj_resolved"; subj_exit=$?
+if [ "$subj_resolved" = "$D1" ] && [ "$subj_exit" -eq 1 ]; then
+  common_test_pass "mode=deployed resolves the deployed copy (direction 1, confirmed by its exit code)"
+else
+  common_test_fail "mode=deployed (direction 1): resolved='$subj_resolved' (want '$D1'), exit=$subj_exit (want 1)"
+fi
+
+subj_resolved=$(common_test_resolve_subject "subject" "deployed" "$D2" "$S2")
+bash "$subj_resolved"; subj_exit=$?
+if [ "$subj_resolved" = "$D2" ] && [ "$subj_exit" -eq 0 ]; then
+  common_test_pass "mode=deployed resolves the deployed copy (direction 2, confirmed by its exit code)"
+else
+  common_test_fail "mode=deployed (direction 2): resolved='$subj_resolved' (want '$D2'), exit=$subj_exit (want 0)"
+fi
+
+# -- mode=source-store resolves the source-store copy, both directions --
+subj_resolved=$(common_test_resolve_subject "subject" "source-store" "$D1" "$S1")
+bash "$subj_resolved"; subj_exit=$?
+if [ "$subj_resolved" = "$S1" ] && [ "$subj_exit" -eq 0 ]; then
+  common_test_pass "mode=source-store resolves the source-store copy (direction 1, confirmed by its exit code)"
+else
+  common_test_fail "mode=source-store (direction 1): resolved='$subj_resolved' (want '$S1'), exit=$subj_exit (want 0)"
+fi
+
+subj_resolved=$(common_test_resolve_subject "subject" "source-store" "$D2" "$S2")
+bash "$subj_resolved"; subj_exit=$?
+if [ "$subj_resolved" = "$S2" ] && [ "$subj_exit" -eq 1 ]; then
+  common_test_pass "mode=source-store resolves the source-store copy (direction 2, confirmed by its exit code)"
+else
+  common_test_fail "mode=source-store (direction 2): resolved='$subj_resolved' (want '$S2'), exit=$subj_exit (want 1)"
+fi
+
+# -- mode=deploy-tree-first resolves the deployed copy when both exist --
+subj_resolved=$(common_test_resolve_subject "subject" "deploy-tree-first" "$D1" "$S1")
+bash "$subj_resolved"; subj_exit=$?
+if [ "$subj_resolved" = "$D1" ] && [ "$subj_exit" -eq 1 ]; then
+  common_test_pass "mode=deploy-tree-first resolves the deployed copy when both exist"
+else
+  common_test_fail "mode=deploy-tree-first (both exist): resolved='$subj_resolved' (want '$D1'), exit=$subj_exit (want 1)"
+fi
+
+# -- mode=deploy-tree-first falls back to the source-store copy when only it exists --
+FALLBACK_STORE="$SUBJ_FIXTURE/dir1/store/fallback-only.sh"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$FALLBACK_STORE"
+chmod +x "$FALLBACK_STORE"
+MISSING_DEPLOYED="$SUBJ_FIXTURE/dir1/deployed/does-not-exist.sh"
+subj_resolved=$(common_test_resolve_subject "subject" "deploy-tree-first" "$MISSING_DEPLOYED" "$FALLBACK_STORE")
+bash "$subj_resolved"; subj_exit=$?
+if [ "$subj_resolved" = "$FALLBACK_STORE" ] && [ "$subj_exit" -eq 0 ]; then
+  common_test_pass "mode=deploy-tree-first falls back to the source-store copy when only it exists"
+else
+  common_test_fail "mode=deploy-tree-first (fallback): resolved='$subj_resolved' (want '$FALLBACK_STORE'), exit=$subj_exit (want 0)"
+fi
+
+# -- common_test_declare_subject names the path actually used, including under the fallback branch --
+declare_line=$(common_test_declare_subject "$subj_resolved")
+fallback_abs="$(cd "$(dirname "$FALLBACK_STORE")" && pwd)/$(basename "$FALLBACK_STORE")"
+if [ "$declare_line" = "[SUBJECT] $fallback_abs" ]; then
+  common_test_pass "common_test_declare_subject declares the absolute path actually used under the fallback branch"
+else
+  common_test_fail "common_test_declare_subject (fallback): got '$declare_line', want '[SUBJECT] $fallback_abs'"
+fi
+
+declare_line=$(common_test_declare_subject "$D1")
+if [ "$declare_line" = "[SUBJECT] $D1" ]; then
+  common_test_pass "common_test_declare_subject declares the absolute path for an already-absolute candidate"
+else
+  common_test_fail "common_test_declare_subject (absolute input): got '$declare_line', want '[SUBJECT] $D1'"
+fi
+
+# -- CORE_TEST_SUBJECT_MODE overrides an empty/deploy-tree-first mode, never a hard-selected one --
+subj_resolved=$(CORE_TEST_SUBJECT_MODE="source-store" common_test_resolve_subject "subject" "" "$D1" "$S1")
+if [ "$subj_resolved" = "$S1" ]; then
+  common_test_pass "CORE_TEST_SUBJECT_MODE=source-store overrides an empty mode argument"
+else
+  common_test_fail "CORE_TEST_SUBJECT_MODE override (empty mode): resolved='$subj_resolved' (want '$S1')"
+fi
+
+subj_resolved=$(CORE_TEST_SUBJECT_MODE="source-store" common_test_resolve_subject "subject" "deploy-tree-first" "$D1" "$S1")
+if [ "$subj_resolved" = "$S1" ]; then
+  common_test_pass "CORE_TEST_SUBJECT_MODE=source-store overrides an explicit deploy-tree-first mode argument"
+else
+  common_test_fail "CORE_TEST_SUBJECT_MODE override (deploy-tree-first mode): resolved='$subj_resolved' (want '$S1')"
+fi
+
+subj_resolved=$(CORE_TEST_SUBJECT_MODE="source-store" common_test_resolve_subject "subject" "deployed" "$D1" "$S1")
+if [ "$subj_resolved" = "$D1" ]; then
+  common_test_pass "CORE_TEST_SUBJECT_MODE does NOT override a hard-selected mode=deployed"
+else
+  common_test_fail "CORE_TEST_SUBJECT_MODE non-override (mode=deployed): resolved='$subj_resolved' (want '$D1')"
+fi
+
+subj_resolved=$(CORE_TEST_SUBJECT_MODE="deployed" common_test_resolve_subject "subject" "source-store" "$D1" "$S1")
+if [ "$subj_resolved" = "$S1" ]; then
+  common_test_pass "CORE_TEST_SUBJECT_MODE does NOT override a hard-selected mode=source-store"
+else
+  common_test_fail "CORE_TEST_SUBJECT_MODE non-override (mode=source-store): resolved='$subj_resolved' (want '$S1')"
+fi
+
+# -- an unrecognized mode value fails loudly rather than defaulting --
+subj_err=$(common_test_resolve_subject "subject" "bogus-mode" "$D1" "$S1" 2>&1 1>/dev/null)
+subj_rc=0
+common_test_resolve_subject "subject" "bogus-mode" "$D1" "$S1" >/dev/null 2>&1 || subj_rc=$?
+if [ "$subj_rc" -eq 1 ] && [[ "$subj_err" == *"unrecognized subject-resolution mode"* ]]; then
+  common_test_pass "an unrecognized mode value fails loudly (non-zero, stderr message) rather than defaulting"
+else
+  common_test_fail "unrecognized mode: rc=$subj_rc, stderr='$subj_err'"
+fi
+
+subj_err=$(CORE_TEST_SUBJECT_MODE="bogus-env-mode" common_test_resolve_subject "subject" "" "$D1" "$S1" 2>&1 1>/dev/null)
+subj_rc=0
+CORE_TEST_SUBJECT_MODE="bogus-env-mode" common_test_resolve_subject "subject" "" "$D1" "$S1" >/dev/null 2>&1 || subj_rc=$?
+if [ "$subj_rc" -eq 1 ] && [[ "$subj_err" == *"unrecognized subject-resolution mode"* ]]; then
+  common_test_pass "an unrecognized CORE_TEST_SUBJECT_MODE value also fails loudly rather than defaulting"
+else
+  common_test_fail "unrecognized CORE_TEST_SUBJECT_MODE: rc=$subj_rc, stderr='$subj_err'"
+fi
+
+# -- Checkpoint-property fixture: with the default (unset CORE_TEST_SUBJECT_MODE, mode
+# deploy-tree-first), a STALE deployed copy is still what resolves, so an Inter-Cycle-Redeploy-
+# Checkpoint-style pre/post pair still diverges. Assert the resolved path, not merely a pass. --
+unset CORE_TEST_SUBJECT_MODE
+subj_resolved=$(common_test_resolve_subject "subject" "" "$D1" "$S1")
+bash "$subj_resolved"; subj_exit=$?
+if [ "$subj_resolved" = "$D1" ] && [ "$subj_exit" -eq 1 ]; then
+  common_test_pass "checkpoint property: default mode still resolves the stale deployed copy (D1, exit 1), preserving pre/post divergence"
+else
+  common_test_fail "checkpoint property: default mode resolved='$subj_resolved' (want '$D1'), exit=$subj_exit (want 1)"
+fi
+
 # ── common_test_workdir_init: creates WORKDIR and tears it down on EXIT ──────
 # Called as a bare statement, per the function's own contract: a command-substitution capture
 # would run it in a subshell whose own EXIT trap fires (deleting the directory) the instant the
@@ -326,7 +481,7 @@ else
 fi
 
 # ── Single-definition assertion: each new function has exactly one definition ─
-for fn in common_test_repo_root common_test_resolve_candidate common_test_workdir_init common_test_fixture_overlay; do
+for fn in common_test_repo_root common_test_resolve_candidate common_test_resolve_subject common_test_declare_subject common_test_workdir_init common_test_fixture_overlay; do
   hits=$(grep -rc "^${fn}() {" --include="*.sh" "$SCRIPT_DIR/../lib" 2>/dev/null | awk -F: '{sum+=$2} END {print sum+0}')
   if [ "$hits" -eq 1 ]; then
     common_test_pass "$fn has exactly one definition under scripts/lib/"

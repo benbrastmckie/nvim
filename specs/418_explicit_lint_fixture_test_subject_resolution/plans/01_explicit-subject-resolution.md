@@ -1,7 +1,7 @@
 # Implementation Plan: Task #418
 
 - **Task**: 418 - Make the lint-fixture-test family's subject resolution explicit and self-declaring
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: None (the three prior tasks on `context/standards/shell-script-testing.md` and `scripts/gate-registry.data` have landed)
 - **Research Inputs**: specs/418_explicit_lint_fixture_test_subject_resolution/reports/01_explicit-subject-resolution.md
@@ -131,45 +131,45 @@ migration batch shrinks the same lint allowlist file, so the batches must not ru
 
 ---
 
-### Phase 1: Mode-Explicit Resolver and Subject Declaration in common.sh [NOT STARTED]
+### Phase 1: Mode-Explicit Resolver and Subject Declaration in common.sh [COMPLETED]
 
 **Goal**: Add the two new functions to the single shared library, with a documented
 producer/consumer contract, and prove every mode against two deliberately DIFFERENT copies.
 
 **Tasks**:
-- [ ] Add `common_test_resolve_subject <desc> <mode> <deployed_candidate> <source_store_candidate>`
+- [x] Add `common_test_resolve_subject <desc> <mode> <deployed_candidate> <source_store_candidate>` *(completed)*
       to `scripts/lib/common.sh`, modeled structurally on
       `scripts/lib/gate-verdict-extract-lib.sh`: one job, explicit required parameter, stated
       contract in the header comment, never calls `exit` (caller keeps `|| exit 2`).
-- [ ] Implement mode semantics: `deployed` resolves the deployed candidate or fails;
+- [x] Implement mode semantics: `deployed` resolves the deployed candidate or fails; *(completed)*
       `source-store` resolves the source-store candidate or fails; `deploy-tree-first` returns the
       first of (deployed, source-store) that is a regular file.
-- [ ] Implement the precedence rule from Design Decisions: `CORE_TEST_SUBJECT_MODE` overrides an
+- [x] Implement the precedence rule from Design Decisions: `CORE_TEST_SUBJECT_MODE` overrides an *(completed)*
       empty or `deploy-tree-first` mode argument only, never a hard-selected `deployed` or
       `source-store`. Reject an unrecognized mode value loudly (return non-zero, message to
       stderr) — never silently fall back.
-- [ ] Add `common_test_declare_subject <resolved_path>` printing exactly
+- [x] Add `common_test_declare_subject <resolved_path>` printing exactly *(completed)*
       `[SUBJECT] <absolute path>` on stdout, one line, line-initial token plus one space.
       Resolve the path to absolute form inside the function so a caller passing a relative
       candidate still declares an absolute subject.
-- [ ] Document in the header comment that the declaration is MANDATORY for any suite resolving a
+- [x] Document in the header comment that the declaration is MANDATORY for any suite resolving a *(completed)*
       subject-under-test, and that `[SUBJECT]` is deliberately disjoint from
       `[PASS]`/`[FAIL]`/`[INFO]`/`[VIOLATION]`.
-- [ ] Correct the stale population figure in `common_test_resolve_candidate`'s own header comment
+- [x] Correct the stale population figure in `common_test_resolve_candidate`'s own header comment *(completed)*
       ("22/121 core suites") to the re-measured figures. Leave the unrelated `115/121` figure in
       `common_test_workdir_init`'s comment alone — it is a different, unmeasured claim.
-- [ ] Extend `scripts/tests/test-common-lib.sh` with fixtures, each built over two deliberately
+- [x] Extend `scripts/tests/test-common-lib.sh` with fixtures, each built over two deliberately *(completed)*
       DIFFERENT copies of a fake subject (a source-store copy that exits 0 and a deployed copy
       that exits 1, plus the mirror image) so a mode that silently resolved the wrong copy fails:
-  - [ ] `deployed` mode resolves the deployed copy, both directions.
-  - [ ] `source-store` mode resolves the source-store copy, both directions.
-  - [ ] `deploy-tree-first` resolves the deployed copy when both exist, and the source-store copy
+  - [x] `deployed` mode resolves the deployed copy, both directions. *(completed)*
+  - [x] `source-store` mode resolves the source-store copy, both directions. *(completed)*
+  - [x] `deploy-tree-first` resolves the deployed copy when both exist, and the source-store copy *(completed)*
         when only it exists (the fallback branch).
-  - [ ] The declaration line names the path actually used, including under the fallback branch.
-  - [ ] `CORE_TEST_SUBJECT_MODE` overrides `deploy-tree-first` but does NOT override a
+  - [x] The declaration line names the path actually used, including under the fallback branch. *(completed)*
+  - [x] `CORE_TEST_SUBJECT_MODE` overrides `deploy-tree-first` but does NOT override a *(completed)*
         hard-selected `deployed` or `source-store`.
-  - [ ] An unrecognized mode value fails loudly rather than defaulting.
-  - [ ] **Checkpoint-property fixture**: with the default (unset `CORE_TEST_SUBJECT_MODE`, mode
+  - [x] An unrecognized mode value fails loudly rather than defaulting. *(completed)*
+  - [x] **Checkpoint-property fixture**: with the default (unset `CORE_TEST_SUBJECT_MODE`, mode *(completed)*
         `deploy-tree-first`), a stale deployed copy is still what resolves — so an
         Inter-Cycle-Redeploy-Checkpoint-style pre/post pair still diverges. Assert the resolved
         path, not merely a pass.

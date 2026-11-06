@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/418_explicit_lint_fixture_test_subject_resolution/plans/01_explicit-subject-resolution.md",
-      "summary": "8-phase plan: mode-explicit resolution helper plus mandatory [SUBJECT] declaration, gate-27 lint with a shrinking allowlist, 70-suite migration in four batches, stale-figure correction, redeploy and full gate set."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1793988163_b25d4a_418",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 11,
-    "dependency_waves": 8
-  },
-  "next_steps": "Run /orchestrate 418 to execute the plan",
-  "dispatch_seq": 7
+    "session_id": "sess_1793988163_b25d4a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
