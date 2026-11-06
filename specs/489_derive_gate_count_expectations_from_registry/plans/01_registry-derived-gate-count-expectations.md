@@ -129,17 +129,18 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Registry Max Accessor and Fixture-Store Builder [IN PROGRESS]
+### Phase 1: Registry Max Accessor and Fixture-Store Builder [COMPLETED]
 
 **Goal**: Provide the single derivation surface every later phase reads from, plus the shared
 fixture-store builder the Phase 6 proof needs, with no behaviour change to any existing caller.
 
 **Tasks**:
-- [ ] Add `gate_registry_max_id` to `scripts/lib/gate-registry-lib.sh`: prints the largest loaded
+- [x] Add `gate_registry_max_id` to `scripts/lib/gate-registry-lib.sh`: prints the largest loaded
       id, prints nothing when `_GREG_IDS` is empty (never `0`, so a caller can distinguish "no
       registry" from "a registry whose max is 0"), returns 0 in both cases. Follow the file's own
-      `gate_registry_ids` style, including the local-variable `unset` hygiene.
-- [ ] Create `scripts/lib/gate-store-fixture-lib.sh` exposing
+      `gate_registry_ids` style, including the local-variable `unset` hygiene. *(completed:
+      verified prints 26 against the real registry, empty/rc=0 with nothing loaded)*
+- [x] Create `scripts/lib/gate-store-fixture-lib.sh` exposing
       `gate_store_fixture_build <dest_root> <extra_id> [gate_name]`, which:
       - creates `<dest_root>/agent-system/extensions/core/scripts/` and copies `verify-deploy.sh`,
         `gate-registry.data`, `lib/` and `lint/` into it (not `tests/` — avoids a 4 MB copy and any
@@ -150,14 +151,17 @@ fixture-store builder the Phase 6 proof needs, with no behaviour change to any e
         `lib/gate-registry-lib.sh` whose body is `gate_selected <id>` guarded and calls
         `say "<id>. <name>"`, `CURRENT_GATE="gate<id>"`, `pass "..."`, `say ""` — the exact shape
         `gate16_run` uses;
-      - echoes the absolute path of the copied `verify-deploy.sh`.
-- [ ] Document in that file's header why the copy is path-mirrored (so
+      - echoes the absolute path of the copied `verify-deploy.sh`. *(completed: also inserts a
+        second, byte-identical copy of the function block into the copied verify-deploy.sh itself,
+        immediately before the dispatch loop -- discovered necessary because lint-gate-registry.sh's
+        Check A greps verify-deploy.sh's text only, never a sourced lib; verified end-to-end)*
+- [x] Document in that file's header why the copy is path-mirrored (so
       `${_VD_SCRIPT_DIR}/../..` resolves to a plausible extensions root) and why the throwaway
       function is appended to the copied library rather than to the copied `verify-deploy.sh`
-      (sourced before dispatch; call-time resolution of `say`/`pass`).
-- [ ] Add `"scripts/lib/gate-store-fixture-lib.sh"` to `agent-system/extensions/core/manifest.json`
+      (sourced before dispatch; call-time resolution of `say`/`pass`). *(completed)*
+- [x] Add `"scripts/lib/gate-store-fixture-lib.sh"` to `agent-system/extensions/core/manifest.json`
       in its correct alphabetical position within the same list that already carries
-      `scripts/lib/gate-registry-lib.sh`.
+      `scripts/lib/gate-registry-lib.sh`. *(completed)*
 
 **Timing**: 0.75 hours
 

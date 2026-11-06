@@ -2,14 +2,15 @@
   "phase": 1,
   "phase_name": "Registry Max Accessor and Fixture-Store Builder",
   "started_at": "2026-11-06T00:00:00Z",
-  "last_updated": "2026-11-06T00:00:00Z",
+  "last_updated": "2026-11-06T21:50:00Z",
   "objectives": [
-    {"id": 1, "description": "Add gate_registry_max_id to gate-registry-lib.sh", "status": "not_started", "files_touched": []},
-    {"id": 2, "description": "Create gate-store-fixture-lib.sh fixture builder", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Register new library file in manifest.json", "status": "not_started", "files_touched": []}
+    {"id": 1, "description": "Add gate_registry_max_id to gate-registry-lib.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/gate-registry-lib.sh"]},
+    {"id": 2, "description": "Create gate-store-fixture-lib.sh fixture builder", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/gate-store-fixture-lib.sh"]},
+    {"id": 3, "description": "Register new library file in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
   ],
-  "current_objective": 1,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [],
+  "note": "Reconciled on re-prompt (dispatch_seq 10): the on-disk files for all three objectives were already present and correct from the prior cut-off attempt; verified gate_registry_max_id returns 26 against the real registry and empty/rc=0 with nothing loaded, and verified gate_store_fixture_build end-to-end (fixture --only-gate 27 accepted with header, --only-gate 28 refused, fixture's own lint-gate-registry.sh copy passes 7/7 including Check A). This progress file was stale (all not_started) relative to disk state and is now corrected."
 }

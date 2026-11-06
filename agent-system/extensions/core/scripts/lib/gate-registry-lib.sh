@@ -255,6 +255,21 @@ gate_registry_ids() {
   return 0
 }
 
+# gate_registry_max_id -- prints the largest loaded gate id. Prints NOTHING (not "0") when
+# _GREG_IDS is empty, so a caller can distinguish "no registry loaded" from "a registry whose
+# max id happens to be 0" -- same empty-vs-zero discipline gate_registry_ids itself already
+# applies to the empty-registry case. Always returns 0 (never a non-zero exit), matching every
+# other function in this file's "thin interpreter, no caller-env mutation beyond stdout"
+# contract. _GREG_IDS is kept sorted ascending by gate_registry_load, so the last element is the
+# max -- no second pass or comparison loop is needed here.
+gate_registry_max_id() {
+  if [ "${#_GREG_IDS[@]}" -eq 0 ]; then
+    return 0
+  fi
+  printf '%s\n' "${_GREG_IDS[@]: -1}"
+  return 0
+}
+
 # gate_registry_exclude_ids <id1,id2,...> -- removes the given ids from the loaded _GREG_IDS set
 # in place. Every later caller of gate_registry_ids (both the concurrent batch dispatcher and
 # the sequential loop, since neither takes a gate-id-list argument of its own -- both read
