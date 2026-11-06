@@ -113,7 +113,7 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 **Coverage appendix (uncovered tasks)**:
 ```
 /orchestrate 483,488,489,490,491,493,495,502
-/orchestrate 503,504,505,506,510,511
+/orchestrate 503,504,505,506,510,511,512
 ```
 
 ## Open work
@@ -219,7 +219,7 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 ```
 
-**Agent system (9)**
+**Agent system (10)**
 ```
 390 blocked:391     Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
 391 blocked:369     Close the target_root authoring hole that files agent-system tasks into the w...
@@ -230,6 +230,7 @@ and `specs/TODO.md`, which every task writes, so it overlaps everything.
 488 ready           Adjudicate where MCP write-tool permission grants belong: repo-scoped extensi...
 510 ready           predispatch_review_test_temp_lib_incomplete
 511 ready           enumeration_grep_sweeps_gitignored_venv
+512 ready           builtin_command_exemption_for_dead_command_lint
 ```
 
 ## Checks before and after every call
