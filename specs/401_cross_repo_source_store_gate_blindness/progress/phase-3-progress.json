@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "Redeploy and Close the Full Gate Set",
+  "started_at": "2026-11-06T08:40:00Z",
+  "last_updated": "2026-11-06T09:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm both source-store edits committed, no half-applied hunk", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh, capture stdout", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Grep RESULT= marker, require landed_verify_clean", "status": "done", "files_touched": []},
+    {"id": 4, "description": "On red, attribute failure (foreign vs own) before acting", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm deployed copies carry new text", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "re-ran deploy-headless.sh a second time to rule out transient flake", "result": "same 4/40 failures both runs, confirming deterministic foreign-territory causes rather than noise (except gate 10's own timeout, separately confirmed via standalone re-run)"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.3",
+      "description": "deploy-headless.sh RESULT=landed_verify_clean",
+      "type": "altered",
+      "reason": "RESULT=landed_verify_red on both runs, due to 4 pre-existing foreign-territory failures (lean-extension manifest drift from task 810, a gate-10 timing artifact, and a memory-extension dead-command-recommendation finding) -- none inside this task's declared file_scope. Closed phase as [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record per status-markers.md's five-condition admission test.",
+      "annotation": "*(deviation: altered -- RESULT=landed_verify_red, attributed to 4 foreign-territory failures, see Reasoned Exclusions)*"
+    }
+  ],
+  "notes": "Closed [COMPLETED WITH EXCLUSIONS]. This task's own two file_scope edits are committed, propagated into the deployed tree, and independently confirmed clean (isolated check-extension-docs.sh shows [core] with no FAIL). The 4 excluded whole-repo gate findings all trace to other tasks' territory or environment timing, evidenced via git log/blame and standalone reruns."
+}

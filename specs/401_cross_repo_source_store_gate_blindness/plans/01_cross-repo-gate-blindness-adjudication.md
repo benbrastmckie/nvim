@@ -298,27 +298,40 @@ trusting this line, and use whatever the function returns.
 
 ---
 
-### Phase 3: Redeploy and Close the Full Gate Set [NOT STARTED]
+### Phase 3: Redeploy and Close the Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: the deployed `.claude/` tree is regenerated from the edited source store and the
 repository's complete gate set is green.
 
 **Tasks**:
 
-- [ ] Confirm both source-store edits are committed and the working tree holds no half-applied
-      hunk of this task's own.
-- [ ] Run `bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh` and capture its
-      stdout.
-- [ ] Grep the captured output for the `RESULT=` marker rather than inferring the outcome from the
-      exit code alone, and require `RESULT=landed_verify_clean`.
-- [ ] On `RESULT=landed_verify_red`, read which gate failed and which path it names before
+- [x] Confirm both source-store edits are committed and the working tree holds no half-applied
+      hunk of this task's own. *(completed: commits `bc004f04b` phase 1, `f0e96a08d` phase 2;
+      only uncommitted leftover is `agent-system/extensions/core/index-entries.json`'s
+      mechanically-derived `line_count` correction, out of this task's declared `file_scope` and
+      dropped by the phase-commit containment self-check -- harmless, regenerated automatically
+      by `deploy-headless.sh` itself)*
+- [x] Run `bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh` and capture its
+      stdout. *(completed, run twice for reproducibility)*
+- [x] Grep the captured output for the `RESULT=` marker rather than inferring the outcome from the
+      exit code alone, and require `RESULT=landed_verify_clean`. *(completed: both runs printed
+      `RESULT=landed_verify_red`, not clean -- see Reasoned Exclusions below)*
+- [x] On `RESULT=landed_verify_red`, read which gate failed and which path it names before
       attributing it: a failure in a file outside this task's `file_scope` may be a concurrent
       sibling's in-flight edit. Check `git log` to confirm the work is not this task's own, and
-      report rather than repairing a foreign regression.
-- [ ] On `RESULT=not_landed` or `RESULT=landed_verify_skipped`, treat the phase as not closed:
-      neither value attests to a clean tree.
-- [ ] Confirm the deployed copies of both edited files carry the new text, so the regeneration
+      report rather than repairing a foreign regression. *(completed: all 4 failing checks traced
+      to non-`file_scope` paths via `git log`/`git blame`; see Reasoned Exclusions below)*
+- [x] On `RESULT=not_landed` or `RESULT=landed_verify_skipped`, treat the phase as not closed:
+      neither value attests to a clean tree. *(not applicable: `--skip-verify` was never passed,
+      and the deploy itself landed both runs -- the result is `landed_verify_red`, not either of
+      these two)*
+- [x] Confirm the deployed copies of both edited files carry the new text, so the regeneration
       actually propagated the source-store edits rather than reporting clean over a stale tree.
+      *(completed: `grep -c 'Cross-Repository Scope' .claude/context/patterns/file-footprint-overlap.md`
+      -> 2; `grep -c 'common_repo_root' .claude/scripts/orchestrate-predispatch-review.sh` -> 2;
+      `grep -c 'Single-repository scope'` on the same deployed file -> 1; isolated
+      `check-extension-docs.sh` run confirms `[core]` passes cleanly with no FAIL, only an
+      unrelated pre-existing `README.md older than manifest.json` advisory WARN)*
 
 **Timing**: 0.5 hours
 
@@ -345,6 +358,31 @@ repository's complete gate set is green.
   returns at least 1, confirming the regeneration propagated Phase 1's edit.
 - `grep -c 'common_repo_root' /home/benjamin/.config/nvim/.claude/scripts/orchestrate-predispatch-review.sh`
   together with a read of the deployed header confirms Phase 2's paragraph propagated.
+
+#### Reasoned Exclusions
+
+`deploy-headless.sh` printed `RESULT=landed_verify_red` on two consecutive runs (verify-deploy.sh
+reporting 4 of 40 checks failed both times, identical set). All four are excluded from this
+phase's closing criterion -- none names a path inside this task's declared `file_scope`
+(`agent-system/extensions/core/context/patterns/file-footprint-overlap.md`,
+`agent-system/extensions/core/scripts/orchestrate-predispatch-review.sh`), and this task's own
+deployed copies of both files were independently confirmed propagated and clean (see Verification
+above; an isolated `check-extension-docs.sh` run shows `[core]` with no FAIL).
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 3 (doc-lint) -- `[lean]` section FAIL: script files on disk not in `provides.scripts`, `ladder-counter-observables.md` `line_count` mismatch | Pre-existing lean-extension manifest/index drift, unrelated to this task's `file_scope` | `git log --oneline -- agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh` resolves to commits `41d544812` and `ce5b1588b` (both pre-date this dispatch, both outside task 401); isolated `check-extension-docs.sh` run shows `[core]` passing with no FAIL |
+| Gate 10 (`validate-state.sh --deep`) -- exceeded its 30s timeout inside the full sweep | Timing/concurrency artifact of running inside the full 40-check sweep, not a content defect | Standalone re-run (`time timeout 60 bash .claude/scripts/validate-state.sh --deep`) completed in 19.9s with `Passed: 21, Warnings: 13, Failed: 0` |
+| Gate 13 (whole-tree orphan detection) -- 6 findings, all under `agent-system/extensions/lean/scripts/**` | Identical root cause to the Gate 3 finding above (same untracked-from-manifest lean files) | Same `git log` evidence as Gate 3's row; none of the 6 orphan paths falls under this task's `file_scope` |
+| Gate 24 (dead-command-recommendation lint) -- `/ide` named with no definition file | Pre-existing content in `agent-system/extensions/memory/context/project/memory/memory-setup.md` and `memory-troubleshooting.md`, unrelated to this task | `bash agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh --verbose` isolates both violation lines to the memory extension's docs; neither path is in this task's `file_scope` |
+
+Per the dispatch's own Risk mitigation ("Treat a gate failure in a file outside this task's
+`file_scope` as possibly a sibling's work... report rather than 'fixing' a foreign regression"),
+none of the four is repaired here. No residual work remains for THIS task: both declared
+`file_scope` files are edited, committed, propagated into the deployed tree, and independently
+verified clean. The four excluded items are pre-existing conditions belonging to other tasks'
+scope (lean-extension manifest drift, a memory-extension documentation fix) or to no task at all
+(the gate 10 timing artifact), not to this one.
 
 ---
 
