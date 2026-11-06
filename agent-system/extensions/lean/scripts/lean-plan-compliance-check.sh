@@ -93,15 +93,24 @@ is_lean_keyword() {
   return 1
 }
 
-# COLON-OPTIONAL GOALS RANGE -- see the header comment. END_RE-equivalent (`^\*\*[^G]`) is
-# unaffected: it only tests the character immediately after `**`, so `**Non-Goals**` still never
-# extends the range.
+# COLON-OPTIONAL GOALS RANGE -- see the header comment. END_RE terminates the range at the next
+# `**`-prefixed bold lead-in, full stop -- it does NOT special-case the first character after
+# `**` to exclude `G`. An earlier `^\*\*[^G]` form tried to dodge re-matching the `**Goals**`
+# start line itself by excluding every bold line beginning with `G`, but GNU sed's range
+# end-address is already tested starting from the line AFTER the one that matched the start
+# address (verified: `/A/,/A/p` over `A`,`B`,`A` prints all three, not just the first), so that
+# exclusion was both unnecessary and actively wrong: a later bold lead-in that itself happens to
+# start with `G` (e.g. a `**Goals-set policy**` paragraph) failed to terminate the range, letting
+# the harvest run on into following prose and pick up unrelated backticked identifiers (see
+# iss_1793949902436_VH60CH -- a stray `valid_m4` mention was harvested this way). `^\*\*/` alone
+# correctly stops at `**Non-Goals**`, at a `**Goals-`-prefixed lead-in, or at any other bold
+# lead-in, with no false "still inside Goals" extension.
 #
 # SHARED FRAGILITY: lean-challenge-snapshot.sh's own extract_goal_names() applies the same
 # colon-optional widening independently (not shared code -- POSIX `sed` here, Python regex
 # there). The two readers must not drift apart on which Goals-header shapes they accept; see the
 # comment at that script's own START_RE for its half of this cross-reference.
-goal_names_raw=$(sed -n '/^\*\*Goals\*\*/,/^\*\*[^G]/p' "$plan_file" \
+goal_names_raw=$(sed -n '/^\*\*Goals\*\*/,/^\*\*/p' "$plan_file" \
   | grep -oP '`[a-zA-Z_][a-zA-Z0-9_'"'"']*`' | tr -d '`' | sort -u)
 
 goal_names=""
