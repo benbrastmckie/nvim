@@ -133,7 +133,7 @@ next_project_number: 518
 
 ### Agent System
 
-418 [IMPLEMENTING] — Make the lint-fixture-test family subject resolution explicit...
+418 [PARTIAL] — Make the lint-fixture-test family subject resolution explicit...
   └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [PLANNED] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
@@ -5358,13 +5358,14 @@ Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json 
 ---
 
 ### 418. Make the lint-fixture-test family subject resolution explicit and self-declaring
-- **Status**: [IMPLEMENTING]
+- **Status**: [PARTIAL]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 411, Task 415, Task 419
 - **Parent**: Task 411
 - **Research**: [418_explicit_lint_fixture_test_subject_resolution/reports/01_explicit-subject-resolution.md]
 - **Plan**: [418_explicit_lint_fixture_test_subject_resolution/plans/01_explicit-subject-resolution.md]
+- **Summary**: [418_explicit_lint_fixture_test_subject_resolution/summaries/01_explicit-subject-resolution-summary.md]
 
 **Description**: Make the lint-fixture-test family's subject resolution explicit and self-declaring, so a green fixture test can never silently mean "the stale deployed copy passed"
 
