@@ -247,13 +247,26 @@ Two MCP server options:
 | obsidian-claude-code-mcp | WebSocket :22360 | Obsidian desktop + plugin |
 | obsidian-cli-rest-mcp | HTTP REST :27124 | Obsidian + Local REST API plugin |
 
-The WebSocket option is configured in `manifest.json` and runs automatically when
-Obsidian is open with the `.memory/` vault.
+**The WebSocket option is NOT a spawnable server and is not declared anywhere in
+`manifest.json`.** `obsidian-claude-code-mcp` names an Obsidian desktop plugin, reached through
+Claude Code's native `/ide` integration command, not through `.mcp.json` or `~/.claude.json` --
+no npx package, no `command`/`args` entry, and no extension-declared `merge_targets.mcp` fragment
+participates in this connection at all. (An extension CAN now register a real, spawnable MCP
+server via `merge_targets.mcp` -- see
+[Extension System Architecture](../core/docs/architecture/extension-system.md)'s "MCP Server
+Registration" section, including its two user-visible gotchas, for the mechanism this extension
+does NOT currently use.)
 
 **Prerequisites**:
 1. Obsidian desktop app installed and open
-2. Node.js (for npx)
-3. `.memory/` vault open in Obsidian
+2. The companion Obsidian plugin installed and the `.memory/` vault open in Obsidian
+3. Connect via Claude Code's `/ide` command (not via any MCP server configuration)
+
+**Tool surface NOT verified**: this plugin's actual MCP tool names were NOT enumerated against
+a running server. The npm package name sometimes associated with it
+(`@anthropic-ai/obsidian-claude-code-mcp`) does not exist on the npm registry (confirmed
+404), so no server could be started to query `tools/list` against. Treat any `mcp__obsidian*`
+tool name as unverified until confirmed against an actually running connection.
 
 ### Graceful Degradation
 

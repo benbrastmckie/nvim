@@ -64,28 +64,33 @@ This is the recommended option for Claude Code, using WebSocket connections.
 2. Note the WebSocket port (default: 22360)
 3. Enable the server
 
-### 3. Add MCP Server to .mcp.json
+### 3. Connect via Claude Code's native `/ide` integration
 
-Create or update `.mcp.json` at project root:
+**There is no `.mcp.json` entry for this option, and there never was one that could work**: the
+plugin previously described here as installable via `npx -y
+@anthropic-ai/obsidian-claude-code-mcp` names an npm package that does not exist on the
+npm registry (confirmed 404). `obsidian-claude-code-mcp` is an Obsidian desktop plugin reached
+through Claude Code's own native `/ide` integration command, not a server spawned from
+`.mcp.json` or `~/.claude.json`. With the plugin installed and enabled (step 1-2 above) and the
+`.memory/` vault open in Obsidian, connect from Claude Code with:
 
-```json
-{
-  "mcpServers": {
-    "obsidian-memory": {
-      "command": "npx",
-      "args": ["-y", "@anthropic-ai/obsidian-claude-code-mcp@latest"],
-      "env": {
-        "OBSIDIAN_WS_PORT": "22360"
-      }
-    }
-  }
-}
 ```
+/ide
+```
+
+and select the running Obsidian instance from the list it presents. No manifest declaration, no
+`merge_targets.mcp` fragment, and no extension-managed `.mcp.json` entry participates in this
+connection.
+
+An extension CAN now register a genuinely spawnable MCP server via `merge_targets.mcp` -- see
+[Extension System Architecture](../../../../core/docs/architecture/extension-system.md)'s
+"MCP Server Registration" section -- but that mechanism is not how this `/ide`-based connection
+works, and this extension does not currently declare any `merge_targets.mcp` fragment.
 
 ### 4. Test the Connection
 
 1. Ensure Obsidian is running with the `.memory/` vault open
-2. Restart Claude Code to pick up the MCP configuration
+2. Run `/ide` in Claude Code and select the Obsidian instance
 3. Run a memory-augmented research query:
    ```
    /research N --remember
@@ -95,6 +100,11 @@ If configured correctly, the system will:
 1. Search existing memories via MCP
 2. Include relevant memories in the research context
 3. Show "memory-augmented" status
+
+**Tool surface NOT verified**: this plugin's actual MCP tool names were NOT enumerated against a
+running server, because no server could be started from the nonexistent npm package to query
+`tools/list` against. Treat any `mcp__obsidian*` tool name as unverified until confirmed against
+an actually running `/ide` connection.
 
 ---
 

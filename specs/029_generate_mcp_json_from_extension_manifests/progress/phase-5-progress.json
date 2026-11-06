@@ -1,0 +1,59 @@
+{
+  "phase": 5,
+  "phase_name": "Resolve the obsidian-memory half per the settled decision",
+  "started_at": "2026-11-06T09:10:00Z",
+  "last_updated": "2026-11-06T09:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Delete memory/settings-fragment.json (dead mcpServers block, no permission grants)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/settings-fragment.json"]
+    },
+    {
+      "id": 2,
+      "description": "Remove dangling merge_targets.settings entry from memory/manifest.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/manifest.json"]
+    },
+    {
+      "id": 3,
+      "description": "README.md MCP Server Setup: correct to /ide path, state prerequisite and unverified-tool-surface fact",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/README.md"]
+    },
+    {
+      "id": 4,
+      "description": "memory-setup.md: remove nonexistent npx package block, document /ide path",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/context/project/memory/memory-setup.md"]
+    },
+    {
+      "id": 5,
+      "description": "memory-troubleshooting.md: correct install/connection step to /ide path",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/context/project/memory/memory-troubleshooting.md"]
+    },
+    {
+      "id": 6,
+      "description": "lint-hook-registration-paths.sh: header comment only, no file-name citation of deleted file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Verification: jq empty, grep checks, run-all.sh lint suite, doc gate subset",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/index-entries.json"],
+      "note": "generate-context-line-counts.sh --write cannot run from the source-store copy (it refuses with an explicit error outside a deployed scripts/ tree, and this task must not deploy against this repository), so the two line_count corrections for memory-setup.md (247->257) and memory-troubleshooting.md (253->257) were applied directly via jq, matching the script's own wc -l-based computation exactly. A SEPARATE, unrelated line_count change the generate-context-line-counts.sh attempt surfaced in agent-system/extensions/lean/index-entries.json (challenge-snapshot.md, ladder-counter-observables.md) was left untouched -- it reflects the concurrently-dispatched sibling task's own edits to those two files, not mine."
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Verification per plan: jq empty agent-system/extensions/memory/manifest.json passes; jq '.merge_targets | keys' returns exactly ['claudemd','index']. grep -rn 'obsidian-claude-code-mcp@latest|configured in `manifest.json`' agent-system/extensions/memory returns nothing (adjusted the explanatory prose to drop the literal '@latest' version-pin suffix from the two citations of the nonexistent package name, so the explanation of why it is wrong does not itself re-trigger this exact check). grep -rn 'settings-fragment' agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh no longer names the memory extension's copy (only generic settings-fragment.json pattern references remain, which also match the lean/core extensions' own real, still-live files of that name). bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-lint-hook-registration-paths.sh passes (1 passed, 0 failed) -- confirmed the heredoc fixture at its case14 site is self-contained synthetic data, not a read of the real deleted file, so it needed no change. check-extension-docs.sh's [memory] section reports OK. No task-number references in any touched file (grep confirmed empty).",
+    "EXPECTED, UNAVOIDABLE gate finding (not a defect, not fixed): check-extension-docs.sh now additionally reports 'FAIL: deployed script content drift (deployed != extension source): scripts/lint/lint-hook-registration-paths.sh' for [core]. This is the direct, unavoidable consequence of editing a source-store script's header comment while the dispatch's own no-deploy constraint (verified at Phase 3/6: no .claude/ modification, no root .mcp.json) forbids running deploy-headless.sh to resync the deployed copy. Recording this plainly for Phase 6's triage rather than silently deploying to clear it, per the Risks table's own explicit acceptance of this exact situation (deployed settings.local.json keeps a stale merged obsidian-memory block for the same no-deploy reason)."
+  ]
+}

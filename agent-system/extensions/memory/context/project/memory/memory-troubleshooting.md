@@ -19,16 +19,20 @@
 2. **WebSocket port mismatch**
    - Default port: 22360
    - Check if another service uses this port
-   - Change port in Obsidian plugin settings and .mcp.json config
+   - Change the port in the Obsidian plugin's own settings (there is no `.mcp.json` config for
+     this option -- see below)
 
 3. **Plugin not installed**
    - Install the obsidian-claude-code-mcp plugin in Obsidian
    - Enable the plugin
    - Note the WebSocket port
 
-4. **Environment not configured**
-   - Check `.mcp.json` at project root for obsidian-memory server
-   - Verify port matches Obsidian plugin settings
+4. **Not connected via `/ide`**
+   - This option connects through Claude Code's native `/ide` integration command, NOT through
+     `.mcp.json` -- there is no `.mcp.json`/`~/.claude.json` entry to check here, and there never
+     was one that could work (see memory-setup.md's Option 1 section for why)
+   - Run `/ide` in Claude Code and select the running Obsidian instance from the list
+   - Verify the WebSocket port Claude Code connects to matches the Obsidian plugin's settings
 
 **Verification**:
 ```bash

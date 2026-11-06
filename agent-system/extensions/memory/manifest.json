@@ -49,10 +49,6 @@
     "index": {
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
-    },
-    "settings": {
-      "source": "settings-fragment.json",
-      "target": ".claude/settings.local.json"
     }
   }
 }

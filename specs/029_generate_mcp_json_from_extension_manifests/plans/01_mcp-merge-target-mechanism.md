@@ -493,43 +493,46 @@ together with the `prose` row's diff read-through of every changed hunk.
 
 ---
 
-### Phase 5: Resolve the obsidian-memory half per the settled decision [NOT STARTED]
+### Phase 5: Resolve the obsidian-memory half per the settled decision [COMPLETED]
 
 **Goal**: the fabricated obsidian-memory declaration is gone, the memory extension's docs name
 Claude Code's native `/ide` integration as the real connection path, and nothing is invented.
 
 **Tasks**:
-- [ ] Delete `agent-system/extensions/memory/settings-fragment.json`. Its entire content is the
+- [x] Delete `agent-system/extensions/memory/settings-fragment.json`. Its entire content is the
       dead `mcpServers.obsidian-memory` block; it carries no permission grants, so nothing is lost.
-      Confirm that by reading the file immediately beforehand.
-- [ ] Remove the now-dangling `merge_targets.settings` entry from
+      Confirm that by reading the file immediately beforehand. *(completed, confirmed before deleting)*
+- [x] Remove the now-dangling `merge_targets.settings` entry from
       `agent-system/extensions/memory/manifest.json`, leaving `claudemd` and `index` untouched.
-      Confirm with `jq empty` afterwards.
-- [ ] `agent-system/extensions/memory/README.md`, `### MCP Server Setup`: remove the claim that the
+      Confirm with `jq empty` afterwards. *(completed)*
+- [x] `agent-system/extensions/memory/README.md`, `### MCP Server Setup`: remove the claim that the
       WebSocket option "is configured in `manifest.json`" (it never was, and under the settled
       decision it will not be). Replace the `obsidian-claude-code-mcp` row's launch story with the
       truth: that plugin is an Obsidian desktop plugin reached through Claude Code's native `/ide`
       command, not a spawnable server, and no `.mcp.json` or `~/.claude.json` entry participates.
       Keep the WebSocket port and the "Obsidian desktop + plugin" prerequisite, which are accurate.
       State the prerequisite plainly as the dispatch requires, and state explicitly that the tool
-      surface was NOT verified against a running server, with the reason.
-- [ ] `agent-system/extensions/memory/context/project/memory/memory-setup.md`: remove the
+      surface was NOT verified against a running server, with the reason. *(completed)*
+- [x] `agent-system/extensions/memory/context/project/memory/memory-setup.md`: remove the
       `@anthropic-ai/obsidian-claude-code-mcp` npx configuration block from its Option 1 section —
       the package does not exist on the npm registry (404) and the block cannot work — and replace
       it with the `/ide` instructions. Leave the second `mcpServers` block alone if it belongs to
-      the separate REST-API option; read it before deciding.
-- [ ] `agent-system/extensions/memory/context/project/memory/memory-troubleshooting.md`: correct
+      the separate REST-API option; read it before deciding. *(completed; Option 2's REST-API block
+      confirmed to be a genuinely separate, different package and left untouched)*
+- [x] `agent-system/extensions/memory/context/project/memory/memory-troubleshooting.md`: correct
       the install step that points at the plugin as an MCP server so it names the `/ide` path.
-- [ ] In the memory README, cross-reference Phase 4's two-gotcha subsection for anyone who later
-      does register a real server through `merge_targets.mcp`.
-- [ ] Update `lint-hook-registration-paths.sh`'s `KNOWN FALSE-POSITIVE RISKS` header comment, which
+      *(completed)*
+- [x] In the memory README, cross-reference Phase 4's two-gotcha subsection for anyone who later
+      does register a real server through `merge_targets.mcp`. *(completed)*
+- [x] Update `lint-hook-registration-paths.sh`'s `KNOWN FALSE-POSITIVE RISKS` header comment, which
       cites `memory/settings-fragment.json`'s `mcpServers.obsidian-memory.command: "npx"` as its
       worked example: restate the same closure argument ("npx" never yields an extracted `*.sh`
       token) without naming a file this phase deletes. Comment-only edit; change no logic.
-- [ ] Do not select a substitute Obsidian MCP package, do not add a `merge_targets.mcp` entry to the
+      *(completed)*
+- [x] Do not select a substitute Obsidian MCP package, do not add a `merge_targets.mcp` entry to the
       memory manifest, and do not list obsidian tool names anywhere. All three are out of scope
-      under the settled decision.
-- [ ] Deliverable rule: no task numbers in any of these files.
+      under the settled decision. *(honored)*
+- [x] Deliverable rule: no task numbers in any of these files. *(completed, confirmed by grep)*
 
 **Timing**: 1 hour
 

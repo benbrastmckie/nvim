@@ -117,10 +117,12 @@
 #     check below is anchored on a literal `"command"` JSON KEY, never on bare path text in the
 #     file -- a whole-file text grep for `.claude/hooks/` would pick the `_comment` field up as a
 #     phantom registration; this lint never does that.
-#   - memory/settings-fragment.json's `"mcpServers"."obsidian-memory"."command": "npx"` is an MCP
-#     server command, not a hook registration. It is excluded not by walking only `.hooks` (though
-#     Check C/D's jq-based inventory does exactly that) but, for the line-oriented checks A/B, by
-#     the simpler and equally sufficient fact that "npx" never yields an extracted `*.sh` token.
+#   - An `mcpServers.<name>.command` entry spawning an MCP server via `npx` (whether inside a
+#     settings-fragment.json's dead `mcpServers` block or inside an `mcp-fragment.json`
+#     merge-target source) is an MCP server command, not a hook registration. It is excluded not
+#     by walking only `.hooks` (though Check C/D's jq-based inventory does exactly that) but, for
+#     the line-oriented checks A/B, by the simpler and equally sufficient fact that "npx" never
+#     yields an extracted `*.sh` token.
 #
 # KNOWN LIMITATION (stated plainly, not papered over)
 # -------------------------------------------------------
