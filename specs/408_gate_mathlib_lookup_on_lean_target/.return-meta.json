@@ -1,10 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/408_gate_mathlib_lookup_on_lean_target/summaries/01_gate-mathlib-lookup-on-lean-target-summary.md",
+      "summary": "All 4 phases complete (Phase 4 closed COMPLETED WITH EXCLUSIONS for 2 confirmed pre-existing, out-of-scope deploy-gate failures). One shared mathlib-lookup-gate.md pattern registered and all 8 formal-extension contract surfaces (4 agents + 4 skills) now point at it instead of mandating the lookup step unconditionally."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extracted the formal extension's previously-unconditional Mathlib-lookup obligation into one registered shared gate (context/patterns/mathlib-lookup-gate.md) conditioning the step on a genuine Lean target plus lookup-tool registration, and rewrote all 8 contract surfaces (4 research-agent contracts, 4 skill wrappers) to point at it. Redeployed via deploy-headless.sh as a hygiene check; the deploy landed but fast-gate verification reported 2 confirmed pre-existing, out-of-scope failures unrelated to this task, closed via a Reasoned Exclusions record."
+  },
+  "modified_files": [
+    "agent-system/extensions/formal/context/patterns/mathlib-lookup-gate.md",
+    "agent-system/extensions/formal/manifest.json",
+    "agent-system/extensions/formal/index-entries.json",
+    "agent-system/extensions/formal/agents/logic-research-agent.md",
+    "agent-system/extensions/formal/agents/math-research-agent.md",
+    "agent-system/extensions/formal/agents/physics-research-agent.md",
+    "agent-system/extensions/formal/agents/formal-research-agent.md",
+    "agent-system/extensions/formal/skills/skill-logic-research/SKILL.md",
+    "agent-system/extensions/formal/skills/skill-math-research/SKILL.md",
+    "agent-system/extensions/formal/skills/skill-physics-research/SKILL.md",
+    "agent-system/extensions/formal/skills/skill-formal-research/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "index-entries.json's 'domain' field is a CLOSED enum (core/project/system), enforced by check-extension-docs.sh Rule T. For an extension whose existing entries all use domain=\"project\" (e.g. a domain-knowledge tier like project/logic, project/math), adding a NEW top-level context tier that is a cross-cutting pattern/mechanism rather than domain knowledge should NOT reuse domain=\"project\" -- use domain=\"core\" with subdomain=\"patterns\" instead, following the only existing precedent (the core extension's own patterns/* entries use exactly this pairing). Rule T does not flag an unlisted 'category' field as forbidden, so an extension's existing per-entry 'category' convention can be kept for consistency even though it is not part of the documented schema.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/408_gate_mathlib_lookup_on_lean_target/summaries/01_gate-mathlib-lookup-on-lean-target-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "domain-enum", "check-extension-docs", "Rule T", "patterns-tier", "context-registration"]
+    },
+    {
+      "content": "deploy-headless.sh's internal verify-deploy.sh --skip-slow fast-gate pass includes gate10 (specs/state.json schema validation via validate-state.sh --deep), which carries a hard-coded internal 30s timeout. On a large state.json (500+ tasks) under concurrent session load, a direct standalone 'validate-state.sh --deep' run can legitimately take 33+ seconds and still pass cleanly -- the 30s gate10 wrapper timeout is a load-sensitive flake, not necessarily a content defect. Before treating a gate10 timeout as blocking, re-run validate-state.sh --deep directly (bypassing the wrapper's timeout) to distinguish a genuine schema failure from a timing margin issue.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/408_gate_mathlib_lookup_on_lean_target/summaries/01_gate-mathlib-lookup-on-lean-target-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["gate10", "validate-state.sh", "deploy-headless", "timeout", "flake", "verify-deploy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

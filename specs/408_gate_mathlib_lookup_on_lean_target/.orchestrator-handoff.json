@@ -1,21 +1,21 @@
 {
-  "status": "planned",
-  "dispatch_seq": 7,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase, 3-wave plan gating the formal extension's mandatory Mathlib-lookup step on (a) a Lean target and (b) lookup-tool registration, with skip-and-log as an accepted degraded mode. Phase 1 authors and REGISTERS one shared context/patterns/mathlib-lookup-gate.md; Phases 2 and 3 run in parallel rewriting the four agent contracts and four skill wrappers to point at it; Phase 4 redeploys to RESULT=landed_verify_clean under the full gate set. Beyond the research report: the new context tier requires manifest.json provides.context and index-entries.json registration, so the file set is 11, not the 8 the report called 'already pinned'.",
+  "summary": "All 4 plan phases complete. Authored and registered one shared context/patterns/mathlib-lookup-gate.md pattern, then rewrote all 8 formal-extension contract surfaces (4 research-agent contracts, 4 skill wrappers) to point at it instead of mandating the Mathlib-lookup step unconditionally. Redeployed via deploy-headless.sh; the deploy landed but fast-gate verification reported 2 confirmed pre-existing, out-of-scope failures (a gate10 timing margin against validate-state.sh --deep; a memory-extension /ide dead-command-recommendation finding), neither caused by or fixable within this task -- Phase 4 closed COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record. The full verify-deploy.sh/run-all.sh gate set was deferred to the batch level per this dispatch's own Batch Gate Deferral directive.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/408_gate_mathlib_lookup_on_lean_target/plans/01_gate-mathlib-lookup-on-lean-target.md",
-      "summary": "4-phase, 3-wave plan gating the formal extension's Mathlib-lookup step on a Lean target plus tool registration, via one registered shared pattern file that all 8 contract surfaces point at."
+      "type": "summary",
+      "path": "specs/408_gate_mathlib_lookup_on_lean_target/summaries/01_gate-mathlib-lookup-on-lean-target-summary.md",
+      "summary": "Implementation summary: all 8 contract surfaces gated, Phase 4 closed with 2 documented exclusions."
     }
   ],
   "metadata": {
-    "session_id": "sess_1793993117_98582a_408",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1793993117_98582a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
