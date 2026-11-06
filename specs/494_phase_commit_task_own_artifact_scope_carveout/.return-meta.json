@@ -1,10 +1,50 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 20,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/494_phase_commit_task_own_artifact_scope_carveout/summaries/01_own-task-dir-containment-member-summary.md",
+      "summary": "All 4 plan phases completed: spliced the committing task's own resolved artifact directory into git-commit-phase.sh's Containment Self-Check, pinned it with three new regression fixtures, recorded the member and two prose corrections in git-staging-scope.md, and redeployed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added the committing task's own resolved artifact directory as an implicit, unconditional in-scope member of git-commit-phase.sh's Phase-Commit Containment Self-Check (a per-site splice, mirroring the two sibling Containment sites that already carried it), pinned the behavior with three new regression fixtures (own-directory acceptance, paired-negative excursion, and fail-open preservation), recorded the member plus two prose corrections and a missing_key resolution in git-staging-scope.md, and redeployed. Scoped verification (per the dispatch's Batch Gate Deferral directive) is green; a full, unnarrowed gate run was also executed and triaged, with all failures attributed to pre-existing, out-of-scope findings (lean extension drift, a memory extension doc reference, and orchestrator-lifecycle suites affected by concurrent sibling activity in this batch)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To red-proof a shell-script fixture change before trusting it, build a splice-stripped scratch copy of the pre-fix script and run the real test file against it by mirroring the test file's own expected relative directory layout (e.g. a tests/ subdir beside a lib/ dir containing common.sh), rather than sed-rewriting the test file's SRC_SCRIPTS_DIR/SCRIPT_DIR computation. Confirm the new fixtures genuinely fail there and the untouched fixtures still pass, then delete the scratch copy. This caught that the dispatch's own 'silently dropped from the commit' framing was imprecise: in this harness, a path under the committing task's own directory still landed via an unconditional directory-level stage_paths seed even without the fix -- the real, provable defect was a spurious drop-warning plus a spurious issue-log entry, not an actual omission. Always empirically verify a bug report's own causal claim with a direct repro before writing fixtures that assume it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/494_phase_commit_task_own_artifact_scope_carveout/summaries/01_own-task-dir-containment-member-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["red-proof", "fixture-testing", "shell-script-testing", "scratch-copy", "stage_paths", "containment-predicate"]
+    },
+    {
+      "content": "When a shared allowlist library documents its own admission bar (e.g. 'engine-written on behalf of every/many tasks, AND never legitimately declarable in any one task's own file_scope'), a per-task-directory member that fails that bar belongs as a per-site splice at each consuming site, not as a library addition -- even when two sibling sites already implement the same splice independently. Resist the instinct to deduplicate into the shared library just because sharing is generally good; the library's own documented admission criterion is the actual decision rule.",
+      "category": "PATTERN",
+      "source_artifact": "specs/494_phase_commit_task_own_artifact_scope_carveout/summaries/01_own-task-dir-containment-member-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["shared-library-admission-bar", "per-site-splice", "containment-predicate", "file_scope", "do-not-overshare"]
+    },
+    {
+      "content": "In a multi-stage commit pipeline with both an unconditional directory-level staging seed and a separate per-file containment filter, the two constructs can diverge: the seed can already stage a file the filter would otherwise flag as out-of-scope, making the filter's drop warning and issue-log entry pure noise rather than an actual omission. When documenting or fixing such a system, state explicitly which construct (seed vs. filter) is responsible for what observed behavior, and verify empirically rather than assuming a filter's warning implies an actual staging omission.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/494_phase_commit_task_own_artifact_scope_carveout/summaries/01_own-task-dir-containment-member-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["staging-seed", "containment-filter", "false-positive-warning", "git-commit-pipeline", "asymmetry"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
