@@ -197,44 +197,44 @@ producer/consumer contract, and prove every mode against two deliberately DIFFER
 
 ---
 
-### Phase 2: Gate-27 Subject-Declaration Lint with Full Allowlist [NOT STARTED]
+### Phase 2: Gate-27 Subject-Declaration Lint with Full Allowlist [COMPLETED]
 
 **Goal**: Ship the mechanical check before any migration, with an allowlist that names every
 not-yet-migrated suite, so the unmigrated remainder can never be read as already-safe.
 
 **Tasks**:
-- [ ] Create `scripts/lint/lint-subject-resolution-declaration.sh`, structurally modeled on
+- [x] Create `scripts/lint/lint-subject-resolution-declaration.sh`, structurally modeled on *(completed)*
       `scripts/lint/lint-state-writer-boundary.sh` and
       `scripts/lint/lint-verdict-extraction-anchoring.sh` (two layers, `--verbose`, `[VIOLATION]`
       verdict rows, a stated KNOWN LIMITATION header paragraph).
-- [ ] Layer 1 (structural detection) over `scripts/tests/*.sh`, flagging a file that:
-  - [ ] declares a local function named `resolve_candidate` (the hand-duplicate shape), or
-  - [ ] contains an inline resolution loop over a `*CANDIDATES*`-named array or
+- [x] Layer 1 (structural detection) over `scripts/tests/*.sh`, flagging a file that: *(completed)*
+  - [x] declares a local function named `resolve_candidate` (the hand-duplicate shape), or *(completed)*
+  - [x] contains an inline resolution loop over a `*CANDIDATES*`-named array or *(completed)*
         `for candidate in` (the inline shape), or
-  - [ ] calls `common_test_resolve_subject` without a paired `common_test_declare_subject` for the
+  - [x] calls `common_test_resolve_subject` without a paired `common_test_declare_subject` for the *(completed)*
         resolved value (the missing-declaration case), or
-  - [ ] calls `common_test_resolve_candidate` with a `$REPO_ROOT/.claude/scripts` candidate and a
+  - [x] calls `common_test_resolve_candidate` with a `$REPO_ROOT/.claude/scripts` candidate and a *(completed)*
         source-store sibling candidate (the un-migrated implicit-order shape).
-- [ ] Layer 2: an explicit, per-entry-reasoned allowlist. Seed it with all 70 not-yet-migrated
+- [x] Layer 2: an explicit, per-entry-reasoned allowlist. Seed it with all 70 not-yet-migrated *(completed)*
       suites plus the exemptions, each carrying a one-line reason; no bare paths.
-- [ ] Record the three deployed-only-by-design suites as permanent exemptions with their reason
+- [x] Record the three deployed-only-by-design suites as permanent exemptions with their reason *(completed)*
       (one valid copy, so there is no ambiguity to declare): `test-backfill-file-scope.sh`,
       `test-double-loading-check.sh`, `test-update-task-status.sh`. Confirm each at
       implementation time rather than trusting this list.
-- [ ] Record the two known non-subject-resolution `candidate` users as permanent exemptions:
+- [x] Record the two known non-subject-resolution `candidate` users as permanent exemptions: *(completed)*
       `test-check-record-versioning.sh`, `test-check-task-references.sh` (they describe a
       production script's own internal resolution, not the harness's subject).
-- [ ] Add `gate27_run()` to `scripts/verify-deploy.sh`, copying `gate26_run`'s exact shape:
+- [x] Add `gate27_run()` to `scripts/verify-deploy.sh`, copying `gate26_run`'s exact shape: *(completed)*
       `gate_selected 27` guard, `say "27. ..."`, `CURRENT_GATE="gate27"`, source-store `[SKIP]`
       branch, missing-script `fail`, `--verbose` invocation with status capture, and
       `verify_deploy_extract_verdict_lines '[VIOLATION]'` folding into `FINDINGS_LIST`.
-- [ ] Add the gate-27 row to `scripts/gate-registry.data`: 9 TAB-separated fields, id 27,
+- [x] Add the gate-27 row to `scripts/gate-registry.data`: 9 TAB-separated fields, id 27, *(completed)*
       `gate27_run`, dependencies `-`, `requires_source_store` true, a timeout and cost class
       matching the comparable `free` lint rows, `serialized` false, and an `input_corpus` naming
       the corpus this lint actually reads.
-- [ ] Register both new scripts in `manifest.json` (`lint/lint-subject-resolution-declaration.sh`
+- [x] Register both new scripts in `manifest.json` (`lint/lint-subject-resolution-declaration.sh` *(completed)*
       and `tests/test-lint-subject-resolution-declaration.sh`).
-- [ ] Create `scripts/tests/test-lint-subject-resolution-declaration.sh` using the harness trio
+- [x] Create `scripts/tests/test-lint-subject-resolution-declaration.sh` using the harness trio *(completed)*
       and `common_test_workdir_init`, with a **deliberately seeded violation of each of the three
       shapes in a temp fixture tree, never the live tree**, asserting non-zero exit and a
       `[VIOLATION]` row naming the seeded file; plus a clean-fixture case asserting exit 0; plus a

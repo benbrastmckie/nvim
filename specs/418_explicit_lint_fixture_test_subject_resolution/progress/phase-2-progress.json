@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Gate-27 Subject-Declaration Lint with Full Allowlist",
+  "started_at": "2026-11-06T21:15:00Z",
+  "last_updated": "2026-11-06T21:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create lint-subject-resolution-declaration.sh (two-layer, allowlist)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh"]},
+    {"id": 2, "description": "Add gate27_run to verify-deploy.sh and register row in gate-registry.data", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh", "agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 3, "description": "Register new scripts in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Create test-lint-subject-resolution-declaration.sh fixture suite; update test-gate-registry-resolution.sh's hardcoded gate-count expectations", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-subject-resolution-declaration.sh", "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "lint_corpus_scan_collect_files's shared-corpus-reuse path with pattern '*.sh'", "result": "failed", "reason": "under verify-deploy.sh (GATE_SHARED_CORPUS_FILE/ROOT exported), the shared-corpus optimization matches '*.sh' against the WHOLE repo-wide corpus via [[ == ]] globbing (which spans directory separators), scanning far beyond scripts/tests/ and producing false violations; replaced with an unconditional direct `find` scoped to the explicit scan path"}
+  ],
+  "handoff_count": 0
+}

@@ -66,9 +66,9 @@ common_test_workdir_init
 gate_registry_load "$REAL_DATA"
 
 ids="$(gate_registry_ids)"
-expected_ids="$(seq 1 26 | tr '\n' ' ' | sed 's/ $//')"
+expected_ids="$(seq 1 27 | tr '\n' ' ' | sed 's/ $//')"
 if [ "$ids" = "$expected_ids " ] || [ "$ids" = "$expected_ids" ]; then
-  common_test_pass "case1: gate_registry_ids returns the real registry's 26 migrated ids, ascending (1-26, gate 26 added for the extension README table lint)"
+  common_test_pass "case1: gate_registry_ids returns the real registry's 27 migrated ids, ascending (1-27, gate 27 added for the subject-resolution declaration lint)"
 else
   common_test_fail "case1: unexpected ids from the real registry (got: '$ids')"
 fi
@@ -648,22 +648,22 @@ fi
 REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
 VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
 
-# Case 32: --only-gate 26 (the current live max) is accepted and selects exactly gate 26.
-out32="$(bash "$VERIFY_DEPLOY" --only-gate 26 "$REPO_ROOT" 2>&1)"; rc32=$?
-if [ "$rc32" -eq 0 ] && echo "$out32" | grep -q "^26\. "; then
-  common_test_pass "case32: --only-gate 26 is accepted against an explicit source-store TARGET and selects gate 26"
+# Case 32: --only-gate 27 (the current live max) is accepted and selects exactly gate 27.
+out32="$(bash "$VERIFY_DEPLOY" --only-gate 27 "$REPO_ROOT" 2>&1)"; rc32=$?
+if [ "$rc32" -eq 0 ] && echo "$out32" | grep -q "^27\. "; then
+  common_test_pass "case32: --only-gate 27 is accepted against an explicit source-store TARGET and selects gate 27"
 else
-  common_test_fail "case32: expected --only-gate 26 to be accepted and select gate 26 (rc=$rc32)" "$out32"
+  common_test_fail "case32: expected --only-gate 27 to be accepted and select gate 27 (rc=$rc32)" "$out32"
 fi
 
-# Case 33: an id ABOVE the live max (27, one past the real registry's current ceiling) is still
+# Case 33: an id ABOVE the live max (28, one past the real registry's current ceiling) is still
 # refused with exit 2 and the documented out-of-range error text -- the derived bound must not
 # silently widen into "accept anything".
-out33="$(bash "$VERIFY_DEPLOY" --only-gate 27 "$REPO_ROOT" 2>&1)"; rc33=$?
-if [ "$rc33" -eq 2 ] && echo "$out33" | grep -q "ERROR: --only-gate: gate id '27' is out of range"; then
-  common_test_pass "case33: --only-gate 27 (above the live max) is still refused with exit 2"
+out33="$(bash "$VERIFY_DEPLOY" --only-gate 28 "$REPO_ROOT" 2>&1)"; rc33=$?
+if [ "$rc33" -eq 2 ] && echo "$out33" | grep -q "ERROR: --only-gate: gate id '28' is out of range"; then
+  common_test_pass "case33: --only-gate 28 (above the live max) is still refused with exit 2"
 else
-  common_test_fail "case33: expected --only-gate 27 to be refused with exit 2 and the out-of-range message (rc=$rc33)" "$out33"
+  common_test_fail "case33: expected --only-gate 28 to be refused with exit 2 and the out-of-range message (rc=$rc33)" "$out33"
 fi
 
 # Case 34: a non-numeric token is still refused with exit 2 -- the derivation must not change

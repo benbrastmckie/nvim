@@ -734,7 +734,7 @@ gate_selected() {
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# GATE FUNCTIONS 1-26 -- all migrated onto the declarative gate registry
+# GATE FUNCTIONS 1-27 -- all migrated onto the declarative gate registry
 # (scripts/gate-registry.data, scripts/lib/gate-registry-lib.sh). Each function body
 # below is the UNMODIFIED original gate block (including its own internal
 # `if gate_selected N; then ... fi` guard, now redundant with the registry's own
@@ -1963,6 +1963,34 @@ else
       while IFS= read -r extension_readme_table_lint_line; do
         FINDINGS_LIST+=("FINDING gate26 $extension_readme_table_lint_line")
       done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$extension_readme_table_lint_output")
+    fi
+  fi
+fi
+
+say ""
+fi
+}
+
+gate27_run() {
+if gate_selected 27; then
+say "27. Subject-resolution declaration lint (lint-subject-resolution-declaration.sh)"
+CURRENT_GATE="gate27"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- subject-resolution declaration lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh" ]; then
+  fail "lint-subject-resolution-declaration.sh not found in source store"
+else
+  subject_resolution_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh" --verbose 2>&1)
+  subject_resolution_lint_status=$?
+  if [ "$subject_resolution_lint_status" -eq 0 ]; then
+    pass "subject-resolution declaration lint reports no undeclared or silently-ordered subject-resolution sites"
+  else
+    fail "subject-resolution declaration lint reported an undeclared or silently-ordered subject-resolution site" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r subject_resolution_lint_line; do
+        FINDINGS_LIST+=("FINDING gate27 $subject_resolution_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$subject_resolution_lint_output")
     fi
   fi
 fi
