@@ -40,7 +40,7 @@ next_project_number: 513
   └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
   └─ 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
-445 [RESEARCHING] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
+445 [RESEARCHED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
   └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or... (see above)
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
@@ -4151,11 +4151,12 @@ PARTS A AND B WERE DELIBERATELY COMBINED, not split: they are the two halves of 
 
 ### 445. Gate8 expected vs new failure distinction
 - **Effort**: medium
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 414, Task 415
 - **Parent**: Task 424
+- **Research**: [445_gate8_expected_vs_new_failure_distinction/reports/01_gate8-expected-new-distinction.md]
 
 **Description**: Give verify-deploy.sh's Gate 8 an expected-versus-new failure distinction instead of collapsing any non-zero run-all.sh exit to FAIL.
 
