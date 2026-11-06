@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/419_enforce_state_write_convention_python_channel/reports/01_python-state-write-lint-extension.md",
+      "summary": "Designs and validates a minimal extension to lint-state-writer-boundary.sh for the Python/json.dump channel (zero new live false positives, measured), and decides -- with evidence from the originating incident log -- that a companion write-time Bash PreToolUse hook is also warranted since the actual incident never existed as a scannable file."
+    }
+  ],
+  "dispatch_seq": 4,
+  "next_steps": "Run /orchestrate 419 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1793947646_0784d9_419",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When deciding whether a write-time PreToolUse hook should trigger on Bash vs. Write|Edit, match the matcher to where the hazard's bytes actually originate: a live interpreter/shell invocation (e.g. `python3 -c \"...\"` run via the Bash tool) needs a Bash-command-string hook mirroring guard-destructive-git.sh (reads tool_input.command); authored file content needs a Write|Edit hook mirroring validate-no-task-references.sh (Edit requires reconstructing old_string/new_string against the on-disk file). A content lint scanning only committed files in a source tree cannot catch an ad hoc, uncommitted interpreter invocation regardless of how good its regex is -- verify which shape the actual incident took before assuming a content lint is sufficient.",
+      "category": "PATTERN",
+      "source_artifact": "specs/419_enforce_state_write_convention_python_channel/reports/01_python-state-write-lint-extension.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["hook-trigger-surface", "PreToolUse", "content-lint-vs-write-time-guard", "bash-command-hook", "state-writer-boundary"]
+    },
+    {
+      "content": "For a line-oriented regex content lint guarding against a specific Python file-write shape (open(...) targeting a sensitive path), key detection on the write-capable open() call itself -- the path literal plus a write-capable mode token (w/a/r+/w+/a+/x) on the same line -- rather than on a bare json.dump/json.dumps/json.load token. Keying on the json function name alone over-matches every legitimate JSON writer in a codebase (producing a large false-positive/allowlist burden); keying on the open()-call-plus-target-literal-plus-mode naturally covers both the inline `json.dump(obj, open(path,'w'))` shape and the `with open(path,'w') as f:` idiom's own line, generalizes to any path suffix (archive/vault-root variants) for free, and measurably produces zero false positives against an existing large codebase's legitimate Python JSON writers.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/419_enforce_state_write_convention_python_channel/reports/01_python-state-write-lint-extension.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["regex-lint-design", "python-open-detection", "state-writer-boundary", "false-positive-avoidance", "write-mode-check"]
+    }
+  ]
+}
