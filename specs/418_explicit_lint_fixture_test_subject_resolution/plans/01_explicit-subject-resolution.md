@@ -270,7 +270,7 @@ not-yet-migrated suite, so the unmigrated remainder can never be read as already
 
 ---
 
-### Phase 3: Migrate Group A — the 20 Shared-Helper Callers [NOT STARTED]
+### Phase 3: Migrate Group A — the 20 Shared-Helper Callers [IN PROGRESS]
 
 **Goal**: Convert every `common_test_resolve_candidate` subject lookup to the explicit-mode form
 plus a mandatory declaration, preserving each call site's existing effective order exactly.
