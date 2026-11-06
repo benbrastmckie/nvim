@@ -27,9 +27,10 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR" 4)"
 # .claude/scripts/tests/), since each copy's own common_test_resolve_candidate call prefers its own sibling
 # deployed lib first. ────────────────────────────────────────────────────────────────────────
 
-LIB_SRC="$(common_test_resolve_candidate "task-type-detect.sh" \
+LIB_SRC="$(common_test_resolve_subject "task-type-detect.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lib/task-type-detect.sh" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/lib/task-type-detect.sh")" || exit 2
+common_test_declare_subject "$LIB_SRC"
 
 # REAL_EXT_ROOT resolves relative to THIS suite's own SCRIPT_DIR, not deployed-first, so the
 # source-store copy always checks the source store's own extensions/ (never a possibly-stale

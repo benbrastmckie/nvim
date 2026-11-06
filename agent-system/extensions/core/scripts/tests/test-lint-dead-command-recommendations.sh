@@ -23,9 +23,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
-LINT_SCRIPT="$(common_test_resolve_candidate "lint-dead-command-recommendations.sh" \
+LINT_SCRIPT="$(common_test_resolve_subject "lint-dead-command-recommendations.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lint/lint-dead-command-recommendations.sh" \
   "$SCRIPT_DIR/../lint/lint-dead-command-recommendations.sh")" || exit 2
+common_test_declare_subject "$LINT_SCRIPT"
 
 PASSED=0
 FAILED=0

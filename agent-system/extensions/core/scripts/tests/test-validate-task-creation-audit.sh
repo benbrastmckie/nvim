@@ -3,10 +3,10 @@
 # hooks/validate-task-creation-audit.sh, the Bash-matcher structural backstop against bypassing
 # scripts/state-write.sh's audit-evidence gate.
 #
-# Structural model: test-lint-state-writer-boundary.sh (common_test_repo_root,
-# common_test_resolve_candidate, common_test_workdir_init, common_test_pass/fail/info,
-# PASSED/FAILED counters), adapted for a PreToolUse hook: each case feeds a synthetic
-# {"tool_name": ..., "tool_input": {"command": ...}} JSON document on stdin and asserts the
+# Structural model: test-lint-state-writer-boundary.sh (common_test_repo_root, the explicit
+# mode-selectable subject resolver in lib/common.sh, common_test_workdir_init,
+# common_test_pass/fail/info, PASSED/FAILED counters), adapted for a PreToolUse hook: each case
+# feeds a synthetic {"tool_name": ..., "tool_input": {"command": ...}} JSON document on stdin and asserts the
 # hook's exit code.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error.
@@ -17,9 +17,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
-HOOK_SCRIPT="$(common_test_resolve_candidate "validate-task-creation-audit.sh" \
+HOOK_SCRIPT="$(common_test_resolve_subject "validate-task-creation-audit.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/hooks/validate-task-creation-audit.sh" \
   "$SCRIPT_DIR/../../hooks/validate-task-creation-audit.sh")" || exit 2
+common_test_declare_subject "$HOOK_SCRIPT"
 
 PASSED=0
 FAILED=0

@@ -28,9 +28,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
-LINT_SCRIPT="$(common_test_resolve_candidate "lint-hook-registration-paths.sh" \
+LINT_SCRIPT="$(common_test_resolve_subject "lint-hook-registration-paths.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lint/lint-hook-registration-paths.sh" \
   "$SCRIPT_DIR/../lint/lint-hook-registration-paths.sh")" || exit 2
+common_test_declare_subject "$LINT_SCRIPT"
 
 PASSED=0
 FAILED=0

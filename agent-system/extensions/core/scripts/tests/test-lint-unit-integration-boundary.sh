@@ -22,9 +22,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
-LINT_SCRIPT="$(common_test_resolve_candidate "lint-unit-integration-boundary.sh" \
+LINT_SCRIPT="$(common_test_resolve_subject "lint-unit-integration-boundary.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lint/lint-unit-integration-boundary.sh" \
   "$SCRIPT_DIR/../lint/lint-unit-integration-boundary.sh")" || exit 2
+common_test_declare_subject "$LINT_SCRIPT"
 
 PASSED=0
 FAILED=0

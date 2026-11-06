@@ -153,27 +153,21 @@ EXCLUDED_FILES=(
 # them (same reasoning as lint-verdict-extraction-anchoring.sh's own self-exemption). ---
     "agent-system/extensions/core/scripts/tests/test-lint-subject-resolution-declaration.sh|permanent: this suite's own seeded-violation fixtures are heredoc-embedded literal strings reproducing the bad shapes, necessarily present in its own source to prove the lint detects them"
 
-# --- Group A: common_test_resolve_candidate callers, migration-pending ---
-    "agent-system/extensions/core/scripts/tests/test-audit-task-proposals.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-common-lib.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-install-uninstall-extension.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-anchor-pointer-collapse.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-lint-verdict-extraction-anchoring.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-validate-task-creation-audit.sh|migration-pending: Group A shape (calls common_test_resolve_candidate for a deployed/.claude/scripts-plus-source-store-sibling pair); scheduled for conversion to common_test_resolve_subject"
+# --- Group A: common_test_resolve_candidate callers -- migrated to common_test_resolve_subject.
+# Only test-common-lib.sh remains, permanently: it is the function's own regression suite,
+# exercising common_test_resolve_candidate/common_test_resolve_subject directly against
+# synthetic fixture paths as the function under test, never as a genuine subject-resolution
+# call -- the paired-declaration discipline does not apply to a function's own unit test. ---
+    "agent-system/extensions/core/scripts/tests/test-common-lib.sh|permanent: this is common_test_resolve_candidate/common_test_resolve_subject's own regression suite, exercising both directly against synthetic fixture paths as the function under test, not as a genuine subject-resolution call"
+
+# --- test-task-type-detect.sh is already migrated (its task-type-detect.sh subject resolves via
+# common_test_resolve_subject with a declaration above). It also calls
+# common_test_resolve_candidate once more, for REAL_EXT_ROOT -- a single-candidate lookup of the
+# extensions/ directory, not a deployed/source-store subject-pair resolution at all, so it is
+# intentionally left on the old helper per this task's "leave non-subject uses on the old helper"
+# rule. The file-level check-4 regex (this lint's documented KNOWN LIMITATION) cannot distinguish
+# that unrelated statement from the migrated one, hence this permanent allowlist entry. ---
+    "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh|permanent: its task-type-detect.sh subject is migrated to common_test_resolve_subject with a declaration; its separate REAL_EXT_ROOT lookup is a single-candidate extensions/-directory resolution, not a deployed/source-store subject pair, and stays on common_test_resolve_candidate by design"
 
 # --- Group B: local hand-duplicated resolve_candidate() function, migration-pending ---
     "agent-system/extensions/core/scripts/tests/test-force-phases.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"

@@ -29,13 +29,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
-LINT_SCRIPT="$(common_test_resolve_candidate "lint-verdict-extraction-anchoring.sh" \
+LINT_SCRIPT="$(common_test_resolve_subject "lint-verdict-extraction-anchoring.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lint/lint-verdict-extraction-anchoring.sh" \
   "$SCRIPT_DIR/../lint/lint-verdict-extraction-anchoring.sh")" || exit 2
+common_test_declare_subject "$LINT_SCRIPT"
 
-HELPER_LIB="$(common_test_resolve_candidate "gate-verdict-extract-lib.sh" \
+HELPER_LIB="$(common_test_resolve_subject "gate-verdict-extract-lib.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lib/gate-verdict-extract-lib.sh" \
   "$SCRIPT_DIR/../lib/gate-verdict-extract-lib.sh")" || exit 2
+common_test_declare_subject "$HELPER_LIB"
 # shellcheck source=../lib/gate-verdict-extract-lib.sh
 source "$HELPER_LIB"
 

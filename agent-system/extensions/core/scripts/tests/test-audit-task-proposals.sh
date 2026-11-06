@@ -7,9 +7,9 @@
 # state/archive file here is synthetic and written to a `mktemp -d` workdir -- this suite never
 # reads or writes the live specs/state.json or specs/archive/state.json.
 #
-# Structural model: test-lint-state-writer-boundary.sh (common_test_repo_root,
-# common_test_resolve_candidate, common_test_workdir_init, common_test_pass/fail/info,
-# PASSED/FAILED counters).
+# Structural model: test-lint-state-writer-boundary.sh (common_test_repo_root, the explicit
+# mode-selectable subject resolver in lib/common.sh, common_test_workdir_init,
+# common_test_pass/fail/info, PASSED/FAILED counters).
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error.
 
@@ -19,9 +19,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT_RESOLVED="$(common_test_repo_root "$SCRIPT_DIR")"
-SCRIPT_UNDER_TEST="$(common_test_resolve_candidate "audit-task-proposals.sh" \
+SCRIPT_UNDER_TEST="$(common_test_resolve_subject "audit-task-proposals.sh" "deploy-tree-first" \
   "$REPO_ROOT_RESOLVED/.claude/scripts/audit-task-proposals.sh" \
   "$SCRIPT_DIR/../audit-task-proposals.sh")" || exit 2
+common_test_declare_subject "$SCRIPT_UNDER_TEST"
 
 # audit-task-proposals.sh sources lib/file-scope-overlap.sh via deploy-root-guard.sh unless
 # REPO_ROOT is already set -- export it unconditionally (harmless for the deployed-path case,

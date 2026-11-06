@@ -28,9 +28,10 @@ source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 
-SKILL_BASE="$(common_test_resolve_candidate "skill-base.sh" \
+SKILL_BASE="$(common_test_resolve_subject "skill-base.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/skill-base.sh" \
   "$SCRIPT_DIR/../skill-base.sh")" || exit 2
+common_test_declare_subject "$SKILL_BASE"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required for this suite" >&2

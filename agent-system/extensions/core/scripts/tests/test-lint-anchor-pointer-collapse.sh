@@ -21,9 +21,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
-LINT_SCRIPT="$(common_test_resolve_candidate "lint-anchor-pointer-collapse.sh" \
+LINT_SCRIPT="$(common_test_resolve_subject "lint-anchor-pointer-collapse.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lint/lint-anchor-pointer-collapse.sh" \
   "$SCRIPT_DIR/../lint/lint-anchor-pointer-collapse.sh")" || exit 2
+common_test_declare_subject "$LINT_SCRIPT"
 
 PASSED=0
 FAILED=0

@@ -28,18 +28,22 @@ source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 
-SKILL_BASE_SRC="$(common_test_resolve_candidate "skill-base.sh (source store)" \
+SKILL_BASE_SRC="$(common_test_resolve_subject "skill-base.sh (source store)" "source-store" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/skill-base.sh" \
   "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
-GATE_OUT_SRC="$(common_test_resolve_candidate "command-gate-out.sh (source store)" \
+common_test_declare_subject "$SKILL_BASE_SRC"
+GATE_OUT_SRC="$(common_test_resolve_subject "command-gate-out.sh (source store)" "source-store" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/command-gate-out.sh" \
   "$REPO_ROOT/.claude/scripts/command-gate-out.sh")" || exit 2
-BASELINE_LIB_SRC="$(common_test_resolve_candidate "deploy-baseline-lib.sh (source store)" \
+common_test_declare_subject "$GATE_OUT_SRC"
+BASELINE_LIB_SRC="$(common_test_resolve_subject "deploy-baseline-lib.sh (source store)" "source-store" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh" \
   "$REPO_ROOT/.claude/scripts/lib/deploy-baseline-lib.sh")" || exit 2
-PROBE_LIB_SRC="$(common_test_resolve_candidate "derived-artifact-probe-lib.sh (source store)" \
+common_test_declare_subject "$BASELINE_LIB_SRC"
+PROBE_LIB_SRC="$(common_test_resolve_subject "derived-artifact-probe-lib.sh (source store)" "source-store" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh" \
   "$REPO_ROOT/.claude/scripts/lib/derived-artifact-probe-lib.sh")" || exit 2
+common_test_declare_subject "$PROBE_LIB_SRC"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq not found on PATH" >&2
