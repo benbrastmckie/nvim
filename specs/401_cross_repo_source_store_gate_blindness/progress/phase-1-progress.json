@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Record the Adjudication in the Overlap Predicate's Contract",
+  "started_at": "2026-11-06T08:13:12Z",
+  "last_updated": "2026-11-06T08:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read file-footprint-overlap.md Non-Goals section", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Append cross-repository Non-Goals bullet", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md"]},
+    {"id": 3, "description": "Add Cross-Repository Scope -- Adjudicated Limitation subsection (a-d)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md"]},
+    {"id": 4, "description": "Re-read diff for task-number/record-versioning compliance; fix stale index line_count", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md", "agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Scoped gate check (verify-deploy.sh --only-gate 3,4) fails repo-wide solely due to pre-existing lean-extension staleness from concurrent sibling tasks (confirmed foreign via check-extension-docs.sh -- core extension passes cleanly on its own). Recorded as issue foreign-territory-gate-failure. Not touched; out of this task's file_scope."
+}

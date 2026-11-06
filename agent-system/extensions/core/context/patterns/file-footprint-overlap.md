@@ -281,3 +281,50 @@ scan.
   registered sessions, never a repo-wide filesystem walk. All four scan-scope shapes are in scope
   for this algorithm — each caller chooses its own scan scope, and this document is not extended
   or forked to accommodate the difference.
+- No cross-repository scope: when two repositories' task spaces file work against one shared
+  source store (see `rules/source-store-deploy-boundary.md`), this predicate and every consumer
+  wired to it see only the invoking repository's own `specs/state.json` — a correctly-sited
+  actor in each repository can claim the same source-store file with no `dependencies[]` edge and
+  no overlap finding anywhere. Accepted risk, detected manually; see the
+  `### Cross-Repository Scope -- Adjudicated Limitation` subsection below for the adjudication.
+
+### Cross-Repository Scope -- Adjudicated Limitation
+
+**The counterexample.** Commit `f49576632` ("lean: record four Lean 4 measurement and syntax
+gotchas", five files, +105 lines) landed from an orchestrate conclusion-stage channel (a)
+dispatch running in a second repository whose deployed `.claude/` tree is produced from this
+source store. Two records in this repository had been filed roughly an hour earlier from the
+identical four issue-log entries (`iss_1791886589088_do8mDR`, `iss_1791914943297_AoBxvm`,
+`iss_1791928136829_T0iDVg`, `iss_1791921588196_IcZKne`) and were still unstarted when the
+dispatch ran, with declared `file_scope` entries covering
+`context/project/lean4/domain/lean4-syntax.md` and
+`context/project/lean4/patterns/dependency-tracing.md` — both among the five files `f49576632`
+edited. Commit `4311617a2` subsequently annotated both records with what had landed. Neither
+this repository's overlap gate nor its `dependencies[]` graph produced any finding: both are
+scoped to this repository's own `specs/state.json`, and the colliding dispatch belonged to the
+other repository's task space.
+
+**The ruling.** A now-archived record ruled the orchestration queue's scope, verbatim:
+
+> SCOPE -- RULED: PER-REPO. One queue per repository, living beside the existing session
+> registry. No cross-repo global queue and no global-ready schema requirement: file_scope
+> conflicts are inherently per-repo, so a global queue would carry no information the per-repo
+> one lacks.
+
+**The adjudication.** Examined against the counterexample above and upheld on 2026-11-06: no
+cross-repo gate, global queue, or global-ready schema is built. The cross-repository entry in
+`## Non-Goals` above states the resulting limitation as an accepted, manually-detected risk, not
+a design gap awaiting a future mechanism — the next paragraph states why a mechanism would not
+have closed it regardless of scope.
+
+**What no mechanism reaches.** An orchestrate conclusion-stage channel (a) dispatch carries no
+task record of its own in either repository's terms — it implements directly from issue-log
+entries. A gate or graph keyed on task records or on `dependencies[]` cannot see such a dispatch
+by construction, cross-repo or not. This is independently corroborated by measured occurrences
+against the same declared territory: the four-note landing itself (`f49576632`), which included
+the `dependency-tracing.md` section named in one of the two colliding records' own appendix, and
+a second, same-repository channel (a) dispatch (commit `9a43026d2`) that later repaired index
+metadata inside the identical declared territory while both records still sat unstarted, with no
+task record of its own either — confirming the record-less shape recurs independent of the
+cross-repo element. Any future proposal in this space must state explicitly what it does about
+the record-less case, or state explicitly that it does not cover it.

@@ -124,7 +124,7 @@ next_project_number: 505
 
 ### Agent System
 
-401 [PLANNED] — Two repositories file against one source store with no...
+401 [IMPLEMENTING] — Two repositories file against one source store with no...
 415 [PLANNED] — Record exact-pid process checking as a parallelism-safety...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
     └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
@@ -5197,7 +5197,7 @@ The batched, dedup-aware, consolidation-biased consumer of this evidence is scop
 
 ### 401. Two repositories file against one source store with no cross-repo overlap or dependency visibility
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 387

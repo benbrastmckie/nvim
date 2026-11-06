@@ -1,7 +1,7 @@
 # Implementation Plan: Task #401
 
 - **Task**: 401 - Cross-repo source store gate blindness
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: 387 (whole_tree_regeneration_scope_claim) -- verified absent from
   `specs/state.json`'s `active_projects[]` this dispatch, i.e. terminal/archived; not a blocker
@@ -137,7 +137,7 @@ These are not stylistic preferences; two of them are enforced by write-time hook
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Record the Adjudication in the Overlap Predicate's Contract [NOT STARTED]
+### Phase 1: Record the Adjudication in the Overlap Predicate's Contract [COMPLETED]
 
 **Goal**: `file-footprint-overlap.md` states the cross-repository limitation as a Non-Goal and
 carries the counterexample, the upheld ruling, and the record-less-dispatch caveat in enough
@@ -146,41 +146,50 @@ across repositories.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/patterns/file-footprint-overlap.md` in full,
+- [x] Re-read `agent-system/extensions/core/context/patterns/file-footprint-overlap.md` in full,
       confirming the `## Non-Goals` section's current bullet list and that it carries no
-      cross-repository entry.
-- [ ] Append a new bullet to `## Non-Goals`, after the existing scan-scope bullet, reading in
+      cross-repository entry. *(completed: confirmed exactly 3 pre-existing bullets, no
+      cross-repo entry)*
+- [x] Append a new bullet to `## Non-Goals`, after the existing scan-scope bullet, reading in
       substance: no cross-repository scope -- when two repositories' task spaces file work against
       one shared source store (see `rules/source-store-deploy-boundary.md`), this predicate and
       every consumer wired to it see only the invoking repository's own `specs/state.json`, so a
       correctly-sited actor in each repository can claim the same source-store file with no
       `dependencies[]` edge and no overlap finding anywhere. State that this is an accepted,
-      manually-detected risk and point at the subsection below for the adjudication.
-- [ ] Add a `### Cross-Repository Scope -- Adjudicated Limitation` subsection under `## Non-Goals`
+      manually-detected risk and point at the subsection below for the adjudication. *(completed)*
+- [x] Add a `### Cross-Repository Scope -- Adjudicated Limitation` subsection under `## Non-Goals`
       carrying four things: (a) the measured counterexample; (b) the per-repo ruling quoted
       verbatim; (c) the adjudication, dated, that upholds it; (d) the record-less-dispatch caveat.
-- [ ] In (a), cite: commit `f49576632` ("lean: record four Lean 4 measurement and syntax
+      *(completed)*
+- [x] In (a), cite: commit `f49576632` ("lean: record four Lean 4 measurement and syntax
       gotchas", five files, +105 lines), landed from a dispatch in a second repository whose
       deployed `.claude/` tree is produced from this source store; commit `4311617a2`, which
       annotated the two affected records with what had landed; the four issue-log entry ids from
       Authoring Constraint 1; and the two declared source-store paths the landed edits fell
       inside. Identify the two colliding records by those anchors, never by task number.
-- [ ] In (b), quote the ruling exactly as follows, as a blockquote, with no paraphrase:
+      *(completed)*
+- [x] In (b), quote the ruling exactly as follows, as a blockquote, with no paraphrase:
       "SCOPE -- RULED: PER-REPO. One queue per repository, living beside the existing session
       registry. No cross-repo global queue and no global-ready schema requirement: file_scope
       conflicts are inherently per-repo, so a global queue would carry no information the per-repo
-      one lacks."
-- [ ] In (c), record that the ruling was examined against this counterexample and upheld on
+      one lacks." *(completed: quoted verbatim as a blockquote)*
+- [x] In (c), record that the ruling was examined against this counterexample and upheld on
       2026-11-06, and that no cross-repo gate, global queue, or global-ready schema is built --
-      stating the reason, which is (d), not merely the outcome.
-- [ ] In (d), state that a conclusion-stage channel (a) dispatch carries no task record in either
+      stating the reason, which is (d), not merely the outcome. *(completed)*
+- [x] In (d), state that a conclusion-stage channel (a) dispatch carries no task record in either
       repository's terms, so a mechanism keyed on task records or on `dependencies[]` cannot see
       it by construction. Cite the three measured instances against the same declared territory:
       the four-note landing (`f49576632`), the `index-entries.json` repair (`9a43026d2`, a
       same-repo dispatch, so the shape is not specific to the cross-repo case), and the
-      `dependency-tracing.md` section named in one affected record's own appendix.
-- [ ] Re-read the full diff and confirm every changed hunk is prose, that no task number appears,
-      and that no record-versioning phrasing appears (Authoring Constraints 1 and 2).
+      `dependency-tracing.md` section named in one affected record's own appendix. *(completed:
+      the dependency-tracing.md citation is stated accurately as part of the f49576632 landing,
+      named in the colliding record's own appendix, rather than implied as a separate dispatch)*
+- [x] Re-read the full diff and confirm every changed hunk is prose, that no task number appears,
+      and that no record-versioning phrasing appears (Authoring Constraints 1 and 2). *(completed:
+      verified via check-task-references.sh (0 occurrences) and manual grep for
+      record-versioning phrasing (no hits in the new hunk); also corrected core's
+      index-entries.json line_count for this file, 283 -> 330, to keep gate 3 green against this
+      task's own edit)*
 
 **Timing**: 0.75 hours
 
