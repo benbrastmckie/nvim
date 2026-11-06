@@ -89,7 +89,8 @@ Parameters:
 The subagent will:
 - Load domain context files from `.claude/context/project/physics/`
 - Search codebase for existing patterns
-- Use Mathlib lookup tools
+- Resolve the Mathlib-lookup gate (`context/patterns/mathlib-lookup-gate.md`) and, when it
+  resolves to perform, use the lookup tools
 - Execute web research for physics/dynamical systems literature
 - Create research report in `specs/{NNN}_{SLUG}/reports/`
 - Write metadata to `specs/{NNN}_{SLUG}/.return-meta.json`

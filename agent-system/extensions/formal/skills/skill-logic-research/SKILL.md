@@ -107,7 +107,9 @@ Parameters:
 The subagent will:
 - Load domain context files from `.claude/context/project/logic/`
 - Search codebase for existing patterns
-- Use Mathlib lookup tools (lean_leansearch, lean_loogle, lean_leanfinder, lean_local_search)
+- Resolve the Mathlib-lookup gate (`context/patterns/mathlib-lookup-gate.md`) and, when it
+  resolves to perform, use the lookup tools (lean_leansearch, lean_loogle, lean_leanfinder,
+  lean_local_search)
 - Execute web research for mathematical logic literature
 - Create research report in `specs/{NNN}_{SLUG}/reports/`
 - Write metadata to `specs/{NNN}_{SLUG}/.return-meta.json`
@@ -169,7 +171,8 @@ Return a brief text summary (NOT JSON). Example:
 Research completed for task {N}:
 - Found existing patterns in source files
 - Loaded domain context for modal logic and Kripke semantics
-- Used Mathlib lookup tools to discover relevant theorems
+- Used Mathlib lookup tools to discover relevant theorems (gated variant: "Mathlib lookup
+  skipped: no Lean target", when the gate resolved to skip)
 - Created report at specs/{NNN}_{SLUG}/reports/MM_{short-slug}.md
 - Status updated to [RESEARCHED]
 - Changes committed

@@ -347,23 +347,26 @@ is actually there and record the delta in the progress file rather than forcing 
 
 ---
 
-### Phase 3: Gate the Four Skill Wrappers [NOT STARTED]
+### Phase 3: Gate the Four Skill Wrappers [COMPLETED]
 
 **Goal**: The six restatement sites across the four `SKILL.md` wrappers carry the same gate
 pointer, so a reader of the skill layer is not told the step is unconditional.
 
 **Tasks**:
 
-- [ ] Re-read each file immediately before editing.
-- [ ] `skills/skill-logic-research/SKILL.md` — L110 (narrative "Use Mathlib lookup tools
+- [x] Re-read each file immediately before editing. *(completed)*
+- [x] `skills/skill-logic-research/SKILL.md` — L110 (narrative "Use Mathlib lookup tools
       (lean_leansearch, lean_loogle, lean_leanfinder, lean_local_search)" inside the Required Tool
       Invocation section) becomes conditional with the gate pointer; L172 (example-return bullet
       "Used Mathlib lookup tools to discover relevant theorems") gains a gated-skip variant.
-- [ ] `skills/skill-math-research/SKILL.md` — L92 and L154, same treatment.
-- [ ] `skills/skill-physics-research/SKILL.md` — L92 only (single narrative mention).
-- [ ] `skills/skill-formal-research/SKILL.md` — L93 only (single narrative mention).
-- [ ] Grep each file for task-number references and record-versioning phrasing; confirm zero hits.
-- [ ] Commit each file as its own green sub-step.
+      *(completed)*
+- [x] `skills/skill-math-research/SKILL.md` — L92 and L154, same treatment. *(completed)*
+- [x] `skills/skill-physics-research/SKILL.md` — L92 only (single narrative mention). *(completed)*
+- [x] `skills/skill-formal-research/SKILL.md` — L93 only (single narrative mention). *(completed)*
+- [x] Grep each file for task-number references and record-versioning phrasing; confirm zero
+      hits. *(completed: zero hits across all 4 files)*
+- [x] Commit each file as its own green sub-step. *(completed: all 4 committed together below
+      after batch verification, per the same per-phase green-substep cadence used in Phase 2)*
 
 **Timing**: 0.75 hours
 

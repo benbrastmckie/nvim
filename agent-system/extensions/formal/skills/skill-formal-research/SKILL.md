@@ -90,7 +90,8 @@ The subagent will:
 - Analyze task for domain routing (logic, math, physics)
 - Load appropriate domain context files
 - Coordinate cross-domain research when needed
-- Use Mathlib lookup tools
+- Resolve the Mathlib-lookup gate (`context/patterns/mathlib-lookup-gate.md`) and, when it
+  resolves to perform, use the lookup tools
 - Execute web research
 - Create research report in `specs/{NNN}_{SLUG}/reports/`
 - Write metadata to `specs/{NNN}_{SLUG}/.return-meta.json`

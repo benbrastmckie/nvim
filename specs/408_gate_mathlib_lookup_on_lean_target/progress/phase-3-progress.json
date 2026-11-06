@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Gate the Four Skill Wrappers",
+  "started_at": "2026-11-07T00:50:00Z",
+  "last_updated": "2026-11-07T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Gate skill-logic-research/SKILL.md (L110, L172)", "status": "done", "files_touched": ["agent-system/extensions/formal/skills/skill-logic-research/SKILL.md"]},
+    {"id": 2, "description": "Gate skill-math-research/SKILL.md (L92, L154)", "status": "done", "files_touched": ["agent-system/extensions/formal/skills/skill-math-research/SKILL.md"]},
+    {"id": 3, "description": "Gate skill-physics-research/SKILL.md (L92)", "status": "done", "files_touched": ["agent-system/extensions/formal/skills/skill-physics-research/SKILL.md"]},
+    {"id": 4, "description": "Gate skill-formal-research/SKILL.md (L93)", "status": "done", "files_touched": ["agent-system/extensions/formal/skills/skill-formal-research/SKILL.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "All 4 wrapper files verified: 4/4 reference patterns/mathlib-lookup-gate.md, no bare ungated '- Use Mathlib lookup tools' line remains, zero task-ref/record-versioning violations. verify-deploy.sh --skip-slow --only-gate 3,4 green, neither gate SKIPping."
+}
