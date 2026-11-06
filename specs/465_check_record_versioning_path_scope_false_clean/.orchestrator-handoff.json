@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase plan for the PATH_SCOPE false-clean defect. The single defect site is scan_tree's `git ls-files` enumeration, which returns zero rows for an on-disk-but-untracked file while the `-e` existence guard still passes, so the scan reports clean without a [SKIP]. The plan extracts a shared tracked-plus-untracked union enumeration library (mirroring script-inventory.sh's existing in-repo precedent) carrying three stderr-only diagnostics, wires both check-record-versioning.sh and the structurally identical check-task-references.sh to it, and adds acceptance fixtures to both lint suites. Exit codes and stdout formats stay byte-identical so verify-deploy gate 4 is unaffected.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/465_check_record_versioning_path_scope_false_clean/plans/01_untracked-enumeration-false-clean.md",
+      "summary": "4-phase plan: shared git-corpus enumeration library plus unit suite, record-versioning lint wiring with the acceptance fixture, task-references lint mirror, then docs/redeploy/full gate sweep."
+    }
+  ],
+  "dispatch_seq": 3
+}

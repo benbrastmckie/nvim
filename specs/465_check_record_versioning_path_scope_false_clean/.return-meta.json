@@ -1,0 +1,30 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/465_check_record_versioning_path_scope_false_clean/plans/01_untracked-enumeration-false-clean.md",
+      "summary": "4-phase plan replacing both git-lint enumeration sites with a shared tracked-plus-untracked union library carrying loud stderr skip diagnostics, with acceptance fixtures in both lint suites."
+    }
+  ],
+  "next_steps": "Run /orchestrate 465 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 5.5,
+  "dependency_waves": 3,
+  "memory_candidates": [
+    {
+      "content": "A lint or gate that enumerates its scan corpus via `git ls-files` reports a FALSE CLEAN for any file that exists on disk but is not yet git-tracked: the index returns zero rows, an on-disk existence guard (`-e`) still passes, the scan loop never iterates, and the summary prints a clean verdict with no diagnostic. This defeats exactly the self-hygiene check a newly created file most needs (a new blocking hook linting its own source before committing it). Remedy pattern, already precedented in this repo by script-inventory.sh: enumerate the UNION of `git ls-files <scope>` and `git ls-files --others --exclude-standard <scope>`, `sort -u`. `--exclude-standard` keeps gitignored build output and the disposable deployed tree excluded, so the union does not widen scope. Pair it with three stderr-only diagnostics so silence is never a possible third outcome: a per-file loud skip naming each on-disk file the union still excludes and why, an untracked-inclusion count disclosure, and a zero-enumeration warning when a scope exists on disk but enumerates nothing. Keep diagnostics off stdout and out of any `info()`/`--quiet` path, so exit codes and stdout formats stay byte-identical for gate consumers. When auditing for this defect, distinguish genuine instances from scripts where untracked-ness is the signal being measured rather than a blind spot.",
+      "category": "PATTERN",
+      "source_artifact": "specs/465_check_record_versioning_path_scope_false_clean/plans/01_untracked-enumeration-false-clean.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-ls-files", "false-clean", "lint-enumeration", "untracked-files", "self-hygiene", "gate-verdict"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1793993117_98582a_465",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 3
+}

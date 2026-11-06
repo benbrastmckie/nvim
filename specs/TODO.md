@@ -41,7 +41,7 @@ next_project_number: 515
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 464 [RESEARCHED] — Make a plan's per-phase line estimates checkable against a...
-465 [PLANNING] — check-record-versioning.sh PATH\_SCOPE mode reports...
+465 [PLANNED] — check-record-versioning.sh PATH\_SCOPE mode reports...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [RESEARCHING] — Make lint Check J fail on a missing handoff-writer section...
 489 [PLANNING] — Derive gate-count expectations in sibling test suites from...
@@ -3016,11 +3016,12 @@ Audited against the full backlog corpus before creation. The single mechanically
 
 ### 465. check-record-versioning.sh PATH_SCOPE mode reports false-clean on a file present on disk but not git-tracked
 - **Effort**: 2 hours
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328
 - **Parent**: Task 282
+- **Plan**: [465_check_record_versioning_path_scope_false_clean/plans/01_untracked-enumeration-false-clean.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
 
