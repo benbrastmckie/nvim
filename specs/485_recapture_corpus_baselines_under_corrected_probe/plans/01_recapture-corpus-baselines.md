@@ -639,26 +639,44 @@ plus the diff read-through the `local` row prescribes.
 
 ---
 
-### Phase 5: Final Gate Set and Close [NOT STARTED]
+### Phase 5: Final Gate Set and Close [COMPLETED]
 
 **Goal**: The complete repository gate set observed green over the finished work, and the record
 closed with the correction's magnitude and its disposition stated in the summary.
 
 **Tasks**:
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Record the gate count,
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Record the gate count,
       failure count and result line. No `--skip-slow`, no `--only-gate` subset: this is the final
       phase, and a narrowed run is not evidence for it.
-- [ ] Record the gate run's own corpus line verbatim, including its `untracked=` field, as a second
+      *(deviation: altered — per this dispatch's own "Batch Gate Deferral" directive (this task is
+      one of several `implement`-phase dispatches inside one multi-task `/orchestrate` batch), this
+      phase's full-gate obligation is discharged against a SCOPED tier instead:
+      `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-artifact.sh`
+      → "1 passed, 0 failed". No source-store script was modified by this record (only three
+      `specs/**` markdown files), so no other suite or gate maps to this phase's changes; the
+      covering check every phase in this plan has used throughout is `validate-artifact.sh`, run
+      against all three touched files below. The complete gate set runs once for the whole batch at
+      the end of this /orchestrate invocation and is attributed back to this task via its own
+      `modified_files`, per `context/formats/plan-format.md`'s "Batch-aware deferral" subsection.)*
+- [x] Record the gate run's own corpus line verbatim, including its `untracked=` field, as a second
       independent reading of the corrected probe alongside Phase 1's — and note any divergence from
-      Phase 1's reading as drift, with the elapsed interval.
-- [ ] Re-validate all three plan files with `bash .claude/scripts/validate-artifact.sh <path> plan`.
-- [ ] Write the completion summary to
+      Phase 1's reading as drift, with the elapsed interval. *(completed: second reading
+      `script-inventory: scripts=249 lines=97567 test_suites=183 test_lines=87535 md_files=949
+      md_lines=232244 cost_per_assertion_ms=191.5 untracked=0` — byte-identical to Phase 1's
+      reading; zero drift across the roughly 2-hour interval between the two captures)*
+- [x] Re-validate all three plan files with `bash .claude/scripts/validate-artifact.sh <path> plan`.
+      *(completed: all three `[PASS]` — this plan 0 warnings; `plans/01_corpus-consolidation-...`
+      2 pre-existing warnings unrelated to this record's edits (missing **Files to modify** on its
+      own Phases 4/5, present before this record touched the file); `plans/03_markdown-...`
+      0 warnings)*
+- [x] Write the completion summary to
       `specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md`,
       leading with the correction's magnitude (old, new, delta per population) and stating plainly
-      whether the result was material or null.
-- [ ] Carry forward, as a follow-up note in the summary rather than as work in this record, the
+      whether the result was material or null. *(completed: see summary file)*
+- [x] Carry forward, as a follow-up note in the summary rather than as work in this record, the
       sibling exposure in `context-reachability.sh`'s own tracked-only enumeration and the parent
-      plan-level status-marker observation recorded under Non-Goals.
+      plan-level status-marker observation recorded under Non-Goals. *(completed: see summary's
+      Follow-ups section)*
 
 **Timing**: 0.5 hours
 

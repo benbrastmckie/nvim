@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Final Gate Set and Close",
+  "started_at": "2026-11-05T03:15:00Z",
+  "last_updated": "2026-11-05T03:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run the gate set (scoped per Batch Gate Deferral)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Record the gate run's own corpus line as a second reading", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 3, "description": "Re-validate all three plan files", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Write the completion summary", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md"]},
+    {"id": 5, "description": "Carry forward follow-up notes in the summary", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/summaries/01_recapture-corpus-baselines-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "Dispatch's own Batch Gate Deferral directive scopes this phase to a narrowing invocation instead, since this task modified only specs/** markdown with no mapped suite/gate",
+      "annotation": "*(deviation: altered — per this dispatch's own \"Batch Gate Deferral\" directive ...)*"
+    }
+  ]
+}
