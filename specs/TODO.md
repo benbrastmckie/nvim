@@ -46,7 +46,7 @@ next_project_number: 505
 465 [RESEARCHED] — check-record-versioning.sh PATH\_SCOPE mode reports...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
-485 [PLANNED] — Recapture corpus baselines under the corrected inventory probe
+485 [IMPLEMENTING] — Recapture corpus baselines under the corrected inventory probe
 489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
@@ -73,7 +73,7 @@ next_project_number: 505
 
 ### Extensions
 
-29 [RESEARCHED] — Generate .mcp.json from extension manifests, then register...
+29 [PLANNING] — Generate .mcp.json from extension manifests, then register...
 342 [HOLD] — Refactor the books extension's context corpus against the...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
@@ -94,7 +94,7 @@ next_project_number: 505
 
 ### File Scope Lifecycle
 
-494 [RESEARCHED] — Exempt a task own artifact directory from the phase-commit...
+494 [PLANNING] — Exempt a task own artifact directory from the phase-commit...
   └─ 430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
     └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
       └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
@@ -104,7 +104,7 @@ next_project_number: 505
 
 ### Lean Extension
 
-385 [RESEARCHED] — Define the sanctioned shape for a lean4-typed plan that...
+385 [PLANNING] — Define the sanctioned shape for a lean4-typed plan that...
   └─ 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
     └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
@@ -127,11 +127,11 @@ next_project_number: 505
 
 ### Agent System
 
-401 [RESEARCHED] — Two repositories file against one source store with no...
-415 [RESEARCHED] — Record exact-pid process checking as a parallelism-safety...
+401 [PLANNING] — Two repositories file against one source store with no...
+415 [PLANNING] — Record exact-pid process checking as a parallelism-safety...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
     └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
-419 [RESEARCHED] — Extend the state-writer boundary lint to the Python JSON...
+419 [PLANNING] — Extend the state-writer boundary lint to the Python JSON...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit... (see above)
 488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
@@ -930,7 +930,7 @@ None of the four carries the verbatim-heading contract, the `^##+` matching rule
 ---
 
 ### 494. Exempt a task own artifact directory from the phase-commit containment predicate
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
@@ -1358,7 +1358,7 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 ---
 
 ### 485. Recapture corpus baselines under the corrected inventory probe
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -4538,7 +4538,7 @@ Sequenced after the concurrent-gate-coordination task because both edit context/
 ---
 
 ### 419. Extend the state-writer boundary lint to the Python JSON re-serialization channel
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 275, Task 411
@@ -4683,7 +4683,7 @@ Sequenced after the exact-pid process-check standard task, which is itself the t
 ---
 
 ### 415. Record exact-pid process checking as a parallelism-safety suite-authoring standard
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 414, Task 411
@@ -5196,7 +5196,7 @@ The batched, dedup-aware, consolidation-biased consumer of this evidence is scop
 
 ### 401. Two repositories file against one source store with no cross-repo overlap or dependency visibility
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 387
@@ -5818,6 +5818,54 @@ scope. The final subset depends on which remedies are adopted; NARROW IT AT PLAN
 overlap with two sibling records on conclusion-stage.md, which the declared dependency edge
 serializes.
 
+========================================================================
+ADDED EVIDENCE 2026-11-05 -- THE HOLE IS RECURRING, NOT HISTORICAL, AND
+ONE REMEDY'S PRECONDITION IS NOW MEASURED
+========================================================================
+
+A SECOND INDEPENDENT OCCURRENCE, measured. The root-cause diagnosis above was made 2026-10-11 from
+reading Step 4b. It reproduced live on 2026-11-05: a six-task /orchestrate batch run in
+~/Projects/BimodalLogic reached its conclusion stage, the user approved channel (b), and the
+channel-(b) dispatch filed FOUR fresh agent-system records into BimodalLogic/specs/ --
+per_phase_generated_surface_gates_and_batch_defer, research_phase_doc_sync_companion_surface,
+revise_unavailable_to_dispatched_agent, lean_goals_block_harvest_contract. Every one declared only
+agent-system/** paths, which do not resolve in that repository at all. All four were relocated by
+hand into this repository (as #502, #503, #504, and a fold into #449) and abandoned at the origin
+with durable pointers.
+
+WHY THIS MATTERS BEYOND A SECOND TALLY MARK: the four were filed WHILE the sibling migration record
+was already open and actively tracking the first batch. So the hole is producing new mis-sited
+records faster than the remediation record retires them, and remediation alone will not converge
+until this record lands. That is an argument about sequencing, not severity -- note it when ordering
+this record against the migration record rather than treating the two as interchangeable cleanup.
+
+THE DISPATCH BODY WAS OTHERWISE WELL-FORMED, which narrows the fault precisely. The conclusion
+stage's channel-(b) dispatch carried collected_answers.confirmed: true, the assembled change
+request, the anti-bypass restatement and the source-store-boundary restatement. The agent in turn
+honored all of those: it created tasks only, it declared agent-system/** edit targets rather than
+.claude/** ones, and it ran its own backlog audit, which correctly caught a duplicate and folded
+that proposal into an existing record instead of filing it. Only target_root was absent. So this is
+one missing delegation-context key at one dispatch site, not a broader contract failure -- and
+remedy (a) above would have sufficed for this instance.
+
+A MEASURED PRECONDITION FOR REMEDY (b). agents/meta-builder-agent.md's own Stage 1 says it
+EXTRACTS target_root from the delegation context and holds it as $TARGET_ROOT for the remainder of
+the run; every later path qualifies against it. So the agent has no resolution step of its own to
+correct -- remedy (b) means ADDING one, together with a precedence rule deciding what happens when
+a caller passes target_root explicitly (skill-meta always does, including in --local mode) versus
+when the key is absent. Weigh also a third, cheaper layer the candidate list above does not name:
+make the ABSENT key a loud refusal or warning rather than a silent cwd fallback. A refusal converts
+this failure mode from four silently misfiled records into one visible error at dispatch time, and
+it is strictly less invasive than teaching the agent to resolve a global root.
+
+ALSO OBSERVED, and relevant to this record's own "enumerate the other callers" instruction: the
+backlog audit the channel-(b) agent ran returned `duplicate-of-open` verdicts with
+mechanical_class `none`, no shared paths, and semantic scores of 0.41-0.55 for records that were
+plainly unrelated. That is the recall-biased Pass-2 behavior the backlog-reconciliation pattern
+already documents, and it is separately owned by #491 fix_backlog_audit_semantic_scorer -- noted
+here only because an audit that cannot be trusted to rule on siting is part of why a misfiled
+record reaches creation. Do not absorb #491.
+
 ---
 
 ### 390. Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one duplicated upstream
@@ -6178,7 +6226,7 @@ two files where there is one.
 ---
 
 ### 385. Define the sanctioned shape for a lean4-typed plan that commits to no theorem, and make lean-challenge-snapshot.sh distinguish it from a malformed one
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -7125,7 +7173,7 @@ that produces no finding.
 ---
 
 ### 29. Generate .mcp.json from extension manifests, then register obsidian-memory through it
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 22

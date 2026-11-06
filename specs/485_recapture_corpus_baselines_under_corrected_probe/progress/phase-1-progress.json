@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Capture the Corrected Reading of Record",
+  "started_at": "2026-11-05T00:00:00Z",
+  "last_updated": "2026-11-05T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run script-inventory.sh --size-line and record verbatim output", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 2, "description": "Capture stderr separately (untracked path warning or silence)", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 3, "description": "Confirm untracked=N is the final field; record observed field order", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 4, "description": "Record host-load conditions (uptime)", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 5, "description": "Note whether deployed and source copies agree at this instant", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #485
 
 - **Task**: 485 - Recapture the corpus baseline figures the net-deletion acceptance criterion is measured against, now that the measurement instrument has been corrected
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None live. The record that fixed the probe (`specs/429_script_inventory_undercounts_untracked_files`, `completed`) is an *input* whose summary carries the exposure measurement this plan consumes, not a blocker. The parent record (`specs/328_systematic_script_and_test_corpus_efficiency`) is `completed` as of commit `fd86bf491`, so its plan files are no longer another task's live territory — the condition that made 429 decline to edit them has lapsed.
 - **Research Inputs**: None. No research dispatch preceded this plan; the dispatch description carries the defect, the measured evidence, the affected-file list and the acceptance bar, and the remaining facts were established by direct reads of the probe, the two plan files, and git history at plan time (recorded under "Plan-Time Measurements" below). Prior measured evidence is drawn from `specs/429_script_inventory_undercounts_untracked_files/summaries/01_untracked-corpus-enumeration-summary.md`.
@@ -102,6 +102,35 @@ recorded Phase-20 line (`scripts=249 lines=97567 test_suites=183 test_lines=8753
 md_lines=232244`) carries *neither* field even though both were in the probe by the time that
 phase committed — which is a question to settle, not a discrepancy to wave through.
 
+## Corrected Reading of Record (captured Phase 1)
+
+Captured by running `bash agent-system/extensions/core/scripts/script-inventory.sh --size-line`
+once; this is the single "new figure" instant every later phase cites.
+
+```
+script-inventory: scripts=249 lines=97567 test_suites=183 test_lines=87535 md_files=949 md_lines=232244 cost_per_assertion_ms=191.5 untracked=0
+```
+
+- **stderr**: silent on both the source and deployed copies — no untracked-path warning, consistent
+  with `untracked=0`.
+- **Observed field order**: `scripts, lines, test_suites, test_lines, md_files, md_lines,
+  cost_per_assertion_ms, untracked` — `untracked=N` is the **final** field on the line, confirming
+  the probe's own header contract holds even after the parent's Phase 12.2 inserted
+  `cost_per_assertion_ms` ahead of it.
+- **Host-load conditions at capture**: `up 3 days 14:31, 1 user, load average: 1.26, 1.32, 0.94`.
+- **Source vs. deployed agreement**: the source copy
+  (`agent-system/extensions/core/scripts/script-inventory.sh`) and the deployed copy
+  (`.claude/scripts/script-inventory.sh`) emit **character-identical** `--size-line` output at this
+  instant — no divergence to record.
+
+This reading is numerically identical to the Plan-Time Measurements "live reading at plan time"
+figure above (`scripts=249 lines=97567 test_suites=183 test_lines=87535 md_files=949
+md_lines=232244 cost_per_assertion_ms=191.5 untracked=0`), confirming the corpus has not drifted
+between plan time and this capture. **The untracked contribution right now is zero**, so this
+corrected reading is numerically identical to what a tracked-only reading would show today — the
+correction, if any, applies only to the *historical* baselines Phase 2 and Phase 3 examine, not to
+today's live figure.
+
 ## Goals & Non-Goals
 
 **Goals**:
@@ -156,29 +185,31 @@ evidence and have no ordering constraint between them; Phase 3 needs both.
 
 ---
 
-### Phase 1: Capture the Corrected Reading of Record [NOT STARTED]
+### Phase 1: Capture the Corrected Reading of Record [COMPLETED]
 
 **Goal**: One verbatim, fully-fielded corrected reading, taken once, that every later phase cites
 as the single "new figure" side of the correction — so the determination is never performed against
 two different instants of a drifting corpus.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/script-inventory.sh --size-line` and record the
+- [x] Run `bash agent-system/extensions/core/scripts/script-inventory.sh --size-line` and record the
       output line **verbatim, every field included**, into this plan's own
       "Corrected Reading of Record" section (create it below this plan's Plan-Time Measurements
       block). Do not trim `cost_per_assertion_ms` or `untracked=`; the field set is load-bearing
-      evidence for Phase 2.
-- [ ] Capture the probe's stderr separately. A non-zero untracked count prints a warning naming each
+      evidence for Phase 2. *(completed)*
+- [x] Capture the probe's stderr separately. A non-zero untracked count prints a warning naming each
       untracked path; record either that path list or the explicit fact that stderr was silent.
-- [ ] Confirm `untracked=N` is present and is the **final** field on the line, as the probe's own
+      *(completed: silent on both copies)*
+- [x] Confirm `untracked=N` is present and is the **final** field on the line, as the probe's own
       header contract states. The parent's Phase 12.2 inserted `cost_per_assertion_ms` into this
       same line after the disclosure field was added, so the contract's "final field" clause is
-      worth confirming rather than assuming; record the observed field order.
-- [ ] Record the host-load conditions at capture time (`uptime`), matching the parent's own practice
-      of qualifying a probe reading taken on a loaded host.
-- [ ] Note in the recording whether the deployed copy (`.claude/scripts/script-inventory.sh`) and the
+      worth confirming rather than assuming; record the observed field order. *(completed: confirmed
+      final field, order recorded)*
+- [x] Record the host-load conditions at capture time (`uptime`), matching the parent's own practice
+      of qualifying a probe reading taken on a loaded host. *(completed)*
+- [x] Note in the recording whether the deployed copy (`.claude/scripts/script-inventory.sh`) and the
       source copy agree at this instant, by reading `--size-line` from both. A disagreement is
-      itself a finding and must be recorded, not reconciled away.
+      itself a finding and must be recorded, not reconciled away. *(completed: character-identical)*
 
 **Timing**: 0.5 hours
 

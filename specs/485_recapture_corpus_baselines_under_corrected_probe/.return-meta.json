@@ -1,21 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md",
-      "summary": "Five-phase plan to re-run the corrected corpus probe, determine per figure which of the parent record's frozen baselines were captured under the tracked-only undercounting behaviour, bound and report the correction (old/new/delta, null result included), and restate the parent's running net against the surviving baseline."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 14,
   "metadata": {
-    "session_id": "sess_1793947646_0784d9_485",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3.5,
-    "dependency_waves": 4
-  },
-  "next_steps": "Run /orchestrate 485 to execute the plan",
-  "dispatch_seq": 7
+    "session_id": "sess_1793947646_0784d9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
