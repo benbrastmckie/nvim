@@ -131,7 +131,7 @@ next_project_number: 505
 415 [PLANNED] — Record exact-pid process checking as a parallelism-safety...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
     └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
-419 [PLANNING] — Extend the state-writer boundary lint to the Python JSON...
+419 [PLANNED] — Extend the state-writer boundary lint to the Python JSON...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit... (see above)
 488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
@@ -4539,12 +4539,13 @@ Sequenced after the concurrent-gate-coordination task because both edit context/
 ---
 
 ### 419. Extend the state-writer boundary lint to the Python JSON re-serialization channel
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 275, Task 411
 - **Parent**: Task 411
 - **Research**: [419_enforce_state_write_convention_python_channel/reports/01_python-state-write-lint-extension.md]
+- **Plan**: [419_enforce_state_write_convention_python_channel/plans/01_python-state-write-enforcement.md]
 
 **Description**: Extend the state-writer boundary lint to the Python/ad hoc JSON re-serialization channel, so an agent reaching for json.dump cannot corrupt the shared state file
 
