@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1793988163_b25d4a_418",
+  "dispatch_seq": 2,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/418_explicit_lint_fixture_test_subject_resolution/reports/01_explicit-subject-resolution.md",
+      "summary": "Re-measures the deploy-tree-first/source-store-fallback resolution family at 70 of 144 scripts/tests/ suites (across 3 implementation shapes, only 1 of which is a shared helper), confirms the Inter-Cycle Redeploy Checkpoint dependency on the default order, and recommends a mode-explicit common.sh helper pair, a staged 70-file migration, and a gate-27 structural+allowlist lint."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/core/scripts/tests/, the 'deploy-tree-first / source-store-fallback' subject resolution convention has THREE implementation shapes: (1) the shared common_test_resolve_candidate helper in scripts/lib/common.sh, (2) a hand-duplicated local function also named resolve_candidate, and (3) an inline CANDIDATES-array for-loop with no named function at all. A plain grep for 'resolve_candidate' only catches shapes 1-2 and silently misses shape 3, which is the largest of the three (~38 of 70 affected suites). Any future population measurement of this family must grep for the CANDIDATES/for-loop shape too, not just the function name.",
+      "category": "PATTERN",
+      "source_artifact": "specs/418_explicit_lint_fixture_test_subject_resolution/reports/01_explicit-subject-resolution.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["resolve_candidate", "deploy-tree-first", "source-store-fallback", "scripts/tests", "subject-resolution"]
+    },
+    {
+      "content": "scripts/lib/gate-verdict-extract-lib.sh and scripts/lint/lint-state-writer-boundary.sh / lint-verdict-extraction-anchoring.sh are the two reusable structural models in agent-system/extensions/core for, respectively, extracting a formerly-duplicated idiom into one documented, explicit-parameter shared function, and for a two-layer (structural detector + explicit per-file allowlist) content lint registered as a numbered gate in scripts/gate-registry.data. Both document their own regex-only KNOWN LIMITATION plainly rather than over-fitting detection.",
+      "category": "PATTERN",
+      "source_artifact": "specs/418_explicit_lint_fixture_test_subject_resolution/reports/01_explicit-subject-resolution.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["gate-verdict-extract-lib", "lint-state-writer-boundary", "content-lint", "gate-registry", "extraction-pattern"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 418 to create implementation plan"
+}
