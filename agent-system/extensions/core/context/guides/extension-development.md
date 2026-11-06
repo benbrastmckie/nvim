@@ -64,6 +64,10 @@ For the full directory layout including agents, skills, rules, context, and opti
     "index": {
       "source": "index-entries.json",
       "target": ".claude/context/index.json"
+    },
+    "mcp": {
+      "source": "mcp-fragment.json",
+      "target": ".mcp.json"
     }
   }
 }
@@ -81,6 +85,14 @@ For the full directory layout including agents, skills, rules, context, and opti
 | `provides` | object | Yes | Agents, skills, commands, rules, context, scripts, hooks, docs, templates, systemd, root_files, data |
 | `routing` | object | No | Task-type to skill mapping for research/plan/implement |
 | `merge_targets` | object | Yes | Source-to-target file mappings for system integration |
+
+**Valid `merge_targets` keys**: `claudemd` (or `opencode_md`), `settings`, `index`, `mcp`,
+`opencode_json`. `validate_merge_targets()` in `manifest.lua` is deliberately **open-set**, not a
+closed enum against this list: any key whose value carries a `source` and a `target` validates,
+whether or not the deploy engine has a dispatch branch for it. A typo'd or unrecognized key
+(`"mcpp"` instead of `"mcp"`) therefore validates but is silently never dispatched -- the
+mechanism simply has nothing wired up for it. Spelling a key from this list correctly is the
+only guard against that silent no-op; there is no validation-time rejection to catch the typo.
 
 For the complete manifest schema with all fields and examples, see [Extension System Architecture](../../docs/architecture/extension-system.md#manifest-schema).
 
@@ -159,6 +171,63 @@ Extension context entries from `index-entries.json` are merged into `.claude/con
 ### 2. CLAUDE.md Generation
 
 `.claude/CLAUDE.md` is a computed artifact. When an extension is loaded or unloaded, the loader regenerates CLAUDE.md by concatenating the CLAUDE.md source from every currently loaded extension. The `section_id` field in `merge_targets.claudemd` is used for tracking which sections to remove on unload, not for locating a content placement point.
+
+### 3. MCP Server Registration
+
+An extension declares an MCP server by pointing `merge_targets.mcp` at a source fragment file:
+
+```json
+{
+  "merge_targets": {
+    "mcp": {
+      "source": "mcp-fragment.json",
+      "target": ".mcp.json"
+    }
+  }
+}
+```
+
+The fragment (`mcp-fragment.json` at the extension root, any filename matching `source`) has the
+same shape Claude Code's own `.mcp.json` uses:
+
+```json
+{
+  "mcpServers": {
+    "my-server": {
+      "type": "stdio",
+      "command": "my-server-binary",
+      "args": []
+    }
+  }
+}
+```
+
+**The `"type"` field is mandatory.** As of Claude Code v2.1.202, a remote server declared
+without an explicit `type` fails fast rather than failing silently; always write `"stdio"`,
+`"sse"`, or `"http"` explicitly, never omit the field.
+
+**Mechanism**: `mcp` is dispatched exactly like `settings` (`process_merge_targets()`/
+`reverse_merge_targets()` in `init.lua`, reusing `merge.lua`'s `merge_settings`/
+`unmerge_settings`) -- an additive deep-merge into the project-root `.mcp.json`, never a
+fully-regenerated computed artifact. That reuse is what gives the mechanism all four of its
+required properties for free:
+
+- **Load**: the fragment's `mcpServers` entries are merged into `.mcp.json` at the repository
+  root (a sibling of `.claude-extensions.json`, outside the disposable `.claude/` tree).
+- **Unload**: exactly the entries this extension's own load added are retracted (deep-merge's
+  per-key tracking), and if no `mcpServers` entries remain anywhere in the file after that
+  retraction, `.mcp.json` itself is deleted rather than left behind as an empty residual file.
+- **Idempotent redeploy**: deploying twice produces a byte-identical `.mcp.json` (the `mcp`
+  branch writes with sorted keys specifically to guarantee this).
+- **Hand-written survival**: see the decision recorded at the top of
+  [Extension System Architecture](../../docs/architecture/extension-system.md)'s MCP section --
+  an entry a user adds to `.mcp.json` by hand is never touched by any extension's load/unload,
+  by construction of the underlying deep-merge (it only ever adds keys that are not already
+  present, never overwrites or removes anything it did not itself add).
+
+**Two user-visible gotchas that look like bugs but are not** -- see
+[Extension System Architecture](../../docs/architecture/extension-system.md)'s MCP section for
+the full detail before reporting a registered server as broken.
 
 ### CLAUDE.md Source Files: merge-sources/claudemd.md vs EXTENSION.md
 

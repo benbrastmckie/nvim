@@ -407,45 +407,47 @@ surface it newly occupies.
 
 ---
 
-### Phase 4: Document the mechanism and its two user-visible gotchas [NOT STARTED]
+### Phase 4: Document the mechanism and its two user-visible gotchas [COMPLETED]
 
 **Goal**: an extension author can find how to declare a server, and a user who sees "my server
 isn't there" finds the workspace-trust and running-session explanations before filing it as broken.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/context/guides/extension-development.md`: document
+- [x] `agent-system/extensions/core/context/guides/extension-development.md`: document
       `merge_targets.mcp` alongside the existing `settings` / `index` / `claudemd` entries — the
       manifest snippet, the `mcp-fragment.json` source-file shape with its mandatory `"type"`
       field, the project-root target, and the load/unload semantics. State the valid merge-target
       key list explicitly (decision 3's mitigation) and note that an unrecognized key validates but
-      is never dispatched.
-- [ ] `agent-system/extensions/core/docs/architecture/extension-system.md`: add an `mcp` row to the
+      is never dispatched. *(completed)*
+- [x] `agent-system/extensions/core/docs/architecture/extension-system.md`: add an `mcp` row to the
       `merge_targets` table; correct the registration-surface note that currently says only
       `~/.claude.json` registers servers, to name project-scoped `.mcp.json` as a real registration
       surface now produced by the deploy engine; add the `mcp` step to the load and unload process
       step lists; and extend the "Settings Merging" section's note so it points `mcpServers`
-      declarations at the new key instead of leaving them as dead weight.
-- [ ] In the same file, repair the two stale rows the research found incidentally: the merge.lua
+      declarations at the new key instead of leaving them as dead weight. *(completed)*
+- [x] In the same file, repair the two stale rows the research found incidentally: the merge.lua
       function table lists `merge_opencode_agents()` / `unmerge_opencode_agents()`, which no longer
       exist in `merge.lua`. Confirm their absence by grepping `merge.lua` before removing the rows.
-- [ ] Add a short, named subsection — in `extension-system.md` next to the new `mcp` material — for
+      *(completed, absence reconfirmed by grep)*
+- [x] Add a short, named subsection — in `extension-system.md` next to the new `mcp` material — for
       the two user-visible gotchas, stated plainly enough to pre-empt a false bug report:
       (i) a project-scoped `.mcp.json` server needs workspace-trust approval before
       `claude mcp list` will read it (Claude Code v2.1.196+);
       (ii) a server added to `.mcp.json` is invisible to any already-running session, including the
       main one — verify against a fresh session or `claude -p`, never the current one.
       Record whatever Phase 3 actually observed for `claude mcp get`, including a trust-gate
-      refusal, rather than asserting an unverified pass.
-- [ ] Also document decision 1 here: `.mcp.json` carries both extension-managed and hand-written
+      refusal, rather than asserting an unverified pass. *(completed: recorded Phase 3's actual
+      observation -- "Status: Pending approval", not a refusal)*
+- [x] Also document decision 1 here: `.mcp.json` carries both extension-managed and hand-written
       entries, hand-written entries survive regeneration by construction, and the file carries no
       in-file generated banner (JSON has no comments) — which is why this prose is the
-      self-declaration.
-- [ ] `agent-system/extensions/core/context/patterns/mcp-server-ownership.md`: add the one-hop
+      self-declaration. *(completed)*
+- [x] `agent-system/extensions/core/context/patterns/mcp-server-ownership.md`: add the one-hop
       cross-reference the research recommended, from its Registration section to the new
       `extension-development.md` material, so the conceptual ownership doc reaches the mechanical
-      how-to.
-- [ ] Deliverable rule: no task numbers anywhere in these files. Cite filenames and section
-      headings only.
+      how-to. *(completed)*
+- [x] Deliverable rule: no task numbers anywhere in these files. Cite filenames and section
+      headings only. *(completed, confirmed by grep)*
 
 **Timing**: 1.25 hours
 

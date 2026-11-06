@@ -1,0 +1,51 @@
+{
+  "phase": 4,
+  "phase_name": "Document the mechanism and its two user-visible gotchas",
+  "started_at": "2026-11-06T08:35:00Z",
+  "last_updated": "2026-11-06T09:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "extension-development.md: document merge_targets.mcp, fragment shape, valid-key list",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]
+    },
+    {
+      "id": 2,
+      "description": "extension-system.md: mcp table row, registration-surface correction, load/unload steps, Settings Merging note, two-gotcha subsection, decision 1 prose, stale merge.lua rows repair",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/extension-system.md"]
+    },
+    {
+      "id": 3,
+      "description": "mcp-server-ownership.md: one-hop cross-reference",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]
+    },
+    {
+      "id": 4,
+      "description": "No task-number references; doc-lint/task-reference-lint gate subset for touched files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "sync-manifest-scripts.sh --write (to register the new Phase 3 test script in core's provides.scripts) also wrote 9 unrelated entries into agent-system/extensions/lean/manifest.json -- a sibling task's (task territory, not mine) file. Reverted those 9 lines by hand immediately (git diff showed zero remaining change to lean/manifest.json afterward), keeping only core/manifest.json's own single-line addition. generate-context-line-counts.sh's line_count corrections for the two touched doc files landed automatically (apparently via a write-time hook) and required no explicit action."
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "Ran sync-manifest-scripts.sh --write globally (all extensions) to register the new test script",
+      "result": "failed",
+      "reason": "It is not extension-scoped: it also wrote 9 missing-entry lines into agent-system/extensions/lean/manifest.json, which belongs to the concurrently-dispatched sibling task's own declared territory. Manually reverted those 9 lines (confirmed via git diff showing zero remaining change to that file) rather than re-running any tool against it."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "verify-deploy.sh --skip-slow --only-gate 3,4 against this repo root still reports overall FAIL, but entirely from agent-system/extensions/lean's own pre-existing, unrelated findings (sibling task territory, confirmed unchanged by this phase). Scoped to this phase's own touched files: check-extension-docs.sh's [core] section reports OK (only an informational 'not deployed'/ADVISORY note for the new test script, expected since this task's SOURCE-STORE RULE forbids deploying against this repository), and check-task-references.sh --quiet reports no findings.",
+    "grep -nE 'task [0-9]+|tasks [0-9]+' over the three touched doc files returns nothing.",
+    "Diff read-through: every changed hunk in the three touched files is prose or a table row; the two removed merge.lua function-table rows (merge_opencode_agents/unmerge_opencode_agents) were confirmed absent from merge.lua by grep before removal (Phase 1's grep already established this)."
+  ]
+}

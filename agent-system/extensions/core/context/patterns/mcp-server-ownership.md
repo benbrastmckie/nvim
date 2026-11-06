@@ -32,7 +32,14 @@ That leaves a three-way, actionable choice for extension authors:
 
 1. **Project-scoped `.mcp.json`**, at the project root. A JSON file, in the same
    `mcpServers`-object shape as `~/.claude.json`, declaring servers usable only within this
-   repository. This is the surface for extension-owned, repo-local servers.
+   repository. This is the surface for extension-owned, repo-local servers. An extension
+   declares one by adding a `merge_targets.mcp` key to its manifest, dispatched by the deploy
+   engine the same way `merge_targets.settings` is — see
+   `../guides/extension-development.md`'s "MCP Server Registration" subsection for the manifest
+   shape, the mandatory `"type"` field, and the load/unload semantics, and
+   `../../docs/architecture/extension-system.md`'s "MCP Server Registration" section for the
+   underlying mechanism and its two user-visible gotchas (workspace-trust approval and
+   already-running-session invisibility).
 2. **User-scope `~/.claude.json`** (its top-level `mcpServers` object), written by one of two
    sanctioned mechanisms:
    - **A host-level or home-manager activation block**, for servers with no per-project computed

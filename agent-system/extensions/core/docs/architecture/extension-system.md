@@ -222,9 +222,14 @@ The manifest declares what the extension provides:
 | `task_type` | string | no | Language code for routing (e.g., "latex"); omit for resource-only extensions |
 | `dependencies` | array | yes | Other extensions that must be loaded first |
 | `provides` | object | yes | What files/directories the extension provides (12 categories) |
-| `merge_targets` | object | yes | Files that get merged (CLAUDE.md, index.json, settings.json) |
+| `merge_targets` | object | yes | Files that get merged (CLAUDE.md, index.json, settings.json, .mcp.json) |
 
-**Note on `mcp_servers`**: This field may appear in some manifests but is NOT directly consumed by the loader, and it does not register an MCP server. Neither this field nor an `mcpServers` key inside a `settings-fragment.json` file registers a server -- only `~/.claude.json` does that (its top-level user scope, or its per-project `.projects[<path>].mcpServers` local scope). See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full registration/permission split, and [Settings Merging](#settings-merging) below for what a `settings-fragment.json` file actually merges (permission grants).
+**Valid `merge_targets` keys**: `claudemd` (or `opencode_md`), `settings`, `index`, `mcp`,
+`opencode_json`. `validate_merge_targets()` is deliberately open-set, not a closed enum against
+this list -- any key with a `source` and a `target` validates, dispatched or not. An
+unrecognized or misspelled key validates silently and is simply never dispatched.
+
+**Note on `mcp_servers`**: This field may appear in some manifests but is NOT directly consumed by the loader, and it does not register an MCP server; it predates the `merge_targets.mcp` mechanism below. Neither this field nor an `mcpServers` key inside a `settings-fragment.json` file registers a server. **Registration now has a real, working path**: `merge_targets.mcp` (see the MCP Server Registration subsection below), which the deploy engine dispatches into a project-scoped `.mcp.json` -- a surface Claude Code itself reads. See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full registration/permission split, and [Settings Merging](#settings-merging) below for what a `settings-fragment.json` file actually merges (permission grants).
 
 **Note on `section_id`**: The `section_id` field in `merge_targets.claudemd` is vestigial for the CLAUDE.md use case. `generate_claudemd()` regenerates CLAUDE.md completely from all loaded extension `EXTENSION.md` files; it does not use section markers.
 
@@ -269,21 +274,19 @@ Before loading, `check_conflicts()` scans target paths for existing files. If co
 
 The merger handles shared file modifications.
 
-**All 11 functions**:
+**All 9 functions**:
 
 | Function | Purpose |
 |----------|---------|
 | `generate_claudemd()` | Fully regenerate CLAUDE.md from all loaded extensions |
 | `inject_section()` | Insert section with markers (exists but NOT used for CLAUDE.md) |
 | `remove_section()` | Remove section from file (exists but NOT used for CLAUDE.md) |
-| `merge_settings()` | Deep merge a JSON fragment into settings.json |
-| `unmerge_settings()` | Remove previously merged settings |
+| `merge_settings()` | Deep merge a JSON fragment into a target JSON file -- reused as-is for both `settings` (settings.json) and `mcp` (project-root `.mcp.json`) |
+| `unmerge_settings()` | Remove previously merged entries from a target JSON file -- reused as-is for both `settings` and `mcp` |
 | `append_index_entries()` | Add entries to index.json (with dedup and tracking) |
 | `remove_index_entries_tracked()` | Remove tracked entries on unload |
 | `remove_index_entries_by_prefix()` | Remove entries by path prefix (utility) |
 | `remove_orphaned_index_entries()` | Pre-load cleanup of stale entries |
-| `merge_opencode_agents()` | Merge opencode agent config |
-| `unmerge_opencode_agents()` | Remove opencode agent config |
 
 **CLAUDE.md as a Computed Artifact**:
 
@@ -378,6 +381,8 @@ Configuration presets for different agent systems:
       - Core index entries loaded via core's merge_targets.index (same as other extensions)
       - Extension-specific entries loaded via each extension's merge_targets.index
    c. merge_settings() if merge_targets.settings defined
+   d. merge_settings() into the project-root .mcp.json if merge_targets.mcp defined (same
+      function as (c), reused as-is; see "MCP Server Registration" below)
 7. Update state (mark_loaded)
 8. Write the project-root extension manifest (.claude-extensions.json / .opencode-extensions.json)
 9. Post-load verification
@@ -398,6 +403,9 @@ Configuration presets for different agent systems:
 4. Merge cleanup:
    a. remove_index_entries_tracked() from index.json
    b. unmerge_settings() if settings were merged
+   c. unmerge_settings() from the project-root .mcp.json if mcp servers were merged; if no
+      mcpServers entries (and no other top-level keys) remain afterward, .mcp.json itself is
+      deleted rather than left as an empty residual file
 5. Update state (mark_unloaded)
 6. Write the project-root extension manifest
 7. Regenerate CLAUDE.md:
@@ -497,11 +505,12 @@ Extensions can provide settings and permission grants (including MCP tool permis
 
 **Note**: Neither `manifest.json`'s `mcp_servers` field nor an `mcpServers` key inside a settings
 fragment registers an MCP server -- Claude Code never reads `settings.json`/`settings.local.json`
-for server definitions, only `~/.claude.json` (both its user and local/per-project scopes). All
-settings merging goes through the `merge_targets.settings` mechanism, but that mechanism's only
-functional MCP-related effect is permission grants like the example above. See
-[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for where registration
-actually happens.
+for server definitions. All settings merging goes through the `merge_targets.settings`
+mechanism, but that mechanism's only functional MCP-related effect is permission grants like the
+example above. **To register a server, declare `merge_targets.mcp` instead** -- see
+"MCP Server Registration" below, and
+[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full
+registration/permission split.
 
 **Merge behavior** (via `merge_settings()`):
 - Arrays are appended (deduplicated)
@@ -539,6 +548,97 @@ Choosing between them is the same "does this need to work with no repo-local dep
 question that also governs MCP server scope (see MCP Server Ownership's local-scope discussion) --
 if the answer is yes, the hook cannot be extension-contributed; it must be a dedicated user-level
 installer, run once per machine, independent of which repositories load the extension.
+
+## MCP Server Registration
+
+`merge_targets.mcp` gives an extension a real, working path to register an MCP server, replacing
+the dead `mcp_servers`/`mcpServers`-in-settings idioms noted above. It is dispatched by exactly
+the same mechanism as `merge_targets.settings` (`process_merge_targets()`/
+`reverse_merge_targets()` in `init.lua`, both calling `merge.lua`'s `merge_settings()`/
+`unmerge_settings()` unmodified) against a different target: the repository-root, project-scoped
+`.mcp.json` instead of `.claude/settings.json`.
+
+**Manifest declaration**:
+```json
+{
+  "merge_targets": {
+    "mcp": {
+      "source": "mcp-fragment.json",
+      "target": ".mcp.json"
+    }
+  }
+}
+```
+
+**mcp-fragment.json**:
+```json
+{
+  "mcpServers": {
+    "my-server": {
+      "type": "stdio",
+      "command": "my-server-binary",
+      "args": []
+    }
+  }
+}
+```
+
+The `"type"` field is mandatory on every entry: as of Claude Code v2.1.202 a remote server
+declared without an explicit `type` fails fast rather than failing silently.
+
+**Why reusing `merge_settings()`/`unmerge_settings()` is correct, not merely convenient**: that
+function's `deep_merge()` only ever adds keys/items that are not already present, and it never
+overwrites or removes anything it did not itself add. Applied to `.mcp.json`, this one property
+delivers all four of the mechanism's requirements with no `mcp`-specific logic inside
+`merge.lua` itself:
+
+- **Generation**: a loaded extension's declared server(s) appear in `.mcp.json` with their
+  explicit `"type"` field intact.
+- **Retraction on unload**: unloading removes exactly the entries that extension's own load
+  added, via the same per-key tracking `unmerge_settings()` already uses for `settings.json`. If
+  no `mcpServers` entries (and no other top-level key) remain afterward, `.mcp.json` itself is
+  deleted -- `unmerge_settings()` would otherwise leave a residual empty file at the project
+  root, since it rewrites its target even when the result is `{}`; this cleanup lives in the
+  `mcp` branch of `reverse_merge_targets()`, not in `merge.lua`, so the `settings` path is
+  untouched.
+- **Idempotent redeploy**: the `mcp` branch writes `.mcp.json` with `M.write_json`'s
+  `sort_keys` option enabled (an addition made specifically for this mechanism -- every other
+  caller of `write_json`/`merge_settings` keeps the prior, order-preserving-only behavior), so
+  deploying twice produces a byte-identical file under `cmp`, not merely JSON-equal content.
+- **Hand-written entries survive regeneration, by construction, with no self-declaration in the
+  file itself**: because `deep_merge()` never touches a key it did not add, an entry a user
+  writes into `.mcp.json` by hand survives every subsequent load/unload of every extension
+  untouched. `.mcp.json` is NOT added to `.gitignore` -- it sits at the same project-root tier as
+  the tracked `.claude-extensions.json`, and project-scoped MCP registration is conventionally
+  repo-shared -- and it carries no in-file "generated" banner, since JSON has no comment syntax
+  to carry one. This prose is the self-declaration: `.mcp.json` is a dual-ownership file,
+  extension-managed entries coexisting with whatever a user adds directly, and that is the
+  intended, permanent shape of the file, not a limitation to work around.
+
+**Known, pre-existing limitation** (not introduced by `mcp`, shared with the `settings` branch):
+a load that OVERWRITES rather than merges its own previously-persisted tracking data means a
+`load -> full regenerate -> unload` sequence can fail to retract entries that predate the
+regenerate. Confirmed empirically by this mechanism's own regression harness
+(`agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh`); a PLAIN `load -> unload`
+round trip with no intervening regenerate retracts correctly.
+
+### Two user-visible gotchas
+
+A project-scoped `.mcp.json` server behaves differently from a user-scope `~/.claude.json` one in
+two ways that look like bugs but are not. Read both before reporting a registered server as
+broken:
+
+1. **Workspace-trust approval is required before the server is actually usable.** As of Claude
+   Code v2.1.196+, a project-scoped MCP server needs explicit workspace-trust approval before
+   `claude mcp list`/`claude mcp get` treats it as active. Empirically (this mechanism's own
+   harness), `claude mcp get <name>` still RESOLVES the entry and reports it, but with
+   `Status: ⏸ Pending approval (run \`claude\` to approve)` -- not an outright failure to find
+   the server, a visible pending-approval state. Run `claude` interactively once in the project
+   (or otherwise grant trust) before concluding the registration did not work.
+2. **A server added to `.mcp.json` is invisible to any ALREADY-RUNNING session**, including the
+   one that triggered the extension load. Verify a newly registered server against a fresh
+   session or `claude -p`, never against the current one -- the running session read
+   `.mcp.json` once, at its own startup, and does not re-read it.
 
 ---
 
