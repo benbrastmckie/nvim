@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 3-phase plan for the exact-pid process-check standard, grounded in the research report's verified findings (origin fix live in test-gate-registry-resolution.sh case13, zero live corpus violations, mechanical lint declined on a 100%-exemption-rate finding, insertion point inside the standard's existing --jobs/serialized-set section). Phase 1 re-derives the audit live and reproduces the original collision shape on purpose with a mandatory non-vacuousness probe; Phase 2 lands the subsection and updates its index-entries.json entry; Phase 3 redeploys and runs the complete gate set with an explicit source-store TARGET. The verdict-extraction sibling's edit to the same file is already landed, so the plan directs a rebase-onto, not a revert.",
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 3,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/415_exact_pid_process_check_standard/plans/01_exact-pid-process-checks.md",
+      "summary": "3-phase implementation plan, 2 hours estimated, waves [[1],[2],[3]]."
+    }
+  ],
+  "dispatch_seq": 10
+}

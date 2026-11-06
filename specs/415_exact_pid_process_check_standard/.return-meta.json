@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793947646_0784d9_415",
-  "dispatch_seq": 3,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/415_exact_pid_process_check_standard/reports/01_exact-pid-process-check-standard.md",
-      "summary": "Confirms the origin fix (test-gate-registry-resolution.sh case13, exact-pid kill -0) and the standard's documented gap; corpus audit of agent-system/extensions/core/scripts/tests/** and scripts/*.sh finds zero live violations of the exact-pid rule (search commands and per-file breakdown included, re-runnable); identifies bounded-build-waiter.md as a sibling-but-distinct agent-layer discipline using the same mechanism; recommends prose-only subsection (declines a mechanical lint on 100%-exemption-rate evidence) inserted into the existing '## Suite runtime: --jobs, --timings, and gate selection' section; flags an index-entries.json keyword/topic gap for the implementation phase."
+      "type": "plan",
+      "path": "specs/415_exact_pid_process_check_standard/plans/01_exact-pid-process-checks.md",
+      "summary": "3-phase plan: live corpus audit plus deliberate collision reproduction, the exact-pid parallelism-safety subsection in shell-script-testing.md with its index entry, then redeploy and the full gate set with an explicit source-store TARGET."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "When auditing a shell-test corpus for a process-check anti-pattern (e.g. pgrep -f/pkill -f/ps|grep name-based matching), expect most textual hits to be non-violating: comments documenting the anti-pattern, fixture command strings fed to a hook-under-test that itself validates the pattern in a different context, or tests of a subject's absence of the pattern. A high exemption-rate (most hits need an allowlist entry) is a strong signal to prefer prose-only guidance over a mechanical lint, mirroring the existing lint-state-writer-boundary.sh template's own documented Layer 1/Layer 2 (structural + file-allowlist) limitation.",
-      "category": "PATTERN",
-      "source_artifact": "specs/415_exact_pid_process_check_standard/reports/01_exact-pid-process-check-standard.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["process-check", "pgrep", "lint-exemption-ratio", "shell-test-audit", "mechanical-lint-tradeoff"]
-    },
-    {
-      "content": "This repo already codifies 'never match a process by name under concurrency, always capture the exact pid at spawn and check it with kill -0' at the agent-waiter layer (context/patterns/bounded-build-waiter.md Rule 2, enforced by validate-bounded-waiter.sh). The same mechanism recurs at the test-suite-authoring layer for a different hazard (sibling-suite name collision vs. self-match) -- treat these as sibling disciplines for the same underlying mechanism, cross-link them, but never merge them into one rule or one enforcement point, since the actor and hazard differ.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/415_exact_pid_process_check_standard/reports/01_exact-pid-process-check-standard.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["bounded-build-waiter", "exact-pid", "parallelism-safety", "process-identity", "kill-0"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 415 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1793947646_0784d9_415",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2,
+    "dependency_waves": [[1], [2], [3]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 415 to execute the plan",
+  "dispatch_seq": 10
 }
