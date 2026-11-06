@@ -294,33 +294,33 @@ else.
 
 ---
 
-### Phase 4: Write-time Bash hook and its test [NOT STARTED]
+### Phase 4: Write-time Bash hook and its test [COMPLETED]
 
 **Goal**: A live `python3` invocation carrying the bad shape is blocked before it runs — the
 incident shape the content lint provably cannot see.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/hooks/validate-no-python-state-write.sh`: `PreToolUse`,
+- [x] Create `agent-system/extensions/core/hooks/validate-no-python-state-write.sh`: `PreToolUse`,
       reading `INPUT=$(cat)` and `COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')`
       exactly as `guard-destructive-git.sh` does, applying the Phase 1 library's predicate to
-      `$COMMAND`.
-- [ ] On a match, block via `exit 2` plus a stderr remedy naming `state-write.sh` and its
+      `$COMMAND`. *(completed)*
+- [x] On a match, block via `exit 2` plus a stderr remedy naming `state-write.sh` and its
       `--arg`/`--argjson` passthrough — never `permissionDecision: deny`, which is
-      documented-buggy for allow-listed Bash calls.
-- [ ] Fail OPEN (`exit 0`) when the shared library cannot be sourced, and state that polarity
+      documented-buggy for allow-listed Bash calls. *(completed)*
+- [x] Fail OPEN (`exit 0`) when the shared library cannot be sourced, and state that polarity
       choice and its rationale in the hook's header (a broken write-time guard must never block
-      every Bash call; this is the opposite polarity from a deploy gate, deliberately).
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-validate-no-python-state-write.sh`
+      every Bash call; this is the opposite polarity from a deploy gate, deliberately). *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-validate-no-python-state-write.sh`
       mirroring `test-validate-no-task-references.sh`'s both-polarity structure: a synthetic
       `python3 -c "..."` command string carrying a write-capable `open()` on `specs/state.json` is
       blocked (exit 2); the archive and vault-root variants are blocked; a read-only `open()` is
       allowed; an equivalent `state-write.sh` invocation is allowed; a missing-library simulation
-      exits 0 (fail-open pinned).
-- [ ] Add an `EXCLUDED_FILES` entry to `lint-state-writer-boundary.sh` for the new hook test with
+      exits 0 (fail-open pinned). *(completed: 11 cases, all PASS)*
+- [x] Add an `EXCLUDED_FILES` entry to `lint-state-writer-boundary.sh` for the new hook test with
       its reason stated inline (it feeds the bad shape as synthetic fixture command strings,
-      following `test-validate-task-creation-audit.sh`'s existing entry).
-- [ ] Add both new files to `manifest.json` (`provides.hooks` for the hook,
-      `provides.scripts` for the test suite).
+      following `test-validate-task-creation-audit.sh`'s existing entry). *(completed)*
+- [x] Add both new files to `manifest.json` (`provides.hooks` for the hook,
+      `provides.scripts` for the test suite). *(completed)*
 
 **Timing**: 1.5 hours
 

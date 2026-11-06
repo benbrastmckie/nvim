@@ -210,6 +210,12 @@ EXCLUDED_FILES=(
     # entry the lint flags its own negative fixtures.
     "agent-system/extensions/core/scripts/tests/test-validate-task-creation-audit.sh"
 
+    # Same reason again, for hooks/validate-no-python-state-write.sh's own fixture suite: its
+    # positive-polarity cases deliberately feed the Python open()-on-state.json anti-pattern as
+    # synthetic Bash command strings (never executed as real Python -- they are piped to the
+    # HOOK under test as JSON, not run), to assert the hook refuses them.
+    "agent-system/extensions/core/scripts/tests/test-validate-no-python-state-write.sh"
+
     # Vault restore: a bare `mv "${vault_path}/archive/state.json" "${vault_path}/state.json"`
     # file relocation, moving a whole state file into place. It is not a jq-staged
     # read-modify-write, so state-write.sh (which transforms content) is not the right tool.
