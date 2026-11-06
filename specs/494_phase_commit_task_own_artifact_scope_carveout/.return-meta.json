@@ -1,42 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/494_phase_commit_task_own_artifact_scope_carveout/reports/01_phase-commit-own-task-dir-carveout.md",
-      "summary": "Confirms git-commit-phase.sh's Containment Self-Check (site 2) is missing the own-task-directory member sites 1 and 3 already carry, rules the fix as a per-site splice (not a shared-lib member, per engine-written-state-paths-lib.sh's own rejection of task-owned directories), resolves the missing_key-yet-dropped question as a legitimate point-in-time file_scope write via --file-scope-add (not a fail-open defect), and narrows git-staging-scope.md's existing V10-subsumption claim for the task-directory case specifically."
+      "type": "plan",
+      "path": "specs/494_phase_commit_task_own_artifact_scope_carveout/plans/01_own-task-dir-containment-member.md",
+      "summary": "4-phase plan adding the committing task's own artifact directory as a per-site in-scope member of git-commit-phase.sh's containment self-check, with three new regression fixtures, a git-staging-scope.md record of the member plus two prose corrections and the missing_key resolution, and a redeploy-and-full-gate close."
     }
   ],
-  "next_steps": "Run /orchestrate 494 to create implementation plan",
   "metadata": {
     "session_id": "sess_1793947646_0784d9_494",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 5
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 3,
+    "dependency_waves": [[1], [2, 3], [4]]
   },
   "memory_candidates": [
     {
-      "content": "In this engine, a task's own artifact directory is deliberately kept OUT of the shared engine-written-state allowlist (scripts/lib/engine-written-state-paths-lib.sh) because the library's own admission bar requires a candidate to be engine-written on behalf of every/many tasks, not authored by one task's own dispatch. Every site that needs to admit a task's own directory as implicitly in-scope (orchestrate-cycle-postflight.sh WORK (h), git-commit-scoped.sh's V10) does so via a per-site splice of the resolved task directory, never by adding it to the shared literal allowlist. A per-task, per-dispatch path belongs at the call site, not in a shared constant list.",
-      "category": "PATTERN",
-      "source_artifact": "specs/494_phase_commit_task_own_artifact_scope_carveout/reports/01_phase-commit-own-task-dir-carveout.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "containment-predicate", "engine-written-state", "per-site-splice", "git-commit-phase"]
-    },
-    {
-      "content": "When a Containment-style check filters a pathspec BEFORE handing it to a downstream commit script, a later, independently-correct containment check inside that downstream script (e.g. git-commit-scoped.sh's V10) cannot rescue a path the upstream check already dropped -- it never sees that path at all. A doc claim that a downstream gate 'subsumes' an upstream filter's reach is only true for false positives both checks would independently catch the same way; it is false for any gap unique to the upstream filter's own admitted-scope construction. Verify subsumption claims against which check actually removes a path from the pathspec first, not just which checks share the same predicate.",
+      "content": "In a source-store/deploy-boundary repo (.claude/** regenerated from agent-system/extensions/**), a plan phase that runs the deploy script must declare both the reserved __WHOLE_TREE__ sentinel AND the regenerated deployed paths in its 'Files to modify' block for honesty. plan-file-scope-harvest.sh then unions those deployed .claude/** paths into the task's file_scope alongside the source-store originals, where a later consumer can misread them as declared hand-edit targets even though source-store-deploy-boundary.md forbids hand-authoring there. Planners should keep the deploy phase's declared deployed paths minimal (only what the change actually regenerates) and state in the phase prose that they are deploy outputs, not edit targets.",
       "category": "INSIGHT",
-      "source_artifact": "specs/494_phase_commit_task_own_artifact_scope_carveout/reports/01_phase-commit-own-task-dir-carveout.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["pipeline-ordering", "containment-check", "subsumption", "pre-filter-vs-post-filter"]
+      "source_artifact": "specs/494_phase_commit_task_own_artifact_scope_carveout/plans/01_own-task-dir-containment-member.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["file_scope", "deploy-boundary", "__WHOLE_TREE__", "plan-file-scope-harvest", "files-to-modify", "source-store"]
     }
   ],
-  "modified_files": [
-    "specs/494_phase_commit_task_own_artifact_scope_carveout/reports/01_phase-commit-own-task-dir-carveout.md"
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/git-commit-phase.sh",
-    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
-    "agent-system/extensions/core/context/standards/git-staging-scope.md"
-  ],
-  "dispatch_seq": 2
+  "next_steps": "Run /orchestrate 494 to execute the plan",
+  "dispatch_seq": 9
 }

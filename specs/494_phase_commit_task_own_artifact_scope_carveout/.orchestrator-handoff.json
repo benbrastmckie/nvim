@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a 4-phase implementation plan adding the committing task's own resolved artifact directory as an implicit in-scope member of git-commit-phase.sh's Phase-Commit Containment Self-Check (site 2), implemented as a per-site splice on the documentary authority of engine-written-state-paths-lib.sh's own rejection of task-owned specs/{NNN}_*/ paths. Phase 1 lands the one-member splice inside the existing non-empty file_scope_arr guard; Phase 2 pins it with three new fixtures (own-directory acceptance with zero excursion records, a paired negative proving a genuine excursion still drops, and fail-open across missing/empty/malformed file_scope) plus a red-proof run against a splice-stripped scratch copy; Phase 3 records the member in git-staging-scope.md and narrows the two now-overbroad claims that site 3 subsumes site 2; Phase 4 redeploys and closes on the full gate set. The missing_key-yet-dropped question needed no second code change: the research report traced it to orchestrator-postflight.sh's additive --file-scope-add write-back populating file_scope between pre-dispatch review and the later phase commit, so the fail-open posture is correct and untouched.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/494_phase_commit_task_own_artifact_scope_carveout/plans/01_own-task-dir-containment-member.md",
+      "summary": "4-phase plan: per-site own-task-directory containment member, three regression fixtures, git-staging-scope.md record plus two prose corrections, redeploy and full gate."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 494; waves are [1], [2,3], [4]. Sequence before tasks 486 and 430, which each declare the same three files and already carry a dependency on this record.",
+  "dispatch_seq": 9
+}

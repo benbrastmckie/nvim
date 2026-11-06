@@ -94,7 +94,7 @@ next_project_number: 505
 
 ### File Scope Lifecycle
 
-494 [PLANNING] — Exempt a task own artifact directory from the phase-commit...
+494 [PLANNED] — Exempt a task own artifact directory from the phase-commit...
   └─ 430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
     └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
       └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
@@ -930,11 +930,12 @@ None of the four carries the verbatim-heading contract, the `^##+` matching rule
 ---
 
 ### 494. Exempt a task own artifact directory from the phase-commit containment predicate
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
 - **Research**: [494_phase_commit_task_own_artifact_scope_carveout/reports/01_phase-commit-own-task-dir-carveout.md]
+- **Plan**: [494_phase_commit_task_own_artifact_scope_carveout/plans/01_own-task-dir-containment-member.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one; note that file carries NO top-level source_dir, only per-extension entries. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
