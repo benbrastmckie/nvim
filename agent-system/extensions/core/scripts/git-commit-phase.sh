@@ -245,6 +245,19 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
     done < <(printf '%s' "$file_scope_json" | jq -r '.[]?' 2>/dev/null || true)
 
     if [ "${#file_scope_arr[@]}" -gt 0 ]; then
+      # Own-task-directory member: the committing task's own resolved artifact directory is an
+      # implicit, unconditional in-scope member of this Self-Check, mirroring the per-site
+      # splices Sites 1 (orchestrate-cycle-postflight.sh) and 3 (git-commit-scoped.sh's V10) each
+      # already carry -- see git-staging-scope.md's "Three Containment sites, not one". This is
+      # deliberately NOT a member of the shared scripts/lib/engine-written-state-paths-lib.sh
+      # allowlist spliced in immediately below: that library's own header rejects any task-owned
+      # specs/{NNN}_*/ path, because a per-task directory is authored by one task's own dispatch
+      # rather than engine-written on behalf of every/many tasks, failing the library's admission
+      # bar. Placed INSIDE this non-empty guard -- exactly where the engine-written-state splice
+      # sits -- so the fail-open posture above is unchanged: a task with no declared file_scope
+      # still skips this whole check, never acquiring a scope member it never declared.
+      file_scope_arr+=("${task_dir}/")
+
       # Engine-written-state allowlist (the third of three Containment sites -- see
       # git-staging-scope.md's "Three Containment sites, not one"): widen file_scope_arr from
       # the shared source scripts/lib/engine-written-state-paths-lib.sh, the same library Sites

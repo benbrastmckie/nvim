@@ -1,7 +1,7 @@
 # Implementation Plan: Exempt a task's own artifact directory from the phase-commit containment predicate
 
 - **Task**: 494 - Exempt a task own artifact directory from the phase-commit containment predicate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None (this record is the predecessor; tasks 430 and 486 each depend on it)
 - **Research Inputs**: specs/494_phase_commit_task_own_artifact_scope_carveout/reports/01_phase-commit-own-task-dir-carveout.md
@@ -123,35 +123,35 @@ No `roadmap_path` was provided in this dispatch, so no roadmap consultation was 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Splice the own-task-directory member into site 2's containment predicate [NOT STARTED]
+### Phase 1: Splice the own-task-directory member into site 2's containment predicate [COMPLETED]
 
 **Goal**: `git-commit-phase.sh`'s Phase-Commit Containment Self-Check admits every path under the
 committing task's own resolved artifact directory, without any change to the fail-open posture,
 the staging seed, or `is_contained()`'s normalization.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-phase.sh` immediately before
-      editing (line numbers drift, and siblings 430/486 declare this same file).
-- [ ] Locate the non-empty `file_scope_arr` guard inside the Containment Self-Check (the
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-phase.sh` immediately before
+      editing (line numbers drift, and siblings 430/486 declare this same file). *(completed)*
+- [x] Locate the non-empty `file_scope_arr` guard inside the Containment Self-Check (the
       `if [ "${#file_scope_arr[@]}" -gt 0 ]; then` block, around line 247) and the
-      engine-written-state-paths splice immediately inside it.
-- [ ] Add one array member inside that guard, alongside (not inside) the engine-written-state
+      engine-written-state-paths splice immediately inside it. *(completed)*
+- [x] Add one array member inside that guard, alongside (not inside) the engine-written-state
       widening: `file_scope_arr+=("${task_dir}/")`, using the already-local `task_dir` from
-      around line 193. No new `source`, no helper call, no archive-aware lookup.
-- [ ] Add a comment above the new line stating: that this is the task's own resolved artifact
+      around line 193. No new `source`, no helper call, no archive-aware lookup. *(completed)*
+- [x] Add a comment above the new line stating: that this is the task's own resolved artifact
       directory; that it mirrors the per-site splices sites 1 and 3 already carry; that it is
       deliberately NOT a member of `engine-written-state-paths-lib.sh`, whose own header rejects
       any task-owned `specs/{NNN}_*/` path because a per-task directory is authored by one task's
       own dispatch rather than engine-written on behalf of every task; and that its placement
       inside this guard is what preserves the fail-open posture. Cite durable anchors (file and
-      section names) only — no task numbers, no draft-history phrasing.
-- [ ] Confirm by inspection that the `stage_paths` seed (around line 201), the `is_contained()`
+      section names) only — no task numbers, no draft-history phrasing. *(completed)*
+- [x] Confirm by inspection that the `stage_paths` seed (around line 201), the `is_contained()`
       trailing-slash and `/**` normalization, and the fail-open guard conditions are all
-      byte-unchanged.
-- [ ] Run `bash -n` and `shellcheck` on the edited script.
-- [ ] Run the existing suite to prove no regression:
-      `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-commit-phase.sh,test-git-commit-scoped.sh`
-- [ ] Commit this green sub-step.
+      byte-unchanged. *(completed)*
+- [x] Run `bash -n` and `shellcheck` on the edited script. *(completed: both clean; shellcheck's two SC1091 info notes are pre-existing, confirmed byte-identical against HEAD)*
+- [x] Run the existing suite to prove no regression:
+      `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-git-commit-phase.sh,test-git-commit-scoped.sh` *(completed: 2 passed, 0 failed)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 0.5 hours
 

@@ -91,7 +91,7 @@ next_project_number: 505
 
 ### File Scope Lifecycle
 
-494 [PLANNED] — Exempt a task own artifact directory from the phase-commit...
+494 [IMPLEMENTING] — Exempt a task own artifact directory from the phase-commit...
   └─ 430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
     └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
       └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
@@ -922,7 +922,7 @@ None of the four carries the verbatim-heading contract, the `^##+` matching rule
 ---
 
 ### 494. Exempt a task own artifact directory from the phase-commit containment predicate
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None

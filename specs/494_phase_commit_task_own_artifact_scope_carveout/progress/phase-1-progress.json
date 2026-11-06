@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Splice the own-task-directory member into site 2's containment predicate",
+  "started_at": "2026-11-06T09:47:45Z",
+  "last_updated": "2026-11-06T09:47:45Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Splice file_scope_arr+=(\"${task_dir}/\") with explanatory comment inside the non-empty file_scope_arr guard in git-commit-phase.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]
+    },
+    {
+      "id": 2,
+      "description": "bash -n and shellcheck clean on the edited script; run-all.sh --only test-git-commit-phase.sh,test-git-commit-scoped.sh passes",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

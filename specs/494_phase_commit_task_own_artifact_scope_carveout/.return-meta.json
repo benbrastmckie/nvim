@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/494_phase_commit_task_own_artifact_scope_carveout/plans/01_own-task-dir-containment-member.md",
-      "summary": "4-phase plan adding the committing task's own artifact directory as a per-site in-scope member of git-commit-phase.sh's containment self-check, with three new regression fixtures, a git-staging-scope.md record of the member plus two prose corrections and the missing_key resolution, and a redeploy-and-full-gate close."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 20,
   "metadata": {
-    "session_id": "sess_1793947646_0784d9_494",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 3,
-    "dependency_waves": [[1], [2, 3], [4]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In a source-store/deploy-boundary repo (.claude/** regenerated from agent-system/extensions/**), a plan phase that runs the deploy script must declare both the reserved __WHOLE_TREE__ sentinel AND the regenerated deployed paths in its 'Files to modify' block for honesty. plan-file-scope-harvest.sh then unions those deployed .claude/** paths into the task's file_scope alongside the source-store originals, where a later consumer can misread them as declared hand-edit targets even though source-store-deploy-boundary.md forbids hand-authoring there. Planners should keep the deploy phase's declared deployed paths minimal (only what the change actually regenerates) and state in the phase prose that they are deploy outputs, not edit targets.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/494_phase_commit_task_own_artifact_scope_carveout/plans/01_own-task-dir-containment-member.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["file_scope", "deploy-boundary", "__WHOLE_TREE__", "plan-file-scope-harvest", "files-to-modify", "source-store"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 494 to execute the plan",
-  "dispatch_seq": 9
+    "session_id": "sess_1793947646_0784d9",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
