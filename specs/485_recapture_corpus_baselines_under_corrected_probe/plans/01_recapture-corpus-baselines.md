@@ -131,6 +131,52 @@ corrected reading is numerically identical to what a tracked-only reading would 
 correction, if any, applies only to the *historical* baselines Phase 2 and Phase 3 examine, not to
 today's live figure.
 
+## Determination Table (Phase 2)
+
+Live-re-derived by sweeping both parent plan files directly (not from this plan's own Plan-Time
+Measurements counts, which were an estimate only). Every figure the task description's "WHAT IS
+AFFECTED" section names, plus every other recorded figure the two files carry, is enumerated
+below exactly once. The dating test is primarily the **field set** of each recorded probe line
+(absence of `untracked=` means tracked-only; absence of `cost_per_assertion_ms` dates a line
+before the parent's own Phase 12.2), corroborated by `git blame`/`git log` against the probe
+file's own fix commits:
+
+```
+Probe union+disclosure fix committed (source):   9341cfe7d  2026-11-04 16:42:21 -0800
+Probe union+disclosure fix deployed:             55875fdad  2026-11-04 16:57:15 -0800
+Probe cost_per_assertion_ms extension committed: 495b8db4f  2026-11-05 11:11:28 -0800
+```
+
+| # | Figure | Location | Instrument | Capture instant | Verdict | Evidence |
+|---|--------|----------|------------|------------------|---------|----------|
+| 1 | Baseline table: NET-PROD 232 scripts/90,568 lines; NET-TEST 160 suites/76,832 lines; NET-MD 927 files/229,217 lines; NET-TOTAL row | `plans/01` lines 130-135 + probe line 138-139 | probe-derived (`script-inventory.sh --size-line`) | `12a65c492` (01's own authoring commit), 2026-10-16 09:45:48 -0800 | **AFFECTED** (potentially) — ~19 days before the fix; the recorded line carries neither `untracked=` nor `cost_per_assertion_ms`, consistent with a tracked-only pre-fix copy. This is the one baseline every acceptance figure in Phase 1's own plan is measured against. Magnitude bounded in Phase 3. | `git blame` places the baseline table + probe line at `12a65c492`; field-set test; `git log` on `script-inventory.sh` confirms `9341cfe7d` postdates it by 19 days |
+| 2 | Same baseline table, restated verbatim | `plans/03` lines 198-207 | probe-derived (same reading, carried into the superseding plan) | `141854011d`, 2026-10-16 17:38:06 -0800 | **AFFECTED**, same determination as #1 — this is a restatement of the identical Phase-1 reading, not an independent capture. Corrected once in Phase 4, both files updated together. | `git blame`; identical figures to #1 |
+| 3 | Interim re-measurement: `scripts=233 lines=90661 test_suites=161 test_lines=77067 md_files=927 md_lines=229217` | `plans/01`:146 / `plans/03`:214 | probe-derived | `47a024f6d` (01) / `141854011d` (03), 2026-10-16 | Pre-fix, tracked-only by field-set test — but this is an **interim drift-observation reading**, never itself cited as the acceptance baseline or target denominator. No separate correction needed; its role is superseded by later readings and by Phase 3's bound on the baseline it is compared against. | Field-set test; `git blame` |
+| 4 | Re-measured after Phase 4: `scripts=233 lines=90778 test_suites=161 test_lines=77201 md_files=927 md_lines=229255` | `plans/01`:150-151 / `plans/03`:218-220 | probe-derived | `487fdaa5e` (01) / `141854011d` (03), 2026-10-16 | Same determination as #3 — pre-fix, tracked-only, interim drift context only | Field-set test; `git blame` |
+| 5 | Re-measured after Phase 5: `scripts=233 lines=90772 test_suites=161 test_lines=77298 md_files=927 md_lines=229299` | `plans/01`:159-161 / `plans/03`:227-229 | probe-derived | `59f67dd69` (01) / `141854011d` (03), 2026-10-16 | Same determination as #3 | Field-set test; `git blame` |
+| 6 | Re-measured after Phase 6: `scripts=233 lines=90772 test_suites=161 test_lines=76943 md_files=927 md_lines=229299` | `plans/01`:168-169 / `plans/03`:236-237 | probe-derived | `30d75561a` (01) / `141854011d` (03), 2026-10-16 | Same determination as #3 | Field-set test; `git blame` |
+| 7 | Revision-round re-measurement (03-only): `scripts=234 lines=91059 test_suites=162 test_lines=77132 md_files=927 md_lines=229299` | `plans/03`:251-252 | probe-derived | `141854011d`, 2026-10-16 17:38:06 -0800 | Same determination as #3 — pre-fix, tracked-only, interim drift context, not an acceptance baseline | Field-set test; `git blame` |
+| 8 | Scope Widening markdown-corpus re-confirmation: "927 files, 229,217 lines — identical to the Phase 1 baseline" | `plans/03`:498-500 | probe-derived | `141854011d`, 2026-10-16 17:38:06 -0800 | **AFFECTED**, same determination as #1/#2 (NET-MD row) — this is a corroborating re-read of the identical pre-fix figure, not an independent new baseline | Field-set test; `git blame`; figure is byte-identical to the baseline row |
+| 9 | Cross-file duplicated-block census (5-line shingling table, Role/Files/Substantive lines/...), built over the same 927-file set | `plans/03`:508-520 | probe-derived (file-set) + other-instrument (shingling analysis on top) | `141854011d`, 2026-10-16 17:38:06 -0800 | **Inherits #8's determination** — the census is built over the same potentially-incomplete 927-file enumeration. If Phase 3's bound is null (expected), this census is unaffected in practice; it is not itself a frozen acceptance figure, only a target-derivation input. | `git blame`; same capture instant as #8 |
+| 10 | Plan-Time Measurements block (ad hoc counts): 237 non-test `*.sh` files/91,802 lines; 155 test files; 943 md files; 23 gate-registry rows | `plans/01`:188-199 / `plans/03`:346 (carried) | **other-instrument** — figures differ from the probe's own Phase-1 baseline (237 vs. 232, 91,802 vs. 90,568), confirming a distinct ad hoc counting method, not `script-inventory.sh` | 2026-10-16 (pre-fix era) | **UNAFFECTED / not applicable** — the plan's own text explicitly supersedes this block ("never against the Plan-Time Measurements block's earlier estimates ... both superseded"); it plays no role in any current acceptance figure, so no correction is needed regardless of its instrument | Plan's own superseding statement at `plans/01`:140-143 / `plans/03`:207-210 |
+| 11 | Harness duplication tallies (121/121 suites defining `pass()`, etc.) | `plans/01`:201-211 (carried into 03) | other-instrument — explicit, bounded count over the 121 named core suites, not a corpus-wide enumeration | 2026-10-16 | **UNAFFECTED** — explicit named-file-set method carries no untracked-blindness exposure; also not used in any NET-TOTAL figure | Method description in the plan text (explicit suite set, not `git ls-files`) |
+| 12 | NET-PROD per-cluster `comm -12` table (Seven-lint, install/uninstall, typst, `literature-search.sh`) | `plans/01`:257-269 / `plans/03`:415-427 | other-instrument — `comm -12` over explicitly named files | 2026-10-16, "re-run against the live corpus" | **UNAFFECTED** — explicit named-file method; feeds only the *declared target* (−700 lines derivation), never the baseline figure itself | Method description (named files, not corpus enumeration) |
+| 13 | NET-TEST harness-boilerplate span (fixed-seed sample of 20 named suites) | `plans/01`:280-293 / `plans/03` (carried) | other-instrument — explicit named-suite sample | 2026-10-16 | **UNAFFECTED** — explicit sample, not full-corpus enumeration; feeds the target derivation (−1,200 floor), never the baseline | Method description |
+| 14 | Phase 15/17 markdown re-derivation readings: `md_files=948 md_lines=233093` (used only as drift context, explicitly NOT substituted for the Phase-1 baseline per the plan's own instruction) | `plans/03`:2055, 2176 | probe-derived (partial fields extracted) | `96f96d3324`, 2026-11-05 15:40:40 -0800 | **UNAFFECTED** — post-fix (after both `9341cfe7d` 2026-11-04 16:42 and `495b8db4f` 2026-11-05 11:11); union-based by construction. These readings require no change; if the Phase-1 baseline they are explicitly measured *against* shifts, only that comparison's target changes, not these readings themselves. | `git blame`; capture instant postdates both fix commits |
+| 15 | **Instrument A** — Phase-20 final live probe reading: `scripts=249 lines=97567 test_suites=183 test_lines=87535 md_files=949 md_lines=232244`, raw NET-TOTAL +20,729 | `plans/03`:264-267 | probe-derived | `4c2fd41dbc`, 2026-11-05 19:57:12 -0800 | **RESOLVED — the flagged ambiguity is answered.** The recorded line is missing both `untracked=` and `cost_per_assertion_ms`, which superficially suggests a stale pre-fix/pre-extension copy. But `git merge-base --is-ancestor` confirms both `9341cfe7d` and `495b8db4f` are ancestors of `4c2fd41dbc`; the commit message itself reads "task 328 phase 20: redeploy, full gate set, and the measured net accounting" — an explicit redeploy preceded this reading; and `git show 4c2fd41dbc:agent-system/extensions/core/scripts/script-inventory.sh` contains the `untracked=N` and `cost_per_assertion_ms` code paths verbatim. **Conclusion: the copy invoked carried the fix; the two trailing fields were trimmed when the reading was recorded in prose, not evidence of a stale copy.** This is immaterial to the determination regardless, because the plan already explicitly disclaims Instrument A as "NOT this task's own net." | `git merge-base --is-ancestor 9341cfe7d 4c2fd41dbc` and `... 495b8db4f 4c2fd41dbc` both succeed; `git show -s 4c2fd41dbc` commit message; `git show 4c2fd41dbc:...script-inventory.sh \| grep untracked\|cost_per_assertion_ms` |
+| 16 | **Instrument B** (authoritative acceptance figure) — git-history-anchored sum over 77 `^task 328` commits: NET-PROD +498, NET-TEST +1,402, NET-MD −681, NET-TOTAL +1,219 | `plans/03`:273-294 | git-history-derived (`git show --numstat` per commit against its own parent) | derived at `4c2fd41dbc` close, 2026-11-05 19:57:12 -0800 | **UNAFFECTED by construction** — never consults the probe's corpus enumeration at all; each commit's diff is against its own parent. This is the task's authoritative acceptance figure and **cannot be moved by this correction in either direction.** | Method description; immune by construction, not merely by timing |
+| 17 | Hand-sum cross-check of all 19 phases' own closing-note deltas: NET-PROD +732 / NET-TEST +1,365 / NET-MD −798 | `plans/03`:283-285 | git-history-derived (same method as #16, applied by hand per phase) | `4c2fd41dbc`, 2026-11-05 19:57:12 -0800 | **UNAFFECTED by construction** — same reasoning as #16 | Method description |
+
+**Summary of the determination**: of the 17 enumerated figures, only the frozen Phase-1 baseline
+row (#1/#2, restated/corroborated in #8 for NET-MD) carries genuine exposure to the undercounting
+defect and requires Phase 3's bound. Rows #3-7 and #9 inherit the same era but are never
+themselves cited as an acceptance baseline. Rows #10-13 use a different, unexposed instrument.
+Rows #14 postdate the fix and need no correction. Row #15 (Instrument A) resolves its own flagged
+ambiguity in the fix's favor and is immaterial regardless (explicitly disclaimed). Rows #16-17
+(Instrument B and its cross-check) are immune by construction — this is the single most
+consequential finding for the record's scope, since Instrument B is what actually decided the
+parent's acceptance verdict.
+
 ## Goals & Non-Goals
 
 **Goals**:
@@ -240,7 +286,7 @@ alongside a diff read-through of the recorded block.
 
 ---
 
-### Phase 2: Date Every Recorded Figure and Classify It by Instrument [NOT STARTED]
+### Phase 2: Date Every Recorded Figure and Classify It by Instrument [COMPLETED]
 
 **Goal**: A complete, enumerated determination table covering every baseline and running-net figure
 in the two parent plan files, each row stating the instrument that produced the figure, the instant
@@ -248,13 +294,15 @@ it was captured, and the verdict — captured under the undercounting behaviour,
 evidence for that verdict named.
 
 **Tasks**:
-- [ ] Enumerate every recorded figure in both files. Do not work from this plan's plan-time counts;
+- [x] Enumerate every recorded figure in both files. Do not work from this plan's plan-time counts;
       re-derive the list live, because the files may have drifted. At minimum sweep for: the
       `script-inventory: scripts=… lines=…` probe lines, the `Figure | Population | Phase 1 baseline
       | Target` baseline tables, every `NET-PROD`/`NET-TEST`/`NET-MD`/`NET-TOTAL` cumulative figure
       stated in a re-measurement paragraph, the Plan-Time Measurements blocks, the markdown
       duplication-census tables, and the Phase-20 Instrument A and Instrument B blocks.
-- [ ] Classify each figure by the instrument that produced it. Three classes, and the class decides
+      *(completed: 17 figures enumerated, see Determination Table above — figures in the two files
+      are byte-identical restatements of the same captures, not independent readings)*
+- [x] Classify each figure by the instrument that produced it. Three classes, and the class decides
       the verdict:
       - **probe-derived** (`script-inventory.sh`, either mode) — exposed to the defect if captured
         before the fix;
@@ -267,13 +315,20 @@ evidence for that verdict named.
         the tracked-only `git ls-files` pattern. A `find`-based or explicit-file-list instrument
         carries no exposure; a `git ls-files`-based one carries the identical exposure and must be
         reported as such even though fixing it is out of scope here.
-- [ ] For each probe-derived figure, determine the probe version in effect at its capture instant.
+      *(completed: 11 probe-derived, 2 git-history-derived, 4 other-instrument (all explicit
+      named-file methods, none `git ls-files`-based, so none carry the exposure) — see Determination
+      Table rows 1-17)*
+- [x] For each probe-derived figure, determine the probe version in effect at its capture instant.
       The primary test is the recorded line's **field set**: a line carrying no `untracked=` field
       was not produced by a union-based copy, and a line carrying no `cost_per_assertion_ms` field
       predates the parent's Phase 12.2 extension (or was recorded non-verbatim — which is itself a
       recordable finding, since a trimmed line cannot be used as evidence of what the probe emitted).
       Corroborate with `git log` on the probe file against the figure's capture commit.
-- [ ] Settle the Phase-20 Instrument A line specifically. Its six figures are identical to the live
+      *(completed: rows 1-9 and the baseline table — all captured 2026-10-16, field-set lacking both
+      trailing fields, corroborated via `git blame`/`git log` against the probe's fix commits; rows
+      14-17 postdate the fix/extension and are either union-based by construction (14) or immune by
+      construction (16-17); row 15 resolved below)*
+- [x] Settle the Phase-20 Instrument A line specifically. Its six figures are identical to the live
       reading, it was committed roughly 27 hours after the fix was deployed, and yet it carries
       neither the `untracked=` nor the `cost_per_assertion_ms` field. Determine which of these holds,
       and state which: the reading came from a copy that carried the fix and the fields were trimmed
@@ -281,10 +336,16 @@ evidence for that verdict named.
       (`git show 4c2fd41db` on the probe's then-current state, the deploy's own timestamp, the
       parent's Phase-20 closing note). If the evidence does not decide it, say that plainly and
       carry the ambiguity into Phase 3's bound rather than picking the convenient reading.
-- [ ] Write the determination table into this plan's own artifact, one row per figure, with columns
+      *(completed: RESOLVED, not left ambiguous — `git merge-base --is-ancestor` confirms both fix
+      commits are ancestors of the Phase-20 commit; the commit message says "redeploy, full gate
+      set"; and the source file at that commit contains both the `untracked=` and
+      `cost_per_assertion_ms` code paths verbatim. The fields were trimmed when recording, not
+      evidence of a stale copy. See Determination Table row 15.)*
+- [x] Write the determination table into this plan's own artifact, one row per figure, with columns
       `Figure | Location | Instrument | Capture instant | Verdict | Evidence`. A figure that turns
       out to be unaffected gets a row stating so — the acceptance criterion requires the
       determination either way, so an unaffected figure is never simply omitted.
+      *(completed: see "Determination Table (Phase 2)" section above, 17 rows)*
 
 **Timing**: 1 hour
 

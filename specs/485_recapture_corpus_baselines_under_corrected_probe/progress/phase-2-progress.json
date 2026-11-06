@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Date Every Recorded Figure and Classify It by Instrument",
+  "started_at": "2026-11-05T00:35:00Z",
+  "last_updated": "2026-11-05T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate every recorded figure in both parent plan files", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 2, "description": "Classify each figure by instrument (probe-derived/git-history-derived/other-instrument)", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 3, "description": "Determine probe version in effect at each probe-derived figure's capture instant via field-set test", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 4, "description": "Settle the Phase-20 Instrument A field-set ambiguity", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 5, "description": "Write the determination table into this plan's own artifact", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
