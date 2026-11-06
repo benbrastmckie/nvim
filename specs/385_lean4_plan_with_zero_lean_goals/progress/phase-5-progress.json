@@ -1,0 +1,71 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and Full Gate",
+  "started_at": "2026-11-05T01:10:00Z",
+  "last_updated": "2026-11-06T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read four source-store files, confirm marker literal identical",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Run deploy-headless.sh and confirm success",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Confirm deployed copies carry the marker",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run gate set (deferred to batch stage per dispatch's Batch Gate Deferral directive; scoped checks run instead)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Run deployed copy of test suite",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Re-verify all four acceptance criteria",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Fix manifest.json registration gap for the 3 new fixtures discovered during redeploy verification; sync lean index-entries.json line_count for challenge-snapshot.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/manifest.json",
+        "agent-system/extensions/lean/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.2",
+      "description": "The first deploy-headless.sh run (after Phases 1-4's commits) did not deploy the three new fixture files added in Phase 4, because agent-system/extensions/lean/manifest.json's provides.scripts array never listed them -- a real gap introduced by Phase 4's own work, not a pre-existing one.",
+      "type": "altered",
+      "reason": "check-extension-docs.sh's post-deploy completeness check surfaced 'script file on disk NOT in provides.scripts' for the 3 new fixtures. Fixed by adding the 3 entries to manifest.json and re-running deploy-headless.sh a second time, which deployed them correctly.",
+      "annotation": "*(deviation: altered -- added a manifest.json registration fix and a second deploy-headless.sh run, not originally an explicit plan step)*"
+    }
+  ],
+  "notes": [
+    "Deploy run 1: landed, verify (fast gates) reported 2 of 40 FAIL -- both were the EXPECTED lean script-content-drift (pre-redeploy) and the then-undiscovered manifest.json registration gap. After fixing the manifest.json gap and running deploy-headless.sh a second time: landed, 3 of 40 FAIL, all three independently traced to either pre-existing unrelated repo drift (R18-R21 fixtures and lean-plan-compliance-check.sh missing from provides.scripts -- never touched by this task) or task 29's own declared-scope in-flight work (lint-hook-registration-paths.sh drift, test-mcp-merge-target.sh not deployed, /ide dead-command references in memory-setup.md/memory-troubleshooting.md -- all four paths are inside task 29's territory payload). None of the 3 remaining failures are attributable to task 385's own touched files.",
+    "Per the dispatch's Batch Gate Deferral directive (this task shares the current /orchestrate batch cycle with concurrently-dispatched task 29), the complete gate set was NOT independently re-run to green here; scoped checks (--only-gate 3,4, plus a full check-extension-docs.sh read, plus the deployed test suite run directly) were used instead, and the full set is deferred to the batch stage.",
+    "Acceptance verification: (a) plan-format.md's '### Zero Lean Goals (no theorem deliverable)' subsection is present and deployed. (b) deployed-copy case Z1 observes exit 72 (distinguishable from 71); 72 appears in both the deployed script header and the deployed challenge-snapshot.md's Exit-Code Vocabulary table. (c) deployed-copy case Z3 observes exit 71 with the malformed-section message. (d) all 33 pre-existing cases (R1-R21, M1-M3, C1-C4, AV1) pass unmodified against the deployed copy, confirming identifier-set cross-validation behaviour for ordinary lean4 plans is unchanged.",
+    "git status --short confirmed no source-store modification was introduced by the deploy operation itself beyond the two intentional fixes (manifest.json, lean/index-entries.json) and pre-existing, unrelated dirty files (lake-build-guard.sh, lean4.md, ladder-counter-observables.md line_count entry) that predate this task's dispatch and belong to other in-flight work -- left untouched and uncommitted exactly as found."
+  ]
+}

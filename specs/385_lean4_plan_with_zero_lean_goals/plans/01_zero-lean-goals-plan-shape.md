@@ -392,27 +392,48 @@ any production signature, and the covering check is that same suite run directly
 
 ---
 
-### Phase 5: Redeploy and Full Gate [NOT STARTED]
+### Phase 5: Redeploy and Full Gate [COMPLETED]
 
 **Goal**: Regenerate the deployed `.claude/` tree from the source store so the change is live,
 and close the task on the complete gate set.
 
 **Tasks**:
-- [ ] Re-read the four source-store files touched by Phases 1-4 and confirm the marker literal is
-      identical in the script, in `plan-format.md`, and in `challenge-snapshot.md`.
-- [ ] Run the deploy (`bash agent-system/extensions/core/scripts/deploy-headless.sh` from the
+- [x] Re-read the four source-store files touched by Phases 1-4 and confirm the marker literal is
+      identical in the script, in `plan-format.md`, and in `challenge-snapshot.md`. *(completed:
+      confirmed byte-identical via grep across all three)*
+- [x] Run the deploy (`bash agent-system/extensions/core/scripts/deploy-headless.sh` from the
       repository root, or the extension picker's regenerate entry) and confirm it reports success.
-- [ ] Confirm the deployed copies carry the change:
+      *(completed: deploy landed both times it was run; see deviation note below for the required
+      second run)*
+- [x] Confirm the deployed copies carry the change:
       `grep -c "lean-challenge-statements:none" .claude/context/formats/plan-format.md`,
       `.claude/scripts/lean-challenge-snapshot.sh`, and
-      `.claude/context/project/lean4/domain/challenge-snapshot.md` are each at least 1.
-- [ ] Run the full gate set and record the result.
-- [ ] Run the deployed copy of the suite once
+      `.claude/context/project/lean4/domain/challenge-snapshot.md` are each at least 1. *(completed:
+      counts were 1, 6, 1 respectively — all >= 1)*
+- [x] Run the full gate set and record the result. *(completed WITH DEFERRAL: this task's dispatch
+      file carries a Batch Gate Deferral directive -- this task is one of several implement-phase
+      dispatches inside one multi-task /orchestrate batch invocation (concurrent sibling: task 29,
+      actively committing throughout this phase). Per that directive, the complete gate set is
+      deferred to the batch stage rather than independently run here. Scoped checks run instead:
+      `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4` (doc-lint, task-ref
+      lint) and a full `bash .claude/scripts/check-extension-docs.sh` read. Result: every
+      remaining doc-lint failure after this task's own fixes is independently attributable to
+      either (i) pre-existing repo drift unrelated to any current task (missing `provides.scripts`
+      registration for pre-existing fixtures `plan_r18`-`plan_r21`.md and
+      `lean-plan-compliance-check.sh`, none touched by this task), or (ii) task 29's own declared
+      `file_scope` in-flight work (`lint-hook-registration-paths.sh` content drift,
+      `test-mcp-merge-target.sh` not yet deployed, `/ide` dead-command references in
+      `memory-setup.md`/`memory-troubleshooting.md` -- all four paths are in task 29's own
+      territory payload). Zero remaining failures are attributable to this task's own touched
+      files.)*
+- [x] Run the deployed copy of the suite once
       (`bash .claude/scripts/tests/test-lean-challenge-snapshot.sh` if present at that path after
       deploy, else note that gate 8 covers it) to confirm the deployed script behaves identically
-      to the source-store one.
-- [ ] Re-verify all four acceptance criteria explicitly against observed output, naming the case
-      or command that evidences each.
+      to the source-store one. *(completed: 37 passed, 0 failed, 0 skipped -- identical to the
+      source-store run)*
+- [x] Re-verify all four acceptance criteria explicitly against observed output, naming the case
+      or command that evidences each. *(completed, see Phase 5 handoff for the full per-criterion
+      evidence)*
 
 **Timing**: 0.5 hours
 
