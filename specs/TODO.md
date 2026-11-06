@@ -1,5 +1,5 @@
 ---
-next_project_number: 502
+next_project_number: 505
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 502
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 29,338,342,383,385,397,401,408,410,412,415,419,423,431,435,437,453,456,459,464,465,466,473,477,478,483,485,488,489,490,491,493,494,495 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 29,338,342,383,385,397,401,408,410,412,415,419,423,431,435,437,453,456,459,464,465,466,473,477,478,483,485,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 313,369,384,398,409,418,430,439,445,458,463,472,474,475,492,497 | 29,383,397,401,412,415,419,431,435,459,491,494 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 391,399,420,436,444,446,448,454,476 | 313,369,385,398,409,418,423,430,435,439,445,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 360,390,402,438,451,455,461,484,500 | 313,385,391,420,435,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
@@ -46,12 +46,14 @@ next_project_number: 502
 465 [RESEARCHED] — check-record-versioning.sh PATH\_SCOPE mode reports...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [NOT STARTED] — Make lint Check J fail on a missing handoff-writer section...
-485 [RESEARCHED] — Recapture corpus baselines under the corrected inventory probe
+485 [PLANNING] — Recapture corpus baselines under the corrected inventory probe
 489 [RESEARCHED] — Derive gate-count expectations in sibling test suites from...
 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
 493 [NOT STARTED] — Fix plan-format.md Tier Justification: a suite entry point...
+502 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
+503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
@@ -71,7 +73,7 @@ next_project_number: 502
 
 ### Extensions
 
-29 [NOT STARTED] — Generate .mcp.json from extension manifests, then register...
+29 [RESEARCHING] — Generate .mcp.json from extension manifests, then register...
 342 [HOLD] — Refactor the books extension's context corpus against the...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
@@ -92,7 +94,7 @@ next_project_number: 502
 
 ### File Scope Lifecycle
 
-494 [NOT STARTED] — Exempt a task own artifact directory from the phase-commit...
+494 [RESEARCHING] — Exempt a task own artifact directory from the phase-commit...
   └─ 430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
     └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
       └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
@@ -102,7 +104,7 @@ next_project_number: 502
 
 ### Lean Extension
 
-385 [NOT STARTED] — Define the sanctioned shape for a lean4-typed plan that...
+385 [RESEARCHING] — Define the sanctioned shape for a lean4-typed plan that...
   └─ 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
     └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
@@ -110,6 +112,7 @@ next_project_number: 502
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
 412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
   └─ 463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
+504 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 
 ### Orchestrator
 
@@ -124,11 +127,11 @@ next_project_number: 502
 
 ### Agent System
 
-401 [NOT STARTED] — Two repositories file against one source store with no...
-415 [NOT STARTED] — Record exact-pid process checking as a parallelism-safety...
+401 [RESEARCHING] — Two repositories file against one source store with no...
+415 [RESEARCHING] — Record exact-pid process checking as a parallelism-safety...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
     └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
-419 [NOT STARTED] — Extend the state-writer boundary lint to the Python JSON...
+419 [RESEARCHING] — Extend the state-writer boundary lint to the Python JSON...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit... (see above)
 488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
@@ -138,6 +141,330 @@ next_project_number: 502
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 504. Lean goals block harvest contract
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: lean-extension
+- **Dependencies**: None
+
+**Description**: MIGRATED FROM BimodalLogic 2026-11-05. This record was filed into ~/Projects/BimodalLogic/specs/
+by an /orchestrate conclusion-stage channel-(b) dispatch, which files into the repository it runs
+in. Its edit targets resolve only under this repository's agent-system/** source store, so it
+could neither be read nor committed where it was filed. Moved here under the migrate-mis-sited
+record's nine numbered constraints; description body below is preserved verbatim, every iss_*
+citation id intact. file_scope has been rewritten to source-store-only paths, which is constraint
+(7) and NOT a defect repair.
+
+CROSS-REPO REFERENCE MAP, required by constraint (3). The body below cites BimodalLogic record
+numbers, which do not resolve in this repository. Read them as: BimodalLogic #839 ->
+plan_contingency_file_scope_and_containment_drop; #785 -> lean_plan_gate_collision_authoring_guidance;
+#840 -> lean_unusedarguments_narrow_remedy_route; #847 -> file_scope_external_source_store_containment
+-- all four still sited in BimodalLogic and themselves pending the same migration ruling. The
+{task, entry_id} citations resolve against ~/Projects/BimodalLogic/specs/{NNN}_{SLUG}/issues.jsonl
+and remain readable cross-repo with: jq -c 'select(.entry_id=="<id>")' <that path>.
+
+Its "NOTE ON file_scope AND THE EXTERNAL STORE" paragraph below is now INVERTED and must be read
+as history, not instruction: sited here, the agent-system/** paths resolve natively and a phase
+commit CAN carry them. Expect no containment drops on those paths from this repository.
+
+========================================================================
+META TASK. ONE defect, ONE record: `lean-plan-compliance-check.sh` and the contract
+`context/formats/plan-format.md` documents disagree about what a plan's `**Goals**` block
+contributes as goal declarations. The script and the document cannot both be right; this record
+settles WHICH, deliberately.
+
+MEASURED {871, iss_1793913951568_HzkOMJ} (class `tooling-contract`, phase `plan`). The script
+harvests EVERY backticked token in the Goals block, not only the leading identifier that
+plan-format.md's `## Lean Challenge Statements` section describes. Binder names cited in
+descriptive prose (`P`, `hP`) and cross-referenced PRE-EXISTING lemmas
+(`plusValidIn_reflectTime`, `lcN_plusValidZTime`) were harvested as goal declarations. Two of them
+can never resolve as declarations introduced by the plan, so the Final Verification spot-check
+would have failed permanently, not transiently. The affected plan had to work around it by
+stripping every backtick from its Goals prose -- a workaround that degrades the plan's own
+readability to satisfy a harvester, and that the next plan author will not know to apply.
+
+VERIFY THE MECHANISM FIRST, do not trust this summary. In the source store's
+`scripts/lean-plan-compliance-check.sh` the harvest is a `sed` range over `/^\*\*Goals\*\*/` to
+the next `/^\*\*[^G]/` piped through a backticked-token extraction, followed by a per-name
+declaration grep across the resolved Lean source roots. The script's own header already records
+two prior narrowings of the same harvest (a keyword exclusion list, so a backticked `sorry` or
+`box` in prose is no longer harvested; and a colon-optional Goals-range fix) -- so this is the
+THIRD narrowing of one over-broad harvest, which is itself evidence about where the contract
+should live. The header also warns that two Goals-block readers must not drift apart on which
+header shapes they accept; find the second reader before changing either.
+
+THE DECISION THIS RECORD OWES, with the rejected alternative recorded on its own merits:
+
+  (a) Narrow the SCRIPT to the documented contract -- harvest only the leading identifier of each
+      Goals entry -- making descriptive backticks in Goals prose safe again.
+  (b) Widen the DOCUMENT to state the script's actual behavior, i.e. make "no backticks in Goals
+      prose except goal identifiers" an explicit, discoverable authoring rule rather than folklore
+      a plan author discovers by a permanent verification failure.
+
+Weigh (a) against the keyword-exclusion precedent already in the script: that precedent chose to
+narrow the harvest rather than to constrain prose, which is an argument for (a). Weigh (b) against
+the risk that a leading-identifier rule mis-parses the multi-line and parenthesized Goals shapes
+the test fixtures already cover (`plan_r19_multiline_paren_goals.md`, `plan_r18_paren_goals.md`,
+`plan_list_item_goals.md`, `plan_goals_preamble.md`). Whichever is chosen, the stripped-backticks
+workaround must NOT be the settled answer.
+
+VERIFICATION: extend `scripts/tests/test-lean-plan-compliance-check.sh` and the
+`scripts/tests/fixtures/challenge/` fixture set rather than replacing them. The minimum bar is a
+regression fixture whose Goals block cites a pre-existing lemma and a binder name in prose and
+which the check does not fail on.
+
+SCOPE BOUNDARY. Two adjacent open records own the Challenge block's OTHER contracts and must not
+be edited here: #813 (precedence and snapshot-prerequisite rules for a pinned Challenge block) and
+#824 (making a fixture-dependent gate statement expressible under `lean-challenge-snapshot.sh`).
+This record owns only the Goals-block harvest-versus-contract disagreement.
+
+EDIT TARGET, binding. Per `rules/source-store-deploy-boundary.md` this repository's `.claude/`
+tree is a gitignored, disposable deploy artifact regenerated from a source store; a hand-authored
+file under `.claude/**` is silently wiped by the next regeneration -- the edit appears to succeed
+and has no lasting effect. Make every edit under the source store at the path mirroring the
+deployed one. RE-DERIVE the store rather than trusting this note: `source_dir` lives PER-EXTENSION
+at `.extensions.<name>.source_dir` in `<project-root>/.claude-extensions.json`, not as a
+top-level key, so a top-level `jq -r '.source_dir'` returning null must NOT be read as the key
+being absent. Re-derive with, for example:
+
+  jq -r '.extensions.core.source_dir' .claude-extensions.json
+
+which currently yields `/home/benjamin/.config/nvim/agent-system/extensions/core`. If `source_dir`
+is absent or its path does not exist when this task runs, record that as an observation of its own
+rather than silently hand-authoring under `.claude/**`.
+
+NOTE ON file_scope AND THE EXTERNAL STORE. The store is a DIFFERENT git repository
+(`/home/benjamin/.config/nvim/agent-system`), so the `agent-system/extensions/**` entries in this
+task's declared `file_scope` do not resolve inside this repository and a phase commit here cannot
+carry them. That mismatch is a known, separately-recorded defect (open backlog record #847) --
+expect containment drops on those paths and do not treat them as this task's own defect.
+
+PROVENANCE. The citations below are {task number, entry_id} pairs into
+`specs/{NNN}_{SLUG}/issues.jsonl`, readable by `entry_id`; each is reproducible with
+`jq -c 'select(.entry_id=="<id>")' specs/{NNN}_{SLUG}/issues.jsonl`. These defects were derived
+from the aggregated issue logs of a five-task `/orchestrate` batch run and grouped by class across
+tasks. The orchestrator's conclusion stage classified this record to channel (b) (agent-system
+change); NO cited entry carries a contrary `suggested_channel` hint -- every one records
+`suggested_channel: null`, verified directly.
+
+---
+
+### 503. Revise unavailable to dispatched agent
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: MIGRATED FROM BimodalLogic 2026-11-05. This record was filed into ~/Projects/BimodalLogic/specs/
+by an /orchestrate conclusion-stage channel-(b) dispatch, which files into the repository it runs
+in. Its edit targets resolve only under this repository's agent-system/** source store, so it
+could neither be read nor committed where it was filed. Moved here under the migrate-mis-sited
+record's nine numbered constraints; description body below is preserved verbatim, every iss_*
+citation id intact. file_scope has been rewritten to source-store-only paths, which is constraint
+(7) and NOT a defect repair.
+
+CROSS-REPO REFERENCE MAP, required by constraint (3). The body below cites BimodalLogic record
+numbers, which do not resolve in this repository. Read them as: BimodalLogic #839 ->
+plan_contingency_file_scope_and_containment_drop; #785 -> lean_plan_gate_collision_authoring_guidance;
+#840 -> lean_unusedarguments_narrow_remedy_route; #847 -> file_scope_external_source_store_containment
+-- all four still sited in BimodalLogic and themselves pending the same migration ruling. The
+{task, entry_id} citations resolve against ~/Projects/BimodalLogic/specs/{NNN}_{SLUG}/issues.jsonl
+and remain readable cross-repo with: jq -c 'select(.entry_id=="<id>")' <that path>.
+
+Its "NOTE ON file_scope AND THE EXTERNAL STORE" paragraph below is now INVERTED and must be read
+as history, not instruction: sited here, the agent-system/** paths resolve natively and a phase
+commit CAN carry them. Expect no containment drops on those paths from this repository.
+
+========================================================================
+META TASK. ONE documentation defect, ONE record: `/revise` is a user-facing slash command that a
+dispatched implementation agent cannot invoke, and that unavailability is undocumented at the point
+of use. An agent that needs a sibling task's DESCRIPTION updated therefore has no documented route,
+and finds the sanctioned one only by reading `skill-reviser`'s own internals.
+
+MEASURED {884, iss_1793913745294_dZNuX5} (class `tooling`, phase `implement`): a dispatched
+implementation agent needed another task's description updated, could not invoke `/revise N`, and
+used the `state-write.sh` jq object-merge fallback instead (object-merge on `description` and
+`last_updated`, with `--session-id`, `--argjson num N`, and `--regen-todo`). THE WORK WAS CORRECT:
+that fallback is the identical mechanical path `skill-reviser`'s own Stage 7 uses for a description
+update, and the plan had named it as the fallback. The defect is purely that an agent had to
+rediscover it.
+
+WHAT TO VERIFY BEFORE WRITING ANYTHING. Establish, and state in the report, which of these the
+system actually enforces -- they imply different wording and possibly different surfaces:
+  (i) `/revise` is categorically unavailable to a dispatched subagent (the same measured
+      tool-withholding that applies to `AskUserQuestion`, documented in
+      `docs/reference/standards/agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched
+      Subagents" section);
+  (ii) it is available in principle but prohibited by contract;
+  (iii) it is a Skill-tool invocation that would succeed, and the observed unavailability was
+        narrower than the entry's own wording.
+Note that `commands/revise.md` and `skills/skill-reviser/SKILL.md` are NOT currently marked
+user-only -- `skill-tag` is the system's existing precedent for a user-only marking, so compare
+against it rather than inventing a new convention.
+
+THE DELIVERABLE is documentation and, if (i) or (ii) holds, a named route at the point of use:
+state the unavailability where an agent will meet it (`commands/revise.md` and
+`skills/skill-reviser/SKILL.md`), and name the sanctioned description-update route for a dispatched
+agent -- with the exact `state-write.sh` invocation shape, since an agent reconstructing a jq
+object-merge by hand against the single mutex-guarded state writer is precisely the kind of
+improvisation this system elsewhere refuses to leave to chance.
+`context/standards/postflight-tool-restrictions.md` is one candidate home for the general
+"what a dispatched agent cannot invoke" statement; weigh it against stating the restriction only on
+the two `/revise` surfaces, and record the rejected alternative.
+
+SCOPE BOUNDARY. Do not change `skill-reviser`'s own revision workflow, and do not add a new
+agent-invokable description-update command: the mechanical path already exists and is correct. This
+record's deliverable is that the path is DISCOVERABLE from where an agent looks for it.
+
+EDIT TARGET, binding. Per `rules/source-store-deploy-boundary.md` this repository's `.claude/`
+tree is a gitignored, disposable deploy artifact regenerated from a source store; a hand-authored
+file under `.claude/**` is silently wiped by the next regeneration -- the edit appears to succeed
+and has no lasting effect. Make every edit under the source store at the path mirroring the
+deployed one. RE-DERIVE the store rather than trusting this note: `source_dir` lives PER-EXTENSION
+at `.extensions.<name>.source_dir` in `<project-root>/.claude-extensions.json`, not as a
+top-level key, so a top-level `jq -r '.source_dir'` returning null must NOT be read as the key
+being absent. Re-derive with, for example:
+
+  jq -r '.extensions.core.source_dir' .claude-extensions.json
+
+which currently yields `/home/benjamin/.config/nvim/agent-system/extensions/core`. If `source_dir`
+is absent or its path does not exist when this task runs, record that as an observation of its own
+rather than silently hand-authoring under `.claude/**`.
+
+NOTE ON file_scope AND THE EXTERNAL STORE. The store is a DIFFERENT git repository
+(`/home/benjamin/.config/nvim/agent-system`), so the `agent-system/extensions/**` entries in this
+task's declared `file_scope` do not resolve inside this repository and a phase commit here cannot
+carry them. That mismatch is a known, separately-recorded defect (open backlog record #847) --
+expect containment drops on those paths and do not treat them as this task's own defect.
+
+PROVENANCE. The citations below are {task number, entry_id} pairs into
+`specs/{NNN}_{SLUG}/issues.jsonl`, readable by `entry_id`; each is reproducible with
+`jq -c 'select(.entry_id=="<id>")' specs/{NNN}_{SLUG}/issues.jsonl`. These defects were derived
+from the aggregated issue logs of a five-task `/orchestrate` batch run and grouped by class across
+tasks. The orchestrator's conclusion stage classified this record to channel (b) (agent-system
+change); NO cited entry carries a contrary `suggested_channel` hint -- every one records
+`suggested_channel: null`, verified directly.
+
+---
+
+### 502. Research phase doc sync companion surface
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: MIGRATED FROM BimodalLogic 2026-11-05. This record was filed into ~/Projects/BimodalLogic/specs/
+by an /orchestrate conclusion-stage channel-(b) dispatch, which files into the repository it runs
+in. Its edit targets resolve only under this repository's agent-system/** source store, so it
+could neither be read nor committed where it was filed. Moved here under the migrate-mis-sited
+record's nine numbered constraints; description body below is preserved verbatim, every iss_*
+citation id intact. file_scope has been rewritten to source-store-only paths, which is constraint
+(7) and NOT a defect repair.
+
+CROSS-REPO REFERENCE MAP, required by constraint (3). The body below cites BimodalLogic record
+numbers, which do not resolve in this repository. Read them as: BimodalLogic #839 ->
+plan_contingency_file_scope_and_containment_drop; #785 -> lean_plan_gate_collision_authoring_guidance;
+#840 -> lean_unusedarguments_narrow_remedy_route; #847 -> file_scope_external_source_store_containment
+-- all four still sited in BimodalLogic and themselves pending the same migration ruling. The
+{task, entry_id} citations resolve against ~/Projects/BimodalLogic/specs/{NNN}_{SLUG}/issues.jsonl
+and remain readable cross-repo with: jq -c 'select(.entry_id=="<id>")' <that path>.
+
+Its "NOTE ON file_scope AND THE EXTERNAL STORE" paragraph below is now INVERTED and must be read
+as history, not instruction: sited here, the agent-system/** paths resolve natively and a phase
+commit CAN carry them. Expect no containment drops on those paths from this repository.
+
+========================================================================
+META TASK. ONE gap, ONE record: the research phase has no obligation to enumerate the GENERATED
+doc-sync companion surface a `.lean` edit forces, so that surface is discovered at plan time -- by
+running the file-scope harvester against a draft plan -- or later, by a gate firing
+mid-implementation. Two entries from the same task record the same cause.
+
+MEASURED {871, iss_1793913951546_jLdhm5} (class `scope-discovery`, phase `plan`): "The research
+report did not cover the generated doc-sync surface at all." Running
+`plan-file-scope-harvest.sh` against the DRAFT plan surfaced four companion paths the harvester
+augments for any `.lean` edit -- `typst/generated/status.typ` plus three registered README
+inventory blocks -- each separately gated by `typst-sync-check.sh` and
+`check-module-invariants.sh --emit-inventory --check`. They had to be retrofitted into a late
+phase as explicit regeneration tasks, declared files, verification criteria, and two Risks rows.
+
+MEASURED {871, iss_1793927811619_YMJoHw} (class `scope-delta`, phase `implement`): a phase's Scope
+Hypothesis predicted zero mentions of a renamed construct in any README; grep found a fourth
+surface inside a GENERATED inventory block. Inspection of
+`scripts/check-module-invariants.sh`'s `render_block` established that the Description column is
+PRESERVED from the existing block (only Lines are refreshed), so that cell is hand-authored and a
+hand edit SURVIVES regeneration. That is a non-obvious fact about a generated surface, and the
+scope hypothesis predicted its opposite.
+
+WHY THESE ARE ONE GAP. The harvester's own header (`scripts/plan-file-scope-harvest.sh`,
+"Generated-surface appending") already documents the augmentation, its `.lean` trigger, its
+capability guard (both generator scripts must exist under the resolved repo root, else the whole
+addition is inert), and the fact that a plan omitting these "either blocks on the pre-commit
+`typst-sync-check.sh` gate or fails `check-module-invariants.sh`'s INV check mid-implementation --
+this has happened twice independently." The capability probe that decides whether the augmentation
+applies is therefore ALREADY mechanized and already repo-agnostic. Nothing in the research-phase
+contract consults it, so the research report can be complete on its own terms and still hand the
+planner a surface inventory that is short by four paths.
+
+THE DELIVERABLE is the research-phase contract: `context/processes/research-workflow.md` and the
+research agent's own instructions should require a report whose scope inventory names the
+generated/derived companion surface for every source file class it expects to be edited, together
+with which generator owns each surface and whether any column or region of it is hand-authored
+rather than regenerated. Decide deliberately whether the obligation is discharged by prose, by
+invoking the existing harvester capability probe at research time, or by both; record the rejected
+alternative on its own merits. A research phase cannot be asked to enumerate a repository-specific
+generator set from nothing -- so weigh resolving it from the repository's own declarations
+(`context/standards/repo-level-declarations.md` is the existing surface) against reusing the
+harvester's probe directly.
+
+SCOPE BOUNDARIES, binding. This record does NOT own the harvester's augmentation SET, nor the
+containment behavior of a path it fails to augment: open record #839 owns both (its Item 1 settles
+whether Scope Hypothesis contingency paths become a second harvest source, and its Item 1 Extended
+owns the companion-surface rule keyed on "the phase touches any `.lean` file"). Do not change
+`plan-file-scope-harvest.sh`'s augmentation set here. This record also does not own the LEAN
+extension's plan-authoring prose record (#785) or its `plan-authoring-gate-collisions.md`
+(#785, #840) -- if the `render_block` Description-preservation fact needs a durable home in a
+lean-specific pattern note rather than in the core research contract, say so and propose adding it
+to that record instead of writing into its declared files.
+
+NOT a repair of this repository's generators. `scripts/check-module-invariants.sh`,
+`scripts/typst-sync-check.sh`, `typst/generated/status.typ` and every inventory block are correct
+as they stand; the Description-column preservation is deliberate behavior to be DOCUMENTED, not
+changed.
+
+EDIT TARGET, binding. Per `rules/source-store-deploy-boundary.md` this repository's `.claude/`
+tree is a gitignored, disposable deploy artifact regenerated from a source store; a hand-authored
+file under `.claude/**` is silently wiped by the next regeneration -- the edit appears to succeed
+and has no lasting effect. Make every edit under the source store at the path mirroring the
+deployed one. RE-DERIVE the store rather than trusting this note: `source_dir` lives PER-EXTENSION
+at `.extensions.<name>.source_dir` in `<project-root>/.claude-extensions.json`, not as a
+top-level key, so a top-level `jq -r '.source_dir'` returning null must NOT be read as the key
+being absent. Re-derive with, for example:
+
+  jq -r '.extensions.core.source_dir' .claude-extensions.json
+
+which currently yields `/home/benjamin/.config/nvim/agent-system/extensions/core`. If `source_dir`
+is absent or its path does not exist when this task runs, record that as an observation of its own
+rather than silently hand-authoring under `.claude/**`.
+
+NOTE ON file_scope AND THE EXTERNAL STORE. The store is a DIFFERENT git repository
+(`/home/benjamin/.config/nvim/agent-system`), so the `agent-system/extensions/**` entries in this
+task's declared `file_scope` do not resolve inside this repository and a phase commit here cannot
+carry them. That mismatch is a known, separately-recorded defect (open backlog record #847) --
+expect containment drops on those paths and do not treat them as this task's own defect.
+
+PROVENANCE. The citations below are {task number, entry_id} pairs into
+`specs/{NNN}_{SLUG}/issues.jsonl`, readable by `entry_id`; each is reproducible with
+`jq -c 'select(.entry_id=="<id>")' specs/{NNN}_{SLUG}/issues.jsonl`. These defects were derived
+from the aggregated issue logs of a five-task `/orchestrate` batch run and grouped by class across
+tasks. The orchestrator's conclusion stage classified this record to channel (b) (agent-system
+change); NO cited entry carries a contrary `suggested_channel` hint -- every one records
+`suggested_channel: null`, verified directly.
+
+---
 
 ### 501. Give the cycle-postflight containment site predicate parity and a guarded recovery route for a dropped path
 - **Status**: [NOT STARTED]
@@ -603,7 +930,7 @@ None of the four carries the verbatim-heading contract, the `^##+` matching rule
 ---
 
 ### 494. Exempt a task own artifact directory from the phase-commit containment predicate
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
@@ -1030,7 +1357,7 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 ---
 
 ### 485. Recapture corpus baselines under the corrected inventory probe
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1381,6 +1708,93 @@ ruling pass can be bounded to these plus any record a mechanical file_scope over
 self entries. This list is a STARTING BOUND, not a closed set: a BimodalLogic record may be
 covered by a record that never mentions BimodalLogic, and 44 closed records are outside it
 entirely -- see (ii) above for why closed records matter here.
+
+
+========================================================================
+AMENDED 2026-11-05 -- THE DELTA GREW AGAIN DURING AN /orchestrate RUN.
+FIVE MORE RULINGS PERFORMED AHEAD OF PHASE 1; THREE RECORDS MOVED.
+========================================================================
+
+THIS RECORD'S OWN DELTA IS STALE, AND THE MECHANISM THAT STALED IT IS STILL LIVE. The 2026-11-04
+amendment above put the delta at 31. Measured 2026-11-05 against BimodalLogic's specs/state.json
+with this record's own two derivation queries, the non-terminal `meta` frozen set is 33:
+
+  group (a), declares at least one agent-system/** path -- 31 records:
+    767, 770, 772, 777, 783, 785, 813, 814, 816, 822, 823, 824, 825, 826, 827, 834, 839, 840,
+    841, 842, 843, 845, 857, 858, 863, 882, 883, 885, 886, 887, 888
+  group (b), declares only .claude/** paths -- 2 of the 5 that query returns are in this set:
+    753, 774   (the query also returns 751, 752 and 784, whose declarations are
+                BimodalLogic-local -- specs/state.json, specs/ROADMAP.md -- so they are group C
+                candidates-to-stay, not group B)
+
+SEVEN RECORDS ARE NEW SINCE THE 2026-11-04 MEASUREMENT: 863, 882, 883, 885, 886, 887, 888. Four of
+those seven -- 885, 886, 887, 888 -- were filed on 2026-11-05 by a single /orchestrate
+conclusion-stage channel-(b) dispatch, during a six-task batch run in BimodalLogic, WHILE THIS
+MIGRATION RECORD WAS ALREADY OPEN. That is the second confirmed instance of the mechanism this
+record's PROVENANCE section describes, and it is now measured rather than inferred: the
+conclusion stage files channel-(b) tasks into whichever repository the batch ran in, and its
+meta-builder dispatch ran a backlog audit that caught a duplicate but had no check for whether a
+proposed record's edit target resolves in the repository receiving it.
+
+THE PREVENTION REMAINS #391's, NOT THIS RECORD'S -- but the measurement sharpens what #391 needs
+to cover: not only task AUTHORING siting, but the conclusion stage's channel-(b) FILING site
+specifically, including the meta-builder's own audit step. Cross-reference #391 and #402
+(conclusion_channels_become_evidence_only) and do not re-decide either here.
+
+--- FIVE RULINGS, EACH PER RECORD WITH ITS GROUNDS ---
+
+(i) MOVED: BimodalLogic #886 research_phase_doc_sync_companion_surface -> this repository's #502,
+same slug. Grounds for `move` rather than `fold`: its claim is that the RESEARCH phase must
+enumerate the generated doc-sync companion surface, and its declared targets are
+context/processes/research-workflow.md and agents/general-research-agent.md. No record here
+declares either path. The adjacent records own the harvester, not the research contract: #446
+close_the_plan_to_file_scope_reconciliation_gap and #455 preflag_module_wiring_invariant_failures
+both declare plan-file-scope-harvest.sh and neither reaches the research phase. Not a sweep-record
+overlap.
+
+(ii) MOVED: BimodalLogic #887 revise_unavailable_to_dispatched_agent -> #503, same slug. Grounds:
+no record here declares commands/revise.md or skills/skill-reviser/SKILL.md. Searched by declared
+path, not by name similarity.
+
+(iii) MOVED: BimodalLogic #888 lean_goals_block_harvest_contract -> #504, same slug. Grounds: its
+subject is lean-plan-compliance-check.sh's Goals-block token harvest. The two adjacent lean
+records, #462 lean_challenge_check_scope_limit and #451 snapshot_lean_challenge_at_plan_time, both
+declare lean-challenge-snapshot.sh -- A DIFFERENT SCRIPT. Distinguished by reading the declared
+paths, exactly as this record's limit (a) requires. Cross-reference #462; do not merge.
+
+(iv) FOLDED: BimodalLogic #885 per_phase_generated_surface_gates_and_batch_defer -> folded into
+#449 hoist_batch_gate_deferral_directive under a "FOLDED IN 2026-11-05" heading, with its five
+citations and its measured status.typ line-count drift transplanted first, per the transplant
+pattern the predecessor record uses. Grounds: #449 already declares batch-gate-stage.md AND
+orchestrate-build-dispatch.sh, which are #885's own declared paths for the deferral half of its
+subject; the per-phase sequencing half belongs to #455, which owns the harvester, and the fold note
+cross-references it rather than editing it. #885 also declared plan-format.md and planner-agent.md,
+which #449 does not -- the sequencing obligation those two paths would carry is stated explicitly
+in the fold note so it is not lost.
+
+(v) ABANDON-AS-COVERED: BimodalLogic #858 state_write_audit_verdict_argv_overflow is covered by
+this repository's #475 audit_evidence_gate_internal_argjson_spill_bypass, which is OPEN and carries
+the more precise diagnosis: the audit-evidence gate's own internal jq invocations pass the whole
+verdict as a single --argjson, bypassing the transparent spill the same script implements for
+caller-supplied values. A CORRECTION TO THIS RECORD'S OWN TEXT: its "TWO TOOLING CONSTRAINTS"
+paragraph calls that defect "nvim #858", but 858 is the BimodalLogic number; the record here is
+#475. Fix that reference when Phase 1 runs.
+  THE DEFECT WAS RE-OBSERVED LIVE on 2026-11-05 in BimodalLogic, independently of its record:
+  state-write.sh --audit-verdict died with `jq: Argument list too long` on a 145KB audit file, and
+  the write only succeeded after the verdict array was hand-trimmed to 7KB. So #475 is reproducing,
+  not historical, and the trimming workaround degrades exactly the Pass-2 recall this record warns
+  against.
+
+--- WHAT THIS AMENDMENT DELIBERATELY DID NOT DO ---
+
+The remaining 28 group-(a) records and both group-(b) records carry NO disposition and were NOT
+abandoned. The repository owner asked for the mis-sited records to be abandoned in BimodalLogic;
+only the five ruled above were, each paired with a durable pointer per constraint (4). A blanket
+abandonment was declined on this record's own terms: Phase 1 gates every disposition, a bulk
+verdict over a group is not acceptable output, the false-abandonment cost is losing a real record,
+group B mixed records must not be force-fitted while #401's question is open, and #753 carries the
+predecessor's standing fail-safe keeping it OPEN until the closed-absorbing-record question in the
+2026-11-04 amendment above is settled. Phase 1 still has 30 records to rule on.
 
 ---
 
@@ -3241,6 +3655,48 @@ TERRITORY EDGES (declared per context/patterns/batch-orchestration-guardrails.md
 
 DUPLICATE CHECK PERFORMED. 413 (completed) coordinated full gate-set runs across concurrent sessions in one repository -- the nearest neighbour in subject, and the reason the contention cost above is measurable at all. It addressed cross-session coordination of gate runs; this record addresses whether a single implementer READS the directive in time to honour it, which that coordination work does not cover. 427 (completed) fixed a different dispatch-file content defect (a superseded Prior Decision emitted as settled) in the same composer -- same file, disjoint section and cause. No absorption candidate found; edges were declared instead.
 
+========================================================================
+FOLDED IN 2026-11-05 -- per-phase generated-surface sequencing, measured
+========================================================================
+
+Absorbed from a BimodalLogic record (per_phase_generated_surface_gates_and_batch_defer) filed there
+by an /orchestrate conclusion-stage channel-(b) dispatch and ruled fold-into-this-record rather
+than moved, on the grounds that this record already declares both batch-gate-stage.md and
+orchestrate-build-dispatch.sh -- the deferral half of its subject -- and that the sequencing half
+belongs to the harvester record that owns plan-file-scope-harvest.sh. Only the measurements this
+record lacks are transplanted.
+
+MEASURED, 5 entries across 4 tasks of one batch run. The pre-commit typst-sync gate fires on EVERY
+phase commit whose .lean line count moves, because typst/generated/status.typ pins FormalSystem
+file and line counts. Three separate plans in that batch sequenced `typst-sync-check.sh --fix` into
+a single final phase; in practice the regeneration must run per-phase, in every module-adding or
+line-count-changing commit. One task recorded the drift concretely: status.typ's
+formalsystem-line-count moved 387552 -> 387568 from a single phase's own additions, and the gate
+refused the commit until --fix regenerated it.
+
+A DISTINCT SUB-CASE, same cause, worth keeping separate: one plan named the bare full
+`check-module-invariants.sh` as its own final-phase gate while the dispatch's own Batch Gate
+Deferral directive superseded it for that run, leaving the plan's written criterion unsatisfiable
+as authored by any narrowing of it. That is this record's own subject -- the deferral directive
+naming a gate the target repository does not have a mapping for -- and is the reason the fold
+lands here rather than solely on the harvester record.
+
+THREE BANDS CAUGHT RED by `--no-build` from one task's own edits, none anticipated by its plan's
+scope hypothesis: stale generated inventory blocks in two READMEs (fixed by --emit-inventory), 69
+citation-manifest line drifts all +4 inside one .lean file from four added docstring lines (fixed
+by export-lean-citations.py), and a requirement that every theorem-index row's declaration carry a
+`Paper:` line in its own doc comment.
+
+CITATIONS, resolvable cross-repo against ~/Projects/BimodalLogic/specs/{NNN}_{SLUG}/issues.jsonl
+via `jq -c 'select(.entry_id=="<id>")'`: {871, iss_1793928066810_oWg5Au}, {867,
+iss_1793914994233_yAr1ND}, {870, iss_1793920716964_cvinG9}, {870, iss_1793927378769_FitNDF},
+{880, iss_1793932578569_JqSq31}. Every one records `suggested_channel: null`.
+
+SEQUENCING OBLIGATION, for whichever record lands it: a plan that edits any .lean file must
+sequence the generated-surface regeneration into EVERY such phase, not into a terminal
+documentation phase. Cross-reference the harvester record (preflag_module_wiring_invariant_failures)
+rather than editing plan-file-scope-harvest.sh here.
+
 ---
 
 ### 448. Contain the regression-anchor source-store mutation so a concurrent session cannot observe or inherit it
@@ -4080,7 +4536,7 @@ Sequenced after the concurrent-gate-coordination task because both edit context/
 ---
 
 ### 419. Extend the state-writer boundary lint to the Python JSON re-serialization channel
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 275, Task 411
@@ -4224,7 +4680,7 @@ Sequenced after the exact-pid process-check standard task, which is itself the t
 ---
 
 ### 415. Record exact-pid process checking as a parallelism-safety suite-authoring standard
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 414, Task 411
@@ -4736,7 +5192,7 @@ The batched, dedup-aware, consolidation-biased consumer of this evidence is scop
 
 ### 401. Two repositories file against one source store with no cross-repo overlap or dependency visibility
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 387
@@ -5717,7 +6173,7 @@ two files where there is one.
 ---
 
 ### 385. Define the sanctioned shape for a lean4-typed plan that commits to no theorem, and make lean-challenge-snapshot.sh distinguish it from a malformed one
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -6663,7 +7119,7 @@ that produces no finding.
 ---
 
 ### 29. Generate .mcp.json from extension manifests, then register obsidian-memory through it
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 22
