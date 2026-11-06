@@ -1,39 +1,11 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1793993117_98582a_478",
-  "dispatch_seq": 5,
-  "findings_count": 9,
-  "artifacts": [
-    {
-      "type": "report",
-      "path": "specs/478_ungate_lint_check_j_handoff_contract/reports/01_ungate-check-j-curated-list.md",
-      "summary": "Derives Check J's in-scope criterion by mechanically probing all 81 dispatchable agent files against its own section-locating logic (44 writers, 23 never-write-one research agents, 8 forked-subagent-only exclusions, zero misclassified); identifies the matching convention as the EXCLUDED-style curated array (Checks E/F/N), not the INCLUDED-style one (Checks C/G/H/M); shows the fail-closed-by-default redesign needs no bolted-on completeness-net check; and traces the 'dispatch-derived predicate' idea's full history (completed via archived task 212 for a different file, not rejected on merit, and structurally inapplicable to a static markdown lint)."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When designing a curated-array lint check in lint-agent-contracts.sh (or similar), first measure the true population shape (what fraction of the population is in-scope) before picking INCLUDED-style (Checks C/G/H/M: small hand-picked subset, needs a bolted-on completeness-net check like Check N to catch silent omission) vs EXCLUDED-style (Checks E/F/N's own exclusion arrays: almost-everyone minus a few named exceptions, fails loud by default on a new unregistered member -- no completeness net needed). The failure direction inverts between the two shapes: INCLUDED-style omits silently, EXCLUDED-style (iterating the full enumerate_dispatchable_agents() universe directly) fails loudly. Prefer EXCLUDED-style whenever the measured shape supports it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/478_ungate_lint_check_j_handoff_contract/reports/01_ungate-check-j-curated-list.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-agent-contracts", "curated-array", "excluded-style", "completeness-net", "fail-closed"]
-    },
-    {
-      "content": "A 'replace allowlist X with a dispatch-derived predicate' design that succeeded for one script (orchestrate-cycle-postflight.sh's is_contractual_handoff_writer -> --handoff-expected flag, task 212) does not automatically transfer to a different script with a superficially similar allowlist. The mechanism only works where a live dispatch row exists to derive the predicate from; a static lint over markdown files at lint time has no dispatch context, so 'dispatch-derived' is a category error there -- the correct analog is a role/filename/content-derived curated classification instead.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/478_ungate_lint_check_j_handoff_contract/reports/01_ungate-check-j-curated-list.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["dispatch-derived-predicate", "is_contractual_handoff_writer", "orchestrate-cycle-postflight", "lint-design", "category-error"]
-    },
-    {
-      "content": "lint-agent-contracts.sh's Check N completeness-net glob '*implementation*agent.md' does not match the '*-implement-agent.md' naming variant (epi-implement-agent.md, founder-implement-agent.md); CHECK_G_EXCLUDED_RELATIVE_PATHS lists epi-implement-agent.md as an exclusion but Check N's own glob never reaches it, making that entry dead code. Any future completeness-net-style check in this file should source its base universe from enumerate_dispatchable_agents() (frontmatter-based, already handles both naming suffixes correctly) rather than inventing a fresh filename glob.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/478_ungate_lint_check_j_handoff_contract/reports/01_ungate-check-j-curated-list.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["check-n", "glob-gap", "enumerate_dispatchable_agents", "lint-agent-contracts", "coverage-gap"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 478 to create implementation plan"
+  "status": "in_progress",
+  "artifacts": [],
+  "metadata": {
+    "session_id": "sess_1793993117_98582a_478",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 9
 }
