@@ -130,7 +130,6 @@
       "lib/file-scope-overlap.sh",
       "lib/gate-cache-lib.sh",
       "lib/gate-registry-lib.sh",
-      "lib/gate-store-fixture-lib.sh",
       "lib/gate-verdict-extract-lib.sh",
       "lib/lint-corpus-scan-lib.sh",
       "lib/manifest-routing-lib.sh",
