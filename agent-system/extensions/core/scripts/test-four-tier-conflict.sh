@@ -83,6 +83,20 @@ cp "$SCRIPT_DIR/lib/task-lookup-lib.sh" "$TMPROOT/.claude/scripts/lib/task-looku
 cp "$SCRIPT_DIR/orchestrate-batch-admit.sh" "$TMPROOT/.claude/scripts/orchestrate-batch-admit.sh"
 chmod +x "$TMPROOT/.claude/scripts/task-lock.sh" "$TMPROOT/.claude/scripts/orchestrate-batch-admit.sh"
 
+# --- Git-repository fixture capability (NEW, for the dirty_scope_advisory presence/absence
+# case below): mirrors test-conflict-predicate.sh's identical addition. orchestrate-batch-
+# admit.sh now shells out to `git -C "$PROJECT_ROOT" diff --name-only HEAD`, where
+# $PROJECT_ROOT resolves to $TMPROOT itself via `common_repo_root "$SCRIPT_DIR" 2`. Init a real
+# git repo at $TMPROOT with a local identity and one baseline tracked file, committed, at a path
+# a dedicated candidate declares in its own file_scope.
+git -C "$TMPROOT" init -q
+git -C "$TMPROOT" config user.email "test-fixture@example.invalid"
+git -C "$TMPROOT" config user.name "test-four-tier-conflict fixture"
+mkdir -p "$TMPROOT/case_dirty"
+echo "baseline" > "$TMPROOT/case_dirty/tracked.txt"
+git -C "$TMPROOT" add case_dirty/tracked.txt
+git -C "$TMPROOT" commit -q -m "baseline fixture commit"
+
 TL="$TMPROOT/.claude/scripts/task-lock.sh"
 BA="$TMPROOT/.claude/scripts/orchestrate-batch-admit.sh"
 SESSIONS_DIR="$TMPROOT/specs/.sessions"
@@ -145,7 +159,8 @@ cat > "$STATE_FILE" << EOF
     {"project_number": 504, "project_name": "case_c_held", "status": "implementing", "task_type": "general", "file_scope": ["case_c/shared.sh"], "dependencies": []},
     {"project_number": 505, "project_name": "case_d_candidate", "status": "not_started", "task_type": "general", "file_scope": ["case_d/shared.sh"], "dependencies": []},
     {"project_number": 506, "project_name": "case_e_reentry", "status": "implementing", "task_type": "general", "file_scope": [], "dependencies": []},
-    {"project_number": 507, "project_name": "case_f_budget", "status": "implementing", "task_type": "general", "file_scope": [], "dependencies": []}
+    {"project_number": 507, "project_name": "case_f_budget", "status": "implementing", "task_type": "general", "file_scope": [], "dependencies": []},
+    {"project_number": 508, "project_name": "case_dirty_scope", "status": "not_started", "task_type": "general", "file_scope": ["case_dirty/tracked.txt"], "dependencies": []}
   ]
 }
 EOF
@@ -153,7 +168,7 @@ EOF
 mkdir -p "$TMPROOT/specs/501_case_a_resolving" "$TMPROOT/specs/502_case_b_exhaustion" \
          "$TMPROOT/specs/503_case_c_candidate" "$TMPROOT/specs/504_case_c_held" \
          "$TMPROOT/specs/505_case_d_candidate" "$TMPROOT/specs/506_case_e_reentry" \
-         "$TMPROOT/specs/507_case_f_budget"
+         "$TMPROOT/specs/507_case_f_budget" "$TMPROOT/specs/508_case_dirty_scope"
 
 info "Fixture built at $TMPROOT (dead pid probe resolved to $DEAD_PID)"
 
@@ -581,6 +596,32 @@ if [ "$c13_ok" = true ]; then
 else
   fail "13: in_batch bit-for-bit guard failed (see INFO lines above)"
 fi
+
+# =============================================================================
+# Case 14 (dirty_scope_advisory presence/absence, NEW): mirrors test-conflict-predicate.sh's
+# own case 10.1/10.2 pair for this suite's own fixture.
+# =============================================================================
+# 14.1 (presence): candidate #508's own file_scope (case_dirty/tracked.txt) intersects an
+# uncommitted edit to that same tracked file -- dirty_scope_advisory fires, naming the path, and
+# the decision is unchanged from the clean-tree baseline taken first.
+v508_clean=$("$BA" 508 2>/dev/null | jq -c '.')
+c141_clean_decision=$(echo "$v508_clean" | jq -r '.decision')
+echo "dirty edit" >> "$TMPROOT/case_dirty/tracked.txt"
+v508_dirty=$("$BA" 508 2>/dev/null | jq -c '.')
+c141_ok=true
+[ "$(echo "$v508_dirty" | jq 'has("dirty_scope_advisory")')" = "true" ] || { c141_ok=false; info "14.1: #508's verdict is missing dirty_scope_advisory with an uncommitted edit present: $v508_dirty"; }
+[ "$(echo "$v508_dirty" | jq -r '.dirty_scope_advisory.dirty_paths | index("case_dirty/tracked.txt") != null')" = "true" ] || { c141_ok=false; info "14.1: dirty_scope_advisory.dirty_paths does not name case_dirty/tracked.txt: $v508_dirty"; }
+[ "$(echo "$v508_dirty" | jq -r '.decision')" = "$c141_clean_decision" ] || { c141_ok=false; info "14.1: decision changed between clean ($c141_clean_decision) and dirty ($(echo "$v508_dirty" | jq -r '.decision')) tree: $v508_dirty"; }
+if [ "$c141_ok" = true ]; then pass "14.1: dirty_scope_advisory fires when the candidate's own file_scope intersects an uncommitted edit, with decision unchanged"; else fail "14.1: dirty_scope_advisory presence case failed (see INFO lines above)"; fi
+git -C "$TMPROOT" checkout -q -- case_dirty/tracked.txt
+
+# 14.2 (absence): candidate #505's file_scope (case_d/shared.sh) lies entirely within a
+# synthetic namespace never committed to the fixture's git repo, so it cannot intersect any
+# real dirty path.
+v505_dirty_check=$("$BA" 505 2>/dev/null | jq -c '.')
+c142_ok=true
+[ "$(echo "$v505_dirty_check" | jq 'has("dirty_scope_advisory")')" = "false" ] || { c142_ok=false; info "14.2: #505 unexpectedly carries dirty_scope_advisory with no real dirty-tree intersection possible: $v505_dirty_check"; }
+if [ "$c142_ok" = true ]; then pass "14.2: dirty_scope_advisory is absent when the candidate's file_scope cannot intersect any real dirty path"; else fail "14.2: dirty_scope_advisory absence case failed (see INFO lines above)"; fi
 
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"

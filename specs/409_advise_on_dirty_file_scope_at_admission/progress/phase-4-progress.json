@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Presence/absence regression cases in both named suites",
+  "started_at": "2026-11-06T01:00:00Z",
+  "last_updated": "2026-11-06T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm zero git init occurrences in both suites", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add git-repository TMPROOT fixture capability to both suites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-conflict-predicate.sh", "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 3, "description": "Add presence case to each suite (10.1, 14.1)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-conflict-predicate.sh", "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 4, "description": "Add absence case to each suite (10.2, 14.2)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-conflict-predicate.sh", "agent-system/extensions/core/scripts/test-four-tier-conflict.sh"]},
+    {"id": 5, "description": "Confirm cases 2.5, 2.6, 12 textually unmodified and still pass", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Revert uncommitted fixture edit after each presence case", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash -n syntax OK on both edited suites; lint-shellcheck.sh exits 0 on both. Direct runs: test-conflict-predicate.sh 35 passed/0 failed (including new 10.1/10.2); test-four-tier-conflict.sh 16 passed/0 failed (including new 14.1/14.2). --only test-conflict-predicate.sh,test-four-tier-conflict.sh via run-all.sh: 2 passed, 0 failed. No leftover $TMPROOT (or nested .git) after either run, confirming the existing trap cleanup EXIT covers the new git fixture identically to every other file it already cleans up. Cases 2.5/2.6/12 confirmed textually unmodified (only new content was appended; no existing lines touched) and pass unchanged."
+}

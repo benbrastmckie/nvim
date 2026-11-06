@@ -70,6 +70,22 @@ if [ -f "$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json" ]; t
   cp "$SCRIPT_DIR/../context/reference/orchestrator-critical-paths.json" "$TMPROOT/.claude/context/reference/orchestrator-critical-paths.json"
 fi
 
+# --- Git-repository fixture capability (NEW, for the dirty_scope_advisory presence/absence
+# cases below): orchestrate-batch-admit.sh now shells out to `git -C "$PROJECT_ROOT" diff
+# --name-only HEAD`, where $PROJECT_ROOT resolves via `common_repo_root "$SCRIPT_DIR" 2` from
+# $TMPROOT/.claude/scripts/orchestrate-batch-admit.sh -- i.e. $TMPROOT itself. Init a real git
+# repo at $TMPROOT with a local identity (so the commit cannot fail on a host with no global git
+# identity configured) and one baseline tracked file, committed, at a path a dedicated candidate
+# declares in its own file_scope. Group g26, mirroring every other group's own isolated
+# synthetic namespace, so this fixture cannot collide with any other group's candidates.
+git -C "$TMPROOT" init -q
+git -C "$TMPROOT" config user.email "test-fixture@example.invalid"
+git -C "$TMPROOT" config user.name "test-conflict-predicate fixture"
+mkdir -p "$TMPROOT/g26"
+echo "baseline" > "$TMPROOT/g26/tracked.txt"
+git -C "$TMPROOT" add g26/tracked.txt
+git -C "$TMPROOT" commit -q -m "baseline fixture commit"
+
 TL="$TMPROOT/.claude/scripts/task-lock.sh"
 BA="$TMPROOT/.claude/scripts/orchestrate-batch-admit.sh"
 SESSIONS_DIR="$TMPROOT/specs/.sessions"
@@ -125,7 +141,8 @@ cat > "$STATE_FILE" << 'EOF'
     {"project_number": 820, "project_name": "g4_clean_candidate", "status": "not_started", "task_type": "general", "file_scope": ["g4/clean"], "dependencies": []},
     {"project_number": 821, "project_name": "g4_edge_connected", "status": "not_started", "task_type": "general", "file_scope": ["g4/unrelated_scope"], "dependencies": [820]},
     {"project_number": 842, "project_name": "g25_idle_candidate", "status": "not_started", "task_type": "general", "file_scope": ["g25/x"], "dependencies": []},
-    {"project_number": 843, "project_name": "g25_idle_collider", "status": "not_started", "task_type": "general", "file_scope": ["g25/x"], "dependencies": []}
+    {"project_number": 843, "project_name": "g25_idle_collider", "status": "not_started", "task_type": "general", "file_scope": ["g25/x"], "dependencies": []},
+    {"project_number": 844, "project_name": "g26_dirty_scope_candidate", "status": "not_started", "task_type": "general", "file_scope": ["g26/tracked.txt"], "dependencies": []}
   ]
 }
 EOF
@@ -526,6 +543,31 @@ fi
 "$TL" release 820 "sess_mt_batch" >/dev/null 2>&1
 "$TL" release 850 "sess_mt_batch" >/dev/null 2>&1
 reset_sessions
+
+# =============================================================================
+# Group 10: dirty_scope_advisory presence/absence (NEW)
+# =============================================================================
+# Case 10.1 (presence): candidate #844's own file_scope (g26/tracked.txt) intersects an
+# uncommitted edit to that same tracked file -- dirty_scope_advisory fires, naming the path, and
+# the decision is unchanged from the clean-tree baseline taken first.
+v844_clean=$("$BA" 844 2>/dev/null | jq -c '.')
+c101_clean_decision=$(echo "$v844_clean" | jq -r '.decision')
+echo "dirty edit" >> "$TMPROOT/g26/tracked.txt"
+v844_dirty=$("$BA" 844 2>/dev/null | jq -c '.')
+c101_ok=true
+[ "$(echo "$v844_dirty" | jq 'has("dirty_scope_advisory")')" = "true" ] || { c101_ok=false; info "10.1: #844's verdict is missing dirty_scope_advisory with an uncommitted edit present: $v844_dirty"; }
+[ "$(echo "$v844_dirty" | jq -r '.dirty_scope_advisory.dirty_paths | index("g26/tracked.txt") != null')" = "true" ] || { c101_ok=false; info "10.1: dirty_scope_advisory.dirty_paths does not name g26/tracked.txt: $v844_dirty"; }
+[ "$(echo "$v844_dirty" | jq -r '.decision')" = "$c101_clean_decision" ] || { c101_ok=false; info "10.1: decision changed between clean ($c101_clean_decision) and dirty ($(echo "$v844_dirty" | jq -r '.decision')) tree: $v844_dirty"; }
+if [ "$c101_ok" = true ]; then pass "10.1: dirty_scope_advisory fires when the candidate's own file_scope intersects an uncommitted edit, with decision unchanged"; else fail "10.1: dirty_scope_advisory presence case failed (see INFO lines above)"; fi
+git -C "$TMPROOT" checkout -q -- g26/tracked.txt
+
+# Case 10.2 (absence): candidate #830's file_scope (g21/x) lies entirely within a synthetic
+# namespace never committed to the fixture's git repo, so it cannot intersect any real dirty
+# path -- mirroring case 2.5/2.6's and case 12's existing presence/absence assertion structure.
+v830_dirty_check=$("$BA" 830 2>/dev/null | jq -c '.')
+c102_ok=true
+[ "$(echo "$v830_dirty_check" | jq 'has("dirty_scope_advisory")')" = "false" ] || { c102_ok=false; info "10.2: #830 unexpectedly carries dirty_scope_advisory with no real dirty-tree intersection possible: $v830_dirty_check"; }
+if [ "$c102_ok" = true ]; then pass "10.2: dirty_scope_advisory is absent when the candidate's file_scope cannot intersect any real dirty path"; else fail "10.2: dirty_scope_advisory absence case failed (see INFO lines above)"; fi
 
 # =============================================================================
 # Summary

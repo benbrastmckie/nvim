@@ -322,34 +322,41 @@ orchestrate-predispatch-review.sh` resolves).
 
 ---
 
-### Phase 4: Presence/absence regression cases in both named suites [NOT STARTED]
+### Phase 4: Presence/absence regression cases in both named suites [COMPLETED]
 
 **Goal**: Both dispatch-named suites exercise a real dirty-worktree intersection and its absence,
 backed by a new git-repository fixture capability.
 
 **Tasks**:
-- [ ] Confirm the gap still holds: zero `git init` occurrences in both
-      `scripts/test-conflict-predicate.sh` and `scripts/test-four-tier-conflict.sh`.
-- [ ] In each suite's `$TMPROOT` builder (around `:52-70` and `:69-83` respectively), add after
+- [x] Confirm the gap still holds: zero `git init` occurrences in both
+      `scripts/test-conflict-predicate.sh` and `scripts/test-four-tier-conflict.sh`. *(completed:
+      confirmed zero in both)*
+- [x] In each suite's `$TMPROOT` builder (around `:52-70` and `:69-83` respectively), add after
       the existing script copies: `git init` at `$TMPROOT` (which is what
       `common_repo_root "$SCRIPT_DIR" 2` resolves to from
       `$TMPROOT/.claude/scripts/orchestrate-batch-admit.sh`, so it is the `$PROJECT_ROOT` the new
       `git -C` call reads), a local `user.email`/`user.name` so the commit cannot fail on a host
       with no global git identity, a baseline tracked file at a path one test candidate declares
-      in its `file_scope`, and an initial commit of it.
-- [ ] Add a PRESENCE case to each suite: make a real uncommitted edit to that baseline tracked
+      in its `file_scope`, and an initial commit of it. *(completed: g26/tracked.txt declared by
+      new candidate #844 in test-conflict-predicate.sh; case_dirty/tracked.txt declared by new
+      candidate #508 in test-four-tier-conflict.sh)*
+- [x] Add a PRESENCE case to each suite: make a real uncommitted edit to that baseline tracked
       file, invoke `orchestrate-batch-admit.sh`, and assert the candidate's verdict has
       `dirty_scope_advisory`, that its `dirty_paths` names that path, and that the verdict's
-      `decision` is unchanged from what the same fixture yields with a clean tree.
-- [ ] Add an ABSENCE case to each suite: assert `has("dirty_scope_advisory") == false` for a
+      `decision` is unchanged from what the same fixture yields with a clean tree. *(completed:
+      case 10.1 and case 14.1 respectively)*
+- [x] Add an ABSENCE case to each suite: assert `has("dirty_scope_advisory") == false` for a
       candidate whose `file_scope` lies entirely within that suite's synthetic namespace and so
       cannot intersect any real path — mirroring case 2.5/2.6's and case 12's existing
-      presence/absence assertion structure.
-- [ ] Leave cases 2.5, 2.6, and 12 textually unmodified: they are the bit-for-bit guard that the
-      sibling advisories' semantics were not disturbed.
-- [ ] Revert the uncommitted fixture edit (or scope it so later cases in the same suite are
+      presence/absence assertion structure. *(completed: case 10.2 reuses #830/g21-x; case 14.2
+      reuses #505/case_d-shared.sh)*
+- [x] Leave cases 2.5, 2.6, and 12 textually unmodified: they are the bit-for-bit guard that the
+      sibling advisories' semantics were not disturbed. *(completed: confirmed untouched, and
+      both still pass unchanged)*
+- [x] Revert the uncommitted fixture edit (or scope it so later cases in the same suite are
       unaffected) before any subsequent case runs, so no case inherits a dirty fixture it did not
-      ask for.
+      ask for. *(completed: `git checkout -q -- <path>` immediately after each presence case,
+      inside the suite's own isolated $TMPROOT — not a real-repo-affecting operation)*
 
 **Timing**: 1.5 hours
 
