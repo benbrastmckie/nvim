@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Record site 2's member, the two prose corrections, and the missing_key resolution",
+  "started_at": "2026-11-06T09:58:00Z",
+  "last_updated": "2026-11-06T10:02:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the own-task-directory member paragraph, narrow the subsumption/redundancy claims, record the staging-seed asymmetry and the missing_key resolution in git-staging-scope.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]
+    },
+    {
+      "id": 2,
+      "description": "Verify no task-number/record-versioning language; run verify-deploy.sh --skip-slow --only-gate 3,4",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.verification",
+      "description": "Run the doc/task-reference gate subset: bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>",
+      "type": "altered",
+      "reason": "Gate 4 (task-reference lint) passes cleanly. Gate 3 (doc-lint) reports FAIL, but for two reasons both structurally outside this phase's own scope: (a) deployed-vs-source script content drift for git-commit-phase.sh and test-git-commit-phase.sh, which are Phase 1/2's already-committed source-store changes awaiting Phase 4's redeploy, not new drift from this phase's doc edit; (b) an index-entries.json line-count mismatch for git-staging-scope.md caused by this phase's own edit, whose remediation script (generate-context-line-counts.sh --write) refuses to run from the source-store tree by design and only operates against a deployed scripts/ tree -- confirmed empirically by invoking it directly. deploy-headless.sh (run in Phase 4) runs this line-count generator automatically before every deploy, so both causes of gate 3's FAIL resolve together at Phase 4's redeploy, which Phase 4 already closes on via its own unnarrowed verify-deploy.sh run.",
+      "annotation": "*(completed: gate 4 passes; gate 3's full pass deferred to Phase 4's redeploy and full gate run)*"
+    }
+  ]
+}

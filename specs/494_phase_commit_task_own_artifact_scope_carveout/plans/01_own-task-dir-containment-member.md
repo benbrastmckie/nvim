@@ -267,7 +267,7 @@ edit adds and every existing one it must not disturb.
 
 ---
 
-### Phase 3: Record site 2's member, the two prose corrections, and the `missing_key` resolution [NOT STARTED]
+### Phase 3: Record site 2's member, the two prose corrections, and the `missing_key` resolution [COMPLETED]
 
 **Goal**: `git-staging-scope.md`'s "Three Containment sites, not one" section records site 2's
 new member and its relationship to sites 1, 3, and the staging seed; narrows the two
@@ -275,47 +275,61 @@ now-overbroad claims about site 3 subsuming site 2; and records why a task repor
 no `file_scope` can still see a drop at a later phase commit.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md`'s "Three
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md`'s "Three
       Containment sites, not one" section (currently around lines 342-412) immediately before
-      editing — siblings 430 and 486 declare this same file.
-- [ ] Add a paragraph recording that all three sites now additionally admit the committing task's
+      editing — siblings 430 and 486 declare this same file. *(completed)*
+- [x] Add a paragraph recording that all three sites now additionally admit the committing task's
       own resolved artifact directory as an implicit, unconditional in-scope member, implemented
       at each site as a per-site splice rather than a shared-library member, because
       `engine-written-state-paths-lib.sh`'s own header rejects any task-owned `specs/{NNN}_*/`
       path: a per-task directory is authored by one task's own dispatch rather than engine-written
       on behalf of every task, so it fails the library's admission bar. Name how each site obtains
       the directory (site 1 strips the project root off its absolute task dir; site 2 reuses the
-      local `task_dir` it already builds; site 3 calls `task_lookup_dir()`).
-- [ ] Narrow the existing "Site 3 therefore structurally subsumes site 2's own reach" paragraph
+      local `task_dir` it already builds; site 3 calls `task_lookup_dir()`). *(completed)*
+- [x] Narrow the existing "Site 3 therefore structurally subsumes site 2's own reach" paragraph
       and its "Site 2's self-check is consequently deliberately redundant, not load-bearing"
       sentence: state that both hold for the engine-written-state allowlist specifically, and do
       NOT hold for the task-directory member, because site 2 removes an uncontained path from its
       own `stage_paths` pathspec before `git-commit-scoped.sh` is ever invoked — V10 only tests
       paths it is actually handed, so it can neither see nor restore a path site 2 already
       dropped. Make explicit that site 2 is therefore load-bearing for this member, so a future
-      reader does not delete the self-check as redundant.
-- [ ] Record the staging-seed relationship explicitly: `git-commit-phase.sh`'s unconditional
+      reader does not delete the self-check as redundant. *(completed)*
+- [x] Record the staging-seed relationship explicitly: `git-commit-phase.sh`'s unconditional
       `stage_paths` seed already stages the whole task directory regardless of declared scope,
       while its containment self-check did not admit that directory — the parity between staging
       and containment that an earlier record assumed was true of the seed and false of the
       check. State the asymmetry as a durable fact about the two constructs, citing the script
-      and the two construct names, never a task number or a draft-history framing.
-- [ ] Record the `missing_key`-yet-dropped resolution: `orchestrator-postflight.sh`'s additive
+      and the two construct names, never a task number or a draft-history framing. *(completed)*
+- [x] Record the `missing_key`-yet-dropped resolution: `orchestrator-postflight.sh`'s additive
       `--file-scope-add` write-back (fed by a research report's `proposed_file_scope` or
       `plan-file-scope-harvest.sh`'s harvested "Files to modify" union, both source-path-only by
       construction) can populate a previously-absent `file_scope` between a pre-dispatch review
       and a later phase commit. A pre-dispatch "no declared scope" observation and a later
       commit-time drop are therefore both correct readings at two different points in a task's
       lifecycle, not a fail-open defect. State that the fail-open posture is unchanged and
-      deliberate.
-- [ ] Verify the edit carries no task-number references and no record-versioning language
+      deliberate. *(completed)*
+- [x] Verify the edit carries no task-number references and no record-versioning language
       (`.claude/rules/no-task-references-in-deliverables.md`,
       `.claude/rules/no-record-versioning-in-deliverables.md`): cite filenames, section headings,
-      and construct names only.
-- [ ] Run the doc/task-reference gate subset from the repository root (which is simultaneously
+      and construct names only. *(completed: diff checked, no violations found)*
+- [x] Run the doc/task-reference gate subset from the repository root (which is simultaneously
       the deploy consumer and the source store):
       `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
-- [ ] Commit this green sub-step.
+      *(completed: gate 4 (task-reference lint) PASSES cleanly. Gate 3 (doc-lint) reports FAIL,
+      but for reasons structurally outside this phase's own edit: (a) "deployed script content
+      drift" for `git-commit-phase.sh` and `test-git-commit-phase.sh`, which are Phase 1/2's
+      already-committed source-store changes not yet regenerated into the deployed `.claude/`
+      tree — exactly the gap Phase 4's redeploy exists to close, not a new drift Phase 3
+      introduced; and (b) an `index-entries.json` line-count mismatch for this very file, whose
+      fix script (`generate-context-line-counts.sh --write`) explicitly refuses to run from the
+      source-store tree and only runs against a deployed `scripts/` tree -- confirmed by invoking
+      it directly, which fails loudly and points at `deploy-headless.sh`, the very script Phase 4
+      runs (and which that script's own header states runs this line-count generator
+      automatically before every deploy). Gate 3's full PASS is therefore deferred to Phase 4's
+      own unnarrowed `verify-deploy.sh` run over the then-regenerated deployed tree, which covers
+      this same doc-lint check and is where the line-count index actually gets corrected; see
+      this phase's own progress-file note for the deviation record.)*
+- [x] Commit this green sub-step. *(completed)*
 
 **Timing**: 0.75 hours
 

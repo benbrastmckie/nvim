@@ -361,18 +361,72 @@ contract). Site 2 previously tested `files_touched` against the raw declared `fi
 alone, with no allowlist at all; it now carries the same splice sites 1 and 3 already carried,
 closing that gap rather than leaving it the one site without one.
 
-Site 3 therefore structurally subsumes site 2's own reach: `git-commit-phase.sh` always forwards
-`--task` to `git-commit-scoped.sh` (see that wrapper's own invocation), so V10 now runs on every
-commit site 2's self-check already covered. **Site 2's self-check is consequently deliberately
-redundant, not load-bearing, going forward** — it is left in place rather than removed (it is
-idempotent, fail-open, and cheap, and additionally records its own `scope excursion` issue-log
-entry independently of V10's), but the durable guarantee against the original "Phase Commit
-(mid-dispatch)" gap now rests on site 3, not site 2. Site 1 is NOT subsumed by site 3: a
+**A second universal, per-site widening: the committing task's own resolved artifact
+directory.** Independently of the shared engine-written-state allowlist above, all three
+Containment sites also admit the dispatching task's own resolved artifact directory as an
+implicit, unconditional in-scope member. This member is deliberately NOT part of the shared
+`scripts/lib/engine-written-state-paths-lib.sh` definition: that library's own header rejects
+any task-owned `specs/{NNN}_*/` path, because a per-task directory is authored by one task's own
+dispatch rather than engine-written on behalf of every/many tasks, failing the library's
+admission bar. Each site obtains the directory through its own existing mechanism rather than a
+shared helper: site 1 strips `PROJECT_ROOT` off its own absolute `TASK_DIR`
+(`orchestrate-cycle-postflight.sh`'s `task_dir_rel="${TASK_DIR#"$PROJECT_ROOT"/}"`); site 2
+reuses the `task_dir` local variable it already builds from `--task`/`--project`
+(`git-commit-phase.sh`'s `task_dir="specs/${padded_num}_${project_name}"`, spliced into
+`file_scope_arr` as `file_scope_arr+=("${task_dir}/")` inside the Self-Check's existing non-empty
+`file_scope_arr` guard); site 3 calls `lib/task-lookup-lib.sh`'s `task_lookup_dir()`
+(`git-commit-scoped.sh`'s V10 resolution). Sites 1 and 3 carried this member from their own
+original landing; site 2's Phase-Commit Containment Self-Check did not, until the splice named
+above.
+
+Site 3 structurally subsumes site 2's own reach for the engine-written-state allowlist gap
+specifically: `git-commit-phase.sh` always forwards `--task` to `git-commit-scoped.sh` (see that
+wrapper's own invocation), so V10 now runs on every commit site 2's self-check already covered
+for that allowlist. **This subsumption does NOT extend to the own-task-directory member
+described above.** Site 2 removes an uncontained path from its own `files_touched` array — and
+therefore from its own `stage_paths` pathspec — before `git-commit-scoped.sh` is ever invoked;
+V10 tests only the pathspec entries it is actually handed, so it can neither see nor restore a
+path site 2 has already dropped upstream of that call. Site 2's Phase-Commit Containment
+Self-Check is therefore load-bearing for the own-task-directory member specifically, even while
+it remains deliberately redundant (not load-bearing) for the engine-written-state allowlist gap,
+where V10's identical coverage makes it so. It is left in place rather than removed for either
+reason (it is idempotent, fail-open, and cheap, and additionally records its own `scope
+excursion` issue-log entry independently of V10's) — but a future reader must not read
+"redundant for the allowlist gap" as license to delete the self-check outright: doing so would
+reopen the own-task-directory gap this section records. Site 1 is NOT subsumed by site 3: a
 postflight `modified_files` entry can be dropped by the postflight-sited filter BEFORE it is
 ever handed to `git-commit-scoped.sh` at all, so V10 never sees a path site 1 already removed —
 the two sites are complementary layers on the SAME surface (the whole-task completion commit),
-not a redundant pair the way sites 2 and 3 are for the phase-commit surface. See "Phase Commit
-(mid-dispatch)" below for the full asymmetry this landing closes.
+not a redundant pair the way sites 2 and 3 are for the phase-commit surface's engine-written-state
+allowlist gap. See "Phase Commit (mid-dispatch)" below for the full asymmetry this landing
+closes.
+
+**The staging-seed/containment asymmetry the own-task-directory member closes.**
+`git-commit-phase.sh`'s unconditional `stage_paths` seed (`stage_paths=("${task_dir}/"
+"specs/TODO.md" "specs/state.json")`, described in "Phase Commit (mid-dispatch)" below) already
+stages the whole task directory regardless of any task's declared `file_scope` — the parity
+assumption recorded in "Scope of the `git-commit-phase.sh` migration" below, that the commit
+pipeline already covers the whole task directory regardless of declared scope, is TRUE of this
+seed. It was FALSE of the Containment Self-Check's own `file_scope_arr`, which tested every
+`files_touched` entry — including one sitting inside the very directory the seed already
+stages — against a scope that never named that directory. In the fixture harness used to pin
+this (`test-git-commit-phase.sh`'s Cases 15 and 16), the practical consequence was not an actual
+omission from the commit — the directory-level seed already lands the file regardless — but a
+spurious `WARNING: ... dropping out-of-scope path` plus a spurious `scope excursion` row written
+to the task's own `issues.jsonl` for a path that was never actually out of scope. The
+own-task-directory member recorded above closes that specific asymmetry between the two
+constructs.
+
+**Why a task reported as carrying no `file_scope` can still see a drop at a later phase
+commit.** `orchestrator-postflight.sh`'s additive `--file-scope-add` write-back — fed by a
+research report's `proposed_file_scope` or by `plan-file-scope-harvest.sh`'s harvested "Files to
+modify" union, both source-path-only by construction — can populate a previously-absent
+`file_scope` between an earlier review of a task's state and a later phase commit. A review
+observing "no declared `file_scope`" and a later phase commit observing a real, non-empty,
+source-only `file_scope` are therefore both correct readings of the same task at two different
+points in its lifecycle, not evidence that the fail-open guard failed to apply. The fail-open
+posture itself — an absent, empty, or malformed `file_scope` skips the Containment Self-Check
+entirely — is unchanged and remains deliberate.
 
 **The engine-written-state allowlist is one shared, canonical definition.** All three
 Containment sites widen their own effective scope with the same fixed path set before testing a
