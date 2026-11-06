@@ -28374,7 +28374,8 @@
         ]
       },
       "last_updated": "2026-11-06T21:17:25Z",
-      "session_id": "sess_1793993117_98582a"
+      "session_id": "sess_1793993117_98582a",
+      "next_artifact_number": 2
     },
     {
       "project_name": "phase_commit_task_own_artifact_scope_carveout",
