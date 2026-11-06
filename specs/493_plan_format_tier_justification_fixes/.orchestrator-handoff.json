@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase implementation plan for both filed defects in plan-format.md's Tier Justification block. Defect 1 is repaired by naming both run-all.sh forms and referencing the Batch-aware deferral section's existing resolve-whichever-exists convention rather than restating it. Defect 2's ruling is recorded explicitly: the measurement obligation is enforced mechanically by a new advisory-first check in validate-artifact.sh's plan branch (which hooks/validate-plan-write.sh already invokes, so no new gate wiring), because the filed defect is exactly the failure a prose-only rule cannot prevent while the re-derivation costs about what a grep costs. file_scope is widened per the hard constraint to the three source-store files plus the __WHOLE_TREE__ sentinel for the redeploy phase.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/493_plan_format_tier_justification_fixes/plans/01_tier-justification-fixes.md",
+      "summary": "5-phase plan: entry-point repair, measurement ruling, validate-artifact.sh lint, fixture pair plus corpus sweep, redeploy and full gate battery."
+    }
+  ],
+  "dispatch_seq": 14
+}

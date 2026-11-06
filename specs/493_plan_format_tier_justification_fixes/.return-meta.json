@@ -1,36 +1,22 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/493_plan_format_tier_justification_fixes/reports/01_tier-justification-fixes.md",
-      "summary": "Confirms both Tier Justification defects by direct measurement and rules: fix line 339 by referencing the existing dual-form convention (not restating it), and add a narrowly-scoped advisory lint to validate-artifact.sh (not prose alone) requiring suite_selection_select to actually be run before a Tier Justification claims a suite subset or the __FULL_SWEEP__ sentinel."
+      "type": "plan",
+      "path": "specs/493_plan_format_tier_justification_fixes/plans/01_tier-justification-fixes.md",
+      "summary": "5-phase plan repairing plan-format.md's dead suite-subset entry point by reference and landing the Tier Justification measurement obligation as an advisory-first lint in validate-artifact.sh with a fixture pair, then redeploying."
     }
   ],
-  "next_steps": "Run /orchestrate 493 to create implementation plan",
-  "dispatch_seq": 11,
+  "next_steps": "Run /orchestrate 493 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 3.8,
+  "dependency_waves": 5,
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1793993117_98582a_493",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 4,
-    "issue_log_contribution": 1
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "scripts/validate-artifact.sh's plan-type checks already fire automatically at write time via hooks/validate-plan-write.sh's generic PostToolUse invocation. Adding a new advisory check inside validate-artifact.sh's existing plan branch gets write-time enforcement for free -- no new hook or verify-deploy.sh gate entry needed, only the validator and its test suite.",
-      "category": "PATTERN",
-      "source_artifact": "specs/493_plan_format_tier_justification_fixes/reports/01_tier-justification-fixes.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["validate-artifact.sh", "validate-plan-write.sh", "plan-format", "gate-wiring", "advisory-lint"]
-    },
-    {
-      "content": "scripts/lib/suite-selection-lib.sh's suite_selection_select function is a pure in-process path-matching loop (no build, no test execution) -- measured at ~50ms wall-clock including library sourcing. When weighing whether to mechanically require a selector invocation before a plan asserts its output, the cost is negligible and not comparable to a full Gate 8 run.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/493_plan_format_tier_justification_fixes/reports/01_tier-justification-fixes.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["suite_selection_select", "suite-selection-lib.sh", "tier-justification", "performance", "gate8"]
-    }
-  ]
+  "dispatch_seq": 14
 }
