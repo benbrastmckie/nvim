@@ -350,25 +350,28 @@ this phase also edits.
 
 ---
 
-### Phase 5: Hook registration and prose pointer [NOT STARTED]
+### Phase 5: Hook registration and prose pointer [COMPLETED]
 
 **Goal**: The hook is reachable through a fragment surface in a deployed tree, and the prose
 standard names its own mechanical enforcer.
 
 **Tasks**:
-- [ ] Register the hook in `merge-sources/settings-hooks.json`'s existing `"matcher": "Bash"`
+- [x] Register the hook in `merge-sources/settings-hooks.json`'s existing `"matcher": "Bash"`
       `PreToolUse` array, alongside `guard-destructive-git.sh`,
       `validate-bounded-waiter.sh` and `validate-task-creation-audit.sh`, using the settled
-      `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/...` absolute shape.
-- [ ] Register it as a blocking guard (no `2>/dev/null || echo '{}'` suppression), matching
+      `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/...` absolute shape. *(completed)*
+- [x] Register it as a blocking guard (no `2>/dev/null || echo '{}'` suppression), matching
       `guard-destructive-git.sh`'s registration rather than the advisory hooks' suppressed form.
-- [ ] Add one sentence to `context/patterns/task-lock.md`'s State-Write Convention section,
+      *(completed)*
+- [x] Add one sentence to `context/patterns/task-lock.md`'s State-Write Convention section,
       immediately after the existing sentence naming the three forbidden write shapes (around
       lines 802-808), naming `scripts/lint/lint-state-writer-boundary.sh`, gate 12, and the new
       hook as the mechanical enforcers of both the jq- and Python-shaped forms of the rule.
-      Confine the edit to that section; touch no other part of the file.
-- [ ] Verify the added sentence introduces neither task-number references nor record-versioning
-      language (both prohibited under `agent-system/**`).
+      Confine the edit to that section; touch no other part of the file. *(completed: line
+      numbers matched the hypothesis exactly, no drift)*
+- [x] Verify the added sentence introduces neither task-number references nor record-versioning
+      language (both prohibited under `agent-system/**`). *(completed: both lints report 0
+      occurrences on the edited file)*
 
 **Timing**: 0.5 hours
 

@@ -803,7 +803,11 @@ Every `specs/state.json` writer in this codebase is a call to `scripts/state-wri
 no other sanctioned way to write `specs/state.json`, `specs/archive/state.json`, or a vault-root
 `state.json`: not a hand-rolled `jq ... > tmp && mv` sequence, not a `python3
 json.load`/`json.dump` in-place write, and not a direct `acquire_scope_mutex` call from a new
-script. A new writer should call `state-write.sh` with its jq filter and any `--arg`/`--argjson`
+script. Both the jq-shaped and the Python-shaped forms of this rule are mechanically enforced:
+`scripts/lint/lint-state-writer-boundary.sh` (gate 12) flags either shape by content wherever it
+lands in a tracked `.md`/`.sh` file, and `hooks/validate-no-python-state-write.sh` additionally
+blocks a live Python invocation of the second shape at write time, before it ever runs. A new
+writer should call `state-write.sh` with its jq filter and any `--arg`/`--argjson`
 bindings, exactly as the existing consumers above do, rather than reimplementing the acquire ->
 mktemp -> transform -> validate -> mv -> release sequence inline. This closes two independent
 corruption channels that used to exist in this codebase: (1) most writers never acquired the
