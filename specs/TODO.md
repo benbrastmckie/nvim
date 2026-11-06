@@ -1,5 +1,5 @@
 ---
-next_project_number: 512
+next_project_number: 513
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 512
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,430,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,495,502,503,504,505,506,510,511,512 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,444,446,448,458,463,472,474,475,476,492,497 | 369,383,397,409,412,418,423,430,431,435,445,459,491 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,451,454,455,461,484,500,507 | 313,391,398,420,435,439,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486 | 360,390,402,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -131,6 +131,7 @@ next_project_number: 512
 488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
+512 [NOT STARTED] — verify-deploy gate 24 reports two findings against lines that...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -138,6 +139,17 @@ next_project_number: 512
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 512. Builtin command exemption for dead command lint
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: verify-deploy gate 24 reports two findings against lines that are correct and must keep working: memory-setup.md and memory-troubleshooting.md each recommend Claude Code native /ide command to connect an Obsidian vault. The lint derives its valid-command set solely by enumerating agent-system/extensions/*/commands/<name>.md, so a host-provided built-in can never be valid and is flagged forever. Decide and implement the exemption mechanism. The constraint that makes this a task rather than a one-line fix: lint-dead-command-recommendations.sh own header documents zero-tolerance, no allowlist and nothing is ever hardcoded here as a deliberate decision with stated rationale, so any built-in allowlist must amend that recorded decision rather than quietly contradict it, and no authoritative set of Claude Code built-in commands exists anywhere in this repository to scope or maintain one against. Candidate approaches to weigh: amend the recorded policy and add a narrowly-scoped built-in set with a named maintenance owner; add an inline per-line exemption marker following the established task-ref-ok and version-ok substring-marker idiom, which keeps the lint free of any hardcoded list; or rule the findings permanently accepted and teach the gate to report them separately from genuine violations. Rewording the two documents to drop the Run /<name> recommendation shape was considered and rejected as the primary fix: it clears the finding without addressing the mechanism, and the next document that correctly recommends a built-in trips the same false positive. SCOPE BOUNDARY: this record owns the lint and its test suite only. The prose naming the three deleted lifecycle commands is owned by reword_dead_lifecycle_command_prose_per_class, which declares agent-system/extensions/memory/context/ in its own file_scope; that record also covers the separate, genuine defect at memory-setup.md where a numbered connection-test step recommends an unrunnable /research invocation with a --remember flag that does not exist. Do not edit those documents from here. SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** never a deployed .claude/** tree. Evidence: the batch gate run of the orchestration that filed this record measured 25 confirmed verify-deploy findings, of which these two persisted after every other attributable finding was cleared.
+
+---
 
 ### 511. Enumeration grep sweeps gitignored venv
 - **Effort**: small
