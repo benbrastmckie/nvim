@@ -1,0 +1,19 @@
+{
+  "status": "researched",
+  "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/512_builtin_command_exemption_for_dead_command_lint/reports/01_builtin-command-exemption-mechanism.md",
+      "summary": "Recommends a new builtin-cmd-ok inline substring marker (the task-ref-ok/version-ok precedent) in lint-dead-command-recommendations.sh's classify_line() to exempt the two correct /ide recommendations, over a maintained built-in allowlist or gate-side bucketing."
+    }
+  ],
+  "next_steps": "Run /orchestrate 512 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1793988163_b25d4a_512",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 2
+  }
+}
