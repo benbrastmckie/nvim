@@ -54,7 +54,9 @@
 #   unrecognized_defer_reason_ledger (three additive ledger fields mirroring idle_overlap_ledger's
 #   own shape, added alongside the absent_file_scope defer_reason and the cross_session_hazard/
 #   absent_scope_advisory additive verdict fields -- see orchestrate-batch-admit.sh's header for
-#   the full admission-posture ruling these ledgers observe), cycle_modified_files. PLUS TWO
+#   the full admission-posture ruling these ledgers observe), dirty_scope_ledger (a FOURTH such
+#   additive ledger field, mirroring the same shape, capturing orchestrate-batch-admit.sh's
+#   dirty_scope_advisory field regardless of decision), cycle_modified_files. PLUS TWO
 #   genuinely NEW fields this script introduces
 #   (per-task force_phases consumption, a feature gap no prior stage closed):
 #   force_phases_remaining (map task_number(string) -> ordered array of not-yet-dispatched forced
@@ -617,6 +619,7 @@ mt_json=$(jq -c \
   | .idle_overlap_ledger //= []
   | .absent_scope_ledger //= []
   | .cross_session_hazard_ledger //= []
+  | .dirty_scope_ledger //= []
   | .unrecognized_defer_reason_ledger //= []
   | .cycle_modified_files //= []
   | .invocation_modified_files //= {}
@@ -1923,6 +1926,14 @@ else
     cross_sess_hazard=$(echo "$row" | jq -c 'if (.cross_session_hazard != null) then .cross_session_hazard else null end')
     if [ "$cross_sess_hazard" != "null" ]; then
       mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --argjson h "$cross_sess_hazard" '{task:$t, session_id:$h.session_id, colliding_task_number:$h.colliding_task_number, overlapping_path:$h.overlapping_path, cycle:$c}')" '.cross_session_hazard_ledger += [$entry]'
+    fi
+
+    # dirty_scope_ledger (NEW): the same "capture the advisory regardless of decision" convention
+    # the three ledgers above already use, for orchestrate-batch-admit.sh's dirty_scope_advisory
+    # field. Never excludes a task from dispatch; an observation log only.
+    dirty_scope_adv=$(echo "$row" | jq -c 'if (.dirty_scope_advisory != null) then .dirty_scope_advisory else null end')
+    if [ "$dirty_scope_adv" != "null" ]; then
+      mt_set --argjson entry "$(jq -n -c --argjson t "$rt" --argjson c "$cycle_count" --argjson a "$dirty_scope_adv" '{task:$t, dirty_paths:$a.dirty_paths, cycle:$c}')" '.dirty_scope_ledger += [$entry]'
     fi
 
     if [ "${admit_decision[$rt]}" = "defer" ]; then

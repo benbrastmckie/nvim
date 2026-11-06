@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Ledger the advisory in orchestrate-cycle-plan.sh",
+  "started_at": "2026-11-06T00:15:00Z",
+  "last_updated": "2026-11-06T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read orchestrate-cycle-plan.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add dirty_scope_ledger to mt_state_file field-list header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Add //= [] self-initializer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add per-row capture block mirroring absent_adv/cross_sess_hazard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash -n syntax OK; lint-shellcheck.sh exits 0. --only test-orchestrate-cycle-plan.sh,test-orchestrate-cycle-postflight.sh run: cycle-plan suite passed cleanly; cycle-postflight suite failed (279 passed, 25 failed), confirmed pre-existing and unrelated by re-running against the pristine HEAD copy of orchestrate-cycle-plan.sh (identical result). Recorded in issue log. Manually simulated the self-initializer and capture-block jq logic standalone: {} | .dirty_scope_ledger //= [] produces [], a presence-case row produces the exact {task,dirty_paths,cycle} entry shape, and an absence-case row correctly yields null (skipped, no ledger entry)."
+}

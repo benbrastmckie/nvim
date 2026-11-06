@@ -219,25 +219,26 @@ check is the changed script plus its enumerated direct dependents:
 
 ---
 
-### Phase 2: Ledger the advisory in `orchestrate-cycle-plan.sh` [NOT STARTED]
+### Phase 2: Ledger the advisory in `orchestrate-cycle-plan.sh` [COMPLETED]
 
 **Goal**: The advisory is captured per cycle in a `dirty_scope_ledger`, regardless of the
 candidate's decision.
 
 **Tasks**:
-- [ ] Re-read `scripts/orchestrate-cycle-plan.sh` immediately before editing (concurrent siblings
-      are active on this tree this cycle).
-- [ ] Add `dirty_scope_ledger` to the `mt_state_file` field-list header comment (the block around
+- [x] Re-read `scripts/orchestrate-cycle-plan.sh` immediately before editing (concurrent siblings
+      are active on this tree this cycle). *(completed: re-read; target file was clean, no
+      foreign dirt present)*
+- [x] Add `dirty_scope_ledger` to the `mt_state_file` field-list header comment (the block around
       `:53-56` that already names `idle_overlap_ledger`, `absent_scope_ledger`,
-      `cross_session_hazard_ledger`, `unrecognized_defer_reason_ledger`).
-- [ ] Add its `| .dirty_scope_ledger //= []` self-initializer alongside the three existing ones
-      (around `:617-619`).
-- [ ] Inside the existing per-row `while IFS= read -r row` loop (around `:1908-1927`), add a
+      `cross_session_hazard_ledger`, `unrecognized_defer_reason_ledger`). *(completed)*
+- [x] Add its `| .dirty_scope_ledger //= []` self-initializer alongside the three existing ones
+      (around `:617-619`). *(completed)*
+- [x] Inside the existing per-row `while IFS= read -r row` loop (around `:1908-1927`), add a
       capture block mirroring the `absent_adv` / `cross_sess_hazard` blocks exactly:
       `jq -c 'if (.dirty_scope_advisory != null) then .dirty_scope_advisory else null end'`, then
       an `mt_set --argjson entry ... '.dirty_scope_ledger += [$entry]'` call carrying
       `{task, dirty_paths, cycle}`. Capture regardless of decision — the loop's own stated
-      convention.
+      convention. *(completed)*
 
 **Timing**: 0.75 hours
 
