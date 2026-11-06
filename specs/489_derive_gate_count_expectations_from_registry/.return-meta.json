@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/489_derive_gate_count_expectations_from_registry/plans/01_registry-derived-gate-count-expectations.md",
+      "summary": "7-phase plan converting every gate-count expectation in the gate test corpus to registry-derived values, with two cross-source drift guards and a copied-fixture-store throwaway-gate proof."
+    }
+  ],
+  "next_steps": "Run /orchestrate 489 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 6.75,
+  "dependency_waves": 5,
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1793993117_98582a_489",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 6
+}
