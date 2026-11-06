@@ -1,7 +1,7 @@
 # Implementation Plan: Task #419
 
 - **Task**: 419 - Extend the state-writer boundary lint to the Python/ad hoc JSON re-serialization channel
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/419_enforce_state_write_convention_python_channel/reports/01_python-state-write-lint-extension.md
