@@ -1,76 +1,64 @@
 {
   "status": "partial",
-  "dispatch_seq": 32,
+  "dispatch_seq": 33,
   "partial_progress": {
     "stage": "phase_complete_more_remain",
-    "details": "Phase 18 (Markdown Tranche B -- The Skill Definitions) closed [COMPLETED WITH EXCLUSIONS]. Collapsed 33 unique skill files across 2 anchor rows: thin-wrapper-skill.md Stage 3b Self-Execution Fallback (19 files, byte-identical 487-char block confirmed in every file before editing) and postflight-tool-restrictions.md MUST NOT Section Template (15 files, the gate-checked heading line kept verbatim, only the PROHIBITION clause/allowed-operations list/Reference line collapsed; one file, skill-epi-implement/SKILL.md, collapsed under both rows). Skipped 3 further anchor rows (10 file-occurrences) with recorded Item/Reason/Evidence in the plan's Reasoned Exclusions subsection: inline-status-update.md (5 files), subagent-continuation-loop.md (3 files), interactive-selection.md (2 files) -- all three excluded because the matched text is a literal, necessarily-concrete bash/JSON invocation embedded in a complete copy-paste example the skill must carry inline to remain runnable, the same exclusion class Phase 17 established for report-format.md/plan-format.md. NET-MD this phase: -127 lines (152 insertions, 279 deletions across 33 .md files, via git diff --numstat). Running NET-MD since Phase 17: -716 + -127 = -843. The plan's own '93 files'/'-2,600' Scope Hypothesis figures were carried from the pre-Phase-15 stale shingling pass and were never reachable from Phase 15's confirmed per-role table (196 anchor-confirmed skills/ lines) independent of this phase's execution -- recorded as a Scope Hypothesis confirmation note with explicit allocation-revision guidance for Phase 19. Gate verification: --skip-slow full gate run twice (pre- and post-redeploy); post-redeploy 39 of 41 checks clean (the sole FAIL, gate 10's transient 30s timeout under contended host load, confirmed clean via a standalone 18.9s re-run matching Phase 16/17's own precedent). Gate 8 (tests/run-all.sh full battery) could not be exercised directly: two full (non-skip-slow) verify-deploy.sh runs each exceeded a 540s bounded wait, with ps aux confirming 3+ concurrent sibling task328-implement* sessions running their own full batteries throughout -- recorded as a non-fatal concurrent-session-contention issue; substituted a targeted 3-suite run (test-lint-anchor-pointer-collapse.sh, test-lint-postflight-boundary.sh, test-lint-agent-contracts.sh, 3/3 pass) and a direct lint-anchor-pointer-collapse.sh --verbose invocation (76/76 registry rows OK, 0 violations, including all 34 of this phase's newly-registered rows). deploy-headless.sh landed (RESULT=landed_verify_red solely due to gate 10's transient timeout, not a regression). sync-manifest-scripts.sh --write confirmed no repeat of Phase 17's manifest-gap finding. 2 of 20 plan phases remain (19: markdown tranche C; 20: redeploy, full gate set, measured net accounting).",
-    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
-    "phases_completed": 18,
+    "details": "Phase 19 (Markdown Tranche C -- Commands, Context, Docs and Rules) closed [COMPLETED WITH EXCLUSIONS]. Re-derived all 15 applicable Phase 15 anchor rows with commands/context/docs/rules participants live (5-line shingling + direct manual inspection of each matched window, not re-trusted from the inventory's recorded heading). Collapsed only 2: context/formats/progress-file.md and context/patterns/metadata-file-return.md, each onto a sibling schema file's File Location section. The other 13 applicable rows were reasoned-excluded with recorded Item/Reason/Evidence in the plan's Reasoned Exclusions subsection: mandatory command-structure.md section headings every command file must instantiate verbatim; complete worked YAML/JSON/bash examples a reader needs in place (thin-wrapper-skill.md, frontmatter.md, extension-development.md, subagent-continuation-loop.md, subagent-return.md, interactive-selection.md, git-staging-scope.md, task-review-mode.md, wrap-up.md, the AskUserQuestion topic-picker scaffold shared by task-recover-mode.md/task-sync-mode.md/task-expand-mode.md); a reference table that is itself the lookup content (anti-stop-patterns.md); and two files (cslib/lean adversarial-verification.md) that are deliberate, documented mirror/parity copies whose own text explains why they must stay content-identical (a deploy-merge collision safeguard and a lean-only-deploy standalone-availability requirement). rules/ (0 anchor-confirmed per Phase 15) spot-checked directly with 3 plausibly-similar pairs -- confirmed zero shared windows in all three. NET-MD this phase: -6 lines (5 insertions, 11 deletions across 2 .md files, via git diff --numstat). Running NET-MD since Phase 17: -843 + -6 = -849. Observation-Duty findings, both inherited from Phase 18, neither introduced by this phase: 34 of Phase 18's own new collapsed-block .txt captures were never added to core/manifest.json's provides.scripts (sync-manifest-scripts.sh enumerates via git ls-files, so the gap was invisible until files were staged), and 15 of its row7-*-SKILL.txt captures were missing their trailing newline relative to corpus convention. Both repaired (sync-manifest-scripts.sh --write; appended missing newlines) and recorded via issue-record.sh. Gate verification: deploy-headless.sh first run surfaced exactly the two inherited findings above (confirmed by the finding naming only files this phase never touched); after repair, deploy-headless.sh landed clean (RESULT=landed_verify_clean, verify-deploy.sh --skip-slow 40/40). lint-anchor-pointer-collapse.sh --verbose: 78/78 registry rows OK, 0 violations. Targeted suites (test-lint-anchor-pointer-collapse.sh, test-lint-postflight-boundary.sh, test-lint-agent-contracts.sh): 3/3 pass. Gate 8 (full battery) could not be exercised: the full (non-skip-slow) verify-deploy.sh run, launched under a bounded 540s background wait, exceeded that cap (exit 143) -- the same confirmed concurrent-session-contention finding Phases 16-18 each independently hit on this shared repository. Recorded non-fatally. Phase committed as e4e20dcea; the phase-end handoff was written AFTER that commit (an ordering slip against the normal 'handoff before closing commit' sequence) and remains uncommitted pending the next commit opportunity, per the no-second-provenance-only-commit rule. 1 of 20 plan phases remains (20: redeploy, full gate set, measured net accounting).",
+    "handoff_path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-19-handoff-20261106T030836Z.md",
+    "phases_completed": 19,
     "phases_total": 20
   },
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
-      "summary": "Phase 18 close: 33 skill files collapsed onto 2 anchors (-127 NET-MD), 3 anchor rows (10 file-occurrences) skipped with recorded reasons, Scope Hypothesis shortfall confirmed with allocation-revision guidance for Phase 19, gate verification clean modulo confirmed concurrent-session contention on gate 8 (substituted with targeted-suite and direct-lint evidence)."
+      "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-19-handoff-20261106T030836Z.md",
+      "summary": "Phase 19 close: only 2 of 15 applicable anchor rows were genuinely collapsible (-6 NET-MD) once inspected row-by-row; the other 13 are mandatory format headings, complete worked code examples, or deliberate documented mirror-copies, not restateable prose. Two Phase-18-inherited Observation-Duty defects (manifest registration gap, trailing-newline artifact) found and repaired. Gate verification clean apart from confirmed concurrent-session contention on gate 8 (substituted targeted-suite and direct-lint evidence, matching Phases 16-18's own precedent)."
     }
   ],
   "completion_data": {
-    "completion_summary": "Closed Phase 18: collapsed 33 unique skill-definition markdown files onto 2 anchors (thin-wrapper-skill.md's Self-Execution Fallback block, 19 files; postflight-tool-restrictions.md's MUST NOT Section Template, 15 files), net -127 markdown lines, with a full claim-retention ledger, 3 anchor rows (10 file-occurrences) reasoned-excluded as literal-invocation content, and gate-finding-set parity confirmed apart from gate 8 (confirmed concurrent-sibling contention, substituted evidence recorded). Running NET-MD since Phase 17: -843."
+    "completion_summary": "Closed Phase 19: of 15 applicable Phase-15-confirmed anchor rows touching commands/context/docs/rules, only 2 small File-Location prose blocks were genuinely collapsible (progress-file.md and metadata-file-return.md onto their sibling schema anchors); the other 13 were reasoned-excluded as mandatory format headings, complete worked code/JSON/bash examples, or deliberate mirror-copies. Net -6 markdown lines. Repaired two Phase-18-inherited defects (manifest provides.scripts gap, trailing-newline artifact) discovered via Observation Duty. Running NET-MD since Phase 17: -849. Gate-finding-set parity confirmed apart from gate 8 (confirmed concurrent-sibling contention, substituted evidence recorded)."
   },
   "modified_files": [
-    "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
-    "agent-system/extensions/books/skills/skill-books-implementation/SKILL.md",
-    "agent-system/extensions/cslib/skills/skill-cslib-implementation/SKILL.md",
-    "agent-system/extensions/cslib/skills/skill-pr-implementation/SKILL.md",
-    "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
-    "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-analyze/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-deck-implement/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-deck-research/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-finance/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-financial-analysis/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-founder-implement/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-founder-spreadsheet/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-legal/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-market/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-meeting/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-project/SKILL.md",
-    "agent-system/extensions/founder/skills/skill-strategy/SKILL.md",
-    "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md",
-    "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
-    "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
-    "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
-    "agent-system/extensions/present/skills/skill-budget/SKILL.md",
-    "agent-system/extensions/present/skills/skill-funds/SKILL.md",
-    "agent-system/extensions/present/skills/skill-grant/SKILL.md",
-    "agent-system/extensions/present/skills/skill-slides/SKILL.md",
-    "agent-system/extensions/present/skills/skill-timeline/SKILL.md",
-    "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md",
-    "agent-system/extensions/rust/skills/skill-rust-implementation/SKILL.md",
-    "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
-    "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
-    "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md",
+    "agent-system/extensions/core/context/formats/progress-file.md",
+    "agent-system/extensions/core/context/patterns/metadata-file-return.md",
     "agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row17-core-context-formats-progress-file.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row22-core-context-patterns-metadata-file-return.txt",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-books-skills-skill-books-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-cslib-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-pr-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-epidemiology-skills-skill-epi-implement-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-founder-skills-skill-deck-implement-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-founder-skills-skill-founder-implement-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-latex-skills-skill-latex-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-lean-skills-skill-lean-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-nix-skills-skill-nix-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-nvim-skills-skill-neovim-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-python-skills-skill-python-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-rust-skills-skill-rust-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-typst-skills-skill-typst-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-web-skills-skill-web-implementation-SKILL.txt",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/row7-z3-skills-skill-z3-implementation-SKILL.txt",
     "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
+    "specs/328_systematic_script_and_test_corpus_efficiency/progress/phase-19-progress.json",
+    "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-19-handoff-20261106T030836Z.md",
     "specs/328_systematic_script_and_test_corpus_efficiency/issues.jsonl"
   ],
   "memory_candidates": [
     {
-      "content": "When auditing a markdown-consolidation duplicate-block inventory, a matched window that is a literal, necessarily-concrete CLI invocation or JSON scaffold (a bash state-write.sh/git-commit-scoped.sh call with real flags, or a worked AskUserQuestion JSON example) is a THIRD exclusion class alongside gate-required and deliberately-inlined content: 'embedded in a complete copy-paste invocation/example.' Collapsing such a block to a cross-reference pointer removes the actually-runnable command from the file, making it non-self-contained for its next reader/executor, without the prose-restatement benefit a genuine explanatory block gets from the same treatment. Distinguish this from a genuinely collapsible block (e.g. a 'write this JSON schema, use the schema file for the full shape' explanation) by checking whether the matched text IS the executable artifact itself versus explanatory prose ABOUT how to produce one.",
+      "content": "When applying a semantic-anchor-finding authorization to a mechanical duplicate-block inventory, apply it in BOTH directions. A literal-text shingling test both under-counts genuine prose anchors (wording drift) AND over-counts collapse candidates: a matched window that is a mandatory format-schema heading (every instance of a file-type MUST carry it to be compliant), a complete worked YAML/JSON/bash example a reader needs in place, a reference table that IS the lookup content, or a deliberately-documented mirror/parity copy (kept content-identical for a stated deploy-mechanism or standalone-availability reason) is NOT genuinely collapsible even though it matches the mechanical test. Across one markdown-consolidation phase, 13 of 15 mechanically-flagged rows fell into one of these four classes; only 2 were genuine restateable prose. Check each matched window's actual surrounding context (is it inside a code fence? is it a schema the format itself requires? does the file's own prose explain why it must stay duplicated?) before collapsing, not just whether the text matches.",
       "category": "PATTERN",
       "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
       "confidence": 0.85,
-      "suggested_keywords": ["anchor-pointer-convention", "literal-invocation-exclusion", "markdown-consolidation", "reasoned-exclusion", "collapse-risk"]
+      "suggested_keywords": ["anchor-pointer-convention", "markdown-consolidation", "reasoned-exclusion", "mirror-copy-exclusion", "deploy-merge-collision"]
     },
     {
-      "content": "verify-deploy.sh's full (non---skip-slow) battery includes gate 8 (tests/run-all.sh, the full shell-suite runner), which is the one gate bracketed by the repo-scoped specs/.gate-lock mutex. On a shared repo with multiple concurrent sibling dispatches (e.g. several orchestrate cycles of the same task running in parallel sessions), a full verify-deploy.sh invocation can hang well past a 500+s bounded wait waiting on that lock/contention, even though the mutex itself is documented as fail-open. Before retrying a hung full gate run, check `ps aux` for live sibling run-all.sh/verify-deploy.sh processes; if present, use --skip-slow (which skips gate 8 only, dropping run time from minutes to under a minute) plus a targeted `run-all.sh --only <relevant suites>` and a direct invocation of the specific lint(s) under test as substitute evidence, and record the gate-8 omission as a non-fatal concurrent-session-contention issue rather than retrying indefinitely.",
-      "category": "INSIGHT",
+      "content": "A script that reconciles a manifest's declared file list against the filesystem (e.g. sync-manifest-scripts.sh) may enumerate 'files on disk' via `git ls-files` rather than a plain filesystem walk. A newly created file that is still untracked (not yet `git add`-ed) will NOT be seen as 'on disk' by such a script and will be silently skipped from its repair pass, even though the file genuinely exists. Stage new files with `git add` BEFORE running a git-ls-files-backed reconciliation/sync script, or its write-mode pass will miss them and a subsequent gate (e.g. a deployed-vs-source content-hash check) will fail on the untracked file once it is eventually staged elsewhere.",
+      "category": "TECHNIQUE",
       "source_artifact": "specs/328_systematic_script_and_test_corpus_efficiency/plans/03_markdown-corpus-consolidation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["gate-lock-contention", "verify-deploy-skip-slow", "concurrent-sibling-dispatch", "bounded-wait", "gate8-run-all"]
+      "confidence": 0.8,
+      "suggested_keywords": ["sync-manifest-scripts", "git-ls-files", "untracked-file-gap", "provides-scripts", "manifest-reconciliation"]
     }
   ],
   "metadata": {
@@ -78,7 +66,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 18,
+    "phases_completed": 19,
     "phases_total": 20
   }
 }

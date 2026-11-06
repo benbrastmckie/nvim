@@ -1897,9 +1897,9 @@
           "summary": "Phase 15 close: re-derived markdown duplicate-block volume and exclusions, mechanically confirmed 933 of 13,053 eligible lines as anchor-backed, wrote markdown-block-inventory.tsv, raised the resulting NET-MD target shortfall as a user_decision."
         },
         {
-          "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-18-handoff-20261106T023910Z.md",
+          "path": "specs/328_systematic_script_and_test_corpus_efficiency/handoffs/phase-19-handoff-20261106T030836Z.md",
           "type": "handoff",
-          "summary": "Phase 18 close: 33 skill files collapsed onto 2 anchors (-127 NET-MD), 3 anchor rows (10 file-occurrences) skipped with recorded reasons, Scope Hypothesis shortfall confirmed with allocation-revision guidance for Phase 19, gate verification clean modulo confirmed concurrent-session contention on gate 8 (substituted with targeted-suite and direct-lint evidence)."
+          "summary": "Phase 19 close: only 2 of 15 applicable anchor rows were genuinely collapsible (-6 NET-MD); the other 13 are mandatory format headings, complete worked code examples, or deliberate documented mirror-copies. Two Phase-18-inherited Observation-Duty defects found and repaired. Gate verification clean apart from confirmed concurrent-session contention on gate 8."
         }
       ],
       "next_artifact_number": 4,
