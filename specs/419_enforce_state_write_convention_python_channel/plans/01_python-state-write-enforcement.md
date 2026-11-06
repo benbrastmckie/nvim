@@ -250,25 +250,28 @@ is the covering check — this phase edits only that one suite file, which is th
 
 ---
 
-### Phase 3: Corruption reproduction fixture [NOT STARTED]
+### Phase 3: Corruption reproduction fixture [COMPLETED]
 
 **Goal**: The remedy message's whole-file-diff claim is evidenced by an executed reproduction, not
 asserted.
 
 **Tasks**:
-- [ ] Add a new case to `test-lint-state-writer-boundary.sh` that builds a scratch JSON state file
+- [x] Add a new case to `test-lint-state-writer-boundary.sh` that builds a scratch JSON state file
       in the suite's existing `$WORKDIR` with 3+ synthetic project entries, at least two carrying
-      non-ASCII content (em dash, arrow) in fields *other* than the one to be modified.
-- [ ] Run a `python3` one-liner that `json.load`s the scratch file, appends one trivial entry to
-      one project's `file_scope`, and `json.dump`s it back with default `ensure_ascii`.
-- [ ] Diff before/after and assert the diff touches the untouched projects' non-ASCII fields (now
+      non-ASCII content (em dash, arrow) in fields *other* than the one to be modified. *(completed)*
+- [x] Run a `python3` one-liner that `json.load`s the scratch file, appends one trivial entry to
+      one project's `file_scope`, and `json.dump`s it back with default `ensure_ascii`. *(completed)*
+- [x] Diff before/after and assert the diff touches the untouched projects' non-ASCII fields (now
       `\uXXXX`-escaped) in addition to the one intentionally-changed entry — i.e. assert the diff
-      is NOT scoped to one project's one field.
-- [ ] Assert the complementary direction too: the same append performed via a `--argjson`-style
+      is NOT scoped to one project's one field. *(completed)*
+- [x] Assert the complementary direction too: the same append performed via a `--argjson`-style
       transform leaves the untouched projects' bytes unchanged, so the case demonstrates the
-      remedy as well as the hazard.
-- [ ] Keep the fixture entirely within `$WORKDIR`; it must never read or write the real
-      `specs/state.json`.
+      remedy as well as the hazard. *(completed: implemented via jq `--arg` rather than
+      `--argjson` since the appended value is a plain string -- same bindings mechanism
+      state-write.sh exposes as `--arg`/`--argjson`)*
+- [x] Keep the fixture entirely within `$WORKDIR`; it must never read or write the real
+      `specs/state.json`. *(completed: confirmed via `git status --short -- specs/state.json`
+      showing no change after the suite run)*
 
 **Timing**: 1 hour
 

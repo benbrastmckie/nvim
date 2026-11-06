@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Corruption reproduction fixture",
+  "started_at": "2026-11-06T09:50:00Z",
+  "last_updated": "2026-11-06T10:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Scratch state file with 3 projects, 2 non-ASCII titles", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 2, "description": "Default-ensure_ascii json.dump round-trip (hazard)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 3, "description": "Assert whole-file diff touches untouched titles", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 4, "description": "jq --arg transform (remedy) leaves untouched rows byte-identical", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh"]},
+    {"id": 5, "description": "Confirm real specs/state.json untouched after suite run", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Assert the complementary --argjson-style transform leaves untouched projects' bytes unchanged",
+      "type": "altered",
+      "reason": "Implemented via jq --arg (not --argjson) since the appended file_scope value is a plain string; --argjson is for JSON-typed values. Same state-write.sh bindings mechanism, correct flag for this value's type.",
+      "annotation": "*(completed: implemented via jq `--arg` rather than `--argjson` since the appended value is a plain string -- same bindings mechanism state-write.sh exposes as `--arg`/`--argjson`)*"
+    }
+  ]
+}

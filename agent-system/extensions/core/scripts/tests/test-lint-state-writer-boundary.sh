@@ -398,6 +398,123 @@ else
 fi
 
 # =====================================================================
+# Case 13: Corruption reproduction fixture. Evidences the remedy message's whole-file-diff claim
+# by actually EXECUTING a default-ensure_ascii json.dump round-trip over a scratch state file
+# carrying non-ASCII content (an em dash and an arrow) in rows OTHER than the one intentionally
+# modified, and showing the diff touches those untouched rows too -- not merely asserting the
+# claim in prose. The complementary transform (jq with --arg, mirroring state-write.sh's own
+# jq-filter-plus-bindings mechanism) is also run and shown to leave the untouched rows
+# byte-identical, demonstrating the remedy as well as the hazard. Entirely scoped to $WORKDIR;
+# never reads or writes the real specs/state.json.
+# =====================================================================
+common_test_info "=== reproduction case: default-ensure_ascii round-trip produces a whole-file diff ==="
+
+REPRO_DIR="$WORKDIR/repro"
+mkdir -p "$REPRO_DIR"
+REPRO_ORIGINAL="$REPRO_DIR/scratch-state.json"
+REPRO_BAD="$REPRO_DIR/scratch-state-bad.json"
+REPRO_GOOD="$REPRO_DIR/scratch-state-good.json"
+
+# Three synthetic project entries. Projects 1 and 2 carry real (non-escaped) non-ASCII bytes --
+# an em dash and a right arrow -- in their title field, which is NOT the field either transform
+# below modifies. Project 3's file_scope is the one field both transforms intentionally change.
+cat > "$REPRO_ORIGINAL" << 'EOF'
+{
+  "active_projects": [
+    {
+      "task_number": 1,
+      "title": "Alpha task — em dash in title",
+      "file_scope": [
+        "a.sh"
+      ]
+    },
+    {
+      "task_number": 2,
+      "title": "Beta task → arrow in title",
+      "file_scope": [
+        "b.sh"
+      ]
+    },
+    {
+      "task_number": 3,
+      "title": "Gamma task, the one to be modified",
+      "file_scope": [
+        "c.sh"
+      ]
+    }
+  ]
+}
+EOF
+
+# The hazard: json.load + append + json.dump with default ensure_ascii (True, since it is not
+# passed at all) -- exactly the originating incident's shape.
+python3 -c "
+import json
+with open('$REPRO_ORIGINAL') as f:
+    data = json.load(f)
+for proj in data['active_projects']:
+    if proj['task_number'] == 3:
+        proj['file_scope'].append('new_file.py')
+with open('$REPRO_BAD', 'w') as f:
+    json.dump(data, f, indent=2)
+"
+
+# The remedy: the same append via a jq filter plus a bound argument (--arg, since the appended
+# value is a string -- the same bindings mechanism state-write.sh exposes as --arg/--argjson).
+jq --arg new_file "new_file.py" \
+  '(.active_projects[] | select(.task_number == 3) | .file_scope) += [$new_file]' \
+  "$REPRO_ORIGINAL" > "$REPRO_GOOD"
+
+BAD_DIFF="$(diff "$REPRO_ORIGINAL" "$REPRO_BAD" || true)"
+GOOD_DIFF="$(diff "$REPRO_ORIGINAL" "$REPRO_GOOD" || true)"
+
+# Hazard assertions -----------------------------------------------------------------------
+if grep -q '"title"' <<< "$BAD_DIFF"; then
+  common_test_pass "default-ensure_ascii round-trip diff touches an untouched project's title field (whole-file diff, not scoped to the one changed row)"
+else
+  common_test_fail "default-ensure_ascii round-trip diff did NOT touch any title field -- reproduction fixture failed to demonstrate the hazard:
+$BAD_DIFF"
+fi
+
+if ! grep -q $'\xe2\x80\x94' "$REPRO_BAD" && grep -q '\\u2014' "$REPRO_BAD"; then
+  common_test_pass "default-ensure_ascii round-trip re-escapes the untouched em-dash byte to \\u2014"
+else
+  common_test_fail "default-ensure_ascii round-trip did not re-escape the em dash as expected"
+fi
+
+if ! grep -q $'\xe2\x86\x92' "$REPRO_BAD" && grep -q '\\u2192' "$REPRO_BAD"; then
+  common_test_pass "default-ensure_ascii round-trip re-escapes the untouched arrow byte to \\u2192"
+else
+  common_test_fail "default-ensure_ascii round-trip did not re-escape the arrow as expected"
+fi
+
+if grep -q "new_file.py" "$REPRO_BAD"; then
+  common_test_pass "default-ensure_ascii round-trip still carries the intentional file_scope append"
+else
+  common_test_fail "default-ensure_ascii round-trip lost the intentional file_scope append"
+fi
+
+# Remedy assertions -------------------------------------------------------------------------
+if ! grep -q '"title"' <<< "$GOOD_DIFF"; then
+  common_test_pass "jq --arg transform's diff leaves untouched projects' title fields byte-identical (the remedy, not just the hazard)"
+else
+  common_test_fail "jq --arg transform's diff unexpectedly touched a title field:
+$GOOD_DIFF"
+fi
+
+if grep -q $'\xe2\x80\x94' "$REPRO_GOOD" && grep -q $'\xe2\x86\x92' "$REPRO_GOOD"; then
+  common_test_pass "jq --arg transform leaves the untouched em-dash and arrow bytes unescaped"
+else
+  common_test_fail "jq --arg transform unexpectedly altered the untouched non-ASCII bytes"
+fi
+
+if grep -q "new_file.py" "$REPRO_GOOD"; then
+  common_test_pass "jq --arg transform carries the intentional file_scope append"
+else
+  common_test_fail "jq --arg transform lost the intentional file_scope append"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""
