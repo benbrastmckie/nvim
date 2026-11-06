@@ -124,7 +124,7 @@ next_project_number: 505
 
 ### Agent System
 
-415 [PLANNED] — Record exact-pid process checking as a parallelism-safety...
+415 [IMPLEMENTING] — Record exact-pid process checking as a parallelism-safety...
   └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
     └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 419 [PLANNED] — Extend the state-writer boundary lint to the Python JSON...
@@ -4682,7 +4682,7 @@ Sequenced after the exact-pid process-check standard task, which is itself the t
 ---
 
 ### 415. Record exact-pid process checking as a parallelism-safety suite-authoring standard
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 414, Task 411

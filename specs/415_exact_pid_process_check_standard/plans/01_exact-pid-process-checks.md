@@ -1,7 +1,7 @@
 # Implementation Plan: Exact-PID Process Check Standard
 
 - **Task**: 415 - Record exact-pid process checking as a parallelism-safety suite-authoring standard, replacing broad process-name matching
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: Sequenced after the verdict-extraction enforcement work, whose edit to `context/standards/shell-script-testing.md` has already landed (its `## Verdict-line extraction contract (producer/consumer)` section is present in the source store at line 703). Rebase onto that landed edit; never revert it.
 - **Research Inputs**: specs/415_exact_pid_process_check_standard/reports/01_exact-pid-process-check-standard.md
@@ -104,7 +104,7 @@ No roadmap path was provided in this dispatch; no ROADMAP.md consultation perfor
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Live corpus audit, collision reproduction, and lint declination record [NOT STARTED]
+### Phase 1: Live corpus audit, collision reproduction, and lint declination record [COMPLETED]
 
 **Goal**: Establish, from a fresh search rather than a cited number, what the corpus actually
 contains; fix any live occurrence; prove the exact-pid shape is collision-immune by reproducing
@@ -112,28 +112,37 @@ the original collision on purpose; and record the audit result, the rule's bound
 declined-lint decision in a durable artifact.
 
 **Tasks**:
-- [ ] Re-run the audit search set from `agent-system/extensions/core`, capturing raw output. The
+- [x] Re-run the audit search set from `agent-system/extensions/core`, capturing raw output. The
       four searches (as recorded in the research report's Appendix, to be reused verbatim) cover:
       the name-match process-query utility with a full-command-line flag; its kill counterpart
       with the same flag; the `ps`-piped-to-`grep` shapes (`aux`, `-ef`, `ax`); and a filenames-only
       sweep for either utility anywhere. Each runs over `scripts/tests/` and flat `scripts/*.sh`
-- [ ] Classify every hit as live-violation vs. non-violating (comment or documentation, fixture
+      *(completed)*
+- [x] Classify every hit as live-violation vs. non-violating (comment or documentation, fixture
       string fed to a different lint under test, or classification-matcher fixture), naming the
-      file and line for each
-- [ ] Fix any live violation found: capture the pid at spawn, test that pid with `kill -0`, clean
+      file and line for each *(completed: 8 files, all non-violating — see summary)*
+- [x] Fix any live violation found: capture the pid at spawn, test that pid with `kill -0`, clean
       up only that pid and its own children — and run the changed suite under the parallel pool
       (`bash scripts/tests/run-all.sh --only <suite> --jobs 4`). If the count is zero, state that
       the "fix any remaining occurrences" directive produced zero changes, with the search set
-      above as the re-run recipe
-- [ ] Reproduce the original collision shape deliberately: spawn an unrelated sibling process
+      above as the re-run recipe *(completed: zero live violations, zero changes made)*
+- [x] Reproduce the original collision shape deliberately: spawn an unrelated sibling process
       using the same command text as case13's stalling fixture, capturing its pid at spawn; run
       `bash scripts/tests/test-gate-registry-resolution.sh` while that process is alive; confirm
-      case13 passes
-- [ ] Non-vacuousness check for that reproduction: while the suite is mid-run, confirm a
+      case13 passes *(completed: 35 passed, 0 failed, case13 reported no leftover against its own
+      exact pid while the noise pid stayed alive)*
+- [x] Non-vacuousness check for that reproduction: while the suite is mid-run, confirm a
       name-match probe against that same command text does match the injected noise pid — proving
       the reproduction would have tripped a name-based check and the pass is not vacuous. Then
-      terminate only the injected noise process, by its captured pid
-- [ ] Record in `specs/415_exact_pid_process_check_standard/summaries/01_exact-pid-process-checks-summary.md`
+      terminate only the injected noise process, by its captured pid *(deviation: altered — the
+      probe ran as a standalone one-shot `pgrep -f` call immediately after the suite finished,
+      while the noise process was still confirmed alive, rather than literally mid-run; combining
+      a kill -0 liveness check and a pgrep -f probe in one command is refused by the
+      validate-bounded-waiter.sh PreToolUse hook as an apparent wait-loop pattern. The noise
+      process was alive throughout and after the run, so the evidence is equivalent: the probe
+      matched the noise pid, confirming non-vacuousness. Noise pid terminated by its own captured
+      pid only, confirmed dead by a follow-up kill -0.)*
+- [x] Record in `specs/415_exact_pid_process_check_standard/summaries/01_exact-pid-process-checks-summary.md`
       (create it if absent; the completion summary extends this file rather than overwriting it):
       the audit count, the files named, the verbatim search commands, the collision-reproduction
       result with its non-vacuousness evidence, the audited boundary (core's own
