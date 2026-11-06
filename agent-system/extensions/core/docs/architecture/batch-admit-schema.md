@@ -203,6 +203,14 @@ candidate's, surfaced on the admit verdict without changing the decision):
 {"$schema":"orchestrate-batch-admit-v7","task_number":"{N}","decision":"admit","self_modifying":true,"cross_session_hazard":{"session_id":"sess_1736700000_a1b2c3","colliding_task_number":"{M}","overlapping_path":"agent-system/extensions/core/scripts/orchestrate-batch-admit.sh","session_liveness_reason":"pid-alive","reason":"live registered session sess_1736700000_a1b2c3 (liveness: pid-alive) covers non-terminal task #{M} whose registered file_scope overlaps this self-modifying candidate at agent-system/extensions/core/scripts/orchestrate-batch-admit.sh; concurrent orchestrator-critical edits are possible -- coordinate with that session before dispatching"}}
 ```
 
+**Admit with dirty-worktree advisory** (additive, no-bump sibling to the v7 bump — the
+candidate's own `file_scope` intersects an uncommitted change in the working tree, surfaced on
+the verdict without changing the decision):
+
+```json
+{"$schema":"orchestrate-batch-admit-v7","task_number":"{N}","decision":"admit","self_modifying":false,"dirty_scope_advisory":{"dirty_paths":["agent-system/extensions/core/scripts/orchestrate-batch-admit.sh"],"reason":"candidate #{N} own file_scope intersects 1 uncommitted path(s) in the working tree (agent-system/extensions/core/scripts/orchestrate-batch-admit.sh); commit the listed path(s) separately before this task own implement dispatch sweeps them into its commit"}}
+```
+
 ## Field Definitions
 
 | Field | Type | Presence | Meaning |
@@ -228,6 +236,7 @@ candidate's, surfaced on the admit verdict without changing the decision):
 | `designated_absent_candidate` | int | `defer_reason == "absent_file_scope"` only (NEW in v6) | The lowest task number among this cycle's absent-scope candidates — the peer that admits this cycle in this candidate's place. Deliberately no `colliding_task_number`/`colliding_task_status`/`overlapping_path`/`collision_scope`/`corroborated_by` on this defer — there is no colliding task and no overlapping path, only missing information, so this value is its own field rather than overloading `file_scope_collision`'s shape with fields that would all be present-but-empty. |
 | `cross_session_hazard` | object | present on a self-modifying ADMIT verdict (any of the three admit shapes: phase-exempt, tie-break-winner, or solo) when a live registered foreign session's own precomputed `file_scope` overlaps the candidate's; absent on every other branch, including the `self_modifying` DEFER branch (additive, no-bump sibling to the v6 bump) | Closes the absorbed cross-session-blindness gap where a solo self-modifying candidate's verdict previously carried no cross-session collision result at all. NEVER changes `decision`. Nested keys, mirroring the existing `session_active` defer payload so the two are diffable: `session_id` (string), `colliding_task_number` (int, the lowest non-excluded task number the contending session covers, per D4), `overlapping_path` (string, first overlapping path), `session_liveness_reason` (string), and `reason` (string, machine-templated). |
 | `whole_tree_claim` | bool | present (always `true`; absent, never `false`) on EVERY verdict for a candidate whose own `file_scope` declares the reserved `__WHOLE_TREE__` sentinel, regardless of `decision` or `defer_reason` (NEW in v7) | "The hazard stays visible even when not deferred" — the same convention `self_modifying` already uses. A FIFTH, orthogonal admission dimension: a plan phase that invokes whole-tree regeneration is an implicit scope claim over the ENTIRE deployed tree, which no declared-path overlap can otherwise express — see `context/patterns/batch-orchestration-guardrails.md`'s whole-tree-claim subsection. NEVER itself the source of a decision change; the decision-affecting half of this dimension is the `whole_tree_claim` `defer_reason` shape above, reached by relabeling a sentinel-vs-sentinel exact match the collision scan already finds, not by a separately-evaluated trailing check. |
+| `dirty_scope_advisory` | object | present on EVERY verdict for a candidate whose own `file_scope` intersects the currently dirty working tree (`git diff --name-only HEAD`, covering both staged and unstaged changes), regardless of `decision` or `defer_reason` (additive, no-bump sibling to the v7 bump) | Depends only on the candidate's own `file_scope`, like `whole_tree_claim`, so it is computed and merged at the identical set of verdict shapes. Structurally absent on the three early-exit branches (unknown task, terminal status, absent `file_scope`) and whenever the intersection is empty. NEVER changes `decision` — purely informational: it exists so an operator can commit a foreign hunk separately before an implement dispatch's whole-file staging sweeps it into that task's own commit. Nested keys: `dirty_paths` (array of strings, every intersecting path, not just the first) and `reason` (string, machine-templated, names the remedy). |
 
 ## Precedence: Self-Modification, Then Collision, Then Session-Registry
 
@@ -863,3 +872,20 @@ own established non-bump criterion, it does NOT bump `$schema` even though it la
 overall convergence as the v6 bump above. Every in-repo consumer's status: unaffected by this
 field alone (no consumer branches on its presence to remain correct); the report composer's
 planned admitted-side selector for it is tracked under the same declared residual above.
+
+**Additive, no-bump sibling change (landed alongside the v7 bump above, but NOT itself a version
+bump)**: a `dirty_scope_advisory` field is added to any verdict (admit or defer alike) for a
+candidate whose own `file_scope` intersects the currently dirty working tree (`git diff
+--name-only HEAD`), so an operator can commit a foreign hunk separately before an implement
+dispatch's whole-file staging sweeps it into that task's own commit. Depends only on the
+candidate's own `file_scope`, exactly like `whole_tree_claim` above, so it follows that field's
+universal-merge placement rather than `cross_session_hazard`'s self-modifying-only scoping. This
+never changes any decision and introduces no new verdict shape a consumer has not seen the
+general pattern of before (`absent_scope_advisory`, `cross_session_hazard`, and `whole_tree_claim`
+are all the same "additional-advisory-object-on-an-existing-shape" pattern) — so, per this
+document's own established non-bump criterion, it does NOT bump `$schema`, following the exact
+precedent the two entries above set. Every in-repo consumer's status: `orchestrate-cycle-plan.sh`
+gains a `dirty_scope_ledger` (additive, self-initializing, mirroring `absent_scope_ledger` and
+`cross_session_hazard_ledger`); `orchestrate-predispatch-review.sh` gains a new Class (Class J)
+re-presenting the field, unconditionally available like Classes C and D (it consumes no
+session-registry input, unlike Class I's `cross_session_hazard` re-presentation).

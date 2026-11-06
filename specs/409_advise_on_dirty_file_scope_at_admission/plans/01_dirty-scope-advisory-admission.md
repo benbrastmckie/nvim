@@ -389,39 +389,44 @@ plus `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` over bo
 
 ---
 
-### Phase 5: Documentation convergence [NOT STARTED]
+### Phase 5: Documentation convergence [COMPLETED]
 
 **Goal**: The two docs that track every existing advisory precisely gain the new field, so the
 codebase's own convergence discipline is not broken by an undocumented fourth advisory.
 
 **Tasks**:
-- [ ] **Re-read `context/patterns/batch-orchestration-guardrails.md` immediately before editing**
+- [x] **Re-read `context/patterns/batch-orchestration-guardrails.md` immediately before editing**
       — it is in a concurrently-planning sibling task's declared `file_scope` this cycle. If a
       foreign commit or foreign uncommitted modification is present, STOP and report it after
-      checking `git log` to confirm it is not this task's own work.
-- [ ] Add a `dirty_scope_advisory` row to `docs/architecture/batch-admit-schema.md`'s Field
+      checking `git log` to confirm it is not this task's own work. *(completed: re-read; both
+      `git status --porcelain` and `git log -5` on the file were checked beforehand and showed no
+      foreign dirt or foreign commit — safe to proceed)*
+- [x] Add a `dirty_scope_advisory` row to `docs/architecture/batch-admit-schema.md`'s Field
       Definitions table (around `:206-231`), matching the three sibling rows' shape: field name,
       type (`object`), presence rule (present on every verdict in the self-modifying and ordinary
       branches whose candidate's own `file_scope` intersects the dirty working tree; absent on
       every early-exit branch and whenever the intersection is empty), and the nested-key list
-      (`dirty_paths` array, `reason` string).
-- [ ] Add a worked example line to the same doc's examples block, matching the existing
-      `absent_scope_advisory` / `cross_session_hazard` example lines.
-- [ ] Add a Version History note stating the field is **additive with no `$schema` bump** (it
+      (`dirty_paths` array, `reason` string). *(completed)*
+- [x] Add a worked example line to the same doc's examples block, matching the existing
+      `absent_scope_advisory` / `cross_session_hazard` example lines. *(completed)*
+- [x] Add a Version History note stating the field is **additive with no `$schema` bump** (it
       adds no new verdict shape a prior consumer would mis-bucket), explicitly following the
-      precedent the two later sibling advisories set.
-- [ ] Add a row to `context/patterns/batch-orchestration-guardrails.md`'s Blocking vs. Advisory
+      precedent the two later sibling advisories set. *(completed)*
+- [x] Add a row to `context/patterns/batch-orchestration-guardrails.md`'s Blocking vs. Advisory
       Classification Table (around `:289-300`) classifying the dirty-worktree check as ADVISORY,
       with a "Why" cell grounded in that section's own two-condition criterion: the harm of
       proceeding is a foreign hunk swept into a task commit — recoverable after the fact and
       requiring an operator's judgment about what to commit separately — not a silent
       concurrent-write corruption, so the condition is logged loudly rather than gated.
-- [ ] Verify no task-number reference and no record-versioning language lands in either file
+      *(completed)*
+- [x] Verify no task-number reference and no record-versioning language lands in either file
       (`.claude/rules/no-task-references-in-deliverables.md`,
       `.claude/rules/no-record-versioning-in-deliverables.md`). Cite durable anchors — field
       names, section headings, script names — never "task N". Note that the schema doc's existing
       `NEW in v7`-style labels are the file-format/schema version axis, a permitted durable axis,
-      not record-versioning.
+      not record-versioning. *(completed: grepped the diff additions for task-reference and
+      record-versioning patterns, zero hits; gate 4 task-reference lint also confirms 0
+      occurrences repo-wide)*
 
 **Timing**: 0.75 hours
 

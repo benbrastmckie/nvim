@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Documentation convergence",
+  "started_at": "2026-11-06T01:40:00Z",
+  "last_updated": "2026-11-06T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read batch-orchestration-guardrails.md; check for foreign dirt/commit", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add dirty_scope_advisory row to Field Definitions table", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 3, "description": "Add worked example line", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 4, "description": "Add Version History additive-no-bump note", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/batch-admit-schema.md"]},
+    {"id": 5, "description": "Add row to Blocking vs. Advisory Classification Table", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 6, "description": "Verify no task-reference/record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "gate 3 (doc-lint, check-extension-docs.sh) shows 6 EXPECTED deployed-script-content-drift FAILs for the Phase 1-4 edited scripts, unresolved until Phase 6's redeploy -- recorded in the issue log, not a Phase 5 defect. One genuine Phase 5-caused doc-lint issue WAS found and fixed: index-entries.json's line_count for patterns/batch-orchestration-guardrails.md was stale (2279 vs actual 2280 after this phase's edit); corrected to 2280 (generate-context-line-counts.sh --write could not run from the source store, so the field was hand-corrected to match wc -l's measurement). gate 4 (task-reference lint, check-task-references.sh --quiet) passes cleanly on its own: 0 occurrences. grep -rn dirty_scope_advisory confirms the field present in both docs and every carrying script (orchestrate-batch-admit.sh, orchestrate-cycle-plan.sh, orchestrate-predispatch-review.sh). Field Definitions table row visually confirmed as one well-formed 4-column row (Field/Type/Presence/Meaning), matching the header and sibling rows. git status --short on the shared guardrails file shows only this task's own modification, no foreign hunk. Diff additions scanned for task-reference and record-versioning patterns: zero hits."
+}
