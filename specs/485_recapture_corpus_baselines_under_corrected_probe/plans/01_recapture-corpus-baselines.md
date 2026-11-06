@@ -177,6 +177,104 @@ ambiguity in the fix's favor and is immaterial regardless (explicitly disclaimed
 consequential finding for the record's scope, since Instrument B is what actually decided the
 parent's acceptance verdict.
 
+## Exposure Bound and Correction (Phase 3)
+
+**Irrecoverability constraint, stated before any number.** An untracked file that was never
+subsequently committed leaves no trace in git history, so the untracked set at the Phase-1
+baseline capture instant (`12a65c492`, 2026-10-16 09:45:48 -0800) cannot be recovered exactly.
+What follows is a **bound**, derived from the files that *were* eventually committed, narrowed by
+plausibility. It is labelled as a bound everywhere it appears below; it is never presented as an
+exact retroactive measurement.
+
+**Upper-bound superset.** `git log --diff-filter=A --name-only` restricted to
+`agent-system/extensions/**/*.sh` and `agent-system/extensions/**/*.md`, from `12a65c492` to
+`HEAD`, returns **62 files** first committed strictly after the capture instant. (The plan's own
+Scope Hypothesis estimated 13, scoped only to the 2026-10-16..17 window; the live `--diff-filter=A`
+sweep over the full 19-day range to `HEAD` is the figure of record, not that estimate — the
+superset is larger because it spans the task's full three-week execution plus three weeks of
+unrelated repository activity, not because the untracked-at-capture set is larger.) This superset
+is every file that *could* theoretically have existed on disk, untracked, at the capture instant.
+
+**Narrowing rule.** A file in the superset is excluded from the plausible untracked-at-capture set
+if either holds:
+1. It is one of the parent task's **own later-phase creations** — it did not exist at Phase 1's
+   capture instant by construction, since Phase 1 is the task's first phase and the file is a
+   declared or evident artifact of a numbered phase that ran afterward.
+2. Its first commit is attributable to **concurrent repository activity with no evidence of being
+   in progress at the exact capture instant** — i.e., no commit from any task straddles the
+   capture moment in a way that would leave that file's creation uncommitted at 09:45:48.
+
+**Applying the rule.** `git log --all --since="2026-10-16 08:30:00 -0800" --until="2026-10-16
+11:00:00 -0800"` (a generous 2.5-hour window bracketing the capture instant) returns exactly eight
+commits, every one of them task 328's own sequential phases (`1.1`, `1.2`, `1.3`, `1`, `2`, `3`)
+plus one unrelated, already-completed, already-committed task-425 commit 69 minutes *before* the
+window opened (no overlap). **No concurrent sibling task has any commit in this window at all** —
+there is no evidence of a second writer with in-progress, uncommitted work at the capture instant.
+The closest file in the superset, `agent-system/extensions/core/scripts/lib/lint-corpus-scan-lib.sh`
+(first committed `f8f71bb2f`, 2026-10-16 10:09:27, only 24 minutes after capture), is itself task
+328's own Phase 3 creation — exactly the case criterion 1 excludes, and the case the plan's own
+risk-mitigation text names by name ("the parent's Phase 3 created `lib/lint-corpus-scan-lib.sh`,
+for instance"). Every remaining file in the 62-file superset is either another of task 328's own
+phases spread across 2026-10-16 through 2026-11-05 (criterion 1), or an unrelated sibling task's
+deliverable (sapience extension, lean challenge fixtures, books-approvals-signal, typst-scan-lib,
+literature test, etc.) first committed hours to weeks later with no commit activity bracketing the
+capture instant (criterion 2).
+
+**Result: the narrowed plausible untracked-at-capture set is EMPTY.** No file in the 62-file
+superset survives the narrowing rule. This is the measured outcome, not the plan's own estimate —
+the live sweep found a larger superset (62, not 13) but the same null result the Scope Hypothesis
+anticipated.
+
+**Per-population correction (old figure / new figure / delta):**
+
+| Population | Old figure (recorded baseline) | New figure (corrected) | Delta |
+|------------|--------------------------------|-------------------------|-------|
+| NET-PROD | 232 scripts, 90,568 lines | 232 scripts, 90,568 lines | **0 — confirmed sound** |
+| NET-TEST | 160 suites, 76,832 lines | 160 suites, 76,832 lines | **0 — confirmed sound** |
+| NET-MD | 927 files, 229,217 lines | 927 files, 229,217 lines | **0 — confirmed sound** |
+
+**A null result is the outcome, not a failure to produce one.** All three Phase-1 baseline
+populations are confirmed sound: no untracked file plausibly existed on disk at the capture
+instant, so the tracked-only probe and a (hypothetical) union-based probe would have reported
+identical figures at that instant.
+
+**Corroboration against the one directly measured exposure.** The fixing record (task 429)
+measured the live delta across the fix at a *different* instant (near 2026-11-04), with a
+fix-attributable component of `md_files +1 / md_lines +32` and zero contribution to either `*.sh`
+population. That measurement is not directly transferable to the Phase-1 capture instant (a
+different moment, three weeks earlier, with a different corpus state) — it is cited here only as
+corroboration that the magnitude of untracked exposure this probe can produce at any single
+instant is small (order of tens of lines), consistent with this record's own null finding at the
+Phase-1 instant specifically. This record's own Phase 1 reading (`untracked=0`, captured live at
+plan-execution time) corroborates further: the untracked contribution is zero right now, and nothing
+in the 19-day history between the two instants suggests the Phase-1 instant was systematically more
+exposed than either of the two directly-measured instants.
+
+**Order of magnitude against the −10,000 floor.** A delta of 0 is, trivially, immaterial against
+a −10,000-line floor. Even the single largest measured exposure this probe has ever shown (32
+lines, at the task-429 fix instant) would be immaterial against the same floor — three orders of
+magnitude smaller.
+
+**Direction of the residual error, stated for completeness.** Since the correction here is 0,
+there is no residual bias to report for the Phase-1 baseline itself. For the record: an
+enumeration blind to new untracked files understates insertions, which biases a baseline-derived
+*later* net toward the favourable (less-net-positive / more-net-negative) direction whenever the
+*baseline* is the tracked-only reading and the *later* reading is union-based (because the later
+reading's insertions are fully counted while the baseline's possible untracked insertions are not)
+— this is the dispatch's own named direction-of-error concern. It does not apply here because the
+baseline's own untracked set is empty, so there is nothing for a later union-based reading to be
+measured against unevenly.
+
+**Instrument A / Instrument B asymmetry — bounding this correction's reach.** The parent's
+authoritative acceptance figure (Instrument B: NET-PROD +498, NET-TEST +1,402, NET-MD −681,
+NET-TOTAL +1,219) is a `git show --numstat` sum over 77 named commits, measured against each
+commit's own parent — it never consults the probe's corpus enumeration and **cannot be moved by
+this correction in either direction**, independent of whether the correction above had been
+material or null. This correction's only possible reach, had it been material, would have been to
+Instrument A's raw probe-delta figure (NET-TOTAL +20,729, already disclaimed in the parent's own
+text as "NOT this task's own net") and to the baseline-versus-target framing in the Running Net
+Figures table. Since the correction is in fact null, neither is moved either.
+
 ## Goals & Non-Goals
 
 **Goals**:
@@ -379,7 +477,7 @@ plus a read-through confirming every enumerated figure has exactly one table row
 
 ---
 
-### Phase 3: Bound the Phase-1 Baseline's Exposure and State the Correction [NOT STARTED]
+### Phase 3: Bound the Phase-1 Baseline's Exposure and State the Correction [COMPLETED]
 
 **Goal**: The magnitude of the correction to the one baseline every parent net is measured against
 — stated as old figure, new figure, delta — together with an explicit statement of what is
@@ -387,44 +485,57 @@ retroactively knowable and what is only boundable, and an explicit null result i
 evidence shows.
 
 **Tasks**:
-- [ ] State the irrecoverability constraint first, in the artifact, before any number: an untracked
+- [x] State the irrecoverability constraint first, in the artifact, before any number: an untracked
       file that was never subsequently committed leaves no trace in git history, so the untracked set
       at a past instant cannot be recovered exactly. What follows is a bound, and it is labelled as
-      one everywhere it appears.
-- [ ] Derive the upper bound of the untracked-at-capture set for the Phase-1 baseline commit
+      one everywhere it appears. *(completed: see "Exposure Bound and Correction (Phase 3)" above)*
+- [x] Derive the upper bound of the untracked-at-capture set for the Phase-1 baseline commit
       (`12a65c492`, pre-fix): enumerate the in-corpus `*.sh` and `*.md` files whose first-ever commit
       is strictly after that commit, via `git log --diff-filter=A --name-only` restricted to
       `agent-system/extensions/**/*.sh` and `agent-system/extensions/**/*.md`. That set is a
-      superset of what could have been untracked at capture.
-- [ ] Narrow the superset by plausibility and state the narrowing rule explicitly. A file first
+      superset of what could have been untracked at capture. *(completed: 62 files, not the 13
+      estimated — the full 19-day range to HEAD is larger than the Scope Hypothesis's narrower
+      window, see above)*
+- [x] Narrow the superset by plausibility and state the narrowing rule explicitly. A file first
       committed days later did not exist on disk at capture; a file created by one of the parent's
       own later phases did not exist at capture by construction (the parent's Phase 3 created
       `lib/lint-corpus-scan-lib.sh`, for instance). Keep only files whose creation plausibly
       preceded the capture instant, name them, and sum their line counts at their first-committed
-      state (`git show <sha>:<path> | wc -l`), not their current state.
-- [ ] Report the correction per population, as old figure / new figure / delta:
+      state (`git show <sha>:<path> | wc -l`), not their current state. *(completed: narrowed set is
+      EMPTY — confirmed via a 2.5-hour commit-log bracket around the capture instant showing no
+      concurrent sibling activity, plus per-file attribution of all 62 to either task 328's own
+      later phases or unrelated sibling tasks dated hours-to-weeks later; no line-count sum needed
+      since the narrowed set has no members)*
+- [x] Report the correction per population, as old figure / new figure / delta:
       - NET-PROD baseline (recorded: 232 scripts, 90,568 lines)
       - NET-TEST baseline (recorded: 160 suites, 76,832 lines)
       - NET-MD baseline (recorded: 927 files, 229,217 lines)
       If the narrowed set is empty, report a delta of 0 for that population and say plainly that the
       baseline is confirmed sound. A null result is the outcome, not a failure to produce one.
-- [ ] Corroborate the bound against the only directly measured exposure the system has: the fixing
+      *(completed: all three populations, delta 0, confirmed sound — see per-population table above)*
+- [x] Corroborate the bound against the only directly measured exposure the system has: the fixing
       record's own across-the-fix measurement, whose fix-attributable component was `md_files +1 /
       md_lines +32` with zero contribution to either `*.sh` population, and this record's Phase-1
       reading of `untracked=N`. State the resulting order of magnitude against the parent's −10,000
-      floor.
-- [ ] Attribute everything outside the narrowed untracked set to concurrent sibling drift, never to
+      floor. *(completed: even the largest-ever measured exposure, 32 lines, would be three orders
+      of magnitude below the floor)*
+- [x] Attribute everything outside the narrowed untracked set to concurrent sibling drift, never to
       the fix, following the parent's own established practice of accounting for drift as drift
-      rather than absorbing it into a new baseline.
-- [ ] State the direction of the residual error explicitly, since the dispatch turns on direction
+      rather than absorbing it into a new baseline. *(completed: all 62 superset files attributed —
+      most to task 328's own later phases across its 3-week execution, the rest to unrelated sibling
+      tasks' deliverables, none to the fix)*
+- [x] State the direction of the residual error explicitly, since the dispatch turns on direction
       rather than magnitude. A baseline understated by untracked blindness makes every later
       probe-delta net *less* negative than the truth when the later reading is union-based, and a
       *later* tracked-only reading understates insertions and so biases the net favourably. Say
       which case each affected figure falls into, so the sign of the residual bias is on the record.
-- [ ] State the Instrument A / Instrument B asymmetry as a finding in its own right: the parent's
+      *(completed: no residual bias applies here since the baseline's own untracked set is empty —
+      direction stated for completeness in the artifact)*
+- [x] State the Instrument A / Instrument B asymmetry as a finding in its own right: the parent's
       authoritative acceptance figure is the git-numstat sum over its own commits, which never
       consults the probe and cannot be moved by this correction in either direction. Bound the
       correction's reach to Instrument A's raw figure and to the baseline-versus-target framing.
+      *(completed: see "Instrument A / Instrument B asymmetry" paragraph above)*
 
 **Timing**: 1 hour
 

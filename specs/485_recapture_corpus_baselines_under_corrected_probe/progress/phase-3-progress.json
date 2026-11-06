@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Bound the Phase-1 Baseline's Exposure and State the Correction",
+  "started_at": "2026-11-05T01:35:00Z",
+  "last_updated": "2026-11-05T02:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "State the irrecoverability constraint first", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 2, "description": "Derive the upper-bound superset via git log --diff-filter=A", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 3, "description": "Narrow the superset by plausibility and state the narrowing rule", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 4, "description": "Report the correction per population (old/new/delta)", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 5, "description": "Corroborate against the directly measured exposure; state order of magnitude", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 6, "description": "Attribute non-narrowed files to concurrent drift, never to the fix", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 7, "description": "State the direction of residual error", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]},
+    {"id": 8, "description": "State the Instrument A / Instrument B asymmetry finding", "status": "done", "files_touched": ["specs/485_recapture_corpus_baselines_under_corrected_probe/plans/01_recapture-corpus-baselines.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
