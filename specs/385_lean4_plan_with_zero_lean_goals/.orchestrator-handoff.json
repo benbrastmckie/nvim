@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Created a 5-phase implementation plan for the zero-Lean-goals plan shape, carrying out the research report's nine decisions verbatim: a substring-matched `<!-- lean-challenge-statements:none -->` marker, a new internal extract_r1 status 3, and a new dedicated exit code 72 in lean-challenge-snapshot.sh, kept distinct from the existing malformed-section 71. Waves: 1 = script change + the two markdown edits (plan-format.md, challenge-snapshot.md) in parallel; 2 = four net-new regression cases plus three fixtures (including the pre-existing coverage gap for the present-but-empty-section path); 3 = redeploy plus the full gate set, declared with the __WHOLE_TREE__ sentinel. validate-artifact.sh passes with 0 warnings.",
+  "summary": "Implemented all five plan phases for task 385: lean-challenge-snapshot.sh now recognizes the literal `<!-- lean-challenge-statements:none -->` marker via a new extract_r1 status 3 and reports it as a dedicated exit code 72, distinct from the existing malformed-section exit 71. plan-format.md and challenge-snapshot.md document the sanctioned shape and the new exit code. Four new regression cases (Z1-Z4) plus three fixtures prove the acceptance criteria; the full suite (37 cases) passes against both the source store and the redeployed .claude/ tree. A manifest.json registration gap for the new fixtures was discovered and fixed mid-implementation, requiring a second deploy and a small file_scope widening to admit the fix through the scoped-commit containment check. Task status is now [COMPLETED].",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/385_lean4_plan_with_zero_lean_goals/plans/01_zero-lean-goals-plan-shape.md",
-      "summary": "5-phase, 3.5-hour plan: marker recognition and exit 72 in lean-challenge-snapshot.sh, the sanctioned zero-goal shape in plan-format.md, the 72 row and Zero-Goal Marker subsection in challenge-snapshot.md, four net-new regression cases with three fixtures, and a redeploy plus full-gate closing phase."
+      "type": "summary",
+      "path": "specs/385_lean4_plan_with_zero_lean_goals/summaries/01_zero-lean-goals-plan-shape-summary.md",
+      "summary": "Documents the sanctioned zero-Lean-goals plan shape, the new exit code 72, the four new regression cases, and the manifest-registration deviation discovered during redeploy."
     }
   ],
-  "dispatch_seq": 8
+  "dispatch_seq": 15
 }

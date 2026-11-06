@@ -1,14 +1,57 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/385_lean4_plan_with_zero_lean_goals/summaries/01_zero-lean-goals-plan-shape-summary.md",
+      "summary": "Documents the sanctioned zero-Lean-goals plan shape (literal marker, new extract_r1 status 3, new exit code 72), the four new regression cases Z1-Z4, and the manifest-registration deviation discovered during redeploy."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the sanctioned shape for a lean/lean4 plan with no theorem deliverable: a literal <!-- lean-challenge-statements:none --> marker recognized by lean-challenge-snapshot.sh via a new extract_r1 status 3 and reported as a dedicated exit code 72, documented in plan-format.md and challenge-snapshot.md, proven by four new regression cases (Z1-Z4, 37/37 total passing), and deployed to the live .claude/ tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_empty_section_no_marker.md",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_zero_goal_marker.md",
+    "agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_zero_goal_marker_with_goals.md",
+    "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Pattern for a required-but-sometimes-inapplicable plan section (e.g. a lean4 plan with zero theorem goals): add a literal, substring-matched marker line recognized at the exact point the section's existing malformed-empty check already fires, reported via a NEW, DISTINCT internal status and exit code -- never collapse the deliberate no-op into the existing malformed-section failure code. Keep every other route's message/exit byte-for-byte unchanged, and add an anti-vacuity test case asserting the new exit code and the malformed-section exit code are DISTINCT non-zero values.",
+      "category": "PATTERN",
+      "source_artifact": "specs/385_lean4_plan_with_zero_lean_goals/summaries/01_zero-lean-goals-plan-shape-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["marker", "opt-out", "exit-code", "plan-format", "anti-vacuity"]
+    },
+    {
+      "content": "When adding new test fixtures under an extension's scripts/tests/fixtures/ directory, deploy-headless.sh only copies files that are registered in that extension's manifest.json provides.scripts array -- a new fixture file alone is not enough. check-extension-docs.sh's post-deploy completeness check ('script file on disk NOT in provides.scripts') catches this, but only AFTER a redeploy, so budget for a second deploy-headless.sh run when a phase adds fixtures without also registering them.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/385_lean4_plan_with_zero_lean_goals/summaries/01_zero-lean-goals-plan-shape-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "deploy-headless", "fixtures", "check-extension-docs"]
+    },
+    {
+      "content": "On a heavily concurrent shared working tree, a single index-entries.json/manifest.json file can carry BOTH your own pending fix and an unrelated sibling task's pending fix in the same file. git-commit-phase.sh and git-commit-scoped.sh both enforce per-task file_scope containment and will drop (not error on) an out-of-scope path -- so an own-but-undeclared fix needs file_scope widened (a targeted specs/state.json edit, never a wholesale array replace) before it can be committed; a foreign hunk in the same file should instead be temporarily reverted to its committed value immediately before your commit and restored immediately after, verified via git diff showing only your own hunk at commit time.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/385_lean4_plan_with_zero_lean_goals/summaries/01_zero-lean-goals-plan-shape-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["file_scope", "containment", "concurrent-dispatch", "git-commit-scoped", "index-entries.json"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793947646_0784d9",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }
