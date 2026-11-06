@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 8,
+  "summary": "Wrote an 8-phase, 11-hour plan for making lint-fixture-test subject resolution explicit and self-declaring. Phase 1 adds common_test_resolve_subject (modes deployed/source-store/deploy-tree-first, CORE_TEST_SUBJECT_MODE override) and common_test_declare_subject ([SUBJECT] line) to scripts/lib/common.sh with two-different-copies fixtures; Phase 2 ships the gate-27 lint with a 70-entry allowlist before any migration; Phases 3-6 migrate the measured 70-suite family in four batches, each shrinking that allowlist; Phase 7 corrects the stale population figure and documents the three-shape taxonomy; Phase 8 redeploys and runs the complete gate set with an explicit source-store TARGET. Every research figure was re-derived live at plan time.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/418_explicit_lint_fixture_test_subject_resolution/plans/01_explicit-subject-resolution.md",
+      "summary": "8-phase plan: mode-explicit resolution helper plus mandatory [SUBJECT] declaration, gate-27 lint with a shrinking allowlist, 70-suite migration in four batches, stale-figure correction, redeploy and full gate set."
+    }
+  ],
+  "dispatch_seq": 7
+}
