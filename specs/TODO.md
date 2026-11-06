@@ -11,11 +11,11 @@ next_project_number: 505
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,408,409,410,412,419,423,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,418,430,439,444,458,463,472,474,475,476,492,497 | 369,383,397,412,419,423,431,435,445,459,491,494 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 390,399,402,420,436,446,448,454 | 313,391,398,409,418,430,435,439,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 360,421,438,451,455,461,481,484,500 | 313,390,402,420,435,446,448,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 5 | 449,452,457,462,479,486 | 360,435,444,448,451,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 313,338,342,369,383,397,408,409,410,412,418,423,431,435,437,445,453,456,459,464,465,466,473,477,478,483,488,489,490,491,493,494,495,502,503,504 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,420,430,439,444,448,458,463,472,474,475,476,492,497 | 369,383,397,409,412,418,423,431,435,445,459,491,494 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 390,399,402,436,446,451,454 | 313,391,398,420,430,435,439,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 360,421,438,455,461,462,481,484,500 | 313,390,402,435,446,448,451,458 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 5 | 449,452,457,479,486 | 360,435,444,448,455,484 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 6 | 450,480,487,501 | 420,435,449,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
 | 7 | 496 | 450,487,488 | extensions |
 | 8 | 498 | 496 | extensions |
@@ -123,9 +123,8 @@ next_project_number: 505
 
 ### Agent System
 
-419 [IMPLEMENTING] — Extend the state-writer boundary lint to the Python JSON...
-  └─ 418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
-    └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
+418 [NOT STARTED] — Make the lint-fixture-test family subject resolution explicit...
+  └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [NOT STARTED] — Adjudicate where MCP write-tool permission grants belong:...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
@@ -4533,13 +4532,14 @@ Sequenced after the concurrent-gate-coordination task because both edit context/
 ---
 
 ### 419. Extend the state-writer boundary lint to the Python JSON re-serialization channel
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 275, Task 411
 - **Parent**: Task 411
 - **Research**: [419_enforce_state_write_convention_python_channel/reports/01_python-state-write-lint-extension.md]
 - **Plan**: [419_enforce_state_write_convention_python_channel/plans/01_python-state-write-enforcement.md]
+- **Summary**: [419_enforce_state_write_convention_python_channel/summaries/01_python-state-write-enforcement-summary.md]
 
 **Description**: Extend the state-writer boundary lint to the Python/ad hoc JSON re-serialization channel, so an agent reaching for json.dump cannot corrupt the shared state file
 
