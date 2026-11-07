@@ -5,6 +5,15 @@
 # deploy) must skip the absent arm with an [SKIP] line rather than cascading [FAIL] rows that
 # mask the real .claude-side result.
 #
+# Cases (f) and (g) cover validate_context_files' tree-attribution contract in both directions:
+# (f) builds a .claude-only fixture with one context index entry whose file exists and one whose
+# file is deliberately absent, and asserts exactly one "Missing context file" line appears,
+# naming the absent entry and the tree ([.claude]), never the present entry. (g) repeats the same
+# two-entry setup against the opencode-only fixture (case (d)'s tree transform) and asserts the
+# failure line instead names [.opencode] -- proving a reader can tell which deployed tree a
+# failure belongs to without inferring it from context. Both also assert the per-tree
+# "N of M context index entries missing on disk" info line Phase 1 added.
+#
 # Fixture model: test-deploy-verify-wiring.sh's mktemp -d + trap cleanup + git-init-free
 # throwaway consumer directory. validate-wiring.sh sources deploy-root-guard.sh unconditionally
 # (no REPO_ROOT override, unlike check-task-references.sh), which requires the running script's
@@ -165,6 +174,71 @@ if [[ "$code_e" -eq 0 ]] && [[ "$skip_count" -ge 1 ]] && ! grep -q '\[FAIL\]' "$
 else
   common_test_fail "(e) expected exit 0 with SKIP lines and no failures, got exit=$code_e skip_count=$skip_count; output:
 $(cat "$out_e")"
+fi
+
+# =====================================================================
+# Case (f): .claude-only fixture, two context index entries (one present, one absent) --
+# the failure line must attribute to .claude, name the absent entry, and never name the
+# present entry. Also asserts the Phase 1 per-tree "N of M ... missing on disk" info line.
+# =====================================================================
+build_fixture "claude-only-ctx"
+cat > "$FIXTURE/.claude/context/present.md" <<'EOF'
+# present
+EOF
+cat > "$FIXTURE/.claude/context/index.json" <<'EOF'
+{"entries": [{"path": "present.md"}, {"path": "absent.md"}]}
+EOF
+out_f="$WORKDIR/case-f.txt"
+code_f="$(run_wiring "all" "$out_f")"
+missing_lines_f=$(grep -c 'Missing context file' "$out_f")
+if [[ "$code_f" -eq 1 ]] && [[ "$missing_lines_f" -eq 1 ]] \
+  && grep -q 'Missing context file \[\.claude\]: absent.md' "$out_f" \
+  && ! grep -q 'Missing context file.*present.md' "$out_f"; then
+  common_test_pass "(f) present entry produces no failure; absent entry's failure names .claude"
+else
+  common_test_fail "(f) expected exactly one .claude-attributed failure naming absent.md and none naming present.md, got exit=$code_f missing_lines=$missing_lines_f; output:
+$(cat "$out_f")"
+fi
+
+if grep -q '\[\.claude\] 1 of 2 context index entries missing on disk' "$out_f"; then
+  common_test_pass "(f) per-tree count line reports 1 of 2 for .claude"
+else
+  common_test_fail "(f) expected a '[.claude] 1 of 2 context index entries missing on disk' line; output:
+$(cat "$out_f")"
+fi
+
+# =====================================================================
+# Case (g): mirror of (f) against the opencode-only fixture -- the failure line must instead
+# name .opencode, proving attribution tracks the tree being validated, not a hardcoded label.
+# =====================================================================
+build_fixture "opencode-only-ctx"
+mv "$FIXTURE/.claude" "$FIXTURE/.opencode"
+mv "$FIXTURE/.opencode/agents" "$FIXTURE/.opencode/agent"
+mkdir -p "$FIXTURE/.opencode/agent/subagents"
+mv "$FIXTURE/.opencode/agent"/*.md "$FIXTURE/.opencode/agent/subagents/" 2>/dev/null || true
+cat > "$FIXTURE/.opencode/context/present.md" <<'EOF'
+# present
+EOF
+cat > "$FIXTURE/.opencode/context/index.json" <<'EOF'
+{"entries": [{"path": "present.md"}, {"path": "absent.md"}]}
+EOF
+out_g="$WORKDIR/case-g.txt"
+code_g="$(run_wiring "all" "$out_g")"
+missing_lines_g=$(grep -c 'Missing context file' "$out_g")
+if [[ "$code_g" -eq 1 ]] && [[ "$missing_lines_g" -eq 1 ]] \
+  && grep -q 'Missing context file \[\.opencode\]: absent.md' "$out_g" \
+  && ! grep -q 'Missing context file.*present.md' "$out_g"; then
+  common_test_pass "(g) present entry produces no failure; absent entry's failure names .opencode"
+else
+  common_test_fail "(g) expected exactly one .opencode-attributed failure naming absent.md and none naming present.md, got exit=$code_g missing_lines=$missing_lines_g; output:
+$(cat "$out_g")"
+fi
+
+if grep -q '\[\.opencode\] 1 of 2 context index entries missing on disk' "$out_g"; then
+  common_test_pass "(g) per-tree count line reports 1 of 2 for .opencode"
+else
+  common_test_fail "(g) expected a '[.opencode] 1 of 2 context index entries missing on disk' line; output:
+$(cat "$out_g")"
 fi
 
 # =====================================================================

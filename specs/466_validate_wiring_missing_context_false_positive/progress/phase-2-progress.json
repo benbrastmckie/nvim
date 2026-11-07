@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Add a both-directions fixture to the regression suite",
+  "started_at": "2026-11-07T01:11:13Z",
+  "last_updated": "2026-11-07T01:11:13Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test file, reuse existing harness", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add case (f): .claude-only fixture, one present one absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]},
+    {"id": 3, "description": "Add case (g): opencode-only fixture, attribution assertion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]},
+    {"id": 4, "description": "Assert per-tree count line shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]},
+    {"id": 5, "description": "Update header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-wiring.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Negative control run: reverting Phase 1's label caused cases (f) and (g) to FAIL (8 passed, 2 failed), confirming the new cases actually test attribution. Restored label; re-ran to 10 passed, 0 failed."
+}

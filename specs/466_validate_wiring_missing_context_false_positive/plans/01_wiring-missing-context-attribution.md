@@ -171,26 +171,28 @@ implementer confirms by grepping the function body for `log_` calls and the file
 
 ---
 
-### Phase 2: Add a both-directions fixture to the regression suite [NOT STARTED]
+### Phase 2: Add a both-directions fixture to the regression suite [COMPLETED]
 
 **Goal**: the suite proves the acceptance criterion in both directions — an index entry whose
 file exists yields no failure, and an index entry whose file is absent yields a failure
 attributed to the tree that lacks it.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-validate-wiring.sh`, reusing its
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-validate-wiring.sh`, reusing its
       existing `build_fixture` / `run_wiring` / `common_test_pass` harness rather than adding a
-      second fixture model.
-- [ ] Add a case (f): in a `.claude`-only fixture, write `context/index.json` with two entries —
+      second fixture model. *(completed)*
+- [x] Add a case (f): in a `.claude`-only fixture, write `context/index.json` with two entries —
       one whose file is created on disk, one whose file is deliberately absent — and assert the
       run reports exactly one `Missing context file` line, that the line names the absent entry's
-      path, that it names `.claude`, and that it does NOT name the present entry.
-- [ ] Add a case (g): the attribution case. Build the `opencode-only` fixture (the suite's
+      path, that it names `.claude`, and that it does NOT name the present entry. *(completed)*
+- [x] Add a case (g): the attribution case. Build the `opencode-only` fixture (the suite's
       existing case-(d) transformation), give its index one present and one absent entry, and
       assert the failure line names `.opencode` — proving a reader can tell which tree failed.
-- [ ] Assert the per-tree count line from Phase 1 appears with the expected `1 of 2` shape.
-- [ ] Extend the file's header comment to state what cases (f) and (g) cover, matching the
-      existing per-case comment style.
+      *(completed)*
+- [x] Assert the per-tree count line from Phase 1 appears with the expected `1 of 2` shape.
+      *(completed)*
+- [x] Extend the file's header comment to state what cases (f) and (g) cover, matching the
+      existing per-case comment style. *(completed)*
 
 **Timing**: 0.75 hours
 
