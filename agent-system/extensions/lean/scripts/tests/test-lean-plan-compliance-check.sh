@@ -47,6 +47,35 @@ theorem newProof (n : Nat) : n = n := by
   exact oldProof n
 EOF
 
+# Fixture for the declaration-kind / dotted-name widening cases (C14-C19): non-theorem
+# declaration kinds, a structure with a field, a fully-qualified dotted theorem, and a theorem
+# whose dotted spelling is realised by nesting inside a `namespace` block.
+cat > "$ROOT/Kinds.lean" <<'EOF'
+namespace Outer.Shapes
+
+structure Frame (S : Type) where
+  carrier : S
+  factoring (n : Nat) : n = n
+
+abbrev Short := Nat
+
+inductive Tree where
+  | leaf : Tree
+  | node : Tree → Tree → Tree
+
+@[simp] private def hidden : Nat := 0
+
+theorem Frame.ofParts {S : Type} (s : S) : True := trivial
+
+theorem fromNamespace : True := trivial
+
+end Outer.Shapes
+EOF
+mkdir -p "$ROOT/Mods"
+cat > "$ROOT/Mods/Deep.lean" <<'EOF'
+-- A module with no declarations: only its module path `Mods.Deep` can satisfy a Goal naming it.
+EOF
+
 # ===========================================================================
 # Case C1: a must-exist plan whose Goals block names a real declaration -> passed, [OK] line.
 # ===========================================================================
@@ -348,6 +377,178 @@ if [ "$rc" -eq 2 ]; then
   pass "C8: missing lean_root argument -> exit 2 (usage error)"
 else
   fail "C8: expected exit 2 for a missing lean_root argument, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C14: declaration kinds beyond theorem/def/lemma/instance -- a `structure`, an `abbrev`, an
+# `inductive`, and an attributed `private def` -- are each recognised, so a Goal naming one is
+# [OK] rather than a false [MISSING]. (Observed symptom: `[MISSING] AgencyFrame` for an existing
+# `structure AgencyFrame`.)
+# ===========================================================================
+plan_kinds="$WORKDIR/plan_kinds.md"
+cat > "$plan_kinds" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+
+- `Frame` -- a structure; `Short` -- an abbrev; `Tree` -- an inductive; `hidden` -- an
+  attributed private def.
+
+**Non-Goals**:
+
+- None.
+EOF
+out=$(bash "$TOOL_SRC" "$plan_kinds" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q '^  \[OK\] Frame' && echo "$out" | grep -q '^  \[OK\] Short' \
+   && echo "$out" | grep -q '^  \[OK\] Tree' && echo "$out" | grep -q '^  \[OK\] hidden' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C14: structure / abbrev / inductive / attributed private def are recognised declaration kinds -> passed"
+else
+  fail "C14: expected [OK] for Frame, Short, Tree, hidden and passed, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C15: a structure FIELD named as a Goal -- bare (`factoring`) and qualified
+# (`Frame.factoring`) -- is not a top-level declaration and is reported [OK] via the field
+# fallback, never [MISSING]. (Observed symptom: `[MISSING] factoring` for a plain field of
+# `GranularityRefinement`.)
+# ===========================================================================
+plan_field="$WORKDIR/plan_field.md"
+cat > "$plan_field" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+
+- `factoring` -- a field of `Frame`, also spelled `Frame.factoring`; `carrier` likewise.
+
+**Non-Goals**:
+
+- None.
+EOF
+out=$(bash "$TOOL_SRC" "$plan_field" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q '^  \[OK\] factoring — found as a structure/class field' \
+   && echo "$out" | grep -q '^  \[OK\] Frame\.factoring — found as a structure/class field' \
+   && echo "$out" | grep -q '^  \[OK\] carrier — found as a structure/class field' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C15: a structure field named bare or qualified -> [OK] via the field fallback, passed"
+else
+  fail "C15: expected field [OK] lines for factoring, Frame.factoring, carrier and passed, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C16: dotted names are now CHECKED. `Outer.Shapes.Frame.ofParts` resolves through the
+# namespace (declared `theorem Frame.ofParts` inside `namespace Outer.Shapes`), `Frame.ofParts`
+# resolves verbatim, and `Outer.Shapes.fromNamespace` resolves as a bare theorem inside the
+# namespace. (Observed symptom: `GranularityRefinement.ofSharedTaskRel` was never checked at all.)
+# ===========================================================================
+plan_dotted="$WORKDIR/plan_dotted.md"
+cat > "$plan_dotted" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+
+- `Frame.ofParts`, `Outer.Shapes.Frame.ofParts`, and `Outer.Shapes.fromNamespace`; the module
+  `Mods.Deep` is revised too.
+
+**Non-Goals**:
+
+- None.
+EOF
+out=$(bash "$TOOL_SRC" "$plan_dotted" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q '^  \[OK\] Frame\.ofParts' \
+   && echo "$out" | grep -q '^  \[OK\] Outer\.Shapes\.Frame\.ofParts' \
+   && echo "$out" | grep -q '^  \[OK\] Outer\.Shapes\.fromNamespace' \
+   && echo "$out" | grep -q '^  \[OK\] Mods\.Deep — found as a Lean module' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C16: dotted names are checked and resolve verbatim, through an enclosing namespace, or as a module path -> passed"
+else
+  fail "C16: expected [OK] for the three dotted spellings plus the Mods.Deep module and passed, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C17 (negative -- the widening must not relax the check): a dotted name that is genuinely
+# absent is now reported [MISSING] and fails, where before it was silently skipped. Also pins
+# that `comm` (declared bare in Basic.lean, no namespace) does NOT satisfy `Outer.Shapes.comm`.
+# ===========================================================================
+plan_dotted_missing="$WORKDIR/plan_dotted_missing.md"
+cat > "$plan_dotted_missing" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+
+- `Frame.ofParts` and `Frame.doesNotExist` and `Outer.Shapes.comm`.
+
+**Non-Goals**:
+
+- None.
+EOF
+out=$(bash "$TOOL_SRC" "$plan_dotted_missing" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 1 ] && echo "$out" | grep -q '^  \[OK\] Frame\.ofParts' \
+   && echo "$out" | grep -q '^  \[MISSING\] Frame\.doesNotExist' \
+   && echo "$out" | grep -q '^  \[MISSING\] Outer\.Shapes\.comm' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: failed$'; then
+  pass "C17 (negative): a genuinely missing dotted name is reported [MISSING] and fails, not silently skipped"
+else
+  fail "C17: expected [MISSING] for Frame.doesNotExist and Outer.Shapes.comm with failed/exit 1, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C18: harvest exclusions that keep the widening honest -- a lowercase-rooted dotted token
+# (`fine.taskRel`, a projection on a local variable) and a filename-shaped token
+# (`Refinement.lean`) are not harvested at all, so neither can produce a false [MISSING].
+# ===========================================================================
+plan_exclusions="$WORKDIR/plan_exclusions.md"
+cat > "$plan_exclusions" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+
+- `Frame` -- from `fine.taskRel = coarse.taskRel`, revised in `Refinement.lean`; see
+  `LogosManual.pdf`.
+
+**Non-Goals**:
+
+- None.
+EOF
+out=$(bash "$TOOL_SRC" "$plan_exclusions" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q '^  \[OK\] Frame' \
+   && ! echo "$out" | grep -q 'taskRel' && ! echo "$out" | grep -q 'Refinement' \
+   && ! echo "$out" | grep -q 'LogosManual' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C18: lowercase-rooted projections and filename-shaped tokens are excluded from the harvest -> passed"
+else
+  fail "C18: expected only Frame to be checked (no taskRel / Refinement lines) and passed, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C19: refutation polarity sees the widened kinds too -- a `structure` that must be absent
+# but is present is [PRESENT], failed (not a false [OK] because the old grep ignored structures).
+# ===========================================================================
+plan_refute_struct="$WORKDIR/plan_refute_struct.md"
+cat > "$plan_refute_struct" <<'EOF'
+## Goals & Non-Goals
+
+- **Goal Polarity**: refutation
+
+**Goals**:
+
+- `Frame` -- must not exist anywhere in the tree (but it does, as a structure in ROOT).
+
+**Non-Goals**:
+
+- None.
+EOF
+out=$(bash "$TOOL_SRC" "$plan_refute_struct" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 1 ] && echo "$out" | grep -q '^  \[PRESENT\] Frame' && echo "$out" | grep -q '^COMPLIANCE_CHECK: failed$'; then
+  pass "C19: refutation polarity recognises a present structure as [PRESENT] -> failed"
+else
+  fail "C19: expected [PRESENT] Frame and failed/exit 1 under refutation polarity, got rc=$rc: $out"
 fi
 
 echo ""
