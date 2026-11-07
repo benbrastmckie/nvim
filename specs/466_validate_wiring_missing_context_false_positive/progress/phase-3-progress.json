@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Prune the dangling entries from the .opencode context index",
+  "started_at": "2026-11-07T01:12:34Z",
+  "last_updated": "2026-11-07T01:12:34Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read .opencode/context/index.json immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-measure predicate: 41 entries under three prefixes, 0 resolve, none outside fail", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Remove exactly those entries, preserve formatting", "status": "done", "files_touched": [".opencode/context/index.json"]},
+    {"id": 4, "description": "Confirm post-state: jq parses, 109 remain, all resolve", "status": "done", "files_touched": [".opencode/context/index.json"]},
+    {"id": 5, "description": "Record progress note on dangling-entry rationale", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Re-measured predicate before acting: 150 total entries, 41 under project/{memory,neovim,nix}/, 0 of those 41 resolve on disk, 0 entries outside those prefixes fail to resolve. Pruned via jq filter (round-trip verified byte-identical to confirm jq --indent 2 preserves the file's existing formatting exactly). Post-state: 109 entries remain, jq parses cleanly, every remaining entry's path resolves on disk. bash .claude/scripts/validate-wiring.sh --opencode: exit 0, VALIDATION PASSED, 0 Missing context file lines. test-validate-wiring.sh suite still passes (10/10). The pruned entries were dangling (0 of 41 resolving) and .opencode carries no extensions manifest for memory/nix/nvim (no .opencode-extensions.json), so the prune resolves a real data inconsistency in the committed index rather than quieting a check."
+}

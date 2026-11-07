@@ -221,24 +221,27 @@ then deciding whether case (g) needs a helper tweak.
 
 ---
 
-### Phase 3: Prune the dangling entries from the .opencode context index [NOT STARTED]
+### Phase 3: Prune the dangling entries from the .opencode context index [COMPLETED]
 
 **Goal**: `.opencode/context/index.json` stops listing 41 context files that tree does not
 contain, so the check's genuine finding is resolved at its source rather than silenced.
 
 **Tasks**:
-- [ ] Re-read `.opencode/context/index.json` immediately before editing (git-tracked,
-      hand-maintained, concurrent siblings active).
-- [ ] Re-measure the predicate before acting: confirm 41 entries match path prefix
+- [x] Re-read `.opencode/context/index.json` immediately before editing (git-tracked,
+      hand-maintained, concurrent siblings active). *(completed)*
+- [x] Re-measure the predicate before acting: confirm 41 entries match path prefix
       `project/memory/`, `project/neovim/`, or `project/nix/`, that 0 of them resolve under
       `.opencode/context/`, and that no entry outside those three prefixes fails to resolve.
-- [ ] Remove exactly those entries, preserving the file's single top-level `entries` key, its key
-      ordering within each surviving entry, and its formatting conventions.
-- [ ] Confirm the post-state: `jq` parses the file, 109 entries remain, and every remaining
-      entry's `path` resolves to a file under `.opencode/context/`.
-- [ ] Record in the phase's progress note that the pruned entries were dangling (0 of 41
+      *(completed: 150 total, 41 matched, 0 of 41 resolve, 0 outside the three prefixes fail)*
+- [x] Remove exactly those entries, preserving the file's single top-level `entries` key, its key
+      ordering within each surviving entry, and its formatting conventions. *(completed via jq
+      filter; round-trip-verified byte-identical formatting preservation before applying)*
+- [x] Confirm the post-state: `jq` parses the file, 109 entries remain, and every remaining
+      entry's `path` resolves to a file under `.opencode/context/`. *(completed)*
+- [x] Record in the phase's progress note that the pruned entries were dangling (0 of 41
       resolving) and that `.opencode` carries no extensions manifest for memory/nix/nvim, so the
-      prune resolves a real inconsistency rather than quieting a check.
+      prune resolves a real inconsistency rather than quieting a check. *(completed: see
+      progress/phase-3-progress.json verification_notes)*
 
 **Timing**: 0.5 hours
 
