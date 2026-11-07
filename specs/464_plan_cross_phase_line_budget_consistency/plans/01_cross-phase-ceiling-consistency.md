@@ -290,32 +290,36 @@ hunk headers; a hunk landing outside that branch means the block has been mis-si
 
 ---
 
-### Phase 3: Regression Suite Cases and Live-Corpus Residue [NOT STARTED]
+### Phase 3: Regression Suite Cases and Live-Corpus Residue [COMPLETED]
 
 **Goal**: The new check is covered by fixtures in both directions, and its effect on the live plan
 corpus is measured and recorded rather than assumed.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` and reuse its
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` and reuse its
       existing structural model: the `pass()`/`fail()`/`info()` helpers, the `PASSED`/`FAILED`
       counters, the `mktemp -d` workdir with `trap EXIT` cleanup, and a new
-      `make_*_fixture()` helper mirroring `make_two_phase_ftm_fixture()`'s shape.
-- [ ] Add a contradiction fixture: a plan whose per-phase `Scope Hypothesis` estimates sum past a
+      `make_*_fixture()` helper mirroring `make_two_phase_ftm_fixture()`'s shape. *(completed; also
+      added a `VALIDATE_SRC` variable — see deviation below — since the suite's existing `$VALIDATE`
+      resolution is deploy-tree-first and would otherwise test the stale deployed copy pre-redeploy)*
+- [x] Add a contradiction fixture: a plan whose per-phase `Scope Hypothesis` estimates sum past a
       ceiling the same plan cites in its Rollback/Contingency section while asserting it stays
       under that ceiling. Assert the check warns, names the ceiling and the summed total, and that
-      default-mode exit stays 0 (advisory, not blocking).
-- [ ] Add a no-contradiction fixture: the same shape with estimates summing below the cited
-      ceiling. Assert no warning from the new check.
-- [ ] Add a no-ceiling fixture: per-phase estimates present but no ceiling cited anywhere. Assert
-      no warning — the check must not fire on estimates alone.
-- [ ] Add a `--strict` assertion on the contradiction fixture confirming the warning is promoted
+      default-mode exit stays 0 (advisory, not blocking). *(completed: case ceiling(f))*
+- [x] Add a no-contradiction fixture: the same shape with estimates summing below the cited
+      ceiling. Assert no warning from the new check. *(completed: case ceiling(g))*
+- [x] Add a no-ceiling fixture: per-phase estimates present but no ceiling cited anywhere. Assert
+      no warning — the check must not fire on estimates alone. *(completed: case ceiling(h))*
+- [x] Add a `--strict` assertion on the contradiction fixture confirming the warning is promoted
       to a failing exit by the pre-existing `total_issues = errors + warnings` branch, with no new
-      strictness logic of its own.
-- [ ] Run the new check in default mode over every non-terminal plan under `specs/`, count the
+      strictness logic of its own. *(completed)*
+- [x] Run the new check in default mode over every non-terminal plan under `specs/`, count the
       plans that newly warn, and record that residue in `plan-format.md`'s promotion-criterion
       text (or, if the count is zero, record that it was measured as zero at this check's
-      authoring and must be re-measured before promotion).
-- [ ] Update the suite's header comment to name the new check among the checks it covers.
+      authoring and must be re-measured before promotion). *(completed: 0 of 14 non-terminal,
+      plan-linked tasks newly warn; recorded in plan-format.md)*
+- [x] Update the suite's header comment to name the new check among the checks it covers.
+      *(completed)*
 
 **Timing**: 45 minutes
 

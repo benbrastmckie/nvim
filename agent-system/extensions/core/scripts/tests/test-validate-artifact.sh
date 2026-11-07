@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # test-validate-artifact.sh - Fixture-driven regression suite for scripts/validate-artifact.sh's
-# two newest checks: the plan-level Status-line grammar (M1/M2/M3, --fix non-participation) and
-# the report required-section heading conformance (the general-research-agent.md drift fix,
-# including the depth-tolerant any-depth semantics). Also carries a cross-script conformance
-# guard asserting scripts/lib/plan-status-line.sh's classification agrees with
-# update-plan-status.sh's own live accept/reject behavior on the same fixtures -- the mechanism
-# that lets this task NOT refactor update-plan-status.sh onto the shared library while still
-# guarding against the two ever drifting apart (see plan-status-line.sh's own header comment).
+# newest checks: the plan-level Status-line grammar (M1/M2/M3, --fix non-participation), the
+# report required-section heading conformance (the general-research-agent.md drift fix,
+# including the depth-tolerant any-depth semantics), and the advisory cross-phase ceiling
+# consistency check (per-phase Scope Hypothesis estimates summing past a plan-cited numeric
+# ceiling while the plan asserts conformance -- cases (f)/(g)/(h) below, driven via
+# $VALIDATE_SRC rather than $VALIDATE so they exercise the source-store copy directly ahead of
+# that check's own redeploy phase; see $VALIDATE_SRC's own header comment above). Also carries a
+# cross-script conformance guard asserting scripts/lib/plan-status-line.sh's classification
+# agrees with update-plan-status.sh's own live accept/reject behavior on the same fixtures -- the
+# mechanism that lets this task NOT refactor update-plan-status.sh onto the shared library while
+# still guarding against the two ever drifting apart (see plan-status-line.sh's own header
+# comment).
 #
 # Structural model: test-update-plan-status.sh (pass()/fail()/info() helpers, PASSED/FAILED
 # integer counters, git-root-first REPO_ROOT resolution, mktemp -d workdir with trap EXIT
@@ -41,6 +46,17 @@ if [[ -z "$VALIDATE" ]]; then
   for candidate in "${VALIDATE_CANDIDATES[@]}"; do
     echo "  $candidate" >&2
   done
+  exit 2
+fi
+
+# VALIDATE_SRC: the source-store sibling copy ONLY, deliberately bypassing $VALIDATE's
+# deploy-tree-first resolution above. The cross-phase ceiling consistency cases below exercise a
+# check that lives only in the source store until the owning task's own redeploy phase lands it
+# under .claude/ -- using $VALIDATE for them would silently test a stale deployed copy lacking
+# the check entirely. Every other case in this suite correctly keeps using $VALIDATE.
+VALIDATE_SRC="$SCRIPT_DIR/../validate-artifact.sh"
+if [[ ! -f "$VALIDATE_SRC" ]]; then
+  echo "ERROR: validate-artifact.sh (source-store sibling) not found at: $VALIDATE_SRC" >&2
   exit 2
 fi
 
@@ -243,6 +259,68 @@ EOF
   echo "$f"
 }
 
+# ── Cross-phase ceiling consistency fixture builder: two phases each carrying a
+# **Scope Hypothesis** line estimate in "lines", plus a caller-supplied Rollback/Contingency
+# sentence that either cites a ceiling and asserts conformance, cites the same ceiling with a
+# lower-summing estimate, or cites no ceiling at all -- the three shapes the three cases below
+# each need. ────────────────────────────────────────────────────────────────────────────────
+make_ceiling_fixture() {
+  local phase1_estimate="$1" phase2_estimate="$2" rollback_sentence="$3"
+  local f
+  f="$(mktemp --tmpdir="$WORKDIR" plan-ceiling-XXXXXX.md)"
+  cat > "$f" <<EOF
+# Plan
+
+- **Task**: 1 - x
+- **Status**: [IMPLEMENTING]
+- **Effort**: 1h
+- **Dependencies**: none
+- **Research Inputs**: none
+- **Artifacts**: none
+- **Standards**: none
+- **Type**: meta
+
+## Overview
+x
+
+## Goals & Non-Goals
+x
+
+## Risks & Mitigations
+x
+
+## Implementation Phases
+
+### Phase 1: X [NOT STARTED]
+
+**Verification Tier**: prose
+
+**Scope Hypothesis**: estimated at roughly ${phase1_estimate} added lines in file.go.
+
+**Files to modify**:
+- \`file.go\`
+
+### Phase 2: Y [NOT STARTED]
+
+**Verification Tier**: prose
+
+**Scope Hypothesis**: estimated at roughly ${phase2_estimate} added lines in file.go.
+
+**Files to modify**:
+- \`file.go\`
+
+## Testing & Validation
+x
+
+## Artifacts & Outputs
+x
+
+## Rollback/Contingency
+${rollback_sentence}
+EOF
+  echo "$f"
+}
+
 make_report_fixture() {
   local extra_headings="$1"
   local f
@@ -356,6 +434,29 @@ if [[ $rc -eq 0 ]]; then common_test_pass "FTM(e): default-mode exit 0 (warning 
 rc=0; "$VALIDATE" "$f" plan --strict >/dev/null 2>&1 || rc=$?
 if [[ $rc -ne 0 ]]; then common_test_pass "FTM(e): --strict escalates the per-phase warning to a non-zero exit"; else common_test_fail "FTM(e): --strict did not escalate: rc=$rc"; fi
 
+# ─── Cross-phase ceiling consistency (f): contradiction -- estimates sum past the cited
+# ceiling while the plan asserts conformance -- WARNS, default-mode exit stays 0 ─────────────
+f=$(make_ceiling_fixture "60" "50" "This change stays well under the 100-line limit.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "sum to 110"; then common_test_pass "ceiling(f): contradiction fixture warns with the correct summed total"; else common_test_fail "ceiling(f) missing expected warning: $out"; fi
+if echo "$out" | grep -qF "cited 100-line ceiling"; then common_test_pass "ceiling(f): warning names the cited ceiling"; else common_test_fail "ceiling(f) did not name the ceiling: $out"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan >/dev/null 2>&1 || rc=$?
+if [[ $rc -eq 0 ]]; then common_test_pass "ceiling(f): default-mode exit stays 0 (advisory, not blocking)"; else common_test_fail "ceiling(f): unexpected non-zero exit in default mode: rc=$rc"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan --strict >/dev/null 2>&1 || rc=$?
+if [[ $rc -ne 0 ]]; then common_test_pass "ceiling(f): --strict escalates the warning to a non-zero exit (via the pre-existing total_issues branch)"; else common_test_fail "ceiling(f): --strict did not escalate: rc=$rc"; fi
+
+# ─── Cross-phase ceiling consistency (g): no-contradiction -- same cited ceiling, estimates
+# sum BELOW it -- no warning from the new check ──────────────────────────────────────────────
+f=$(make_ceiling_fixture "10" "10" "This change stays well under the 100-line limit.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "cited 100-line ceiling"; then common_test_fail "ceiling(g): no-contradiction fixture incorrectly warned: $out"; else common_test_pass "ceiling(g): no-contradiction fixture draws no ceiling warning"; fi
+
+# ─── Cross-phase ceiling consistency (h): no-ceiling -- per-phase estimates present but no
+# ceiling cited anywhere -- the check must not fire on estimates alone ──────────────────────
+f=$(make_ceiling_fixture "60" "50" "This change has no stated ceiling.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "cited"; then common_test_fail "ceiling(h): no-ceiling fixture incorrectly warned: $out"; else common_test_pass "ceiling(h): no-ceiling fixture draws no ceiling warning"; fi
+
 # ─── Report-heading: near-miss-only FAILs ───────────────────────────────────────────────────
 f=$(make_report_fixture '
 ## Recommended Next Steps (for the plan phase)
@@ -439,7 +540,7 @@ check_conformance "M2"      $'# Plan\n- **Status**: COMPLETED'
 check_conformance "M3"      $'# Plan\n- **Status**: see [NOTE]'
 
 echo ""
-common_test_info "Target scripts: $VALIDATE ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"
+common_test_info "Target scripts: $VALIDATE ; $VALIDATE_SRC ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"
 echo "PASSED: $PASSED"
 echo "FAILED: $FAILED"
 

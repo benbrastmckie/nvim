@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "Regression Suite Cases and Live-Corpus Residue",
+  "started_at": "2026-11-07T00:05:00Z",
+  "last_updated": "2026-11-07T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add contradiction, no-contradiction, and no-ceiling fixtures plus --strict assertion to test-validate-artifact.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 2, "description": "Run default-mode sweep over non-terminal specs/ plans, record observed residue in plan-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "Update suite header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.VALIDATE_SRC",
+      "description": "Added a VALIDATE_SRC variable (source-store sibling path) for the three new ceiling fixtures",
+      "type": "altered",
+      "reason": "test-validate-artifact.sh's existing $VALIDATE resolution is deploy-tree-first; the deployed copy of validate-artifact.sh has not yet received this task's new check (redeploy is Phase 4), so using $VALIDATE for the new fixtures would test a stale binary lacking the check entirely",
+      "annotation": "*(deviation: altered — see Phase 3 Tasks list)*"
+    }
+  ]
+}

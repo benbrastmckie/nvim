@@ -552,8 +552,11 @@ warning alone. `--strict` mode promotes it today through the same pre-existing
 `total_issues = errors + warnings` branch the other two checks already rely on; no new
 strictness logic is added for this check. **Promotion criterion**: promote the warning to an
 error once a default-mode sweep of every non-terminal plan under `specs/` shows zero plans newly
-warning. Measured residue at this check's authoring: pending a corpus sweep recorded separately
-in this same document; re-measure rather than trusting a stale count before promoting.
+warning. Measured residue at this check's authoring: **0 of 14 non-terminal plans under `specs/`
+with a linked plan artifact newly warn** in default mode. Re-measure rather than trusting this
+count before promoting — the active-plan corpus turns over continuously, and this count reflects
+only the 14 non-terminal, plan-linked tasks present in `specs/state.json` at authoring time, not
+every non-terminal task (most carry no plan artifact yet).
 
 ### Enforcement level (Files to modify)
 
