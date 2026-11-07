@@ -233,8 +233,9 @@ require('neotex.plugins.tools.stt').setup({
 |-----|--------|
 | `<leader>vr` | Start recording |
 | `<leader>vs` | Stop recording and transcribe |
-| `<leader>vt` | Toggle recording |
+| `<leader>vv` | Toggle recording |
 | `<leader>vh` | Health check (verify dependencies) |
+| `<C-'>` | Dictation key: Claude Code push-to-talk in a Claude Code buffer, Vosk toggle elsewhere |
 
 ### Commands
 
@@ -244,6 +245,38 @@ require('neotex.plugins.tools.stt').setup({
 | `:STTStop` | Stop recording and transcribe |
 | `:STTToggle` | Toggle recording |
 | `:STTHealth` | Check dependencies |
+| `:STTClaudeVoice` | Toggle Claude Code voice mode via `/voice` |
+
+### Claude Code Voice Mode
+
+Claude Code carries its own speech-to-text, and `<C-'>` inside a Claude Code buffer drives
+that rather than Vosk. Neovim writes the kitty-keyboard encoding of `ctrl+'` (`ESC[39;5u`)
+to the terminal channel, where Claude Code matches its `voice:pushToTalk` binding.
+
+Hold the key to record and release to stop. Claude Code reads the release from its 200ms
+timer expiring rather than from a release event, and each key auto-repeat re-arms that
+timer; Neovim forwards the press and every repeat into a terminal buffer while dropping the
+true release, so auto-repeat carries the gesture.
+
+With `voice.autoSubmit` false the transcript is inserted into the prompt for editing, and a
+double-tap of `<C-'>` within 300ms sends it. The `tap` mode submits any transcript of three
+or more words unconditionally, so `hold` is the mode that keeps transcripts editable.
+
+Claude Code configuration:
+
+```json
+// ~/.claude/keybindings.json
+{ "bindings": [ { "context": "Chat", "bindings": { "ctrl+'": "voice:pushToTalk" } } ] }
+
+// ~/.claude/settings.json
+{ "voice": { "enabled": true, "mode": "hold", "autoSubmit": false } }
+```
+
+`voice.enabled` persists, so voice mode stays on across sessions. When it is off, the first
+`<C-'>` press sends `/voice <mode>` to enable it instead of forwarding a keypress.
+
+A key that is already mapped in terminal mode never reaches Claude Code — `<C-h>`, `<C-j>`,
+`<C-k>` and `<C-l>` are bound to window navigation in `lua/neotex/config/keymaps.lua`.
 
 ### Configuration Options
 

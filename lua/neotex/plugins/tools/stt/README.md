@@ -18,8 +18,12 @@ Offline speech recognition for Neovim using Vosk.
 <leader>vs     " Stop and transcribe
 <leader>vv     " Toggle recording
 
-<C-\>          " Toggle (works in normal AND terminal modes)
+<C-'>          " Dictation key (normal, insert and terminal modes)
 ```
+
+`<C-'>` is context-aware. In a Claude Code buffer it drives Claude Code's own voice
+mode; in every other buffer it toggles Vosk recording. See
+[Claude Code Voice Mode](#claude-code-voice-mode).
 
 ### Health Check
 
@@ -31,29 +35,93 @@ Offline speech recognition for Neovim using Vosk.
 
 ## Terminal Mode Support
 
-The `<C-\>` keybinding includes a **terminal-mode mapping** required for Claude Code sidebar:
+Terminal buffers send keystrokes straight to the running program, so `<C-'>` carries a
+terminal-mode mapping alongside the normal- and insert-mode ones. The mapping branches on
+the buffer:
 
 ```lua
--- Terminal-mode mapping
-vim.keymap.set('t', '<C-\\>', function()
-  vim.cmd('stopinsert')  -- Exit terminal mode temporarily
-  M.toggle_recording()
-end, {
-  noremap = true,
-  silent = true,
-  desc = 'STT: Toggle recording (terminal mode)'
-})
+vim.keymap.set('t', "<C-'>", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  if _is_claude_code_buffer(bufnr) then
+    _send_claude_ptt(bufnr)        -- hand the key to Claude Code
+  else
+    vim.cmd('stopinsert')          -- drive Vosk instead
+    M.toggle_recording()
+    vim.schedule(function() vim.cmd('startinsert') end)
+  end
+end, { noremap = true, silent = true })
 ```
 
-### Why Terminal Mode?
+Claude Code buffers are identified through `neotex.plugins.ai.claude.core.session-manager`,
+falling back to a buffer-name match when that module is unavailable.
 
-Terminal buffers intercept keybindings before Neovim can process them. Without a terminal-mode mapping, `<C-\>` would be sent to the terminal application (Claude Code) instead of triggering STT.
+### Non-Claude terminals
 
-**Behavior**:
-1. Press `<C-\>` in Claude Code sidebar
-2. Exits terminal mode (`stopinsert`)
-3. Starts/stops recording
-4. Returns to insert mode after transcription completes
+1. Press `<C-'>` in the terminal buffer
+2. Neovim leaves terminal mode (`stopinsert`)
+3. Vosk recording starts or stops
+4. Terminal mode resumes once transcription finishes
+
+## Claude Code Voice Mode
+
+Claude Code has its own speech-to-text, and in a Claude Code buffer `<C-'>` feeds that
+rather than Vosk. The mapping writes the kitty-keyboard encoding of `ctrl+'`
+(`ESC[39;5u`, codepoint 39 with the ctrl modifier) to the terminal channel, where Claude
+Code matches it against its `voice:pushToTalk` binding.
+
+### Required Claude Code configuration
+
+`~/.claude/keybindings.json` binds the key:
+
+```json
+{
+  "bindings": [
+    { "context": "Chat", "bindings": { "ctrl+'": "voice:pushToTalk" } }
+  ]
+}
+```
+
+`~/.claude/settings.json` holds the mode:
+
+```json
+{
+  "voice": { "enabled": true, "mode": "hold", "autoSubmit": false }
+}
+```
+
+`voice.enabled` persists across sessions, so voice mode stays on by default. When it is
+switched off, the first `<C-'>` press sends `/voice <mode>` to turn it back on instead of
+forwarding a keypress; hold the key again to record. A three-second grace window keeps the
+key repeats of one held press from re-sending that command.
+
+### Why hold-to-talk works through Neovim
+
+Hold-to-talk never observes the key being released. Claude Code arms a 200ms timer that
+each key event re-arms, and treats the timer firing as the release; a 2000ms fallback
+covers the case where no auto-repeat arrives at all. Neovim forwards the initial press and
+every auto-repeat into a terminal buffer but drops the true release event, so auto-repeat
+is what carries the whole gesture — which is exactly what Claude Code measures.
+
+A held key that records for roughly two seconds and then stops on its own means
+auto-repeat is not reaching Claude Code.
+
+### Choosing a mode
+
+| Mode | Gesture | Transcript handling |
+|------|---------|---------------------|
+| `hold` | Hold `<C-'>`, release to stop | Inserted into the prompt for editing; double-tap `<C-'>` within 300ms to send |
+| `tap` | Tap to start, tap again | Submitted automatically once it reaches three words |
+
+`tap` mode's auto-submit is unconditional — `voice.autoSubmit` applies only to `hold`. Pick
+`hold` to keep transcripts editable before they are sent.
+
+Set the mode Neovim uses when it has to enable voice mode itself:
+
+```lua
+vim.g.stt_claude_voice_mode = "hold"  -- or "tap"
+```
+
+`:STTClaudeVoice` sends `/voice` to a Claude Code buffer to switch voice mode on or off.
 
 ## Dependencies
 
@@ -105,8 +173,10 @@ vim.g.stt_sample_rate = 16000  -- Hz
 | `<leader>vs` | Normal | Stop recording and transcribe |
 | `<leader>vv` | Normal | Toggle recording |
 | `<leader>vh` | Normal | Health check |
-| `<C-\>` | Normal | Toggle recording (alternative) |
-| `<C-\>` | Terminal | Toggle recording (works in Claude Code) |
+| `:STTClaudeVoice` | Any | Toggle Claude Code voice mode via `/voice` |
+| `<C-'>` | Normal | Vosk toggle, or Claude Code push-to-talk in a Claude Code buffer |
+| `<C-'>` | Insert | Toggle Vosk recording |
+| `<C-'>` | Terminal | Vosk toggle, or Claude Code push-to-talk in a Claude Code buffer |
 
 ## Troubleshooting
 
@@ -146,16 +216,26 @@ python3 ~/.local/bin/vosk-transcribe.py /tmp/test.wav ~/.local/share/vosk/vosk-m
 
 **Verify terminal-mode mapping**:
 ```vim
-:verbose map <C-\>
+:verbose map <C-'>
 ```
 
-Should show:
+Should show a terminal-mode and a normal-mode entry, both Lua functions described as
+`STT: Toggle dictation`.
+
+**Check the key reaches Claude Code**: another terminal-mode mapping on the same key wins
+over this one. `lua/neotex/config/keymaps.lua` maps `<C-h>`, `<C-j>`, `<C-k>` and `<C-l>`
+to window navigation in terminal buffers, so those keys never reach the program inside.
+Bind `voice:pushToTalk` to a key that is not mapped there.
+
+**Check Claude Code's own configuration**:
+```bash
+cat ~/.claude/keybindings.json   # ctrl+' bound to voice:pushToTalk
+python3 -c "import json; print(json.load(open('$HOME/.claude/settings.json'))['voice'])"
 ```
-t  <C-\>       * <Lua function>
-                 STT: Toggle recording (terminal mode)
-n  <C-\>       * <Lua function>
-                 STT: Toggle recording (Ctrl-\)
-```
+
+**Recording stops after about two seconds while the key is held**: Claude Code is not
+seeing auto-repeat, and its fallback release timer is firing. Confirm the terminal
+auto-repeats the key while held.
 
 **Check buffer type**:
 ```vim
@@ -175,7 +255,7 @@ n  <C-\>       * <Lua function>
 ### Recording Flow
 
 ```
-User presses <C-\> (terminal mode)
+User presses <C-'> (terminal mode, non-Claude buffer)
     │
     ▼
 Exits terminal mode (stopinsert)
@@ -190,7 +270,7 @@ jobstart(parecord) -> /tmp/nvim-stt-recording.wav
 User speaks (up to 30s)
     │
     ▼
-User presses <C-\> again
+User presses <C-'> again
     │
     ▼
 jobstop(parecord) sends SIGTERM
@@ -220,7 +300,8 @@ local recording_file = "/tmp/nvim-stt-recording.wav"
 
 The STT plugin integrates with Claude Code sidebar via:
 
-1. **Terminal-mode keybinding**: `<C-\>` works in terminal buffers
+1. **Push-to-talk forwarding**: `<C-'>` drives Claude Code's voice mode from a Claude Code
+   buffer (see [Claude Code Voice Mode](#claude-code-voice-mode))
 2. **SessionStart hook**: Claude signals Neovim when ready (see `.claude/docs/guides/neovim-integration.md`)
 3. **TTS notifications**: pico2wave announces when Claude completes (see `.claude/hooks/tts-notify.sh`)
 

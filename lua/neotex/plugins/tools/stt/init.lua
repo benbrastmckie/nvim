@@ -17,9 +17,17 @@
 --   <leader>vs - Stop recording and transcribe (which-key, if enabled)
 --   <leader>vv - Toggle recording (which-key, if enabled)
 --   <C-'>      - Unified dictation key (normal, insert, terminal modes)
---                In Claude Code buffers: toggles voice mode via /voice
---                  (use Space for hold-to-talk once voice mode is enabled)
+--                In Claude Code buffers: forwarded to Claude Code as its own
+--                  push-to-talk key. Hold <C-'> to record, release to stop; the
+--                  transcript lands in the prompt for editing rather than being
+--                  sent (Claude Code's `voice.autoSubmit` must stay false).
+--                  Hold works because Claude Code detects the release by key
+--                  AUTO-REPEAT stopping -- Neovim forwards repeats but drops the
+--                  actual release event, so repeat is what carries the gesture.
+--                  If Claude Code voice mode is off, the first press enables it.
 --                In all other buffers: toggles Vosk STT recording/transcription
+--
+--   :STTClaudeVoice - send /voice to a Claude Code buffer to enable/disable voice mode
 --
 -- Global state:
 --   vim.g.stt_recording - true when recording, false otherwise (for statusline)
@@ -54,20 +62,94 @@ end
 -- Claude Code integration
 local _session_manager_ok, _session_manager = pcall(require, "neotex.plugins.ai.claude.core.session-manager")
 
-local function _is_claude_code_buffer(bufnr)
-  if not _session_manager_ok then
-    return false
-  end
-  local ok, result = pcall(_session_manager.is_claude_buffer, bufnr)
-  if not ok then
-    return false
-  end
-  return result
+-- Kitty keyboard protocol encoding of <C-'> (codepoint 39, modifier 5 = ctrl).
+-- Neovim forwards this sequence verbatim into a :terminal buffer, so Claude Code
+-- receives it as its own `ctrl+'` binding (voice:pushToTalk in keybindings.json).
+local CLAUDE_PTT_SEQUENCE = "\27[39;5u"
+
+-- Claude Code persists voice mode in its own settings file, so Neovim can tell
+-- whether voice mode is currently on and enable it on demand.
+local CLAUDE_SETTINGS_FILE = vim.fn.expand("~/.claude/settings.json")
+
+-- Mode used when Neovim has to enable voice mode itself. "hold" keeps the
+-- transcript editable; "tap" always auto-submits once the transcript reaches
+-- three words, which is not configurable in Claude Code.
+local function _claude_voice_mode()
+  return vim.g.stt_claude_voice_mode or "hold"
 end
 
-local function _send_claude_voice(bufnr)
+--- Read Claude Code's persisted voice-mode state.
+--- @return boolean|nil enabled True/false when known, nil when it cannot be read
+local function _claude_voice_enabled()
+  local ok, lines = pcall(vim.fn.readfile, CLAUDE_SETTINGS_FILE)
+  if not ok or type(lines) ~= "table" then
+    return nil
+  end
+  local decoded_ok, decoded = pcall(vim.json.decode, table.concat(lines, "\n"))
+  if not decoded_ok or type(decoded) ~= "table" then
+    return nil
+  end
+  if type(decoded.voice) == "table" and decoded.voice.enabled ~= nil then
+    return decoded.voice.enabled == true
+  end
+  if decoded.voiceEnabled ~= nil then
+    return decoded.voiceEnabled == true
+  end
+  return nil
+end
+
+local function _is_claude_code_buffer(bufnr)
+  if _session_manager_ok then
+    local ok, result = pcall(_session_manager.is_claude_buffer, bufnr)
+    if ok and result then
+      return true
+    end
+  end
+  -- Fallback mirrors the bufname test used by _G.set_terminal_keymaps()
+  local name = vim.api.nvim_buf_get_name(bufnr)
+  return name:match("claude") ~= nil or name:match("ClaudeCode") ~= nil
+end
+
+local function _claude_channel(bufnr)
   local channel = vim.b[bufnr].terminal_job_id
-  if not channel or channel <= 0 then return false end
+  if not channel or channel <= 0 then return nil end
+  return channel
+end
+
+-- Suppress the voice-mode probe briefly after enabling it, so the key repeats of
+-- a single held <C-'> do not each re-send the /voice command while Claude Code is
+-- still writing its settings file.
+local _voice_enable_sent_at = 0
+local VOICE_ENABLE_GRACE_MS = 3000
+
+--- Forward <C-'> to Claude Code as a push-to-talk keypress, enabling voice mode
+--- first when Claude Code currently has it switched off.
+--- @param bufnr number Buffer handle of the Claude Code terminal
+--- @return boolean ok True when something was written to the terminal channel
+local function _send_claude_ptt(bufnr)
+  local channel = _claude_channel(bufnr)
+  if not channel then return false end
+
+  local within_grace = (vim.loop.now() - _voice_enable_sent_at) < VOICE_ENABLE_GRACE_MS
+  if not within_grace and _claude_voice_enabled() == false then
+    -- Voice mode is off. Turn it on; holding the key keeps sending repeats, and
+    -- the next one starts recording now that voice mode is live.
+    _voice_enable_sent_at = vim.loop.now()
+    vim.fn.chansend(channel, "/voice " .. _claude_voice_mode() .. "\r")
+    notify("Claude Code voice mode enabling -- hold <C-'> again to record", vim.log.levels.INFO)
+    return true
+  end
+
+  vim.fn.chansend(channel, CLAUDE_PTT_SEQUENCE)
+  return true
+end
+
+--- Send the /voice slash command to toggle Claude Code voice mode on or off.
+--- @param bufnr number Buffer handle of the Claude Code terminal
+--- @return boolean ok True when the command was written to the terminal channel
+local function _send_claude_voice(bufnr)
+  local channel = _claude_channel(bufnr)
+  if not channel then return false end
   vim.fn.chansend(channel, "/voice\r")
   return true
 end
@@ -320,7 +402,7 @@ function M.setup(opts)
   vim.keymap.set('n', "<C-'>", function()
     local bufnr = vim.api.nvim_get_current_buf()
     if _is_claude_code_buffer(bufnr) then
-      _send_claude_voice(bufnr)
+      _send_claude_ptt(bufnr)
     else
       M.toggle_recording()
     end
@@ -341,7 +423,7 @@ function M.setup(opts)
   vim.keymap.set('t', "<C-'>", function()
     local bufnr = vim.api.nvim_get_current_buf()
     if _is_claude_code_buffer(bufnr) then
-      _send_claude_voice(bufnr)
+      _send_claude_ptt(bufnr)
     else
       vim.cmd('stopinsert')
       M.toggle_recording()

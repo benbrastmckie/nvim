@@ -419,7 +419,7 @@ Speech-to-text input using Vosk offline recognition.
 | `<leader>vs` | Stop recording | Stop capture and insert transcribed text at cursor |
 | `<leader>vv` | Toggle recording | Start recording if stopped, stop if recording |
 | `<leader>vh` | Health check | Verify STT dependencies and model availability |
-| `<C-\>` | Toggle recording | Works in both normal and terminal modes (Claude Code sidebar) |
+| `<C-'>` | Dictation key | Vosk toggle, or Claude Code push-to-talk inside a Claude Code buffer |
 
 **Commands**: `:STTStart`, `:STTStop`, `:STTToggle`, `:STTHealth`
 
@@ -427,7 +427,9 @@ Speech-to-text input using Vosk offline recognition.
 
 **Configuration**: `lua/neotex/plugins/tools/stt/`
 
-**Note**: In terminal buffers like Claude Code, `<C-\>` exits terminal mode temporarily to allow STT to function, then resumes after recording stops.
+**Note**: `<C-'>` is context-aware. In a Claude Code buffer it is forwarded to Claude Code as its own push-to-talk key, driving Claude Code's voice mode. In any other terminal buffer it exits terminal mode temporarily to run Vosk, then resumes after recording stops.
+
+**Claude Code voice mode**: hold `<C-'>` to record and release to stop. The transcript is inserted into the prompt for editing rather than sent, and a double-tap of `<C-'>` sends it. Requires `ctrl+'` bound to `voice:pushToTalk` in `~/.claude/keybindings.json`, with `voice.mode` set to `hold` and `voice.autoSubmit` false in `~/.claude/settings.json`. See `lua/neotex/plugins/tools/stt/README.md`.
 
 ### YANK (`<leader>y`)
 
@@ -458,7 +460,7 @@ Active in terminal buffers (`:terminal` command or toggleterm).
 | `<C-t>` | Toggle terminal | Close/open terminal window |
 | `<C-h>`, `<C-j>`, `<C-k>`, `<C-l>` | Navigate windows | Move between terminal and other windows |
 | `<M-h>`, `<M-l>`, `<M-Left>`, `<M-Right>` | Resize terminal | Adjust terminal window width |
-| `<C-\>` | Toggle STT recording | Start/stop speech-to-text recording (exits terminal mode temporarily) |
+| `<C-'>` | Dictation | Claude Code push-to-talk in a Claude Code buffer; otherwise toggles Vosk recording |
 
 ### Markdown Buffers
 
