@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Reproduced the 41 'Missing context file' failures and root-caused them: all 41 come from the .opencode arm of a --all run, where the files genuinely do not exist (0 of 41 resolve), while --claude alone is green. The defect is not path resolution but unattributed reporting (the FAIL line omits the system tree and resolved path) plus a real data inconsistency in the committed .opencode/context/index.json, which lists 41 memory/nix/nvim entries never mirrored into that tree. The 4-phase plan fixes the message attribution, adds a both-directions fixture to the existing test-validate-wiring.sh harness, prunes the dangling entries, and redeploys under the full gate set.",
+  "summary": "Fixed validate-wiring.sh's Missing context file message to attribute the failing tree (.claude/.opencode) and full resolved path, added a per-tree missing/total info line, and extended the regression suite with both-directions cases (f)/(g) backed by a negative control. Pruned 41 genuinely dangling entries from .opencode/context/index.json (150 -> 109, all resolving). Redeployed via deploy-headless.sh; validate-wiring.sh --all now exits 0 with VALIDATION PASSED and zero Missing context file lines, with a move-aside/restore probe confirming the check still fails loudly and attributes correctly.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/466_validate_wiring_missing_context_false_positive/plans/01_wiring-missing-context-attribution.md",
-      "summary": "4-phase plan with waves 1:[1,3] 2:[2] 3:[4]; Phase 4 declares __WHOLE_TREE__ for the redeploy."
+      "type": "summary",
+      "path": "specs/466_validate_wiring_missing_context_false_positive/summaries/01_wiring-missing-context-attribution-summary.md",
+      "summary": "Full implementation summary covering root cause, both fixes, and verification evidence."
     }
-  ],
-  "dispatch_seq": 4
+  ]
 }

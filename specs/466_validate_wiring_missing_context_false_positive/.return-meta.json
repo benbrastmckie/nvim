@@ -1,10 +1,28 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/466_validate_wiring_missing_context_false_positive/summaries/01_wiring-missing-context-attribution-summary.md",
+      "summary": "Fixed validate-wiring.sh's missing-context failure attribution (tree label + full resolved path + per-tree counts) and pruned 41 genuinely-dangling entries from .opencode/context/index.json; added both-directions regression fixture; redeployed and verified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Root-caused the 41 Missing context file failures as a message-attribution defect (not a path-resolution bug as hypothesized) plus a genuine stale-data inconsistency in .opencode/context/index.json. Fixed validate_context_files to label every failure/pass line with its deployed tree and full resolved path and emit per-tree missing/total counts, added both-directions regression cases (f)/(g) with a negative-control proof, pruned the 41 dangling .opencode index entries (150 -> 109, all resolving), redeployed, and verified validate-wiring.sh --all passes green with the check still failing loudly on a genuinely absent file."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-wiring.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-wiring.sh",
+    ".opencode/context/index.json"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
