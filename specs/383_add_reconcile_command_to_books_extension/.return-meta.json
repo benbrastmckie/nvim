@@ -1,0 +1,50 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 serialized tasks for the books extension /reconcile command and its lifecycle-hook ruling. Both start in NOT STARTED status.",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/383_add_reconcile_command_to_books_extension/",
+      "summary": "Task directory for the /reconcile command, its skill, manifest registration, and claudemd merge-source rows"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/384_adjudicate_books_reconciliation_lifecycle_hook/",
+      "summary": "Task directory for the postflight lifecycle-hook adjudication, serialized behind the command task"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Regenerated with both task entries and the 383 -> 384 dependency edge"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Both entries appended under topic 'extensions'; next_project_number advanced to 385"
+    }
+  ],
+  "next_steps": "Run /research 383 to begin research on the foundational task",
+  "metadata": {
+    "session_id": "sess_1791636986_46998e_meta",
+    "agent_type": "meta-builder-agent",
+    "duration_seconds": 210,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/state.json"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/books/commands/reconcile.md",
+    "agent-system/extensions/books/skills/skill-books-reconcile/SKILL.md",
+    "agent-system/extensions/books/manifest.json",
+    "agent-system/extensions/books/merge-sources/claudemd.md",
+    "agent-system/extensions/books/hooks/"
+  ],
+  "errors": []
+}

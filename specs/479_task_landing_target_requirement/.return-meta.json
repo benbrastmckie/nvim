@@ -1,0 +1,43 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 tasks giving research-only tasks a lifecycle terminus: a landing-target requirement (479) and an advisory stranded-research detector (480).",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/479_task_landing_target_requirement/",
+      "summary": "Creation-time landing-target gate plus research-phase completion contract"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/480_stranded_research_task_detector/",
+      "summary": "Advisory detector for tasks stranded at RESEARCHED with no landing target"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks 479 and 480 added, Task Order regenerated"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Two active_projects entries with file_scope, topic core-agent-system, and recorded audit_verdict"
+    }
+  ],
+  "next_steps": "Run /orchestrate 479 to begin the foundational task; 480 follows after 479 lands",
+  "metadata": {
+    "session_id": "sess_1793827858_5fe829",
+    "agent_type": "meta-builder-agent",
+    "duration_seconds": 600,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2,
+    "task_numbers": [479, 480]
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/state.json"
+  ]
+}

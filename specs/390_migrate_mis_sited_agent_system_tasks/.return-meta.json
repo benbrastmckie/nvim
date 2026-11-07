@@ -1,0 +1,46 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 meta tasks in /home/benjamin/.config/nvim for agent-system task siting, then amended both. #390 migrates SEVEN mis-sited tasks out of BimodalLogic (752 added after re-reading established it is not covered upstream) and transplant-then-abandons 753 into the null-resolution record here. #391 closes the target_root authoring hole in conclusion-stage.md Step 4b; its file_scope scope item was reframed from a defect repair to an open convention question after verification showed all six BimodalLogic records document their .claude/** entries as declared collision surfaces, not edit targets. Assigned 390 and 391 (not the briefed 387/388) after a concurrent writer claimed 387-389 between the counter read and the write.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/390_migrate_mis_sited_agent_system_tasks/",
+      "summary": "Task #390 migrate_mis_sited_agent_system_tasks: move seven source-store-targeting tasks (767,768,769,770,730,741,752) out of BimodalLogic into this repo task space, transplant 753 evidence plus its open suggested_channel question into the null-resolution record here before abandoning it, and document the one-shot procedure at context/patterns/cross-repo-task-migration.md."
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/391_agent_system_task_siting_and_target_root/",
+      "summary": "Task #391 agent_system_task_siting_and_target_root: close the authoring hole whereby conclusion-stage.md Step 4b dispatches meta-builder-agent without resolving target_root, and settle the open question of how a cross-repo task declares file_scope. Depends on 372 and 373 for serialization on conclusion-stage.md."
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Tasks #390 and #391 added to TODO.md via generate-todo.sh regeneration."
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Two active_projects entries appended; next_project_number advanced to 392 after repairing a concurrent-collision clobber that had left it at 389."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1791737651_7cb97a",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": [
+      "orchestrator",
+      "meta",
+      "skill-meta",
+      "meta-builder-agent"
+    ],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2,
+    "task_numbers": [
+      390,
+      391
+    ]
+  },
+  "next_steps": "Run /research 390 and /research 391. They are independent of each other; 391 additionally waits on 372 and 373 for serialization on conclusion-stage.md. #390 edits the [planned] null-resolution record description as part of the 753 transplant -- check that record is not mid-dispatch first."
+}

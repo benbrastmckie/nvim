@@ -1,0 +1,34 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#481) ruling on and migrating the 32-record mis-sited agent-system task delta, with a serialization dependency edge on #390.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #481 added to TODO.md and placed in Task Order wave 6 behind #390"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/481_migrate_mis_sited_agent_system_task_delta/",
+      "summary": "Task directory created with reports/, plans/, summaries/"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1793830217_548036",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [481],
+    "audit_evidence_mechanism": "audit_override",
+    "audit_override_reason": "Verdict supplied in the delegation context was a human-authored prose ruling, not an audit-task-proposals.sh NDJSON verdict document, so --audit-verdict would have rejected it as invalid JSON. Recorded verbatim on the entry's audit_override field instead."
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md"
+  ],
+  "next_steps": "Run /orchestrate 481 to begin work; it will serialize behind #390 on the shared specs/state.json territory."
+}

@@ -1,0 +1,36 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#410) closing the result-sharing replay hole in lake-build-guard.sh, serialized behind task 170.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #410 added to TODO.md with topic core-agent-system and dependency on #170"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/410_close_result_sharing_replay_hole_build_guard/",
+      "summary": "Task directory created with reports/, plans/, summaries/ subdirectories"
+    }
+  ],
+  "next_steps": "Complete task 170 first, then run /research 410",
+  "metadata": {
+    "session_id": "sess_1792025956_66d088",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/state.json"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/lake-build-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh"
+  ],
+  "errors": []
+}

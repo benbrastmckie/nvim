@@ -1,0 +1,33 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#461) in the agent-system source store's repository for the git-commit-scoped.sh V7 refusal of a positive directory pathspec naming a `git rm -r --cached` untracking whose content is still on disk. The reported root cause was re-verified by direct read of the script, not taken on trust.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task #461 appended to active_projects; next_project_number bumped to 462"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #461 entry regenerated via generate-todo.sh"
+    },
+    {
+      "type": "task_directory",
+      "path": "/home/benjamin/.config/nvim/specs/461_v7_refuses_cached_untracking_pathspec/",
+      "summary": "Task directory with reports/, plans/, summaries/"
+    }
+  ],
+  "metadata": {
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrate", "conclusion-stage-channel-b", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [461],
+    "origin_citation": "Vision:#234:iss_1793752881502_Y429oi"
+  },
+  "next_steps": "Run /orchestrate 461 in /home/benjamin/.config/nvim once its declared predecessors are resolved or their serialization-only edges lifted."
+}

@@ -1,0 +1,35 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#457) in the agent-system source store recording that repo-specific Lean content has leaked into the shared formal and lean extensions; per-file route decision left deliberately open.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Task #457 appended to active_projects; next_project_number advanced to 458"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #457 entry and Task Order wave 1 membership regenerated"
+    },
+    {
+      "type": "handoff",
+      "path": "/home/benjamin/.config/nvim/specs/457_repo_specific_content_in_shared_source_store/",
+      "summary": "Task directory created (empty until first artifact)"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1793640325_8ad836",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [457],
+    "topic": "extensions",
+    "commit": "7d891081ae9687bee0ebfc11839ed8dc588436a1"
+  },
+  "next_steps": "Run /orchestrate 457 in /home/benjamin/.config/nvim to begin work. The per-file route decision (relocate vs de-specialize) must not be pre-defaulted by the dispatch."
+}

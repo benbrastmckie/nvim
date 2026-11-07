@@ -21,8 +21,8 @@
       "token_count": 302,
       "created": "2026-04-13",
       "modified": "2026-04-13",
-      "last_retrieved": "2026-10-18",
-      "retrieval_count": 99
+      "last_retrieved": "2026-11-07",
+      "retrieval_count": 120
     },
     {
       "id": "MEM-config-nextcord-discord-nixos",
@@ -106,8 +106,8 @@
       "token_count": 100,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-09-03",
-      "retrieval_count": 7
+      "last_retrieved": "2026-11-05",
+      "retrieval_count": 10
     },
     {
       "id": "MEM-pattern-gate-out-defensive-check",
@@ -150,8 +150,8 @@
       "token_count": 90,
       "created": "2026-05-22",
       "modified": "2026-05-22",
-      "last_retrieved": "2026-10-18",
-      "retrieval_count": 167
+      "last_retrieved": "2026-11-07",
+      "retrieval_count": 186
     },
     {
       "id": "MEM-technique-validate-context-budgets-budget",
