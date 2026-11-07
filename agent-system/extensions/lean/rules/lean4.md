@@ -152,6 +152,37 @@ instance Foo := trivial
 instance Foo := True
 ```
 
+### Prohibited Pattern: a `noncomputable` `Decidable`-valued Declaration
+
+A second, structurally different vacuity class, not caught by any shape above:
+
+```lean
+-- PROHIBITED: the hypothesis is not load-bearing
+noncomputable def decidableFoo (h : SomeHypothesis) (x : A) : Decidable (P x) := ...
+```
+
+A `Decidable P` that is allowed to be `noncomputable` is inhabited by `Classical.dec _` for
+any `P` whatsoever, with no hypothesis at all. Such a declaration therefore compiles,
+is sorry-free, and carries a measured axiom profile, while establishing nothing: its stated
+hypothesis can be deleted without breaking it, so the declaration is not the reduction its
+signature advertises. A row of this shape in `docs/theorem-index.md` reads as a decidability
+transfer result and is not one.
+
+**The test**: for every `Decidable`-valued declaration, ask whether `Classical.dec _`
+type-checks as its body. If it does, the declaration is vacuous.
+
+**What to do instead**: land it as a plain computable `def` — no `noncomputable` — so the
+hypothesis is forced to be consumed. Where that is impossible because the term the body must
+evaluate is itself noncomputable, restate the result in a shape whose hypothesis is
+load-bearing: take the specific instance as an explicit argument rather than quantifying over
+all of them, or abstract over an explicit function plus its correctness `iff` and record the
+noncomputable term as inhabiting that slot via an existential. Both shapes compile computably.
+
+A worked instance of this trap is recorded in
+`FormalSystem/Metalogic/Expressiveness/OpenFutureElimination.lean`'s module docstring, which
+names the rejected uniform shape, says why its body is forced `noncomputable`, and records that
+every `Decidable`-valued declaration in that module compiles without the keyword.
+
 ### Why These Are Prohibited
 
 - `def X := True` compiles but proves nothing about `X`'s actual semantics
@@ -165,6 +196,7 @@ If you cannot implement `X`:
 1. Mark the phase **[BLOCKED]** in the plan file
 2. Document the blocker with what was tried, what goal state was reached, and what is needed to unblock
 3. Return `status: "partial"` with `requires_user_review: true`
-4. **Do NOT create `def X := True` or any vacuous placeholder**
+4. **Do NOT create `def X := True`, a `noncomputable` `Decidable`-valued declaration, or any
+   other vacuous placeholder**
 
 The Escalation Protocol in `lean-implementation-agent.md` specifies the exact procedure.
