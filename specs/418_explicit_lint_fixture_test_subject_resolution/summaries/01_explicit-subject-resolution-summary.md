@@ -1,112 +1,165 @@
 # Implementation Summary: Task #418
 
 - **Task**: 418 - Make the lint-fixture-test family's subject resolution explicit and self-declaring
-- **Status**: [IN PROGRESS]
+- **Status**: [COMPLETED]
 - **Started**: 2026-11-06T21:00:00Z
-- **Completed**: (not yet -- phases 4-8 remain)
-- **Effort**: ~4 hours so far of an estimated 11
+- **Completed**: 2026-11-07T05:40:00Z
+- **Effort**: ~11 hours across all 8 phases
 - **Dependencies**: None
 - **Artifacts**: plans/01_explicit-subject-resolution.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
 
 ## Overview
 
-This round landed Phases 1-3 of an 8-phase plan that replaces the lint-fixture-test family's
-implicit deploy-tree-first/source-store-fallback subject resolution with an explicit,
-mode-selectable, self-declaring mechanism. Phase 1 added the two new shared-library functions.
-Phase 2 shipped the gate-27 content lint with a full migration-pending allowlist. Phase 3
-migrated all 20 Group A (shared-helper-caller) suites onto the explicit form. Phases 4-8 --
-the local-duplicate and inline-loop migrations, the documentation correction, and the final
-redeploy/full-gate-set pass -- remain.
-
-This dispatch was a re-prompt of an earlier run that completed real Phase 3 work but died on an
-API transport error before any wrap-up artifact was written. This summary, together with
-`.return-meta.json` and `.orchestrator-handoff.json`, is that wrap-up.
+The lint-fixture-test family's deploy-tree-first/source-store-fallback subject resolution is
+now explicit, mode-selectable, and self-declaring across the full measured 70-suite family.
+`common_test_resolve_subject` (three modes: `deployed`, `source-store`, `deploy-tree-first`,
+with a `CORE_TEST_SUBJECT_MODE` environment override that applies only to the preference case)
+plus `common_test_declare_subject` (a mandatory `[SUBJECT] <absolute path>` declaration line)
+replace every hand-duplicated local function, every inline `CANDIDATES`-array loop, and every
+mode-implicit call to the old `common_test_resolve_candidate` helper. A new gate-27 content
+lint (`lint-subject-resolution-declaration.sh`) mechanically blocks a new suite from
+reintroducing any of the three undeclared shapes, with a Layer-2 allowlist that started at 70
+migration-pending entries and now drains to exactly 8 permanent, individually-reasoned
+exemptions. The default resolution order stays deploy-tree-first, preserving the Inter-Cycle
+Redeploy Checkpoint's pre/post divergence signal — confirmed live, post-redeploy, that a
+deploy-tree-first suite now declares the deployed copy while a hard-selected source-store suite
+still declares the source-store copy regardless of deploy state.
 
 ## What Changed
 
-- `agent-system/extensions/core/scripts/lib/common.sh` -- added `common_test_resolve_subject`
-  and `common_test_declare_subject` (Phase 1, already committed: `c51aa1e4f`).
-- `agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh` -- new
-  gate-27 two-layer content lint (Phase 2, committed `91954aa3e`/`8edccf7e0`); this round
-  (Phase 3, commit `4b178352b`) shrank its allowlist by the 20 Group A entries and added two
-  permanent exemptions: `test-common-lib.sh` (its own regression suite for the resolver
-  functions) and `test-task-type-detect.sh` (a legitimate, intentionally-unmigrated
-  single-candidate `REAL_EXT_ROOT` lookup that is not a deployed/source-store subject pair).
-- 19 of the 20 Group A test suites under `agent-system/extensions/core/scripts/tests/` --
-  migrated every `common_test_resolve_candidate` subject-resolution call site to
-  `common_test_resolve_subject` with an explicit mode plus a `common_test_declare_subject` call.
-  `test-gate-out-derived-staleness.sh` and `test-install-uninstall-extension.sh` moved to
-  `mode=source-store` (the two confirmed non-default-order callers); the rest moved to
-  `mode=deploy-tree-first`. (`test-common-lib.sh`, the 20th Group A member, already carried its
-  own resolver fixtures from Phase 1 and needed no further edit this round.)
-- `test-audit-task-proposals.sh`, `test-validate-task-creation-audit.sh` -- corrected a stale
-  structural-model doc comment that still named `common_test_resolve_candidate`; the comment's
-  mere mention of that token, combined with an unrelated `.claude/scripts` literal elsewhere in
-  the same file, was tripping gate-27's file-level check 4 as a false positive.
+- `agent-system/extensions/core/scripts/lib/common.sh` — added `common_test_resolve_subject` and
+  `common_test_declare_subject`; corrected the stale population figure in
+  `common_test_resolve_candidate`'s own header comment.
+- `agent-system/extensions/core/scripts/tests/test-common-lib.sh` — mode, declaration, fallback,
+  precedence, and checkpoint-property fixtures for the two new functions.
+- `agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh` — new
+  two-layer content lint (gate 27): four structural checks (hand-duplicate function, inline
+  array/loop, missing declaration, unmigrated implicit order) against a Layer-2 allowlist that
+  now holds 8 permanent exemptions and zero migration-pending entries.
+- `agent-system/extensions/core/scripts/tests/test-lint-subject-resolution-declaration.sh` — the
+  new lint's own seeded-violation suite.
+- `agent-system/extensions/core/scripts/gate-registry.data`, `verify-deploy.sh`,
+  `manifest.json` — gate 27 registered and wired.
+- 70 suites under `agent-system/extensions/core/scripts/tests/` migrated to the explicit
+  mechanism, across three measured shapes: 20 shared-helper callers (Group A), 12
+  hand-duplicated local functions (Group B), 38 inline `CANDIDATES`-array loops (Group C, in two
+  19-suite batches). Each suite's effective resolution order was preserved exactly — the
+  majority default to `deploy-tree-first`; a meaningful minority (confirmed via two
+  genuinely-divergent fixture directions) hard-select `mode=source-store` or `mode=deployed`
+  because they validate a pre-deploy source-store edit under active development, where a
+  deploy-dependent fallback would silently test stale logic.
+- `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md` — corrected
+  the stale "73 files...41 use" sentence to the measured 70-suite/three-shape breakdown; the
+  Inter-Cycle Redeploy Checkpoint's rejected-design rationale now states the divergence property
+  rests on each suite's declared mode, not an implicit argument order.
+- `agent-system/extensions/core/context/standards/shell-script-testing.md` — new "Explicit
+  deployed/source-store subject resolution" section documenting the three historical shapes, the
+  mode vocabulary, the `CORE_TEST_SUBJECT_MODE` precedence rule, the mandatory declaration, and
+  gate 27 as the mechanical enforcement.
+- `agent-system/extensions/core/index-entries.json` — line_count corrections for the two edited
+  docs.
+- A redeployed `.claude/` tree (two redeploys: one mid-Phase-8 discovery pass, one final).
 
 ## Decisions
 
-- `test-task-type-detect.sh`'s `REAL_EXT_ROOT` lookup (a single-candidate extensions-directory
-  resolution, not a deployed/source-store subject pair) stays on the old
-  `common_test_resolve_candidate` helper by design, per the plan's "leave non-subject uses on the
-  old helper" instruction. Because gate-27's Layer-1 check 4 is documented as file-level (not
-  call-site-level) and cannot distinguish this call from the migrated one in the same file, it is
-  recorded as a permanent allowlist exemption rather than relying on the commit message alone.
-- The two stale doc-comment mentions of `common_test_resolve_candidate` were reworded to
-  describe the resolver generically ("the explicit mode-selectable subject resolver in
-  lib/common.sh") rather than naming either literal function token, after an initial attempt to
-  rename them to `common_test_resolve_subject` instead tripped the lint's separate
-  resolve_subject/declare_subject count-balance check (check 3) via the same file-level
-  limitation.
+- **Argument-order correctness over copy-paste convenience**: `common_test_resolve_subject`'s
+  mode=source-store/deployed branches read a FIXED positional slot (`$4` for source-store, `$3`
+  for deployed), not "whichever candidate the old helper tried first." A Phase 3 migration bug
+  (both confirmed non-default-order callers silently declaring the DEPLOYED copy instead of the
+  intended source-store copy, because the old helper's try-order was copied into the new
+  function's fixed slots without re-mapping) was found and fixed before Phase 4 began, via
+  empirical `[SUBJECT]`-output verification rather than trusting the plan's own prior
+  verification note.
+- **The gate-27 allowlist, not a fresh grep, is the authoritative per-phase roster.** A naive
+  `grep -l '.claude/scripts' | grep -L resolve_candidate` over-matches badly against an
+  already-partially-migrated corpus. Every batch's membership was confirmed against the lint's
+  own Layer-2 data instead.
+- **A directory resolution derives from a resolved file's directory**, never a second parallel
+  directory-candidate loop (which would re-trip the lint's own structural checks). Two suites
+  needed a whole-tree copy source rather than one named file; both now take `dirname` of a
+  representative resolved file.
+- **Content-gated resolution (10 sites in one suite) consolidated into one file-local helper**
+  (`resolve_content_gated` in `test-validate-state.sh`) built on `common_test_resolve_subject`,
+  rather than ten duplicated custom loops — `common_test_resolve_subject`'s pure existence check
+  cannot express "resolved AND contains this check's identifier," so the helper adds exactly that
+  gate on top of the shared primitive.
+- **Comment-induced false positives are a confirmed, recurring hazard**: gate 27's
+  `MISSING_DECLARATION` check is a naive whole-file substring count of
+  `common_test_resolve_subject` vs `common_test_declare_subject`. An explanatory comment naming
+  the resolver function by its literal identifier — without an equal-count mention of the
+  declare function — trips a false-positive violation. Hit and fixed 5 times across Phases 4-6
+  by saying "the shared resolve-subject helper" in prose instead.
 
 ## Plan Deviations
 
-- None (implementation followed the plan; the two allowlist additions and comment corrections
-  above are closing-the-gap fixes within Phase 3's own stated scope, not deviations from it).
+- None against any phase's own task list. All deviations the plan anticipated (the two
+  non-default-order Group A callers, `test-task-type-detect.sh`'s non-subject-resolution
+  exemption, `test-deploy-root-guard.sh`'s confirmed migration-family membership) were resolved
+  exactly as the plan's own contingencies described.
 
 ## Verification
 
-- Build: N/A (shell scripts)
-- Tests: `run-all.sh --only` over the 20 Group A suites plus
-  `test-lint-subject-resolution-declaration.sh`, `test-gate-registry-resolution.sh`,
-  `test-manifest-scripts-sync.sh`, `test-deploy-verify-wiring.sh` -- 23 passed, 1 failed (see
-  below), 0 skipped.
-- `lint-subject-resolution-declaration.sh --verbose` (gate 27 itself): exit 0, 0 violations, 52
-  exempted files.
-- `lint-gate-registry.sh --verbose`: exit 0, 7/7 checks passed (gate 27's row is well-formed and
-  contiguous).
-- Files verified: Yes (all 20 pass `bash -n`).
-- One pre-existing, unrelated failure: `test-lint-unit-integration-boundary.sh` fails against the
-  live deployed tree because two deployed suites (`test-mcp-merge-target.sh`,
-  `test-validate-no-python-state-write.sh`) have no row in
-  `.claude/scripts/tests/suite-classification.data`. This is independent of subject resolution --
-  confirmed by inspecting the failure (a classification-data gap, not a resolution-mode issue)
-  and by the fact that these two files are untouched by this task's Group A migration. Not fixed
-  here; attributed to a different task's territory.
+- Build: N/A (shell corpus, no compiled build step)
+- Tests: Passed — every one of the 70 migrated suites, plus the new lint's own suite, produces
+  its prior verdict unchanged on the freshly-redeployed tree (confirmed via a scoped
+  `run-all.sh --only` run over all 71 basenames: 67 passed, 4 failed, all 4 confirmed
+  pre-existing and unrelated to this task — see Follow-ups)
+- Files verified: Yes
+- Gate 27 (`verify-deploy.sh --only-gate 27` and the full gate set alike): RUN, never SKIP,
+  "Total violations: 0" in every post-migration check
+- Checkpoint divergence property reconfirmed live, post-redeploy: a deploy-tree-first suite
+  (`test-issue-record.sh`) now declares the deployed copy; a hard-selected source-store suite
+  (`test-gate-out-derived-staleness.sh`) still declares the source-store copy regardless of
+  deploy state
+- `grep -c '\[SUBJECT\]'` across all 71 suites run individually: 164 declaration lines total,
+  confirming every suite in the family declares its subject
+- `bash .claude/scripts/verify-deploy.sh "$(git rev-parse --show-toplevel)"` (full gate set,
+  explicit source-store TARGET, final run): 3 of 42 checks failed, all three pre-existing and
+  unrelated (see Follow-ups); every other gate, including the new gate 27, passed
 
 ## Impacts
 
-- The 20 Group A suites now print a `[SUBJECT] <absolute path>` declaration for every resolved
-  subject, making a vacuous (stale-deployed-copy) run visibly distinguishable from a genuine one.
-- The gate-27 lint's allowlist shrank from 51 entries (50 migration-pending Group A/B/C plus 1
-  self-exemption) to the Group B (12) and Group C (38) migration-pending entries plus 4 permanent
-  exemptions (the lint's own fixture suite, `test-common-lib.sh`, `test-task-type-detect.sh`, and
-  -- carried from Phase 2 -- the two non-subject-resolution `candidate` users).
+- A green run of any suite in this family can no longer be silently vacuous: the printed
+  `[SUBJECT] <path>` line always names the exact copy that was actually exercised, closing the
+  originating defect class (editing the source store, then running the test suite before a
+  redeploy, silently testing the stale deployed copy instead of the change under test).
+- A new suite under `scripts/tests/` reintroducing any of the three undeclared/implicit-order
+  shapes is now mechanically blocked by gate 27 rather than relying on review discipline alone.
+- The Inter-Cycle Redeploy Checkpoint's pre/post divergence signal is unchanged in its default
+  behavior and now additionally documented as depending on each suite's declared mode rather
+  than an implicit, unstated convention.
 
 ## Follow-ups
 
-- Phase 4: migrate the 12 Group B local-duplicate-function suites.
-- Phase 5-6: migrate the 38 Group C inline-loop suites in two batches.
-- Phase 7: correct the stale population figure and document the three-shape taxonomy.
-- Phase 8: redeploy and run the complete gate set with an explicit source-store TARGET.
-- The pre-existing `test-lint-unit-integration-boundary.sh` classification-data gap (two deployed
-  suites with no row in `suite-classification.data`) is unrelated to this task and was not fixed.
+- Four pre-existing, unrelated failures were newly discovered during this task's own
+  verification passes, none caused by or attributable to this task's own edits (confirmed via
+  git-history bisection and/or `git stash push -- <path>` isolation for each):
+  - Gate 8 `test-postflight-deploy-gate.sh` and `test-redeploy-checkpoint-promotion.sh`: both
+    already red on the pristine, pre-migration committed tree (confirmed by stashing this task's
+    own edit out, re-running, and restoring); verdict unchanged by this task's migration.
+  - Gate 8 `test-task-type-detect.sh`: its permanently-exempted `REAL_EXT_ROOT` fallback branch
+    calls a helper that tests `[ -f ]` against a path that is always a directory, so the branch
+    always fails when reached (confirmed byte-identical in the pre-task-418 commit history).
+  - Gate 8 `test-lint-unit-integration-boundary.sh`: 3 `suite-classification.data` mismatches,
+    none touching any file this task edited.
+  - Gate 22 (shellcheck, `agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh`)
+    and Gate 24 (dead-command-recommendation, two `/ide` references in
+    `agent-system/extensions/memory/context/project/memory/`): both in extensions this task's
+    file_scope never touches.
+  - None of the five were fixed here, per this task's own explicit directive to attribute
+    nothing from pre-existing, unrelated failures. A future task may want to fold the newly
+    discovered four into the repository's durable known-unrelated-failures record alongside the
+    three the task description already enumerated (`test-detect-noop-bash.sh`,
+    `test-four-tier-conflict.sh`, `test-guard-git-push.sh`).
+- The checkpoint-coverage follow-up `batch-orchestration-guardrails.md` recommends ("running
+  only the ~40 deploy-tree-first suites against gate 8 post-deploy, cheaply") remains explicitly
+  out of scope, per the task description, and was not folded in or created from here.
 
 ## References
 
-- `specs/418_explicit_lint_fixture_test_subject_resolution/plans/01_explicit-subject-resolution.md`
-- `specs/418_explicit_lint_fixture_test_subject_resolution/reports/01_explicit-subject-resolution.md`
-- `specs/418_explicit_lint_fixture_test_subject_resolution/progress/phase-1-progress.json`
-- `specs/418_explicit_lint_fixture_test_subject_resolution/progress/phase-2-progress.json`
-- `specs/418_explicit_lint_fixture_test_subject_resolution/progress/phase-3-progress.json`
+- Plan: `specs/418_explicit_lint_fixture_test_subject_resolution/plans/01_explicit-subject-resolution.md`
+- Progress files: `specs/418_explicit_lint_fixture_test_subject_resolution/progress/phase-{1..8}-progress.json`
+- Handoffs: `specs/418_explicit_lint_fixture_test_subject_resolution/handoffs/phase-{3,4,5,6,7}-handoff-*.md`
+- Originating issue log entry: `specs/411_refactor_verify_deploy_gate_framework/issues.jsonl`,
+  `iss_1792085973348_eyqwMs`

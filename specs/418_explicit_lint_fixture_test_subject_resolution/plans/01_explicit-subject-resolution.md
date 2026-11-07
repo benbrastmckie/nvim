@@ -603,23 +603,23 @@ copy-pasting from a neighbour copies the explicit form.
 
 ---
 
-### Phase 8: Redeploy and Full Gate Set [IN PROGRESS]
+### Phase 8: Redeploy and Full Gate Set [COMPLETED]
 
 **Goal**: Regenerate the deployed tree from the source store and discharge the complete gate set
 with an explicit source-store TARGET.
 
 **Tasks**:
-- [ ] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout`
+- [x] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout` *(completed: redeployed twice -- once to surface Phase-8-discovery issues, once final after fixing the gate-27 suite's own Case 6 fixture)*
       parameter raised to 600000, per the bounded-wait idiom).
-- [ ] Run the complete gate set with an explicit TARGET:
+- [x] Run the complete gate set with an explicit TARGET: *(completed: final run -- 3 of 42 checks failed, all confirmed pre-existing/unrelated)*
       `bash .claude/scripts/verify-deploy.sh "$(git rev-parse --show-toplevel)"`. The bare form is
       not acceptable here — an explicit source-store TARGET is required so the source-store-only
       gates (including the new gate 27) do not silently SKIP.
-- [ ] Confirm gate 27 runs and passes against the freshly-deployed tree.
-- [ ] Confirm Gate 8 reports every migrated suite's prior verdict unchanged on the fresh tree, and
+- [x] Confirm gate 27 runs and passes against the freshly-deployed tree. *(completed: "Subject-resolution declaration lint reports no undeclared or silently-ordered subject-resolution sites" -- RUN, not SKIP, both full-gate-set runs)*
+- [x] Confirm Gate 8 reports every migrated suite's prior verdict unchanged on the fresh tree, and *(completed: scoped run-all.sh over the 71-file family -- 67 passed, 4 failed, all 4 pre-existing; checkpoint property confirmed live: test-issue-record.sh (mode=deploy-tree-first) now declares the deployed copy, test-gate-out-derived-staleness.sh (mode=source-store) still declares the source-store copy)*
       that every migrated suite's `[SUBJECT]` line now names the **deployed** copy where its mode
       is `deployed` or `deploy-tree-first` — the post-redeploy half of the divergence property.
-- [ ] Attribute nothing to this work from the known-unrelated pre-existing failures list (Gate 3
+- [x] Attribute nothing to this work from the known-unrelated pre-existing failures list (Gate 3 *(completed: none fixed. Four ADDITIONAL pre-existing/unrelated occurrences discovered and recorded this task, none in this task's file_scope: Gate 8 test-postflight-deploy-gate.sh and test-redeploy-checkpoint-promotion.sh (verdict confirmed unchanged via git-stash-pathspec bisection, Phase 6), Gate 8 test-task-type-detect.sh (a structural [-f]-on-a-directory bug in its REAL_EXT_ROOT fallback branch, byte-identical since commit 1f1b3c274/task 328), Gate 8 test-lint-unit-integration-boundary.sh (3 suite-classification.data mismatches, none touching this task's edits), Gate 22 shellcheck (lean extension, untouched by this task), Gate 24 dead-command-recommendation (memory extension, untouched by this task)*
       lean4 doc-lint index.json entry, Gate 20 eager-load budget, Gate 8
       `test-detect-noop-bash.sh` / `test-four-tier-conflict.sh` / `test-guard-git-push.sh`), and do
       not fix them here. Record each observed occurrence as pre-existing in the phase notes.
