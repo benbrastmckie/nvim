@@ -260,6 +260,10 @@ select(.type != "plan")
 
 Full documentation: `.claude/context/patterns/jq-escaping-workarounds.md`
 
+Piping an entire JSON file through jq also reflows every record's formatting regardless of
+which fields the filter targets; see that same file's "jq Rewrites Reflow Unrelated JSON
+Formatting" section for the checkable trigger condition and the copyable recipe.
+
 ## Syncprotect
 
 The `.syncprotect` file at the **project root** (not inside `.claude/`) lists relative paths
