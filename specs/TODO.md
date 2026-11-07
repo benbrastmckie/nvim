@@ -6,12 +6,12 @@ next_project_number: 519
 
 ## Task Order
 
-*Updated 2026-11-06. Generated from state.json dependency graph.*
+*Updated 2026-11-07. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,464,465,466,473,477,478,483,488,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,465,466,473,477,478,483,488,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,445,446,448,458,463,472,474,475,492,497,516 | 369,383,397,412,418,430,431,435,459,491,493,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,444,451,454,455,461,476,484,500,507,518 | 313,391,398,420,423,435,439,445,446,448,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486,517 | 360,390,402,435,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -44,7 +44,6 @@ next_project_number: 519
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
-464 [IMPLEMENTING] — Make a plan's per-phase line estimates checkable against a...
 465 [PLANNED] — check-record-versioning.sh PATH\_SCOPE mode reports...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 478 [PLANNED] — Make lint Check J fail on a missing handoff-writer section...
@@ -3346,12 +3345,13 @@ Audited against the full backlog corpus before creation. The closed record recor
 ---
 
 ### 464. Make a plan's per-phase line estimates checkable against a line ceiling the same plan cites, so a plan cannot contradict its own arithmetic
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [464_plan_cross_phase_line_budget_consistency/reports/01_cross-phase-line-budget-consistency.md]
 - **Plan**: [464_plan_cross_phase_line_budget_consistency/plans/01_cross-phase-ceiling-consistency.md]
+- **Summary**: [464_plan_cross_phase_line_budget_consistency/summaries/01_cross-phase-ceiling-consistency-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description, which lives under specs/**.
 

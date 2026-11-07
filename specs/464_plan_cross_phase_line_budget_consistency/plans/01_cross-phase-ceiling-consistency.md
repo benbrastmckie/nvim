@@ -1,7 +1,7 @@
 # Implementation Plan: Task #464
 
 - **Task**: 464 - Plan cross-phase line/scope budget consistency
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/464_plan_cross_phase_line_budget_consistency/reports/01_cross-phase-line-budget-consistency.md

@@ -1,12 +1,59 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/464_plan_cross_phase_line_budget_consistency/summaries/01_cross-phase-ceiling-consistency-summary.md",
+      "summary": "Landed the generalized cross-phase ceiling consistency rule in plan-format.md, an advisory check in validate-artifact.sh, a three-case regression suite with measured zero live-corpus residue, and a redeploy."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a mandatory, generally-phrased cross-phase ceiling consistency rule to plan-format.md plus an advisory check in validate-artifact.sh's per-phase plan loop, with a three-case regression suite (contradiction/no-contradiction/no-ceiling) and a measured zero live-corpus residue, then redeployed. Two pre-existing, unrelated gate findings surfaced during Phase 4 verification and were recorded via issue-record.sh rather than fixed (out of scope)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a validate-artifact.sh-style test suite's $VALIDATE variable resolves deploy-tree-first (checking .claude/scripts/... before the agent-system/extensions/.../scripts/ source-store sibling), new fixtures covering a just-written source-store check will silently test a stale deployed binary unless they explicitly invoke the source-store path instead. Pattern: add a second variable (e.g. VALIDATE_SRC) pointing directly at \"$SCRIPT_DIR/../<script>.sh\" for use only by the new fixtures, leaving the shared deploy-tree-first variable untouched for every pre-existing case.",
+      "category": "PATTERN",
+      "source_artifact": "specs/464_plan_cross_phase_line_budget_consistency/summaries/01_cross-phase-ceiling-consistency-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "validate-artifact.sh",
+        "source-store",
+        "deploy-tree-first",
+        "test fixtures",
+        "redeploy ordering"
+      ]
+    },
+    {
+      "content": "In a bash validator pipeline, never chain `grep -n ...` into a later step that extracts the first digit from the matched text with `grep -oE '[0-9]+' | head -1` -- the -n line-number prefix itself contains a digit and will be mistakenly picked up as the real value instead of the digit inside the actual content. Drop -n from any grep stage that feeds digit/number extraction downstream; only use -n when the line number itself is needed.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/464_plan_cross_phase_line_budget_consistency/summaries/01_cross-phase-ceiling-consistency-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "bash",
+        "grep",
+        "digit extraction",
+        "line-number prefix",
+        "shell pitfall"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
     "phases_total": 4
   }
 }

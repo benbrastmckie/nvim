@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Wrote a four-phase implementation plan adopting the research report's option (b): a generalized cross-phase ceiling consistency rule stated once in plan-format.md plus one advisory, non-blocking check in validate-artifact.sh's existing per-phase plan loop, backed by three new regression fixtures and a redeploy. No new script, no new required plan field, no Lean-specific clause. The dispatch's named residual risk was re-checked and CONFIRMED: plan-format.md lines 3 and 417 carry dead-lifecycle-command prose owned by the prose-rewording sweep, which is not_started and not a sibling this cycle, so the mitigation is a scoped-edit constraint rather than a dependency edge. Plan validates clean under validate-artifact.sh.",
+  "dispatch_seq": 15,
+  "status": "implemented",
+  "summary": "Closed task 464's plan-time self-contradiction gap: added a generalized cross-phase ceiling consistency rule to plan-format.md plus an advisory, non-blocking check in validate-artifact.sh's per-phase plan loop, a three-case regression suite with a measured zero live-corpus residue, and a redeploy. All four plan phases closed (Phase 4 COMPLETED WITH EXCLUSIONS, with a full Reasoned Exclusions record for two pre-existing, unrelated gate findings and the dispatch's own Batch Gate Deferral).",
   "blockers": [],
+  "phases_completed": 4,
+  "phases_total": 4,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/464_plan_cross_phase_line_budget_consistency/summaries/01_cross-phase-ceiling-consistency-summary.md",
+      "summary": "Full implementation summary covering all four phases, decisions, deviations, and verification evidence."
+    },
     {
       "type": "plan",
       "path": "specs/464_plan_cross_phase_line_budget_consistency/plans/01_cross-phase-ceiling-consistency.md",
-      "summary": "Four-phase plan: rule text in plan-format.md, advisory check in validate-artifact.sh, regression fixtures, redeploy with full gate set."
+      "summary": "Four-phase plan, all phases closed, with per-phase task annotations and a Phase 4 Reasoned Exclusions table."
     }
-  ],
-  "dispatch_seq": 8
+  ]
 }
