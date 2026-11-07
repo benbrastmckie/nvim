@@ -330,29 +330,29 @@ same verdict and, in findings mode, the same `FINDING gate4 ...` line shape.
 
 ---
 
-### Phase 4: Documentation, redeploy, and full gate sweep [NOT STARTED]
+### Phase 4: Documentation, redeploy, and full gate sweep [COMPLETED]
 
 **Goal**: The inventory record matches the shipped behavior, the sibling audit is recorded in a
 durable place, the deployed tree carries the fix, and the whole gate set is green.
 
 **Tasks**:
 
-- [ ] Correct the `check-record-versioning.sh` entry in
+- [x] Correct the `check-record-versioning.sh` entry in
   `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md`: it currently states
   the lint "scans every git-tracked file outside `specs/**` (via `git ls-files`...)". Restate it as
   the tracked-plus-untracked union, with gitignored content excluded but loudly reported, and note
   that `PATH_SCOPE` mode names any on-disk file it did not scan. Do not add a new entry for
-  `check-task-references.sh` -- that gap is out of scope and already noted in this entry's own text.
-- [ ] Confirm the Sibling Enumeration Audit note landed in the shared library header in Phase 1
-  (one durable home, not duplicated into the inventory doc).
-- [ ] Redeploy the source store: `bash agent-system/scripts/deploy-headless.sh` (or the repo's
+  `check-task-references.sh` -- that gap is out of scope and already noted in this entry's own text. *(completed)*
+- [x] Confirm the Sibling Enumeration Audit note landed in the shared library header in Phase 1
+  (one durable home, not duplicated into the inventory doc). *(completed: confirmed present in git-corpus-enum-lib.sh's header)*
+- [x] Redeploy the source store: `bash agent-system/scripts/deploy-headless.sh` (or the repo's
   documented headless deploy entry point), so `.claude/scripts/` carries the new library, both
-  updated lints, and the new suites.
-- [ ] Repo-wide triage pass: run both lints repo-wide after the redeploy and resolve any finding
+  updated lints, and the new suites. *(completed: bash .claude/scripts/deploy-headless.sh, bounded 540s inner timeout, run three times -- the second two to carry forward an exec-bit fix and a wording fix discovered during post-deploy verification)*
+- [x] Repo-wide triage pass: run both lints repo-wide after the redeploy and resolve any finding
   newly surfaced in an untracked file -- fix the content or add a properly-categorized
   `version-ok` / `task-ref-ok` marker. A new finding is a real violation, never grounds for
-  reverting the enumeration.
-- [ ] Record the issue-log entry(ies) for this phase per the dispatch's Issue Log section.
+  reverting the enumeration. *(completed: the one anticipated untracked non-specs/ file, gate-cost-model.csv, carried one genuine ADVISORY finding (bare "previously" vocabulary) -- fixed by rewording both printf template sites in its generator, measure-gate-costs.sh, plus the already-generated CSV's own header line, rather than adding a version-ok marker, since this is ordinary prose that reads cleanly either way. Verified: tracked-only and union enumeration now report byte-identical 3 BLOCKING / 833 ADVISORY repo-wide. check-task-references.sh's repo-wide union introduced zero new findings (none of the 13 untracked files carry a task-reference citation).)*
+- [x] Record the issue-log entry(ies) for this phase per the dispatch's Issue Log section. *(completed: 2 entries via issue-record.sh -- the triaged ADVISORY finding, and the pre-existing/unrelated gate failures observed during redeploy verification)*
 
 **Timing**: 1 hour
 

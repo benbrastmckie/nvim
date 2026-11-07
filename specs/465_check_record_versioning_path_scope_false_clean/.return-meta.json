@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/465_check_record_versioning_path_scope_false_clean/summaries/01_untracked-enumeration-false-clean-summary.md",
+      "summary": "Fixed the shared git-ls-files false-clean defect in check-record-versioning.sh and check-task-references.sh via a new shared tracked-plus-untracked union enumeration library with loud stderr diagnostics, plus a repo-wide triage fix and redeploy."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extracted a shared git-corpus-enum-lib.sh (tracked-plus-untracked union enumeration, gitignored content still excluded) and wired both check-record-versioning.sh and check-task-references.sh to it, closing the PATH_SCOPE false-clean defect for both lints with three stderr-only diagnostics (untracked-inclusion count, per-file gitignored loud-skip, zero-enumeration notice). Added 10+22+17 passing fixture cases across a new and two extended test suites, corrected the inventory doc, redeployed, and triaged the one genuine new ADVISORY finding the fix surfaced (gate-cost-model.csv) at its generator source."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/git-corpus-enum-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-corpus-enum-lib.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/check-record-versioning.sh",
+    "agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh",
+    "agent-system/extensions/core/scripts/check-task-references.sh",
+    "agent-system/extensions/core/scripts/tests/test-check-task-references.sh",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/scripts/measure-gate-costs.sh",
+    "agent-system/extensions/core/scripts/gate-cost-model.csv"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When authoring a NEW shell test suite under agent-system/extensions/core/scripts/tests/ that resolves a deploy-tree-first/source-store-fallback subject (a script or library under test), use lib/common.sh's common_test_resolve_subject (mode \"deploy-tree-first\", deployed path, source-store path) plus common_test_declare_subject immediately after, rather than hand-writing an inline CANDIDATES-array for-loop. A repo-wide lint (lint-subject-resolution-declaration.sh) now requires this shape and flags the inline for-loop as an undeclared/silently-ordered subject-resolution site -- it exempts pre-existing files as 'migration-pending' but a brand-new file gets no such grace. Caught only by a post-redeploy verify-deploy.sh run, not by the test's own exit code, since the test still passes correctly either way; only the lint cares about the resolution SHAPE, not the test outcome.",
+      "category": "PATTERN",
+      "source_artifact": "specs/465_check_record_versioning_path_scope_false_clean/summaries/01_untracked-enumeration-false-clean-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["subject-resolution", "common_test_resolve_subject", "test-authoring", "lint-subject-resolution-declaration", "shell-script-testing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 17
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

@@ -1,0 +1,33 @@
+{
+  "phase": 4,
+  "phase_name": "Documentation, redeploy, and full gate sweep",
+  "started_at": "2026-11-07T01:08:00Z",
+  "last_updated": "2026-11-07T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Correct check-record-versioning.sh entry in utility-scripts-inventory.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
+    {"id": 2, "description": "Confirm Sibling Enumeration Audit note landed in shared library header (Phase 1)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Redeploy source store via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Repo-wide triage pass: resolve the one new ADVISORY finding (gate-cost-model.csv)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-gate-costs.sh", "agent-system/extensions/core/scripts/gate-cost-model.csv"]},
+    {"id": 5, "description": "Record issue-log entries; batch-gate-deferral scoped verification", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra",
+      "description": "Post-deploy verify-deploy.sh (run inside deploy-headless.sh) surfaced a subject-resolution-declaration lint violation in this task's own new test-git-corpus-enum-lib.sh (inline LIB_CANDIDATES for-loop instead of the now-required common_test_resolve_subject/common_test_declare_subject helpers added by a concurrently in-flight sibling task). Fixed by migrating to common_test_resolve_subject/common_test_declare_subject before the second deploy pass.",
+      "type": "additional-fix",
+      "reason": "Not anticipated by the plan (the migration requirement landed in this same batch orchestrate run via a sibling task); fixing it is squarely within this task's own new-file quality bar, not scope creep.",
+      "annotation": "n/a -- not a plan checklist item"
+    },
+    {
+      "task_id": "4.extra2",
+      "description": "The redeployed test-git-corpus-enum-lib.sh was also missing its executable bit (chmod +x), causing run-all.sh --only to report it as [SKIP] not executable. Fixed with chmod +x and a third deploy-headless.sh pass.",
+      "type": "additional-fix",
+      "reason": "Mechanical oversight at file-creation time in Phase 1; corrected here since it was only surfaced by this phase's scoped suite run.",
+      "annotation": "n/a -- not a plan checklist item"
+    }
+  ],
+  "verification_notes": "deploy-headless.sh run 3 times (bounded 540s inner timeout each): first pass landed the fix but verify-deploy's fast gates found 3 issues (gate10 timeout -- confirmed standalone-green and load-induced, unrelated; lint-dead-command-recommendations in agent-system/extensions/memory/** -- pre-existing, untouched by this task; lint-subject-resolution-declaration on this task's own new test file -- genuinely this task's responsibility, fixed). Second pass confirmed the subject-resolution fix landed but surfaced the missing exec bit via the scoped suite run. Third pass (after chmod +x) left only the 2 unrelated pre-existing failures. Batch Gate Deferral scoped verification (per dispatch): `run-all.sh --only test-git-corpus-enum-lib.sh,test-check-record-versioning.sh,test-check-task-references.sh` -- 3 passed, 0 failed, 0 skipped. `verify-deploy.sh --only-gate 4` -- PASS, 1 check, 0 failures (gate 4 / check-task-references.sh against the redeployed tree). check-extension-docs.sh run directly (not part of the deferred batch tools) -- all extensions PASS. Deployed-copy acceptance reproduction (bash .claude/scripts/check-record-versioning.sh against an untracked BLOCKING file OUTSIDE the gitignored .claude/ tree) -- exit 1, names the file. Full gate set (verify-deploy.sh) and full suite set (run-all.sh without --only) deferred to the once-per-batch-invocation stage per the dispatch's Batch Gate Deferral section; the 2 remaining failures observed in this phase's own deploy-headless runs are pre-existing and unrelated to this task's file_scope."
+}
