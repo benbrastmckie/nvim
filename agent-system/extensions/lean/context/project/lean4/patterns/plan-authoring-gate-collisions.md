@@ -123,3 +123,87 @@ baseline first": a legitimate `trivial` closing a real goal is simultaneously a 
 for the underlying pattern, so the pattern itself cannot distinguish debt from a correct one-line
 proof — there is no baseline state in which an absolute-zero version of this particular lint
 could ever hold.
+
+## Condition 5 — `check-metalogic-cycles.sh` Assertion B Asserts Equality and Fails on Surplus
+
+This is the most dangerous of the gate-surface conditions below, because it fails on work that is
+correct. Assertion B in `scripts/check-metalogic-cycles.sh` asserts that the library-wide upward
+import set EQUALS a frozen allowlist (`_SRC`, `_SRC_OPEN` and the `ALLOWLIST` set built from them)
+— equality, not containment — so it fails on SURPLUS as well as on deficit. A new layer-0 file
+importing a layer-2 `FormalSystem.Theorems.*` module for a legitimate discharge arm produces
+surplus upward edges and fails the gate even though the import is intended and correct. State the
+mechanism this way rather than citing the allowlist's current size as a fact to copy: if a plan
+wants to name a concrete count at all, read it live from the script's own header comment at
+authoring time, since a stale copy elsewhere in the repository has already been observed to
+disagree with that header.
+
+**Plan-authoring consequence**: a plan introducing ANY new upward import must extend the
+allowlist IN THE SAME PHASE as the import, and must carry `scripts/check-metalogic-cycles.sh` in
+its file scope.
+
+## Condition 6 — C26 Forbids Non-Trailing Underscores in `def`/`abbrev` Names, and `theorem` Is Exempt
+
+`check-module-invariants.sh` C26 flags any live `def` or `abbrev` whose last name component
+carries a non-trailing underscore. `theorem` is EXEMPT from C26 — which is exactly why
+snake_case theorem names are common in this repository and mislead by analogy when a plan reaches
+for the same convention on a `def`. The repository's actual precedent for derivation-term `def`s
+is lowerCamelCase: `MinusLanguage/AxiomDischarge.lean`'s `dischargePropK`, `dischargeModalT`,
+`dischargeAxiom`; `Theorems/TemporalDerived.lean` follows the same convention.
+
+**Plan-authoring consequence**: a plan that says "promote probe N rather than re-deriving it"
+must state whether the promotion is verbatim, and must mandate the `def` renames explicitly when
+it is not — a verbatim promotion of a probe's own snake_case `def` names will fail C26 on arrival.
+
+## Condition 7 — The `longFile` 1500-Line Ceiling, and Its Narrow Baselining Window
+
+The package-level `longFile` lint ceiling is 1500 lines. Per
+`docs/development/LEAN_STYLE_GUIDE.md`, a file crossing that ceiling is BASELINED, not split, via
+`set_option linter.style.longFile N` placed directly after the module docstring; `longFile 0`
+turns the linter off rather than recording a ceiling and is rejected for that reason, not a
+shortcut.
+
+**The trap is the acceptance window**: the linter accepts a baseline `N` only when `N - 200 <=
+lines < N`. A baseline set in an early phase becomes WRONG as later phases grow or shrink the
+file, so the final phase touching that file must RE-TIGHTEN `N` in the same change, not leave the
+earlier phase's value in place.
+
+**Plan-authoring consequence**: a plan whose file will cross 1500 lines schedules both the
+baseline and its re-tightening as named phase work, rather than leaving either to be discovered
+when a gate fails.
+
+## Condition 8 — The `show` Tactic Is Linted, and CI Builds With `--wfail`
+
+The `show` tactic is linted in this repository (the linter's own guidance: `show` should only be
+used to indicate intermediate goal states for readability), and CI builds with `--wfail`, so a
+lint WARNING is a CI FAILURE, not a note. Using `show` to exploit a definitional equality — an
+ordinary and otherwise idiomatic move — fails CI under this configuration; the remedy is a named
+`rfl` lemma instead of an inline `show`.
+
+**The general point this makes a planning condition rather than a style note**: under `--wfail`,
+ANY linter category is a hard gate, including categories such as `unusedVariables` that read as
+merely cosmetic elsewhere. A plan must treat "warning" and "error" as the same thing when judging
+whether a phase is green.
+
+## Condition 9 — C5's Module-Path Regex Cannot Tell a Declaration Name From a Module Path
+
+`check-module-invariants.sh` C5's module-path regex matches any dotted, all-capitalized name
+shape, including a DECLARATION NAME that happens to look like a module path component — it
+cannot distinguish the two syntactically. The remedy is a permanent, documented exemption entry
+in `scripts/module-invariants-allowlist.txt`, not a rename: that file is a permanent-exemption
+list, not a debt ledger, and already carries exactly this kind of entry for existing
+declarations whose names collide with the module-path shape.
+
+**Plan-authoring consequence**: a plan introducing a declaration whose name looks like a module
+path component pre-authorizes the companion allowlist entry and carries
+`scripts/module-invariants-allowlist.txt` in its own file scope.
+
+**A companion checklist of further bare-gate conditions worth enumerating in the same pass**,
+each one a `check-module-invariants.sh` finding observed to surface unannounced on a bare run:
+
+- **C15**: every theorem-index row needs a `Paper:` line in the declaration's own doc comment.
+  A batch of new declarations lacking one will all fail together.
+- **C33**: after adding or removing files, `lake exe mk_all --lib FormalSystem` must be re-run to
+  regenerate the library root; a plan adding files carries this step explicitly.
+- **`FAIL INV`**: the module-inventory blocks (Condition 1's surface (a)) go stale the same way a
+  line-count change makes them stale — a file added, removed, or renamed under `FormalSystem/`
+  without a matching `--emit-inventory` run reports as a stale generated block.
