@@ -98,7 +98,7 @@ next_project_number: 528
 
 ### File Scope Lifecycle
 
-430 [RESEARCHING] — Feed observed-but-undeclared implement paths back into a task...
+430 [RESEARCHED] — Feed observed-but-undeclared implement paths back into a task...
   └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
     └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
     └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
@@ -5053,10 +5053,11 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 ---
 
 ### 430. Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428, Task 494
+- **Research**: [430_feed_undeclared_implement_paths_into_file_scope/reports/01_feedback-mechanism-design.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

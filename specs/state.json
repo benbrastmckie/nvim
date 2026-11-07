@@ -3631,7 +3631,7 @@
     {
       "project_number": 430,
       "project_name": "feed_undeclared_implement_paths_into_file_scope",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits",
       "topic": "file-scope-lifecycle",
@@ -3653,10 +3653,17 @@
         "agent-system/extensions/core/scripts/update-task-status.sh",
         "agent-system/extensions/core/agents/general-implementation-agent.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/430_feed_undeclared_implement_paths_into_file_scope/reports/01_feedback-mechanism-design.md",
+          "type": "report",
+          "summary": "Designs the feedback mechanism: extend the existing proposed_file_scope channel to implement, sourced mechanically from git-commit-phase.sh's own drop-time computation rather than agent self-report, auto-merged without an operator confirmation gate; confirms all six territory/dependency sibling tasks already landed with no conflicts, including the git-commit-scoped.sh chokepoint (394), which landed as a redundant drop-and-warn gate rather than the refusal the dispatch description speculated about."
+        }
+      ],
       "created": "2026-10-16T23:40:01Z",
-      "last_updated": "2026-11-07T22:15:10Z",
-      "session_id": "sess_1794089641_e5bee5_430"
+      "last_updated": "2026-11-07T22:26:10Z",
+      "session_id": "sess_1794089641_e5bee5",
+      "next_artifact_number": 2
     },
     {
       "project_number": 431,
