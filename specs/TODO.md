@@ -1,5 +1,5 @@
 ---
-next_project_number: 523
+next_project_number: 525
 ---
 
 # TODO
@@ -12,11 +12,11 @@ next_project_number: 523
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,410,412,420,423,430,431,435,437,445,448,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520,521,522 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,444,446,451,458,463,472,474,475,476,492,497,507,516 | 369,383,397,412,420,423,430,431,435,445,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 2 | 384,391,398,439,444,446,451,458,463,472,474,475,476,492,497,507,516,523 | 369,383,397,412,420,423,430,431,435,445,448,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,454,455,461,462,484,500,518 | 313,391,398,435,439,446,448,451,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,479,481,486,517 | 360,390,402,435,444,448,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 5 | 450,480,487,501,508,509,513 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 6 | 496 | 450,487,488 | extensions |
+| 6 | 496,524 | 450,487,488,501 | core-agent-system, extensions |
 | 7 | 498 | 496 | extensions |
 | 8 | 499 | 497,498 | extensions |
 
@@ -47,6 +47,7 @@ next_project_number: 523
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory... (see above)
   └─ 500 [NOT STARTED] — Dependency-edge backfill is unreachable for a not-started task
+  └─ 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
@@ -70,6 +71,7 @@ next_project_number: 523
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
     └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
+524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 
 ### Extensions
 
@@ -140,6 +142,112 @@ next_project_number: 523
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 524. Rule on a staged-vs-working-tree divergence signal for a pathspec commit, and name the partial-stage trap in the staging-scope standard
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 461, Task 484, Task 501
+- **Parent**: Task 418
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation, session sess_1794023900_f4ac5a. User-approved at the lead level and dispatched to the meta builder for task creation only.
+
+CITATIONS: #418:iss_1794001639995_QvyIy9 (the near-miss itself, severity costly); #418:iss_1794001112756_1CPE72 (the partial-stage attempt and its motivation); #418:iss_1794001757595_GJUSiy (a live concurrent sibling writer observed in the same working tree during the same dispatch); #418:iss_1793989293251_3pfJ9z (a plan-time territory collision with a concurrent sibling over a shared file). None of the four carried a suggested_channel hint; routing them to the agent-system channel is the orchestrator's own classification, on the grounds that the hazard lives in shared commit tooling and its governing standard. Severity of the primary entry: costly.
+
+PROVENANCE: every file, line number, and quoted string below was re-derived by direct read of the source store at creation time (2026-11-06), not copied from the cited entries. Line numbers move -- re-derive before editing. The incident narrative itself is CARRIED-UNVERIFIED from the cited entries; the mechanism it turns on was independently re-confirmed against the script, as recorded below.
+
+LIVE SYMPTOM. A hand-built partial patch was staged with `git apply --cached` against agent-system/extensions/core/manifest.json, specifically so that one task's own two hunks would be committed and a concurrent sibling's uncommitted lib/gate-store-fixture-lib.sh provides.scripts line would be left untouched. The subsequent `git commit -- <pathspec>` nevertheless committed the WORKING-TREE content for that path, sweeping the sibling's unrelated uncommitted line into the commit. It was caught immediately via `git show --stat` and corrected with a second narrow commit removing that line from HEAD, after which the sibling's line was restored into the working tree uncommitted so their in-progress work survived exactly as found. No work was lost. The report is the near-miss and the standing unsoundness, not a live breakage.
+
+ROOT CAUSE IS KNOWN GIT SEMANTICS, ALREADY DOCUMENTED IN THE SCRIPT. scripts/git-commit-scoped.sh's header carries a dedicated block (the "Git semantics discovered empirically while diagnosing V8" note, around lines 259-270) stating that `git commit -- <pathspec>` RE-READS the current working-tree content fresh for each named path AT COMMIT TIME and does not commit whatever `git add` most recently staged. The index is therefore not the authority for a pathspec commit, and any partial stage of a named path is discarded by the commit that follows. The defect is not that this is unknown; it is that nothing refuses, warns about, or documents the partial-stage idiom that the semantics silently defeat.
+
+WHY NO EXISTING GATE CATCHES IT -- VERIFIED, AND THE CRUX TO RULE ON. The V8 post-commit integrity gate (header around lines 164-207; implementation around lines 780-828) takes its PRE-COMMIT INTENT SNAPSHOT as `git hash-object -- "$v8_f"` of each enumerated path's WORKING-TREE content, with an explicit "absent" sentinel when the file is not on disk. V8's operative definition of intent IS therefore the working tree. In the cited incident the working tree held the sibling's line, the commit landed exactly that content, and V8 compared a MATCH -- correctly, by its own contract. V8 structurally cannot see index-vs-working-tree divergence because it never reads the index. The V7 verification loop does read the index, but only for PRESENCE of a path, never for its content. So no gate in the script notices that the caller staged a subset and git committed the superset, and the script exits 0 with nothing printed.
+
+THE QUESTION TO RULE ON, NOT A PRESCRIPTION. A defensible outcome here is option (2) -- no code change, documentation only. Do not assume a code change is required.
+  (1) Add a PRE-COMMIT divergence check inside git-commit-scoped.sh: for each surviving positive pathspec, compare the staged content against the working-tree content (per-file index blob vs. `git hash-object`, or `git diff --cached --name-only -- <p>` against `git diff --name-only -- <p>`) and REFUSE, or WARN, when they differ. Refusal is the stronger posture but will also fire on the ordinary and entirely legitimate case of a file edited further after it was staged; decide whether that case is a real population in this pipeline or only an artifact of hand workflows, and record the evidence for whichever answer is given.
+  (2) Change nothing in the script and treat sub-file partial staging as simply UNSUPPORTED, documented as such -- the script's contract then being stated plainly as "for every named path you get the working tree as it stands at commit time".
+  (3) A narrower middle: detect only the specific shape where the index holds a STRICT SUBSET of the working-tree changes for a named path (the partial-stage signature) and warn on that alone, leaving a plain edited-after-staging file unflagged.
+Options (1) and (3) both interact with V8: if a pre-commit divergence signal exists, V8's own snapshot choice becomes a deliberate, stated decision rather than an unexamined one, and the header must then say which authority each gate consults and why they differ.
+
+DOCUMENTATION OBLIGATION, INDEPENDENT OF WHICH OPTION WINS. context/standards/git-staging-scope.md's "Concurrency Qualifier: Targeted Staging Is Necessary But Not Sufficient" section (around lines 223-258) states that "Path granularity is the file -- an explicit-path `git add` cannot subdivide a file by author", then routes the reader to the two sanctioned remedies (the first-claim contended-path lease inside git-commit-scoped.sh, and per-dispatch working-tree isolation). It does NOT name the partial-stage attempt anywhere. A reader who has just been told that granularity is the file will reach for `git apply --cached` as the obvious sub-file workaround, and that reach is silently unsound under `git commit -- <pathspec>`. The section MUST name the trap explicitly: sub-file staging does not survive a pathspec commit, so it is not an available remedy, and the lease and tree isolation remain the only sanctioned ones.
+
+WHY THIS IS NOT HYPOTHETICAL. The same dispatch separately observed a concurrent sibling editing scripts/verify-deploy.sh live, mid-dispatch, in the same working tree (#418:iss_1794001757595_GJUSiy), and a plan-time territory collision with a concurrent sibling over a shared file (#418:iss_1793989293251_3pfJ9z). Concurrent writers in one shared working tree are this repository's normal operating condition, not an exceptional state, which is precisely what makes a silently-unsound narrowing idiom worth closing or naming.
+
+DO NOT RE-LITIGATE any of the following: V5's contended-path lease and its first-claim posture; V8's existence, its working-tree snapshot being valuable on its own mechanism-agnostic terms, or its dedicated exit code 5; the prohibition on a bare `git commit`; the settled bare-directory-pathspec policy and its lint. Note also that the incident's own commit was a HAND-RUN `git commit --`, not a git-commit-scoped.sh invocation, so "the script was not involved" is a point for the planner to weigh, not a reason to close the record -- the standard it governs is read by the humans and agents who run git by hand.
+
+DEPENDENCY RATIONALE (file territory, not a sequencing preference). Three open records already declare scripts/git-commit-scoped.sh and scripts/tests/test-git-commit-scoped.sh in their file_scope: task 461 (the V7 refusal of a positive directory pathspec for a `git rm --cached` untracking), whose declared three-file scope is identical to this record's; task 484 (collapsing per-path scope-excursion issue rows); and task 501 (cycle-postflight containment predicate parity). Because this repository runs concurrent writers in one shared working tree -- the very hazard this record reports -- the overlap is sequenced by dependency edges rather than left unordered. Tasks 430, 446 and 486 additionally declare context/standards/git-staging-scope.md but none of the two scripts; that overlap is documentation-only and is deliberately left unsequenced rather than chained, to avoid over-constraining the backlog.
+
+PRIOR ART -- DISPOSED OF EXPLICITLY AT CREATION TIME, DO NOT REDISCOVER OR RE-LITIGATE.
+  - Task 374 (completed) is the closest prior art and shares this record's exact three-file scope: it diagnosed and fixed the silent staging drop in git-commit-scoped.sh, and its product IS the V8 gate. It does NOT cover this case, and that distinction is the whole substance of this record. V8's intent authority is the WORKING TREE (`git hash-object` of each enumerated path), so it catches a divergence arising BETWEEN its snapshot and the commit -- a concurrent writer changing the file after staging -- and compares a correct MATCH when the index held a narrower subset than the working tree all along. Read that record's outcome before planning, then state in the plan which authority each gate consults and why.
+  - Task 461 (open) declares a scope identical to this record's three files, for a different defect: the V7 refusal of a positive directory pathspec for a `git rm --cached` untracking whose content is still on disk. Sequenced here by dependency edge.
+  - Task 484 (open) and task 501 (open) both declare git-commit-scoped.sh and its suite -- 484 collapsing per-path scope-excursion issue rows, 501 giving the cycle-postflight containment site predicate parity. Both sequenced by dependency edge for file territory, not for any logical ordering between the subjects.
+  - Tasks 430, 446 and 486 (all open) declare context/standards/git-staging-scope.md but neither script. Documentation-only overlap on one shared file, deliberately left unsequenced.
+  - Task 435 (open) declares agent-system/extensions/core/scripts/ and agent-system/extensions/core/context/ as whole directories for a repo-wide prose reword; that declaration overlaps essentially every agent-system record and is left unsequenced on the same grounds the rest of the backlog leaves it unsequenced.
+  - Closed and settled -- do not reopen: task 302 (the scoped-commit directory pathspec and first-claim task lease), task 199 (the concurrent-dispatch isolation posture decision record, which context/standards/git-staging-scope.md already cites as the home of both sanctioned remedies), task 277 (an unresolvable pathspec made a hard error), task 304 (an out-of-repository pathspec aborting the whole commit, V9), task 226 (staged deletions dropped by the V2 gate).
+  - The creation-time backlog audit returned a cluster of roughly 0.4-to-0.5-scored duplicate-of-open and covered-by-closed verdicts carrying mechanical_class=none against unrelated records. Those are uncorroborated Pass-2 shortlist entries, inflated by this description's length -- the exact condition task 491 (open) exists to fix. They were checked, not accepted.
+  - Task 448 (open) declares agent-system/extensions/core/scripts/tests/ as a whole directory, which covers this record's test suite but neither of its other two files. Its subject -- containing a test harness's deliberate-break mutation of the shared source store -- is unrelated to this one. A single-file overlap inside a broad directory declaration, deliberately left unsequenced: the dependency edges above already serialize this record against every open task that names git-commit-scoped.sh itself.
+
+---
+
+### 523. Make Gate 27 MISSING_DECLARATION count call sites, not whole-file substring mentions
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 448
+- **Parent**: Task 418
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system changes) of an /orchestrate invocation, session sess_1794023900_f4ac5a. User-approved at the lead level and dispatched to the meta builder for task creation only.
+
+CITATION: #418:iss_1794024837652_7HqnmR. The entry carried no suggested_channel hint; routing it to the agent-system channel is the orchestrator's own classification, on the grounds that the defect is in a lint this system owns rather than in any task's work product. Severity: recurring minor -- a workaround exists and nothing is blocked, but it fired three separate times inside a single migration phase, each time costing a diagnosis pass.
+
+PROVENANCE: every file, line number, and quoted string below was re-derived by direct read of the source store at creation time (2026-11-06), not copied from the cited entry. Line numbers move -- re-derive before editing.
+
+LIVE SYMPTOM. Gate 27's MISSING_DECLARATION check reports a violation against a suite that is in fact fully compliant, whenever a header comment or explanatory prose in that suite names the resolver helper by its literal identifier without an equal number of mentions of the declarer helper. Observed three times inside one migration phase, on scripts/tests/test-force-phases.sh, scripts/tests/test-lint-json-channel-discipline.sh, and scripts/tests/test-orchestrate-build-dispatch.sh.
+
+ROOT CAUSE, VERIFIED AGAINST THE SCRIPT. scripts/lint/lint-subject-resolution-declaration.sh's classify_file(), around lines 232-239:
+
+    resolve_subject_count="$(grep -c 'common_test_resolve_subject' "$f" 2>/dev/null || true)"
+    declare_subject_count="$(grep -c 'common_test_declare_subject' "$f" 2>/dev/null || true)"
+    ...
+    if [[ "$resolve_subject_count" -gt "$declare_subject_count" ]]; then
+        hits="$hits MISSING_DECLARATION"
+    fi
+
+Both figures are whole-file, unanchored `grep -c` SUBSTRING counts over every line of the file -- comments, heredoc bodies, and string literals included, with no call-shape anchoring and no comment stripping. Any line that names the resolver identifier without also naming the declarer identifier adds one to the resolve side only, and a single such line is enough to make a compliant file count resolve > declare.
+
+LATENT FRAGILITY, VERIFIED LIVE -- cited because it shows the trap is not confined to the three files already reworded. scripts/tests/test-dispatch-metrics.sh has four genuine common_test_resolve_subject call sites (lines 47, 51, 55, 59) and four genuine common_test_declare_subject call sites (lines 50, 54, 58, 62), yet the lint counts 5 and 5 -- balanced only because its line 43 comment happens to name BOTH identifiers on one line. Had that comment named only the resolver, which is the natural phrasing for explaining why lib/common.sh is sourced, the file would count 5 against 4 and the lint would flag a suite that is entirely correct. The same accidental balance holds in scripts/tests/test-common-lib.sh, test-lint-test-harness-adoption.sh, and test-validate-state.sh, each of which also carries a comment mentioning the identifiers.
+
+THE WORKAROUND IN PLACE IS THE DEFECT BEING REPORTED. The fix applied at the time was to reword prose so it says "the shared resolve-subject helper" rather than naming the function. Five suites now carry such de-identified prose: test-force-phases.sh (lines 25, 50, 90), test-lint-json-channel-discipline.sh (line 18), test-orchestrate-build-dispatch.sh (line 9, hyphenated as "resolve-subject-helper"), test-orchestrate-suggest-next-batch.sh (line 68), and test-reconcile-demote-stranded.sh (line 33). The cited entry attributes three of these to this workaround; the other two may predate it for unrelated reasons, so re-derive the set by grep rather than trusting this enumeration. Either way the standing cost is the same: the next author who writes the identifier in a comment, which is the natural thing to do, trips a gate for no reason.
+
+SCOPE -- rule on the counting predicate explicitly and record the reasoning. Candidate directions, offered as starting points and NOT as a prescription:
+  (1) Strip comment lines before counting. Cheap and closes the observed cases, but a heredoc-embedded fixture or a string literal naming the identifier still counts.
+  (2) Anchor on a call-shaped pattern (the identifier at a command or command-substitution position, followed by whitespace or a quote) rather than a bare substring. This closes the heredoc and string-literal cases too.
+  (3) Both: count only lines that are neither comments nor inside a quoted fixture body AND that match a call shape.
+Whichever is chosen, the KNOWN LIMITATION header block (around lines 42-51) MUST be rewritten to state what the new predicate can and cannot see. It currently claims file-level regex matching as its precedent and names the limitations that follow from that; it must not keep claiming a limitation it no longer has, nor quietly retain one it still does.
+
+DO NOT RE-LITIGATE any of the following -- they are settled and out of scope: the three bad shapes themselves (HAND_DUP, INLINE_LOOP, UNMIGRATED_IMPLICIT_ORDER); the Layer-2 file allowlist mechanism and its existing permanent entries; the deliberately narrow scripts/tests/ scan corpus and the documented reason it does not use lint_corpus_scan_collect_files's shared-corpus path; and the mandatory-declaration contract itself. Only check 3's counting predicate is in question.
+
+VERIFICATION OBLIGATION.
+  - scripts/tests/test-lint-subject-resolution-declaration.sh Case 3 (around lines 110-133) already seeds a genuine missing-declaration file and asserts a non-zero exit whose message names the seeded file. That case MUST stay green: the fix must not blind the check to the real defect it exists to catch.
+  - Add a new case that is RED before the fix and GREEN after: a fully compliant suite whose comment names the resolver identifier without naming the declarer. This is the regression anchor for the false positive.
+  - Gate 27 in scripts/verify-deploy.sh (around line 1980) runs this lint with --verbose over the source store and must stay green.
+  - Restoring the de-identified prose in the five suites above to name the identifier directly is the natural end-to-end confirmation, and is what actually removes the standing trap for the next author. Decide whether to do that here or to leave it as follow-up, and say which.
+
+DOCUMENTATION. context/standards/shell-script-testing.md (around lines 153-168) states the mandatory-declaration contract and describes this lint as detecting "a common_test_resolve_subject call with no paired common_test_declare_subject". That description is currently aspirational rather than accurate -- the implementation counts mentions, not calls. If the predicate becomes call-shaped, the description becomes true as written; if it stays count-based, the doc must say so plainly. Either way the doc must not leave a reader believing comments are exempt from the count when they are not.
+
+DEPENDENCY RATIONALE (file territory, not a sequencing preference). Task 448 declares agent-system/extensions/core/scripts/lint/ and agent-system/extensions/core/scripts/tests/ as whole directories in its file_scope, plus context/standards/shell-script-testing.md -- every file this record edits falls inside that declaration. This repository runs concurrent writers in one shared working tree, so an unordered overlap is sequenced by a dependency edge rather than left to chance.
+
+PRIOR ART -- DISPOSED OF EXPLICITLY AT CREATION TIME, DO NOT REDISCOVER OR RE-LITIGATE.
+  - Task 418 (completed) is this record's parent. It created this lint, the explicit common_test_resolve_subject/common_test_declare_subject pair, the mandatory-declaration contract, and Gate 27 itself -- and it applied the prose-rewording workaround described above. The defect reported here is in what that work shipped, not a gap it left unexplored. The relationship is parent_task, not duplication.
+  - Task 448 (open) declares scripts/lint/ and scripts/tests/ as whole directories plus context/standards/shell-script-testing.md. Its subject is containing a test harness's deliberate-break mutation of the shared source store -- a different defect in overlapping territory. Sequenced here by dependency edge; nothing in its scope is re-litigated.
+  - Task 445 (open) and task 511 (open) both declare context/standards/shell-script-testing.md. 445 is the Gate 8 expected-versus-new failure distinction; 511 is an enumeration grep sweeping a gitignored venv. Both are documentation-only overlaps on one shared file and are deliberately left unsequenced rather than chained, to avoid over-constraining the backlog.
+  - Task 435 (open) declares agent-system/extensions/core/scripts/ and agent-system/extensions/core/context/ as whole directories, for a repo-wide per-class prose reword of three deleted lifecycle command names. That declaration overlaps essentially every agent-system record and is deliberately left unsequenced on the same grounds the rest of the backlog leaves it unsequenced.
+  - The creation-time backlog audit returned a cluster of roughly 0.5-scored duplicate-of-open and covered-by-closed verdicts carrying mechanical_class=none against unrelated records. Those are uncorroborated Pass-2 shortlist entries, inflated by this description's length -- the exact condition task 491 (open) exists to fix. They were checked, not accepted, and are not evidence of duplication.
+
+---
 
 ### 522. Report summary skeleton conformance across extensions
 - **Effort**: medium
