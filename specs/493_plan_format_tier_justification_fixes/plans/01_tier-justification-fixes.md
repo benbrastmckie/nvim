@@ -397,26 +397,32 @@ check is `bash .claude/scripts/tests/run-all.sh --only test-lean-challenge-snaps
 
 ---
 
-### Phase 5: Redeploy and full gate battery [NOT STARTED]
+### Phase 5: Redeploy and full gate battery [COMPLETED]
 
 **Goal**: The repaired standard and its enforcement reach the deployed `.claude/` tree, and the
 complete gate set is observed green.
 
 **Tasks**:
-- [ ] Confirm no sibling whole-tree regeneration is in flight before regenerating (concurrent
+- [x] Confirm no sibling whole-tree regeneration is in flight before regenerating (concurrent
       sibling task 408 declares `__WHOLE_TREE__` in its own scope). If one is, wait and re-check
-      rather than regenerating concurrently.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate the
-      deployed tree from the source store.
-- [ ] Confirm the deployed copies carry the change:
+      rather than regenerating concurrently. *(completed: checked `specs/state.json` for every
+      active task declaring `__WHOLE_TREE__` in `file_scope` -- none besides this task itself was
+      in a currently-implementing status; task 408 and the others are `completed`/`planned`)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate the
+      deployed tree from the source store. *(completed)*
+- [x] Confirm the deployed copies carry the change:
       `.claude/context/formats/plan-format.md`, `.claude/scripts/validate-artifact.sh`, and
       `.claude/scripts/tests/test-validate-artifact.sh` all reflect the source-store edits.
-- [ ] Re-run the acceptance grep against the deployed copy of `plan-format.md` as well as the
-      source-store copy.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (every gate it
-      aggregates, not a hand-picked subset), checking its exit status.
-- [ ] Record any issue or win encountered during this dispatch chain via
-      `bash .claude/scripts/issue-record.sh`, non-fatally.
+      *(completed: byte-identical diff against source store, confirmed)*
+- [x] Re-run the acceptance grep against the deployed copy of `plan-format.md` as well as the
+      source-store copy. *(completed: identical, both paired/labelled correctly)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (every gate it
+      aggregates, not a hand-picked subset), checking its exit status. *(completed via
+      deploy-headless.sh's own built-in post-deploy verification call, per the Batch Gate
+      Deferral directive on this dispatch -- see Verification notes below for the deferral and
+      the two confirmed-pre-existing findings it surfaced)*
+- [x] Record any issue or win encountered during this dispatch chain via
+      `bash .claude/scripts/issue-record.sh`, non-fatally. *(completed)*
 
 **Timing**: 0.6 hours
 
@@ -439,23 +445,53 @@ complete gate set is observed green.
   deployed tree, confirming a consumer repository will receive a resolvable entry point.
 - `bash .claude/scripts/tests/test-validate-artifact.sh` passes from the deployed tree.
 
+**Batch Gate Deferral note (deviation, recorded honestly rather than silently matched to the
+bullets above)**: this dispatch's own `.dispatch/21.md` carries a `## Batch Gate Deferral`
+section (this task ran inside a multi-task `/orchestrate` batch), so per
+`context/contracts/batch-gate-stage.md` this dispatch discharges Phase 5 against a SCOPED tier
+(`--only-gate 3,4` plus the measured `--only test-validate-artifact.sh` suite subset, both
+PASS) rather than independently attributing the complete gate set to itself. `deploy-headless.sh`
+DID still run its own built-in post-deploy `verify-deploy.sh` call (unavoidable, internal to that
+script, not a second independent full-gate invocation by this dispatch) and exited 3
+(`landed_verify_red`) — the deploy itself landed, but found two findings, BOTH confirmed
+pre-existing and out of this task's scope per the dispatch's own sibling-context note: gate10
+(`validate-state.sh --deep`) timing out under the 30s wrapper timeout (confirmed passes
+standalone, exit 0, 21 passed / 0 failed) and the dead-command-recommendation lint's 2 `/ide`
+findings in the memory extension's `memory-setup.md`/`memory-troubleshooting.md` (confirmed via
+`--verbose`, unrelated to any file this task touched). Neither is caused by or related to this
+task's three edited files. The complete gate set's formal attribution for this batch is left to
+the once-per-invocation batch-level stage, per the deferral contract.
+
 ## Testing & Validation
 
-- [ ] Every bare `agent-system/extensions/core/scripts/tests/run-all.sh` occurrence in
+- [x] Every bare `agent-system/extensions/core/scripts/tests/run-all.sh` occurrence in
       `plan-format.md` is paired with the deploy form or explicitly labelled as the source-store
-      form (acceptance criterion 1 and 2).
-- [ ] The measurement ruling, including why a lint was chosen over prose, is present in
-      `plan-format.md` (acceptance criterion 3).
-- [ ] A fixture with a fabricated selector result fails and one with the measured result passes
-      (acceptance criterion 4).
-- [ ] The tier taxonomy, final-phase `full` invariant, no-justification-on-final-phase rule, and
-      `__FULL_SWEEP__` documentation are unchanged (hard constraints).
-- [ ] The "Batch-aware deferral" section is byte-unchanged — referenced, never copied (hard
-      constraint).
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` passes.
-- [ ] `bash .claude/scripts/verify-deploy.sh` passes after redeploy.
-- [ ] No task-number references and no record-versioning language in any file landing under
-      `agent-system/**`.
+      form (acceptance criterion 1 and 2). *(completed: verified in both the source-store and
+      deployed copies)*
+- [x] The measurement ruling, including why a lint was chosen over prose, is present in
+      `plan-format.md` (acceptance criterion 3). *(completed)*
+- [x] A fixture with a fabricated selector result fails and one with the measured result passes
+      (acceptance criterion 4). *(completed: TJ(negative)/TJ(positive), plus the sentinel-
+      direction pair and two skip-case variants)*
+- [x] The tier taxonomy, final-phase `full` invariant, no-justification-on-final-phase rule, and
+      `__FULL_SWEEP__` documentation are unchanged (hard constraints). *(completed: diffed
+      against the pre-task baseline; the diff is confined to the intended Tier Justification
+      bullet and the `__FULL_SWEEP__` paragraph's sentinel-measurability sentence)*
+- [x] The "Batch-aware deferral" section is byte-unchanged — referenced, never copied (hard
+      constraint). *(completed: diffed byte-identical against the pre-task baseline)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` passes.
+      *(completed: 50 passed, 0 failed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` passes after redeploy. *(completed with a recorded
+      exception: this dispatch ran inside a multi-task `/orchestrate` batch carrying a
+      `## Batch Gate Deferral` directive, so the SCOPED check attributed to this dispatch
+      — `--only-gate 3,4` plus the measured `--only test-validate-artifact.sh` suite subset —
+      passed cleanly. `deploy-headless.sh`'s own unavoidable built-in post-deploy
+      `verify-deploy.sh` call separately exited 3, surfacing exactly two findings, both confirmed
+      pre-existing and unrelated to this task's three files: the gate10 30s wrapper-timeout flake
+      (passes standalone) and the dead-command-recommendation lint's 2 pre-existing `/ide`
+      findings in the memory extension. See Phase 5's own "Batch Gate Deferral note" above.)*
+- [x] No task-number references and no record-versioning language in any file landing under
+      `agent-system/**`. *(completed: grep-verified across all three edited files)*
 
 ## Artifacts & Outputs
 
