@@ -15,8 +15,8 @@
 # real repo and assert it reports the real corpus clean, apart from the one documented
 # verify-deploy.sh allowlist entry.
 #
-# Structural model: test-lint-postflight-boundary.sh's resolve_candidate (deploy-tree-first /
-# source-store-fallback) and WORKDIR-fixture conventions.
+# Structural model: test-lint-postflight-boundary.sh's resolve-subject helper call
+# (mode=deploy-tree-first) and WORKDIR-fixture conventions.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error.
 

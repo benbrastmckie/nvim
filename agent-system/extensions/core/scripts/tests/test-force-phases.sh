@@ -11,23 +11,24 @@
 # (test-skill-base-lifecycle.sh is owned by a sibling task landing concurrently) -- not an
 # extension of that suite.
 #
-# CANDIDATE-RESOLUTION INVERSION (deliberate, and the reason this suite cannot just copy the
-# sibling's resolve_candidate() calls verbatim): this repository's .claude/ tree is a gitignored,
+# CANDIDATE-RESOLUTION MODE (deliberate, and the reason this suite cannot just copy the
+# sibling's deploy-tree-first calls verbatim): this repository's .claude/ tree is a gitignored,
 # disposable deploy artifact regenerated from agent-system/extensions/**. Every relevant loader in
 # this codebase (including the sibling suite above) resolves DEPLOY-TREE-FIRST, source-store
 # fallback -- correct for a suite validating what actually runs in production. This suite instead
 # tests a PRE-DEPLOY SOURCE-STORE EDIT, a different question: did A2 land correctly in the four
-# files this task edits? Copying the deploy-first order verbatim here would make this suite
-# silently vacuous -- it would validate the OLD, undeployed-against copy and report a false green
-# on a source-store regression. So for exactly the four files this task edits --
+# files this task edits? Resolving deploy-tree-first here would make this suite silently
+# vacuous -- it would validate the OLD, undeployed-against copy and report a false green on a
+# source-store regression. So for exactly the four files this task edits --
 # scripts/skill-base.sh, scripts/lib/status-vocabulary.sh,
 # scripts/orchestrate-stage5-postflight.sh, and scripts/parse-command-args.sh -- resolution below
-# is inverted: agent-system/extensions/core/ FIRST, falling back to .claude/ only if the
-# source-store copy is absent. Every OTHER fixture dependency (update-task-status.sh,
-# state-write.sh, task-lock.sh, generate-todo.sh, deploy-root-guard.sh, update-plan-status.sh,
-# update-phase-status.sh, and the rest of lib/*.sh) keeps the existing deploy-tree provenance --
-# those are not under test here, and inverting their resolution too would just substitute one
-# untested assumption for another.
+# uses the shared resolve-subject helper (lib/common.sh) with mode=source-store, a hard
+# correctness requirement never overridden by CORE_TEST_SUBJECT_MODE. Every OTHER fixture
+# dependency
+# (update-task-status.sh, state-write.sh, task-lock.sh, generate-todo.sh, deploy-root-guard.sh,
+# update-plan-status.sh, update-phase-status.sh, and the rest of lib/*.sh) keeps the existing
+# deploy-tree provenance -- those are not under test here, and inverting their resolution too
+# would just substitute one untested assumption for another.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (a
 # required library/script was not found at any candidate path, OR the harness-sanity case
@@ -45,27 +46,25 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 
-# ─── resolve_inverted: source-store first, deploy fallback (the deliberate inversion) ──────────
-resolve_inverted() {
-  local desc="$1" relpath="$2"
-  if [[ -f "$SOURCE_STORE_SCRIPTS/$relpath" ]]; then
-    printf '%s\n' "$SOURCE_STORE_SCRIPTS/$relpath"
-    return 0
-  fi
-  if [[ -f "$DEPLOY_SCRIPTS_SRC/$relpath" ]]; then
-    printf '%s\n' "$DEPLOY_SCRIPTS_SRC/$relpath"
-    return 0
-  fi
-  echo "ERROR: $desc not found at either candidate:" >&2
-  echo "  $SOURCE_STORE_SCRIPTS/$relpath" >&2
-  echo "  $DEPLOY_SCRIPTS_SRC/$relpath" >&2
-  return 1
-}
+# resolve_inverted (source-store first, deploy fallback) is replaced by the shared
+# resolve-subject helper's mode=source-store below: this suite's own harness-sanity check
+# (further down) already requires a source-store-only resolution and exits 2 on anything else,
+# so mode=source-store's strict no-fallback semantics are equivalent in observable behavior --
+# a missing source-store copy fails loudly either way, never silently substituting the deployed
+# copy for these task-edited files.
 
-SKILL_BASE="$(resolve_inverted "skill-base.sh" "skill-base.sh")" || exit 2
-STATUS_VOCAB="$(resolve_inverted "lib/status-vocabulary.sh" "lib/status-vocabulary.sh")" || exit 2
-STAGE5_POSTFLIGHT="$(resolve_inverted "orchestrate-stage5-postflight.sh" "orchestrate-stage5-postflight.sh")" || exit 2
-PARSE_ARGS="$(resolve_inverted "parse-command-args.sh" "parse-command-args.sh")" || exit 2
+SKILL_BASE="$(common_test_resolve_subject "skill-base.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/skill-base.sh" "$SOURCE_STORE_SCRIPTS/skill-base.sh")" || exit 2
+STATUS_VOCAB="$(common_test_resolve_subject "lib/status-vocabulary.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/lib/status-vocabulary.sh" "$SOURCE_STORE_SCRIPTS/lib/status-vocabulary.sh")" || exit 2
+STAGE5_POSTFLIGHT="$(common_test_resolve_subject "orchestrate-stage5-postflight.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/orchestrate-stage5-postflight.sh" "$SOURCE_STORE_SCRIPTS/orchestrate-stage5-postflight.sh")" || exit 2
+PARSE_ARGS="$(common_test_resolve_subject "parse-command-args.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/parse-command-args.sh" "$SOURCE_STORE_SCRIPTS/parse-command-args.sh")" || exit 2
+common_test_declare_subject "$SKILL_BASE"
+common_test_declare_subject "$STATUS_VOCAB"
+common_test_declare_subject "$STAGE5_POSTFLIGHT"
+common_test_declare_subject "$PARSE_ARGS"
 
 if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then
   echo "ERROR: deployed scripts tree not found at $DEPLOY_SCRIPTS_SRC -- this suite needs a" >&2
@@ -88,8 +87,8 @@ FAILED=0
 common_test_workdir_init
 
 # ─── build the isolated fixture repo: deployed dependency chain, THEN overlay the four ────────
-# task-edited files with whichever candidate resolve_inverted picked above (source-store,
-# normally -- deploy only as the documented absent-fallback).
+# task-edited files with the source-store copy the shared resolve-subject helper
+# (mode=source-store) resolved above.
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in update-task-status.sh state-write.sh task-lock.sh generate-todo.sh deploy-root-guard.sh \
          update-plan-status.sh update-phase-status.sh; do
@@ -352,7 +351,9 @@ fi
 # =====================================================================
 common_test_info "=== stop-after-last-forced-phase (orchestrate-cycle-plan.sh, observed live incident) ==="
 
-CYCLE_PLAN="$(resolve_inverted "orchestrate-cycle-plan.sh" "orchestrate-cycle-plan.sh")" || exit 2
+CYCLE_PLAN="$(common_test_resolve_subject "orchestrate-cycle-plan.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/orchestrate-cycle-plan.sh" "$SOURCE_STORE_SCRIPTS/orchestrate-cycle-plan.sh")" || exit 2
+common_test_declare_subject "$CYCLE_PLAN"
 echo "[INFO] resolved orchestrate-cycle-plan.sh -> $CYCLE_PLAN"
 case "$CYCLE_PLAN" in
   "$SOURCE_STORE_SCRIPTS"/*)
@@ -372,11 +373,17 @@ chmod +x "$WORKDIR/.claude/scripts/orchestrate-cycle-plan.sh"
 # itself -- the line-106 deploy-tree lib/*.sh copy above predates all three files' existence and
 # would otherwise silently leave the fixture without them, breaking every case below that reaches
 # orchestrate-cycle-plan.sh's sourced functions.
-TERRITORY_LIB="$(resolve_inverted "lib/territory-contention-lib.sh" "lib/territory-contention-lib.sh")" || exit 2
+TERRITORY_LIB="$(common_test_resolve_subject "lib/territory-contention-lib.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/lib/territory-contention-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/territory-contention-lib.sh")" || exit 2
+common_test_declare_subject "$TERRITORY_LIB"
 cp "$TERRITORY_LIB" "$WORKDIR/.claude/scripts/lib/territory-contention-lib.sh"
-TASK_CLASSIFICATION_LIB="$(resolve_inverted "lib/task-classification-lib.sh" "lib/task-classification-lib.sh")" || exit 2
+TASK_CLASSIFICATION_LIB="$(common_test_resolve_subject "lib/task-classification-lib.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/lib/task-classification-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/task-classification-lib.sh")" || exit 2
+common_test_declare_subject "$TASK_CLASSIFICATION_LIB"
 cp "$TASK_CLASSIFICATION_LIB" "$WORKDIR/.claude/scripts/lib/task-classification-lib.sh"
-REDEPLOY_CHECKPOINT_LIB="$(resolve_inverted "lib/redeploy-checkpoint-lib.sh" "lib/redeploy-checkpoint-lib.sh")" || exit 2
+REDEPLOY_CHECKPOINT_LIB="$(common_test_resolve_subject "lib/redeploy-checkpoint-lib.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/lib/redeploy-checkpoint-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/redeploy-checkpoint-lib.sh")" || exit 2
+common_test_declare_subject "$REDEPLOY_CHECKPOINT_LIB"
 cp "$REDEPLOY_CHECKPOINT_LIB" "$WORKDIR/.claude/scripts/lib/redeploy-checkpoint-lib.sh"
 # Non-task-edited batch-engine collaborators: existing deploy-tree provenance, unchanged.
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh orchestrate-build-dispatch.sh \

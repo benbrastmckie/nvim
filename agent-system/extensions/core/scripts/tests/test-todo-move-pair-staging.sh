@@ -57,38 +57,26 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-resolve_candidate() {
-  local label="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $label not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
 # Source-store copy preferred over the deployed copy: this suite's static half exists to
 # verify the task's own source-store edits, which lag the deployed `.claude/` tree until the
 # next redeploy. Once redeployed the two copies are byte-identical, so this order is harmless
-# post-deploy and necessary pre-deploy.
-TODO_MD="$(resolve_candidate "commands/todo.md" \
-  "$SCRIPT_DIR/../../commands/todo.md" \
-  "$REPO_ROOT/.claude/commands/todo.md")" || exit 2
-SKILL_MD="$(resolve_candidate "skill-todo/SKILL.md" \
-  "$SCRIPT_DIR/../../skills/skill-todo/SKILL.md" \
-  "$REPO_ROOT/.claude/skills/skill-todo/SKILL.md")" || exit 2
-STAGING_STD="$(resolve_candidate "git-staging-scope.md" \
-  "$SCRIPT_DIR/../../context/standards/git-staging-scope.md" \
-  "$REPO_ROOT/.claude/context/standards/git-staging-scope.md")" || exit 2
-ASSESS_TOOL="$(resolve_candidate "assess-repo-health.sh" \
+# post-deploy and necessary pre-deploy -- a hard correctness requirement (mode=source-store).
+TODO_MD="$(common_test_resolve_subject "commands/todo.md" "source-store" \
+  "$REPO_ROOT/.claude/commands/todo.md" \
+  "$SCRIPT_DIR/../../commands/todo.md")" || exit 2
+common_test_declare_subject "$TODO_MD"
+SKILL_MD="$(common_test_resolve_subject "skill-todo/SKILL.md" "source-store" \
+  "$REPO_ROOT/.claude/skills/skill-todo/SKILL.md" \
+  "$SCRIPT_DIR/../../skills/skill-todo/SKILL.md")" || exit 2
+common_test_declare_subject "$SKILL_MD"
+STAGING_STD="$(common_test_resolve_subject "git-staging-scope.md" "source-store" \
+  "$REPO_ROOT/.claude/context/standards/git-staging-scope.md" \
+  "$SCRIPT_DIR/../../context/standards/git-staging-scope.md")" || exit 2
+common_test_declare_subject "$STAGING_STD"
+ASSESS_TOOL="$(common_test_resolve_subject "assess-repo-health.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/assess-repo-health.sh" \
   "$SCRIPT_DIR/../assess-repo-health.sh")" || exit 2
+common_test_declare_subject "$ASSESS_TOOL"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git not available; this suite's behavioral half requires it" >&2

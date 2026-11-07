@@ -169,19 +169,9 @@ EXCLUDED_FILES=(
 # that unrelated statement from the migrated one, hence this permanent allowlist entry. ---
     "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh|permanent: its task-type-detect.sh subject is migrated to common_test_resolve_subject with a declaration; its separate REAL_EXT_ROOT lookup is a single-candidate extensions/-directory resolution, not a deployed/source-store subject pair, and stays on common_test_resolve_candidate by design"
 
-# --- Group B: local hand-duplicated resolve_candidate() function, migration-pending ---
-    "agent-system/extensions/core/scripts/tests/test-force-phases.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-lint-test-harness-adoption.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
-    "agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh|migration-pending: Group B shape (hand-duplicated local resolve_candidate() function); scheduled for deletion in favor of the shared explicit helper"
+# --- Group B: local hand-duplicated resolve_candidate() function -- all 12 migrated to the
+# shared explicit helper (common_test_resolve_subject + common_test_declare_subject); no entries
+# remain. ---
 
 # --- Group C: inline CANDIDATES-array loop, no named function, migration-pending ---
     "agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"

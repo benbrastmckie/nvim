@@ -6,11 +6,11 @@
 # orchestrate-triage-classify.sh cannot silently drift back into two copies.
 #
 # Structural model: test-skill-base-lifecycle.sh / test-validate-return-meta.sh (mktemp -d
-# WORKDIR with an EXIT-trap cleanup, deploy-tree-first / source-store-fallback candidate
-# resolution for TRIAGE_CLASSIFY/CONT_LIB, pass()/fail()/info() helpers with integer counters,
-# exit 0 all-pass / 1 any-fail / 2 environment error). The SUT itself uses an INVERTED
-# source-store-first resolution -- see the CANDIDATE-RESOLUTION INVERSION comment at its own
-# resolve_candidate call below for why.
+# WORKDIR with an EXIT-trap cleanup, explicit-mode resolve-subject-helper resolution for
+# TRIAGE_CLASSIFY/CONT_LIB (mode=deploy-tree-first), pass()/fail()/info() helpers with integer
+# counters, exit 0 all-pass / 1 any-fail / 2 environment error). The SUT itself uses
+# mode=source-store -- see the CANDIDATE-RESOLUTION comment at its own resolution call below for
+# why.
 #
 # ISOLATION CONTRACT (never touches the real specs/ tree or real state.json): the SUT
 # (orchestrate-build-dispatch.sh) is invoked as a subprocess with SKILL_REPO_ROOT exported to a
@@ -36,46 +36,33 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-# CANDIDATE-RESOLUTION INVERSION for the SUT only (deliberate -- same rationale as
-# test-force-phases.sh's own documented inversion): this suite's Group 13 tests a PRE-DEPLOY
-# SOURCE-STORE EDIT to orchestrate-build-dispatch.sh itself (the task that carries
-# concurrent-sibling territory into base-mode dispatch briefs). Resolving deploy-tree-first here
-# would silently validate the OLD, undeployed-against `.claude/scripts/` copy and report a false
-# green on a source-store regression in the exact file under test. So, for the SUT only,
-# resolution is inverted: agent-system/extensions/core/ FIRST, `.claude/scripts/` fallback only if
-# the source-store copy is absent. TRIAGE_CLASSIFY and CONT_LIB below are NOT under test by this
-# task and keep the ordinary deploy-tree-first / source-store-fallback order.
-SUT="$(resolve_candidate "orchestrate-build-dispatch.sh" \
-  "$SCRIPT_DIR/../orchestrate-build-dispatch.sh" \
-  "$REPO_ROOT/.claude/scripts/orchestrate-build-dispatch.sh")" || exit 2
-TRIAGE_CLASSIFY="$(resolve_candidate "orchestrate-triage-classify.sh" \
+# CANDIDATE-RESOLUTION for the SUT only (deliberate -- same rationale as test-force-phases.sh's
+# own documented inversion): this suite's Group 13 tests a PRE-DEPLOY SOURCE-STORE EDIT to
+# orchestrate-build-dispatch.sh itself (the task that carries concurrent-sibling territory into
+# base-mode dispatch briefs). mode=source-store here is a hard correctness requirement: resolving
+# deploy-tree-first would silently validate the OLD, undeployed-against `.claude/scripts/` copy
+# and report a false green on a source-store regression in the exact file under test.
+# TRIAGE_CLASSIFY and CONT_LIB below are NOT under test by this task and keep the ordinary
+# deploy-tree-first preference.
+SUT="$(common_test_resolve_subject "orchestrate-build-dispatch.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-build-dispatch.sh" \
+  "$SCRIPT_DIR/../orchestrate-build-dispatch.sh")" || exit 2
+common_test_declare_subject "$SUT"
+TRIAGE_CLASSIFY="$(common_test_resolve_subject "orchestrate-triage-classify.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/orchestrate-triage-classify.sh" \
   "$SCRIPT_DIR/../orchestrate-triage-classify.sh")" || exit 2
-CONT_LIB="$(resolve_candidate "continuation-pointer-lib.sh" \
+common_test_declare_subject "$TRIAGE_CLASSIFY"
+CONT_LIB="$(common_test_resolve_subject "continuation-pointer-lib.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lib/continuation-pointer-lib.sh" \
   "$SCRIPT_DIR/../lib/continuation-pointer-lib.sh")" || exit 2
-# Not under test by this task (ordinary deploy-tree-first / source-store-fallback order, same as
+common_test_declare_subject "$CONT_LIB"
+# Not under test by this task (ordinary deploy-tree-first preference, same as
 # TRIAGE_CLASSIFY/CONT_LIB above) -- used only by Group 18 to prove the revision_sentinel line
 # this task added is per-cycle-STABLE under cycle_plan_dispatch_hash()'s own real normalizer.
-CYCLE_PLAN_SRC="$(resolve_candidate "orchestrate-cycle-plan.sh" \
+CYCLE_PLAN_SRC="$(common_test_resolve_subject "orchestrate-cycle-plan.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/orchestrate-cycle-plan.sh" \
   "$SCRIPT_DIR/../orchestrate-cycle-plan.sh")" || exit 2
+common_test_declare_subject "$CYCLE_PLAN_SRC"
 
 PASSED=0
 FAILED=0

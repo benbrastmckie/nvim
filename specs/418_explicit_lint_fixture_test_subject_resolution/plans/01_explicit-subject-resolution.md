@@ -380,7 +380,7 @@ plus a mandatory declaration, preserving each call site's existing effective ord
 
 ---
 
-### Phase 4: Migrate Group B — the 12 Local-Duplicate Suites [IN PROGRESS]
+### Phase 4: Migrate Group B — the 12 Local-Duplicate Suites [COMPLETED]
 
 **Goal**: Delete the 12 hand-duplicated `resolve_candidate` functions and route those suites
 through the shared explicit helper with declarations.
@@ -390,17 +390,17 @@ re-verified green at revision time; see the revision-time re-verification subsec
 Research Integration. No blocker applies — begin here normally.
 
 **Tasks**:
-- [ ] Re-derive Group B:
+- [x] Re-derive Group B: *(completed: re-ran `grep -L 'common_test_resolve_candidate' scripts/tests/*.sh | xargs grep -l 'resolve_candidate'` -- confirmed the exact 12-file roster unchanged from plan-authoring time)*
       `grep -L 'common_test_resolve_candidate' scripts/tests/*.sh | xargs grep -l 'resolve_candidate'`.
-- [ ] For each file: confirm the local function body is a verbatim copy of
+- [x] For each file: confirm the local function body is a verbatim copy of *(completed: 11 of 12 were verbatim deploy-tree-first or source-store-first copies; test-force-phases.sh's `resolve_inverted` diverged -- source-store-first WITH a deploy fallback, labeled "the documented absent-fallback" -- preserved by migrating to mode=source-store, which is behaviorally equivalent since the suite's own harness-sanity check already fails loudly, exit 2, if resolution ever lands outside the source store)*
       `common_test_resolve_candidate`'s semantics (find-first-existing-candidate) before deleting
       it; if any copy diverges, record the divergence and preserve its behavior explicitly rather
       than assuming equivalence.
-- [ ] Delete the local function; rewrite each call site as `common_test_resolve_subject` with the
+- [x] Delete the local function; rewrite each call site as `common_test_resolve_subject` with the *(completed: all 12 local functions (11 `resolve_candidate`, 1 `resolve_inverted`) deleted; every call site migrated with mode reproducing its existing effective order -- deploy-tree-first, source-store, or source-store for the hard-selected callers)*
       mode reproducing its existing effective order; add `common_test_declare_subject`.
-- [ ] Confirm each file already sources `scripts/lib/common.sh` (all 12 do, for the harness trio);
+- [x] Confirm each file already sources `scripts/lib/common.sh` (all 12 do, for the harness trio); *(completed: confirmed all 12 already sourced it)*
       add the source line if any does not.
-- [ ] Remove this batch's 12 entries from the lint's Layer-2 allowlist in the same commit.
+- [x] Remove this batch's 12 entries from the lint's Layer-2 allowlist in the same commit. *(completed: Group B section now holds zero migration-pending entries; gate 27 exits 0 with Total violations: 0)*
 
 **Timing**: 1 hour
 

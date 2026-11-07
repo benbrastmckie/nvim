@@ -17,10 +17,17 @@
       "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh",
       "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"
     ]},
-    {"id": 3, "description": "Migrate remaining 3 Group B suites: test-orchestrate-build-dispatch.sh, test-todo-move-pair-staging.sh, test-force-phases.sh", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Remove this batch's 12 entries from the gate-27 lint's Layer-2 allowlist", "status": "not_started", "files_touched": []}
+    {"id": 3, "description": "Migrate remaining 3 Group B suites: test-orchestrate-build-dispatch.sh (deletes resolve_candidate, migrates 4 call sites), test-todo-move-pair-staging.sh (4 call sites), test-force-phases.sh (deletes resolve_inverted, migrates 8 call sites); fix stray comment mentions of the function name that inflated gate-27's naive resolve/declare substring count", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+      "agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh",
+      "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh"
+    ]},
+    {"id": 4, "description": "Remove this batch's 12 entries from the gate-27 lint's Layer-2 allowlist", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh"
+    ]}
   ],
-  "current_objective": 3,
+  "current_objective": 4,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []
