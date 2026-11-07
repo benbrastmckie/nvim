@@ -5714,6 +5714,310 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 36: plan-size vs. remaining-cycle-budget ADVISORY (admission-layer, non-blocking)
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Group 36: plan-size vs. remaining-cycle-budget advisory"
+
+# Group 35 overwrote orchestrate-triage-classify.sh and orchestrate-batch-admit.sh with fixed,
+# hardcoded-project-number stubs; this group needs the REAL classification/admission engines
+# (same restoration idiom used by earlier groups after a stub-installing predecessor).
+cp "$CORE_DIR/orchestrate-triage-classify.sh" "$WORKDIR/.claude/scripts/orchestrate-triage-classify.sh"
+cp "$CORE_DIR/orchestrate-batch-admit.sh" "$WORKDIR/.claude/scripts/orchestrate-batch-admit.sh"
+
+# ── Case 1 (Fires -- originating shape): an 11-phase plan at phase 0, base mode, fresh 5-cycle
+# budget. --dry-run always starts cycle_counts fresh at 0 (Group 17's own documented behavior),
+# so this single-task batch's remaining_cycles is the full per_task_max_cycles=5 budget;
+# threshold = remaining_cycles * K(=2 base) = 10, and 11 > 10 fires. ──────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3601, "project_name": "g36_fires_origin", "task_type": "general", "status": "implementing", "description": "11-phase plan at phase 0 against a fresh 5-cycle base budget", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/3601_g36_fires_origin/plans"
+cat > "$WORKDIR/specs/3601_g36_fires_origin/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [NOT STARTED]
+### Phase 2: Two [NOT STARTED]
+### Phase 3: Three [NOT STARTED]
+### Phase 4: Four [NOT STARTED]
+### Phase 5: Five [NOT STARTED]
+### Phase 6: Six [NOT STARTED]
+### Phase 7: Seven [NOT STARTED]
+### Phase 8: Eight [NOT STARTED]
+### Phase 9: Nine [NOT STARTED]
+### Phase 10: Ten [NOT STARTED]
+### Phase 11: Eleven [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36a_sess.json"
+run_sut --session g36a_sess --dry-run -- 3601
+if [ "$(jqf '.dispatch[] | select(.task == 3601) | .cycle_budget_advisory | length')" != "0" ] && \
+   [ "$(jqf '.dispatch[] | select(.task == 3601) | .cycle_budget_advisory')" != "null" ]; then
+  common_test_pass "Group 36: an 11-phase plan at phase 0 against a fresh 5-cycle base budget fires the advisory (originating shape)"
+else
+  common_test_fail "Group 36: the originating-shape advisory did not fire (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch[] | select(.task == 3601) | .cycle_budget_advisory | .phases_total')" = "11" ] && \
+   [ "$(jqf '.dispatch[] | select(.task == 3601) | .cycle_budget_advisory | .phases_remaining')" = "11" ] && \
+   [ "$(jqf '.dispatch[] | select(.task == 3601) | .cycle_budget_advisory | .remaining_cycles')" = "5" ] && \
+   [ "$(jqf '.dispatch[] | select(.task == 3601) | .cycle_budget_advisory | .mode')" = "base" ]; then
+  common_test_pass "Group 36: the fired advisory carries the correct component fields (11/11/5/base)"
+else
+  common_test_fail "Group 36: the fired advisory's component fields are wrong (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case 2 (does not fire -- comfortably within budget): a 2-phase plan, base mode, fresh
+# budget. remaining(2) > remaining_cycles(5) * K(2)=10 is false. ───────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3602, "project_name": "g36_within_budget", "task_type": "general", "status": "implementing", "description": "2-phase plan comfortably within a fresh 5-cycle base budget", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/3602_g36_within_budget/plans"
+cat > "$WORKDIR/specs/3602_g36_within_budget/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [NOT STARTED]
+### Phase 2: Two [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36b_sess.json"
+run_sut --session g36b_sess --dry-run -- 3602
+if [ "$(jqf '.dispatch[] | select(.task == 3602) | has("cycle_budget_advisory")')" = "false" ]; then
+  common_test_pass "Group 36: a 2-phase plan comfortably within budget does not fire the advisory"
+else
+  common_test_fail "Group 36: a 2-phase plan unexpectedly carried an advisory (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case 3 (does not fire -- no plan at all): an implement candidate whose task directory has
+# no plans/ entry. Absence of the advisory, AND the candidate still appears in .dispatch exactly
+# as it would without this feature (base mode never required a plan for an ordinary dispatch). ──
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3603, "project_name": "g36_no_plan", "task_type": "general", "status": "implementing", "description": "implement candidate with no plan file at all", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/3603_g36_no_plan"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36c_sess.json"
+run_sut --session g36c_sess --dry-run -- 3603
+if [ "$(jqf '.dispatch[] | select(.task == 3603) | has("cycle_budget_advisory")')" = "false" ]; then
+  common_test_pass "Group 36: a candidate with no plan file at all does not fire the advisory"
+else
+  common_test_fail "Group 36: a no-plan candidate unexpectedly carried an advisory (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 3603)) | length')" = "1" ]; then
+  common_test_pass "Group 36: a candidate with no plan file at all still dispatches exactly as it would without this feature"
+else
+  common_test_fail "Group 36: a no-plan candidate failed to dispatch (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case 4a (does not fire -- zero conforming phase headings): a plan file with no
+# `### Phase N:` heading at all. ────────────────────────────────────────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3604, "project_name": "g36_zero_headings", "task_type": "general", "status": "implementing", "description": "plan file with no conforming phase heading", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/3604_g36_zero_headings/plans"
+cat > "$WORKDIR/specs/3604_g36_zero_headings/plans/01_plan.md" <<'EOF'
+# Plan
+
+Just prose, no phase headings at all.
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36d_sess.json"
+run_sut --session g36d_sess --dry-run -- 3604
+if [ "$(jqf '.dispatch[] | select(.task == 3604) | has("cycle_budget_advisory")')" = "false" ]; then
+  common_test_pass "Group 36: a plan file with zero conforming phase headings does not fire the advisory"
+else
+  common_test_fail "Group 36: a zero-heading plan unexpectedly carried an advisory (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case 4b (does not fire -- inconclusive heading scan): a plan file with a non-conforming
+# heading (the same '3a'-style example H1's own Group 9 Case A uses). Absence of the advisory,
+# plus no blocked row attributable to it -- in base mode this candidate is never H1-gated at
+# all, so it must still dispatch normally. ──────────────────────────────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3605, "project_name": "g36_nonconforming", "task_type": "general", "status": "implementing", "description": "plan file with a non-conforming phase heading", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/3605_g36_nonconforming/plans"
+cat > "$WORKDIR/specs/3605_g36_nonconforming/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+### Phase 3a: Bad heading [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36e_sess.json"
+run_sut --session g36e_sess --dry-run -- 3605
+if [ "$(jqf '.dispatch[] | select(.task == 3605) | has("cycle_budget_advisory")')" = "false" ]; then
+  common_test_pass "Group 36: an inconclusive (non-conforming) heading scan does not fire the advisory"
+else
+  common_test_fail "Group 36: a non-conforming-heading plan unexpectedly carried an advisory (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.dispatch | map(select(.task == 3605)) | length')" = "1" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 3605)) | length')" = "0" ]; then
+  common_test_pass "Group 36: the non-conforming-heading candidate still dispatches, with no blocked row attributable to the advisory (base mode, never H1-gated)"
+else
+  common_test_fail "Group 36: the non-conforming-heading candidate was unexpectedly blocked or not dispatched (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case 5 (mode-aware -- different budgets disagree): the SAME 11-phase plan, run once base
+# and once --hard. Base: remaining_cycles=5, K=2, threshold=10, 11>10 fires. Hard:
+# remaining_cycles=13, K=1, threshold=13, 11>13 does not fire. The two runs must disagree. ──────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3606, "project_name": "g36_mode_aware", "task_type": "general", "status": "implementing", "description": "same 11-phase plan, base vs. hard mode disagree on firing", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/3606_g36_mode_aware/plans"
+cat > "$WORKDIR/specs/3606_g36_mode_aware/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [NOT STARTED]
+### Phase 2: Two [NOT STARTED]
+### Phase 3: Three [NOT STARTED]
+### Phase 4: Four [NOT STARTED]
+### Phase 5: Five [NOT STARTED]
+### Phase 6: Six [NOT STARTED]
+### Phase 7: Seven [NOT STARTED]
+### Phase 8: Eight [NOT STARTED]
+### Phase 9: Nine [NOT STARTED]
+### Phase 10: Ten [NOT STARTED]
+### Phase 11: Eleven [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36f_base_sess.json"
+run_sut --session g36f_base_sess --dry-run -- 3606
+g36_base_fired=$(jqf '.dispatch[] | select(.task == 3606) | has("cycle_budget_advisory")')
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36f_hard_sess.json"
+run_sut --session g36f_hard_sess --hard --dry-run -- 3606
+g36_hard_fired=$(jqf '.dispatch[] | select(.task == 3606) | has("cycle_budget_advisory")')
+if [ "$g36_base_fired" = "true" ] && [ "$g36_hard_fired" = "false" ]; then
+  common_test_pass "Group 36: mode-aware -- base mode fires (K=2, budget=5) and hard mode does not (K=1, budget=13) for the SAME plan"
+else
+  common_test_fail "Group 36: mode-aware disagreement did not hold (base_fired=$g36_base_fired, hard_fired=$g36_hard_fired)"
+fi
+
+# ── Case 6 (counter-fixture from real history -- does not fire): a plan at phase 10 of 11 (ten
+# headings [COMPLETED], one open) with budget remaining. remaining(1) > remaining_cycles(5) *
+# K(2)=10 is false. Proves the heuristic is not merely flagging large TOTAL plans unconditionally
+# -- it is the REMAINING count that matters. ────────────────────────────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3607, "project_name": "g36_phase_10_of_11", "task_type": "general", "status": "implementing", "description": "11-phase plan at phase 10 of 11, budget remaining", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/3607_g36_phase_10_of_11/plans"
+cat > "$WORKDIR/specs/3607_g36_phase_10_of_11/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+### Phase 2: Two [COMPLETED]
+### Phase 3: Three [COMPLETED]
+### Phase 4: Four [COMPLETED]
+### Phase 5: Five [COMPLETED]
+### Phase 6: Six [COMPLETED]
+### Phase 7: Seven [COMPLETED]
+### Phase 8: Eight [COMPLETED]
+### Phase 9: Nine [COMPLETED]
+### Phase 10: Ten [COMPLETED]
+### Phase 11: Eleven [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36g_sess.json"
+run_sut --session g36g_sess --dry-run -- 3607
+if [ "$(jqf '.dispatch[] | select(.task == 3607) | has("cycle_budget_advisory")')" = "false" ]; then
+  common_test_pass "Group 36: a plan at phase 10 of 11 with budget remaining does not fire -- the heuristic tracks REMAINING phases, not total plan size"
+else
+  common_test_fail "Group 36: the phase-10-of-11 real-history counter-case unexpectedly fired (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case 7 (non-blocking / byte-identical dispatch -- the property most likely to regress): the
+# SAME 10-phase-remaining plan, SAME task number, SAME base mode, run twice LIVE (never
+# --dry-run: Group 17/18's own documented behavior is that --dry-run always starts cycle_counts
+# fresh at 0, so it cannot read a pre-seeded pool-usage value at all -- the single variable this
+# case needs to vary). Suppressed run: fresh cycle_counts (pool_used=0, remaining_cycles=5,
+# threshold=10, 10>10 is false). Firing run: cycle_counts pre-seeded to 1 already spent
+# (remaining_cycles=4, threshold=8, 10>8 fires). The task directory (and its durable
+# .orchestrator-loop-guard dispatch_seq_counter) is fully reset between the two runs so every
+# OTHER field -- dispatch_file, model, force, focus -- mints identically across both. ───────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 3608, "project_name": "g36_byte_identical", "task_type": "general", "status": "implementing", "description": "non-interference: advisory presence must be the ONLY difference in the emitted dispatch row", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+g36_plan_10() {
+  cat > "$WORKDIR/specs/3608_g36_byte_identical/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [NOT STARTED]
+### Phase 2: Two [NOT STARTED]
+### Phase 3: Three [NOT STARTED]
+### Phase 4: Four [NOT STARTED]
+### Phase 5: Five [NOT STARTED]
+### Phase 6: Six [NOT STARTED]
+### Phase 7: Seven [NOT STARTED]
+### Phase 8: Eight [NOT STARTED]
+### Phase 9: Nine [NOT STARTED]
+### Phase 10: Ten [NOT STARTED]
+EOF
+}
+
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/3608_g36_byte_identical"
+mkdir -p "$WORKDIR/specs/3608_g36_byte_identical/plans"
+g36_plan_10
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36_suppressed_sess.json"
+run_sut --session g36_suppressed_sess -- 3608
+g36_suppressed_full="$LAST_STDOUT"
+g36_suppressed_fired=$(jqf '.dispatch[] | select(.task == 3608) | has("cycle_budget_advisory")')
+
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/3608_g36_byte_identical"
+mkdir -p "$WORKDIR/specs/3608_g36_byte_identical/plans"
+g36_plan_10
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36_firing_sess.json"
+jq -n --arg t "3608" '{cycle_counts: {($t): 1}}' > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g36_firing_sess.json"
+run_sut --session g36_firing_sess -- 3608
+g36_firing_full="$LAST_STDOUT"
+g36_firing_fired=$(echo "$g36_firing_full" | jq -r '.dispatch[] | select(.task == 3608) | has("cycle_budget_advisory")' 2>/dev/null)
+
+if [ "$g36_suppressed_fired" = "false" ] && [ "$g36_firing_fired" = "true" ]; then
+  common_test_pass "Group 36: non-interference setup is non-vacuous -- the two runs genuinely disagree on whether the advisory fires"
+else
+  common_test_fail "Group 36: non-interference setup did not produce a genuine fire/no-fire pair (suppressed_fired=$g36_suppressed_fired, firing_fired=$g36_firing_fired)"
+fi
+
+g36_suppressed_stripped=$(echo "$g36_suppressed_full" | jq -S -c '.dispatch |= map(del(.cycle_budget_advisory))' 2>/dev/null)
+g36_firing_stripped=$(echo "$g36_firing_full" | jq -S -c '.dispatch |= map(del(.cycle_budget_advisory))' 2>/dev/null)
+if [ -n "$g36_suppressed_stripped" ] && [ "$g36_suppressed_stripped" = "$g36_firing_stripped" ]; then
+  common_test_pass "Group 36: with cycle_budget_advisory stripped, the firing and suppressed runs emit byte-identical plan JSON (including .stop and .blocked)"
+else
+  common_test_fail "Group 36: the dispatch is NOT provably unchanged by the advisory (suppressed=$g36_suppressed_stripped firing=$g36_firing_stripped)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

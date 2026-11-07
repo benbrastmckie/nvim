@@ -1,0 +1,38 @@
+{
+  "phase": 3,
+  "phase_name": "Fixtures pinning the behavior and the non-interference property",
+  "started_at": "2026-11-07T22:40:00Z",
+  "last_updated": "2026-11-07T23:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read test-orchestrate-cycle-plan.sh immediately before editing; add Group 36 following the file's established idiom",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Eight fixture cases across the seven required categories (fires-originating-shape, does-not-fire-within-budget, does-not-fire-no-plan, does-not-fire-zero/absent-headings x2 (zero and non-conforming), mode-aware-disagreement, real-history-counter-case, non-blocking/byte-identical)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"],
+      "note": "Mapped to 12 common_test_pass call sites across 7 Cases (1-7): Case 1 (fires, 2 assertions: presence + component fields), Case 2 (no-fire within budget, 1), Case 3 (no-fire no-plan, 2: absence + still dispatches), Case 4a (no-fire zero headings, 1), Case 4b (no-fire non-conforming heading, 2: absence + still dispatches/not blocked), Case 5 (mode-aware disagreement, 1), Case 6 (phase-10-of-11 real-history counter-case, 1), Case 7 (non-interference/byte-identical, 2: non-vacuous pair + byte-identical diff). Every task-description VERIFICATION bullet maps to at least one passing case; none ended with zero cases."
+    },
+    {
+      "id": 3,
+      "description": "All assertions use common_test_pass/common_test_fail with $LAST_STDOUT quoted in failure messages, matching the file's convention",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Use --dry-run throughout, including for the byte-identical non-interference fixture (Case 7), seeding cycle_counts via the on-disk .orchestrator-multi-state-<session>.json file",
+      "result": "failed",
+      "reason": "--dry-run always starts the in-memory multi-task state fresh at {} regardless of any on-disk seeded file (orchestrate-cycle-plan.sh only loads from disk when dry_run != true) -- confirmed by direct code reading and consistent with the pre-existing Group 8 budget fixtures, which deliberately avoid --dry-run for exactly this reason. Case 7 was redesigned to run LIVE twice (fresh task directory + durable loop-guard reset between runs) with distinct pre-seeded cycle_counts (0 vs. 1) on the SAME plan/task/mode, which is the only way to vary remaining_cycles as a genuine single-variable change for a single-task (ntasks=1) batch."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verification: bash -n clean. Full suite run (bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh, not narrowed) passes 398/398 including all 12 new Group 36 assertions, with the suite's pre-existing case count undiminished. Narrowed Tier-'local' suite set passes with the same single pre-existing-unrelated failure (test-orchestrate-cycle-postflight.sh) already recorded under Phase 1/2."
+}

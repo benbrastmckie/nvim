@@ -316,7 +316,7 @@ including `test-orchestrate-cycle-postflight.sh` and `test-orchestrate-build-dis
 
 ---
 
-### Phase 3: Fixtures pinning the behavior and the non-interference property [NOT STARTED]
+### Phase 3: Fixtures pinning the behavior and the non-interference property [COMPLETED]
 
 **Goal**: `test-orchestrate-cycle-plan.sh` gains a fixture group covering every case the task
 description requires, including the non-interference property and both the originating shape and
@@ -324,38 +324,38 @@ its real-history counter-case.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh`
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh`
   immediately before editing.
-- [ ] Add a new test group following the file's established idiom: `write_state` heredoc,
+- [x] Add a new test group following the file's established idiom: `write_state` heredoc,
   `reset_lock_dirs`, a seeded `.orchestrator-multi-state-<session>.json` carrying `cycle_counts`,
   a plan file written with `printf`/`cat` heredoc into `specs/{NNN}_{slug}/plans/01_*.md`, then
   `run_sut --session <s> --dry-run -- <task>` and `jqf` assertions.
-- [ ] **Fires**: an 11-phase plan at phase 0, base mode, fresh 5-cycle budget — asserts
+- [x] **Fires**: an 11-phase plan at phase 0, base mode, fresh 5-cycle budget — asserts
   `.dispatch[] | select(.task == N) | .cycle_budget_advisory` is non-null. This is the fixture
   reproducing the originating shape.
-- [ ] **Does not fire (comfortably within)**: a 2-phase plan, base mode, fresh budget — asserts
+- [x] **Does not fire (comfortably within)**: a 2-phase plan, base mode, fresh budget — asserts
   `has("cycle_budget_advisory")` is `false`.
-- [ ] **Does not fire (no plan)**: an implement candidate whose task directory has no `plans/`
+- [x] **Does not fire (no plan)**: an implement candidate whose task directory has no `plans/`
   entry — asserts absence, and asserts the task still appears in `.dispatch` or `.blocked`
   exactly as it would without this feature.
-- [ ] **Does not fire (zero/absent phase count)**: a plan file containing no conforming
+- [x] **Does not fire (zero/absent phase count)**: a plan file containing no conforming
   `### Phase N:` heading at all — asserts absence. Add a second case whose plan has a
   non-conforming heading, asserting absence plus no blocked row attributable to the advisory.
-- [ ] **Mode-aware, different budgets**: the same plan and the same seeded `cycle_counts` run
+- [x] **Mode-aware, different budgets**: the same plan and the same seeded `cycle_counts` run
   once without and once with `--hard`, asserting the two runs disagree on whether the advisory is
   present. Choose the phase count so the `K=2` base multiplier fires and the 13-cycle hard budget
   does not, so the assertion genuinely discriminates mode rather than restating the plan size.
-- [ ] **Counter-fixture from real history**: a plan at phase 10 of 11 (ten headings marked
+- [x] **Counter-fixture from real history**: a plan at phase 10 of 11 (ten headings marked
   `[COMPLETED]`, one open) with budget remaining — asserts absence. This is the case that proves
   the heuristic is not merely flagging large plans unconditionally.
-- [ ] **Non-blocking / byte-identical dispatch**: run the firing scenario, capture the full
+- [x] **Non-blocking / byte-identical dispatch**: run the firing scenario, capture the full
   emitted plan JSON, strip `cycle_budget_advisory` from every dispatch row with jq, and diff
   against the same scenario's full emitted JSON with the notice suppressed (suppress it by
   seeding a `cycle_counts` value that puts the same plan comfortably within budget while leaving
   every other input identical, or by an equivalent single-variable change). Assert the two
   stripped documents are identical, and that `.stop` and `.blocked` are identical between them.
   This is the property most likely to regress.
-- [ ] Confirm every assertion uses the suite's `common_test_pass` / `common_test_fail` helpers
+- [x] Confirm every assertion uses the suite's `common_test_pass` / `common_test_fail` helpers
   with `$LAST_STDOUT` quoted in the failure message, matching the file's convention.
 
 **Timing**: 1.5 hours
@@ -386,12 +386,12 @@ relying on it.
 
 **Verification**:
 
-- [ ] `bash -n` clean on the test file.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` passes in
+- [x] `bash -n` clean on the test file.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh` passes in
   full, with the new group's cases all reported pass and the suite's pre-existing case count
   undiminished.
-- [ ] The narrowed suite set above passes.
-- [ ] Each of the task description's four named fixture requirements plus the mode-awareness and
+- [x] The narrowed suite set above passes.
+- [x] Each of the task description's four named fixture requirements plus the mode-awareness and
   zero/absent requirements maps to at least one passing case, listed explicitly in the phase's
   progress notes.
 
