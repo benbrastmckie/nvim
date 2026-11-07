@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 16,
+  "summary": "Wrote a five-phase implementation plan adopting all five research decisions: one canonical required-heading contract section in core report-format.md (plus the parallel six-heading statement in summary-format.md), general-research-agent.md's verbatim copy converted to a pointer, and the four formal research agents given a reachable pointer (Context References entry plus skeleton-site sentence) with the buried `### Recommendations` promoted to a top-level `## Recommendations`. Phase 1 builds the red fixture and a task-directory sweep harness that machine-checks every extension agent's skeleton against the validator's own arrays and regex; Phase 5 redeploys, runs the full gate set, re-confirms the near-miss fixture still FAILS (validator deliberately unchanged), and records the scope-item-(4) enumeration as four follow-up groups. Two facts measured at plan time and folded in: none of the four formal agents currently load report-format.md at all, so the Context References entry is a required sub-step rather than optional polish; and `formal` is not a loaded extension in this repository, so formal-agent conformance evidence must come from the source store, never a deployed-tree check.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/495_formal_research_agents_report_section_conformance/plans/01_report-heading-contract-conformance.md",
+      "summary": "Five-phase plan (4h, 4 waves) for the required-heading contract remediation across core formats, general-research-agent.md, and the four formal research agents."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": []
+}

@@ -1,36 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/495_formal_research_agents_report_section_conformance/reports/01_formal-research-agents-report-section-conformance.md",
-      "summary": "Confirms (via fixture and direct validator runs) the four formal research agents' skeletons currently pass validate-artifact.sh but carry none of the verbatim required-heading contract general-research-agent.md gained from abandoned project 166; rules on a single-canonical-home fix in report-format.md/summary-format.md, promoting ### Recommendations to top-level, and a cheap self-check; enumerates further sweep gaps (nix/neovim/web agents, and a larger founder/present/epidemiology domain-shaped-report gap, and seven skeleton-less research agents) explicitly left out of this record's file_scope."
+      "type": "plan",
+      "path": "specs/495_formal_research_agents_report_section_conformance/plans/01_report-heading-contract-conformance.md",
+      "summary": "Five-phase plan establishing one canonical required-heading contract in report-format.md, converting general-research-agent.md's copy to a pointer, and remediating the four formal research agents with a reachable pointer plus top-level ## Recommendations."
     }
   ],
-  "next_steps": "Run /orchestrate 495 to create implementation plan",
-  "findings_count": 7,
-  "memory_candidates": [
-    {
-      "content": "When a format-conformance contract (required headings, a validator regex, named near-misses) is added to fix a drift bug, check whether it landed in the actual standard document agents cite (e.g. report-format.md, named in every report's own Standards metadata) or only in one downstream consumer agent file that happens to restate the standard. The latter shape is exactly what leaves a fix 'half-applied': other consumers of the same standard never see it, because the standard itself never changed.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/495_formal_research_agents_report_section_conformance/reports/01_formal-research-agents-report-section-conformance.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["report-format.md", "validate-artifact.sh", "contract-drift", "single-source-of-truth", "near-miss"]
-    },
-    {
-      "content": "Extracting embedded ```-fenced skeletons from markdown agent-definition files for mechanical checking requires a line-based fence parser, not a naive regex like '```markdown\\n(.*?)\\n```'. The naive form's closing-fence pattern ('\\n```') also matches the start of the NEXT fence even when that fence carries a language tag (e.g. '```json'), silently merging two separate blocks and skipping the real target block in scan order. A parser that tracks fence state per line and only closes on a bare (no-language-tag) fence line, per CommonMark's own rule, avoids this.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/495_formal_research_agents_report_section_conformance/reports/01_formal-research-agents-report-section-conformance.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["markdown", "fence-parsing", "regex-pitfall", "skeleton-extraction", "validate-artifact.sh"]
-    },
-    {
-      "content": "skill-base.sh's skill_validate_task_artifacts sweep applies validate-artifact.sh by PATH CONVENTION (reports/*.md -> type report, summaries/*.md -> type summary), not by task_type. This means every extension's research/implementation agent, however domain-customized its report shape (e.g. a founder/present/epidemiology agent using '## Summary' instead of '## Executive Summary', or a title like '# Study Design Report'), is still checked against the generic REPORT_SECTIONS/SUMMARY_SECTIONS arrays as long as its artifact lands under specs/*/reports/ or /summaries/. A domain-specific report format is not thereby exempt from the generic conformance check.",
-      "category": "PATTERN",
-      "source_artifact": "specs/495_formal_research_agents_report_section_conformance/reports/01_formal-research-agents-report-section-conformance.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["skill-base.sh", "validate-artifact.sh", "path-convention", "task_type", "report-format"]
-    }
-  ]
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 495 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1793993117_98582a_495",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 4,
+    "dependency_waves": 4
+  },
+  "dispatch_seq": 16
 }

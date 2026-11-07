@@ -78,7 +78,7 @@ next_project_number: 519
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
-495 [PLANNING] — Give the formal extension research agents the verbatim...
+495 [PLANNED] — Give the formal extension research agents the verbatim...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
   └─ 498 [NOT STARTED] — Replace the email preference harvest tally substrate
@@ -1679,11 +1679,12 @@ The audit's `duplicate-of-open #421` verdict is `mechanical_class: none` at 41% 
 ---
 
 ### 495. Give the formal extension research agents the verbatim required-heading contract their core counterpart already carries
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [495_formal_research_agents_report_section_conformance/reports/01_formal-research-agents-report-section-conformance.md]
+- **Plan**: [495_formal_research_agents_report_section_conformance/plans/01_report-heading-contract-conformance.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/formal/** (and agent-system/extensions/core/** if the chosen remedy reaches core) -- never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one; note that file carries NO top-level source_dir, only per-extension entries, so resolve the `formal` entry specifically. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
