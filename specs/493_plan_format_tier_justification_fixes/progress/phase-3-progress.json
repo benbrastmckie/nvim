@@ -1,0 +1,40 @@
+{
+  "phase": 3,
+  "phase_name": "Implement the measurement lint in validate-artifact.sh",
+  "started_at": "2026-11-07T02:10:00Z",
+  "last_updated": "2026-11-07T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm Scope Hypothesis against a real phase block", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Source suite-selection-lib.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "Extract Tier Justification block, parse claim, compute touched paths, call selector, compare, warn", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 4, "description": "Verify syntax/shellcheck/live fixtures/measured suite subset", "status": "done", "files_touched": ["specs/493_plan_format_tier_justification_fixes/plans/01_tier-justification-fixes.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Anchor the Tier Justification block-capture awk pattern to a substring match anywhere in the line (mirroring the existing Scope Hypothesis check's own pattern)", "result": "failed", "reason": "False-matched this plan's own Phase 2 task bullet mentioning the field name in backticks, misreading it as the real field value and producing a spurious sentinel-claim warning"}
+  ],
+  "deviations": [
+    {
+      "task_id": "3.live-fixture",
+      "description": "Phase 3 verification: live-test the new check against this plan file in the deployed .claude/scripts/validate-artifact.sh environment (the production execution context per hooks/validate-plan-write.sh's VALIDATOR resolution)",
+      "type": "altered",
+      "reason": "Running the check from the SOURCE STORE copy produces false positives, because suite_selection_select resolves its scripts root relative to BASH_SOURCE and the core extension's own source-store tests/ directory lacks suites that live in OTHER extensions (e.g. test-lean-challenge-snapshot.sh), which only exist in the merged deployed tree. Since .claude/ is gitignored/disposable and the production consumer (the write-time hook) always invokes the deployed copy, testing was done by temporarily copying the edited validate-artifact.sh into .claude/scripts/ (a safe, disposable operation) rather than against the source-store copy directly.",
+      "annotation": "n/a (verification-procedure note, not a plan-checklist item)"
+    },
+    {
+      "task_id": "3.verification-bullet-2",
+      "description": "Verification bullet: 'A hand-edited copy of this plan file with one suite name corrupted produces exactly one mismatch warning in default mode'",
+      "type": "altered",
+      "reason": "Measured result is TWO warnings (one under-verification for the now-missing original suite, one fabrication for the substituted name), not one -- this is the correct, more informative behavior for a substitution edit (the check reports both directions independently), not a defect. --strict exit is still non-zero as specified.",
+      "annotation": "n/a (verification-procedure note, not a plan-checklist item)"
+    },
+    {
+      "task_id": "3.phase4-tier-justification-fix",
+      "description": "Phase 4's own Tier Justification/Verification lines (as originally planned) named only test-validate-artifact.sh's covering suite and deferred plan-format.md's coverage to Phase 2 by cross-reference rather than restating it",
+      "type": "altered",
+      "reason": "This plan file is itself the first live positive fixture (Phase 3's own verification requirement), and the new mechanical check correctly flagged the cross-reference shortcut as under-verification, since Phase 4's own Files to modify lists both files. Updated Phase 4's Tier Justification and matching Verification bullet to name the full measured union of covering suites for both touched paths, which resolved the warning to zero.",
+      "annotation": "see Phase 4's own Tier Justification/Verification text, updated in place"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -238,49 +238,59 @@ that same `run-all.sh --only` subset plus gates 3 and 4 for the prose itself.
 
 ---
 
-### Phase 3: Implement the measurement lint in validate-artifact.sh [NOT STARTED]
+### Phase 3: Implement the measurement lint in validate-artifact.sh [COMPLETED]
 
 **Goal**: `scripts/validate-artifact.sh`'s `plan` branch re-derives the covering suites for each
 non-final phase's touched paths and reports a mismatch against that phase's
 `**Tier Justification**:` claim, advisory by default and enforced under `--strict`.
 
 **Tasks**:
-- [ ] Confirm the phase-block path-extraction mechanism before building on it (see Scope
+- [x] Confirm the phase-block path-extraction mechanism before building on it (see Scope
       Hypothesis): write one real phase block to a temp file, run
       `bash scripts/plan-file-scope-harvest.sh` on it, and confirm it emits that phase's
       `Files to modify` paths as a JSON array. If it does not, call the harvester's
       `extract_paths()` awk grammar directly instead — never duplicate the grammar in this script.
-- [ ] Source `scripts/lib/suite-selection-lib.sh` using the `${BASH_SOURCE[0]}`-relative
+      *(completed: Scope Hypothesis confirmed directly against a real phase block; no fallback
+      needed)*
+- [x] Source `scripts/lib/suite-selection-lib.sh` using the `${BASH_SOURCE[0]}`-relative
       `$_validate_script_dir/lib/...` resolution this script already uses for
       `phase-heading-patterns.sh` and `plan-status-line.sh`, so it resolves in both the source
       store and the deployed tree. Treat a missing library as an environment error consistent
-      with how the two existing libraries are handled, never as a silent skip.
-- [ ] Inside the existing per-phase loop (which already computes `phase_block` and `phase_num`),
+      with how the two existing libraries are handled, never as a silent skip. *(completed)*
+- [x] Inside the existing per-phase loop (which already computes `phase_block` and `phase_num`),
       extract the phase's `**Tier Justification**:` line, accepting both punctuation conventions
       (`**Tier Justification**:` and `**Tier Justification:**`) exactly as the
-      `**Verification Tier**` extraction above it already does.
-- [ ] Parse the claim from that line: either a `--only SUITE[,SUITE,...]` suite list, or a
+      `**Verification Tier**` extraction above it already does. *(completed: anchored to
+      line-start, with an optional leading list marker, specifically to avoid a false match
+      against a TASK bullet that merely mentions the field name in backticks — discovered via
+      this very plan's own Phase 2 task list during live-fixture testing)*
+- [x] Parse the claim from that line: either a `--only SUITE[,SUITE,...]` suite list, or a
       mention of the `__FULL_SWEEP__` sentinel. A line naming neither is out of this check's
       scope and is passed over silently (it is the `full`-tier or cross-cutting-surface shape,
-      which this check does not police).
-- [ ] Collect the phase's touched paths, dropping reserved sentinels (`__WHOLE_TREE__`) and
+      which this check does not police). *(completed: implemented as a token scan for
+      `test-*.sh` basenames anywhere in the captured block, which also handles the corpus's
+      alternate free-text "measured ... returns `SUITE SUITE`" surface form, not only the
+      literal `--only` command syntax)*
+- [x] Collect the phase's touched paths, dropping reserved sentinels (`__WHOLE_TREE__`) and
       non-path placeholder entries (Decision D3). If the remaining set is empty, skip the check
-      for that phase without emitting anything.
-- [ ] Call `suite_selection_select` on the remaining paths and compare (Decision D4): a
+      for that phase without emitting anything. *(completed)*
+- [x] Call `suite_selection_select` on the remaining paths and compare (Decision D4): a
       sentinel claim requires the selector to return exactly `__FULL_SWEEP__`; a suite-list claim
       requires set equality after `sort -u`, with distinct messages for the two failure
       directions — a covering suite the selector returns but the line omits (under-verification)
-      and a suite the line names but the selector does not return (fabrication).
-- [ ] Emit via `log_warn` so default mode stays advisory and the existing
+      and a suite the line names but the selector does not return (fabrication). *(completed)*
+- [x] Emit via `log_warn` so default mode stays advisory and the existing
       `total_issues=$((errors + warnings))` `--strict` branch enforces it, with no change to the
-      summary block.
-- [ ] Skip the final phase (the highest-numbered phase), which carries no justification line by
-      standard; its absence must never warn.
-- [ ] Write the check's own header comment recording the path-source precedence, the sentinel and
+      summary block. *(completed)*
+- [x] Skip the final phase (the highest-numbered phase), which carries no justification line by
+      standard; its absence must never warn. *(completed: `_final_phase_idx` computed once from
+      `phase_line_nums`)*
+- [x] Write the check's own header comment recording the path-source precedence, the sentinel and
       placeholder exclusions, the comparison semantics, and the bounded scope (no `--only-gate`
-      coverage), mirroring the comment style the two neighbouring checks use.
-- [ ] Confirm the new code is safe under the script's `set -euo pipefail` posture — the library
-      sets no shell options and never calls `exit`, per its own header contract.
+      coverage), mirroring the comment style the two neighbouring checks use. *(completed)*
+- [x] Confirm the new code is safe under the script's `set -euo pipefail` posture — the library
+      sets no shell options and never calls `exit`, per its own header contract. *(completed:
+      `bash -n` and shellcheck both clean of new findings)*
 
 **Timing**: 1.3 hours
 
@@ -352,11 +362,12 @@ warning residue across the active-plan corpus is recorded.
 
 **Verification Tier**: local
 
-**Tier Justification**: `suite_selection_select agent-system/extensions/core/scripts/tests/test-validate-artifact.sh`
-measured this dispatch returns exactly `test-validate-artifact.sh` (not the sentinel), so the
-covering check is `bash .claude/scripts/tests/run-all.sh --only test-validate-artifact.sh`; the
-corpus-sweep residue edit to `plan-format.md` is additionally covered by that file's own measured
-subset named in Phase 2.
+**Tier Justification**: `suite_selection_select` measured over both of this phase's touched
+paths (`agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` and
+`agent-system/extensions/core/context/formats/plan-format.md`) this dispatch returns
+`test-lean-challenge-snapshot.sh test-phase-heading-patterns.sh test-plan-file-scope-harvest.sh
+test-resume-scan-nonconformance.sh test-validate-artifact.sh` (not the sentinel), so the covering
+check is `bash .claude/scripts/tests/run-all.sh --only test-lean-challenge-snapshot.sh,test-phase-heading-patterns.sh,test-plan-file-scope-harvest.sh,test-resume-scan-nonconformance.sh,test-validate-artifact.sh`.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` - add the fixture
@@ -369,7 +380,8 @@ subset named in Phase 2.
   new assertions counted in `PASSED` and `FAILED` at 0.
 - The negative fixture demonstrably fails under `--strict` and the positive one passes — the
   task's own acceptance criterion, shown by the assertion output rather than asserted.
-- `bash .claude/scripts/tests/run-all.sh --only test-validate-artifact.sh` passes.
+- `bash .claude/scripts/tests/run-all.sh --only test-lean-challenge-snapshot.sh,test-phase-heading-patterns.sh,test-plan-file-scope-harvest.sh,test-resume-scan-nonconformance.sh,test-validate-artifact.sh`
+  passes (the measured covering subset for both of this phase's touched paths).
 - The corpus sweep's measured counts appear in `plan-format.md`'s new enforcement-level
   subsection.
 

@@ -252,6 +252,31 @@ if [ "$artifact_type" = "plan" ]; then
   # shellcheck disable=SC1090
   . "$_status_line_lib"
 
+  # --- Shared suite-selection library (lazy: only the Tier Justification measurement check
+  # below needs it). Same lazy, ${BASH_SOURCE[0]}-relative, exit-5-on-missing idiom as the two
+  # libraries above -- correct in both the source store and the deployed tree. The library sets
+  # no shell options and never calls `exit` itself (see its own header contract), so sourcing it
+  # is safe under this script's `set -euo pipefail` posture.
+  _suite_selection_lib_candidates=(
+    "$_validate_script_dir/lib/suite-selection-lib.sh"
+  )
+  _suite_selection_lib=""
+  for _candidate in "${_suite_selection_lib_candidates[@]}"; do
+    if [ -f "$_candidate" ]; then
+      _suite_selection_lib="$_candidate"
+      break
+    fi
+  done
+  if [ -z "$_suite_selection_lib" ]; then
+    echo "Error: shared library suite-selection-lib.sh not found at any of:" >&2
+    for _candidate in "${_suite_selection_lib_candidates[@]}"; do
+      echo "  $_candidate" >&2
+    done
+    exit 5
+  fi
+  # shellcheck disable=SC1090
+  . "$_suite_selection_lib"
+
   # --- Plan-level Status-line grammar check (error level: DEFECT 2 -- the validator previously
   # checked only field PRESENCE via the whole-document grep above, so a hand-typed, bracket-losing
   # value like "- **Status**: COMPLETED" validated as [PASS]. Landed at error, not warn, because a
@@ -313,6 +338,11 @@ if [ "$artifact_type" = "plan" ]; then
   if [ "${#phase_line_nums[@]}" -gt 0 ]; then
     total_lines=$(wc -l < "$artifact_path")
     _ftm_omitting_phases=()
+    # The final phase (highest-numbered, last heading in the file) carries no Tier
+    # Justification line by standard -- the Tier Justification measurement check below must
+    # never warn on its absence. See plan-format.md's "`**Tier Justification**:` -- required on
+    # every non-final phase" subsection.
+    _final_phase_idx=$(( ${#phase_line_nums[@]} - 1 ))
     # Cross-phase ceiling consistency (advisory-first; see plan-format.md's "Cross-phase
     # ceiling consistency obligation" and its paired "Enforcement level (Cross-phase ceiling
     # consistency)" subsection for the full rule and promotion criterion). Accumulated per unit
@@ -345,6 +375,116 @@ if [ "$artifact_type" = "plan" ]; then
       # tests whether the header line itself is present anywhere in the phase's own block.
       if ! echo "$phase_block" | grep -qE '^[[:space:]]*(-[[:space:]]+)?\*\*Files to modify\*\*:|^[[:space:]]*(-[[:space:]]+)?\*\*Files to modify:\*\*'; then
         _ftm_omitting_phases+=("$phase_num")
+      fi
+
+      # --- Tier Justification measurement check (advisory-first; see plan-format.md's
+      # "`**Tier Justification**:` -- required on every non-final phase" subsection and its
+      # paired "Enforcement level (Tier Justification measurement)" subsection for the full rule
+      # and promotion criterion). Re-derives suite_selection_select's actual output for this
+      # phase's own touched paths and compares it against this phase's own Tier Justification
+      # claim, in BOTH directions: a claimed suite the selector does not return (fabrication) and
+      # a suite the selector returns that the claim omits (under-verification) -- including the
+      # __FULL_SWEEP__ sentinel as a measurable claim in its own right, per the defect this check
+      # closes. Bounded to suite_selection_select-grounded claims only: a phase whose Tier
+      # Justification names neither a suite nor the sentinel (the `full`-tier or `--only-gate`
+      # gate-subset shape) is out of this check's scope and is passed over silently. Never runs
+      # on the final phase, which carries no justification line by standard.
+      if [ "$i" -ne "$_final_phase_idx" ]; then
+        # Anchored to line-start (optional leading list marker): a bare substring match would
+        # also capture a TASK bullet that merely mentions the field name in backticks (e.g.
+        # "- [x] In the `**Tier Justification**:` subsection, add ..."), which precedes the real
+        # field line in document order and carries no suite tokens of its own -- exactly the
+        # false-sentinel-claim misread this anchoring prevents.
+        _tier_just_block=$(echo "$phase_block" | awk '
+          /^[[:space:]]*(-[[:space:]]+)?\*\*Tier Justification\*\*:|^[[:space:]]*(-[[:space:]]+)?\*\*Tier Justification:\*\*/ { capture=1 }
+          capture { print; if ($0 ~ /^[[:space:]]*$/) exit }
+        ')
+        if [ -n "$_tier_just_block" ]; then
+          # Claim extraction: scan the whole justification block for suite-basename tokens,
+          # regardless of whether they appear after a structured `--only SUITE[,SUITE,...]`
+          # invocation or in an earlier free-text "measured ... returns `SUITE SUITE`" clause --
+          # both are the same underlying claim, and the corpus uses both surface forms
+          # interchangeably. A `--only` match never false-positives on the sibling `--only-gate`
+          # gate-subset mechanism: "--only-gate" has no whitespace directly after "--only", so it
+          # cannot match either extraction below.
+          mapfile -t _tj_claimed < <(echo "$_tier_just_block" | grep -oE 'test-[A-Za-z0-9_-]+\.sh' | sort -u)
+          if [ "${#_tj_claimed[@]}" -gt 0 ]; then
+            _tj_claim_kind="suitelist"
+          elif echo "$_tier_just_block" | grep -qF "$SUITE_SELECTION_FULL_SWEEP_SENTINEL"; then
+            _tj_claim_kind="sentinel"
+          else
+            _tj_claim_kind=""
+          fi
+
+          if [ -n "$_tj_claim_kind" ]; then
+            # Collect this phase's own touched paths via the harvester, reusing its grammar
+            # verbatim on a single phase block written to a temp file (confirmed to emit exactly
+            # that phase's own paths -- see this task's own Scope Hypothesis). Drop the reserved
+            # `__WHOLE_TREE__` sentinel and any non-path placeholder entry (Decision D3) before
+            # calling the selector; an empty remaining set skips the check for this phase without
+            # emitting anything.
+            _tj_tmp_phase_file=$(mktemp)
+            printf '%s\n' "$phase_block" > "$_tj_tmp_phase_file"
+            _tj_harvested_json=$(bash "$_validate_script_dir/plan-file-scope-harvest.sh" "$_tj_tmp_phase_file" 2>/dev/null) || _tj_harvested_json='[]'
+            rm -f "$_tj_tmp_phase_file"
+            mapfile -t _tj_touched_raw < <(echo "$_tj_harvested_json" | jq -r '.[]' 2>/dev/null)
+            _tj_touched=()
+            for _tj_p in "${_tj_touched_raw[@]}"; do
+              [ "$_tj_p" = "__WHOLE_TREE__" ] && continue
+              case "$_tj_p" in
+                */*|*.*) _tj_touched+=("$_tj_p") ;;
+              esac
+            done
+
+            if [ "${#_tj_touched[@]}" -gt 0 ]; then
+              mapfile -t _tj_actual < <(suite_selection_select "${_tj_touched[@]}")
+              _tj_actual_is_sentinel=false
+              if [ "${#_tj_actual[@]}" -eq 1 ] && [ "${_tj_actual[0]}" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
+                _tj_actual_is_sentinel=true
+              fi
+
+              if [ "$_tj_claim_kind" = "sentinel" ]; then
+                if [ "$_tj_actual_is_sentinel" = false ]; then
+                  log_warn "Phase ${phase_num} Tier Justification claims the __FULL_SWEEP__ sentinel (no suite covers this phase) but suite_selection_select returns real suite(s) for its touched paths: ${_tj_actual[*]} -- unmeasured/false sentinel claim"
+                fi
+              else
+                # suitelist claim
+                if [ "$_tj_actual_is_sentinel" = true ]; then
+                  log_warn "Phase ${phase_num} Tier Justification names suite(s) (${_tj_claimed[*]}) but suite_selection_select returns the __FULL_SWEEP__ sentinel for its touched paths -- no suite actually covers them (fabricated claim)"
+                else
+                  _tj_missing=()
+                  for _tj_a in "${_tj_actual[@]}"; do
+                    _tj_found=false
+                    for _tj_c in "${_tj_claimed[@]}"; do
+                      if [ "$_tj_a" = "$_tj_c" ]; then
+                        _tj_found=true
+                        break
+                      fi
+                    done
+                    [ "$_tj_found" = false ] && _tj_missing+=("$_tj_a")
+                  done
+                  _tj_extra=()
+                  for _tj_c in "${_tj_claimed[@]}"; do
+                    _tj_found=false
+                    for _tj_a in "${_tj_actual[@]}"; do
+                      if [ "$_tj_a" = "$_tj_c" ]; then
+                        _tj_found=true
+                        break
+                      fi
+                    done
+                    [ "$_tj_found" = false ] && _tj_extra+=("$_tj_c")
+                  done
+                  if [ "${#_tj_missing[@]}" -gt 0 ]; then
+                    log_warn "Phase ${phase_num} Tier Justification under-verifies: suite_selection_select additionally returns (${_tj_missing[*]}) for this phase's touched paths, not named in the justification"
+                  fi
+                  if [ "${#_tj_extra[@]}" -gt 0 ]; then
+                    log_warn "Phase ${phase_num} Tier Justification fabricates coverage: suite(s) (${_tj_extra[*]}) named that suite_selection_select does not return for this phase's touched paths"
+                  fi
+                fi
+              fi
+            fi
+          fi
+        fi
       fi
 
       # --- Cross-phase ceiling consistency: per-phase accumulation step (advisory-first; see
