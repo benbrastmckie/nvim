@@ -355,24 +355,41 @@ criterion must be the observed count, never a projection.
 
 ---
 
-### Phase 4: Redeploy and Full Gate Set [NOT STARTED]
+### Phase 4: Redeploy and Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The source-store changes are deployed and the whole gate set is observed green.
 
 **Tasks**:
-- [ ] Confirm the three source-store files are committed and the working tree holds no
-      unrelated staged hunks.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` and confirm
-      `RESULT=landed_verify_clean` (exit 0).
-- [ ] Confirm the deployed `.claude/context/formats/plan-format.md` and
+- [x] Confirm the three source-store files are committed and the working tree holds no
+      unrelated staged hunks. *(completed: `git status --short` on the three files was empty;
+      the working tree carries substantial UNSTAGED/UNTRACKED changes from concurrent sibling
+      implement dispatches in this same /orchestrate batch, per the dispatch's own territory
+      note — not touched, reverted, or claimed)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` and confirm
+      `RESULT=landed_verify_clean` (exit 0). *(deviation: got `RESULT=landed_verify_red` — the
+      deploy itself landed, but the inline fast-gate verify found 2 pre-existing, unrelated
+      failures: gate10's 30s timeout (already documented load-sensitive in
+      tests/known-failures.txt for a related suite) and lint-dead-command-recommendations.sh
+      flagging two pre-existing `/ide` references in `agent-system/extensions/memory/**`, files
+      this task never touched. Recorded via issue-record.sh. Deferred the complete gate set to
+      the batch-level stage per this dispatch's Batch Gate Deferral directive, and instead ran a
+      scoped `verify-deploy.sh --only-gate 3,4,22` covering the gates relevant to THIS task's own
+      files — see below)*
+- [x] Confirm the deployed `.claude/context/formats/plan-format.md` and
       `.claude/scripts/validate-artifact.sh` carry the new subsection and the new check
       respectively, so the deploy is known to have landed this task's content and not merely
-      exited 0.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` with no `--skip-slow` and no `--only-gate`, and
+      exited 0. *(completed: `diff -q` against the source-store originals confirmed byte-identical
+      for all three touched files, and `grep -c 'Cross-phase ceiling consistency'
+      .claude/context/formats/plan-format.md` returned 3)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` with no `--skip-slow` and no `--only-gate`, and
       read its verdict as this phase's evidence — the deploy's own inline verify covers only the
-      fast subset and is not a substitute.
-- [ ] Confirm Gate 3 (doc-lint) and Gate 4 (task-reference lint) both ran and did not SKIP, since
+      fast subset and is not a substitute. *(deviation: per this dispatch's Batch Gate Deferral
+      directive, ran the scoped narrowing `verify-deploy.sh --only-gate 3,4,22` instead —
+      4/4 checks passed, 0 failures. The full, unscoped gate set runs once for the whole batch at
+      the end of this /orchestrate invocation, not independently in this dispatch)*
+- [x] Confirm Gate 3 (doc-lint) and Gate 4 (task-reference lint) both ran and did not SKIP, since
       this task's edits are source-store markdown and a silent SKIP would attest to nothing.
+      *(completed: both ran and PASSed in the scoped invocation above)*
 
 **Timing**: 30 minutes
 
@@ -392,30 +409,53 @@ criterion must be the observed count, never a projection.
 - `grep -c 'Cross-phase ceiling consistency' .claude/context/formats/plan-format.md` is non-zero
   and the deployed `validate-artifact.sh` contains the new check block.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `deploy-headless.sh` exiting with `RESULT=landed_verify_clean` | The deploy itself landed successfully; its inline fast-gate verify found 2 pre-existing, unrelated failures instead of 0. Not caused by this task's three source-store files. | gate10 (`validate-state.sh --deep`) exceeded its 30s timeout -- already documented as load-sensitive in `tests/known-failures.txt` for a related suite. `lint-dead-command-recommendations.sh` flagged two pre-existing `/ide` references in `agent-system/extensions/memory/context/project/memory/{memory-setup,memory-troubleshooting}.md` -- files this task never read, let alone wrote. |
+| The complete, unscoped `verify-deploy.sh` run (full gate set, no narrowing flags) | This dispatch's own Batch Gate Deferral directive explicitly defers the complete gate set to a once-per-batch run at the end of the `/orchestrate` invocation, rather than requiring it independently here. | `.dispatch/15.md`'s `## Batch Gate Deferral` section; `context/formats/plan-format.md`'s "Batch-aware deferral" subsection; `context/contracts/phase-closure.md`'s no-promotion-without-evidence carve-out. A scoped `verify-deploy.sh --only-gate 3,4,22` (doc-lint, task-reference lint, shellcheck -- the gates covering this task's own three files) was run instead and passed 4/4 with 0 failures. |
+| `test-orchestrate-cycle-postflight.sh` inside the Phase 2/3 covering-suite `run-all.sh --only ...` invocation | Pre-existing, unrelated failure (279 passed / 25 failed), reproduced identically against the unmodified git-HEAD baseline of `validate-artifact.sh`. | Phase 2 and Phase 3 handoff artifacts; issue-record.sh entries filed for this phase and Phase 2/3. |
+
+All three exclusions are pre-existing-and-unrelated or an explicit, dispatch-level deferral
+directive -- never a defect introduced by this task's own three files, each of which was
+independently confirmed clean via the scoped gate run and the manual `diff -q` comparison above.
+
 ---
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with the
-      contradiction, no-contradiction and no-ceiling cases all PASS.
-- [ ] The contradiction fixture warns in default mode AND default-mode exit stays 0, proving the
-      check is advisory and not blocking.
-- [ ] `--strict` turns the same fixture's warning into a failing exit through the pre-existing
-      `total_issues = errors + warnings` branch, with no new strictness logic added.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-artifact.sh,test-gate-out-derived-staleness.sh,test-gate-out-repair-reporting.sh,test-orchestrate-cycle-postflight.sh`
-      exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-phase-heading-patterns.sh,test-plan-file-scope-harvest.sh,test-resume-scan-nonconformance.sh`
-      exits 0.
-- [ ] The default-mode sweep over non-terminal `specs/` plans is run and its observed warning count
-      is recorded in the promotion criterion.
-- [ ] No Lean identifier (`longFile`, `LEAN_STYLE_GUIDE`, `MODULE_INVARIANTS`) appears in
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with the
+      contradiction, no-contradiction and no-ceiling cases all PASS. *(confirmed: 39 passed, 0
+      failed)*
+- [x] The contradiction fixture warns in default mode AND default-mode exit stays 0, proving the
+      check is advisory and not blocking. *(confirmed: case ceiling(f))*
+- [x] `--strict` turns the same fixture's warning into a failing exit through the pre-existing
+      `total_issues = errors + warnings` branch, with no new strictness logic added. *(confirmed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-artifact.sh,test-gate-out-derived-staleness.sh,test-gate-out-repair-reporting.sh,test-orchestrate-cycle-postflight.sh`
+      exits 0. *(deviation: exits 1 — test-orchestrate-cycle-postflight.sh fails identically
+      (279 passed/25 failed) both before and after this task's edits, confirmed by temporarily
+      swapping back the git-HEAD baseline validate-artifact.sh and re-running; pre-existing,
+      unrelated, recorded via issue-record.sh. The other three suites in this set all pass.)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-phase-heading-patterns.sh,test-plan-file-scope-harvest.sh,test-resume-scan-nonconformance.sh`
+      exits 0. *(confirmed: 3 passed, 0 failed)*
+- [x] The default-mode sweep over non-terminal `specs/` plans is run and its observed warning count
+      is recorded in the promotion criterion. *(confirmed: 0 of 14 non-terminal, plan-linked
+      tasks newly warn; recorded in plan-format.md)*
+- [x] No Lean identifier (`longFile`, `LEAN_STYLE_GUIDE`, `MODULE_INVARIANTS`) appears in
       `plan-format.md` outside the single worked example, and none appears in
-      `validate-artifact.sh` at all.
-- [ ] No task-number reference and no record-versioning language in any hunk landing under
-      `agent-system/**`.
-- [ ] `bash agent-system/extensions/core/scripts/deploy-headless.sh` reaches
+      `validate-artifact.sh` at all. *(confirmed by grep)*
+- [x] No task-number reference and no record-versioning language in any hunk landing under
+      `agent-system/**`. *(confirmed by grepping each phase's added diff hunks)*
+- [x] `bash agent-system/extensions/core/scripts/deploy-headless.sh` reaches
       `RESULT=landed_verify_clean`, and the full `verify-deploy.sh` run exits 0 with Gates 3 and 4
-      not SKIPped.
+      not SKIPped. *(deviation: `RESULT=landed_verify_red` — 2 pre-existing, unrelated failures
+      (gate10 timeout; dead-command-recommendation lint on two pre-existing `/ide` references in
+      agent-system/extensions/memory/**, untouched by this task). Per this dispatch's Batch Gate
+      Deferral directive, ran the scoped `verify-deploy.sh --only-gate 3,4,22` instead (doc-lint,
+      task-reference lint, shellcheck — the gates covering this task's own files): 4/4 PASS, 0
+      failures. Gates 3 and 4 confirmed ran and did not SKIP. The full, unscoped gate set is
+      deferred to the batch-level stage, run once for the whole /orchestrate invocation.)*
 
 ## Artifacts & Outputs
 
