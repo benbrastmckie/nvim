@@ -2511,14 +2511,31 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   fi
 done
 
+# Shared composition idiom for both dispatch-row construction sites below (dry-run and live), so
+# they cannot drift: `{}` -- the key entirely ABSENT, never `null` -- when this task has no
+# advisory, matching the `byte-identical when absent` convention this script's header already
+# states for --compare/--gate, and dirty_scope_advisory's own empty-fragment shape.
+adv_fragment_json() {
+  local __t="$1"
+  if [ -n "${adv_fired[$__t]:-}" ]; then
+    jq -n -c --argjson pt "${adv_phases_total[$__t]}" --argjson pr "${adv_phases_remaining[$__t]}" \
+      --argjson rc "${adv_remaining_cycles[$__t]}" --arg mode "${adv_mode_label[$__t]}" \
+      --arg msg "${adv_message[$__t]}" \
+      '{cycle_budget_advisory: {phases_total: $pt, phases_remaining: $pr, remaining_cycles: $rc, mode: $mode, message: $msg}}'
+  else
+    echo '{}'
+  fi
+}
+
 if [ "$dry_run" = "true" ]; then
   for t in "${probed_dispatch_post_h1[@]}"; do
     g="${effective_group[$t]}"
     agent=$(resolve_agent "$g" "${task_types[$t]}" "$t")
     dry_force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && dry_force_json="true"
     dry_focus=$(compose_focus "$t" "$g")
-    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" --arg focus "$dry_focus" \
-      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force, focus: $focus}')")
+    dry_adv_frag=$(adv_fragment_json "$t")
+    out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson force "$dry_force_json" --arg focus "$dry_focus" --argjson adv "$dry_adv_frag" \
+      '{task: $t, phase: $p, agent: $a, model: null, dispatch_file: null, force: $force, focus: $focus} + $adv')")
   done
   emit_and_exit "$cycle_count"
 fi
@@ -2962,8 +2979,9 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   # Threading it through the row (rather than recomputing it downstream) is the same shape as
   # every other per-task field this row already carries.
   force_json="false"; [ "${forced_this_cycle[$t]:-false}" = "true" ] && force_json="true"
-  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" --arg focus "$task_composed_focus" \
-    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force, focus: $focus}')")
+  live_adv_frag=$(adv_fragment_json "$t")
+  out_dispatch_rows+=("$(jq -n -c --argjson t "$t" --arg p "$g" --arg a "$agent" --argjson dm "$dispatch_model_json" --arg df "$dispatch_file" --argjson force "$force_json" --arg focus "$task_composed_focus" --argjson adv "$live_adv_frag" \
+    '{task: $t, phase: $p, agent: $a, model: $dm, dispatch_file: $df, force: $force, focus: $focus} + $adv')")
 done
 
 mt_set --argjson c "$new_cycle_count" '.cycle_count = $c'

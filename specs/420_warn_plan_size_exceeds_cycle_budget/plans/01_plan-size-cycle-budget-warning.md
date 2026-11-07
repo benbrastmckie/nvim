@@ -246,7 +246,7 @@ computation block with no signature or output-shape change; covered by
 
 ---
 
-### Phase 2: Thread `cycle_budget_advisory` onto both dispatch-row sites [NOT STARTED]
+### Phase 2: Thread `cycle_budget_advisory` onto both dispatch-row sites [COMPLETED]
 
 **Goal**: The advisory is carried as a purely additive `cycle_budget_advisory` object on the
 per-task dispatch row, present with identical content in the dry-run and live paths, and absent
@@ -254,25 +254,25 @@ entirely when the threshold does not fire.
 
 **Tasks**:
 
-- [ ] Re-read `orchestrate-cycle-plan.sh` immediately before editing.
-- [ ] Audit every consumer of the dispatch row for exhaustive key enumeration BEFORE adding the
+- [x] Re-read `orchestrate-cycle-plan.sh` immediately before editing.
+- [x] Audit every consumer of the dispatch row for exhaustive key enumeration BEFORE adding the
   field: `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`,
   `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`, and
   `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`. Grep each for
   `to_entries`, `keys`, `with_entries`, and any fixed-field destructuring of a `.dispatch[]`
   element. Record the audit result in the phase's progress notes. If a consumer does enumerate
   keys exhaustively, STOP and report rather than adding the field.
-- [ ] Add the field to the dry-run row construction (the `jq -n -c` call inside the
+- [x] Add the field to the dry-run row construction (the `jq -n -c` call inside the
   `if [ "$dry_run" = "true" ]` block that currently emits
   `{task, phase, agent, model: null, dispatch_file: null, force, focus}`).
-- [ ] Add the field to the live row construction (the `jq -n -c` call at the end of the live
+- [x] Add the field to the live row construction (the `jq -n -c` call at the end of the live
   per-task loop that emits the same seven keys with real `model`/`dispatch_file`).
-- [ ] Use one shared composition idiom at both sites so they cannot drift: build the advisory
+- [x] Use one shared composition idiom at both sites so they cannot drift: build the advisory
   fragment as a jq object merged onto the base row, empty (`{}`) when this task has no advisory,
   so the key is entirely ABSENT rather than `null` in the non-firing case. This matches the
   `byte-identical when absent` convention the script's own header already states for
   `--compare`/`--gate`, and `dirty_scope_advisory`'s empty-fragment shape.
-- [ ] Confirm the field's content is identical between the two paths for the same scenario: the
+- [x] Confirm the field's content is identical between the two paths for the same scenario: the
   advisory depends only on the plan file, the mode, and the pool, none of which differ across the
   fork.
 
@@ -307,12 +307,12 @@ including `test-orchestrate-cycle-postflight.sh` and `test-orchestrate-build-dis
 
 **Verification**:
 
-- [ ] `bash -n` clean; `shellcheck` no new findings against the Phase 1 baseline.
-- [ ] The narrowed suite set above passes.
-- [ ] A hand-run dry-run invocation on the 11-phase fixture shows `.dispatch[0].cycle_budget_advisory`
+- [x] `bash -n` clean; `shellcheck` no new findings against the Phase 1 baseline.
+- [x] The narrowed suite set above passes.
+- [x] A hand-run dry-run invocation on the 11-phase fixture shows `.dispatch[0].cycle_budget_advisory`
   present with all five component fields; the same invocation on a 2-phase fixture shows
   `.dispatch[0] | has("cycle_budget_advisory")` is `false`.
-- [ ] The consumer audit is recorded, with the specific grep patterns run and their results.
+- [x] The consumer audit is recorded, with the specific grep patterns run and their results.
 
 ---
 

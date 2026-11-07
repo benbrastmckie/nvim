@@ -1,0 +1,32 @@
+{
+  "phase": 2,
+  "phase_name": "Thread cycle_budget_advisory onto both dispatch-row sites",
+  "started_at": "2026-11-07T22:35:00Z",
+  "last_updated": "2026-11-07T23:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read orchestrate-cycle-plan.sh immediately before editing; audit every consumer of the dispatch row for exhaustive key enumeration (orchestrate-cycle-postflight.sh, skill-orchestrate/SKILL.md, orchestrate-build-dispatch.sh) before adding the field",
+      "status": "done",
+      "files_touched": [],
+      "note": "grep for to_entries, keys, with_entries, and fixed-field destructuring of a .dispatch[] element in all three consumers: zero hits in any of the three. orchestrate-cycle-postflight.sh and skill-orchestrate/SKILL.md both read dispatch-row fields exclusively via `jq -r .task`/`.phase`/`.agent`/`.model`/`.force`/`.dispatch_file` (named-field reads, never exhaustive key enumeration) -- see SKILL.md's own explicit MUST NOT ('no field of a dispatch[] row is ever forwarded as an Agent-tool argument unless this section names it as one'). orchestrate-build-dispatch.sh has zero matches at all for any dispatch-row-reading pattern -- it COMPOSES a dispatch file from flag arguments; it never reads an existing dispatch[] row. No fourth consumer was discovered. Safe to add the additive field: no consumer enumerates keys exhaustively."
+    },
+    {
+      "id": 2,
+      "description": "Add the field to the dry-run row construction and the live row construction via one shared composition idiom (adv_fragment_json helper), empty {} when absent so the key is entirely ABSENT rather than null",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Confirm the field's content is identical between the dry-run and live paths for the same scenario",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verification: bash -n clean; shellcheck -S warning zero findings (same as Phase 1 baseline). Narrowed suite set (Tier: interface) passes with the same 5 pre-existing-unrelated failures as Phase 1, none newly introduced. test-orchestrate-cycle-plan.sh passes in full (398/398) including the dispatch-row-presence assertions in Group 36 (Phase 3 work, verified together since both phases land in one implementation session): an 11-phase fixture shows .dispatch[0].cycle_budget_advisory present with all five component fields (phases_total, phases_remaining, remaining_cycles, mode, message), and a 2-phase fixture shows has(\"cycle_budget_advisory\") is false. Both the dry-run and live construction sites use the identical adv_fragment_json() helper, so the two paths cannot drift by construction."
+}
