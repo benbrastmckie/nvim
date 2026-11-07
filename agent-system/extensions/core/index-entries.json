@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 910,
+      "line_count": 1020,
       "keywords": [
         "format",
         "plan",
@@ -353,7 +353,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Research report file format specification",
-      "line_count": 150,
+      "line_count": 185,
       "keywords": [
         "format",
         "report",
@@ -451,7 +451,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation summary file format",
-      "line_count": 76,
+      "line_count": 103,
       "keywords": [
         "format",
         "summary",
@@ -2819,7 +2819,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 2279,
+      "line_count": 2280,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3151,7 +3151,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1727,
+      "line_count": 1731,
       "keywords": [
         "task-lock",
         "concurrency",
@@ -3198,7 +3198,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 884,
+      "line_count": 938,
       "keywords": [
         "git-staging",
         "commit-scope",
