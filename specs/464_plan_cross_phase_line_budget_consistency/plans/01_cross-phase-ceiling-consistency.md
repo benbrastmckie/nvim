@@ -216,38 +216,47 @@ check's own header comment instead.
 
 ---
 
-### Phase 2: Add the Advisory Check to validate-artifact.sh [NOT STARTED]
+### Phase 2: Add the Advisory Check to validate-artifact.sh [COMPLETED]
 
 **Goal**: `validate-artifact.sh` warns, non-blockingly, when a plan's own per-phase estimates sum
 past a ceiling the same plan cites while asserting conformance.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-artifact.sh` immediately before
-      editing and re-derive the per-phase loop's current bounds.
-- [ ] Inside the existing per-phase `for i in "${!phase_line_nums[@]}"` loop, add a sibling block
+- [x] Re-read `agent-system/extensions/core/scripts/validate-artifact.sh` immediately before
+      editing and re-derive the per-phase loop's current bounds. *(completed)*
+- [x] Inside the existing per-phase `for i in "${!phase_line_nums[@]}"` loop, add a sibling block
       that reads the already-computed `phase_block` and extracts a numeric-with-unit token from
       that phase's `Scope Hypothesis` text, accepting both punctuation conventions
       (`**Scope Hypothesis**:` and `**Scope Hypothesis:**`) exactly as the neighbouring checks do.
-- [ ] Accumulate a running sum per distinct unit word encountered, and remember which phase
-      numbers contributed to each unit's sum, so the warning can name them.
-- [ ] After the loop, scan the whole document (not phase-scoped — a ceiling citation and a
+      *(completed)*
+- [x] Accumulate a running sum per distinct unit word encountered, and remember which phase
+      numbers contributed to each unit's sum, so the warning can name them. *(completed: unit
+      word normalized to a singular stem so "lines"/"line" aggregate together)*
+- [x] After the loop, scan the whole document (not phase-scoped — a ceiling citation and a
       conformance assertion both live in plan-level prose) for a ceiling citation whose unit word
       matches an accumulated unit AND sits near a ceiling-indicating word
       (`ceiling|limit|budget|cap`), and separately for a conformance assertion
-      (`stays|remains` + optional `well` + `under|within|below`) near the same number.
-- [ ] Emit `log_warn` only when all three hold for the same unit word — estimates accumulated, a
+      (`stays|remains` + optional `well` + `under|within|below`) near the same number. *(completed:
+      implemented as same-line co-occurrence of digit + ceiling-word + unit-stem for the ceiling
+      citation, and unit-stem co-occurrence with the stays/remains phrase for the conformance
+      assertion, rather than literal numeric proximity — a deliberate, documented heuristic
+      simplification)*
+- [x] Emit `log_warn` only when all three hold for the same unit word — estimates accumulated, a
       ceiling cited, a conformance assertion present — and the sum (plus any stated baseline
       the scan found) exceeds the cited ceiling. Name the contributing phases, the summed total
-      and the cited ceiling in the message.
-- [ ] Add a header comment above the block recording: the advisory-first posture, the promotion
+      and the cited ceiling in the message. *(completed; manually verified against a synthetic
+      contradiction fixture, a no-contradiction fixture, and a no-ceiling fixture — see the
+      permanent versions of these fixtures added to test-validate-artifact.sh in Phase 3)*
+- [x] Add a header comment above the block recording: the advisory-first posture, the promotion
       criterion by reference to `plan-format.md`'s enforcement-level area, the deliberate
       heuristic-not-field choice, and an explicit note that the block must never be promoted to
       `log_error` as part of an unrelated migration (mirroring the existing note on the
-      Verification Tier check).
-- [ ] Confirm the block never calls `log_error` and never touches the
-      `total_issues`/`strict_mode` summary logic.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` (or the repository's
+      Verification Tier check). *(completed)*
+- [x] Confirm the block never calls `log_error` and never touches the
+      `total_issues`/`strict_mode` summary logic. *(completed: confirmed by grep)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` (or the repository's
       sanctioned entry point for shellcheck) over the changed script and resolve any new finding.
+      *(completed: 0 findings at -S warning)*
 
 **Timing**: 1 hour
 

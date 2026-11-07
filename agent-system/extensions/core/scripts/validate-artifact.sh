@@ -313,6 +313,12 @@ if [ "$artifact_type" = "plan" ]; then
   if [ "${#phase_line_nums[@]}" -gt 0 ]; then
     total_lines=$(wc -l < "$artifact_path")
     _ftm_omitting_phases=()
+    # Cross-phase ceiling consistency (advisory-first; see plan-format.md's "Cross-phase
+    # ceiling consistency obligation" and its paired "Enforcement level (Cross-phase ceiling
+    # consistency)" subsection for the full rule and promotion criterion). Accumulated per unit
+    # word across all phases in this plan, consumed by the whole-document scan after the loop.
+    declare -A _ceiling_unit_sum=()
+    declare -A _ceiling_unit_phases=()
     for i in "${!phase_line_nums[@]}"; do
       start_line="${phase_line_nums[$i]}"
       phase_heading=$(sed -n "${start_line}p" "$artifact_path")
@@ -340,6 +346,52 @@ if [ "$artifact_type" = "plan" ]; then
       if ! echo "$phase_block" | grep -qE '^[[:space:]]*(-[[:space:]]+)?\*\*Files to modify\*\*:|^[[:space:]]*(-[[:space:]]+)?\*\*Files to modify:\*\*'; then
         _ftm_omitting_phases+=("$phase_num")
       fi
+
+      # --- Cross-phase ceiling consistency: per-phase accumulation step (advisory-first; see
+      # the header comment above the two `declare -A` lines preceding this loop). Reads a
+      # numeric-with-unit token out of this phase's own **Scope Hypothesis** paragraph (both
+      # punctuation conventions, mirroring the Verification Tier check above) and accumulates a
+      # running sum per distinct unit word, remembering which phases contributed. The whole-
+      # document ceiling-citation / conformance-assertion scan and its log_warn emission happen
+      # once, after this loop -- never here -- because a ceiling citation and a conformance
+      # assertion both live in plan-level prose, not inside a single phase block.
+      #
+      # NOTE: do NOT promote this check to log_error as part of an unrelated migration -- its
+      # documented promotion criterion (plan-format.md's "Enforcement level (Cross-phase
+      # ceiling consistency)" subsection) is unmet, and the extraction below is a deliberately
+      # lossy heuristic: a miss here means a missed warning, never a suppressed stricter
+      # finding (same tolerance already accepted for the Verification Tier and Files to modify
+      # checks above).
+      _scope_hyp_block=$(echo "$phase_block" | awk '
+        /\*\*Scope Hypothesis\*\*:|\*\*Scope Hypothesis:\*\*/ { capture=1 }
+        capture { print; if ($0 ~ /^[[:space:]]*$/) exit }
+      ')
+      if [ -n "$_scope_hyp_block" ]; then
+        while IFS= read -r _tok; do
+          [ -z "$_tok" ] && continue
+          _num_part=$(echo "$_tok" | grep -oE '^[0-9]+(-[0-9]+)?')
+          _unit_word=$(echo "$_tok" | grep -oE '[A-Za-z]+$' | tr '[:upper:]' '[:lower:]')
+          if [ -z "$_num_part" ] || [ -z "$_unit_word" ]; then
+            continue
+          fi
+          # Normalize to a singular stem (strip one trailing "s") so a plural per-phase
+          # estimate ("60 added lines") and a singular, hyphen-joined ceiling citation
+          # ("a 1500-line limit") are recognized as the SAME unit word -- a substring match on
+          # the stem matches both the singular and plural surface forms in the scan below.
+          _unit_word="${_unit_word%s}"
+          if [ -z "$_unit_word" ]; then
+            continue
+          fi
+          if [[ "$_num_part" == *-* ]]; then
+            _value="${_num_part#*-}"
+          else
+            _value="$_num_part"
+          fi
+          _prev_sum=${_ceiling_unit_sum[$_unit_word]:-0}
+          _ceiling_unit_sum[$_unit_word]=$((_prev_sum + _value))
+          _ceiling_unit_phases[$_unit_word]="${_ceiling_unit_phases[$_unit_word]:-}${_ceiling_unit_phases[$_unit_word]:+ }${phase_num}"
+        done < <(echo "$_scope_hyp_block" | grep -oE '[0-9]+(-[0-9]+)?[[:space:]]+(added[[:space:]]+)?[A-Za-z]+' || true)
+      fi
     done
 
     # --- Deferred two-tier "Files to modify" presence emission (D3: per-phase omission warns,
@@ -365,6 +417,44 @@ if [ "$artifact_type" = "plan" ]; then
         log_warn "Phase ${_ftm_phase_num} missing **Files to modify** field"
       done
     fi
+
+    # --- Cross-phase ceiling consistency: whole-document ceiling-citation / conformance-
+    # assertion scan (advisory-first; see the accumulation step's header comment above and
+    # plan-format.md's "Cross-phase ceiling consistency obligation" / "Enforcement level
+    # (Cross-phase ceiling consistency)" subsections for the full rule and promotion criterion).
+    # Fires only when all three hold for the SAME unit word: per-phase estimates accumulated
+    # above, a ceiling citation (a digit, a ceiling-indicating word, and the unit word all on
+    # one line -- deliberately strict to keep false positives low), and a conformance
+    # assertion (stays/remains [well] under/within/below) naming the same unit word anywhere in
+    # the document. `--strict` promotes a hit via the existing total_issues=$((errors +
+    # warnings)) branch below; no new strictness logic is added for this check.
+    for _unit_word in "${!_ceiling_unit_sum[@]}"; do
+      _ceiling_sum="${_ceiling_unit_sum[$_unit_word]}"
+      _ceiling_line=$(grep -E '[0-9]' "$artifact_path" | grep -iE '(ceiling|limit|budget|cap)' | grep -iE "${_unit_word}" | head -1 || true)
+      if [ -z "$_ceiling_line" ]; then
+        continue
+      fi
+      _ceiling_value=$(echo "$_ceiling_line" | grep -oE '[0-9]+' | head -1 || true)
+      if [ -z "$_ceiling_value" ]; then
+        continue
+      fi
+      _conformance_line=$(grep -iE '(stays|remains)[[:space:]]+(well[[:space:]]+)?(under|within|below)' "$artifact_path" | grep -iE "${_unit_word}" | head -1 || true)
+      if [ -z "$_conformance_line" ]; then
+        continue
+      fi
+      # Best-effort stated starting baseline for this unit word (e.g. "a 959-line starting
+      # file"); absence means baseline 0 -- never treated as a fact, only ever added to the sum.
+      _baseline_line=$(grep -iE "[0-9]+-?${_unit_word}[^.]{0,40}(starting|baseline)" "$artifact_path" | head -1 || true)
+      _baseline=0
+      if [ -n "$_baseline_line" ]; then
+        _baseline=$(echo "$_baseline_line" | grep -oE '[0-9]+' | head -1 || true)
+        [ -z "$_baseline" ] && _baseline=0
+      fi
+      _ceiling_total=$((_ceiling_sum + _baseline))
+      if [ "$_ceiling_total" -gt "$_ceiling_value" ]; then
+        log_warn "Per-phase ${_unit_word} estimates (phases:${_ceiling_unit_phases[$_unit_word]}) sum to ${_ceiling_total} (incl. baseline ${_baseline}), past the cited ${_ceiling_value}-${_unit_word} ceiling this plan also asserts it stays within"
+      fi
+    done
   fi
 fi
 

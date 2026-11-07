@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Add the Advisory Check to validate-artifact.sh",
+  "started_at": "2026-11-06T23:56:00Z",
+  "last_updated": "2026-11-07T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add per-phase numeric accumulation of Scope Hypothesis estimates by unit word", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 2, "description": "Add whole-document ceiling/conformance scan and log_warn emission", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "Header comment, log_error/strict-logic exclusion check, shellcheck", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "grep -n to pre-filter lines then extract digits downstream", "result": "failed", "reason": "the -n line-number prefix itself contains a digit and was mistakenly extracted as the ceiling value instead of the real one; fixed by dropping -n from the content-matching pipeline"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.heuristic",
+      "description": "Whole-document ceiling-citation/conformance-assertion scan proximity rule",
+      "type": "altered",
+      "reason": "Plan described 'near the same number' proximity for the conformance assertion; implemented as same-line unit-word co-occurrence instead (simpler, still advisory-only, and verified against all three fixture shapes)",
+      "annotation": "*(deviation: altered — see Phase 2 Tasks list)*"
+    }
+  ]
+}
