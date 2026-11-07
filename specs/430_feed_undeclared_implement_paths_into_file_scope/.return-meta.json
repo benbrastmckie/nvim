@@ -1,39 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794089641_e5bee5_430",
-  "dispatch_seq": 13,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/430_feed_undeclared_implement_paths_into_file_scope/reports/01_feedback-mechanism-design.md",
-      "summary": "Designs the feedback mechanism: extend the existing proposed_file_scope channel to implement, sourced mechanically from git-commit-phase.sh's own drop-time computation rather than agent self-report, auto-merged without an operator confirmation gate; confirms all six territory/dependency sibling tasks already landed with no conflicts, including the git-commit-scoped.sh chokepoint (394), which landed as a redundant drop-and-warn gate rather than the refusal the dispatch description speculated about."
+      "type": "plan",
+      "path": "specs/430_feed_undeclared_implement_paths_into_file_scope/plans/01_implement-phase-scope-feedback.md",
+      "summary": "6-phase plan extending the proposed_file_scope channel to the implement phase, sourced from git-commit-phase.sh's own drop-time loop, with auto-merge ruled and justified."
     }
   ],
-  "findings_count": 12,
-  "memory_candidates": [
-    {
-      "content": "Mechanize-over-instructing precedent: git-commit-phase.sh's own header documents a prose 'remember to do X' reminder firing 0/8 times in one measured run versus 16/16 once the identical step moved inside a script every caller must already invoke. When designing a feedback/proposal mechanism that depends on an agent noticing and later self-reporting something (e.g. a dropped file path), prefer sourcing it mechanically from whichever script already computed the fact synchronously, rather than relying on agent self-report of the same fact after the moment has passed.",
-      "category": "PATTERN",
-      "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/reports/01_feedback-mechanism-design.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["mechanize-over-instructing", "file_scope", "git-commit-phase", "proposal-channel", "self-report-unreliable"]
-    },
-    {
-      "content": "specs/{N}_{slug}/issues.jsonl is explicitly CAPTURE ONLY (context/formats/issue-log.md): nothing recorded there is ever surfaced mid-run or read back to drive a decision. When a mechanism needs to act on a fact that is ALSO being logged as an issue (e.g. a containment-dropped file path also needing to feed a file_scope proposal), source that fact directly from the computing script's own in-memory value at the moment it happens -- never by reading issues.jsonl back after the fact, even though the data looks present there.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/reports/01_feedback-mechanism-design.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["issue-log", "capture-only", "issues.jsonl", "feedback-channel", "anti-pattern"]
-    },
-    {
-      "content": "return-metadata-file.md's 'Multiple Sequential Writers' section states a single blanket producer for several top-level fields ('producer-owned by the implementation agent'), but at least one of those fields (proposed_file_scope) has a per-operation producer that varies (the research agent for research; potentially a script like git-commit-phase.sh for implement). When extending a producer-owned .return-meta.json field to a new operation, check whether the field's actual producer is the dispatched AGENT or an auxiliary SCRIPT invoked mid-dispatch -- the read-modify-write obligation on the later writer is the same either way, but documentation describing 'the producer' as a single fixed role can be stale/inconsistent across a schema doc's own sections.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/reports/01_feedback-mechanism-design.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["return-meta.json", "producer-ownership", "multiple-sequential-writers", "schema-drift"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 430 to create implementation plan"
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 430 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1794089641_e5bee5_430",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7,
+    "dependency_waves": [[1], [2, 3], [4, 5], [6]]
+  },
+  "dispatch_seq": 16
 }

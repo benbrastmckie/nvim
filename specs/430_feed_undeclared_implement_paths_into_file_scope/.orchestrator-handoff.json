@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 16,
+  "summary": "Wrote a 6-phase, ~7-hour implementation plan adopting the research report's four decisions: git-commit-phase.sh deposits each containment-dropped path into the task's own .return-meta.json proposed_file_scope at drop time (flock-guarded, additive, idempotent, fail-open), and that existing additions-only channel's consumers (update-task-status.sh --file-scope-add, skill-base.sh's skill_postflight_update) are widened from {research, plan} to {research, plan, implement} with auto-merge and no confirmation gate. Three plan-time re-derivations extend the report: the drop loop is at git-commit-phase.sh:319-334 (not 270-290); test-update-task-status.sh Case 11h actively pins the implement rejection and must be retargeted rather than merely supplemented; and git-commit-phase.sh must skip-if-absent rather than mint .return-meta.json, because validate-return-meta.sh requires status and a shaped artifacts field. All five dispatch VERIFY fixtures are mapped to named test cases, every non-final tier justification names a suite list produced by running suite_selection_select, and the final phase declares the full gate set after a bounded-wait redeploy.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/430_feed_undeclared_implement_paths_into_file_scope/plans/01_implement-phase-scope-feedback.md",
+      "summary": "6-phase plan extending proposed_file_scope to the implement phase, sourced from git-commit-phase.sh's own drop-time loop, with auto-merge ruled and justified."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}
