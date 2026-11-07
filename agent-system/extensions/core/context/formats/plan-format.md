@@ -335,7 +335,10 @@ justification line. Every non-final phase carries exactly one `**Tier Justificat
 one sentence, never an essay:
 
 - A non-final phase declaring a tier **below** `full` names the specific check that covers the
-  edit — the command, not a description of one. Two narrowing mechanisms exist today:
+  edit — the command, not a description of one — and the claim is honest only when the author
+  ran `suite_selection_select` over the phase's `Files to modify` paths and the line's suite
+  names or sentinel match that output verbatim, never an asserted guess at what the selector
+  would return. Two narrowing mechanisms exist today:
   - a suite subset within Gate 8: `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`
     in a deploy-target repository, or `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`
     as the source-store-repository form — see "Batch-aware deferral" below for the
@@ -348,8 +351,12 @@ one sentence, never an essay:
     `__FULL_SWEEP__` for a touched path with no mapped suite — this is the normal, expected
     result for a pure-guidance markdown edit (a context/contract/agent-definition file with no
     executable surface), not a tool failure. When it returns the sentinel, **no suite covers
-    that file**, and the justification MUST NOT claim one. The honest covering check then depends
-    on WHERE the touched path lives — three sub-cases, not one:
+    that file**, and the justification MUST NOT claim one. Claiming the sentinel is itself a
+    measurable claim, subject to the same run-and-match obligation as a suite-list claim above: a
+    justification asserting `__FULL_SWEEP__` for a path the selector actually maps to one or more
+    real suites is exactly as dishonest as a fabricated suite name, not a lesser omission. The
+    honest covering check then depends on WHERE the touched path lives — three sub-cases, not
+    one:
     - **(a) Every touched path lies entirely under `specs/**`.** `--only-gate 3,4` is never the
       answer here: `specs/**` is the task-reference lint's own exempt tree by design (category 1
       of its taxonomy), and doc-lint has no bearing on `specs/**` content at all. The honest
@@ -595,6 +602,44 @@ See "Consumers of this field" above for `validate-artifact.sh`'s place as the fo
 this field, and `scripts/plan-file-scope-harvest.sh`'s own header comment for the cross-reference
 recording that the no-header/empty-header distinction this enforcement draws is deliberately
 made only here, never in the harvester itself.
+
+### Enforcement level (Tier Justification measurement)
+
+The measurement obligation above — that a `**Tier Justification**:` line naming a suite subset or
+invoking `__FULL_SWEEP__` is honest only when it matches `suite_selection_select`'s actual output
+for the phase's `Files to modify` paths — is enforced by a mechanical, advisory-first check in
+`scripts/validate-artifact.sh`'s existing per-phase `plan` loop, the same enforcing consumer
+already named by the "Enforcement level" and "Enforcement level (Cross-phase ceiling
+consistency)" subsections above. A detected mismatch emits a warning via `log_warn`, never an
+error, so default-mode validation exits 0 on the warning alone; `--strict` mode promotes it today
+through the same pre-existing `total_issues = errors + warnings` branch the other checks on this
+page already rely on — no new strictness logic is added for this check.
+
+**Decision and rejected alternative.** A mechanical lint was chosen over a prose-only
+requirement because the filed defect is precisely the failure a prose-only rule cannot prevent:
+an author asserted the selector's output without running it, and the assertion was false, with
+nothing in the standard requiring the claim to be checked. A prose-only requirement asks the same
+author to do the same thing again with nothing backstopping the result — it was rejected for
+exactly the reason a prose-only authoring rule was rejected for the cross-cutting-ceiling
+obligation above. Weighed against that: the selector costs roughly what a `grep` costs (no
+build, no test execution, no filesystem mutation — see `context/standards/shell-script-testing.md`
+for the measured figures this file cites by reference) and re-running it once per non-final phase
+at plan-authoring or plan-validation time does not inherit a `full` gate's cost, so the mechanical
+check does not make the standard materially more expensive to satisfy than the prose-only
+requirement it replaces.
+
+**Scope**: bounded to claims grounded in `suite_selection_select` — a suite-list claim or a
+`__FULL_SWEEP__` claim. It does not extend to the gate-subset mechanism
+(`--only-gate N[,M,...]`), which is not grounded in `suite_selection_select` and is not
+implicated by either defect this check was added to close.
+
+**Promotion criterion**: promote the warning to an error once a default-mode sweep of every
+non-terminal, plan-linked task under `specs/` shows zero plans newly warning. This is recorded
+here for a future task to execute, not done by the task that introduces this check. Measured
+residue at this check's authoring: **PENDING-CORPUS-SWEEP** — the check lands later in this same
+implementation (the fixture and corpus-sweep step), and the measured count is written into this
+sentence once that step runs; a placeholder is intentional here rather than a guessed figure,
+since guessing one would repeat the exact defect this check exists to close.
 
 ### Naming a tool's entry point in verification criteria
 

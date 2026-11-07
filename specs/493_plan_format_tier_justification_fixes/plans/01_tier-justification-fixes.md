@@ -174,35 +174,40 @@ plus the acceptance grep below.
 
 ---
 
-### Phase 2: Record the measurement ruling in the standard [NOT STARTED]
+### Phase 2: Record the measurement ruling in the standard [COMPLETED]
 
 **Goal**: `plan-format.md` states the measurement obligation for a Tier Justification naming a
 suite subset or the `__FULL_SWEEP__` sentinel, and records the ruling that it is enforced
 mechanically rather than by prose alone, with its reasoning.
 
 **Tasks**:
-- [ ] Re-read `plan-format.md` immediately before editing.
-- [ ] In the `**Tier Justification**:` subsection, add the measurement obligation to the bullet
+- [x] Re-read `plan-format.md` immediately before editing. *(completed)*
+- [x] In the `**Tier Justification**:` subsection, add the measurement obligation to the bullet
       governing a non-final phase declaring a tier below `full`: a justification naming a suite
       subset or invoking `__FULL_SWEEP__` is honest only if the author ran
       `suite_selection_select` over the phase's `Files to modify` paths and the line's claim
       matches that output. State the requirement in the subsection's existing one-sentence idiom;
-      do not expand it into a procedure.
-- [ ] Extend the `__FULL_SWEEP__` paragraph with the measurement obligation's sentinel half only
+      do not expand it into a procedure. *(completed)*
+- [x] Extend the `__FULL_SWEEP__` paragraph with the measurement obligation's sentinel half only
       — that claiming the sentinel is itself a measurable claim — without altering, weakening, or
       reordering the three existing sub-cases (a), (b), (c), which stay exactly as written.
-- [ ] Add a new `### Enforcement level (Tier Justification measurement)` subsection after the
+      *(completed)*
+- [x] Add a new `### Enforcement level (Tier Justification measurement)` subsection after the
       existing `### Enforcement level (Files to modify)` subsection, modelled on it: name
       `scripts/validate-artifact.sh` as the enforcing consumer, state the advisory-first posture
       (warn by default, `--strict` enforces), record the promotion criterion, and record the
       ruling itself — that a mechanical lint was chosen over a prose-only requirement because the
       filed defect is precisely the failure a prose-only rule cannot prevent (an author asserted
       the selector's output without running it, and the assertion was false), while the
-      re-derivation costs about what a grep costs rather than what a gate run costs.
-- [ ] State in the same subsection that the check's scope is bounded to
+      re-derivation costs about what a grep costs rather than what a gate run costs. *(completed:
+      promotion-criterion residue left as an explicit PENDING-CORPUS-SWEEP placeholder since the
+      check does not exist until Phase 3 — Phase 4 fills in the measured count once it does,
+      rather than guessing a figure here)*
+- [x] State in the same subsection that the check's scope is bounded to
       `suite_selection_select`-grounded claims and explicitly does not extend to the
-      `--only-gate N[,M,...]` gate-subset mechanism.
-- [ ] Confirm no task-number references and no record-versioning language entered the file.
+      `--only-gate N[,M,...]` gate-subset mechanism. *(completed)*
+- [x] Confirm no task-number references and no record-versioning language entered the file.
+      *(completed: grep-verified)*
 
 **Timing**: 0.6 hours
 

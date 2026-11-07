@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Record the measurement ruling in the standard",
+  "started_at": "2026-11-07T01:56:00Z",
+  "last_updated": "2026-11-07T02:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read plan-format.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add measurement obligation to Tier Justification bullet", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "Extend FULL_SWEEP paragraph with sentinel-measurement half", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 4, "description": "Add Enforcement level (Tier Justification measurement) subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 5, "description": "Verify tier table/invariant unchanged, gates 3/4, measured suite subset", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Phase 2 verification step: run verify-deploy.sh --skip-slow --only-gate 3,4 against the source-store repo root",
+      "type": "altered",
+      "reason": "Gate 3 (doc-lint) Rule R reports an index-entries.json line_count mismatch for plan-format.md and three unrelated files (patterns/batch-orchestration-guardrails.md, patterns/task-lock.md, standards/git-staging-scope.md). index-entries.json was already dirty at session start (listed in the initial git status before this dispatch began), so this is pre-existing concurrent-sibling drift, not a defect introduced by this phase's content. generate-context-line-counts.sh refuses to run from the source store (must run against a deployed tree), so it cannot be corrected mid-phase without racing concurrent sibling edits or operating on a stale deployed tree. Gate 4 (task-reference lint) passed cleanly. Expected to self-resolve when Phase 5's deploy-headless.sh regenerates line counts from the final source-store state.",
+      "annotation": "*(deviation: altered — gate 3 Rule R line-count mismatch is pre-existing concurrent-sibling drift in index-entries.json, unrelated to this phase's content; gate 4 passed; expected to resolve at Phase 5 redeploy)*"
+    }
+  ],
+  "handoff_count": 0
+}
