@@ -1,5 +1,5 @@
 ---
-next_project_number: 519
+next_project_number: 521
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 519
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,445,446,448,458,463,472,474,475,492,497,516 | 369,383,397,412,418,430,431,435,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,444,451,454,455,461,476,484,500,507,518 | 313,391,398,420,423,435,439,445,446,448,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486,517 | 360,390,402,435,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -55,6 +55,8 @@ next_project_number: 519
 515 [NOT STARTED] — Rebase the bounded-wait guidance on the measured...
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the... (see above)
   └─ 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
+519 [NOT STARTED] — Infra exempt transport error dispatch deaths
+520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -125,7 +127,7 @@ next_project_number: 519
 
 ### Agent System
 
-418 [PARTIAL] — Make the lint-fixture-test family subject resolution explicit...
+418 [IMPLEMENTING] — Make the lint-fixture-test family subject resolution explicit...
   └─ 420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [PLANNED] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
@@ -138,6 +140,114 @@ next_project_number: 519
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 520. Emit deploy ordering in implement dispatch body
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate batch over eight tasks (408, 464, 465, 466, 478, 489, 493, 495), session sess_1793993117_98582a. User-approved at the orchestrate-lead level and dispatched to the meta builder for task creation only. SEVERITY: costly. All eight tasks in the batch reached [COMPLETED]; this defect caused no failure, it cost cycles.
+
+## The defect
+
+Implement-phase dispatch bodies carry no deploy-ordering instruction, so an implementation that edits the source store, redeploys, and then lands a further source edit leaves the deployed tree stale and is refused by the completion-deploy gate.
+
+MEASURED: task 465 lost two full orchestration cycles. Its implement dispatch made source-store edits, redeployed via deploy-headless.sh, then landed a further source edit (a manifest.json registration) AFTER the deploy. orchestrate-cycle-postflight.sh's completion-deploy gate refused the completion write with exit 6 ("modified_files overlap agent-system/extensions/** and the deploy is stale") on two consecutive cycles, each deferring to the next cycle's Inter-Cycle Redeploy Checkpoint. The task reached [COMPLETED] only when the checkpoint's own post-deploy reconcile promoted it.
+
+## The workaround that proved the fix
+
+The orchestrate lead hand-patched a "DEPLOY ORDERING" paragraph into every subsequent implement dispatch prompt in the batch, and no later task hit the gate. That instruction belongs in the dispatch body orchestrate-build-dispatch.sh emits for every implement-phase dispatch, not in an ad-hoc addendum a human has to remember per dispatch.
+
+## Scope
+
+Add a deploy-ordering instruction to the implement-phase dispatch body emitted by agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh, stating that every source-store edit must precede the final deploy-headless.sh run and that no source-store edit may land after it. Cover the emitted instruction with a test in agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh.
+
+## Constraints
+
+- Emit the instruction for implement-phase dispatches only, not research or plan phases.
+- Do NOT change the completion-deploy gate. The gate is correct; this task removes the cause of its firing, not the gate.
+
+## Distinct from the already-adjudicated gate-side remedies
+
+Verified by reading the records, not assumed. Three prior records attack the same cost from the gate/trigger/recovery side and leave the prevention side untouched:
+
+- Task 442 (`deploy_before_implement_postflight_to_avoid_cycle_cost`, completed) evaluated a pre-postflight-sweep deploy trigger and deliberately left it UNBUILT, recording that decision in agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md. No gate logic or trigger predicate changed.
+- Task 507 (`revisit_pre_sweep_deploy_trigger_ruling`, open) re-adjudicates that declined ruling against measured whole-cycle gate cost. Its file_scope is batch-orchestration-guardrails.md only.
+- Task 367 (`reduce_deploy_staleness_completion_round_trip`, completed) widened the Inter-Cycle Redeploy Checkpoint's post-deploy reconcile sweep so a refused task cannot stay invisible to the self-heal mechanism. The gate itself is unchanged.
+
+This task acts on the PREVENTION side -- what the dispatch builder tells the implementing agent -- and touches none of those three files. It is complementary to task 507, not a substitute for it, and neither blocks the other.
+
+## Durable evidence anchors
+
+- issue-log entries: 465/iss_1794013002526_LmxN8I, 465/iss_1794013542296_YzqgQt
+- refusing site: orchestrate-cycle-postflight.sh completion-deploy gate, exit 6
+
+## Visible hint override, recorded so a future reader can audit it
+
+Both citing entries carried `suggested_channel: fix_now`. The orchestrate lead overrode that to the agent-system channel and said so to the user when seeking approval. The reason: there is no local code fix -- the durable remedy is a change to what the dispatch builder emits for every future implement dispatch.
+
+## Overlapping open file territory
+
+Task 487 (`identical_dispatch_halt_despite_phase_progress`, open) declares orchestrate-build-dispatch.sh in its file_scope, as do open tasks 360, 435, 449 and 450. No dependency edge is asserted here because none of them blocks this work; the overlap is recorded so batch admission orders rather than parallelizes them.
+
+---
+
+### 519. Infra exempt transport error dispatch deaths
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate batch over eight tasks (408, 464, 465, 466, 478, 489, 493, 495), session sess_1793993117_98582a. User-approved at the orchestrate-lead level and dispatched to the meta builder for task creation only. SEVERITY: blocking. All eight tasks in the batch reached [COMPLETED]; this defect caused no failure, it cost cycles.
+
+## The defect
+
+A dispatch killed mid-flight by a transport error is charged as a genuine work cycle and reported as verdict `failed`, even though its work is demonstrably recoverable.
+
+MEASURED: three plan-phase dispatches (tasks 408, 464, 478) were killed by `API Error: Unable to connect to API (ESERVFAIL)`. Each had already written `.return-meta.json` with `status: "in_progress"` but had not yet written `.orchestrator-handoff.json`. orchestrate-cycle-postflight.sh therefore declined return-meta recovery with RECOVERY_DECLINED / STATUS_IN_PROGRESS, charged the cycle (`transport_error=true, meta_touched=true`), and emitted verdict `failed`. All three were then rescued by the separate stall-reprompt path, which re-dispatched at the same `dispatch_seq` and succeeded on the FIRST retry.
+
+## The premise to adjudicate
+
+The decline message asserts that the occurrence "is not evidence of recoverable, work-intact failure". Three first-retry successes in a single batch are direct counter-evidence to that premise. The decline, not the transport error, is what cost the cycles. That premise is the most likely thing to fix.
+
+## Scope
+
+Decide and implement the correct remedy. Either side, or both, is in scope:
+
+- Postflight side: treat the conjunction `transport_error=true` + `.return-meta.json status=in_progress` + no `.orchestrator-handoff.json` as an infra-exempt DEFER (uncharged cycle, non-`failed` verdict) rather than a charged work cycle with a `failed` verdict.
+- Agent side: have planner-agent write a terminal-status `.return-meta.json` earlier, or write the handoff incrementally, so a transport death leaves a readable terminal record behind.
+
+## Hard constraints
+
+- MUST NOT weaken the handoff-staleness gate, which is working as designed.
+- MUST NOT make a genuinely-stalled dispatch (no transport error) look recoverable. Any exemption must key on real transport-error evidence, never on `status=in_progress` alone -- otherwise it reopens exactly the stall-vs-agent-fault conflation that prior work closed.
+
+## What the closed record already settled, and what it deliberately did not
+
+Verified by reading the records, not assumed:
+
+- Task 426 (`recovery_declined_cannot_tell_stall_from_agent_fault`, completed) fixed the RECOVERY_DECLINED arm's two recording bugs and added arm-local stall/strand corroboration to its message and to issue-record.sh's `--tags-json`. Its own completion summary states this was done "without touching either canonical signal's own trigger expression". The trigger, the cycle charge, and the `failed` verdict are therefore untouched by that record -- they are this task's subject.
+- Task 428 (`enforce_planner_agent_terminal_write`, completed) examined the terminal-write gap and resolved documentation-only: it recorded in agent-system/extensions/core/docs/architecture/handoff-schema.md's Outcome Channels section that RECOVERY_DECLINED detection is the sole, detection-only enforcement of the terminal write on the /orchestrate direct-dispatch path. That establishes the detector's ROLE; it does not address whether the decline's premise is correct under transport-error conditions.
+- Task 258 (`fix_postflight_recovery_decline_attribution`, completed) fixed WHO the defect is attributed to, not WHETHER the cycle is charged.
+
+Research should start by reading those three records' artifacts before re-deriving any of the above.
+
+## Durable evidence anchors
+
+- specs/events.jsonl: evt_1793996242895_2qx9GM, evt_1793996246440_SEHzq3, evt_1793996249954_Roptu4
+- issue-log entries: 408/iss_1793996242954_ouf9ST, 464/iss_1793996246495_y5MWCS, 478/iss_1793996250009_5hs0ww
+- detecting site: skill-orchestrate/SKILL.md:cycle-postflight-recovery-declined
+
+## Overlapping open file territory
+
+Several open tasks declare overlapping file_scope on orchestrate-cycle-postflight.sh and its test suite (notably 501 `cycle_postflight_containment_parity`, 472 `handoff_validator_crash_and_defect_record_gap`, 476, 448). No dependency edge is asserted here because none of them blocks this work; the overlap is recorded so batch admission orders rather than parallelizes them.
+
+---
 
 ### 518. State the blockers[] admission contract and continuation-on-partial requirement at every handoff-authoring site
 - **Status**: [NOT STARTED]
@@ -5485,7 +5595,7 @@ Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json 
 ---
 
 ### 418. Make the lint-fixture-test family subject resolution explicit and self-declaring
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 411, Task 415, Task 419
