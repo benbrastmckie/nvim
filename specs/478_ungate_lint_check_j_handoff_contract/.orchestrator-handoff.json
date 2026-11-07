@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "summary": "Wrote a 4-phase implementation plan for ungating lint-agent-contracts.sh Check J. The design removes the one-line content gate and iterates enumerate_dispatchable_agents() fail-closed, skipping only files in a new 8-entry CHECK_J_EXCLUDED_RELATIVE_PATHS array (matching the file's EXCLUDED-style precedent from Checks E/F/N, named explicitly) or carrying the existing 'never write one' contract. A stale-exclusion detector closes the array's own inverted drift direction, and the existing fixture suite gains the removal and exclusion cases the content gate could not express. Independently re-confirmed the 8-file exclusion set has zero handoff headings and zero string mentions; plan validates clean in both default and --strict mode.",
+  "status": "implemented",
+  "summary": "Replaced lint-agent-contracts.sh Check J's content gate with a fail-closed iteration over every dispatchable agent, an 8-entry EXCLUDED-style CHECK_J_EXCLUDED_RELATIVE_PATHS array, and a stale-exclusion sweep, so removing a handoff-writer section now turns the lint red by name. Extended test-lint-agent-contracts-handoff-section.sh from 6 to 9 cases and repaired a discovered collateral regression in the sibling test-lint-agent-contracts.sh suite. Redeployed; deployed tree confirmed byte-identical to the source store for all three edited files, and the deployed lint/handoff-section suite re-runs matched pre-redeploy exactly.",
   "blockers": [],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/478_ungate_lint_check_j_handoff_contract/plans/01_ungate-check-j-curated-list.md",
-      "summary": "4-phase plan replacing Check J's content gate with a fail-closed EXCLUDED-style curated array, a stale-exclusion detector, new fixture cases, and a full verification/redeploy sweep."
+      "type": "summary",
+      "path": "specs/478_ungate_lint_check_j_handoff_contract/summaries/01_ungate-check-j-curated-list-summary.md",
+      "summary": "Replaced Check J's content gate with a fail-closed EXCLUDED-style curated array, added a stale-exclusion sweep, extended the fixture suite from 6 to 9 cases, repaired a discovered sibling-suite regression, and redeployed."
     }
   ],
-  "dispatch_seq": 9
+  "dispatch_seq": 20
 }

@@ -1,10 +1,50 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 20,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/478_ungate_lint_check_j_handoff_contract/summaries/01_ungate-check-j-curated-list-summary.md",
+      "summary": "Replaced Check J's content gate with a fail-closed EXCLUDED-style curated array, added a stale-exclusion sweep, extended the fixture suite from 6 to 9 cases, repaired a discovered sibling-suite regression, and redeployed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Replaced lint-agent-contracts.sh Check J's content gate with a fail-closed iteration over every dispatchable agent plus an 8-entry EXCLUDED-style array (CHECK_J_EXCLUDED_RELATIVE_PATHS) and a stale-exclusion sweep, so removing a handoff-writer section now turns the lint red by name. Extended test-lint-agent-contracts-handoff-section.sh from 6 to 9 cases and repaired a discovered collateral regression in the sibling test-lint-agent-contracts.sh suite. Redeployed; deployed tree confirmed byte-identical to the source store. Two pre-existing, out-of-scope verify-deploy.sh findings (a gate10 timeout flake, 2 unrelated memory-extension dead-command-recommendation findings) remain, as pre-authorized by the dispatching orchestrator."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a shell-script lint whose curated-array population is majority-in-scope with few genuine exceptions, follow the EXCLUDED-style convention (a literal bash array of exceptions, each with its own reason comment, plus a mirror is_excluded_from_X() helper) rather than an INCLUDED-style allowlist, a frontmatter-declared opt-in, or a separate registry file. A fail-closed default (iterate the full population, FAIL by name on anything unaccounted for) makes a Check-N-style completeness net unnecessary, since a new population member is in scope the moment it is added.",
+      "category": "PATTERN",
+      "source_artifact": "specs/478_ungate_lint_check_j_handoff_contract/summaries/01_ungate-check-j-curated-list-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint", "curated-array", "excluded-style", "fail-closed", "bash"]
+    },
+    {
+      "content": "When widening a lint check to scan a larger population (e.g. removing a content pre-filter so it now iterates every dispatchable file), always re-run EVERY sibling test suite that shares the same lint script, not just the suite directly associated with the changed check. A pre-existing shared 'fully compliant, no FAIL expected' fixture authored before the new/widened check existed can silently regress, because its WORKDIR tree structure (e.g. which extension agents/ directories it happens to create) can incidentally collide with the new check's own scoping logic in ways the original check author never anticipated.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/478_ungate_lint_check_j_handoff_contract/summaries/01_ungate-check-j-curated-list-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sibling-suite", "regression", "fixture-repair", "shell-test", "collateral-damage"]
+    },
+    {
+      "content": "To run a bash test suite against a modified/restored variant of the script it tests (a negative control) without mutating the working tree: copy both the test suite and the script-under-test to a scratch directory, hardcode the copied suite's SCRIPT_DIR variable to the REAL script directory (fragment/lib sourcing is typically SCRIPT_DIR-relative and breaks if the copy lives elsewhere), then override the copied suite's LINT_SRC (or equivalent) to point at the scratch script variant. A plain env-var override does not work when the target script assigns its own var unconditionally (not via ${VAR:-default}).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/478_ungate_lint_check_j_handoff_contract/summaries/01_ungate-check-j-curated-list-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["negative-control", "bash-testing", "scratch-copy", "SCRIPT_DIR", "LINT_SRC"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
