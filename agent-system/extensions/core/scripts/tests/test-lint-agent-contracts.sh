@@ -31,14 +31,14 @@
 #
 # Check J fixture repair, required when Check J's content gate was replaced with a fail-closed
 # iteration over every dispatchable agent (same repair pattern as the two notes above -- a new
-# or newly-widened check landing retroactively breaks a previously-clean shared "no FAIL at all"
-# fixture unless repaired in the same rollout):
+# or newly-widened check landing retroactively breaks a shared "no FAIL at all" fixture that was
+# clean against every check in place before it landed, unless repaired in the same rollout):
 #   - A new shared HANDOFF_SECTION_BLOCK (a minimal recognized `.orchestrator-handoff.json`
 #     handoff-writing section) was added to compliant-agent.md, check-f-conforming-agent.md,
 #     check-e-falsepositive-guard-agent.md, and cslib-implementation-agent.md -- all four are
 #     asserted elsewhere in this file to produce no FAIL whatsoever, and each would otherwise
-#     newly FAIL Check J's missing-section branch now that the content gate no longer silently
-#     drops a zero-mention file out of the scan.
+#     newly FAIL Check J's missing-section branch, since Check J's fail-closed design evaluates
+#     every dispatchable agent directly instead of pre-filtering by content.
 #   - This suite's WORKDIR already creates core/agents/ (for Checks A/B/C/E/F/G/H/K/L fixtures)
 #     and cslib/agents/ (for the cslib-implementation-agent.md fixture above), which brings
 #     Check J's stale-exclusion sweep (added in a later plan phase) into scope for every
