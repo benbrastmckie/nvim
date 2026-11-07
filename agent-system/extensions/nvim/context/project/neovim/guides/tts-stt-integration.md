@@ -253,14 +253,19 @@ Claude Code carries its own speech-to-text, and `<C-'>` inside a Claude Code buf
 that rather than Vosk. Neovim writes the kitty-keyboard encoding of `ctrl+'` (`ESC[39;5u`)
 to the terminal channel, where Claude Code matches its `voice:pushToTalk` binding.
 
-Hold the key to record and release to stop. Claude Code reads the release from its 200ms
-timer expiring rather than from a release event, and each key auto-repeat re-arms that
-timer; Neovim forwards the press and every repeat into a terminal buffer while dropping the
-true release, so auto-repeat carries the gesture.
+Claude Code reads the release from its 200ms timer expiring rather than from a release
+event, and every key event re-arms that timer. Neovim exploits this to hold the key down on
+the user's behalf: `<C-'>` toggles recording, repeating the keypress every 80ms while active
+and stopping on the second press, which Claude Code reads as the release.
 
-With `voice.autoSubmit` false the transcript is inserted into the prompt for editing, and a
-double-tap of `<C-'>` within 300ms sends it. The `tap` mode submits any transcript of three
-or more words unconditionally, so `hold` is the mode that keeps transcripts editable.
+That indirection is what keeps the transcript editable. Claude Code's `tap` mode submits any
+transcript of three or more words unconditionally and `voice.autoSubmit` applies only to
+`hold`, so a tap gesture run through hold mode is the only combination that leaves the
+transcript in the prompt.
+
+Set `vim.g.stt_claude_ptt_style = "passthrough"` to forward each key event instead, which
+requires holding the key physically. `vim.g.stt_claude_hold_timeout` caps a virtual hold in
+seconds (default 120).
 
 Claude Code configuration:
 

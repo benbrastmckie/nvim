@@ -18,12 +18,16 @@
 --   <leader>vv - Toggle recording (which-key, if enabled)
 --   <C-'>      - Unified dictation key (normal, insert, terminal modes)
 --                In Claude Code buffers: forwarded to Claude Code as its own
---                  push-to-talk key. Hold <C-'> to record, release to stop; the
---                  transcript lands in the prompt for editing rather than being
---                  sent (Claude Code's `voice.autoSubmit` must stay false).
---                  Hold works because Claude Code detects the release by key
---                  AUTO-REPEAT stopping -- Neovim forwards repeats but drops the
---                  actual release event, so repeat is what carries the gesture.
+--                  push-to-talk key. Tap to start recording, tap again to stop;
+--                  the transcript lands in the prompt for editing rather than
+--                  being sent.
+--                  Claude Code ends a hold-mode recording when key events STOP
+--                  arriving (a 200ms timer re-armed by each event), not when the
+--                  key is released -- which Neovim drops anyway. Neovim therefore
+--                  repeats the keypress on a timer to hold the key down itself,
+--                  making a tap gesture run through hold mode. That matters
+--                  because Claude Code's own tap mode submits any transcript of
+--                  three or more words, with no setting to prevent it.
 --                  If Claude Code voice mode is off, the first press enables it.
 --                In all other buffers: toggles Vosk STT recording/transcription
 --
@@ -31,6 +35,7 @@
 --
 -- Global state:
 --   vim.g.stt_recording - true when recording, false otherwise (for statusline)
+--   vim.g.stt_claude_recording - true while a Claude Code virtual hold is active
 
 local M = {}
 
@@ -78,9 +83,9 @@ local function _claude_voice_mode()
   return vim.g.stt_claude_voice_mode or "hold"
 end
 
---- Read Claude Code's persisted voice-mode state.
---- @return boolean|nil enabled True/false when known, nil when it cannot be read
-local function _claude_voice_enabled()
+--- Read Claude Code's persisted settings.
+--- @return table|nil settings Decoded settings table, or nil when unreadable
+local function _claude_settings()
   local ok, lines = pcall(vim.fn.readfile, CLAUDE_SETTINGS_FILE)
   if not ok or type(lines) ~= "table" then
     return nil
@@ -89,11 +94,37 @@ local function _claude_voice_enabled()
   if not decoded_ok or type(decoded) ~= "table" then
     return nil
   end
+  return decoded
+end
+
+--- Read Claude Code's persisted voice-mode state.
+--- @return boolean|nil enabled True/false when known, nil when it cannot be read
+local function _claude_voice_enabled()
+  local decoded = _claude_settings()
+  if not decoded then
+    return nil
+  end
   if type(decoded.voice) == "table" and decoded.voice.enabled ~= nil then
     return decoded.voice.enabled == true
   end
   if decoded.voiceEnabled ~= nil then
     return decoded.voiceEnabled == true
+  end
+  return nil
+end
+
+--- Read the voice mode Claude Code is actually configured for.
+--- @return string|nil mode "hold", "tap", or nil when it cannot be read
+local function _claude_active_voice_mode()
+  local decoded = _claude_settings()
+  if not decoded then
+    return nil
+  end
+  if type(decoded.voice) == "table" and type(decoded.voice.mode) == "string" then
+    return decoded.voice.mode
+  end
+  if type(decoded.voiceMode) == "string" then
+    return decoded.voiceMode
   end
   return nil
 end
@@ -114,6 +145,76 @@ local function _claude_channel(bufnr)
   local channel = vim.b[bufnr].terminal_job_id
   if not channel or channel <= 0 then return nil end
   return channel
+end
+
+local uv = vim.uv or vim.loop
+
+-- Virtual hold: Claude Code's hold mode ends a recording when key events stop
+-- arriving (a 200ms timer re-armed by every event), not when the key is released.
+-- Repeating the keypress on a timer therefore holds the key on the user's behalf,
+-- giving a tap-to-start/tap-to-stop gesture that still runs through hold mode --
+-- and so still leaves the transcript in the prompt instead of submitting it.
+-- Tap mode cannot do this: it submits any transcript of three or more words.
+local VIRTUAL_HOLD_INTERVAL_MS = 80
+local VIRTUAL_HOLD_DEBOUNCE_MS = 250
+local _virtual_hold = { timer = nil, bufnr = nil, started_at = 0 }
+local _last_ptt_at = 0
+
+local function _virtual_hold_active()
+  return _virtual_hold.timer ~= nil
+end
+
+--- Stop holding the key; Claude Code finishes the recording ~200ms later.
+local function _virtual_hold_stop()
+  if _virtual_hold.timer then
+    pcall(function()
+      _virtual_hold.timer:stop()
+      _virtual_hold.timer:close()
+    end)
+    _virtual_hold.timer = nil
+  end
+  _virtual_hold.bufnr = nil
+  vim.g.stt_claude_recording = false
+end
+
+--- Begin holding the key down on a timer until stopped.
+--- @param bufnr number Buffer handle of the Claude Code terminal
+--- @param channel number Terminal job channel
+--- @return boolean ok True when the hold started
+local function _virtual_hold_start(bufnr, channel)
+  _virtual_hold_stop()
+  local timer = uv.new_timer()
+  if not timer then
+    return false
+  end
+  _virtual_hold.timer = timer
+  _virtual_hold.bufnr = bufnr
+  _virtual_hold.started_at = uv.now()
+  vim.g.stt_claude_recording = true
+  vim.fn.chansend(channel, CLAUDE_PTT_SEQUENCE)
+
+  local max_ms = (vim.g.stt_claude_hold_timeout or 120) * 1000
+  timer:start(VIRTUAL_HOLD_INTERVAL_MS, VIRTUAL_HOLD_INTERVAL_MS, vim.schedule_wrap(function()
+    if not _virtual_hold_active() then
+      return
+    end
+    if not vim.api.nvim_buf_is_valid(bufnr) then
+      _virtual_hold_stop()
+      return
+    end
+    if (uv.now() - _virtual_hold.started_at) > max_ms then
+      _virtual_hold_stop()
+      notify("Claude Code recording stopped at timeout", vim.log.levels.WARN)
+      return
+    end
+    local ch = _claude_channel(bufnr)
+    if not ch then
+      _virtual_hold_stop()
+      return
+    end
+    vim.fn.chansend(ch, CLAUDE_PTT_SEQUENCE)
+  end))
+  return true
 end
 
 -- Suppress the voice-mode probe briefly after enabling it, so the key repeats of
@@ -137,6 +238,25 @@ local function _send_claude_ptt(bufnr)
     _voice_enable_sent_at = vim.loop.now()
     vim.fn.chansend(channel, "/voice " .. _claude_voice_mode() .. "\r")
     notify("Claude Code voice mode enabling -- hold <C-'> again to record", vim.log.levels.INFO)
+    return true
+  end
+
+  -- Virtual hold only makes sense against Claude Code's hold mode; in tap mode a
+  -- repeated keypress would toggle the recorder on and off instead.
+  local style = vim.g.stt_claude_ptt_style or "virtual_hold"
+  if style == "virtual_hold" and _claude_active_voice_mode() == "hold" then
+    local now = uv.now()
+    local since = now - _last_ptt_at
+    _last_ptt_at = now
+    -- Swallow key auto-repeat so physically holding the key is still one gesture.
+    if since < VIRTUAL_HOLD_DEBOUNCE_MS then
+      return true
+    end
+    if _virtual_hold_active() then
+      _virtual_hold_stop()
+    else
+      _virtual_hold_start(bufnr, channel)
+    end
     return true
   end
 

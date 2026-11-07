@@ -21,8 +21,8 @@ Offline speech recognition for Neovim using Vosk.
 <C-'>          " Dictation key (normal, insert and terminal modes)
 ```
 
-`<C-'>` is context-aware. In a Claude Code buffer it drives Claude Code's own voice
-mode; in every other buffer it toggles Vosk recording. See
+`<C-'>` is context-aware. In a Claude Code buffer it toggles Claude Code's own voice
+recording; in every other buffer it toggles Vosk recording. See
 [Claude Code Voice Mode](#claude-code-voice-mode).
 
 ### Health Check
@@ -102,24 +102,47 @@ covers the case where no auto-repeat arrives at all. Neovim forwards the initial
 every auto-repeat into a terminal buffer but drops the true release event, so auto-repeat
 is what carries the whole gesture — which is exactly what Claude Code measures.
 
-A held key that records for roughly two seconds and then stops on its own means
-auto-repeat is not reaching Claude Code.
+### Virtual hold: tapping instead of holding
 
-### Choosing a mode
+Because the recording ends when key events stop rather than when the key comes up, Neovim
+can hold the key down on the user's behalf. `<C-'>` is therefore a **toggle**: the first
+press starts repeating the keypress every 80ms, and the second press stops repeating, which
+Claude Code reads as the release 200ms later.
 
-| Mode | Gesture | Transcript handling |
-|------|---------|---------------------|
-| `hold` | Hold `<C-'>`, release to stop | Inserted into the prompt for editing; double-tap `<C-'>` within 300ms to send |
-| `tap` | Tap to start, tap again | Submitted automatically once it reaches three words |
+This is what makes a tap gesture compatible with an editable transcript. Claude Code's own
+`tap` mode submits any transcript of three or more words unconditionally, and
+`voice.autoSubmit` has no effect there — it applies to `hold` only. Running a tap gesture
+*through* hold mode keeps the transcript in the prompt.
 
-`tap` mode's auto-submit is unconditional — `voice.autoSubmit` applies only to `hold`. Pick
-`hold` to keep transcripts editable before they are sent.
+| Claude Code `voice.mode` | Gesture at `<C-'>` | Transcript handling |
+|--------------------------|--------------------|---------------------|
+| `hold` | Tap to start, tap to stop | Inserted into the prompt for editing |
+| `tap` | Tap to start, tap to stop | Submitted automatically at three or more words |
 
-Set the mode Neovim uses when it has to enable voice mode itself:
+Holding the key physically also works: auto-repeat arriving within 250ms of the previous
+press is swallowed, so one held press stays one gesture rather than toggling repeatedly.
+
+A recording that stops on its own after roughly two seconds means key events are not
+reaching Claude Code at all.
+
+### Configuration
 
 ```lua
-vim.g.stt_claude_voice_mode = "hold"  -- or "tap"
+-- Mode used when Neovim has to enable Claude Code voice mode itself
+vim.g.stt_claude_voice_mode = "hold"          -- or "tap"
+
+-- "virtual_hold" (default) makes <C-'> a toggle; "passthrough" forwards each
+-- key event as-is, so the key must be held down physically
+vim.g.stt_claude_ptt_style = "virtual_hold"
+
+-- Safety cap on a virtual hold, in seconds
+vim.g.stt_claude_hold_timeout = 120
 ```
+
+Virtual hold engages only when Claude Code's `voice.mode` is `hold`; under `tap` the key is
+forwarded as a single press, since repeating it would toggle the recorder on and off.
+
+`vim.g.stt_claude_recording` is true while a virtual hold is active, for statusline use.
 
 `:STTClaudeVoice` sends `/voice` to a Claude Code buffer to switch voice mode on or off.
 
