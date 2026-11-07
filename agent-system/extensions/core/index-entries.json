@@ -1012,12 +1012,15 @@
       "path": "patterns/jq-escaping-workarounds.md",
       "domain": "core",
       "subdomain": "patterns",
-      "summary": "Workarounds for jq escaping issues",
-      "line_count": 285,
+      "summary": "Workarounds for jq escaping issues and whole-file re-serialization of record formatting",
+      "line_count": 351,
       "keywords": [
         "patterns",
         "jq",
-        "escaping"
+        "escaping",
+        "reserialization",
+        "record-files",
+        "formatting"
       ],
       "topics": [
         "troubleshooting"
