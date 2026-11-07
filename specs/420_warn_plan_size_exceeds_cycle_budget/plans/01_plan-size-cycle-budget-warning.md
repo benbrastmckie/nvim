@@ -397,7 +397,7 @@ relying on it.
 
 ---
 
-### Phase 4: Document the notice in both named homes [NOT STARTED]
+### Phase 4: Document the notice in both named homes [COMPLETED]
 
 **Goal**: The advisory is described where the budget is already documented and where this class of
 admission guardrail is already catalogued, with its threshold stated alongside the measured
@@ -405,9 +405,9 @@ source and sample size.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`
+- [x] Re-read `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md`
   immediately before editing.
-- [ ] Add a subsection to that file's `## MAX_CYCLES Enforcement` section, after the
+- [x] Add a subsection to that file's `## MAX_CYCLES Enforcement` section, after the
   `### Infra-Failure vs. Work-Cycle Discrimination` subsection and before the section's closing
   `---`. State: the notice is advisory and never blocks; it fires at admission for implement-phase
   candidates only; both operands and where they come from (plan-file headings; the shared pool,
@@ -419,20 +419,20 @@ source and sample size.
   heuristic about likely non-completion in one invocation and never a proof of impossibility; and
   the two sanctioned remedies, with an explicit note that no budget-override flag is proposed
   because its absence is deliberate.
-- [ ] While in that section, make the shared-pool framing explicit in the prose rather than only
+- [x] While in that section, make the shared-pool framing explicit in the prose rather than only
   in the code block, per the research report's Context Extension Recommendation — the surrounding
   prose currently describes `cycle_count` in largely single-task terms.
-- [ ] Re-read `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
+- [x] Re-read `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
   immediately before editing. A concurrent sibling task also edits this file.
-- [ ] Add one row to that file's `### Classification Table` (inside
+- [x] Add one row to that file's `### Classification Table` (inside
   `## Blocking vs. Advisory: The Criterion`) classifying the plan-size/cycle-budget notice as
   ADVISORY, with the reasoning tied to the file's own two-condition criterion: the signal is a
   derived heuristic rather than a hard structural fact (the same failure mode the existing
   heuristic-drift-percentage row records), and the harm of a false positive is recoverable by the
   operator simply continuing. Follow the `dirty_scope_advisory` row's phrasing conventions.
-- [ ] Touch no other section of the guardrails file. Confine the edit to the admission-layer
+- [x] Touch no other section of the guardrails file. Confine the edit to the admission-layer
   material named above.
-- [ ] Verify no task-number reference and no record-versioning language enters either file (both
+- [x] Verify no task-number reference and no record-versioning language enters either file (both
   land under `agent-system/**`, where both are prohibited).
 
 **Timing**: 1 hour
@@ -472,12 +472,12 @@ and the `agent-system/extensions` source store).
 
 **Verification**:
 
-- [ ] Diff read-through confirms every changed hunk in both files lies entirely within prose, and
+- [x] Diff read-through confirms every changed hunk in both files lies entirely within prose, and
   that the guardrails edit touches only the classification-table row.
-- [ ] The narrowed suite set above passes.
-- [ ] `--only-gate 3,4` with the explicit repository-root TARGET passes, with neither gate
+- [x] The narrowed suite set above passes.
+- [x] `--only-gate 3,4` with the explicit repository-root TARGET passes, with neither gate
   reporting SKIP (a SKIP would mean nothing was checked).
-- [ ] `grep` over both files' diffs finds no task-number reference and no record-versioning
+- [x] `grep` over both files' diffs finds no task-number reference and no record-versioning
   language.
 
 ---

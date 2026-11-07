@@ -235,6 +235,14 @@ explicit way to continue. What DOES genuinely persist and accumulate across invo
 task across separate runs, so it is durably seeded and flushed on every dispatch regardless of
 the per-run budget's own reset.
 
+In a multi-task `/orchestrate` invocation, the per-run budget is enforced as a SHARED, BATCH-WIDE
+POOL rather than an isolated per-task counter: `BATCH_CYCLE_BUDGET` above is the whole batch's
+allotment, and the eligibility gate tests the SUM of every batched task's own `cycle_counts`
+against that one pool, not any single task's count against its own slice. A task may therefore
+spend more cycles than its own `PER_TASK_CYCLES` contribution when a sibling needs fewer; the
+pool, not the task, is the bound. A single-task invocation is simply the batch-of-one special
+case of this same pool — the "N cycles left" framing below reduces to it exactly.
+
 **On cycle limit**: The task is left in `partial` state. The orchestrator reports: "Task {N} reached
 MAX_CYCLES limit. Run `/orchestrate {N}` again to continue, or `/orchestrate {N} --implement` to
 resume the implement phase manually."
@@ -251,6 +259,57 @@ instead, up to `MAX_INFRA_FAILURES`. See
 iteration bound. On reaching `MAX_INFRA_FAILURES`, the orchestrator exits `partial` with a
 message distinct from the `MAX_CYCLES` message, so a log reader can tell "connectivity problem"
 apart from "ran out of work budget."
+
+### Plan-Size vs. Remaining-Budget Advisory
+
+At admission time, for every implement-phase candidate, the engine also compares the plan's own
+remaining phase count against the shared pool's remaining budget and, when the comparison trips a
+mode-aware threshold, attaches an advisory to that candidate's dispatch row. This is ADVISORY
+ONLY — the same posture `--gate` already documents for itself: it never blocks a dispatch, never
+fails one, never downgrades a status, and never alters `dispatch`/`deferred`/`blocked`/`stop` in
+any way. Its only visible effects are a purely additive `cycle_budget_advisory` object on the
+dispatch row (entirely absent when the threshold does not trip) and a paired `[orchestrate]`
+stderr line.
+
+Both operands come from facts this section already defines:
+
+- **Plan-derived remaining phases**: counted from the candidate's own latest plan file's
+  `### Phase N:` headings (total minus those already marked `[COMPLETED]`/
+  `[COMPLETED WITH EXCLUSIONS]`), never from a handoff — a plan file exists before a task's first
+  dispatch, when the signal is most valuable, and a handoff does not. An inconclusive heading
+  scan, or a plan with zero conforming headings (or no plan file at all), suppresses the advisory
+  rather than firing it; it is never treated as a blocking condition by this mechanism.
+- **Remaining shared-pool cycles**: `BATCH_CYCLE_BUDGET - sum(cycle_counts)` — the exact same two
+  values the eligibility gate above already reads, so the advisory can never disagree with the
+  mechanism that actually enforces the budget.
+
+The threshold is mode-aware: the advisory fires when
+`remaining_phases > remaining_cycles * K`, with `K=2` in base mode and `K=1` under `--hard`. This
+is a measured, not asserted, choice. Across a 127-task sample of every implement dispatch in this
+repository's own history carrying a known plan size, 117 of 127 (92%) completed their entire plan
+in a single implement dispatch regardless of phase count, with observed single-dispatch totals
+running as high as 10 — a base-mode multiplier of 1 would false-positive on the bulk of ordinary
+plans, while 2 lands exactly on the boundary the data supports (a 10-phase plan against a fresh
+5-cycle budget does not fire; an 11-phase plan does). Hard mode's per-phase dispatch behavior is
+corroborated directly: one 20-phase plan in that same history required 18 implement dispatches
+across more than one invocation, with every advance from partway through onward landing at
+exactly +1, zero deviation, across 15 consecutive cycles — an observed near-exact 1:1 ratio that
+justifies `K=1` with no added slack.
+
+Raw phase count alone is a weak predictor of single- vs. multi-cycle completion — multi-dispatch
+totals in the sample overlap substantially with totals that completed in a single dispatch
+elsewhere in the same sample, because `phases_total` cannot see the actual scope of work each
+phase names. The advisory is therefore a heuristic signal about likely non-completion in one
+invocation, never a proof of impossibility, and a future change to `K` should be re-grounded in a
+fresh measurement rather than tightened on raw phase count alone.
+
+The two remedies the advisory names are both already-sanctioned: re-invoking `/orchestrate`
+starts a fresh run with a fresh zero-valued budget (the ordinary way to continue past this
+signal, identical to the remedy for an actual `MAX_CYCLES` stop above), and a plan materially
+larger than one run's likely budget may be a candidate for division into smaller tasks. There is
+deliberately no proposal to add a budget-override flag here, for the same reason none exists for
+the hard `MAX_CYCLES` stop itself: its absence is intentional, not a gap this signal should paper
+over.
 
 ---
 

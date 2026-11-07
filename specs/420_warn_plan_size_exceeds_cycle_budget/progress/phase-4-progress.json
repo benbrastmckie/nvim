@@ -1,0 +1,31 @@
+{
+  "phase": 4,
+  "phase_name": "Document the notice in both named homes",
+  "started_at": "2026-11-07T23:36:00Z",
+  "last_updated": "2026-11-07T23:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read docs/architecture/orchestrate-state-machine.md immediately before editing; add a new subsection to the MAX_CYCLES Enforcement section (after Infra-Failure vs. Work-Cycle Discrimination, before the section's closing ---), and make the shared-pool framing explicit in the surrounding prose",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]
+    },
+    {
+      "id": 2,
+      "description": "Re-read context/patterns/batch-orchestration-guardrails.md immediately before editing; add one ADVISORY row to the Classification Table, confined strictly to that table",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]
+    },
+    {
+      "id": 3,
+      "description": "Verify no task-number reference and no record-versioning language entered either file",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Measured figures quoted from the research report verbatim with its own sample sizes: 127 tasks sampled (138 metrics.jsonl files across the repository), 117 of 127 (92%) completing an entire plan in one implement dispatch at single-dispatch totals up to 10; one 20-phase plan in this repository's history needing 18 implement dispatches with every advance from partway through onward landing at exactly +1 across 15 consecutive cycles, zero deviation -- no task numbers used (per no-task-references-in-deliverables.md, this lands under agent-system/**). Diff read-through confirms both changed hunks lie entirely within prose/table rows; the guardrails edit touches only the Classification Table (git diff --stat shows exactly 1 line added to that file). grep for task-number and record-versioning patterns over both files' new content: zero matches. Narrowed suite set (9 suites) passes 9/9. `--only-gate 3,4 --skip-slow` with the explicit repository-root TARGET currently shows Gate 4 (task-reference lint) PASS but Gate 3 (doc-lint, STRICT_CORE_DEPLOY) FAIL -- entirely attributable to the NOT-YET-REDEPLOYED source-store edits made in Phases 1-4 (deployed-script-content-drift on orchestrate-cycle-plan.sh and its test file, plus an index-entries.json line_count staleness for batch-orchestration-guardrails.md after this phase's 1-line addition), not to any defect in this phase's own edits. deploy-headless.sh runs generate-context-line-counts.sh --write automatically before every deploy (confirmed via the tool's own error message when attempted from the undeployed source-store path), so this is expected to self-resolve as part of Phase 5's redeploy; re-confirmed there rather than duplicated here."
+}
