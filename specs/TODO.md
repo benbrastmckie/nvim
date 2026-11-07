@@ -134,7 +134,7 @@ next_project_number: 528
 
 ### Agent System
 
-420 [PLANNED] — Surface a plan-size versus per-run cycle-budget mismatch...
+420 [IMPLEMENTING] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [PLANNED] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
@@ -5211,7 +5211,7 @@ artifact's path, creates nothing, and does NOT drop the proposal silently.
 ---
 
 ### 420. Surface a plan-size versus per-run cycle-budget mismatch before a run hits the wall
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 409, Task 411, Task 413, Task 418

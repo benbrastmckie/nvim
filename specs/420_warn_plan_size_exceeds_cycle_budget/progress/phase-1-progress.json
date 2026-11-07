@@ -1,0 +1,31 @@
+{
+  "phase": 1,
+  "phase_name": "Compute the plan-size versus remaining-budget signal",
+  "started_at": "2026-11-07T22:00:00Z",
+  "last_updated": "2026-11-07T22:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read orchestrate-cycle-plan.sh immediately before editing; make phase-heading-patterns.sh sourcing unconditional without widening the H1 loop guard",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add the advisory computation block after probed_dispatch_post_h1 build loop and before the dry_run fork: resolve plan file, conformance gate, count adv_phases_total/done/remaining, compute adv_remaining_cycles from the same pool mt_get expressions, apply mode-aware K threshold, populate component arrays and echo the stderr line",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Confirm no existing control flow altered (no new continue affecting out_blocked_rows/out_deferred_rows/eligible_tasks/probed_dispatch_post_h1/cycle_counts/status)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verification: bash -n clean; shellcheck -S warning (the repo's actual lint-shellcheck.sh gate severity) reports zero findings on both the unmodified baseline and this edit -- the one new -S info (SC2012, 'use find instead of ls') introduced by reusing H1's own established ls|sort -V|tail -1 idiom is below that gate's threshold and matches an idiom the baseline already carries elsewhere at that same severity. Narrowed suite set passed except 5 pre-existing-and-unrelated failures (test-orchestrate-cycle-postflight.sh, test-orchestrate-predispatch-review.sh, test-orchestrate-unwind-dispatch.sh, test-postflight-deploy-gate.sh, test-redeploy-checkpoint-promotion.sh), confirmed unrelated by reproducing them identically against the pristine pre-edit baseline file (same 5 suites, same case-level failures) -- recorded via issue-record.sh. test-orchestrate-cycle-plan.sh itself (including H1 Group 9 and Group 25 fixtures) passes cleanly both before and after. Hand-run fixture requirement (stderr line fires for an 11-phase plan at phase 0 against a fresh base budget, and does not fire for a 2-phase plan) is satisfied by Group 36 Cases 1-2 in the Phase 3 fixture work (same conditional guards both the field population and the stderr echo, so JSON-field assertion and stderr-line assertion are logically coupled) -- committed separately under Phase 3 rather than duplicated here as a standalone throwaway run."
+}

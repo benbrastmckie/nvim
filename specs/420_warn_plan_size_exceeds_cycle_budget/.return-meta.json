@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/420_warn_plan_size_exceeds_cycle_budget/plans/01_plan-size-cycle-budget-warning.md",
-      "summary": "Five-phase plan adding an advisory, mode-aware cycle_budget_advisory field to orchestrate-cycle-plan.sh's per-task dispatch rows at admission time, with fixtures, two documentation homes, and a redeploy plus full-gate phase."
-    }
-  ],
-  "next_steps": "Run /orchestrate 420 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 6,
-  "dependency_waves": [[1], [2], [3, 4], [5]],
-  "memory_candidates": [
-    {
-      "content": "When designing a derived admission-layer signal that compares two facts, the correct emission site is the earliest point at which EVERY operand is knowable -- and an operand whose value is chosen per-invocation (a mode flag, a per-run budget) is structurally never knowable at artifact-authoring time, only at command time. This settles 'warn at authoring time or at admission time' decisions without guesswork: if any operand is invocation-scoped, an authoring-time warning can only be operand-blind (guessing a future flag or using a worst case), which is a materially weaker signal than the exact admission-time computation that costs nothing extra to obtain. The corollary for implementation: compare against the SAME values the enforcing mechanism itself reads (here, a shared batch-wide pool rather than a per-task counter), because a notice that disagrees with the mechanism that actually enforces the limit is actively misleading rather than merely imprecise.",
-      "category": "PATTERN",
-      "source_artifact": "specs/420_warn_plan_size_exceeds_cycle_budget/plans/01_plan-size-cycle-budget-warning.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["admission-layer", "advisory-signal", "operand-knowability", "emission-site", "shared-budget-pool", "orchestration-engine"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 18,
   "metadata": {
-    "session_id": "sess_1794089641_e5bee5_420",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 15
+    "session_id": "sess_1794089641_e5bee5",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

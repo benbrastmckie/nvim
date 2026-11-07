@@ -1,7 +1,7 @@
 # Implementation Plan: Task #420
 
 - **Task**: 420 - Surface a plan-size versus per-run cycle-budget mismatch at plan time or at admission
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None (sequenced after the concurrent-gate-coordination task for file territory only, not a blocking dependency edge)
 - **Research Inputs**: specs/420_warn_plan_size_exceeds_cycle_budget/reports/01_plan-size-cycle-budget-warning.md
@@ -152,7 +152,7 @@ not research questions:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Compute the plan-size versus remaining-budget signal [NOT STARTED]
+### Phase 1: Compute the plan-size versus remaining-budget signal [COMPLETED]
 
 **Goal**: `orchestrate-cycle-plan.sh` computes, for every implement-phase dispatch candidate, the
 plan-derived remaining phase count, the remaining shared pool cycles, and the mode-aware
@@ -160,43 +160,43 @@ threshold verdict — and emits the human-readable stderr line. No dispatch-row 
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` immediately before
   editing (concurrent siblings declare overlapping scope).
-- [ ] Make the `. "$SCRIPT_DIR/lib/phase-heading-patterns.sh"` sourcing unconditional, replacing
+- [x] Make the `. "$SCRIPT_DIR/lib/phase-heading-patterns.sh"` sourcing unconditional, replacing
   the `if [ "$hard_mode" = "true" ]` wrapper that currently guards it. Leave the H1 loop's own
   `[ "$hard_mode" != "true" ] && continue` guard and every hard-mode-only side effect inside that
   loop exactly as they are.
-- [ ] Add a new, clearly commented sibling block immediately AFTER the loop that builds
+- [x] Add a new, clearly commented sibling block immediately AFTER the loop that builds
   `probed_dispatch_post_h1` and BEFORE the `if [ "$dry_run" = "true" ]` fork. Iterating
   `probed_dispatch_post_h1` (not `probed_dispatch`) is deliberate: an H1-refused candidate is
   already blocked and must receive no advisory.
-- [ ] In that block, for each candidate with `effective_group[$t] == "implement"`: resolve the
+- [x] In that block, for each candidate with `effective_group[$t] == "implement"`: resolve the
   latest plan file by the same chain the H1 block uses (`task_lookup_dir` then
   `ls -1 "${task_dir_abs}/plans/"*.md | sort -V | tail -1`). Skip the candidate when the project
   name is empty, no plan file resolves, or the resolved path is not a regular file.
-- [ ] Run `has_nonconforming_phase_headings` over the whole plan file BEFORE any filtered scan.
+- [x] Run `has_nonconforming_phase_headings` over the whole plan file BEFORE any filtered scan.
   On a hit, call `warn_nonconforming` and skip this candidate with no advisory (Decision 2). This
   ordering obligation is the one `plan-format.md` names as structurally unreachable if checked
   on the filtered result instead.
-- [ ] Count `adv_phases_total` with `PHASE_HEADING_ERE` and `adv_phases_done` with
+- [x] Count `adv_phases_total` with `PHASE_HEADING_ERE` and `adv_phases_done` with
   `PHASE_HEADING_DONE_ERE`; compute `adv_phases_remaining = total - done`, clamped at a floor of
   0. Skip the candidate with no advisory when `adv_phases_total` is 0 or non-numeric (the
   `skill_gate_completion_claim` Case 3 pass-through posture), and when `adv_phases_remaining` is
   0.
-- [ ] Compute `adv_remaining_cycles` as `_pool_budget - _pool_used`, re-read via the same two
+- [x] Compute `adv_remaining_cycles` as `_pool_budget - _pool_used`, re-read via the same two
   `mt_get` expressions the eligibility gate uses (`'[.cycle_counts[]? // 0] | add // 0'` and
   `'.batch_cycle_budget // 0'`), clamped at a floor of 0. Do not substitute a per-task
   subtraction.
-- [ ] Apply the mode-aware threshold: `K=1` when `hard_mode == "true"`, else `K=2`; fire when
+- [x] Apply the mode-aware threshold: `K=1` when `hard_mode == "true"`, else `K=2`; fire when
   `adv_phases_remaining > adv_remaining_cycles * K`.
-- [ ] On a fire, populate an associative array keyed by task number with the advisory's component
+- [x] On a fire, populate an associative array keyed by task number with the advisory's component
   values (`phases_total`, `phases_remaining`, `remaining_cycles`, `mode`, `message`), and echo a
   `[orchestrate]`-prefixed line to stderr naming the numbers, the concrete consequence (the plan
   is unlikely to finish in this invocation and the task will come to rest blocked for the
   remainder of the run), and the two sanctioned remedies (re-invoke `/orchestrate` to continue in
   a fresh run; consider dividing a plan materially larger than one run's budget). The message
   must not propose a budget-override flag and must not claim impossibility.
-- [ ] Confirm no existing control flow was altered: the block must contain no `continue` that
+- [x] Confirm no existing control flow was altered: the block must contain no `continue` that
   skips subsequent per-candidate work, no `out_blocked_rows` / `out_deferred_rows` append, and no
   mutation of `eligible_tasks`, `probed_dispatch_post_h1`, `cycle_counts`, or any status.
 
@@ -233,14 +233,14 @@ computation block with no signature or output-shape change; covered by
 
 **Verification**:
 
-- [ ] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` is clean.
-- [ ] `shellcheck` on the file reports no new findings relative to its pre-edit baseline (capture
+- [x] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` is clean.
+- [x] `shellcheck` on the file reports no new findings relative to its pre-edit baseline (capture
   the baseline before editing).
-- [ ] The narrowed suite set named in Tier Justification passes, with
+- [x] The narrowed suite set named in Tier Justification passes, with
   `test-orchestrate-cycle-plan.sh` green — in particular its existing Group 9 (H1 nonconforming /
   mismatch / dispatch / fallthrough / dry-run) and Group 25 (hard-mode H1) fixtures, which prove
   the unconditional sourcing did not disturb hard-mode H1 behavior.
-- [ ] A hand-run fixture confirms the stderr line appears for a seeded implement candidate with
+- [x] A hand-run fixture confirms the stderr line appears for a seeded implement candidate with
   an 11-phase plan at phase 0 against a fresh base-mode budget, and does not appear for the same
   task with a 2-phase plan.
 

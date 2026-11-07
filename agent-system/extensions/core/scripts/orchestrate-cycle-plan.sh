@@ -2331,10 +2331,14 @@ declare -A h1_territory=()           # t -> H7 territory JSON literal (only when
 declare -A h1_disputed_plan_path=()  # t -> plan_path (live-only repair, paired with the next map)
 declare -A h1_disputed_linenum=()    # t -> line number to downgrade to [PARTIAL]
 
-if [ "$hard_mode" = "true" ]; then
-  # shellcheck disable=SC1091
-  . "$SCRIPT_DIR/lib/phase-heading-patterns.sh"
-fi
+# Unconditional: the plan-size-vs-cycle-budget admission advisory below also needs this
+# library's functions/variables (PHASE_HEADING_ERE, PHASE_HEADING_DONE_ERE,
+# has_nonconforming_phase_headings, warn_nonconforming), and it is not hard-mode-gated. Sourcing
+# only defines functions and variables -- no side effect -- so widening this to unconditional is
+# safe; the H1 loop immediately below keeps its OWN `[ "$hard_mode" != "true" ] && continue`
+# guard untouched, so every hard-mode-only side effect stays exactly as gated as before.
+# shellcheck disable=SC1091
+. "$SCRIPT_DIR/lib/phase-heading-patterns.sh"
 
 for t in "${probed_dispatch[@]}"; do
   [ "$hard_mode" != "true" ] && continue
@@ -2424,6 +2428,87 @@ for t in "${probed_dispatch[@]}"; do
     continue
   fi
   probed_dispatch_post_h1+=("$t")
+done
+
+# ── Plan-size vs. remaining-cycle-budget ADVISORY (admission-layer, non-blocking) ──────────────
+# Surfaces a heuristic signal, for every implement-phase candidate that survived H1 above, that
+# compares the plan's own remaining phase count against the shared batch cycle pool's remaining
+# budget. ADVISORY ONLY, mirroring --gate's own documented posture: this block never appends to
+# out_blocked_rows / out_deferred_rows, never mutates eligible_tasks / probed_dispatch_post_h1 /
+# cycle_counts / any status, and never alters control flow for any candidate. See
+# docs/architecture/orchestrate-state-machine.md's MAX_CYCLES Enforcement section and
+# context/patterns/batch-orchestration-guardrails.md's Classification Table for the full
+# rationale, the measured phases-per-cycle distribution the threshold below is drawn from, and
+# the two sanctioned remedies named in the emitted message.
+#
+# Iterating probed_dispatch_post_h1 (not probed_dispatch) is deliberate: an H1-refused candidate
+# is already blocked above and must receive no advisory of its own (Decision 2).
+declare -A adv_fired=()              # t -> "true" (only when the threshold trips)
+declare -A adv_phases_total=()       # t -> plan-derived total conforming phase count
+declare -A adv_phases_remaining=()   # t -> plan-derived remaining phase count (total - done)
+declare -A adv_remaining_cycles=()   # t -> shared-pool cycles remaining, at computation time
+declare -A adv_mode_label=()         # t -> "base" or "hard", as in effect for this invocation
+declare -A adv_message=()            # t -> human-readable line (also echoed to stderr below)
+
+for t in "${probed_dispatch_post_h1[@]}"; do
+  [ "${effective_group[$t]}" != "implement" ] && continue
+  adv_project_name="${project_names[$t]:-}"
+  [ -z "$adv_project_name" ] && continue
+  adv_task_dir_abs="${PROJECT_ROOT}/$(task_lookup_dir "$t" "$adv_project_name" "$PROJECT_ROOT")"
+  adv_plan_path=$(ls -1 "${adv_task_dir_abs}/plans/"*.md 2>/dev/null | sort -V | tail -1) || adv_plan_path=""
+  [ -z "$adv_plan_path" ] && continue
+  [ -f "$adv_plan_path" ] || continue
+
+  # Whole-file conformance gate BEFORE any filtered scan -- same ordering obligation as H1's own
+  # resume-scan-conformance-gate above (a non-conforming heading is INVISIBLE to the filtered
+  # grep, not merely unmatched). On a hit: suppress the advisory for this candidate; never block
+  # (Decision 2 -- the blocking response to this condition is H1's alone, and hard-mode-only).
+  if has_nonconforming_phase_headings "$adv_plan_path"; then
+    warn_nonconforming "$adv_plan_path" "orchestrate-cycle-plan-cycle-budget-advisory" || true
+    continue
+  fi
+
+  # grep -c already prints "0" before exiting 1 on zero matches -- `x=$(grep -c ...) || x=0`,
+  # never `x=$(grep -c ... || echo 0)`, which would emit two lines and break the arithmetic below.
+  adv_total=$(grep -cE "$PHASE_HEADING_ERE" "$adv_plan_path" 2>/dev/null) || adv_total=0
+  case "$adv_total" in ''|*[!0-9]*) adv_total=0 ;; esac
+  # `phases_total == 0` pass-through (mirrors skill_gate_completion_claim's Case 3): a plan with
+  # no conforming phase heading at all gets no advisory rather than a false/degenerate one.
+  [ "$adv_total" -eq 0 ] && continue
+
+  adv_done=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$adv_plan_path" 2>/dev/null) || adv_done=0
+  case "$adv_done" in ''|*[!0-9]*) adv_done=0 ;; esac
+
+  adv_remaining=$(( adv_total - adv_done ))
+  [ "$adv_remaining" -lt 0 ] && adv_remaining=0
+  [ "$adv_remaining" -eq 0 ] && continue
+
+  # Same two mt_get expressions the blocking eligibility gate itself reads above (the shared
+  # batch-wide pool, not a per-task counter) -- a notice that disagreed with the mechanism that
+  # actually enforces the budget would be actively misleading rather than merely imprecise.
+  adv_pool_used=$(mt_get '[.cycle_counts[]? // 0] | add // 0')
+  adv_pool_budget=$(mt_get '.batch_cycle_budget // 0')
+  adv_cycles_left=$(( adv_pool_budget - adv_pool_used ))
+  [ "$adv_cycles_left" -lt 0 ] && adv_cycles_left=0
+
+  # Mode-aware threshold: per-phase hard-mode dispatch justifies zero slack (K=1); base mode's
+  # right-skewed multi-phase-per-dispatch distribution justifies one dispatch's worth of slack
+  # (K=2). See the documentation homes named above for the measured sample this is drawn from.
+  adv_k=2
+  adv_mode_label[$t]="base"
+  if [ "$hard_mode" = "true" ]; then
+    adv_k=1
+    adv_mode_label[$t]="hard"
+  fi
+
+  if [ "$adv_remaining" -gt "$(( adv_cycles_left * adv_k ))" ]; then
+    adv_fired[$t]="true"
+    adv_phases_total[$t]="$adv_total"
+    adv_phases_remaining[$t]="$adv_remaining"
+    adv_remaining_cycles[$t]="$adv_cycles_left"
+    adv_message[$t]="task #${t}: plan has ${adv_remaining} phase(s) remaining (of ${adv_total} total), but only ${adv_cycles_left} cycle(s) remain in this run's shared budget (mode: ${adv_mode_label[$t]}) -- this plan is unlikely to finish in this invocation and the task will come to rest blocked for the remainder of the run; re-invoke /orchestrate to continue in a fresh run, or consider dividing a plan materially larger than one run's budget"
+    echo "[orchestrate] ADVISORY: ${adv_message[$t]}" >&2
+  fi
 done
 
 if [ "$dry_run" = "true" ]; then
