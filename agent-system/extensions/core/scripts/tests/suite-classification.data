@@ -124,6 +124,7 @@ test-lint-scoped-commit-boundary.sh	unit	-
 test-lint-shellcheck-parallel.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-lint-shellcheck.sh	unit	-
 test-lint-state-writer-boundary.sh	unit	-
+test-lint-subject-resolution-declaration.sh	unit	-
 test-lint-task-lookup-adoption.sh	integration	invokes:verify-deploy.sh
 test-lint-test-harness-adoption.sh	unit	-
 test-lint-unit-integration-boundary.sh	integration	invokes:run-all.sh,verify-deploy.sh,deploy-headless.sh (fixture string literals exercising this lint's own detection, not real invocations)
