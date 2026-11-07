@@ -131,7 +131,9 @@ See `lua/neotex/plugins/editor/which-key.lua` for implementation.
 
 ### Overview
 
-Vosk-based offline speech recognition for voice input in Claude Code sidebar and regular buffers.
+`<C-'>` is the dictation key. In a Claude Code buffer it toggles Claude Code's own voice
+recording; in every other buffer it toggles Vosk-based offline speech recognition and
+inserts the transcript at the cursor.
 
 ### Keybindings
 
@@ -141,34 +143,40 @@ Vosk-based offline speech recognition for voice input in Claude Code sidebar and
 | `<leader>vs` | Normal | Stop recording and transcribe |
 | `<leader>vv` | Normal | Toggle recording |
 | `<leader>vh` | Normal | Health check (verify dependencies) |
-| `<C-\>` | Normal | Toggle recording (alternative binding) |
-| `<C-\>` | Terminal | Toggle recording (works in Claude Code sidebar) |
+| `<C-'>` | Normal | Claude Code push-to-talk in a Claude Code buffer, Vosk toggle elsewhere |
+| `<C-'>` | Insert | Toggle Vosk recording |
+| `<C-'>` | Terminal | Claude Code push-to-talk in a Claude Code buffer, Vosk toggle elsewhere |
 
 ### Terminal Mode Support
 
-Terminal buffers (like Claude Code) intercept most keybindings. The `<C-\>` mapping includes a terminal-mode variant:
+Terminal buffers send keystrokes straight to the running program, so `<C-'>` carries a
+terminal-mode mapping that branches on the buffer
+(`lua/neotex/plugins/tools/stt/init.lua`).
 
-**Implementation** (`lua/neotex/plugins/tools/stt/init.lua`):
-```lua
--- Terminal-mode mapping for Ctrl-\ (required for Claude Code sidebar)
-vim.keymap.set('t', '<C-\\>', function()
-  -- Exit terminal mode temporarily to allow STT to function
-  vim.cmd('stopinsert')
-  M.toggle_recording()
-end, {
-  noremap = true,
-  silent = true,
-  desc = 'STT: Toggle recording (terminal mode)'
-})
-```
+**In a Claude Code buffer** the key drives Claude Code's own voice mode. Neovim writes the
+kitty-keyboard encoding of `ctrl+'` (`ESC[39;5u`) to the terminal channel, where Claude Code
+matches its `voice:pushToTalk` binding:
 
-**Behavior**:
-1. Press `<C-\>` in Claude Code sidebar
+1. Tap `<C-'>` to start recording
+2. Speak your prompt
+3. Tap `<C-'>` again to stop
+4. The transcript lands in the Claude Code prompt, editable, rather than being sent
+
+Claude Code ends a hold-mode recording when key events stop arriving rather than when the key
+is released, so Neovim repeats the keypress on a timer to hold the key down itself. That is
+what makes a tap gesture compatible with an editable transcript: Claude Code's own `tap` mode
+submits any transcript of three or more words unconditionally.
+
+Requires `ctrl+'` bound to `voice:pushToTalk` in `~/.claude/keybindings.json`, with
+`voice.mode` set to `hold` and `voice.autoSubmit` false in `~/.claude/settings.json`.
+
+**In any other buffer** the key drives Vosk:
+
+1. Press `<C-'>` in the terminal buffer
 2. Neovim exits terminal mode (`stopinsert`)
-3. STT starts recording
-4. Speak your prompt
-5. Press `<C-\>` again to stop and transcribe
-6. Text inserts at cursor position
+3. Vosk starts recording
+4. Press `<C-'>` again to stop and transcribe
+5. Text inserts at the cursor position
 
 ### Dependencies
 
@@ -212,12 +220,22 @@ bash ~/.config/nvim/scripts/claude-ready-signal.sh
 
 **Verify terminal-mode mapping**:
 ```vim
-:verbose map <C-\>
+:verbose map <C-'>
 ```
 
 Should show both normal-mode and terminal-mode mappings.
 
-**Check STT is functional**:
+**Check the key reaches Claude Code**: another terminal-mode mapping on the same key wins
+over this one. `lua/neotex/config/keymaps.lua` binds `<C-h>`, `<C-j>`, `<C-k>` and `<C-l>` to
+window navigation in terminal buffers, so those keys never reach the program inside.
+
+**Check Claude Code's voice configuration**:
+```bash
+cat ~/.claude/keybindings.json
+python3 -c "import json; print(json.load(open('$HOME/.claude/settings.json'))['voice'])"
+```
+
+**Check Vosk is functional** (the non-Claude path):
 ```vim
 :STTHealth
 ```
@@ -332,4 +350,4 @@ Notification hook fires (permission_prompt, elicitation_dialog)
 - [TTS/STT Integration Guide](tts-stt-integration.md) - Complete TTS/STT documentation with software dependencies
 - [Permission Configuration](../../../../docs/guides/permission-configuration.md) - Hook permissions
 - [User Guide](../../../../docs/guides/user-guide.md) - General Claude Code usage
-- Neovim STT README: `~/.config/nvim/lua/neotex/plugins/tools/README.md`
+- Neovim STT README: `~/.config/nvim/lua/neotex/plugins/tools/stt/README.md`

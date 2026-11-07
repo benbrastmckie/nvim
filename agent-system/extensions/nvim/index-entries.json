@@ -517,7 +517,7 @@
         "stt"
       ],
       "summary": "Hook-based readiness signaling, TTS notifications, and STT voice input for Neovim",
-      "line_count": 335,
+      "line_count": 353,
       "load_when": {
         "agents": [],
         "task_types": [
@@ -545,7 +545,7 @@
         "audio"
       ],
       "summary": "TTS/STT setup, configuration, and troubleshooting for Claude Code and Neovim",
-      "line_count": 382,
+      "line_count": 420,
       "load_when": {
         "agents": [],
         "task_types": [
