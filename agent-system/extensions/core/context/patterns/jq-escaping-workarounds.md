@@ -1,6 +1,8 @@
 # jq Escaping Workarounds
 
-This document describes workarounds for jq command escaping issues caused by Claude Code's Bash tool (Issue #1132).
+This document covers two independent jq hazards: escaping issues in Claude Code's Bash tool
+(Issue #1132), and jq's unconditional whole-file re-serialization of any JSON content it is
+piped through.
 
 ## Bug Description
 
@@ -276,6 +278,70 @@ jq --arg path "$artifact_path" \
 State updates now go through `.claude/scripts/update-task-status.sh` (preflight/postflight
 variants), which encapsulates the correct jq patterns internally. See
 `.claude/rules/state-management.md` for the state-first update pipeline this script implements.
+
+## jq Rewrites Reflow Unrelated JSON Formatting
+
+Piping an entire JSON file through jq re-serializes the whole file: jq parses its input to a
+value and prints that value back in jq's own fixed style, and no flag preserves input
+formatting. Every record in the file is reflowed to jq's style, including records a narrowly
+scoped filter never touches.
+
+**Trigger condition** — check both before writing a jq step against a file:
+
+1. The file is committed with a layout a bare `jq . file` round-trip would not byte-reproduce:
+   hand-maintained per-record compaction, a deliberately preserved key order, or a mix of
+   compact and expanded records.
+2. The edit is meant to touch a few fields, not to intentionally rewrite the file's layout.
+
+A concrete shape that meets this trigger: a dependency/record array where most entries are
+serialized compactly on one line while one or more entries have been hand-expanded for
+readability. Editing one field on one entry with a whole-file jq pipe reflows every other
+entry's layout too, even though the filter never selected it.
+
+**The assertion-backed recipe** — five copyable steps:
+
+```bash
+path="specs/some_task/some-record-file.json"
+
+# 1. Starting bytes: the committed HEAD version, not the working-tree copy
+git show HEAD:"$path" > /tmp/head.json
+
+# 2. Text-level edit: apply the intended field changes directly to a copy of those bytes
+cp /tmp/head.json /tmp/text-edited.json
+# ... edit /tmp/text-edited.json (Edit tool, sed, etc.), touching only the intended fields ...
+
+# 3. Independently compute the intended result with jq, from the SAME starting bytes
+jq '.records[] |= (if .id == "T4" then .description = "..." else . end)' \
+  /tmp/head.json > /tmp/jq-output.json
+
+# 4. Assert the two agree as JSON under canonicalization — THIS MUST BE EMPTY
+diff <(jq -S . /tmp/text-edited.json) <(jq -S . /tmp/jq-output.json)
+
+# 5. Only once step 4 is empty, move the text-edited file into place
+cp /tmp/text-edited.json "$path"
+```
+
+Step 4 is the load-bearing half of this recipe. It buys back the one guarantee a bare
+text-level edit gives up — that the result is well-formed JSON carrying exactly the intended
+values. Guidance that stops at "edit it by hand instead" without this assertion is worse than no
+guidance: a hand edit of JSON silently admits a trailing comma or a broken escape that jq itself
+would have caught.
+
+**Relation to `specs/state.json`'s writer**: `scripts/state-write.sh` exists for a different
+problem — many concurrent automated callers writing one hot file behind a fail-closed mutex. jq
+remains the correct, unchanged tool for every call routed through that wrapper, and for
+computing the intended result in step 3 above. A record file edited by a single implementer
+inside one planned step has no equivalent wrapper, deliberately: a wrapper would buy no
+concurrency safety there and would add an interface to learn for no benefit.
+
+**Reopen condition**: if some record file turns out to be edited often enough that this recipe
+is being retyped repeatedly, that repetition is the signal to revisit a helper-script question
+for that file — not before.
+
+**Not a general indictment of jq**: this is not "jq is unsafe for JSON edits". jq stays correct
+for `specs/state.json` via its wrapper, for computing the intended value in step 3 above, and
+for any file whose byte-level layout nobody depends on. The hazard is specific to files whose
+layout is itself part of what the repository maintains.
 
 ## References
 
