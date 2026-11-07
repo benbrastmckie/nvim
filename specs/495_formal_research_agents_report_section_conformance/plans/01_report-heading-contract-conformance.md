@@ -412,50 +412,73 @@ that file rather than applied blind.
 
 ---
 
-### Phase 5: Redeploy, Full Gate Verification, and Record the Sweep [NOT STARTED]
+### Phase 5: Redeploy, Full Gate Verification, and Record the Sweep [COMPLETED]
 
 **Goal**: Regenerate the deployed tree, run the complete gate set, re-run the fixture and sweep to
 confirm red-to-green and no regression, and record the scope-item-(4) enumeration with its remaining
 gaps listed as follow-ups.
 
 **Tasks**:
-- [ ] Re-read every file this task touched, confirming no sibling edit landed on top of it
+- [x] Re-read every file this task touched, confirming no sibling edit landed on top of it
       (`git log` and `git status --short` on each path; a foreign commit or foreign modification in
-      this task's paths is a STOP-and-report condition, not noise to dismiss).
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` in the foreground with a bounded timeout,
+      this task's paths is a STOP-and-report condition, not noise to dismiss). *(completed: all
+      seven touched files' most recent commit is this task's own phase commit; no foreign edit)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` in the foreground with a bounded timeout,
       redirecting output to a file, then grep that file for its own success line. Do NOT end the
-      dispatch awaiting a background job.
-- [ ] Confirm the deployed `.claude/context/formats/report-format.md` and
+      dispatch awaiting a background job. *(completed: "Resynced 9 extension(s)"; RESULT=landed_verify_red
+      — the deploy itself landed; see verification note below for the 2 pre-existing fast-gate
+      failures)*
+- [x] Confirm the deployed `.claude/context/formats/report-format.md` and
       `.claude/context/formats/summary-format.md` carry the new section, and that the deployed
-      `.claude/agents/general-research-agent.md` carries the pointer.
-- [ ] Record explicitly in the summary that the four formal agents have NO deployed counterpart in
+      `.claude/agents/general-research-agent.md` carries the pointer. *(completed, all confirmed)*
+- [x] Record explicitly in the summary that the four formal agents have NO deployed counterpart in
       this repository (the `formal` extension is not in `.claude-extensions.json`), so their
       conformance evidence is the source-store check from Phase 4, not a deployed-tree check.
-- [ ] Re-run all three Phase 1 fixtures through `validate-artifact.sh`: the near-miss fixture must
+      *(completed, recorded in the summary's Impacts section)*
+- [x] Re-run all three Phase 1 fixtures through `validate-artifact.sh`: the near-miss fixture must
       STILL fail (the validator was not weakened) and both `-ok` fixtures must still pass. A
       near-miss fixture that now passes means the validator was changed and is a hard failure of
-      this task.
-- [ ] Re-run the Phase 1 harness in full; diff against `fixtures/sweep-baseline.txt`. The only
+      this task. *(completed: identical result to Phase 1 — near-miss still fails with exactly
+      "Missing required section: ## Recommendations"; both -ok fixtures still pass)*
+- [x] Re-run the Phase 1 harness in full; diff against `fixtures/sweep-baseline.txt`. The only
       expected deltas are the four formal agents (unchanged PASS, now with the pointer) and
-      `general-research-agent.md` (unchanged PASS).
-- [ ] Run the complete gate set in the foreground with a bounded timeout, output to a file, then grep
+      `general-research-agent.md` (unchanged PASS). *(completed: byte-identical diff, zero deltas
+      — the regex-based harness cannot distinguish pointer-vs-no-pointer or nested-vs-top-level
+      heading depth, so PASS status for these five agents was unchanged by this task's edits, as
+      expected)*
+- [x] Run the complete gate set in the foreground with a bounded timeout, output to a file, then grep
       that file: `bash .claude/scripts/verify-deploy.sh` for the full battery (including Gate 8's
       shell-suite run via `agent-system/extensions/core/scripts/tests/run-all.sh`). Treat a failure
       in `test-validate-artifact.sh` or any `plan-format.md`-related suite as possibly sibling task
       464's in-flight edit — check `git log` to confirm the work is not this task's before
-      attributing it.
-- [ ] Record the scope-item-(4) enumeration in the implementation summary's `## Follow-ups`: (a) the
+      attributing it. *(deviation — see note below: this dispatch's own dispatch file carries a
+      Batch Gate Deferral directive overriding this task to a scoped tier
+      (`verify-deploy.sh --only-gate 3,4`, which passed cleanly) rather than the independent full
+      battery; the complete gate set runs once for the whole batch at the end of the
+      `/orchestrate` invocation per that directive. `deploy-headless.sh`'s own built-in fast-gate
+      verification (41 checks, --skip-slow) DID run as a side effect of the deploy step above and
+      found exactly 2 pre-existing failures (gate10 `validate-state.sh --deep` 30s timeout flake;
+      dead-command-recommendation lint in the memory extension), both named in advance by the
+      batch lead as out-of-scope and not attributable to this task)*
+- [x] Record the scope-item-(4) enumeration in the implementation summary's `## Follow-ups`: (a) the
       four confirmed small gaps — `nix-implementation-agent.md`, `neovim-implementation-agent.md`,
       `web-implementation-agent.md` (summary: missing Impacts, Follow-ups, References) and
       `web-research-agent.md` (report: missing Context & Scope); (b) the eleven domain-shaped
       report/summary agents across the founder, present and epidemiology extensions; (c) the seven
       research agents carrying no embedded skeleton at all (typst, z3, books, latex, python, rust,
       cslib); (d) the optional promotion of this task's sweep harness into a permanent core script
-      with its own suite. Each needs its own record with its own widened `file_scope`.
-- [ ] Record in the summary's `## Decisions` why `validate-artifact.sh` was NOT changed: a substring
+      with its own suite. Each needs its own record with its own widened `file_scope`. *(completed
+      with a correction: this task's own measurement found group (b) is 15 agents, not eleven —
+      10 founder (the research report named only 9 while calling them "eight"; this task's own
+      harness additionally found `project-agent.md`), 3 present, 2 epidemiology. The summary
+      records the corrected count and cites this task's own `fixtures/sweep-baseline.txt` as the
+      authoritative source)*
+- [x] Record in the summary's `## Decisions` why `validate-artifact.sh` was NOT changed: a substring
       relaxation would let `## Context Extension Recommendations` satisfy a check for
       `Recommendations`, converting the real production failure into a silent false pass.
-- [ ] Record a final issue-log entry, or attest explicitly in the handoff that nothing further arose.
+      *(completed)*
+- [x] Record a final issue-log entry, or attest explicitly in the handoff that nothing further arose.
+      *(completed: recorded a win entry summarizing the clean Phase 5 close)*
 
 **Timing**: 45 minutes
 

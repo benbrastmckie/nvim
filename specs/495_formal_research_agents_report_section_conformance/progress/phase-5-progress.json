@@ -1,0 +1,29 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy, Full Gate Verification, and Record the Sweep",
+  "started_at": "2026-11-07T02:31:00Z",
+  "last_updated": "2026-11-07T02:42:00Z",
+  "objectives": [
+    {"id": 1, "description": "re-read every touched file, confirm no foreign edit", "status": "done", "files_touched": []},
+    {"id": 2, "description": "run deploy-headless.sh in foreground bounded timeout", "status": "done", "files_touched": []},
+    {"id": 3, "description": "confirm deployed report-format.md/summary-format.md/general-research-agent.md carry the new content", "status": "done", "files_touched": []},
+    {"id": 4, "description": "re-run all three Phase 1 fixtures through deployed validate-artifact.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "re-run Phase 1 harness in full, diff against sweep-baseline.txt", "status": "done", "files_touched": []},
+    {"id": 6, "description": "discharge Batch Gate Deferral scoped tier (verify-deploy.sh --only-gate 3,4)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "write implementation summary with scope-item-4 enumeration, decisions, follow-ups", "status": "done", "files_touched": ["specs/495_formal_research_agents_report_section_conformance/summaries/01_report-heading-contract-conformance-summary.md"]},
+    {"id": 8, "description": "validate summary with validate-artifact.sh", "status": "done", "files_touched": []},
+    {"id": 9, "description": "record final issue-log entry", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5",
+      "description": "Run the complete gate set in the foreground (bash .claude/scripts/verify-deploy.sh, no flags)",
+      "type": "altered",
+      "reason": "Dispatch file (.dispatch/22.md) carries a Batch Gate Deferral directive for this batch invocation: discharge this phase against a scoped tier (verify-deploy.sh --only-gate 3,4) instead of independently running the complete gate set, which runs once for the whole batch at the end of the /orchestrate invocation. deploy-headless.sh's own built-in fast-gate verification (--skip-slow, 41 checks) still ran as a side effect of the deploy and found only 2 pre-existing, out-of-scope failures (gate10 timeout flake, dead-command-recommendation lint) already named by the batch lead.",
+      "annotation": "*(deviation: altered -- Batch Gate Deferral directive from the dispatch file substitutes a scoped tier for the independent full battery)*"
+    }
+  ]
+}
