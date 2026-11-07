@@ -201,7 +201,11 @@
 #        tree has not moved since that build finished. This is the "result predates the waiter's
 #        own edits" guard.
 #     3. The record's scope_key equals the WAITER's OWN scope key -- a hash of the invocation's
-#        lake argument vector (see compute_scope_key() below). A scoped build (e.g. `build
+#        lake argument vector, PLUS the content of every argument that resolves to an existing
+#        regular file (see compute_scope_key() below; this content fold closes the stale-
+#        scratch-file defect, where a file named on the command line -- e.g. `env lean
+#        /tmp/scratch.lean` -- changes between invocations with the argv itself unchanged, and
+#        often lives outside the tree compute_fingerprint() scans). A scoped build (e.g. `build
 #        Foo.Bar`) and a full build (`build`) over an identical, unchanged tree are DIFFERENT
 #        requested work and must never share a result; a missing or empty recorded scope_key
 #        (e.g. a hand-written or pre-scope-key record) is treated as NOT shareable (fail closed).
@@ -463,10 +467,31 @@ compute_fingerprint() {
 # NUL-separated join, NEVER a space-joined string, so argument boundaries stay unambiguous (e.g.
 # `build A B` and `build "A B"` must not collide). `printf '%s\0' "$@"` on a zero-length "$@"
 # still produces well-defined input to sha256sum (the hash of the empty byte stream).
+#
+# STALE-SCRATCH-FILE FIX: the argument vector alone identifies WHICH file was named (e.g.
+# `env lean /tmp/scratch.lean`), never WHAT IT CONTAINED at invocation time. A scratch/working
+# file passed by path is frequently outside the project root entirely, so compute_fingerprint()'s
+# tree scan (scoped to the resolved package root) never observes an edit to it either -- the
+# fingerprint-plus-literal-argv scope key previously left such a file's content edit invisible to
+# BOTH staleness checks, and an unchanged-argv rerun after fixing the scratch file's contents
+# could replay the PRIOR (stale, since-corrected) result. Folding the content hash of every
+# argument that resolves to an existing regular file into the scope key closes this: a changed
+# scratch file now changes the scope key itself, so decide_sharing()'s scope-key comparison
+# (condition 3 in the STALENESS POLICY above) fails and a fresh build runs. This generalizes
+# past `env lean` to any lake subcommand taking a file-path argument, since the fix lives in
+# argument inspection, not subcommand-specific logic.
 compute_scope_key() {
   (
     set +o pipefail
-    printf '%s\0' "$@" | sha256sum | awk '{print $1}'
+    {
+      printf '%s\0' "$@"
+      local a
+      for a in "$@"; do
+        if [ -f "$a" ]; then
+          sha256sum "$a" 2>/dev/null
+        fi
+      done
+    } | sha256sum | awk '{print $1}'
   )
 }
 
