@@ -11,7 +11,7 @@
 # no `artifacts` key at all. See lint-agent-contracts.sh's own Check J header comment for the
 # full section-bounding and detection-predicate rationale.
 #
-# Six fixture cases, each its own minimal dispatchable-agent file in an isolated scratch repo
+# Nine fixture cases, each its own minimal dispatchable-agent file in an isolated scratch repo
 # tree (mktemp -d), run against the REAL, unmodified lint-agent-contracts.sh via
 # REPO_ROOT=<scratch> (the same source-store invocation override the script documents and
 # test-lint-agent-contracts-heartbeat.sh already uses):
@@ -22,6 +22,30 @@
 #      handoff section (the exact Check F blind spot)  -> FAIL
 #   5. a "never write one" research-agent contract     -> skipped (neither PASS nor FAIL)
 #   6. a writer with an unrecognizable heading          -> FAIL (heading drift, never silent)
+#   7. (case b) a required handoff writer with ZERO
+#      mention of .orchestrator-handoff.json anywhere,
+#      not in CHECK_J_EXCLUDED_RELATIVE_PATHS            -> FAIL, naming the exclusion array --
+#      this is the central regression case: it fails under the redesigned fail-closed check and
+#      (confirmed separately, see the scratch-copy negative control below) would NOT fail under
+#      the old content-gated check, since the content gate's `grep ... || continue` drops a
+#      zero-mention file out of the scan before it is ever evaluated.
+#   8. (case c) a fixture placed at a REAL recorded
+#      exclusion path (literature/agents/literature-
+#      agent.md), zero mention of the string            -> decided skip (neither PASS nor FAIL),
+#      mirroring case 5's assertion shape.
+#   9. (case d, part 2) the stale-exclusion sweep
+#      (added in a later plan phase than this suite's
+#      original six cases) reports clean against this
+#      fixture tree                                      -> zero
+#      "CHECK_J_EXCLUDED_RELATIVE_PATHS entry ..." FAIL lines anywhere in the Check J section.
+#
+# Case (a) from the task's required-outcomes list ("a curated file WITH the section passes") is
+# already covered by cases 1 and 2 above (both are recognized writers that pass) and is not
+# re-fixtured here. Case (d) from that same list ("a qualifying-but-unregistered file produces
+# the intended finding") is the SAME mechanism as case 7/(b): under the fail-closed design any
+# dispatchable agent not in CHECK_J_EXCLUDED_RELATIVE_PATHS and not a "never write one" contract
+# is in scope by default, so an unregistered-but-qualifying file and a zero-mention file are
+# indistinguishable to Check J's loop -- case 7 exercises that one mechanism for both framings.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED.
 
@@ -54,6 +78,16 @@ build_fixture_tree() {
   mkdir -p "$root/agent-system/extensions/core/docs/reference/standards"
   mkdir -p "$root/agent-system/extensions/core/scripts/lib"
   mkdir -p "$root/agent-system/extensions/fixture/agents"
+  # Case 8/(c) needs a real recorded-exclusion path to exist in this tree so the fixture lands
+  # at the exact relative path CHECK_J_EXCLUDED_RELATIVE_PATHS names. literature/ is chosen
+  # (over core/, which the plan's own prose uses as an illustrative example) because
+  # literature/agents/literature-agent.md is the SOLE CHECK_J_EXCLUDED_RELATIVE_PATHS entry
+  # under its extension: creating this one directory brings the Phase 2 stale-exclusion sweep's
+  # per-extension-agents-dir guard into scope for exactly one entry, never dragging in
+  # collateral entries the way creating core/agents/ would (core/ has three recorded exclusions
+  # sharing that one agents/ directory: code-reviewer-agent.md, meta-builder-agent.md,
+  # spawn-agent.md -- all three would need their own stub fixtures to keep the sweep clean).
+  mkdir -p "$root/agent-system/extensions/literature/agents"
   cp "$FRAGMENT_SRC" "$root/agent-system/extensions/core/context/contracts/no-task-references-bullet.md"
   cp "$ARTIFACTS_FRAGMENT_SRC" "$root/agent-system/extensions/core/context/contracts/return-meta-artifacts-template.md"
   cp "$STATUS_LIB_SRC" "$root/agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh"
@@ -180,6 +214,40 @@ model: sonnet
 Write the orchestrator handoff file .orchestrator-handoff.json with status and artifacts
 before returning.
 EOF
+
+  # Case 7/(b): the central regression case the old content gate could not express. A
+  # dispatchable agent with ZERO mention of .orchestrator-handoff.json anywhere, and NOT in
+  # CHECK_J_EXCLUDED_RELATIVE_PATHS -> must FAIL, naming the exclusion array as the remediation
+  # pointer. Under the old content gate (`grep -qF '.orchestrator-handoff.json' "$f" || continue`)
+  # this file would silently drop out of the scan instead -- the scratch-copy negative control
+  # below confirms that directly.
+  cat > "$fx/case7-nomention-agent.md" << 'EOF'
+---
+name: case7-nomention-agent
+description: fixture
+model: sonnet
+---
+# Fixture agent
+
+This agent's contract has nothing to do with handoffs of any kind.
+EOF
+
+  # Case 8/(c): a fixture placed at a REAL recorded CHECK_J_EXCLUDED_RELATIVE_PATHS path
+  # (literature/agents/literature-agent.md), with zero mention of the string -> must be a
+  # decided skip (neither [PASS] nor [FAIL] names it), mirroring case 5's assertion shape for a
+  # "never write one" contract. Also exercises Phase 2's stale-exclusion sweep on its one real
+  # entry under this tree: the file exists and carries no writer heading, so the sweep must stay
+  # clean for it (see case 9's assertion below).
+  cat > "$root/agent-system/extensions/literature/agents/literature-agent.md" << 'EOF'
+---
+name: literature-agent
+description: fixture
+model: sonnet
+---
+# Fixture agent
+
+Invoked only via the forked-subagent pattern; carries no handoff-writing contract of any kind.
+EOF
 }
 
 run_lint() {
@@ -247,6 +315,40 @@ if echo "$check_j_section" | grep -qF "case6-headingdrift-agent.md" \
   common_test_pass "(6) writer with an unrecognizable heading FAILs Check J loudly, named as heading drift"
 else
   common_test_fail "(6) expected a named heading-drift Check J FAIL for case6-headingdrift-agent.md"
+fi
+
+# Case 7/(b): the central regression case -- a required handoff writer with zero mention of the
+# string anywhere, not recorded in CHECK_J_EXCLUDED_RELATIVE_PATHS, must FAIL by name and the
+# FAIL text must name the exclusion array (the remediation pointer is itself regression-tested).
+if echo "$check_j_section" | grep -qF "case7-nomention-agent.md" \
+   && echo "$check_j_section" | grep -F "case7-nomention-agent.md" | grep -q '\[FAIL\]' \
+   && echo "$check_j_section" | grep -F "case7-nomention-agent.md" | grep -qF "CHECK_J_EXCLUDED_RELATIVE_PATHS"; then
+  common_test_pass "(7/b) required handoff writer with zero mention of the string FAILs Check J, naming CHECK_J_EXCLUDED_RELATIVE_PATHS"
+else
+  common_test_fail "(7/b) expected a named Check J FAIL for case7-nomention-agent.md citing CHECK_J_EXCLUDED_RELATIVE_PATHS"
+fi
+
+# Case 8/(c): a fixture at a REAL recorded exclusion path (literature/agents/literature-agent.md)
+# must be a decided skip -- the exclusion skip INFO line fires, and neither [PASS] nor [FAIL]
+# names it, mirroring case 5's assertion shape.
+literature_lines="$(echo "$check_j_section" | grep -F "literature/agents/literature-agent.md")"
+if echo "$literature_lines" | grep -qF "recorded exclusion in CHECK_J_EXCLUDED_RELATIVE_PATHS" \
+   && ! echo "$literature_lines" | grep -qE '\[PASS\]|\[FAIL\]'; then
+  common_test_pass "(8/c) real recorded-exclusion-path fixture is a decided skip -- no Check J PASS/FAIL line names it"
+else
+  common_test_fail "(8/c) expected literature/agents/literature-agent.md to produce only the exclusion skip INFO line, with no [PASS]/[FAIL] line"
+fi
+
+# Case 9/(d, part 2): Phase 2's stale-exclusion sweep must report clean against this fixture
+# tree -- zero "CHECK_J_EXCLUDED_RELATIVE_PATHS entry ..." FAIL lines anywhere in the Check J
+# section. This is the condition-(a) interaction Phase 2 documented: the sweep is scoped to
+# entries whose extension's agents/ directory exists in this tree (only literature/agents/ here,
+# via case 8 above), so core/cslib/filetypes/present's recorded exclusions are correctly not
+# evaluated in this narrow tree, and literature's one entry is present-and-correct.
+if ! echo "$check_j_section" | grep -qF "CHECK_J_EXCLUDED_RELATIVE_PATHS entry"; then
+  common_test_pass "(9/d) stale-exclusion sweep reports clean against the fixture tree"
+else
+  common_test_fail "(9/d) expected zero stale-exclusion sweep FAIL lines in the Check J section"
 fi
 
 rm -rf "$ROOT"

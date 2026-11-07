@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Extend the fixture suite with the cases the content gate could not express",
+  "started_at": "2026-11-07T01:27:53Z",
+  "last_updated": "2026-11-07T02:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-lint-agent-contracts-handoff-section.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add case (b) central regression fixture + assertion; confirm bug-detection power via scratch content-gate-restored copy", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh"]},
+    {"id": 3, "description": "Add case (c) real-excluded-path fixture + decided-skip assertion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh"]},
+    {"id": 4, "description": "Add case (d) stale-sweep-clean assertion; update header comment for cases (a)/(d) equivalence; update case count", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh"]},
+    {"id": 5, "description": "Discovered and repaired a sibling-suite regression: test-lint-agent-contracts.sh's shared compliant/conforming fixtures (compliant-agent.md, check-f-conforming-agent.md, check-e-falsepositive-guard-agent.md, cslib-implementation-agent.md) newly FAILed Check J's missing-section branch, and the stale-exclusion sweep found 3 recorded exclusion entries with no corresponding file in that suite's WORKDIR; repaired via a new shared HANDOFF_SECTION_BLOCK plus 3 new minimal stub fixtures at the real excluded paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

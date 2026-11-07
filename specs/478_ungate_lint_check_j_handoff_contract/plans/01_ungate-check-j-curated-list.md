@@ -295,7 +295,7 @@ is wrong (a Phase 1 defect) or a sibling task has edited one of the 8 files.
 
 ---
 
-### Phase 3: Extend the fixture suite with the cases the content gate could not express [NOT STARTED]
+### Phase 3: Extend the fixture suite with the cases the content gate could not express [COMPLETED]
 
 **Goal**: `test-lint-agent-contracts-handoff-section.sh` is the regression home for this hole.
 After this phase it contains a case that fails under the old content gate and passes under the
@@ -303,37 +303,55 @@ new design, so the hole cannot silently reopen.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh`
-      immediately before editing.
-- [ ] Add case (b), the central regression test, FIRST: a minimal dispatchable fixture agent file
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-handoff-section.sh`
+      immediately before editing. *(completed)*
+- [x] Add case (b), the central regression test, FIRST: a minimal dispatchable fixture agent file
       under `agent-system/extensions/fixture/agents/` with zero mention of
       `.orchestrator-handoff.json` anywhere and no entry in the exclusion array. Assert a named
       `[FAIL]` line for it inside the Check-J-scoped output slice, and assert the FAIL text names
       `CHECK_J_EXCLUDED_RELATIVE_PATHS` so the remediation pointer itself is regression-tested.
-- [ ] Confirm case (b) has real bug-detection power without mutating the working tree: copy the
+      *(completed: case7-nomention-agent.md)*
+- [x] Confirm case (b) has real bug-detection power without mutating the working tree: copy the
       current `lint-agent-contracts.sh` to the scratchpad, re-add the deleted content gate line
       in the copy, point the suite at the copy via a one-off `LINT_SRC` override run, and confirm
       case (b) does NOT fail there. Record the observation in the phase notes, then discard the
       copy. A regression test that would also pass against the bug is worthless, and this is the
-      cheapest available proof that it would not.
-- [ ] Add case (c): a fixture file placed at one of the REAL excluded relative paths inside the
+      cheapest available proof that it would not. *(completed: with the content gate restored,
+      case 7/(b)'s assertion is the ONE assertion that flips to FAIL (8 passed, 1 failed) while
+      all 8 others stay green — direct proof of bug-detection power. Scratch copies discarded.)*
+- [x] Add case (c): a fixture file placed at one of the REAL excluded relative paths inside the
       scratch tree (e.g. `agent-system/extensions/core/agents/code-reviewer-agent.md`), minimal
       and with zero mention of the string. Assert it produces the exclusion skip INFO line and
       that NO `[PASS]` or `[FAIL]` line names it — mirroring the existing case-5 assertion shape
       for a decided skip. Using a real excluded path avoids polluting the production array with a
-      fixture-namespace entry and avoids inventing a test-only override seam.
-- [ ] Case (a) — a curated file WITH the section passes — is already covered by existing cases 1
+      fixture-namespace entry and avoids inventing a test-only override seam. *(completed with a
+      deviation: used `literature/agents/literature-agent.md` instead of the illustrative
+      `core/agents/code-reviewer-agent.md` example — literature has exactly ONE
+      CHECK_J_EXCLUDED_RELATIVE_PATHS entry under its extension, so creating only
+      `literature/agents/` brings the stale-exclusion sweep's per-extension-directory guard into
+      scope for exactly that one entry; `core/agents/` would have brought in two sibling entries
+      with no fixture of their own, requiring extra stub files in THIS suite for no added
+      coverage value)*
+- [x] Case (a) — a curated file WITH the section passes — is already covered by existing cases 1
       and 2 (prose-form and JSON-form writers); confirm that explicitly rather than adding a
-      redundant fixture, and say so in the suite's header comment.
-- [ ] Case (d) — a qualifying-but-unregistered file produces the intended finding — is the SAME
+      redundant fixture, and say so in the suite's header comment. *(completed)*
+- [x] Case (d) — a qualifying-but-unregistered file produces the intended finding — is the SAME
       mechanism as case (b) under the fail-closed design, since any unregistered dispatchable
       agent is in scope by default. State that equivalence in the header comment rather than
       adding a duplicate fixture, and additionally cover Phase 2's stale-exclusion sweep with one
       assertion that the sweep reports clean against the fixture tree (the condition-(a)
-      interaction Phase 2 documented).
-- [ ] Update the suite's header comment block to describe the new case count and each case's
-      intent, matching the existing numbered-list style.
-- [ ] Stage and commit only this file's own hunks with an explicit single-file pathspec.
+      interaction Phase 2 documented). *(completed: case 9 asserts the sweep is clean)*
+- [x] Update the suite's header comment block to describe the new case count and each case's
+      intent, matching the existing numbered-list style. *(completed: 6 -> 9 cases)*
+- [x] Stage and commit only this file's own hunks with an explicit single-file pathspec.
+      *(altered: this phase's own verification — Required Outcome 6's sibling-suite check —
+      surfaced a genuine collateral regression in a SECOND file,
+      `test-lint-agent-contracts.sh` (not in this phase's "Files to modify" list): 4 shared
+      no-FAIL-expected fixtures newly FAILed Check J, and the stale-exclusion sweep found 3
+      recorded exclusion entries with no corresponding file in that suite's WORKDIR. Repaired in
+      the same phase — see the `Plan Deviations`-style note above and the phase's own commit,
+      which stages BOTH files' own hunks with two explicit single-file pathspecs, never a
+      directory or glob add)*
 
 **Timing**: 1 hour
 
