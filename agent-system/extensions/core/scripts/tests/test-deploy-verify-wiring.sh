@@ -30,34 +30,14 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (.claude/scripts/tests/), which sit at different depths below the repo root.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-find_script() {
-  local name="$1"
-  local candidates=(
-    "$REPO_ROOT/.claude/scripts/${name}"
-    "$SCRIPT_DIR/../${name}"
-  )
-  local candidate
-  for candidate in "${candidates[@]}"; do
-    if [[ -f "$candidate" ]]; then
-      echo "$candidate"
-      return 0
-    fi
-  done
-  return 1
-}
-
-VERIFY_DEPLOY="$(find_script verify-deploy.sh)" || {
-  echo "ERROR: verify-deploy.sh not found at any of:" >&2
-  echo "  $REPO_ROOT/.claude/scripts/verify-deploy.sh" >&2
-  echo "  $SCRIPT_DIR/../verify-deploy.sh" >&2
-  exit 2
-}
-DEPLOY_HEADLESS="$(find_script deploy-headless.sh)" || {
-  echo "ERROR: deploy-headless.sh not found at any of:" >&2
-  echo "  $REPO_ROOT/.claude/scripts/deploy-headless.sh" >&2
-  echo "  $SCRIPT_DIR/../deploy-headless.sh" >&2
-  exit 2
-}
+VERIFY_DEPLOY="$(common_test_resolve_subject "verify-deploy.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/verify-deploy.sh" \
+  "$SCRIPT_DIR/../verify-deploy.sh")" || exit 2
+common_test_declare_subject "$VERIFY_DEPLOY"
+DEPLOY_HEADLESS="$(common_test_resolve_subject "deploy-headless.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/deploy-headless.sh" \
+  "$SCRIPT_DIR/../deploy-headless.sh")" || exit 2
+common_test_declare_subject "$DEPLOY_HEADLESS"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git not found on PATH" >&2

@@ -37,43 +37,15 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-CHECKER_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/check-deploy-freshness.sh"
-  "$SCRIPT_DIR/../check-deploy-freshness.sh"
-)
-CHECKER=""
-for candidate in "${CHECKER_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    CHECKER="$candidate"
-    break
-  fi
-done
-if [[ -z "$CHECKER" ]]; then
-  echo "ERROR: check-deploy-freshness.sh not found at any of:" >&2
-  for candidate in "${CHECKER_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+CHECKER="$(common_test_resolve_subject "check-deploy-freshness.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/check-deploy-freshness.sh" \
+  "$SCRIPT_DIR/../check-deploy-freshness.sh")" || exit 2
+common_test_declare_subject "$CHECKER"
 
-LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/deploy-freshness-lib.sh"
-  "$SCRIPT_DIR/../lib/deploy-freshness-lib.sh"
-)
-LIB=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$LIB" ]]; then
-  echo "ERROR: deploy-freshness-lib.sh not found at any of:" >&2
-  for candidate in "${LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+LIB="$(common_test_resolve_subject "deploy-freshness-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/deploy-freshness-lib.sh" \
+  "$SCRIPT_DIR/../lib/deploy-freshness-lib.sh")" || exit 2
+common_test_declare_subject "$LIB"
 
 # Argued addition (not mechanical): check-deploy-freshness.sh's two WARN remedy lines are being
 # converted to route through scripts/lib/redeploy-remedy-lib.sh (see that library's own header).
@@ -86,17 +58,10 @@ fi
 # check-deploy-freshness.sh itself, is converted, so the library legitimately does not exist yet
 # on a checkout that has not advanced past this phase. The `cp` below guards on its presence for
 # the same reason.
-RR_LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/redeploy-remedy-lib.sh"
-  "$SCRIPT_DIR/../lib/redeploy-remedy-lib.sh"
-)
-RR_LIB=""
-for candidate in "${RR_LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    RR_LIB="$candidate"
-    break
-  fi
-done
+RR_LIB="$(common_test_resolve_subject "redeploy-remedy-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/redeploy-remedy-lib.sh" \
+  "$SCRIPT_DIR/../lib/redeploy-remedy-lib.sh" 2>/dev/null)" || RR_LIB=""
+[[ -n "$RR_LIB" ]] && common_test_declare_subject "$RR_LIB"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git not found on PATH" >&2

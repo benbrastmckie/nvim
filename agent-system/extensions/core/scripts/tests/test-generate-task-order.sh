@@ -46,45 +46,18 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
 
-# --- Source-store-first resolution for the file under test ---
-GTO_CANDIDATES=(
-  "$SOURCE_STORE_SCRIPTS/generate-task-order.sh"
-  "$DEPLOY_SCRIPTS_SRC/generate-task-order.sh"
-)
-GTO_SRC=""
-for c in "${GTO_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { GTO_SRC="$c"; break; }
-done
-if [[ -z "$GTO_SRC" ]]; then
-  echo "ERROR: generate-task-order.sh not found at any of: ${GTO_CANDIDATES[*]}" >&2
-  exit 2
-fi
+# --- mode=source-store resolution for the file under test ---
+GTO_SRC="$(common_test_resolve_subject "generate-task-order.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/generate-task-order.sh" "$SOURCE_STORE_SCRIPTS/generate-task-order.sh")" || exit 2
+common_test_declare_subject "$GTO_SRC"
 
-# --- Deploy-tree-first resolution for the two unchanged dependencies ---
-GUARD_CANDIDATES=(
-  "$DEPLOY_SCRIPTS_SRC/deploy-root-guard.sh"
-  "$SOURCE_STORE_SCRIPTS/deploy-root-guard.sh"
-)
-GUARD_SRC=""
-for c in "${GUARD_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { GUARD_SRC="$c"; break; }
-done
-COMMON_CANDIDATES=(
-  "$DEPLOY_SCRIPTS_SRC/lib/common.sh"
-  "$SOURCE_STORE_SCRIPTS/lib/common.sh"
-)
-COMMON_SRC=""
-for c in "${COMMON_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { COMMON_SRC="$c"; break; }
-done
-if [[ -z "$GUARD_SRC" ]]; then
-  echo "ERROR: deploy-root-guard.sh not found at any of: ${GUARD_CANDIDATES[*]}" >&2
-  exit 2
-fi
-if [[ -z "$COMMON_SRC" ]]; then
-  echo "ERROR: lib/common.sh not found at any of: ${COMMON_CANDIDATES[*]}" >&2
-  exit 2
-fi
+# --- mode=deploy-tree-first resolution for the two unchanged dependencies ---
+GUARD_SRC="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
+  "$DEPLOY_SCRIPTS_SRC/deploy-root-guard.sh" "$SOURCE_STORE_SCRIPTS/deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SRC"
+COMMON_SRC="$(common_test_resolve_subject "lib/common.sh" "deploy-tree-first" \
+  "$DEPLOY_SCRIPTS_SRC/lib/common.sh" "$SOURCE_STORE_SCRIPTS/lib/common.sh")" || exit 2
+common_test_declare_subject "$COMMON_SRC"
 
 PASSED=0
 FAILED=0

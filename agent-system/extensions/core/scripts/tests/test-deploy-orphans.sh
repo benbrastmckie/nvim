@@ -29,24 +29,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-DEPLOY_SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/deploy-headless.sh"
-  "$SCRIPT_DIR/../deploy-headless.sh"
-)
-DEPLOY_SCRIPT=""
-for candidate in "${DEPLOY_SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    DEPLOY_SCRIPT="$candidate"
-    break
-  fi
-done
-if [[ -z "$DEPLOY_SCRIPT" ]]; then
-  echo "ERROR: deploy-headless.sh not found at any of:" >&2
-  for candidate in "${DEPLOY_SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+DEPLOY_SCRIPT="$(common_test_resolve_subject "deploy-headless.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/deploy-headless.sh" \
+  "$SCRIPT_DIR/../deploy-headless.sh")" || exit 2
+common_test_declare_subject "$DEPLOY_SCRIPT"
 
 if ! command -v nvim >/dev/null 2>&1; then
   echo "ERROR: nvim not found on PATH; cannot run the real headless deploy / find_orphans." >&2

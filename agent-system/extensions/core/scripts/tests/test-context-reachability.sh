@@ -40,24 +40,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-TOOL_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/context-reachability.sh"
-  "$SCRIPT_DIR/../context-reachability.sh"
-)
-TOOL=""
-for candidate in "${TOOL_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    TOOL="$candidate"
-    break
-  fi
-done
-if [[ -z "$TOOL" ]]; then
-  echo "ERROR: context-reachability.sh not found at any of:" >&2
-  for candidate in "${TOOL_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+TOOL="$(common_test_resolve_subject "context-reachability.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/context-reachability.sh" \
+  "$SCRIPT_DIR/../context-reachability.sh")" || exit 2
+common_test_declare_subject "$TOOL"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq not available; cannot exercise context-reachability.sh" >&2

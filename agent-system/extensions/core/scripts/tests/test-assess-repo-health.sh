@@ -69,43 +69,15 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/assess-repo-health.sh"
-  "$SCRIPT_DIR/../assess-repo-health.sh"
-)
-TOOL=""
-for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    TOOL="$candidate"
-    break
-  fi
-done
-if [[ -z "$TOOL" ]]; then
-  echo "ERROR: assess-repo-health.sh not found at any of:" >&2
-  for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+TOOL="$(common_test_resolve_subject "assess-repo-health.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/assess-repo-health.sh" \
+  "$SCRIPT_DIR/../assess-repo-health.sh")" || exit 2
+common_test_declare_subject "$TOOL"
 
-SCHEMA_CANDIDATES=(
-  "$REPO_ROOT/.claude/context/schemas/state-schema.json"
-  "$SCRIPT_DIR/../../context/schemas/state-schema.json"
-)
-SCHEMA=""
-for candidate in "${SCHEMA_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    SCHEMA="$candidate"
-    break
-  fi
-done
-if [[ -z "$SCHEMA" ]]; then
-  echo "ERROR: state-schema.json not found at any of:" >&2
-  for candidate in "${SCHEMA_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+SCHEMA="$(common_test_resolve_subject "state-schema.json" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/context/schemas/state-schema.json" \
+  "$SCRIPT_DIR/../../context/schemas/state-schema.json")" || exit 2
+common_test_declare_subject "$SCHEMA"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq not available; cannot exercise assess-repo-health.sh or the enum check" >&2

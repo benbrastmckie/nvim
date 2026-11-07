@@ -35,24 +35,10 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SCRIPT_CANDIDATES=(
-  "$SCRIPT_DIR/../check-extension-docs.sh"
-  "$REPO_ROOT/.claude/scripts/check-extension-docs.sh"
-)
-DOCS_SCRIPT=""
-for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    DOCS_SCRIPT="$candidate"
-    break
-  fi
-done
-if [[ -z "$DOCS_SCRIPT" ]]; then
-  echo "ERROR: check-extension-docs.sh not found at any of:" >&2
-  for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+DOCS_SCRIPT="$(common_test_resolve_subject "check-extension-docs.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/check-extension-docs.sh" \
+  "$SCRIPT_DIR/../check-extension-docs.sh")" || exit 2
+common_test_declare_subject "$DOCS_SCRIPT"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required to build fixture JSON and is not on PATH" >&2

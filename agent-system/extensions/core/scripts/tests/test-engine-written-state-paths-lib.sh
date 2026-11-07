@@ -22,24 +22,10 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # root first and only fall back to the fixed-depth guess when not inside a work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/engine-written-state-paths-lib.sh"
-  "$SCRIPT_DIR/../lib/engine-written-state-paths-lib.sh"
-)
-LIB=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$LIB" ]]; then
-  echo "ERROR: engine-written-state-paths-lib.sh not found at any of:" >&2
-  for candidate in "${LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+LIB="$(common_test_resolve_subject "engine-written-state-paths-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/engine-written-state-paths-lib.sh" \
+  "$SCRIPT_DIR/../lib/engine-written-state-paths-lib.sh")" || exit 2
+common_test_declare_subject "$LIB"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq not found on PATH" >&2

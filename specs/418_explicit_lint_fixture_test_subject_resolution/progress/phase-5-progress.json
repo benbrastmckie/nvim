@@ -11,10 +11,27 @@
       "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
       "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"
     ]},
-    {"id": 2, "description": "Migrate remaining 14 Group C batch 1 suites", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Remove this batch's 19 entries from the gate-27 lint's Layer-2 allowlist", "status": "not_started", "files_touched": []}
+    {"id": 2, "description": "Migrate remaining 14 Group C batch 1 suites: test-consumer-freshness.sh, test-context-reachability.sh, test-corroborate-phase-counts.sh, test-deploy-freshness.sh, test-deploy-orphans.sh, test-deploy-propagation.sh, test-deploy-root-guard.sh (mode=source-store, confirmed deliberate not deployed-only), test-deploy-verify-wiring.sh, test-derived-artifact-probe-lib.sh, test-engine-written-state-paths-lib.sh, test-assess-repo-health.sh, test-generate-task-order.sh, test-index-entries-schema.sh, test-manifest-scripts-sync.sh", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-consumer-freshness.sh",
+      "agent-system/extensions/core/scripts/tests/test-context-reachability.sh",
+      "agent-system/extensions/core/scripts/tests/test-corroborate-phase-counts.sh",
+      "agent-system/extensions/core/scripts/tests/test-deploy-freshness.sh",
+      "agent-system/extensions/core/scripts/tests/test-deploy-orphans.sh",
+      "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+      "agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh",
+      "agent-system/extensions/core/scripts/tests/test-deploy-verify-wiring.sh",
+      "agent-system/extensions/core/scripts/tests/test-derived-artifact-probe-lib.sh",
+      "agent-system/extensions/core/scripts/tests/test-engine-written-state-paths-lib.sh",
+      "agent-system/extensions/core/scripts/tests/test-assess-repo-health.sh",
+      "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh",
+      "agent-system/extensions/core/scripts/tests/test-index-entries-schema.sh",
+      "agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh"
+    ]},
+    {"id": 3, "description": "Remove this batch's 19 entries from the gate-27 lint's Layer-2 allowlist", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh"
+    ]}
   ],
-  "current_objective": 2,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

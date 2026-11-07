@@ -37,31 +37,17 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # REPO_ROOT resolution must work from BOTH invocation sites this harness supports:
 # the source-store copy (agent-system/extensions/core/scripts/tests/, 5 directories
 # below repo root) and the deployed copy (.claude/scripts/tests/, only 3 directories
-# below repo root) -- see the DEPLOY_SCRIPT_CANDIDATES dual-lookup below, which already
-# treats the deployed copy as the preferred resolution path. A single fixed levels-up
-# count cannot be correct for both depths at once, so resolve via the git worktree root
-# first (depth-independent) and only fall back to the fixed-depth guess (matching the
+# below repo root) -- see the resolve-subject call below, which already treats the
+# deployed copy as the preferred resolution path (mode=deploy-tree-first). A single fixed
+# levels-up count cannot be correct for both depths at once, so resolve via the git worktree
+# root first (depth-independent) and only fall back to the fixed-depth guess (matching the
 # source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-DEPLOY_SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/deploy-headless.sh"
-  "$SCRIPT_DIR/../deploy-headless.sh"
-)
-DEPLOY_SCRIPT=""
-for candidate in "${DEPLOY_SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    DEPLOY_SCRIPT="$candidate"
-    break
-  fi
-done
-if [[ -z "$DEPLOY_SCRIPT" ]]; then
-  echo "ERROR: deploy-headless.sh not found at any of:" >&2
-  for candidate in "${DEPLOY_SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+DEPLOY_SCRIPT="$(common_test_resolve_subject "deploy-headless.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/deploy-headless.sh" \
+  "$SCRIPT_DIR/../deploy-headless.sh")" || exit 2
+common_test_declare_subject "$DEPLOY_SCRIPT"
 
 if ! command -v nvim >/dev/null 2>&1; then
   echo "ERROR: nvim not found on PATH; cannot run the real headless deploy." >&2

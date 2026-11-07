@@ -436,25 +436,25 @@ Research Integration. No blocker applies — begin here normally.
 
 ---
 
-### Phase 5: Migrate Group C Batch 1 — 19 Inline-Loop Suites [IN PROGRESS]
+### Phase 5: Migrate Group C Batch 1 — 19 Inline-Loop Suites [COMPLETED]
 
 **Goal**: Convert the first half of the inline `CANDIDATES`-loop shape — the shape invisible to a
 `grep resolve_candidate` measurement — onto the explicit helper.
 
 **Tasks**:
-- [ ] Re-derive Group C: suites referencing `$REPO_ROOT/.claude/scripts` with no
+- [x] Re-derive Group C: suites referencing `$REPO_ROOT/.claude/scripts` with no *(completed: used the gate-27 lint's own Layer-2 allowlist as the authoritative roster, per the plan's revision-time re-verification note -- cross-checked against the Phase 5+6 file lists with zero diff, confirming both batches' 19+19 membership unchanged)*
       `resolve_candidate` token, minus the three deployed-only-by-design suites.
-- [ ] For each file in this batch: read the inline loop, confirm it implements
+- [x] For each file in this batch: read the inline loop, confirm it implements *(completed: all 19 implemented find-first-existing-candidate; two diverged from plain deploy-tree-first -- test-generate-task-order.sh's GTO_SRC and test-index-entries-schema.sh/test-manifest-scripts-sync.sh's DOCS_SCRIPT/SYNC_SCRIPT are deliberately source-store-first by documented header rationale, migrated to mode=source-store rather than mode=deploy-tree-first)*
       find-first-existing-candidate over a deployed/source-store pair, delete the loop and its
       `CANDIDATES` array, and replace with `common_test_resolve_subject` in the mode reproducing
       the array's existing order plus `common_test_declare_subject`.
-- [ ] Where a loop ranges over more than two candidates, record the extra candidates and preserve
+- [x] Where a loop ranges over more than two candidates, record the extra candidates and preserve *(completed: no file in this batch ranged over more than two real candidates -- test-orchestrate-conclusion-aggregate.sh's GIT_COMMIT_SCOPED/TASK_LOCK pair is a separate, independently-optional 2-candidate resolution, not a 3+-candidate single lookup)*
       the existing order explicitly (the two-candidate signature covers the deployed/source-store
       duality only) — do not silently drop a third candidate.
-- [ ] Re-confirm per-file that `test-deploy-root-guard.sh` belongs in the migration family rather
+- [x] Re-confirm per-file that `test-deploy-root-guard.sh` belongs in the migration family rather *(completed: confirmed by its own header comment -- "Resolved SOURCE-STORE-first ... this suite validates the guard as it is developed in the source store" -- a deliberate mode=source-store migration-family member, not a deployed-only exemption)*
       than the deployed-only exemption set; if its single-copy requirement is by design, move it
       to the permanent exemption list with its reason instead of migrating it.
-- [ ] Remove this batch's entries from the lint's Layer-2 allowlist in the same commit.
+- [x] Remove this batch's entries from the lint's Layer-2 allowlist in the same commit. *(completed: Group C Batch 1 section now holds zero entries; gate 27 exits 0 with Total violations: 0, 22 files exempted (Batch 2's 19 plus 3 permanent))*
 
 **Timing**: 1.5 hours
 

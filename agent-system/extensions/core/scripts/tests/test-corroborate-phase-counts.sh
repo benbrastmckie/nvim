@@ -28,43 +28,15 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SKILL_BASE_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/skill-base.sh"
-  "$SCRIPT_DIR/../skill-base.sh"
-)
-SKILL_BASE=""
-for candidate in "${SKILL_BASE_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    SKILL_BASE="$candidate"
-    break
-  fi
-done
-if [[ -z "$SKILL_BASE" ]]; then
-  echo "ERROR: skill-base.sh not found at any of:" >&2
-  for candidate in "${SKILL_BASE_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+SKILL_BASE="$(common_test_resolve_subject "skill-base.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/skill-base.sh" \
+  "$SCRIPT_DIR/../skill-base.sh")" || exit 2
+common_test_declare_subject "$SKILL_BASE"
 
-LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/phase-heading-patterns.sh"
-  "$SCRIPT_DIR/../lib/phase-heading-patterns.sh"
-)
-LIB=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$LIB" ]]; then
-  echo "ERROR: shared library phase-heading-patterns.sh not found at any of:" >&2
-  for candidate in "${LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+LIB="$(common_test_resolve_subject "phase-heading-patterns.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/phase-heading-patterns.sh" \
+  "$SCRIPT_DIR/../lib/phase-heading-patterns.sh")" || exit 2
+common_test_declare_subject "$LIB"
 
 # shellcheck disable=SC1090
 . "$LIB"

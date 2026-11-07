@@ -24,43 +24,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-CHECKER_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/check-consumer-freshness.sh"
-  "$SCRIPT_DIR/../check-consumer-freshness.sh"
-)
-CHECKER=""
-for candidate in "${CHECKER_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    CHECKER="$candidate"
-    break
-  fi
-done
-if [[ -z "$CHECKER" ]]; then
-  echo "ERROR: check-consumer-freshness.sh not found at any of:" >&2
-  for candidate in "${CHECKER_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+CHECKER="$(common_test_resolve_subject "check-consumer-freshness.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/check-consumer-freshness.sh" \
+  "$SCRIPT_DIR/../check-consumer-freshness.sh")" || exit 2
+common_test_declare_subject "$CHECKER"
 
-LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/deploy-freshness-lib.sh"
-  "$SCRIPT_DIR/../lib/deploy-freshness-lib.sh"
-)
-LIB=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$LIB" ]]; then
-  echo "ERROR: deploy-freshness-lib.sh not found at any of:" >&2
-  for candidate in "${LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+LIB="$(common_test_resolve_subject "deploy-freshness-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/deploy-freshness-lib.sh" \
+  "$SCRIPT_DIR/../lib/deploy-freshness-lib.sh")" || exit 2
+common_test_declare_subject "$LIB"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git not found on PATH" >&2

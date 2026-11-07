@@ -24,24 +24,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-GUARD_CANDIDATES=(
-  "$SCRIPT_DIR/../deploy-root-guard.sh"
-  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh"
-)
-GUARD_SCRIPT=""
-for candidate in "${GUARD_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    GUARD_SCRIPT="$candidate"
-    break
-  fi
-done
-if [[ -z "$GUARD_SCRIPT" ]]; then
-  echo "ERROR: deploy-root-guard.sh not found at any of:" >&2
-  for candidate in "${GUARD_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" \
+  "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SCRIPT"
 GUARD_SCRIPT="$(cd "$(dirname "$GUARD_SCRIPT")" && pwd)/$(basename "$GUARD_SCRIPT")"
 
 PASSED=0
