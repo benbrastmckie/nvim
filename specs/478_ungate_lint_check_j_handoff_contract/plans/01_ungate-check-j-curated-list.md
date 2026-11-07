@@ -230,7 +230,7 @@ set itself reproduced exactly), so the pass-count arithmetic is a hypothesis, no
 
 ---
 
-### Phase 2: Close the exclusion array's own inverted drift direction [NOT STARTED]
+### Phase 2: Close the exclusion array's own inverted drift direction [COMPLETED]
 
 **Goal**: A stale exclusion entry is a finding, not a silent permanent skip. This is the
 "mechanically checkable criterion" half of the drift-hazard requirement; Phase 1 supplied the
@@ -238,25 +238,30 @@ other half (a qualifying-but-unregistered agent fails loudly by construction).
 
 **Tasks**:
 
-- [ ] Re-read `lint-agent-contracts.sh` immediately before editing.
-- [ ] Inside `check_j_handoff_section_artifacts()`, before the enumeration loop, sweep every
+- [x] Re-read `lint-agent-contracts.sh` immediately before editing. *(completed)*
+- [x] Inside `check_j_handoff_section_artifacts()`, before the enumeration loop, sweep every
       `CHECK_J_EXCLUDED_RELATIVE_PATHS` entry and FAIL on either staleness condition: (a) the
       entry names a path that does not exist under `$REPO_ROOT`, or (b) the file exists and now
       carries a recognized writer heading (the same
       `^#+.*(\`\.orchestrator-handoff\.json\`|Wrap-Up)` pattern
       `_check_j_locate_handoff_section()` uses), meaning the recorded exception is no longer
       true and the file must be removed from the array so it is checked on its merits.
-- [ ] Word each FAIL so the remedy is explicit: remove the entry from the array (condition b) or
-      correct/remove the path (condition a).
-- [ ] Keep the sweep's severity at FAIL, consistent with Phase 1's finding on tiering.
-- [ ] Guard condition (a) so it cannot fire spuriously inside a fixture `REPO_ROOT` tree that
+      *(completed: `_check_j_sweep_stale_exclusions()`)*
+- [x] Word each FAIL so the remedy is explicit: remove the entry from the array (condition b) or
+      correct/remove the path (condition a). *(completed)*
+- [x] Keep the sweep's severity at FAIL, consistent with Phase 1's finding on tiering.
+      *(completed)*
+- [x] Guard condition (a) so it cannot fire spuriously inside a fixture `REPO_ROOT` tree that
       legitimately contains only a subset of the real agent files — this is the one real design
       constraint of this phase, and it is why the fixture suite in Phase 3 must place a real
       excluded file's path in its scratch tree. Decide and document the resolution in a comment:
       either condition (a) applies only when the file's extension directory itself exists in the
       tree, or the sweep is scoped to entries whose extension directory is present. Do not leave
-      the interaction undocumented.
-- [ ] Stage and commit only this file's own hunks with an explicit single-file pathspec.
+      the interaction undocumented. *(completed: per-extension `agents/` directory presence
+      guard, documented in `_check_j_sweep_stale_exclusions()`'s header comment — an entry is
+      evaluated only if `$AGENTS_ROOT/<ext>/agents` exists in the current tree)*
+- [x] Stage and commit only this file's own hunks with an explicit single-file pathspec.
+      *(completed below)*
 
 **Timing**: 45 minutes
 

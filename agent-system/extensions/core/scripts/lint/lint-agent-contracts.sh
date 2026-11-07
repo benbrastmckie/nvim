@@ -939,9 +939,50 @@ is_excluded_from_check_j() {
   return 1
 }
 
+# Closes the exclusion array's OWN inverted drift direction: an entry that goes stale (the file
+# is renamed/deleted, or the agent later becomes a real handoff writer) must be a FAIL, not a
+# silent permanent skip -- the complementary half of the drift hazard to Phase 1's "unregistered
+# qualifying agent fails loudly by construction" half.
+#
+# Two staleness conditions, both FAIL:
+#   (a) the entry names a path that does not exist under $REPO_ROOT;
+#   (b) the file exists and now carries a recognized (non-"never write one") handoff-writing
+#       heading -- the recorded exception is no longer true, and the file must be removed from
+#       the array so Check J's main loop checks it on its merits.
+#
+# SCOPING, to avoid firing spuriously inside a narrow fixture/test $REPO_ROOT tree that
+# legitimately contains only a subset of the real agent files (e.g.
+# test-lint-agent-contracts-handoff-section.sh's scratch tree, which creates only
+# core/{context,docs,scripts} and fixture/agents/, never core/agents/ itself): an entry is only
+# evaluated if its extension's own `agents/` directory exists in THIS tree
+# ($AGENTS_ROOT/<ext>/agents). If that directory is absent, this tree simply does not model that
+# extension's agent population at all, and the entry is silently not evaluated here -- not
+# treated as stale. This is a per-extension-directory presence guard, not a per-file one: once
+# an extension's `agents/` directory exists in a tree (as Phase 3's case (c) fixture does for
+# `core/agents/`), every entry under that extension IS evaluated on its merits.
+_check_j_sweep_stale_exclusions() {
+  local ex rest ext agents_dir full
+  for ex in "${CHECK_J_EXCLUDED_RELATIVE_PATHS[@]}"; do
+    rest="${ex#agent-system/extensions/}"
+    ext="${rest%%/*}"
+    agents_dir="$AGENTS_ROOT/$ext/agents"
+    [[ -d "$agents_dir" ]] || continue
+    full="$REPO_ROOT/$ex"
+    if [[ ! -f "$full" ]]; then
+      log_fail "Check J: CHECK_J_EXCLUDED_RELATIVE_PATHS entry '$ex' names a path that no longer exists under \$REPO_ROOT -- correct or remove this entry"
+      continue
+    fi
+    if _check_j_locate_handoff_section "$full"; then
+      log_fail "Check J: CHECK_J_EXCLUDED_RELATIVE_PATHS entry '$ex' now carries a recognized handoff-writing section heading -- the recorded exception no longer holds; remove this entry from CHECK_J_EXCLUDED_RELATIVE_PATHS so the file is checked on its merits"
+    fi
+  done
+}
+
 check_j_handoff_section_artifacts() {
   echo ""
   echo "--- Check J: section-scoped handoff artifacts requirement presence ---"
+
+  _check_j_sweep_stale_exclusions
 
   local any_writer=false
   while IFS= read -r f; do
