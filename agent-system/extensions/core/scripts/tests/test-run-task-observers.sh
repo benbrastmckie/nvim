@@ -27,62 +27,33 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/run-task-observers.sh"
-  "$SCRIPT_DIR/../run-task-observers.sh"
-)
-EVENTS_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/events-append.sh"
-  "$SCRIPT_DIR/../events-append.sh"
-)
-GUARD_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh"
-  "$SCRIPT_DIR/../deploy-root-guard.sh"
-)
-COMMON_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/common.sh"
-  "$SCRIPT_DIR/../lib/common.sh"
-)
-ROUTING_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/manifest-routing-lib.sh"
-  "$SCRIPT_DIR/../lib/manifest-routing-lib.sh"
-)
-POSTFLIGHT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/orchestrate-cycle-postflight.sh"
-  "$SCRIPT_DIR/../orchestrate-cycle-postflight.sh"
-)
-
-resolve_candidate() {
-  local name="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $name not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-SCRIPT_UNDER_TEST="$(resolve_candidate "run-task-observers.sh" "${SCRIPT_CANDIDATES[@]}")" || exit 2
-EVENTS_SCRIPT="$(resolve_candidate "events-append.sh" "${EVENTS_CANDIDATES[@]}")" || exit 2
-GUARD_SCRIPT="$(resolve_candidate "deploy-root-guard.sh" "${GUARD_CANDIDATES[@]}")" || exit 2
-COMMON_SCRIPT="$(resolve_candidate "lib/common.sh" "${COMMON_CANDIDATES[@]}")" || exit 2
-ROUTING_SCRIPT="$(resolve_candidate "lib/manifest-routing-lib.sh" "${ROUTING_CANDIDATES[@]}")" || exit 2
+SCRIPT_UNDER_TEST="$(common_test_resolve_subject "run-task-observers.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/run-task-observers.sh" \
+  "$SCRIPT_DIR/../run-task-observers.sh")" || exit 2
+common_test_declare_subject "$SCRIPT_UNDER_TEST"
+EVENTS_SCRIPT="$(common_test_resolve_subject "events-append.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/events-append.sh" \
+  "$SCRIPT_DIR/../events-append.sh")" || exit 2
+common_test_declare_subject "$EVENTS_SCRIPT"
+GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" \
+  "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SCRIPT"
+COMMON_SCRIPT="$(common_test_resolve_subject "lib/common.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/common.sh" \
+  "$SCRIPT_DIR/../lib/common.sh")" || exit 2
+common_test_declare_subject "$COMMON_SCRIPT"
+ROUTING_SCRIPT="$(common_test_resolve_subject "lib/manifest-routing-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/manifest-routing-lib.sh" \
+  "$SCRIPT_DIR/../lib/manifest-routing-lib.sh")" || exit 2
+common_test_declare_subject "$ROUTING_SCRIPT"
 # Postflight is optional -- only case (o) (ordering assertion) needs it, and it is sourced
 # nowhere; it is only read as text, so a missing file degrades that one case to FAIL, not to an
 # environment error for the whole suite.
-POSTFLIGHT_SCRIPT=""
-for candidate in "${POSTFLIGHT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    POSTFLIGHT_SCRIPT="$candidate"
-    break
-  fi
-done
+POSTFLIGHT_SCRIPT="$(common_test_resolve_subject "orchestrate-cycle-postflight.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-cycle-postflight.sh" \
+  "$SCRIPT_DIR/../orchestrate-cycle-postflight.sh" 2>/dev/null)" || POSTFLIGHT_SCRIPT=""
+[[ -n "$POSTFLIGHT_SCRIPT" ]] && common_test_declare_subject "$POSTFLIGHT_SCRIPT"
 
 PASSED=0
 FAILED=0

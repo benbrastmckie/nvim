@@ -52,52 +52,29 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 # Source-store-first (see test-validate-handoff.sh's identical rationale): this suite exercises
 # the SKILL.md files under active development, which live in the source store before a redeploy
 # copies them to the deploy tree. After redeploy the two are identical, so either order then
-# yields the same result.
-resolve_candidate() {
-  local relative="$1" candidate
-  for candidate in "$SCRIPT_DIR/../../$relative" "$REPO_ROOT/.claude/$relative"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  return 1
-}
-
-SKILL_FILE="$(resolve_candidate "skills/skill-orchestrate/SKILL.md")" || {
+# yields the same result. mode="source-store" below is this suite's hard correctness
+# requirement, matching that rationale exactly.
+SKILL_FILE="$(common_test_resolve_subject "skills/skill-orchestrate/SKILL.md" "source-store" \
+  "$REPO_ROOT/.claude/skills/skill-orchestrate/SKILL.md" \
+  "$SCRIPT_DIR/../../skills/skill-orchestrate/SKILL.md")" || {
   echo "ERROR: skill-orchestrate/SKILL.md not found (source store or deploy tree)" >&2
   exit 2
 }
-SCRIPT_FILE_CANDIDATES=(
-  "$SCRIPT_DIR/../orchestrate-cycle-postflight.sh"
-  "$REPO_ROOT/.claude/scripts/orchestrate-cycle-postflight.sh"
-)
-SCRIPT_FILE=""
-for candidate in "${SCRIPT_FILE_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    SCRIPT_FILE="$candidate"
-    break
-  fi
-done
-if [[ -z "$SCRIPT_FILE" ]]; then
+common_test_declare_subject "$SKILL_FILE"
+SCRIPT_FILE="$(common_test_resolve_subject "orchestrate-cycle-postflight.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-cycle-postflight.sh" \
+  "$SCRIPT_DIR/../orchestrate-cycle-postflight.sh")" || {
   echo "ERROR: orchestrate-cycle-postflight.sh not found at any candidate path" >&2
   exit 2
-fi
-VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-handoff.sh"
-  "$REPO_ROOT/.claude/scripts/validate-handoff.sh"
-)
-VALIDATOR=""
-for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    VALIDATOR="$candidate"
-    break
-  fi
-done
-if [[ -z "$VALIDATOR" ]]; then
+}
+common_test_declare_subject "$SCRIPT_FILE"
+VALIDATOR="$(common_test_resolve_subject "validate-handoff.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/validate-handoff.sh" \
+  "$SCRIPT_DIR/../validate-handoff.sh")" || {
   echo "ERROR: validate-handoff.sh not found at any candidate path" >&2
   exit 2
-fi
+}
+common_test_declare_subject "$VALIDATOR"
 
 PASSED=0
 FAILED=0
@@ -303,17 +280,10 @@ else
 fi
 
 # ── Every extracted field name must appear in the schema's properties (grep-audit lock-in) ─────
-SCHEMA_CANDIDATES=(
-  "$SCRIPT_DIR/../../context/schemas/orchestrator-handoff-schema.json"
-  "$REPO_ROOT/.claude/context/schemas/orchestrator-handoff-schema.json"
-)
-SCHEMA=""
-for candidate in "${SCHEMA_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    SCHEMA="$candidate"
-    break
-  fi
-done
+SCHEMA="$(common_test_resolve_subject "orchestrator-handoff-schema.json" "source-store" \
+  "$REPO_ROOT/.claude/context/schemas/orchestrator-handoff-schema.json" \
+  "$SCRIPT_DIR/../../context/schemas/orchestrator-handoff-schema.json")" || SCHEMA=""
+[[ -n "$SCHEMA" ]] && common_test_declare_subject "$SCHEMA"
 if [[ -z "$SCHEMA" ]]; then
   common_test_fail "schema file not found at any candidate path -- cannot lock in field-name audit"
 else

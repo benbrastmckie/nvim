@@ -12,10 +12,15 @@
       "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
       "agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh"
     ]},
-    {"id": 2, "description": "Migrate remaining 6 Group B suites: test-handoff-reader-parity.sh, test-run-task-observers.sh, test-skill-base-lifecycle.sh, test-orchestrate-build-dispatch.sh, test-todo-move-pair-staging.sh, test-force-phases.sh", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Remove this batch's 12 entries from the gate-27 lint's Layer-2 allowlist", "status": "not_started", "files_touched": []}
+    {"id": 2, "description": "Migrate test-handoff-reader-parity.sh, test-run-task-observers.sh, test-skill-base-lifecycle.sh to common_test_resolve_subject + common_test_declare_subject", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-handoff-reader-parity.sh",
+      "agent-system/extensions/core/scripts/tests/test-run-task-observers.sh",
+      "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"
+    ]},
+    {"id": 3, "description": "Migrate remaining 3 Group B suites: test-orchestrate-build-dispatch.sh, test-todo-move-pair-staging.sh, test-force-phases.sh", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Remove this batch's 12 entries from the gate-27 lint's Layer-2 allowlist", "status": "not_started", "files_touched": []}
   ],
-  "current_objective": 2,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

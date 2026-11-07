@@ -46,26 +46,10 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-# ─── candidate resolution: deployed tree first, source-store fallback ─────────────────────────
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-SKILL_BASE="$(resolve_candidate "skill-base.sh" \
+SKILL_BASE="$(common_test_resolve_subject "skill-base.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/skill-base.sh" \
   "$SCRIPT_DIR/../skill-base.sh")" || exit 2
+common_test_declare_subject "$SKILL_BASE"
 
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then
@@ -923,9 +907,10 @@ fi
 # =====================================================================
 common_test_info "=== skill_get_extension_dir / skill_run_extension_hook (source-store-first) ==="
 
-HOOK_SKILL_BASE="$(resolve_candidate "skill-base.sh (source-store-first, for the hook mechanism group)" \
-  "$SCRIPT_DIR/../skill-base.sh" \
-  "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
+HOOK_SKILL_BASE="$(common_test_resolve_subject "skill-base.sh (source-store-first, for the hook mechanism group)" "source-store" \
+  "$REPO_ROOT/.claude/scripts/skill-base.sh" \
+  "$SCRIPT_DIR/../skill-base.sh")" || exit 2
+common_test_declare_subject "$HOOK_SKILL_BASE"
 common_test_info "Group 5 exercises: $HOOK_SKILL_BASE"
 
 # ─── fixture: a real object-schema .claude-extensions.json joined with per-extension manifests ──
@@ -1080,9 +1065,10 @@ fi
 # =====================================================================
 common_test_info "=== skill_read_artifact_number (source-store-first) ==="
 
-ARTIFACT_SKILL_BASE="$(resolve_candidate "skill-base.sh (source-store-first, for the artifact-round group)" \
-  "$SCRIPT_DIR/../skill-base.sh" \
-  "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
+ARTIFACT_SKILL_BASE="$(common_test_resolve_subject "skill-base.sh (source-store-first, for the artifact-round group)" "source-store" \
+  "$REPO_ROOT/.claude/scripts/skill-base.sh" \
+  "$SCRIPT_DIR/../skill-base.sh")" || exit 2
+common_test_declare_subject "$ARTIFACT_SKILL_BASE"
 common_test_info "Group 6 exercises: $ARTIFACT_SKILL_BASE"
 
 # ─── subshell helper: source ARTIFACT_SKILL_BASE fresh each time, cd into the fixture root so
