@@ -1914,7 +1914,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 1093,
+      "line_count": 1152,
       "keywords": [
         "standards",
         "shell",
@@ -2819,7 +2819,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 2280,
+      "line_count": 2295,
       "keywords": [
         "patterns",
         "orchestrate",
