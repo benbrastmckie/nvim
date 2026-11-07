@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Wire check-record-versioning.sh + acceptance fixture",
+  "started_at": "2026-11-07T00:22:00Z",
+  "last_updated": "2026-11-07T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Wire library resolution + required-function check + git_corpus_enum in scan_tree + 3 stderr diagnostics + header doc updates", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-record-versioning.sh"]},
+    {"id": 2, "description": "Add acceptance fixture + 3 supporting cases to test-check-record-versioning.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-record-versioning.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash tests/test-check-record-versioning.sh: 22/22 cases pass (all 18 pre-existing + 4 new). lint-shellcheck.sh clean on both edited paths. Direct acceptance reproduction confirmed (untracked BLOCKING file under PATH_SCOPE exits 1, names the file). Repo-wide --quiet comparison against the pre-change script (via git show HEAD:...): BLOCKING unchanged at 3; ADVISORY rose by exactly 1 (agent-system/extensions/core/scripts/gate-cost-model.csv:9, bare 'previously' vocabulary) -- matches the plan's measured one-untracked-file blast radius exactly. Recorded via issue-record.sh and deferred to Phase 4's triage pass per the plan (never grounds to revert the enumeration)."
+}

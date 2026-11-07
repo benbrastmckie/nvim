@@ -192,7 +192,7 @@ and checking that neither reports an undeclared script.
 
 ---
 
-### Phase 2: Wire check-record-versioning.sh + acceptance fixture [NOT STARTED]
+### Phase 2: Wire check-record-versioning.sh + acceptance fixture [COMPLETED]
 
 **Goal**: The task's own acceptance criterion holds: an untracked, on-disk file with a BLOCKING
 occurrence is scanned under `PATH_SCOPE` and yields a non-clean verdict; any still-excluded on-disk
@@ -200,39 +200,39 @@ file is named on stderr.
 
 **Tasks**:
 
-- [ ] Add `git-corpus-enum-lib.sh` to the script's library resolution: extend the existing
+- [x] Add `git-corpus-enum-lib.sh` to the script's library resolution: extend the existing
   `LIB_CANDIDATES` pattern (deployed `.claude/scripts/lib/` first, source-store
   `agent-system/extensions/core/scripts/lib/` fallback) for the new library, failing with `exit 2`
   and a named remedy when absent -- matching the existing not-found branch at
-  `check-record-versioning.sh:111-117`, not the degrade-safe no-op used for the redeploy-remedy lib.
-- [ ] Extend the existing `declare -F` required-function loop (`check-record-versioning.sh:130-140`)
+  `check-record-versioning.sh:111-117`, not the degrade-safe no-op used for the redeploy-remedy lib. *(completed)*
+- [x] Extend the existing `declare -F` required-function loop (`check-record-versioning.sh:130-140`)
   with `git_corpus_enum`, `git_corpus_unenumerated_report`, and `git_corpus_untracked_count`, so a
-  stale deployed library fails loudly rather than reinstating the defect.
-- [ ] Replace `scan_tree`'s enumeration (`check-record-versioning.sh:201`) with
-  `done < <(git_corpus_enum "$REPO_ROOT" "$enum_path")`. Leave the loop body untouched.
-- [ ] In `scan_tree`, after enumeration, emit on stderr (never through `info()`, so `--quiet` cannot
+  stale deployed library fails loudly rather than reinstating the defect. *(completed: added as its own CORPUS_LIB_CANDIDATES block + required-function loop, right after the existing record-version-patterns.sh block)*
+- [x] Replace `scan_tree`'s enumeration (`check-record-versioning.sh:201`) with
+  `done < <(git_corpus_enum "$REPO_ROOT" "$enum_path")`. Leave the loop body untouched. *(completed: enumerated once into `$enum_output`, loop body fed via `<<< "$enum_output"` instead of process substitution so the same enumeration can also drive the zero-enumeration check; loop body itself unchanged)*
+- [x] In `scan_tree`, after enumeration, emit on stderr (never through `info()`, so `--quiet` cannot
   suppress it):
   - the untracked-inclusion disclosure when `git_corpus_untracked_count` is non-zero, naming the
     count and the scope;
   - the per-file `git_corpus_unenumerated_report` output, in `PATH_SCOPE` mode only;
   - a zero-enumeration diagnostic when the scope exists on disk but the union is empty, naming the
-    scope and the reason, so a bare `PASS` is never the only signal.
-- [ ] Leave exit codes and every stdout line format unchanged (Non-Goals).
-- [ ] Update the script header: the "scans every git-tracked file" claim in the opening paragraph,
+    scope and the reason, so a bare `PASS` is never the only signal. *(completed)*
+- [x] Leave exit codes and every stdout line format unchanged (Non-Goals). *(completed: verified -- all 18 pre-existing suite assertions pass unmodified)*
+- [x] Update the script header: the "scans every git-tracked file" claim in the opening paragraph,
   the `PATH_SCOPE` usage paragraph (lines 37-42) to state the untracked-inclusion and loud-skip
-  behavior, and a note that enumeration now lives in the shared library.
-- [ ] Add to `test-check-record-versioning.sh` the acceptance case: write a file into the fixture
+  behavior, and a note that enumeration now lives in the shared library. *(completed)*
+- [x] Add to `test-check-record-versioning.sh` the acceptance case: write a file into the fixture
   with BLOCKING content, do NOT `git add` it, run `PATH_SCOPE` over exactly that path, and assert
   the verdict is non-clean (exit 1 with a `BLOCKING` finding line naming the path). Wrap the literal
   fixture content in a `version-ok:begin/end` pair, per this suite's existing convention and its
-  header note.
-- [ ] Add three supporting cases to the same suite: (a) a gitignored file under a `PATH_SCOPE`
+  header note. *(completed: Case 16)*
+- [x] Add three supporting cases to the same suite: (a) a gitignored file under a `PATH_SCOPE`
   produces the `[SKIP] ...: gitignored` stderr line and still does not count as a finding (Case 7's
   exclusion preserved, now audible); (b) that stderr diagnostic still appears under `--quiet`;
   (c) a `PATH_SCOPE` directory containing only gitignored files emits the zero-enumeration
   diagnostic instead of a silent `PASS`. Note that the suite's `run_lint` helper currently folds
   stderr into stdout via `2>&1`, which is sufficient for these assertions; if a case needs the
-  streams separated, add a second helper rather than changing `run_lint`'s existing signature.
+  streams separated, add a second helper rather than changing `run_lint`'s existing signature. *(completed: Cases 17-19; run_lint's existing 2>&1 fold was sufficient, no second helper needed)*
 
 **Timing**: 1.5 hours
 

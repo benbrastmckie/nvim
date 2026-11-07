@@ -42,6 +42,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 LINT_SRC="$SCRIPT_DIR/../check-record-versioning.sh"
 LIB_SRC="$SCRIPT_DIR/../lib/record-version-patterns.sh"
+CORPUS_LIB_SRC="$SCRIPT_DIR/../lib/git-corpus-enum-lib.sh"
 HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-no-record-versioning.sh"
 
 PASSED=0
@@ -54,6 +55,10 @@ if [[ ! -f "$LINT_SRC" ]]; then
 fi
 if [[ ! -f "$LIB_SRC" ]]; then
   echo "ERROR: expected shared library at $LIB_SRC" >&2
+  exit 2
+fi
+if [[ ! -f "$CORPUS_LIB_SRC" ]]; then
+  echo "ERROR: expected shared library git-corpus-enum-lib.sh at $CORPUS_LIB_SRC" >&2
   exit 2
 fi
 if [[ ! -f "$HOOK_SRC" ]]; then
@@ -84,6 +89,7 @@ mkdir -p "$FIXTURE/docs" "$FIXTURE/code" "$FIXTURE/.github" \
 # (.claude/scripts/lib/... first, then agent-system/extensions/core/scripts/lib/... as the
 # source-store fallback) -- mirror the source-store layout so REPO_ROOT=$FIXTURE resolves it.
 cp "$LIB_SRC" "$FIXTURE/agent-system/extensions/core/scripts/lib/record-version-patterns.sh"
+cp "$CORPUS_LIB_SRC" "$FIXTURE/agent-system/extensions/core/scripts/lib/git-corpus-enum-lib.sh"
 git init -q "$FIXTURE"
 git -C "$FIXTURE" config user.email "test@example.com"
 git -C "$FIXTURE" config user.name "Test"
@@ -416,6 +422,63 @@ for rel in "${!AGREEMENT_FIXTURES[@]}"; do
 done
 if [[ "$agreement_ok" -eq 1 ]]; then
   common_test_pass "lint and hook agree on every BLOCKING-tier fixture file's in-scope verdict"
+fi
+
+# =====================================================================
+# Case 16 (acceptance): an untracked, on-disk file containing a BLOCKING-tier occurrence does
+# NOT yield a clean verdict under PATH_SCOPE mode -- the task's own stated acceptance criterion.
+# Deliberately never `git add`ed.
+# =====================================================================
+# version-ok:begin test fixture for check-record-versioning.sh detection
+echo "## The widget convention (v2)" > "$FIXTURE/docs/untracked-blocking.md"
+# version-ok:end
+out16="$WORKDIR/case16.txt"
+code16="$(run_lint "docs/untracked-blocking.md" "$out16")"
+if [[ "$code16" -eq 1 ]] && grep -qE '^  docs/untracked-blocking\.md:[0-9]+: BLOCKING:' "$out16"; then
+  common_test_pass "untracked on-disk file with a BLOCKING occurrence yields a non-clean PATH_SCOPE verdict (acceptance)"
+else
+  common_test_fail "untracked BLOCKING file expected exit 1 with a BLOCKING finding naming it, got exit=$code16; output:
+$(cat "$out16")"
+fi
+
+# =====================================================================
+# Case 17: a gitignored file under a PATH_SCOPE still does not count as a finding (Case 7's
+# exclusion preserved), AND now produces an explicit "[SKIP] ...: gitignored" stderr line naming
+# it, rather than passing in total silence.
+# =====================================================================
+out17="$WORKDIR/case17.txt"
+code17="$(run_lint "ignored" "$out17")"
+if [[ "$code17" -eq 0 ]] && ! grep -qE '^  ignored/scratch\.md:[0-9]+: (BLOCKING|ADVISORY):' "$out17" \
+   && grep -qF '[SKIP] ignored/scratch.md: gitignored (not scanned)' "$out17"; then
+  common_test_pass "gitignored file under PATH_SCOPE=ignored: not a finding, named on stderr by [SKIP]"
+else
+  common_test_fail "PATH_SCOPE=ignored expected exit 0, no finding, [SKIP] line naming ignored/scratch.md; got exit=$code17; output:
+$(cat "$out17")"
+fi
+
+# =====================================================================
+# Case 18: the [SKIP]/gitignored stderr diagnostic survives --quiet.
+# =====================================================================
+out18="$WORKDIR/case18.txt"
+code18="$(run_lint "--quiet ignored" "$out18")"
+if [[ "$code18" -eq 0 ]] && grep -qF '[SKIP] ignored/scratch.md: gitignored (not scanned)' "$out18"; then
+  common_test_pass "[SKIP]/gitignored diagnostic survives --quiet"
+else
+  common_test_fail "PATH_SCOPE=ignored --quiet expected the [SKIP] diagnostic to survive; got exit=$code18; output:
+$(cat "$out18")"
+fi
+
+# =====================================================================
+# Case 19: a PATH_SCOPE directory containing only gitignored files enumerates 0 files, and emits
+# the zero-enumeration diagnostic instead of a silent PASS being the only signal. Reuses the
+# same "ignored" scope as Case 17/18 -- it contains exactly one file, and that file is
+# gitignored, so the union enumerates nothing under it.
+# =====================================================================
+if grep -qF 'PATH_SCOPE exists on disk but enumerates 0 files' "$out17"; then
+  common_test_pass "PATH_SCOPE=ignored (all-gitignored directory) emits the zero-enumeration diagnostic"
+else
+  common_test_fail "expected a zero-enumeration diagnostic for PATH_SCOPE=ignored; output:
+$(cat "$out17")"
 fi
 
 # =====================================================================
