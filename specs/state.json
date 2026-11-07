@@ -12687,19 +12687,20 @@
         445
       ],
       "file_scope": [
+        "agent-system/extensions/core/scripts/tests/run-all.sh",
         "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
         "agent-system/extensions/core/scripts/tests/test-gate-lock.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
         "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
-        "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh",
-        "agent-system/extensions/core/scripts/tests/run-all.sh"
+        "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh"
       ],
       "parent_task": 275,
       "artifacts": [],
       "created": "2026-11-04T22:42:30Z",
-      "last_updated": "2026-11-04T22:42:30Z",
+      "last_updated": "2026-11-07T04:09:01Z",
       "audit_verdict": {
         "proposal": {
           "id": "isolate_seven_red_gate8_shell_suites",

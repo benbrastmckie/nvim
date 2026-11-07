@@ -1,5 +1,5 @@
 ---
-next_project_number: 521
+next_project_number: 523
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 521
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520,521,522 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,445,446,448,458,463,472,474,475,492,497,516 | 369,383,397,412,418,430,431,435,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,444,451,454,455,461,476,484,500,507,518 | 313,391,398,420,423,435,439,445,446,448,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486,517 | 360,390,402,435,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -57,6 +57,7 @@ next_project_number: 521
   └─ 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
+521 [NOT STARTED] — lint-agent-contracts.sh Check N completeness-net glob does...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -77,6 +78,7 @@ next_project_number: 521
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
+522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
   └─ 498 [NOT STARTED] — Replace the email preference harvest tally substrate
@@ -140,6 +142,63 @@ next_project_number: 521
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 522. Report summary skeleton conformance across extensions
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+- **Parent**: Task 495
+
+**Description**: Report and summary heading skeletons are nonconformant across fifteen agents beyond the four already remediated.
+
+A mechanical sweep against validate-artifact.sh's own REPORT_SECTIONS and SUMMARY_SECTIONS lists, using the validator's own regex, found heading-contract gaps well beyond the four formal research agents whose conformance work produced this finding:
+
+CONFIRMED FAIL, summary skeleton missing Impacts, Follow-ups and References:
+  agent-system/extensions/nix/agents/nix-implementation-agent.md
+  agent-system/extensions/nvim/agents/neovim-implementation-agent.md
+  agent-system/extensions/web/agents/web-implementation-agent.md
+CONFIRMED FAIL, report skeleton missing Context and Scope:
+  agent-system/extensions/web/agents/web-research-agent.md
+DOMAIN-SHAPED, larger pre-existing cluster (ten founder, three present, two epidemiology agents): skeletons use domain-customised headings such as Summary in place of Executive Summary, yet still write into specs report directories subject to the generic check.
+NO SKELETON AT ALL: seven agents across typst, z3, books, latex, python, rust and cslib carry neither an embedded report skeleton nor a pointer to the canonical contract.
+
+The authoritative enumeration is specs/495_formal_research_agents_report_section_conformance/fixtures/sweep-baseline.txt, produced and re-run by the formal-agent conformance work. It is explicitly authoritative over that work's own research report, which undercounted the founder-extension list (the sweep found ten founder agents failing; the report described eight while listing nine).
+
+The canonical required-heading contract now lives once in report-format.md and summary-format.md, with general-research-agent.md and the four formal agents pointing at it rather than carrying their own copies. That pointer-not-copy pattern is the template to follow here; do not reintroduce per-agent verbatim copies.
+
+Decide per cluster rather than uniformly: the four confirmed FAILs are straightforward remediation, while the domain-shaped cluster needs a ruling on whether a domain-customised skeleton should conform to the generic contract or whether the validator should recognise a declared domain shape. Resolve that ruling before editing fifteen files.
+
+CHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1793993117_98582a.
+CITATIONS: {task 495, iss_1793997449338_BjRvG0} class artifact-format-gap, and {task 495, iss_1794018627494_M2yr6l} class measurement discrepancy.
+
+BACKLOG RECONCILIATION: the audit returned one real mechanical hit, subset-of-open against reword_dead_lifecycle_command_prose_per_class, which shares the three implementation-agent paths above. That record rewords dead lifecycle-command prose per class and site; this one fixes report and summary heading skeletons. The shared paths are a coarse footprint match, not intent overlap, so no dependency edge is asserted here. If the two are ever dispatched concurrently, batch admission's own file_scope overlap check will serialize them. Every other duplicate-of-open verdict carries shared_paths null and mechanical_class none, i.e. semantic threshold noise.
+
+---
+
+### 521. Check n completeness net glob misses implement variant
+- **Effort**: low
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 478
+
+**Description**: lint-agent-contracts.sh Check N completeness-net glob does not match the -implement-agent.md naming variant.
+
+Check N (Net 1/Net 2) enumerates the agents its completeness net must cover with the glob '*implementation*agent.md'. That pattern does not match the '*-implement-agent.md' variant, so epi-implement-agent.md and founder-implement-agent.md fall outside the net entirely. One consequence is already observable: CHECK_G_EXCLUDED_RELATIVE_PATHS lists epi-implement-agent.md, but because the glob never reaches that file, the exclusion entry is dead code that can never fire.
+
+Found mechanically while redesigning Check J as fail-closed, and deliberately left unfixed there because it falls outside that work's declared file_scope.
+
+Deciding between widening the glob, sourcing Net 1/Net 2 from enumerate_dispatchable_agents(), and normalising the agent filename convention is the substance of this task. Prefer the enumerate_dispatchable_agents() route if it holds up: the Check J fix established that sourcing a check's universe from a filename glob is itself the trap, and Check J now iterates that function directly.
+
+CHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1793993117_98582a.
+CITATIONS: {task 478, iss_1793993679918_nAiaZ8}, class COVERAGE_GAP, severity minor.
+
+BACKLOG RECONCILIATION: three open records name lint-agent-contracts.sh in their own file_scope (audit_cross_extension_bounded_wait_duplication, durable_record_for_gate_enforced_verbatim_fragments, rebase_bounded_wait_guidance_on_180s_ceiling), but all three concern bounded-wait prose and verbatim-fragment enforcement, not Check N's enumeration source. No intent overlap, so no dependency edge is asserted. Every duplicate-of-open verdict the audit returned for this proposal carries shared_paths null and mechanical_class none, i.e. semantic threshold noise rather than real territory overlap.
+
+---
 
 ### 520. Emit deploy ordering in implement dispatch body
 - **Status**: [NOT STARTED]
