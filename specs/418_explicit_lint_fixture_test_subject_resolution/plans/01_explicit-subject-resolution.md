@@ -436,7 +436,7 @@ Research Integration. No blocker applies — begin here normally.
 
 ---
 
-### Phase 5: Migrate Group C Batch 1 — 19 Inline-Loop Suites [NOT STARTED]
+### Phase 5: Migrate Group C Batch 1 — 19 Inline-Loop Suites [IN PROGRESS]
 
 **Goal**: Convert the first half of the inline `CANDIDATES`-loop shape — the shape invisible to a
 `grep resolve_candidate` measurement — onto the explicit helper.

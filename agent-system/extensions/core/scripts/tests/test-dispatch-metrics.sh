@@ -40,80 +40,26 @@ if [[ -z "$REPO_ROOT" ]]; then
   REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 fi
 
-SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/dispatch-metrics.sh"
-  "$SCRIPT_DIR/../dispatch-metrics.sh"
-)
-GUARD_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh"
-  "$SCRIPT_DIR/../deploy-root-guard.sh"
-)
-COMMON_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/common.sh"
-  "$SCRIPT_DIR/../lib/common.sh"
-)
-TASK_LOOKUP_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/task-lookup-lib.sh"
-  "$SCRIPT_DIR/../lib/task-lookup-lib.sh"
-)
+# Sourced only for common_test_resolve_subject/common_test_declare_subject below -- this suite
+# keeps its OWN local pass()/fail()/info() (below) for its own test-harness output.
+source "$SCRIPT_DIR/../lib/common.sh"
 
-SCRIPT_UNDER_TEST=""
-for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    SCRIPT_UNDER_TEST="$candidate"
-    break
-  fi
-done
-GUARD_SCRIPT=""
-for candidate in "${GUARD_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    GUARD_SCRIPT="$candidate"
-    break
-  fi
-done
-COMMON_SCRIPT=""
-for candidate in "${COMMON_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    COMMON_SCRIPT="$candidate"
-    break
-  fi
-done
-TASK_LOOKUP_SCRIPT=""
-for candidate in "${TASK_LOOKUP_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    TASK_LOOKUP_SCRIPT="$candidate"
-    break
-  fi
-done
-
-if [[ -z "$SCRIPT_UNDER_TEST" ]]; then
-  echo "ERROR: dispatch-metrics.sh not found at any of:" >&2
-  for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
-if [[ -z "$GUARD_SCRIPT" ]]; then
-  echo "ERROR: deploy-root-guard.sh not found at any of:" >&2
-  for candidate in "${GUARD_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
-if [[ -z "$COMMON_SCRIPT" ]]; then
-  echo "ERROR: lib/common.sh not found at any of:" >&2
-  for candidate in "${COMMON_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
-if [[ -z "$TASK_LOOKUP_SCRIPT" ]]; then
-  echo "ERROR: lib/task-lookup-lib.sh not found at any of:" >&2
-  for candidate in "${TASK_LOOKUP_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+SCRIPT_UNDER_TEST="$(common_test_resolve_subject "dispatch-metrics.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/dispatch-metrics.sh" \
+  "$SCRIPT_DIR/../dispatch-metrics.sh")" || exit 2
+common_test_declare_subject "$SCRIPT_UNDER_TEST"
+GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" \
+  "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SCRIPT"
+COMMON_SCRIPT="$(common_test_resolve_subject "lib/common.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/common.sh" \
+  "$SCRIPT_DIR/../lib/common.sh")" || exit 2
+common_test_declare_subject "$COMMON_SCRIPT"
+TASK_LOOKUP_SCRIPT="$(common_test_resolve_subject "lib/task-lookup-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/task-lookup-lib.sh" \
+  "$SCRIPT_DIR/../lib/task-lookup-lib.sh")" || exit 2
+common_test_declare_subject "$TASK_LOOKUP_SCRIPT"
 
 PASSED=0
 FAILED=0

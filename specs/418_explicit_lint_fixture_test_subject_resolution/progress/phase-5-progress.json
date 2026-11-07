@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Migrate Group C Batch 1 -- 19 Inline-Loop Suites",
+  "started_at": "2026-11-07T04:20:00Z",
+  "last_updated": "2026-11-07T04:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate the 5 standard-shape multi-candidate suites sharing the SCRIPT/GUARD/COMMON/TASK_LOOKUP template: test-issue-record.sh, test-dispatch-metrics.sh, test-errors-append.sh, test-orchestrate-record-decision.sh, test-orchestrate-conclusion-aggregate.sh", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-issue-record.sh",
+      "agent-system/extensions/core/scripts/tests/test-dispatch-metrics.sh",
+      "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"
+    ]},
+    {"id": 2, "description": "Migrate remaining 14 Group C batch 1 suites", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Remove this batch's 19 entries from the gate-27 lint's Layer-2 allowlist", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

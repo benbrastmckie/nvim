@@ -22,105 +22,34 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/orchestrate-conclusion-aggregate.sh"
-  "$SCRIPT_DIR/../orchestrate-conclusion-aggregate.sh"
-)
-GUARD_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh"
-  "$SCRIPT_DIR/../deploy-root-guard.sh"
-)
-COMMON_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/common.sh"
-  "$SCRIPT_DIR/../lib/common.sh"
-)
-TASK_LOOKUP_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/task-lookup-lib.sh"
-  "$SCRIPT_DIR/../lib/task-lookup-lib.sh"
-)
+SCRIPT_UNDER_TEST="$(common_test_resolve_subject "orchestrate-conclusion-aggregate.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-conclusion-aggregate.sh" \
+  "$SCRIPT_DIR/../orchestrate-conclusion-aggregate.sh")" || exit 2
+common_test_declare_subject "$SCRIPT_UNDER_TEST"
+GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" \
+  "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SCRIPT"
+COMMON_SCRIPT="$(common_test_resolve_subject "lib/common.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/common.sh" \
+  "$SCRIPT_DIR/../lib/common.sh")" || exit 2
+common_test_declare_subject "$COMMON_SCRIPT"
+TASK_LOOKUP_SCRIPT="$(common_test_resolve_subject "lib/task-lookup-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/task-lookup-lib.sh" \
+  "$SCRIPT_DIR/../lib/task-lookup-lib.sh")" || exit 2
+common_test_declare_subject "$TASK_LOOKUP_SCRIPT"
 # Phase 9 cross-cutting fixtures (case i, commit-scope) additionally need git-commit-scoped.sh
-# and its own runtime dependency task-lock.sh -- resolved the same deploy-tree-first /
-# source-store-fallback way as every other candidate above.
-GIT_COMMIT_SCOPED_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/git-commit-scoped.sh"
-  "$SCRIPT_DIR/../git-commit-scoped.sh"
-)
-TASK_LOCK_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/task-lock.sh"
-  "$SCRIPT_DIR/../task-lock.sh"
-)
-
-SCRIPT_UNDER_TEST=""
-for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    SCRIPT_UNDER_TEST="$candidate"
-    break
-  fi
-done
-GUARD_SCRIPT=""
-for candidate in "${GUARD_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    GUARD_SCRIPT="$candidate"
-    break
-  fi
-done
-COMMON_SCRIPT=""
-for candidate in "${COMMON_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    COMMON_SCRIPT="$candidate"
-    break
-  fi
-done
-TASK_LOOKUP_SCRIPT=""
-for candidate in "${TASK_LOOKUP_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    TASK_LOOKUP_SCRIPT="$candidate"
-    break
-  fi
-done
-GIT_COMMIT_SCOPED_SCRIPT=""
-for candidate in "${GIT_COMMIT_SCOPED_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    GIT_COMMIT_SCOPED_SCRIPT="$candidate"
-    break
-  fi
-done
-TASK_LOCK_SCRIPT=""
-for candidate in "${TASK_LOCK_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    TASK_LOCK_SCRIPT="$candidate"
-    break
-  fi
-done
-
-if [[ -z "$SCRIPT_UNDER_TEST" ]]; then
-  echo "ERROR: orchestrate-conclusion-aggregate.sh not found at any of:" >&2
-  for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
-if [[ -z "$GUARD_SCRIPT" ]]; then
-  echo "ERROR: deploy-root-guard.sh not found at any of:" >&2
-  for candidate in "${GUARD_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
-if [[ -z "$COMMON_SCRIPT" ]]; then
-  echo "ERROR: lib/common.sh not found at any of:" >&2
-  for candidate in "${COMMON_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
-if [[ -z "$TASK_LOOKUP_SCRIPT" ]]; then
-  echo "ERROR: lib/task-lookup-lib.sh not found at any of:" >&2
-  for candidate in "${TASK_LOOKUP_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+# and its own runtime dependency task-lock.sh -- resolved the same mode=deploy-tree-first way as
+# every other candidate above. Absence is tolerated here (guarded later, near case i) rather
+# than an environment-error exit, matching this pair's existing optional-dependency contract.
+GIT_COMMIT_SCOPED_SCRIPT="$(common_test_resolve_subject "git-commit-scoped.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/git-commit-scoped.sh" \
+  "$SCRIPT_DIR/../git-commit-scoped.sh" 2>/dev/null)" || GIT_COMMIT_SCOPED_SCRIPT=""
+[[ -n "$GIT_COMMIT_SCOPED_SCRIPT" ]] && common_test_declare_subject "$GIT_COMMIT_SCOPED_SCRIPT"
+TASK_LOCK_SCRIPT="$(common_test_resolve_subject "task-lock.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/task-lock.sh" \
+  "$SCRIPT_DIR/../task-lock.sh" 2>/dev/null)" || TASK_LOCK_SCRIPT=""
+[[ -n "$TASK_LOCK_SCRIPT" ]] && common_test_declare_subject "$TASK_LOCK_SCRIPT"
 
 PASSED=0
 FAILED=0

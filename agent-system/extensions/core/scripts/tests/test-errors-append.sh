@@ -32,62 +32,18 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/errors-append.sh"
-  "$SCRIPT_DIR/../errors-append.sh"
-)
-GUARD_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh"
-  "$SCRIPT_DIR/../deploy-root-guard.sh"
-)
-COMMON_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/common.sh"
-  "$SCRIPT_DIR/../lib/common.sh"
-)
-
-SCRIPT_UNDER_TEST=""
-for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    SCRIPT_UNDER_TEST="$candidate"
-    break
-  fi
-done
-GUARD_SCRIPT=""
-for candidate in "${GUARD_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    GUARD_SCRIPT="$candidate"
-    break
-  fi
-done
-COMMON_SCRIPT=""
-for candidate in "${COMMON_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    COMMON_SCRIPT="$candidate"
-    break
-  fi
-done
-
-if [[ -z "$SCRIPT_UNDER_TEST" ]]; then
-  echo "ERROR: errors-append.sh not found at any of:" >&2
-  for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
-if [[ -z "$GUARD_SCRIPT" ]]; then
-  echo "ERROR: deploy-root-guard.sh not found at any of:" >&2
-  for candidate in "${GUARD_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
-if [[ -z "$COMMON_SCRIPT" ]]; then
-  echo "ERROR: lib/common.sh not found at any of:" >&2
-  for candidate in "${COMMON_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+SCRIPT_UNDER_TEST="$(common_test_resolve_subject "errors-append.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/errors-append.sh" \
+  "$SCRIPT_DIR/../errors-append.sh")" || exit 2
+common_test_declare_subject "$SCRIPT_UNDER_TEST"
+GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" \
+  "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SCRIPT"
+COMMON_SCRIPT="$(common_test_resolve_subject "lib/common.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/common.sh" \
+  "$SCRIPT_DIR/../lib/common.sh")" || exit 2
+common_test_declare_subject "$COMMON_SCRIPT"
 
 PASSED=0
 FAILED=0
