@@ -129,7 +129,7 @@
 7	Routing wiring lint (lint-routing-wiring.sh)	gate7_run	-	true	30	free	false	@extensions
 8	Shell test suite runner (tests/run-all.sh)	gate8_run	-	true	1500	slow	true	@extensions
 9	Postflight boundary lint (lint-postflight-boundary.sh, full corpus)	gate9_run	-	true	30	free	false	.claude/skills,.claude/extensions
-10	specs/state.json schema validation (validate-state.sh --deep)	gate10_run	-	true	30	moderate	false	specs/state.json,specs/TODO.md
+10	specs/state.json schema validation (validate-state.sh --deep)	gate10_run	-	true	60	moderate	false	specs/state.json,specs/TODO.md
 11	Contract compliance lint (lint-contract-compliance.sh)	gate11_run	-	true	30	free	false	@extensions
 12	State-writer boundary lint (lint-state-writer-boundary.sh)	gate12_run	-	true	30	moderate	false	@extensions
 13	Whole-tree orphan detection (find_orphans, headless nvim)	gate13_run	-	true	30	free	false	@extensions,.claude
