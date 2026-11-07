@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Mirror onto check-task-references.sh + its suite",
+  "started_at": "2026-11-07T00:40:00Z",
+  "last_updated": "2026-11-07T01:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Wire check-task-references.sh: library resolution + fresh required-function loop + git_corpus_enum + 3 stderr diagnostics + header doc updates", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-task-references.sh"]},
+    {"id": 2, "description": "Add mirrored acceptance + gitignored-skip + --quiet-survival cases to test-check-task-references.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-check-task-references.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash tests/test-check-task-references.sh: 17/17 cases pass (all 14 pre-existing + 3 new). lint-shellcheck.sh clean on both edited paths. Source-store acceptance reproduction confirmed (untracked file with a task-reference occurrence under PATH_SCOPE exits 1, names the file). Repo-wide --quiet comparison against the pre-change script (via git show HEAD:...): exit status unchanged at 0 both before and after; the 13 untracked files now included contain no task-reference citations, so the occurrence count stays 0 -- gate 4's own verdict is unaffected. verify-deploy.sh --only-gate 4 re-confirmation deferred to Phase 4 (requires a redeploy first, since gate 4 runs against the deployed copy)."
+}

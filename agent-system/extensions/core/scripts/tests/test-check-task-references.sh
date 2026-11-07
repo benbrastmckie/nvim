@@ -38,6 +38,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 LINT_SRC="$SCRIPT_DIR/../check-task-references.sh"
 LIB_SRC="$SCRIPT_DIR/../lib/task-reference-patterns.sh"
+CORPUS_LIB_SRC="$SCRIPT_DIR/../lib/git-corpus-enum-lib.sh"
 HOOK_SRC="$SCRIPT_DIR/../../hooks/validate-no-task-references.sh"
 
 PASSED=0
@@ -49,6 +50,10 @@ if [[ ! -f "$LINT_SRC" ]]; then
 fi
 if [[ ! -f "$LIB_SRC" ]]; then
   echo "ERROR: expected shared library at $LIB_SRC" >&2
+  exit 2
+fi
+if [[ ! -f "$CORPUS_LIB_SRC" ]]; then
+  echo "ERROR: expected shared library git-corpus-enum-lib.sh at $CORPUS_LIB_SRC" >&2
   exit 2
 fi
 if [[ ! -f "$HOOK_SRC" ]]; then
@@ -81,6 +86,7 @@ mkdir -p "$FIXTURE/docs" "$FIXTURE/code" "$FIXTURE/.github" \
 # (.claude/scripts/lib/... first, then agent-system/extensions/core/scripts/lib/... as the
 # source-store fallback) -- mirror the source-store layout so REPO_ROOT=$FIXTURE resolves it.
 cp "$LIB_SRC" "$FIXTURE/agent-system/extensions/core/scripts/lib/task-reference-patterns.sh"
+cp "$CORPUS_LIB_SRC" "$FIXTURE/agent-system/extensions/core/scripts/lib/git-corpus-enum-lib.sh"
 git init -q "$FIXTURE"
 git -C "$FIXTURE" config user.email "test@example.com"
 git -C "$FIXTURE" config user.name "Test"
@@ -362,6 +368,49 @@ for rel in "${!AGREEMENT_FIXTURES[@]}"; do
 done
 if [[ "$agreement_ok" -eq 1 ]]; then
   common_test_pass "lint and hook agree on every fixture file's in-scope verdict"
+fi
+
+# =====================================================================
+# Case 9 (acceptance, mirrored from check-record-versioning.sh's own acceptance case): an
+# untracked, on-disk file containing a task-reference occurrence does NOT yield a clean verdict
+# under PATH_SCOPE mode. Deliberately never `git add`ed.
+# =====================================================================
+# task-ref-ok:begin test fixture for check-task-references.sh detection, category 6
+echo "See task 777 for the untracked-file acceptance case." > "$FIXTURE/docs/untracked-citation.md"
+# task-ref-ok:end
+out9="$WORKDIR/case9.txt"
+code9="$(run_lint "docs/untracked-citation.md" "$out9")"
+if [[ "$code9" -eq 1 ]] && grep -qE '^  docs/untracked-citation\.md:[0-9]+:' "$out9"; then
+  common_test_pass "untracked on-disk file with a task-reference occurrence yields a non-clean PATH_SCOPE verdict (acceptance)"
+else
+  common_test_fail "untracked citation file expected exit 1 naming it, got exit=$code9; output:
+$(cat "$out9")"
+fi
+
+# =====================================================================
+# Case 10: a gitignored file under a PATH_SCOPE still does not count as a finding (Case 5's
+# exclusion preserved), AND now produces an explicit "[SKIP] ...: gitignored" stderr line.
+# =====================================================================
+out10="$WORKDIR/case10.txt"
+code10="$(run_lint "ignored" "$out10")"
+if [[ "$code10" -eq 0 ]] && ! grep -qE '^  ignored/scratch\.md:[0-9]+:' "$out10" \
+   && grep -qF '[SKIP] ignored/scratch.md: gitignored (not scanned)' "$out10"; then
+  common_test_pass "gitignored file under PATH_SCOPE=ignored: not a finding, named on stderr by [SKIP]"
+else
+  common_test_fail "PATH_SCOPE=ignored expected exit 0, no finding, [SKIP] line naming ignored/scratch.md; got exit=$code10; output:
+$(cat "$out10")"
+fi
+
+# =====================================================================
+# Case 11: the [SKIP]/gitignored stderr diagnostic survives --quiet.
+# =====================================================================
+out11="$WORKDIR/case11.txt"
+code11="$(run_lint "--quiet ignored" "$out11")"
+if [[ "$code11" -eq 0 ]] && grep -qF '[SKIP] ignored/scratch.md: gitignored (not scanned)' "$out11"; then
+  common_test_pass "[SKIP]/gitignored diagnostic survives --quiet"
+else
+  common_test_fail "PATH_SCOPE=ignored --quiet expected the [SKIP] diagnostic to survive; got exit=$code11; output:
+$(cat "$out11")"
 fi
 
 # =====================================================================

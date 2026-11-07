@@ -272,7 +272,7 @@ that all 15 pre-existing cases still pass unmodified.
 
 ---
 
-### Phase 3: Mirror onto check-task-references.sh + its suite [NOT STARTED]
+### Phase 3: Mirror onto check-task-references.sh + its suite [COMPLETED]
 
 **Goal**: The higher-stakes sibling -- the lint backing verify-deploy gate 4 and the blocking
 `validate-no-task-references.sh` write-time hook -- gets the identical fix from the same shared
@@ -280,21 +280,21 @@ definition, so the two lints cannot drift.
 
 **Tasks**:
 
-- [ ] Apply the Phase 2 changes to `check-task-references.sh`: shared-library resolution with a
+- [x] Apply the Phase 2 changes to `check-task-references.sh`: shared-library resolution with a
   loud `exit 2` on absence, required-function check, `git_corpus_enum` enumeration at
   `check-task-references.sh:159`, and the same three stderr diagnostics placed so `--quiet` cannot
-  suppress them.
-- [ ] Leave the `marker_balance_report` branch and the `strip_exempt_regions | grep -nEi` finding
-  loop untouched; this phase changes enumeration only.
-- [ ] Update the script header's "scans every git-tracked file" claim and its `PATH_SCOPE` usage
-  paragraph to match the new behavior.
-- [ ] Add the mirrored acceptance case to
+  suppress them. *(completed: added fresh -- this script had no prior required-function loop at all)*
+- [x] Leave the `marker_balance_report` branch and the `strip_exempt_regions | grep -nEi` finding
+  loop untouched; this phase changes enumeration only. *(completed)*
+- [x] Update the script header's "scans every git-tracked file" claim and its `PATH_SCOPE` usage
+  paragraph to match the new behavior. *(completed)*
+- [x] Add the mirrored acceptance case to
   `agent-system/extensions/core/scripts/tests/test-check-task-references.sh`: an untracked on-disk
   file with a task-reference occurrence under `PATH_SCOPE` yields a non-clean verdict. Wrap the
   literal fixture content in the `task-ref-ok` marker pair this suite already uses for its own
-  fixtures.
-- [ ] Add the gitignored-file loud-skip case and the `--quiet`-survival case to the same suite,
-  mirroring Phase 2's supporting cases.
+  fixtures. *(completed: Case 9)*
+- [x] Add the gitignored-file loud-skip case and the `--quiet`-survival case to the same suite,
+  mirroring Phase 2's supporting cases. *(completed: Cases 10-11)*
 
 **Timing**: 1.5 hours
 
