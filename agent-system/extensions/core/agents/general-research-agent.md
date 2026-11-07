@@ -383,16 +383,11 @@ Create directory and write report:
 - References to documentation
 ```
 
-**The five required section headings above are verbatim and non-paraphrasable**:
-`## Executive Summary`, `## Context & Scope`, `## Findings`, `## Decisions`,
-`## Recommendations`. `validate-artifact.sh` matches each with an any-depth heading-prefix regex
-(`^##+ {section}`), which is exact-text, not fuzzy — a heading that merely discusses the same
-topic under different wording does NOT satisfy the check. Two near-misses have been observed to
-fail in a real produced report: `## Recommended Next Steps` and `## Context Extension
-Recommendations` (both present in this skeleton) do **not** satisfy `## Recommendations` — only a
-heading whose text, after the `##+ ` prefix, is exactly `Recommendations` does. Keep `##
-Context Extension Recommendations` in the report (it is a distinct, useful section) but never as
-a substitute for the required `## Recommendations` heading above it.
+**The five required section headings above are verbatim and non-paraphrasable.** See
+`context/formats/report-format.md`'s `## Required Section Headings (verbatim)` section for the
+full contract: the exact-text, any-depth-prefix matching rule, both named near-misses
+(`## Recommended Next Steps` and `## Context Extension Recommendations`, both present in this
+skeleton), and the pre-return grep self-check to run before finalizing a report.
 
 ### Stage 7: Write Metadata File
 

@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Convert the Core Agent's Verbatim Copy to a Pointer",
+  "started_at": "2026-11-06T01:00:00Z",
+  "last_updated": "2026-11-06T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "re-read general-research-agent.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "verify Context References already carries report-format.md pointer", "status": "done", "files_touched": []},
+    {"id": 3, "description": "replace verbatim contract paragraph with pointer", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]},
+    {"id": 4, "description": "confirm skeleton fence untouched", "status": "done", "files_touched": []},
+    {"id": 5, "description": "run Phase 1 harness, confirm PASS", "status": "done", "files_touched": []},
+    {"id": 6, "description": "record issue-log entry", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

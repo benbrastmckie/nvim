@@ -277,29 +277,31 @@ them (plan-format.md's `__FULL_SWEEP__` sub-case (b)); the honest covering check
 
 ---
 
-### Phase 3: Convert the Core Agent's Verbatim Copy to a Pointer [NOT STARTED]
+### Phase 3: Convert the Core Agent's Verbatim Copy to a Pointer [COMPLETED]
 
 **Goal**: Remove the second copy of the contract so the two cannot diverge, leaving
 `general-research-agent.md` with a short pointer at the canonical section Phase 2 created.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/agents/general-research-agent.md` immediately before
-      editing.
-- [ ] Verify FIRST that its `## Context References` already carries
+- [x] Re-read `agent-system/extensions/core/agents/general-research-agent.md` immediately before
+      editing. *(completed)*
+- [x] Verify FIRST that its `## Context References` already carries
       `@.claude/context/formats/report-format.md` with a "when creating report" load condition. If
       it does not, add it before touching the block — the pointer must not be able to become a dead
-      link.
-- [ ] Replace the verbatim contract paragraph that follows the Stage 6 skeleton fence (the block
+      link. *(completed: confirmed already present at line 24, no addition needed)*
+- [x] Replace the verbatim contract paragraph that follows the Stage 6 skeleton fence (the block
       beginning `**The five required section headings above are verbatim and non-paraphrasable**`)
       with a two-to-three sentence pointer naming the file and the exact section heading
       (`context/formats/report-format.md`'s `## Required Section Headings (verbatim)`), stating that
       the five headings are exact-text and non-paraphrasable and that the pre-return self-check is
-      defined there.
-- [ ] Leave the Stage 6 skeleton fence itself untouched, including its top-level `## Recommendations`
-      and its `## Context Extension Recommendations`.
-- [ ] Run the extraction harness from Phase 1 against this file to confirm the skeleton still
-      machine-checks PASS after the edit.
-- [ ] Record an issue-log entry for any deviation or blocker.
+      defined there. *(completed)*
+- [x] Leave the Stage 6 skeleton fence itself untouched, including its top-level `## Recommendations`
+      and its `## Context Extension Recommendations`. *(completed: diff confirms only the paragraph
+      after the fence changed)*
+- [x] Run the extraction harness from Phase 1 against this file to confirm the skeleton still
+      machine-checks PASS after the edit. *(completed: PASS)*
+- [x] Record an issue-log entry for any deviation or blocker. *(completed: attesting nothing arose
+      in this phase beyond the routine checks above)*
 
 **Timing**: 30 minutes
 
