@@ -35,20 +35,20 @@ source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 INSTALL_SCRIPT="$(common_test_resolve_subject "install-extension.sh" "source-store" \
-  "$SCRIPT_DIR/../install-extension.sh" \
-  "$REPO_ROOT/.claude/scripts/install-extension.sh")" || exit 2
+  "$REPO_ROOT/.claude/scripts/install-extension.sh" \
+  "$SCRIPT_DIR/../install-extension.sh")" || exit 2
 common_test_declare_subject "$INSTALL_SCRIPT"
 UNINSTALL_SCRIPT="$(common_test_resolve_subject "uninstall-extension.sh" "source-store" \
-  "$SCRIPT_DIR/../uninstall-extension.sh" \
-  "$REPO_ROOT/.claude/scripts/uninstall-extension.sh")" || exit 2
+  "$REPO_ROOT/.claude/scripts/uninstall-extension.sh" \
+  "$SCRIPT_DIR/../uninstall-extension.sh")" || exit 2
 common_test_declare_subject "$UNINSTALL_SCRIPT"
 COMMON_LIB="$(common_test_resolve_subject "lib/common.sh" "source-store" \
-  "$SCRIPT_DIR/../lib/common.sh" \
-  "$REPO_ROOT/.claude/scripts/lib/common.sh")" || exit 2
+  "$REPO_ROOT/.claude/scripts/lib/common.sh" \
+  "$SCRIPT_DIR/../lib/common.sh")" || exit 2
 common_test_declare_subject "$COMMON_LIB"
 GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "source-store" \
-  "$SCRIPT_DIR/../deploy-root-guard.sh" \
-  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh")" || exit 2
+  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" \
+  "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
 common_test_declare_subject "$GUARD_SCRIPT"
 # Optional: the shared helper lib this phase extracts. Not present before the refactor lands;
 # copied into the fake tree when it exists so a post-refactor run resolves it correctly.
