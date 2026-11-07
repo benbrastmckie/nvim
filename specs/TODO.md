@@ -1,5 +1,5 @@
 ---
-next_project_number: 525
+next_project_number: 528
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 525
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,410,412,420,423,430,431,435,437,445,448,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,444,446,451,458,463,472,474,475,476,492,497,507,516,523 | 369,383,397,412,420,423,430,431,435,445,448,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 2 | 384,391,398,439,444,446,451,458,463,472,474,475,476,492,497,507,516,523,526,527 | 369,383,397,412,420,423,430,431,435,445,448,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,454,455,461,462,484,500,518 | 313,391,398,435,439,446,448,451,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,479,481,486,517 | 360,390,402,435,444,448,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 5 | 450,480,487,501,508,509,513 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
@@ -28,6 +28,7 @@ next_project_number: 525
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 369 [NOT STARTED] — Orphan sweep for deployed entries removed from the source...
+  └─ 527 [NOT STARTED] — Assert the deployed hook registration SET matches the...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 423 [NOT STARTED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
@@ -35,14 +36,16 @@ next_project_number: 525
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
-435 [NOT STARTED] — Reword architectural and phase-versus-command prose naming...
+435 [RESEARCHING] — Reword architectural and phase-versus-command prose naming...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
   └─ 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
+  └─ 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
 445 [PLANNED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
   └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or... (see above)
+  └─ 527 [NOT STARTED] — Assert the deployed hook registration SET matches the... (see above)
 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory... (see above)
@@ -95,7 +98,7 @@ next_project_number: 525
 
 ### File Scope Lifecycle
 
-430 [NOT STARTED] — Feed observed-but-undeclared implement paths back into a task...
+430 [RESEARCHING] — Feed observed-but-undeclared implement paths back into a task...
   └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
     └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
     └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
@@ -131,7 +134,7 @@ next_project_number: 525
 
 ### Agent System
 
-420 [NOT STARTED] — Surface a plan-size versus per-run cycle-budget mismatch...
+420 [RESEARCHED] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [PLANNED] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
@@ -143,6 +146,123 @@ next_project_number: 525
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 527. Assert the deployed hook registration SET matches the merge-source, not only each path's form
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 369, Task 445
+
+**Description**: Extend the hook-registration lint so it asserts the deployed hook registration SET against the merge-source, not only the FORM of each individual command path, and wire the resulting gate into verify-deploy.sh.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** or lua/**; both are permitted in this description.
+
+--- DEPENDENCIES: TWO EDGES ---
+
+1. orphan_sweep_for_removed_merge_target_entries (task 369). That record's acceptance criterion 3 requires the registration-identity notion to be defined in exactly ONE place consumed by both its sweep and this lint, with a test asserting the two agree on a path outside hooks/. This lint must CONSUME that settled identity notion rather than define a second one, so 369 must land first.
+2. gate8_expected_vs_new_failure_distinction (task 445) -- a territory edge on verify-deploy.sh's gate surface, which both records touch.
+
+--- DIAGNOSIS IS COMPLETE: DO NOT RE-DERIVE IT ---
+
+GOAL. scripts/lint/lint-hook-registration-paths.sh checks the FORM of each hook command path -- whether a registration uses the fixed "$CLAUDE_PROJECT_DIR"-prefixed shape or the stale CWD-relative one. It does not check the SET. Three drift shapes therefore pass it silently, all three observed in the field:
+
+(a) a registration for a hook script that no source surface declares anywhere;
+(b) the same hook script registered under two different matcher strings for one event, so a single notification fires it twice;
+(c) a registration whose hook script file does not exist on disk at all, failing open behind its own `2>/dev/null || echo '{}'`.
+
+MEASURED FIELD INSTANCES as of 2026-11-07, across the repos this loader deploys into:
+- Logos/Theory carried all three: shape (a) (Stop|* registrations of tts-notify.sh and a bare wezterm-notify.sh, neither declared by any source surface), shape (b) (two Notification blocks, matchers permission_prompt|idle_prompt|elicitation_dialog and permission_prompt|elicitation_dialog, both registering tts-notify.sh, so one permission event fired two announcements), and shape (c) (wezterm-clear-status.sh, whose file is absent).
+- ModelBuilder and Logos/Website carry the same shape (a) and (b) pair.
+- theorem_proving_in_lean4 carries shape (c) twice (claude-stop-notify.sh, wezterm-preflight-status.sh).
+- Fourteen other deployed repos are clean, which is what makes a set assertion useful rather than noisy: the drift is real but rare, so a gate on it will not fire constantly.
+
+FIX. Extend the lint to compare the deployed (event, matcher, hook-identity) set against the union of what the merge-source and root-files surfaces declare, and report (a), (b) and (c) as distinct findings with distinct remedies. Then wire it into verify-deploy.sh's gate suite so the drift class fails a check instead of accumulating.
+
+--- MANDATORY CONSTRAINTS ---
+
+- Consume the single shared identity notion the orphan-sweep record establishes. Defining a second notion here is the specific failure the first dependency edge exists to prevent -- the hook-path lint and the loader's own hook_identity() have a DOCUMENTED historical divergence (the lint keyed coverage on any invoked script path, hook_identity() recognized only paths under hooks/), and resolving it in one place is that record's criterion, not this one's to re-litigate.
+- A hand-written custom hook -- a command not recognizable as a source-store hook invocation -- is NEVER a finding. The carve-out is mandatory, not best-effort. A lint that reports a user's own hook registration as drift is worse than no lint.
+- Anchor detection on the "command" JSON key, never a text grep over the file. A naive .claude/hooks/ grep matches root-files/settings.json's own _comment field -- a false-positive hazard already recorded by this lint's prior research.
+- Shape (b) must be reported even when both registrations are individually well-formed. Form-correctness is exactly why it passes today.
+- env, permissions, statusLine and every non-hooks key are out of scope for this lint; it must not report or touch them.
+
+--- ACCEPTANCE CRITERIA ---
+
+1. Each of shapes (a), (b) and (c) produces a distinct finding with its own remedy text, demonstrated against a faithful copy of a real drifted deploy, not only a synthetic fixture.
+2. A hand-written hook command survives the lint with zero findings, with a dedicated regression case.
+3. A clean deploy produces zero findings -- verified against several of the fourteen clean repos, so the gate is not noisy by construction.
+4. The identity notion is imported from its single shared definition; a test asserts this lint and the loader's sweep agree on a path outside hooks/.
+5. The gate is wired into verify-deploy.sh and a deliberately drifted fixture fails it.
+6. Pre-existing lint and verify-deploy tests still pass; a newly red pre-existing test is treated as caused by this task.
+
+---
+
+### 526. Announce completion and input-needed over TTS from the source store, with a cooldown
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 435
+
+**Description**: Make every repo the loader deploys into announce the two things that actually matter -- work finished, and input needed -- and make repeat announcements harmless by construction. Today neither fires.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** and agent-system/extensions/nvim/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** or lua/**; both are permitted in this description.
+
+--- DEPENDENCY: TERRITORY, NOT SUBJECT ---
+
+This task depends on the open record reword_dead_lifecycle_command_prose_per_class (task 435) as a TERRITORY edge, not a subject edge. That record's file_scope covers the directory roots agent-system/extensions/core/hooks/, core/merge-sources/, core/root-files/, core/scripts/ and agent-system/extensions/nvim/context/ -- every one of which this task edits specific files inside. Per context/patterns/batch-orchestration-guardrails.md, shared file territory is a reason to add the edge and serialize, never to exclude. Task 435 is a prose-rewording sweep with no TTS subject overlap, so the edge exists purely to serialize two writers over the same roots.
+
+--- DIAGNOSIS IS COMPLETE: DO NOT RE-DERIVE IT ---
+
+Everything below is established fact. Research should confirm the current file state and design the fix, not re-diagnose the defects.
+
+DEFECT 1, a documented-but-unimplemented behavior. hooks/claude-stop-notify.sh's no-workflow-marker branch fires only the WezTerm color, with the inline comment "Fire needs_input wezterm color only (no TTS for non-lifecycle stops)". But scripts/lifecycle-notify.sh's own header decision table promises the opposite: "orchestrate final completion: orchestrate-active cleared by Stage 8 -> subsequent Stop hook fires TTS" and "orchestrate paused/blocked: ... Stop hook fires TTS". Two files in the same source store state contradictory contracts, and the implemented side is the silent one, so an /orchestrate run that finishes never announces.
+
+FIX: call hooks/tts-notify.sh from that no-marker branch, after the existing wezterm-notify.sh call. The existing subagent-detection guard (agent_id present in the Stop stdin JSON) and the global workflow-active-marker suppression loop MUST both be preserved exactly as they are -- they are what keeps a mid-orchestrate pause from overwriting an in-progress tab color, and the marker suppression is deliberately global across sessions (see that file's own header for the rationale, which this task must not weaken).
+
+DEFECT 2, a trigger that cannot fire. The canonical Notification matcher is permission_prompt|elicitation_dialog. The operator runs with skipDangerousModePermissionPrompt: true in the user-level settings and in bypass-permissions mode, so permission prompts essentially never occur and that matcher is effectively dead. idle_prompt -- the actionable notification type meaning Claude has been waiting 60s or more for user input -- was removed from the matcher at some earlier point, which is precisely the "a question needs answering" case the operator wants announced, and it now has no trigger at all.
+
+FIX: widen the matcher to permission_prompt|idle_prompt|elicitation_dialog in BOTH surfaces that declare it, merge-sources/settings-hooks.json and root-files/settings.json. Both must change together; changing only one leaves a fresh deploy and a resynced deploy disagreeing.
+
+DEFECT 3, the reason widening the matcher is not safe on its own. idle_prompt re-fires on a repeating cadence while Claude waits, so the matcher widening above would by itself produce a repeating announcement rather than one.
+
+MEASURED EVIDENCE from a repo that was accidentally running with idle_prompt registered (Logos/Theory, whose specs/tmp/claude-tts-notify.log holds 1329 bare "Tab N" lines against 21 lifecycle lines): of the last 199 inter-announcement intervals, 65 fell in the 10-70 second band -- the idle re-fire cadence -- and 11 fell under 2 seconds, those being one event matching two overlapping Notification blocks at once.
+
+FIX: add a cooldown/dedup stamp to hooks/tts-notify.sh, keyed by WEZTERM_PANE so concurrent panes never suppress each other, that drops a repeat announcement inside a short window. This is the load-bearing change: with the cooldown in place, an idle re-fire, a Stop and a Notification coinciding, or any future double registration all degrade to a single utterance instead of a burst. Keep the existing TTS_ENABLED and PIPER_VOICE env contract and the non-blocking backgrounded piper | paplay invocation shape. The stamp must live somewhere a repo without a specs/ directory can still write, or fail open silently exactly as the current log write does.
+
+--- REQUIRED BEHAVIOR, NOT OPTIONAL POLISH ---
+
+The two cases must be distinguishable by ear. A completion and an input-needed prompt currently both render as the bare string "Tab N". Give the Stop-branch utterance its own word (for example "Tab N done") while the input-needed utterance stays "Tab N", and keep the existing --lifecycle STATUS mode's "Tab N STATUS" vocabulary (researching/researched/planning/planned/implementing/completed/blocked) unchanged.
+
+--- DOCUMENTATION RECONCILIATION, IN SCOPE AND NOT DEFERRABLE ---
+
+agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md currently asserts "The Stop hook does NOT trigger TTS. This eliminates random 'Tab N' announcements during mid-workflow orchestrator pauses." and carries a Notification Event Types table listing only permission_prompt and elicitation_dialog. Both become false with this task and must be restated to the implemented behavior, including the cooldown and the distinguishable utterances.
+
+scripts/lifecycle-notify.sh's header decision table must be reconciled in the same pass -- it is the file that was already correct about the intent, so the reconciliation is to make its description match what the code now does and to drop any claim that is still untrue afterwards.
+
+--- SCOPE DECISION ALREADY SETTLED BY THE OPERATOR ---
+
+Not to be revisited by research or planning: the Neovim extension loader owns TTS. Do NOT add a TTS hook to the user-level ~/.dotfiles/config/claude/settings.json, even though hooks is an enforced key there and it would reach repos with no deployed .claude/ tree. Those repos stay silent by choice.
+
+--- NON-GOALS, OWNED ELSEWHERE ---
+
+Do not absorb these and do not edit their files:
+- The loader-side inability to delete a stale hook registration, and the one-shot remediation of the repos currently carrying stale registrations, are owned by the open orphan-sweep record (orphan_sweep_for_removed_merge_target_entries, task 369).
+- Asserting the deployed registration SET against the merge-source is owned by the hook_registration_set_lint_assertion record.
+
+This task changes only what the source store declares and what the hooks do.
+
+--- ACCEPTANCE CRITERIA ---
+
+1. An /orchestrate run reaching completion produces exactly one audible announcement, distinguishable by ear from an input-needed announcement.
+2. An idle_prompt re-fire inside the cooldown window produces no second announcement; one outside it does. Demonstrated against the real notification cadence, not only a synthetic repeat.
+3. A mid-orchestrate pause still produces no Stop-branch announcement: the workflow-active-marker suppression and the subagent agent_id guard both still hold, with a regression check for each.
+4. merge-sources/settings-hooks.json and root-files/settings.json declare the identical Notification matcher; a check asserts they agree.
+5. tts-stt-integration.md and lifecycle-notify.sh's header contain no claim contradicted by the landed code.
+6. TTS_ENABLED=0 still fully disables every path, including the new Stop-branch call.
+
+---
 
 ### 525. Repair the always-failing extensions-directory fallback in the task-type detection suite
 - **Status**: [NOT STARTED]
@@ -4827,7 +4947,7 @@ and stops there -- repairing it is someone else's work.
 ---
 
 ### 435. Reword architectural and phase-versus-command prose naming the three deleted lifecycle commands, per class, no blanket substitution
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 434, Task 407
@@ -4933,7 +5053,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 ---
 
 ### 430. Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428, Task 494
@@ -5087,11 +5207,12 @@ artifact's path, creates nothing, and does NOT drop the proposal silently.
 ---
 
 ### 420. Surface a plan-size versus per-run cycle-budget mismatch before a run hits the wall
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 409, Task 411, Task 413, Task 418
 - **Parent**: Task 411
+- **Research**: [420_warn_plan_size_exceeds_cycle_budget/reports/01_plan-size-cycle-budget-warning.md]
 
 **Description**: Surface a plan-size versus per-run cycle-budget mismatch at plan time or at admission, instead of letting the operator discover it by hitting the wall mid-run
 
@@ -6366,6 +6487,46 @@ which is why it went unnoticed. Severity is low -- a silent no-op, not a disable
 CLASS is not low: the same mechanism would silently retain a registration that had become actively
 wrong.
 
+SECOND LIVE INSTANCE, observed 2026-11-07, higher severity than the first and across four repos.
+The first cited instance is a silent no-op invoking a script that exists nowhere. This one is an
+actively-wrong retained registration with a user-visible effect. Logos/Theory's deployed
+.claude/settings.json retained three registrations no source surface declares: a Notification
+block with matcher `permission_prompt|idle_prompt|elicitation_dialog` registering tts-notify.sh,
+and `Stop|*` registrations of tts-notify.sh and a bare wezterm-notify.sh. Effect: an
+unconditional spoken announcement at every turn end, repeating on the `idle_prompt` re-fire
+cadence, and doubled on any permission event because the retained Notification block and the
+canonical one both matched. Measured in that repo's specs/tmp/claude-tts-notify.log: 1329 bare
+"Tab N" lines against 21 lifecycle lines; 65 of the last 199 intervals in the 10-70 second
+idle-re-fire band and 11 under 2 seconds. The bare `Stop|*` wezterm-notify.sh registration
+additionally defeated the suppression claude-stop-notify.sh exists to provide, setting the
+needs_input tab color during mid-workflow pauses. That repo was repaired by hand on 2026-11-07
+and now matches the canonical source exactly; ModelBuilder and Logos/Website still carry the same
+pair and are the remaining live reproduction targets, and theorem_proving_in_lean4 carries two
+dead registrations whose script files are absent on disk (claude-stop-notify.sh,
+wezterm-preflight-status.sh).
+
+SUB-BEHAVIOR THIS RECORD DOES NOT YET NAME, and the mechanism by which the above became immortal:
+a CHANGED MATCHER STRING creates a parallel block rather than superseding the earlier one.
+`merge_hook_event_array` locates a target block by EXACT matcher-string equality (merge.lua, the
+`block.matcher == source_block.matcher` comparison), so when the source narrowed
+`permission_prompt|idle_prompt|elicitation_dialog` to `permission_prompt|elicitation_dialog`, no
+target block matched, the source block was appended whole, and the old block survived beside it
+with the same hook identity inside. `hook_identity()` already solves the analogous problem WITHIN
+one matcher block; it is not consulted ACROSS blocks of the same event. The sweep should therefore
+also treat the source as authoritative about WHERE its own hooks register: a hook identity the
+source declares under one matcher must not survive under a different matcher of the same event.
+The existing custom-hook carve-out governs this cross-matcher case exactly as it governs the
+within-block case -- an unrecognized command is left strictly alone.
+
+WHY NO LOADER OPERATION HEALS THIS, worth stating in the record because it bounds the by-hand
+repair this task documents: settings.json survives even the destructive wipe. settings_backup.lua
+snapshots it, `manager.wipe` runs `rm -rf base_dir`, and `manager.regenerate` restores the
+snapshot as the MERGE BASE before re-applying every surviving extension's fragments on top. That
+ordering is itself a deliberate fix for an earlier defect (restoring after the load loop clobbered
+fragment merges), so it is not to be reverted -- but its consequence is that a stale registration
+cannot be removed by [Reload All], [Regenerate], or `deploy-headless.sh --wipe`, only by this
+task's sweep or by hand.
+
 PRECEDENT TO EXTEND, not invent. merge.lua already solves exactly this shape for a different
 merge target: `remove_orphaned_index_entries(index_path, valid_prefixes, context_dir)` at
 merge.lua:755, documented at :746 and :689 as "cleaning orphaned entries that bypass tracked
@@ -6431,6 +6592,11 @@ ACCEPTANCE CRITERIA:
      as caused by this task.
   6. The source-store/deploy-boundary documentation states the add/change-but-not-delete invariant,
      names which merge targets sweep orphans, and records the by-hand repair for an older deploy.
+
+
+REMEDIATION TARGETS for acceptance criteria 1 and 4 above: ModelBuilder, Logos/Website,
+Logos/Theory and theorem_proving_in_lean4 are the concrete deploys to measure before and after.
+Fourteen other deployed repos are already clean and serve as the no-change control set.
 
 ---
 
