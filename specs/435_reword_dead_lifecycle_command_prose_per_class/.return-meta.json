@@ -1,18 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 435,
-  "session_id": "sess_1794089641_e5bee5_435",
-  "dispatch_seq": 14,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/reports/01_dead-lifecycle-command-prose.md",
-      "summary": "Re-measures the post-434 dead-lifecycle-command-prose scope (223 files / 948 occurrences, excluding core/docs/), confirms both dependency edges (407, 434) are resolved, derives concrete fix text for all three revise.md incidental findings, identifies live territory collisions with concurrent siblings 420/430, confirms the 328 overlap advisory is now moot, and recommends a per-extension/per-core-subdirectory phase partition for implementation."
+      "type": "plan",
+      "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/plans/01_dead-lifecycle-command-prose-sweep.md",
+      "summary": "15-phase per-class, per-site reword of 223 source-store files naming the three deleted lifecycle commands, with a three-class rubric, the revise.md incidentals, and a terminal redeploy plus full gate set."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 435 to create implementation plan"
+  "next_steps": "Run /orchestrate 435 to execute the plan",
+  "phase_count": 15,
+  "estimated_hours": 22,
+  "dependency_waves": [[1], [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], [15]],
+  "memory_candidates": [
+    {
+      "content": "suite_selection_select is not a usable narrowing mechanism for plan phases whose files are markdown. Its stratum-(b) grep lookup resolves a touched path by BASENAME, so any path named SKILL.md or README.md matches every suite that textually references that basename -- measured 28 suites for a 14-file founder/skills set and 43 for a 21-file small-extensions set. Two consequences for plan authoring: a suite-subset Tier Justification for such a phase is neither writable in one line nor a real narrowing, and claiming the __FULL_SWEEP__ sentinel for those sets is affirmatively false (the selector does map them). Pure-directory markdown sets whose basenames are distinctive (core/context/patterns/*.md) do correctly return __FULL_SWEEP__. The correct grounding for a markdown phase's Tier Justification is the gate-subset mechanism (verify-deploy.sh --only-gate N[,M...]), which plan-format.md explicitly places outside the suite-selection measurement check's scope.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/435_reword_dead_lifecycle_command_prose_per_class/plans/01_dead-lifecycle-command-prose-sweep.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["suite-selection", "tier-justification", "full-sweep-sentinel", "only-gate", "plan-authoring", "basename-collision"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794089641_e5bee5_435",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 17
 }

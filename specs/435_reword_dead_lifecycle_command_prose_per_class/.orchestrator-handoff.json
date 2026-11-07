@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 15,
+  "summary": "Wrote a 15-phase plan for the per-class, per-site reword of the three deleted lifecycle commands across 223 source-store files. Re-derived the research report's measurement at plan time (223 files / 948 occurrences, distribution identical to the report, so nothing needed CARRIED-UNVERIFIED marking) and generated every per-phase file list from that live run. Added a third occurrence class neither the dispatch nor the research named: sites where the command name IS the data and must be left alone, with four verified instances including the companion lint's own detection strings. Phases partition by extension then by core subdirectory at 6-25 files each; the terminal phase reconciles the corpus, redeploys, and runs the full gate set.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/plans/01_dead-lifecycle-command-prose-sweep.md",
+      "summary": "15-phase per-class, per-site reword of 223 source-store files naming the three deleted lifecycle commands, with a three-class rubric, the revise.md incidentals, and a terminal redeploy plus full gate set."
+    }
+  ],
+  "dispatch_seq": 17
+}
