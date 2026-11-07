@@ -61,6 +61,7 @@
 **/.commit-lock/
 **/.deploy-lock/
 **/.scope-lock/
+**/.gate-lock/
 **/.sessions/
 **/.freshness-warn-streak.json
 # Contended-path manifest (orchestrate-cycle-plan.sh's build_contended_manifest, Option 3(ii)'s
