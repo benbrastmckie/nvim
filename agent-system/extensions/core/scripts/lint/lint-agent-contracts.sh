@@ -889,6 +889,56 @@ _check_j_section_has_artifacts_requirement() {
   return 1
 }
 
+# Derivation criterion (what makes the handoff-writing section NECESSARY, not what the file
+# happens to mention today): an agent that writes, or is contractually expected to write,
+# `.orchestrator-handoff.json` under `orchestrator_mode`. Check J now iterates EVERY
+# dispatchable agent with no content pre-filter and FAILs by name on any file that is neither a
+# recognized writer (_check_j_locate_handoff_section returns 0 or 1), nor a "never write one"
+# research-agent contract (return 2), nor listed below. This array records the EXCLUDED-style
+# exceptions -- never the inclusions -- matching this file's own established precedent
+# (EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS, EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS,
+# CHECK_G_EXCLUDED_RELATIVE_PATHS/CHECK_M_EXCLUDED_RELATIVE_PATHS) over a frontmatter-declared
+# opt-in or a separate registry file, neither of which has precedent in this file.
+#
+# Re-audit reproduce command (verbatim, so a future auditor can re-derive the set): confirm each
+# entry below is invoked ONLY via the forked-subagent pattern from inside another skill or agent
+# and never reaches a `skill-orchestrate` `dispatch[]`/`aux_dispatch[]` row (grep the skills/
+# agents tree for the file's own agent name used as a Task-tool/Agent-tool `subagent_type`
+# rather than as a `routing_agents`/dispatch-table entry), AND that the file carries zero
+# `.orchestrator-handoff.json` mentions and zero recognized writer heading:
+#   for f in "${CHECK_J_EXCLUDED_RELATIVE_PATHS[@]}"; do
+#     echo "$(grep -c '.orchestrator-handoff.json' "$AGENTS_ROOT/../../${f#agent-system/extensions/}" 2>/dev/null) $f"
+#   done
+#
+# MUST NOT: do not derive this set from docs/architecture/handoff-schema.md's role-named
+# "Handoff Writers" table -- the founder/present extensions route additional per-task-type
+# terminal and plan agents through the same orchestrator_mode-gated writer contract via other
+# paths, and those files are correctly IN scope (not listed here). MUST NOT: do not introduce a
+# filename glob as this check's universe -- enumerate_dispatchable_agents() stays the sole
+# source of the population.
+CHECK_J_EXCLUDED_RELATIVE_PATHS=(
+  # Invoked only via the forked-subagent pattern (Task/Agent-tool dispatch from inside another
+  # skill or agent); never reached through a skill-orchestrate dispatch[]/aux_dispatch[] row, so
+  # orchestrator_mode never applies and no handoff-writing section is ever required.
+  "agent-system/extensions/core/agents/code-reviewer-agent.md"
+  "agent-system/extensions/core/agents/meta-builder-agent.md"
+  "agent-system/extensions/core/agents/spawn-agent.md"
+  "agent-system/extensions/cslib/agents/cslib-vet-agent.md"
+  "agent-system/extensions/filetypes/agents/document-agent.md"
+  "agent-system/extensions/literature/agents/literature-agent.md"
+  "agent-system/extensions/present/agents/pptx-assembly-agent.md"
+  "agent-system/extensions/present/agents/slide-critic-agent.md"
+)
+
+is_excluded_from_check_j() {
+  local rel="$1"
+  local ex
+  for ex in "${CHECK_J_EXCLUDED_RELATIVE_PATHS[@]}"; do
+    [[ "$rel" == "$ex" ]] && return 0
+  done
+  return 1
+}
+
 check_j_handoff_section_artifacts() {
   echo ""
   echo "--- Check J: section-scoped handoff artifacts requirement presence ---"
@@ -896,9 +946,14 @@ check_j_handoff_section_artifacts() {
   local any_writer=false
   while IFS= read -r f; do
     [[ -z "$f" ]] && continue
-    grep -qF '.orchestrator-handoff.json' "$f" || continue
     local rel
     rel="$(rel_path "$f")"
+
+    if is_excluded_from_check_j "$rel"; then
+      log_info "Check J: $rel is a recorded exclusion in CHECK_J_EXCLUDED_RELATIVE_PATHS (invoked only via the forked-subagent pattern, never reaches a skill-orchestrate dispatch row) -- skipped"
+      continue
+    fi
+
     log_info "Checking $rel"
 
     if _check_j_locate_handoff_section "$f"; then
@@ -914,7 +969,11 @@ check_j_handoff_section_artifacts() {
         log_info "Check J: $rel is a 'never write one' non-writer contract -- skipped"
       else
         any_writer=true
-        log_fail "$rel: mentions .orchestrator-handoff.json but has no heading matching either recognized handoff-writing section form (quoted \`.orchestrator-handoff.json\` or 'Wrap-Up') -- heading drift, cannot verify the artifacts requirement reaches this writer"
+        if grep -qF '.orchestrator-handoff.json' "$f"; then
+          log_fail "$rel: mentions .orchestrator-handoff.json but has no heading matching either recognized handoff-writing section form (quoted \`.orchestrator-handoff.json\` or 'Wrap-Up') -- heading drift, cannot verify the artifacts requirement reaches this writer"
+        else
+          log_fail "$rel: is a required handoff writer (dispatchable agent, not a recorded exclusion, not a 'never write one' research-agent contract) with no handoff-writing section at all -- add the section, or if this agent genuinely never writes .orchestrator-handoff.json under orchestrator_mode, record a justified exception in CHECK_J_EXCLUDED_RELATIVE_PATHS"
+        fi
       fi
     fi
   done < <(enumerate_dispatchable_agents)

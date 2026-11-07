@@ -2,7 +2,7 @@
 
 - **Task**: 478 - Ungate lint-agent-contracts.sh Check J: replace the content gate with a curated
   in-scope list so removal of a handoff-writer section is detected
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/478_ungate_lint_check_j_handoff_contract/reports/01_ungate-check-j-curated-list.md`
@@ -146,7 +146,7 @@ edits or verifies the artifact the previous one produced.
 
 ---
 
-### Phase 1: Replace the content gate with the curated EXCLUDED-style array [NOT STARTED]
+### Phase 1: Replace the content gate with the curated EXCLUDED-style array [COMPLETED]
 
 **Goal**: Check J iterates every dispatchable agent with no content pre-filter and FAILs by name
 on any file that is neither a recognized writer, nor a "never write one" contract, nor an
@@ -154,15 +154,15 @@ explicitly justified exclusion. Removal of a handoff-writer section turns the li
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` immediately
-      before editing (a sibling task claims this same file for a different check).
-- [ ] Declare `CHECK_J_EXCLUDED_RELATIVE_PATHS` immediately above
+- [x] Re-read `agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` immediately
+      before editing (a sibling task claims this same file for a different check). *(completed)*
+- [x] Declare `CHECK_J_EXCLUDED_RELATIVE_PATHS` immediately above
       `check_j_handoff_section_artifacts()`, following the file's own location pattern: a header
       comment documenting the derivation criterion ("an agent that writes, or is contractually
       expected to write, `.orchestrator-handoff.json` under `orchestrator_mode`"), a reproduce
       command, and one per-entry reason comment each — never "see above" as the whole
-      justification, matching `CHECK_G_EXCLUDED_RELATIVE_PATHS`'s comment style.
-- [ ] Populate it with the 8 confirmed forked-subagent-pattern-only files, in the FULL
+      justification, matching `CHECK_G_EXCLUDED_RELATIVE_PATHS`'s comment style. *(completed)*
+- [x] Populate it with the 8 confirmed forked-subagent-pattern-only files, in the FULL
       `agent-system/extensions/...` path form that `rel_path()` produces:
       `core/agents/code-reviewer-agent.md`, `core/agents/meta-builder-agent.md`,
       `core/agents/spawn-agent.md`, `cslib/agents/cslib-vet-agent.md`,
@@ -171,22 +171,26 @@ explicitly justified exclusion. Removal of a handoff-writer section turns the li
       prefixed `agent-system/extensions/`. Each entry's reason comment states that the agent is
       invoked only via the forked-subagent pattern from inside another skill or agent and never
       reaches a `skill-orchestrate` dispatch row, so `orchestrator_mode` never applies to it.
-- [ ] Add `is_excluded_from_check_j()`, mirroring `is_excluded_from_terminal_status()` /
-      `is_excluded_from_artifacts_template()` verbatim in shape.
-- [ ] Delete the content gate line `grep -qF '.orchestrator-handoff.json' "$f" || continue`.
-- [ ] Insert the exclusion skip in its place: if `is_excluded_from_check_j "$rel"`, emit a
-      `log_info` skip notice naming the file and the array, and `continue`.
-- [ ] In the `_check_j_locate_handoff_section` return-1 branch, split the message by whether the
+      *(completed)*
+- [x] Add `is_excluded_from_check_j()`, mirroring `is_excluded_from_terminal_status()` /
+      `is_excluded_from_artifacts_template()` verbatim in shape. *(completed)*
+- [x] Delete the content gate line `grep -qF '.orchestrator-handoff.json' "$f" || continue`.
+      *(completed)*
+- [x] Insert the exclusion skip in its place: if `is_excluded_from_check_j "$rel"`, emit a
+      `log_info` skip notice naming the file and the array, and `continue`. *(completed)*
+- [x] In the `_check_j_locate_handoff_section` return-1 branch, split the message by whether the
       file mentions the string at all. If it does, keep the existing heading-drift FAIL wording.
       If it does NOT, emit a new FAIL stating that the file is a required handoff writer with no
       handoff-writing section at all, and naming `CHECK_J_EXCLUDED_RELATIVE_PATHS` as the place
-      to record a genuine exception. Both branches set `any_writer=true`.
-- [ ] MUST NOT: do not derive the in-scope set from `docs/architecture/handoff-schema.md`'s
+      to record a genuine exception. Both branches set `any_writer=true`. *(completed)*
+- [x] MUST NOT: do not derive the in-scope set from `docs/architecture/handoff-schema.md`'s
       role-named "Handoff Writers" table, and do not add an inclusion array of writer files —
-      the design records exceptions only.
-- [ ] MUST NOT: do not introduce a filename glob as Check J's universe;
-      `enumerate_dispatchable_agents()` stays the sole source of the population.
-- [ ] Stage and commit only this file's own hunks with an explicit single-file pathspec.
+      the design records exceptions only. *(confirmed: not done)*
+- [x] MUST NOT: do not introduce a filename glob as Check J's universe;
+      `enumerate_dispatchable_agents()` stays the sole source of the population. *(confirmed: not
+      done — enumerate_dispatchable_agents() remains the sole population source)*
+- [x] Stage and commit only this file's own hunks with an explicit single-file pathspec.
+      *(completed below)*
 
 **Timing**: 1 hour
 
