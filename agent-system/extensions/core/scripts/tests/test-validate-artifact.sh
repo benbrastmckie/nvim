@@ -30,73 +30,31 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-VALIDATE_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/validate-artifact.sh"
-  "$SCRIPT_DIR/../validate-artifact.sh"
-)
-VALIDATE=""
-for candidate in "${VALIDATE_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    VALIDATE="$candidate"
-    break
-  fi
-done
-if [[ -z "$VALIDATE" ]]; then
-  echo "ERROR: validate-artifact.sh not found at any of:" >&2
-  for candidate in "${VALIDATE_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+VALIDATE="$(common_test_resolve_subject "validate-artifact.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/validate-artifact.sh" \
+  "$SCRIPT_DIR/../validate-artifact.sh")" || exit 2
+common_test_declare_subject "$VALIDATE"
 
-# VALIDATE_SRC: the source-store sibling copy ONLY, deliberately bypassing $VALIDATE's
-# deploy-tree-first resolution above. The cross-phase ceiling consistency cases below exercise a
-# check that lives only in the source store until the owning task's own redeploy phase lands it
-# under .claude/ -- using $VALIDATE for them would silently test a stale deployed copy lacking
-# the check entirely. Every other case in this suite correctly keeps using $VALIDATE.
-VALIDATE_SRC="$SCRIPT_DIR/../validate-artifact.sh"
-if [[ ! -f "$VALIDATE_SRC" ]]; then
-  echo "ERROR: validate-artifact.sh (source-store sibling) not found at: $VALIDATE_SRC" >&2
-  exit 2
-fi
+# VALIDATE_SRC: mode=source-store for the SAME file, deliberately distinct from $VALIDATE's
+# mode=deploy-tree-first resolution above. The cross-phase ceiling consistency cases below
+# exercise a check that lives only in the source store until the owning task's own redeploy
+# phase lands it under .claude/ -- using $VALIDATE for them would silently test a stale deployed
+# copy lacking the check entirely. Every other case in this suite correctly keeps using
+# $VALIDATE.
+VALIDATE_SRC="$(common_test_resolve_subject "validate-artifact.sh (source store)" "source-store" \
+  "$REPO_ROOT/.claude/scripts/validate-artifact.sh" \
+  "$SCRIPT_DIR/../validate-artifact.sh")" || exit 2
+common_test_declare_subject "$VALIDATE_SRC"
 
-UPDATE_PLAN_STATUS_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/update-plan-status.sh"
-  "$SCRIPT_DIR/../update-plan-status.sh"
-)
-UPDATE_PLAN_STATUS=""
-for candidate in "${UPDATE_PLAN_STATUS_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    UPDATE_PLAN_STATUS="$candidate"
-    break
-  fi
-done
-if [[ -z "$UPDATE_PLAN_STATUS" ]]; then
-  echo "ERROR: update-plan-status.sh not found at any of:" >&2
-  for candidate in "${UPDATE_PLAN_STATUS_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+UPDATE_PLAN_STATUS="$(common_test_resolve_subject "update-plan-status.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/update-plan-status.sh" \
+  "$SCRIPT_DIR/../update-plan-status.sh")" || exit 2
+common_test_declare_subject "$UPDATE_PLAN_STATUS"
 
-PLAN_STATUS_LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/plan-status-line.sh"
-  "$SCRIPT_DIR/../lib/plan-status-line.sh"
-)
-PLAN_STATUS_LIB=""
-for candidate in "${PLAN_STATUS_LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    PLAN_STATUS_LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$PLAN_STATUS_LIB" ]]; then
-  echo "ERROR: plan-status-line.sh not found at any of:" >&2
-  for candidate in "${PLAN_STATUS_LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+PLAN_STATUS_LIB="$(common_test_resolve_subject "plan-status-line.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/plan-status-line.sh" \
+  "$SCRIPT_DIR/../lib/plan-status-line.sh")" || exit 2
+common_test_declare_subject "$PLAN_STATUS_LIB"
 # shellcheck disable=SC1090
 . "$PLAN_STATUS_LIB"
 

@@ -65,8 +65,8 @@ common_test_declare_subject "$GENERATE_TODO_SCRIPT"
 GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
 common_test_declare_subject "$GUARD_SCRIPT"
-# LIB_DIR is a directory, not a single-file subject -- common_test_resolve_subject resolves
-# one named file via `[ -f ]`, so it cannot resolve a bare directory. Derived instead from
+# LIB_DIR is a directory, not a single-file subject -- the shared resolve-subject helper
+# resolves one named file via `[ -f ]`, so it cannot resolve a bare directory. Derived instead from
 # GUARD_SCRIPT's own resolved directory: both GUARD_CANDIDATES and the old LIB_DIR_CANDIDATES
 # shared the identical deploy-tree-first tree-pair order, so whichever tree GUARD_SCRIPT
 # resolved from is the same tree this directory must come from.

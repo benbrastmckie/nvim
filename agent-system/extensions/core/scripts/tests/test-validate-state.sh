@@ -28,109 +28,64 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-VALIDATOR_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-  "$SCRIPT_DIR/../validate-state.sh"
-)
-VALIDATOR=""
-for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    VALIDATOR="$candidate"
-    break
-  fi
-done
-if [[ -z "$VALIDATOR" ]]; then
-  echo "ERROR: validate-state.sh not found at any of:" >&2
-  for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
+VALIDATOR="$(common_test_resolve_subject "validate-state.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/validate-state.sh" "$SCRIPT_DIR/../validate-state.sh")" || exit 2
+common_test_declare_subject "$VALIDATOR"
+
+# Every "<CHECK>_VALIDATOR" resolution below (D5, FS, SCOPE, ARCHIVE, C12, and further down
+# WIDEN/D6/XREPO) targets this SAME file, validate-state.sh, under mode=source-store (opposite
+# preference from VALIDATOR above): each check's fixtures must exercise the new check without
+# depending on a prior deploy step, verified by grepping the resolved candidate for that check's
+# own identifier before trusting it -- this is what prevents a stale deployed copy from
+# producing a false green. One shared path pair, reused by every content-gated resolution
+# below instead of ten separate copies of the same two literals.
+VSTATE_DEPLOYED="$REPO_ROOT/.claude/scripts/validate-state.sh"
+VSTATE_STORE="$SCRIPT_DIR/../validate-state.sh"
+
+# resolve_content_gated <var_name> <desc> <grep-pattern...> -- sets <var_name> to whichever of
+# VSTATE_STORE/VSTATE_DEPLOYED exists AND matches every <grep-pattern> (mode=source-store tried
+# first, mode=deployed as fallback -- same effective order the original two-candidate loop
+# used), declaring the winner via common_test_declare_subject. Sets <var_name> to "" and returns
+# 1 if neither candidate qualifies (the caller's own existing info-skip block decides what that
+# means). Builds on common_test_resolve_subject for the raw per-mode lookup, adding only the
+# content gate these fixtures need that a pure existence check cannot express -- not a
+# resolve_candidate duplicate.
+resolve_content_gated() {
+  local _rcg_var="$1" _rcg_desc="$2"; shift 2
+  local _rcg_mode _rcg_candidate _rcg_ok _rcg_pat
+  for _rcg_mode in source-store deployed; do
+    _rcg_candidate="$(common_test_resolve_subject "$_rcg_desc" "$_rcg_mode" "$VSTATE_DEPLOYED" "$VSTATE_STORE" 2>/dev/null)" || continue
+    _rcg_ok=true
+    for _rcg_pat in "$@"; do
+      grep -q "$_rcg_pat" "$_rcg_candidate" 2>/dev/null || { _rcg_ok=false; break; }
+    done
+    if $_rcg_ok; then
+      printf -v "$_rcg_var" '%s' "$_rcg_candidate"
+      common_test_declare_subject "$_rcg_candidate"
+      return 0
+    fi
   done
-  exit 2
-fi
+  printf -v "$_rcg_var" '%s' ""
+  return 1
+}
 
 # --- D5 (per-type artifact-loss) validator resolution ---
-# Deliberately source-store-first (opposite order from VALIDATOR_CANDIDATES above), because the
-# D5 fixtures below must exercise the new check without depending on a prior deploy step. Every
-# candidate is still verified via grep for the check's identifier ("Check D5") before being
-# trusted -- this is what prevents a stale deployed copy from producing a false green, per the
-# suite's existing structural precedent (VALIDATOR resolution above).
-D5_VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-state.sh"
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-)
-D5_VALIDATOR=""
-for candidate in "${D5_VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]] && grep -q "Check D5" "$candidate" 2>/dev/null; then
-    D5_VALIDATOR="$candidate"
-    break
-  fi
-done
+resolve_content_gated D5_VALIDATOR "validate-state.sh (D5 check)" "Check D5"
 
 # --- Check 8 / Check 9 (coarse + duplicate file_scope) validator resolution ---
-# Same source-store-first precedent as D5_VALIDATOR above, for the same reason: these fixtures
-# must exercise the new checks without depending on a prior deploy step. A candidate is trusted
-# only after grepping for BOTH check identifiers ("Check 8" and "Check 9"), so a stale deployed
-# copy that has one but not the other cannot produce a false green.
-FS_VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-state.sh"
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-)
-FS_VALIDATOR=""
-for candidate in "${FS_VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]] && grep -q "Check 8" "$candidate" 2>/dev/null && grep -q "Check 9" "$candidate" 2>/dev/null; then
-    FS_VALIDATOR="$candidate"
-    break
-  fi
-done
+resolve_content_gated FS_VALIDATOR "validate-state.sh (Check 8/9)" "Check 8" "Check 9"
 
 # --- Check 10 / Check 11 (missing/null/empty + glob file_scope) validator resolution ---
-# Same source-store-first precedent as FS_VALIDATOR above. A candidate is trusted only after
-# grepping for BOTH check identifiers ("Check 10" and "Check 11"), so a stale deployed copy that
-# has one but not the other cannot produce a false green.
-SCOPE_VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-state.sh"
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-)
-SCOPE_VALIDATOR=""
-for candidate in "${SCOPE_VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]] && grep -q "Check 10" "$candidate" 2>/dev/null && grep -q "Check 11" "$candidate" 2>/dev/null; then
-    SCOPE_VALIDATOR="$candidate"
-    break
-  fi
-done
+resolve_content_gated SCOPE_VALIDATOR "validate-state.sh (Check 10/11)" "Check 10" "Check 11"
 
 # --- --archive mode (Checks A1-A6, the base-mode unvalidatable-shape guard) validator
-# resolution --- Same source-store-first precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR
-# above. A candidate is trusted only after grepping for "Check A6" (the LAST archive check added,
-# mirroring the existing precedent of grepping the last check in a batch) -- "Check A1" alone
-# would also match the archive-mode top-level-key check's own "Check A1b" label, so A6 is the
-# more specific anchor.
-ARCHIVE_VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-state.sh"
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-)
-ARCHIVE_VALIDATOR=""
-for candidate in "${ARCHIVE_VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]] && grep -q "Check A6" "$candidate" 2>/dev/null; then
-    ARCHIVE_VALIDATOR="$candidate"
-    break
-  fi
-done
+# resolution --- grepped for "Check A6" (the LAST archive check added, mirroring the existing
+# precedent of grepping the last check in a batch) -- "Check A1" alone would also match the
+# archive-mode top-level-key check's own "Check A1b" label, so A6 is the more specific anchor.
+resolve_content_gated ARCHIVE_VALIDATOR "validate-state.sh (--archive mode, Check A6)" "Check A6"
 
 # --- Check 12 (archive-aware next_project_number staleness, base mode) validator resolution ---
-# Same source-store-first precedent as ARCHIVE_VALIDATOR/D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR
-# above. A candidate is trusted only after grepping for "Check 12" -- the fixtures below
-# info-SKIP loudly (never silently, never a hard fail) when no candidate has it.
-C12_VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-state.sh"
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-)
-C12_VALIDATOR=""
-for candidate in "${C12_VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]] && grep -q "Check 12" "$candidate" 2>/dev/null; then
-    C12_VALIDATOR="$candidate"
-    break
-  fi
-done
+resolve_content_gated C12_VALIDATOR "validate-state.sh (Check 12)" "Check 12"
 
 PASSED=0
 FAILED=0
@@ -332,9 +287,8 @@ fi
 if [[ -z "$C12_VALIDATOR" ]]; then
   common_test_info "SKIPPING Check 12 / Fixture (f) fixtures: no candidate validate-state.sh contains \"Check 12\""
   common_test_info "Candidates checked:"
-  for candidate in "${C12_VALIDATOR_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
 else
   common_test_info "Check 12 fixtures running against: $C12_VALIDATOR (confirmed to contain Check 12)"
 
@@ -675,9 +629,8 @@ fi
 if [[ -z "$D5_VALIDATOR" ]]; then
   common_test_info "SKIPPING D5 fixtures: no candidate validator (source-store or deployed) contains the D5"
   common_test_info "per-type artifact-loss check (grepped for \"Check D5\"). Candidates checked:"
-  for candidate in "${D5_VALIDATOR_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
   common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
   common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
@@ -840,9 +793,8 @@ if [[ -z "$FS_VALIDATOR" ]]; then
   common_test_info "SKIPPING Check 8/Check 9/--fix fixtures: no candidate validator (source-store or"
   common_test_info "deployed) contains BOTH Check 8 and Check 9 (grepped for \"Check 8\" and \"Check 9\")."
   common_test_info "Candidates checked:"
-  for candidate in "${FS_VALIDATOR_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
   common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
   common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
@@ -996,9 +948,8 @@ if [[ -z "$SCOPE_VALIDATOR" ]]; then
   common_test_info "SKIPPING Check 10/Check 11/--strict fixtures: no candidate validator (source-store or"
   common_test_info "deployed) contains BOTH Check 10 and Check 11 (grepped for \"Check 10\" and \"Check 11\")."
   common_test_info "Candidates checked:"
-  for candidate in "${SCOPE_VALIDATOR_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
   common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
   common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
@@ -1261,32 +1212,22 @@ fi
 # =====================================================================
 # Widened-field ruling fixtures (Checks 3/4 advisory-first posture) + schema/validator drift test
 # =====================================================================
-# Source-store-first resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR
-# above): these fixtures exercise the widened fields and the advisory-first posture without
-# depending on a prior deploy step. A candidate is trusted only after grepping for both
-# "resume_phase" (confirms the schema-widening-mirroring KNOWN_ENTRY_FIELDS entry landed) and
-# "model it there and in KNOWN_TOP_LEVEL_FIELDS" (confirms Check 3's advisory WARN message
-# landed), so a stale deployed copy that has neither cannot produce a false green.
-WIDEN_VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-state.sh"
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-)
-WIDEN_VALIDATOR=""
-for candidate in "${WIDEN_VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]] && grep -q "resume_phase" "$candidate" 2>/dev/null \
-      && grep -q "model it there and in KNOWN_TOP_LEVEL_FIELDS" "$candidate" 2>/dev/null; then
-    WIDEN_VALIDATOR="$candidate"
-    break
-  fi
-done
+# mode=source-store resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR
+# above, via resolve_content_gated): these fixtures exercise the widened fields and the
+# advisory-first posture without depending on a prior deploy step. A candidate is trusted only
+# after grepping for both "resume_phase" (confirms the schema-widening-mirroring
+# KNOWN_ENTRY_FIELDS entry landed) and "model it there and in KNOWN_TOP_LEVEL_FIELDS" (confirms
+# Check 3's advisory WARN message landed), so a stale deployed copy that has neither cannot
+# produce a false green.
+resolve_content_gated WIDEN_VALIDATOR "validate-state.sh (widened-field fixtures)" \
+  "resume_phase" "model it there and in KNOWN_TOP_LEVEL_FIELDS"
 
 if [[ -z "$WIDEN_VALIDATOR" ]]; then
   common_test_info "SKIPPING widened-field fixtures: no candidate validator (source-store or deployed)"
   common_test_info "contains both the resume_phase known-field name and the Check 3 advisory WARN message."
   common_test_info "Candidates checked:"
-  for candidate in "${WIDEN_VALIDATOR_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
 else
   common_test_info "Widened-field fixtures running against: $WIDEN_VALIDATOR (confirmed to contain the widened fields and the advisory posture)"
 
@@ -1416,29 +1357,19 @@ fi
 
 # =====================================================================
 # Check D6 fixtures: parentage integrity (self-parent, orphaned-parent, cyclic-parentage).
-# Source-store-first resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR/
-# WIDEN_VALIDATOR above): a candidate is trusted only after grepping for a signature confirming
-# the Check D6 code actually landed, so a stale deployed copy cannot produce a false green.
+# mode=source-store resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR/
+# WIDEN_VALIDATOR above, via resolve_content_gated): a candidate is trusted only after grepping
+# for a signature confirming the Check D6 code actually landed, so a stale deployed copy cannot
+# produce a false green.
 # =====================================================================
-D6_VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-state.sh"
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-)
-D6_VALIDATOR=""
-for candidate in "${D6_VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]] && grep -q "Check D6: parentage integrity" "$candidate" 2>/dev/null; then
-    D6_VALIDATOR="$candidate"
-    break
-  fi
-done
+resolve_content_gated D6_VALIDATOR "validate-state.sh (Check D6)" "Check D6: parentage integrity"
 
 if [[ -z "$D6_VALIDATOR" ]]; then
   common_test_info "SKIPPING Check D6 fixtures: no candidate validator (source-store or deployed) contains"
   common_test_info "the 'Check D6: parentage integrity' signature comment."
   common_test_info "Candidates checked:"
-  for candidate in "${D6_VALIDATOR_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
 else
   common_test_info "Check D6 fixtures running against: $D6_VALIDATOR (confirmed to contain Check D6)"
 
@@ -1611,23 +1542,16 @@ fi
 # Modelled on test-status-vocabulary.sh's library/schema anti-drift assertion -- the in-repo
 # precedent for exactly this pattern, applied here to a different hand-maintained pair.
 # =====================================================================
-SCHEMA_CANDIDATES=(
-  "$SCRIPT_DIR/../../context/schemas/state-schema.json"
-  "$REPO_ROOT/.claude/context/schemas/state-schema.json"
-)
-SCHEMA=""
-for candidate in "${SCHEMA_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    SCHEMA="$candidate"
-    break
-  fi
-done
+SCHEMA_STORE="$SCRIPT_DIR/../../context/schemas/state-schema.json"
+SCHEMA_DEPLOYED="$REPO_ROOT/.claude/context/schemas/state-schema.json"
+SCHEMA="$(common_test_resolve_subject "state-schema.json" "source-store" \
+  "$SCHEMA_DEPLOYED" "$SCHEMA_STORE" 2>/dev/null)" || SCHEMA=""
+[[ -n "$SCHEMA" ]] && common_test_declare_subject "$SCHEMA"
 
 if [[ -z "$SCHEMA" ]]; then
   common_test_info "SKIPPING schema-to-validator drift test: state-schema.json not found at any of:"
-  for candidate in "${SCHEMA_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $SCHEMA_STORE"
+  common_test_info "  $SCHEMA_DEPLOYED"
 elif [[ -z "$WIDEN_VALIDATOR" ]]; then
   common_test_info "SKIPPING schema-to-validator drift test: no validator candidate confirmed to contain the widened fields (see above)."
 elif ! command -v jq >/dev/null 2>&1; then
@@ -1677,29 +1601,19 @@ fi
 # default is script-anchored, never CWD-relative, and that the explicit-positional-argument path
 # (including argument-relative sibling lookups) is unaffected.
 #
-# Source-store-first resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR/
-# WIDEN_VALIDATOR/D6_VALIDATOR above): a candidate is trusted only after grepping for the
-# "default-resolution: script-anchored" marker comment, so a stale deployed copy predating this
-# fix cannot produce a false green.
+# mode=source-store resolution (same precedent as D5_VALIDATOR/FS_VALIDATOR/SCOPE_VALIDATOR/
+# WIDEN_VALIDATOR/D6_VALIDATOR above, via resolve_content_gated): a candidate is trusted only
+# after grepping for the "default-resolution: script-anchored" marker comment, so a stale
+# deployed copy predating this fix cannot produce a false green.
 # =====================================================================
-XREPO_VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-state.sh"
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-)
-XREPO_VALIDATOR=""
-for candidate in "${XREPO_VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]] && grep -q "default-resolution: script-anchored" "$candidate" 2>/dev/null; then
-    XREPO_VALIDATOR="$candidate"
-    break
-  fi
-done
+resolve_content_gated XREPO_VALIDATOR "validate-state.sh (XREPO default resolution)" \
+  "default-resolution: script-anchored"
 
 if [[ -z "$XREPO_VALIDATOR" ]]; then
   common_test_info "SKIPPING XREPO fixtures: no candidate validator (source-store or deployed) contains the"
   common_test_info "'default-resolution: script-anchored' marker comment. Candidates checked:"
-  for candidate in "${XREPO_VALIDATOR_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
   common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
   common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else
@@ -1824,9 +1738,8 @@ fi
 if [[ -z "$ARCHIVE_VALIDATOR" ]]; then
   common_test_info "SKIPPING --archive fixtures: no candidate validator (source-store or deployed) contains"
   common_test_info "Check A6 (grepped for \"Check A6\"). Candidates checked:"
-  for candidate in "${ARCHIVE_VALIDATOR_CANDIDATES[@]}"; do
-    common_test_info "  $candidate"
-  done
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
   common_test_info "Ensure agent-system/extensions/core/scripts/validate-state.sh is up to date (and, for the"
   common_test_info "deployed candidate, that a deploy has run) before re-running this suite."
 else

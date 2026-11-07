@@ -30,7 +30,7 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 # The directory-level SCRIPTS_SRC this suite needs (a whole-tree copy source for the sandbox,
 # not a single-file subject) is derived from the resolved reconcile-task-status.sh's own
 # directory; dispatch-strand-probe.sh's joint presence there is then verified explicitly, since
-# common_test_resolve_subject resolves one named file, not a directory's joint file set.
+# the shared resolve-subject helper resolves one named file, not a directory's joint file set.
 RECONCILE_SCRIPT="$(common_test_resolve_subject "reconcile-task-status.sh" "source-store" \
   "$REPO_ROOT/.claude/scripts/reconcile-task-status.sh" \
   "$REPO_ROOT/agent-system/extensions/core/scripts/reconcile-task-status.sh")" || exit 2

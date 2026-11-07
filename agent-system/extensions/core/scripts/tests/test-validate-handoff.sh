@@ -28,24 +28,10 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 # resolution): this suite validates the validator's own logic under active development, which
 # lives in the source store before a Phase 7 redeploy copies it to the deploy tree. After
 # redeploy the two are identical, so either order then yields the same result.
-VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-handoff.sh"
-  "$REPO_ROOT/.claude/scripts/validate-handoff.sh"
-)
-VALIDATOR=""
-for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    VALIDATOR="$candidate"
-    break
-  fi
-done
-if [[ -z "$VALIDATOR" ]]; then
-  echo "ERROR: validate-handoff.sh not found at any of:" >&2
-  for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+VALIDATOR="$(common_test_resolve_subject "validate-handoff.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/validate-handoff.sh" \
+  "$SCRIPT_DIR/../validate-handoff.sh")" || exit 2
+common_test_declare_subject "$VALIDATOR"
 
 PASSED=0
 FAILED=0

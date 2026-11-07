@@ -173,28 +173,8 @@ EXCLUDED_FILES=(
 # shared explicit helper (common_test_resolve_subject + common_test_declare_subject); no entries
 # remain. ---
 
-# --- Group C Batch 1: inline CANDIDATES-array loop, no named function -- all 19 Batch 1 suites
-# migrated to the shared explicit helper; no Batch 1 entries remain. Batch 2 (19 more) is still
-# migration-pending below. ---
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-reconcile-demote-stranded.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-script-inventory.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
-    "agent-system/extensions/core/scripts/tests/test-validate-state.sh|migration-pending: Group C shape (inline CANDIDATES-array for-loop, invisible to a resolve_candidate grep); scheduled for conversion to common_test_resolve_subject"
+# --- Group C: inline CANDIDATES-array loop, no named function -- all 38 suites (Batch 1 and
+# Batch 2) migrated to the shared explicit helper; no entries remain. ---
 
 # --- Permanent exemptions: deployed-only-by-design (one valid copy; no store/deployed duality) ---
     "agent-system/extensions/core/scripts/tests/test-backfill-file-scope.sh|permanent: deployed-only by design, one valid copy, no deployed/source-store duality to declare"

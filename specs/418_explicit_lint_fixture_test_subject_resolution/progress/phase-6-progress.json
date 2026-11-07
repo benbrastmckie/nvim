@@ -22,10 +22,18 @@
       "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
       "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh"
     ]},
-    {"id": 4, "description": "Migrate remaining 4 Group C batch 2 suites", "status": "not_started", "files_touched": []},
-    {"id": 5, "description": "Remove this batch's 19 entries from the gate-27 lint's Layer-2 allowlist, leaving only the 3 permanent exemptions", "status": "not_started", "files_touched": []}
+    {"id": 4, "description": "Migrate remaining 4 Group C batch 2 suites: test-update-plan-status.sh, test-validate-artifact.sh (two resolutions of the same file under different modes), test-validate-handoff.sh, test-validate-return-meta.sh, test-validate-state.sh (10 content-gated resolutions consolidated via a new local resolve_content_gated wrapper over the shared helper)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-update-plan-status.sh",
+      "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh",
+      "agent-system/extensions/core/scripts/tests/test-validate-handoff.sh",
+      "agent-system/extensions/core/scripts/tests/test-validate-return-meta.sh",
+      "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
+    ]},
+    {"id": 5, "description": "Remove this batch's 19 entries from the gate-27 lint's Layer-2 allowlist, leaving only the 8 permanent exemptions (3 deployed-only + 2 non-subject-resolution + test-common-lib.sh + test-lint-subject-resolution-declaration.sh + test-task-type-detect.sh)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh"
+    ]}
   ],
-  "current_objective": 4,
+  "current_objective": 5,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

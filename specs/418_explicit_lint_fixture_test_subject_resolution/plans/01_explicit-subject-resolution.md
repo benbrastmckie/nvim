@@ -496,17 +496,17 @@ Research Integration. No blocker applies — begin here normally.
 
 ---
 
-### Phase 6: Migrate Group C Batch 2 — the Remaining 19 Inline-Loop Suites [IN PROGRESS]
+### Phase 6: Migrate Group C Batch 2 — the Remaining 19 Inline-Loop Suites [COMPLETED]
 
 **Goal**: Finish the inline-loop shape, leaving the lint's allowlist holding nothing but the
 permanent, reasoned exemptions.
 
 **Tasks**:
-- [ ] Apply Phase 5's per-file procedure to the remaining Group C suites.
-- [ ] Remove this batch's entries from the lint's Layer-2 allowlist in the same commit, leaving
+- [x] Apply Phase 5's per-file procedure to the remaining Group C suites. *(completed: 19 suites migrated; 10 content-gated resolutions in test-validate-state.sh (D5/FS/SCOPE/ARCHIVE/C12/WIDEN/D6/XREPO, each gated on a grep content check the plain two-candidate helper cannot express) consolidated via a new file-local `resolve_content_gated` wrapper built on `common_test_resolve_subject`, rather than 10 duplicated inline checks; two directory-joint resolutions (test-reconcile-demote-stranded.sh, test-reconcile-handoff-status.sh) derive their directory from a resolved file's own dirname since the shared helper resolves one named file, not a directory)*
+- [x] Remove this batch's entries from the lint's Layer-2 allowlist in the same commit, leaving *(completed)*
       only the permanent exemptions (the three deployed-only suites and the two
       non-subject-resolution `candidate` users).
-- [ ] Confirm the allowlist now holds **zero** "not yet migrated" entries, and that every
+- [x] Confirm the allowlist now holds **zero** "not yet migrated" entries, and that every *(completed: grep -c "migration-pending" over the allowlist's own data rows is 0; exactly 8 permanent entries remain (3 deployed-only + 2 non-subject-resolution + test-common-lib.sh + test-lint-subject-resolution-declaration.sh + test-task-type-detect.sh); gate 27 exits 0 with Total violations: 0)*
       remaining entry carries a permanent, reasoned exemption rather than a migration-pending one.
 
 **Timing**: 1.5 hours

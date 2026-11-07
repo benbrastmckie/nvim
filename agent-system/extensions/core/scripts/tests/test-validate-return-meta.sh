@@ -5,8 +5,10 @@
 # repair without ever running implicitly.
 #
 # Structural model: test-validate-handoff.sh (mktemp -d workdir with an EXIT-trap cleanup,
-# deploy-tree-first / source-store-fallback candidate resolution, pass()/fail()/info() helpers
-# with integer counters, exit 0 all-pass / 1 any-fail / 2 environment error).
+# mode=source-store subject resolution -- matching that suite's own rationale: this suite
+# validates the validator's own logic under active development in the source store --
+# pass()/fail()/info() helpers with integer counters, exit 0 all-pass / 1 any-fail / 2
+# environment error).
 #
 # Covers at minimum: a well-formed file (exit 0), a bare-string array (exit 1), a missing file
 # (exit 3), an object missing summary (exit 1), a non-resolving path (exit 1), and a --fix
@@ -28,24 +30,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-return-meta.sh"
-  "$REPO_ROOT/.claude/scripts/validate-return-meta.sh"
-)
-VALIDATOR=""
-for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    VALIDATOR="$candidate"
-    break
-  fi
-done
-if [[ -z "$VALIDATOR" ]]; then
-  echo "ERROR: validate-return-meta.sh not found at any of:" >&2
-  for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+VALIDATOR="$(common_test_resolve_subject "validate-return-meta.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/validate-return-meta.sh" \
+  "$SCRIPT_DIR/../validate-return-meta.sh")" || exit 2
+common_test_declare_subject "$VALIDATOR"
 
 PASSED=0
 FAILED=0

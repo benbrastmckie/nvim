@@ -33,24 +33,10 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/update-plan-status.sh"
-  "$SCRIPT_DIR/../update-plan-status.sh"
-)
-TARGET=""
-for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    TARGET="$candidate"
-    break
-  fi
-done
-if [[ -z "$TARGET" ]]; then
-  echo "ERROR: update-plan-status.sh not found at any of:" >&2
-  for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+TARGET="$(common_test_resolve_subject "update-plan-status.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/update-plan-status.sh" \
+  "$SCRIPT_DIR/../update-plan-status.sh")" || exit 2
+common_test_declare_subject "$TARGET"
 
 PASSED=0
 FAILED=0
