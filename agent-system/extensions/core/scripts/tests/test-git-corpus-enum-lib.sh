@@ -20,24 +20,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/git-corpus-enum-lib.sh"
-  "$SCRIPT_DIR/../lib/git-corpus-enum-lib.sh"
-)
-LIB=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$LIB" ]]; then
-  echo "ERROR: shared library git-corpus-enum-lib.sh not found at any of:" >&2
-  for candidate in "${LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+LIB="$(common_test_resolve_subject "shared library git-corpus-enum-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/git-corpus-enum-lib.sh" \
+  "$SCRIPT_DIR/../lib/git-corpus-enum-lib.sh")" || exit 2
+common_test_declare_subject "$LIB"
 if ! command -v git >/dev/null 2>&1; then
   echo "ERROR: git not found on PATH" >&2
   exit 2
