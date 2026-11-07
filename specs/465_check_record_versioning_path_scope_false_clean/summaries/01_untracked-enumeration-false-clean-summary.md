@@ -43,6 +43,9 @@ adding three stderr-only diagnostics so "clean" and "not examined" can never be 
   acceptance + 2 supporting cases added. 17/17 cases pass.
 - `agent-system/extensions/core/manifest.json`, `agent-system/extensions/core/scripts/tests/suite-classification.data`
   — registered the two new files (`provides.scripts` entries, one new `unit` suite row).
+- `agent-system/extensions/core/manifest.json` — continuation dispatch: added the missing
+  `"gate-cost-model.csv"` entry to `provides.scripts` (via `sync-manifest-scripts.sh --write`),
+  resolving the gate-3 finding the redeploy checkpoint held this task open for.
 - `agent-system/extensions/core/docs/reference/utility-scripts-inventory.md` — corrected the
   check-record-versioning.sh entry to describe the union enumeration and loud-skip behavior.
 - `agent-system/extensions/core/scripts/measure-gate-costs.sh`,
@@ -119,6 +122,22 @@ adding three stderr-only diagnostics so "clean" and "not examined" can never be 
   `agent-system/extensions/memory/**`) remain open for whichever task owns that territory.
 - The full `verify-deploy.sh`/`run-all.sh` battery, deferred here per the dispatch's Batch Gate
   Deferral, still runs once at the end of the enclosing multi-task `/orchestrate` batch.
+- **Continuation dispatch (gate-3 resolution)**: the redeploy checkpoint's self-attribution
+  screen held this task open for `FINDING gate3 [core] FAIL: script file on disk NOT in
+  provides.scripts: scripts/gate-cost-model.csv`, surfaced because this task's own
+  `modified_files` named `gate-cost-model.csv`. Root cause unrelated to this task's own
+  enumeration fix: `check-extension-docs.sh` Rule Q requires every file under an extension's
+  `scripts/` tree to be declared in that extension's `provides.scripts`, independent of file
+  type — the same precedent already followed by `gate-registry.data`,
+  `tests/suite-classification.data`, and `tests/suite-cost-hints.txt` — and `gate-cost-model.csv`
+  had simply never been added to that list. Resolved with the sanctioned repair tool,
+  `sync-manifest-scripts.sh --write`, which added the single missing entry to
+  `agent-system/extensions/core/manifest.json`. The two files this continuation was asked to
+  reconcile (`measure-gate-costs.sh`, `gate-cost-model.csv`) were found to already be committed
+  (prior dispatch's `task 465 phase 4: triage fix` commit) — nothing was dangling. Redeployed and
+  confirmed `verify-deploy.sh --only-gate 3` PASS for core, with no new finding introduced beyond
+  the two already-confirmed pre-existing ones (gate10 timeout, memory `/ide` dead-command
+  findings).
 
 ## References
 

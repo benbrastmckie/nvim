@@ -353,6 +353,28 @@ durable place, the deployed tree carries the fix, and the whole gate set is gree
   `version-ok` / `task-ref-ok` marker. A new finding is a real violation, never grounds for
   reverting the enumeration. *(completed: the one anticipated untracked non-specs/ file, gate-cost-model.csv, carried one genuine ADVISORY finding (bare "previously" vocabulary) -- fixed by rewording both printf template sites in its generator, measure-gate-costs.sh, plus the already-generated CSV's own header line, rather than adding a version-ok marker, since this is ordinary prose that reads cleanly either way. Verified: tracked-only and union enumeration now report byte-identical 3 BLOCKING / 833 ADVISORY repo-wide. check-task-references.sh's repo-wide union introduced zero new findings (none of the 13 untracked files carry a task-reference citation).)*
 - [x] Record the issue-log entry(ies) for this phase per the dispatch's Issue Log section. *(completed: 2 entries via issue-record.sh -- the triaged ADVISORY finding, and the pre-existing/unrelated gate failures observed during redeploy verification)*
+- [x] Follow-up (continuation dispatch): the redeploy checkpoint's self-attribution screen held
+  this task for one further gate-3 finding -- `script file on disk NOT in provides.scripts:
+  scripts/gate-cost-model.csv`. This is the "Adjacent instance, named but deliberately not fixed
+  here" item from the Sibling Enumeration Audit above, but the concrete trigger was unrelated to
+  that enumeration blind spot: gate-cost-model.csv (and its generator, measure-gate-costs.sh)
+  were already git-tracked and already declared in `provides.scripts` -- only the CSV itself had
+  never been added to the list. Root cause: `check-extension-docs.sh` Rule Q requires every file
+  under an extension's `scripts/` tree to be named in that extension's own `provides.scripts`
+  regardless of file type (data file vs. shell script) -- the same precedent already followed by
+  `gate-registry.data`, `tests/suite-classification.data`, and `tests/suite-cost-hints.txt`.
+  Resolved by running the sanctioned repair tool,
+  `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`, which added the
+  one missing `"gate-cost-model.csv"` entry to `agent-system/extensions/core/manifest.json`
+  (alphabetically, next to `gate-registry.data`) -- no new convention invented. The two
+  previously-uncommitted excursion files this dispatch was asked to resolve
+  (`measure-gate-costs.sh`, `gate-cost-model.csv`) turned out to already be committed, in the
+  prior dispatch's own `task 465 phase 4: triage fix` commit; nothing was left dangling.
+  Redeployed and confirmed: `verify-deploy.sh --only-gate 3` now reports `PASS -- 2 check(s), 0
+  failure(s)` for core. The full gate sweep after this redeploy shows exactly the two findings
+  already confirmed pre-existing and out of scope (the gate10 30s-timeout flake and the two
+  memory-extension `/ide` dead-command-recommendation findings) -- no new finding introduced.
+  *(completed)*
 
 **Timing**: 1 hour
 

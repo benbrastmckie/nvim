@@ -104,6 +104,7 @@
       "events-append.sh",
       "events-query.sh",
       "export-to-markdown.sh",
+      "gate-cost-model.csv",
       "gate-registry.data",
       "generate-context-line-counts.sh",
       "generate-task-order.sh",
