@@ -36,7 +36,7 @@ next_project_number: 528
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
-435 [RESEARCHING] — Reword architectural and phase-versus-command prose naming...
+435 [RESEARCHED] — Reword architectural and phase-versus-command prose naming...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
@@ -4947,10 +4947,11 @@ and stops there -- repairing it is someone else's work.
 ---
 
 ### 435. Reword architectural and phase-versus-command prose naming the three deleted lifecycle commands, per class, no blanket substitution
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 434, Task 407
+- **Research**: [435_reword_dead_lifecycle_command_prose_per_class/reports/01_dead-lifecycle-command-prose.md]
 
 **Description**: Reword, per class and per site, the architectural and phase-versus-command prose naming the three deleted lifecycle commands, with a blanket find-and-replace explicitly forbidden.
 

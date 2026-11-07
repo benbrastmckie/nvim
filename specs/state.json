@@ -3709,7 +3709,7 @@
     {
       "project_number": 435,
       "project_name": "reword_dead_lifecycle_command_prose_per_class",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Reword architectural and phase-versus-command prose naming the three deleted lifecycle commands, per class, no blanket substitution",
       "topic": "core-agent-system",
@@ -3802,10 +3802,17 @@
         "agent-system/extensions/z3/agents/",
         "agent-system/extensions/z3/skills/"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/reports/01_dead-lifecycle-command-prose.md",
+          "type": "report",
+          "summary": "Re-measures the post-434 dead-lifecycle-command-prose scope (223 files / 948 occurrences, excluding core/docs/), confirms both dependency edges (407, 434) are resolved, derives concrete fix text for all three revise.md incidental findings, identifies live territory collisions with concurrent siblings 420/430, confirms the 328 overlap advisory is now moot, and recommends a per-extension/per-core-subdirectory phase partition for implementation."
+        }
+      ],
       "created": "2026-10-17T01:06:39Z",
-      "last_updated": "2026-11-07T22:15:23Z",
-      "session_id": "sess_1794089641_e5bee5_435"
+      "last_updated": "2026-11-07T22:26:33Z",
+      "session_id": "sess_1794089641_e5bee5",
+      "next_artifact_number": 2
     },
     {
       "project_number": 436,
