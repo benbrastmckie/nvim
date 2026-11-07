@@ -155,6 +155,34 @@ depend only on the heading string, not on list-item shape:
 verbatim in a prompt directive or a ported grep, where a mismatch fails silently with no parse
 error — never rename or rephrase this heading without auditing both.
 
+**Correction-target existence obligation.** `Files to modify` names two different kinds of
+target under one flat list: a path the phase will CREATE, and a path that already exists and
+that the phase will CORRECT, AMEND, or RETIRE. Only the second kind carries an existence
+obligation.
+
+*(a) The general rule.* When a plan names an existing artifact as the thing to correct, amend,
+or retire, the author confirms at authoring time that it exists, and the entry's annotation
+states what the implementer does if it turns out not to. A correction task against a path that
+is absent is not a task; it is a sentence that cannot be executed, leaving the implementer only
+the choice of skipping it or inventing a target — neither of which is a sound substitute for
+authoring-time confirmation.
+
+*(b) The stronger prohibition, for a dispatch-created sidecar.* A plan MUST NOT make a phase's
+goal turn on correcting a machine-written orchestration sidecar — a file whose existence is
+contingent on whether a particular auxiliary dispatch has run, and whose content, if it appears
+at all, is written by that dispatch rather than by anyone the plan can consult. The sanctioned
+carrier for a route decision, a retirement, or a withdrawn recommendation is the durable record
+instead: the task's own description in `specs/state.json`, or a file under that task's
+`records/` directory. Name the carrier the phase actually updates, not a sidecar the plan cannot
+guarantee is present.
+
+An artifact's existence is a quantity the plan does not control, so a plan that assumes it —
+in either direction, present or absent — is wrong the moment the quantity moves. This is the
+general reason behind rule (a): authoring-time confirmation is a check against the world as it
+stood at authoring time, not a guarantee that holds at implementation time, so the entry's
+annotation must still say what to do if that check stops matching the world by the time the
+phase runs.
+
 **Whole-tree-claim declaration rule.** A phase whose steps invoke whole-tree regeneration (the
 deploy script, or the extension picker's reload/regenerate entries) MUST additionally declare
 the reserved sentinel `` `__WHOLE_TREE__` `` as its own entry in that phase's `Files to modify`
@@ -497,6 +525,38 @@ prose about a claim to confirm, not a structured file enumeration; the structure
 phase's file list is `Files to modify` (see "Consumers of this field" above), and
 `plan-file-scope-harvest.sh` reads only that field.
 
+### Scope-Hypothesis / task-list self-consistency obligation
+
+The obligation above governs a `**Scope Hypothesis**:` line as a claim about the WORLD —
+something to confirm or correct once implementation starts. This subsection governs a different
+failure: a `**Scope Hypothesis**:` line that is inconsistent with that same phase's own task
+list, as written by the same author in the same phase. No implementation-time confirmation can
+repair that case, because the phase is unsatisfiable as written, not merely mis-estimated.
+
+**(a) The authoring obligation.** A phase's `**Scope Hypothesis**:` and that phase's task list
+are two assertions by the same author about the same phase. An author who writes a Scope
+Hypothesis naming what is deliberately EXCLUDED from the phase MUST check every task in that
+same phase against the exclusion before the phase is written.
+
+**(b) The implementer's rule for when it happens anyway.** Authoring discipline cannot close
+this gap entirely, so when a phase's task list is found, during implementation, to require what
+that phase's own Scope Hypothesis excludes: preserve what the task list requires — the
+statement, the declaration, the thing the phase exists to produce — over the scope prediction;
+record the deviation in place with the reason (see "Reasoned Exclusions (format)" below); and
+propagate any consequence to later phases that named the same identifiers. Never silently drop
+the task to protect the prediction, and never silently widen the prediction without saying so.
+
+**Why the pinned-block precedence reasoning does not transfer here.** A sibling rule for a
+different surface pair — a plan's Verification criteria against its own pinned Lean Challenge
+Statements block, in the lean extension's `rules/plan-compliance.md` "Statement Fidelity"
+section — resolves its contradiction by precedence, because one of its two surfaces is pinned
+and immutable by design after plan time. Neither a `**Scope Hypothesis**:` line nor a task list
+is pinned or immutable, so no immutability argument is available to decide which surface wins
+here, which is exactly why condition (b) above is argued from what the phase exists to produce
+instead of from precedence. The two rules are siblings in the same class of defect — a plan
+asserting two things about itself that cannot both hold — but each is decided on its own surface
+pair; neither restates the other.
+
 ### Cross-phase ceiling consistency obligation
 
 The obligation above governs each `**Scope Hypothesis**:` estimate on its own, pointed forward at
@@ -832,7 +892,10 @@ reasoned exclusion is decided and will not be revisited, so there is nothing to 
 out to be an overcount — the Evidence column is where that confirmation lands. The record may be
 written at plan time, as a pre-emptive declaration alongside the phase's Scope Hypothesis line, or
 discovered mid-phase at implement time, with implement-time entries confirming or superseding any
-plan-time hypothesis.
+plan-time hypothesis. Alongside that overcount case, a reasoned exclusion may also close a Scope
+Hypothesis that was found to contradict its own phase's task list — see "Scope-Hypothesis /
+task-list self-consistency obligation" above for that case and the rule for preserving the task
+list over the prediction.
 
 ### Decision gates and contingency branches
 

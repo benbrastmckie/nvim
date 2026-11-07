@@ -260,6 +260,23 @@ Apply task-breakdown.md guidelines:
    - A plan with no whole-tree-regeneration phase declares nothing new here; this obligation is
      additive and changes no other phase's `Files to modify` block.
 
+10. **Check a Scope Hypothesis Against Its Own Phase's Task List**
+    - Before writing a phase that carries a `**Scope Hypothesis**:` naming something deliberately
+      EXCLUDED, check every task in that same phase against the exclusion.
+    - **MUST NOT**: do not write a phase whose task list requires what its own Scope Hypothesis
+      excludes. See `context/formats/plan-format.md`'s "Scope-Hypothesis / task-list
+      self-consistency obligation" subsection for the full mechanism and the implementer's rule
+      for the case where the contradiction is found anyway.
+
+11. **Confirm a Correction Target Exists Before Naming It**
+    - When a phase names an existing artifact as the thing to correct, amend, or retire, confirm
+      at authoring time that it exists, and state in the task what the implementer does if it
+      does not.
+    - **MUST NOT**: do not make a phase's goal turn on correcting a dispatch-created
+      orchestration sidecar; name the durable record as the carrier instead. See
+      `context/formats/plan-format.md`'s "Correction-target existence obligation" subsection for
+      the full mechanism.
+
 ### Stage 5: Create Plan File
 
 Create directory if needed:
