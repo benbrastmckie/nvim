@@ -410,7 +410,7 @@ if ! $SKIP_GATE_MEASURE; then
     printf '# the start and end of the whole measurement pass. ALL_VALID below is the AND of every row'"'"'s\n'
     printf '# valid column and the final post-measurement guard. A false ALL_VALID does not stop this\n'
     printf '# file from being written (a reader needs to see exactly which gates were affected), but\n'
-    printf '# this script itself refuses to let a contaminated run silently overwrite a previously\n'
+    printf '# this script itself refuses to let a contaminated run silently overwrite an existing\n'
     printf '# ALL_VALID=true artifact -- see mgc_write_with_overwrite_guard. Never trust a non-true\n'
     printf '# ALL_VALID for a cost-class decision; regenerate once the host is idle instead.\n'
     printf '# ALL_VALID=%s\n' "$MGC_ALL_VALID"
@@ -498,7 +498,7 @@ if $REGEN_HINTS; then
     printf '# VALIDITY: ALL_VALID is false if ANY of the %s per-invocation load captures below\n' "$RUNS"
     printf '# (one taken immediately after each --runs iteration'"'"'s full run-all.sh pass, plus the\n'
     printf '# final post-regeneration guard) exceeded load_threshold. As with gate-cost-model.csv, this\n'
-    printf '# script refuses to let an ALL_VALID=false regeneration silently overwrite a previously\n'
+    printf '# script refuses to let an ALL_VALID=false regeneration silently overwrite an existing\n'
     printf '# ALL_VALID=true hints file -- see mgc_write_with_overwrite_guard. Never trust a non-true\n'
     printf '# ALL_VALID for scheduling decisions; regenerate once idle instead.\n'
     printf '# ALL_VALID=%s\n' "$MGC_ALL_VALID_H"
