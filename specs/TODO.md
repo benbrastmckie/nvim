@@ -308,6 +308,26 @@ Whichever is chosen: the obligation must be expressed in terms of DECLARED deriv
 
 DUPLICATE CHECK PERFORMED against the full open backlog and the closed corpus via `scripts/audit-task-proposals.sh` (verdict document recorded on this entry's own `audit_verdict` field). The matcher's `duplicate-of-open` verdicts here are Pass-2 semantic shortlist output with no mechanical corroboration and were ruled against. #455 is the real neighbour and is handled above by an explicit scope split plus an ordering edge rather than by absorption -- the declaration and execution halves are complementary, and closing one does not close the other.
 
+=== ADDITIONAL CORROBORATION, appended 2026-11-06 ===
+
+FOURTH CITED RECURRENCE, completing the four-recurrence claim this record's VERIFY section asks a
+reader to re-derive from the cited entry ids. Only three ids were cited above; this is the fourth:
+{task: 867, entry_id: iss_1794007210786_BLLyzL}. Reproduce with
+
+  jq -c 'select(.entry_id=="iss_1794007210786_BLLyzL")' specs/867_formalize_gabbay_separation_ztime/issues.jsonl
+
+in /home/benjamin/Projects/BimodalLogic. It records dispatch_seq 18, class gate-collision,
+severity minor, suggested_channel null, and names its own predecessors: two generated inventory
+blocks (README.md, FormalSystem/Metalogic/README.md) again required regeneration via
+check-module-invariants.sh --emit-inventory because the module's line count moved, and "Same
+collision recorded at Phases 21, 22.1 and 22.2 -- it is now a standing per-phase cost, not an
+incident." That sentence is what fixes the phase attribution of the three ids cited earlier in
+this record to Phases 21, 22.1 and 22.2, with this one being Phase 22.3.
+
+NO NEW DEFECT FACE. Same mechanism, same two surfaces, same sanctioned repair entry point. This
+is evidence accrual to an already-filed record, not a new subject, and it does not change the
+(a)/(b)/(c) ruling this record owes or any of its declared territory edges.
+
 ---
 
 ### 516. Stop the Lean plan compliance check failing on not-yet-reached end-state deliverables
