@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794089641_e5bee5_420",
-  "dispatch_seq": 12,
-  "findings_count": 7,
-  "next_steps": "Run /orchestrate 420 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/420_warn_plan_size_exceeds_cycle_budget/reports/01_plan-size-cycle-budget-warning.md",
-      "summary": "Confirms the phases_total gap in orchestrate-cycle-plan.sh, documents the shared batch-wide cycle budget pool, measures the real phases-per-cycle distribution from this repo's own metrics.jsonl history (base mode and hard mode), and recommends an admission-time-only advisory notice with a data-grounded threshold (remaining_phases > remaining_cycles*2 base / *1 hard)."
+      "type": "plan",
+      "path": "specs/420_warn_plan_size_exceeds_cycle_budget/plans/01_plan-size-cycle-budget-warning.md",
+      "summary": "Five-phase plan adding an advisory, mode-aware cycle_budget_advisory field to orchestrate-cycle-plan.sh's per-task dispatch rows at admission time, with fixtures, two documentation homes, and a redeploy plus full-gate phase."
     }
   ],
+  "next_steps": "Run /orchestrate 420 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 6,
+  "dependency_waves": [[1], [2], [3, 4], [5]],
   "memory_candidates": [
     {
-      "content": "orchestrate-cycle-plan.sh's work-cycle budget is a SHARED BATCH-WIDE POOL (batch_cycle_budget = ntasks * per_task_max_cycles, tested against sum(cycle_counts)), not a per-task-isolated counter. Any feature reasoning about 'remaining cycles' for a task must read batch_cycle_budget - sum(cycle_counts), which reduces to the per-task case only for a batch of one.",
+      "content": "When designing a derived admission-layer signal that compares two facts, the correct emission site is the earliest point at which EVERY operand is knowable -- and an operand whose value is chosen per-invocation (a mode flag, a per-run budget) is structurally never knowable at artifact-authoring time, only at command time. This settles 'warn at authoring time or at admission time' decisions without guesswork: if any operand is invocation-scoped, an authoring-time warning can only be operand-blind (guessing a future flag or using a worst case), which is a materially weaker signal than the exact admission-time computation that costs nothing extra to obtain. The corollary for implementation: compare against the SAME values the enforcing mechanism itself reads (here, a shared batch-wide pool rather than a per-task counter), because a notice that disagrees with the mechanism that actually enforces the limit is actively misleading rather than merely imprecise.",
       "category": "PATTERN",
-      "source_artifact": "specs/420_warn_plan_size_exceeds_cycle_budget/reports/01_plan-size-cycle-budget-warning.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["orchestrate", "cycle-budget", "shared-pool", "MAX_CYCLES", "batch"]
-    },
-    {
-      "content": "Measured from this repo's own specs/**/metrics.jsonl history (138 files, 451 entries): 92% of tasks with a plan complete their entire implement phase in one dispatch regardless of phase count (observed up to 10 phases in one cycle); base-mode multi-cycle advances are right-skewed (mean 1.32, median 1, max 5, n=31); hard-mode advances are observed near-exactly 1 phase/cycle (zero deviation across 15 consecutive cycles in one real task). Raw phase count alone is a weak single-vs-multi-cycle predictor -- totals overlap between the two groups.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/420_warn_plan_size_exceeds_cycle_budget/reports/01_plan-size-cycle-budget-warning.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["metrics.jsonl", "phases-per-cycle", "orchestrate", "hard-mode", "measurement"]
-    },
-    {
-      "content": "phases_total for a plan is derivable BEFORE any handoff exists by grepping the plan file's '### Phase N:' headings via lib/phase-heading-patterns.sh's PHASE_HEADING_ERE -- three call sites already do this (update-task-status.sh count_plan_phases, skill-base.sh skill_corroborate_phase_counts, orchestrate-cycle-plan.sh's H1 block for hard-mode plan-path resolution). A fourth phases_total-counting call site is a mechanical port of this existing pattern, not new design.",
-      "category": "PATTERN",
-      "source_artifact": "specs/420_warn_plan_size_exceeds_cycle_budget/reports/01_plan-size-cycle-budget-warning.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["phase-heading-patterns", "phases_total", "plan-file", "corroboration"]
+      "source_artifact": "specs/420_warn_plan_size_exceeds_cycle_budget/plans/01_plan-size-cycle-budget-warning.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["admission-layer", "advisory-signal", "operand-knowability", "emission-site", "shared-budget-pool", "orchestration-engine"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1794089641_e5bee5_420",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 15
 }

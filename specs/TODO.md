@@ -36,7 +36,7 @@ next_project_number: 528
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
-435 [RESEARCHED] — Reword architectural and phase-versus-command prose naming...
+435 [PLANNING] — Reword architectural and phase-versus-command prose naming...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the... (see above)
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
@@ -98,7 +98,7 @@ next_project_number: 528
 
 ### File Scope Lifecycle
 
-430 [RESEARCHED] — Feed observed-but-undeclared implement paths back into a task...
+430 [PLANNING] — Feed observed-but-undeclared implement paths back into a task...
   └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
     └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
     └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
@@ -134,7 +134,7 @@ next_project_number: 528
 
 ### Agent System
 
-420 [RESEARCHED] — Surface a plan-size versus per-run cycle-budget mismatch...
+420 [PLANNED] — Surface a plan-size versus per-run cycle-budget mismatch...
 488 [PLANNED] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
@@ -4947,7 +4947,7 @@ and stops there -- repairing it is someone else's work.
 ---
 
 ### 435. Reword architectural and phase-versus-command prose naming the three deleted lifecycle commands, per class, no blanket substitution
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 434, Task 407
@@ -5054,7 +5054,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 ---
 
 ### 430. Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428, Task 494
@@ -5209,12 +5209,13 @@ artifact's path, creates nothing, and does NOT drop the proposal silently.
 ---
 
 ### 420. Surface a plan-size versus per-run cycle-budget mismatch before a run hits the wall
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 409, Task 411, Task 413, Task 418
 - **Parent**: Task 411
 - **Research**: [420_warn_plan_size_exceeds_cycle_budget/reports/01_plan-size-cycle-budget-warning.md]
+- **Plan**: [420_warn_plan_size_exceeds_cycle_budget/plans/01_plan-size-cycle-budget-warning.md]
 
 **Description**: Surface a plan-size versus per-run cycle-budget mismatch at plan time or at admission, instead of letting the operator discover it by hitting the wall mid-run
 
