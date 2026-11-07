@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Migrate Group B -- the 12 Local-Duplicate Suites",
+  "started_at": "2026-11-06T23:50:00Z",
+  "last_updated": "2026-11-06T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate the 6 simplest Group B suites (4 single-call-site deploy-tree-first lints plus 2 four-candidate source-store-first gate-out suites) to common_test_resolve_subject + common_test_declare_subject", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-json-channel-discipline.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-lifecycle-status-var.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-postflight-boundary.sh",
+      "agent-system/extensions/core/scripts/tests/test-lint-test-harness-adoption.sh",
+      "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh",
+      "agent-system/extensions/core/scripts/tests/test-gate-out-self-attribution.sh"
+    ]},
+    {"id": 2, "description": "Migrate remaining 6 Group B suites: test-handoff-reader-parity.sh, test-run-task-observers.sh, test-skill-base-lifecycle.sh, test-orchestrate-build-dispatch.sh, test-todo-move-pair-staging.sh, test-force-phases.sh", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Remove this batch's 12 entries from the gate-27 lint's Layer-2 allowlist", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

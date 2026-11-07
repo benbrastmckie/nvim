@@ -26,25 +26,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-LINT_SCRIPT="$(resolve_candidate "lint-json-channel-discipline.sh" \
+LINT_SCRIPT="$(common_test_resolve_subject "lint-json-channel-discipline.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lint/lint-json-channel-discipline.sh" \
   "$SCRIPT_DIR/../lint/lint-json-channel-discipline.sh")" || exit 2
+common_test_declare_subject "$LINT_SCRIPT"
 
 PASSED=0
 FAILED=0

@@ -2,9 +2,10 @@
 
 - **Task**: 418 - Make the lint-fixture-test family's subject resolution explicit and self-declaring
 - **Status**: [IMPLEMENTING]
-- **Effort**: 11 hours
+- **Effort**: 11 hours total; 5 hours discharged (Phases 1-3), 6 hours remaining (Phases 4-8)
 - **Dependencies**: None (the three prior tasks on `context/standards/shell-script-testing.md` and `scripts/gate-registry.data` have landed)
 - **Research Inputs**: specs/418_explicit_lint_fixture_test_subject_resolution/reports/01_explicit-subject-resolution.md
+- **Reports Integrated**: 01_explicit-subject-resolution.md (plan-authoring); blocker-triage findings delivered inline by the revising dispatch (no standalone report artifact was written)
 - **Artifacts**: plans/01_explicit-subject-resolution.md (this file)
 - **Standards**: plan-format.md, status-markers.md, artifact-management.md, tasks.md
 - **Type**: meta
@@ -46,6 +47,44 @@ time (see each phase's **Scope Hypothesis**):
   and `lib/common.sh` -> `tests/test-common-lib.sh` by strict basename rule, so **no
   suite-selection edit is required** — which also keeps this task clear of sibling task 505's
   declared territory.
+
+#### Revision-Time Re-Verification (blocker triage)
+
+This plan was revised by a blocker-triage dispatch. **The reported blocker was spurious**: no
+blocker ever prevented Phases 4-8, and none is recorded here. The preceding dispatch's wrap-up
+handoff placed an already-resolved retrospective note (transport instability during an earlier
+dispatch, whose own text ended "No blocker prevents resuming phases 4-8 in a normal dispatch")
+into the length-counted `blockers[]` array, and omitted the `continuation_path` required when
+`status` is `partial`. Because the triage classifier counts `blockers[]` entries rather than
+reading them, a cleanly resumable partial task was classified `needs_human` and Phases 4-8 were
+hard-blocked. Nothing in the plan below caused that, and nothing in it needed correcting.
+
+Every load-bearing claim the revision rests on was re-measured rather than carried forward:
+
+- **Phases 1-3 are committed**: `c51aa1e4f` (Phase 1), `b30bbbb5b` / `29db7fcab` / `91954aa3e` /
+  `8edccf7e0` (Phase 2), `4b178352b` (Phase 3) — all six verified present in `git log`.
+- **Phase 1-3 output is green**: gate 27, invoked exactly as `gate27_run` invokes it (no path
+  argument, so the narrow default `scripts/tests/` corpus applies), exits 0 with
+  `Total violations: 0`. Its own suite, `test-lint-subject-resolution-declaration.sh`, reports
+  `13 passed, 0 failed`, including its live-corpus case.
+- **Phases 4-6 scope is unchanged and correct**: counted directly from the gate-27 lint's
+  `EXCLUDED_FILES` allowlist — the authoritative roster, since each migration phase shrinks it —
+  there are exactly **12** `migration-pending: Group B` entries (matching Phase 4's file list
+  one-for-one) and exactly **38** `migration-pending: Group C` entries (matching Phases 5 and 6
+  at 19 + 19), plus 8 permanent exemptions. No phase's file list required rebalancing.
+- **No concurrent-writer collision**: the two test suites dirty in the working tree at revision
+  time (`test-gate-cache-equivalence.sh`, `test-verify-deploy-gate-selection-crash-net.sh`)
+  belong to another writer and are **not** in this family — neither references
+  `$REPO_ROOT/.claude/scripts`, declares a local `resolve_candidate()`, uses an inline
+  `CANDIDATES` loop, nor appears on the allowlist. They are outside every remaining phase's
+  declared file list.
+
+A caution for the dispatch that resumes here, since the cost above was entirely a wrap-up
+artifact defect rather than an implementation one: on any wrap-up that reports `status: partial`,
+`blockers[]` must carry only conditions that actually prevent progress — a retrospective note
+about a past, resolved condition belongs in `summary`, never in `blockers[]` — and
+`continuation_path` must name the next phase. An empty `blockers[]` is the normal, expected value
+for a partial that is cleanly resumable.
 
 ### Prior Plan Reference
 
@@ -341,10 +380,14 @@ plus a mandatory declaration, preserving each call site's existing effective ord
 
 ---
 
-### Phase 4: Migrate Group B — the 12 Local-Duplicate Suites [NOT STARTED]
+### Phase 4: Migrate Group B — the 12 Local-Duplicate Suites [IN PROGRESS]
 
 **Goal**: Delete the 12 hand-duplicated `resolve_candidate` functions and route those suites
 through the shared explicit helper with declarations.
+
+**Resume Point**: This phase is the task's resume point. Phases 1-3 are complete, committed, and
+re-verified green at revision time; see the revision-time re-verification subsection under
+Research Integration. No blocker applies — begin here normally.
 
 **Tasks**:
 - [ ] Re-derive Group B:
@@ -653,3 +696,8 @@ with an explicit source-store TARGET.
 - If sibling task 512 has `test-lint-dead-command-recommendations.sh` in flight, leave that one
   file on the allowlist with that reason and migrate it in a follow-up round rather than editing
   over a concurrent writer.
+- If a dispatch ends with phases still outstanding, report `status: partial` with
+  `continuation_path` naming the next unstarted phase and with `blockers[]` holding only
+  conditions that genuinely prevent progress. A resolved retrospective note placed in `blockers[]`
+  is read by the triage classifier as a live blocker and hard-blocks the remaining phases; that is
+  precisely what stalled this task once already.

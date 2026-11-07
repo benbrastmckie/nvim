@@ -25,25 +25,16 @@ if [[ -z "$REPO_ROOT" ]]; then
   REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 fi
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
+# Sourced only for common_test_resolve_subject/common_test_declare_subject below -- this suite
+# keeps its OWN local pass()/fail()/info() (below) for its own test-harness output, deliberately,
+# since it is itself a fixture exercising lint-test-harness-adoption.sh's two legitimate shapes;
+# the local trio is never replaced by the common_test_* names this sourcing also makes available.
+source "$SCRIPT_DIR/../lib/common.sh"
 
-LINT_SCRIPT="$(resolve_candidate "lint-test-harness-adoption.sh" \
+LINT_SCRIPT="$(common_test_resolve_subject "lint-test-harness-adoption.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lint/lint-test-harness-adoption.sh" \
   "$SCRIPT_DIR/../lint/lint-test-harness-adoption.sh")" || exit 2
+common_test_declare_subject "$LINT_SCRIPT"
 
 PASSED=0
 FAILED=0

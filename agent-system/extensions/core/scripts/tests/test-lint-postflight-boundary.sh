@@ -27,25 +27,10 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-LINT_SCRIPT="$(resolve_candidate "lint-postflight-boundary.sh" \
+LINT_SCRIPT="$(common_test_resolve_subject "lint-postflight-boundary.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lint/lint-postflight-boundary.sh" \
   "$SCRIPT_DIR/../lint/lint-postflight-boundary.sh")" || exit 2
+common_test_declare_subject "$LINT_SCRIPT"
 
 PASSED=0
 FAILED=0
@@ -196,17 +181,10 @@ rm -f /tmp/lint-ctrl-out.$$
 # =====================================================================
 common_test_info "=== real target: skill-orchestrate/SKILL.md is not silently SKIPped ==="
 
-ORCH_SKILL_CANDIDATES=(
-  "$REPO_ROOT/.claude/skills/skill-orchestrate/SKILL.md"
-  "$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
-)
-ORCH_SKILL=""
-for candidate in "${ORCH_SKILL_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    ORCH_SKILL="$candidate"
-    break
-  fi
-done
+ORCH_SKILL="$(common_test_resolve_subject "skill-orchestrate/SKILL.md" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/skills/skill-orchestrate/SKILL.md" \
+  "$REPO_ROOT/agent-system/extensions/core/skills/skill-orchestrate/SKILL.md")" || ORCH_SKILL=""
+[[ -n "$ORCH_SKILL" ]] && common_test_declare_subject "$ORCH_SKILL"
 
 if [[ -z "$ORCH_SKILL" ]]; then
   common_test_fail "skill-orchestrate/SKILL.md not found at any candidate path -- cannot run the real-target case"

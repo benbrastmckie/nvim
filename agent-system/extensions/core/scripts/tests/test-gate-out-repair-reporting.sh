@@ -36,37 +36,25 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-resolve_candidate() {
-  local desc="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -f "$candidate" ]]; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $desc not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-SKILL_BASE_SRC="$(resolve_candidate "skill-base.sh (source store)" \
-  "$REPO_ROOT/agent-system/extensions/core/scripts/skill-base.sh" \
-  "$REPO_ROOT/.claude/scripts/skill-base.sh")" || exit 2
-GATE_OUT_SRC="$(resolve_candidate "command-gate-out.sh (source store)" \
-  "$REPO_ROOT/agent-system/extensions/core/scripts/command-gate-out.sh" \
-  "$REPO_ROOT/.claude/scripts/command-gate-out.sh")" || exit 2
-VALIDATE_ARTIFACT_SRC="$(resolve_candidate "validate-artifact.sh (source store)" \
-  "$REPO_ROOT/agent-system/extensions/core/scripts/validate-artifact.sh" \
-  "$REPO_ROOT/.claude/scripts/validate-artifact.sh")" || exit 2
+SKILL_BASE_SRC="$(common_test_resolve_subject "skill-base.sh (source store)" "source-store" \
+  "$REPO_ROOT/.claude/scripts/skill-base.sh" \
+  "$REPO_ROOT/agent-system/extensions/core/scripts/skill-base.sh")" || exit 2
+common_test_declare_subject "$SKILL_BASE_SRC"
+GATE_OUT_SRC="$(common_test_resolve_subject "command-gate-out.sh (source store)" "source-store" \
+  "$REPO_ROOT/.claude/scripts/command-gate-out.sh" \
+  "$REPO_ROOT/agent-system/extensions/core/scripts/command-gate-out.sh")" || exit 2
+common_test_declare_subject "$GATE_OUT_SRC"
+VALIDATE_ARTIFACT_SRC="$(common_test_resolve_subject "validate-artifact.sh (source store)" "source-store" \
+  "$REPO_ROOT/.claude/scripts/validate-artifact.sh" \
+  "$REPO_ROOT/agent-system/extensions/core/scripts/validate-artifact.sh")" || exit 2
+common_test_declare_subject "$VALIDATE_ARTIFACT_SRC"
 # Resolved from the SOURCE STORE first (not the deployed-tree lib/*.sh glob copy below), since a
 # freshly-added library may not yet exist in a stale deployed tree -- same overlay rationale as
 # the skill-base.sh/command-gate-out.sh/validate-artifact.sh overlay this suite already performs.
-PROBE_LIB_SRC="$(resolve_candidate "derived-artifact-probe-lib.sh (source store)" \
-  "$REPO_ROOT/agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh" \
-  "$REPO_ROOT/.claude/scripts/lib/derived-artifact-probe-lib.sh")" || exit 2
+PROBE_LIB_SRC="$(common_test_resolve_subject "derived-artifact-probe-lib.sh (source store)" "source-store" \
+  "$REPO_ROOT/.claude/scripts/lib/derived-artifact-probe-lib.sh" \
+  "$REPO_ROOT/agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh")" || exit 2
+common_test_declare_subject "$PROBE_LIB_SRC"
 
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then

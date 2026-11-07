@@ -1,60 +1,31 @@
 {
-  "status": "partial",
-  "dispatch_seq": 12,
-  "partial_progress": {
-    "stage": "phase_3_completed_remaining_phases_not_started",
-    "details": "Phases 1-3 of 8 completed and committed. Phase 3 (Group A migration, 20 shared-helper callers) was in progress on entry to this dispatch and is now fully migrated, verified, and committed. Phases 4-8 (Group B/C migrations, documentation correction, redeploy+full gate set) have not been started.",
-    "phases_completed": 3,
-    "phases_total": 8
-  },
+  "status": "planned",
+  "dispatch_seq": 14,
   "artifacts": [
     {
-      "type": "summary",
-      "path": "specs/418_explicit_lint_fixture_test_subject_resolution/summaries/01_explicit-subject-resolution-summary.md",
-      "summary": "Phases 1-3 complete (resolver/declaration helper, gate-27 lint, Group A migration); phases 4-8 remaining."
+      "type": "plan",
+      "path": "specs/418_explicit_lint_fixture_test_subject_resolution/plans/01_explicit-subject-resolution.md",
+      "summary": "Revised plan: blocker recorded as spurious, revision-time re-verification of phases 1-3 and of the Group B/C rosters, Phase 4 marked as the resume point, wrap-up discipline contingency added. Phases 1-3 remain [COMPLETED]; phases 4-8 remain [NOT STARTED] with unchanged scope."
     }
   ],
-  "completion_data": {
-    "completion_summary": "Completed Phase 3 of task 418's plan: migrated all 20 Group A shared-helper-caller suites to the explicit common_test_resolve_subject/common_test_declare_subject mechanism, shrank the gate-27 lint's allowlist accordingly, and fixed two file-level false-positive triggers (stale doc comments, a legitimate non-subject call) uncovered during verification. Committed as 4b178352b. Phases 1-2 were already complete on entry; phases 4-8 remain."
-  },
-  "modified_files": [
-    "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh",
-    "agent-system/extensions/core/scripts/tests/test-audit-task-proposals.sh",
-    "agent-system/extensions/core/scripts/tests/test-gate-out-derived-staleness.sh",
-    "agent-system/extensions/core/scripts/tests/test-install-uninstall-extension.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-anchor-pointer-collapse.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-branch-gated-sections.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-directory-pathspec-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-extension-readme-table.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-scoped-commit-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-shellcheck.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-state-writer-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-task-lookup-adoption.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-verdict-extraction-anchoring.sh",
-    "agent-system/extensions/core/scripts/tests/test-mint-dispatch-seq.sh",
-    "agent-system/extensions/core/scripts/tests/test-postflight-marker-schema.sh",
-    "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh",
-    "agent-system/extensions/core/scripts/tests/test-validate-task-creation-audit.sh",
-    "specs/418_explicit_lint_fixture_test_subject_resolution/plans/01_explicit-subject-resolution.md",
-    "specs/418_explicit_lint_fixture_test_subject_resolution/progress/phase-3-progress.json",
-    "specs/418_explicit_lint_fixture_test_subject_resolution/summaries/01_explicit-subject-resolution-summary.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "A regex-only, file-level (not call-site-level) content lint can produce a false positive when a stale doc comment merely mentions a now-migrated helper's old function name, if an unrelated literal elsewhere in the same file also matches the check's other half. Fix by rewording the comment away from BOTH the old and the new literal function-name tokens (a generic description), not by swapping one literal for the other -- swapping just moves the over-count to a different check (e.g. a resolve/declare call-count-balance check) that has the same file-level blind spot.",
-      "category": "PATTERN",
-      "source_artifact": "specs/418_explicit_lint_fixture_test_subject_resolution/summaries/01_explicit-subject-resolution-summary.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["content-lint", "false-positive", "file-level-detection", "doc-comment", "regex-lint"]
-    }
-  ],
+  "next_steps": "Run /orchestrate 418 to resume at Phase 4 (Group B migration, 12 suites). No blocker applies.",
   "metadata": {
     "session_id": "sess_1793988163_b25d4a",
-    "agent_type": "general-implementation-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "agent_type": "reviser-agent",
+    "delegation_path": ["orchestrator", "revise", "reviser-agent"],
+    "revision_mode": "plan_revision",
+    "revision_reason": "blocker",
+    "blocker_disposition": "spurious -- no genuine blocker; prior wrap-up put a resolved retrospective note in the length-counted blockers[] array and omitted continuation_path, so the triage classifier hard-blocked a cleanly resumable partial task",
+    "phase_count": 8,
+    "phases_preserved_completed": 3,
+    "phases_revised": 0,
+    "phases_added": 0,
+    "phases_removed": 0,
+    "estimated_hours": 11,
+    "estimated_hours_remaining": 6,
+    "reports_integrated": ["01_explicit-subject-resolution.md"],
+    "sentinel_written": "specs/418_explicit_lint_fixture_test_subject_resolution/.plan-revised.json",
+    "orchestrator_handoff_written": false,
+    "orchestrator_handoff_rationale": "dispatch context carries orchestrator_mode: false and no handoff_path (aux_dispatch plan-revision path) -- no handoff is written by design"
   }
 }
