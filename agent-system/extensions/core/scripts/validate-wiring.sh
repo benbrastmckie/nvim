@@ -130,6 +130,8 @@ validate_task_type_entries() {
 # Validate context files exist on disk
 validate_context_files() {
     local system_dir="$1"
+    local system_label
+    system_label="$(basename "$system_dir")"
 
     local index_file="$system_dir/context/index.json"
     if [[ ! -f "$index_file" ]]; then
@@ -138,16 +140,20 @@ validate_context_files() {
     fi
 
     local missing=0
+    local total=0
     while IFS= read -r path; do
         local full_path="$system_dir/context/$path"
+        ((total++))
         if [[ ! -f "$full_path" ]]; then
-            log_fail "Missing context file: $path"
+            log_fail "Missing context file [$system_label]: $path (expected at $full_path)"
             ((missing++))
         fi
     done < <(jq -r '.entries[].path' "$index_file" 2>/dev/null)
 
+    log_info "[$system_label] $missing of $total context index entries missing on disk"
+
     if [[ "$missing" -eq 0 ]]; then
-        log_pass "All context files exist on disk"
+        log_pass "[$system_label] all $total context index entries resolve on disk"
         return 0
     else
         return 1

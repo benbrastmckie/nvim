@@ -1,7 +1,7 @@
 # Implementation Plan: Task #466
 
 - **Task**: 466 - validate-wiring.sh reports a context file missing when it exists
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (Stage 1.5 assessment: root-caused mechanically within this dispatch — see Overview)
@@ -115,27 +115,29 @@ No `roadmap_path` provided in the delegation context; no roadmap phases are adde
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Attribute every missing-context failure to its deployed tree [NOT STARTED]
+### Phase 1: Attribute every missing-context failure to its deployed tree [COMPLETED]
 
 **Goal**: `validate_context_files` emits failures a reader can check against disk without
 inferring which tree was scanned, and reports per-tree missing/total counts distinctly.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-wiring.sh` and re-run
+- [x] Re-read `agent-system/extensions/core/scripts/validate-wiring.sh` and re-run
       `grep -rn "Missing context file" --include="*.sh" --include="*.md" --include="*.json" agent-system/ .claude/docs`
-      to confirm the message still has no consumer.
-- [ ] In `validate_context_files`, derive a tree label from the function's existing
+      to confirm the message still has no consumer. *(completed: re-grep reconfirmed exactly one
+      producer, zero consumers)*
+- [x] In `validate_context_files`, derive a tree label from the function's existing
       `$system_dir` argument (`system_label="$(basename "$system_dir")"`, yielding `.claude` or
-      `.opencode`) — no new parameter, no call-site change.
-- [ ] Change the failure line to carry both the label and the resolved path, e.g.
-      `log_fail "Missing context file [$system_label]: $path (expected at $full_path)"`.
-- [ ] Count total entries scanned alongside `missing`, and emit one `log_info` line per tree
+      `.opencode`) — no new parameter, no call-site change. *(completed)*
+- [x] Change the failure line to carry both the label and the resolved path, e.g.
+      `log_fail "Missing context file [$system_label]: $path (expected at $full_path)"`. *(completed)*
+- [x] Count total entries scanned alongside `missing`, and emit one `log_info` line per tree
       reporting `$missing of $total context index entries missing on disk`, so the two trees'
-      shortfalls are reported as separate facts rather than one aggregate verdict.
-- [ ] Label the success line too (`log_pass "[$system_label] all $total context index entries resolve on disk"`),
-      so a passing run states which tree passed.
-- [ ] Leave the `return 0`/`return 1` contract, the `jq` extraction, and every other function
-      untouched.
+      shortfalls are reported as separate facts rather than one aggregate verdict. *(completed)*
+- [x] Label the success line too (`log_pass "[$system_label] all $total context index entries resolve on disk"`),
+      so a passing run states which tree passed. *(completed)*
+- [x] Leave the `return 0`/`return 1` contract, the `jq` extraction, and every other function
+      untouched. *(completed: verified only one call site of validate_context_files, signature
+      and return contract unchanged)*
 
 **Timing**: 0.5 hours
 

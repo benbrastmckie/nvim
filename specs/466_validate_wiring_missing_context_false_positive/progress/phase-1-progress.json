@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Attribute every missing-context failure to its deployed tree",
+  "started_at": "2026-11-07T01:09:34Z",
+  "last_updated": "2026-11-07T01:09:34Z",
+  "objectives": [
+    {"id": 1, "description": "Re-grep for Missing context file consumers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Derive tree label from system_dir", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-wiring.sh"]},
+    {"id": 3, "description": "Change failure line to carry label and resolved path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-wiring.sh"]},
+    {"id": 4, "description": "Count total entries, emit per-tree info line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-wiring.sh"]},
+    {"id": 5, "description": "Label the success line too", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-wiring.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
