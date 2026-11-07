@@ -1,7 +1,7 @@
 # Implementation Plan: Task #418
 
 - **Task**: 418 - Make the lint-fixture-test family's subject resolution explicit and self-declaring
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours total; 5 hours discharged (Phases 1-3), 6 hours remaining (Phases 4-8)
 - **Dependencies**: None (the three prior tasks on `context/standards/shell-script-testing.md` and `scripts/gate-registry.data` have landed)
 - **Research Inputs**: specs/418_explicit_lint_fixture_test_subject_resolution/reports/01_explicit-subject-resolution.md

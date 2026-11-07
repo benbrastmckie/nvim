@@ -1,22 +1,20 @@
 {
-  "status": "partial",
-  "phases_completed": 3,
-  "phases_total": 8,
-  "summary": "This dispatch re-prompted an earlier run that had completed real Phase 3 work (migrating the 20 Group A shared-helper-caller suites to the explicit common_test_resolve_subject/common_test_declare_subject mechanism) but died on an API transport error before writing any wrap-up artifact; that instability was specific to the prior dispatch's environment and is not a property of the remaining work. This dispatch verified the uncommitted Group A work was complete and self-consistent, fixed two file-level false-positive triggers in the gate-27 lint uncovered during verification (two stale doc comments, one legitimate non-subject resolve_candidate call needing a permanent allowlist exemption), confirmed the gate-27 lint and its own test suite pass clean, and committed Phase 3 as 4b178352b. Phases 1-2 were already complete and committed on entry. Phases 4-8 (Group B/C migrations, documentation correction, redeploy plus full gate set) were explicitly out of scope for this narrowly-scoped re-prompt and have not been started; resume at the plan's own Phase 4 Resume Point marker.",
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "summary": "Completed all remaining phases (4-8) of the lint-fixture-test subject-resolution task: migrated the 12 Group B and 38 Group C suites to the explicit common_test_resolve_subject/common_test_declare_subject mechanism, drained gate 27's allowlist to exactly 8 permanent exemptions, corrected the stale documentation figures, redeployed, and ran the full gate set. Gate 27 passes cleanly in both full-gate-set runs this phase; the only remaining 3 gate failures are confirmed pre-existing and unrelated to this task (git-history and git-stash bisection evidence recorded in the summary). Also fixed a genuine Phase-3 argument-order bug and a genuine Phase-8-discovered fixture regression in the new lint's own test suite.",
   "blockers": [],
-  "continuation_path": "specs/418_explicit_lint_fixture_test_subject_resolution/handoffs/phase-3-handoff-20261106T225017Z.md",
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/418_explicit_lint_fixture_test_subject_resolution/summaries/01_explicit-subject-resolution-summary.md",
-      "summary": "Phases 1-3 complete (resolver/declaration helper, gate-27 lint, Group A migration); phases 4-8 remaining."
+      "summary": "Final implementation summary covering all 8 phases, decisions, verification evidence, and the five newly-discovered pre-existing/unrelated issues."
     },
     {
       "type": "plan",
       "path": "specs/418_explicit_lint_fixture_test_subject_resolution/plans/01_explicit-subject-resolution.md",
-      "summary": "8-phase plan; phase headings now read Phase 1-3 [COMPLETED], Phase 4-8 [NOT STARTED]."
+      "summary": "8-phase implementation plan, all phases marked [COMPLETED] with per-task completion annotations."
     }
   ],
-  "next_action_hint": "implement (resume at plan's Phase 4 Resume Point)",
-  "dispatch_seq": 12
+  "phases_completed": 8,
+  "phases_total": 8
 }
