@@ -3700,6 +3700,11 @@
           "path": "specs/465_check_record_versioning_path_scope_false_clean/plans/01_untracked-enumeration-false-clean.md",
           "type": "plan",
           "summary": "4-phase plan: shared git-corpus enumeration library plus unit suite, record-versioning lint wiring with the acceptance fixture, task-references lint mirror, then docs/redeploy/full gate sweep."
+        },
+        {
+          "path": "specs/465_check_record_versioning_path_scope_false_clean/summaries/01_untracked-enumeration-false-clean-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: shared enumeration library, both lints wired, fixture coverage, inventory doc correction, redeploy, and repo-wide triage."
         }
       ],
       "audit_verdict": {
@@ -6334,7 +6339,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1793993117_98582a"
+      "session_id": "sess_1793993117_98582a",
+      "completion_summary": "Extracted a shared git-corpus-enum-lib.sh (tracked-plus-untracked union enumeration, gitignored content still excluded) and wired both check-record-versioning.sh and check-task-references.sh to it, closing the PATH_SCOPE false-clean defect for both lints with three stderr-only diagnostics (untracked-inclusion count, per-file gitignored loud-skip, zero-enumeration notice). Added 10+22+17 passing fixture cases across a new and two extended test suites, corrected the inventory doc, redeployed, and triaged the one genuine new ADVISORY finding the fix surfaced (gate-cost-model.csv) at its generator source."
     },
     {
       "project_number": 466,

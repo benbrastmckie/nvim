@@ -3328,6 +3328,7 @@ Audited against the full backlog corpus before creation. The single mechanically
 - **Dependencies**: Task 328
 - **Parent**: Task 282
 - **Plan**: [465_check_record_versioning_path_scope_false_clean/plans/01_untracked-enumeration-false-clean.md]
+- **Summary**: [465_check_record_versioning_path_scope_false_clean/summaries/01_untracked-enumeration-false-clean-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
 

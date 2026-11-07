@@ -30,15 +30,27 @@
       "category": "PATTERN",
       "source_artifact": "specs/465_check_record_versioning_path_scope_false_clean/summaries/01_untracked-enumeration-false-clean-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["subject-resolution", "common_test_resolve_subject", "test-authoring", "lint-subject-resolution-declaration", "shell-script-testing"]
+      "suggested_keywords": [
+        "subject-resolution",
+        "common_test_resolve_subject",
+        "test-authoring",
+        "lint-subject-resolution-declaration",
+        "shell-script-testing"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
