@@ -274,23 +274,29 @@ trusting these numbers.
 
 ---
 
-### Phase 4: Redeploy and verify the full gate set [NOT STARTED]
+### Phase 4: Redeploy and verify the full gate set [COMPLETED]
 
 **Goal**: the source-store changes reach the deployed tree, and the repository's complete gate
 set is green with `validate-wiring.sh --all` passing for the right reason.
 
 **Tasks**:
-- [ ] Redeploy via `bash agent-system/extensions/core/scripts/deploy-headless.sh` so
+- [x] Redeploy via `bash agent-system/extensions/core/scripts/deploy-headless.sh` so
       `.claude/scripts/validate-wiring.sh` and `.claude/scripts/tests/test-validate-wiring.sh`
-      match the source store.
-- [ ] Confirm the deployed copies are byte-identical to their source-store counterparts.
-- [ ] Run `bash .claude/scripts/validate-wiring.sh --all` and confirm zero
-      `Missing context file` failures and `VALIDATION PASSED`.
-- [ ] Prove the check still fails loudly end-to-end: temporarily move one real
+      match the source store. *(completed)*
+- [x] Confirm the deployed copies are byte-identical to their source-store counterparts.
+      *(completed)*
+- [x] Run `bash .claude/scripts/validate-wiring.sh --all` and confirm zero
+      `Missing context file` failures and `VALIDATION PASSED`. *(completed)*
+- [x] Prove the check still fails loudly end-to-end: temporarily move one real
       `.claude/context/**` file listed in `.claude/context/index.json` aside, re-run `--claude`,
       confirm a failure line naming `.claude` and the full path, restore the file, re-run to
-      green.
-- [ ] Run the complete gate set and confirm green.
+      green. *(completed: component-checklist.md probe)*
+- [x] Run the complete gate set and confirm green. *(completed with exclusions: deploy-headless's
+      built-in fast-gate pass reported 2 of 41 failures, both pre-existing and out of this task's
+      scope -- gate10's 30s wrapper-timeout flake (confirmed passing standalone in 33.9s) and the
+      2 /ide dead-command-recommendation findings in the memory extension. This task's own scope
+      verified fully green; see progress/phase-4-progress.json verification_notes for the full
+      record)*
 
 **Timing**: 0.5 hours
 
@@ -316,17 +322,20 @@ set is green with `validate-wiring.sh --all` passing for the right reason.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-wiring.sh`
-      passes with the two new cases included.
-- [ ] Case (g) was shown to fail against an unlabelled message and pass against the labelled one
-      (negative control, Phase 2).
-- [ ] `bash .claude/scripts/validate-wiring.sh --all` exits 0; `--claude` and `--opencode` each
-      report zero missing-context failures.
-- [ ] Every entry in both `.claude/context/index.json` (311) and
-      `.opencode/context/index.json` (109) resolves to a file on disk.
-- [ ] A genuinely absent context file still produces a loud, tree-attributed failure and a
-      non-zero exit (Phase 4 move-aside probe).
-- [ ] `bash .claude/scripts/verify-deploy.sh` is green.
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-validate-wiring.sh`
+      passes with the two new cases included. *(completed: 10/10 assertions pass)*
+- [x] Case (g) was shown to fail against an unlabelled message and pass against the labelled one
+      (negative control, Phase 2). *(completed)*
+- [x] `bash .claude/scripts/validate-wiring.sh --all` exits 0; `--claude` and `--opencode` each
+      report zero missing-context failures. *(completed)*
+- [x] Every entry in both `.claude/context/index.json` (311) and
+      `.opencode/context/index.json` (109) resolves to a file on disk. *(completed)*
+- [x] A genuinely absent context file still produces a loud, tree-attributed failure and a
+      non-zero exit (Phase 4 move-aside probe). *(completed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` is green. *(completed with exclusions: 2 of 41
+      checks failed, both pre-existing and out of this task's scope per the dispatch briefing --
+      gate10's 30s wrapper-timeout flake and 2 /ide dead-command-recommendation findings in the
+      memory extension; see Phase 4's verification notes)*
 
 ## Artifacts & Outputs
 
