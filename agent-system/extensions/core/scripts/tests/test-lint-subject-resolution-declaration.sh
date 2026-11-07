@@ -190,12 +190,17 @@ fi
 # =====================================================================
 # Case 6 (PASSING): an allowlisted file is not flagged, even though its content trips a shape --
 # mirror one of the lint's own baked-in allowlist entries under a matching relative path.
+# Deliberately targets a PERMANENT exemption (test-common-lib.sh), never a migration-pending
+# one: a migration-pending entry's allowlist row is removed as its own batch completes, which
+# would silently stale this fixture's assumption out from under it (observed live: this case
+# originally mirrored test-force-phases.sh, a Group B migration-pending entry at authoring time,
+# which later migration work legitimately drained from the allowlist).
 # =====================================================================
 common_test_info "=== PASSING: an allowlisted file is not flagged ==="
 
 CASE6_DIR="$WORKDIR/case6/agent-system/extensions/core/scripts/tests"
 mkdir -p "$CASE6_DIR"
-cat > "$CASE6_DIR/test-force-phases.sh" << 'EOF'
+cat > "$CASE6_DIR/test-common-lib.sh" << 'EOF'
 #!/usr/bin/env bash
 resolve_candidate() {
   for c in "$@"; do
@@ -208,12 +213,12 @@ EOF
 case6_out="$(bash "$LINT_SCRIPT" "$WORKDIR/case6" --verbose 2>&1)"
 case6_rc=$?
 if [[ $case6_rc -eq 0 ]]; then
-  common_test_pass "an allowlisted file (test-force-phases.sh) is not flagged despite tripping a shape"
+  common_test_pass "an allowlisted file (test-common-lib.sh) is not flagged despite tripping a shape"
 else
   common_test_fail "allowlisted file was unexpectedly flagged:
 $case6_out"
 fi
-if grep -q '\[EXEMPT\].*test-force-phases\.sh' <<< "$case6_out"; then
+if grep -q '\[EXEMPT\].*test-common-lib\.sh' <<< "$case6_out"; then
   common_test_pass "the allowlisted file is reported as [EXEMPT] under --verbose"
 else
   common_test_fail "the allowlisted file was not reported as [EXEMPT] under --verbose:

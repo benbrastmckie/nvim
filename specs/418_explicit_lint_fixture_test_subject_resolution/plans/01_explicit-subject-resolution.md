@@ -603,7 +603,7 @@ copy-pasting from a neighbour copies the explicit form.
 
 ---
 
-### Phase 8: Redeploy and Full Gate Set [NOT STARTED]
+### Phase 8: Redeploy and Full Gate Set [IN PROGRESS]
 
 **Goal**: Regenerate the deployed tree from the source store and discharge the complete gate set
 with an explicit source-store TARGET.

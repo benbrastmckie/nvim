@@ -1,0 +1,17 @@
+{
+  "phase": 8,
+  "phase_name": "Redeploy and Full Gate Set",
+  "started_at": "2026-11-07T04:52:00Z",
+  "last_updated": "2026-11-07T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy (deploy-headless.sh) and run the complete gate set with explicit source-store TARGET; gate 27 passes clean; two fast-gate failures (shellcheck in lean extension, dead-command-recommendation in memory extension) confirmed pre-existing/unrelated and recorded", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Scoped run-all.sh --only over the 71-file migrated family (70 migrated + the new lint's own suite) against the freshly-deployed tree found and fixed a genuine Phase-8-discovered regression: test-lint-subject-resolution-declaration.sh's own Case 6 fixture hardcoded a now-drained migration-pending allowlist path (test-force-phases.sh); retargeted at the permanent exemption test-common-lib.sh. Also found and recorded as pre-existing/unrelated: test-task-type-detect.sh's structural [-f]-on-a-directory bug in its REAL_EXT_ROOT fallback branch, and test-lint-unit-integration-boundary.sh's 3 classification-data mismatches (none in this task's scope)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-lint-subject-resolution-declaration.sh"
+    ]},
+    {"id": 3, "description": "Final redeploy and full source-store-target gate set confirming no new failures beyond the enumerated known-unrelated set plus the issues recorded this phase", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
