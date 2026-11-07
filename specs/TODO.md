@@ -11,7 +11,7 @@ next_project_number: 519
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,478,483,488,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,483,488,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,445,446,448,458,463,472,474,475,492,497,516 | 369,383,397,412,418,430,431,435,459,491,493,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,444,451,454,455,461,476,484,500,507,518 | 313,391,398,420,423,435,439,445,446,448,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486,517 | 360,390,402,435,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -45,7 +45,6 @@ next_project_number: 519
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
-478 [IMPLEMENTING] — Make lint Check J fail on a missing handoff-writer section...
 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
@@ -2757,13 +2756,14 @@ An edge on validate_carried_unverified_names_a_source is declared because that t
 
 ### 478. Make lint Check J fail on a missing handoff-writer section instead of skipping the file
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Parent**: Task 378
 - **Research**: [478_ungate_lint_check_j_handoff_contract/reports/01_ungate-check-j-curated-list.md]
 - **Plan**: [478_ungate_lint_check_j_handoff_contract/plans/01_ungate-check-j-curated-list.md]
+- **Summary**: [478_ungate_lint_check_j_handoff_contract/summaries/01_ungate-check-j-curated-list-summary.md]
 
 **Description**: lint-agent-contracts.sh Check J is content-gated: it only scans agent files that ALREADY mention .orchestrator-handoff.json. An agent file that LOSES its handoff-writer section therefore stops being checked rather than failing the check. Replace the content gate with a curated in-scope list, so that removal is detected.
 

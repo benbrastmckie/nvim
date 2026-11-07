@@ -2,7 +2,7 @@
 
 - **Task**: 478 - Ungate lint-agent-contracts.sh Check J: replace the content gate with a curated
   in-scope list so removal of a handoff-writer section is detected
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/478_ungate_lint_check_j_handoff_contract/reports/01_ungate-check-j-curated-list.md`
