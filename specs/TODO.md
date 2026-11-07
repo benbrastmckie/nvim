@@ -11,7 +11,7 @@ next_project_number: 525
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,420,423,430,431,435,437,445,448,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520,521,522 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,420,423,430,431,435,437,445,448,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,444,446,451,458,463,472,474,475,476,492,497,507,516,523 | 369,383,397,412,420,423,430,431,435,445,448,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,454,455,461,462,484,500,518 | 313,391,398,435,439,446,448,451,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,479,481,486,517 | 360,390,402,435,444,448,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -66,6 +66,7 @@ next_project_number: 525
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — lint-agent-contracts.sh Check N completeness-net glob does...
+525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -142,6 +143,107 @@ next_project_number: 525
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 
 ## Tasks
+
+### 525. Repair the always-failing extensions-directory fallback in the task-type detection suite
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 418
+
+**Description**: Repair the always-failing extensions-directory fallback in the task-type detection suite
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+--- MEASURED EVIDENCE ---
+
+scripts/tests/test-task-type-detect.sh resolves its real-manifest root in two branches. The first detects the source-store shape directly and is correct. The second -- the fallback, reached whenever the first does not match, which is precisely when the suite runs from the DEPLOYED copy -- cannot ever succeed:
+
+    REAL_EXT_ROOT="$(common_test_resolve_candidate "real extensions directory" \
+      "$(cd "$SCRIPT_DIR/../.." && pwd)/extensions")" || exit 2
+
+common_test_resolve_candidate (scripts/lib/common.sh) selects the first candidate satisfying
+[ -f "$_common_candidate" ]. The single candidate passed here is an extensions DIRECTORY, so the
+[ -f ] test fails against it unconditionally, the helper falls through to its own not-found error,
+and the suite exits 2 before reaching the real-manifest case the variable exists to serve.
+
+Confirmed structurally: the helper's loop body tests [ -f ] and nothing else; the candidate path
+ends in a directory component by construction. Confirmed historically: this branch is byte-identical
+before and after the subject-resolution migration that surfaced it, so the migration neither caused
+nor touched it. The branch was deliberately left on the older candidate helper by that migration's
+own plan, which is why the mismatch survived.
+
+--- THE CONSEQUENCE ---
+
+Gate 8 runs the deployed copy, which is exactly the shape that takes the failing branch. The
+real-manifest case guarded by REAL_EXT_ROOT -- the one asserting a bare "literature" mention no
+longer force-routes to meta -- therefore never runs under Gate 8. This is a silent coverage hole,
+not merely a red suite: the assertion that regression test exists to make is not being made.
+
+--- REQUIRED DIRECTION ---
+
+Resolve a DIRECTORY with a directory-appropriate test rather than passing one to a file-only
+helper. Research must settle which of these the tree's own conventions favour, with evidence
+rather than preference:
+
+- A directory-mode selector on the shared helper, if one already exists or if other callers need it.
+- A plain inline [ -d ] check in this suite, if this is the only site that resolves a directory.
+
+Prefer whichever option leaves exactly one home for the behaviour. If the shared helper gains a
+directory mode, research must enumerate every existing common_test_resolve_candidate call site and
+confirm none of them silently changes meaning.
+
+Research must also settle whether other suites pass a directory to this file-only helper. A single
+grep over the call sites answers it, and an unfixed sibling would be the same silent hole.
+
+--- VERIFICATION ---
+
+- A fixture proving the fallback branch resolves the real extensions directory when it is taken --
+  exercised by running the suite from the DEPLOYED copy, which is the shape that takes it. A fixture
+  that only ever runs the source-store shape cannot reach the branch under repair and does not count
+  as evidence.
+- A fixture proving the first branch still wins when the source-store shape matches, so the repair
+  does not silently reroute the source-store path through the fallback.
+- The real-manifest assertion (bare "literature" no longer force-routes to meta) is observed actually
+  executing under the deployed shape, not merely not-failing. A skipped assertion and a passing one
+  are indistinguishable in the suite's current output, which is how this hole stayed open.
+- Final phase declares the complete gate set with an explicit source-store TARGET (the bare form
+  silently skips the source-store-only gates).
+
+Known-unrelated pre-existing failures: Gate 3 lean4 doc-lint missing index.json entry; Gate 20
+eager-load budget over baseline; Gate 22 shellcheck SC2155 in the lean extension's
+lean-plan-compliance-check.sh; Gate 24 two /ide references in the memory extension's docs; Gate 8
+suites test-detect-noop-bash.sh, test-four-tier-conflict.sh, test-guard-git-push.sh. Do not
+attribute these to this work and do not fix them here.
+--- AUDIT DISPOSITION (mechanically corroborated overlaps, each disposed of rather than inherited) ---
+
+The proposal audit returned two mechanically corroborated overlaps against open records. Both are
+coarse-declaration artifacts, not genuine duplicates, and neither owns the defect above:
+
+- Record 435 (reword_dead_lifecycle_command_prose_per_class), verdict subset-of-open, shared paths
+  scripts/lib/common.sh and scripts/tests/test-task-type-detect.sh. That record's file_scope declares
+  whole DIRECTORIES (agent-system/extensions/core/scripts/ among roughly eighty entries), so it
+  mechanically contains every file under them. Its subject is rewording prose that names three deleted
+  lifecycle commands, per site and per class. It does not touch candidate resolution, directory-versus-file
+  tests, or REAL_EXT_ROOT. The overlap is an artifact of directory-level declaration.
+
+- Record 448 (contain_deliberate_break_source_mutations), verdict duplicate-of-open, shared path
+  scripts/tests/test-task-type-detect.sh. That record likewise declares scripts/tests/ as a directory.
+  Its subject is containing a regression-anchor source-store mutation so a concurrent session cannot
+  observe or inherit it. That is a test-isolation concern about deliberate mutation; this record is a
+  resolution-helper type mismatch. Disjoint mechanisms.
+
+Both records were open and not_started at this record's creation. If either is dispatched concurrently
+with this one, the shared file is scripts/tests/test-task-type-detect.sh and the two must be serialized
+rather than run in parallel; add a dependencies[] edge at that point rather than widening either scope.
+
+ORIGIN: /orchestrate conclusion stage, channel (c) follow-up task.
+CITATION: {task 418, iss_1794028461910_9Z5Zqz}, class "test-resolution-quirk". That entry recorded the
+defect as one of several pre-existing failures observed but deliberately not fixed in its own dispatch.
+The entry carried no suggested_channel; channel (c) was chosen because the repair needs its own research
+into the shared helper's call sites rather than an inline patch.
+
+---
 
 ### 524. Rule on a staged-vs-working-tree divergence signal for a pathspec commit, and name the partial-stage trap in the staging-scope standard
 - **Status**: [NOT STARTED]
@@ -2844,6 +2946,60 @@ CONCURRENT TERRITORY NOTES -- all verified against the open backlog at creation 
   - Record 452 ("Require a verification criterion over a repo-wide gate with standing pre-existing findings to be baseline-relative, not absolute") is the doctrine counterpart to this task's mechanics; this task supplies the clean baseline that doctrine presumes.
 
 SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via agent-system/extensions/core/scripts/deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+--- MEASURED EVIDENCE ADDED BY A LATER CONCLUSION STAGE (two of the seven suites) ---
+
+Two suites already in this record's file_scope were re-measured during a later /orchestrate
+conclusion stage. A follow-up record was drafted for them and then NOT created, because the
+proposal audit correctly returned duplicate-of-open against this record, which already owns both
+files and already states the right acceptance criterion. The evidence is handed here instead of
+being lost or duplicated.
+
+CITATION: {task 418, iss_1794025742468_254t2U}, class "test-resolution-quirk".
+
+FAILURE COUNTS, MEASURED BOTH SIDES OF AN UNRELATED MIGRATION. Each suite's own pre-migration
+version was extracted from git and run against the same tree as the current version, to establish
+that an unrelated subject-resolution migration did not cause these failures:
+
+    scripts/tests/test-postflight-deploy-gate.sh         pre-migration: 17 passed, 12 failed
+                                                         current:                    5 failed
+    scripts/tests/test-redeploy-checkpoint-promotion.sh  pre-migration: 10 passed,  7 failed
+                                                         current:                    3 failed
+
+Both were already red before that migration touched them, and the migration measurably REDUCED
+each one's failure count. The remaining failures are this record's to resolve.
+
+THE SURVIVING ASSERTIONS, AND WHAT THEIR SHAPE SUGGESTS. In test-postflight-deploy-gate.sh, the
+refusal-then-recovery and marker-clearing cases fail like this:
+
+    expected exit 0 on the second (fresh) call, got 2
+    expected status 'completed' after the second call, got 'implementing'
+    expected both keys absent, got deploy_pending='true'
+      deploy_pending_reason='postflight completion-deploy gate refused (exit 6): modified_files
+      overlap agent-system/extensions/** and the deploy is stale'
+
+The FIRST call behaves correctly: it refuses with exit 6, leaves the task at implementing, and sets
+deploy_pending. Those assertions pass. The SECOND call, against a tree the fixture has freshened,
+should exit 0, promote to completed, and clear both marker keys; instead it exits 2 and changes
+nothing. Exit 2 is a script-error code, not the gate's own refusal code 6, so the recovery call
+appears to fail before it ever evaluates freshness.
+
+In test-redeploy-checkpoint-promotion.sh the survivors are Cases B, C and E, of which Case C is the
+informative one: it asserts a refused / exit_code=6 notice is recorded for a stale tree, and none
+is. Taken with the exit-2 above, the shared cause may be that the refusal path's bookkeeping is not
+running at all rather than running and reaching a wrong verdict. That is a hypothesis, not a
+finding, and should be confirmed against the .err files each fixture already writes rather than
+inferred from assertion text.
+
+TWO POSSIBILITIES NOT YET ELIMINATED. Whether the exit-2 has one shared cause across both suites or
+two independent ones is unsettled; do not assume one. And whether the fixtures themselves construct
+a "fresh" tree correctly is unsettled: a fixture that does not would produce exactly this symptom
+with no defect in the gate at all, and that must be ruled out before any production script changes.
+
+ONE SPECULATION DELIBERATELY NOT CARRIED FORWARD. The originating entry speculated the breakage
+might be a concurrent sibling writer's in-flight edit to update-task-status.sh or its dependency
+chain in the shared working tree. That is UNVERIFIED. Confirm or discard it against the committed
+tree; it is not evidence.
 
 ---
 
