@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Reproduce the Failure and Build the Sweep Harness",
+  "started_at": "2026-11-06T00:00:00Z",
+  "last_updated": "2026-11-06T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "mkdir fixtures dir", "status": "done", "files_touched": []},
+    {"id": 2, "description": "write report-near-miss.md fixture", "status": "done", "files_touched": ["specs/495_formal_research_agents_report_section_conformance/fixtures/report-near-miss.md"]},
+    {"id": 3, "description": "write report-nested-ok.md fixture", "status": "done", "files_touched": ["specs/495_formal_research_agents_report_section_conformance/fixtures/report-nested-ok.md"]},
+    {"id": 4, "description": "write report-toplevel-ok.md fixture", "status": "done", "files_touched": ["specs/495_formal_research_agents_report_section_conformance/fixtures/report-toplevel-ok.md"]},
+    {"id": 5, "description": "run validator against all three fixtures: near-miss fails with 'Missing required section: ## Recommendations', both -ok fixtures pass", "status": "done", "files_touched": []},
+    {"id": 6, "description": "write sweep-skeletons.sh harness (line-based fence parser, live REPORT_SECTIONS/SUMMARY_SECTIONS read)", "status": "done", "files_touched": ["specs/495_formal_research_agents_report_section_conformance/fixtures/sweep-skeletons.sh"]},
+    {"id": 7, "description": "run harness, capture baseline to sweep-baseline.txt", "status": "done", "files_touched": ["specs/495_formal_research_agents_report_section_conformance/fixtures/sweep-baseline.txt"]},
+    {"id": 8, "description": "record issue-log entry for deviation from research report's measured baseline (project-agent.md new FAIL)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,0 +1,80 @@
+[SKELETON-LESS] agent-system/extensions/books/agents/books-implementation-agent.md
+[SKELETON-LESS] agent-system/extensions/books/agents/books-implementation-hard-agent.md
+[SKELETON-LESS] agent-system/extensions/books/agents/books-research-agent.md
+[SKELETON-LESS] agent-system/extensions/books/agents/books-research-hard-agent.md
+[SKELETON-LESS] agent-system/extensions/core/agents/README.md
+[SKELETON-LESS] agent-system/extensions/core/agents/code-reviewer-agent.md
+[PASS] agent-system/extensions/core/agents/general-implementation-agent.md (summary)
+[PASS] agent-system/extensions/core/agents/general-research-agent.md (report)
+[SKELETON-LESS] agent-system/extensions/core/agents/meta-builder-agent.md
+[SKELETON-LESS] agent-system/extensions/core/agents/planner-agent.md
+[SKELETON-LESS] agent-system/extensions/core/agents/reviser-agent.md
+[SKELETON-LESS] agent-system/extensions/core/agents/spawn-agent.md
+[PASS] agent-system/extensions/cslib/agents/cslib-implementation-agent.md (summary)
+[SKELETON-LESS] agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md
+[SKELETON-LESS] agent-system/extensions/cslib/agents/cslib-research-agent.md
+[SKELETON-LESS] agent-system/extensions/cslib/agents/cslib-research-hard-agent.md
+[SKELETON-LESS] agent-system/extensions/cslib/agents/cslib-vet-agent.md
+[SKELETON-LESS] agent-system/extensions/cslib/agents/pr-review-implementation-agent.md
+[SKELETON-LESS] agent-system/extensions/cslib/agents/pr-review-research-agent.md
+[SKELETON-LESS] agent-system/extensions/email/agents/email-implementation-agent.md
+[FAIL] agent-system/extensions/epidemiology/agents/epi-implement-agent.md (summary): summary: missing What Changed, Decisions, Impacts, Follow-ups, References
+[FAIL] agent-system/extensions/epidemiology/agents/epi-research-agent.md (report): report: missing Context & Scope, Findings, Decisions, Recommendations
+[SKELETON-LESS] agent-system/extensions/filetypes/agents/document-agent.md
+[SKELETON-LESS] agent-system/extensions/filetypes/agents/docx-edit-agent.md
+[SKELETON-LESS] agent-system/extensions/filetypes/agents/filetypes-router-agent.md
+[SKELETON-LESS] agent-system/extensions/filetypes/agents/filetypes-spreadsheet-agent.md
+[SKELETON-LESS] agent-system/extensions/filetypes/agents/presentation-agent.md
+[SKELETON-LESS] agent-system/extensions/filetypes/agents/scrape-agent.md
+[SKELETON-LESS] agent-system/extensions/filetypes/agents/sheet-agent.md
+[PASS] agent-system/extensions/formal/agents/formal-research-agent.md (report)
+[PASS] agent-system/extensions/formal/agents/logic-research-agent.md (report)
+[PASS] agent-system/extensions/formal/agents/math-research-agent.md (report)
+[PASS] agent-system/extensions/formal/agents/physics-research-agent.md (report)
+[FAIL] agent-system/extensions/founder/agents/analyze-agent.md (report): report: missing Executive Summary, Context & Scope, Decisions
+[FAIL] agent-system/extensions/founder/agents/deck-builder-agent.md (summary): summary: missing Overview, What Changed, Decisions, Impacts, Follow-ups, References
+[SKELETON-LESS] agent-system/extensions/founder/agents/deck-planner-agent.md
+[FAIL] agent-system/extensions/founder/agents/deck-research-agent.md (report): report: missing Executive Summary, Context & Scope, Findings, Decisions
+[FAIL] agent-system/extensions/founder/agents/finance-agent.md (report): report: missing Executive Summary, Context & Scope, Decisions
+[SKELETON-LESS] agent-system/extensions/founder/agents/financial-analysis-agent.md
+[FAIL] agent-system/extensions/founder/agents/founder-implement-agent.md (summary): summary: missing Overview, What Changed, Decisions, Impacts, Follow-ups, References
+[SKELETON-LESS] agent-system/extensions/founder/agents/founder-plan-agent.md
+[FAIL] agent-system/extensions/founder/agents/founder-spreadsheet-agent.md (report): report: missing Executive Summary, Context & Scope, Decisions, Recommendations
+[SKELETON-LESS] agent-system/extensions/founder/agents/legal-analysis-agent.md
+[FAIL] agent-system/extensions/founder/agents/legal-council-agent.md (report): report: missing Executive Summary, Context & Scope, Decisions
+[FAIL] agent-system/extensions/founder/agents/market-agent.md (report): report: missing Executive Summary, Context & Scope, Decisions
+[SKELETON-LESS] agent-system/extensions/founder/agents/meeting-agent.md
+[FAIL] agent-system/extensions/founder/agents/project-agent.md (report): report: missing Executive Summary, Context & Scope, Findings, Decisions
+[FAIL] agent-system/extensions/founder/agents/strategy-agent.md (report): report: missing Executive Summary, Context & Scope, Decisions, Recommendations
+[SKELETON-LESS] agent-system/extensions/latex/agents/latex-implementation-agent.md
+[SKELETON-LESS] agent-system/extensions/latex/agents/latex-research-agent.md
+[PASS] agent-system/extensions/lean/agents/lean-implementation-agent.md (summary)
+[PASS] agent-system/extensions/lean/agents/lean-implementation-hard-agent.md (summary)
+[PASS] agent-system/extensions/lean/agents/lean-research-agent.md (report)
+[PASS] agent-system/extensions/lean/agents/lean-research-hard-agent.md (report)
+[SKELETON-LESS] agent-system/extensions/literature/agents/literature-agent.md
+[FAIL] agent-system/extensions/nix/agents/nix-implementation-agent.md (summary): summary: missing Impacts, Follow-ups, References
+[PASS] agent-system/extensions/nix/agents/nix-research-agent.md (report)
+[FAIL] agent-system/extensions/nvim/agents/neovim-implementation-agent.md (summary): summary: missing Impacts, Follow-ups, References
+[PASS] agent-system/extensions/nvim/agents/neovim-research-agent.md (report)
+[FAIL] agent-system/extensions/present/agents/budget-agent.md (report): report: missing Executive Summary, Context & Scope, Decisions, Recommendations
+[SKELETON-LESS] agent-system/extensions/present/agents/funds-agent.md
+[SKELETON-LESS] agent-system/extensions/present/agents/grant-agent.md
+[SKELETON-LESS] agent-system/extensions/present/agents/pptx-assembly-agent.md
+[FAIL] agent-system/extensions/present/agents/slide-critic-agent.md (report): report: missing Executive Summary, Context & Scope, Findings, Decisions
+[SKELETON-LESS] agent-system/extensions/present/agents/slide-planner-agent.md
+[FAIL] agent-system/extensions/present/agents/slides-research-agent.md (report): report: missing Context & Scope, Findings, Decisions, Recommendations
+[SKELETON-LESS] agent-system/extensions/present/agents/slidev-assembly-agent.md
+[SKELETON-LESS] agent-system/extensions/present/agents/timeline-agent.md
+[SKELETON-LESS] agent-system/extensions/python/agents/python-implementation-agent.md
+[SKELETON-LESS] agent-system/extensions/python/agents/python-research-agent.md
+[SKELETON-LESS] agent-system/extensions/rust/agents/rust-implementation-agent.md
+[SKELETON-LESS] agent-system/extensions/rust/agents/rust-research-agent.md
+[SKELETON-LESS] agent-system/extensions/typst/agents/typst-implementation-agent.md
+[SKELETON-LESS] agent-system/extensions/typst/agents/typst-research-agent.md
+[FAIL] agent-system/extensions/web/agents/web-implementation-agent.md (summary): summary: missing Impacts, Follow-ups, References
+[FAIL] agent-system/extensions/web/agents/web-research-agent.md (report): report: missing Context & Scope
+[SKELETON-LESS] agent-system/extensions/z3/agents/z3-implementation-agent.md
+[SKELETON-LESS] agent-system/extensions/z3/agents/z3-research-agent.md
+
+Summary: 78 agent file(s) scanned, 32 with an embedded skeleton (13 PASS, 19 FAIL), 46 skeleton-less, 4 under extensions/formal/

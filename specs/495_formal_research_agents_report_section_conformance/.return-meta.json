@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/495_formal_research_agents_report_section_conformance/plans/01_report-heading-contract-conformance.md",
-      "summary": "Five-phase plan establishing one canonical required-heading contract in report-format.md, converting general-research-agent.md's copy to a pointer, and remediating the four formal research agents with a reachable pointer plus top-level ## Recommendations."
-    }
-  ],
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 495 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 22,
   "metadata": {
-    "session_id": "sess_1793993117_98582a_495",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4,
-    "dependency_waves": 4
-  },
-  "dispatch_seq": 16
+    "session_id": "sess_1793993117_98582a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

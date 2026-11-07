@@ -1,7 +1,7 @@
 # Implementation Plan: Task #495
 
 - **Task**: 495 - Formal research agents report section conformance
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/495_formal_research_agents_report_section_conformance/reports/01_formal-research-agents-report-section-conformance.md
@@ -118,7 +118,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Reproduce the Failure and Build the Sweep Harness [NOT STARTED]
+### Phase 1: Reproduce the Failure and Build the Sweep Harness [COMPLETED]
 
 **Goal**: Establish the RED baseline required by the acceptance criteria — a fixture carrying the
 production failure's exact shape fails `validate-artifact.sh` — and build the machine-check harness
@@ -132,29 +132,40 @@ cycle, and a new permanent script carries script-inventory and own-test-suite ob
 record does not declare. The durable-script option is listed as a Phase 5 follow-up, not taken here.
 
 **Tasks**:
-- [ ] `mkdir -p specs/495_formal_research_agents_report_section_conformance/fixtures`
-- [ ] Write `fixtures/report-near-miss.md`: a complete report carrying every other required heading
+- [x] `mkdir -p specs/495_formal_research_agents_report_section_conformance/fixtures` *(completed)*
+- [x] Write `fixtures/report-near-miss.md`: a complete report carrying every other required heading
       (`## Executive Summary`, `## Context & Scope`, `## Findings`, `## Decisions`) plus
       `## Context Extension Recommendations` AND `## Recommended Next Steps`, and NO
       `## Recommendations` / `### Recommendations` anywhere. This is the BimodalLogic shape.
-- [ ] Write `fixtures/report-nested-ok.md`: the same document with `### Recommendations` nested under
-      `## Findings` (formal's current shape).
-- [ ] Write `fixtures/report-toplevel-ok.md`: the same document with a top-level `## Recommendations`
-      (formal's post-remedy shape).
-- [ ] Run the real validator against all three, capturing output to a file and grepping that file:
+      *(completed)*
+- [x] Write `fixtures/report-nested-ok.md`: the same document with `### Recommendations` nested under
+      `## Findings` (formal's current shape). *(completed)*
+- [x] Write `fixtures/report-toplevel-ok.md`: the same document with a top-level `## Recommendations`
+      (formal's post-remedy shape). *(completed)*
+- [x] Run the real validator against all three, capturing output to a file and grepping that file:
       `bash agent-system/extensions/core/scripts/validate-artifact.sh <fixture> report`. Confirm
       near-miss emits `Missing required section: ## Recommendations` and fails; both others pass.
-- [ ] Write `fixtures/sweep-skeletons.sh` (or `.py`): extracts each fenced block from every
+      *(completed: near-miss exit=1 with exactly that message; both -ok fixtures exit=0)*
+- [x] Write `fixtures/sweep-skeletons.sh` (or `.py`): extracts each fenced block from every
       `agent-system/extensions/*/agents/*.md` using a LINE-BASED fence parser (per the research
       report's Appendix, a `` ```lang ... ``` `` regex mis-pairs fences in these files and silently
       merges blocks), classifies a block as report or summary by its `# ...Report`/`# ...Summary`
       first line, and checks it with the validator's own `^##+ {section}` regex against the arrays
       read live out of `validate-artifact.sh` — never hardcoded copies of those arrays.
-- [ ] Run the harness; capture the baseline to `fixtures/sweep-baseline.txt`. Confirm it reproduces
+      *(completed; written as a bash wrapper invoking an embedded python3 -I line-based parser)*
+- [x] Run the harness; capture the baseline to `fixtures/sweep-baseline.txt`. Confirm it reproduces
       the research report's enumeration (the four formal agents PASS as written; the four
-      nix/nvim/web gaps and the domain-shaped/skeleton-less classes appear).
-- [ ] Record an issue-log entry (`issue-record.sh`, non-fatal) for anything that deviated from the
+      nix/nvim/web gaps and the domain-shaped/skeleton-less classes appear). *(completed: 78 files
+      scanned, four formal agents PASS, the four nix/nvim/web gaps reproduced, the 9 founder +
+      3 present + 2 epidemiology domain-shaped FAILs and the 7 named skeleton-less research agents
+      reproduced — see deviation note below)*
+- [x] Record an issue-log entry (`issue-record.sh`, non-fatal) for anything that deviated from the
       research report's measured baseline, or a `win` entry if the harness reproduced it exactly.
+      *(completed: recorded a deviation — the harness found one additional FAIL,
+      `founder/agents/project-agent.md`, not named in the research report's founder-gap list, and
+      the report's own count ("eight") undercounts its own 9 named founder agents; the Phase 1
+      baseline file is treated as the authoritative measurement for Phase 5's follow-up
+      enumeration rather than the report's stale list)*
 
 **Timing**: 1 hour
 
