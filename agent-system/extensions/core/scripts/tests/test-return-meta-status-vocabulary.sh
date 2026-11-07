@@ -31,38 +31,17 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/return-meta-status-vocabulary.sh"
-  "$SCRIPT_DIR/../lib/return-meta-status-vocabulary.sh"
-)
-LIB=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$LIB" ]]; then
-  echo "ERROR: shared library return-meta-status-vocabulary.sh not found at any of:" >&2
-  for candidate in "${LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+LIB="$(common_test_resolve_subject "return-meta-status-vocabulary.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/return-meta-status-vocabulary.sh" \
+  "$SCRIPT_DIR/../lib/return-meta-status-vocabulary.sh")" || exit 2
+common_test_declare_subject "$LIB"
 # shellcheck disable=SC1090
 . "$LIB"
 
-VALIDATOR_CANDIDATES=(
-  "$SCRIPT_DIR/../validate-return-meta.sh"
-  "$REPO_ROOT/.claude/scripts/validate-return-meta.sh"
-)
-VALIDATOR=""
-for candidate in "${VALIDATOR_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    VALIDATOR="$candidate"
-    break
-  fi
-done
+VALIDATOR="$(common_test_resolve_subject "validate-return-meta.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/validate-return-meta.sh" \
+  "$SCRIPT_DIR/../validate-return-meta.sh" 2>/dev/null)" || VALIDATOR=""
+[[ -n "$VALIDATOR" ]] && common_test_declare_subject "$VALIDATOR"
 
 PASSED=0
 FAILED=0

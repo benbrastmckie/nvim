@@ -44,50 +44,32 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
 
-# --- Resolution for the library under test: env override > source-store > deploy tree ---
+# --- Resolution for the library under test: env override > mode=source-store ---
 if [[ -n "${REDEPLOY_CHECKPOINT_LIB:-}" ]]; then
   LIB_UNDER_TEST="$REDEPLOY_CHECKPOINT_LIB"
-elif [[ -f "$SOURCE_STORE_SCRIPTS/lib/redeploy-checkpoint-lib.sh" ]]; then
-  LIB_UNDER_TEST="$SOURCE_STORE_SCRIPTS/lib/redeploy-checkpoint-lib.sh"
 else
-  LIB_UNDER_TEST="$DEPLOY_SCRIPTS_SRC/lib/redeploy-checkpoint-lib.sh"
+  LIB_UNDER_TEST="$(common_test_resolve_subject "redeploy-checkpoint-lib.sh" "source-store" \
+    "$DEPLOY_SCRIPTS_SRC/lib/redeploy-checkpoint-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/redeploy-checkpoint-lib.sh")" || exit 2
 fi
 if [[ ! -f "$LIB_UNDER_TEST" ]]; then
   echo "ERROR: redeploy-checkpoint-lib.sh not found at $LIB_UNDER_TEST" >&2
   exit 2
 fi
+common_test_declare_subject "$LIB_UNDER_TEST"
 
-# --- Source-store-first resolution for reconcile-task-status.sh, update-task-status.sh, and
+# --- mode=source-store resolution for reconcile-task-status.sh, update-task-status.sh, and
 #     lib/deploy-freshness-lib.sh (the files this suite exercises but does not itself modify) ---
-RECONCILE_CANDIDATES=(
-  "$SOURCE_STORE_SCRIPTS/reconcile-task-status.sh"
-  "$DEPLOY_SCRIPTS_SRC/reconcile-task-status.sh"
-)
-RECONCILE_SRC=""
-for c in "${RECONCILE_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { RECONCILE_SRC="$c"; break; }
-done
-[[ -z "$RECONCILE_SRC" ]] && { echo "ERROR: reconcile-task-status.sh not found at any of: ${RECONCILE_CANDIDATES[*]}" >&2; exit 2; }
+RECONCILE_SRC="$(common_test_resolve_subject "reconcile-task-status.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/reconcile-task-status.sh" "$SOURCE_STORE_SCRIPTS/reconcile-task-status.sh")" || exit 2
+common_test_declare_subject "$RECONCILE_SRC"
 
-UTS_CANDIDATES=(
-  "$SOURCE_STORE_SCRIPTS/update-task-status.sh"
-  "$DEPLOY_SCRIPTS_SRC/update-task-status.sh"
-)
-UTS_SRC=""
-for c in "${UTS_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { UTS_SRC="$c"; break; }
-done
-[[ -z "$UTS_SRC" ]] && { echo "ERROR: update-task-status.sh not found at any of: ${UTS_CANDIDATES[*]}" >&2; exit 2; }
+UTS_SRC="$(common_test_resolve_subject "update-task-status.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/update-task-status.sh" "$SOURCE_STORE_SCRIPTS/update-task-status.sh")" || exit 2
+common_test_declare_subject "$UTS_SRC"
 
-FRESHNESS_LIB_CANDIDATES=(
-  "$SOURCE_STORE_SCRIPTS/lib/deploy-freshness-lib.sh"
-  "$DEPLOY_SCRIPTS_SRC/lib/deploy-freshness-lib.sh"
-)
-FRESHNESS_LIB_SRC=""
-for c in "${FRESHNESS_LIB_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { FRESHNESS_LIB_SRC="$c"; break; }
-done
-[[ -z "$FRESHNESS_LIB_SRC" ]] && { echo "ERROR: deploy-freshness-lib.sh not found at any of: ${FRESHNESS_LIB_CANDIDATES[*]}" >&2; exit 2; }
+FRESHNESS_LIB_SRC="$(common_test_resolve_subject "deploy-freshness-lib.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/lib/deploy-freshness-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/deploy-freshness-lib.sh")" || exit 2
+common_test_declare_subject "$FRESHNESS_LIB_SRC"
 
 # --- Deploy-tree-first resolution (unchanged dependencies) ---
 if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then

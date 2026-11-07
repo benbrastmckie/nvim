@@ -38,83 +38,45 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/orchestrate-suggest-next-batch.sh"
-  "$SCRIPT_DIR/../orchestrate-suggest-next-batch.sh"
-)
-ADMIT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/orchestrate-batch-admit.sh"
-  "$SCRIPT_DIR/../orchestrate-batch-admit.sh"
-)
-TRIAGE_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/orchestrate-triage-classify.sh"
-  "$SCRIPT_DIR/../orchestrate-triage-classify.sh"
-)
-UPDATE_STATUS_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/update-task-status.sh"
-  "$SCRIPT_DIR/../update-task-status.sh"
-)
-TASK_LOCK_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/task-lock.sh"
-  "$SCRIPT_DIR/../task-lock.sh"
-)
-VALIDATE_STATE_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/validate-state.sh"
-  "$SCRIPT_DIR/../validate-state.sh"
-)
-STATE_WRITE_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/state-write.sh"
-  "$SCRIPT_DIR/../state-write.sh"
-)
-GENERATE_TODO_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/generate-todo.sh"
-  "$SCRIPT_DIR/../generate-todo.sh"
-)
-GUARD_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh"
-  "$SCRIPT_DIR/../deploy-root-guard.sh"
-)
-LIB_DIR_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib"
-  "$SCRIPT_DIR/../lib"
-)
-CRITICAL_PATHS_CANDIDATES=(
-  "$REPO_ROOT/.claude/context/reference/orchestrator-critical-paths.json"
-  "$SCRIPT_DIR/../../context/reference/orchestrator-critical-paths.json"
-)
-SCHEMA_DOC_CANDIDATES=(
-  "$REPO_ROOT/.claude/docs/architecture/batch-admit-schema.md"
-  "$SCRIPT_DIR/../../docs/architecture/batch-admit-schema.md"
-)
-
-resolve_one() {
-  local name="$1"; shift
-  local candidate
-  for candidate in "$@"; do
-    if [[ -e "$candidate" ]]; then
-      echo "$candidate"
-      return 0
-    fi
-  done
-  echo "ERROR: $name not found at any of:" >&2
-  for candidate in "$@"; do
-    echo "  $candidate" >&2
-  done
-  return 1
-}
-
-SCRIPT_UNDER_TEST="$(resolve_one "orchestrate-suggest-next-batch.sh" "${SCRIPT_CANDIDATES[@]}")" || exit 2
-ADMIT_SCRIPT="$(resolve_one "orchestrate-batch-admit.sh" "${ADMIT_CANDIDATES[@]}")" || exit 2
-TRIAGE_SCRIPT="$(resolve_one "orchestrate-triage-classify.sh" "${TRIAGE_CANDIDATES[@]}")" || exit 2
-UPDATE_STATUS_SCRIPT="$(resolve_one "update-task-status.sh" "${UPDATE_STATUS_CANDIDATES[@]}")" || exit 2
-TASK_LOCK_SCRIPT="$(resolve_one "task-lock.sh" "${TASK_LOCK_CANDIDATES[@]}")" || exit 2
-VALIDATE_STATE_SCRIPT="$(resolve_one "validate-state.sh" "${VALIDATE_STATE_CANDIDATES[@]}")" || exit 2
-STATE_WRITE_SCRIPT="$(resolve_one "state-write.sh" "${STATE_WRITE_CANDIDATES[@]}")" || exit 2
-GENERATE_TODO_SCRIPT="$(resolve_one "generate-todo.sh" "${GENERATE_TODO_CANDIDATES[@]}")" || exit 2
-GUARD_SCRIPT="$(resolve_one "deploy-root-guard.sh" "${GUARD_CANDIDATES[@]}")" || exit 2
-LIB_DIR="$(resolve_one "scripts/lib" "${LIB_DIR_CANDIDATES[@]}")" || exit 2
-CRITICAL_PATHS_FILE="$(resolve_one "orchestrator-critical-paths.json" "${CRITICAL_PATHS_CANDIDATES[@]}")" || exit 2
-SCHEMA_DOC="$(resolve_one "batch-admit-schema.md" "${SCHEMA_DOC_CANDIDATES[@]}")" || exit 2
+SCRIPT_UNDER_TEST="$(common_test_resolve_subject "orchestrate-suggest-next-batch.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-suggest-next-batch.sh" "$SCRIPT_DIR/../orchestrate-suggest-next-batch.sh")" || exit 2
+common_test_declare_subject "$SCRIPT_UNDER_TEST"
+ADMIT_SCRIPT="$(common_test_resolve_subject "orchestrate-batch-admit.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-batch-admit.sh" "$SCRIPT_DIR/../orchestrate-batch-admit.sh")" || exit 2
+common_test_declare_subject "$ADMIT_SCRIPT"
+TRIAGE_SCRIPT="$(common_test_resolve_subject "orchestrate-triage-classify.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/orchestrate-triage-classify.sh" "$SCRIPT_DIR/../orchestrate-triage-classify.sh")" || exit 2
+common_test_declare_subject "$TRIAGE_SCRIPT"
+UPDATE_STATUS_SCRIPT="$(common_test_resolve_subject "update-task-status.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/update-task-status.sh" "$SCRIPT_DIR/../update-task-status.sh")" || exit 2
+common_test_declare_subject "$UPDATE_STATUS_SCRIPT"
+TASK_LOCK_SCRIPT="$(common_test_resolve_subject "task-lock.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/task-lock.sh" "$SCRIPT_DIR/../task-lock.sh")" || exit 2
+common_test_declare_subject "$TASK_LOCK_SCRIPT"
+VALIDATE_STATE_SCRIPT="$(common_test_resolve_subject "validate-state.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/validate-state.sh" "$SCRIPT_DIR/../validate-state.sh")" || exit 2
+common_test_declare_subject "$VALIDATE_STATE_SCRIPT"
+STATE_WRITE_SCRIPT="$(common_test_resolve_subject "state-write.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/state-write.sh" "$SCRIPT_DIR/../state-write.sh")" || exit 2
+common_test_declare_subject "$STATE_WRITE_SCRIPT"
+GENERATE_TODO_SCRIPT="$(common_test_resolve_subject "generate-todo.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/generate-todo.sh" "$SCRIPT_DIR/../generate-todo.sh")" || exit 2
+common_test_declare_subject "$GENERATE_TODO_SCRIPT"
+GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SCRIPT"
+# LIB_DIR is a directory, not a single-file subject -- common_test_resolve_subject resolves
+# one named file via `[ -f ]`, so it cannot resolve a bare directory. Derived instead from
+# GUARD_SCRIPT's own resolved directory: both GUARD_CANDIDATES and the old LIB_DIR_CANDIDATES
+# shared the identical deploy-tree-first tree-pair order, so whichever tree GUARD_SCRIPT
+# resolved from is the same tree this directory must come from.
+LIB_DIR="$(dirname "$GUARD_SCRIPT")/lib"
+CRITICAL_PATHS_FILE="$(common_test_resolve_subject "orchestrator-critical-paths.json" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/context/reference/orchestrator-critical-paths.json" "$SCRIPT_DIR/../../context/reference/orchestrator-critical-paths.json")" || exit 2
+common_test_declare_subject "$CRITICAL_PATHS_FILE"
+SCHEMA_DOC="$(common_test_resolve_subject "batch-admit-schema.md" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/docs/architecture/batch-admit-schema.md" "$SCRIPT_DIR/../../docs/architecture/batch-admit-schema.md")" || exit 2
+common_test_declare_subject "$SCHEMA_DOC"
 
 PASSED=0
 FAILED=0

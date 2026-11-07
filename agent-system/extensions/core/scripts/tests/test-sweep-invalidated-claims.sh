@@ -34,19 +34,10 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
 
-# --- Source-store-first resolution for the file under test ---
-SWEEP_CANDIDATES=(
-  "$SOURCE_STORE_SCRIPTS/sweep-invalidated-claims.sh"
-  "$DEPLOY_SCRIPTS_SRC/sweep-invalidated-claims.sh"
-)
-SWEEP_SRC=""
-for c in "${SWEEP_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { SWEEP_SRC="$c"; break; }
-done
-if [[ -z "$SWEEP_SRC" ]]; then
-  echo "ERROR: sweep-invalidated-claims.sh not found at any of: ${SWEEP_CANDIDATES[*]}" >&2
-  exit 2
-fi
+# --- mode=source-store resolution for the file under test ---
+SWEEP_SRC="$(common_test_resolve_subject "sweep-invalidated-claims.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/sweep-invalidated-claims.sh" "$SOURCE_STORE_SCRIPTS/sweep-invalidated-claims.sh")" || exit 2
+common_test_declare_subject "$SWEEP_SRC"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq not found on PATH -- required to build/inspect fixtures" >&2

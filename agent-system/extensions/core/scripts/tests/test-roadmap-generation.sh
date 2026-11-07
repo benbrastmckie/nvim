@@ -39,33 +39,24 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
 
-# --- Source-store-first resolution for the file under test ---
-RI_CANDIDATES=(
-  "$SOURCE_STORE_SCRIPTS/roadmap-integration.sh"
-  "$DEPLOY_SCRIPTS_SRC/roadmap-integration.sh"
-)
-RI_SRC=""
-for c in "${RI_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { RI_SRC="$c"; break; }
-done
-if [[ -z "$RI_SRC" ]]; then
-  echo "ERROR: roadmap-integration.sh not found at any of: ${RI_CANDIDATES[*]}" >&2
-  exit 2
-fi
+# --- mode=source-store resolution for the file under test ---
+RI_SRC="$(common_test_resolve_subject "roadmap-integration.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/roadmap-integration.sh" "$SOURCE_STORE_SCRIPTS/roadmap-integration.sh")" || exit 2
+common_test_declare_subject "$RI_SRC"
 
-# --- Deploy-tree-first resolution for unchanged dependencies ---
-resolve_dep() {
-  local name="$1" c
-  for c in "$DEPLOY_SCRIPTS_SRC/$name" "$SOURCE_STORE_SCRIPTS/$name"; do
-    [[ -f "$c" ]] && { echo "$c"; return 0; }
-  done
-  echo "ERROR: $name not found at $DEPLOY_SCRIPTS_SRC/$name or $SOURCE_STORE_SCRIPTS/$name" >&2
-  return 1
-}
-GTO_SRC="$(resolve_dep generate-task-order.sh)" || exit 2
-GUARD_SRC="$(resolve_dep deploy-root-guard.sh)" || exit 2
-COMMON_SRC="$(resolve_dep lib/common.sh)" || exit 2
-STATUSVOC_SRC="$(resolve_dep lib/status-vocabulary.sh)" || exit 2
+# --- mode=deploy-tree-first resolution for unchanged dependencies ---
+GTO_SRC="$(common_test_resolve_subject "generate-task-order.sh" "deploy-tree-first" \
+  "$DEPLOY_SCRIPTS_SRC/generate-task-order.sh" "$SOURCE_STORE_SCRIPTS/generate-task-order.sh")" || exit 2
+common_test_declare_subject "$GTO_SRC"
+GUARD_SRC="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
+  "$DEPLOY_SCRIPTS_SRC/deploy-root-guard.sh" "$SOURCE_STORE_SCRIPTS/deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SRC"
+COMMON_SRC="$(common_test_resolve_subject "lib/common.sh" "deploy-tree-first" \
+  "$DEPLOY_SCRIPTS_SRC/lib/common.sh" "$SOURCE_STORE_SCRIPTS/lib/common.sh")" || exit 2
+common_test_declare_subject "$COMMON_SRC"
+STATUSVOC_SRC="$(common_test_resolve_subject "lib/status-vocabulary.sh" "deploy-tree-first" \
+  "$DEPLOY_SCRIPTS_SRC/lib/status-vocabulary.sh" "$SOURCE_STORE_SCRIPTS/lib/status-vocabulary.sh")" || exit 2
+common_test_declare_subject "$STATUSVOC_SRC"
 
 PASSED=0
 FAILED=0

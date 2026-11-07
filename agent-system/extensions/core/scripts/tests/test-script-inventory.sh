@@ -52,24 +52,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-SCRIPT_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/script-inventory.sh"
-  "$SCRIPT_DIR/../script-inventory.sh"
-)
-TOOL=""
-for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    TOOL="$candidate"
-    break
-  fi
-done
-if [[ -z "$TOOL" ]]; then
-  echo "ERROR: script-inventory.sh not found at any of:" >&2
-  for candidate in "${SCRIPT_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+TOOL="$(common_test_resolve_subject "script-inventory.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/script-inventory.sh" \
+  "$SCRIPT_DIR/../script-inventory.sh")" || exit 2
+common_test_declare_subject "$TOOL"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq not available; cannot exercise script-inventory.sh" >&2

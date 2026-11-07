@@ -38,32 +38,14 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 DEPLOY_SCRIPTS_SRC="$REPO_ROOT/.claude/scripts"
 SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
 
-# --- Source-store-first resolution for the two files under test ---
-UTS_CANDIDATES=(
-  "$SOURCE_STORE_SCRIPTS/update-task-status.sh"
-  "$DEPLOY_SCRIPTS_SRC/update-task-status.sh"
-)
-UTS_SRC=""
-for c in "${UTS_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { UTS_SRC="$c"; break; }
-done
-if [[ -z "$UTS_SRC" ]]; then
-  echo "ERROR: update-task-status.sh not found at any of: ${UTS_CANDIDATES[*]}" >&2
-  exit 2
-fi
+# --- mode=source-store resolution for the two files under test ---
+UTS_SRC="$(common_test_resolve_subject "update-task-status.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/update-task-status.sh" "$SOURCE_STORE_SCRIPTS/update-task-status.sh")" || exit 2
+common_test_declare_subject "$UTS_SRC"
 
-FRESHNESS_LIB_CANDIDATES=(
-  "$SOURCE_STORE_SCRIPTS/lib/deploy-freshness-lib.sh"
-  "$DEPLOY_SCRIPTS_SRC/lib/deploy-freshness-lib.sh"
-)
-FRESHNESS_LIB_SRC=""
-for c in "${FRESHNESS_LIB_CANDIDATES[@]}"; do
-  [[ -f "$c" ]] && { FRESHNESS_LIB_SRC="$c"; break; }
-done
-if [[ -z "$FRESHNESS_LIB_SRC" ]]; then
-  echo "ERROR: deploy-freshness-lib.sh not found at any of: ${FRESHNESS_LIB_CANDIDATES[*]}" >&2
-  exit 2
-fi
+FRESHNESS_LIB_SRC="$(common_test_resolve_subject "deploy-freshness-lib.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/lib/deploy-freshness-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/deploy-freshness-lib.sh")" || exit 2
+common_test_declare_subject "$FRESHNESS_LIB_SRC"
 
 # --- Deploy-tree-first resolution (unchanged dependencies) ---
 if [[ ! -d "$DEPLOY_SCRIPTS_SRC" ]]; then

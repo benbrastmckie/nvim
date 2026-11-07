@@ -12,10 +12,20 @@
       "agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh",
       "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"
     ]},
-    {"id": 2, "description": "Migrate remaining 13 Group C batch 2 suites", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Remove this batch's 19 entries from the gate-27 lint's Layer-2 allowlist, leaving only the 3 permanent exemptions", "status": "not_started", "files_touched": []}
+    {"id": 2, "description": "Migrate 9 more Group C batch 2 suites: test-orchestrate-suggest-next-batch.sh, test-postflight-deploy-gate.sh, test-redeploy-checkpoint-promotion.sh (both pre-existing red, verdict unchanged -- recorded as issue), test-return-meta-status-vocabulary.sh, test-roadmap-generation.sh, test-script-inventory.sh, test-status-vocabulary.sh, test-sweep-invalidated-claims.sh", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+      "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+      "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh",
+      "agent-system/extensions/core/scripts/tests/test-return-meta-status-vocabulary.sh",
+      "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
+      "agent-system/extensions/core/scripts/tests/test-script-inventory.sh",
+      "agent-system/extensions/core/scripts/tests/test-status-vocabulary.sh",
+      "agent-system/extensions/core/scripts/tests/test-sweep-invalidated-claims.sh"
+    ]},
+    {"id": 4, "description": "Migrate remaining 4 Group C batch 2 suites", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Remove this batch's 19 entries from the gate-27 lint's Layer-2 allowlist, leaving only the 3 permanent exemptions", "status": "not_started", "files_touched": []}
   ],
-  "current_objective": 2,
+  "current_objective": 4,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []
