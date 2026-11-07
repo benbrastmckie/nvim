@@ -11,7 +11,7 @@ next_project_number: 519
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,483,488,490,491,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,445,446,448,458,463,472,474,475,492,497,516 | 369,383,397,412,418,430,431,435,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,444,451,454,455,461,476,484,500,507,518 | 313,391,398,420,423,435,439,445,446,448,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486,517 | 360,390,402,435,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -75,7 +75,6 @@ next_project_number: 519
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
-495 [IMPLEMENTING] — Give the formal extension research agents the verbatim...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
   └─ 498 [NOT STARTED] — Replace the email preference harvest tally substrate
@@ -1695,7 +1694,7 @@ The audit's `duplicate-of-open #421` verdict is `mechanical_class: none` at 41% 
 ---
 
 ### 495. Give the formal extension research agents the verbatim required-heading contract their core counterpart already carries
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
