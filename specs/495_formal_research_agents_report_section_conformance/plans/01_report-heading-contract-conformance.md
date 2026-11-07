@@ -205,16 +205,17 @@ disagreement is a harness bug, not a new finding.
 
 ---
 
-### Phase 2: Establish the Canonical Contract in the Format Standards [NOT STARTED]
+### Phase 2: Establish the Canonical Contract in the Format Standards [COMPLETED]
 
 **Goal**: Put the verbatim required-heading contract, the matching-rule statement, both named
 near-misses, and the pre-return grep self-check into `context/formats/report-format.md` as the ONE
 place they live, with the parallel six-heading statement in `summary-format.md`.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/report-format.md` immediately before
+- [x] Re-read `agent-system/extensions/core/context/formats/report-format.md` immediately before
       editing (sibling task 464 is live on this tree and holds `plan-format.md` in the same directory).
-- [ ] Add a new section to `report-format.md` — heading `## Required Section Headings (verbatim)`,
+      *(completed)*
+- [x] Add a new section to `report-format.md` — heading `## Required Section Headings (verbatim)`,
       placed immediately after `## Structure` so it reads as that list's enforcement counterpart —
       containing: the five headings written out literally (`## Executive Summary`,
       `## Context & Scope`, `## Findings`, `## Decisions`, `## Recommendations`); the statement that
@@ -223,23 +224,28 @@ place they live, with the parallel six-heading statement in `summary-format.md`.
       topic in different wording does not satisfy the check; both observed near-misses named
       outright (`## Recommended Next Steps` and `## Context Extension Recommendations`) with the
       explicit instruction to keep the latter as a distinct section but never as a substitute.
-- [ ] Add the pre-return self-check to that same new section: before finalizing a report, grep the
+      *(completed)*
+- [x] Add the pre-return self-check to that same new section: before finalizing a report, grep the
       written file once per required heading (`grep -qE "^##+ <section>" <path>`) and add any missing
       heading before proceeding to the metadata-file stage — stated as an action to take, not a
       passive warning, since the observed production failure was a non-blocking warning left
-      unactioned.
-- [ ] State in that section that the five headings and the regex are read from
+      unactioned. *(completed)*
+- [x] State in that section that the five headings and the regex are read from
       `validate-artifact.sh`'s `REPORT_SECTIONS` array and its own check loop, and that this section
-      is the single home other agents point at rather than copy.
-- [ ] Add the parallel section to `agent-system/extensions/core/context/formats/summary-format.md`
+      is the single home other agents point at rather than copy. *(completed)*
+- [x] Add the parallel section to `agent-system/extensions/core/context/formats/summary-format.md`
       — heading `## Required Section Headings (verbatim)` — naming the six
       `SUMMARY_SECTIONS` headings (`## Overview`, `## What Changed`, `## Decisions`, `## Impacts`,
       `## Follow-ups`, `## References`), the same regex statement, and the same self-check. Keep that
       file's existing required-minimum-not-whitelist paragraph and its `## Plan Deviations` optional
-      section intact.
-- [ ] Confirm no task-number reference and no record-versioning phrasing entered either file (the new
-      text names headings, a regex, and two heading strings only).
-- [ ] Record an issue-log entry for any deviation, blocker, or notably smooth result.
+      section intact. *(completed)*
+- [x] Confirm no task-number reference and no record-versioning phrasing entered either file (the new
+      text names headings, a regex, and two heading strings only). *(completed:
+      check-task-references.sh and check-record-versioning.sh both report 0 occurrences for both
+      files)*
+- [x] Record an issue-log entry for any deviation, blocker, or notably smooth result. *(completed:
+      recorded a win — the plan's own grep-based verification step caught a real line-wrap defect
+      in the new prose before it shipped)*
 
 **Timing**: 45 minutes
 

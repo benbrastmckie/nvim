@@ -25,6 +25,41 @@
 8. **Context Extension Recommendations (optional)** – identified gaps in project context documentation.
 9. **Appendix** – references, data, links.
 
+## Required Section Headings (verbatim)
+
+The five headings below are verbatim and non-paraphrasable:
+
+- `## Executive Summary`
+- `## Context & Scope`
+- `## Findings`
+- `## Decisions`
+- `## Recommendations`
+
+They are read live out of `validate-artifact.sh`'s own `REPORT_SECTIONS` array, and that
+script's own check loop matches each with an any-depth heading-prefix regex, `^##+ {section}`.
+This match is exact-text, not fuzzy: a heading that merely discusses the same topic under
+different wording does not satisfy the check. A nested heading (for example a third-level
+`### Recommendations` inside `## Findings`) does satisfy the check — the regex has no ceiling on
+heading depth — but a renamed or reworded heading never does.
+
+Two near-misses have been observed to fail in a real produced report:
+`## Recommended Next Steps` and `## Context Extension Recommendations` do **not** satisfy
+`## Recommendations` — only a heading whose text, after the `##+ ` prefix, is exactly
+`Recommendations` does. Keep `## Context Extension Recommendations` in a report where it applies
+(it is a distinct, useful section), but never as a substitute for the required
+`## Recommendations` heading.
+
+**Pre-return self-check**: before finalizing a report, grep the written file once per required
+heading above (`grep -qE "^##+ {section}" <path>`) and add any missing heading before proceeding
+to the metadata-file stage. Treat a missing heading as something to fix immediately, not a
+passive warning to leave for a later gate — the production failure this contract exists to
+prevent was exactly a non-blocking validator warning left unactioned.
+
+This section is the single place this contract is stated. An agent whose report-writing stage
+needs this contract should point at this section by name rather than copy its text — copying
+the same contract into several agent files is the mechanism that let one copy drift out of date
+while another was updated.
+
 ## Project Context (optional)
 
 Include when dependency relationships are essential to the research topic. Omit for standalone topics. Fields: **Upstream Dependencies**, **Downstream Dependents**, **Alternative Paths**, **Potential Extensions** -- each a brief list of relevant modules/components.

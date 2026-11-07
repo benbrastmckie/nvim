@@ -25,6 +25,33 @@ additional sections beyond them. The gate-out validator (`validate-artifact.sh`)
 *missing* required section — it never enumerates a document's headings against a whitelist — so
 additional sections have never been rejected and are not an error.
 
+## Required Section Headings (verbatim)
+
+The six headings below are verbatim and non-paraphrasable:
+
+- `## Overview`
+- `## What Changed`
+- `## Decisions`
+- `## Impacts`
+- `## Follow-ups`
+- `## References`
+
+They are read live out of `validate-artifact.sh`'s own `SUMMARY_SECTIONS` array, and that
+script's own check loop matches each with an any-depth heading-prefix regex, `^##+ {section}`.
+This match is exact-text, not fuzzy: a heading that merely discusses the same topic under
+different wording does not satisfy the check, while a nested heading at any depth (for example a
+third-level subsection) does.
+
+**Pre-return self-check**: before finalizing a summary, grep the written file once per required
+heading above (`grep -qE "^##+ {section}" <path>`) and add any missing heading before proceeding
+to the metadata-file stage. Treat a missing heading as something to fix immediately, not a
+passive warning to leave for a later gate.
+
+This section is the single place this contract is stated for summaries; see
+`context/formats/report-format.md`'s own `## Required Section Headings (verbatim)` section for
+the parallel statement covering reports. An agent whose summary-writing stage needs this
+contract should point at this section by name rather than copy its text.
+
 ### Optional Sections
 
 - **Plan Deviations** – records plan-checklist deviations under a skipped/altered/deferred

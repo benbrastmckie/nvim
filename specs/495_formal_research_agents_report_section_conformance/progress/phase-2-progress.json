@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Establish the Canonical Contract in the Format Standards",
+  "started_at": "2026-11-06T00:35:00Z",
+  "last_updated": "2026-11-06T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "re-read report-format.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "add ## Required Section Headings (verbatim) to report-format.md after ## Structure", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 3, "description": "add pre-return self-check to report-format.md new section", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 4, "description": "add parallel section to summary-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/summary-format.md"]},
+    {"id": 5, "description": "confirm no task-ref/record-versioning phrasing entered either file", "status": "done", "files_touched": []},
+    {"id": 6, "description": "record issue-log entry for deviation/win", "status": "done", "files_touched": []},
+    {"id": 7, "description": "regenerate index-entries.json line counts to fix doc-lint gate-3 failure", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "grep -c 'Recommended Next Steps' single-line match", "result": "failed", "reason": "initial prose wrapped the phrase across two lines; reworded to keep it on one line"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "generate-context-line-counts.sh --write was required to fix index-entries.json line_count drift for report-format.md/summary-format.md (doc-lint gate 3 failure); this also opportunistically re-synced 4 unrelated entries (plan-format.md, batch-orchestration-guardrails.md, task-lock.md, git-staging-scope.md) that were already stale from a concurrent sibling task's in-flight edits on this shared tree -- carried forward as a harmless regen side effect, not fabricated content."
+}
