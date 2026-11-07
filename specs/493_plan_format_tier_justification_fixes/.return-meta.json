@@ -23,28 +23,48 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/493_plan_format_tier_justification_fixes/summaries/01_tier-justification-fixes-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "test-fixture", "self-reference", "grep", "suite-selection"]
+      "suggested_keywords": [
+        "bash",
+        "test-fixture",
+        "self-reference",
+        "grep",
+        "suite-selection"
+      ]
     },
     {
       "content": "When a mechanical lint's claim-extraction heuristic scans justification/comment text for tokens matching a naming pattern (e.g. test-*.sh), a real subject PATH mentioned in that same text (as the argument being measured) can itself match the pattern and be misread as part of the claim rather than the measured subject -- especially dangerous when it silently flips a sentinel/negative claim into a coincidentally-matching positive one. Prefer picking test fixtures whose subject path does not itself look like the token shape being scanned for, or anchor extraction to a structured command form rather than a bare substring scan.",
       "category": "PATTERN",
       "source_artifact": "specs/493_plan_format_tier_justification_fixes/summaries/01_tier-justification-fixes-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["lint-design", "false-positive", "token-extraction", "fixture-design"]
+      "suggested_keywords": [
+        "lint-design",
+        "false-positive",
+        "token-extraction",
+        "fixture-design"
+      ]
     },
     {
       "content": "A bash script that sources sibling libraries via ${BASH_SOURCE[0]}-relative resolution (so it works identically in both a source-store tree and a deployed/merged tree) can still behave differently between the two trees when the sourced library itself resolves a SECOND scripts-root relative to its own BASH_SOURCE (e.g. suite_selection_select's cross-extension suite population). Always test such a check against the DEPLOYED/merged tree context if that is where it will actually run in production, not only the source-store copy -- the two can give genuinely different answers for the same input.",
       "category": "INSIGHT",
       "source_artifact": "specs/493_plan_format_tier_justification_fixes/summaries/01_tier-justification-fixes-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["source-store", "deploy-boundary", "bash-source", "cross-extension"]
+      "suggested_keywords": [
+        "source-store",
+        "deploy-boundary",
+        "bash-source",
+        "cross-extension"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1793993117_98582a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

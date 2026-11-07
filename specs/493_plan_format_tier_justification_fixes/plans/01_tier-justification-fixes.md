@@ -1,7 +1,7 @@
 # Implementation Plan: Task #493
 
 - **Task**: 493 - Plan format Tier Justification fixes
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/493_plan_format_tier_justification_fixes/reports/01_tier-justification-fixes.md
