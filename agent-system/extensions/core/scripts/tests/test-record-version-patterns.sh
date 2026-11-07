@@ -35,24 +35,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/record-version-patterns.sh"
-  "$SCRIPT_DIR/../lib/record-version-patterns.sh"
-)
-LIB=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$LIB" ]]; then
-  echo "ERROR: shared library record-version-patterns.sh not found at any of:" >&2
-  for candidate in "${LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+LIB="$(common_test_resolve_subject "record-version-patterns.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/record-version-patterns.sh" \
+  "$SCRIPT_DIR/../lib/record-version-patterns.sh")" || exit 2
+common_test_declare_subject "$LIB"
 # shellcheck disable=SC1090
 . "$LIB"
 

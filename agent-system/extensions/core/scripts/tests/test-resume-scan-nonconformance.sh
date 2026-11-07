@@ -60,24 +60,10 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-LIB_CANDIDATES=(
-  "$REPO_ROOT/.claude/scripts/lib/phase-heading-patterns.sh"
-  "$SCRIPT_DIR/../lib/phase-heading-patterns.sh"
-)
-LIB=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB="$candidate"
-    break
-  fi
-done
-if [[ -z "$LIB" ]]; then
-  echo "ERROR: shared library phase-heading-patterns.sh not found at any of:" >&2
-  for candidate in "${LIB_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
-  exit 2
-fi
+LIB="$(common_test_resolve_subject "phase-heading-patterns.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/phase-heading-patterns.sh" \
+  "$SCRIPT_DIR/../lib/phase-heading-patterns.sh")" || exit 2
+common_test_declare_subject "$LIB"
 
 SITE_C_FILE="$REPO_ROOT/agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
 SITE_D_FILE="$REPO_ROOT/agent-system/extensions/core/scripts/update-task-status.sh"

@@ -1,0 +1,22 @@
+{
+  "phase": 6,
+  "phase_name": "Migrate Group C Batch 2 -- the Remaining 19 Inline-Loop Suites",
+  "started_at": "2026-11-07T04:30:00Z",
+  "last_updated": "2026-11-07T04:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Migrate 6 single/dual-candidate suites: test-phase-heading-patterns.sh, test-reconcile-demote-stranded.sh (directory-joint resolution, mode=source-store), test-reconcile-handoff-status.sh (mode=source-store), test-record-version-patterns.sh, test-redeploy-remedy-lib.sh (mode=source-store), test-resume-scan-nonconformance.sh", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh",
+      "agent-system/extensions/core/scripts/tests/test-reconcile-demote-stranded.sh",
+      "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh",
+      "agent-system/extensions/core/scripts/tests/test-record-version-patterns.sh",
+      "agent-system/extensions/core/scripts/tests/test-redeploy-remedy-lib.sh",
+      "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh"
+    ]},
+    {"id": 2, "description": "Migrate remaining 13 Group C batch 2 suites", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Remove this batch's 19 entries from the gate-27 lint's Layer-2 allowlist, leaving only the 3 permanent exemptions", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

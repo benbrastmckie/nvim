@@ -24,25 +24,20 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-# Source-store-first / deploy-tree-fallback, matching test-reconcile-handoff-status.sh's own
-# rationale: this suite regression-guards the fix being landed in the source store right now, so
-# preferring a possibly-stale deployed mirror would silently validate the wrong file.
-SCRIPTS_SRC_CANDIDATES=(
-  "$REPO_ROOT/agent-system/extensions/core/scripts"
-  "$REPO_ROOT/.claude/scripts"
-)
-SCRIPTS_SRC=""
-for candidate in "${SCRIPTS_SRC_CANDIDATES[@]}"; do
-  if [[ -f "$candidate/reconcile-task-status.sh" && -f "$candidate/dispatch-strand-probe.sh" ]]; then
-    SCRIPTS_SRC="$candidate"
-    break
-  fi
-done
-if [[ -z "$SCRIPTS_SRC" ]]; then
-  echo "ERROR: reconcile-task-status.sh and dispatch-strand-probe.sh not found together at any of:" >&2
-  for candidate in "${SCRIPTS_SRC_CANDIDATES[@]}"; do
-    echo "  $candidate" >&2
-  done
+# mode=source-store (hard correctness requirement), matching test-reconcile-handoff-status.sh's
+# own rationale: this suite regression-guards the fix being landed in the source store right
+# now, so preferring a possibly-stale deployed mirror would silently validate the wrong file.
+# The directory-level SCRIPTS_SRC this suite needs (a whole-tree copy source for the sandbox,
+# not a single-file subject) is derived from the resolved reconcile-task-status.sh's own
+# directory; dispatch-strand-probe.sh's joint presence there is then verified explicitly, since
+# common_test_resolve_subject resolves one named file, not a directory's joint file set.
+RECONCILE_SCRIPT="$(common_test_resolve_subject "reconcile-task-status.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/reconcile-task-status.sh" \
+  "$REPO_ROOT/agent-system/extensions/core/scripts/reconcile-task-status.sh")" || exit 2
+common_test_declare_subject "$RECONCILE_SCRIPT"
+SCRIPTS_SRC="$(dirname "$RECONCILE_SCRIPT")"
+if [[ ! -f "$SCRIPTS_SRC/dispatch-strand-probe.sh" ]]; then
+  echo "ERROR: dispatch-strand-probe.sh not found alongside reconcile-task-status.sh in $SCRIPTS_SRC" >&2
   exit 2
 fi
 

@@ -496,7 +496,7 @@ Research Integration. No blocker applies — begin here normally.
 
 ---
 
-### Phase 6: Migrate Group C Batch 2 — the Remaining 19 Inline-Loop Suites [NOT STARTED]
+### Phase 6: Migrate Group C Batch 2 — the Remaining 19 Inline-Loop Suites [IN PROGRESS]
 
 **Goal**: Finish the inline-loop shape, leaving the lint's allowlist holding nothing but the
 permanent, reasoned exemptions.

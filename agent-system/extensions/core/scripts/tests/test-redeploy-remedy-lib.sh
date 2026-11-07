@@ -21,23 +21,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-LIB_CANDIDATES=(
-  "$SCRIPT_DIR/../lib/redeploy-remedy-lib.sh"
-  "$REPO_ROOT/.claude/scripts/lib/redeploy-remedy-lib.sh"
-)
-
-LIB_UNDER_TEST=""
-for candidate in "${LIB_CANDIDATES[@]}"; do
-  if [[ -f "$candidate" ]]; then
-    LIB_UNDER_TEST="$candidate"
-    break
-  fi
-done
-
-if [[ -z "$LIB_UNDER_TEST" ]]; then
+LIB_UNDER_TEST="$(common_test_resolve_subject "redeploy-remedy-lib.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/lib/redeploy-remedy-lib.sh" \
+  "$SCRIPT_DIR/../lib/redeploy-remedy-lib.sh")" || {
   echo "ENV ERROR: redeploy-remedy-lib.sh not found at any candidate path" >&2
   exit 2
-fi
+}
+common_test_declare_subject "$LIB_UNDER_TEST"
 
 PASSED=0
 FAILED=0

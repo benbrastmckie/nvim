@@ -51,27 +51,16 @@ source "$SCRIPT_DIR/../lib/common.sh"
 # (matching the source-store depth) when SCRIPT_DIR is not inside a git work tree.
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
-# Source-store-first / deploy-tree-fallback -- see the header comment above for why this suite
-# deliberately inverts the deploy-tree-first order used elsewhere in this codebase (e.g.
-# check-task-references.sh, update-task-status.sh's PHASE_LIB_CANDIDATES).
-SCRIPTS_SRC_CANDIDATES=(
-  "$REPO_ROOT/agent-system/extensions/core/scripts"
-  "$REPO_ROOT/.claude/scripts"
-)
-SCRIPTS_SRC=""
-for candidate in "${SCRIPTS_SRC_CANDIDATES[@]}"; do
-  if [[ -f "$candidate/reconcile-task-status.sh" ]]; then
-    SCRIPTS_SRC="$candidate"
-    break
-  fi
-done
-if [[ -z "$SCRIPTS_SRC" ]]; then
-  echo "ERROR: reconcile-task-status.sh not found at any of:" >&2
-  for candidate in "${SCRIPTS_SRC_CANDIDATES[@]}"; do
-    echo "  $candidate/reconcile-task-status.sh" >&2
-  done
-  exit 2
-fi
+# mode=source-store (hard correctness requirement) -- see the header comment above for why this
+# suite deliberately prefers the source-store copy over the deploy-tree-first order used
+# elsewhere in this codebase (e.g. check-task-references.sh, update-task-status.sh's
+# PHASE_LIB_CANDIDATES). SCRIPTS_SRC is a directory-level copy source for the sandbox, derived
+# from the resolved file's own directory.
+RECONCILE_SCRIPT="$(common_test_resolve_subject "reconcile-task-status.sh" "source-store" \
+  "$REPO_ROOT/.claude/scripts/reconcile-task-status.sh" \
+  "$REPO_ROOT/agent-system/extensions/core/scripts/reconcile-task-status.sh")" || exit 2
+common_test_declare_subject "$RECONCILE_SCRIPT"
+SCRIPTS_SRC="$(dirname "$RECONCILE_SCRIPT")"
 
 PASSED=0
 FAILED=0
