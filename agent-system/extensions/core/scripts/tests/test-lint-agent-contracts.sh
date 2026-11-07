@@ -29,6 +29,33 @@
 # and a "modified_files": [] key -- otherwise Check L would newly break both of those
 # pre-existing assertions the moment it landed.
 #
+# Check J fixture repair, required when Check J's content gate was replaced with a fail-closed
+# iteration over every dispatchable agent (same repair pattern as the two notes above -- a new
+# or newly-widened check landing retroactively breaks a previously-clean shared "no FAIL at all"
+# fixture unless repaired in the same rollout):
+#   - A new shared HANDOFF_SECTION_BLOCK (a minimal recognized `.orchestrator-handoff.json`
+#     handoff-writing section) was added to compliant-agent.md, check-f-conforming-agent.md,
+#     check-e-falsepositive-guard-agent.md, and cslib-implementation-agent.md -- all four are
+#     asserted elsewhere in this file to produce no FAIL whatsoever, and each would otherwise
+#     newly FAIL Check J's missing-section branch now that the content gate no longer silently
+#     drops a zero-mention file out of the scan.
+#   - This suite's WORKDIR already creates core/agents/ (for Checks A/B/C/E/F/G/H/K/L fixtures)
+#     and cslib/agents/ (for the cslib-implementation-agent.md fixture above), which brings
+#     Check J's stale-exclusion sweep (added in a later plan phase) into scope for every
+#     CHECK_J_EXCLUDED_RELATIVE_PATHS entry under those two extensions, per that sweep's
+#     per-extension-agents-directory-presence guard (see lint-agent-contracts.sh's
+#     _check_j_sweep_stale_exclusions() header comment). Three real entries
+#     (core/agents/code-reviewer-agent.md, core/agents/spawn-agent.md,
+#     cslib/agents/cslib-vet-agent.md) have no corresponding file in this WORKDIR at all, so
+#     without repair the sweep would report them stale (nonexistent path) in this tree -- never
+#     asserted on by name below, but still unvetted noise in the raw lint output this suite
+#     captures. Three minimal stub fixtures were added at those exact real paths (mirroring the
+#     real files' own recorded exclusion reason: invoked only via the forked-subagent pattern)
+#     to keep the sweep clean here too. spawn-agent.md and cslib-vet-agent.md additionally carry
+#     ARTIFACTS_TEMPLATE_BLOCK, since -- unlike code-reviewer-agent.md, which is independently a
+#     recorded exclusion on BOTH Check E's and Check F's own arrays -- neither is excluded from
+#     Check E or Check F, so a contentless stub would newly fail those two checks instead.
+#
 # Follows the core shell-test convention in context/standards/shell-script-testing.md:
 # pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d workdir with a trap
 # EXIT cleanup, exit 0 on all-pass and exit 1 on any-fail.
@@ -125,6 +152,17 @@ ARTIFACTS_TEMPLATE_BLOCK='```json
   ]
 }
 ```'
+
+# A minimal, recognized handoff-writing section -- satisfies Check J for any fixture that must
+# pass it (a required handoff writer, not on CHECK_J_EXCLUDED_RELATIVE_PATHS, not a "never write
+# one" research-agent contract). Used by fixtures elsewhere in this file that are asserted to
+# produce no FAIL at all and were repaired to carry this section once Check J's content gate was
+# replaced with a fail-closed iteration -- see this file's header comment's "Check J fixture
+# repair" note.
+# shellcheck disable=SC2016
+HANDOFF_SECTION_BLOCK='### `.orchestrator-handoff.json` (orchestrator-mode dispatches)
+
+Write this file always. `artifacts[]` entries use the {type, path, summary} object shape.'
 
 # run_lint: invokes the real lint script against the scratch tree, capturing stdout+exit code.
 run_lint() {
@@ -231,6 +269,8 @@ model: sonnet
 ---
 
 # CSLib Implementation Agent
+
+$HANDOFF_SECTION_BLOCK
 
 ## Write Metadata
 
@@ -349,6 +389,8 @@ tools: Read, Write
 
 # Compliant Agent
 
+$HANDOFF_SECTION_BLOCK
+
 ## Write Metadata
 
 $ARTIFACTS_TEMPLATE_BLOCK
@@ -417,6 +459,8 @@ model: sonnet
 ---
 
 # Check F Conforming Agent
+
+$HANDOFF_SECTION_BLOCK
 
 ## Write Metadata
 
@@ -569,6 +613,8 @@ model: sonnet
 
 # Check E False-Positive Guard Agent
 
+$HANDOFF_SECTION_BLOCK
+
 ## Write Metadata
 
 $ARTIFACTS_TEMPLATE_BLOCK
@@ -611,6 +657,61 @@ model: opus
 
 **MUST NOT**:
 1. $BULLET_LINE
+EOF
+
+# =====================================================================
+# Check J stale-exclusion sweep stub fixtures -- see this file's header comment's "Check J
+# fixture repair" note. Each is a minimal stand-in placed at a REAL CHECK_J_EXCLUDED_RELATIVE_PATHS
+# path, present-and-headingless, so the stale-exclusion sweep (which evaluates every entry whose
+# extension's agents/ directory exists in this tree -- true here for core/ and cslib/, already
+# created above for other fixtures' sake) stays clean rather than reporting these two paths
+# stale purely because this suite's tree was never built with Check J's exclusion array in
+# mind. code-reviewer-agent.md needs no artifacts/status content (it is independently a recorded
+# exclusion on both Check E's and Check F's own arrays); spawn-agent.md and cslib-vet-agent.md
+# are NOT excluded from either, so each carries ARTIFACTS_TEMPLATE_BLOCK to stay clean there too.
+# =====================================================================
+cat > "$WORKDIR/agent-system/extensions/core/agents/code-reviewer-agent.md" <<EOF
+---
+name: code-reviewer-agent
+description: fixture standing in for the real code-reviewer-agent (CHECK_J_EXCLUDED_RELATIVE_PATHS entry)
+model: sonnet
+---
+
+# Code Reviewer Agent (fixture)
+
+Invoked only via the forked-subagent pattern; carries no handoff-writing contract of any kind.
+EOF
+
+cat > "$WORKDIR/agent-system/extensions/core/agents/spawn-agent.md" <<EOF
+---
+name: spawn-agent
+description: fixture standing in for the real spawn-agent (CHECK_J_EXCLUDED_RELATIVE_PATHS entry)
+model: sonnet
+---
+
+# Spawn Agent (fixture)
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
+Invoked only via the forked-subagent pattern; carries no handoff-writing contract of any kind.
+EOF
+
+cat > "$WORKDIR/agent-system/extensions/cslib/agents/cslib-vet-agent.md" <<EOF
+---
+name: cslib-vet-agent
+description: fixture standing in for the real cslib-vet-agent (CHECK_J_EXCLUDED_RELATIVE_PATHS entry)
+model: sonnet
+---
+
+# CSLib Vet Agent (fixture)
+
+## Write Metadata
+
+$ARTIFACTS_TEMPLATE_BLOCK
+
+Invoked only via the forked-subagent pattern; carries no handoff-writing contract of any kind.
 EOF
 
 # =====================================================================
