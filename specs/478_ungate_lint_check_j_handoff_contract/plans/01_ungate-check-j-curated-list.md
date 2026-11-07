@@ -386,32 +386,61 @@ every assertion passes, rather than assuming the arithmetic.
 
 ---
 
-### Phase 4: Full verification sweep and redeploy [NOT STARTED]
+### Phase 4: Full verification sweep and redeploy [COMPLETED]
 
 **Goal**: Confirm no collateral damage to the other checks sharing `lint-agent-contracts.sh`,
 land the change in the deployed tree, and close the task against the full gate set.
 
 **Tasks**:
 
-- [ ] Run the full lint and all four sibling suites in the FOREGROUND with a bounded timeout,
+- [x] Run the full lint and all four sibling suites in the FOREGROUND with a bounded timeout,
       redirecting each run's output to a file under the scratchpad and grepping that file:
       `lint-agent-contracts.sh`, `test-lint-agent-contracts.sh`,
       `test-lint-agent-contracts-await-notification.sh`,
       `test-lint-agent-contracts-heartbeat.sh`, `test-lint-agent-contracts-handoff-section.sh`.
-- [ ] Compare against the research-recorded baseline — lint 421 passed / 15 warn / 0 failed, and
+      *(completed via the mechanized `run-all.sh --only` entry point, per this dispatch's Batch
+      Gate Deferral directive — see note below)*
+- [x] Compare against the research-recorded baseline — lint 421 passed / 15 warn / 0 failed, and
       61/61, 6/6, 6/6, 6/6 — and account for every delta explicitly. The only expected deltas are
       Check J's own new skip INFO lines and the handoff-section suite's new assertion count.
-- [ ] Redeploy via `agent-system/extensions/core/scripts/deploy-headless.sh` using the
+      *(completed: lint held exactly at 421/15/0 — zero delta, since excluded files and the
+      stale-exclusion sweep both emit log_info, not log_pass/log_fail. Suite counts:
+      test-lint-agent-contracts.sh 61/0 (unchanged count, after a discovered-and-repaired
+      collateral regression — see Phase 3's handoff and this summary's Plan Deviations),
+      await-notification 6/0 (unchanged), heartbeat 6/0 (unchanged), handoff-section 9/0 (the
+      expected 6->9 growth). Every delta accounted for.)*
+- [x] Redeploy via `agent-system/extensions/core/scripts/deploy-headless.sh` using the
       bounded-wait idiom (`timeout 540`, Bash tool timeout raised to 600000), waiting to
       `RESULT=landed_verify_clean`. Read `context/patterns/bounded-build-waiter.md` before
       waiting: a hard timeout, writer liveness via `kill -0` on the captured PID, never
-      `ps | grep` or `pgrep -f`, one waiter per log.
-- [ ] Re-run `lint-agent-contracts.sh` and the handoff-section suite once more after the
-      redeploy, to confirm the deployed tree agrees with the source store.
-- [ ] Confirm no file landing under `agent-system/**` carries a task-number reference or
+      `ps | grep` or `pgrep -f`, one waiter per log. *(completed with a deviation: two runs both
+      returned `RESULT=landed_verify_red`, 2 of 41 checks failing. Both failures were confirmed,
+      independently of this task, to be the pre-existing, out-of-scope findings named in this
+      dispatch's own briefing before any redeploy was attempted: a gate10
+      (`validate-state.sh --deep`) 30s wrapper-timeout flake (confirmed passing standalone at
+      21/13/0 in under a second) and the 2 `/ide` dead-command-recommendation findings, both
+      located in `agent-system/extensions/memory/context/project/memory/{memory-setup,
+      memory-troubleshooting}.md` -- files this task never touches. The deploy itself landed
+      (source store and deployed tree agree byte-for-byte on every file this task edited); only
+      the full verify-deploy.sh fast-gate sweep shows these two unrelated, pre-authorized
+      findings, which this dispatch's own Batch Gate Deferral directive defers to the
+      once-per-batch full gate run rather than requiring independently here.)*
+- [x] Re-run `lint-agent-contracts.sh` and the handoff-section suite once more after the
+      redeploy, to confirm the deployed tree agrees with the source store. *(completed: deployed
+      copies are byte-identical to the source store for all three edited files; the deployed
+      lint reports 421/15/0 and the deployed handoff-section suite reports 9/0, matching the
+      pre-redeploy run exactly)*
+- [x] Confirm no file landing under `agent-system/**` carries a task-number reference or
       record-versioning language (both are permitted in the task description and in `specs/**`,
-      neither is permitted in the edited files).
-- [ ] Write the implementation summary and run the task's full gate set.
+      neither is permitted in the edited files). *(completed: 0 task-reference occurrences in
+      all three edited files. check-record-versioning.sh flagged one advisory hit this task
+      introduced ("previously-clean" in a Phase 3 header comment) -- reworded and reverified
+      clean; all other advisory hits in the three files predate this task's edits)*
+- [x] Write the implementation summary and run the task's full gate set. *(the task's own
+      scoped gate set ran per the Batch Gate Deferral directive above; the unnarrowed full gate
+      set -- `run-all.sh` with no `--only`, and `verify-deploy.sh` with no `--only-gate` -- is
+      deferred to the once-per-batch stage at the end of this /orchestrate invocation, per that
+      directive, never run independently in this dispatch)*
 
 **Timing**: 45 minutes
 
