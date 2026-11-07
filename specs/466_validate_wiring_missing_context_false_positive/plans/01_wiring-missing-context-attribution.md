@@ -1,7 +1,7 @@
 # Implementation Plan: Task #466
 
 - **Task**: 466 - validate-wiring.sh reports a context file missing when it exists
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (Stage 1.5 assessment: root-caused mechanically within this dispatch — see Overview)

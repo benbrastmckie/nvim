@@ -11,7 +11,7 @@ next_project_number: 519
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,466,473,477,478,483,488,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,418,423,430,431,435,437,453,456,459,473,477,478,483,488,490,491,493,495,502,503,504,505,506,510,511,512,514,515 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,420,439,445,446,448,458,463,472,474,475,492,497,516 | 369,383,397,412,418,430,431,435,459,491,493,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 360,390,399,402,436,438,444,451,454,455,461,476,484,500,507,518 | 313,391,398,420,423,435,439,445,446,448,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,457,462,479,481,486,517 | 360,390,402,435,444,448,451,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
@@ -115,7 +115,6 @@ next_project_number: 519
 
 ### Orchestrator
 
-466 [IMPLEMENTING] — validate-wiring.sh reports Missing context file for context...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
@@ -3270,12 +3269,13 @@ CONCURRENT TERRITORY NOTE: open task #461 (v7_refuses_cached_untracking_pathspec
 
 ### 466. validate-wiring.sh reports Missing context file for context paths present on disk and in index.json
 - **Effort**: 3 hours
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Parent**: Task 312
 - **Plan**: [466_validate_wiring_missing_context_false_positive/plans/01_wiring-missing-context-attribution.md]
+- **Summary**: [466_validate_wiring_missing_context_false_positive/summaries/01_wiring-missing-context-attribution-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
 

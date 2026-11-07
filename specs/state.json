@@ -6345,7 +6345,7 @@
     {
       "project_number": 466,
       "project_name": "validate_wiring_missing_context_false_positive",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "validate-wiring.sh reports Missing context file for context paths present on disk and in index.json",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.\n\n## Goal\n\nvalidate-wiring.sh must agree with disk reality: it must not report a context file missing when that file exists at the path it is looking for.\n\n## The defect, as observed\n\nA validate-wiring.sh run emitted 41 FAIL lines, every one reading \"Missing context file\", for memory, nix and neovim extension context paths. Spot-checked examples: project/memory/learn-usage.md, project/nix/README.md, project/neovim/domain/lua-patterns.md.\n\nTwo independent checks contradict the verdict:\n- The files PHYSICALLY EXIST at the exact expected path (ls .claude/context/project/memory/learn-usage.md succeeds).\n- They are correctly present in .claude/context/index.json with matching path fields.\n\nSo this is not a real missing-file condition. It is either a path-resolution defect in the validator (most likely: a prefix, tree-root or relative-vs-absolute mismatch between how index.json records a path and how the validator resolves it) or an environmental quirk in how the validator is invoked.\n\n## Why this is worth fixing\n\n41 FAIL lines that are all false make the validator useless as a gate. Worse, they train a reader to ignore its output, which is how a real missing-context-file regression gets through unnoticed. A validator whose failures are routinely dismissed is a liability rather than a safeguard.\n\n## Required outcome\n\nRoot-cause the resolution and make the validator correct. Specifically: determine whether the fault is in the validator or in how it is called, state which, and fix the one that is wrong. If a subset of the 41 turns out to be genuinely missing, separate those from the false positives and report them distinctly rather than collapsing both into one verdict.\n\n## Non-goals\n\nDo not suppress the check or lower its severity to make the output quiet. Silencing a validator that is wrong is strictly worse than leaving it loud, because it removes the signal that something needs attention.\n\n## Acceptance\n\nvalidate-wiring.sh reports zero \"Missing context file\" failures for context files that exist on disk and are present in index.json with a matching path, and still fails loudly for a context file genuinely absent from either. A fixture covering both directions is added.\n\n## Provenance\n\nDerived from the orchestration conclusion stage, issue-log entry iss_1793760793964_HkYoUN (class: scope excursion, severity: minor, phase: implement), observed during a deploy-verify step and left unroot-caused as out of that task scope.\n\n## Backlog reconciliation note\n\nAudited against the full backlog corpus before creation. The single mechanically-corroborated open match is reword_dead_lifecycle_command_prose_per_class, whose declared scope is coarse directory globs including scripts/ -- footprint, not intent. No open or closed record addresses this validator defect. The systematic script-and-test corpus consolidation record declares scripts/tests/test-validate-wiring.sh but not validate-wiring.sh itself, so no serializing edge is carried; if the fix turns out to require changes to that test file, add the edge at planning time.",
@@ -6362,12 +6362,17 @@
         "agent-system/extensions/core/scripts/validate-wiring.sh"
       ],
       "created": "2026-11-04T04:10:21Z",
-      "last_updated": "2026-11-07T01:08:05Z",
+      "last_updated": "2026-11-07T01:19:38Z",
       "artifacts": [
         {
           "path": "specs/466_validate_wiring_missing_context_false_positive/plans/01_wiring-missing-context-attribution.md",
           "type": "plan",
           "summary": "4-phase plan with waves 1:[1,3] 2:[2] 3:[4]; Phase 4 declares __WHOLE_TREE__ for the redeploy."
+        },
+        {
+          "path": "specs/466_validate_wiring_missing_context_false_positive/summaries/01_wiring-missing-context-attribution-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering root cause, both fixes, and verification evidence."
         }
       ],
       "audit_verdict": {
@@ -7367,7 +7372,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1793993117_98582a"
+      "session_id": "sess_1793993117_98582a",
+      "completion_summary": "Root-caused the 41 Missing context file failures as a message-attribution defect (not a path-resolution bug as hypothesized) plus a genuine stale-data inconsistency in .opencode/context/index.json. Fixed validate_context_files to label every failure/pass line with its deployed tree and full resolved path and emit per-tree missing/total counts, added both-directions regression cases (f)/(g) with a negative-control proof, pruned the 41 dangling .opencode index entries (150 -> 109, all resolving), redeployed, and verified validate-wiring.sh --all passes green with the check still failing loudly on a genuinely absent file."
     },
     {
       "project_name": "allowlist_infrastructure_paths_in_scoped_commits",
