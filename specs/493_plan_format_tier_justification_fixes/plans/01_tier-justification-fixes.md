@@ -329,32 +329,42 @@ calling `extract_paths()` directly if the whole-file tool proves unusable on a f
 
 ---
 
-### Phase 4: Fixture pair and corpus sweep [NOT STARTED]
+### Phase 4: Fixture pair and corpus sweep [COMPLETED]
 
 **Goal**: `scripts/tests/test-validate-artifact.sh` proves a Tier Justification carrying a
 fabricated selector result fails and one carrying the measured result passes, and the measured
 warning residue across the active-plan corpus is recorded.
 
 **Tasks**:
-- [ ] Add a fixture builder for a two-phase plan whose non-final phase carries a
+- [x] Add a fixture builder for a two-phase plan whose non-final phase carries a
       `**Files to modify**` entry with a known selector resolution and a parameterizable
       `**Tier Justification**:` line, following `make_two_phase_ftm_fixture()`'s existing shape
-      and the file's `mktemp --tmpdir="$WORKDIR"` convention.
-- [ ] Add the negative fixture: a justification naming a suite list that does not match the
+      and the file's `mktemp --tmpdir="$WORKDIR"` convention. *(completed: `make_tj_fixture()`;
+      the "known selector resolution" is computed live via a newly-sourced
+      `suite-selection-lib.sh` rather than hardcoded, so the fixture tracks the corpus's actual
+      current mapping instead of a snapshot that can drift stale)*
+- [x] Add the negative fixture: a justification naming a suite list that does not match the
       selector's output for the fixture's touched path. Assert one mismatch warning in default
-      mode and a non-zero exit under `--strict`.
-- [ ] Add the positive fixture: a justification naming the actual measured output for the same
-      path. Assert no mismatch warning and exit 0.
-- [ ] Add a sentinel-direction fixture pair covering defect 2's own shape: a justification
+      mode and a non-zero exit under `--strict`. *(completed: the real suite(s) plus one
+      fabricated name, isolating the fabrication direction to exactly one warning)*
+- [x] Add the positive fixture: a justification naming the actual measured output for the same
+      path. Assert no mismatch warning and exit 0. *(completed)*
+- [x] Add a sentinel-direction fixture pair covering defect 2's own shape: a justification
       claiming `__FULL_SWEEP__` for a path the selector actually maps to real suites (must warn),
-      and one claiming the sentinel for a genuinely unmapped path (must pass).
-- [ ] Add a skip-case fixture: a phase whose `Files to modify` block holds only `__WHOLE_TREE__`
-      or a `- none planned ...` placeholder must produce no mismatch warning at all.
-- [ ] Sweep the active-plan corpus: run the validator in default mode over every non-terminal
+      and one claiming the sentinel for a genuinely unmapped path (must pass). *(completed: the
+      real-suite path deliberately avoids a `test-*.sh`-shaped basename, and the unmapped path is
+      PID-suffixed rather than a fixed literal -- both fixed live defects discovered while
+      authoring this fixture; see this task's own summary)*
+- [x] Add a skip-case fixture: a phase whose `Files to modify` block holds only `__WHOLE_TREE__`
+      or a `- none planned ...` placeholder must produce no mismatch warning at all. *(completed:
+      both variants added)*
+- [x] Sweep the active-plan corpus: run the validator in default mode over every non-terminal
       plan under `specs/` and count the plans and phases the new check warns on. Record that
       measured residue in the Phase 2 enforcement-level subsection as its promotion criterion's
-      baseline, re-reading `plan-format.md` immediately before that edit.
-- [ ] Confirm the suite's own `PASSED`/`FAILED` counters and exit contract are unchanged.
+      baseline, re-reading `plan-format.md` immediately before that edit. *(completed: 5 of 11
+      non-terminal plan-linked tasks newly warn)*
+- [x] Confirm the suite's own `PASSED`/`FAILED` counters and exit contract are unchanged.
+      *(completed: 50 passed, 0 failed, exit 0)*
 
 **Timing**: 0.9 hours
 

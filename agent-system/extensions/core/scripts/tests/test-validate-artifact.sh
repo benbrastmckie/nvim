@@ -100,6 +100,19 @@ fi
 # shellcheck disable=SC1090
 . "$PLAN_STATUS_LIB"
 
+# SUITE_SELECTION_LIB: deliberately resolved as $VALIDATE_SRC's own sibling (never deploy-tree-
+# first), because the Tier Justification fixtures below need to compute their EXPECTED answer
+# from the exact same scripts-root `suite_selection_select` will resolve against inside
+# $VALIDATE_SRC -- a tree mismatch here would make the fixtures assert against the wrong root's
+# suite population (see this task's own summary for the live mismatch this resolution avoids).
+SUITE_SELECTION_LIB="$SCRIPT_DIR/../lib/suite-selection-lib.sh"
+if [[ ! -f "$SUITE_SELECTION_LIB" ]]; then
+  echo "ERROR: suite-selection-lib.sh (source-store sibling) not found at: $SUITE_SELECTION_LIB" >&2
+  exit 2
+fi
+# shellcheck disable=SC1090
+. "$SUITE_SELECTION_LIB"
+
 PASSED=0
 FAILED=0
 
@@ -538,6 +551,139 @@ check_conformance "trailing" $'# Plan\n- **Status**: [IMPLEMENTING] (resumed; Ph
 check_conformance "M1"      $'# Plan\nno status line here'
 check_conformance "M2"      $'# Plan\n- **Status**: COMPLETED'
 check_conformance "M3"      $'# Plan\n- **Status**: see [NOTE]'
+
+# ── Tier Justification measurement fixture builder: a two-phase plan whose Phase 1 (non-final)
+# carries a caller-supplied **Files to modify** block and a caller-supplied
+# **Tier Justification** line; Phase 2 (final) always carries a valid, unrelated anchor so the
+# Files-to-modify presence check stays quiet and only the Tier Justification measurement check's
+# own findings vary across cases.
+#
+# TJ_REAL_SUITE_PATH is deliberately NOT itself a `test-*.sh` file: `plan-file-scope-harvest.sh`
+# is referenced by several real suites (measured, not assumed), and using a *non-test-shaped*
+# basename avoids a genuine ambiguity discovered live while authoring this fixture -- the claim
+# extraction below scans for `test-*.sh` TOKENS anywhere in the justification text, so a real
+# suite PATH that itself looks like `test-*.sh` would be misread as part of the claim rather
+# than as the measured subject, silently flipping a sentinel claim into a (coincidentally
+# matching) suite-list claim. TJ_UNMAPPED_PATH is PID-suffixed so its exact runtime string never
+# appears as a literal substring in this test file's OWN source -- a fixed literal placeholder
+# would make `suite_selection_select`'s grep-based reference stratum discover THIS test file as
+# a spurious "reference" to its own fixture string once this edit lands in the source store
+# (confirmed live: a static placeholder resolved to `test-validate-artifact.sh` via that exact
+# self-match, not to the sentinel). ─────────────────────────────────────────────────────────────
+TJ_REAL_SUITE_PATH="agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"
+TJ_UNMAPPED_PATH="docs/nonexistent-fixture-subject-$$.md"
+# Computed, never hardcoded, so this fixture tracks the corpus's actual current mapping rather
+# than a snapshot that can silently drift stale as suites are added/removed/renamed.
+mapfile -t TJ_REAL_SUITE_NAMES < <(suite_selection_select "$TJ_REAL_SUITE_PATH")
+TJ_REAL_SUITE_NAMES_CSV="$(IFS=,; echo "${TJ_REAL_SUITE_NAMES[*]}")"
+
+make_tj_fixture() {
+  local files_block="$1" tier_justification="$2"
+  local f
+  f="$(mktemp --tmpdir="$WORKDIR" plan-tj-XXXXXX.md)"
+  cat > "$f" <<EOF
+# Plan
+
+- **Task**: 1 - x
+- **Status**: [IMPLEMENTING]
+- **Effort**: 1h
+- **Dependencies**: none
+- **Research Inputs**: none
+- **Artifacts**: none
+- **Standards**: none
+- **Type**: meta
+
+## Overview
+x
+
+## Goals & Non-Goals
+x
+
+## Risks & Mitigations
+x
+
+## Implementation Phases
+
+### Phase 1: X [NOT STARTED]
+
+**Verification Tier**: local
+
+**Tier Justification**: ${tier_justification}
+
+${files_block}
+
+### Phase 2: Y [NOT STARTED]
+
+**Verification Tier**: prose
+
+**Files to modify**:
+- \`path/to/anchor.ext\`
+
+## Testing & Validation
+x
+
+## Artifacts & Outputs
+x
+
+## Rollback/Contingency
+x
+EOF
+  echo "$f"
+}
+
+# ─── Tier Justification (positive): claim names exactly the measured suite(s) -- no mismatch ──
+f=$(make_tj_fixture "**Files to modify**:
+- \`${TJ_REAL_SUITE_PATH}\`" "\`suite_selection_select ${TJ_REAL_SUITE_PATH}\` returns \`${TJ_REAL_SUITE_NAMES[*]}\`, so the covering check is \`bash .claude/scripts/tests/run-all.sh --only ${TJ_REAL_SUITE_NAMES_CSV}\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ(positive): measured claim incorrectly drew a Tier Justification finding: $out"; else common_test_pass "TJ(positive): measured claim draws no Tier Justification finding"; fi
+if echo "$out" | grep -qF "[PASS]"; then common_test_pass "TJ(positive): overall [PASS]"; else common_test_fail "TJ(positive) did not PASS overall: $out"; fi
+
+# ─── Tier Justification (negative/fabrication): claim includes the real suite(s) PLUS a
+# fabricated one that suite_selection_select never returns -- exactly one mismatch warning
+# (fabrication only; the real suites' presence in the claim means no under-verification
+# direction fires) ───────────────────────────────────────────────────────────────────────────
+f=$(make_tj_fixture "**Files to modify**:
+- \`${TJ_REAL_SUITE_PATH}\`" "\`suite_selection_select ${TJ_REAL_SUITE_PATH}\` returns \`${TJ_REAL_SUITE_NAMES[*]}\`, so the covering check is \`bash .claude/scripts/tests/run-all.sh --only ${TJ_REAL_SUITE_NAMES_CSV},test-totally-fabricated-suite.sh\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+tj_warn_count=$(echo "$out" | grep -cF "Tier Justification")
+if [[ "$tj_warn_count" -eq 1 ]]; then common_test_pass "TJ(negative): exactly one Tier Justification warning"; else common_test_fail "TJ(negative): expected exactly one Tier Justification warning, got $tj_warn_count: $out"; fi
+if echo "$out" | grep -qF "fabricates coverage"; then common_test_pass "TJ(negative): warning identifies fabricated coverage"; else common_test_fail "TJ(negative) did not identify fabrication: $out"; fi
+if echo "$out" | grep -qF "test-totally-fabricated-suite.sh"; then common_test_pass "TJ(negative): warning names the fabricated suite"; else common_test_fail "TJ(negative) did not name the fabricated suite: $out"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan --strict >/dev/null 2>&1 || rc=$?
+if [[ $rc -ne 0 ]]; then common_test_pass "TJ(negative): --strict escalates to a non-zero exit"; else common_test_fail "TJ(negative): --strict did not escalate: rc=$rc"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan >/dev/null 2>&1 || rc=$?
+if [[ $rc -eq 0 ]]; then common_test_pass "TJ(negative): default-mode exit stays 0 (advisory)"; else common_test_fail "TJ(negative): unexpected non-zero exit in default mode: rc=$rc"; fi
+
+# ─── Tier Justification sentinel (i): claims __FULL_SWEEP__ for a path that actually maps to a
+# real suite -- defect 2's own shape -- must WARN ───────────────────────────────────────────
+f=$(make_tj_fixture "**Files to modify**:
+- \`${TJ_REAL_SUITE_PATH}\`" "\`suite_selection_select ${TJ_REAL_SUITE_PATH}\` returns the \`__FULL_SWEEP__\` sentinel, so the covering check is \`bash <repo_root>/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "unmeasured/false sentinel claim"; then common_test_pass "TJ-sentinel(i): fabricated sentinel claim WARNS"; else common_test_fail "TJ-sentinel(i) missing expected warning: $out"; fi
+
+# ─── Tier Justification sentinel (ii): claims __FULL_SWEEP__ for a path genuinely unmapped to
+# any suite -- the honest case -- must draw no finding ─────────────────────────────────────
+f=$(make_tj_fixture "**Files to modify**:
+- \`${TJ_UNMAPPED_PATH}\`" "\`suite_selection_select ${TJ_UNMAPPED_PATH}\` returns the \`__FULL_SWEEP__\` sentinel, so the covering check is \`bash <repo_root>/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ-sentinel(ii): measured sentinel claim incorrectly drew a finding: $out"; else common_test_pass "TJ-sentinel(ii): measured sentinel claim draws no finding"; fi
+
+# ─── Tier Justification skip-case: Files to modify holds only the reserved __WHOLE_TREE__
+# sentinel -- the remaining touched-path set is empty after filtering, so the check must skip
+# silently even though the Tier Justification claim itself would otherwise mismatch ─────────
+f=$(make_tj_fixture "**Files to modify**:
+- \`__WHOLE_TREE__\` - deploy-headless.sh regenerates the entire deployed tree." "\`suite_selection_select\` is not applicable; this justification intentionally names a suite that does not exist, to prove the skip-case fires before any comparison is attempted: \`test-should-never-be-compared.sh\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ(skip-case): __WHOLE_TREE__-only phase incorrectly drew a Tier Justification finding: $out"; else common_test_pass "TJ(skip-case): __WHOLE_TREE__-only phase draws no Tier Justification finding"; fi
+
+# ─── Tier Justification skip-case (prose sentinel): Files to modify holds only a
+# "- none planned ..." prose sentinel (no backtick-path entry at all) -- the harvester already
+# contributes zero paths for this shape (see FTM(b) above), so the remaining touched-path set is
+# empty and the check must skip silently here too ──────────────────────────────────────────
+f=$(make_tj_fixture "**Files to modify**:
+- none planned - pure verification phase" "\`suite_selection_select\` is not applicable; this justification intentionally names a suite that does not exist, to prove the skip-case fires before any comparison is attempted: \`test-should-never-be-compared.sh\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ(skip-case, prose sentinel): incorrectly drew a Tier Justification finding: $out"; else common_test_pass "TJ(skip-case, prose sentinel): draws no Tier Justification finding"; fi
 
 echo ""
 common_test_info "Target scripts: $VALIDATE ; $VALIDATE_SRC ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"

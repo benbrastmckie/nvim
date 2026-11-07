@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Fixture pair and corpus sweep",
+  "started_at": "2026-11-07T02:50:00Z",
+  "last_updated": "2026-11-07T03:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Fixture builder, positive/negative/sentinel/skip-case fixtures", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 2, "description": "Corpus sweep and record residue in plan-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "Confirm PASSED/FAILED counters and exit contract unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Use a fixed, hardcoded literal path (docs/nonexistent-fixture-subject-zzyzx.md) as the genuinely-unmapped sentinel fixture", "result": "failed", "reason": "The literal placeholder string, once written into this test file's own source, becomes discoverable by suite_selection_select's grep-based reference stratum as a spurious self-reference from test-validate-artifact.sh to itself -- resolving to a real suite instead of the sentinel. Fixed by PID-suffixing the path so its exact runtime string never appears as a static substring in the source."},
+    {"approach": "Use a real-suite path whose own basename is itself a test-*.sh file (test-validate-artifact.sh) for the sentinel(i) fixture", "result": "failed", "reason": "The claim-extraction token scan picks up the PATH ARGUMENT mention (since it matches the test-*.sh pattern) and misreads it as part of the claim, flipping claim_kind from sentinel to suitelist and coincidentally matching the real answer -- silently producing no warning where one was expected. Fixed by using a real-suite path (plan-file-scope-harvest.sh) whose own basename is not test-*.sh-shaped."}
+  ],
+  "deviations": [
+    {
+      "task_id": "4.fixture-robustness",
+      "description": "Two live-discovered fixture-construction hazards (self-referential placeholder path; test-*.sh-shaped real-suite path) corrected during fixture authoring, not anticipated by the plan",
+      "type": "altered",
+      "reason": "Both are documented inline in the fixture builder's own header comment and in the task-list annotations above.",
+      "annotation": "see Tasks list items 1 and 4 above"
+    }
+  ],
+  "handoff_count": 0
+}

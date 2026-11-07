@@ -636,10 +636,13 @@ implicated by either defect this check was added to close.
 **Promotion criterion**: promote the warning to an error once a default-mode sweep of every
 non-terminal, plan-linked task under `specs/` shows zero plans newly warning. This is recorded
 here for a future task to execute, not done by the task that introduces this check. Measured
-residue at this check's authoring: **PENDING-CORPUS-SWEEP** — the check lands later in this same
-implementation (the fixture and corpus-sweep step), and the measured count is written into this
-sentence once that step runs; a placeholder is intentional here rather than a guessed figure,
-since guessing one would repeat the exact defect this check exists to close.
+residue at this check's authoring: **5 of 11 non-terminal plans under `specs/` with a linked plan
+artifact newly warn** in default mode. Re-measure rather than trusting this count before
+promoting — the active-plan corpus turns over continuously, and this count reflects only the
+11 non-terminal, plan-linked tasks present in `specs/state.json` at authoring time. Much of this
+residue predates the obligation this check enforces (plans authored before the measurement
+requirement existed), exactly the same shape the per-phase `Verification Tier` and
+`Files to modify` enforcement subsections above already carry for their own residues.
 
 ### Naming a tool's entry point in verification criteria
 
