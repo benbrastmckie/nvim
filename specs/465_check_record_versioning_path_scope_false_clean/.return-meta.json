@@ -1,15 +1,15 @@
 {
   "status": "implemented",
-  "dispatch_seq": 17,
+  "dispatch_seq": 18,
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/465_check_record_versioning_path_scope_false_clean/summaries/01_untracked-enumeration-false-clean-summary.md",
-      "summary": "Fixed the shared git-ls-files false-clean defect in check-record-versioning.sh and check-task-references.sh via a new shared tracked-plus-untracked union enumeration library with loud stderr diagnostics, plus a repo-wide triage fix and redeploy."
+      "summary": "Fixed the shared git-ls-files false-clean defect in check-record-versioning.sh and check-task-references.sh via a new shared tracked-plus-untracked union enumeration library with loud stderr diagnostics, plus a repo-wide triage fix, redeploy, and a continuation-dispatch gate-3 manifest-registration follow-up."
     }
   ],
   "completion_data": {
-    "completion_summary": "Extracted a shared git-corpus-enum-lib.sh (tracked-plus-untracked union enumeration, gitignored content still excluded) and wired both check-record-versioning.sh and check-task-references.sh to it, closing the PATH_SCOPE false-clean defect for both lints with three stderr-only diagnostics (untracked-inclusion count, per-file gitignored loud-skip, zero-enumeration notice). Added 10+22+17 passing fixture cases across a new and two extended test suites, corrected the inventory doc, redeployed, and triaged the one genuine new ADVISORY finding the fix surfaced (gate-cost-model.csv) at its generator source."
+    "completion_summary": "Extracted a shared git-corpus-enum-lib.sh (tracked-plus-untracked union enumeration, gitignored content still excluded) and wired both check-record-versioning.sh and check-task-references.sh to it, closing the PATH_SCOPE false-clean defect for both lints with three stderr-only diagnostics (untracked-inclusion count, per-file gitignored loud-skip, zero-enumeration notice). Added 10+22+17 passing fixture cases across a new and two extended test suites, corrected the inventory doc, redeployed, and triaged the one genuine new ADVISORY finding the fix surfaced (gate-cost-model.csv) at its generator source. Continuation dispatch (seq 18) resolved the one held-open gate-3 finding: ran sync-manifest-scripts.sh --write to add the missing gate-cost-model.csv entry to provides.scripts, confirmed the two previously-flagged excursion files were already committed, redeployed, and verified verify-deploy.sh --only-gate 3 PASS for core with no new finding."
   },
   "modified_files": [
     "agent-system/extensions/core/scripts/lib/git-corpus-enum-lib.sh",

@@ -2,8 +2,8 @@
   "status": "implemented",
   "phases_completed": 4,
   "phases_total": 4,
-  "dispatch_seq": 17,
-  "summary": "Fixed the shared git-ls-files false-clean defect in check-record-versioning.sh and check-task-references.sh: PATH_SCOPE mode previously enumerated via a bare `git ls-files`, returning zero rows (and a silent clean verdict) for an on-disk-but-untracked file. Extracted a shared git-corpus-enum-lib.sh (tracked-plus-untracked union, gitignored content still excluded) and wired both lints to it, adding three stderr-only diagnostics so 'clean' and 'not examined' are always distinguishable. Added 10+22+17 passing fixture cases, corrected the inventory doc, redeployed (three passes, fixing a subject-resolution lint hit and a missing exec bit on this task's own new test file along the way), and triaged the one genuine new ADVISORY finding the fix surfaced (gate-cost-model.csv, fixed at its generator source).",
+  "dispatch_seq": 18,
+  "summary": "Fixed the shared git-ls-files false-clean defect in check-record-versioning.sh and check-task-references.sh: PATH_SCOPE mode previously enumerated via a bare `git ls-files`, returning zero rows (and a silent clean verdict) for an on-disk-but-untracked file. Extracted a shared git-corpus-enum-lib.sh (tracked-plus-untracked union, gitignored content still excluded) and wired both lints to it, adding three stderr-only diagnostics so 'clean' and 'not examined' are always distinguishable. Added 10+22+17 passing fixture cases, corrected the inventory doc, redeployed (three passes, fixing a subject-resolution lint hit and a missing exec bit on this task's own new test file along the way), and triaged the one genuine new ADVISORY finding the fix surfaced (gate-cost-model.csv, fixed at its generator source). Continuation dispatch (seq 18) closed the held-open gate-3 self-attribution finding (gate-cost-model.csv missing from provides.scripts) via sync-manifest-scripts.sh --write, confirmed the two previously-flagged excursion files were already committed, redeployed, and verified gate 3 PASS for core.",
   "blockers": [],
   "artifacts": [
     {
