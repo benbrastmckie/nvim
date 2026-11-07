@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/493_plan_format_tier_justification_fixes/plans/01_tier-justification-fixes.md",
-      "summary": "5-phase plan repairing plan-format.md's dead suite-subset entry point by reference and landing the Tier Justification measurement obligation as an advisory-first lint in validate-artifact.sh with a fixture pair, then redeploying."
-    }
-  ],
-  "next_steps": "Run /orchestrate 493 to execute the plan",
-  "phase_count": 5,
-  "estimated_hours": 3.8,
-  "dependency_waves": 5,
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 21,
   "metadata": {
-    "session_id": "sess_1793993117_98582a_493",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 14
+    "session_id": "sess_1793993117_98582a",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

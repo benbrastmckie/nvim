@@ -1,7 +1,7 @@
 # Implementation Plan: Task #493
 
 - **Task**: 493 - Plan format Tier Justification fixes
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/493_plan_format_tier_justification_fixes/reports/01_tier-justification-fixes.md
@@ -124,28 +124,28 @@ Phases within the same wave can execute in parallel. This plan is a strict chain
 edit the same file and the same subsection, phase 3 enforces the contract phase 2 writes, phase 4
 tests phase 3, and phase 5 deploys all of it.
 
-### Phase 1: Repair the suite-subset entry point by reference [NOT STARTED]
+### Phase 1: Repair the suite-subset entry point by reference [COMPLETED]
 
 **Goal**: Line 339's suite-subset bullet names a form that resolves in both repository shapes,
 under the convention the "Batch-aware deferral" section already states.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/plan-format.md` immediately before
+- [x] Re-read `agent-system/extensions/core/context/formats/plan-format.md` immediately before
       editing (concurrent siblings may have touched it), locating the bullet by its anchor text
-      `a suite subset within Gate 8:` rather than by line number.
-- [ ] Rewrite that bullet so the deploy form `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`
+      `a suite subset within Gate 8:` rather than by line number. *(completed)*
+- [x] Rewrite that bullet so the deploy form `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`
       is named first, the source-store form
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE,...]` is
       named second and explicitly labelled as the form for the agent-system source-store
       repository, and the choice between them is delegated to the "Batch-aware deferral"
       section's resolve-whichever-exists rule **by name** — one short pointer clause, no restated
-      copy of that rule.
-- [ ] Keep the bullet's existing `suite_selection_select` pointer and its
+      copy of that rule. *(completed)*
+- [x] Keep the bullet's existing `suite_selection_select` pointer and its
       `context/standards/shell-script-testing.md` cross-reference intact; this edit changes the
-      command form only.
-- [ ] Verify the acceptance grep: every occurrence of the bare
+      command form only. *(completed)*
+- [x] Verify the acceptance grep: every occurrence of the bare
       `agent-system/extensions/core/scripts/tests/run-all.sh` path in the file is either paired
-      with the deploy form or explicitly labelled as the source-store form.
+      with the deploy form or explicitly labelled as the source-store form. *(completed)*
 
 **Timing**: 0.4 hours
 

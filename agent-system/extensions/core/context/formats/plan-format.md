@@ -336,9 +336,12 @@ one sentence, never an essay:
 
 - A non-final phase declaring a tier **below** `full` names the specific check that covers the
   edit — the command, not a description of one. Two narrowing mechanisms exist today:
-  - a suite subset within Gate 8: `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`,
-    where `scripts/lib/suite-selection-lib.sh`'s `suite_selection_select` function resolves a
-    touched path to its covering suite basenames (see
+  - a suite subset within Gate 8: `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`
+    in a deploy-target repository, or `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`
+    as the source-store-repository form — see "Batch-aware deferral" below for the
+    resolve-whichever-exists rule governing which of the two names an entry point that actually
+    resolves in the repository the dispatch is running in. `scripts/lib/suite-selection-lib.sh`'s
+    `suite_selection_select` function resolves a touched path to its covering suite basenames (see
     `context/standards/shell-script-testing.md`'s suite-selection-lib.sh subsection);
   - a gate subset of the full aggregator: `bash .claude/scripts/verify-deploy.sh --only-gate N[,M,...]`.
   - **The `__FULL_SWEEP__` case**: `suite_selection_select` returns the sentinel

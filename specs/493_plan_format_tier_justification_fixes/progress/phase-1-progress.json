@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Repair the suite-subset entry point by reference",
+  "started_at": "2026-11-07T01:49:00Z",
+  "last_updated": "2026-11-07T01:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read plan-format.md bullet by anchor text", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite bullet to name both forms, delegate to Batch-aware deferral rule by reference", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "Keep suite_selection_select pointer and cross-reference intact", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Verify acceptance grep and measured test subset", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
