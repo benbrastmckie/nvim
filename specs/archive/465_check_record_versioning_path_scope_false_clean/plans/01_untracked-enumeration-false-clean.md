@@ -1,7 +1,7 @@
 # Implementation Plan: Task #465
 
 - **Task**: 465 - check-record-versioning.sh PATH_SCOPE mode must never report clean for a file it did not actually scan
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (planned directly from the task specification plus direct source inspection -- see Overview)

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #428
 
 - **Task**: 428 - Enforce and detect planner-agent terminal return-meta write
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (task 378 completed; task 426 completed and already discharged this task's contract/detection scope — see Overview)
 - **Research Inputs**: specs/428_enforce_planner_agent_terminal_write/reports/01_terminal-write-enforcement.md

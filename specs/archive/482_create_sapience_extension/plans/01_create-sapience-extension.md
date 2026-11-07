@@ -1,7 +1,7 @@
 # Implementation Plan: Task #482
 
 - **Task**: 482 - Create sapience extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/482_create_sapience_extension/reports/01_create-sapience-extension.md

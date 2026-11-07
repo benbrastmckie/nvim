@@ -1,7 +1,7 @@
 # Implementation Plan: Task #429
 
 - **Task**: 429 - script-inventory.sh undercounts untracked files
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research report; planned directly from the task description plus

@@ -11,5 +11,12 @@
     "cycle": 1,
     "timestamp": "2026-11-05T23:44:19Z",
     "description_fingerprint": "b460ea879c4ff070cf70b9a7fbeb2d7d656551af2fa90b44a19b27a532db0eac"
+  },
+  {
+    "question": "Phase 20's final, git-history-anchored net accounting found this task's own measured contribution is NET-TOTAL +1,219 lines (NET-PROD +498, NET-TEST +1,402, NET-MD -681) -- missing the retained -10,000-line net-deletion floor by 11,219 lines and landing net-positive overall, even though Phases 6-11 and 16-19 each individually delivered real, verified negative net. The shortfall is caused by infrastructure phases (3, 4, 12, 13, 14, 16) whose declared-in-advance net-positive cost exceeded the realized payback from the migration/dedup phases that followed them. How should this task close?",
+    "answer": "Accept the measured result as this task's final close (mark [COMPLETED WITH EXCLUSIONS] at the task level) and file a new, separately-chartered follow-up task to migrate the remaining unmigrated test suites onto the shared harness (the largest remaining realizable NET-TEST payback) and to fix the project-number-inuse.sh test-fixture gap found in gate 8",
+    "cycle": 6,
+    "timestamp": "2026-11-06T03:58:13Z",
+    "description_fingerprint": "b460ea879c4ff070cf70b9a7fbeb2d7d656551af2fa90b44a19b27a532db0eac"
   }
 ]

@@ -2,7 +2,7 @@
 
 - **Task**: 22 - Silence opencode-agents.json fragment validation spam (absorbed: picker Reload
   All/Regenerate honesty fix; absorbed: Global Update repo-registration feature)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None blocking. One concurrent sibling (task 459) is scheduled this same
   `/orchestrate` cycle with `file_scope` limited to `specs/459_cross_task_traceability_and_changelog_verdict/`
