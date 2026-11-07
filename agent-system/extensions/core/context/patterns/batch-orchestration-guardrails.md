@@ -855,23 +855,38 @@ that task's own blocking precondition audit, which found the necessary invarianc
 not merely unconfirmed. The candidate design would have captured Gate 8 (`tests/run-all.sh`)
 exactly once, before `deploy-headless.sh` runs, and reused that one capture identically as both
 the pre- and post-redeploy Gate-8 component of the pair described in Gate depth (Defect A) above.
-That is unsound because Gate 8 does not test the source store alone: of the 73 files under
-`agent-system/extensions/core/scripts/tests/`, 41 use a documented "deploy-tree-first /
-source-store-fallback candidate resolution" pattern — each resolves its own repo root via
-`git rev-parse --show-toplevel` and then prefers the DEPLOYED copy of its subject-under-test
-(`$REPO_ROOT/.claude/scripts/...`) over the source-store sibling, falling back to the source-store
-copy only when the deployed copy is absent. Since `.claude/` is always deployed in this
-repository, the deployed candidate wins for all 41 files. A pre-redeploy Gate-8 run therefore
-exercises the STALE, pre-deploy copies of whatever scripts those 41 suites target, while a
-post-redeploy run exercises the FRESH, just-landed copies — precisely the divergence the pre/post
-comparison exists to observe. Reusing one capture for both sides would make the checkpoint
-categorically blind to any Gate-8-detectable regression a redeploy itself introduces across those
-41 suites — a strictly worse defect than the verify cost being saved, and the same asymmetric-pair
-hazard the Gate depth (Defect A) comment above already warns against, generalized from "don't
-compare full against fast" to "don't substitute one side's answer for the other's." No code was
-changed as a result: `deploy-baseline-lib.sh`, this checkpoint's three
-`deploy_findings_snapshot` call sites, `deploy-ledger-lib.sh`, and `command-gate-out.sh` all
-remain exactly as documented elsewhere in this section.
+That is unsound because Gate 8 does not test the source store alone: of the `*.sh` files under
+`agent-system/extensions/core/scripts/tests/`, 70 belong to the lint-fixture-test family that
+resolves a deployed-or-source-store subject-under-test, in three structural shapes measured
+directly from that corpus — 20 call the shared `common_test_resolve_candidate`/
+`common_test_resolve_subject` helper (`lib/common.sh`) directly, 12 historically hand-duplicated
+the lookup as a local function, and 38 used an inline `CANDIDATES`-array `for`-loop with no named
+function at all (the shape invisible to a `grep resolve_candidate` measurement, the reason
+earlier counts of this family undershot). Every one of the 70 now resolves through
+`common_test_resolve_subject` with an explicit, caller-declared mode and prints a mandatory
+`[SUBJECT] <absolute path>` declaration naming the copy it actually resolved
+(`scripts/lint/lint-subject-resolution-declaration.sh`, gate 27, mechanically enforces this).
+The divergence property this checkpoint's pre/post comparison depends on now rests on each
+suite's DECLARED MODE, not an implicit candidate-argument order: a suite declaring
+`mode=deploy-tree-first` — the majority, and the default when a caller passes no mode — prefers
+the DEPLOYED copy of its subject-under-test over the source-store sibling, falling back to the
+source-store copy only when the deployed copy is absent; since `.claude/` is always deployed in
+this repository, the deployed candidate wins whenever both exist. A pre-redeploy Gate-8 run
+therefore exercises the STALE, pre-deploy copies of whatever scripts a deploy-tree-first suite
+targets, while a post-redeploy run exercises the FRESH, just-landed copies — precisely the
+divergence the pre/post comparison exists to observe, for every suite whose declared mode is
+`deploy-tree-first`. A suite instead declaring `mode=source-store` or `mode=deployed` has stated
+a correctness requirement, not a preference, and always resolves the same copy regardless of
+deploy state — carrying no pre/post divergence of its own, but still contributing no evidence
+toward the single-capture design that the deploy-tree-first majority's divergence already
+refutes. Reusing one capture for both sides would make the checkpoint categorically blind to any
+Gate-8-detectable regression a redeploy itself introduces across the deploy-tree-first suites — a
+strictly worse defect than the verify cost being saved, and the same asymmetric-pair hazard the
+Gate depth (Defect A) comment above already warns against, generalized from "don't compare full
+against fast" to "don't substitute one side's answer for the other's." No code was changed as a
+result: `deploy-baseline-lib.sh`, this checkpoint's three `deploy_findings_snapshot` call sites,
+`deploy-ledger-lib.sh`, and `command-gate-out.sh` all remain exactly as documented elsewhere in
+this section.
 
 **Why a separate, later task made `verify-deploy.sh`'s Gate 8 itself faster instead of extending
 this rejection.** The rejection above and `--skip-verify` below both concern WHO RUNS Gate 8 and

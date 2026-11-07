@@ -109,6 +109,65 @@ the harness, so there is no reasoned-exemption list to carry here: a future suit
 `pass()`/`fail()`/`info()` locally is a regression against this now-closed migration, not a
 holdout awaiting its turn.
 
+## Explicit deployed/source-store subject resolution (mode + mandatory declaration)
+
+A suite under `scripts/tests/` that resolves its own subject-under-test between the deployed
+tree (`$REPO_ROOT/.claude/scripts/...`) and the source-store sibling
+(`agent-system/extensions/core/scripts/...`) MUST do so through `common_test_resolve_subject`
+plus `common_test_declare_subject` (both in `lib/common.sh`), never through a hand-rolled
+lookup. Historically, before this pair existed, every such suite's resolution took one of three
+structural shapes — a direct call to the shared but mode-implicit
+`common_test_resolve_candidate` helper, a hand-duplicated local function reimplementing the same
+find-first-existing-candidate lookup, or an inline `*CANDIDATES*=()` array consumed by a bare
+`for candidate in ...` loop with no named function at all (the shape invisible to a
+`grep resolve_candidate` measurement, since it never names that function). All three shapes left
+the resolution MODE implicit in candidate argument order, so a suite could never declare —
+to itself, to a reader, or to a later gate — which copy it had actually tested. A green run was
+therefore indistinguishable from a vacuous one: running a suite after editing the source-store
+copy but before a redeploy could silently exercise the STALE deployed copy instead of the change
+under test.
+
+**Mode vocabulary** (`common_test_resolve_subject <desc> <mode> <deployed_candidate>
+<source_store_candidate>`, exactly three recognized values for `<mode>`; an empty string is
+`deploy-tree-first`):
+
+| Mode | Behavior | Precedence |
+|------|----------|------------|
+| `deployed` | Resolve `<deployed_candidate>` only, or fail | Correctness requirement — never overridden |
+| `source-store` | Resolve `<source_store_candidate>` only, or fail | Correctness requirement — never overridden |
+| `deploy-tree-first` | Resolve `<deployed_candidate>` if present, else `<source_store_candidate>` | Preference — the one case the environment override applies to |
+
+**Environment override**: `CORE_TEST_SUBJECT_MODE`, the same unset-means-sane-default idiom
+`VERIFY_DEPLOY_GATE8_JOBS` already uses elsewhere in this corpus. A caller passing `deployed` or
+`source-store` has stated a correctness requirement and is NEVER overridden by the environment.
+A caller passing `deploy-tree-first` (or an empty mode) has stated a preference, and
+`CORE_TEST_SUBJECT_MODE` — when set — overrides exactly that case. This is what keeps a
+hard-selected caller (a suite that must always resolve the source-store copy because it is
+validating a pre-deploy edit under active development) correct under any environment, while
+still giving the override one real, single meaning. `deploy-tree-first` is also the default this
+corpus's Inter-Cycle Redeploy Checkpoint relies on: see
+`context/patterns/batch-orchestration-guardrails.md`'s single-capture-Gate-8-sharing rejection
+for why that checkpoint's pre/post divergence signal depends on the default staying
+deploy-tree-first rather than flipping globally to source-store-first.
+
+**Mandatory declaration**: every suite that resolves a subject via `common_test_resolve_subject`
+(or, for a not-yet-migrated caller, `common_test_resolve_candidate`) MUST call
+`common_test_declare_subject <resolved_path>` immediately after resolving, once per resolved
+subject, printing exactly `[SUBJECT] <absolute path>` — a line-initial token, one space, then the
+absolute path. `[SUBJECT]` is deliberately disjoint from the four verdict anchors this corpus
+already extracts on (`[PASS]`/`[FAIL]`/`[INFO]`/`[VIOLATION]`; see the verdict-line extraction
+contract above), so it can never be mistaken for one by an anchored extraction, and a captured
+run's `[SUBJECT]` lines always answer "which copy did this test?" without inspecting the suite's
+own source.
+
+Mechanically enforced by `scripts/lint/lint-subject-resolution-declaration.sh` (gate 27 in
+`scripts/gate-registry.data`), which flags a new suite reintroducing any of the three undeclared
+shapes above, or a `common_test_resolve_subject` call with no paired
+`common_test_declare_subject`, against a Layer-2 allowlist of permanent, individually-reasoned
+exemptions (a suite with no genuine deployed/source-store duality to declare, or
+`common_test_resolve_subject`/`common_test_resolve_candidate`'s own regression suite exercising
+the functions directly as its subject rather than calling them to resolve one).
+
 ## Inherited `SHELLOPTS` and the `errexit` trap
 
 The header above declares `set -uo pipefail` with no `-e` — but that does not guarantee `errexit`

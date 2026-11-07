@@ -550,32 +550,32 @@ permanent, reasoned exemptions.
 
 ---
 
-### Phase 7: Correct the Stale Figures and Document the Taxonomy [NOT STARTED]
+### Phase 7: Correct the Stale Figures and Document the Taxonomy [COMPLETED]
 
 **Goal**: Replace the stale population figure where it is stated, and document the three-shape
 taxonomy, the mode vocabulary, the env override, and the mandatory declaration so the next author
 copy-pasting from a neighbour copies the explicit form.
 
 **Tasks**:
-- [ ] Correct `context/patterns/batch-orchestration-guardrails.md`'s "of the 73 files under
+- [x] Correct `context/patterns/batch-orchestration-guardrails.md`'s "of the 73 files under *(completed: replaced with the measured 70-suite/three-shape breakdown -- 20 shared-helper callers, 12 hand-duplicated local functions, 38 inline CANDIDATES-array for-loops)*
       agent-system/extensions/core/scripts/tests/, 41 use a documented 'deploy-tree-first /
       source-store-fallback candidate resolution' pattern" sentence to the figures measured at
       implementation time, with the three-shape breakdown.
-- [ ] Add one sentence there naming the inline-loop shape explicitly, so a future grep-based
+- [x] Add one sentence there naming the inline-loop shape explicitly, so a future grep-based *(completed: named inline, with the "invisible to a grep for resolve_candidate" rationale)*
       re-measurement for `resolve_candidate` does not reproduce the undercount.
-- [ ] Confirm the Inter-Cycle Redeploy Checkpoint section's rejected-design rationale still reads
+- [x] Confirm the Inter-Cycle Redeploy Checkpoint section's rejected-design rationale still reads *(completed: confirmed and rewritten -- the divergence property is stated as resting on each suite's declared mode; mode=source-store/deployed suites carry no pre/post divergence of their own, which the prior text did not distinguish)*
       correctly against the new mechanism, and state that the divergence property now rests on the
       **declared default mode** rather than an implicit argument order — without narrating this
       document's own revision history.
-- [ ] Extend `context/standards/shell-script-testing.md`'s "Required structural model for a new
+- [x] Extend `context/standards/shell-script-testing.md`'s "Required structural model for a new *(completed: added as a new "## Explicit deployed/source-store subject resolution (mode + mandatory declaration)" section immediately following)*
       suite" section with: the three-shape taxonomy; `common_test_resolve_subject`'s mode
       vocabulary and the `CORE_TEST_SUBJECT_MODE` precedence rule; the mandatory
       `common_test_declare_subject` call; and the `[SUBJECT]` token's disjointness from the four
       verdict anchors, cross-referenced from that file's own "Verdict-line extraction contract"
       section.
-- [ ] Name gate 27 and `lint-subject-resolution-declaration.sh` as the mechanical enforcement, in
+- [x] Name gate 27 and `lint-subject-resolution-declaration.sh` as the mechanical enforcement, in *(completed)*
       the same shape the verdict-extraction contract names gate 25.
-- [ ] Re-read both files immediately before editing: all three tasks in this task's sequencing
+- [x] Re-read both files immediately before editing: all three tasks in this task's sequencing *(completed: both re-read fresh before editing; no sibling edits present in either file at edit time)*
       chain also edit `context/standards/shell-script-testing.md`.
 
 **Timing**: 1 hour
