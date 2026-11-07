@@ -328,41 +328,50 @@ plus the Phase 1 harness re-run on this one file.
 
 ---
 
-### Phase 4: Remediate the Four Formal Research Agents [NOT STARTED]
+### Phase 4: Remediate the Four Formal Research Agents [COMPLETED]
 
 **Goal**: Give each of the four formal research agents a reachable pointer at the canonical contract
 and a top-level `## Recommendations` in its embedded skeleton, removing contributing factor (a)
 structurally rather than by instruction-following.
 
 **Tasks**:
-- [ ] For each of `formal-research-agent.md`, `logic-research-agent.md`, `math-research-agent.md`,
+- [x] For each of `formal-research-agent.md`, `logic-research-agent.md`, `math-research-agent.md`,
       `physics-research-agent.md` under `agent-system/extensions/formal/agents/`, re-read the file
       immediately before editing it, then apply all three edits below to that file before moving to
-      the next (one file fully done per sub-step, each committed on green).
-- [ ] Edit (a) — Context References: add `@.claude/context/formats/report-format.md` with a
+      the next (one file fully done per sub-step, each committed on green). *(completed; per-file
+      grep count confirmed each file at exactly 1 "Recommendations" / 0 "validate-artifact" before
+      editing, matching the Scope Hypothesis)*
+- [x] Edit (a) — Context References: add `@.claude/context/formats/report-format.md` with a
       "when creating report" load condition, beside the existing `return-metadata-file.md` entry.
       This is the load path that makes edit (b) reachable; without it the pointer is a dead link.
-- [ ] Edit (b) — pointer: immediately after the skeleton's closing fence and before/beside the
+      *(completed, all four files)*
+- [x] Edit (b) — pointer: immediately after the skeleton's closing fence and before/beside the
       existing `**Copy source**:` note, add a short pointer at
       `context/formats/report-format.md`'s `## Required Section Headings (verbatim)`, stating that
       the five headings are exact-text and non-paraphrasable and that the pre-return self-check is
       defined there. Do not restate the contract's body — a fifth copy is the mechanism that
-      produced this gap.
-- [ ] Edit (c) — promotion: remove the `### Recommendations` subsection from inside the skeleton's
+      produced this gap. *(completed; the pointer sentence was appended to the end of the existing
+      `**Copy source**:` paragraph in all four files, satisfying "beside")*
+- [x] Edit (c) — promotion: remove the `### Recommendations` subsection from inside the skeleton's
       `## Findings` block and insert it as a top-level `## Recommendations` between the end of
       `## Findings` and `## Decisions`, matching `general-research-agent.md`'s canonical order
       (Findings -> Recommendations -> Decisions -> Risks & Mitigations). Leave
       `### Cross-Domain Synthesis` and every per-domain `### {Domain N} Findings` subsection in place
-      and unchanged.
-- [ ] Keep each file's `**Copy source**:` note accurate: it names `general-research-agent.md`'s
+      and unchanged. *(completed, all four files; `### Cross-Domain Synthesis` and per-domain
+      subsections confirmed unchanged)*
+- [x] Keep each file's `**Copy source**:` note accurate: it names `general-research-agent.md`'s
       Stage 6 as the canonical shape, which remains true after Phase 3's pointer conversion.
-- [ ] Run the Phase 1 harness restricted to `agent-system/extensions/formal/agents/`; confirm four
-      inputs were found and all four report PASS.
-- [ ] Extract each of the four skeletons verbatim to a temporary file and run the real
+      *(completed; note left unchanged except for the appended pointer sentence)*
+- [x] Run the Phase 1 harness restricted to `agent-system/extensions/formal/agents/`; confirm four
+      inputs were found and all four report PASS. *(completed: 4 agent file(s) scanned, 4 PASS,
+      0 FAIL, 4 under extensions/formal/)*
+- [x] Extract each of the four skeletons verbatim to a temporary file and run the real
       `bash agent-system/extensions/core/scripts/validate-artifact.sh <extracted> report` on each,
       so the acceptance claim rests on the validator binary and not only on the harness's regex
-      re-implementation.
-- [ ] Record an issue-log entry per deviation, blocker or notable win as it arises.
+      re-implementation. *(completed: all four exit 0, "[PASS] report artifact is valid")*
+- [x] Record an issue-log entry per deviation, blocker or notable win as it arises. *(completed:
+      recorded a win — all four edits applied cleanly with zero deviation from the measured
+      baseline)*
 
 **Timing**: 1 hour
 

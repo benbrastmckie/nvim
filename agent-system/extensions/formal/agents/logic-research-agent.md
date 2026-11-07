@@ -75,6 +75,7 @@ Load these on-demand using @-references following hierarchical pattern.
 
 - `@.claude/context/project/logic/README.md` - Logic context index (load FIRST)
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema
+- `@.claude/context/formats/report-format.md` - Required report section headings (when creating report)
 
 ### Load By Topic
 
@@ -256,7 +257,7 @@ Create directory and write report:
 ### External Resources
 - {Mathematical literature references}
 
-### Recommendations
+## Recommendations
 - {Implementation approaches}
 
 ## Decisions
@@ -273,7 +274,11 @@ Create directory and write report:
 
 **Copy source**: `general-research-agent.md`'s `### Stage 6: Create Research Report` is the
 canonical shape for the required metadata/sections above; `**Task Type**` and the
-logic-domain-specific `### {section}` subsections under `## Findings` are additive.
+logic-domain-specific `### {section}` subsections under `## Findings` are additive. The five
+required section headings (`## Executive Summary`, `## Context & Scope`, `## Findings`,
+`## Decisions`, `## Recommendations`) are verbatim and non-paraphrasable — see
+`context/formats/report-format.md`'s `## Required Section Headings (verbatim)` section for the
+full contract, including the exact-text matching rule and the pre-return grep self-check.
 
 ### Stage 6: Write Metadata File
 

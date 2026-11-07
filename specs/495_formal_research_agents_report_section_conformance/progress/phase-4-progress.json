@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Remediate the Four Formal Research Agents",
+  "started_at": "2026-11-06T01:15:00Z",
+  "last_updated": "2026-11-06T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "re-read + grep-c pre-check all four files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "edit (a) Context References for formal-research-agent.md", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/formal-research-agent.md"]},
+    {"id": 3, "description": "edit (b)+(c) pointer + promotion for formal-research-agent.md", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/formal-research-agent.md"]},
+    {"id": 4, "description": "all three edits for logic-research-agent.md", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/logic-research-agent.md"]},
+    {"id": 5, "description": "all three edits for math-research-agent.md", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/math-research-agent.md"]},
+    {"id": 6, "description": "all three edits for physics-research-agent.md", "status": "done", "files_touched": ["agent-system/extensions/formal/agents/physics-research-agent.md"]},
+    {"id": 7, "description": "run Phase 1 harness restricted to formal agents: 4 found, 4 PASS", "status": "done", "files_touched": []},
+    {"id": 8, "description": "extract + validate all four skeletons with real validate-artifact.sh binary", "status": "done", "files_touched": []},
+    {"id": 9, "description": "record issue-log entry", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
