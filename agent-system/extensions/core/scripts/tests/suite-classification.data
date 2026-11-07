@@ -87,6 +87,7 @@ test-gate-registry-resolution.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-generate-task-order.sh	unit	-
 test-git-commit-phase.sh	unit	-
 test-git-commit-scoped.sh	unit	-
+test-git-corpus-enum-lib.sh	unit	-
 test-git-snapshot.sh	unit	-
 test-guard-destructive-git.sh	unit	-
 test-guard-git-push.sh	unit	-

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #465
 
 - **Task**: 465 - check-record-versioning.sh PATH_SCOPE mode must never report clean for a file it did not actually scan
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: None (planned directly from the task specification plus direct source inspection -- see Overview)
@@ -119,7 +119,7 @@ consulted and is not modified.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Shared git-corpus enumeration library + unit suite [NOT STARTED]
+### Phase 1: Shared git-corpus enumeration library + unit suite [COMPLETED]
 
 **Goal**: One definition of "the set of files a git-backed lint should scan under a path scope",
 with the diagnostics that make an exclusion audible, plus its own fixture suite. Nothing consumes
@@ -127,7 +127,7 @@ it yet, so this phase cannot change any existing verdict.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/scripts/lib/git-corpus-enum-lib.sh` exposing:
+- [x] Create `agent-system/extensions/core/scripts/lib/git-corpus-enum-lib.sh` exposing: *(completed)*
   - `git_corpus_enum <repo_root> <enum_path>` -- prints, newline-delimited and `sort -u`'d, the
     union of `git -C <repo_root> ls-files <enum_path>` and
     `git -C <repo_root> ls-files --others --exclude-standard <enum_path>`. Output shape is
@@ -140,22 +140,22 @@ it yet, so this phase cannot change any existing verdict.
     never exits.
   - `git_corpus_untracked_count <repo_root> <enum_path>` -- prints the count of untracked-but-
     included paths, for the caller's disclosure line.
-- [ ] Give the library the contract header `lib/common.sh` and `lib/lint-corpus-scan-lib.sh` both
-  use verbatim: sets no shell options, never calls `exit`, reports conditions by return status.
-- [ ] Record in that header the "Known adjacent enumeration sites" note from the Sibling
+- [x] Give the library the contract header `lib/common.sh` and `lib/lint-corpus-scan-lib.sh` both
+  use verbatim: sets no shell options, never calls `exit`, reports conditions by return status. *(completed)*
+- [x] Record in that header the "Known adjacent enumeration sites" note from the Sibling
   Enumeration Audit section below (which sibling scripts share the `git ls-files` shape, which were
   classified as not-defective and why, and which one remains an open adjacent instance), citing
-  script filenames only -- no task-number references, per `rules/no-task-references-in-deliverables.md`.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-git-corpus-enum-lib.sh` following
+  script filenames only -- no task-number references, per `rules/no-task-references-in-deliverables.md`. *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-git-corpus-enum-lib.sh` following *(completed: all 8 enumerated cases plus 2 extra, 10 total, all passing)*
   `context/standards/shell-script-testing.md` (mktemp WORKDIR via `common_test_workdir_init`,
   `common_test_pass`/`common_test_fail`, exit 0/1/2 convention), with cases: tracked file included;
   untracked-not-ignored file included; gitignored file excluded; scoped single untracked file
   enumerated; union deduplicated and sorted; non-existent enum_path returns empty without error;
   `git_corpus_unenumerated_report` names a gitignored file and is silent when there is none;
   `git_corpus_untracked_count` is accurate.
-- [ ] Register both new files in `agent-system/extensions/core/manifest.json` `provides.scripts`
+- [x] Register both new files in `agent-system/extensions/core/manifest.json` `provides.scripts`
   (alongside the existing `lib/*.sh` and `tests/*.sh` entries) and add the test to
-  `scripts/tests/suite-classification.data` as `unit`.
+  `scripts/tests/suite-classification.data` as `unit`. *(completed)*
 
 **Timing**: 1.5 hours
 

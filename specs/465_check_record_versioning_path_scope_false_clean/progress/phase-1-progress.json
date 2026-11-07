@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Shared git-corpus enumeration library + unit suite",
+  "started_at": "2026-11-07T00:20:00Z",
+  "last_updated": "2026-11-07T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create git-corpus-enum-lib.sh with git_corpus_enum/git_corpus_unenumerated_report/git_corpus_untracked_count", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/git-corpus-enum-lib.sh"]},
+    {"id": 2, "description": "Add contract header + sibling audit note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/git-corpus-enum-lib.sh"]},
+    {"id": 3, "description": "Create test-git-corpus-enum-lib.sh fixture suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-corpus-enum-lib.sh"]},
+    {"id": 4, "description": "Register both files in manifest.json and suite-classification.data", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/scripts/tests/suite-classification.data"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash tests/test-git-corpus-enum-lib.sh: 10/10 passed. lint-shellcheck.sh clean on both new files. sync-manifest-scripts.sh and check-extension-docs.sh confirm exactly the 2 new provides.scripts entries + 1 new suite-classification.data row were needed (both tools additionally report expected pre-redeploy drift/absent-on-disk-via-ls-files noise for the new untracked files, which resolves after this phase's commit and Phase 4's redeploy)."
+}
