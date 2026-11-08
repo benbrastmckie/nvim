@@ -1,9 +1,57 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md",
+      "summary": "All 6 phases complete: git-commit-phase.sh now deposits a containment-dropped path into proposed_file_scope at drop time; the --file-scope-add consumer chain widened to implement; end-to-end loop closure confirmed against a throwaway fixture; full gate set deferred to the batch stage per this cycle's Batch Gate Deferral directive, with the scoped 34-suite union green modulo pre-existing/environmental failures independently confirmed unrelated to this task."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the proposed_file_scope feedback loop for the implement phase: git-commit-phase.sh now deposits each containment-dropped path into the task's own .return-meta.json at drop time, and the existing --file-scope-add consumer chain (update-task-status.sh, skill-base.sh) was widened from {research, plan} to {research, plan, implement} to forward it. All five VERIFY fixtures plus idempotence and deposit-path fail-open are pinned by new test cases (181 total new/retargeted assertions across three suites, all passing), the drop-and-warn excursion guard and every fail-open posture are unchanged, and an end-to-end throwaway-fixture check confirms the full drop-propose-merge-no-re-drop loop closes."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    ".gitignore"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell test suite's default subject resolution is deploy-tree-first (a copy of the deployed .claude/scripts/ tree), exercising a pre-redeploy source-store edit requires a dedicated source-store-first resolved variable, sourced fresh inside its own subshell -- never the suite-level sourced functions, which would silently exercise the stale deployed copy. Mirror an existing Group 5/6-style pattern in the same suite rather than inventing a new one; and if the edit under test calls a SECOND script via a bare relative path (e.g. skill-base.sh invoking .claude/scripts/update-task-status.sh), that second script's fixture copy must ALSO be overridden from the source store, or its own stale gate will reject the call before the first edit is ever exercised.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["source-store-first", "deploy-tree-first", "test fixture", "pre-redeploy", "shell test suite"]
+    },
+    {
+      "content": "update-task-status.sh's postflight/implement path has a plan-file-completion-stamp step (writes [COMPLETED] to the plan's Status line) that runs independently of --phase-check -- it fires even when --phase-check is absent, and refuses with an unrelated error if no plan directory/file is resolvable for the task. Any fixture exercising postflight/implement (directly or via skill-base.sh's skill_postflight_update) must seed a minimal plan file (even a single all-[COMPLETED]-phase one) or the call fails for a reason unrelated to whatever is actually under test.",
+      "category": "PATTERN",
+      "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["update-task-status.sh", "postflight implement", "plan-completion stamp", "test fixture"]
+    },
+    {
+      "content": "To decide whether a failing test suite is caused by your own in-progress edit or by environment/concurrent-sibling drift on a shared source-store tree: temporarily copy the pre-edit file from `git show HEAD:path`, run the suspect suite(s) against it, and compare. Identical failures with the edit entirely absent prove the cause lies elsewhere. Always restore the edited file afterward and diff against a saved copy to confirm byte-for-byte restoration before proceeding.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["root cause isolation", "concurrent edits", "shared worktree", "test suite failure", "git show HEAD"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794089641_e5bee5",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
