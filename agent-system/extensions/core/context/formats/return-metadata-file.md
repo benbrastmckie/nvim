@@ -70,8 +70,13 @@ invocation — e.g. an implementation agent writes the rich object first, then
 `status`/`metadata`. Any writer that runs after an earlier writer in the same invocation MUST
 merge onto the existing file (read-modify-write) rather than overwrite wholesale, touching only
 the fields it owns. `modified_files`, `completion_data`, `memory_candidates`,
-`proposed_file_scope`, `claim_invalidations`, and `artifacts` are producer-owned by the
-implementation agent and MUST survive a later writer's update untouched.
+`claim_invalidations`, and `artifacts` are producer-owned by the implementation agent and MUST
+survive a later writer's update untouched. `proposed_file_scope` is producer-owned by whichever
+process actually discovers the paths for the current operation — the research agent on the
+`research` path, but `scripts/git-commit-phase.sh` itself (not the implementation agent) on the
+`implement` path — and MUST survive a later writer's update untouched regardless of which
+producer populated it; see its own field specification below for the full per-operation
+producer table.
 
 ## Field Specifications
 
@@ -522,27 +527,55 @@ for the `file_scope` side of this contrast.
 **Type**: optional `string[]` at the **top level** of `.return-meta.json` — a sibling of
 `modified_files` and `memory_candidates`, not nested under `completion_data`.
 
-**Include if**: the operation is `research` and research discovered concrete file targets not
-already covered by the task's declared `file_scope`. Unused and absent for `plan` and
-`implement` operations.
+**Include if**: the operation is `research` or `implement` and that operation discovered
+concrete file targets not already covered by the task's declared `file_scope`. Unused and
+absent for `plan` operations. What triggers the field differs by permitted operation:
+
+- `research` — a report discovered concrete file targets not already declared.
+- `implement` — `scripts/git-commit-phase.sh`'s own containment check dropped a
+  `files_touched` path from a phase commit because that path was not contained in the task's
+  declared `file_scope`.
 
 Research agents populate this field when research discovers concrete files the implementation
 will need to touch, but which the task's `file_scope` (declared at creation time, per
 `docs/reference/standards/multi-task-creation-standard.md` Component 4a's "Unknown-Footprint
 Convention") does not yet name. It is a proposal of **additions only** — the consumer
 union-merges it into `active_projects[].file_scope` and never removes an existing entry. An
-absent, `null`, or empty (`[]`) value is a valid no-op: it means research found nothing beyond
-what was already declared.
+absent, `null`, or empty (`[]`) value is a valid no-op: it means the operation found nothing
+beyond what was already declared. This additions-only, never-remove semantics is unchanged by
+the operation that populates the field.
 
 **Consumer**: `agent-system/extensions/core/scripts/update-task-status.sh`'s `--file-scope-add`
-flag, invoked at research postflight (`operation == postflight && target_status == research`).
-The merge runs inside that script's existing single mutex-guarded `state-write.sh` write — see
-Component 4a's "Unknown-Footprint Convention" subsection (cross-referenced above) for the full
-producer/consumer narrative.
+flag, invoked at research postflight (`operation == postflight && target_status == research`)
+and, identically, at implement postflight (`operation == postflight && target_status ==
+implement`), the latter via `skill-base.sh`'s `skill_postflight_update()`. Both paths merge
+inside that script's one existing single mutex-guarded `state-write.sh` write — see Component
+4a's "Unknown-Footprint Convention" subsection (cross-referenced above) for the full
+producer/consumer narrative. No second state.json writer exists for either operation.
 
-**Producer ownership**: consistent with the "Multiple Sequential Writers" section above,
-`proposed_file_scope` is producer-owned by the research agent that discovers the paths, and MUST
-survive any later writer's read-modify-write update to this file untouched.
+**Producer, per operation**: consistent with the "Multiple Sequential Writers" section above,
+`proposed_file_scope` is producer-owned by whichever process discovers the paths for a given
+operation, and MUST survive any later writer's read-modify-write update to this file untouched:
+
+- `research` — produced by the research agent itself, as the original design intended.
+- `implement` — produced by `scripts/git-commit-phase.sh` **at drop time**, mid-dispatch,
+  **not** by the implementing agent. This reverses the producer direction relative to
+  `research` for this one operation: the implementing agent is a *later writer* of its own
+  `.return-meta.json` (notably at its own Stage 7 final write), not this field's originator, and
+  must carry forward untouched whatever the script already deposited rather than overwriting it
+  from a freshly built object.
+
+On the `implement` path, the producer skips the deposit — and never creates the file — when
+`.return-meta.json` is absent for the task at drop time: the file's own required fields
+(`status`, a correctly shaped `artifacts`) cannot be synthesized by a commit wrapper, and a bare
+`{"proposed_file_scope": [...]}` would be schema-invalid against
+`scripts/validate-return-meta.sh`. In practice the file already exists by drop time, because
+`agents/general-implementation-agent.md`'s Stage 0 mandates creating it before any substantive
+work, which necessarily precedes any phase commit.
+
+**`scripts/orchestrator-postflight.sh` deliberately gains no `implement` arm.** That script has
+no live caller (its own header comment says so), so an `implement`-path edit there would be
+cosmetic only; this is a deliberate omission, not an oversight left behind by this widening.
 
 **Path form**: entries are repo-relative paths, matching `modified_files`'s path convention.
 

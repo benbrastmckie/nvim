@@ -2,7 +2,7 @@
 
 - **Task**: 430 - Feed observed-but-undeclared implement paths back into a task's declared
   `file_scope` instead of silently dropping them from phase commits
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None (362, 394, 395, 425, 428, 494 all confirmed `[COMPLETED]`/archived by the
   research round)
@@ -188,41 +188,41 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Reconcile the `proposed_file_scope` spec and record the producer reversal [NOT STARTED]
+### Phase 1: Reconcile the `proposed_file_scope` spec and record the producer reversal [COMPLETED]
 
 **Goal**: Make `context/formats/return-metadata-file.md` the authoritative, self-consistent spec
 for the widened channel *before* any consumer is edited, so each later phase implements a written
 contract rather than inventing one.
 
 **Tasks**:
-- [ ] Re-read `context/formats/return-metadata-file.md`'s `### proposed_file_scope (optional)`
+- [x] Re-read `context/formats/return-metadata-file.md`'s `### proposed_file_scope (optional)`
       subsection and its `### Multiple Sequential Writers` section immediately before editing
-      (sibling task 435 declares this directory at coarse granularity).
-- [ ] Rewrite the subsection's **Include if** sentence so it permits `implement` alongside
+      (sibling task 435 declares this directory at coarse granularity). *(completed)*
+- [x] Rewrite the subsection's **Include if** sentence so it permits `implement` alongside
       `research`, stating for each permitted operation what triggers the field: `research` — a
       report discovered concrete file targets not already declared; `implement` —
-      `git-commit-phase.sh` dropped a `files_touched` path for containment during a phase commit.
-- [ ] Add a **Producer, per operation** paragraph replacing the current single-producer
+      `git-commit-phase.sh` dropped a `files_touched` path for containment during a phase commit. *(completed)*
+- [x] Add a **Producer, per operation** paragraph replacing the current single-producer
       **Producer ownership** paragraph: `research` is produced by the research agent;
       `implement` is produced by `scripts/git-commit-phase.sh` itself, **not** by the
       implementing agent. State plainly that this reverses the producer direction for that one
       operation, and that the implementing agent is consequently a *later* writer that must carry
-      the field through untouched, not its originator.
-- [ ] Extend the **Consumer** paragraph to name the `implement` consumer point
+      the field through untouched, not its originator. *(completed)*
+- [x] Extend the **Consumer** paragraph to name the `implement` consumer point
       (`operation == postflight && target_status == implement`, via `skill-base.sh`'s
       `skill_postflight_update()`), keeping the existing single-mutex-guarded-write statement
-      intact.
-- [ ] Correct the `### Multiple Sequential Writers` list so `proposed_file_scope` is described by
+      intact. *(completed)*
+- [x] Correct the `### Multiple Sequential Writers` list so `proposed_file_scope` is described by
       its actual per-operation producer rather than a blanket "the implementation agent" — the
-      inconsistency the research report flagged. Leave the other fields in that list unchanged.
-- [ ] Add one short paragraph recording that `scripts/orchestrator-postflight.sh` deliberately
+      inconsistency the research report flagged. Leave the other fields in that list unchanged. *(completed)*
+- [x] Add one short paragraph recording that `scripts/orchestrator-postflight.sh` deliberately
       gains no `implement` arm because it has no live caller, so a future reader does not read the
-      omission as an oversight.
-- [ ] Add one sentence stating that the `implement`-path producer skips the deposit when
+      omission as an oversight. *(completed)*
+- [x] Add one sentence stating that the `implement`-path producer skips the deposit when
       `.return-meta.json` is absent and never creates it, because the file's own required fields
-      cannot be synthesized by a commit wrapper.
-- [ ] Preserve the field's additions-only, never-remove semantics verbatim; this phase adds an
-      operation and names producers, and changes no merge semantics.
+      cannot be synthesized by a commit wrapper. *(completed)*
+- [x] Preserve the field's additions-only, never-remove semantics verbatim; this phase adds an
+      operation and names producers, and changes no merge semantics. *(completed)*
 
 **Timing**: 1 hour
 

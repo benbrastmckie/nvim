@@ -6,7 +6,7 @@ next_project_number: 528
 
 ## Task Order
 
-*Updated 2026-11-07. Generated from state.json dependency graph.*
+*Updated 2026-11-08. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
@@ -98,7 +98,7 @@ next_project_number: 528
 
 ### File Scope Lifecycle
 
-430 [PLANNED] — Feed observed-but-undeclared implement paths back into a task...
+430 [IMPLEMENTING] — Feed observed-but-undeclared implement paths back into a task...
   └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
     └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
     └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
@@ -5055,7 +5055,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 ---
 
 ### 430. Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428, Task 494
