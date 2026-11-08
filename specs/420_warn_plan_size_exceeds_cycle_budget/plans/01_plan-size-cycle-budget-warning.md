@@ -482,7 +482,7 @@ and the `agent-system/extensions` source store).
 
 ---
 
-### Phase 5: Redeploy and full gate set [NOT STARTED]
+### Phase 5: Redeploy and full gate set [IN PROGRESS]
 
 **Goal**: The source-store changes are deployed to the running `.claude/` tree and the complete
 gate set passes against an explicit source-store TARGET.
