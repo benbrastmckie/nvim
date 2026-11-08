@@ -725,8 +725,17 @@ decided, this one time, should run anyway) — never as a general-purpose weaken
 
 ### Scope Limitation and Residual Risk
 
-**Corrected (this passage was stale)**: plain multi-task `/implement N,M`, `/research N,M`, and
-`/plan N,M` are NOT blind to `orchestrate-batch-admit.sh` — each already runs a Batch Admission
+**Residue note (recorded, not restructured here)**: this section's "plain multi-task
+implement/research/plan invocation" analysis, and its citations of `commands/research.md`'s,
+`commands/plan.md`'s, and `commands/implement.md`'s own Step 2.5, describe an invocation mode
+whose command files have no definition anywhere in the source store. Whether the self-
+modification-hazard and `file_scope_collision` risk this section analyzes is now moot (the mode
+cannot be invoked) or still reachable under `/orchestrate`'s own batch mode by a different name
+is unresolved here — re-verifying this section against current reachability is a restructure
+beyond this record's per-site reword scope (see Non-Goals), flagged as a named follow-up.
+
+**Corrected (this passage was stale)**: a plain multi-task implement, research, and plan
+invocation (`implement N,M`-style) is NOT blind to `orchestrate-batch-admit.sh` — each already runs a Batch Admission
 Pre-Check (Step 2.5, "Gap C") that calls it over the whole validated candidate set with
 `--invocation-count "${#validated_tasks[@]}"`, so a self-modifying candidate co-dispatched
 alongside another candidate in the same plain multi-task batch IS deferred by this gate, exactly
@@ -734,15 +743,15 @@ as an `/orchestrate` co-dispatch is. What remains genuinely `/orchestrate`-only 
 **same-cycle narrowing** described above, not gate visibility itself — see the next paragraph.
 
 **Decision, restated after the same-cycle narrowing: restate the acceptance, do not extend
-protection.** The narrowing this document records above does NOT transfer to plain multi-task
-`/implement`, `/research`, or `/plan` by analogy, and the reason is specific to what those
-commands lack, not a general judgment that they are lower-risk. The narrowed self-modification
+protection.** The narrowing this document records above does NOT transfer to a plain multi-task
+implement, research, or plan invocation by analogy, and the reason is specific to what that
+invocation mode lacks, not a general judgment that it is lower-risk. The narrowed self-modification
 trigger is counted against `${#eligible_tasks[@]}` — a per-CYCLE co-dispatch set produced by
-`/orchestrate`'s own Kahn-ordered wave/cycle machinery (Move 1's wave/cycle sequencing). Plain multi-task
-`/implement N,M`, `/research N,M`, and `/plan N,M` have no wave or cycle computation at all: no
+`/orchestrate`'s own Kahn-ordered wave/cycle machinery (Move 1's wave/cycle sequencing). A plain multi-task implement, research, and plan invocation
+(`implement N,M`-style) has no wave or cycle computation at all: no
 Kahn ordering, no per-cycle eligibility re-evaluation, no concept of "this cycle's co-dispatch
 set" for a narrowed trigger to be counted against. There is therefore no unit the narrowing could
-even be expressed in for those commands — extending equivalent protection would require first
+even be expressed in for that invocation mode — extending equivalent protection would require first
 introducing a wave/cycle concept those commands do not have, which is a materially larger change
 than narrowing an existing trigger. A future reader must not assume the narrowing implicitly
 covered plain multi-task commands merely because it narrowed the analogous check inside
@@ -773,7 +782,7 @@ never expanded to pull in an out-of-batch predecessor.
 The batch-commit staging gap previously noted here — that the retired end-of-batch commit did not
 stage an implementation agent's self-reported `modified_files` per task — is now closed: the
 per-task commit described under hazard 2's retirement above stages each task's own `modified_files`
-via the same contract single-task `/implement` uses (`context/standards/git-staging-scope.md`'s
+via the same contract the single-task implement dispatch uses (`context/standards/git-staging-scope.md`'s
 "Multi-Task Application" subsection).
 
 ### The Inter-Cycle Redeploy Checkpoint
@@ -1279,7 +1288,7 @@ deploy/regeneration script or the deploy-verification script itself — mechanic
 preflight-cheap, path-scoped `git log -1` comparison per touched extension, via
 `scripts/lib/deploy-freshness-lib.sh`'s `deploy_freshness_status` function — the same comparison
 algorithm `check-deploy-freshness.sh` uses, factored into one shared library so the two tiers
-below share one algorithm. Multi-task `/implement` and `skill-orchestrate` both dispatch per-task
+below share one algorithm. A multi-task implement invocation and `skill-orchestrate` both dispatch per-task
 implementation skills in parallel; a deploy fired from inside per-task postflight would race the
 fail-open `specs/.deploy-lock` mutex exactly as the Concurrency note above describes for the
 Inter-Cycle checkpoint — so the actual redeploy trigger is placed ONLY at the two already-
@@ -1314,7 +1323,7 @@ resolution" subsection above specifies — not special-cased.
 
 - **Single-task path**: `scripts/command-gate-out.sh`'s existing `gate_out_rc` handling, extended
   with an `rc == 6` branch alongside the pre-existing `rc == 4` phase-check branch. This call site
-  has no concurrency — it is the true single-task `/implement` completion path — so it is safe to
+  has no concurrency — it is the true single-task implement-dispatch completion path — so it is safe to
   fire the redeploy directly from here.
 - **Multi-task batch path**: `commands/implement.md` Step 4, already serial (it runs once, after
   all of Step 3's parallel dispatches have returned), placed strictly BEFORE the existing per-task
@@ -1364,7 +1373,7 @@ path exactly as on the pre-existing matched-allowlist path — unchanged, not by
 
 **Concurrency posture (why the redeploy still lives at the checkpoint boundary, never in
 per-task postflight)**: `command-gate-out.sh`'s single-task trigger licenses itself on the grounds
-that its call site has NO concurrency — the true single-task `/implement` completion path.
+that its call site has NO concurrency — the true single-task implement-dispatch completion path.
 `skills/skill-orchestrate/SKILL.md`'s Move 2 issues every `dispatch[]` row's Agent call in ONE
 message (genuinely simultaneous); a redeploy fired from inside `orchestrate-cycle-postflight.sh`
 would therefore race the fail-open `specs/.deploy-lock` mutex against a sibling task's own

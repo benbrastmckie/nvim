@@ -76,7 +76,7 @@ This indicates the directory was archived in state but never physically moved.
 
 ## Completion Summary Guidance
 
-`/implement` populates `completion_summary` (and, optionally, `roadmap_items`) on task
+An implement dispatch populates `completion_summary` (and, optionally, `roadmap_items`) on task
 completion; `/todo` consumes `completion_summary` when generating `specs/CHANGE_LOG.md` entries
 for archived tasks.
 

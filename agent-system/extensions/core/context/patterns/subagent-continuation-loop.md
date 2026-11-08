@@ -179,7 +179,7 @@ If `handoff_path` is missing from partial metadata:
 If the session_id in the loop guard does not match the current session:
 - Abort the continuation loop
 - Report partial status
-- This prevents race conditions when the user re-runs `/implement` while a continuation is in progress
+- This prevents race conditions when the user re-runs an implement dispatch (via `/orchestrate`) while a continuation is in progress
 
 ### Context Exhaustion During Handoff Writing
 

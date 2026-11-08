@@ -147,7 +147,7 @@ When MCP errors occur, they should be logged to errors.json with:
   "message": "MCP tool {tool_name} aborted with error -32001",
   "context": {
     "session_id": "sess_...",
-    "command": "/research or /implement",
+    "command": "research or implement dispatch",
     "task": 259,
     "tool_name": "tool_name_here",
     "error_code": -32001,

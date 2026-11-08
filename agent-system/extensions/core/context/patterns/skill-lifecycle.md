@@ -235,7 +235,7 @@ some skills still use).
 ### Agent Errors
 - If the subagent returns `partial` or `failed`, do NOT run the Stage 7 status advance
   (`skill_postflight_update` already no-ops on a non-success status). Keep the task in its
-  preflight-set status (e.g. `researching`) so the next `/research`/`/plan`/`/implement` invocation
+  preflight-set status (e.g. `researching`) so the next research/plan/implement dispatch
   resumes rather than silently re-reporting success.
 
 ### Postflight Errors

@@ -136,7 +136,7 @@ edited, weakened, or reworded here. This is the second and, as of this writing, 
 this section records.
 
 **The exact and only sanctioned automated call sites**: `scripts/command-gate-out.sh`'s
-`rc == 6` branch (the single-task `/implement` completion path -- a point with no concurrency,
+`rc == 6` branch (the single-task implement-dispatch completion path -- a point with no concurrency,
 since it runs once per task after that task's own dispatch has already returned), and
 `scripts/orchestrate-cycle-plan.sh`'s Inter-Cycle Redeploy Checkpoint (the multi-task
 `/orchestrate` completion path -- already serial, since it runs inside this already-serialized

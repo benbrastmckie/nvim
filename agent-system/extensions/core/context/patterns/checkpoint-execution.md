@@ -8,7 +8,7 @@
 
 ## Overview
 
-All workflow commands (/research, /plan, /implement, /revise) follow a three-checkpoint pattern that ensures consistent execution, traceability, and error recovery.
+All workflow operations (the research, plan, and implement dispatches, plus the `/revise` command) follow a three-checkpoint pattern that ensures consistent execution, traceability, and error recovery.
 
 ---
 
@@ -39,11 +39,11 @@ All workflow commands (/research, /plan, /implement, /revise) follow a three-che
 5. PROCEED or ABORT
 
 **Status Transitions**:
-| Command | From Status | To Status |
+| Operation | From Status | To Status |
 |---------|-------------|-----------|
-| /research | not_started, researched | researching |
-| /plan | researched | planning |
-| /implement | planned, implementing | implementing |
+| research dispatch | not_started, researched | researching |
+| plan dispatch | researched | planning |
+| implement dispatch | planned, implementing | implementing |
 | /revise | planned, researched | planning |
 
 **Session ID Generation**:
@@ -87,11 +87,11 @@ extensions without a dedicated plan skill. See `.claude/extensions/*/manifest.js
 6. PROCEED, RETRY, or PARTIAL
 
 **Status Transitions**:
-| Command | From Status | To Status |
+| Operation | From Status | To Status |
 |---------|-------------|-----------|
-| /research | researching | researched |
-| /plan | planning | planned |
-| /implement | implementing | completed |
+| research dispatch | researching | researched |
+| plan dispatch | planning | planned |
+| implement dispatch | implementing | completed |
 
 **Idempotency Check**:
 Before adding artifact links, check if already present:
@@ -124,12 +124,12 @@ Session: {session_id}
 ```
 
 **Action Values**:
-| Command | Action |
+| Operation | Action |
 |---------|--------|
-| /research | complete research |
-| /plan | create implementation plan |
-| /implement | complete implementation |
-| /implement (phase) | phase {P}: {phase_name} |
+| research dispatch | complete research |
+| plan dispatch | create implementation plan |
+| implement dispatch | complete implementation |
+| implement dispatch (phase) | phase {P}: {phase_name} |
 
 ---
 

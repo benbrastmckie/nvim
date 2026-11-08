@@ -26,7 +26,7 @@ inside a script).
   skill, e.g. `description=$(echo "$task_data" | jq -r '.description // ""')`).
 - `orchestrator_mode` — value of the `orchestrator_mode` field from the delegation context this
   skill instance received (present when dispatched by `/orchestrate` or `/orchestrate --hard`;
-  absent/unset for a direct `/research`, `/plan`, or `/implement` invocation). Default to
+  absent/unset for a research, plan, or implement dispatch invoked outside `/orchestrate`). Default to
   `"false"` when unset: `"${orchestrator_mode:-false}"`. See
   `.claude/docs/architecture/handoff-schema.md`'s Dual-Consumer Note — this field also gates the
   `.orchestrator-handoff.json` write, a SEPARATE consumer; do not conflate the two meanings.

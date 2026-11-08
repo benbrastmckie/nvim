@@ -1,0 +1,62 @@
+{
+  "phase": 2,
+  "phase_name": "core/context/patterns",
+  "started_at": "2026-11-07T18:56:00Z",
+  "last_updated": "2026-11-07T19:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply shared per-phase procedure to all 14 files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/anti-stop-patterns.md",
+        "agent-system/extensions/core/context/patterns/checkpoint-execution.md",
+        "agent-system/extensions/core/context/patterns/context-discovery.md",
+        "agent-system/extensions/core/context/patterns/mcp-tool-recovery.md",
+        "agent-system/extensions/core/context/patterns/regeneration-is-manual-only.md",
+        "agent-system/extensions/core/context/patterns/subagent-continuation-loop.md",
+        "agent-system/extensions/core/context/patterns/todo-archival-reference.md",
+        "agent-system/extensions/core/context/patterns/checkpoint-before-overflow.md",
+        "agent-system/extensions/core/context/patterns/lit-stage4a-flow.md",
+        "agent-system/extensions/core/context/patterns/skill-postflight-flow.md",
+        "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+        "agent-system/extensions/core/context/patterns/task-lock.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "121 occurrences across 14 files, matching Scope Hypothesis exactly. multi-task-operations.md (33 occ) had none-exempt remaining; task-lock.md (23) same; batch-orchestration-guardrails.md (13, sibling task-420 file_scope) re-read before editing per instruction."
+    },
+    {
+      "id": 2,
+      "description": "batch-orchestration-guardrails.md sibling-collision re-read before editing",
+      "status": "done",
+      "files_touched": [],
+      "note": "Re-read immediately before editing; staged only this task's own hunks via git-commit-phase.sh's files_touched-derived pathspec."
+    },
+    {
+      "id": 3,
+      "description": "multi-task-operations.md and task-lock.md budgeted as heaviest files",
+      "status": "done",
+      "files_touched": [],
+      "note": "Both files found to describe substantially pre-/orchestrate-rewrite architecture (standalone multi-task command dispatch, SIX-command-file command-gate-in.sh sourcing count). Rather than restructure, applied token-level reword plus residue notes documenting the deeper staleness for a named follow-up, consistent with Non-Goals."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "class_decisions": {
+    "class_3_leave_alone": [
+      {"file": "context-discovery.md", "lines": "329,340,347", "reason": "Check Command Scope section: literal jq-matched string values documenting index.json load_when.commands registration; rewording breaks the check's own documentation of its literal match targets."},
+      {"file": "multi-task-operations.md", "lines": "286-287", "reason": "Section 6 'Superseded note' -- already correctly marked historical/record-versioning-exempt per this task's own Non-Goals (system-overview.md precedent); left exactly as pre-existing."},
+      {"file": "multi-task-operations.md", "lines": "555,561-563", "reason": "Section 12 'Historical' note plus the table it explicitly says is 'retained for the pattern's original per-command design intent' -- already correctly marked, left as-is."},
+      {"file": "skill-lifecycle.md", "lines": "288", "reason": "Correct historical statement ('the former per-command .../.../... multi-task dispatch has been retired along with those commands') -- the retired commands are the sentence's own subject matter, same class as the lint's own historical statement."}
+    ],
+    "residue_notes_added": [
+      {"file": "skill-postflight-flow.md", "what": "Entire '.return-meta.json Reader Table' cites commands/{research,plan,implement}.md CHECKPOINT 3 and the /orchestrate single-task CHECKPOINT 3, both of which orchestrate.md's own command file says were deleted along with the former single-task engine. Flagged as a named follow-up; not restructured."},
+      {"file": "batch-orchestration-guardrails.md", "what": "The 'Scope Limitation and Residual Risk' section's plain-multi-task-command risk analysis cites the same dead commands/{research,plan,implement}.md files; flagged whether the analysis is now moot or still reachable under /orchestrate's batch mode, left unresolved as a named follow-up."},
+      {"file": "task-lock.md", "what": "The 'SIX command files' sourcing count for command-gate-in.sh is verifiably stale: re-running the doc's own prescribed grep today returns one hit (revise.md only), not six, since /orchestrate's single-task GATE IN sequencing was also deleted. Flagged as a named follow-up rather than re-deriving and rewriting the full Consumers/Six-Distinct-Wiring-Paths section, which would be a restructure."}
+    ]
+  }
+}

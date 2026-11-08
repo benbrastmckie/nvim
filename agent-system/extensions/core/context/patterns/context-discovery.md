@@ -64,7 +64,7 @@ jq -r '.entries[] |
 
 ```bash
 jq -r '.entries[] |
-  select(.load_when.commands[]? == "/implement") |
+  select(.load_when.commands[]? == "/revise") |
   .path' .claude/context/index.json
 ```
 
@@ -199,7 +199,7 @@ Load context that matches any active dimension - always, agent, language, or com
 # Full combined query for adaptive context loading
 jq -r --arg agent "general-implementation-agent" \
       --arg task_type "meta" \
-      --arg cmd "/implement" '
+      --arg cmd "/revise" '
   .entries[] |
   select(
     (.load_when.always == true) or
@@ -238,7 +238,7 @@ jq -r '.entries[] |
 
 ```bash
 jq -r '.entries[] |
-  select(.load_when.commands[]? == "/implement") |
+  select(.load_when.commands[]? == "/revise") |
   select(.line_count < 500) |
   "\(.path) (\(.line_count) lines)"' .claude/context/index.json
 ```
@@ -284,8 +284,8 @@ duplicate hook, not a legitimate dual-addressed shape. The fix is to drop `comma
 
 **Enforcement**: this is not merely documented policy -- `validate-context-budgets.sh`'s
 Double-Loading Check enforces it mechanically. It derives the current command-to-agent routing
-table live from deployed artifacts (`manifest.json`'s `routing_agents` block for `/research`,
-`/plan`, `/implement`, and the sole `subagent_type:` line in each of `skill-meta`,
+table live from deployed artifacts (`manifest.json`'s `routing_agents` block for the research, plan,
+and implement phases, and the sole `subagent_type:` line in each of `skill-meta`,
 `skill-spawn`, `skill-reviser`'s `SKILL.md` for `/meta`, `/spawn`, `/revise`) and classifies
 every entry carrying both hooks into one of three buckets: **redundant** (a build-breaking
 violation), **legitimate-dual** (informational only), or **unclassifiable-command** (a command

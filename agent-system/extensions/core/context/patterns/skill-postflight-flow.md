@@ -158,16 +158,29 @@ reading it. See the reader table immediately below for the full per-command mapp
 Every consumer of `.return-meta.json` downstream of DELEGATE, and which step owns the file's
 deletion. Reference sites by file and section name, never by line number (line numbers drift).
 
-| Calling command | Consumers downstream of DELEGATE | Deletion owner |
+| Calling command/phase | Consumers downstream of DELEGATE | Deletion owner |
 |---|---|---|
-| `/research` | `command-gate-out.sh` (defensive correction, `skill_validate_task_artifacts`); `commands/research.md` CHECKPOINT 3 `git add` (stages the file as durable provenance) | `commands/research.md` CHECKPOINT 3, final line of the commit block |
-| `/plan` | `command-gate-out.sh` (same two mechanisms); `commands/plan.md` CHECKPOINT 3 `git add` (recursive task-dir add) | `commands/plan.md` CHECKPOINT 3, final line of the commit block |
-| `/implement` | `command-gate-out.sh` (same two mechanisms); `commands/implement.md` CHECKPOINT 3 (`modified_files` read into `stage_paths`) | `commands/implement.md` CHECKPOINT 3, final line of both the completion and partial commit branches |
+| research-phase dispatch | `command-gate-out.sh` (defensive correction, `skill_validate_task_artifacts`); `commands/research.md` CHECKPOINT 3 `git add` (stages the file as durable provenance) | `commands/research.md` CHECKPOINT 3, final line of the commit block |
+| plan-phase dispatch | `command-gate-out.sh` (same two mechanisms); `commands/plan.md` CHECKPOINT 3 `git add` (recursive task-dir add) | `commands/plan.md` CHECKPOINT 3, final line of the commit block |
+| implement-phase dispatch | `command-gate-out.sh` (same two mechanisms); `commands/implement.md` CHECKPOINT 3 (`modified_files` read into `stage_paths`) | `commands/implement.md` CHECKPOINT 3, final line of both the completion and partial commit branches |
 | `/revise` | `command-gate-out.sh` (same two mechanisms, gated on `skill-reviser`'s reported status); the revise-specific plan-file existence check | `commands/revise.md`, immediately after that plan-file existence check (no CHECKPOINT 3 exists for `/revise`) |
 | `/orchestrate` (single-task) | `command-gate-out.sh` (same two mechanisms); `commands/orchestrate.md` CHECKPOINT 3 (`modified_files` read into `stage_paths`) | `commands/orchestrate.md` CHECKPOINT 3, completion branch only, after `git-commit-scoped.sh`. The partial/paused branch deliberately keeps the file so the next cycle's `orchestrate-stage5-gates.sh` outcome recovery still has its mtime-freshness-windowed fallback |
-| `/research`, `/plan`, `/implement` multi-task batch loops | None of the above — these loops deliberately bypass `command-gate-in.sh`/`command-gate-out.sh` and never reach the single-task CHECKPOINT 3 | Each command's own Step 4 batch-commit block, iterating the dispatched task list, after the batch commit |
+| research/plan/implement-phase multi-task batch loops | None of the above — these loops deliberately bypass `command-gate-in.sh`/`command-gate-out.sh` and never reach the single-task CHECKPOINT 3 | Each phase's own Step 4 batch-commit block, iterating the dispatched task list, after the batch commit |
 | `/orchestrate` (multi-task) | `skill-orchestrate`'s own Move 2 per-task dispatch loop, which dispatches directly to agents (bypassing the skill layer and `skill_cleanup` entirely) and reads `.return-meta.json` repeatedly across however many cycles a task's dispatch spans, for outcome recovery via `orchestrate-recover-outcome.sh` | **No deletion site exists, deliberately.** The file is never deleted in this path — it functions as an ongoing, multi-cycle recovery record, the same role the single-task completion-only scoping protects, but more conservative because an MT task's dispatch can legitimately span several cycles |
 | `/spawn` | None (no `command-gate-out.sh`/CHECKPOINT 3 consumer) | `skill-spawn/SKILL.md` Stage 16, inline, immediately after `skill_cleanup` |
+
+**Residue note (recorded, not restructured here)**: the research-phase/plan-phase/implement-phase
+rows above, and the `/orchestrate` (single-task) row, cite `commands/research.md`,
+`commands/plan.md`, and `commands/implement.md` CHECKPOINT 3 blocks. Those three files have no
+definition anywhere in the source store — `/orchestrate`'s own command file states that its
+former single-task CHECKPOINT 1-4 engine, reachable only when a lone task number fell through the
+pre-rewrite single-task branch, "is deleted along with the single-task `SKILL.md` engine it
+delegated to." That implies every row above the `/orchestrate` (multi-task) row describes a
+dispatch path this reader table has not been re-verified against since that deletion, and the
+live mechanism for a `.return-meta.json` deletion today may be the same Move 2/3 per-task loop the
+multi-task row already documents, for both a one-task and a many-task `/orchestrate` invocation.
+Re-verifying and correcting this table is a restructure beyond this record's per-site reword
+scope (see Non-Goals); flagged here as a named follow-up rather than silently left stale.
 
 ### Why `command-gate-out.sh`'s two mechanisms are retained, not removed
 

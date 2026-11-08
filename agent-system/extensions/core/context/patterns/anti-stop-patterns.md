@@ -6,7 +6,7 @@ Claude interprets certain words and phrases as signals to stop execution immedia
 
 **Root Cause**: Claude Code treats certain return values as "conversation complete" signals, halting execution before the calling skill/orchestrator can continue.
 
-**Impact**: Workflow commands like /research, /plan, /implement stop prematurely, leaving tasks in inconsistent states (e.g., [RESEARCHING] instead of [RESEARCHED]).
+**Impact**: Workflow dispatches like research, plan, and implement stop prematurely, leaving tasks in inconsistent states (e.g., [RESEARCHING] instead of [RESEARCHED]).
 
 ## Forbidden Patterns
 
@@ -79,7 +79,7 @@ Use continuation-oriented language that implies the workflow continues:
 // Good: implies orchestrator continues
 {"next_steps": "Implementation finished. Run /task --sync to verify."}
 {"next_steps": "Research concluded. Artifacts created."}
-{"next_steps": "Plan created. Ready for /implement {N}."}
+{"next_steps": "Plan created. Continuing to the implement phase."}
 
 // Bad: triggers stop
 {"next_steps": "Task complete"}

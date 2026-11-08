@@ -40,7 +40,7 @@ provides exclusivity:
   "operation": "plan",
   "acquired_at": "2026-07-04T18:07:17Z",
   "heartbeat_at": "2026-07-04T18:12:40Z",
-  "command": "/plan 788",
+  "command": "/orchestrate 788 --plan",
   "pid": 261744,
   "pid_source": "ancestor-claude"
 }
@@ -96,7 +96,7 @@ Tunable via `TASK_LOCK_STALE_MIN` (default 30, plan-sanctioned range 30-60 minut
 constant is **distinct from and much longer than** `git-snapshot.sh`'s unrelated 120-**second**
 marker-freshness window — that window gates a single destructive-git-command exemption; this
 threshold gates whether a lock is still meaningful for concurrency purposes over the timescale
-of an entire `/research`/`/plan`/`/implement` invocation (which can run for many minutes).
+of an entire research/plan/implement dispatch (which can run for many minutes).
 
 ## Contract: acquire / heartbeat / release / check / init-marker
 
@@ -224,7 +224,7 @@ Response" below). A bounded wait-and-retry WRAPPER around `acquire`, never a mod
 Refresh `heartbeat_at` in place if the lock is held by the SAME session. If the lock is
 missing, or held by a different session, this is a **no-op with a stderr warning** — heartbeat
 never blocks or errors the caller; it is a best-effort refresh at existing checkpoints (the
-`/orchestrate` cycle loop, `/implement` phase transitions), not a gate. Task-directory resolution
+`/orchestrate` cycle loop, implement-dispatch phase transitions), not a gate. Task-directory resolution
 here is strictly read-only: `heartbeat` never creates a directory, even against a task that
 `state.json` names but that has no directory on disk yet.
 
@@ -1051,7 +1051,7 @@ stream.
   "session_id": "sess_1736700000_a1b2c3",
   "pid": 261744,
   "pid_source": "ancestor-claude",
-  "command": "/implement 944",
+  "command": "/orchestrate 944 --implement",
   "task_numbers": [944],
   "file_scope": ["agent-system/extensions/core/scripts/task-lock.sh"],
   "started_at": "2026-07-04T18:07:17Z",
@@ -1439,7 +1439,7 @@ inapplicable; the ladder never skips a tier that IS reachable for the calling co
 
 - **Tier 1 has no meaning for a single-task invocation run in isolation** — auto-sequencing
   presupposes another task's work that the SAME invocation will itself finish (an in-batch
-  collision, or a later `/orchestrate` cycle). A solo `/research 42` has no batch or cycle to
+  collision, or a later `/orchestrate` cycle). A solo single-task research dispatch (`/orchestrate 42 --research`) has no batch or cycle to
   re-sequence into, so Tier 1 is simply never reached for it — Tier 2 is the first tier a
   single-task invocation's collision can hit.
 - **Tier 4 has no meaning under `orchestrator_mode: true`** — no human is available to answer an
@@ -1486,11 +1486,10 @@ ABORT: Task {N}'s file_scope overlaps task {other_task}'s file_scope at "{overla
 
 The last-resort tier of the four-tier conflict-response ladder (auto-sequence, bounded retry,
 warn, ask — see this document's "Four-Tier Conflict Response" section above for the full ladder).
-Reachable ONLY where a human actually exists to answer: a direct single-task `/research`,
-`/plan`, or `/implement` invocation whose CHECKPOINT 1 GATE IN step (`command-gate-in.sh`) has
+Reachable ONLY where a human actually exists to answer: a direct single-task research, plan,
+or implement dispatch whose CHECKPOINT 1 GATE IN step (`command-gate-in.sh`) has
 just failed the acquire-retry call (Tier 2 exhausted, Tier 3's ABORT text already emitted). This
-is the SINGLE canonical Tier-4 block; `commands/research.md`, `commands/plan.md`, and
-`commands/implement.md` all reference it by pointer immediately after their `source
+is the SINGLE canonical Tier-4 block, referenced by pointer immediately after the `source
 .claude/scripts/command-gate-in.sh` failure branch rather than restating it — the same
 single-source-of-truth shape `context/patterns/lit-stage4a-flow.md` established for `--lit`'s
 Stage 4a, and this block's `orchestrator_mode` branch is modeled directly on that document's
@@ -1524,8 +1523,8 @@ task for this invocation, exactly as `lit-stage4a-flow.md`'s `AUTONOMOUS_GLOBAL`
 echo "[conflict:auto] Task acquire refused after the bounded retry budget; autonomous context (orchestrator_mode=true) — no human available to ask, so the warn tier (Tier 3) is the terminus for this invocation. Deferring/skipping this task rather than prompting." >&2
 ```
 
-**`orchestrator_mode != "true"` (interactive — a direct `/research`, `/plan`, or `/implement`
-invocation)**: present the real question via `AskUserQuestion`.
+**`orchestrator_mode != "true"` (interactive — a direct research, plan, or implement
+dispatch)**: present the real question via `AskUserQuestion`.
 
 ### The Interactive Question
 
@@ -1578,22 +1577,29 @@ decision, not an omission:
 
 This is the **highest-impact risk** in this lock's design: a bug in the
 session-identity check would block ALL task work system-wide, since `command-gate-in.sh` is
-sourced by SIX command files: `/research`, `/plan`, `/implement`, `/revise`, `/orchestrate`, and
-`/task` (twice — its `expand` and `abandon` operations). This count is verifiable by
-`grep -rn 'source .claude/scripts/command-gate-in.sh' agent-system/extensions/core/commands/` and
-must not be trusted as frozen — re-derive it rather than citing this prose if a future command
-gains a new `command-gate-in.sh` call site. The session-identity branch is checked FIRST,
+sourced by the research, plan, and implement dispatch paths, `/revise`, `/orchestrate`, and
+`/task` (twice — its `expand` and `abandon` operations), historically counted as SIX command
+files. **Residue note (recorded, not restructured here)**: that count predates the three
+lifecycle commands' removal — re-deriving it today via
+`grep -rn 'source .claude/scripts/command-gate-in.sh' agent-system/extensions/core/commands/`
+returns a single hit (`revise.md`), since `/orchestrate`'s own single-task GATE IN sequencing was
+also deleted (see `batch-orchestration-guardrails.md`'s "Inter-Cycle Redeploy Checkpoint"
+section). Re-verifying and correcting every count and consumer-list entry this sourcing figure
+feeds (including the "Six Distinct Wiring Paths" heading and list below) is a restructure beyond
+this record's per-site reword scope (see Non-Goals); flagged as a named follow-up. This count
+must not be trusted as frozen — re-derive it rather than citing this prose, since both a future
+command gaining a new call site and a command's removal change it. The session-identity branch is checked FIRST,
 unconditionally, before any staleness computation
-— a session re-acquiring its own lock (e.g. `/research 42` immediately followed by `/plan 42` in
-the same conversation) always succeeds. This property has a dedicated functional test and should never be weakened by future edits.
+— a session re-acquiring its own lock (e.g. a research dispatch for 42 immediately
+followed by a plan dispatch for 42 in the same conversation) always succeeds. This property has a dedicated functional test and should never be weakened by future edits.
 
 ## Consumers (Six Distinct Wiring Paths)
 
 1. **Single-task gate scripts**: `command-gate-in.sh` (acquire after the terminal-status guard)
-   and `command-gate-out.sh` (unconditional release) — covers `/research`, `/plan`,
-   `/implement`, `/revise`, `/orchestrate`'s own single-task CHECKPOINT 1/2, and `/task`'s
+   and `command-gate-out.sh` (unconditional release) — covers the research, plan,
+   implement, `/revise`, `/orchestrate`'s own single-task CHECKPOINT 1/2, and `/task`'s
    `expand` and `abandon` operations (see the Same-Session Re-Entry section above for the full
-   six-site sourcing list and its grep-verifiable count).
+   sourcing list, its grep-verifiable count, and the residue note on that count's staleness).
 2. **Multi-task/wave dispatch**: `skill-orchestrate/SKILL.md` Stage MT (per-task
    acquire/release inside each wave dispatch) and `implement.md` Step 3 (per-task
    acquire/release in the multi-task loop) — these paths bypass the gate scripts entirely and
@@ -1681,8 +1687,8 @@ so the wiring paths cannot drift from each other's semantics.
 
 ## Non-Goals (Deferred Follow-Ups)
 
-- ~~**`file_scope`-granular cross-task locking**: blocking `/implement 99` while `/implement 42`
-  holds a lock when their `file_scope` arrays overlap (reusing `file-footprint-overlap.md`'s
+- ~~**`file_scope`-granular cross-task locking**: blocking an implement dispatch for 99
+  while an implement dispatch for 42 holds a lock when their `file_scope` arrays overlap (reusing `file-footprint-overlap.md`'s
   algorithm)~~ — CLOSED by the cross-task `file_scope` overlap check (see "Cross-Task
   `file_scope` Overlap Check" above), which scans every held `.lock` across all task directories
   at acquire time via `find_held_locks`/`get_file_scope`/`scopes_overlap`, guarded by the

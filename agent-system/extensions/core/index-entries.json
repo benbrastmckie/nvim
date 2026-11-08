@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 887,
+      "line_count": 920,
       "keywords": [
         "format",
         "metadata",
@@ -2822,7 +2822,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 2295,
+      "line_count": 2305,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3090,7 +3090,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared Stage 7/7a/8/8a/9 postflight status update, memory-candidate propagation, artifact linking, TTS notify, and cleanup block imported by lifecycle skills",
-      "line_count": 193,
+      "line_count": 206,
       "keywords": [
         "postflight",
         "memory_candidates",
@@ -3154,7 +3154,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1731,
+      "line_count": 1737,
       "keywords": [
         "task-lock",
         "concurrency",
@@ -3201,7 +3201,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 938,
+      "line_count": 950,
       "keywords": [
         "git-staging",
         "commit-scope",

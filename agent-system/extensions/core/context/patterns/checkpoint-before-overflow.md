@@ -159,7 +159,7 @@ contract's H9 wrap-up schema:
 - **Why the distinction matters**: writing an H9-shaped artifact that nothing reads is worse than
   writing nothing — it looks like a supported continuation mechanism when none exists. Research's
   checkpoint value is crash-avoidance (never lose in-progress findings to an uncommitted RED
-  tree) plus a discoverable partial report on disk that a fresh `/research N` invocation can
+  tree) plus a discoverable partial report on disk that a fresh research-phase dispatch for that task can
   build on, not automatic resume.
 
 See each research agent's own Stage 3.6 (or equivalent) for the full research handoff sequence

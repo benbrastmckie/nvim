@@ -2,7 +2,7 @@
 
 **Created**: 2026-04-02
 **Purpose**: Define how workflow commands parse multi-task arguments, dispatch parallel skills, and produce consolidated output
-**Audience**: Command developers implementing multi-task support in /research, /plan, /implement
+**Audience**: Command developers implementing multi-task support for the research, plan, and implement dispatch phases
 
 ---
 
@@ -103,10 +103,10 @@ len(task_numbers) == 1
 ```
 
 **Backward compatibility guarantees**:
-- Single task number (`/research 7`) behaves identically to current implementation
-- Single task with focus prompt (`/research 7 focus on APIs`) behaves identically
-- Single task with flags (`/research 7 --hard`) behaves identically
-- Ranges that resolve to one task (`/research 7-7` or `/research 7,7,7`) use single-task flow
+- Single task number (`/orchestrate 7 --research`) behaves identically to current implementation
+- Single task with focus prompt (`/orchestrate 7 --research focus on APIs`) behaves identically
+- Single task with flags (`/orchestrate 7 --research --hard`) behaves identically
+- Ranges that resolve to one task (`/orchestrate 7-7 --research` or `/orchestrate 7,7,7 --research`) use single-task flow
 
 ---
 
@@ -200,11 +200,11 @@ done
 
 **Status validation per command**:
 
-| Command | Allowed From Status |
+| Phase | Allowed From Status |
 |---------|-------------------|
-| /research | not_started, researched |
-| /plan | researched |
-| /implement | planned, implementing (resume) |
+| research | not_started, researched |
+| plan | researched |
+| implement | planned, implementing (resume) |
 
 **Handling invalid tasks**:
 
@@ -455,7 +455,7 @@ Skipped: {count}
 | #99 | Not found in state.json |
 
 ### Next Steps
-- /plan 7, 22, 24, 59
+- /orchestrate 7, 22, 24, 59 --plan
 ```
 
 **Field definitions**:
@@ -520,9 +520,9 @@ silently assumed complete.
 
 This pattern is fully backward compatible with existing single-task usage:
 
-1. **Single task** (`/research 7`): `parse_task_args()` returns `[7]`, falls through to existing flow
-2. **Single task with focus** (`/research 7 focus on APIs`): Parser separates `7` from `focus on APIs`
-3. **Single task with flags** (`/research 7 --hard`): Parser separates `7` from `--hard`
+1. **Single task** (`/orchestrate 7 --research`): `parse_task_args()` returns `[7]`, falls through to existing flow
+2. **Single task with focus** (`/orchestrate 7 --research focus on APIs`): Parser separates `7` from `focus on APIs`
+3. **Single task with flags** (`/orchestrate 7 --research --hard`): Parser separates `7` from `--hard`
 4. **Existing /task flags** (`/task --recover 343-345`): Unaffected -- different command with flag-based routing via `/task` command file
 
 No existing behavior changes. Multi-task mode activates only when multiple task numbers are detected in the argument string.
@@ -564,7 +564,7 @@ the pattern's original per-command design intent.
 
 ### Batch Dispatch Architecture
 
-Multi-task dispatch is handled by the orchestrator loop built into each command file (`/research`, `/plan`, `/implement`), not by a separate batch skill. Each command's MULTI-TASK DISPATCH section implements:
+Multi-task dispatch is handled by the orchestrator loop built into each of the research, plan, and implement dispatch paths, not by a separate batch skill. Each one's MULTI-TASK DISPATCH section implements:
 
 - Task type extraction per task (from state.json)
 - Skill routing per task (using existing task-type-based routing from extension manifests)
@@ -580,7 +580,7 @@ This approach keeps dispatch logic co-located with each command's validation and
 
 ### Why Wave Dispatch Instead of Pure Parallel
 
-`/research`, `/plan`, and `/implement` operate on a **single lifecycle phase**: each command performs one well-defined step for each task. Since one task's research does not depend on another task's research completing (they are independent state machines), pure parallel dispatch is safe.
+The research, plan, and implement dispatch phases each operate on a **single lifecycle phase**: each performs one well-defined step for each task. Since one task's research does not depend on another task's research completing (they are independent state machines), pure parallel dispatch is safe.
 
 `/orchestrate` is different: it drives tasks through their **entire lifecycle** (research -> plan -> implement -> complete). When task B depends on task A, B must not begin orchestration until A has completed -- if B requires A's output, starting B before A finishes produces incorrect results.
 
@@ -664,7 +664,7 @@ The optional focus prompt (e.g., `/orchestrate 42, 43 focus on the auth layer`) 
 
 ### Dispatch Model Comparison
 
-| Property | `/research`, `/plan`, `/implement` | `/orchestrate` |
+| Property | research/plan/implement dispatch | `/orchestrate` |
 |----------|------------------------------------|----------------|
 | Scope per task | Single lifecycle phase | Full lifecycle (all phases) |
 | Dispatch model | Pure parallel (all tasks at once) | Wave dispatch (topological order) |

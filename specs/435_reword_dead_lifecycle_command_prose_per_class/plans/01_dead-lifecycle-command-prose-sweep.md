@@ -271,18 +271,21 @@ measurement command restricted to these two paths.
 
 ---
 
-### Phase 2: core/context/patterns [NOT STARTED]
+### Phase 2: core/context/patterns [COMPLETED]
 
 **Goal**: Treat the single densest tranche in the corpus per the rubric.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `batch-orchestration-guardrails.md` is a declared `file_scope` entry of sibling task 420,
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed)*
+- [x] `batch-orchestration-guardrails.md` is a declared `file_scope` entry of sibling task 420,
       dispatched this same cycle: re-read it immediately before editing and stage only this
-      task's own hunks.
-- [ ] `multi-task-operations.md` (33 occurrences) and `task-lock.md` (23) are the two heaviest
-      files in the corpus; budget accordingly and do not rush them.
+      task's own hunks. *(completed: re-read, residue note added for the dead commands/*.md
+      citations found in its risk analysis)*
+- [x] `multi-task-operations.md` (33 occurrences) and `task-lock.md` (23) are the two heaviest
+      files in the corpus; budget accordingly and do not rush them. *(completed: both found to
+      describe substantially pre-orchestrate-rewrite architecture; rewarded tokens + residue
+      notes recorded rather than restructuring)*
 
 **Timing**: 1.75 hours
 
