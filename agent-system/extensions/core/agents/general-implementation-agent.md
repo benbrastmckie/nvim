@@ -423,7 +423,14 @@ remains the durable description of the policy the wrapper implements:
    `--class "scope excursion"` (see `context/formats/issue-log.md`). Never refuse the whole
    commit over this — drop-and-warn only, the same "under-stage, never over-stage" fail-safe
    direction already settled in `@.claude/context/standards/git-staging-scope.md`. An agent
-   legitimately touching one incidental out-of-scope file still lands its in-scope work.
+   legitimately touching one incidental out-of-scope file still lands its in-scope work. The
+   wrapper additionally proposes the dropped path back into the task's own declared `file_scope`
+   by depositing it into `.return-meta.json`'s `proposed_file_scope` array at drop time
+   (skip-if-absent, never create) — this is strictly additive to, and never a substitute for,
+   the warning and the issue row above, both of which still fire unconditionally on every drop.
+   The agent applies nothing by hand here: the deposit, like the predicate itself, is mechanical.
+   See `@.claude/context/formats/return-metadata-file.md`'s `proposed_file_scope` field
+   specification for the full producer/consumer contract on this path.
 5. If `file_scope` is missing, empty, unreadable, or malformed, or the check hits any internal
    error, the wrapper proceeds exactly as if the check were absent — fail OPEN, never block a
    commit over a guard defect.
@@ -804,6 +811,8 @@ Store the candidates array in memory for inclusion in the metadata file at Stage
 ### Stage 7: Write Metadata File
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Include `modified_files` (from Stage 6-modified-files) at the top level of the JSON output — this is the agent's self-reported list of every source file touched, consumed by the commit pipeline for targeted staging (see `@.claude/context/standards/git-staging-scope.md`).
+
+**Preserve any `proposed_file_scope` already deposited mid-dispatch — read-modify-write, never blind-overwrite.** Before writing this final `.return-meta.json`, read the file as it currently stands on disk and check whether it already carries a `proposed_file_scope` array. It may have been deposited by `scripts/git-commit-phase.sh` itself, at a phase commit earlier in this same dispatch, when its own Containment Self-Check dropped a `files_touched` path for not being in the declared `file_scope` (see the Self-Check's step 4 above). On this path the agent is a **later writer** of the field, not its producer — `scripts/git-commit-phase.sh` is. Carry any such array through this write untouched rather than building a fresh object that omits it; losing it here silently reintroduces the exact staleness this task's mechanism exists to close, on the very next phase's commit. See `@.claude/context/formats/return-metadata-file.md`'s "Multiple Sequential Writers" section and its `proposed_file_scope` field specification for the full per-operation producer table.
 
 **Phase-count nesting (read this before writing `phases_completed`/`phases_total`)**: unlike `memory_candidates` and `modified_files` above, `phases_completed` and `phases_total` are **agent-specific metadata fields that go INSIDE the `metadata` object** (or inside `partial_progress` for a `partial` return — see the worked example immediately below), never at the top level of `.return-meta.json`. This is the OPPOSITE of `.orchestrator-handoff.json`, where these same two field names are always written at the top level — the two files use the same field names with different nesting rules, and a shape correct for one is wrong for the other. Do not pattern-match one file's shape onto the other.
 

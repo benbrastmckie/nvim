@@ -438,41 +438,41 @@ axis keeping its test coverage rather than losing it.
 
 ---
 
-### Phase 5: Sync the prose sources the mechanism is ported from [NOT STARTED]
+### Phase 5: Sync the prose sources the mechanism is ported from [COMPLETED]
 
 **Goal**: Keep the agent-facing and standards-facing descriptions matching the code, and give the
 implementing agent the explicit read-modify-write obligation that protects the script's
 mid-dispatch deposit from being overwritten at Stage 7.
 
 **Tasks**:
-- [ ] Re-read `agents/general-implementation-agent.md` (its `#### Phase-Commit Containment
+- [x] Re-read `agents/general-implementation-agent.md` (its `#### Phase-Commit Containment
       Self-Check` section and its `### Stage 7: Write Metadata File` section) and
       `context/standards/git-staging-scope.md` immediately before editing. Both files are inside
-      sibling task 435's coarse declared scope.
-- [ ] In `general-implementation-agent.md`'s Self-Check step 4, add one clause recording that the
+      sibling task 435's coarse declared scope. *(completed)*
+- [x] In `general-implementation-agent.md`'s Self-Check step 4, add one clause recording that the
       wrapper additionally proposes the dropped path back into the task's `file_scope` via
       `.return-meta.json`'s `proposed_file_scope`, that this is additive to and never a
       substitute for the warning and the issue row, and that the agent applies nothing by hand
       here. Leave steps 1-3 and 5 unchanged — in particular, leave step 5's fail-open sentence
-      exactly as it stands.
-- [ ] In `general-implementation-agent.md`'s Stage 7, add the preservation obligation: before the
+      exactly as it stands. *(completed)*
+- [x] In `general-implementation-agent.md`'s Stage 7, add the preservation obligation: before the
       final `.return-meta.json` `Write`, read any `proposed_file_scope` already present — it may
       have been deposited mid-dispatch by `git-commit-phase.sh` — and carry it through untouched
       rather than blind-overwriting it from a freshly built object. Cross-reference
       `return-metadata-file.md`'s "Multiple Sequential Writers" section. State plainly that on
-      this path the agent is a later writer, not the producer.
-- [ ] In `git-staging-scope.md`, extend the existing "Why a task reported as carrying no
+      this path the agent is a later writer, not the producer. *(completed)*
+- [x] In `git-staging-scope.md`, extend the existing "Why a task reported as carrying no
       `file_scope` can still see a drop at a later phase commit" paragraph — which already names
       the research report's `proposed_file_scope` and `plan-file-scope-harvest.sh` as the two
       `--file-scope-add` sources — with the third source: `git-commit-phase.sh`'s own drop-time
       deposit, consumed at implement postflight. Keep the paragraph's existing conclusion (that
       both readings of the same task at two different lifecycle points are correct, and that the
-      fail-open posture is unchanged) intact.
-- [ ] In `git-staging-scope.md`'s "Three Containment sites, not one" discussion of site 2, add one
+      fail-open posture is unchanged) intact. *(completed)*
+- [x] In `git-staging-scope.md`'s "Three Containment sites, not one" discussion of site 2, add one
       sentence noting that site 2 is now also the feedback source that keeps a declaration from
       staying stale, and that this changes nothing about the predicate or the drop-and-warn
-      posture at any of the three sites.
-- [ ] Verify no sentence in either file still implies `proposed_file_scope` is research-only.
+      posture at any of the three sites. *(completed)*
+- [x] Verify no sentence in either file still implies `proposed_file_scope` is research-only. *(completed)*
 
 **Timing**: 1 hour
 

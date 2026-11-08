@@ -349,6 +349,13 @@ sites, each reaching a different commit surface:
    commit.
 2. **`git-commit-phase.sh`'s own Phase-Commit Containment Self-Check** (its header's section of
    that name) — reaches a mid-dispatch phase commit issued through that wrapper specifically.
+   Site 2 is also the feedback source that keeps a task's declared `file_scope` from staying
+   stale: every path this site drops is additionally deposited into `proposed_file_scope` (see
+   "Why a task reported as carrying no `file_scope` can still see a drop at a later phase
+   commit" below for the full producer/consumer narrative). This changes nothing about the
+   predicate or the drop-and-warn posture at this or either of the other two sites — the
+   deposit is additive to, and never a substitute for, the warning and the issue row every site
+   already fires on a drop.
 3. **V10, inside `git-commit-scoped.sh` itself** (gated on `--task`) — reaches EVERY caller that
    already supplies `--task` for the V5 contended-path lease, which includes both sites above
    (both already pass `--task`) plus every other caller of `git-commit-scoped.sh` that does the
@@ -419,14 +426,19 @@ constructs.
 
 **Why a task reported as carrying no `file_scope` can still see a drop at a later phase
 commit.** `orchestrator-postflight.sh`'s additive `--file-scope-add` write-back — fed by a
-research report's `proposed_file_scope` or by `plan-file-scope-harvest.sh`'s harvested "Files to
-modify" union, both source-path-only by construction — can populate a previously-absent
-`file_scope` between an earlier review of a task's state and a later phase commit. A review
-observing "no declared `file_scope`" and a later phase commit observing a real, non-empty,
-source-only `file_scope` are therefore both correct readings of the same task at two different
-points in its lifecycle, not evidence that the fail-open guard failed to apply. The fail-open
-posture itself — an absent, empty, or malformed `file_scope` skips the Containment Self-Check
-entirely — is unchanged and remains deliberate.
+research report's `proposed_file_scope`, by `plan-file-scope-harvest.sh`'s harvested "Files to
+modify" union, or (the third source) by `git-commit-phase.sh`'s own drop-time deposit into the
+SAME `proposed_file_scope` field, consumed at implement postflight — can populate a
+previously-absent `file_scope` between an earlier review of a task's state and a later phase
+commit. The third source differs from the other two in producer, not in consumer path or merge
+semantics: the field is still additive-only, still union-merged, and still forwarded via the
+same `--file-scope-add` flag, but on this path it is deposited by the commit wrapper itself,
+mid-dispatch, at the moment its own Containment Self-Check drops a path — not authored by any
+agent. A review observing "no declared `file_scope`" and a later phase commit observing a real,
+non-empty, source-only `file_scope` are therefore both correct readings of the same task at two
+different points in its lifecycle, not evidence that the fail-open guard failed to apply. The
+fail-open posture itself — an absent, empty, or malformed `file_scope` skips the Containment
+Self-Check entirely — is unchanged and remains deliberate.
 
 **The engine-written-state allowlist is one shared, canonical definition.** All three
 Containment sites widen their own effective scope with the same fixed path set before testing a

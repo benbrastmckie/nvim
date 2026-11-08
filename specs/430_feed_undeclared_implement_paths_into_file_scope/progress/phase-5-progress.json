@@ -1,0 +1,15 @@
+{
+  "phase": 5,
+  "phase_name": "Sync the prose sources the mechanism is ported from",
+  "started_at": "2026-11-08T03:10:00Z",
+  "last_updated": "2026-11-08T03:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add the proposal clause to general-implementation-agent.md's Self-Check step 4, and the read-modify-write preservation obligation to Stage 7", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 2, "description": "Name the drop-time deposit as the third --file-scope-add source in git-staging-scope.md; note site 2's new feedback role", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Verified no sentence in either file still implies proposed_file_scope is research-only (grep confirmed). Both files pass check-task-references.sh with 0 occurrences. Pre-existing environmental suite failure (test-orchestrate-cycle-postflight.sh) recurred in this phase's verification tier -- impossible to attribute to this phase's edits since both edited files are prose-only (.md), zero .sh files touched."
+}
