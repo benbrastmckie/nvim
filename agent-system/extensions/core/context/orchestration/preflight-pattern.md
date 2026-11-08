@@ -2,7 +2,7 @@
 
 ## Overview
 
-All workflow commands (`/research`, `/plan`, `/revise`, `/implement`) MUST execute preflight in Stage 1.5 before delegating work to subagents.
+All workflow operations (the research, plan, and implement dispatches, plus `/revise`) MUST execute preflight in Stage 1.5 before delegating work to subagents.
 
 Preflight ensures status is updated BEFORE work begins, making progress immediately visible to users.
 
@@ -63,10 +63,10 @@ task(
 ```
 
 **Status mappings:**
-- `/research` → `researching`
-- `/plan` → `planning`
+- research dispatch → `researching`
+- plan dispatch → `planning`
 - `/revise` → `revising`
-- `/implement` → `implementing`
+- implement dispatch → `implementing`
 
 ### Step 3: Validate status-sync-manager Return
 

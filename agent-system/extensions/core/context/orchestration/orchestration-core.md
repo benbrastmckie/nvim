@@ -93,11 +93,11 @@ def check_cycle(delegation_path, target):
 
 ### Timeout Configuration
 
-| Command | Default Timeout | Max Timeout |
+| Phase/Command | Default Timeout | Max Timeout |
 |---------|----------------|-------------|
-| /research | 3600s (1 hour) | 7200s (2 hours) |
-| /plan | 1800s (30 min) | 3600s (1 hour) |
-| /implement | 7200s (2 hours) | 14400s (4 hours) |
+| research dispatch | 3600s (1 hour) | 7200s (2 hours) |
+| plan dispatch | 1800s (30 min) | 3600s (1 hour) |
+| implement dispatch | 7200s (2 hours) | 14400s (4 hours) |
 | /revise | 1800s (30 min) | 3600s (1 hour) |
 
 **Timeout Handling**:
@@ -178,11 +178,11 @@ Every delegation MUST include this context:
 
 ### Command -> Agent Mapping
 
-| Command | Language-Based | Agent(s) |
+| Phase/Command | Language-Based | Agent(s) |
 |---------|---------------|----------|
-| /research | Yes | Extension-provided or general-research-agent |
-| /plan | No | planner-agent |
-| /implement | Yes | Extension-provided or general-implementation-agent |
+| research dispatch | Yes | Extension-provided or general-research-agent |
+| plan dispatch | No | planner-agent |
+| implement dispatch | Yes | Extension-provided or general-implementation-agent |
 | /revise | No | planner-agent |
 | /review | No | reviewer-agent |
 | /meta | No | meta-builder-agent |

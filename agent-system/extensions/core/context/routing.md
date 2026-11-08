@@ -21,11 +21,11 @@ Token budget: ~200 tokens
 
 ## Status Transitions
 
-| Command | From Status | To Status (In-Progress) | To Status (Complete) |
+| Phase/Command | From Status | To Status (In-Progress) | To Status (Complete) |
 |---------|-------------|------------------------|---------------------|
-| /research | not_started | researching | researched |
-| /plan | researched, not_started | planning | planned |
-| /implement | planned, implementing, partial | implementing | completed |
+| research dispatch | not_started | researching | researched |
+| plan dispatch | researched, not_started | planning | planned |
+| implement dispatch | planned, implementing, partial | implementing | completed |
 | /revise | planned, implementing | planning | planned |
 
 ## Task Lookup

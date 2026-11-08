@@ -39,9 +39,9 @@ This standard defines the complete state management system:
 
 | From | To | Condition |
 |------|-----|-----------|
-| `[NOT STARTED]` | `[RESEARCHING]` | `/research` starts |
-| `[RESEARCHED]` | `[PLANNING]` | `/plan` starts |
-| `[PLANNED]` | `[IMPLEMENTING]` | `/implement` starts |
+| `[NOT STARTED]` | `[RESEARCHING]` | research dispatch starts |
+| `[RESEARCHED]` | `[PLANNING]` | plan dispatch starts |
+| `[PLANNED]` | `[IMPLEMENTING]` | implement dispatch starts |
 | `[IMPLEMENTING]` | `[COMPLETED]` | Implementation finishes |
 | `[IMPLEMENTING]` | `[PARTIAL]` | Timeout/error |
 
@@ -302,12 +302,12 @@ Any non-terminal status -> [BLOCKED] | [ABANDONED] | [EXPANDED]
 
 ### Command Mappings
 
-| Command | Preflight | Postflight |
+| Phase/Command | Preflight | Postflight |
 |---------|-----------|------------|
-| /research | RESEARCHING | RESEARCHED |
-| /plan | PLANNING | PLANNED |
+| research dispatch | RESEARCHING | RESEARCHED |
+| plan dispatch | PLANNING | PLANNED |
 | /revise | REVISING | REVISED |
-| /implement | IMPLEMENTING | COMPLETED or PARTIAL |
+| implement dispatch | IMPLEMENTING | COMPLETED or PARTIAL |
 
 ---
 

@@ -77,12 +77,12 @@ It does NOT handle:
    **Performance**: ~12ms for state.json vs ~100ms for TODO.md (8x faster)
 
 2. Map language to agent:
-   - /research: Extension type → extension agent, default → general-research-agent
-   - /implement: Extension type → extension agent, default → general-implementation-agent
+   - research dispatch: Extension type → extension agent, default → general-research-agent
+   - implement dispatch: Extension type → extension agent, default → general-implementation-agent
 
 **For Direct Routing** (routing.task_type_based: false):
 - Use routing.target_agent from command frontmatter
-- Examples: /plan → planner, /revise → reviser
+- Examples: plan dispatch → planner, /revise → reviser
 
 **Output**: Target agent name
 
@@ -236,7 +236,7 @@ routing:
   target_agent: planner
 ```
 
-**Used by**: /plan, /revise, /review, /todo, /task
+**Used by**: plan dispatch, /revise, /review, /todo, /task
 
 ---
 
@@ -247,7 +247,7 @@ routing:
   default: general-research-agent
 ```
 
-**Used by**: /research, /implement
+**Used by**: research dispatch, implement dispatch
 
 ---
 
@@ -275,11 +275,11 @@ Level 3: Utility → Sub-Utility (rare)
 ### Timeout Enforcement
 All delegations have timeouts:
 
-| Command | Default Timeout | Max Timeout |
+| Phase/Command | Default Timeout | Max Timeout |
 |---------|----------------|-------------|
-| /research | 3600s (1 hour) | 7200s (2 hours) |
-| /plan | 1800s (30 min) | 3600s (1 hour) |
-| /implement | 7200s (2 hours) | 14400s (4 hours) |
+| research dispatch | 3600s (1 hour) | 7200s (2 hours) |
+| plan dispatch | 1800s (30 min) | 3600s (1 hour) |
+| implement dispatch | 7200s (2 hours) | 14400s (4 hours) |
 
 ---
 
@@ -571,7 +571,7 @@ function check_cycle(delegation_path, target_agent) {
 ### Example: Valid Delegation Chain
 
 ```
-Orchestrator → /implement → task-executor → implementer → git-workflow-manager
+Orchestrator → implement dispatch → task-executor → implementer → git-workflow-manager
     (depth 0)      (depth 1)      (depth 2)       (depth 3)
                                                    ↑ MAX DEPTH
 ```
@@ -579,7 +579,7 @@ Orchestrator → /implement → task-executor → implementer → git-workflow-m
 ### Example: Blocked Delegation
 
 ```
-Orchestrator → /implement → task-executor → implementer → git-workflow-manager → ???
+Orchestrator → implement dispatch → task-executor → implementer → git-workflow-manager → ???
     (depth 0)      (depth 1)      (depth 2)       (depth 3)         (BLOCKED)
 ```
 
@@ -811,7 +811,7 @@ If validation fails:
 ### Example 1: Simple Research Delegation
 
 ```
-User: /research 197
+User: /orchestrate 197 --research
 
 Orchestrator:
 1. Load command file: .claude/command/research.md
@@ -829,7 +829,7 @@ Orchestrator:
 ### Example 2: Phased Implementation with Timeout
 
 ```
-User: /implement 191
+User: /orchestrate 191 --implement
 
 Orchestrator:
 1. Load command file: .claude/command/implement.md
@@ -849,7 +849,7 @@ Orchestrator:
 ### Example 3: Cycle Detection
 
 ```
-User: /implement 192 (complex delegation chain)
+User: /orchestrate 192 --implement (complex delegation chain)
 
 Orchestrator:
 1. Load command file: .claude/command/implement.md

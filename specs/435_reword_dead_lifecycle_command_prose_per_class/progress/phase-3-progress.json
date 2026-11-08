@@ -1,0 +1,50 @@
+{
+  "phase": 3,
+  "phase_name": "core/context/orchestration and routing.md",
+  "started_at": "2026-11-07T19:46:00Z",
+  "last_updated": "2026-11-07T20:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply shared per-phase procedure to all 10 files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/orchestration/state-management.md",
+        "agent-system/extensions/core/context/orchestration/postflight-pattern.md",
+        "agent-system/extensions/core/context/orchestration/orchestration-core.md",
+        "agent-system/extensions/core/context/routing.md",
+        "agent-system/extensions/core/context/orchestration/orchestration-reference.md",
+        "agent-system/extensions/core/context/orchestration/validation.md",
+        "agent-system/extensions/core/context/orchestration/delegation.md",
+        "agent-system/extensions/core/context/orchestration/orchestrator.md",
+        "agent-system/extensions/core/context/orchestration/preflight-pattern.md",
+        "agent-system/extensions/core/context/orchestration/architecture.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "63 occurrences across 10 files, matching Scope Hypothesis exactly. All resolved to zero remaining dead-command tokens -- no class-3 leave-alone sites in this tranche."
+    },
+    {
+      "id": 2,
+      "description": "orchestrator.md stale per-command routing-table rows reworded to phase-name framing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/orchestration/orchestrator.md"]
+    },
+    {
+      "id": 3,
+      "description": "Check each reworded routing row against live Skill-to-Agent mapping",
+      "status": "done",
+      "files_touched": [],
+      "note": "manifest.json's routing_agents block confirms task_type-based routing keys 'research'/'plan'/'implement' still exist (no slash), consistent with the reworded phase-name framing. architecture.md's Three-Layer Architecture section (Orchestrator -> standalone Command File -> Subagent) found to describe the same deleted per-command delegation model as Phase 2's residue files; added one inline residue note rather than restructuring, and reworded its literal invocation examples (User: /plan 196, etc.) to their real /orchestrate equivalent."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "class_decisions": {
+    "class_3_leave_alone": [],
+    "residue_notes_added": [
+      {"file": "architecture.md", "what": "Three-Layer Architecture section's Layer 1 (Orchestrator pure router) / Layer 2 (standalone Command File under .claude/command/*.md) split describes the research/plan/implement command files that no longer exist; today /orchestrate dispatches directly to agents via command-route-agent.sh/skill-orchestrate. Flagged as a named follow-up rather than restructured."}
+    ]
+  }
+}

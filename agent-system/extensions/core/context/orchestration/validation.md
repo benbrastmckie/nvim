@@ -701,7 +701,7 @@ These validation rules are now ACTIVELY ENFORCED by command files Stage 3 (Valid
 - Validation tested with malformed returns (plain text, missing fields, invalid status)
 - Validation tested with phantom research scenarios (status=completed, no artifacts)
 - Validation tested with missing/empty artifact files
-- All workflow commands (/research, /plan, /implement, /revise) protected
+- All workflow operations (research, plan, and implement dispatches, plus /revise) protected
 
 ## See Also
 

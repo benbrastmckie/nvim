@@ -11,7 +11,7 @@
 ### Command Execution Flow
 
 ```
-User: /implement 611
+User: /orchestrate 611 --implement
     |
     v
 CHECKPOINT 1: GATE IN (Preflight)
@@ -41,11 +41,11 @@ CHECKPOINT 3: COMMIT
 
 ### Status Flow by Command
 
-| Command | Preflight Status | Postflight Status |
+| Phase/Command | Preflight Status | Postflight Status |
 |---------|------------------|-------------------|
-| /research | RESEARCHING | RESEARCHED |
-| /plan | PLANNING | PLANNED |
-| /implement | IMPLEMENTING | COMPLETED |
+| research dispatch | RESEARCHING | RESEARCHED |
+| plan dispatch | PLANNING | PLANNED |
+| implement dispatch | IMPLEMENTING | COMPLETED |
 | /revise | REVISING | REVISED |
 
 ---
@@ -55,7 +55,7 @@ CHECKPOINT 3: COMMIT
 ### Example 1: Simple Research Delegation
 
 ```
-User: /research {N}
+User: /orchestrate {N} --research
 
 GATE IN:
 - Task {N} exists: YES
@@ -80,7 +80,7 @@ COMMIT:
 ### Example 2: Implementation with Timeout
 
 ```
-User: /implement {N}
+User: /orchestrate {N} --implement
 
 GATE IN:
 - Task {N} exists: YES

@@ -2,7 +2,7 @@
 
 ## Overview
 
-All workflow commands (`/research`, `/plan`, `/revise`, `/implement`) MUST execute postflight in Stage 3.5 after validating subagent returns in Stage 3.
+All workflow operations (the research, plan, and implement dispatches, plus `/revise`) MUST execute postflight in Stage 3.5 after validating subagent returns in Stage 3.
 
 Postflight ensures status is updated and artifacts are linked AFTER work completes, preventing the manual fixes needed by the historical phantom-artifact incident (status updated but artifacts not actually created).
 
@@ -98,10 +98,10 @@ task(
 ```
 
 **Status mappings:**
-- `/research` → `researched`
-- `/plan` → `planned`
+- research dispatch → `researched`
+- plan dispatch → `planned`
 - `/revise` → `revised`
-- `/implement` → `completed`
+- implement dispatch → `completed`
 
 **Note:** The `validated_artifacts` field contains the artifacts array from the subagent return, which status-sync-manager will use to create artifact links in TODO.md.
 

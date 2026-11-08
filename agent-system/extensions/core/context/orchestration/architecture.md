@@ -31,6 +31,17 @@ This pattern enables:
 
 ## Three-Layer Architecture
 
+**Residue note (recorded, not restructured here)**: this section's Layer 1/Layer 2 split
+(Orchestrator routes to a standalone command file under `.claude/command/*.md`, which then
+parses arguments and delegates to Layer 3) describes the research/plan/implement command files
+that have no definition anywhere in the source store today. `/orchestrate` now dispatches
+directly to agents via `command-route-agent.sh`/`skill-orchestrate`, collapsing what this section
+calls Layer 1 and Layer 2 for those three phases. Re-deriving this section's model against
+current `orchestrate.md`/`skill-orchestrate` behavior is a restructure beyond this record's
+per-site reword scope (see Non-Goals); flagged as a named follow-up. The literal invocation
+examples below are updated to what a user actually types today; the Layer 1/Layer 2 mechanics
+they feed into are left as this residue.
+
 ### Layer 1: Orchestrator (Pure Router)
 
 **File**: `.claude/agent/orchestrator.md`  
@@ -46,7 +57,7 @@ This pattern enables:
 
 **Routing Logic**:
 ```
-User: /plan 196
+User: /orchestrate 196 --plan
   ↓
 Orchestrator: Identify command = "plan"
   ↓
@@ -73,7 +84,7 @@ Delegate to Layer 2
 ```markdown
 ## Routing Decision
 
-User command: "/implement 259"
+User command: "/orchestrate 259 --implement"
 Command identified: "implement"
 Target: .claude/command/implement.md
 Delegation depth: 0 → 1
@@ -241,13 +252,13 @@ Command File: Return to orchestrator
 
 ## Delegation Flow
 
-### Complete Example: `/plan 196`
+### Complete Example: `/orchestrate 196 --plan`
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Layer 1: Orchestrator                                       │
 │                                                              │
-│ Input: "/plan 196"                                          │
+│ Input: "/orchestrate 196 --plan"                            │
 │ Action: Identify command = "plan"                           │
 │ Output: Delegate to .claude/command/plan.md              │
 │ Delegation Depth: 0 → 1                                     │
@@ -426,7 +437,7 @@ Delegate to status-sync-manager with:
 **Example**:
 ```
 Orchestrator (depth 0)
-  → /implement command (depth 1)
+  → implement dispatch (depth 1)
     → task-executor subagent (depth 2)
       → implementer subagent (depth 3)
         → STOP (max depth reached)
@@ -491,13 +502,13 @@ Layer 1: Orchestrator displays error to user
 ```
 Command → Subagent → Return
 ```
-Example: `/research 197` → researcher → return report
+Example: `/orchestrate 197 --research` → researcher → return report
 
 **2. Sequential Delegation** (multiple subagents):
 ```
 Command → Subagent A → Subagent B → Return
 ```
-Example: `/plan 196` → planner → status-sync-manager → return plan
+Example: `/orchestrate 196 --plan` → planner → status-sync-manager → return plan
 
 **3. Conditional Delegation** (branching):
 ```
@@ -640,7 +651,7 @@ The meta-builder (`/meta` command) uses this architecture documentation to:
 **Wrong**:
 ```markdown
 ## Orchestrator
-User: /plan 196
+User: /orchestrate 196 --plan
 Parse task_number = 196
 Validate task exists
 Delegate to planner
@@ -649,7 +660,7 @@ Delegate to planner
 **Correct**:
 ```markdown
 ## Orchestrator
-User: /plan 196
+User: /orchestrate 196 --plan
 Identify command = "plan"
 Delegate to .claude/command/plan.md with args = ["196"]
 ```

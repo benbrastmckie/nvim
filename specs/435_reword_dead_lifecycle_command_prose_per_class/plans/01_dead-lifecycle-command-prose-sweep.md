@@ -326,21 +326,25 @@ measurement command restricted to `agent-system/extensions/core/context/patterns
 
 ---
 
-### Phase 3: core/context/orchestration and routing.md [NOT STARTED]
+### Phase 3: core/context/orchestration and routing.md [COMPLETED]
 
 **Goal**: Reword the dispatch-model and routing-table prose at the heart of the orchestration
 documentation, where stale per-command routing rows predate the commands' deletion.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `orchestrator.md` carries per-command routing-table rows (`- /research: Extension type ->
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed)*
+- [x] `orchestrator.md` carries per-command routing-table rows (`- /research: Extension type ->
       extension agent, default -> general-research-agent`; `Examples: /plan -> planner, /revise ->
       reviser`; `**Used by**: /plan, /revise, /review, /todo, /task`). Reword to phase-name
       framing; a bare `/orchestrate` substitution would be false in each row, since routing today
-      is `task_type` -> agent.
-- [ ] Check each reworded routing row against the live Skill-to-Agent mapping rather than assuming
-      the stale row's claim still holds for the phase it names.
+      is `task_type` -> agent. *(completed: reworded to "research dispatch"/"plan dispatch"
+      framing; manifest.json's routing_agents block still confirms task_type-based routing for
+      these three phases)*
+- [x] Check each reworded routing row against the live Skill-to-Agent mapping rather than assuming
+      the stale row's claim still holds for the phase it names. *(completed; also found and
+      reworded architecture.md's deeper Layer-1/Layer-2 delegation-model residue, flagged via an
+      inline note rather than restructured)*
 
 **Timing**: 1.25 hours
 

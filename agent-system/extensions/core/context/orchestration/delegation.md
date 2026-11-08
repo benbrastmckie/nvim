@@ -478,7 +478,7 @@ Standardized error codes for consistent error handling:
       "recommendation": "Run /orchestrate again to resume from phase 2"
     }
   ],
-  "next_steps": "Resume implementation with /implement command"
+  "next_steps": "Resume implementation via /orchestrate --implement"
 }
 ```
 
@@ -765,11 +765,11 @@ Result: ❌ CYCLE DETECTED - Block delegation
 
 ## Timeout Configuration
 
-| Command | Default Timeout | Max Timeout |
+| Phase/Command | Default Timeout | Max Timeout |
 |---------|----------------|-------------|
-| /research | 3600s (1 hour) | 7200s (2 hours) |
-| /plan | 1800s (30 min) | 3600s (1 hour) |
-| /implement | 7200s (2 hours) | 14400s (4 hours) |
+| research dispatch | 3600s (1 hour) | 7200s (2 hours) |
+| plan dispatch | 1800s (30 min) | 3600s (1 hour) |
+| implement dispatch | 7200s (2 hours) | 14400s (4 hours) |
 | /revise | 1800s (30 min) | 3600s (1 hour) |
 | /review | 3600s (1 hour) | 7200s (2 hours) |
 

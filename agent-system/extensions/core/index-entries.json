@@ -606,7 +606,7 @@
       "domain": "core",
       "subdomain": "orchestration",
       "summary": "Orchestration system architecture",
-      "line_count": 756,
+      "line_count": 767,
       "keywords": [
         "orchestration",
         "architecture"
