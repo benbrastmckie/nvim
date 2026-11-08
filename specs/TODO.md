@@ -11,14 +11,13 @@ next_project_number: 528
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,420,423,430,431,435,437,445,448,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,444,446,451,458,463,472,474,475,476,492,497,507,516,523,526,527 | 369,383,397,412,420,423,430,431,435,445,448,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 360,390,399,402,436,438,454,455,461,462,484,500,518 | 313,391,398,435,439,446,448,451,458,472 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,449,452,457,479,481,486,517 | 360,390,402,435,444,448,455,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 5 | 450,480,487,501,508,509,513 | 420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator |
-| 6 | 496,524 | 450,487,488,501 | core-agent-system, extensions |
-| 7 | 498 | 496 | extensions |
-| 8 | 499 | 497,498 | extensions |
+| 1 | 313,338,342,369,383,397,410,412,420,423,431,435,437,445,446,448,453,456,459,473,477,483,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 360,384,391,398,439,444,451,455,458,461,463,472,474,475,476,484,492,497,500,507,516,523,526,527 | 369,383,397,412,420,423,431,435,445,446,448,459,491,504,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 390,399,402,436,438,449,452,454,457,462,479,486,517,518 | 313,360,391,398,435,439,444,446,448,451,455,458,472,484,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 4 | 421,450,480,481,487,501,508,509,513 | 390,402,420,435,449,452,461,472,476,479,486 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 5 | 496,524 | 450,487,488,501 | core-agent-system, extensions |
+| 6 | 498 | 496 | extensions |
+| 7 | 499 | 497,498 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -98,13 +97,12 @@ next_project_number: 528
 
 ### File Scope Lifecycle
 
-430 [IMPLEMENTING] — Feed observed-but-undeclared implement paths back into a task...
-  └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
-    └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
-    └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
-      └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
-        └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
-        └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
+446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
+  └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
+  └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
+    └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
+      └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
+      └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -5055,7 +5053,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 ---
 
 ### 430. Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428, Task 494

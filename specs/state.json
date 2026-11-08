@@ -3637,7 +3637,7 @@
     {
       "project_number": 430,
       "project_name": "feed_undeclared_implement_paths_into_file_scope",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits",
       "topic": "file-scope-lifecycle",
@@ -3682,7 +3682,7 @@
         }
       ],
       "created": "2026-10-16T23:40:01Z",
-      "last_updated": "2026-11-08T01:31:27Z",
+      "last_updated": "2026-11-08T02:36:19Z",
       "session_id": "sess_1794089641_e5bee5",
       "next_artifact_number": 2,
       "completion_summary": "Closed the proposed_file_scope feedback loop for the implement phase: git-commit-phase.sh now deposits each containment-dropped path into the task's own .return-meta.json at drop time, and the existing --file-scope-add consumer chain (update-task-status.sh, skill-base.sh) was widened from {research, plan} to {research, plan, implement} to forward it. All five VERIFY fixtures plus idempotence and deposit-path fail-open are pinned by new test cases (181 total new/retargeted assertions across three suites, all passing), the drop-and-warn excursion guard and every fail-open posture are unchanged, and an end-to-end throwaway-fixture check confirms the full drop-propose-merge-no-re-drop loop closes."
