@@ -331,35 +331,35 @@ of the dispatch's VERIFY fixtures that live in this suite.
 
 ---
 
-### Phase 3: Widen `update-task-status.sh --file-scope-add` to `implement`, and retarget its tests [NOT STARTED]
+### Phase 3: Widen `update-task-status.sh --file-scope-add` to `implement`, and retarget its tests [COMPLETED]
 
 **Goal**: Let the consumer accept the implement-postflight call, with the `target_status` guard
 axis keeping its test coverage rather than losing it.
 
 **Tasks**:
-- [ ] Re-read `scripts/update-task-status.sh`'s `--file-scope-add` validation gate (currently
+- [x] Re-read `scripts/update-task-status.sh`'s `--file-scope-add` validation gate (currently
       ~lines 333-349) and its header documentation block (currently ~lines 55-85), and
-      `scripts/tests/test-update-task-status.sh` Case 11, immediately before editing.
-- [ ] Widen the validation condition so the permitted set is `{research, plan, implement}`, and
-      update the error message to name all three permitted target statuses.
-- [ ] Update the header block's `RESTRICTED to ...` sentence to name all three, and add one
+      `scripts/tests/test-update-task-status.sh` Case 11, immediately before editing. *(completed)*
+- [x] Widen the validation condition so the permitted set is `{research, plan, implement}`, and
+      update the error message to name all three permitted target statuses. *(completed)*
+- [x] Update the header block's `RESTRICTED to ...` sentence to name all three, and add one
       sentence identifying the implement consumer point: `skill-base.sh`'s
       `skill_postflight_update()` forwards `proposed_file_scope` deposited by
       `git-commit-phase.sh` at drop time. Cross-reference
-      `context/formats/return-metadata-file.md`.
-- [ ] Confirm by reading — not by assumption — that the merge logic itself (the jq union on
+      `context/formats/return-metadata-file.md`. *(completed)*
+- [x] Confirm by reading — not by assumption — that the merge logic itself (the jq union on
       `active_projects[].file_scope` riding inside the single `state-write.sh` invocation) is
       status-agnostic and needs no change; record the confirmation in the phase's progress notes.
-      Do not add a second writer.
-- [ ] Confirm `emit_file_scope_notice()` fires on the implement path with no edit, since it is
-      driven by the post-merge delta rather than by target status.
-- [ ] Retarget `test-update-task-status.sh` Case 11h: it becomes an **accepted-and-merges**
+      Do not add a second writer. *(completed)*
+- [x] Confirm `emit_file_scope_notice()` fires on the implement path with no edit, since it is
+      driven by the post-merge delta rather than by target status. *(completed)*
+- [x] Retarget `test-update-task-status.sh` Case 11h: it becomes an **accepted-and-merges**
       assertion for `postflight 1 implement ... --file-scope-add`, mirroring Case 11g's shape
-      (exit 0, `file_scope` additively widened, state actually written).
-- [ ] Add a NEW negative case (11i) preserving the `target_status` guard axis Case 11h used to
+      (exit 0, `file_scope` additively widened, state actually written). *(completed)*
+- [x] Add a NEW negative case (11i) preserving the `target_status` guard axis Case 11h used to
       cover: a target status outside the permitted three (for example `postflight 1 completed
       ... --file-scope-add`) is still rejected, state is unchanged, and the error names all
-      three permitted target statuses. Keep Case 11f's `operation`-axis negative untouched.
+      three permitted target statuses. Keep Case 11f's `operation`-axis negative untouched. *(completed)*
 
 **Timing**: 1 hour
 

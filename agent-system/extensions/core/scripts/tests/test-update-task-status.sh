@@ -509,15 +509,18 @@ fi
 
 # =====================================================================
 # Case 11: --file-scope-add -- additive-only union-merge onto file_scope, restricted to
-# operation=postflight/target_status in {research, plan}. Eight sub-cases (a)-(h) share one
-# fixture, run in sequence, mirroring Case 1/2's continuation pattern. (g)/(h) cover the
-# target_status=plan widening this phase adds: (g) asserts plan is now accepted, (h) asserts
-# implement is still rejected under postflight (the target_status axis, distinct from (f)'s
-# operation axis). (a)/(b)/(c) additionally assert the emit_file_scope_notice() stderr
-# behavior: (a) is the real-write branch gaining both paths (delta 2, notice fires), (b) is
-# the status no-op branch re-forwarding an identical array (delta 0, the cry-wolf case --
-# notice must stay silent), and (c) is the status no-op branch with one already-present and
-# one genuinely new path (delta 1, notice fires naming only the new path).
+# operation=postflight/target_status in {research, plan, implement}. Nine sub-cases (a)-(i)
+# share one fixture, run in sequence, mirroring Case 1/2's continuation pattern. (g)/(h)/(i)
+# cover the target_status widening: (g) asserts plan is accepted, (h) asserts implement is NOW
+# ALSO accepted and merges additively (the implement-postflight consumer point this task adds),
+# and (i) asserts a target_status outside the permitted three (e.g. "completed") is still
+# rejected -- preserving the target_status axis of the guard that (h) used to cover before this
+# widening, distinct from (f)'s operation axis. (a)/(b)/(c) additionally assert the
+# emit_file_scope_notice() stderr behavior: (a) is the real-write branch gaining both paths
+# (delta 2, notice fires), (b) is the status no-op branch re-forwarding an identical array
+# (delta 0, the cry-wolf case -- notice must stay silent), and (c) is the status no-op branch
+# with one already-present and one genuinely new path (delta 1, notice fires naming only the
+# new path).
 # =====================================================================
 common_test_info "=== Case 11: --file-scope-add ==="
 FIXTURE_ROOT="$WORKDIR/case11"
@@ -634,24 +637,57 @@ else
   common_test_fail "11g: postflight/plan --file-scope-add unexpectedly exited nonzero (see $WORKDIR/c11g.err)"
 fi
 
-# --- 11h: postflight ... implement ... --file-scope-add is STILL rejected (only research/plan
-# are permitted target statuses under postflight; this exercises the target_status axis of the
-# guard, distinct from 11f's operation axis) ---
-BEFORE_11H="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+# --- 11h: postflight ... implement ... --file-scope-add is NOW ACCEPTED and merges additively
+# (the widened restriction this phase adds: target_status=implement alongside
+# target_status=research/plan -- the implement-postflight write-back consumer point forwarding a
+# path git-commit-phase.sh deposited at containment-drop time). A plan file with every phase
+# already [COMPLETED] is seeded first -- postflight/implement's own (unrelated-to-file-scope)
+# plan-file [COMPLETED] stamp step requires a resolvable plan directory to succeed, exactly as
+# Case 5/6/7/10 above already seed for the same reason; no --phase-check flag is passed, so the
+# phase-check gate itself stays inactive regardless of plan content. ---
+mkdir -p "$FIXTURE_ROOT/specs/001_fixture_task/plans"
+cat > "$FIXTURE_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md" << 'PLANEOF'
+# Implementation Plan: Fixture Task
+
+- **Status**: [IMPLEMENTING]
+
+## Implementation Phases
+
+### Phase 1: First phase [COMPLETED]
+PLANEOF
 if UTS postflight 1 implement sess_test_c11 --file-scope-add='["y.sh"]' \
     >"$WORKDIR/c11h.out" 2>"$WORKDIR/c11h.err"; then
-  common_test_fail "11h: --file-scope-add on postflight/implement unexpectedly exited 0"
-else
-  AFTER_11H="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
-  if [[ "$BEFORE_11H" == "$AFTER_11H" ]]; then
-    common_test_pass "11h: --file-scope-add rejected on postflight/implement, state unchanged"
+  fs="$(file_scope)"
+  if [[ "$fs" == '["a.sh","b.sh","c.sh","d.sh","y.sh"]' ]]; then
+    common_test_pass "11h: postflight/implement --file-scope-add is accepted and merges additively"
   else
-    common_test_fail "11h: --file-scope-add rejection exited non-zero but state.json changed anyway"
+    common_test_fail "11h: expected [\"a.sh\",\"b.sh\",\"c.sh\",\"d.sh\",\"y.sh\"], got '$fs' (see $WORKDIR/c11h.err)"
   fi
-  if grep -q "target_status in {research, plan}" "$WORKDIR/c11h.err"; then
-    common_test_pass "11h: rejection error names both permitted target statuses"
+else
+  common_test_fail "11h: postflight/implement --file-scope-add unexpectedly exited nonzero (see $WORKDIR/c11h.err)"
+fi
+
+# --- 11i: a target_status that is otherwise valid for postflight but outside the three
+# permitted for --file-scope-add ("partial") is STILL rejected -- preserves the target_status
+# axis of the guard that 11h used to cover before this widening, distinct from 11f's operation
+# axis. "partial" (not "completed") is used deliberately: "completed" is not in the script's
+# general target_status enum at all and would be rejected earlier by that unrelated check,
+# never reaching the --file-scope-add-specific guard this case exists to pin. ---
+BEFORE_11I="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+if UTS postflight 1 partial sess_test_c11 --file-scope-add='["z.sh"]' \
+    >"$WORKDIR/c11i.out" 2>"$WORKDIR/c11i.err"; then
+  common_test_fail "11i: --file-scope-add on postflight/partial unexpectedly exited 0"
+else
+  AFTER_11I="$(jq -c '.active_projects[0]' "$FIXTURE_ROOT/specs/state.json")"
+  if [[ "$BEFORE_11I" == "$AFTER_11I" ]]; then
+    common_test_pass "11i: --file-scope-add rejected on postflight/partial, state unchanged"
   else
-    common_test_fail "11h: rejection error does not name both permitted target statuses (see $WORKDIR/c11h.err)"
+    common_test_fail "11i: --file-scope-add rejection exited non-zero but state.json changed anyway"
+  fi
+  if grep -q "target_status in {research, plan, implement}" "$WORKDIR/c11i.err"; then
+    common_test_pass "11i: rejection error names all three permitted target statuses"
+  else
+    common_test_fail "11i: rejection error does not name all three permitted target statuses (see $WORKDIR/c11i.err)"
   fi
 fi
 

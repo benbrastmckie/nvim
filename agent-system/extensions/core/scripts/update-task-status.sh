@@ -63,13 +63,20 @@
 #   VALUE must parse as a JSON array of strings (`jq -e 'type == "array" and (all(.[]; type ==
 #   "string"))'`) -- a malformed value is a hard validation error (exit 1) with a named message,
 #   never a silent no-op, so a typo cannot quietly drop coverage.
-#   RESTRICTED to operation==postflight && target_status in {research, plan}. The plan branch is
-#   the plan-postflight consumer point: context/formats/plan-format.md's "Files to modify"
-#   per-phase field is harvested via scripts/plan-file-scope-harvest.sh and forwarded here from
-#   every plan-postflight call site (orchestrator-postflight.sh, reconcile-task-status.sh's two
-#   call sites, and skill-reviser/SKILL.md, so /revise and reconciliation self-heal both
-#   re-harvest too). Any other operation/target_status combination is a validation error naming
-#   both permitted target statuses.
+#   RESTRICTED to operation==postflight && target_status in {research, plan, implement}. The
+#   plan branch is the plan-postflight consumer point: context/formats/plan-format.md's "Files
+#   to modify" per-phase field is harvested via scripts/plan-file-scope-harvest.sh and forwarded
+#   here from every plan-postflight call site (orchestrator-postflight.sh,
+#   reconcile-task-status.sh's two call sites, and skill-reviser/SKILL.md, so /revise and
+#   reconciliation self-heal both re-harvest too). The implement branch is the
+#   implement-postflight consumer point: skill-base.sh's skill_postflight_update() reads
+#   `proposed_file_scope` off the task's `.return-meta.json` and forwards it here -- but on this
+#   path the field was deposited not by the implementing agent, but by
+#   scripts/git-commit-phase.sh itself, mid-dispatch, at the moment its own Containment
+#   Self-Check dropped a `files_touched` path for not being in the declared `file_scope`; see
+#   context/formats/return-metadata-file.md's `proposed_file_scope` field specification for the
+#   full per-operation producer table. Any other operation/target_status combination is a
+#   validation error naming all three permitted target statuses.
 #   The merge rides along inside update_state_json()'s existing single state-write.sh invocation
 #   (`.file_scope = ((.file_scope // []) + $add | unique)`, scoped to the matching
 #   active_projects[] entry) -- never a second write. An empty array, or an array whose members
@@ -338,12 +345,14 @@ if [[ -n "$FILE_SCOPE_ADD" ]]; then
     echo "Error: --file-scope-add value must be a JSON array of strings, got: $FILE_SCOPE_ADD" >&2
     exit 1
   fi
-  # Restricted to operation==postflight && target_status in {research, plan} (the
-  # research-postflight write-back consumer point plus the plan-postflight harvest consumer
-  # point). Any other combination is a validation error naming both permitted target statuses,
-  # never a silent no-op.
-  if [[ "$operation" != "postflight" || ( "$target_status" != "research" && "$target_status" != "plan" ) ]]; then
-    echo "Error: --file-scope-add is only valid with operation=postflight and target_status in {research, plan} (got operation='$operation', target_status='$target_status')." >&2
+  # Restricted to operation==postflight && target_status in {research, plan, implement} (the
+  # research-postflight write-back consumer point, the plan-postflight harvest consumer point,
+  # and the implement-postflight write-back consumer point -- the latter forwarding a path
+  # git-commit-phase.sh deposited at containment-drop time, via skill-base.sh's
+  # skill_postflight_update()). Any other combination is a validation error naming all three
+  # permitted target statuses, never a silent no-op.
+  if [[ "$operation" != "postflight" || ( "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" ) ]]; then
+    echo "Error: --file-scope-add is only valid with operation=postflight and target_status in {research, plan, implement} (got operation='$operation', target_status='$target_status')." >&2
     exit 1
   fi
 fi

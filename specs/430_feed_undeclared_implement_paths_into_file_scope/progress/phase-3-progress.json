@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Widen update-task-status.sh --file-scope-add to implement, and retarget its tests",
+  "started_at": "2026-11-08T02:15:00Z",
+  "last_updated": "2026-11-08T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Widen the --file-scope-add validation gate to {research, plan, implement}; update header docs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/update-task-status.sh"]},
+    {"id": 2, "description": "Retarget Case 11h to accepted-and-merges for implement; add Case 11i preserving the target_status guard axis", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-update-task-status.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "Case 11i using target_status='completed'", "result": "failed", "reason": "'completed' is not in the script's general target_status enum and is rejected by an earlier, unrelated check before reaching the --file-scope-add guard; switched to 'partial' (valid target_status, not in the permitted file-scope-add set)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Confirmed by reading: the state-write.sh union-merge filter and emit_file_scope_notice() are both status-agnostic and needed no edit. Isolated 4 unrelated suite failures (test-orchestrate-cycle-postflight.sh, test-orchestrate-unwind-dispatch.sh, test-postflight-deploy-gate.sh, test-redeploy-checkpoint-promotion.sh) in the 20-suite tier run as pre-existing/environmental by temporarily restoring the HEAD-committed update-task-status.sh and reproducing identical failures with no phase-3 edit present; see issue log."
+}
