@@ -381,37 +381,41 @@ axis keeping its test coverage rather than losing it.
 
 ---
 
-### Phase 4: Add the `implement` forwarding arm in `skill-base.sh`, with coverage [NOT STARTED]
+### Phase 4: Add the `implement` forwarding arm in `skill-base.sh`, with coverage [COMPLETED]
 
 **Goal**: Close the last link in the chain — the live implement-postflight path reads
 `proposed_file_scope` and forwards it, mirroring the existing `research` arm exactly.
 
 **Tasks**:
-- [ ] Re-read `scripts/skill-base.sh`'s `skill_postflight_update()` `--file-scope-add` write-back
+- [x] Re-read `scripts/skill-base.sh`'s `skill_postflight_update()` `--file-scope-add` write-back
       block (currently ~lines 1044-1077) and `scripts/tests/test-skill-base-lifecycle.sh`
-      Group 4a immediately before editing.
-- [ ] Add a third arm to the existing `if "$operation" == "research" ... elif "$operation" ==
+      Group 4a immediately before editing. *(completed)*
+- [x] Add a third arm to the existing `if "$operation" == "research" ... elif "$operation" ==
       "plan"` chain: `elif [[ "$operation" == "implement" && -n "${_task_dir}" && -f
       "${_task_dir}/.return-meta.json" ]]`, reading `.proposed_file_scope` with the same `jq -c
       '... // [] | if (type == "array") then . else [] end'` guard and the same
       empty/`null`/`[]`-passes-no-flag behaviour as the `research` arm. Do not restructure the
-      existing arms.
-- [ ] Extend the block's leading comment to name the third source and its producer
+      existing arms. *(completed)*
+- [x] Extend the block's leading comment to name the third source and its producer
       (`git-commit-phase.sh`, mid-dispatch, at containment-drop time), distinguishing it from
-      `research`'s agent-authored proposal and `plan`'s harvested one.
-- [ ] Confirm by reading that this arm sits inside the existing `case "$status" in
+      `research`'s agent-authored proposal and `plan`'s harvested one. *(completed)*
+- [x] Confirm by reading that this arm sits inside the existing `case "$status" in
       researched|planned|implemented)` block that already runs for `implemented`, and that
       `"$operation"` is what is forwarded as `target_status` to `update-task-status.sh` — so
-      Phase 3's widened gate is the one this arm depends on.
-- [ ] Add a Group 4b to `test-skill-base-lifecycle.sh`, modelled on Group 4a's fixture shape: a
+      Phase 3's widened gate is the one this arm depends on. *(completed)*
+- [x] Add a Group 4b to `test-skill-base-lifecycle.sh`, modelled on Group 4a's fixture shape: a
       fixture task with a `.return-meta.json` carrying a non-empty `proposed_file_scope`, driven
       through `skill_postflight_update <n> implement <sid> implemented "" <task_dir> ""`, asserting
       (a) `active_projects[0].file_scope` is additively widened with those paths, and (b) a
-      `[file-scope]` notice naming the correct new-path count surfaces on stderr.
-- [ ] Add a degenerate sub-case: a `.return-meta.json` with no `proposed_file_scope` (and,
+      `[file-scope]` notice naming the correct new-path count surfaces on stderr. *(completed:
+      named "Group 4c", not "Group 4b" -- that label is already taken by an unrelated existing
+      per-dispatch deploy-freshness group in this suite; also source-store-first resolution was
+      required for both skill-base.sh and update-task-status.sh, mirroring this suite's own
+      Group 5/6 pattern, since both subject files are pre-redeploy source-store edits)*
+- [x] Add a degenerate sub-case: a `.return-meta.json` with no `proposed_file_scope` (and,
       separately, no `.return-meta.json` at all) passes no flag, leaves `file_scope` byte-for-byte
       unchanged, and emits no `[file-scope]` notice — mirroring Group 4a's own "no plans/ dir"
-      degenerate case.
+      degenerate case. *(completed)*
 
 **Timing**: 1.25 hours
 

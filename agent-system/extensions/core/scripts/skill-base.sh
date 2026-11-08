@@ -1041,15 +1041,21 @@ skill_postflight_update() {
       if [[ "$_skip_write" == "true" ]]; then
         :
       else
-        # --file-scope-add write-back: two independent sources, mirroring
+        # --file-scope-add write-back: three independent sources, mirroring
         # orchestrator-postflight.sh's Stage 7 branch (this function is the OTHER, actually-live
         # plan-postflight path -- orchestrator-postflight.sh itself has no live callers; see its
         # own header note -- so both must carry the harvest, not only the orphaned one). research
-        # reads proposed_file_scope from this task's own .return-meta.json; plan instead harvests
-        # the latest plan artifact's own "Files to modify" per-phase field via
-        # plan-file-scope-harvest.sh (never re-implementing extraction). Both forward the result
-        # as --file-scope-add=<json> so update-task-status.sh's additive union-merge picks it up
-        # in the same postflight write. Same empty-array-expansion pattern as phase_check_args
+        # reads proposed_file_scope from this task's own .return-meta.json, agent-authored; plan
+        # instead harvests the latest plan artifact's own "Files to modify" per-phase field via
+        # plan-file-scope-harvest.sh (never re-implementing extraction). implement reads the SAME
+        # proposed_file_scope field as research, but on this path the field was NOT authored by
+        # the implementing agent -- it was deposited mid-dispatch by
+        # scripts/git-commit-phase.sh itself, at the moment its own Containment Self-Check
+        # dropped a files_touched path for not being in the declared file_scope; see
+        # context/formats/return-metadata-file.md's `proposed_file_scope` field specification for
+        # the full per-operation producer table. All three forward the result as
+        # --file-scope-add=<json> so update-task-status.sh's additive union-merge picks it up in
+        # the same postflight write. Same empty-array-expansion pattern as phase_check_args
         # above -- an absent field, null, or [] passes no flag at all (byte-for-byte no-op).
         local _fsa_args=()
         if [[ "$operation" == "research" && -n "${_task_dir}" && -f "${_task_dir}/.return-meta.json" ]]; then
@@ -1072,6 +1078,13 @@ skill_postflight_update() {
             if [[ -n "$_harvested_fs" && "$_harvested_fs" != "[]" && "$_harvested_fs" != "null" ]]; then
               _fsa_args=(--file-scope-add="$_harvested_fs")
             fi
+          fi
+        elif [[ "$operation" == "implement" && -n "${_task_dir}" && -f "${_task_dir}/.return-meta.json" ]]; then
+          local _proposed_fs_impl
+          _proposed_fs_impl=$(jq -c '.proposed_file_scope // [] | if (type == "array") then . else [] end' \
+            "${_task_dir}/.return-meta.json" 2>/dev/null)
+          if [[ -n "$_proposed_fs_impl" && "$_proposed_fs_impl" != "[]" && "$_proposed_fs_impl" != "null" ]]; then
+            _fsa_args=(--file-scope-add="$_proposed_fs_impl")
           fi
         fi
         bash .claude/scripts/update-task-status.sh postflight "$task_number" "$operation" "$session_id" "${phase_check_args[@]}" "${_fsa_args[@]}" || _postflight_rc=$?

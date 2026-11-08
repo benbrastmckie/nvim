@@ -596,6 +596,148 @@ fi
 cd "$ORIG_PWD" || true
 
 # =====================================================================
+# Group 4c: skill_postflight_update's implement-branch file_scope forwarding -- the
+# proposed_file_scope field git-commit-phase.sh deposits mid-dispatch at containment-drop time,
+# forwarded here exactly as research's own agent-authored proposal already is (see Group 4a
+# above). Named "4c" rather than "4b" because that letter is already taken by the per-dispatch
+# deploy-freshness group immediately below, which is unrelated to file_scope.
+#
+# SOURCE-STORE-FIRST resolution for BOTH skill-base.sh (the elif arm under test) and
+# update-task-status.sh (Phase 3's widened --file-scope-add gate), the same deliberate reversal
+# Group 5/6 below document in full: both files are being changed IN THE SOURCE STORE by this
+# authoring task, and the deployed copies are regenerated only by a later, separate operator
+# action (<leader>al "Reload All", or deploy-headless.sh) this task does not perform. A
+# deploy-first resolution for either file would silently exercise OLD, unfixed code and report a
+# misleading result -- either a vacuous pass with no notice (stale skill-base.sh lacking the
+# implement arm), or a hard failure from the still-restricted deployed --file-scope-add gate
+# rejecting operation=implement outright before any write (stale update-task-status.sh). Each
+# case sources skill-base.sh fresh inside its OWN subshell and overlays the fixture's own
+# .claude/scripts/update-task-status.sh with the source-store copy, never touching the
+# suite-level SKILL_BASE-sourced functions Groups 1-4 above and 4a rely on.
+# =====================================================================
+common_test_info "=== skill_postflight_update (implement-branch file_scope forwarding) ==="
+
+IMPLEMENT_ARM_SKILL_BASE="$(common_test_resolve_subject "skill-base.sh (source-store-first, for the implement-arm file_scope forwarding group)" "source-store" \
+  "$REPO_ROOT/.claude/scripts/skill-base.sh" \
+  "$SCRIPT_DIR/../skill-base.sh")" || exit 2
+common_test_declare_subject "$IMPLEMENT_ARM_SKILL_BASE"
+common_test_info "Group 4c exercises: $IMPLEMENT_ARM_SKILL_BASE"
+
+SOURCE_STORE_UTS="$SCRIPT_DIR/../update-task-status.sh"
+if [[ ! -f "$SOURCE_STORE_UTS" ]]; then
+  echo "ERROR: source-store override file missing: $SOURCE_STORE_UTS" >&2
+  exit 2
+fi
+
+# --- build_implement_arm_fixture <root>: build_fixture_repo's shape, plus the source-store
+# override of update-task-status.sh (Phase 3's widened --file-scope-add gate) and a minimal
+# all-phases-[COMPLETED] plan file, so postflight/implement's own (unrelated-to-file-scope)
+# plan-completion stamp succeeds rather than refusing for a missing-plan-directory reason --
+# mirrors test-update-task-status.sh Case 11h's identical fixture requirement. ---
+build_implement_arm_fixture() {
+  local root="$1"
+  build_fixture_repo "$root"
+  cp "$SOURCE_STORE_UTS" "$root/.claude/scripts/update-task-status.sh"
+  chmod +x "$root/.claude/scripts/update-task-status.sh"
+  mkdir -p "$root/specs/001_fixture_task/plans"
+  cat > "$root/specs/001_fixture_task/plans/01_fixture-plan.md" << 'PLANEOF'
+# Implementation Plan: Fixture Task
+
+- **Status**: [IMPLEMENTING]
+
+## Implementation Phases
+
+### Phase 1: First phase [COMPLETED]
+PLANEOF
+}
+
+# --- positive case: proposed_file_scope deposited into .return-meta.json reaches
+# active_projects[].file_scope through the live implement-postflight path, and the existing
+# [file-scope] notice surfaces on stderr. ---
+IMPL_FS_ROOT="$WORKDIR/implement-arm-fixture"
+build_implement_arm_fixture "$IMPL_FS_ROOT"
+cat > "$IMPL_FS_ROOT/specs/001_fixture_task/.return-meta.json" << 'EOF'
+{"status":"in_progress","artifacts":[],"proposed_file_scope":["scripts/dropped-one.sh","scripts/dropped-two.sh"]}
+EOF
+
+(
+  cd "$IMPL_FS_ROOT" || exit 2
+  # shellcheck disable=SC1090
+  . "$IMPLEMENT_ARM_SKILL_BASE"
+  skill_postflight_update 1 "implement" "sess_test_implement_fs" "implemented" "" "specs/001_fixture_task"
+) 2>"$WORKDIR/implement-arm-stderr.log"
+IMPL_FS_EXIT=$?
+IMPL_FS_FILE_SCOPE="$(jq -c '.active_projects[0].file_scope' "$IMPL_FS_ROOT/specs/state.json" 2>/dev/null)"
+
+if [[ "$IMPL_FS_EXIT" -eq 0 ]]; then
+  common_test_pass "skill_postflight_update (implement, with proposed_file_scope): exits 0"
+else
+  common_test_fail "skill_postflight_update (implement, with proposed_file_scope) exited $IMPL_FS_EXIT (see $WORKDIR/implement-arm-stderr.log)"
+fi
+if [[ "$(echo "$IMPL_FS_FILE_SCOPE" | jq -c 'sort')" == '["scripts/dropped-one.sh","scripts/dropped-two.sh"]' ]]; then
+  common_test_pass "skill_postflight_update (implement): file_scope widened from .return-meta.json's proposed_file_scope ($IMPL_FS_FILE_SCOPE)"
+else
+  common_test_fail "skill_postflight_update (implement): expected file_scope [\"scripts/dropped-one.sh\",\"scripts/dropped-two.sh\"], got '$IMPL_FS_FILE_SCOPE' (see $WORKDIR/implement-arm-stderr.log)"
+fi
+if grep -q '\[file-scope\].*2 new path' "$WORKDIR/implement-arm-stderr.log"; then
+  common_test_pass "skill_postflight_update (implement): [file-scope] notice naming a count of 2 surfaces on the live implement-postflight path"
+else
+  common_test_fail "skill_postflight_update (implement): expected a [file-scope] notice naming a count of 2 (see $WORKDIR/implement-arm-stderr.log)"
+fi
+
+# --- degenerate sub-case A: .return-meta.json with no proposed_file_scope field -- file_scope
+# stays absent/null, never [], and no [file-scope] notice fires (mirrors Group 4a's own
+# "no plans/ dir" degenerate case). ---
+IMPL_FS_NOFIELD_ROOT="$WORKDIR/implement-arm-nofield-fixture"
+build_implement_arm_fixture "$IMPL_FS_NOFIELD_ROOT"
+cat > "$IMPL_FS_NOFIELD_ROOT/specs/001_fixture_task/.return-meta.json" << 'EOF'
+{"status":"in_progress","artifacts":[]}
+EOF
+
+(
+  cd "$IMPL_FS_NOFIELD_ROOT" || exit 2
+  # shellcheck disable=SC1090
+  . "$IMPLEMENT_ARM_SKILL_BASE"
+  skill_postflight_update 1 "implement" "sess_test_implement_fs_nofield" "implemented" "" "specs/001_fixture_task"
+) 2>"$WORKDIR/implement-arm-nofield-stderr.log"
+IMPL_FS_NOFIELD_FILE_SCOPE="$(jq -c '.active_projects[0].file_scope' "$IMPL_FS_NOFIELD_ROOT/specs/state.json" 2>/dev/null)"
+
+if [[ "$IMPL_FS_NOFIELD_FILE_SCOPE" == "null" ]]; then
+  common_test_pass "skill_postflight_update (implement, no proposed_file_scope field): file_scope stays absent (null), no bogus [] written"
+else
+  common_test_fail "skill_postflight_update (implement, no proposed_file_scope field): expected file_scope null, got '$IMPL_FS_NOFIELD_FILE_SCOPE' (see $WORKDIR/implement-arm-nofield-stderr.log)"
+fi
+if grep -q '\[file-scope\]' "$WORKDIR/implement-arm-nofield-stderr.log"; then
+  common_test_fail "skill_postflight_update (implement, no proposed_file_scope field): a [file-scope] notice fired unexpectedly (see $WORKDIR/implement-arm-nofield-stderr.log)"
+else
+  common_test_pass "skill_postflight_update (implement, no proposed_file_scope field): no [file-scope] notice fires"
+fi
+
+# --- degenerate sub-case B: no .return-meta.json at all -- same no-op contract. ---
+IMPL_FS_NOFILE_ROOT="$WORKDIR/implement-arm-nofile-fixture"
+build_implement_arm_fixture "$IMPL_FS_NOFILE_ROOT"
+# Deliberately no .return-meta.json written for this fixture.
+
+(
+  cd "$IMPL_FS_NOFILE_ROOT" || exit 2
+  # shellcheck disable=SC1090
+  . "$IMPLEMENT_ARM_SKILL_BASE"
+  skill_postflight_update 1 "implement" "sess_test_implement_fs_nofile" "implemented" "" "specs/001_fixture_task"
+) 2>"$WORKDIR/implement-arm-nofile-stderr.log"
+IMPL_FS_NOFILE_FILE_SCOPE="$(jq -c '.active_projects[0].file_scope' "$IMPL_FS_NOFILE_ROOT/specs/state.json" 2>/dev/null)"
+
+if [[ "$IMPL_FS_NOFILE_FILE_SCOPE" == "null" ]]; then
+  common_test_pass "skill_postflight_update (implement, no .return-meta.json at all): file_scope stays absent (null), no bogus [] written"
+else
+  common_test_fail "skill_postflight_update (implement, no .return-meta.json at all): expected file_scope null, got '$IMPL_FS_NOFILE_FILE_SCOPE' (see $WORKDIR/implement-arm-nofile-stderr.log)"
+fi
+if grep -q '\[file-scope\]' "$WORKDIR/implement-arm-nofile-stderr.log"; then
+  common_test_fail "skill_postflight_update (implement, no .return-meta.json at all): a [file-scope] notice fired unexpectedly (see $WORKDIR/implement-arm-nofile-stderr.log)"
+else
+  common_test_pass "skill_postflight_update (implement, no .return-meta.json at all): no [file-scope] notice fires"
+fi
+
+# =====================================================================
 # Group 4b: per-dispatch deploy-freshness surface inside skill_preflight_update (see
 # skill-base.sh's own deploy-freshness-lib.sh sourcing block and skill_deploy_freshness_stale_names
 # helper). Three cases: WARN-and-parity (stale extension present, everything else on the same
