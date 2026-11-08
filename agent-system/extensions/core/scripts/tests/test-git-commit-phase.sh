@@ -81,6 +81,13 @@ GITIGNORE_EOF
 {"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["src/a.txt","src/b.txt","src/c.txt"]}]}
 STATE_EOF
   echo "# TODO" > "$repo/specs/TODO.md"
+  # Minimal, schema-valid .return-meta.json (status + an empty artifacts array, legal for
+  # in_progress per validate-return-meta.sh) -- the implement-postflight shape every real task
+  # directory already carries by Stage 0 before any phase commit. Cases 18-24 below exercise the
+  # propose_file_scope_addition() deposit against this seeded file.
+  cat > "$repo/specs/999_probe/.return-meta.json" <<'RETURN_META_EOF'
+{"status":"in_progress","artifacts":[]}
+RETURN_META_EOF
 
   git -C "$repo" add .gitignore specs src
   git -C "$repo" commit -q -m "initial"
@@ -727,6 +734,247 @@ if [ "$rc17c" -eq 0 ] && echo "$show17c" | grep -qF "specs/999_probe/reports/01_
   common_test_pass "Case 17 (malformed file_scope): the own-task-directory report commits without being dropped"
 else
   common_test_fail "Case 17 (malformed file_scope): expected rc=0, report committed, no drop warning; got rc=$rc17c show='$show17c' out=$out17c"
+fi
+
+# =====================================================================
+# Case 18/19 (VERIFY 1 + VERIFY 2, same fixture run): a files_touched path outside the declared
+# file_scope is STILL dropped from the commit with its existing WARNING and its existing
+# issue-record.sh "scope excursion" row (the hard-constraint guard, unweakened) -- AND it is now
+# additionally deposited into specs/999_probe/.return-meta.json's proposed_file_scope, so the
+# genuine work is proposed forward rather than silently dropped-and-forgotten.
+# =====================================================================
+common_test_info "=== Case 18/19: a dropped path is proposed into proposed_file_scope, and the drop-and-warn guard survives intact ==="
+
+repo18="$(build_repo)"
+mkdir -p "$repo18/other"
+echo "out of scope" > "$repo18/other/outside.txt"
+git -C "$repo18" add other/outside.txt
+git -C "$repo18" commit -q -m "seed out-of-scope file"
+write_progress "$repo18" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","other/outside.txt"]}]'
+echo "mod a" > "$repo18/src/a.txt"
+echo "mod outside" > "$repo18/other/outside.txt"
+
+out18="$(run_phase_commit "$repo18" --task 999 --project probe --phase 1 --message "case18" --session sess_18 2>&1)"
+rc18=$?
+show18="$(git -C "$repo18" show --name-only --format= HEAD)"
+proposed18="$(jq -c '.proposed_file_scope // []' "$repo18/specs/999_probe/.return-meta.json" 2>/dev/null)"
+
+if [ "$rc18" -eq 0 ] && echo "$show18" | grep -qF "src/a.txt" && ! echo "$show18" | grep -qF "other/outside.txt"; then
+  common_test_pass "Case 18: the commit still lands (src/a.txt) with other/outside.txt still dropped"
+else
+  common_test_fail "Case 18: expected rc=0, src/a.txt committed, other/outside.txt not; got rc=$rc18 show='$show18' out=$out18"
+fi
+
+if echo "$proposed18" | jq -e 'index("other/outside.txt") != null' >/dev/null 2>&1; then
+  common_test_pass "Case 18 (VERIFY 1): other/outside.txt was deposited into proposed_file_scope"
+else
+  common_test_fail "Case 18 (VERIFY 1): expected other/outside.txt in proposed_file_scope; got $proposed18"
+fi
+
+if echo "$out18" | grep -q "WARNING.*dropping out-of-scope path 'other/outside.txt'"; then
+  common_test_pass "Case 19 (VERIFY 2): the existing WARNING still fires for the dropped path"
+else
+  common_test_fail "Case 19 (VERIFY 2): expected the drop WARNING to still fire; got out=$out18"
+fi
+
+if [ -f "$repo18/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo18/specs/999_probe/issues.jsonl" \
+  && grep -q "other/outside.txt" "$repo18/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 19 (VERIFY 2): the existing issue-record.sh scope-excursion row still fires"
+else
+  common_test_fail "Case 19 (VERIFY 2): expected a scope-excursion issue record naming other/outside.txt; got $(cat "$repo18/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+status18="$(git -C "$repo18" status --porcelain -- other/outside.txt)"
+if [ -n "$status18" ]; then
+  common_test_pass "Case 19 (VERIFY 2): the dropped path is still left uncommitted on disk for manual review"
+else
+  common_test_fail "Case 19 (VERIFY 2): the dropped path should remain modified/uncommitted"
+fi
+
+# =====================================================================
+# Case 20 (idempotence): a second phase commit that drops the SAME path again leaves exactly one
+# occurrence of that path in proposed_file_scope -- no duplicate append.
+# =====================================================================
+common_test_info "=== Case 20: a repeated drop of the same path appends to proposed_file_scope exactly once ==="
+
+echo "mod outside again" > "$repo18/other/outside.txt"
+out20="$(run_phase_commit "$repo18" --task 999 --project probe --phase 1 --message "case20" --session sess_20 2>&1)"
+rc20=$?
+proposed20="$(jq -c '.proposed_file_scope // []' "$repo18/specs/999_probe/.return-meta.json" 2>/dev/null)"
+count20="$(echo "$proposed20" | jq '[.[] | select(. == "other/outside.txt")] | length' 2>/dev/null)"
+
+if [ "$rc20" -eq 0 ] && [ "$count20" = "1" ]; then
+  common_test_pass "Case 20: other/outside.txt appears exactly once in proposed_file_scope after a repeated drop"
+else
+  common_test_fail "Case 20: expected rc=0 and exactly one occurrence; got rc=$rc20 count=$count20 proposed=$proposed20"
+fi
+
+# =====================================================================
+# Case 21 (VERIFY 3): the fixed-scope carve-out paths (the task directory, specs/TODO.md, and
+# specs/state.json) are still staged unconditionally and are NEVER themselves proposed into
+# proposed_file_scope, even when a files_touched entry names one of them directly.
+# =====================================================================
+common_test_info "=== Case 21: the fixed-scope carve-out paths are staged unconditionally and never proposed ==="
+
+repo21="$(build_repo)"
+write_progress "$repo21" 1 '[{"id":1,"status":"done","files_touched":["specs/TODO.md","specs/state.json","specs/999_probe/marker.txt"]}]'
+echo "# TODO updated" > "$repo21/specs/TODO.md"
+echo "a marker updated" > "$repo21/specs/999_probe/marker.txt"
+# specs/state.json is rewritten in place with the same declared file_scope -- only its content
+# bytes change, never its shape -- so the containment loop sees it as a genuinely modified path.
+python3 - "$repo21/specs/state.json" <<'PYEOF'
+import json, sys
+path = sys.argv[1]
+with open(path) as f:
+    data = json.load(f)
+data["active_projects"][0]["last_touched_marker"] = "case21"
+with open(path, "w") as f:
+    json.dump(data, f)
+PYEOF
+
+out21="$(run_phase_commit "$repo21" --task 999 --project probe --phase 1 --message "case21" --session sess_21 2>&1)"
+rc21=$?
+show21="$(git -C "$repo21" show --name-only --format= HEAD)"
+proposed21="$(jq -c '.proposed_file_scope // []' "$repo21/specs/999_probe/.return-meta.json" 2>/dev/null)"
+
+if [ "$rc21" -eq 0 ] && echo "$show21" | grep -qF "specs/TODO.md" && echo "$show21" | grep -qF "specs/state.json" \
+  && echo "$show21" | grep -qF "specs/999_probe/marker.txt" \
+  && ! echo "$out21" | grep -q "dropping out-of-scope"; then
+  common_test_pass "Case 21 (VERIFY 3): the fixed-scope carve-out paths are staged unconditionally with no drop warning"
+else
+  common_test_fail "Case 21 (VERIFY 3): expected rc=0, all three carve-out paths committed, no drop warning; got rc=$rc21 show='$show21' out=$out21"
+fi
+
+if echo "$proposed21" | jq -e '(index("specs/TODO.md") // null) == null and (index("specs/state.json") // null) == null and (index("specs/999_probe/marker.txt") // null) == null' >/dev/null 2>&1; then
+  common_test_pass "Case 21 (VERIFY 3): none of the carve-out paths were proposed into proposed_file_scope"
+else
+  common_test_fail "Case 21 (VERIFY 3): expected no carve-out path in proposed_file_scope; got $proposed21"
+fi
+
+# =====================================================================
+# Case 22 (VERIFY 4): fail-open on a missing, empty, and malformed file_scope is unchanged by the
+# new deposit -- the whole Containment Self-Check is skipped, so nothing is dropped AND nothing
+# is proposed, for all three shapes, mirroring Case 17a/b/c's existing fixture shape.
+# =====================================================================
+common_test_info "=== Case 22 (VERIFY 4): fail-open on missing/empty/malformed file_scope -- nothing dropped, nothing proposed ==="
+
+run_case22_shape() {
+  local shape_label="$1" state_json="$2"
+  local repo
+  repo="$(build_repo)"
+  printf '%s' "$state_json" > "$repo/specs/state.json"
+  git -C "$repo" add specs/state.json
+  git -C "$repo" commit -q -m "declare $shape_label file_scope"
+  mkdir -p "$repo/other"
+  echo "anything" > "$repo/other/anything.txt"
+  git -C "$repo" add other/anything.txt
+  git -C "$repo" commit -q -m "seed anything.txt"
+  write_progress "$repo" 1 '[{"id":1,"status":"done","files_touched":["other/anything.txt"]}]'
+  echo "modified anything" > "$repo/other/anything.txt"
+
+  local out rc proposed
+  out="$(run_phase_commit "$repo" --task 999 --project probe --phase 1 --message "case22-$shape_label" --session "sess_22_$shape_label" 2>&1)"
+  rc=$?
+  proposed="$(jq -c '.proposed_file_scope // []' "$repo/specs/999_probe/.return-meta.json" 2>/dev/null)"
+
+  if [ "$rc" -eq 0 ] && ! echo "$out" | grep -q "dropping out-of-scope" \
+    && echo "$proposed" | jq -e 'length == 0' >/dev/null 2>&1; then
+    common_test_pass "Case 22 ($shape_label file_scope): fail-open preserved -- nothing dropped, nothing proposed"
+  else
+    common_test_fail "Case 22 ($shape_label file_scope): expected rc=0, no drop, empty proposed_file_scope; got rc=$rc proposed=$proposed out=$out"
+  fi
+}
+
+run_case22_shape "missing" '{"active_projects":[{"project_number":999,"project_name":"probe"}]}'
+run_case22_shape "empty" '{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":[]}]}'
+run_case22_shape "malformed" '{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":"not-an-array"}]}'
+
+# =====================================================================
+# Case 23 (deposit-path fail-open): with .return-meta.json absent, and separately with it present
+# but malformed JSON, a drop still warns, still records the issue, still commits, and the exit
+# code matches the same fixture run with a valid .return-meta.json. The absent case must not
+# create the file; the malformed case must not be overwritten.
+# =====================================================================
+common_test_info "=== Case 23: the proposed_file_scope deposit fails open when .return-meta.json is absent or malformed ==="
+
+# Baseline: the same drop fixture with a valid (seeded) .return-meta.json, for the exit-code
+# comparison below -- this is exactly Case 18/19's repo18 result (rc18, already captured above).
+
+# Case 23a: .return-meta.json absent entirely.
+repo23a="$(build_repo)"
+rm -f "$repo23a/specs/999_probe/.return-meta.json"
+mkdir -p "$repo23a/other"
+echo "out of scope" > "$repo23a/other/outside.txt"
+git -C "$repo23a" add other/outside.txt
+git -C "$repo23a" commit -q -m "seed out-of-scope file (no .return-meta.json)"
+write_progress "$repo23a" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","other/outside.txt"]}]'
+echo "mod a" > "$repo23a/src/a.txt"
+echo "mod outside" > "$repo23a/other/outside.txt"
+
+out23a="$(run_phase_commit "$repo23a" --task 999 --project probe --phase 1 --message "case23a" --session sess_23a 2>&1)"
+rc23a=$?
+show23a="$(git -C "$repo23a" show --name-only --format= HEAD)"
+
+if [ "$rc23a" -eq "$rc18" ] \
+  && echo "$out23a" | grep -q "WARNING.*dropping out-of-scope path 'other/outside.txt'" \
+  && [ -f "$repo23a/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo23a/specs/999_probe/issues.jsonl" \
+  && echo "$show23a" | grep -qF "src/a.txt" && ! echo "$show23a" | grep -qF "other/outside.txt"; then
+  common_test_pass "Case 23a: an absent .return-meta.json still warns, still records the issue, still commits, same exit code as the valid-file baseline"
+else
+  common_test_fail "Case 23a: expected rc=$rc18, drop warning, issue record, src/a.txt committed, other/outside.txt not; got rc=$rc23a show='$show23a' out=$out23a"
+fi
+
+if [ ! -f "$repo23a/specs/999_probe/.return-meta.json" ]; then
+  common_test_pass "Case 23a: .return-meta.json was NOT created (skip-if-absent, never create)"
+else
+  common_test_fail "Case 23a: .return-meta.json should not have been created; found: $(cat "$repo23a/specs/999_probe/.return-meta.json")"
+fi
+
+# Case 23b: .return-meta.json present but malformed JSON.
+repo23b="$(build_repo)"
+echo "{not valid json" > "$repo23b/specs/999_probe/.return-meta.json"
+mkdir -p "$repo23b/other"
+echo "out of scope" > "$repo23b/other/outside.txt"
+git -C "$repo23b" add other/outside.txt
+git -C "$repo23b" commit -q -m "seed out-of-scope file (malformed .return-meta.json)"
+write_progress "$repo23b" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","other/outside.txt"]}]'
+echo "mod a" > "$repo23b/src/a.txt"
+echo "mod outside" > "$repo23b/other/outside.txt"
+
+out23b="$(run_phase_commit "$repo23b" --task 999 --project probe --phase 1 --message "case23b" --session sess_23b 2>&1)"
+rc23b=$?
+show23b="$(git -C "$repo23b" show --name-only --format= HEAD)"
+content23b="$(cat "$repo23b/specs/999_probe/.return-meta.json")"
+
+if [ "$rc23b" -eq "$rc18" ] \
+  && echo "$out23b" | grep -q "WARNING.*dropping out-of-scope path 'other/outside.txt'" \
+  && [ -f "$repo23b/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo23b/specs/999_probe/issues.jsonl" \
+  && echo "$show23b" | grep -qF "src/a.txt" && ! echo "$show23b" | grep -qF "other/outside.txt"; then
+  common_test_pass "Case 23b: a malformed .return-meta.json still warns, still records the issue, still commits, same exit code as the valid-file baseline"
+else
+  common_test_fail "Case 23b: expected rc=$rc18, drop warning, issue record, src/a.txt committed, other/outside.txt not; got rc=$rc23b show='$show23b' out=$out23b"
+fi
+
+if [ "$content23b" = "{not valid json" ]; then
+  common_test_pass "Case 23b: the malformed .return-meta.json was left byte-for-byte untouched (no write on a malformed file)"
+else
+  common_test_fail "Case 23b: expected the malformed file untouched; got: $content23b"
+fi
+
+# =====================================================================
+# Case 24 (VERIFY 5): the post-commit completeness check reports accurately under the new rule --
+# a containment-dropped path is excluded from the surviving set the check verifies, so the check
+# never reports the dropped path as un-landed. Reuses Case 18's repo and output (out18/show18).
+# =====================================================================
+common_test_info "=== Case 24 (VERIFY 5): the completeness check does not report the dropped path as un-landed ==="
+
+if ! echo "$out18" | grep -q "completeness check failed"; then
+  common_test_pass "Case 24 (VERIFY 5): no completeness-check failure is reported for a correctly-landed commit"
+elif ! echo "$out18" | grep -A5 "files_touched path(s)" | grep -qF "other/outside.txt"; then
+  common_test_pass "Case 24 (VERIFY 5): a completeness-check failure (if any) does not name the containment-dropped path"
+else
+  common_test_fail "Case 24 (VERIFY 5): the dropped path other/outside.txt was wrongly named among the un-landed completeness-check paths:
+$out18"
 fi
 
 # task-ref-ok:end

@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Deposit the dropped path at drop time in git-commit-phase.sh, with fixtures",
+  "started_at": "2026-11-08T01:45:00Z",
+  "last_updated": "2026-11-08T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add propose_file_scope_addition() helper and call site in the containment loop; extend header; add .return-meta.lock to .gitignore", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh", ".gitignore"]},
+    {"id": 2, "description": "Extend test-git-commit-phase.sh build_repo to seed .return-meta.json; add Cases 18-24 mapping to VERIFY 1-5, idempotence, and deposit-path fail-open", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verify_item_mapping": {
+    "VERIFY_1": "Case 18",
+    "VERIFY_2": "Case 19",
+    "VERIFY_3": "Case 21",
+    "VERIFY_4": "Case 22 (missing/empty/malformed)",
+    "VERIFY_5": "Case 24",
+    "idempotence": "Case 20",
+    "deposit_path_fail_open": "Case 23 (23a absent, 23b malformed)"
+  }
+}

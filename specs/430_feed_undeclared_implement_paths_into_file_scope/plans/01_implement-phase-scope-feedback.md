@@ -243,17 +243,17 @@ contract rather than inventing one.
 
 ---
 
-### Phase 2: Deposit the dropped path at drop time in `git-commit-phase.sh`, with fixtures [NOT STARTED]
+### Phase 2: Deposit the dropped path at drop time in `git-commit-phase.sh`, with fixtures [COMPLETED]
 
 **Goal**: Make the drop loop write each dropped path into the task's own `.return-meta.json`
 `proposed_file_scope`, under `flock`, additively, idempotently, and fail-open — and pin all five
 of the dispatch's VERIFY fixtures that live in this suite.
 
 **Tasks**:
-- [ ] Re-read `scripts/git-commit-phase.sh`'s containment block (currently ~lines 234-336) and
+- [x] Re-read `scripts/git-commit-phase.sh`'s containment block (currently ~lines 234-336) and
       `scripts/tests/test-git-commit-phase.sh` immediately before editing; re-derive the drop
-      loop's line numbers rather than trusting the figures in this plan.
-- [ ] Add a `propose_file_scope_addition <path>` helper function near `warn()`, before the
+      loop's line numbers rather than trusting the figures in this plan. *(completed)*
+- [x] Add a `propose_file_scope_addition <path>` helper function near `warn()`, before the
       containment block. Contract: resolve `${task_dir}/.return-meta.json`; if the file does not
       exist, `warn` once and return 0 (skip-if-absent — never create, see Decisions); if `jq
       empty` fails on it, `warn` and return 0; otherwise, inside `(flock -x 200; ...) 200>
@@ -261,53 +261,53 @@ of the dispatch's VERIFY fixtures that live in this suite.
       non-array value to `[]`, append the path only if not already present, write the result to a
       temp file and `mv` it into place atomically. Every failure path — lock failure, `jq`
       failure, unwritable file, unwritable temp — `warn`s non-fatally and returns 0. The function
-      never returns non-zero and never writes to stdout.
-- [ ] Add the `.return-meta.lock` filename to the fixture `.gitignore` consideration and confirm
+      never returns non-zero and never writes to stdout. *(completed)*
+- [x] Add the `.return-meta.lock` filename to the fixture `.gitignore` consideration and confirm
       it is not picked up as a committed path (the lock file lives in the task directory, which
       the fixed `stage_paths` seed stages as a directory; verify in the Case 18 fixture that no
       `.return-meta.lock` is committed, and add the lock to the repo's existing lock ignore
-      pattern if it is).
-- [ ] Call `propose_file_scope_addition "$f"` inside the existing containment loop's `else`
+      pattern if it is). *(completed)*
+- [x] Call `propose_file_scope_addition "$f"` inside the existing containment loop's `else`
       branch, placed **after** the existing `warn` and `issue-record.sh` calls and **before** the
       loop continues, so the warning and the issue row remain unconditional and the deposit is
-      strictly additive to them (research Decision 3).
-- [ ] Extend the script header: add a short paragraph under the PHASE-COMMIT CONTAINMENT
+      strictly additive to them (research Decision 3). *(completed)*
+- [x] Extend the script header: add a short paragraph under the PHASE-COMMIT CONTAINMENT
       SELF-CHECK section recording that a dropped path is additionally proposed back into the
       task's `file_scope` via `.return-meta.json`'s `proposed_file_scope`, that this is additive
       to and never a substitute for the warning and the issue row, and that the deposit fails open
       exactly as the check itself does. Cross-reference
-      `context/formats/return-metadata-file.md`.
-- [ ] Extend `scripts/tests/test-git-commit-phase.sh` with new cases numbered from 18, following
+      `context/formats/return-metadata-file.md`. *(completed)*
+- [x] Extend `scripts/tests/test-git-commit-phase.sh` with new cases numbered from 18, following
       the file's existing house convention (`build_repo`/`write_progress`/`run_phase_commit`
       helpers, `pass`/`fail`/`info`, assertions reading file content rather than exit code alone).
       `build_repo` must be extended to seed a minimal valid `.return-meta.json` in
       `specs/999_probe/` — reuse the existing fixture task identifier and its `task-ref-ok`
-      block, adding no new synthetic task number.
-- [ ] Case 18 (VERIFY 1 — genuine work is no longer dropped-and-forgotten): a `files_touched`
+      block, adding no new synthetic task number. *(completed)*
+- [x] Case 18 (VERIFY 1 — genuine work is no longer dropped-and-forgotten): a `files_touched`
       path outside the declared `file_scope` is dropped from the commit AND appears in
-      `specs/999_probe/.return-meta.json`'s `proposed_file_scope`. Assert both halves.
-- [ ] Case 19 (VERIFY 2 — the excursion guard survives intact): in the same fixture run, assert
+      `specs/999_probe/.return-meta.json`'s `proposed_file_scope`. Assert both halves. *(completed)*
+- [x] Case 19 (VERIFY 2 — the excursion guard survives intact): in the same fixture run, assert
       the `WARNING: ... dropping out-of-scope path` line is still emitted for that path and that
       the `issue-record.sh` call still wrote a `scope excursion` row to
       `specs/999_probe/issues.jsonl`. This is the paired-negative guard the dispatch's hard
-      constraint requires: the predicate is not weakened, only supplemented.
-- [ ] Case 20 (idempotence): running the same phase commit twice leaves exactly one occurrence of
-      the path in `proposed_file_scope` — no duplicate append.
-- [ ] Case 21 (VERIFY 3 — fixed-scope carve-out unchanged): `specs/999_probe/`, `specs/TODO.md`,
+      constraint requires: the predicate is not weakened, only supplemented. *(completed)*
+- [x] Case 20 (idempotence): running the same phase commit twice leaves exactly one occurrence of
+      the path in `proposed_file_scope` — no duplicate append. *(completed)*
+- [x] Case 21 (VERIFY 3 — fixed-scope carve-out unchanged): `specs/999_probe/`, `specs/TODO.md`,
       and `specs/state.json` are still staged unconditionally and are never themselves proposed
-      into `proposed_file_scope`.
-- [ ] Case 22 (VERIFY 4 — fail-open unchanged, three shapes): with `file_scope` absent, `[]`, and
+      into `proposed_file_scope`. *(completed)*
+- [x] Case 22 (VERIFY 4 — fail-open unchanged, three shapes): with `file_scope` absent, `[]`, and
       malformed (a bare string), the whole check is still skipped, nothing is dropped, nothing is
-      proposed, and the commit's exit code is unchanged. Mirror Case 17a/b/c's existing shape.
-- [ ] Case 23 (deposit-path fail-open): with `.return-meta.json` absent, and separately with it
+      proposed, and the commit's exit code is unchanged. Mirror Case 17a/b/c's existing shape. *(completed)*
+- [x] Case 23 (deposit-path fail-open): with `.return-meta.json` absent, and separately with it
       present but malformed JSON, a drop still warns, still records the issue, still commits, and
       the script's exit code is identical to the same fixture run with a valid
       `.return-meta.json` — the deposit never affects the commit or its exit code, and no
-      `.return-meta.json` is created in the absent case.
-- [ ] Case 24 (VERIFY 5 — post-commit completeness check reports accurately): a containment-
+      `.return-meta.json` is created in the absent case. *(completed)*
+- [x] Case 24 (VERIFY 5 — post-commit completeness check reports accurately): a containment-
       dropped path is still excluded from the completeness check's surviving set, so the check
       reports on exactly the paths that were committed and does not newly report the dropped path
-      as un-landed. Assert the check's output names the surviving paths and not the dropped one.
+      as un-landed. Assert the check's output names the surviving paths and not the dropped one. *(completed)*
 
 **Timing**: 1.75 hours
 

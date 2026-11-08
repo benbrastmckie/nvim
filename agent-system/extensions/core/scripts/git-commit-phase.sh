@@ -78,6 +78,16 @@
 # Never refuse the whole commit over this -- drop-and-warn only, the same "under-stage, never
 # over-stage" fail-safe direction git-staging-scope.md already settles.
 #
+# A dropped path is additionally proposed back into the task's own declared `file_scope`: it is
+# deposited into this task's `.return-meta.json` `proposed_file_scope` array (skip-if-absent,
+# never create) so the next implement-postflight merge widens the declaration to match reality.
+# This deposit is strictly additive to, and never a substitute for, the warn() and
+# issue-record.sh calls immediately above it -- the warning and the issue row still fire on
+# every drop, unconditionally. The deposit fails open exactly as this check itself does: every
+# failure mode warns non-fatally and never touches the commit's exit code. See
+# context/formats/return-metadata-file.md's `proposed_file_scope` field specification for the
+# full producer/consumer contract on the implement path.
+#
 # POST-COMMIT COMPLETENESS CHECK
 # -------------------------------
 # After git-commit-scoped.sh returns, every surviving (derived, not containment-dropped)
@@ -187,6 +197,54 @@ cd "$PROJECT_ROOT" || exit 2
 
 warn() {
   echo "WARNING: git-commit-phase.sh: $1" >&2
+}
+
+# propose_file_scope_addition <path> -- deposits a containment-dropped path into the task's own
+# .return-meta.json `proposed_file_scope` array at drop time, additively and idempotently, under
+# flock. This is the implement-path producer side of the proposed_file_scope channel documented
+# in context/formats/return-metadata-file.md -- additive to, and never a substitute for, the
+# warn()/issue-record.sh calls at the call site below. Skip-if-absent, never create: a task
+# directory with no .return-meta.json yet is left untouched, because the file's own required
+# fields (status, a correctly shaped artifacts) cannot be synthesized by a commit wrapper -- see
+# the Decisions section this helper implements. Every failure path warns non-fatally and returns
+# 0; this function never returns non-zero and never writes to stdout, and nothing it does can
+# change the calling commit's exit code.
+propose_file_scope_addition() {
+  local path="$1"
+  local meta_file="${task_dir}/.return-meta.json"
+  local lock_file="${task_dir}/.return-meta.lock"
+
+  if [ ! -f "$meta_file" ]; then
+    warn "skipping proposed_file_scope deposit for '${path}': ${meta_file} not found (skip-if-absent, never create)"
+    return 0
+  fi
+  if ! jq empty "$meta_file" >/dev/null 2>&1; then
+    warn "skipping proposed_file_scope deposit for '${path}': ${meta_file} is not valid JSON"
+    return 0
+  fi
+
+  (
+    flock -x 200
+    local tmp_file
+    if ! tmp_file="$(mktemp "${meta_file}.XXXXXX" 2>/dev/null)"; then
+      warn "skipping proposed_file_scope deposit for '${path}': mktemp failed"
+      exit 0
+    fi
+    if jq --arg p "$path" \
+        '.proposed_file_scope = (
+           (((.proposed_file_scope // []) | if (type == "array") then . else [] end)) as $existing
+           | if ($existing | index($p)) then $existing else ($existing + [$p]) end
+         )' \
+        "$meta_file" > "$tmp_file" 2>/dev/null \
+      && mv "$tmp_file" "$meta_file" 2>/dev/null; then
+      exit 0
+    fi
+    warn "skipping proposed_file_scope deposit for '${path}': jq update or atomic move failed"
+    rm -f "$tmp_file" 2>/dev/null || true
+    exit 0
+  ) 200> "$lock_file" || warn "skipping proposed_file_scope deposit for '${path}': flock failed"
+
+  return 0
 }
 
 padded_num=$(printf "%03d" "$task_number")
@@ -328,6 +386,7 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
             --what-happened "git-commit-phase.sh dropped '${f}' from a phase commit pathspec: not contained in this task's declared file_scope." \
             --phase implement \
             >/dev/null 2>&1 || warn "issue-record.sh call failed (non-fatal)"
+          propose_file_scope_addition "$f"
         fi
       done
       files_touched=("${kept_files_touched[@]}")
