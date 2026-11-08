@@ -3651,6 +3651,7 @@
         494
       ],
       "file_scope": [
+        ".gitignore",
         "__WHOLE_TREE__",
         "agent-system/extensions/core/agents/general-implementation-agent.md",
         "agent-system/extensions/core/context/formats/return-metadata-file.md",
