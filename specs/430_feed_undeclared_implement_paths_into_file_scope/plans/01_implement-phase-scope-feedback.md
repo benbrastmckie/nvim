@@ -496,31 +496,57 @@ mid-dispatch deposit from being overwritten at Stage 7.
 
 ---
 
-### Phase 6: Redeploy and run the complete gate set [NOT STARTED]
+### Phase 6: Redeploy and run the complete gate set [COMPLETED]
 
 **Goal**: Regenerate the deployed `.claude/` tree from the source store and prove the whole change
 set green under the repository's full gate set, end to end.
 
 **Tasks**:
-- [ ] Confirm the working tree holds this task's own committed work and no foreign uncommitted
+- [x] Confirm the working tree holds this task's own committed work and no foreign uncommitted
       modification (`git status --short`, `git log --oneline -5`). If a sibling's in-flight edit
-      is present, STOP and report rather than redeploying over it.
-- [ ] Redeploy with the bounded-wait idiom required by
+      is present, STOP and report rather than redeploying over it. *(completed: no foreign
+      commits on top of this task's 5 phase commits; pre-existing modified/untracked entries
+      from siblings 420/435 and engine-written files left untouched)*
+- [x] Redeploy with the bounded-wait idiom required by
       `context/patterns/external-process-wait.md` Rule 1: `timeout 540 bash
       .claude/scripts/deploy-headless.sh`, with the Bash tool's `timeout` parameter raised to
-      600000 (not its 120000ms default).
-- [ ] Confirm the deploy-freshness warning for the `core` extension clears, and that the three
+      600000 (not its 120000ms default). *(completed: deploy landed both runs; first run's
+      deploy-headless fast-gate flagged a since-resolved content drift in
+      test-git-commit-phase.sh caused by a post-first-deploy shellcheck fix, then re-run clean
+      of that specific drift)*
+- [x] Confirm the deploy-freshness warning for the `core` extension clears, and that the three
       stale extensions named in this dispatch (`core`, `lean`, `nvim`) are no longer reported
       stale — or, if `lean`/`nvim` staleness predates this task, record that it does and is out of
-      this task's scope rather than silently absorbing it.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`.
-- [ ] Run an end-to-end sanity check of the closed loop against a throwaway fixture (not live
+      this task's scope rather than silently absorbing it. *(completed: check-deploy-freshness.sh
+      emits no WARN line for any of the three after the whole-tree redeploy -- all fresh)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. *(deviation: per this
+      dispatch's Batch Gate Deferral directive, the full gate set was deferred to the
+      once-per-invocation batch-level stage rather than independently run at full depth here.
+      This dispatch instead ran (a) the exact 34-suite `run-all.sh --only` union covering every
+      file this task touched, computed via `suite_selection_select` -- 30/34 pass, with the
+      remaining 4 independently confirmed pre-existing/environmental by temporarily reverting
+      the phase-3 edit and reproducing identical failures with no task-430 change present (see
+      phase 3's progress file and issues.jsonl); and (b) a scoped `verify-deploy.sh --only-gate
+      3,4,10` re-run isolating the deploy-headless fast-gate's three apparent timeouts -- gate4
+      and gate10 passed cleanly under adequate time (the 60s fast-gate budget was too tight
+      under this batch's concurrent load), and gate3's one genuine finding (the test-git-commit-
+      phase.sh content drift) was resolved by the second redeploy and reconfirmed clean via
+      check-extension-docs.sh directly. The two remaining deploy-headless fast-gate FAILs
+      (eager-load budget overage, 1 pre-existing shellcheck finding in
+      agent-system/extensions/lean/, 1 pre-existing dead-command-recommendation finding in
+      agent-system/extensions/memory/) were independently confirmed pre-existing and unrelated
+      to this task by git-log timestamp and content inspection -- all predate this dispatch's
+      start and sit entirely outside this task's declared file_scope.)*
+- [x] Run an end-to-end sanity check of the closed loop against a throwaway fixture (not live
       `specs/state.json`): a phase commit drops an undeclared path, the path lands in
       `.return-meta.json`'s `proposed_file_scope`, the implement postflight merges it into
       `file_scope`, and a second phase commit for the same path is NOT dropped. This is the one
-      assertion no single-suite test makes, because it spans three scripts.
-- [ ] Record in the phase's progress notes which VERIFY item each landed test case discharges, so
-      the summary can report the mapping rather than reconstruct it.
+      assertion no single-suite test makes, because it spans three scripts. *(completed: ran
+      against a throwaway mktemp fixture with the freshly-redeployed .claude/scripts/ tree --
+      all three steps confirmed exactly as specified; fixture discarded afterward)*
+- [x] Record in the phase's progress notes which VERIFY item each landed test case discharges, so
+      the summary can report the mapping rather than reconstruct it. *(completed: recorded in
+      phase 2's progress file verify_item_mapping field)*
 
 **Timing**: 1 hour
 

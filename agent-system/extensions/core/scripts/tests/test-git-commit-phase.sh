@@ -806,7 +806,7 @@ count20="$(echo "$proposed20" | jq '[.[] | select(. == "other/outside.txt")] | l
 if [ "$rc20" -eq 0 ] && [ "$count20" = "1" ]; then
   common_test_pass "Case 20: other/outside.txt appears exactly once in proposed_file_scope after a repeated drop"
 else
-  common_test_fail "Case 20: expected rc=0 and exactly one occurrence; got rc=$rc20 count=$count20 proposed=$proposed20"
+  common_test_fail "Case 20: expected rc=0 and exactly one occurrence; got rc=$rc20 count=$count20 proposed=$proposed20 out=$out20"
 fi
 
 # =====================================================================

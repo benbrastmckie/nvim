@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and run the complete gate set",
+  "started_at": "2026-11-08T03:30:00Z",
+  "last_updated": "2026-11-08T04:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm clean working tree, redeploy, confirm freshness clears for core/lean/nvim", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Discharge Phase 6's verification against the Batch Gate Deferral's scoped tier (34-suite union + targeted gate3/4/10 recheck) instead of an independent full verify-deploy.sh run", "status": "done", "files_touched": []},
+    {"id": 3, "description": "End-to-end throwaway-fixture sanity check: drop, propose, merge, no re-drop", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Fix an SC2034 shellcheck finding in test-git-commit-phase.sh's own Case 20 (out20 unused), discovered by the redeploy's fast-gate run; redeploy a second time", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.4",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "Per this dispatch's Batch Gate Deferral directive, the full gate set is deferred to the once-per-invocation batch-level stage rather than independently run at full depth in this dispatch. Discharged instead via the exact suite_selection_select-derived 34-suite union (30/34 pass; 4 independently confirmed pre-existing/environmental) plus a targeted --only-gate 3,4,10 recheck isolating the deploy-headless fast-gate's apparent timeouts (gate4/gate10 pass with adequate time; gate3's one real finding was the transient content drift from a later source-store edit, resolved by a second redeploy).",
+      "annotation": "see plan checklist's own deviation note on this item"
+    }
+  ],
+  "verify_item_mapping_summary": "Full mapping recorded in phase-2-progress.json's verify_item_mapping field: VERIFY 1=Case 18, VERIFY 2=Case 19, VERIFY 3=Case 21, VERIFY 4=Case 22, VERIFY 5=Case 24, idempotence=Case 20, deposit-path fail-open=Case 23.",
+  "notes": "Pre-existing/unrelated findings isolated and NOT fixed (out of this task's declared file_scope): 1 shellcheck SC2155 finding in agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh (committed 2026-11-06, a day before this dispatch); 1 dead-command-recommendation finding (/ide) in agent-system/extensions/memory/context/project/memory/{memory-setup,memory-troubleshooting}.md; the orchestrator eager-load budget overage (67096B vs 66800B baseline), traced via git log to commits that all predate this dispatch's start_ts, none touching any file in this task's declared file_scope. The one finding genuinely caused by this task's own new test code (an SC2034 unused-variable warning on Case 20's out20 capture) was fixed in this same phase and reconfirmed clean."
+}
