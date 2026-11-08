@@ -23,13 +23,13 @@ share that round's number:
 **Example Flow**:
 ```
 Round 1:
-  /research 309  -> creates 01_report.md (next_artifact_number becomes 2)
-  /plan 309      -> creates 01_plan.md (uses round 1)
-  /implement 309 -> creates 01_summary.md (uses round 1)
+  research-phase dispatch for 309  -> creates 01_report.md (next_artifact_number becomes 2)
+  plan-phase dispatch for 309      -> creates 01_plan.md (uses round 1)
+  implement-phase dispatch for 309 -> creates 01_summary.md (uses round 1)
 
 Round 2 (after blocker/revision):
-  /research 309  -> creates 02_report.md (next_artifact_number becomes 3)
-  /plan 309      -> creates 02_plan.md (uses round 2)
+  research-phase dispatch for 309  -> creates 02_report.md (next_artifact_number becomes 3)
+  plan-phase dispatch for 309      -> creates 02_plan.md (uses round 2)
 ```
 
 ## Versioning — Per-Type Detail

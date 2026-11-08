@@ -9,7 +9,7 @@ model: opus
 
 Create a new version of an implementation plan, or update task description if no plan exists.
 
-**Artifact Numbering Note**: Plan revision creates a new plan file within the same artifact round. The revised plan uses the SAME artifact number (not incremented) because it replaces the previous plan in the same round. Only `/research` advances the artifact number to start a new round.
+**Artifact Numbering Note**: Plan revision creates a new plan file within the same artifact round. The revised plan uses the SAME artifact number (not incremented) because it replaces the previous plan in the same round. Only a research-phase dispatch — or a forced `/orchestrate --plan`/`--implement` dispatch that skips research — advances the artifact number to start a new round; an unforced plan or implement dispatch shares the round its preceding research already opened.
 
 ## Arguments
 
@@ -96,7 +96,7 @@ fi
 
 **Cleanup**: `/revise` has no CHECKPOINT 3 commit block of its own (`skill-reviser` commits
 inline), so this is the command's own last step and owns `.return-meta.json`'s deletion --
-skill_cleanup no longer deletes it at the skill's own Stage 9:
+skill_cleanup does not delete it at the skill's own Stage 9:
 ```bash
 rm -f "specs/${PADDED_NUM}_${PROJECT_NAME}/.return-meta.json"
 ```
@@ -142,7 +142,7 @@ Status: [{current_status}]
   overlaps this task's and that lock is fresh, `/revise` ABORTs before DELEGATE, naming the
   conflicting task number — this is a new failure mode `/revise` did not have before this
   gate-in refactor; re-run once the other task's lock releases or goes stale
-- Note: unlike `/research`/`/plan`/`/implement`, `/revise` has no terminal-status ABORT — the
+- Note: unlike a research/plan/implement dispatch, `/revise` has no terminal-status ABORT — the
   Phase-1 gate-in exemption preserves the pre-existing "works regardless of task status"
   contract; only the two lock-refusal modes above can block `/revise` at GATE IN
 

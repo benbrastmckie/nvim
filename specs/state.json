@@ -3731,7 +3731,7 @@
     {
       "project_number": 435,
       "project_name": "reword_dead_lifecycle_command_prose_per_class",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Reword architectural and phase-versus-command prose naming the three deleted lifecycle commands, per class, no blanket substitution",
       "topic": "core-agent-system",
@@ -4040,7 +4040,7 @@
         }
       ],
       "created": "2026-10-17T01:06:39Z",
-      "last_updated": "2026-11-07T22:41:05Z",
+      "last_updated": "2026-11-08T02:36:44Z",
       "session_id": "sess_1794089641_e5bee5",
       "next_artifact_number": 2
     },

@@ -1,0 +1,58 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline Reconciliation and the revise.md Incidentals",
+  "started_at": "2026-11-07T18:40:00Z",
+  "last_updated": "2026-11-07T18:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run corpus-wide measurement, record baseline",
+      "status": "done",
+      "files_touched": [],
+      "note": "223 files / 948 occurrences confirmed (grep -roP count), matches plan baseline exactly, no drift."
+    },
+    {
+      "id": 2,
+      "description": "revise.md:145 class-1 reword",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/revise.md"]
+    },
+    {
+      "id": 3,
+      "description": "revise.md:99 record-versioning fix",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/revise.md"]
+    },
+    {
+      "id": 4,
+      "description": "revise.md:12 artifact-round rewording",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/revise.md"]
+    },
+    {
+      "id": 5,
+      "description": "Remaining revise.md occurrences per rubric",
+      "status": "done",
+      "files_touched": [],
+      "note": "Grep confirms no other dead-command occurrences remain in revise.md after the three named fixes."
+    },
+    {
+      "id": 6,
+      "description": "artifact-numbering-and-versioning.md Example Flow reworded to dispatch-model framing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/reference/artifact-numbering-and-versioning.md"],
+      "note": "Used 'research/plan/implement-phase dispatch for 309' instead of literal /command 309; avoided the word 'task' before the number to not trip the task-reference-citation hook (309 is an illustrative artifact-numbering example, not a real task number)."
+    },
+    {
+      "id": 7,
+      "description": "Confirm revise.md:12 and artifact-numbering-and-versioning.md do not contradict on the artifact-round rule",
+      "status": "done",
+      "files_touched": [],
+      "note": "Both state: only a research-phase dispatch (or a forced /orchestrate --plan/--implement dispatch skipping research) advances the round."
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

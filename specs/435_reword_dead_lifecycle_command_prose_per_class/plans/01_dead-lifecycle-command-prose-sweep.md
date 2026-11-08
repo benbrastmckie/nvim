@@ -1,7 +1,7 @@
 # Implementation Plan: Task #435
 
 - **Task**: 435 - Reword, per class and per site, the architectural and phase-versus-command prose naming the three deleted lifecycle commands, with a blanket find-and-replace explicitly forbidden
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 22 hours
 - **Dependencies**: Task 434 (companion lint; completed), Task 407 (artifact-round derivation; completed) — both terminal and resolved
 - **Research Inputs**: specs/435_reword_dead_lifecycle_command_prose_per_class/reports/01_dead-lifecycle-command-prose.md
@@ -208,35 +208,36 @@ Gate 3 is doc-lint (`check-extension-docs.sh`), gate 4 the task-reference lint
 
 ---
 
-### Phase 1: Baseline Reconciliation and the revise.md Incidentals [NOT STARTED]
+### Phase 1: Baseline Reconciliation and the revise.md Incidentals [COMPLETED]
 
 **Goal**: Re-establish the corpus baseline every later phase checks against, and apply the three
 concrete, already-derived fixes to `revise.md` plus the adjacent artifact-round worked example.
 
 **Tasks**:
 
-- [ ] Run the corpus-wide measurement command and record the file and occurrence counts as the
-      baseline all later phases reconcile against.
-- [ ] `revise.md:145` (class 1): replace ``unlike `/research`/`/plan`/`/implement`, `/revise` has
+- [x] Run the corpus-wide measurement command and record the file and occurrence counts as the
+      baseline all later phases reconcile against. *(completed: 223 files / 948 occurrences, exact match to plan baseline, no drift)*
+- [x] `revise.md:145` (class 1): replace ``unlike `/research`/`/plan`/`/implement`, `/revise` has
       no terminal-status ABORT`` with `unlike a research/plan/implement dispatch, /revise has no
-      terminal-status ABORT`. No substantive claim changes — only the command-name token.
-- [ ] `revise.md:99` (record-versioning, the file's only hit for the
+      terminal-status ABORT`. No substantive claim changes — only the command-name token. *(completed)*
+- [x] `revise.md:99` (record-versioning, the file's only hit for the
       no-longer/previously/formerly/used-to family): replace `skill_cleanup no longer deletes it
       at the skill's own Stage 9` with `skill_cleanup does not delete it at the skill's own
-      Stage 9`.
-- [ ] `revise.md:12` (class 1 entangled with a substantive artifact-round claim): replace
+      Stage 9`. *(completed)*
+- [x] `revise.md:12` (class 1 entangled with a substantive artifact-round claim): replace
       `Only /research advances the artifact number to start a new round.` with
       `Only a research-phase dispatch — or a forced /orchestrate --plan/--implement dispatch that
       skips research — advances the artifact number to start a new round; an unforced plan or
       implement dispatch shares the round its preceding research already opened.` Do not restate
       the rule from the stale sentence alone; this text is derived from
       `orchestrate-stage5-postflight.sh`'s live A2 P1/P2 logic.
-- [ ] Treat every remaining occurrence in `revise.md` per the rubric.
-- [ ] `core/context/reference/artifact-numbering-and-versioning.md`: reword the "Example Flow"
+- [x] Treat every remaining occurrence in `revise.md` per the rubric. *(completed: only the 3 named sites carried a dead-command/record-versioning hit; grep confirms zero remaining)*
+- [x] `core/context/reference/artifact-numbering-and-versioning.md`: reword the "Example Flow"
       that literally types `/research 309`, `/plan 309`, `/implement 309` into the dispatch model
       that produces that behavior today, keeping it consistent with the `revise.md:12` wording
-      above. Treat the file's remaining occurrences per the rubric.
-- [ ] Confirm the two files' sentences do not contradict each other on the artifact-round rule.
+      above. Treat the file's remaining occurrences per the rubric. *(completed: reworded to
+      "research/plan/implement-phase dispatch for 309"; no remaining dead-command occurrences)*
+- [x] Confirm the two files' sentences do not contradict each other on the artifact-round rule. *(completed: both agree)*
 
 **Timing**: 0.75 hours
 
