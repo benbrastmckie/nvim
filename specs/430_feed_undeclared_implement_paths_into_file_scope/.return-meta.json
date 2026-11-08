@@ -29,29 +29,52 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["source-store-first", "deploy-tree-first", "test fixture", "pre-redeploy", "shell test suite"]
+      "suggested_keywords": [
+        "source-store-first",
+        "deploy-tree-first",
+        "test fixture",
+        "pre-redeploy",
+        "shell test suite"
+      ]
     },
     {
       "content": "update-task-status.sh's postflight/implement path has a plan-file-completion-stamp step (writes [COMPLETED] to the plan's Status line) that runs independently of --phase-check -- it fires even when --phase-check is absent, and refuses with an unrelated error if no plan directory/file is resolvable for the task. Any fixture exercising postflight/implement (directly or via skill-base.sh's skill_postflight_update) must seed a minimal plan file (even a single all-[COMPLETED]-phase one) or the call fails for a reason unrelated to whatever is actually under test.",
       "category": "PATTERN",
       "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["update-task-status.sh", "postflight implement", "plan-completion stamp", "test fixture"]
+      "suggested_keywords": [
+        "update-task-status.sh",
+        "postflight implement",
+        "plan-completion stamp",
+        "test fixture"
+      ]
     },
     {
       "content": "To decide whether a failing test suite is caused by your own in-progress edit or by environment/concurrent-sibling drift on a shared source-store tree: temporarily copy the pre-edit file from `git show HEAD:path`, run the suspect suite(s) against it, and compare. Identical failures with the edit entirely absent prove the cause lies elsewhere. Always restore the edited file afterward and diff against a saved copy to confirm byte-for-byte restoration before proceeding.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["root cause isolation", "concurrent edits", "shared worktree", "test suite failure", "git show HEAD"]
+      "suggested_keywords": [
+        "root cause isolation",
+        "concurrent edits",
+        "shared worktree",
+        "test suite failure",
+        "git show HEAD"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794089641_e5bee5",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

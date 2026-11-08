@@ -5061,6 +5061,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 - **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428, Task 494
 - **Research**: [430_feed_undeclared_implement_paths_into_file_scope/reports/01_feedback-mechanism-design.md]
 - **Plan**: [430_feed_undeclared_implement_paths_into_file_scope/plans/01_implement-phase-scope-feedback.md]
+- **Summary**: [430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

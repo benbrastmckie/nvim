@@ -3674,12 +3674,18 @@
           "path": "specs/430_feed_undeclared_implement_paths_into_file_scope/plans/01_implement-phase-scope-feedback.md",
           "type": "plan",
           "summary": "6-phase plan extending proposed_file_scope to the implement phase, sourced from git-commit-phase.sh's own drop-time loop, with auto-merge ruled and justified."
+        },
+        {
+          "path": "specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for all 6 phases, including the Batch Gate Deferral record and the isolated pre-existing/environmental findings."
         }
       ],
       "created": "2026-10-16T23:40:01Z",
       "last_updated": "2026-11-08T01:31:27Z",
       "session_id": "sess_1794089641_e5bee5",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the proposed_file_scope feedback loop for the implement phase: git-commit-phase.sh now deposits each containment-dropped path into the task's own .return-meta.json at drop time, and the existing --file-scope-add consumer chain (update-task-status.sh, skill-base.sh) was widened from {research, plan} to {research, plan, implement} to forward it. All five VERIFY fixtures plus idempotence and deposit-path fail-open are pinned by new test cases (181 total new/retargeted assertions across three suites, all passing), the drop-and-warn excursion guard and every fail-open posture are unchanged, and an end-to-end throwaway-fixture check confirms the full drop-propose-merge-no-re-drop loop closes."
     },
     {
       "project_number": 431,
