@@ -62,21 +62,18 @@ is surfaced when either:
 **Extension targeting**: `meta-builder-agent` is expected to decide which of this system's
 extension directories (`agent-system/extensions/{core,cslib,email,epidemiology,filetypes,formal,
 founder,latex,lean,literature,memory,nix,nvim,present,python,slidev,typst,web,z3}/`) a proposal
-should contribute to. **Do not write new detection logic here.**
-`meta-builder-agent.md`'s own documented "Known limitation" states its affected-area heuristic
-"has no reliable signal to distinguish core scope from an extension's own source directory ...
-without parsing extension manifests, so extension-scoped tasks require human correction rather
-than a guess" -- it defaults to `agent-system/extensions/core/` and relies on the delegation
-contract's own `AskUserQuestion` selection/modification step (below) for a human to correct
-extension-scoped proposals. `--meta` inherits this exact limitation rather than working around
-it; a future improvement to `meta-builder-agent`'s own detection benefits `--meta` automatically
-with no change needed here.
+should contribute to. **Do not write new detection logic here.** Delegate entirely to
+`meta-builder-agent` (see `meta-builder-agent.md`) and rely on the delegation contract's own
+`AskUserQuestion` selection/modification step (below) for a human to correct a mistargeted
+proposal, rather than re-deriving a detection heuristic in this file. A future change to
+`meta-builder-agent`'s own targeting behavior benefits `--meta` automatically with no change
+needed here.
 
 ## Dry-Run
 
 When `--dry-run` is active, display the full candidate list (summary, evidence citations, and the
 `meta-builder-agent`-resolved affected area where available, or "core (default -- verify manually)"
-where the known limitation above applies) and perform **zero task creation**:
+when `meta-builder-agent` could not resolve one) and perform **zero task creation**:
 
 ```
 [DRY RUN] Improvement proposal candidates ({count}):

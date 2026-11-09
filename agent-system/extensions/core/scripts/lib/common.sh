@@ -286,20 +286,23 @@ common_test_repo_root() {
 }
 
 # common_test_resolve_candidate <desc> <candidate> [<candidate>...] -- echoes the first
-# <candidate> that exists as a regular file and returns 0; if none exist, prints an "ERROR: ...
-# not found at any of:" listing (one candidate per line) to stderr and returns 1. This is the
-# deploy-tree-first / source-store-fallback script-under-test lookup 20/144 core suites call
-# directly (plus 12 more hand-duplicating the same shape as a local `resolve_candidate` function,
-# and 38 more via an inline `CANDIDATES`-array loop with no named function at all -- see
-# common_test_resolve_subject below, which gives all three shapes one explicit-mode home). Never
-# calls `exit` -- the caller decides what a miss means for its own exit-code convention (every
-# existing caller does `... || exit 2`, the documented environment-error code).
+# <candidate> that exists (file, directory, or any other filesystem entry type) and returns 0;
+# if none exist, prints an "ERROR: ... not found at any of:" listing (one candidate per line) to
+# stderr and returns 1. The predicate is an existence test, not a file-type test: callers that
+# resolve a script under test and callers that resolve a directory (e.g. an extensions/ root)
+# share this one function. This is the deploy-tree-first / source-store-fallback lookup 20/144
+# core suites call directly (plus 12 more hand-duplicating the same shape as a local
+# `resolve_candidate` function, and 38 more via an inline `CANDIDATES`-array loop with no named
+# function at all -- see common_test_resolve_subject below, which gives all three shapes one
+# explicit-mode home). Never calls `exit` -- the caller decides what a miss means for its own
+# exit-code convention (every existing caller does `... || exit 2`, the documented
+# environment-error code).
 common_test_resolve_candidate() {
   local _common_desc="$1"; shift
   local _common_candidate
 
   for _common_candidate in "$@"; do
-    if [ -f "$_common_candidate" ]; then
+    if [ -e "$_common_candidate" ]; then
       printf '%s\n' "$_common_candidate"
       unset _common_desc _common_candidate
       return 0
