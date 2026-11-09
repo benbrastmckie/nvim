@@ -1583,7 +1583,7 @@ Phase 5 failure does NOT block task completion. The Typst source and markdown fa
     "warning": "No research report found - using plan context only"
   },
   "metadata": {...},
-  "next_steps": "Consider running /research first for better context"
+  "next_steps": "Consider running /orchestrate --research first for better context"
 }
 ```
 
@@ -1602,7 +1602,7 @@ Phase 5 failure does NOT block task completion. The Typst source and markdown fa
     "missing": ["Capture rate assumptions"]
   },
   "metadata": {...},
-  "next_steps": "Review plan and provide capture rate data, then run /implement to resume"
+  "next_steps": "Review plan and provide capture rate data, then run /orchestrate --implement to resume"
 }
 ```
 
@@ -1638,7 +1638,7 @@ Include project-specific data in partial progress:
     "missing": ["Team structure", "Resource availability"]
   },
   "metadata": {...},
-  "next_steps": "Update research with team structure data, then run /implement to resume from Phase 3"
+  "next_steps": "Update research with team structure data, then run /orchestrate --implement to resume from Phase 3"
 }
 ```
 

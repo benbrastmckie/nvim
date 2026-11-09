@@ -551,7 +551,7 @@ When answers are vague, push back:
     "missing": ["Marketing", "Operations"]
   },
   "metadata": {...},
-  "next_steps": "Resume with /research to complete forcing questions"
+  "next_steps": "Resume with /orchestrate --research to complete forcing questions"
 }
 ```
 

@@ -4,10 +4,10 @@ Strategic business analysis tools for founders and entrepreneurs. Integrates for
 
 ## What's New in v3.0
 
-- **Unified Phased Workflow**: All 9 commands (market, analyze, strategy, legal, project, deck, finance, sheet, consult) follow the same `/research -> /plan -> /implement` lifecycle
+- **Unified Phased Workflow**: All 9 commands (market, analyze, strategy, legal, project, deck, finance, sheet, consult) follow the same research -> plan -> implement dispatch cycle
 - **Project Command Updated**: `/project` now creates research reports instead of generating timelines directly
 - **Per-Type Routing**: Complete routing table with 5 types across 3 phases (research, plan, implement)
-- **Breaking Changes**: project-agent is now research-only; TRACK/REPORT modes move to `/implement`
+- **Breaking Changes**: project-agent is now research-only; TRACK/REPORT modes move to the implement phase
 
 ## Overview
 
@@ -313,19 +313,19 @@ All commands follow the same lifecycle:
 [1] Ask forcing questions, create task with forcing_data
     |  Status: [NOT STARTED]
     v
-/research {N}
+/orchestrate {N} --research
     |
     v
 [2] Domain-specific research agent gathers data
     |  Status: [RESEARCHED]
     v
-/plan {N}
+/orchestrate {N} --plan
     |
     v
 [3] Shared planner creates implementation plan
     |  Status: [PLANNED]
     v
-/implement {N}
+/orchestrate {N} --implement
     |
     v
 [4] Shared implementer generates final artifact

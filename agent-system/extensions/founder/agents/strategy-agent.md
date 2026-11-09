@@ -464,7 +464,7 @@ Adapt questions based on selected mode.
     "sections_remaining": ["channels", "launch", "metrics"]
   },
   "metadata": {...},
-  "next_steps": "Resume with /research to complete GTM strategy research"
+  "next_steps": "Resume with /orchestrate --research to complete GTM strategy research"
 }
 ```
 

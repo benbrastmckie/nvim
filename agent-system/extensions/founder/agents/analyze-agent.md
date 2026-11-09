@@ -397,7 +397,7 @@ When analyzing competitors, push back on:
     "competitors_total": 5
   },
   "metadata": {...},
-  "next_steps": "Resume with /research to complete competitor analysis"
+  "next_steps": "Resume with /orchestrate --research to complete competitor analysis"
 }
 ```
 

@@ -576,7 +576,7 @@ When answers are vague, push back:
     "missing": ["Assumptions", "Decision context"]
   },
   "metadata": {...},
-  "next_steps": "Resume with /research to complete forcing questions"
+  "next_steps": "Resume with /orchestrate --research to complete forcing questions"
 }
 ```
 
@@ -595,7 +595,7 @@ When answers are vague, push back:
   ],
   "metadata": {
     "xlsx_skipped": true,
-    "recovery": "pip install openpyxl and re-run /research"
+    "recovery": "pip install openpyxl and re-run /orchestrate --research"
   }
 }
 ```
@@ -612,7 +612,7 @@ If user describes questions but hasn't shared actual financial data:
   "metadata": {
     "data_quality": "medium",
     "document_available": false,
-    "recommendation": "Share financial documents for detailed verification in /implement"
+    "recommendation": "Share financial documents for detailed verification during the implement phase"
   }
 }
 ```

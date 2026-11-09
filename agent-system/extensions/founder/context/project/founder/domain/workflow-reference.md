@@ -32,10 +32,10 @@ This workflow gathers essential data upfront, creating richer task entries and e
 All 5 commands follow the same standard lifecycle:
 
 ```
-/{command} "description"   -> Asks forcing questions, creates task, stops at [NOT STARTED]
-/research {N}              -> Domain-specific research agent, stops at [RESEARCHED]
-/plan {N}                  -> Shared planner (content-aware), creates plan
-/implement {N}             -> Shared implementer (type-aware), generates final artifact
+/{command} "description"      -> Asks forcing questions, creates task, stops at [NOT STARTED]
+/orchestrate {N} --research    -> Domain-specific research agent, stops at [RESEARCHED]
+/orchestrate {N} --plan        -> Shared planner (content-aware), creates plan
+/orchestrate {N} --implement   -> Shared implementer (type-aware), generates final artifact
 ```
 
 The differentiation is at the **research** phase where each command has a specialized agent. Planning and implementation use shared agents that detect the task type from the research report content.
@@ -70,30 +70,30 @@ Tasks created by founder commands include a `task_type` field for finer-grained 
 | /legal | legal | skill-legal |
 | /project | project | skill-project |
 
-When `/research {N}` is invoked on a founder task with `task_type` set, routing uses the composite key `founder:{task_type}` to select the appropriate skill.
+When the research phase is dispatched (via `/orchestrate {N} --research`) on a founder task with `task_type` set, routing uses the composite key `founder:{task_type}` to select the appropriate skill.
 
 ## Language-Based Routing (Full Table)
 
-| Workflow | Routing Key | Skill | Agent |
+| Phase | Routing Key | Skill | Agent |
 |----------|-------------|-------|-------|
-| `/research` (task_type: market) | founder:market | skill-market | market-agent |
-| `/research` (task_type: analyze) | founder:analyze | skill-analyze | analyze-agent |
-| `/research` (task_type: strategy) | founder:strategy | skill-strategy | strategy-agent |
-| `/research` (task_type: legal) | founder:legal | skill-legal | legal-council-agent |
-| `/research` (task_type: project) | founder:project | skill-project | project-agent |
-| `/research` (no task_type) | founder | skill-market | market-agent |
-| `/plan` (task_type: market) | founder:market | skill-founder-plan | founder-plan-agent |
-| `/plan` (task_type: analyze) | founder:analyze | skill-founder-plan | founder-plan-agent |
-| `/plan` (task_type: strategy) | founder:strategy | skill-founder-plan | founder-plan-agent |
-| `/plan` (task_type: legal) | founder:legal | skill-founder-plan | founder-plan-agent |
-| `/plan` (task_type: project) | founder:project | skill-founder-plan | founder-plan-agent |
-| `/plan` (no task_type) | founder | skill-founder-plan | founder-plan-agent |
-| `/implement` (task_type: market) | founder:market | skill-founder-implement | founder-implement-agent |
-| `/implement` (task_type: analyze) | founder:analyze | skill-founder-implement | founder-implement-agent |
-| `/implement` (task_type: strategy) | founder:strategy | skill-founder-implement | founder-implement-agent |
-| `/implement` (task_type: legal) | founder:legal | skill-founder-implement | founder-implement-agent |
-| `/implement` (task_type: project) | founder:project | skill-founder-implement | founder-implement-agent |
-| `/implement` (no task_type) | founder | skill-founder-implement | founder-implement-agent |
+| research (task_type: market) | founder:market | skill-market | market-agent |
+| research (task_type: analyze) | founder:analyze | skill-analyze | analyze-agent |
+| research (task_type: strategy) | founder:strategy | skill-strategy | strategy-agent |
+| research (task_type: legal) | founder:legal | skill-legal | legal-council-agent |
+| research (task_type: project) | founder:project | skill-project | project-agent |
+| research (no task_type) | founder | skill-market | market-agent |
+| plan (task_type: market) | founder:market | skill-founder-plan | founder-plan-agent |
+| plan (task_type: analyze) | founder:analyze | skill-founder-plan | founder-plan-agent |
+| plan (task_type: strategy) | founder:strategy | skill-founder-plan | founder-plan-agent |
+| plan (task_type: legal) | founder:legal | skill-founder-plan | founder-plan-agent |
+| plan (task_type: project) | founder:project | skill-founder-plan | founder-plan-agent |
+| plan (no task_type) | founder | skill-founder-plan | founder-plan-agent |
+| implement (task_type: market) | founder:market | skill-founder-implement | founder-implement-agent |
+| implement (task_type: analyze) | founder:analyze | skill-founder-implement | founder-implement-agent |
+| implement (task_type: strategy) | founder:strategy | skill-founder-implement | founder-implement-agent |
+| implement (task_type: legal) | founder:legal | skill-founder-implement | founder-implement-agent |
+| implement (task_type: project) | founder:project | skill-founder-implement | founder-implement-agent |
+| implement (no task_type) | founder | skill-founder-implement | founder-implement-agent |
 
 ## Forcing Data Storage
 

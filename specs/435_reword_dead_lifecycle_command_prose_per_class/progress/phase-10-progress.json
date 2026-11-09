@@ -1,0 +1,72 @@
+{
+  "phase": 10,
+  "phase_name": "founder commands, agents, context and README",
+  "started_at": "2026-11-08T21:00:00Z",
+  "last_updated": "2026-11-08T21:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 19 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/founder/agents/analyze-agent.md",
+        "agent-system/extensions/founder/agents/finance-agent.md",
+        "agent-system/extensions/founder/agents/founder-implement-agent.md",
+        "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
+        "agent-system/extensions/founder/agents/legal-council-agent.md",
+        "agent-system/extensions/founder/agents/market-agent.md",
+        "agent-system/extensions/founder/agents/project-agent.md",
+        "agent-system/extensions/founder/agents/strategy-agent.md",
+        "agent-system/extensions/founder/commands/analyze.md",
+        "agent-system/extensions/founder/commands/deck.md",
+        "agent-system/extensions/founder/commands/finance.md",
+        "agent-system/extensions/founder/commands/legal.md",
+        "agent-system/extensions/founder/commands/market.md",
+        "agent-system/extensions/founder/commands/project.md",
+        "agent-system/extensions/founder/commands/sheet.md",
+        "agent-system/extensions/founder/commands/strategy.md",
+        "agent-system/extensions/founder/context/project/founder/domain/migration-guide.md",
+        "agent-system/extensions/founder/context/project/founder/domain/workflow-reference.md",
+        "agent-system/extensions/founder/README.md"
+      ],
+      "note": "60+ occurrences measured (well above the plan's Scope Hypothesis, which quoted figures 'at plan time' only -- drift recorded, not silently absorbed, consistent with the established per-phase convention). All 19 files treated via a mix of batch sed substitutions across the 8 near-identical command files (legal/market/finance/analyze/project/sheet/strategy/deck.md all share 3 template patterns) and individual Edit calls for the agent/context/README files. Verified clean afterward by the measurement command restricted to this tranche."
+    },
+    {
+      "id": 2,
+      "description": "workflow-reference.md (22 occurrences) -- coherence judgment, same test Phase 5 applied to core's process documents",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/founder/context/project/founder/domain/workflow-reference.md"],
+      "note": "VERDICT: criterion MET (unlike Phase 5's core processes/ documents) -- this document's underlying mechanism (task_type-based routing through a composite `founder:{task_type}` key, dispatched by /orchestrate's phase flags) is real, current, and accurately described once the command-name tokens are reworded to phase names; no fictional delegation layer or orphaned feature (like research-workflow.md's --divide) was found here. The 18-row 'Language-Based Routing (Full Table)' had its 'Workflow' column header and all 18 row values reworded from '`/research`'/'`/plan`'/'`/implement`' to bare 'research'/'plan'/'implement' phase labels (column renamed 'Phase'), and the lifecycle diagram's three invocation lines corrected to the `/orchestrate {N} --research/--plan/--implement` form. The pre-existing '(v3.0)' section-title version label and the 'Legacy (--quick)' mode were left untouched -- out of this task's charter (record-versioning cleanup is a Non-Goal; --quick is a live, unrelated feature)."
+    },
+    {
+      "id": 3,
+      "description": "migration-guide.md (10 occurrences at plan time) -- the class-3 historical-record test, applied per-cell rather than per-file",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/founder/context/project/founder/domain/migration-guide.md"],
+      "note": "This document's two 'v2.x Pattern | v3.0 Equivalent' tables required a finer-grained test than file-level class-3: the LEFT ('old pattern') column cells are genuinely historical record (what a user used to type) and were left untouched as class 3 -- 2 such cells survive (line 23's '/research asks questions' and line 25's '`/research` uses language routing', both explicitly the OLD v2.0 pattern being contrasted against). The RIGHT ('v3.0 Equivalent') column cells, by contrast, are PRESENT-TENSE claims about today's behavior that happened to still use a dead-command token -- these are NOT historical record and were reworded (5 sites: the two 'Breaking Changes' bullets above the tables, and 3 table cells: '/plan 234 -> /implement 234', 'TRACK/REPORT via /implement {N}', and 'the research phase uses task_type routing when available'). Recorded as a discovered sub-rule for this file type: a migration-guide's before/after table needs per-cell, not per-file, class-3 judgment."
+    },
+    {
+      "id": 4,
+      "description": "Genuine dead-command RECOMMENDATIONS discovered inside agent JSON next_steps/recommendation fields, not caught by gate 24's own pattern (same defect class as Phase 7's orchestrate-cycle-plan.sh:1459 finding)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/founder/agents/founder-implement-agent.md",
+        "agent-system/extensions/founder/agents/project-agent.md",
+        "agent-system/extensions/founder/agents/market-agent.md",
+        "agent-system/extensions/founder/agents/founder-spreadsheet-agent.md",
+        "agent-system/extensions/founder/agents/legal-council-agent.md",
+        "agent-system/extensions/founder/agents/finance-agent.md",
+        "agent-system/extensions/founder/agents/strategy-agent.md",
+        "agent-system/extensions/founder/agents/analyze-agent.md"
+      ],
+      "note": "11 sites across 8 agent files used 'Consider running /research...', 'Resume with /research...', 're-run /research', 'then run /implement to resume', or 'detailed ... analysis in /implement' inside JSON `next_steps`/`recommendation` example fields -- gate 24's own Layer-2 shape test ('Next:'/standalone 'Run' immediately before '/<name>') did not catch these because the surrounding verbs ('Consider running', 'Resume with', 're-run', 'then run ... to resume', '... in /implement') don't match its anchored shape, but they are substantively the exact unrunnable-recommendation defect gate 24 exists to guard against. All 11 retargeted onto `/orchestrate` (with `--research`/`--implement` flags where a flag made the recommendation concretely actionable) or reworded to phase-dispatch framing where no flag form read naturally (the two 'in /implement' sites, reworded to 'during the implement phase'). Verified via a diff read-through that each edit changed only the JSON string VALUE, never the surrounding structure (one pre-existing, unrelated `{...}` pseudo-JSON placeholder in founder-implement-agent.md predates and is unaffected by this phase's edits, confirmed by git diff)."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24). founder extension reports no new FAIL (check-extension-docs.sh). Gate 24 unchanged: the same 2 pre-existing /ide violations. No new FAIL introduced by Phase 10. Residual overall FAILs are the same core-extension items already confirmed in Phases 4/7/8/9."
+  ]
+}

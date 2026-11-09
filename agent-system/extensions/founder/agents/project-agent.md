@@ -842,7 +842,7 @@ Timeline review complete for {source}:
     "questions_total": 20
   },
   "metadata": {...},
-  "next_steps": "Resume with /research {N} to complete estimation"
+  "next_steps": "Resume with /orchestrate {N} --research to complete estimation"
 }
 ```
 

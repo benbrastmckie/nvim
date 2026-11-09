@@ -405,7 +405,7 @@ When answers are vague, push back:
     "missing": ["Financial exposure", "Walk-away conditions"]
   },
   "metadata": {...},
-  "next_steps": "Resume with /research to complete forcing questions"
+  "next_steps": "Resume with /orchestrate --research to complete forcing questions"
 }
 ```
 
@@ -422,7 +422,7 @@ If user describes concerns but hasn't shared the actual contract:
     ...,
     "data_quality": "medium",
     "contract_available": false,
-    "recommendation": "Share contract document for detailed clause analysis in /implement"
+    "recommendation": "Share contract document for detailed clause analysis during the implement phase"
   },
   "next_steps": "Run /orchestrate with contract document attached"
 }

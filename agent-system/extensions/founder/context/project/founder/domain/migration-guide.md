@@ -2,8 +2,8 @@
 
 ## Breaking Changes from v2.x
 
-1. **`/project` no longer generates timelines directly** - Use `/research N -> /plan N -> /implement N` for the full lifecycle. The `/project` command now creates a task and optionally runs research only.
-2. **TRACK and REPORT modes move to `/implement` phase** - These modes are now handled during implementation, not directly by the `/project` command.
+1. **`/project` no longer generates timelines directly** - Use the research -> plan -> implement dispatch cycle (`/orchestrate N --research`, then `--plan`, then `--implement`) for the full lifecycle. The `/project` command now creates a task and optionally runs research only.
+2. **TRACK and REPORT modes move to the implement phase** - These modes are now handled during implementation, not directly by the `/project` command.
 3. **project-agent output is now a research report** - Previously generated a Typst timeline file directly. Now creates a research report at `specs/{NNN}_{SLUG}/reports/01_{short-slug}.md`.
 4. **skill-project sets `researched` status** - Previously set `planned`. Now follows the standard research -> plan -> implement lifecycle.
 
@@ -11,9 +11,9 @@
 
 | v2.1 Pattern | v3.0 Equivalent |
 |--------------|-----------------|
-| `/project 234` -> generates timeline directly | `/project 234` -> research only, then `/plan 234` -> `/implement 234` |
+| `/project 234` -> generates timeline directly | `/project 234` -> research only, then a plan-phase dispatch -> an implement-phase dispatch |
 | project-agent creates Typst file | project-agent creates research report |
-| TRACK/REPORT via `/project {N}` | TRACK/REPORT via `/implement {N}` |
+| TRACK/REPORT via `/project {N}` | TRACK/REPORT via the implement-phase dispatch |
 | skill-project -> status: planned | skill-project -> status: researched |
 
 ## Migration from v2.0
@@ -22,7 +22,7 @@
 |--------------|-----------------|
 | `/market "fintech"` -> task created -> /research asks questions | `/market "fintech"` -> questions asked -> task created with data |
 | No task_type field | task_type: "market", "analyze", "strategy", "legal", or "project" |
-| `/research` uses language routing | `/research` uses task_type routing when available |
+| `/research` uses language routing | the research phase uses task_type routing when available |
 | forcing_data gathered during research | forcing_data gathered at command invocation (STAGE 0) |
 
 ## Migration from v1.0

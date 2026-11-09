@@ -796,19 +796,26 @@ re-derived at plan time. Confirm by running the measurement command restricted t
 
 ---
 
-### Phase 10: founder commands, agents, context and README [NOT STARTED]
+### Phase 10: founder commands, agents, context and README [COMPLETED]
 
 **Goal**: Treat the rest of the founder extension.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `context/project/founder/domain/workflow-reference.md` (22 occurrences) is the heaviest file
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 60+
+      occurrences across all 19 files, zero remaining)*
+- [x] `context/project/founder/domain/workflow-reference.md` (22 occurrences) is the heaviest file
       outside `core`; it is a workflow-narrative document and may need the same coherence judgment
       Phase 5 applies to `core`'s process documents. If local rewording leaves it incoherent,
-      record the residue — do not restructure.
-- [ ] `context/project/founder/domain/migration-guide.md` (10 occurrences) may name the dead
-      commands as historical record; apply the class-3 test before editing.
+      record the residue — do not restructure. *(completed: VERDICT criterion MET, unlike Phase
+      5's core processes/ docs -- the underlying task_type routing mechanism is real and current;
+      no residue needed, see phase-10 progress file objective 2)*
+- [x] `context/project/founder/domain/migration-guide.md` (10 occurrences) may name the dead
+      commands as historical record; apply the class-3 test before editing. *(completed: applied
+      PER-CELL, not per-file -- the 'v2.x Pattern' left column is genuine historical record,
+      class 3, left alone (2 cells survive); the 'v3.0 Equivalent' right column makes present-tense
+      claims and was reworded (5 sites). See phase-10 progress file objective 3 for the discovered
+      sub-rule)*
 
 **Timing**: 1.5 hours
 
