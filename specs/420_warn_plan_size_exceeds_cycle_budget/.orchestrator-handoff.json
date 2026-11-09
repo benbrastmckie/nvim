@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase implementation plan executing the research report's recommendations: an advisory, mode-aware cycle_budget_advisory field computed at admission time in orchestrate-cycle-plan.sh from the plan file's own phase headings against the shared batch cycle pool, threaded additively onto both dispatch-row construction sites. Phases are compute+stderr, row threading with a consumer audit, eight fixtures (including the byte-identical non-interference diff, the 11-phase originating shape, and the phase-10-of-11 real-history counter-case), documentation in both named homes, and a redeploy plus full gate set with an explicit source-store TARGET. Four planning judgment calls the research left open are recorded as Decisions: both threshold operands come from the plan file rather than the handoff; an inconclusive heading scan suppresses rather than blocks; the stderr line re-emits per cycle rather than deduplicating; and only implement-phase candidates are considered. Strict-mode validate-artifact.sh passes with zero warnings.",
+  "summary": "Completed all five implementation phases for the advisory plan-size versus per-run cycle-budget notice. Phase 5 redeployed the source store and ran a scoped verification (test-orchestrate-cycle-plan.sh: 398/398 green, including the new Group 36 fixtures; a scoped suite/gate run covering this task's own file_scope). The scoped run surfaced 7 unrelated, pre-existing test-fixture failures in other tasks' suites (state-write.sh gained a lib/project-number-inuse.sh dependency that several tests' isolated fixture builders never learned to copy) plus a concurrent sibling's in-flight uncommitted edit to state-write.sh causing a deploy-drift advisory -- both investigated, confirmed unrelated to this task's own file_scope, and recorded as an issue rather than fixed forward. Task's own deliverable (orchestrate-cycle-plan.sh, its test file, and both documentation homes) verified fully green.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/420_warn_plan_size_exceeds_cycle_budget/plans/01_plan-size-cycle-budget-warning.md",
-      "summary": "Five-phase plan for the advisory plan-size versus per-run cycle-budget notice."
+      "type": "summary",
+      "path": "specs/420_warn_plan_size_exceeds_cycle_budget/summaries/01_plan-size-cycle-budget-warning-summary.md",
+      "summary": "Implementation summary covering all five phases, the Batch Gate Deferral deviation, and the cross-task regression triage."
     }
-  ],
-  "dispatch_seq": 15
+  ]
 }
