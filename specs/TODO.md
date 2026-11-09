@@ -94,7 +94,7 @@ next_project_number: 564
 
 ### File Scope Lifecycle
 
-446 [PLANNED] — Close the plan-to-file\_scope reconciliation gap and make a...
+446 [IMPLEMENTING] — Close the plan-to-file\_scope reconciliation gap and make a...
   └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
   └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
     └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
@@ -7637,7 +7637,7 @@ DUPLICATE CHECK PERFORMED. 415 was read and rejected as an absorption target: it
 ---
 
 ### 446. Close the plan-to-file_scope reconciliation gap and make a containment drop non-advisory
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 328, Task 385, Task 407, Task 430, Task 443

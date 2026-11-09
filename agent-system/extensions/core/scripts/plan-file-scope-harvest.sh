@@ -53,6 +53,23 @@
 # "prospective, not filesystem-validated" (context/schemas/state-schema.json), and a path a plan
 # names for a file it will CREATE is exactly what must be harvested, not filtered out.
 #
+# Deployed-tree refusal:
+#   A deployed-tree path (`.claude`, `.claude/`, or anything prefixed `.claude/`) is never a
+#   legitimate `file_scope` member -- `.claude/` is a gitignored, disposable deploy artifact
+#   regenerated from this source store (rules/source-store-deploy-boundary.md), and a hand-authored
+#   claim on it is silently wiped by the next regeneration regardless of what file_scope says.
+#   This is a pure STRUCTURAL PREFIX TEST on the harvested string itself -- it is explicitly NOT a
+#   filesystem/existence check, and does not change the never-validates posture documented above
+#   for every other path. The test runs over the final merged array (the `extract_paths()` output
+#   unioned with anything the generated-surface stage below appends), so both inputs are covered
+#   by one filter rather than two. Each refused entry is reported with a single `>&2` warning
+#   naming the entry and the governing rule -- never silently -- but a refusal is never signalled
+#   through the exit code (see the Contract section above: `[]` for "nothing survived" is a
+#   normal, exit-0 outcome, identical to "nothing to harvest" in the first place). The sanctioned
+#   way to declare a whole-deployed-tree claim remains the reserved `__WHOLE_TREE__` sentinel
+#   (plan-format.md's "Whole-tree-claim declaration rule" subsection), which this prefix test never
+#   matches.
+#
 # Generated-surface appending:
 #   Any `.lean` path in the harvested set mechanically forces regeneration of a fixed set of
 #   derived surfaces in this repository's generator toolchain (`scripts/check-module-invariants.sh`
@@ -359,4 +376,18 @@ if echo "$HARVESTED" | jq -e 'any(.[]; test("\\.lean$"))' >/dev/null 2>&1; then
 fi
 
 EXTRA_PATHS="$(printf '%s\n' "${EXTRA[@]+"${EXTRA[@]}"}" | jq -R -s -c 'split("\n") | map(select(length > 0))')"
-jq -n --argjson base "$HARVESTED" --argjson extra "$EXTRA_PATHS" '($base + $extra) | unique'
+MERGED="$(jq -n --argjson base "$HARVESTED" --argjson extra "$EXTRA_PATHS" '($base + $extra) | unique')"
+
+# Deployed-tree refusal (see the header "Deployed-tree refusal" subsection above): drop any entry
+# equal to `.claude`/`.claude/` or prefixed `.claude/` from the single merged array, so both the
+# extract_paths() output and anything the generated-surface stage appended are covered by the same
+# filter. A structural prefix test on the string only -- never a filesystem/existence check -- and
+# never signalled through the exit code: a plan whose every entry is refused still exits 0 with
+# `[]`, identical to the "nothing to harvest" outcome.
+DEPLOYED_TREE_RE='^\.claude(/.*)?$'
+while IFS= read -r refused; do
+  [[ -z "$refused" ]] && continue
+  echo "WARNING: plan-file-scope-harvest.sh refused '$refused' from file_scope: a deployed-tree (.claude/**) path is never a legitimate file_scope member (see rules/source-store-deploy-boundary.md). Declare a whole-deployed-tree claim with the \`__WHOLE_TREE__\` sentinel instead." >&2
+done < <(echo "$MERGED" | jq -r --arg re "$DEPLOYED_TREE_RE" '.[] | select(test($re))')
+
+echo "$MERGED" | jq -c --arg re "$DEPLOYED_TREE_RE" '[.[] | select(test($re) | not)]'

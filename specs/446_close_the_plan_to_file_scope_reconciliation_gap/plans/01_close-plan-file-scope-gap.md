@@ -1,7 +1,7 @@
 # Implementation Plan: Task #446
 
 - **Task**: 446 - Close the plan-to-file-scope reconciliation gap
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: 430 (semantic + file overlap, must land first -- `[COMPLETED]`), 443, 407, 385, 328 (serialization only)
 - **Research Inputs**: specs/446_close_the_plan_to_file_scope_reconciliation_gap/reports/01_plan_to_file_scope_reconciliation_gap.md
@@ -130,7 +130,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Rule and enforce the deployed-tree refusal in the harvester, with its documentation mirror [NOT STARTED]
+### Phase 1: Rule and enforce the deployed-tree refusal in the harvester, with its documentation mirror [COMPLETED]
 
 **Goal**: Land the single ruling this record turns on -- a deployed-tree path is never a
 legitimate `file_scope` member -- at the harvester, and keep the harvester header and
@@ -138,39 +138,44 @@ legitimate `file_scope` member -- at the harvester, and keep the harvester heade
 
 **Tasks**:
 
-- [ ] Re-derive the current line numbers for `extract_paths()`, the `HARVESTED=` assignment, and
+- [x] Re-derive the current line numbers for `extract_paths()`, the `HARVESTED=` assignment, and
       the final `jq -n` emission in `agent-system/extensions/core/scripts/plan-file-scope-harvest.sh`
-      (the research report's numbers were taken at research time and move).
-- [ ] Add a refusal stage operating on the harvested string set, placed so it filters BOTH the
+      (the research report's numbers were taken at research time and move). *(completed)*
+- [x] Add a refusal stage operating on the harvested string set, placed so it filters BOTH the
       `extract_paths()` output and anything the generated-surface stage appends: drop any entry
       equal to `.claude` or `.claude/`, or matching the prefix `.claude/`, emitting one loud
       `>&2` warning per refused entry naming the entry and the governing rule
-      (`rules/source-store-deploy-boundary.md`). Never silently.
-- [ ] Confirm the refusal cannot change the exit-code contract: a plan whose every entry is
+      (`rules/source-store-deploy-boundary.md`). Never silently. *(completed: strip applied to the
+      single merged array, after the generated-surface append, via a `^\.claude(/.*)?$` regex)*
+- [x] Confirm the refusal cannot change the exit-code contract: a plan whose every entry is
       refused still exits 0 with `[]`, and a refusal is never signalled through the exit code.
-- [ ] Extend the script's header comment: a new subsection stating the refusal, that it is a
+      *(completed: pinned by new Case 25)*
+- [x] Extend the script's header comment: a new subsection stating the refusal, that it is a
       structural prefix test on the string and explicitly NOT a filesystem/existence check (the
       never-validates posture for every other path is unchanged), and that the sanctioned way to
       declare a whole-deployed-tree claim is the reserved `` `__WHOLE_TREE__` `` sentinel.
-- [ ] In `agent-system/extensions/core/context/formats/plan-format.md`'s `Files to modify` field
+      *(completed)*
+- [x] In `agent-system/extensions/core/context/formats/plan-format.md`'s `Files to modify` field
       definition (around line 108), add the matching sentence pair: each real path takes its own
       `` - `path` `` line (with the comma-join and wrapped-continuation shapes named as the
       anti-pattern), and never name a `.claude/**` path directly -- use the `` `__WHOLE_TREE__` ``
       sentinel, cross-referenced to the existing "Whole-tree-claim declaration rule" subsection.
-- [ ] Re-read both files immediately before editing (concurrency: `plan-format.md` is also in
+      *(completed)*
+- [x] Re-read both files immediately before editing (concurrency: `plan-format.md` is also in
       task 385's declared territory) and diff the header subsection against the `plan-format.md`
-      sentences to confirm the mirror claim still holds after the edit.
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh` with
+      sentences to confirm the mirror claim still holds after the edit. *(completed)*
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh` with
       three cases appended after the existing Case 22: the #417 rendering (one entry line whose
       following indented line itself begins with a backtick, plus a separate entry line joining
       two backtick paths with a comma) asserting the CURRENT, unchanged first-path-only output as
       a regression pin of the documented semantics; a `.claude/**` entry refused out of the
       output with a stderr warning while a sibling real path survives; and a bare `.claude/`
-      entry refused the same way.
-- [ ] Re-run the harvester against
+      entry refused the same way. *(completed: Cases 23-25, 39/39 total passing)*
+- [x] Re-run the harvester against
       `specs/archive/417_resolve_gate20_eager_load_budget_overage/plans/01_gate20-eager-load-headroom.md`
       and confirm the output is byte-identical to the pre-change output (that plan authors zero
-      `.claude/**` paths, so the refusal must be a no-op for it).
+      `.claude/**` paths, so the refusal must be a no-op for it). *(completed: confirmed identical
+      against git show HEAD's pre-change copy)*
 
 **Timing**: 1.5 hours
 

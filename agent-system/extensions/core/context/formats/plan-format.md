@@ -114,6 +114,24 @@ role as a durable, non-reverting checkpoint.
     one; "required" describes existing practice, not an aspiration. See "Consumers of this field"
     below for who depends on this shape and how.
 
+    **One path per line; a continuation line belongs to the preceding entry.** Each real path
+    takes its own `` - `path` `` line. The anti-pattern is two shapes that both silently drop a
+    path rather than erroring: a second backtick-delimited path joined onto the same entry line
+    by a comma (only the first survives harvest), and a wrapped continuation line that itself
+    begins with a backtick but carries no leading `- ` marker (it contributes nothing — it is
+    read as prose, not as a second entry). Widening the harvester's grammar to recover either
+    shape was considered and rejected (a token scan would also sweep in an unrelated
+    backtick-quoted token sitting in the same block's free prose, trading a silent drop for
+    silent garbage); the authoring fix is to give every real path its own `` - `path` `` line.
+
+    **Never name a deployed-tree (`.claude/**`) path directly in this list.** `.claude/` is a
+    gitignored, disposable deploy artifact regenerated from this source store
+    (`rules/source-store-deploy-boundary.md`); a `file_scope` entry naming a path under it is
+    never legitimate; and `scripts/plan-file-scope-harvest.sh` enforces this with a loud
+    drop-and-warn refusal. A phase whose steps touch the deployed tree only by *invoking*
+    whole-tree regeneration declares that honestly with the `` `__WHOLE_TREE__` `` sentinel
+    instead — see "Whole-tree-claim declaration rule" below.
+
     A generator may render every per-phase field, including this one, as its own top-level list
     item (a leading `- ` before the bold label, e.g. `- **Files to modify**:`) rather than a bare
     `**Field:**` line — this document's own compact example template (below, under

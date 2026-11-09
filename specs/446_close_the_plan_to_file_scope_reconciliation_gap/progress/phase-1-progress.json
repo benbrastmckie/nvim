@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Rule and enforce the deployed-tree refusal in the harvester, with its documentation mirror",
+  "started_at": "2026-11-09T13:24:20Z",
+  "last_updated": "2026-11-09T13:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive current line numbers in plan-file-scope-harvest.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add deployed-tree refusal stage filtering extract_paths() output and generated-surface appends", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 3, "description": "Confirm exit-code contract unchanged by refusal", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Extend header comment with refusal subsection and __WHOLE_TREE__ sentinel note", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"]},
+    {"id": 5, "description": "Update plan-format.md Files to modify field definition with anti-pattern and sentinel cross-reference", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 6, "description": "Extend test-plan-file-scope-harvest.sh with Cases 23-25", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"]},
+    {"id": 7, "description": "Re-run harvester against archived #417 plan, confirm byte-identical output", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh: 39/39 pass (33 pre-existing + 6 new assertions across Cases 23-25). Source-store run-all.sh --only across the tier-justification suite set (7 suites): all PASS. The deployed .claude/ tree is stale for extension 'core' per this dispatch's deploy-freshness-context, so the deployed-mode run-all.sh invocation named in the Tier Justification would exercise stale code; verification was performed directly against the source store instead (both the dedicated harvester suite and run-all.sh invoked from agent-system/extensions/core/scripts/tests/run-all.sh, which resolves to source-store mode). check-task-references.sh and check-record-versioning.sh both clean (0 BLOCKING; pre-existing ADVISORY-only hits unrelated to this edit) on all three touched files."
+}

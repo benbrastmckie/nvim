@@ -43,6 +43,13 @@
 #       negative for a sibling `Automation/Other/*.lean`.
 #   21. The `machine-appendix.{jsonl,typ}` narrow pair: positive for `ProofSystem/Axioms.lean`,
 #       negative for `ProofSystem/Other.lean`.
+#   23. The #417 rendering: a wrapped-continuation entry and a comma-joined entry both still
+#       harvest only their first backtick path -- a regression pin of the unchanged, documented
+#       grammar (widening it was considered and rejected).
+#   24. A `.claude/**` entry is refused (dropped, warned on stderr) while a sibling real path
+#       survives.
+#   25. A bare `.claude/` entry is refused the same way; refusing every entry in the block still
+#       exits 0 with `[]`.
 #
 # Structural model: pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d
 # workdir with an EXIT-trap cleanup, exit 0 all-pass / 1 any-fail / 2 environment error.
@@ -561,6 +568,81 @@ cat > "$FIXTURE_22" << 'EOF'
 EOF
 OUT_22="$(bash "$HARVESTER" "$FIXTURE_22")"
 assert_json_array_eq "$OUT_22" '["scripts/deploy-headless.sh","__WHOLE_TREE__"]' "Case 22 (reserved sentinel harvests verbatim alongside a real path)"
+
+# ── Case 23: the #417 rendering -- one entry line whose following indented line itself begins
+# with a backtick (wrapped-continuation shape), plus a separate entry line joining two backtick
+# paths with a comma (comma-join shape). This is a REGRESSION PIN of the CURRENT, UNCHANGED
+# first-path-only output -- the documented semantics (a continuation line, lacking the leading
+# `-` marker, contributes nothing; a comma-joined second backtick token on the same entry line is
+# never a second entry) are reaffirmed here, not altered. See this task's Research Integration
+# section: widening the grammar to scan every backtick token was considered and rejected. ───────
+FIXTURE_23="$WORKDIR/case23.md"
+cat > "$FIXTURE_23" << 'EOF'
+### Phase 2: Example [NOT STARTED]
+
+**Files to modify**:
+- `agent-system/extensions/core/merge-sources/claudemd.md` - compress sections
+- `agent-system/extensions/literature/merge-sources/claudemd.md` - relocate the
+  `## Literature Mode (--lit)` reference subsections behind the existing
+  `lit-stage4a-flow.md` pointer.
+- `agent-system/extensions/core/rules/git-workflow.md`,
+  `agent-system/extensions/core/rules/artifact-formats.md`,
+  `agent-system/extensions/core/rules/state-management.md`,
+  `agent-system/extensions/core/rules/pr-prohibition.md` - as ranked.
+
+**Verification**:
+- ok
+EOF
+OUT_23="$(bash "$HARVESTER" "$FIXTURE_23")"
+assert_json_array_eq "$OUT_23" '["agent-system/extensions/core/merge-sources/claudemd.md","agent-system/extensions/literature/merge-sources/claudemd.md","agent-system/extensions/core/rules/git-workflow.md"]' "Case 23 (#417 wrapped-continuation and comma-join shapes: unchanged first-path-only extraction)"
+
+# ── Case 24: a `.claude/**` entry is refused out of the harvested output, with a stderr warning,
+# while a sibling real path in the same block survives. Pins the deployed-tree refusal's basic
+# drop-and-warn behavior (Hard Constraint: a .claude/** file_scope claim is never legitimate). ──
+FIXTURE_24="$WORKDIR/case24.md"
+cat > "$FIXTURE_24" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `scripts/real-source-file.sh` - a legitimate source-store path
+- `.claude/scripts/test-four-tier-conflict.sh` - a deployed-tree path, must be refused
+
+**Verification**:
+- ok
+EOF
+OUT_24="$(bash "$HARVESTER" "$FIXTURE_24" 2>"$WORKDIR/case24.err")"
+assert_json_array_eq "$OUT_24" '["scripts/real-source-file.sh"]' "Case 24 (.claude/** entry refused, sibling real path survives)"
+if grep -q "refused '.claude/scripts/test-four-tier-conflict.sh'" "$WORKDIR/case24.err"; then
+  common_test_pass "Case 24: stderr names the refused entry"
+else
+  common_test_fail "Case 24: stderr did not name the refused entry: $(cat "$WORKDIR/case24.err")"
+fi
+
+# ── Case 25: a bare `.claude/` entry is refused the same way, and refusing EVERY entry in the
+# block still exits 0 with `[]` -- the exit-code contract is never used to signal a refusal. ────
+FIXTURE_25="$WORKDIR/case25.md"
+cat > "$FIXTURE_25" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `.claude/` - bare deployed-tree claim, must be refused
+
+**Verification**:
+- ok
+EOF
+OUT_25="$(bash "$HARVESTER" "$FIXTURE_25" 2>"$WORKDIR/case25.err")"
+EXIT_25=$?
+assert_json_array_eq "$OUT_25" '[]' "Case 25 (bare .claude/ entry refused, result is empty array)"
+if [[ "$EXIT_25" -eq 0 ]]; then
+  common_test_pass "Case 25: exit code 0 even though every entry was refused"
+else
+  common_test_fail "Case 25: expected exit 0, got $EXIT_25"
+fi
+if grep -q "refused '.claude/'" "$WORKDIR/case25.err"; then
+  common_test_pass "Case 25: stderr names the refused bare entry"
+else
+  common_test_fail "Case 25: stderr did not name the refused bare entry: $(cat "$WORKDIR/case25.err")"
+fi
 
 echo ""
 echo "=== Summary ==="

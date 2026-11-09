@@ -1,22 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/plans/01_close-plan-file-scope-gap.md",
-      "summary": "Six-phase, 8.5-hour plan closing the plan-to-file_scope reconciliation gap: a three-site deployed-tree refusal for PART A plus advisory authoring-shape detection, and a within-dispatch proposed_file_scope union plus a mechanical follow-up-commit trigger for PART B."
-    }
-  ],
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1794228960_78281f_446",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 8.5,
-    "dependency_waves": 5
+    "session_id": "sess_1794228960_78281f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
   "memory_candidates": [],
-  "next_steps": "Run /orchestrate 446 to execute the plan",
-  "dispatch_seq": 3
+  "modified_files": [],
+  "dispatch_seq": 5
 }
