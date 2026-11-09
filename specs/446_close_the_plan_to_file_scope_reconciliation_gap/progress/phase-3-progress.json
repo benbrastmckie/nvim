@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Refuse a deployed-tree path at the deposit site and at the containment site",
+  "started_at": "2026-11-09T14:18:00Z",
+  "last_updated": "2026-11-09T14:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive line numbers for propose_file_scope_addition(), file_scope_arr assembly, is_contained()", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Refuse deposit of a deployed-tree path in propose_file_scope_addition()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 3, "description": "Strip deployed-tree entries from file_scope_arr before the splices, with post-strip non-emptiness re-test", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 4, "description": "Extend header comment's Containment Self-Check section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 5, "description": "Extend test-git-commit-phase.sh with loophole-closure, strip-to-empty, deposit-refusal, surviving-guard, carve-out, fail-open fixtures", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 6, "description": "Re-read both files before editing, stage only this phase's hunks", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "Extend test-git-commit-phase.sh with a fixture asserting a .claude/-only file_scope strips to empty and fails open exactly as a missing file_scope does.",
+      "type": "altered",
+      "reason": "A fixture asserting the FULL end-to-end commit outcome (rc=0, path lands) depends on git-commit-scoped.sh's own, separate V10 containment guard (Site 3 of the three documented containment sites), which re-reads the unstripped file_scope from state.json and is not patched by this phase -- git-commit-scoped.sh and its test suite are not members of this task's declared file_scope, and the plan's own Phase 3 Scope Hypothesis names 'two refusal sites in ONE script'. Case 26 was narrowed to assert only this script's own Containment Self-Check behavior (no drop warning, nothing proposed) rather than silently weakening the claim to match Site 3's unrelated, un-patched outcome.",
+      "annotation": "*(deviation: altered -- Case 26 narrows to Site 2's own behavior only)*"
+    }
+  ],
+  "verification_notes": "bash agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh: 56/56 pass (54 pre-existing/Cases 1-24 unchanged + 2 new: Case 25 loophole-closure/deposit-refusal, Case 26 Site-2-only fail-open). Scoped suite (test-git-commit-phase.sh, test-git-commit-scoped.sh, test-skill-base-lifecycle.sh, test-task-reference-patterns-lib.sh, test-update-task-status.sh) via source-store run-all.sh: 5/5 pass. check-task-references.sh and check-record-versioning.sh both 0 BLOCKING on both touched files. ISSUE (residual gap, recorded via issue-record.sh, non-blocking): the deployed-tree strip closes the .claude/** loophole only at git-commit-phase.sh's OWN Containment Self-Check (Site 2 of the documented three containment sites in git-staging-scope.md). git-commit-scoped.sh's separate V10 containment guard (Site 3) re-reads the unstripped file_scope directly from state.json and is NOT patched here -- git-commit-scoped.sh and its test suite are not members of this task's declared file_scope, and the plan's own Phase 3 Scope Hypothesis explicitly names 'two refusal sites in ONE script'. Case 26 was narrowed to assert only Site 2's own behavior (no drop warning, nothing proposed) rather than the full end-to-end commit outcome, documented inline in the fixture's own comment rather than silently weakened to match Site 3's unrelated, un-patched behavior."
+}

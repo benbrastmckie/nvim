@@ -88,6 +88,32 @@
 # context/formats/return-metadata-file.md's `proposed_file_scope` field specification for the
 # full producer/consumer contract on the implement path.
 #
+# DEPLOYED-TREE REFUSAL
+# ----------------------
+# A deployed-tree path (`.claude`, `.claude/`, or anything prefixed `.claude/`) is never a
+# legitimate `file_scope` member: `.claude/` is a gitignored, disposable deploy artifact
+# regenerated from the source store (rules/source-store-deploy-boundary.md), so a declared claim
+# on it is silently wiped by the next regeneration regardless of what `file_scope` says. This is
+# enforced at the two points such a path can reach this script, both a pure structural prefix
+# test on the string -- never a filesystem/existence check:
+#   1. `propose_file_scope_addition()` refuses to deposit such a path at all, so a drop caused BY
+#      the refusal below can never re-seed `state.json`'s `file_scope` through the implement
+#      postflight's `--file-scope-add` union-merge. The warn()/issue-record.sh calls at the drop
+#      call site fire unconditionally regardless of this refusal -- it changes only what, if
+#      anything, gets deposited.
+#   2. The Containment Self-Check's own `file_scope_arr`, once populated from `state.json` and
+#      BEFORE the own-task-directory and engine-written-state splices immediately below it, has
+#      every deployed-tree entry stripped, each with its own `warn()`. This is the predicate's
+#      input, unioned with this task's own currently-deposited `proposed_file_scope` before the
+#      strip runs (see the within-dispatch union immediately below the strip), so a deposited
+#      deployed-tree path cannot survive into the check either. Non-emptiness is re-tested
+#      immediately after the strip: if nothing survives, the existing fail-open path (skip the
+#      whole check) fires exactly as it does for a missing/empty `file_scope` today -- this is
+#      why neither splice is relocated out of the non-empty guard.
+# Refusing a deployed-tree path never changes the drop-and-warn guard's behavior for a genuine
+# out-of-territory SOURCE path, and never touches the fail-open posture for an absent, empty,
+# unreadable, or malformed `file_scope` -- both stay exactly as documented above.
+#
 # POST-COMMIT COMPLETENESS CHECK
 # -------------------------------
 # After git-commit-scoped.sh returns, every surviving (derived, not containment-dropped)
@@ -214,6 +240,20 @@ propose_file_scope_addition() {
   local meta_file="${task_dir}/.return-meta.json"
   local lock_file="${task_dir}/.return-meta.lock"
 
+  # Deployed-tree deposit refusal (see "Deployed-tree refusal" subsection below): a path dropped
+  # by the Containment Self-Check specifically BECAUSE it is a deployed-tree path must never be
+  # re-deposited here -- the whole point of the drop. Without this refusal, the deposit channel
+  # would re-seed specs/state.json's file_scope through the implement postflight's
+  # --file-scope-add union-merge, resurrecting the exact entry the drop just correctly removed.
+  # The warn()/issue-record.sh calls at the drop call site are untouched and still fire
+  # unconditionally on every drop -- this refusal only changes what, if anything, gets deposited.
+  case "$path" in
+    .claude|.claude/|.claude/*)
+      warn "refusing to deposit '${path}' into proposed_file_scope: a deployed-tree (.claude/**) path is never a legitimate file_scope member (see rules/source-store-deploy-boundary.md)"
+      return 0
+      ;;
+  esac
+
   if [ ! -f "$meta_file" ]; then
     warn "skipping proposed_file_scope deposit for '${path}': ${meta_file} not found (skip-if-absent, never create)"
     return 0
@@ -301,6 +341,30 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
     while IFS= read -r s; do
       [ -n "$s" ] && file_scope_arr+=("$s")
     done < <(printf '%s' "$file_scope_json" | jq -r '.[]?' 2>/dev/null || true)
+
+    # Deployed-tree strip (see "Deployed-tree refusal" subsection below): drop every entry
+    # equal to `.claude`/`.claude/` or prefixed `.claude/` from the task's own declared
+    # file_scope BEFORE the own-task-directory and engine-written-state splices below -- a
+    # deployed-tree path is never a legitimate file_scope member (Hard Constraint:
+    # rules/source-store-deploy-boundary.md), and residue from an older, un-refused declaration
+    # must not re-admit a deployed-tree path into this Containment check. A pure structural
+    # prefix test on the string, never a filesystem/existence check. Non-emptiness is re-tested
+    # by the very next guard below: if nothing survives the strip, the existing fail-open path
+    # (skip the whole Containment check) fires exactly as it does for a missing/empty
+    # file_scope today -- this ordering (strip, then test) is why the splices are never
+    # relocated out of the non-empty guard.
+    _fsa_stripped=()
+    for _fsa_entry in "${file_scope_arr[@]}"; do
+      case "$_fsa_entry" in
+        .claude|.claude/|.claude/*)
+          warn "stripped deployed-tree file_scope entry '${_fsa_entry}': never a legitimate file_scope member (see rules/source-store-deploy-boundary.md); declare a whole-deployed-tree claim with the \`__WHOLE_TREE__\` sentinel instead"
+          ;;
+        *)
+          _fsa_stripped+=("$_fsa_entry")
+          ;;
+      esac
+    done
+    file_scope_arr=("${_fsa_stripped[@]}")
 
     if [ "${#file_scope_arr[@]}" -gt 0 ]; then
       # Own-task-directory member: the committing task's own resolved artifact directory is an

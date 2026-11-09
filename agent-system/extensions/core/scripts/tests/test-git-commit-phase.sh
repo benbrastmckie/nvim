@@ -977,6 +977,123 @@ else
 $out18"
 fi
 
+# =====================================================================
+# Case 25 (deployed-tree loophole closure): a file_scope seeded with a bare `.claude/` entry no
+# longer admits any `.claude/**` path -- the normalized is_contained() entry used to read the
+# bare `.claude/` member as covering every deployed-tree path via its own "$entry/*" composition
+# (the exact loophole the Hard Constraint forbids); the strip now removes the entry before
+# is_contained() is even built. The `.claude/**` path is still dropped, still warned, and still
+# issue-recorded -- exactly like a genuine out-of-territory excursion -- but it is NEVER deposited
+# into proposed_file_scope (the deposit-site refusal). A sibling genuine (non-deployed)
+# out-of-territory path in the SAME run is still dropped, warned, issue-recorded, AND deposited,
+# confirming the refusal is scoped to deployed-tree paths only.
+# =====================================================================
+common_test_info "=== Case 25: a bare .claude/ file_scope entry no longer admits any .claude/** path (loophole closed); the drop is not deposited ==="
+
+repo25="$(build_repo)"
+cat > "$repo25/specs/state.json" <<'STATE25_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["src/a.txt",".claude/"]}]}
+STATE25_EOF
+git -C "$repo25" add specs/state.json
+git -C "$repo25" commit -q -m "declare bare .claude/ file_scope"
+mkdir -p "$repo25/other" "$repo25/.claude/scripts"
+echo "out of scope" > "$repo25/other/outside.txt"
+echo "deployed stray" > "$repo25/.claude/scripts/stray.sh"
+git -C "$repo25" add other/outside.txt .claude/scripts/stray.sh
+git -C "$repo25" commit -q -m "seed out-of-scope and deployed-tree files"
+write_progress "$repo25" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","other/outside.txt",".claude/scripts/stray.sh"]}]'
+echo "mod a" > "$repo25/src/a.txt"
+echo "mod outside" > "$repo25/other/outside.txt"
+echo "mod stray" > "$repo25/.claude/scripts/stray.sh"
+
+out25="$(run_phase_commit "$repo25" --task 999 --project probe --phase 1 --message "case25" --session sess_25 2>&1)"
+rc25=$?
+show25="$(git -C "$repo25" show --name-only --format= HEAD)"
+proposed25="$(jq -c '.proposed_file_scope // []' "$repo25/specs/999_probe/.return-meta.json" 2>/dev/null)"
+
+if [ "$rc25" -eq 0 ] && echo "$show25" | grep -qF "src/a.txt" \
+  && ! echo "$show25" | grep -qF "other/outside.txt" \
+  && ! echo "$show25" | grep -qF ".claude/scripts/stray.sh"; then
+  common_test_pass "Case 25: src/a.txt commits; other/outside.txt and .claude/scripts/stray.sh are both dropped"
+else
+  common_test_fail "Case 25: expected rc=0, src/a.txt committed, both excursions dropped; got rc=$rc25 show='$show25' out=$out25"
+fi
+
+if echo "$out25" | grep -q "WARNING.*dropping out-of-scope path '.claude/scripts/stray.sh'"; then
+  common_test_pass "Case 25: the deployed-tree path still draws the existing drop WARNING"
+else
+  common_test_fail "Case 25: expected the drop WARNING for .claude/scripts/stray.sh; got out=$out25"
+fi
+
+if [ -f "$repo25/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo25/specs/999_probe/issues.jsonl" \
+  && grep -q "\.claude/scripts/stray\.sh" "$repo25/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 25: the deployed-tree path still draws the existing issue-record.sh scope-excursion row"
+else
+  common_test_fail "Case 25: expected a scope-excursion issue record naming .claude/scripts/stray.sh; got $(cat "$repo25/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+if echo "$out25" | grep -q "refusing to deposit '.claude/scripts/stray.sh'"; then
+  common_test_pass "Case 25: the deposit-site refusal fires for the deployed-tree path"
+else
+  common_test_fail "Case 25: expected the deposit-site refusal warning for .claude/scripts/stray.sh; got out=$out25"
+fi
+
+if echo "$proposed25" | jq -e 'index(".claude/scripts/stray.sh") == null' >/dev/null 2>&1; then
+  common_test_pass "Case 25: the deployed-tree path was NOT deposited into proposed_file_scope"
+else
+  common_test_fail "Case 25: .claude/scripts/stray.sh should never be deposited; got $proposed25"
+fi
+
+if echo "$proposed25" | jq -e 'index("other/outside.txt") != null' >/dev/null 2>&1; then
+  common_test_pass "Case 25: the sibling genuine excursion (other/outside.txt) was still deposited"
+else
+  common_test_fail "Case 25: expected other/outside.txt still deposited (refusal must be scoped, not blanket); got $proposed25"
+fi
+
+# =====================================================================
+# Case 26: a file_scope consisting SOLELY of `.claude/` strips to empty at THIS SCRIPT's own
+# Containment Self-Check, which therefore fails open (skips itself) exactly like a missing/
+# empty/malformed file_scope -- git-commit-phase.sh's OWN drop warning
+# ("WARNING: git-commit-phase.sh: dropping out-of-scope path") never fires, and nothing is
+# proposed into proposed_file_scope by THIS script.
+#
+# Deliberately NOT asserted here: the full end-to-end commit outcome (rc, whether the path
+# actually lands in the commit). git-commit-scoped.sh carries its own SEPARATE V10 containment
+# guard (context/standards/git-staging-scope.md's "Three Containment sites, not one" -- Site 3),
+# which re-reads the UNSTRIPPED file_scope directly from specs/state.json and is not touched by
+# this task's declared file_scope (git-commit-scoped.sh and test-git-commit-scoped.sh are not
+# members of it). A `.claude/`-only declared file_scope therefore still interacts with Site 3's
+# own (separately scoped, un-patched) containment predicate for a files_touched path that is not
+# otherwise carve-out-admitted there -- a residual, OUT-OF-SCOPE-FOR-THIS-TASK gap recorded via
+# issue-record.sh rather than silently masked by weakening this assertion to match whatever Site
+# 3 happens to do. See this task's own implementation summary for the full citation.
+# =====================================================================
+common_test_info "=== Case 26: a file_scope of only .claude/ strips to empty at THIS script's own Containment Self-Check (fails open at Site 2 only) ==="
+
+repo26="$(build_repo)"
+cat > "$repo26/specs/state.json" <<'STATE26_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":[".claude/"]}]}
+STATE26_EOF
+git -C "$repo26" add specs/state.json
+git -C "$repo26" commit -q -m "declare claude-only file_scope"
+write_progress "$repo26" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt"]}]'
+echo "mod a" > "$repo26/src/a.txt"
+
+out26="$(run_phase_commit "$repo26" --task 999 --project probe --phase 1 --message "case26" --session sess_26 2>&1)"
+proposed26="$(jq -c '.proposed_file_scope // []' "$repo26/specs/999_probe/.return-meta.json" 2>/dev/null)"
+
+if ! echo "$out26" | grep -q "git-commit-phase.sh: dropping out-of-scope path"; then
+  common_test_pass "Case 26: git-commit-phase.sh's OWN Containment Self-Check never fires its drop warning (fails open at Site 2)"
+else
+  common_test_fail "Case 26: git-commit-phase.sh's own Self-Check should have failed open (skipped itself) for a claude-only file_scope; got out=$out26"
+fi
+
+if echo "$proposed26" | jq -e 'length == 0' >/dev/null 2>&1; then
+  common_test_pass "Case 26: nothing proposed into proposed_file_scope (Site 2's check never ran)"
+else
+  common_test_fail "Case 26: expected empty proposed_file_scope; got $proposed26"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================

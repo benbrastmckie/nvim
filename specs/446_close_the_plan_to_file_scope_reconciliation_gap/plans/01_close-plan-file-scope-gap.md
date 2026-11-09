@@ -261,7 +261,7 @@ acceptance time, where the author can still fix them, rather than at implement t
 
 ---
 
-### Phase 3: Refuse a deployed-tree path at the deposit site and at the containment site [NOT STARTED]
+### Phase 3: Refuse a deployed-tree path at the deposit site and at the containment site [COMPLETED]
 
 **Goal**: Close the two remaining leak paths by which a deployed-tree entry reaches or is honored
 by `file_scope` -- the mid-dispatch deposit, and a `file_scope_arr` assembled from an already-
@@ -269,25 +269,28 @@ polluted `state.json` -- without weakening the drop-and-warn guard or the fail-o
 
 **Tasks**:
 
-- [ ] Re-derive the current line numbers for `propose_file_scope_addition()` (around line 212),
+- [x] Re-derive the current line numbers for `propose_file_scope_addition()` (around line 212),
       the `file_scope_arr` assembly (around line 300), and `is_contained()` (around line 346) in
-      `agent-system/extensions/core/scripts/git-commit-phase.sh`.
-- [ ] In `propose_file_scope_addition()`, refuse to deposit a path equal to `.claude`/`.claude/`
+      `agent-system/extensions/core/scripts/git-commit-phase.sh`. *(completed)*
+- [x] In `propose_file_scope_addition()`, refuse to deposit a path equal to `.claude`/`.claude/`
       or prefixed `.claude/`: return early with a `warn` naming the path and the governing rule.
       This keeps the deposit channel from re-seeding `state.json` through implement postflight's
       `--file-scope-add`. The `warn()` and `issue-record.sh` calls at the drop call site are
-      untouched and still fire unconditionally on every drop.
-- [ ] Immediately after `file_scope_arr` is populated from the `state.json` JSON and before the
+      untouched and still fire unconditionally on every drop. *(completed)*
+- [x] Immediately after `file_scope_arr` is populated from the `state.json` JSON and before the
       own-task-directory and engine-written-state splices, strip every entry equal to
       `.claude`/`.claude/` or prefixed `.claude/`, emitting one `warn` per stripped entry.
-- [ ] Re-test non-emptiness after the strip: if nothing survives, fall through to the existing
+      *(completed)*
+- [x] Re-test non-emptiness after the strip: if nothing survives, fall through to the existing
       fail-open path (skip the whole Containment check) rather than running it against an empty
       array. Do not relocate either splice; both must stay inside the non-empty guard where they
-      are today.
-- [ ] Extend the header comment's Phase-Commit Containment Self-Check section to state the strip,
+      are today. *(completed: the strip reassigns file_scope_arr in place, and the pre-existing
+      `if [ "${#file_scope_arr[@]}" -gt 0 ]` guard immediately below re-tests the stripped result;
+      neither splice moved)*
+- [x] Extend the header comment's Phase-Commit Containment Self-Check section to state the strip,
       its placement relative to the two splices, and the fail-open consequence when nothing
-      survives.
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` with fixtures
+      survives. *(completed: new "DEPLOYED-TREE REFUSAL" header subsection)*
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` with fixtures
       appended after Case 24: a `.claude/**` `files_touched` path under a `file_scope` seeded with
       a bare `.claude/` entry is STILL dropped, warned, and issue-recorded (the loophole closed);
       a `file_scope` consisting solely of `.claude/` strips to empty and fails open exactly as a
@@ -296,9 +299,14 @@ polluted `state.json` -- without weakening the drop-and-warn guard or the fail-o
       IS deposited; a genuine out-of-territory source path is still dropped with its warning AND
       its `issue-record.sh --class "scope excursion"` call; the fixed-scope carve-out paths are
       still staged unconditionally; and fail-open on absent/empty/malformed `file_scope` is
-      unchanged.
-- [ ] Re-read `git-commit-phase.sh` and `test-git-commit-phase.sh` immediately before editing
+      unchanged. *(completed: Case 25 covers the loophole-closure/deposit-refusal/sibling-excursion
+      properties; Case 26 pins this script's OWN fail-open at the strip-to-empty shape. Cases 1-24
+      re-run unchanged, 56/56 total. Deviation: Case 26 narrows to Site 2's own behavior only --
+      see Deviations below and this phase's progress-file verification_notes for the Site-3
+      residual this uncovered)*
+- [x] Re-read `git-commit-phase.sh` and `test-git-commit-phase.sh` immediately before editing
       (tasks 430 and 443 share this territory) and stage only this phase's own hunks.
+      *(completed)*
 
 **Timing**: 1.5 hours
 
