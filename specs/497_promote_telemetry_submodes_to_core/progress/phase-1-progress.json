@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Author the Core-Owned Telemetry Content Set",
+  "started_at": "2026-11-09T20:49:00Z",
+  "last_updated": "2026-11-09T21:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create core/context/standards/telemetry-guardrails.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/telemetry-guardrails.md"]},
+    {"id": 2, "description": "Create core/context/patterns/telemetry-review-submode.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/telemetry-review-submode.md"]},
+    {"id": 3, "description": "Create core/context/patterns/telemetry-dream-submode.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/telemetry-dream-submode.md"]},
+    {"id": 4, "description": "Create core/context/patterns/telemetry-meta-submode.md (incl. stale quotation rewrite and reflection caveat)", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/telemetry-meta-submode.md"], "note": "Stale meta-builder-agent.md quotation was already fixed in a prior commit (2730547c3, same planning-cycle session) before this dispatch read the source file; current text already reflects the fresh SCOPE BOUNDARY-grounded prose, so no further rewrite was needed beyond carrying it forward."},
+    {"id": 5, "description": "Create core/commands/telemetry.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/telemetry.md"]},
+    {"id": 6, "description": "De-narrate all five files", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/standards/telemetry-guardrails.md",
+      "agent-system/extensions/core/context/patterns/telemetry-review-submode.md",
+      "agent-system/extensions/core/context/patterns/telemetry-dream-submode.md",
+      "agent-system/extensions/core/context/patterns/telemetry-meta-submode.md",
+      "agent-system/extensions/core/commands/telemetry.md"
+    ]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

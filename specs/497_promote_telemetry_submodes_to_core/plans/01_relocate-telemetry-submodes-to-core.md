@@ -1,7 +1,7 @@
 # Implementation Plan: Task #497
 
 - **Task**: 497 - Promote telemetry sub-modes to core
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: None (re-sequences 421 to depend on this task; declared edges with 328, 435)
 - **Research Inputs**: specs/497_promote_telemetry_submodes_to_core/reports/01_relocate-telemetry-submodes-research.md
@@ -180,7 +180,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Author the Core-Owned Telemetry Content Set [NOT STARTED]
+### Phase 1: Author the Core-Owned Telemetry Content Set [COMPLETED]
 
 **Goal**: Land the five new core markdown files — the three sub-mode specifications, the shared
 guardrails document, and the `/telemetry` command file — each self-sufficient at its new
@@ -188,20 +188,20 @@ location and free of draft-history narration.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/context/standards/telemetry-guardrails.md` from
+- [x] Create `agent-system/extensions/core/context/standards/telemetry-guardrails.md` from
       memory's copy. Retitle from "Telemetry Guardrails for Distill Sub-Modes" to "Telemetry
       Guardrails" (the document now serves two host commands). Keep all fifteen sections,
       including `## The No-New-Hygiene-Below-~100-Entries Constraint`, whose consumers are the
       memory extension's hygiene sub-modes citing this core copy. Update its
-      `## Related Documentation` section's own outbound paths.
-- [ ] Create `agent-system/extensions/core/context/patterns/telemetry-review-submode.md` from
+      `## Related Documentation` section's own outbound paths. *(completed)*
+- [x] Create `agent-system/extensions/core/context/patterns/telemetry-review-submode.md` from
       `distill-review-submode.md`. Preserve the `## MANDATORY STOP Exemption (Stated, Not
       Omitted)` section and the four-tier access table including Tier 1's exact degraded string
       "OTel not enabled for this session/repo -- outcome evidence unavailable for this
       question." Repoint the skeleton citation at `skill-telemetry/SKILL.md`, the guardrails
       citation at `context/standards/telemetry-guardrails.md`, and the optional log destination
-      at `specs/telemetry/review-log.json` (still optional, audit-only).
-- [ ] Create `agent-system/extensions/core/context/patterns/telemetry-dream-submode.md` from
+      at `specs/telemetry/review-log.json` (still optional, audit-only). *(completed)*
+- [x] Create `agent-system/extensions/core/context/patterns/telemetry-dream-submode.md` from
       `distill-dream-submode.md`. Preserve its `## MANDATORY STOP Exemption (Stated, Not
       Omitted)` section. Inline the three-line `overlap_score = |segment_terms intersect
       memory_terms| / |segment_terms|` formula (read from
@@ -211,8 +211,8 @@ location and free of draft-history narration.
       existing-coverage check read `specs/TODO.md` unconditionally and
       `.memory/memory-index.json` only when that file is present. Move the log destination to
       `specs/telemetry/dream-log.json` and state that this log is the sole `--since` cursor,
-      replacing the `memory_health.last_dream` / `dream_count` coupling.
-- [ ] Create `agent-system/extensions/core/context/patterns/telemetry-meta-submode.md` from
+      replacing the `memory_health.last_dream` / `dream_count` coupling. *(completed)*
+- [x] Create `agent-system/extensions/core/context/patterns/telemetry-meta-submode.md` from
       `distill-meta-submode.md`. Drop the `validate-on-read` precondition from its Edge Case
       Checks (promotion frees it from the knowledge-store gate). Rename `DISTILL_META_LOCAL` to
       `TELEMETRY_META_LOCAL`, keeping `--local` as the primary opt-out and
@@ -222,30 +222,33 @@ location and free of draft-history narration.
       section. Move the log destination to `specs/telemetry/meta-log.json`. Preserve the
       MANDATORY STOP, the confirmation gate, the `meta-builder-agent` delegation contract, the
       doc-edit-proposal rule, and the single-repo signal limitation verbatim in substance.
-- [ ] In that same file, replace the stale `meta-builder-agent.md` "Known limitation" quotation
+      *(completed)*
+- [x] In that same file, replace the stale `meta-builder-agent.md` "Known limitation" quotation
       with fresh prose grounded in that agent's current `SCOPE BOUNDARY` section. Re-read
       `agent-system/extensions/core/agents/meta-builder-agent.md` first; the quoted text is
       absent from it today. Keep the behavioral point that `--meta` writes no extension-detection
       logic of its own and relies on the delegation contract's `AskUserQuestion` step for human
-      correction.
-- [ ] Carry the `reflection` producer-status caveat forward as a stated fact in
+      correction. *(completed: text was already corrected in a prior commit from this planning
+      cycle; relocation carried the already-fixed prose forward -- see the `win` issue-log entry)*
+- [x] Carry the `reflection` producer-status caveat forward as a stated fact in
       `telemetry-meta-submode.md`: the event type has one historical record in this repo and no
       live producer (`context/formats/events-format.md`), so it must not be presented as a live
-      input.
-- [ ] Create `agent-system/extensions/core/commands/telemetry.md`: frontmatter `description`,
+      input. *(completed)*
+- [x] Create `agent-system/extensions/core/commands/telemetry.md`: frontmatter `description`,
       argument parsing for `--meta` / `--review "<question>"` / `--dream` plus `--dry-run`,
       `--verbose` and `--local`, a sub-mode availability table whose Section column anchors into
       `skill-telemetry/SKILL.md`, delegation to `skill-telemetry`, per-sub-mode result
       presentation, error handling with the three-flag availability message, and a State
       Management block listing the reads (`specs/events.jsonl` via `events-query.sh`,
       `~/.claude/history.jsonl`, transcripts, OTel when enabled) and writes
-      (`specs/telemetry/*.json`; task directories only via `meta-builder-agent`).
-- [ ] De-narrate all five files: remove every sentence describing an earlier draft of the same
+      (`specs/telemetry/*.json`; task directories only via `meta-builder-agent`). *(completed)*
+- [x] De-narrate all five files: remove every sentence describing an earlier draft of the same
       content, every phase-number reference, and every "no longer / previously / redefined /
       pre-redefinition / inherits from the current X section" construction, per
       `rules/no-record-versioning-in-deliverables.md` and
       `rules/no-task-references-in-deliverables.md`. State each sub-mode's current charter
-      directly.
+      directly. *(completed; verified via check-record-versioning.sh and
+      check-task-references.sh, both 0 findings on all five new files)*
 
 **Timing**: 2 hours
 

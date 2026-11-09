@@ -1,0 +1,9 @@
+[
+  {
+    "question": "The three relocated sub-modes need a core-owned host command, since memory's /distill command file stays in the extension being retired. The plan picks the command's name; the sub-mode flag names and specifications are unchanged either way.",
+    "answer": "/telemetry --meta|--review|--dream -- one new core command hosting all three flags under their existing names (non-blocking decision: proceeded on the agent's own recommendation per the orchestrate contract; no user prompt was issued)",
+    "cycle": 2,
+    "timestamp": "2026-11-09T13:23:07Z",
+    "description_fingerprint": "6c54f02fe064a8dae273d6e2604d2c9162615e7446a68dc921023fd89fba48ac"
+  }
+]
