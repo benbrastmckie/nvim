@@ -1094,6 +1094,100 @@ else
   common_test_fail "Case 26: expected empty proposed_file_scope; got $proposed26"
 fi
 
+# =====================================================================
+# Case 27 (PART B within-dispatch annotation): a path already recorded in proposed_file_scope
+# earlier in THIS dispatch (a simulated earlier phase's own drop) draws an ANNOTATED warning on
+# a subsequent phase's commit of the same path -- pointing at the already-known status and the
+# scoped-follow-up-commit remedy -- while every pre-existing behavior (still dropped from
+# staging, still issue-recorded, still deposited, idempotently) is UNCHANGED. A true admit-via-
+# union design was built and rejected (see git-commit-phase.sh's own "WITHIN-DISPATCH
+# proposed_file_scope LOOKUP (PART B)" header subsection for the full reasoning and the Site-3
+# residual); this is the narrower, safe alternative actually shipped.
+# =====================================================================
+common_test_info "=== Case 27: a path already known in proposed_file_scope draws an annotated (not suppressed) repeat-drop warning ==="
+
+repo27="$(build_repo)"
+mkdir -p "$repo27/other"
+echo "out of scope" > "$repo27/other/outside.txt"
+git -C "$repo27" add other/outside.txt
+git -C "$repo27" commit -q -m "seed out-of-scope file"
+write_progress "$repo27" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","other/outside.txt"]}]'
+echo "mod a" > "$repo27/src/a.txt"
+echo "mod outside" > "$repo27/other/outside.txt"
+
+# First drop (phase 1): plain warning, no annotation yet (nothing known before this run).
+out27a="$(run_phase_commit "$repo27" --task 999 --project probe --phase 1 --message "case27a" --session sess_27a 2>&1)"
+if echo "$out27a" | grep -qF "already recorded in proposed_file_scope"; then
+  common_test_fail "Case 27a: the FIRST drop should not yet carry the already-known annotation; got out=$out27a"
+else
+  common_test_pass "Case 27a: the first drop draws the plain (unannotated) warning"
+fi
+
+# Second drop (simulated subsequent phase 2, same repo, same path): annotated warning.
+write_progress "$repo27" 2 '[{"id":1,"status":"done","files_touched":["other/outside.txt"]}]'
+echo "mod outside again" > "$repo27/other/outside.txt"
+out27b="$(run_phase_commit "$repo27" --task 999 --project probe --phase 2 --message "case27b" --session sess_27b 2>&1)"
+rc27b=$?
+proposed27b="$(jq -c '.proposed_file_scope // []' "$repo27/specs/999_probe/.return-meta.json" 2>/dev/null)"
+count27b="$(echo "$proposed27b" | jq '[.[] | select(. == "other/outside.txt")] | length' 2>/dev/null)"
+
+if echo "$out27b" | grep -qF "already recorded in proposed_file_scope earlier in this dispatch -- land it with a scoped follow-up commit"; then
+  common_test_pass "Case 27b: the SECOND (subsequent-phase) drop of the same path draws the already-known annotation"
+else
+  common_test_fail "Case 27b: expected the already-known annotation on the second drop; got out=$out27b"
+fi
+
+if echo "$out27b" | grep -q "issue-record\|scope excursion" || { [ -f "$repo27/specs/999_probe/issues.jsonl" ] && [ "$(grep -c "other/outside.txt" "$repo27/specs/999_probe/issues.jsonl")" -ge 2 ]; }; then
+  common_test_pass "Case 27b: the issue-record.sh call still fires on the repeat drop (unsuppressed)"
+else
+  common_test_fail "Case 27b: expected the issue-record.sh call to still fire on the repeat drop; got $(cat "$repo27/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+if [ "$count27b" = "1" ]; then
+  common_test_pass "Case 27b: proposed_file_scope still holds exactly one occurrence (idempotent deposit unaffected)"
+else
+  common_test_fail "Case 27b: expected exactly one occurrence; got count=$count27b proposed=$proposed27b"
+fi
+
+if [ "$rc27b" -eq 0 ]; then
+  common_test_pass "Case 27b: the repeat-drop commit still exits 0 (no regression -- the issue-record.sh append keeps the commit non-empty)"
+else
+  common_test_fail "Case 27b: expected rc=0; got rc=$rc27b out=$out27b"
+fi
+
+# =====================================================================
+# Case 28: a deployed-tree path planted DIRECTLY into proposed_file_scope (bypassing
+# propose_file_scope_addition()'s own deposit-site refusal, e.g. by a hand edit) is excluded
+# from the already-known lookup -- it must never be annotated as "land it with a follow-up
+# commit", since a deployed-tree path is never legitimate to land at all. The drop itself is
+# still the plain, unannotated warning.
+# =====================================================================
+common_test_info "=== Case 28: a deployed-tree path planted directly in proposed_file_scope is excluded from the already-known annotation ==="
+
+repo28="$(build_repo)"
+printf '%s' '{"status":"in_progress","artifacts":[],"proposed_file_scope":[".claude/scripts/planted.sh"]}' > "$repo28/specs/999_probe/.return-meta.json"
+mkdir -p "$repo28/.claude/scripts"
+echo "planted" > "$repo28/.claude/scripts/planted.sh"
+git -C "$repo28" add .claude/scripts/planted.sh
+git -C "$repo28" commit -q -m "seed a planted deployed-tree file"
+write_progress "$repo28" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt",".claude/scripts/planted.sh"]}]'
+echo "mod a" > "$repo28/src/a.txt"
+echo "mod planted" > "$repo28/.claude/scripts/planted.sh"
+
+out28="$(run_phase_commit "$repo28" --task 999 --project probe --phase 1 --message "case28" --session sess_28 2>&1)"
+
+if echo "$out28" | grep -qF "already recorded in proposed_file_scope"; then
+  common_test_fail "Case 28: a planted deployed-tree proposed_file_scope entry must never draw the already-known annotation; got out=$out28"
+else
+  common_test_pass "Case 28: the planted deployed-tree entry draws no already-known annotation"
+fi
+
+if echo "$out28" | grep -q "WARNING.*dropping out-of-scope path '.claude/scripts/planted.sh'"; then
+  common_test_pass "Case 28: the deployed-tree path is still dropped with the plain warning"
+else
+  common_test_fail "Case 28: expected the plain drop warning for .claude/scripts/planted.sh; got out=$out28"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================

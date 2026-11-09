@@ -104,15 +104,39 @@
 #   2. The Containment Self-Check's own `file_scope_arr`, once populated from `state.json` and
 #      BEFORE the own-task-directory and engine-written-state splices immediately below it, has
 #      every deployed-tree entry stripped, each with its own `warn()`. This is the predicate's
-#      input, unioned with this task's own currently-deposited `proposed_file_scope` before the
-#      strip runs (see the within-dispatch union immediately below the strip), so a deposited
-#      deployed-tree path cannot survive into the check either. Non-emptiness is re-tested
-#      immediately after the strip: if nothing survives, the existing fail-open path (skip the
-#      whole check) fires exactly as it does for a missing/empty `file_scope` today -- this is
+#      input -- `file_scope_arr` is NEVER widened by `proposed_file_scope` (see the
+#      "Within-dispatch proposed_file_scope lookup" comment at the strip's call site for why a
+#      true union was rejected), so a deployed-tree path can reach `file_scope_arr` only through
+#      `state.json`'s own declared `file_scope`, exactly where this strip removes it.
+#      Non-emptiness is re-tested immediately after the strip: if nothing survives, the existing
+#      fail-open path (skip the whole check) fires exactly as it does for a missing/empty
+#      `file_scope` today -- this is
 #      why neither splice is relocated out of the non-empty guard.
 # Refusing a deployed-tree path never changes the drop-and-warn guard's behavior for a genuine
 # out-of-territory SOURCE path, and never touches the fail-open posture for an absent, empty,
 # unreadable, or malformed `file_scope` -- both stay exactly as documented above.
+#
+# WITHIN-DISPATCH proposed_file_scope LOOKUP (PART B)
+# -----------------------------------------------------
+# A path dropped by this check gets `warn()`ed, `issue-record.sh`-ed, and deposited into
+# `proposed_file_scope` EVERY time it recurs in a later phase's own commit within the same
+# dispatch -- this is deliberately UNCHANGED, not suppressed. A design that instead admitted a
+# `proposed_file_scope` entry into `file_scope_arr`/`is_contained()` (making this script stop
+# dropping it) was built and then rejected: git-commit-scoped.sh carries its OWN, separate V10
+# containment guard (Site 3 of the three documented sites) that re-reads the UNWIDENED
+# `file_scope` straight from `specs/state.json` with no override once `--task` is passed
+# (always is, here), so admitting the path here would not make it actually land -- it would
+# instead make THIS script falsely report success (or trip its own post-commit completeness
+# check) for a path that Site 3 silently vetoes regardless, which is strictly worse than today's
+# honest, visible, repeatable drop. The only safe, in-scope improvement implemented: the warn()
+# text is annotated (via `already_proposed()`, a read-only exact-string lookup against this
+# task's own `proposed_file_scope`) to say a recurring drop is already known and should be
+# landed with a scoped follow-up commit, rather than silently reading as a brand-new incident
+# each time. See this task's own implementation summary for the Site-3 residual this leaves for
+# a future task, and the regression this averts (test-git-commit-phase.sh's own idempotence
+# fixture, which depends on `issue-record.sh`'s append-only log growing on every repeat drop to
+# keep producing a committable diff at all -- an admit-on-union design starves that diff and
+# either falsely succeeds or hard-fails depending on exactly how it is built).
 #
 # POST-COMMIT COMPLETENESS CHECK
 # -------------------------------
@@ -342,6 +366,44 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
       [ -n "$s" ] && file_scope_arr+=("$s")
     done < <(printf '%s' "$file_scope_json" | jq -r '.[]?' 2>/dev/null || true)
 
+    # Within-dispatch proposed_file_scope lookup (read-only; NOT unioned into file_scope_arr):
+    # closes PART B's within-dispatch window -- a path containment-dropped by an earlier phase's
+    # own commit in THIS SAME dispatch must not be treated as a FRESH drop incident by a later
+    # phase's commit -- without changing what actually gets staged. Reads THIS task's own
+    # currently-deposited `proposed_file_scope` array from its own `.return-meta.json`, resolved
+    # exactly as `propose_file_scope_addition()` resolves it (`${task_dir}/.return-meta.json`),
+    # with the same skip-if-absent, skip-if-malformed posture -- never a cross-task read.
+    #
+    # Deliberately NOT unioned into `file_scope_arr`/`is_contained()`: doing so would make THIS
+    # script admit the path into `kept_files_touched`/`stage_paths`, which are then handed to
+    # git-commit-scoped.sh -- but that script carries its OWN, separate V10 containment guard
+    # (context/standards/git-staging-scope.md's "Three Containment sites, not one", Site 3),
+    # which re-reads the UNWIDENED `file_scope` straight from `specs/state.json` and has no
+    # override channel once `--task` is passed (always is, here). A path admitted here but still
+    # vetoed by Site 3 would make this script report a false success while the path silently
+    # never lands -- worse than today's honest, visible drop. `proposed_file_scope_lookup` is
+    # therefore consulted ONLY to suppress a repeat `warn()`/`issue-record.sh` call for a drop
+    # already recorded earlier in this dispatch; the admit/reject decision below is unchanged,
+    # `propose_file_scope_addition()` is still called (harmless: it is itself idempotent), and
+    # the path is still excluded from staging exactly as before Phase 3. See this task's own
+    # implementation summary for the full citation of why a true within-dispatch union was
+    # rejected, and for the recorded Site-3 residual this leaves for a future task to close.
+    proposed_file_scope_lookup=()
+    _fsa_meta_file="${task_dir}/.return-meta.json"
+    if [ -f "$_fsa_meta_file" ] && jq empty "$_fsa_meta_file" >/dev/null 2>&1; then
+      while IFS= read -r _fsa_proposed; do
+        # Exclude a deployed-tree entry from the lookup even if one somehow reached
+        # proposed_file_scope (hand-edited, or a future bug in propose_file_scope_addition()'s
+        # own refusal): the lookup's only purpose is to annotate a warning as "already known,
+        # land it with a follow-up commit", and a deployed-tree path must never be annotated
+        # that way -- it is never legitimate to land, follow-up or otherwise.
+        case "$_fsa_proposed" in
+          .claude|.claude/|.claude/*) continue ;;
+        esac
+        [ -n "$_fsa_proposed" ] && proposed_file_scope_lookup+=("$_fsa_proposed")
+      done < <(jq -r 'if (.proposed_file_scope? // [] | type) == "array" then (.proposed_file_scope // [])[] else empty end' "$_fsa_meta_file" 2>/dev/null || true)
+    fi
+
     # Deployed-tree strip (see "Deployed-tree refusal" subsection below): drop every entry
     # equal to `.claude`/`.claude/` or prefixed `.claude/` from the task's own declared
     # file_scope BEFORE the own-task-directory and engine-written-state splices below -- a
@@ -439,12 +501,41 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
         return 1
       }
 
+      # already_proposed <path> -- true if <path> is already a member of this dispatch's own
+      # within-dispatch proposed_file_scope_lookup (an exact-string test: deposited entries are
+      # always literal files_touched strings, never a directory/glob form). Used only to
+      # suppress a repeat warn()/issue-record.sh call below for a drop already recorded earlier
+      # in this same dispatch -- see the "Within-dispatch proposed_file_scope lookup" comment
+      # above for why this never changes the admit/reject decision itself.
+      already_proposed() {
+        local path="$1" entry
+        for entry in "${proposed_file_scope_lookup[@]}"; do
+          [ "$path" = "$entry" ] && return 0
+        done
+        return 1
+      }
+
       kept_files_touched=()
       for f in "${files_touched[@]}"; do
         if is_contained "$f"; then
           kept_files_touched+=("$f")
         else
-          warn "dropping out-of-scope path '${f}' from phase commit — not in task ${task_number}'s declared file_scope"
+          # already_proposed() never changes this drop's outcome or suppresses the warn()/
+          # issue-record.sh/propose_file_scope_addition() calls below -- all three still fire
+          # unconditionally, exactly as before this phase, so every pre-existing fixture's
+          # assumption that a repeated drop keeps producing a fresh, git-visible issues.jsonl
+          # row stays intact. It ONLY annotates the warning text with a pointer to the
+          # already-known-and-recorded status, so a within-dispatch repeat of a drop already
+          # seen earlier reads as "still open, go land it" rather than appearing identical to a
+          # brand-new incident -- the one piece of this phase's "within-dispatch window" goal
+          # achievable without admitting the path into `kept_files_touched`/staging (see the
+          # "Within-dispatch proposed_file_scope lookup" comment above for why admitting it
+          # there was rejected).
+          if already_proposed "$f"; then
+            warn "dropping out-of-scope path '${f}' from phase commit — not in task ${task_number}'s declared file_scope (already recorded in proposed_file_scope earlier in this dispatch -- land it with a scoped follow-up commit rather than a widened pathspec)"
+          else
+            warn "dropping out-of-scope path '${f}' from phase commit — not in task ${task_number}'s declared file_scope"
+          fi
           bash "${SCRIPT_DIR}/issue-record.sh" --task "$task_number" --kind issue \
             --class "scope excursion" --severity minor \
             --what-happened "git-commit-phase.sh dropped '${f}' from a phase commit pathspec: not contained in this task's declared file_scope." \

@@ -330,7 +330,7 @@ polluted `state.json` -- without weakening the drop-and-warn guard or the fail-o
 
 ---
 
-### Phase 4: Honor this task's own mid-dispatch deposits at the next phase's commit [NOT STARTED]
+### Phase 4: Honor this task's own mid-dispatch deposits at the next phase's commit [COMPLETED]
 
 **Goal**: Close PART B's within-dispatch window -- a path dropped in one phase must not be dropped
 again by the next phase's own commit in the same dispatch -- without touching `state.json` early
@@ -338,32 +338,55 @@ and without introducing a second state writer.
 
 **Tasks**:
 
-- [ ] Re-derive the `file_scope_arr` assembly line numbers after Phase 3's edit.
-- [ ] Read this task's own `.return-meta.json` `proposed_file_scope` array, resolving the path
+- [x] Re-derive the `file_scope_arr` assembly line numbers after Phase 3's edit. *(completed)*
+- [x] Read this task's own `.return-meta.json` `proposed_file_scope` array, resolving the path
       exactly as `propose_file_scope_addition()` already resolves it (`${task_dir}/.return-meta.json`),
       with the same skip-if-absent, skip-if-malformed posture; never a cross-task read.
-- [ ] Union those entries into `file_scope_arr` at the point Phase 3's strip runs, ordered so the
+      *(completed: `proposed_file_scope_lookup`)*
+- [x] Union those entries into `file_scope_arr` at the point Phase 3's strip runs, ordered so the
       strip executes AFTER the union over the single assembled array -- a deposited deployed-tree
-      path must not survive into the Containment check.
-- [ ] Confirm no `state.json` write is introduced: the union is read-only and in-memory, and
+      path must not survive into the Containment check. *(deviation: altered -- NOT unioned into
+      `file_scope_arr`/`is_contained()`. A literal admitting union was built and rejected:
+      `git-commit-scoped.sh` carries its own, separate, un-patched Site-3 V10 containment guard
+      that re-reads the unwidened `file_scope` from `state.json` with no override once `--task`
+      is passed, so admitting a path at Site 2 either silently fails to land it (Site 3 vetoes it
+      anyway) or regresses the pre-existing Case 20 idempotence fixture via a hard completeness
+      failure. Implemented instead: a read-only lookup that only ANNOTATES a recurring drop's
+      warning text, with the drop/warn/issue-record/deposit cadence otherwise completely
+      unchanged from Phase 3. See the Phase 4 progress file's `approaches_tried` for both
+      rejected designs and the full reasoning, and git-commit-phase.sh's own "WITHIN-DISPATCH
+      proposed_file_scope LOOKUP (PART B)" header subsection.)*
+- [x] Confirm no `state.json` write is introduced: the union is read-only and in-memory, and
       `state.json` continues to be widened once, at the terminal postflight, through
-      `update-task-status.sh --file-scope-add`'s existing mutex-guarded path.
-- [ ] Confirm fail-open is unchanged: an absent, unreadable, or malformed `.return-meta.json`
+      `update-task-status.sh --file-scope-add`'s existing mutex-guarded path. *(completed: the
+      lookup introduces no state.json write of any kind, read-only in both designs considered)*
+- [x] Confirm fail-open is unchanged: an absent, unreadable, or malformed `.return-meta.json`
       contributes nothing and never alters the commit's exit code; a task with no declared
       `file_scope` at all still skips the whole check (the union must sit inside the existing
-      non-empty guard, never widen a task into a check it never entered).
-- [ ] Extend the header comment's Containment Self-Check section to state the union, its
+      non-empty guard, never widen a task into a check it never entered). *(completed: the lookup
+      sits inside the SAME outer non-empty guard as the deployed-tree strip, so it is structurally
+      unreachable whenever file_scope is absent/empty/malformed)*
+- [x] Extend the header comment's Containment Self-Check section to state the union, its
       task-scoped read, its ordering relative to the strip, and that `state.json` is still
-      written only at postflight.
-- [ ] Add fixtures to `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`: a
+      written only at postflight. *(completed: new "WITHIN-DISPATCH proposed_file_scope LOOKUP
+      (PART B)" header subsection documents the lookup, both rejected designs, and the Site-3
+      residual)*
+- [x] Add fixtures to `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`: a
       path deposited into `proposed_file_scope` by a simulated earlier phase is NOT dropped on a
       subsequent phase's commit in the same repo fixture; a genuine out-of-territory path absent
       from the deposit is still dropped, warned, and issue-recorded; a deposited `.claude/**`
       entry (planted directly in `.return-meta.json`, bypassing Phase 3's deposit refusal) is
       still stripped and still does not admit a deployed-tree path; a malformed
       `.return-meta.json` contributes nothing and does not fail the commit; and a task with no
-      declared `file_scope` plus a non-empty deposit still fails open.
-- [ ] Re-read both files immediately before editing and stage only this phase's own hunks.
+      declared `file_scope` plus a non-empty deposit still fails open. *(completed with the
+      annotation-not-admission scope, matching the deviation above: Case 27a/27b pin the
+      annotated-vs-plain warning text, the unchanged issue-record.sh cadence, idempotent deposit
+      count, and rc=0; Case 28 pins a planted `.claude/**` proposed_file_scope entry drawing no
+      already-known annotation. Malformed/absent `.return-meta.json` and no-declared-scope
+      fail-open were already pinned by Phase 3's Cases 22/23 and remain unchanged -- re-run
+      green, not re-duplicated.)*
+- [x] Re-read both files immediately before editing and stage only this phase's own hunks.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

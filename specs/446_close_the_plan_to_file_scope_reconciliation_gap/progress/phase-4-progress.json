@@ -1,0 +1,40 @@
+{
+  "phase": 4,
+  "phase_name": "Honor this task's own mid-dispatch deposits at the next phase's commit",
+  "started_at": "2026-11-09T14:48:00Z",
+  "last_updated": "2026-11-09T15:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive file_scope_arr assembly line numbers after Phase 3's edit", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Read this task's own .return-meta.json proposed_file_scope, resolved exactly as propose_file_scope_addition() resolves it", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 3, "description": "Union those entries into file_scope_arr ahead of the strip", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 4, "description": "Confirm no state.json write introduced (read-only, in-memory union)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm fail-open unchanged for absent/unreadable/malformed .return-meta.json and no-declared-file_scope", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Extend header comment's Containment Self-Check section with the union", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 7, "description": "Add fixtures: within-dispatch honoring, surviving-guard, planted-deployed-entry, malformed-metadata, no-declared-scope fail-open", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 8, "description": "Re-read both files before editing, stage only this phase's hunks", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {
+      "approach": "Full union: append proposed_file_scope entries directly into file_scope_arr so is_contained() admits an already-known drop and it is staged/committed on a subsequent phase's commit.",
+      "result": "failed",
+      "reason": "git-commit-scoped.sh carries its own, separate V10 containment guard (Site 3) that independently re-reads the UNWIDENED file_scope from specs/state.json (no override once --task is passed). Admitting the path at Site 2 passed it downstream, where Site 3 silently vetoed it anyway, producing either a false success (file never actually lands) or a hard completeness-check failure (exit 6) -- regressing the pre-existing Case 20 idempotence fixture, which depends on issue-record.sh's append-only growth to keep the repeat-drop commit non-empty."
+    },
+    {
+      "approach": "Noise-suppression-only: keep is_contained()'s decision unchanged, but skip the warn()/issue-record.sh calls (while still calling the idempotent propose_file_scope_addition()) on a repeat drop of an already-known path.",
+      "result": "failed",
+      "reason": "Suppressing issue-record.sh's append removed the ONLY git-visible change that kept the repeat-drop commit non-empty (propose_file_scope_addition() is itself idempotent and produces no byte-level diff on a repeat call), so the second commit had literally nothing to stage and git-commit-scoped.sh exited 1 ('nothing to commit') -- the same Case 20 regression via a different mechanism."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Union those entries into file_scope_arr at the point Phase 3's strip runs, so a path dropped in one phase is not dropped again by the next phase's own commit in the same dispatch.",
+      "type": "altered",
+      "reason": "A literal union (admitting the path into is_contained()/staging) is architecturally incompatible with git-commit-scoped.sh's separate, unpatched Site-3 V10 containment guard -- see approaches_tried above and git-commit-phase.sh's own 'WITHIN-DISPATCH proposed_file_scope LOOKUP (PART B)' header subsection. Implemented instead: a read-only proposed_file_scope_lookup (never unioned into file_scope_arr) that ANNOTATES a recurring drop's warning text ('already recorded in proposed_file_scope earlier in this dispatch -- land it with a scoped follow-up commit') rather than suppressing or admitting it. The drop/warn/issue-record/deposit cadence is completely unchanged from Phase 3, preserving every pre-existing fixture (including Case 20's idempotence pin) exactly. This is a narrower result than the plan's literal 'is NOT dropped'/'is staged' fixture language, and is recorded as a deviation rather than silently substituted.",
+      "annotation": "*(deviation: altered -- a read-only annotation lookup, not an admitting union; see the Site-3 residual this leaves)*"
+    }
+  ],
+  "verification_notes": "bash agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh: 63/63 pass (56 pre-existing from Phases 1-3 unchanged, including Case 20's idempotence pin + 7 new: Case 27a/27b annotation behavior, Case 28 deployed-tree-planted-entry exclusion). Scoped suite (test-git-commit-phase.sh, test-git-commit-scoped.sh, test-skill-base-lifecycle.sh, test-task-reference-patterns-lib.sh, test-update-task-status.sh) via source-store run-all.sh: 5/5 pass. check-task-references.sh and check-record-versioning.sh both 0 BLOCKING on both touched files."
+}
