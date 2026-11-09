@@ -260,7 +260,7 @@
       "domain": "project",
       "subdomain": "memory",
       "summary": "Complete specification for /distill --meta sub-mode (cross-repo agent-system improvement proposals: candidate discovery from recurring deviations/blockers and reflection phrases, delegated to meta-builder-agent for task creation) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
-      "line_count": 205,
+      "line_count": 202,
       "keywords": [
         "distill",
         "meta-submode",
