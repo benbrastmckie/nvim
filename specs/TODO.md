@@ -11,8 +11,8 @@ next_project_number: 569
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,360,369,383,397,410,412,420,423,431,437,445,448,453,456,459,472,473,475,477,483,484,488,490,491,497,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,444,451,452,455,458,461,463,474,476,479,486,492,500,507,516,518,523,527,540,541,542,543,544,553,564 | 360,369,383,397,412,420,423,431,445,448,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 313,338,342,360,369,383,397,410,412,420,423,431,437,445,448,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,444,451,452,455,458,461,463,474,476,479,486,492,497,500,507,516,518,523,527,540,541,542,543,544,553,564 | 360,369,383,397,412,420,423,431,445,448,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,454,457,462,480,501,508,509,517,547,552,566 | 313,360,391,398,439,444,448,451,452,455,458,461,472,476,479,486,515,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 4 | 421,450,481,487,513,524,561 | 390,402,420,449,479,501,552 | core-agent-system, orchestrator, agent-system |
 | 5 | 496 | 450,487,488 | extensions |
@@ -81,14 +81,14 @@ next_project_number: 569
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
-497 [PLANNED] — Promote the three vault-independent distill telemetry...
-  └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
   └─ 498 [NOT STARTED] — Replace the email preference harvest tally substrate
-    └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the... (see above)
+    └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
+497 [PLANNED] — Promote the three vault-independent distill telemetry...
+  └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the... (see above)
 
 ### Literature
 
@@ -170,6 +170,7 @@ next_project_number: 569
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
+569 [NOT STARTED] — Four fixture-based test suites fail because their curated...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -186,6 +187,17 @@ next_project_number: 569
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 569. Repair stale fixture lib dependency lists
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Four fixture-based test suites fail because their curated dependency-copy lists are stale: state-write.sh gained 'source ${SCRIPT_DIR}/lib/project-number-inuse.sh' (state-write.sh:214) in commit 918c9a031, and none of the four suites copies that library into its temp fixture. The copied state-write.sh therefore aborts at line 214 with 'No such file or directory', every fixture state.json write fails, and each caller surfaces it as its own generic write-failure exit (update-task-status.sh maps it to exit 2, 'state.json update failed'), which hides the real cause. Affected suites and current standalone results: test-postflight-deploy-gate.sh (17 passed, 12 failed), test-orchestrate-unwind-dispatch.sh (10 passed, 11 failed), test-redeploy-checkpoint-promotion.sh (10 passed, 7 failed), test-orchestrate-predispatch-review.sh (35 passed, 2 failed). Confirmed pre-existing: test-orchestrate-unwind-dispatch.sh fails identically at commit 3b7f13344. Reproduce by neutering a suite's common_test_workdir_init cleanup and reading the preserved per-case .err file, which names the missing library directly. Primary fix: add project-number-inuse.sh to each suite's REQUIRED_LIBS array. Consider also whether these curated per-suite dependency lists should be derived from the subject script's own source lines rather than hand-maintained, since that is the defect class that produced this. NOT the audit-evidence gate in state-write.sh (commit b5b730454, same day): that gate fires only on new active_projects entries, and these fixtures pre-seed active_projects and only transition status.
+
+---
 
 ### 568. Repair orchestrate cycle postflight suite
 - **Effort**: medium
@@ -5294,7 +5306,7 @@ Whichever is chosen, preserve: the exact-key (not fuzzy) dedup semantics for the
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 435, Task 328
+- **Dependencies**: Task 328, Task 420, Task 435
 - **Research**: [497_promote_telemetry_submodes_to_core/reports/01_relocate-telemetry-submodes-research.md]
 - **Plan**: [497_promote_telemetry_submodes_to_core/plans/01_relocate-telemetry-submodes-to-core.md]
 
