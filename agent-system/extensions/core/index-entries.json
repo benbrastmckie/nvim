@@ -1312,7 +1312,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Research phase workflow details",
-      "line_count": 566,
+      "line_count": 563,
       "keywords": [
         "process",
         "research",
@@ -2222,7 +2222,7 @@
       "domain": "core",
       "subdomain": "workflows",
       "summary": "Complete command lifecycle documentation",
-      "line_count": 440,
+      "line_count": 443,
       "keywords": [
         "workflows",
         "command",

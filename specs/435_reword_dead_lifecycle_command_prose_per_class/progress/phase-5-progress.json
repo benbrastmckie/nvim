@@ -1,0 +1,44 @@
+{
+  "phase": 5,
+  "phase_name": "core/context/processes and core/context/workflows -- Decision Gate",
+  "started_at": "2026-11-08T17:50:00Z",
+  "last_updated": "2026-11-08T18:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to all 6 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/processes/implementation-workflow.md",
+        "agent-system/extensions/core/context/processes/planning-workflow.md",
+        "agent-system/extensions/core/context/processes/research-workflow.md",
+        "agent-system/extensions/core/context/workflows/command-lifecycle.md",
+        "agent-system/extensions/core/context/workflows/meta-interview.md",
+        "agent-system/extensions/core/context/workflows/preflight-postflight.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "Measured 29 occurrences vs. the plan's Scope Hypothesis of 36 -- drift recorded, not silently absorbed: the discrepancy is attributable to normal corpus flux between plan-authoring time and this resumption (see Phase 4's handoff re: the prior stalled dispatch), not to any skipped file. All 6 files confirmed by file-list match; every occurrence treated per rubric; zero remain under the measurement command restricted to this tranche. index-entries.json line_count entries hand-corrected for research-workflow.md (566->563) and command-lifecycle.md (440->443), the two files whose edits changed total line count enough to trip the doc-lint check; preflight-postflight.md, meta-interview.md, planning-workflow.md and implementation-workflow.md's counts were unaffected (table-row/line-for-line substitutions)."
+    },
+    {
+      "id": 2,
+      "description": "Gate-criterion evaluation for the three processes/ documents",
+      "status": "done",
+      "files_touched": [],
+      "note": "VERDICT FOR ALL THREE: criterion FAILS (rewording insufficient to leave a fully coherent document); dead-command tokens reworded anyway per the gate's own instruction, residue recorded below, no restructuring performed.\n\nresearch-workflow.md: beyond the 4 measured tokens (lines 336/406/435/453, all 'Usage:'/'Resume with:'/'Or retry:' strings reworded to '/orchestrate ... --research' framing, verified against commands/orchestrate.md's argument-hint 'TASK_NUMBERS [PROMPT] ... [--research]'), the document's broader premise remains stale: (a) its References section cites '.claude/commands/research.md', a command file that does not exist (not caught by the measurement regex because the path has no bare '/research' token, but the same defect in substance); (b) the entire 'Topic Subdivision (--divide flag)' section describes a flag verified (via corpus-wide grep) to appear NOWHERE else in the system -- no command, skill, or script implements '--divide' -- so this section may describe a feature that was never carried forward, or never existed outside this doc; (c) the document's Step 5/6/8 narrative assumes delegation through a 'command' layer to a 'status-sync-manager'/'git-workflow-manager', abstractions command-structure.md's own Mistake-pattern section already calls fictional. Residue named for a follow-up record: audit and likely remove/replace the --divide section and the stale command-file Reference, and reconcile the status-sync-manager/git-workflow-manager language with the real skill-base.sh lifecycle functions, consistent with command-structure.md's existing correction.\n\nplanning-workflow.md and implementation-workflow.md: same class of residue as research-workflow.md (command-file References sections, status-sync-manager/git-workflow-manager narrative) is presumed present by structural similarity but was not independently re-verified line-by-line in this phase given the measured token count was only 2 and 3 respectively; flagged for the same follow-up record rather than independently investigated here to stay within this phase's scope.\n\nmeta-interview.md and preflight-postflight.md are NOT processes/ gate-criterion documents (workflows/ tranche); their isolated occurrences (a status-marker table and one summary line) were local and self-contained -- VERDICT: criterion MET, local rewording sufficient, no residue."
+    },
+    {
+      "id": 3,
+      "description": "command-lifecycle.md (heaviest in tranche, 13 occurrences) -- per-site treatment",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/workflows/command-lifecycle.md"],
+      "note": "All 13 measured occurrences reworded to phase framing (research/plan/implement phase, keeping /revise and /task verbatim as live commands). One additional, non-measured but substantively identical defect also fixed: the References section's '.claude/commands/{research,plan,revise,implement,task}.md' list named 3 nonexistent command files; corrected to the 2 that exist with an inline note. Residue recorded (not fixed, per Non-Goals): the document's own title and its 'Research Command'/'Plan Command'/'Implement Command' section headers (no leading-slash token, so outside the measurement pattern) still frame these three phases as standalone commands with their own 8-stage lifecycle; a full restructure separating phase-dispatch lifecycle from live-command lifecycle is out of scope here and named for the same follow-up record as research-workflow.md's residue."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24) run after this phase's edits and the index-entries.json corrections. Residual FAILs are the same pre-existing, out-of-scope items already confirmed and logged during Phase 4 (gate 24's 2 /ide violations; gate 3's validate-state.sh drift and state-schema.json line_count mismatch, both from the unrelated commit ebc532373). No new FAIL introduced by Phase 5."
+  ]
+}

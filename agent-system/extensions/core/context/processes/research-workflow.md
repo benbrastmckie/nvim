@@ -331,10 +331,7 @@ Use `--divide` flag when:
    - Identify cross-cutting themes
    - Create unified recommendations
 
-**Example**:
-```bash
-/research 197 --divide
-```
+**Example**: a research-phase dispatch for 197 with topic subdivision
 
 Topic: "LeanSearch API integration"
 
@@ -403,7 +400,7 @@ Recommendation: Verify task number exists in TODO.md
 ```
 Error: Task number must be an integer. Got: {input}
 
-Usage: /research TASK_NUMBER [PROMPT]
+Usage: /orchestrate TASK_NUMBER [PROMPT] --research
 ```
 
 ### Language Extraction Failed
@@ -432,7 +429,7 @@ Warning: Research timed out after 3600s
 
 Partial artifacts created: {list}
 
-Resume with: /research {task_number}
+Resume with: /orchestrate {task_number} --research
 ```
 
 ### Status Update Failed
@@ -450,7 +447,7 @@ Manual recovery steps:
 2. Manually update TODO.md status to [RESEARCHED]
 3. Manually update state.json status to "researched"
 
-Or retry: /research {task_number}
+Or retry: /orchestrate {task_number} --research
 ```
 
 ### Git Commit Failed (non-critical)

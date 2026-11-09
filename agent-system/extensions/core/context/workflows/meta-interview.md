@@ -69,7 +69,7 @@ I'll help you create structured tasks for your .claude/ system changes.
 - Task entries in TODO.md and state.json
 - Clear descriptions and priorities
 - Dependencies mapped between tasks
-- Ready for /research -> /plan -> /implement cycle
+- Ready for a research -> plan -> implement dispatch cycle
 
 Let's begin!
 ```

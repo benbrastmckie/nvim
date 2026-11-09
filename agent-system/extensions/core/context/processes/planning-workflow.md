@@ -402,7 +402,7 @@ Recommendation: Verify task number exists in TODO.md
 ```
 Error: Task number must be an integer. Got: {input}
 
-Usage: /plan TASK_NUMBER [PROMPT]
+Usage: /orchestrate TASK_NUMBER [PROMPT] --plan
 ```
 
 ### Task Already Completed
@@ -431,7 +431,7 @@ Error: Planning timed out after 1800s
 Status: Partial plan may exist
 Task status: [PLANNING]
 
-Recommendation: Resume with /plan {task_number}
+Recommendation: Resume with /orchestrate {task_number} --plan
 ```
 
 ### Validation Failure

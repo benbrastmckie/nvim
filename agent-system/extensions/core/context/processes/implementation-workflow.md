@@ -366,13 +366,13 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
 
 ### Resume Invocation
 
-**Same command** works for both initial implementation and resume:
+**Same dispatch** works for both initial implementation and resume:
 
 ```bash
-/implement {task_number}
+/orchestrate {task_number} --implement
 ```
 
-**No special flags needed** - implementer detects state automatically
+**No special flags needed beyond `--implement`** - the implement dispatch detects state automatically
 
 ### Partial Return
 
@@ -455,7 +455,7 @@ Recommendation: Verify task number exists in TODO.md
 ```
 Error: Task must be integer or range (N-M). Got: {input}
 
-Usage: /implement TASK_NUMBER [PROMPT]
+Usage: /orchestrate TASK_NUMBER [PROMPT] --implement
 ```
 
 ### Task Already Completed
@@ -475,7 +475,7 @@ Status: Partial implementation may exist
 Task status: [IMPLEMENTING]
 Phase status: [IN PROGRESS] (if plan exists)
 
-Recommendation: Resume with /implement {task_number}
+Recommendation: Resume with /orchestrate {task_number} --implement
 ```
 
 ### Validation Failure

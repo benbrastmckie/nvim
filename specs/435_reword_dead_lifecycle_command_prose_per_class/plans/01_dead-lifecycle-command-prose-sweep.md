@@ -449,7 +449,7 @@ measurement command restricted to `agent-system/extensions/core/context/standard
 
 ---
 
-### Phase 5: core/context/processes and core/context/workflows — Decision Gate [NOT STARTED]
+### Phase 5: core/context/processes and core/context/workflows — Decision Gate [COMPLETED]
 
 **Goal**: Reword the occurrences in the three lifecycle-narrative process documents and the three
 workflow documents, and decide — on measured evidence, not impression — whether local rewording
@@ -470,12 +470,20 @@ document's occurrences leaves a document that states something true.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] For each `processes/` document, evaluate the gate criterion explicitly and record the
-      verdict with the specific sentences that drove it.
-- [ ] `workflows/command-lifecycle.md` (18 occurrences) is the heaviest file in this tranche.
-- [ ] If any gate verdict is "rewording insufficient", record the residue and the proposed
-      follow-up scope in the phase notes. Do not restructure.
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 29 occurrences
+      measured vs. 36 hypothesized -- drift recorded in the phase-5 progress file, not silently
+      absorbed; all 6 files treated, zero dead-command tokens remain in this tranche)*
+- [x] For each `processes/` document, evaluate the gate criterion explicitly and record the
+      verdict with the specific sentences that drove it. *(completed: all three verdicts are
+      "rewording insufficient" -- see phase-5 progress file objective 2 for the full per-document
+      evidence and residue)*
+- [x] `workflows/command-lifecycle.md` (13 occurrences measured at this resumption, not 18) is the
+      heaviest file in this tranche. *(completed: all 13 reworded to phase framing, plus one
+      additional non-measured stale command-file Reference corrected)*
+- [x] If any gate verdict is "rewording insufficient", record the residue and the proposed
+      follow-up scope in the phase notes. Do not restructure. *(completed: residue recorded for
+      research-workflow.md, planning-workflow.md, implementation-workflow.md and
+      command-lifecycle.md in the phase-5 progress file; no document restructured)*
 
 **Timing**: 1.5 hours
 

@@ -110,12 +110,12 @@ Commands update task status to "in_progress" BEFORE delegating to subagents, ens
 
 ### Status Values
 
-| Command | Preflight Status |
+| Phase/Command | Preflight Status |
 |---------|-----------------|
-| /research | "researching" |
-| /plan | "planning" |
+| research phase | "researching" |
+| plan phase | "planning" |
 | /revise | "revising" |
-| /implement | "implementing" |
+| implement phase | "implementing" |
 
 ### Example (research.md)
 
@@ -249,12 +249,12 @@ Commands update task status to "completed" and link artifacts AFTER subagent com
 
 ### Status Values
 
-| Command | Postflight Status |
+| Phase/Command | Postflight Status |
 |---------|------------------|
-| /research | "researched" |
-| /plan | "planned" |
+| research phase | "researched" |
+| plan phase | "planned" |
 | /revise | "revised" |
-| /implement | "completed" |
+| implement phase | "completed" |
 
 ### Example (research.md)
 

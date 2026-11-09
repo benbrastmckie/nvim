@@ -2,7 +2,9 @@
 
 ## Overview
 
-This document describes the lifecycle of workflow commands (`/research`, `/plan`, `/revise`, `/implement`, `/task`) and the state-first status update pattern that all workflow commands follow.
+This document describes the lifecycle of workflow dispatches (the research, plan, and implement
+phases, plus `/revise` and `/task`) and the state-first status update pattern that all of them
+follow.
 
 **Note**: `/task` follows a different pattern since it creates tasks rather than modifying them. See "Task Creation Pattern" section below.
 
@@ -60,10 +62,10 @@ All workflow commands follow a **state-first status update pattern**: update sta
 **When:** Before delegating to subagent  
 **Purpose:** Signal that work has started  
 **Status Markers:**
-- `/research`: [RESEARCHING]
-- `/plan`: [PLANNING]
+- research phase: [RESEARCHING]
+- plan phase: [PLANNING]
 - `/revise`: [REVISING]
-- `/implement`: [IMPLEMENTING]
+- implement phase: [IMPLEMENTING]
 
 **Process:**
 1. Validate task exists and is valid for operation
@@ -88,10 +90,10 @@ All workflow commands follow a **state-first status update pattern**: update sta
 **When:** After subagent completes work  
 **Purpose:** Signal that work has completed and link artifacts  
 **Status Markers:**
-- `/research`: [RESEARCHED]
-- `/plan`: [PLANNED]
+- research phase: [RESEARCHED]
+- plan phase: [PLANNED]
 - `/revise`: [REVISED]
-- `/implement`: [COMPLETED]
+- implement phase: [COMPLETED]
 
 **Process:**
 1. Validate artifacts created successfully
@@ -261,7 +263,7 @@ The `/task` command follows a different pattern from workflow commands since it 
 
 ### Inline Implementation
 
-Unlike /research and /implement which delegate to subagents, /task uses **inline implementation** with executable pseudocode directly in Stage 2:
+Unlike the research and implement phases, which delegate to subagents, /task uses **inline implementation** with executable pseudocode directly in Stage 2:
 
 ```bash
 # Read next project number
@@ -290,7 +292,7 @@ jq '.next_project_number = (.next_project_number + 1) |
 2. **No Preflight/Postflight**: Task doesn't exist yet, so no status to update
 3. **No Git Commit**: Task creation doesn't create artifacts (only TODO.md + state.json updates)
 4. **Inline Implementation**: No delegation to subagent (executable pseudocode in command file)
-5. **Matches /research Pattern**: Stage 1 has executable logic that Claude can directly follow
+5. **Matches the Research-Phase Pattern**: Stage 1 has executable logic that Claude can directly follow
 
 ### Atomic Updates
 
@@ -328,7 +330,7 @@ jq '.next_project_number = (.next_project_number + 1) |
 
 ### The Continuation Marker Pattern
 
-Workflow commands (`/research`, `/plan`, `/implement`) use explicit continuation markers to ensure Claude executes the full checkpoint-based flow without stopping prematurely.
+Workflow dispatches (research phase, plan phase, implement phase) use explicit continuation markers to ensure Claude executes the full checkpoint-based flow without stopping prematurely.
 
 **Problem**: Without explicit continuation markers, Claude may interpret skill invocation returns (JSON responses) as transaction boundaries and stop execution after GATE IN or DELEGATE, failing to complete the full workflow.
 
@@ -348,17 +350,17 @@ Workflow commands (`/research`, `/plan`, `/implement`) use explicit continuation
 
 ### Examples
 
-**In /research command**:
+**In a research-phase dispatch**:
 ```markdown
 **On GATE IN success**: Status is [RESEARCHING]. **IMMEDIATELY CONTINUE** to STAGE 2 below.
 ```
 
-**In /plan command**:
+**In a plan-phase dispatch**:
 ```markdown
 **On DELEGATE success**: Plan created. **IMMEDIATELY CONTINUE** to CHECKPOINT 2 below.
 ```
 
-**In /implement command**:
+**In an implement-phase dispatch**:
 ```markdown
 **On GATE OUT success**: Artifacts verified. **IMMEDIATELY CONTINUE** to CHECKPOINT 3 below.
 ```
@@ -391,7 +393,8 @@ When creating new checkpoint-based commands:
 - **Research Agent:** `.claude/agents/general-research-agent.md`
 - **Planner Agent:** `.claude/agents/planner-agent.md`
 - **Implementation Agent:** `.claude/agents/general-implementation-agent.md`
-- **Command Files:** `.claude/commands/{research,plan,revise,implement,task}.md`
+- **Command Files:** `.claude/commands/{revise,task}.md` (research/plan/implement are phases
+  dispatched by `/orchestrate`, not standalone command files)
 
 ## Validation
 
