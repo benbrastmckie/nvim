@@ -61,7 +61,7 @@
               },
               "command": {
                 "type": "string",
-                "description": "The invoking command, e.g. /implement, /plan."
+                "description": "The invoking command or phase dispatch, e.g. /orchestrate, /revise, an implement-phase dispatch."
               },
               "task": {
                 "type": "integer",

@@ -520,21 +520,26 @@ coherence rather than occurrence count. Confirm by running the measurement comma
 
 ---
 
-### Phase 6: core/context remainder [NOT STARTED]
+### Phase 6: core/context remainder [COMPLETED]
 
 **Goal**: Treat the remaining `core/context/` files not covered by Phases 1-5.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `architecture/system-overview.md`: reword the dead-command half of its sentence only. Leave
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: all 17 files
+      treated, zero remaining dead-command tokens)*
+- [x] `architecture/system-overview.md`: reword the dead-command half of its sentence only. Leave
       its "Superseded note"/"used to" record-versioning phrasing exactly as-is — that is an
       explicit Non-Goal of this record, confirmed advisory-tier by the live gate and owned by a
-      completed lineage.
-- [ ] The two `.json` files (`index.schema.json`, `schemas/errors-schema.json`,
+      completed lineage. *(completed: only the backtick-wrapped slash tokens dropped; versioning
+      phrasing preserved verbatim)*
+- [x] The two `.json` files (`index.schema.json`, `schemas/errors-schema.json`,
       `schemas/orchestrator-handoff-schema.json`) hold occurrences in schema descriptions or
       enum documentation: check whether each is prose about the system (class 2) or a schema
-      value other code matches on (class 3) before editing.
+      value other code matches on (class 3) before editing. *(completed: all three verdicted
+      class 2, not class 3 -- see phase-6 progress file objective 3 for the full reasoning,
+      including the discovery that index.schema.json's and README.md's dead-command `examples`
+      were illustrating a currently-invalid configuration, corrected to a live-command example)*
 
 **Timing**: 1.5 hours
 

@@ -4,7 +4,7 @@ This directory defines the three-gate checkpoint model for command execution.
 
 ## Overview
 
-Every command (/research, /plan, /implement, /revise) follows a three-checkpoint pattern:
+Every workflow dispatch (the research, plan, and implement phases, plus /revise) follows a three-checkpoint pattern:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

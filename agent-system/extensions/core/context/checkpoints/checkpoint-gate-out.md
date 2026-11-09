@@ -76,9 +76,9 @@ session_id: {session_id}
 ```
 
 Completed variants:
-- researched (after /research)
-- planned (after /plan)
-- completed (after /implement)
+- researched (after the research phase)
+- planned (after the plan phase)
+- completed (after the implement phase)
 - partial (if status == "partial")
 
 ### 4. Link Artifacts (via skill-status-sync)

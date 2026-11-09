@@ -101,7 +101,7 @@ Generate session_id at GATE IN, include in commit for traceability.
 
 ---
 
-## Example: /research Command
+## Example: Research-Phase Checkpoint Flow
 
 ```markdown
 ### CHECKPOINT 1: GATE IN

@@ -182,7 +182,7 @@ The `index.json` file enables automated context discovery:
 "load_when": { "agents": ["planner-agent"] }
 
 // Load for specific commands
-"load_when": { "commands": ["/research", "/implement"] }
+"load_when": { "commands": ["/revise", "/task"] }
 
 // Load for specific languages
 "load_when": { "task_types": ["meta", "general"] }

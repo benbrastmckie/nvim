@@ -42,8 +42,9 @@ Inter-Cycle Redeploy Checkpoint (`context/patterns/batch-orchestration-guardrail
 research-only or plan-only invocation never touches source-store files the gate would have
 anything new to say about.
 
-**Single-task and bare-`/implement` invariance**: this stage's trigger is read from the
-multi-task engine's own state, which a bare `/implement N` never creates and a single-task
+**Single-task and single-task-implement-dispatch invariance**: this stage's trigger is read from
+the multi-task engine's own state, which a single-task implement-phase dispatch never creates and
+a single-task
 `/orchestrate N` populates with exactly one `implement_agents` entry — but critically, Mechanism A
 (the dispatch-time deferral) is gated on `.task_numbers | length > 1` at `orchestrate-cycle-plan.sh`'s
 `build_args` composition, so a single-task invocation never emits the `## Batch Gate Deferral`

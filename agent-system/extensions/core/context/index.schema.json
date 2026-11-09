@@ -97,7 +97,7 @@
                 "type": "string"
               },
               "description": "Commands that should load this context. If every command listed here routes to an agent already present in this entry's own 'agents' array, the pair is a redundant duplicate hook (validate-context-budgets.sh's Double-Loading Check enforces this as a violation) -- drop 'commands' and keep 'agents' alone in that case. See context/patterns/context-discovery.md's Hook-Shape Policy section for the full agents-vs-commands-vs-both authoring guidance.",
-              "examples": [["/implement", "/plan"]]
+              "examples": [["/revise", "/task"]]
             },
             "task_types": {
               "type": "array",

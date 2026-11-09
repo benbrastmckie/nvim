@@ -195,14 +195,14 @@ The `next_artifact_number` field enables unified artifact numbering where all ar
 **Example Flow**:
 ```
 Round 1:
-  /research 309  -> reads 1, creates 01_report.md, increments to 2
-  /plan 309      -> reads 2, uses (2-1)=1, creates 01_plan.md
-  /implement 309 -> reads 2, uses (2-1)=1, creates 01_summary.md
+  research-phase dispatch for 309  -> reads 1, creates 01_report.md, increments to 2
+  plan-phase dispatch for 309      -> reads 2, uses (2-1)=1, creates 01_plan.md
+  implement-phase dispatch for 309 -> reads 2, uses (2-1)=1, creates 01_summary.md
 
 Round 2 (after blocker):
-  /research 309  -> reads 2, creates 02_report.md, increments to 3
-  /plan 309      -> reads 3, uses (3-1)=2, creates 02_plan.md
-  /implement 309 -> reads 3, uses (3-1)=2, creates 02_summary.md
+  research-phase dispatch for 309  -> reads 2, creates 02_report.md, increments to 3
+  plan-phase dispatch for 309      -> reads 3, uses (3-1)=2, creates 02_plan.md
+  implement-phase dispatch for 309 -> reads 3, uses (3-1)=2, creates 02_summary.md
 ```
 
 **Normalization Against Disk**:
@@ -253,7 +253,7 @@ The `memory_candidates` array on task entries accumulates structured memory cand
 - **Semantics**: Append-only during task lifecycle; consumed and removed during archival
 
 **Responsibility Split**:
-- **`/implement` (Producer)**: Reports what was changed factually
+- **The implement phase (Producer)**: Reports what was changed factually
 - **`/todo` (Consumer)**: Evaluates content and decides what warrants CLAUDE.md updates
 
 ### Skeleton Follow-Ups Field

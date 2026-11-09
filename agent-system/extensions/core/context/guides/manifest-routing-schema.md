@@ -10,7 +10,7 @@ agent names are always declared data, never derived strings.
 FOUR two-level routing blocks (`routing`, `routing_hard`, `routing_agents`, `routing_agents_hard`)
 resolved by two parallel resolvers, one per layer (a now-removed skill-level resolver script,
 and an agent-level resolver, `command-route-agent.sh`). The skill-level layer existed only to
-serve the now-deleted `/research`, `/plan`, `/implement` commands; once those commands were
+serve the now-deleted research, plan, and implement commands; once those commands were
 deleted and `/orchestrate` became the sole dispatch path (dispatching AGENTS directly), the
 skill-level blocks and their resolver had no remaining caller and were retired outright, not
 migrated. `routing`/`routing_hard` are gone from every manifest; the skill-level resolver script

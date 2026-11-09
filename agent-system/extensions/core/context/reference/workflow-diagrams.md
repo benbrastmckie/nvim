@@ -5,7 +5,7 @@ Process diagrams for research, planning, and implementation workflows. For behav
 ## Research Workflow
 
 ```
-/research N [focus]
+research-phase dispatch for N [focus]
     |
     v
 +-----------------+
@@ -48,7 +48,7 @@ Process diagrams for research, planning, and implementation workflows. For behav
 ## Planning Workflow
 
 ```
-/plan N
+plan-phase dispatch for N
     |
     v
 +-----------------+
@@ -89,7 +89,7 @@ Process diagrams for research, planning, and implementation workflows. For behav
 ## Implementation Workflow
 
 ```
-/implement N
+implement-phase dispatch for N
     |
     v
 +-----------------+
@@ -143,7 +143,7 @@ Process diagrams for research, planning, and implementation workflows. For behav
 For interrupted implementations:
 
 ```
-/implement N (resumed)
+implement-phase dispatch for N (resumed)
     |
     v
 +-----------------+

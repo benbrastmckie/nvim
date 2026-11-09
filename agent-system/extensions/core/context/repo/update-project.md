@@ -16,9 +16,9 @@ Generate or update `project-overview.md` when:
 The fastest way to generate `project-overview.md` is the `/project-overview` command. It interactively scans the repository, interviews you about project purpose and workflow, and creates a task in [RESEARCHED] status with a research artifact. Then follow the standard lifecycle:
 
 ```bash
-/project-overview     # Interactive scan + task creation
-/plan {N}             # Create implementation plan
-/implement {N}        # Generate the file
+/project-overview               # Interactive scan + task creation
+/orchestrate {N} --plan         # Create implementation plan
+/orchestrate {N} --implement    # Generate the file
 ```
 
 The manual process below is preserved as a reference for understanding what the command does internally, or for cases where fine-grained control is needed.
@@ -106,9 +106,9 @@ project-root/
 
 ### AI-Assisted Workflow
 
-1. **Research**: `/research` - Gather relevant documentation and patterns
-2. **Planning**: `/plan` - Create implementation plan
-3. **Implementation**: `/implement` - Execute the plan
+1. **Research**: a research-phase dispatch - Gather relevant documentation and patterns
+2. **Planning**: a plan-phase dispatch - Create implementation plan
+3. **Implementation**: an implement-phase dispatch - Execute the plan
 4. **Review**: `/review` - Analyze changes
 
 ## Common Tasks

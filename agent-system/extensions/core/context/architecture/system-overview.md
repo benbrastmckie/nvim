@@ -11,7 +11,7 @@
 
 The agent system implements a three-layer delegation pattern separating concerns into distinct execution layers.
 
-**Superseded note**: the standalone `/research`, `/plan`, `/implement` commands and the three
+**Superseded note**: the standalone research, plan, and implement commands and the three
 base lifecycle skills that used to occupy Layers 1-2 for the `general`/`meta`/`markdown` task
 types have been deleted. `/orchestrate` is now the sole
 lifecycle entry point for those task types; its `skill-orchestrate` skill dispatches agents

@@ -48,9 +48,9 @@ session_id: {session_id}
 ```
 
 In-progress variants:
-- researching (for /research)
-- planning (for /plan)
-- implementing (for /implement)
+- researching (for the research phase)
+- planning (for the plan phase)
+- implementing (for the implement phase)
 
 ### 5. Verify Status Update
 

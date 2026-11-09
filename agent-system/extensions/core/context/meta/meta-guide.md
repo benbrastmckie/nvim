@@ -4,11 +4,11 @@ Reference guide for the `/meta` command -- the interactive system builder that c
 
 ## Overview
 
-The `/meta` command creates structured tasks in TODO.md and state.json for modifying the `.claude/` agent architecture. It never implements changes directly -- it only plans what needs to change and creates task entries for the standard `/research` -> `/plan` -> `/implement` lifecycle.
+The `/meta` command creates structured tasks in TODO.md and state.json for modifying the `.claude/` agent architecture. It never implements changes directly -- it only plans what needs to change and creates task entries for the standard research -> plan -> implement lifecycle.
 
 **Delegation chain**: `/meta` command -> `skill-meta` -> `meta-builder-agent` -> TODO.md + state.json
 
-**Critical distinction**: `/meta` does NOT create commands, skills, agents, rules, or context files. It creates *tasks* that describe those changes. Actual file creation happens later during `/implement`.
+**Critical distinction**: `/meta` does NOT create commands, skills, agents, rules, or context files. It creates *tasks* that describe those changes. Actual file creation happens later during the implement phase.
 
 **Multi-task creation standard**: `/meta` is the reference implementation for the multi-task creation standard (all 8 components). See `.claude/docs/reference/standards/multi-task-creation-standard.md`.
 
@@ -117,7 +117,7 @@ Generates a summary with:
 - Task table (number, title, dependencies, path)
 - Dependency graph visualization (linear chain or layered DAG based on complexity)
 - Execution order with parallel execution annotations
-- Next steps pointing to `/research {first_task}` for the foundational task
+- Next steps pointing to an `/orchestrate {first_task} --research` dispatch for the foundational task
 
 ## Task Dependency System
 
@@ -233,7 +233,7 @@ The `meta-builder-agent` is only invoked by `/meta` itself -- it is not used dur
 
 2. **Minimal postflight**: Git commits happen inside the agent (Stage 6), not in skill-meta's postflight. The skill's declared "skill-internal postflight" is limited to reading the agent's return. This differs from other skills where postflight handles status updates, artifact linking, and git commits.
 
-3. **No memory integration**: Unlike `/research`, `/plan`, and `/implement` (which call `memory-retrieve.sh` to inject relevant memories), `/meta` does not retrieve memories. Past decisions, patterns, and anti-patterns from the memory vault are not available during the interview.
+3. **No memory integration**: Unlike the research, plan, and implement phases (which call `memory-retrieve.sh` to inject relevant memories), `/meta` does not retrieve memories. Past decisions, patterns, and anti-patterns from the memory vault are not available during the interview.
 
 4. **No effort/model flags**: `/meta` does not support `--fast`, `--hard`, `--haiku`, `--sonnet`, `--opus`, or `--fable` flags. It always runs in its default mode.
 

@@ -1,0 +1,73 @@
+{
+  "phase": 6,
+  "phase_name": "core/context remainder",
+  "started_at": "2026-11-08T18:30:00Z",
+  "last_updated": "2026-11-08T19:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 17 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/architecture/component-checklist.md",
+        "agent-system/extensions/core/context/architecture/system-overview.md",
+        "agent-system/extensions/core/context/checkpoints/checkpoint-gate-in.md",
+        "agent-system/extensions/core/context/checkpoints/checkpoint-gate-out.md",
+        "agent-system/extensions/core/context/checkpoints/README.md",
+        "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+        "agent-system/extensions/core/context/guides/manifest-routing-schema.md",
+        "agent-system/extensions/core/context/index.schema.json",
+        "agent-system/extensions/core/context/meta/domain-patterns.md",
+        "agent-system/extensions/core/context/meta/meta-guide.md",
+        "agent-system/extensions/core/context/README.md",
+        "agent-system/extensions/core/context/reference/state-management-schema.md",
+        "agent-system/extensions/core/context/reference/workflow-diagrams.md",
+        "agent-system/extensions/core/context/repo/update-project.md",
+        "agent-system/extensions/core/context/schemas/errors-schema.json",
+        "agent-system/extensions/core/context/schemas/orchestrator-handoff-schema.json",
+        "agent-system/extensions/core/context/templates/command-template.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "All 17 files treated; zero remaining dead-command tokens under the measurement command restricted to this tranche's file list. index-entries.json line_count entries hand-corrected for batch-gate-stage.md (163->164); all other touched files' line counts were unaffected (inline text substitutions of equal line count) and verified unchanged against their declared entries."
+    },
+    {
+      "id": 2,
+      "description": "system-overview.md: reword the dead-command half only, leave the record-versioning phrasing untouched",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/architecture/system-overview.md"],
+      "note": "'the standalone `/research`, `/plan`, `/implement` commands ... that used to occupy Layers 1-2 ... have been deleted' -> 'the standalone research, plan, and implement commands ... that used to occupy Layers 1-2 ... have been deleted'. Only the backtick-wrapped slash-command tokens were dropped (phase names substituted); 'Superseded note', 'used to occupy', and 'have been deleted' are preserved verbatim per the explicit Non-Goal."
+    },
+    {
+      "id": 3,
+      "description": "The two .json schema files (index.schema.json, schemas/errors-schema.json) and orchestrator-handoff-schema.json: class-3-vs-class-2 check",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/index.schema.json",
+        "agent-system/extensions/core/context/schemas/errors-schema.json",
+        "agent-system/extensions/core/context/schemas/orchestrator-handoff-schema.json"
+      ],
+      "note": "VERDICT for all three: class 2 (prose about the system inside a JSON description/examples field), not class 3. index.schema.json's `examples: [[\"/implement\", \"/plan\"]]` for the context-index `load_when.commands` field, and core/context/README.md's matching worked example `{ \"commands\": [\"/research\", \"/implement\"] }`, were both illustrating a currently-invalid configuration -- every live `commands` array in agent-system/extensions/core/index-entries.json is empty (grep-confirmed), so holding up dead commands as the canonical example was actively misleading, not a harmless fixture. Both corrected to a live-command example (`[\"/revise\", \"/task\"]`). errors-schema.json's `command` field description example ('e.g. /implement, /plan') and orchestrator-handoff-schema.json's 'a standalone /research, /plan, or /implement invocation' phrase were both ordinary class-2 prose claims and reworded to phase-dispatch framing; neither is detected or matched by code (unlike lint-dead-command-recommendations.sh's class-3 strings), so neither qualifies for the class-3 leave-alone treatment despite being JSON."
+    },
+    {
+      "id": 4,
+      "description": "manifest-routing-schema.md: dead-command tokens reworded inside a record-versioning-heavy paragraph",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"],
+      "note": "The paragraph ('Collapsed model (post routing-ladder-collapse)') is itself squarely in the record-versioning-exempt class (a dated architectural-change explanation, heavy with 'now-removed'/'no longer exists'/'retired outright'), same as revise.md's companion exemption class named in the plan's Non-Goals ('confirmed advisory-tier by the live gate, owned by a completed taxonomy/lint/hook lineage'). Only the bare dead-command tokens ('`/research`, `/plan`, `/implement`' -> 'research, plan, and implement') were reworded; the surrounding versioning language ('now-deleted', 'once those commands were deleted', 'retired outright, not migrated', 'no longer exists') was left exactly as-is, mirroring the system-overview.md treatment in objective 2."
+    },
+    {
+      "id": 5,
+      "description": "command-template.md: worked example heading using a dead command as illustration",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/templates/command-template.md"],
+      "note": "'## Example: /research Command' -> '## Example: Research-Phase Checkpoint Flow'. The body's status strings ('researching'/'researched') are phase-status markers, not command tokens, and were left unchanged; they do not match the measurement pattern and are substantively accurate regardless of the dead command name."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24) run after this phase's edits and the index-entries.json correction. Residual FAILs are the same two pre-existing, out-of-scope items already confirmed and logged during Phase 4 (gate 24's 2 /ide violations; gate 3's validate-state.sh drift and state-schema.json line_count mismatch, both from the unrelated commit ebc532373). No new FAIL introduced by Phase 6."
+  ]
+}

@@ -53,7 +53,7 @@ extensions/{ext}/context/
 Create a new extension when a domain requires:
 - Dedicated research and implementation agents
 - Domain-specific context files (standards, patterns, tools)
-- Custom routing for `/research`, `/plan`, `/implement`
+- Custom routing for the research, plan, and implement phases
 - Domain-specific rules auto-applied by file path
 
 ### Manifest Structure

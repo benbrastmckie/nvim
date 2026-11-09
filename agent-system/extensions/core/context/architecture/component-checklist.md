@@ -191,7 +191,7 @@ When: Adding support for a new language (e.g., Rust)
 1. Skill: `.claude/skills/skill-rust-research/SKILL.md`
 2. Agent: `.claude/agents/rust-research-agent.md`
 
-**Uses existing**: `/research` command routes by language
+**Uses existing**: the research-phase dispatch routes by language
 
 ### Pattern 3: Domain-Specific Agent
 
