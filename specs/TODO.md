@@ -1,5 +1,5 @@
 ---
-next_project_number: 567
+next_project_number: 569
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 567
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,360,369,383,397,410,412,420,423,431,437,445,448,453,456,459,472,473,475,477,483,484,488,490,491,497,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,360,369,383,397,410,412,420,423,431,437,445,448,453,456,459,472,473,475,477,483,484,488,490,491,497,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,444,451,452,455,458,461,463,474,476,479,486,492,500,507,516,518,523,527,540,541,542,543,544,553,564 | 360,369,383,397,412,420,423,431,445,448,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,454,457,462,480,501,508,509,517,547,552,566 | 313,360,391,398,439,444,448,451,452,455,458,461,472,476,479,486,515,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 4 | 421,450,481,487,513,524,561 | 390,402,420,449,479,501,552 | core-agent-system, orchestrator, agent-system |
@@ -101,6 +101,8 @@ next_project_number: 567
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
+567 [NOT STARTED] — Port git-commit-phase.sh's deployed-tree containment strip...
+568 [NOT STARTED] — Fix test-orchestrate-cycle-postflight.sh, which fails 25 of...
 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
@@ -184,6 +186,30 @@ next_project_number: 567
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 568. Repair orchestrate cycle postflight suite
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: None
+- **Parent**: Task 446
+
+**Description**: Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions. Failures are status-name mismatches (e.g. expecting 'planning' where 'researching' is produced) and persisted_status drift. Confirmed pre-existing and unrelated to the file_scope reconciliation work that surfaced it: no diff exists for the suite or its target scripts (orchestrator-postflight.sh, update-task-status.sh) across that work. Determine whether the suite's expectations or the scripts' behaviour are wrong before changing either.
+
+---
+
+### 567. Port containment strip to git commit scoped
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: None
+- **Parent**: Task 446
+
+**Description**: Port git-commit-phase.sh's deployed-tree containment strip into git-commit-scoped.sh's V10 resolution block (around its containment_scope_arr assembly), closing Site 3 of the three documented containment sites. Site 2 (git-commit-phase.sh's own Containment Self-Check) now strips .claude/** entries before use, but git-commit-scoped.sh carries a separate, unpatched V10 guard that re-reads the unstripped file_scope directly from specs/state.json with no override once --task is passed. Consequence: a path admitted at Site 2 still does not land, because Site 3 vetoes it independently. This is the documented reason the planned proposed_file_scope union design was abandoned in favour of a read-only annotation; see the Site-3 parity note in context/standards/git-staging-scope.md. Scope: git-commit-scoped.sh and its test suite. Verify by restoring the full end-to-end assertion in test-git-commit-phase.sh Case 26 (currently narrowed to Site 2 behaviour only) and by re-checking the Case 20 idempotence fixture that the abandoned union design regressed.
+
+---
 
 ### 566. Document that the validate-state.sh cycle check requires --deep at every call site that specifies it
 - **Status**: [NOT STARTED]
