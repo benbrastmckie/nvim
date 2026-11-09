@@ -1,6 +1,71 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 20,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/497_promote_telemetry_submodes_to_core/summaries/01_relocate-telemetry-submodes-summary.md",
+      "summary": "Relocated --meta/--review/--dream from /distill into a new core-owned /telemetry command and skill-telemetry skill, repointed every cross-extension citation, reduced /distill to nine sub-modes, redeployed, and verified all three sub-modes live against this repo's real events.jsonl and history.jsonl."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Relocated the --meta, --review, and --dream telemetry sub-modes from the memory extension's /distill surface into a new core-owned /telemetry command backed by skill-telemetry across five phases: authored five new core files, registered them in core's manifest/index/README/CLAUDE.md, repointed every cross-extension guardrails/meta-spec citation, retired the three sub-modes from memory's /distill (now nine sub-modes), and redeployed plus verified all three live end to end against this repo's real event and prompt-history data."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/context/project/books/patterns/books-review-submode.md",
+    "agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md",
+    "agent-system/extensions/books/index-entries.json",
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/commands/telemetry.md",
+    "agent-system/extensions/core/context/formats/dispatch-metrics.md",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/context/patterns/telemetry-dream-submode.md",
+    "agent-system/extensions/core/context/patterns/telemetry-meta-submode.md",
+    "agent-system/extensions/core/context/patterns/telemetry-review-submode.md",
+    "agent-system/extensions/core/context/standards/telemetry-guardrails.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/skills/skill-telemetry/SKILL.md",
+    "agent-system/extensions/memory/EXTENSION.md",
+    "agent-system/extensions/memory/README.md",
+    "agent-system/extensions/memory/commands/distill.md",
+    "agent-system/extensions/memory/context/project/memory/distill-usage.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-dream-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-learn-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-review-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md",
+    "agent-system/extensions/memory/context/project/memory/telemetry-guardrails.md",
+    "agent-system/extensions/memory/index-entries.json",
+    "agent-system/extensions/memory/skills/skill-distill/README.md",
+    "agent-system/extensions/memory/skills/skill-distill/SKILL.md",
+    "specs/telemetry/dream-log.json",
+    "specs/telemetry/review-log.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When an implementation phase's own plan carries a 'Scope Hypothesis' asserting a specific count of files/citations, always re-run the grep immediately before editing rather than trusting the stated number -- it caught two real discrepancies in this task (a plan undercounting a file's own citation references by one, and an uncertain 'provides.context already covers patterns/standards' claim that turned out true but needed live verification). Report any discrepancy explicitly rather than silently absorbing it into a wider or narrower edit.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/497_promote_telemetry_submodes_to_core/summaries/01_relocate-telemetry-submodes-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["scope-hypothesis", "plan-verification", "grep-before-edit", "discrepancy-reporting"]
+    },
+    {
+      "content": "During a multi-task /orchestrate batch, an intermediate (non-final) implementation phase declaring Verification Tier: full can hit the same severe gate-8 contention the dispatch's Batch Gate Deferral section anticipates for the plan's literal final phase -- one single meta-test (test-gate-cache-equivalence.sh) was observed running 10+ minutes under concurrent sibling load. When ps aux confirms genuine heavy concurrent verify-deploy.sh/run-all.sh activity from other dispatched tasks, applying the same scoped-tier-plus-deferral treatment by analogy to an intermediate full-tier phase (not just the literal final one) is a reasonable, explicitly-recorded deviation -- run the narrowest --only-gate selection that covers the phase's own touched files, defer the rest, and record the reasoning as both an issue-log entry and a progress-file deviation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/497_promote_telemetry_submodes_to_core/summaries/01_relocate-telemetry-submodes-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["batch-gate-deferral", "gate-contention", "verify-deploy", "multi-task-batch"]
+    },
+    {
+      "content": "After deleting source-store markdown files that have deployed copies AND removing their index-entries.json entries, a single deploy-headless.sh redeploy pass may leave the deployed .claude/context/index.json aggregate still carrying 'ghost index row' findings for the removed entries, even after the orphaned deployed .md files themselves are explicitly removed. A second redeploy pass (after the explicit orphan-file removal) correctly regenerates the aggregate index.json fresh and clears the ghost rows. Plan for two redeploy passes when a phase both deletes source files and prunes their index entries in the same dispatch.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/497_promote_telemetry_submodes_to_core/summaries/01_relocate-telemetry-submodes-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless", "orphan-detection", "ghost-index-row", "context-index-json", "redeploy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794255075_c95572",
     "agent_type": "general-implementation-agent",
@@ -10,7 +75,7 @@
       "implement",
       "general-implementation-agent"
     ],
-    "phases_completed": 0,
+    "phases_completed": 5,
     "phases_total": 5
   },
   "proposed_file_scope": [
