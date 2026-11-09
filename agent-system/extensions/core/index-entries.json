@@ -1600,7 +1600,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 13-value task-status enum",
-      "line_count": 442,
+      "line_count": 493,
       "keywords": [
         "state",
         "schema",

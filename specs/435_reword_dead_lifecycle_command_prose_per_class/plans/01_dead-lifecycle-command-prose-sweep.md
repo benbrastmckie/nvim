@@ -1,7 +1,7 @@
 # Implementation Plan: Task #435
 
 - **Task**: 435 - Reword, per class and per site, the architectural and phase-versus-command prose naming the three deleted lifecycle commands, with a blanket find-and-replace explicitly forbidden
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 22 hours
 - **Dependencies**: Task 434 (companion lint; completed), Task 407 (artifact-round derivation; completed) — both terminal and resolved
 - **Research Inputs**: specs/435_reword_dead_lifecycle_command_prose_per_class/reports/01_dead-lifecycle-command-prose.md

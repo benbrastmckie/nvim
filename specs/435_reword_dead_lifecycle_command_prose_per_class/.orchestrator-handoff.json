@@ -1,15 +1,25 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 15,
   "phases_total": 15,
-  "summary": "Wrote a 15-phase plan for the per-class, per-site reword of the three deleted lifecycle commands across 223 source-store files. Re-derived the research report's measurement at plan time (223 files / 948 occurrences, distribution identical to the report, so nothing needed CARRIED-UNVERIFIED marking) and generated every per-phase file list from that live run. Added a third occurrence class neither the dispatch nor the research named: sites where the command name IS the data and must be left alone, with four verified instances including the companion lint's own detection strings. Phases partition by extension then by core subdirectory at 6-25 files each; the terminal phase reconciles the corpus, redeploys, and runs the full gate set.",
+  "summary": "Completed the 15-phase, 223-file per-class, per-site reword of dead /implement, /research, /plan prose across agent-system/extensions/** (core/docs/ excluded per the 2026-11-03 scope amendment). Phases 1-14 swept core and 21 other extensions by directory/extension, each closing with its own commit and green per-phase verification. Phase 15 reconciled the whole corpus (11 remaining occurrences, every one matched to a recorded class-3 leave-alone decision), redeployed the source store, and confirmed the regenerated CLAUDE.md renders the Phase 13 literature reword correctly. The redeploy's fast-gate pass landed RESULT=landed_verify_red on 3 findings, each independently confirmed pre-existing (predating this task's first commit, verified via an isolated pre-task worktree deploy) and unrelated to this task's charter: an eager-load context-budget overage, a lean-extension shellcheck finding, and two memory-extension /ide dead-command-recommendation violations. Phase 15 closed COMPLETED WITH EXCLUSIONS on the five-condition admission test.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/summaries/02_dead-lifecycle-command-prose-sweep-summary.md",
+      "summary": "Implementation summary for the 15-phase, 223-file dead-lifecycle-command-prose sweep."
+    },
+    {
+      "type": "report",
+      "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/reports/02_class-decision-collation.md",
+      "summary": "Collated per-site class-decision record across all 14 sweep phases plus Phase 15 gate findings."
+    },
+    {
       "type": "plan",
       "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/plans/01_dead-lifecycle-command-prose-sweep.md",
-      "summary": "15-phase per-class, per-site reword of 223 source-store files naming the three deleted lifecycle commands, with a three-class rubric, the revise.md incidentals, and a terminal redeploy plus full gate set."
+      "summary": "15-phase plan, all phases closed (14 COMPLETED, Phase 15 COMPLETED WITH EXCLUSIONS)."
     }
   ],
-  "dispatch_seq": 17
+  "dispatch_seq": 21
 }

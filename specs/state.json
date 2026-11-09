@@ -3732,7 +3732,7 @@
     {
       "project_number": 435,
       "project_name": "reword_dead_lifecycle_command_prose_per_class",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Reword architectural and phase-versus-command prose naming the three deleted lifecycle commands, per class, no blanket substitution",
       "topic": "core-agent-system",
@@ -4038,12 +4038,18 @@
           "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/plans/01_dead-lifecycle-command-prose-sweep.md",
           "type": "plan",
           "summary": "15-phase per-class, per-site reword of 223 source-store files naming the three deleted lifecycle commands, with a three-class rubric, the revise.md incidentals, and a terminal redeploy plus full gate set."
+        },
+        {
+          "path": "specs/435_reword_dead_lifecycle_command_prose_per_class/summaries/02_dead-lifecycle-command-prose-sweep-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the 15-phase, 223-file dead-lifecycle-command-prose sweep."
         }
       ],
       "created": "2026-10-17T01:06:39Z",
-      "last_updated": "2026-11-08T02:36:44Z",
+      "last_updated": "2026-11-09T07:01:13Z",
       "session_id": "sess_1794089641_e5bee5",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Completed the 15-phase, 223-file per-class, per-site reword of dead /implement, /research, /plan prose across agent-system/extensions/** (excluding core/docs/). Phase 15 reconciled the whole corpus (11 remaining occurrences, all matched to recorded class-3 decisions), redeployed the source store, and closed COMPLETED WITH EXCLUSIONS on three independently-confirmed pre-existing, out-of-scope gate findings (eager-load budget overage, a lean-extension shellcheck finding, two memory-extension /ide dead-command-recommendation violations)."
     },
     {
       "project_number": 436,
