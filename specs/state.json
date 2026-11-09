@@ -3612,10 +3612,16 @@
           "path": "specs/420_warn_plan_size_exceeds_cycle_budget/plans/01_plan-size-cycle-budget-warning.md",
           "type": "plan",
           "summary": "Five-phase plan for the advisory plan-size versus per-run cycle-budget notice."
+        },
+        {
+          "path": "specs/420_warn_plan_size_exceeds_cycle_budget/summaries/01_plan-size-cycle-budget-warning-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all five phases, the Batch Gate Deferral deviation, and the cross-task regression triage."
         }
       ],
       "session_id": "sess_1794089641_e5bee5",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a mode-aware, purely advisory cycle_budget_advisory signal to orchestrate-cycle-plan.sh's admission layer, threaded additively onto both dispatch-row construction sites, pinned by 11 new fixtures (including the byte-identical non-interference diff and the phase-10-of-11 real-history counter-case), and documented in both named homes. Redeployed and verified: test-orchestrate-cycle-plan.sh passes 398/398 in the deployed tree; a scoped gate run surfaced 7 unrelated, pre-existing test-fixture failures (traced to a cross-task state-write.sh dependency drift) and transient concurrent-load gate timeouts, none attributable to this task."
     },
     {
       "project_number": 421,

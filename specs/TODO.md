@@ -1,5 +1,5 @@
 ---
-next_project_number: 569
+next_project_number: 570
 ---
 
 # TODO
@@ -8456,6 +8456,7 @@ artifact's path, creates nothing, and does NOT drop the proposal silently.
 - **Parent**: Task 411
 - **Research**: [420_warn_plan_size_exceeds_cycle_budget/reports/01_plan-size-cycle-budget-warning.md]
 - **Plan**: [420_warn_plan_size_exceeds_cycle_budget/plans/01_plan-size-cycle-budget-warning.md]
+- **Summary**: [420_warn_plan_size_exceeds_cycle_budget/summaries/01_plan-size-cycle-budget-warning-summary.md]
 
 **Description**: Surface a plan-size versus per-run cycle-budget mismatch at plan time or at admission, instead of letting the operator discover it by hitting the wall mid-run
 
