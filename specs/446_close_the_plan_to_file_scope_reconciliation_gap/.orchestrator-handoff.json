@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase, 8.5-hour plan closing the plan-to-file_scope gap along the two axes the research verdicts actually name. PART A adds no harvester grammar change (explicitly rejected with the recorded counter-example) but a narrow structural deployed-tree refusal at all three points such a path can enter file_scope -- the harvester, propose_file_scope_addition()'s deposit (a third leak path found at plan time, not in the report), and git-commit-phase.sh's assembled file_scope_arr -- plus three advisory authoring-shape checks in validate-artifact.sh. PART B extends task 430's completed proposed_file_scope channel by unioning this task's own deposits into the Containment check (closing the within-dispatch window) and replaces 'read the WARNING' with a mechanical follow-up-commit trigger. Plan passes validate-artifact.sh at 0 warnings in both default and --strict mode, and its own Files to modify declaration harvests cleanly to all 11 entries including the __WHOLE_TREE__ sentinel.",
+  "dispatch_seq": 5,
+  "summary": "Closed the plan-to-file_scope reconciliation gap across all six planned phases. PART A: a deployed-tree refusal enforced at the harvester (plan-file-scope-harvest.sh), the proposed_file_scope deposit site, and git-commit-phase.sh's own Containment Self-Check, closing a live loophole where a bare .claude/ entry admitted every deployed-tree path; plus advisory authoring-shape detection in validate-artifact.sh. PART B: a read-only proposed_file_scope annotation lookup and a mechanical follow-up-commit trigger in the implementing agent's own protocol, replacing 'read the WARNING output'. One significant deviation: Phase 4's planned admitting union was built, found to regress a pre-existing idempotence fixture (git-commit-scoped.sh's own, separate, un-patched Site-3 containment guard independently vetoes an admitted-but-not-yet-merged path), and replaced with the read-only annotation design -- fully reasoned in the Phase 4 progress file's approaches_tried and the summary's Decisions section. Two residuals recorded for a future task (Site-3 parity, both out of this task's declared file_scope), plus five unrelated pre-existing defects discovered during verification. All ten edited source-store files redeployed and byte-identical; four extended fixture suites all green (196 assertions total).",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/summaries/01_close-plan-file-scope-gap-summary.md",
+      "summary": "Full implementation summary with per-phase changes, the Phase 4 deviation and its two rejected designs, verification results, and the two recorded Site-3 residuals."
+    },
+    {
       "type": "plan",
       "path": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/plans/01_close-plan-file-scope-gap.md",
-      "summary": "Six-phase plan: harvester deployed-tree refusal with its plan-format.md documentation mirror, advisory authoring-shape detection at plan acceptance, deposit-site and containment-site refusals, within-dispatch proposed_file_scope union, implementer follow-up-commit trigger, and an end-to-end reconciliation proof plus redeploy and full gate."
+      "summary": "Six-phase plan, all phases [COMPLETED], with inline deviation annotations on every affected checklist item."
     }
-  ],
-  "dispatch_seq": 3
+  ]
 }
