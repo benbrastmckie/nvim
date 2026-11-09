@@ -4194,7 +4194,7 @@
     {
       "project_number": 446,
       "project_name": "close_the_plan_to_file_scope_reconciliation_gap",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Close the plan-to-file_scope reconciliation gap and make a containment drop non-advisory",
       "topic": "file-scope-lifecycle",
@@ -4241,7 +4241,7 @@
         }
       ],
       "created": "2026-10-18T17:24:48Z",
-      "last_updated": "2026-11-09T13:23:17Z",
+      "last_updated": "2026-11-09T14:34:03Z",
       "session_id": "sess_1794228960_78281f",
       "next_artifact_number": 2,
       "completion_summary": "Closed the plan-to-file_scope reconciliation gap across six phases: a deployed-tree refusal enforced at the harvester, the proposed_file_scope deposit site, and git-commit-phase.sh's own Containment Self-Check (closing a live loophole where a bare .claude/ entry admitted every deployed-tree path), advisory authoring-shape detection in validate-artifact.sh, and a mechanical follow-up-commit trigger in the implementing agent's own protocol. Phase 4's planned admitting union was built, found to regress a pre-existing idempotence fixture via git-commit-scoped.sh's separate, un-patched Site-3 containment guard, and replaced with a read-only annotation lookup instead -- recorded as a deviation with full reasoning. All ten edited source-store files redeployed and verified byte-identical; 196 fixture-suite assertions across four extended test suites, all green."
