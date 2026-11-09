@@ -3207,7 +3207,7 @@
     {
       "project_number": 369,
       "project_name": "orphan_sweep_for_removed_merge_target_entries",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Orphan sweep for deployed entries removed from the source store: the deploy adds and changes but cannot delete",
@@ -3218,21 +3218,35 @@
         435
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
+        "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+        "lua/neotex/plugins/ai/shared/extensions/hook_identity.lua",
+        "lua/neotex/plugins/ai/shared/extensions/hook_identity_cli.lua",
+        "lua/neotex/plugins/ai/shared/extensions/hook_identity_fixtures.json",
+        "lua/neotex/plugins/ai/shared/extensions/init.lua",
         "lua/neotex/plugins/ai/shared/extensions/merge.lua",
         "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua",
-        "lua/neotex/plugins/ai/shared/extensions/init.lua",
-        "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md"
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/01_baseline-measurements.md",
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/02_after-measurements.md",
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/"
       ],
       "artifacts": [
         {
           "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/reports/01_orphan-sweep-hook-registrations.md",
           "type": "report",
           "summary": "Grounds the hook-registration orphan sweep in merge.lua's existing remove_orphaned_index_entries precedent and call-siting, reconciles the hook_identity()/lint identity divergence, and directly re-verifies all claimed live instances across five real deployed repos (finding Logos/Theory's prior hand-repair incomplete and a new cross-event defect shape)."
+        },
+        {
+          "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/plans/01_orphan-sweep-hook-registrations.md",
+          "type": "plan",
+          "summary": "8-phase plan (5 dependency waves, 10h) for the hook-registration orphan sweep: shared identity definition, sweep function, manager.load call-siting with two fail-safe gates, real-deploy before/after measurement, boundary-narrative invariant, full gate set."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-07T21:40:00Z",
-      "last_updated": "2026-11-09T07:41:54Z",
+      "last_updated": "2026-11-09T07:53:10Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1794209498_570cdb"

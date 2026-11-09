@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 8,
+  "summary": "Wrote an 8-phase, 10-hour implementation plan for the hook-registration orphan sweep, extending merge.lua's remove_orphaned_index_entries precedent and its manager.load call-siting rather than inventing a mechanism. The plan settles the two open design questions the research flagged: the single identity definition lives in a new pure-Lua module that merge.lua consumes directly and the hook-path lint consumes through a logic-free bridge (the lint's own normalize_identity is deleted), and cross-EVENT survival is in scope because a valid set keyed (event, matcher, type, normalized_path) sweeps it with the same predicate that handles an undeclared registration. All five live-orphan deploys were re-verified by jq census at plan time, confirming the research field table exactly; regression safety is front-loaded into Phase 1 (baseline measurement plus verbatim field fixtures) and Phase 6 (before/after per repo with env/permissions fingerprints).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/plans/01_orphan-sweep-hook-registrations.md",
+      "summary": "8-phase plan (5 dependency waves, 10h) for the hook-registration orphan sweep: shared identity definition, sweep function, manager.load call-siting with two fail-safe gates, real-deploy before/after measurement, boundary-narrative invariant, full gate set."
+    }
+  ]
+}
