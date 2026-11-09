@@ -1,0 +1,26 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 4,
+  "summary": "Wrote a five-phase, four-wave implementation plan relocating the --meta, --review and --dream sub-modes from memory's /distill surface into a new core-owned /telemetry command backed by a direct-execution skill-telemetry. Planning surfaced six dependencies the research inventory missed (the Shared Sub-Mode Skeleton, three .memory/ log and index paths, the missing Agent tool in allowed-tools, and the AskUserQuestion-withheld-from-subagents constraint) plus a record-versioning gate collision that rules out a verbatim copy; each is resolved by a named phase task. The unresolved invocation-surface question is decided in favor of /telemetry and relayed as a non-blocking user_decision.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/497_promote_telemetry_submodes_to_core/plans/01_relocate-telemetry-submodes-to-core.md",
+      "summary": "Five-phase, four-wave relocation plan: author core content, register the new core surface, repoint cross-extension citations, retire the memory surface, redeploy and verify live."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "user_decision": {
+    "question": "The three relocated sub-modes need a core-owned host command, since memory's /distill command file stays in the extension being retired. The plan picks the command's name; the sub-mode flag names and specifications are unchanged either way.",
+    "options": [
+      "/telemetry --meta|--review|--dream -- one new core command hosting all three flags under their existing names",
+      "A different command name of your choosing (e.g. /signal or /reflect) hosting the same three flags",
+      "Fold --meta onto the existing /meta command and host only --review/--dream elsewhere"
+    ],
+    "recommended": "/telemetry --meta|--review|--dream -- one new core command hosting all three flags under their existing names",
+    "blocking": false
+  }
+}

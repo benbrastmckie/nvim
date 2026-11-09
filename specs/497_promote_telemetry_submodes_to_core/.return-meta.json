@@ -1,35 +1,40 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/497_promote_telemetry_submodes_to_core/reports/01_relocate-telemetry-submodes-research.md",
-      "summary": "Research on relocating --meta/--review/--dream distill sub-modes to core: confirms events-query.sh and related core anchors already exist, but surfaces two cross-extension dependency gaps (Overlap Scoring formula, three-strikes threshold citation), a telemetry-guardrails.md shared-ownership question, a /review command naming collision, a /meta command overlap opportunity, and a stale quoted cross-reference, all with live-data verification."
+      "type": "plan",
+      "path": "specs/497_promote_telemetry_submodes_to_core/plans/01_relocate-telemetry-submodes-to-core.md",
+      "summary": "Five-phase, four-wave plan relocating the --meta/--review/--dream sub-modes from memory's /distill into a new core-owned /telemetry command and skill-telemetry skill, re-anchoring six previously undiscovered dependencies and repointing every cross-extension citation."
     }
   ],
-  "next_steps": "Run /orchestrate 497 to create implementation plan",
+  "next_steps": "Run /orchestrate 497 to execute the plan",
   "metadata": {
     "session_id": "sess_1794228960_78281f_497",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 8.5,
+    "dependency_waves": 4
   },
-  "dispatch_seq": 2,
+  "user_decision": {
+    "question": "The three relocated sub-modes need a core-owned host command, since memory's /distill command file stays in the extension being retired. The plan picks the command's name; the sub-mode flag names and specifications are unchanged either way.",
+    "options": [
+      "/telemetry --meta|--review|--dream -- one new core command hosting all three flags under their existing names",
+      "A different command name of your choosing (e.g. /signal or /reflect) hosting the same three flags",
+      "Fold --meta onto the existing /meta command and host only --review/--dream elsewhere"
+    ],
+    "recommended": "/telemetry --meta|--review|--dream -- one new core command hosting all three flags under their existing names",
+    "blocking": false
+  },
+  "dispatch_seq": 4,
   "memory_candidates": [
     {
-      "content": "When a file's spec says to 'follow X by name, do not restate or fork it' as a cross-reference discipline, always trace the reference to its actual defining section before relocating the citing file across an extension boundary — the cited section may itself only be a sibling citation of a deeper canonical source elsewhere (e.g. a three-strikes threshold cited from a sub-mode spec traced back to a contracts/convergence.md precedent), and the correct fix after relocation is often to repoint at that deeper source rather than duplicate the sibling.",
+      "content": "Relocating prose from an extension's context tree into agent-system/extensions/core/** is never a verbatim copy: core/** is a deliverable tree where rules/no-record-versioning-in-deliverables.md and rules/no-task-references-in-deliverables.md both apply and are enforced at write time by hooks/validate-no-record-versioning.sh and hooks/validate-no-task-references.sh. Extension-local specifications routinely narrate their own draft history ('redefined by X, not deletion', 'inherits in substance unchanged from the current Y section', 'Phase N removes the now-duplicated copy', 'pre-redefinition, historical') because their origin tree was never linted for it. Plan a de-narration pass as an explicit task in the phase that lands the copy, or the write is rejected mid-phase.",
       "category": "PATTERN",
-      "source_artifact": "specs/497_promote_telemetry_submodes_to_core/reports/01_relocate-telemetry-submodes-research.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["cross-extension-dependency", "relocation", "citation-tracing", "mode-gated-section-loading", "convergence"]
-    },
-    {
-      "content": "events-query.sh (and likely other agent-system scripts resolving PROJECT_ROOT from BASH_SOURCE[0]) refuses to run directly from the source store (agent-system/extensions/core/scripts/), with a clear error directing to the deployed .claude/scripts/ copy instead. Always invoke the deployed copy when verifying source-store script behavior live, not the source-store path.",
-      "category": "CONFIG",
-      "source_artifact": "specs/497_promote_telemetry_submodes_to_core/reports/01_relocate-telemetry-submodes-research.md",
+      "source_artifact": "specs/497_promote_telemetry_submodes_to_core/plans/01_relocate-telemetry-submodes-to-core.md",
       "confidence": 0.85,
-      "suggested_keywords": ["events-query", "source-store", "deploy-boundary", "bash-source-resolution"]
+      "suggested_keywords": ["extension-relocation", "record-versioning", "deliverable-tree", "write-time-hook", "de-narration", "source-store"]
     }
   ]
 }
