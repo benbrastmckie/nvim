@@ -477,7 +477,7 @@ handoff_status_value() {
 #
 # Ties refuse, deliberately: a directory move can land an artifact's mtime on the same whole
 # second as the recovery stamp, and the two outcomes are not symmetric. Refusing a tie costs one
-# re-run of /plan; permitting one silently skips planning on a task that was reopened to redo it.
+# re-run of the plan phase; permitting one silently skips planning on a task that was reopened to redo it.
 #
 # Fails OPEN (0) when last_updated is missing or unparseable -- the same "signal absent ->
 # permit" philosophy handoff_permits_promotion above already uses, so a task predating the
@@ -783,7 +783,7 @@ case "$current_status" in
     # cold reconcile pass finding a stalled run is exactly status-markers.md's "implementation
     # partially completed (can resume)". `partial` is also what record_refused_promotion and the
     # `partial` branch above already treat as the resting state for this situation, and the
-    # permissive-transition rule lets /implement pick it up unchanged on the next dispatch.
+    # permissive-transition rule lets the implement phase pick it up unchanged on the next dispatch.
     handoff_dir="${TASK_DIR}/handoffs"
     if [[ -d "$handoff_dir" ]]; then
       # `|| true` for the same pipefail reason documented on find_latest_artifact above: an

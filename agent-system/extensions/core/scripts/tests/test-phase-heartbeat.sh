@@ -91,12 +91,12 @@ EOF
     --arg sid "$SESSION_ID" \
     --argjson tn "$TASK_NUM" \
     --arg ts "$FIXED_PAST_ISO" \
-    '{session_id: $sid, task_number: $tn, operation: "implement", acquired_at: $ts, heartbeat_at: $ts, command: "/implement 1", pid: 999999999, pid_source: "self"}' \
+    '{session_id: $sid, task_number: $tn, operation: "implement", acquired_at: $ts, heartbeat_at: $ts, command: "/revise 1", pid: 999999999, pid_source: "self"}' \
     > "$TMPROOT/specs/001_${PROJECT_NAME}/.lock/holder.json"
   jq -n \
     --arg sid "$SESSION_ID" \
     --arg ts "$FIXED_PAST_ISO" \
-    '{session_id: $sid, pid: 999999999, pid_source: "self", command: "/implement 1", task_numbers: [1], file_scope: [], started_at: $ts, heartbeat_at: $ts}' \
+    '{session_id: $sid, pid: 999999999, pid_source: "self", command: "/revise 1", task_numbers: [1], file_scope: [], started_at: $ts, heartbeat_at: $ts}' \
     > "$TMPROOT/specs/.sessions/${SESSION_ID}.json"
 }
 

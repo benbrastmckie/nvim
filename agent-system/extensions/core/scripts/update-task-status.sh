@@ -834,7 +834,7 @@ fi
 # context/patterns/regeneration-is-manual-only.md's carve-out (command-gate-out.sh's rc==6
 # branch for the single-task path; skill-orchestrate/SKILL.md's Stage MT-3 step 7 inter-cycle
 # redeploy checkpoint for the multi-task batch path) --
-# never here, where multi-task /implement's parallel per-task dispatch would race the
+# never here, where a multi-task batch's parallel per-task implement dispatch would race the
 # fail-open specs/.deploy-lock mutex.
 #
 # Conclusiveness convention (mirrors the --phase-check block's own INCONCLUSIVE-passes-through

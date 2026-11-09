@@ -109,7 +109,7 @@ _dtd_strong_anchor_meta() {
     printf 'hit\n'
     return 0
   fi
-  # A leading-slash command token (/task, /orchestrate, /implement, ...): a "/" preceded by
+  # A leading-slash command token (/task, /orchestrate, /revise, ...): a "/" preceded by
   # start-of-string or whitespace, followed by a word.
   if printf '%s' "$_dtd_desc_lower" | grep -Eq '(^|[[:space:]])/[a-z][a-z-]*'; then
     printf 'hit\n'

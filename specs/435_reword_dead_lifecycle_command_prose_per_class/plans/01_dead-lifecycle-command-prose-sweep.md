@@ -585,32 +585,42 @@ subtracting the tranches owned by Phases 1-5.
 
 ---
 
-### Phase 7: core/scripts and core/hooks [NOT STARTED]
+### Phase 7: core/scripts and core/hooks [COMPLETED]
 
 **Goal**: Treat the comment-level and fixture-level occurrences in shell sources — the tranche
 with the highest class-3 density and the only one where a wrong edit breaks executable behavior.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below, with every edit confined
-      to a comment or a string; no edit may cross out of a comment or string boundary.
-- [ ] **Leave `lint/lint-dead-command-recommendations.sh` alone** apart from recording the
+- [x] Apply the shared per-phase procedure to every file listed below, with every edit confined
+      to a comment or a string; no edit may cross out of a comment or string boundary. *(completed:
+      verified via `bash -n` on all 18 touched scripts, zero syntax errors)*
+- [x] **Leave `lint/lint-dead-command-recommendations.sh` alone** apart from recording the
       decision: line 8 is the correct historical statement of the lint's purpose, and lines 53-54
       are illustrative match strings documenting its detection behavior. Rewording either
-      corrupts the gate this task depends on staying green.
-- [ ] **`tests/test-double-loading-check.sh:187`** — `"commands": ["/research"]` is JSON test
+      corrupts the gate this task depends on staying green. *(completed: confirmed byte-identical
+      to pre-phase state via git diff)*
+- [x] **`tests/test-double-loading-check.sh:187`** — `"commands": ["/research"]` is JSON test
       fixture data coupled to the suite's expectations. Class 3 unless reading the suite shows the
-      value is inert; record the decision either way.
-- [ ] **`lib/task-type-detect.sh:112`** — an illustrative list of leading-slash command tokens.
+      value is inert; record the decision either way. *(completed: read the suite, confirmed the
+      value is inert -- no assertion checks the literal substring -- so treated per the
+      dispatch's own conditional, swapped to "/revise". Discovered the same inert-fixture defect
+      class in 15 more sites across 7 other test files not individually named by the dispatch;
+      treated identically, see phase-7 progress file objective 5)*
+- [x] **`lib/task-type-detect.sh:112`** — an illustrative list of leading-slash command tokens.
       Swap the dead token for a live command; do not change the surrounding detection description.
-- [ ] `skill-base.sh`'s `skill_cleanup()` doc-comment names
+      *(completed: swapped /implement -> /revise)*
+- [x] `skill-base.sh`'s `skill_cleanup()` doc-comment names
       `commands/{research,plan,implement,revise,orchestrate}.md`, three of which do not exist.
       Correct it to the two that do. Note: `skill-base.sh` is not in the measured hit list for
       this pattern, so add it to this phase's working set explicitly rather than expecting the
-      sweep to surface it — the research report names this as a site easy to drop.
-- [ ] `orchestrate-cycle-plan.sh` (task 420) and `update-task-status.sh` (task 430) are declared
+      sweep to surface it — the research report names this as a site easy to drop. *(completed)*
+- [x] `orchestrate-cycle-plan.sh` (task 420) and `update-task-status.sh` (task 430) are declared
       `file_scope` entries of siblings dispatched this same cycle: re-read each immediately
-      before editing and stage only this task's own hunks.
+      before editing and stage only this task's own hunks. *(completed: re-read, no collision with
+      either sibling's own hunks; also found and fixed a genuine dead-command user-facing
+      recommendation in orchestrate-cycle-plan.sh:1459 not caught by gate 24's own pattern, see
+      phase-7 progress file objective 9)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,120 @@
+{
+  "phase": 7,
+  "phase_name": "core/scripts and core/hooks",
+  "started_at": "2026-11-08T19:10:00Z",
+  "last_updated": "2026-11-08T19:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 24 declared files, confined to comments/strings",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/task-type-detect.sh",
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/command-gate-out.sh",
+        "agent-system/extensions/core/scripts/errors-append.sh",
+        "agent-system/extensions/core/scripts/lifecycle-notify.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+        "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+        "agent-system/extensions/core/scripts/test-session-registry.sh",
+        "agent-system/extensions/core/scripts/test-task-lock-reap.sh",
+        "agent-system/extensions/core/scripts/tests/test-dispatch-strand-probe.sh",
+        "agent-system/extensions/core/scripts/tests/test-double-loading-check.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh",
+        "agent-system/extensions/core/scripts/tests/test-reconcile-demote-stranded.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh",
+        "agent-system/extensions/core/scripts/update-task-status.sh"
+      ],
+      "note": "Every edit confined to a comment or a quoted string literal; verified with `bash -n` on all 18 touched scripts (zero syntax errors) and a diff read-through confirming no hunk crosses a comment/string boundary. skill-base.sh's skill_cleanup() doc-comment corrected per the dispatch's explicit instruction, even though not in the measured hit list."
+    },
+    {
+      "id": 2,
+      "description": "Named class-3 leave-alone sites: lint-dead-command-recommendations.sh (lines 8, 53-54)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Left byte-identical to pre-phase state, confirmed by diff against git HEAD. Line 8 is the correct historical statement of the lint's purpose; lines 53-54 are illustrative match strings documenting its own detection behavior. Rewording either would corrupt the documentation of the gate this task depends on staying green."
+    },
+    {
+      "id": 3,
+      "description": "test-double-loading-check.sh:187 -- fixture-vs-prose investigation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-double-loading-check.sh"],
+      "note": "Investigated per the dispatch's own instruction ('Class 3 unless reading the suite shows the value is inert'). Read the full Case 5 assertion block: no assertion checks the literal '/research' substring -- only '[DEGRADED ROUTE DERIVATION]' banner presence, 'fixture/degraded.md' path presence, and the redundant-count line are checked. The value is inert, so per the dispatch's own conditional it is treated, not left alone: swapped to '/revise' (a live command) to avoid the fixture looking like a still-expected test of a dead command."
+    },
+    {
+      "id": 4,
+      "description": "lib/task-type-detect.sh:112 -- swap the dead token for a live command, per the plan's explicit instruction",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/task-type-detect.sh"],
+      "note": "'(/task, /orchestrate, /implement, ...)' -> '(/task, /orchestrate, /revise, ...)'. Surrounding detection description (the leading-slash-token heuristic itself) left unchanged, per the plan's instruction."
+    },
+    {
+      "id": 5,
+      "description": "Discovery and treatment: 15 inert '/implement N' and '/research N' fixture values in 7 session-registry/task-lock test files, matching the test-double-loading-check.sh:187 defect class but not individually named by the dispatch or plan",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/test-session-registry.sh",
+        "agent-system/extensions/core/scripts/test-task-lock-reap.sh",
+        "agent-system/extensions/core/scripts/tests/test-dispatch-strand-probe.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-phase-heartbeat.sh",
+        "agent-system/extensions/core/scripts/tests/test-reconcile-demote-stranded.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-lock-liveness.sh"
+      ],
+      "note": "These 7 files all pass a literal '/implement N' or '/research N' string as the opaque 'command' field of a task-lock holder.json or session-registry fixture (distinct from the separate, legitimate, bare 'operation' field -- e.g. operation: \"implement\" -- which was never touched, since that is a live, correctly-bare value). Verified inert across all 7 files: grepped every file's assertions for a check against the literal command substring and found none; one file (test-session-registry.sh) already uses an unrelated placeholder ('/test $session_id') for the identical field elsewhere, confirming the convention is arbitrary passthrough data, not suite-coupled content. All 15 occurrences swapped to '/revise' (operation fields left untouched). Verification: `bash -n` clean on all 7; `run-all.sh --only <these 7 + test-double-loading-check.sh + test-four-tier-conflict.sh>` run against the DEPLOYED (pre-redeploy) copies -- see gate_notes for why this could only validate syntax/diff-identity of my edit, not exercise the edited source content, and why that is expected and acceptable at this phase."
+    },
+    {
+      "id": 6,
+      "description": "Class-3 leave-alone: lint-contract-compliance.sh's awk pattern strings (lines 174, 188, 197)",
+      "status": "done",
+      "files_touched": [],
+      "note": "'/research\\)/', '/plan\\)/', '/implement\\)/' are AWK regex-delimiter syntax matching a literal shell case-arm label ('research)', 'plan)', 'implement)') inside orchestrate-build-dispatch.sh's own core_contracts case statement -- these are internal phase-name case labels, not slash commands, and the apparent dead-command match is a pure syntactic coincidence of AWK's '/pattern/' delimiter convention colliding with the measurement regex's own '/' lookup. Left unchanged; editing would change what the awk program matches and could silently break the lint."
+    },
+    {
+      "id": 7,
+      "description": "Class-3 leave-alone: validate-context-budgets.sh's routing-table data keys (lines 280, 330-332, 353-355)",
+      "status": "done",
+      "files_touched": [],
+      "note": "The jq object keys '/research', '/plan', '/implement' (and '/meta', '/spawn', '/revise') are the literal, documented key convention a context-index entry's own load_when.commands[] field uses (per index.schema.json and core/context/README.md, both corrected in Phase 6 to use a live-command example) -- this script's own classification table must keep matching that convention regardless of which specific command names are currently live, so the leading-slash form is load-bearing data, not a claim that /research/plan/implement are runnable. The one comment at line 280 ('/research, /plan, /implement <- manifest.json's routing_agents.{research,plan,implement}') accurately documents this key-naming correspondence (slash-prefixed commands[]-field convention vs. bare routing_agents keys) and was left as-is for the same reason."
+    },
+    {
+      "id": 8,
+      "description": "Class-3 leave-alone (investigated, not merely assumed): wezterm-preflight-status.sh and wezterm-task-number.sh comments (lines 11-14/68-70 and 10 respectively)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Both hooks' comments accurately describe LIVE executable regex matching against the raw user-prompt TEXT (e.g. `^[[:space:]]*/?(research)[[:space:]]+`), confirmed by reading the surrounding code: the hooks still literally pattern-match a user typing '/research N' or 'research N' for cosmetic WezTerm tab-coloring purposes, independent of whether a real /research command exists to invoke. Rewording the comment to phase-dispatch framing would misdescribe what the code actually matches on (literal prompt text, not an /orchestrate dispatch). Neither comment line is itself in the measured hit list for the executable regex lines (which don't contain a literal '/' immediately before the bare word), only for the prose summarizing them -- confirmed by checking the code is unchanged either way."
+    },
+    {
+      "id": 9,
+      "description": "Ordinary class-1/2 rewords across command-gate-out.sh, errors-append.sh, lifecycle-notify.sh, orchestrate-cycle-plan.sh, orchestrate-recover-outcome.sh, reconcile-task-status.sh, task-lock.sh, test-four-tier-conflict.sh, update-task-status.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/command-gate-out.sh",
+        "agent-system/extensions/core/scripts/errors-append.sh",
+        "agent-system/extensions/core/scripts/lifecycle-notify.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/orchestrate-recover-outcome.sh",
+        "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+        "agent-system/extensions/core/scripts/task-lock.sh",
+        "agent-system/extensions/core/scripts/test-four-tier-conflict.sh",
+        "agent-system/extensions/core/scripts/update-task-status.sh"
+      ],
+      "note": "Notably, orchestrate-cycle-plan.sh:1459 was a genuine user-facing dead-command RECOMMENDATION ('Suggest: (1) /research $t, (2) /revise $t, (3) /implement $t.') that gate 24's own pattern did not catch (shape 'Suggest:' not 'Next:'/'Run'), but is substantively the exact defect class gate 24 exists to guard against. Retargeted onto /orchestrate per gate 24's own stated fix guidance: '(1) /orchestrate $t --research, (2) /revise $t, (3) /orchestrate $t --implement.' task-lock.sh:50's JSON registry-layout example '\"command\": \"/implement 944\"' and task-lock.sh:218's same-session re-entry example ('/research 42 then /plan 42') were both corrected on the same reasoning as objective 5 above (live callers -- confirmed via command-gate-in.sh:121's '/$operation $task_number' construction -- no longer ever pass operation=research/plan/implement, only revise/task/review/todo) -- task-lock.sh:50 swapped to '/revise 944'; task-lock.sh:218 reworded to the live '/orchestrate 42 --research' then '/orchestrate 42 --plan' invocation shape."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset run with gate 22 added per this phase's Tier Justification: --only-gate 3,4,22,24.",
+    "Gate 22 (shellcheck): 1 finding, in agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh:207 -- a file this phase never touched (lean extension, not core). Pre-existing, out of scope.",
+    "Gate 24: the same 2 pre-existing /ide violations already confirmed in Phase 4's notes. No new violation.",
+    "Gate 3: in addition to the 2 pre-existing items already logged (validate-state.sh, schemas/state-schema.json), this phase's own 18 edited .sh files now ALSO show 'deployed script content drift (deployed != extension source)'. This is NEW relative to Phases 4-6, but it is the EXPECTED and unavoidable consequence of editing scripts/ source files before Phase 15's redeploy -- Phases 4-6 never triggered this specific check because they only touched context/ markdown, which this check does not cover. Confirmed by direct read: every flagged path is one this phase edited (plus the 2 pre-existing ones); none is a content defect, all resolve automatically at Phase 15's redeploy.",
+    "Local test-suite run (`run-all.sh --only <9 edited test files + test-double-loading-check.sh + test-four-tier-conflict.sh>`) executes the DEPLOYED .claude/scripts/tests/ copies, not the source-store edits just made (confirmed by diff: the deployed copy of test-orchestrate-cycle-postflight.sh still read '/implement $task_number' at the time of the run, not my '/revise $task_number' edit). This means the run validated only that the deployed (pre-redeploy) suite still passes at its pre-existing baseline -- it could not exercise my source edits' content. It did, however, surface and let me positively attribute 25 pre-existing failures in test-orchestrate-cycle-postflight.sh (e.g. case 986, case 991) to causes entirely unrelated to this task, confirmed via a git-HEAD diff showing my edit was the only line-183 change in that file. `bash -n` syntax-checked all 18 edited scripts directly against my source-store edits (zero errors), which is the strongest verification available pre-redeploy; full suite exercise of the edited fixture content is deferred to Phase 15 like every other script edit in this phase."
+  ]
+}

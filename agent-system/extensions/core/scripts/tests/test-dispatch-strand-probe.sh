@@ -77,7 +77,7 @@ write_holder_fixture() {
     --argjson task_number "$task_number" \
     --arg operation "implement" \
     --arg ts "$ts" \
-    --arg command "/implement $task_number" \
+    --arg command "/revise $task_number" \
     '{session_id: $session_id, task_number: $task_number, operation: $operation, acquired_at: $ts, heartbeat_at: $ts, command: $command}' \
     > "$lock_dir/holder.json"
 }

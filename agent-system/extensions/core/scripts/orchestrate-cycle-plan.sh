@@ -1456,7 +1456,7 @@ for t in "${task_args[@]}"; do
     blocker-research)
       aux_cnt=$(mt_get --arg t "$t" '.blocker_escalation_count[$t] // 0')
       if [ "$aux_cnt" -ge "$MAX_BLOCKER_ESCALATIONS" ]; then
-        echo "[orchestrate] MAX_BLOCKER_ESCALATIONS ($MAX_BLOCKER_ESCALATIONS) reached for task #$t. Manual intervention required. Suggest: (1) /research $t, (2) /revise $t, (3) /implement $t." >&2
+        echo "[orchestrate] MAX_BLOCKER_ESCALATIONS ($MAX_BLOCKER_ESCALATIONS) reached for task #$t. Manual intervention required. Suggest: (1) /orchestrate $t --research, (2) /revise $t, (3) /orchestrate $t --implement." >&2
         aux_clear_pending[$t]="true"
         continue
       fi

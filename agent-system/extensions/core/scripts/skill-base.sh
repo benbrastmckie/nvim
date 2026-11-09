@@ -1396,9 +1396,10 @@ skill_lifecycle_notify() {
 # after gate-out) ever read the file. Deleting it here made that entire body
 # structurally unreachable. Ownership of .return-meta.json's deletion belongs
 # to the calling command's own last step that consumes it -- see each of
-# commands/{research,plan,implement,revise,orchestrate}.md for its site, and
-# skill-spawn/SKILL.md Stage 16 for the one caller with no command-level
-# consumer, which deletes the file inline itself.
+# commands/{revise,orchestrate}.md for its site (the research/plan/implement phases are
+# dispatched by skill-orchestrate itself, not by standalone command files, so their consumption
+# site lives there instead), and skill-spawn/SKILL.md Stage 16 for the one caller with no
+# command-level consumer, which deletes the file inline itself.
 # Note: Implementer also removes .continuation-loop-guard inline (after calling this)
 skill_cleanup() {
   local padded_num="$1"

@@ -14,8 +14,8 @@
 # already reads from a handoff, so the three call sites (base Stage 5, hard Stage 5, multi-task
 # Stage MT-4 step 1) cannot drift into three separately-maintained recovery rules.
 #
-# Precedent: `scripts/command-gate-out.sh` (the non-orchestrator postflight path used by plain
-# `/research`, `/plan`, `/implement`) already reads `.return-meta.json`'s `.status` as its sole
+# Precedent: `scripts/command-gate-out.sh` (the non-orchestrator postflight path used by a plain,
+# standalone research/plan/implement dispatch) already reads `.return-meta.json`'s `.status` as its sole
 # outcome signal. This script extends the same channel to the orchestrator path.
 #
 # Usage:

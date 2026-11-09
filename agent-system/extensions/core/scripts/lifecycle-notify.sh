@@ -22,7 +22,7 @@
 # orchestrate-active marker:
 #   When .claude/tmp/orchestrate-active exists, TTS is automatically suppressed (tab color
 #   still updates) to implement the UX decision table:
-#     - standalone /research N completes: no orchestrate-active -> TTS fires
+#     - a standalone research-phase dispatch for N completes: no orchestrate-active -> TTS fires
 #     - mid-orchestrate research completes: orchestrate-active exists -> TTS suppressed, tab color only
 #     - orchestrate final completion: orchestrate-active cleared by Stage 8 -> subsequent Stop hook
 #       fires TTS (via tts-notify.sh integration)

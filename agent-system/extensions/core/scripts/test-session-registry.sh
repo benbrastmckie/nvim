@@ -116,7 +116,7 @@ info "Fixture built at $TMPROOT (dead pid probe resolved to $DEAD_PID)"
 # =====================================================================
 # Case 1: register writes every required field
 # =====================================================================
-reg_out=$("$TL" session-register "sess_case1" "/implement 801,802" "801,802" 2>&1)
+reg_out=$("$TL" session-register "sess_case1" "/revise 801,802" "801,802" 2>&1)
 reg_exit=$?
 
 c1_ok=true
@@ -159,7 +159,7 @@ fi
 # re-registering (no sleeping).
 jq --arg ts "$(minutes_ago_iso 5)" '.started_at = $ts | .heartbeat_at = $ts' "$entry_file" > "${entry_file}.tmp" && mv "${entry_file}.tmp" "$entry_file"
 backdated_started=$(jq -r '.started_at' "$entry_file")
-"$TL" session-register "sess_case1" "/implement 801,802" "801,802" >/dev/null 2>&1
+"$TL" session-register "sess_case1" "/revise 801,802" "801,802" >/dev/null 2>&1
 started_after=$(jq -r '.started_at' "$entry_file")
 heartbeat_after=$(jq -r '.heartbeat_at' "$entry_file")
 
@@ -192,7 +192,7 @@ fi
 # =====================================================================
 # Case 5: release is idempotent (two consecutive releases both exit 0)
 # =====================================================================
-"$TL" session-register "sess_case5" "/implement 803" "803" >/dev/null 2>&1
+"$TL" session-register "sess_case5" "/revise 803" "803" >/dev/null 2>&1
 rel1_exit=0
 "$TL" session-release "sess_case5" >/dev/null 2>&1 || rel1_exit=$?
 rel1_gone=true
@@ -349,7 +349,7 @@ fi
 jq '.active_projects += [{"project_number": 810, "project_name": "widen_case", "status": "implementing", "task_type": "general", "file_scope": ["path/widen-a.sh"]}]' \
   "$TMPROOT/specs/state.json" > "$TMPROOT/specs/state.json.tmp" && mv "$TMPROOT/specs/state.json.tmp" "$TMPROOT/specs/state.json"
 
-"$TL" session-register "sess_widen" "/implement 810" "810" >/dev/null 2>&1
+"$TL" session-register "sess_widen" "/revise 810" "810" >/dev/null 2>&1
 widen_entry="$SESSIONS_DIR/sess_widen.json"
 scope_before=$(jq -c '.file_scope | sort' "$widen_entry" 2>/dev/null)
 
@@ -382,7 +382,7 @@ fi
 # Case 12: session-register's OWN output/behavior is unchanged by the derive_union_file_scope
 # extraction -- byte-identical union result to the pre-extraction inlined computation.
 # =====================================================================
-"$TL" session-register "sess_widen_fresh" "/implement 810" "810" >/dev/null 2>&1
+"$TL" session-register "sess_widen_fresh" "/revise 810" "810" >/dev/null 2>&1
 register_scope=$(jq -c '.file_scope | sort' "$SESSIONS_DIR/sess_widen_fresh.json" 2>/dev/null)
 expected_register_scope=$(jq -n -c '["path/widen-a.sh","path/widen-b.sh"] | sort')
 

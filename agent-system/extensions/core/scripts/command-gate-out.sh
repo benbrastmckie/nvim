@@ -206,7 +206,7 @@ if [ -n "$expected_status" ] && { [ "$skill_status" = "implemented" ] || \
     elif [ "$gate_out_rc" -eq 6 ]; then
       # Postflight completion-deploy gate refused (deploy-pending, update-task-status.sh's
       # "PHASE 0.5" check-only backstop): this gate-out call is a point with NO concurrency --
-      # the true single-task /implement completion path -- so it is one of the two sanctioned
+      # the true single-task implement-phase completion path -- so it is one of the two sanctioned
       # automated deploy-trigger sites named in
       # context/patterns/regeneration-is-manual-only.md's carve-out. The failure contract below
       # is the SAME baseline-relative (a)/(b)/(c) contract
@@ -372,7 +372,7 @@ fi
 # NOTE: this script MUST NOT delete .return-meta.json. Two reasons: (1) skill-orchestrate never
 # calls skill_cleanup and its own postflight stage merges onto .return-meta.json rather than
 # deleting it, so deleting it here would regress /orchestrate's completion/resume behavior; (2)
-# for /research and /plan, the calling command's own CHECKPOINT 3 commit block runs AFTER this
+# for a standalone research-phase or plan-phase dispatch, the calling command's own CHECKPOINT 3 commit block runs AFTER this
 # script and still needs to read and stage the file -- deleting it here would reintroduce the
 # same class of bug this file's lifecycle-ordering fix was written to eliminate. Deletion is
 # owned exclusively by each calling command's own last step; see

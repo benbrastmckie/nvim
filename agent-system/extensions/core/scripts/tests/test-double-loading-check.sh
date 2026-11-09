@@ -184,7 +184,7 @@ fi
 FIXTURE_DEGRADED="$WORKDIR/fixture-degraded.json"
 cat > "$FIXTURE_DEGRADED" << 'EOF'
 {"entries": [
-  {"path": "fixture/degraded.md", "load_when": {"agents": ["general-research-agent"], "commands": ["/research"], "task_types": []}, "line_count": 10}
+  {"path": "fixture/degraded.md", "load_when": {"agents": ["general-research-agent"], "commands": ["/revise"], "task_types": []}, "line_count": 10}
 ]}
 EOF
 

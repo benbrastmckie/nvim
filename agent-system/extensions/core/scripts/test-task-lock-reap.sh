@@ -87,7 +87,7 @@ write_holder_fixture() {
     --argjson task_number "$task_number" \
     --arg operation "implement" \
     --arg ts "$ts" \
-    --arg command "/implement $task_number" \
+    --arg command "/revise $task_number" \
     '{session_id: $session_id, task_number: $task_number, operation: $operation, acquired_at: $ts, heartbeat_at: $ts, command: $command}' \
     > "$lock_dir/holder.json"
 }
@@ -160,7 +160,7 @@ fi
 # =====================================================================
 "$TL" check 606 >/dev/null 2>&1
 "$TL" heartbeat 699 "sess_fixture_x" >/dev/null 2>&1
-"$TL" acquire 607 "test" "sess_fixture_607" "/implement 607" >/dev/null 2>&1
+"$TL" acquire 607 "test" "sess_fixture_607" "/revise 607" >/dev/null 2>&1
 "$TL" release 698 "sess_fixture_x" >/dev/null 2>&1
 
 if [ -d "$FOREIGN_STALE_DIR" ]; then

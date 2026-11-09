@@ -99,7 +99,7 @@ write_lock_fixture() {
   ts=$(minutes_ago_iso "$mins_ago")
   mkdir -p "$TASK_DIR/.lock"
   jq -n --arg session_id "$session_id" --argjson task_number "$TASK_NUMBER" \
-    --arg operation "research" --arg ts "$ts" --arg command "/research $TASK_NUMBER" \
+    --arg operation "research" --arg ts "$ts" --arg command "/revise $TASK_NUMBER" \
     '{session_id: $session_id, task_number: $task_number, operation: $operation, acquired_at: $ts, heartbeat_at: $ts, command: $command}' \
     > "$TASK_DIR/.lock/holder.json"
 }

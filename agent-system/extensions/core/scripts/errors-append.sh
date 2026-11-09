@@ -54,7 +54,7 @@ append -- create a new error record:
     --message "..."        Short human-readable one-line summary
   Optional (context):
     --session SESSION_ID   sess_{timestamp}_{random} value
-    --command CMD           Invoking command, e.g. /implement
+    --command CMD           Invoking command or phase dispatch, e.g. /orchestrate, /revise
     --task N                 Bare (unpadded) task/project number
     --phase N                 Implementation phase number
     --checkpoint NAME        Lifecycle checkpoint name

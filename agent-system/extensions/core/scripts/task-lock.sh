@@ -47,7 +47,7 @@
 #     "session_id": "sess_1736700000_a1b2c3",
 #     "pid": 261744,
 #     "pid_source": "ancestor-claude",
-#     "command": "/implement 944",
+#     "command": "/revise 944",
 #     "task_numbers": [944],
 #     "file_scope": ["agent-system/extensions/core/scripts/task-lock.sh"],
 #     "started_at": "2026-07-04T18:07:17Z",
@@ -215,7 +215,8 @@
 #     2 - usage error
 #
 # Same-session re-entry (CRITICAL): a session re-acquiring its own lock (e.g.
-# `/research 42` then `/plan 42` in one conversation) MUST NOT self-block. `acquire`
+# `/orchestrate 42 --research` then `/orchestrate 42 --plan` in one conversation) MUST NOT
+# self-block. `acquire`
 # checks holder.json's session_id BEFORE ever treating an existing lock as a refusal
 # — matching session_id always succeeds and just refreshes the heartbeat.
 

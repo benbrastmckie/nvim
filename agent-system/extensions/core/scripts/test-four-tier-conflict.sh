@@ -449,7 +449,7 @@ second_pass_ledger+=("pass1:602:file_scope_collision:in_batch")
 
 # =============================================================================
 # Case 8 (Tier 1, pass 2, convergent): the pass-1 winner (project 601) reaches terminal status
-# (simulating /implement's success terminus, per this suite's own implementation note on
+# (simulating the implement phase's success terminus, per this suite's own implementation note on
 # convergence semantics -- orchestrate-batch-admit.sh's collision predicate is a state.json
 # STATUS check, not a lock check, so pass 2 converges once the winner goes terminal). The
 # second-pass admission call runs over EXACTLY the deferred singleton (deferred_second_pass =

@@ -79,7 +79,7 @@ write_holder_fixture() {
     --argjson task_number "$task_number" \
     --arg operation "implement" \
     --arg ts "$ts" \
-    --arg command "/implement $task_number" \
+    --arg command "/revise $task_number" \
     '{session_id: $session_id, task_number: $task_number, operation: $operation, acquired_at: $ts, heartbeat_at: $ts, command: $command}' \
     > "$lock_dir/holder.json"
 }
@@ -244,7 +244,7 @@ write_holder_fixture "$LOCK_DIR_6" 810 "sess_case6_foreign" 33
 # indistinguishable in this fixture).
 write_session_fixture "$SESSIONS_DIR" "sess_case6_foreign" "$OWN_PID" "[999]" "[]" 33
 
-acquire_out6=$("$TL" acquire 811 implement "sess_case6_acquirer" "/implement 811" 2>&1); rc6=$?
+acquire_out6=$("$TL" acquire 811 implement "sess_case6_acquirer" "/revise 811" 2>&1); rc6=$?
 
 if [ "$rc6" -eq 1 ]; then
   common_test_pass "(6a) cmd_acquire ABORTs (exit 1) on an overlapping stale-but-pid-alive foreign session"
@@ -281,7 +281,7 @@ LOCK_DIR_7="$TMPROOT/specs/812_foreign_dead_task/.lock"
 write_holder_fixture "$LOCK_DIR_7" 812 "sess_case7_foreign" 33
 write_session_fixture "$SESSIONS_DIR" "sess_case7_foreign" "$DEAD_PID" "[999]" "[]" 33
 
-acquire_out7=$("$TL" acquire 813 implement "sess_case7_acquirer" "/implement 813" 2>&1); rc7=$?
+acquire_out7=$("$TL" acquire 813 implement "sess_case7_acquirer" "/revise 813" 2>&1); rc7=$?
 
 if [ "$rc7" -eq 0 ]; then
   common_test_pass "(7a) cmd_acquire still WARNs-and-proceeds (exit 0) against a dead-pid foreign session"
