@@ -32,7 +32,7 @@ Review task artifacts and create classified memories:
 
 ## Auto-Retrieval
 
-Memory retrieval is automatic: `/research`, `/plan`, and `/implement` preflight stages call `memory-retrieve.sh` to inject relevant memories into agent context. The `--clean` flag on these commands suppresses auto-retrieval. No explicit opt-in flag is needed.
+Memory retrieval is automatic: the research, plan, and implement preflight stages (dispatched via `/orchestrate`) call `memory-retrieve.sh` to inject relevant memories into agent context. The `--clean` flag suppresses auto-retrieval. No explicit opt-in flag is needed.
 
 ## Validate-on-Read
 

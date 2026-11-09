@@ -1,13 +1,13 @@
 # When to Use `--hard` for CSLib Tasks
 
 Selection criteria, added contracts, and cost profile for hard-mode CSLib dispatch. Hard mode is
-per-invocation only: pass `--hard` explicitly on each `/research`, `/plan`, `/implement`, or
-`/orchestrate` call.
+per-invocation only: pass `--hard` explicitly on each `/orchestrate` call, combined with
+`--research`, `--plan`, or `--implement`.
 
 ## Selection Criteria
 
-Use `/research N --hard`, `/plan N --hard`, or `/implement N --hard` when one or more of the
-following apply to a CSLib task:
+Use `/orchestrate N --research --hard`, `--plan --hard`, or `--implement --hard` when one or more
+of the following apply to a CSLib task:
 
 1. **Previous research produced analysis-only output** with no actionable proof direction --
    no Lean code sketches, no Mathlib lemma candidates, no reuse check results.

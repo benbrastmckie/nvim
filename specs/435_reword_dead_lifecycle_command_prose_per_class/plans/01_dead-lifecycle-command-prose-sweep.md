@@ -921,19 +921,25 @@ measurement command restricted to `agent-system/extensions/present/`.
 
 ---
 
-### Phase 12: cslib and memory [NOT STARTED]
+### Phase 12: cslib and memory [COMPLETED]
 
 **Goal**: Treat the cslib and memory extensions.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `memory/README.md` (14 occurrences) is the densest here. Memory's auto-retrieval
-      documentation names the three commands as the preflight stages that call
-      `memory-retrieve.sh`: that is class 2 (phase framing), and the `--clean` suppression claim
-      attached to it must stay true after rewording.
-- [ ] cslib's hard-mode and PR-review skills reference lifecycle phases for `task_type: pr`:
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 69
+      occurrences across all 19 files, zero remaining)*
+- [x] `memory/README.md` (14 occurrences at plan time; 8 measured at this resumption) is the
+      densest here. Memory's auto-retrieval documentation names the three commands as the
+      preflight stages that call `memory-retrieve.sh`: that is class 2 (phase framing), and the
+      `--clean` suppression claim attached to it must stay true after rewording. *(completed:
+      verified `--clean` is a live `/orchestrate` flag via commands/orchestrate.md before
+      rewording; the claim remains true)*
+- [x] cslib's hard-mode and PR-review skills reference lifecycle phases for `task_type: pr`:
       check each against the live `[PR READY]` lifecycle rather than renaming mechanically.
+      *(completed: verified the pr-submission-vs-pr-review routing branch (keyed on `sources`
+      presence) against README.md's own routing tables before rewording; the branching logic
+      was preserved exactly, only the command tokens naming the phases were reworded)*
 
 **Timing**: 1.5 hours
 

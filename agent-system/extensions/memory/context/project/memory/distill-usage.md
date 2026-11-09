@@ -241,9 +241,9 @@ Health score formula: `100 - (purge_count * 3) - (merge_count * 5) - (compress_c
 Create          Use               Capture           Maintain
 ------          ---               -------           --------
 /learn    ->    auto-retrieval    ->    /todo        ->    /distill
-                in /research,           harvests           scores,
-                /plan, /implement       memory             reports,
-                                        candidates         and maintains
+                in the research,        harvests           scores,
+                plan, and implement     memory             reports,
+                phases                  candidates         and maintains
 ```
 
 ## Telemetry-Sourced Sub-Mode Log Files

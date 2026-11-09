@@ -16,7 +16,7 @@ task to `[PR READY]`, directing the user to manually post the response files.
 
 This skill activates when:
 - Task type is "pr"
-- `/implement` command targets a pr-type task
+- An implement-phase dispatch targets a pr-type task
 - The routing entry for `implement.pr` resolves to `skill-pr-review-implementation`
 
 ## Dispatch Decision
@@ -325,7 +325,7 @@ After the agent returns, this skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/implement` to resume.
+> status and let the user re-run the implement-phase dispatch to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

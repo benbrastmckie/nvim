@@ -26,11 +26,11 @@ Reference (do not load eagerly):
 ## Trigger Conditions
 
 This skill activates when:
-- `/research N --hard` is invoked and task type is `cslib`
+- `/orchestrate N --research --hard` is invoked and task type is `cslib`
 - Not currently routing-reachable: the routing-ladder collapse retired the skill-side `routing`/
   `routing_hard` manifest blocks and their resolver. This skill is pending migration onto
   `hard_contracts` (a separate, not-yet-dispatched follow-on); until then it is reachable only by
-  direct invocation, not through `/research --hard` dispatch
+  direct invocation, not through a `--research --hard` dispatch
 
 ---
 
@@ -283,7 +283,7 @@ proceed immediately to postflight (Stage 6). The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/research --hard` to resume.
+> status and let the user re-run the `--research --hard` dispatch to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

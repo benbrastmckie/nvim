@@ -93,7 +93,7 @@ works, and this extension does not currently declare any `merge_targets.mcp` fra
 2. Run `/ide` in Claude Code and select the Obsidian instance
 3. Run a memory-augmented research query:
    ```
-   /research N --remember
+   /orchestrate N --research --remember
    ```
 
 If configured correctly, the system will:

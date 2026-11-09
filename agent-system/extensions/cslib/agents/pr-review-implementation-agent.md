@@ -12,7 +12,7 @@ Implementation agent that reads a PR review research report, applies minor code 
 when explicitly requested, and composes response files (`pr-response.md` and/or
 `zulip-response.md`) for `pr`-type review tasks.
 
-This agent is invoked by `skill-pr-review-implementation` when `/implement N` is run on a
+This agent is invoked by `skill-pr-review-implementation` when an implement-phase dispatch for N is run on a
 PR review task that has a `sources` array in state.json. It:
 1. Reads the research report synthesized by `pr-review-research-agent`
 2. Determines which response files are needed based on source types

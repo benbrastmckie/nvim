@@ -11,7 +11,7 @@ this workflow detail stays available wherever CSLib is deployed.
 For tasks with `task_type: "pr"` (CSLib pull request tasks), the workflow differs from the
 general `/merge` flow:
 
-1. **skill-pr-implementation** (invoked via `/implement N`): Analyzes the git diff and
+1. **skill-pr-implementation** (invoked via an implement-phase dispatch for N): Analyzes the git diff and
    composes `specs/{NNN}_{SLUG}/pr-description.md`. Transitions the task to `[PR READY]`.
    Does NOT create branches or run CI.
 
@@ -31,11 +31,11 @@ state.json. These tasks use the pr-review skills:
    (GitHub PR URLs, Zulip thread URLs, or free-text descriptions). This is the ONLY way to
    create pr-review tasks.
 
-2. **`/research N`** (pr-type task): Routes to `skill-pr-review-research`, which fetches
+2. **A research-phase dispatch for N** (pr-type task): Routes to `skill-pr-review-research`, which fetches
    GitHub PR data (reviews, comments, inline comments) and optionally Zulip thread data.
    Produces a research report.
 
-3. **`/implement N`** (pr-type task with sources): Routes to `skill-pr-review-implementation`,
+3. **An implement-phase dispatch for N** (pr-type task with sources): Routes to `skill-pr-review-implementation`,
    which dispatches to `pr-review-implementation-agent`. The agent composes `pr-response.md`
    (GitHub PR comment) and optionally `zulip-response.md` (Zulip thread message). Transitions
    task to `[PR READY]`.
@@ -48,8 +48,8 @@ state.json. These tasks use the pr-review skills:
 
 | Condition | Workflow |
 |-----------|----------|
-| `task_type: "pr"`, `sources` absent or empty | pr-submission (legacy): `/implement` produces pr-description.md |
-| `task_type: "pr"`, `sources` present | pr-review: `/implement` produces pr-response.md + zulip-response.md |
+| `task_type: "pr"`, `sources` absent or empty | pr-submission (legacy): the implement phase produces pr-description.md |
+| `task_type: "pr"`, `sources` present | pr-review: the implement phase produces pr-response.md + zulip-response.md |
 
 The dispatch within `skill-pr-review-implementation` checks for sources and forks to either
 the review path or the legacy pr-description path.

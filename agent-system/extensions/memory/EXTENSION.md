@@ -21,7 +21,7 @@ Knowledge capture and retrieval via the memory vault. Supports text, file, direc
 
 ### Memory-Augmented Research
 
-Memory retrieval is automatic: when the memory extension is loaded, `/research`, `/plan`, and `/implement` preflight stages call `memory-retrieve.sh` to inject relevant memories as `<memory-context>` into the agent context. The `--clean` flag on these commands suppresses auto-retrieval.
+Memory retrieval is automatic: when the memory extension is loaded, the research, plan, and implement preflight stages (dispatched via `/orchestrate`) call `memory-retrieve.sh` to inject relevant memories as `<memory-context>` into the agent context. The `--clean` flag suppresses auto-retrieval.
 
 ### Literature-Augmented Research
 
@@ -29,7 +29,7 @@ The `--lit` flag is the complementary context-injection mechanism to memory retr
 
 ### Memory Lifecycle
 
-Create (`/learn`) -> Use (auto-retrieval in `/research`, `/plan`, `/implement`) -> Capture
+Create (`/learn`) -> Use (auto-retrieval in the research, plan, and implement phases) -> Capture
 (`/todo` harvests memory candidates) -> Maintain (`/distill` scores, reports, maintains). See
 `context/project/memory/distill-usage.md`'s own Memory Lifecycle diagram for the full rendering.
 

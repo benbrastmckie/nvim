@@ -11,7 +11,7 @@ model: sonnet
 Research agent that fetches GitHub pull request data and optional Zulip thread content,
 then synthesizes the discussion into a structured research report for `pr`-type review tasks.
 
-This agent is invoked by `skill-pr-review-research` when `/research N` is run on a task
+This agent is invoked by `skill-pr-review-research` when a research-phase dispatch for N is run on a task
 with `task_type: "pr"`. It:
 1. Fetches PR metadata, reviews, conversation comments, and inline code comments from GitHub
 2. Optionally fetches Zulip thread messages (gracefully skipping if unconfigured)

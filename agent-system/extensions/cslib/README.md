@@ -93,7 +93,7 @@ Loaded via the extension picker. Once loaded, `cslib` and `pr` become recognized
 
 ## Hard Mode for CSLib Tasks
 
-Use `/research N --hard`, `/plan N --hard`, or `/implement N --hard` when one or more of the following apply:
+Use `/orchestrate N --research --hard`, `--plan --hard`, or `--implement --hard` when one or more of the following apply:
 
 1. **Previous research produced analysis-only output** with no actionable proof direction (no Lean code sketches, no Mathlib lemma candidates, no reuse check results)
 2. **Task involves faithful transcription of a published CS paper** into Lean 4 (literature-backed: bisimulation theorems, operational semantics rules, type system proofs)
@@ -129,19 +129,19 @@ The `pr` task type supports two paths depending on whether `sources` are present
 
 | Condition | Workflow |
 |-----------|----------|
-| `task_type: "pr"`, `sources` absent or empty | pr-submission: `/implement` produces pr-description.md |
-| `task_type: "pr"`, `sources` present | pr-review: `/implement` produces pr-response.md + zulip-response.md |
+| `task_type: "pr"`, `sources` absent or empty | pr-submission: the implement phase produces pr-description.md |
+| `task_type: "pr"`, `sources` present | pr-review: the implement phase produces pr-response.md + zulip-response.md |
 
 **PR Submission path** (legacy):
 1. Create task via `/task "Submit PR for..."` or `/pr <task|path|desc>`
-2. `/implement N` routes to skill-pr-implementation, which produces `pr-description.md`
+2. An implement-phase dispatch for N routes to skill-pr-implementation, which produces `pr-description.md`
 3. Task transitions to [PR READY]
 4. User invokes `/pr N` to create branch, run CI, and submit the PR
 
 **PR Review path**:
 1. User invokes `/pr --review <github_pr_url> [zulip_url]` to create a pr-type task with sources
-2. `/research N` routes to skill-pr-review-research, which fetches PR data and Zulip threads
-3. `/implement N` routes to skill-pr-review-implementation, which composes `pr-response.md` and optionally `zulip-response.md`
+2. A research-phase dispatch for N routes to skill-pr-review-research, which fetches PR data and Zulip threads
+3. An implement-phase dispatch for N routes to skill-pr-review-implementation, which composes `pr-response.md` and optionally `zulip-response.md`
 4. Task transitions to [PR READY]
 5. User invokes `/pr N` to post the GitHub PR comment and optionally send Zulip message
 

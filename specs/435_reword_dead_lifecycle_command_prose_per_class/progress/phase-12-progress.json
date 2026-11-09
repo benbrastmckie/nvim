@@ -1,0 +1,71 @@
+{
+  "phase": 12,
+  "phase_name": "cslib and memory",
+  "started_at": "2026-11-08T22:25:00Z",
+  "last_updated": "2026-11-08T23:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 19 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md",
+        "agent-system/extensions/cslib/agents/pr-review-research-agent.md",
+        "agent-system/extensions/cslib/context/project/cslib/domain/hard-mode-selection.md",
+        "agent-system/extensions/cslib/context/project/cslib/pr-command-workflow.md",
+        "agent-system/extensions/cslib/README.md",
+        "agent-system/extensions/cslib/skills/skill-cslib-implementation-hard/SKILL.md",
+        "agent-system/extensions/cslib/skills/skill-cslib-implementation/SKILL.md",
+        "agent-system/extensions/cslib/skills/skill-cslib-research-hard/SKILL.md",
+        "agent-system/extensions/cslib/skills/skill-pr-implementation/SKILL.md",
+        "agent-system/extensions/cslib/skills/skill-pr-review-implementation/SKILL.md",
+        "agent-system/extensions/cslib/skills/skill-pr-review-research/SKILL.md",
+        "agent-system/extensions/memory/context/project/memory/distill-usage.md",
+        "agent-system/extensions/memory/context/project/memory/knowledge-capture-usage.md",
+        "agent-system/extensions/memory/context/project/memory/memory-setup.md",
+        "agent-system/extensions/memory/context/project/memory/memory-troubleshooting.md",
+        "agent-system/extensions/memory/EXTENSION.md",
+        "agent-system/extensions/memory/README.md",
+        "agent-system/extensions/memory/skills/skill-distill/SKILL.md",
+        "agent-system/extensions/memory/skills/skill-learn/README.md"
+      ],
+      "note": "69 occurrences measured (cslib 35, memory 34 -- close to the plan's Scope Hypothesis of 69 total), all 19 files treated. Zero remaining dead-command tokens under the measurement command restricted to cslib/ and memory/."
+    },
+    {
+      "id": 2,
+      "description": "cslib's hard-mode and PR-review skills: check against the live [PR READY] lifecycle rather than renaming mechanically",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/context/project/cslib/pr-command-workflow.md",
+        "agent-system/extensions/cslib/README.md",
+        "agent-system/extensions/cslib/agents/pr-review-research-agent.md",
+        "agent-system/extensions/cslib/agents/pr-review-implementation-agent.md"
+      ],
+      "note": "Verified against CLAUDE.md's documented [PR READY] lifecycle and the live cslib README's own routing tables before rewording: for task_type=pr, the research and implement PHASES (dispatched identically to any other task_type, via /orchestrate) route to pr-specific skills (skill-pr-review-research/skill-pr-review-implementation vs. the pr-submission-only skill-pr-implementation) based on whether a `sources` array is present -- this routing distinction is orthogonal to the dead-command naming and was preserved exactly; only the command tokens naming the phases were reworded ('/research N' -> 'a research-phase dispatch for N', etc.), never the pr-submission-vs-pr-review branching logic itself."
+    },
+    {
+      "id": 3,
+      "description": "memory/README.md (densest file, 8 occurrences measured) -- the --clean suppression claim must stay true after rewording",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/memory/README.md"],
+      "note": "Verified via commands/orchestrate.md (`--clean` | Skip automatic memory retrieval) and skill-orchestrate/SKILL.md's `clean_flag` wiring that `--clean` IS a live, currently-supported `/orchestrate` flag before rewording the suppression example to `/orchestrate N --research --clean` -- the claim remains true, not merely reworded. The matching EXTENSION.md and skill-learn/README.md copies of the same auto-retrieval/--clean prose (EXTENSION.md is literally merged into the generated root CLAUDE.md, same mechanism Phase 13 will check for literature's merge-sources/claudemd.md) were reworded identically for consistency."
+    },
+    {
+      "id": 4,
+      "description": "Residue discovered and recorded, not fixed: the `--remember` flag named in memory-setup.md and memory-troubleshooting.md appears nowhere else in the system",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/context/project/memory/memory-setup.md",
+        "agent-system/extensions/memory/context/project/memory/memory-troubleshooting.md"
+      ],
+      "note": "grep-confirmed `--remember` is not a flag recognized by orchestrate.md, skill-orchestrate/SKILL.md, or manifest.json anywhere in the corpus -- it appears to be a vestigial explicit opt-in flag from before auto-retrieval existed (skill-learn/README.md's own prose says 'No explicit opt-in flag is needed' for the CURRENT behavior). This is a separate, pre-existing defect class from the dead-command naming this task owns. The dead-command token in each occurrence was reworded ('/research' -> '/orchestrate --research') while `--remember` was left exactly as-is; named here as residue for a follow-up record, same treatment as other out-of-scope findings across this task."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24). Both cslib and memory extensions report OK (no FAIL) in check-extension-docs.sh. Gate 24 unchanged: the same 2 pre-existing /ide violations (both inside memory-setup.md/memory-troubleshooting.md, confirmed untouched by this phase's edits -- the /ide lines are at different line numbers than any line this phase edited). No new FAIL introduced by Phase 12."
+  ]
+}

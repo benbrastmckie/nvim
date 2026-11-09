@@ -5,7 +5,7 @@
 ### MCP Server Not Connecting
 
 **Symptoms**:
-- `/research --remember` doesn't find memories
+- `/orchestrate --research --remember` doesn't find memories
 - "Connection refused" errors
 - Memory search step skipped
 
@@ -64,7 +64,7 @@ lsof -i :22360
 ### Memories Not Found in Research
 
 **Symptoms**:
-- `/research N --remember` shows "No relevant memories found"
+- `/orchestrate N --research --remember` shows "No relevant memories found"
 - Memory vault appears empty in research context
 
 **Causes & Solutions**:

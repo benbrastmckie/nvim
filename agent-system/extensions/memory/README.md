@@ -18,11 +18,11 @@ Everything in this extension comes down to three operations:
 | Operation | Command | When to use |
 |-----------|---------|-------------|
 | **Write** | `/learn <input>` | After finishing work, to capture what you learned |
-| **Read** | Automatic during `/research`, `/plan`, `/implement` | Relevant memories injected into agent context |
+| **Read** | Automatic during the research, plan, and implement phases | Relevant memories injected into agent context |
 | **Maintain** | `/distill` | Periodically, to assess vault health and run maintenance |
 
-**Note**: When this extension is loaded, memory retrieval is automatic. The `/research`, `/plan`,
-and `/implement` preflight stages call `memory-retrieve.sh` to inject relevant memories into
+**Note**: When this extension is loaded, memory retrieval is automatic. The research, plan,
+and implement preflight stages (dispatched via `/orchestrate`) call `memory-retrieve.sh` to inject relevant memories into
 agent context. Use the `--clean` flag to suppress auto-retrieval for a specific invocation.
 
 **`/distill` now spans 12 sub-modes**, not only vault-hygiene maintenance: the seven original
@@ -78,15 +78,15 @@ You always see what it wants to do and can override or skip any segment.
 
 ### Automatic Retrieval
 
-When this extension is loaded, memory retrieval happens automatically during `/research`,
-`/plan`, and `/implement`. The preflight stage calls `memory-retrieve.sh` to search the
+When this extension is loaded, memory retrieval happens automatically during the research,
+plan, and implement phases. The preflight stage calls `memory-retrieve.sh` to search the
 vault for memories relevant to the current task and injects them into the agent context
 under a `<memory-context>` section.
 
 To suppress auto-retrieval for a specific invocation, pass the `--clean` flag:
 
 ```bash
-/research N --clean    # Skip memory injection
+/orchestrate N --research --clean    # Skip memory injection
 ```
 
 ### Manual Access
@@ -197,7 +197,7 @@ across `skill-learn` and `skill-distill`:
 - **Exact-key dedup**: an exact `topic ==` match short-circuits classification straight to
   UPDATE/EXTEND, bypassing the fuzzy keyword-overlap thresholds used elsewhere.
 - **Retrieval exclusion**: `memory-retrieve.sh` excludes this namespace from general
-  `/research`/`/plan`/`/implement` auto-retrieval (a topic-prefix pre-filter), so these memories
+  research/plan/implement-phase auto-retrieval (a topic-prefix pre-filter), so these memories
   never leak into unrelated task context.
 - **Purge/scoring exemption**: `/distill`'s zero-retrieval penalty and purge candidate selection
   both exempt this namespace — a low `retrieval_count` is expected here (auto-retrieval never
@@ -317,7 +317,7 @@ Limit is 200 files. Narrow the path or run multiple `/learn` invocations.
 
 ### When to Read
 
-- Memory retrieval is automatic when this extension is loaded -- just run `/research N`
+- Memory retrieval is automatic when this extension is loaded -- just run `/orchestrate N --research`
 - When manually starting work on something familiar: browse `.memory/20-Indices/index.md`
 
 ### Writing Effective Memories

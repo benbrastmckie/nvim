@@ -84,7 +84,7 @@ Penalizes memories that have never been retrieved after a grace period.
 if topic starts_with "email/preferences/":
   zero_retrieval = 0.0   # reserved-namespace exemption (email-to-memory-preferences.md design
                           # §5.1) -- these memories are intentionally never read back by
-                          # /research /plan /implement auto-retrieval (see memory-retrieve.sh's
+                          # research/plan/implement-phase auto-retrieval (see memory-retrieve.sh's
                           # topic-prefix pre-filter), so a zero retrieval_count is expected, not
                           # a staleness signal
 elif retrieval_count == 0 AND days_since_created > 30:

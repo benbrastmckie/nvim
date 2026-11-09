@@ -34,11 +34,11 @@ Reference (do not load eagerly):
 ## Trigger Conditions
 
 This skill activates when:
-- `/implement N --hard` is invoked and task type is `cslib`
+- `/orchestrate N --implement --hard` is invoked and task type is `cslib`
 - Not currently routing-reachable: the routing-ladder collapse retired the skill-side `routing`/
   `routing_hard` manifest blocks and their resolver. This skill is pending migration onto
   `hard_contracts` (a separate, not-yet-dispatched follow-on); until then it is reachable only by
-  direct invocation, not through `/implement --hard` dispatch
+  direct invocation, not through an `--implement --hard` dispatch
 - Note: `skill-orchestrate`'s own hard-mode dispatch (both effort modes, one engine — the
   formerly-separate hard-mode engine is deleted) resolves and dispatches the AGENT
   (`cslib-implementation-hard-agent`) directly via `command-route-agent.sh`, not this SKILL
@@ -363,7 +363,7 @@ After the agent returns, this skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, MUST NOT attempt to continue,
 > complete, or "fill in" the subagent's work. Report partial/failed status and let user re-run
-> `/implement --hard` to resume.
+> an `--implement --hard` dispatch to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

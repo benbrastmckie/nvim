@@ -12,7 +12,7 @@ Thin wrapper that delegates CSLib proof implementation to `cslib-implementation-
 
 This skill activates when:
 - Task type is "cslib"
-- /implement command targets a CSLib task
+- An implement-phase dispatch targets a CSLib task
 - Lean 4 proofs or CSLib definitions need to be created or modified
 
 ## Execution Flow
@@ -146,7 +146,7 @@ After the agent returns, this skill MUST NOT:
 
 See `context/standards/postflight-tool-restrictions.md` § "MUST NOT Section Template"
 for the full PROHIBITION clause (the lead skill must not continue, complete, or "fill in" a
-partial/failed subagent's work; report the status and let the user re-run `/implement`) and the
+partial/failed subagent's work; report the status and let the user re-run the implement-phase dispatch) and the
 postflight-phase allowed-operations list (read metadata, state.json/TODO.md updates, artifact
 linking, git commit, cleanup).
 

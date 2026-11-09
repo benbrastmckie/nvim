@@ -198,7 +198,7 @@ Finds 3 FIXME tags in source code, creates tasks.
 ### Step 2: Research a Task
 
 ```bash
-/research 150
+/orchestrate 150 --research
 ```
 
 Creates comprehensive research report.
@@ -222,7 +222,7 @@ Creates comprehensive research report.
 ### Step 4: Implement the Task
 
 ```bash
-/implement 150
+/orchestrate 150 --implement
 ```
 
 Executes plan, creates implementation.

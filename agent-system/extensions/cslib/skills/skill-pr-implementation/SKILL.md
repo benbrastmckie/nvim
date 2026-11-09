@@ -15,7 +15,7 @@ task to `[PR READY]` to direct the user to run `/pr {task_number}`.
 
 This skill activates when:
 - Task type is "pr"
-- /implement command targets a PR preparation task
+- An implement-phase dispatch targets a PR preparation task
 - A pr-description.md needs to be composed based on the task description and git diff
 
 ## Execution Flow
@@ -148,7 +148,7 @@ After the agent returns, this skill MUST NOT:
 
 See `context/standards/postflight-tool-restrictions.md` § "MUST NOT Section Template"
 for the full PROHIBITION clause (the lead skill must not continue, complete, or "fill in" a
-partial/failed subagent's work; report the status and let the user re-run `/implement`) and the
+partial/failed subagent's work; report the status and let the user re-run the implement-phase dispatch) and the
 postflight-phase allowed-operations list (read metadata, TODO.md update, artifact linking, git
 commit, cleanup); this skill's own state.json update uses jq with the `pr_ready` status target,
 not `postflight implement`.

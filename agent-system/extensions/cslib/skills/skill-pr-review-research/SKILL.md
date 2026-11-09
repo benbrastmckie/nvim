@@ -13,7 +13,7 @@ and delegates to `pr-review-research-agent` to fetch GitHub and Zulip data.
 
 This skill activates when:
 - Task type is "pr"
-- `/research` command targets a pr-type review task
+- A research-phase dispatch targets a pr-type review task
 - The task was created by `/pr --review` and has a `sources` array in state.json
 
 ## Execution Flow
@@ -272,7 +272,7 @@ proceed immediately to postflight (Stage 6). The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/research` to resume.
+> status and let the user re-run the research-phase dispatch to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file
