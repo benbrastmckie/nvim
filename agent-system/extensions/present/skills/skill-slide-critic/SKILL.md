@@ -11,7 +11,7 @@ agent: slide-critic-agent
 Interactive critique feedback loop for academic presentations. Delegates to slide-critic-agent for
 initial material review, parses the structured critique report, presents findings to the user grouped
 by severity tier, collects accept/reject/modify decisions, loops until all issues are addressed, and
-produces a final filtered critique report consumable by `/plan`.
+produces a final filtered critique report consumable by the plan phase.
 
 **IMPORTANT**: This skill implements the skill-internal postflight pattern. After the subagent returns
 and the interactive loop completes, this skill handles all postflight operations (status update,
@@ -31,7 +31,7 @@ Note: This skill runs delegation then interactive Q&A. Context is loaded by the 
 
 This skill activates when:
 - `/critique` command with task number input
-- `/research` on a task with `task_type: "present:slides"` and `workflow_type: "slides_critique"`
+- A research-phase dispatch (via `/orchestrate`) on a task with `task_type: "present:slides"` and `workflow_type: "slides_critique"`
 - Present extension is available
 - Task has existing slide materials to review (research reports, plans, or assembled slides)
 
@@ -103,7 +103,7 @@ operation="research"
 
 `operation="research"` (not `"slides_critique"`) is required here: `update-task-status.sh`'s
 `target_status` vocabulary has no `slides_critique` value, so this skill maps onto the plain
-`research` operation (this skill is invoked from `/research` on `workflow_type: "slides_critique"`
+`research` operation (this skill is invoked from a research-phase dispatch on `workflow_type: "slides_critique"`
 tasks). The marker's `operation` field now reads `"research"` rather than `"slides_critique"`.
 
 ---
@@ -534,7 +534,7 @@ proceed immediately to postflight (Stage 6). The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/research` to resume.
+> status and let the user re-run the research-phase dispatch (via `/orchestrate`) to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

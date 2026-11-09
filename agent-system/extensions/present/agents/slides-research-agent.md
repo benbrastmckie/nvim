@@ -170,7 +170,7 @@ The following slides need additional input:
 - Slide 5 (methods): Study design details not found in source materials
 - Slide 6 (results-primary): No figures or tables provided
 
-These can be addressed during the /plan or /implement phases.
+These can be addressed during the plan or implement phases.
 ```
 
 ### Stage 6: Create Slide-Mapped Report

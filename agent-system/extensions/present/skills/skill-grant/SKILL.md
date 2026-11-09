@@ -30,7 +30,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 
 This skill activates when:
 - Task type is "present" and task_type is "grant"
-- Grant workflow requested via flags (--draft, --budget) or /implement routing
+- Grant workflow requested via flags (--draft, --budget) or implement-phase routing
 - Present extension is available
 
 ---
@@ -48,7 +48,7 @@ This skill routes to grant-agent with one of five workflow types:
 | assemble | implementing | completed | [IMPLEMENTING] -> [COMPLETED] |
 | fix_it_scan | (no change) | (no change) | (no change) |
 
-**Note**: The `assemble` workflow is triggered via `/implement N` command (not `/grant`), which routes to skill-grant when the task type is "present" and task_type is "grant".
+**Note**: The `assemble` workflow is triggered via an implement-phase dispatch (not `/grant`), which routes to skill-grant when the task type is "present" and task_type is "grant".
 
 ---
 
@@ -554,7 +554,7 @@ Proposal draft created for task {N}:
 - Focus applied: "{focus_prompt}" (if provided)
 - Created draft at specs/{NNN}_{SLUG}/drafts/{MM}_narrative-draft.md
 - Status updated to [PLANNED]
-- Recommend: Run /grant {N} --budget next, then /plan {N}
+- Recommend: Run /grant {N} --budget next, then /orchestrate {N} --plan
 ```
 
 **Budget Development Success**:
@@ -910,7 +910,7 @@ Grant fix-it scan completed for task {N}:
 - Changes committed with session {session_id}
 
 Next steps:
-- /research {NEW_N} to begin work on created tasks
+- /orchestrate {NEW_N} --research to begin work on created tasks
 - Review tasks in TODO.md
 ```
 

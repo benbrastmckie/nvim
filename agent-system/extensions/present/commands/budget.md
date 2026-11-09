@@ -11,7 +11,7 @@ Grant budget spreadsheet command using forcing questions with task system integr
 
 ## Overview
 
-This command initiates grant budget spreadsheet generation through structured forcing questions. It asks essential forcing questions BEFORE creating the task, storing gathered data in task metadata. After task creation, the user runs `/research`, `/plan`, and `/implement` to complete the workflow.
+This command initiates grant budget spreadsheet generation through structured forcing questions. It asks essential forcing questions BEFORE creating the task, storing gathered data in task metadata. After task creation, the user runs the research, plan, and implement phases (via `/orchestrate`) to complete the workflow.
 
 ## Syntax
 
@@ -469,9 +469,9 @@ The standard workflow (with pre-task forcing questions):
 
 ```
 /budget "description"    -> Asks forcing questions, creates task with data, stops at [NOT STARTED]
-/research {N}            -> Uses forcing_data, completes research, generates XLSX, stops at [RESEARCHED]
-/plan {N}                -> Reads research report, creates implementation plan
-/implement {N}           -> Executes plan, generates final deliverables
+/orchestrate {N} --research            -> Uses forcing_data, completes research, generates XLSX, stops at [RESEARCHED]
+/orchestrate {N} --plan                -> Reads research report, creates implementation plan
+/orchestrate {N} --implement           -> Executes plan, generates final deliverables
 ```
 
 Alternative: Resume existing task:

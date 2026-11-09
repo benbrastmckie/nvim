@@ -861,17 +861,22 @@ subtracting the `skills/` tranche.
 
 ---
 
-### Phase 11: present [NOT STARTED]
+### Phase 11: present [COMPLETED]
 
 **Goal**: Treat the present extension.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `commands/grant.md` (14 occurrences), `context/project/present/domain/grant-workflow.md`
-      (12) and `commands/slides.md` (12) are the dense sites in this tranche.
-- [ ] `present` defines compound task types (`present:grant`): a routing reference naming a phase
-      for a compound type is class 2 and must keep the compound-type framing intact.
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 83
+      occurrences across all 19 files, zero remaining)*
+- [x] `commands/grant.md` (14 occurrences), `context/project/present/domain/grant-workflow.md`
+      (12) and `commands/slides.md` (12) are the dense sites in this tranche. *(completed;
+      grant.md:314 found to carry a genuine dead-command recommendation gate 24 missed because
+      its Layer-2 shape test only checks the first command on a 'Next:' line -- see phase-11
+      progress file objective 2 for the full finding)*
+- [x] `present` defines compound task types (`present:grant`): a routing reference naming a phase
+      for a compound type is class 2 and must keep the compound-type framing intact. *(completed:
+      every `present:slides` compound-type string preserved verbatim throughout)*
 
 **Timing**: 1.75 hours
 

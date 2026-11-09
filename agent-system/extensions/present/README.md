@@ -4,7 +4,7 @@ Research presentation support for Claude Code. Provides grant writing, budget pl
 
 ## Overview
 
-The present extension provides research presentation capabilities through five commands that follow the standard `/research -> /plan -> /implement` lifecycle:
+The present extension provides research presentation capabilities through five commands that follow the standard research -> plan -> implement dispatch cycle:
 
 | Feature | Command | Purpose |
 |---------|---------|---------|
@@ -178,19 +178,19 @@ All commands follow the standard phased workflow:
 [1] Ask forcing questions, create task
     |  Status: [NOT STARTED]
     v
-/research {N}
+/orchestrate {N} --research
     |
     v
 [2] Domain-specific research agent gathers data
     |  Status: [RESEARCHED]
     v
-/plan {N}
+/orchestrate {N} --plan
     |
     v
 [3] Planner creates implementation plan
     |  Status: [PLANNED]
     v
-/implement {N}
+/orchestrate {N} --implement
     |
     v
 [4] Domain agent generates final artifact

@@ -11,7 +11,7 @@ Funding landscape analysis and verification command with task system integration
 
 ## Overview
 
-This command initiates funding analysis research through structured forcing questions. It asks essential forcing questions BEFORE creating the task, storing gathered data in task metadata. After task creation, the user runs `/research`, `/plan`, and `/implement` to complete the workflow.
+This command initiates funding analysis research through structured forcing questions. It asks essential forcing questions BEFORE creating the task, storing gathered data in task metadata. After task creation, the user runs the research, plan, and implement phases (via `/orchestrate`) to complete the workflow.
 
 ## Syntax
 
@@ -428,11 +428,11 @@ No task was created. Re-run /funds with your description to start again.
 
 Tasks with language="present" and task_type="funds" route through core commands:
 
-| Command | Routes To | Purpose |
+| Phase | Routes To | Purpose |
 |---------|-----------|---------|
-| `/research N` | skill-funds | Research funding landscape |
-| `/plan N` | planner-agent (direct) | Create implementation plan |
-| `/implement N` | skill-funds | Generate funding analysis report |
+| research | skill-funds | Research funding landscape |
+| plan | planner-agent (direct) | Create implementation plan |
+| implement | skill-funds | Generate funding analysis report |
 
 ---
 
@@ -442,9 +442,9 @@ The standard workflow (with pre-task forcing questions):
 
 ```
 /funds "description"    -> Asks forcing questions, creates task with data, stops at [NOT STARTED]
-/research {N}           -> Uses forcing_data, completes research, stops at [RESEARCHED]
-/plan {N}               -> Reads research report, creates implementation plan
-/implement {N}          -> Executes plan, generates funding analysis deliverables
+/orchestrate {N} --research           -> Uses forcing_data, completes research, stops at [RESEARCHED]
+/orchestrate {N} --plan               -> Reads research report, creates implementation plan
+/orchestrate {N} --implement          -> Executes plan, generates funding analysis deliverables
 ```
 
 Alternative: Resume existing task:

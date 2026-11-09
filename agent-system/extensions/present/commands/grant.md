@@ -233,11 +233,11 @@ Capture all responses in a forcing_data object:
    Artifacts path: specs/{NNN}_{SLUG}/ (created on first artifact)
 
    Recommended workflow:
-   1. /research {N} - Research funders and requirements
+   1. /orchestrate {N} --research - Research funders and requirements
    2. /grant {N} --draft - Draft narrative sections (exploratory)
    3. /grant {N} --budget - Develop budget (exploratory)
-   4. /plan {N} - Create plan informed by drafts
-   5. /implement {N} - Assemble grant materials to grants/{N}_{slug}/
+   4. /orchestrate {N} --plan - Create plan informed by drafts
+   5. /orchestrate {N} --implement - Assemble grant materials to grants/{N}_{slug}/
    ```
 
 ---
@@ -311,7 +311,7 @@ Grant proposal draft created for Task #{N}
 Draft: specs/{NNN}_{SLUG}/drafts/{MM}_narrative-draft.md
 
 Status: [PLANNED]
-Next: /grant {N} --budget, then /plan {N}
+Next: /grant {N} --budget, then /orchestrate {N} --plan
 ```
 
 ---
@@ -493,7 +493,7 @@ Revises: {grant_dir}
 Recommended workflow:
 1. /grant {NEW_N} --draft "Focus on sections needing revision"
 2. /grant {NEW_N} --budget "Update budget items as needed"
-3. /implement {NEW_N} - Update existing grant directory
+3. /orchestrate {NEW_N} --implement - Update existing grant directory
 ```
 
 ---
@@ -580,8 +580,8 @@ For backward compatibility, continue supporting:
 **Deprecation notice**: Display warning when legacy mode detected:
 ```
 [Warning] Legacy workflow_type syntax is deprecated.
-Use: /grant N --draft or --budget instead. For final assembly, use /implement N.
-For funder research, use: /research N
+Use: /grant N --draft or --budget instead. For final assembly, use /orchestrate N --implement.
+For funder research, use: /orchestrate N --research
 ```
 
 Then proceed with legacy execution as documented in original command.
@@ -592,13 +592,13 @@ Then proceed with legacy execution as documented in original command.
 
 Tasks with language="present" and task_type="grant" route through core commands:
 
-| Command | Routes To | Purpose |
+| Phase | Routes To | Purpose |
 |---------|-----------|---------|
-| `/research N` | skill-grant (funder_research) | Research funders |
-| `/plan N` | planner-agent (direct) | Create implementation plan (informed by drafts/budgets) |
-| `/implement N` | skill-grant (assemble) | Assemble grant materials |
+| research | skill-grant (funder_research) | Research funders |
+| plan | planner-agent (direct) | Create implementation plan (informed by drafts/budgets) |
+| implement | skill-grant (assemble) | Assemble grant materials |
 
-**Note**: `/plan N` creates an implementation plan using the standard planner, not a proposal draft. The plan should reference existing draft and budget artifacts when available. This routing is configured in the extension's manifest.json.
+**Note**: the plan phase creates an implementation plan using the standard planner, not a proposal draft. The plan should reference existing draft and budget artifacts when available. This routing is configured in the extension's manifest.json.
 
 ---
 
@@ -629,11 +629,11 @@ Language: present
 Type: grant
 
 Recommended workflow:
-1. /research {N} - Research funders and requirements
+1. /orchestrate {N} --research - Research funders and requirements
 2. /grant {N} --draft - Draft narrative sections (exploratory)
 3. /grant {N} --budget - Develop budget (exploratory)
-4. /plan {N} - Create plan informed by drafts
-5. /implement {N} - Assemble grant materials to grants/{N}_{slug}/
+4. /orchestrate {N} --plan - Create plan informed by drafts
+5. /orchestrate {N} --implement - Assemble grant materials to grants/{N}_{slug}/
 ```
 
 ### Workflow Success

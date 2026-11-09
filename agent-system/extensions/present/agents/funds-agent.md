@@ -351,7 +351,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json`:
       "summary": "Funding {mode} analysis for {research_area}"
     }
   ],
-  "next_steps": "Review report, then /plan {N} for implementation plan",
+  "next_steps": "Review report, then /orchestrate {N} --plan for implementation plan",
   "metadata": {
     "session_id": "{from delegation context}",
     "agent_type": "funds-agent",

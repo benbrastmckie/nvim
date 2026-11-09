@@ -599,7 +599,7 @@ Proposal draft created for task {N}:
 - Executive summary and methodology sections ready for review
 - Budget section marked as placeholder (needs budget_develop workflow)
 - Created draft at specs/501_ai_safety_proposal/drafts/01_narrative-draft.md
-- Recommend: Run budget_develop workflow next, then /plan 501
+- Recommend: Run budget_develop workflow next, then /orchestrate 501 --plan
 ```
 
 ### Partial Result (Text Summary)

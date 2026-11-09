@@ -1,0 +1,64 @@
+{
+  "phase": 11,
+  "phase_name": "present",
+  "started_at": "2026-11-08T21:40:00Z",
+  "last_updated": "2026-11-08T22:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 19 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/present/agents/budget-agent.md",
+        "agent-system/extensions/present/agents/funds-agent.md",
+        "agent-system/extensions/present/agents/grant-agent.md",
+        "agent-system/extensions/present/agents/slide-planner-agent.md",
+        "agent-system/extensions/present/agents/slides-research-agent.md",
+        "agent-system/extensions/present/commands/budget.md",
+        "agent-system/extensions/present/commands/funds.md",
+        "agent-system/extensions/present/commands/grant.md",
+        "agent-system/extensions/present/commands/slides.md",
+        "agent-system/extensions/present/commands/timeline.md",
+        "agent-system/extensions/present/context/project/present/domain/grant-workflow.md",
+        "agent-system/extensions/present/README.md",
+        "agent-system/extensions/present/skills/skill-budget/SKILL.md",
+        "agent-system/extensions/present/skills/skill-funds/SKILL.md",
+        "agent-system/extensions/present/skills/skill-grant/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-critic/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slides/SKILL.md",
+        "agent-system/extensions/present/skills/skill-timeline/SKILL.md"
+      ],
+      "note": "83 occurrences measured (vs. the plan's Scope Hypothesis of 93, close match), all 19 files treated. grant.md, slides.md, budget.md, funds.md, timeline.md handled via batch sed on shared template patterns (same technique as Phases 9/10); grant-workflow.md, README.md, and the agent/skill files via individual Edit calls for their unique prose. Verified clean afterward by the measurement command restricted to present/."
+    },
+    {
+      "id": 2,
+      "description": "commands/grant.md (14 occurrences), grant-workflow.md (12), commands/slides.md (12) -- the dense sites named by the plan",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/present/commands/grant.md",
+        "agent-system/extensions/present/context/project/present/domain/grant-workflow.md",
+        "agent-system/extensions/present/commands/slides.md"
+      ],
+      "note": "grant.md:314 ('Next: /grant {N} --budget, then /plan {N}') is a genuine dead-command recommendation that gate 24's own Layer-2 shape test missed -- the test only checks the FIRST command token on a 'Next:' line (here, the valid '/grant'), never a second command named later on the same line. Confirmed by running gate 24 directly on this line before and after the fix: EXEMPT both times, but for different reasons (first pass: exempted because /grant is valid, missing the /plan defect entirely; second pass, post-fix: exempted because the line now names only valid commands). This is the same class of gate-24 blind spot already discovered in Phases 7 and 10 (verb/line-shape outside the anchored pattern), now additionally confirmed as a MULTI-COMMAND-PER-LINE blind spot distinct from those two. Retargeted onto `/orchestrate --plan`. grant.md's and grant-workflow.md's 3-row 'Core Command Integration' / routing tables both reworded from '`/research N`'/'`/plan N`'/'`/implement N`' Command-column rows to bare 'research'/'plan'/'implement' Phase-column rows, matching the Phase 3 orchestrator.md and Phase 9 workflow-reference.md precedent."
+    },
+    {
+      "id": 3,
+      "description": "present defines compound task types (present:slides); routing references for a compound type kept the compound-type framing intact",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/present/skills/skill-slides/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-critic/SKILL.md",
+        "agent-system/extensions/present/skills/skill-slide-planning/SKILL.md"
+      ],
+      "note": "Every reworded trigger-condition line preserved its `task_type: \"present:slides\"` / compound `present:slides` framing verbatim, changing only the dead-command token immediately preceding it (e.g. '`/research` on a task with `task_type: \"present:slides\"`' -> 'A research-phase dispatch (via `/orchestrate`) on a task with `task_type: \"present:slides\"`'). No compound-type string was ever a candidate for editing."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24). present extension reports no new FAIL. Gate 24 shows zero violations in present/ (all candidate lines EXEMPT, confirmed by direct inspection of its verbose output for every present/ path). Residual overall FAILs are the same core-extension items already confirmed in Phases 4/7/8/9/10."
+  ]
+}

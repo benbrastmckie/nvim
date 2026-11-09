@@ -371,7 +371,7 @@ fields enumerated above does not validate. A write-time `PostToolUse` gate (`hoo
 ### No Research Report
 - Warn in plan: "Based on talk pattern defaults (no research report available)"
 - Use talk pattern slide types and generic content descriptions
-- Recommend running `/research` before `/implement`
+- Recommend running the research phase before the implement phase
 
 ### User Added Custom Slides
 - Custom slides from Stage 2 arc feedback get type "custom"

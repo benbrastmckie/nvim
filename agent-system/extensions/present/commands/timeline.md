@@ -238,8 +238,8 @@ Capture all responses in a forcing_data object:
 
    Recommended workflow:
    1. /timeline {N} - Research and build project timeline
-   2. /plan {N} - Create implementation plan
-   3. /implement {N} - Generate Typst timeline output
+   2. /orchestrate {N} --plan - Create implementation plan
+   3. /orchestrate {N} --implement - Generate Typst timeline output
    ```
 
 ---
@@ -277,7 +277,7 @@ When $ARGUMENTS starts with a task number.
 4. **Determine workflow_type** based on current status:
    - `not_started` or `partial` -> `timeline_research`
    - `researched` -> `timeline_research` (re-research with new round)
-   - `planned` -> Already planned, suggest /implement
+   - `planned` -> Already planned, suggest an implement-phase dispatch
 
 **ABORT** if validation fails.
 
@@ -319,12 +319,12 @@ Next: /orchestrate {N} to create implementation plan
 
 Tasks with language="present", task_type="timeline" route through core commands:
 
-| Command | Routes To | Purpose |
+| Command/Phase | Routes To | Purpose |
 |---------|-----------|---------|
 | `/timeline N` | skill-timeline (timeline_research) | Research and build timeline |
-| `/research N` | skill-timeline (timeline_research) | Alternative research entry |
-| `/plan N` | planner-agent (direct) | Create implementation plan |
-| `/implement N` | skill-timeline (timeline_plan) | Generate Typst timeline output |
+| research | skill-timeline (timeline_research) | Alternative research entry |
+| plan | planner-agent (direct) | Create implementation plan |
+| implement | skill-timeline (timeline_plan) | Generate Typst timeline output |
 
 **Note**: Manifest integration (routing entries, index entries) is a follow-up item.
 
@@ -357,8 +357,8 @@ Type: timeline
 
 Recommended workflow:
 1. /timeline {N} - Research and build project timeline
-2. /plan {N} - Create implementation plan
-3. /implement {N} - Generate Typst timeline output
+2. /orchestrate {N} --plan - Create implementation plan
+3. /orchestrate {N} --implement - Generate Typst timeline output
 ```
 
 ### Workflow Success

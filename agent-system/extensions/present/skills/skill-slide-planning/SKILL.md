@@ -1,6 +1,6 @@
 ---
 name: skill-slide-planning
-description: Interactive slide planning with narrative arc review and per-slide feedback. Invoke for /plan on present:slides tasks.
+description: Interactive slide planning with narrative arc review and per-slide feedback. Invoke for the plan phase on present:slides tasks.
 allowed-tools: Agent, Bash, Edit, Read, Write, AskUserQuestion
 context: fork
 agent: slide-planner-agent
@@ -28,7 +28,7 @@ Note: This skill runs interactive Q&A then delegates to slide-planner-agent. Con
 ## Trigger Conditions
 
 This skill activates when:
-- `/plan` on a present task with `task_type: "slides"` (or compound `present:slides`)
+- A plan-phase dispatch (via `/orchestrate`) on a present task with `task_type: "slides"` (or compound `present:slides`)
 - Manifest routing: `plan -> present:slides -> skill-slide-planning`
 - Present extension is available
 
@@ -462,7 +462,7 @@ Slide planning error for task {N}:
 ```
 Slide planning error for task {N}:
 - Task is not a slides task (task_type={task_type})
-- Use /plan for slides tasks routed via manifest
+- Use the plan phase for slides tasks routed via manifest
 - No status changes made
 ```
 
@@ -487,7 +487,7 @@ proceed immediately to postflight (Stage 6). The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/plan` to resume.
+> status and let the user re-run the plan-phase dispatch (via `/orchestrate`) to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

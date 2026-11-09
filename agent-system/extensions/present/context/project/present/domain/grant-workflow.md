@@ -22,11 +22,11 @@ Status: [NOT STARTED]
 Language: grant
 
 Recommended workflow:
-1. /research 500 - Research funders and requirements
+1. /orchestrate 500 --research - Research funders and requirements
 2. /grant 500 --draft - Draft narrative sections (exploratory)
 3. /grant 500 --budget - Develop budget (exploratory)
-4. /plan 500 - Create plan informed by drafts
-5. /implement 500 - Assemble grant materials to grants/500_{slug}/
+4. /orchestrate 500 --plan - Create plan informed by drafts
+5. /orchestrate 500 --implement - Assemble grant materials to grants/500_{slug}/
 ```
 
 ### Draft Mode (--draft)
@@ -81,7 +81,7 @@ Revises: grants/500_nsf_career_ai/
 Recommended workflow:
 1. /grant 505 --draft "Focus on sections needing revision"
 2. /grant 505 --budget "Update budget items as needed"
-3. /implement 505 - Update existing grant directory
+3. /orchestrate 505 --implement - Update existing grant directory
 ```
 
 ### Legacy Mode (Deprecated)
@@ -90,7 +90,7 @@ Recommended workflow:
 ```
 
 Legacy workflow_type syntax is deprecated but still supported:
-- `funder_research` - Use `/research N` instead
+- `funder_research` - Use `/orchestrate N --research` instead
 - `proposal_draft` - Use `/grant N --draft` instead
 - `budget_develop` - Use `/grant N --budget` instead
 - `progress_track` - Still supported
@@ -99,20 +99,20 @@ Legacy workflow_type syntax is deprecated but still supported:
 
 Tasks with `language="grant"` route through core commands:
 
-| Command | Routes To | Purpose |
+| Phase | Routes To | Purpose |
 |---------|-----------|---------|
-| `/research N` | skill-grant (funder_research) | Research funders |
-| `/plan N` | planner-agent (direct) | Create implementation plan (informed by drafts/budgets) |
-| `/implement N` | skill-grant (assemble) | Assemble grant materials |
+| research | skill-grant (funder_research) | Research funders |
+| plan | planner-agent (direct) | Create implementation plan (informed by drafts/budgets) |
+| implement | skill-grant (assemble) | Assemble grant materials |
 
 ## Recommended Workflow
 
 1. **Create task**: `/grant "Research NSF CAREER funding for AI interpretability"`
-2. **Research funders**: `/research 500` (routes to skill-grant)
+2. **Research funders**: `/orchestrate 500 --research` (routes to skill-grant)
 3. **Draft narrative**: `/grant 500 --draft ["focus prompt"]` (exploratory)
 4. **Develop budget**: `/grant 500 --budget ["budget guidance"]` (exploratory)
-5. **Create plan**: `/plan 500` (informed by drafts and budget)
-6. **Assemble materials**: `/implement 500` (creates grants/500_{slug}/)
+5. **Create plan**: `/orchestrate 500 --plan` (informed by drafts and budget)
+6. **Assemble materials**: `/orchestrate 500 --implement` (creates grants/500_{slug}/)
 
 ## Grant Output Directory
 
@@ -135,7 +135,7 @@ To revise an existing grant:
 
 2. **Make changes**: Use `--draft` and `--budget` to create updated sections
 
-3. **Assemble revision**: `/implement 505`
+3. **Assemble revision**: `/orchestrate 505 --implement`
    - Merges new changes with existing grant
    - Preserves unchanged sections
    - Creates backup of original files

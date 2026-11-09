@@ -11,7 +11,7 @@ Research presentation creation command with material synthesis and task system i
 
 ## Overview
 
-This command initiates research talk creation through structured material gathering. It asks essential questions BEFORE creating the task, storing gathered data in task metadata. After task creation, the user runs `/research`, `/plan`, and `/implement` to complete the workflow. The command focuses on collecting source materials and presentation context for synthesis into research talks. Output format is user-selectable: Slidev (default) or PowerPoint (PPTX).
+This command initiates research talk creation through structured material gathering. It asks essential questions BEFORE creating the task, storing gathered data in task metadata. After task creation, the user runs the research, plan, and implement phases (via `/orchestrate`) to complete the workflow. The command focuses on collecting source materials and presentation context for synthesis into research talks. Output format is user-selectable: Slidev (default) or PowerPoint (PPTX).
 
 ## Syntax
 
@@ -341,9 +341,9 @@ Forcing Data Gathered:
 - Audience context: {forcing_data.audience_context}
 
 Recommended workflow:
-1. /research {N} - Synthesize source materials into slide-mapped report
-2. /plan {N} - Create implementation plan
-3. /implement {N} - Generate {output_format} presentation to talks/{N}_{slug}/
+1. /orchestrate {N} --research - Synthesize source materials into slide-mapped report
+2. /orchestrate {N} --plan - Create implementation plan
+3. /orchestrate {N} --implement - Generate {output_format} presentation to talks/{N}_{slug}/
 ```
 
 ---
@@ -391,11 +391,11 @@ Next: /orchestrate {N} (create implementation plan with design questions)
 
 Tasks with task_type="present:slides" route through core commands:
 
-| Command | Routes To | Purpose |
+| Phase/Command | Routes To | Purpose |
 |---------|-----------|---------|
-| `/research N` | skill-slides | Synthesize materials into slide-mapped report |
-| `/plan N` | skill-slides (plan workflow) | Ask design questions, then delegate to planner-agent |
-| `/implement N` | skill-slides (assemble) | Generate presentation (Slidev or PPTX per output_format) |
+| research | skill-slides | Synthesize materials into slide-mapped report |
+| plan | skill-slides (plan workflow) | Ask design questions, then delegate to planner-agent |
+| implement | skill-slides (assemble) | Generate presentation (Slidev or PPTX per output_format) |
 | `/slides N --critic` | skill-slide-critic | Interactive critique loop with accept/reject decisions |
 
 ---
@@ -434,9 +434,9 @@ Forcing Data Gathered:
 - Audience context: {forcing_data.audience_context}
 
 Recommended workflow:
-1. /research {N} - Synthesize source materials
-2. /plan {N} - Create implementation plan
-3. /implement {N} - Generate {output_format} presentation
+1. /orchestrate {N} --research - Synthesize source materials
+2. /orchestrate {N} --plan - Create implementation plan
+3. /orchestrate {N} --implement - Generate {output_format} presentation
 ```
 
 ### Research Success

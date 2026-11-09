@@ -19,7 +19,7 @@ Thin wrapper that delegates slides work to the appropriate subagent based on wor
 - **pptx-assembly-agent**: PowerPoint generation from research reports
 - **slidev-assembly-agent**: Slidev project generation from research reports
 
-**Note**: Plan workflow (`/plan present:slides`) is handled by `skill-slide-planning`, not this skill.
+**Note**: Plan workflow (the plan phase on `present:slides` tasks) is handled by `skill-slide-planning`, not this skill.
 
 **IMPORTANT**: This skill implements the skill-internal postflight pattern. After the subagent returns,
 this skill handles all postflight operations (status update, artifact linking, git commit) before returning.
@@ -39,8 +39,8 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 
 This skill activates when:
 - `/slides` command with task number input
-- `/research` on a task with `task_type: "present:slides"`
-- `/implement` on a task with `task_type: "present:slides"` (assemble workflow)
+- A research-phase dispatch (via `/orchestrate`) on a task with `task_type: "present:slides"`
+- An implement-phase dispatch (via `/orchestrate`) on a task with `task_type: "present:slides"` (assemble workflow)
 - Present extension is available
 
 ---

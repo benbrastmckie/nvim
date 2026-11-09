@@ -32,7 +32,7 @@ This skill activates when:
 
 ### Direct Invocation
 - User explicitly runs `/budget` command with task number
-- User runs `/research` on a task with language "present" and task_type "budget"
+- A research-phase dispatch (via `/orchestrate`) on a task with language "present" and task_type "budget"
 
 ### Implicit Invocation (during task implementation)
 
@@ -323,7 +323,7 @@ proceed immediately to postflight (Stage 6). The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/research` to resume.
+> status and let the user re-run the research-phase dispatch (via `/orchestrate`) to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

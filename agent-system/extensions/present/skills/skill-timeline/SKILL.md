@@ -31,7 +31,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 
 This skill activates when:
 - Task type is "present" and task_type is "timeline"
-- Timeline workflow requested via /timeline command or /research routing
+- Timeline workflow requested via /timeline command or research-phase routing
 - Present extension is available
 
 ---
