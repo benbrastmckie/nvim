@@ -1,5 +1,5 @@
 ---
-next_project_number: 572
+next_project_number: 576
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 572
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,448,451,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,448,451,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,444,452,455,458,461,462,463,474,476,479,486,492,500,516,518,523,527,540,541,542,543,544,553,564 | 360,369,383,397,412,423,431,445,448,451,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,454,457,480,501,508,509,517,547,552,566,570 | 313,360,391,398,439,444,448,452,455,458,461,472,476,479,486,515,519,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 4 | 421,450,481,487,513,524,561 | 390,402,449,479,501,552 | core-agent-system, orchestrator, agent-system |
@@ -72,6 +72,8 @@ next_project_number: 572
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
 565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
+574 [NOT STARTED] — Correct the cycle-budget contract to state shared-pool...
+575 [NOT STARTED] — Stop the cross-phase ceiling check reading a stop-word as a...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 
@@ -188,6 +190,93 @@ next_project_number: 572
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 575. Stop the cross-phase ceiling check reading a stop-word as a unit and false-positiving on N-of-M prose
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve it with `jq -r '.extensions.core.source_dir' .claude-extensions.json` (source_dir is a PER-EXTENSION key, not a top-level one). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation, user-approved at the lead level and dispatched to the meta builder for task creation only. CITATION: task 420, entry iss_1794090946368_48ofpk in specs/420_warn_plan_size_exceeds_cycle_budget/issues.jsonl (class tooling-or-harness-defect, severity minor, plan phase, resolution open, suggested_channel agent_system -- this routing agrees with the hint). That entry records TWO defects; this record owns the FIRST only. See the SECOND DEFECT IS ALREADY OWNED section below.
+
+THE DEFECT, reproduced at creation time and not inferred. validate-artifact.sh's advisory cross-phase ceiling-consistency check extracts a per-phase quantity estimate from a phase's **Scope Hypothesis** block with `grep -oE '[0-9]+(-[0-9]+)?[[:space:]]+(added[[:space:]]+)?[A-Za-z]+'` and takes the match's TRAILING WORD as the unit noun. Ordinary statistical prose of the shape "N of M <noun>" therefore yields the unit word "of": the token "92 of" matches, "of" becomes the unit, and the check then hunts a ceiling citation and a conformance assertion for the unit "of". Both scans find one trivially, because "of" occurs in nearly every line of English prose that also contains a digit and one of the words ceiling, limit, budget, or cap -- the three-condition gate the check's own comment calls "deliberately strict to keep false positives low" collapses entirely when the unit is a stop-word. The ceiling value is then read as the first integer on whatever line matched, producing a nonsensical bound.
+
+EXACT REPRODUCTION (re-run it before editing; it is cheap and it is the failing-first case):
+  - Take a plan that validates clean. Appending the clause "Measured: 92 of 155 run_sut call sites already pass the fixture root explicitly." to one phase's Scope Hypothesis line was sufficient.
+  - `validate-artifact.sh <plan> plan` then emits: `[WARN] Per-phase of estimates (phases:5) sum to 92 (incl. baseline 0), past the cited 0-of ceiling this plan also asserts it stays within`.
+  - Unmodified, the same plan reports `[PASS] plan artifact is valid (0 warning(s))`.
+  - Under `--strict` the same false positive turns the run into `[FAIL] 0 error(s), 1 warning(s)`, because this check rides the pre-existing `total_issues = errors + warnings` branch. A false positive is therefore gate-blocking in strict mode, not merely noisy.
+
+WHY IT MATTERS MORE THAN ITS SEVERITY SUGGESTS. The originating dispatch worked around it by rephrasing its own prose to drop the N-of-M shape. That leaves the checker defect unfixed and recurring for any author who writes a legitimate N-of-M statistic -- and it carries the same bad incentive the sentinel-path-set record names: it pressures authors to write worse, less precise prose to satisfy a checker rather than fixing the checker. Two further consequences: the check's documented promotion criterion in context/formats/plan-format.md is "promote the warning to an error once a default-mode sweep of every non-terminal plan under specs/ shows zero plans newly warning", so false positives on ordinary prose indefinitely block a promotion that is otherwise earned; and if the check were promoted with this hole open, honestly-worded plans would hard-fail. Note that plan-format.md's own Enforcement level subsection contains the phrase "0 of 14 non-terminal plans under specs/" -- the governing document is itself written in the shape its checker misreads.
+
+THE DESIGN TENSION, which must be resolved deliberately rather than by accident. plan-format.md's Cross-phase ceiling consistency obligation is deliberately unit-generic: "a line count, a file count, a token budget, or any other countable dimension", and its worked example states the obligation holds "regardless of which linter or unit the ceiling happens to come from". So the fix must NOT be a whitelist of known units such as line and file -- that would silently narrow the stated obligation. The fix must exclude non-units while keeping the unit vocabulary open.
+
+THE ASK:
+(1) Stop a stop-word from ever being read as a unit noun. At minimum "of" must be excluded; enumerate the closed set of function words that can legitimately follow a bare integer in English prose (of, in, to, out, and, or, than, per, through, across, from, by, with, as, at, is, are, was, were, the, a, an) and decide the predicate deliberately rather than patching the single observed token. State the chosen set and its reasoning.
+(2) Recognize the N-of-M shape itself as a ratio rather than a quantity estimate. "92 of 155 run_sut call sites" states a proportion over an existing population; it is not a per-phase quantity this phase will add, so it must not enter the accumulation at all -- not under the unit "of", and not under the unit "sites" either. Decide and state whether the M-side noun is admitted, excluded, or admitted only outside an N-of-M context.
+(3) Keep the check's existing deliberate lossiness posture intact: its comment records that a miss is a missed warning and never a suppressed stricter finding, and that it must not be promoted to log_error as part of an unrelated change. Honor both. A narrower extraction that misses a real contradiction is acceptable; a false positive on honest prose is not.
+(4) Leave the three-condition gate's structure alone unless the ruling in (1) and (2) genuinely requires changing it, and say which if it does.
+
+VERIFY:
+(1) Extend agent-system/extensions/core/scripts/tests/test-validate-artifact.sh with fixtures pinning: (a) the exact reproduction above warning ZERO times, demonstrated failing-first against the unmodified source-store script; (b) a genuine same-unit contradiction in the shape plan-format.md's worked example describes -- per-phase line estimates summing past a cited line ceiling while the plan asserts conformance -- still warning, so the fix is a narrowing of the predicate and not a disabling of the check; (c) each function word in the chosen stop-word set exercised at least once; (d) an N-of-M clause whose M-side noun coincides with a real unit the same plan also cites a ceiling for, behaving as the ruling in (2) decided.
+(2) Re-run the default-mode sweep that produced the promotion criterion's residue figure and report the re-measured count rather than carrying the recorded one forward. If the residue is now zero, say so and say explicitly whether the promotion criterion is thereby met -- but do NOT promote the check in this task; promotion is its own decision with its own consumers.
+(3) Update the obligation and Enforcement level subsections in context/formats/plan-format.md only insofar as the implemented predicate changed what authors can rely on. Do not restate the implementation there.
+(4) Name covering suites from an actual suite_selection_select run over the touched paths, not from assertion.
+
+THE SECOND DEFECT IN THE CITED ENTRY IS ALREADY OWNED -- DO NOT WORK IT HERE. That entry's second half records that suite_selection_select returns a LARGER set for a multi-path call than the union of per-path calls over the same paths. That is the same mechanism the open record fix_validateartifactsh_tier_justification_false_po (titled for the Tier Justification false positive from sentinel path-set membership) already owns: a path set containing one sentinel-mapped member escalates the WHOLE call to __FULL_SWEEP__, so the sentinel member dominates every non-sentinel member. Measured here independently at creation time: `suite_selection_select context/contracts/phase-closure.md scripts/lib/suite-selection-lib.sh` returns `__FULL_SWEEP__`, while the second path alone returns `test-run-all-selection.sh` and `test-validate-artifact.sh` -- an author composing a Tier Justification from per-path runs and discarding the sentinel line therefore under-names real covering suites, which is exactly the observed under-naming. That record's point (1) also settles the question of which result is correct: the compositional union, with __FULL_SWEEP__ kept as a floor contributed by its own member rather than a ceiling imposed on the set. This record creates no duplicate of it and must not edit suite-selection-lib.sh.
+
+TERRITORY. scripts/validate-artifact.sh and scripts/tests/test-validate-artifact.sh are contended by four open records: the sentinel-path-set Tier Justification fix, the reversed-argument-order fault, the CARRIED-UNVERIFIED mark validation record, and the baseline-relative gate criteria record. context/formats/plan-format.md is contended more widely still. No dependency edge is filed, matching the explicit, stated treatment both the sentinel-path-set record and the argument-order record already give this exact file pair: subject matter is disjoint -- a different check in a 677-line script -- so the overlap is mechanical only. Re-check at admission time and batch rather than exclude. In particular, if the sentinel-path-set record is admitted alongside this one, run them in one batch: they touch the same two files and the same script, and serialized batching is the sanctioned response to shared territory.
+
+NON-GOALS: no promotion of this check from warning to error; no edit to scripts/lib/suite-selection-lib.sh or tests/test-run-all-selection.sh; no change to the Verification Tier or Files to modify checks that share the same per-phase loop; no change to the argument-parsing guard sequence; no hand-authored file under any deployed .claude/** tree.
+
+---
+
+### 574. Correct the cycle-budget contract to state shared-pool semantics wherever remaining budget is described
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve it with `jq -r '.extensions.core.source_dir' .claude-extensions.json` (source_dir is a PER-EXTENSION key, not a top-level one). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation, user-approved at the lead level and dispatched to the meta builder for task creation only. CITATION: task 420, entry iss_1794090304994_akHoH2 in specs/420_warn_plan_size_exceeds_cycle_budget/issues.jsonl (class requirements-gap, severity minor, research phase, resolution open, suggested_channel agent_system -- this routing agrees with the hint). Read that entry's what_happened before editing.
+
+THIS IS A DOCUMENTATION AND CONTRACT CORRECTION, NOT A BEHAVIOR CHANGE. Nothing about how the budget is enforced is in question or in scope. Confirm the current behavior by reading the code before writing a single word of corrected prose, and state in the summary what the re-derivation found.
+
+THE MECHANISM, verified by direct read of the source store at creation time (line numbers move; re-derive before editing):
+- scripts/orchestrate-cycle-plan.sh sets `per_task_max_cycles=5`, or `13` under --hard, then computes `batch_cycle_budget=$(( ${#task_args[@]} * per_task_max_cycles ))` -- every task in the batch CONTRIBUTES its allotment to ONE pool that all of them draw from. There is no `min(..., 25)` clamp anywhere in the computation.
+- The eligibility gate, and the plan-size advisory that deliberately mirrors it, both read `.batch_cycle_budget` against the SUM of `.cycle_counts` (`[.cycle_counts[]? // 0] | add // 0`), never a single task's own count against its own slice.
+- Consequence: a task may spend more cycles than its own contribution when a sibling needs fewer. The pool, not the task, is the bound. A single-task invocation is the batch-of-one special case where a per-task reading happens to coincide with the pool reading.
+
+THE HAZARD, stated as the originating entry states it: a future plan or implementation phase that naively implements a per-task subtraction would silently disagree with the mechanism that actually enforces the cap. The disagreement would not surface as an error -- both readings produce a plausible integer, and they coincide exactly in the batch-of-one case most dispatches exercise. That is what makes the misframing worth correcting rather than tolerating.
+
+MEASURED RESIDUE. docs/architecture/orchestrate-state-machine.md's MAX_CYCLES Enforcement section already names the shared pool explicitly and correctly; it is not the gap. The gap is everywhere else, and it has two distinct shapes:
+
+(1) PER-TASK FRAMING OF A POOL STOP. The state-transition table near the top of orchestrate-state-machine.md gives the stop condition as `cycle_count >= MAX_CYCLES`, a single counter against a single bound. The same file's "On cycle limit" prose reports "Task {N} reached MAX_CYCLES limit", attributing to one task an exhaustion the pool incurred collectively. docs/guides/user-guide.md's Cycle Budgets subsection says "the task is left [PARTIAL]" on reaching the cap, with no indication that siblings' spending is what reached it. commands/orchestrate.md's termination list and its MAX_CYCLES Reached entry carry the same per-task reading.
+
+(2) A FORMULA THE CODE DOES NOT IMPLEMENT. Five places state `MAX_CYCLES_MT = min(task_count * 5, 25)`: docs/guides/user-guide.md, docs/architecture/orchestrate-state-machine.md's own MT Exit Conditions section, context/patterns/task-lock.md, scripts/task-lock.sh's header comment, and scripts/reap-session-runtime-files.sh's header comment. The implemented value is `ntasks * per_task_max_cycles` with no clamp, and `per_task_max_cycles` is 13 under --hard, so the stated formula is wrong in base mode for any batch wider than five tasks and wrong under --hard at every width. Note that orchestrate-state-machine.md therefore contradicts ITSELF: its MAX_CYCLES Enforcement snippet gives `BATCH_CYCLE_BUDGET=$(( ntasks * PER_TASK_CYCLES ))` while its MT Exit Conditions section gives the clamped formula. Also note that orchestrate-cycle-plan.sh's own pool comment appeals to "MAX_TASKS bounds the pool by construction" while defining no MAX_TASKS -- establish where, if anywhere, a batch-width cap is actually enforced before repeating that claim or deleting it.
+
+THE ASK:
+(1) Wherever remaining budget, the budget bound, or the stop condition is described, name the pool semantics explicitly: the bound is the batch-wide pool, the quantity tested is the SUM of every batched task's cycle_counts, and a single task's own count is not the gate. Keep the batch-of-one reduction stated where a reader of a single-task example would otherwise generalize wrongly.
+(2) Settle the `min(task_count * 5, 25)` claim against the implementation and make all five sites agree with whatever the code actually does. If a width cap exists somewhere, cite where and keep the clamp. If it does not, remove the clamp from the prose rather than adding one to the code -- this task changes no behavior.
+(3) Rule on the MAX_CYCLES / MAX_CYCLES_MT / BATCH_CYCLE_BUDGET / PER_TASK_CYCLES naming spread. Either reduce it to one name per concept or state in one place which names are synonyms for which quantity. The ambiguity is a contributing cause of the misreading, not incidental to it.
+(4) State the --hard multiplier consistently with the code: `per_task_max_cycles=13`, applied per contributing task before the pool is summed, not a 2.6x factor applied to a finished single-task budget.
+
+OUT OF SCOPE, deliberately, having been checked: context/contracts/phase-closure.md's "within its remaining budget (context, time, or tool-call budget)" is a DIFFERENT budget -- the dispatch's own context and tool-call headroom, not the cycle pool. Do not rewrite it. docs/architecture/handoff-schema.md's single passing mention of "the existing MAX_CYCLES / MAX_CYCLES_MT caps" is left to the naming ruling in point (3) and is not declared by this record, which also avoids a needless collision with the record for the settled-user-decision route.
+
+VERIFY:
+(1) Re-derive the implemented formula and the gate expression from scripts/orchestrate-cycle-plan.sh and quote them in the summary. A corrected contract asserted from this description rather than from the code is not acceptable -- this description is itself a carried claim.
+(2) Grep the whole source store for the clamped formula and for per-task stop phrasing after the edit and show the residue is zero or deliberately exempt, naming each exemption.
+(3) Confirm no behavioral file changed: the diff must touch documentation prose and script header comments only. scripts/task-lock.sh and scripts/reap-session-runtime-files.sh are in scope for their COMMENTS alone; if either edit would alter executable lines, stop and report instead.
+(4) Run the suites that cover any touched script and the doc-sync pins that cover the touched documents; name them from an actual suite_selection_select run rather than asserting coverage.
+
+TERRITORY. docs/architecture/orchestrate-state-machine.md is contended: it is declared by the open records for the settled-user-decision route, the zero-dispatch convergence guard, the inherited-error-count distrust, the aux-carrier readmission, and the unattributed-commit stall signal. No dependency edge is filed, matching how this backlog treats that file across those five records; each of them edits a different section and so does this one. Re-check at admission time and batch rather than exclude if any of them is admitted alongside this record. context/patterns/task-lock.md and scripts/task-lock.sh are declared by no other open record.
+
+NON-GOALS: no change to how the budget is computed, clamped, charged, or enforced; no change to the plan-size advisory's threshold or its firing condition; no new cap, flag, or override; no hand-authored file under any deployed .claude/** tree.
+
+---
 
 ### 573. Fix two single assertion suite failures
 - **Effort**: small
@@ -441,6 +530,19 @@ VERIFY: extend agent-system/extensions/core/scripts/tests/test-run-all-selection
 TERRITORY AND ORDERING. This record declares the same two files as the non-core selection record (suite-selection-lib.sh and tests/test-run-all-selection.sh), which states it holds them alone. That record is already planned and changes the same resolution function, so a dependency edge is FILED rather than relying on a bare exclusion: land it first, then re-derive this defect against the changed selector before editing, since its mapping-walk change may alter which paths are sentinel-mapped at all. Mechanical overlap also exists with the evidence-discipline record and the baseline-relative-criteria record on validate-artifact.sh and tests/test-validate-artifact.sh; subject matter is disjoint, so no edge is filed for those -- re-check at admission time, matching how this backlog treats broad-prefix declarations.
 
 NON-GOALS. No hand-authored file under any deployed .claude/** tree; no redeploy claimed as complete by this task beyond the required deploy-headless.sh run; no broadening of what __FULL_SWEEP__ means for a genuinely repo-wide change; no change to the non-core mapping walk that the other record owns.
+=== INDEPENDENT CORROBORATION (appended from a later conclusion-stage channel-b dispatch; everything above this marker is the record as originally filed) ===
+
+A SECOND, INDEPENDENT SIGHTING of this same escalation mode, from a different repository and a different session, confirms the defect and adds one framing worth having. CITATION: task 420, entry iss_1794090946368_48ofpk in specs/420_warn_plan_size_exceeds_cycle_budget/issues.jsonl (class tooling-or-harness-defect, severity minor, plan phase). That entry describes the symptom from the opposite direction: suite_selection_select returns a LARGER set for a multi-path call than the union of per-path calls over the same paths, so a Tier Justification an author composed from PER-PATH invocations under-named its covering suites -- four of them in the observed case, until corrected by hand.
+
+THE TWO DESCRIPTIONS ARE THE SAME DEFECT. The larger multi-path result IS __FULL_SWEEP__, dominating its non-sentinel members exactly as this record's THE DEFECT section states. Measured directly against the source store at the time of this append: `suite_selection_select context/contracts/phase-closure.md scripts/lib/suite-selection-lib.sh` returns `__FULL_SWEEP__`, while `suite_selection_select scripts/lib/suite-selection-lib.sh` alone returns `test-run-all-selection.sh` and `test-validate-artifact.sh`, and `suite_selection_unmapped` over the pair correctly names only the first path. An author who runs the selector per path and discards the sentinel line for the one unmappable path is left naming strictly fewer suites than the multi-path call reports -- which is the under-naming the cited entry recorded.
+
+WHY THE PER-PATH-COMPOSING AUTHOR IS THE MORE DANGEROUS CASE, and the reason this is worth appending rather than filing separately: validate-artifact.sh's Tier Justification check calls `suite_selection_select "${_tj_touched[@]}"` as a single MULTI-PATH call and compares its output against the author's claim. So a per-path-composing author and the checker judging that author disagree by construction, and the checker reports the honest per-path composition as "under-verifies: suite_selection_select additionally returns (...) for this phase's touched paths, not named in the justification". Both the fabrication warning this record already documents and this under-verification warning come from the same set-semantics asymmetry.
+
+IMPLICATION FOR THIS RECORD'S POINT (2) -- which layer owns the fix: this sighting is evidence for the selector layer rather than the consumer layer, since the asymmetry is observable from the library alone with no plan and no validator involved, and any consumer composing per path hits it independently. Treat that as evidence weighing the existing decision, not as the decision itself; this record's point (2) still owns the ruling and still requires it be stated in the implementing commit.
+
+ALSO WORTH PINNING, if cheap: a caller-facing statement of the composition contract. The library's PUBLIC API header already documents the sentinel escalation for `suite_selection_select`, but nothing warns a caller that composing per-path results is NOT equivalent to one multi-path call, which is the mistake both sightings record an author making. A line in the header, or in whatever document instructs an author to run the selector for a Tier Justification, would close the authoring half of this defect alongside the mechanical half.
+
+NO SEPARATE RECORD WAS FILED for the cited entry's selector half, specifically to avoid a duplicate of this record. The same entry's OTHER defect -- validate-artifact.sh's cross-phase ceiling-consistency check misreading a stop-word as a unit noun -- is a disjoint concern in a different code block and is filed separately as fix_ceiling_check_stopword_unit_false_positive, which declares scripts/validate-artifact.sh and tests/test-validate-artifact.sh and so overlaps this record mechanically. That record files no dependency edge to this one, matching the treatment this record already states for the other validate-artifact.sh claimants; if both are admitted together, batch them rather than excluding either.
 
 ---
 
