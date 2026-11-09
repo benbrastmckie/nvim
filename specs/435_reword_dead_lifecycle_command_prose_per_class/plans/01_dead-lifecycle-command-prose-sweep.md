@@ -381,7 +381,7 @@ measurement command restricted to `agent-system/extensions/core/context/orchestr
 
 ---
 
-### Phase 4: core/context/standards and core/context/formats [NOT STARTED]
+### Phase 4: core/context/standards and core/context/formats [IN PROGRESS]
 
 **Goal**: Treat the standards and format documents, including the two verified class-2 sites in
 `plan-format.md`.
