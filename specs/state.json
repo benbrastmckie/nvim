@@ -4233,12 +4233,18 @@
           "path": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/plans/01_close-plan-file-scope-gap.md",
           "type": "plan",
           "summary": "Six-phase plan: harvester deployed-tree refusal with its plan-format.md documentation mirror, advisory authoring-shape detection at plan acceptance, deposit-site and containment-site refusals, within-dispatch proposed_file_scope union, implementer follow-up-commit trigger, and an end-to-end reconciliation proof plus redeploy and full gate."
+        },
+        {
+          "path": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/summaries/01_close-plan-file-scope-gap-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with per-phase changes, the Phase 4 deviation and its two rejected designs, verification results, and the two recorded Site-3 residuals."
         }
       ],
       "created": "2026-10-18T17:24:48Z",
       "last_updated": "2026-11-09T13:23:17Z",
       "session_id": "sess_1794228960_78281f",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the plan-to-file_scope reconciliation gap across six phases: a deployed-tree refusal enforced at the harvester, the proposed_file_scope deposit site, and git-commit-phase.sh's own Containment Self-Check (closing a live loophole where a bare .claude/ entry admitted every deployed-tree path), advisory authoring-shape detection in validate-artifact.sh, and a mechanical follow-up-commit trigger in the implementing agent's own protocol. Phase 4's planned admitting union was built, found to regress a pre-existing idempotence fixture via git-commit-scoped.sh's separate, un-patched Site-3 containment guard, and replaced with a read-only annotation lookup instead -- recorded as a deviation with full reasoning. All ten edited source-store files redeployed and verified byte-identical; 196 fixture-suite assertions across four extended test suites, all green."
     },
     {
       "project_number": 448,

@@ -7743,6 +7743,7 @@ DUPLICATE CHECK PERFORMED. 415 was read and rejected as an absorption target: it
 - **Dependencies**: Task 328, Task 385, Task 407, Task 430, Task 443
 - **Research**: [446_close_the_plan_to_file_scope_reconciliation_gap/reports/01_plan_to_file_scope_reconciliation_gap.md]
 - **Plan**: [446_close_the_plan_to_file_scope_reconciliation_gap/plans/01_close-plan-file-scope-gap.md]
+- **Summary**: [446_close_the_plan_to_file_scope_reconciliation_gap/summaries/01_close-plan-file-scope-gap-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
