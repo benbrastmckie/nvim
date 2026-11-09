@@ -6,7 +6,11 @@
 # consistency check (per-phase Scope Hypothesis estimates summing past a plan-cited numeric
 # ceiling while the plan asserts conformance -- cases (f)/(g)/(h) below, driven via
 # $VALIDATE_SRC rather than $VALIDATE so they exercise the source-store copy directly ahead of
-# that check's own redeploy phase; see $VALIDATE_SRC's own header comment above). Also carries a
+# that check's own redeploy phase; see $VALIDATE_SRC's own header comment above). Also covers the
+# advisory "Files to modify" authoring-shape scan -- FTM-shape cases (g)/(h) below -- surfacing
+# the wrapped-continuation, comma-join, and deployed-tree-path (`.claude/**`) shapes that each
+# silently drop a path from plan-file-scope-harvest.sh's output; also driven via $VALIDATE_SRC
+# for the same redeploy-timing reason. Also carries a
 # cross-script conformance guard asserting scripts/lib/plan-status-line.sh's classification
 # agrees with update-plan-status.sh's own live accept/reject behavior on the same fixtures -- the
 # mechanism that lets this task NOT refactor update-plan-status.sh onto the shared library while
@@ -404,6 +408,41 @@ rc=0; "$VALIDATE" "$f" plan >/dev/null 2>&1 || rc=$?
 if [[ $rc -eq 0 ]]; then common_test_pass "FTM(e): default-mode exit 0 (warning alone does not fail the gate)"; else common_test_fail "FTM(e): unexpected non-zero exit in default mode: rc=$rc"; fi
 rc=0; "$VALIDATE" "$f" plan --strict >/dev/null 2>&1 || rc=$?
 if [[ $rc -ne 0 ]]; then common_test_pass "FTM(e): --strict escalates the per-phase warning to a non-zero exit"; else common_test_fail "FTM(e): --strict did not escalate: rc=$rc"; fi
+
+# ─── Files to modify authoring-shape (g): all three shapes in one phase block -- each warns,
+# default-mode exit stays 0, and --strict escalates. Uses VALIDATE_SRC (not the deploy-tree-first
+# VALIDATE) because the deployed core tree can be stale relative to a freshly landed source-store
+# edit -- the same VALIDATE_SRC precedent the TJ(negative) and ceiling(f) cases above already
+# establish for exactly this reason. ────────────────────────────────────────────────────────────
+f=$(make_two_phase_ftm_fixture '
+**Files to modify**:
+- `scripts/real-source-file.sh` - a legitimate path
+- `scripts/wrapped.sh` - relocate the
+  `## Some Heading` reference subsections behind the existing
+- `scripts/commajoin-a.sh`, `scripts/commajoin-b.sh` - as ranked
+- `.claude/scripts/stray.sh` - should be the sentinel instead')
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "wrapped-continuation line begins with a backtick"; then common_test_pass "FTM-shape(g): wrapped-continuation shape warns"; else common_test_fail "FTM-shape(g) missing wrapped-continuation warning: $out"; fi
+if echo "$out" | grep -qF "joins a second backtick-delimited path with a comma"; then common_test_pass "FTM-shape(g): comma-join shape warns"; else common_test_fail "FTM-shape(g) missing comma-join warning: $out"; fi
+if echo "$out" | grep -qF "a deployed-tree (.claude/**) path is named directly"; then common_test_pass "FTM-shape(g): deployed-tree-path shape warns"; else common_test_fail "FTM-shape(g) missing deployed-tree-path warning: $out"; fi
+if echo "$out" | grep -qF "[FAIL]"; then common_test_fail "FTM-shape(g): overall [FAIL] in default mode (should be warnings only): $out"; else common_test_pass "FTM-shape(g): overall default-mode outcome is not a hard [FAIL]"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan >/dev/null 2>&1 || rc=$?
+if [[ $rc -eq 0 ]]; then common_test_pass "FTM-shape(g): default-mode exit 0 (warnings alone do not fail the gate)"; else common_test_fail "FTM-shape(g): unexpected non-zero exit in default mode: rc=$rc"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan --strict >/dev/null 2>&1 || rc=$?
+if [[ $rc -ne 0 ]]; then common_test_pass "FTM-shape(g): --strict escalates to a non-zero exit"; else common_test_fail "FTM-shape(g): --strict did not escalate: rc=$rc"; fi
+
+# ─── Files to modify authoring-shape (h): a correctly-authored block (one path per line, the
+# sentinel used instead of a deployed-tree path) emits NONE of the three new warnings -- the
+# no-noise negative case. ────────────────────────────────────────────────────────────────────
+f=$(make_two_phase_ftm_fixture '
+**Files to modify**:
+- `scripts/real-source-file.sh` - a legitimate path
+- `scripts/another-real-file.sh` - another legitimate path
+- `__WHOLE_TREE__` - this phase invokes whole-tree regeneration')
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "wrapped-continuation line begins with a backtick"; then common_test_fail "FTM-shape(h): false-positive wrapped-continuation warning: $out"; else common_test_pass "FTM-shape(h): no wrapped-continuation warning"; fi
+if echo "$out" | grep -qF "joins a second backtick-delimited path with a comma"; then common_test_fail "FTM-shape(h): false-positive comma-join warning: $out"; else common_test_pass "FTM-shape(h): no comma-join warning"; fi
+if echo "$out" | grep -qF "a deployed-tree (.claude/**) path is named directly"; then common_test_fail "FTM-shape(h): false-positive deployed-tree-path warning: $out"; else common_test_pass "FTM-shape(h): no deployed-tree-path warning"; fi
 
 # ─── Cross-phase ceiling consistency (f): contradiction -- estimates sum past the cited
 # ceiling while the plan asserts conformance -- WARNS, default-mode exit stays 0 ─────────────

@@ -200,39 +200,43 @@ legitimate `file_scope` member -- at the harvester, and keep the harvester heade
 
 ---
 
-### Phase 2: Advisory authoring-shape detection at plan acceptance [NOT STARTED]
+### Phase 2: Advisory authoring-shape detection at plan acceptance [COMPLETED]
 
 **Goal**: Surface the #417 authoring shape and the directly-named deployed-tree path at plan
 acceptance time, where the author can still fix them, rather than at implement time via a drop.
 
 **Tasks**:
 
-- [ ] Re-derive the current line numbers for the per-phase loop in
+- [x] Re-derive the current line numbers for the per-phase loop in
       `agent-system/extensions/core/scripts/validate-artifact.sh` (the `Files to modify`
       header-presence test sits around line 376; the deferred two-tier emission around line 553).
-- [ ] Inside the existing per-phase loop, add a `Files to modify` block scan emitting `log_warn`
+      *(completed)*
+- [x] Inside the existing per-phase loop, add a `Files to modify` block scan emitting `log_warn`
       (never `log_error`) for each of three shapes: (i) an entry line whose immediately following
       line, leading whitespace stripped, itself begins with a backtick -- the #417 wrapped-
       continuation shape; (ii) an entry line carrying a second `` `...` `` pair after a comma --
       the #417 comma-join shape; (iii) an entry naming a path equal to `.claude`/`.claude/` or
-      prefixed `.claude/` instead of the `` `__WHOLE_TREE__` `` sentinel.
-- [ ] Anchor each pattern to line-start with the same optional-leading-list-marker tolerance the
+      prefixed `.claude/` instead of the `` `__WHOLE_TREE__` `` sentinel. *(completed)*
+- [x] Anchor each pattern to line-start with the same optional-leading-list-marker tolerance the
       header-presence test already uses, so a task bullet that merely mentions the field name in
       backticks is never misread as a field line (the precedent the Tier Justification check's
-      own anchoring comment already records).
-- [ ] Confirm the new warnings route through the existing `warnings` counter and the existing
+      own anchoring comment already records). *(completed: block captured via the same
+      header/field-label-bounded awk shape the Tier Justification capture already uses)*
+- [x] Confirm the new warnings route through the existing `warnings` counter and the existing
       `total_issues=$((errors + warnings))` `--strict` branch -- no new strictness logic, no new
-      exit path.
-- [ ] Add an "Enforcement level" subsection for this check to
+      exit path. *(completed: verified by grep diff for log_error/exit -- only the two awk-internal
+      capture exits, zero new script-level additions)*
+- [x] Add an "Enforcement level" subsection for this check to
       `agent-system/extensions/core/context/formats/plan-format.md`, placed alongside the existing
       `Enforcement level (Files to modify)` subsection (around line 631) and following its shape:
-      advisory-by-default, with the promotion criterion stated.
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` with fixtures:
+      advisory-by-default, with the promotion criterion stated. *(completed)*
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` with fixtures:
       a plan exhibiting each of the three shapes warns and still exits 0 in default mode; the same
       plan exits non-zero under `--strict`; a correctly-authored plan (one path per line, sentinel
-      used for a deploy phase) emits none of the three warnings.
-- [ ] Re-read `plan-format.md` immediately before editing (Phase 1 also touched it; task 385
-      shares territory) and stage only this phase's own hunks.
+      used for a deploy phase) emits none of the three warnings. *(completed: FTM-shape(g)/(h),
+      59/59 total passing)*
+- [x] Re-read `plan-format.md` immediately before editing (Phase 1 also touched it; task 385
+      shares territory) and stage only this phase's own hunks. *(completed)*
 
 **Timing**: 1.5 hours
 

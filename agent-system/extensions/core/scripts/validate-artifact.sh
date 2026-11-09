@@ -377,6 +377,65 @@ if [ "$artifact_type" = "plan" ]; then
         _ftm_omitting_phases+=("$phase_num")
       fi
 
+      # --- Files to modify authoring-shape advisory scan (advisory-first; see plan-format.md's
+      # paired "Enforcement level (Files to modify authoring shape)" subsection for the full rule
+      # and promotion criterion). Surfaces the #417 authoring shapes at plan-acceptance time,
+      # where the author can still fix them, rather than at implement time via a harvester drop:
+      # (i) a wrapped-continuation entry line whose immediately following line, leading
+      # whitespace stripped, itself begins with a backtick; (ii) an entry line carrying a second
+      # backtick-delimited path joined by a comma; (iii) an entry naming a deployed-tree path
+      # (`.claude`, `.claude/`, or prefixed `.claude/`) instead of the `__WHOLE_TREE__` sentinel.
+      # Body-only capture (header line excluded via `next`), stopping at the first blank line or
+      # the next bolded field label -- the same block-termination shape the Tier Justification
+      # capture just below already uses, so this check introduces no new capture grammar.
+      _ftm_block=$(echo "$phase_block" | awk '
+        /^[[:space:]]*(-[[:space:]]+)?\*\*Files to modify\*\*:|^[[:space:]]*(-[[:space:]]+)?\*\*Files to modify:\*\*/ { capture=1; next }
+        capture && /^[[:space:]]*$/ { exit }
+        capture && /^[[:space:]]*(-[[:space:]]+)?\*\*[A-Za-z]/ { exit }
+        capture { print }
+      ')
+      if [ -n "$_ftm_block" ]; then
+        mapfile -t _ftm_lines <<< "$_ftm_block"
+        _ftm_shape_continuation=0
+        _ftm_shape_commajoin=0
+        _ftm_shape_claude=0
+        for ((_ftm_i = 0; _ftm_i < ${#_ftm_lines[@]}; _ftm_i++)); do
+          _ftm_line="${_ftm_lines[$_ftm_i]}"
+          # Entry-line test (optional leading list marker, same anchoring the header-presence
+          # test above and the harvester's own strip_marker()/entry grammar use).
+          if [[ "$_ftm_line" =~ ^[[:space:]]*-[[:space:]]*\` ]]; then
+            # Shape (iii): the entry's first backtick-delimited token is a deployed-tree path.
+            _ftm_entry_path=$(echo "$_ftm_line" | sed -E 's/^[[:space:]]*-[[:space:]]*`([^`]*)`.*/\1/')
+            if [[ "$_ftm_entry_path" == ".claude" || "$_ftm_entry_path" == ".claude/" || "$_ftm_entry_path" == .claude/* ]]; then
+              _ftm_shape_claude=1
+            fi
+            # Shape (ii): a second backtick-delimited path joined by a comma on the same line.
+            if echo "$_ftm_line" | grep -qE '`[^`]*`[[:space:]]*,[[:space:]]*`[^`]*`'; then
+              _ftm_shape_commajoin=1
+            fi
+            # Shape (i): the immediately following line, leading whitespace stripped, itself
+            # begins with a backtick (the wrapped-continuation shape -- it carries no leading
+            # `- ` marker, so the harvester's entry grammar reads it as prose, not a second
+            # entry).
+            if [ $((_ftm_i + 1)) -lt "${#_ftm_lines[@]}" ]; then
+              _ftm_next_stripped=$(echo "${_ftm_lines[$((_ftm_i + 1))]}" | sed -E 's/^[[:space:]]+//')
+              if [[ "$_ftm_next_stripped" == \`* ]]; then
+                _ftm_shape_continuation=1
+              fi
+            fi
+          fi
+        done
+        if [ "$_ftm_shape_continuation" -eq 1 ]; then
+          log_warn "Phase ${phase_num} Files to modify: a wrapped-continuation line begins with a backtick but carries no leading '- ' marker, so it is read as prose, not a second entry -- give it its own '- \`path\`' line"
+        fi
+        if [ "$_ftm_shape_commajoin" -eq 1 ]; then
+          log_warn "Phase ${phase_num} Files to modify: an entry line joins a second backtick-delimited path with a comma -- only the first path is harvested; give each path its own '- \`path\`' line"
+        fi
+        if [ "$_ftm_shape_claude" -eq 1 ]; then
+          log_warn "Phase ${phase_num} Files to modify: a deployed-tree (.claude/**) path is named directly -- it is never a legitimate file_scope member (rules/source-store-deploy-boundary.md); declare a whole-deployed-tree claim with the \`__WHOLE_TREE__\` sentinel instead"
+        fi
+      fi
+
       # --- Tier Justification measurement check (advisory-first; see plan-format.md's
       # "`**Tier Justification**:` -- required on every non-final phase" subsection and its
       # paired "Enforcement level (Tier Justification measurement)" subsection for the full rule

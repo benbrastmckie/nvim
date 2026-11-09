@@ -681,6 +681,38 @@ this field, and `scripts/plan-file-scope-harvest.sh`'s own header comment for th
 recording that the no-header/empty-header distinction this enforcement draws is deliberately
 made only here, never in the harvester itself.
 
+### Enforcement level (Files to modify authoring shape)
+
+Distinct from the presence check immediately above (which asks only whether the `Files to
+modify` header exists in a phase's block): this check scans a PRESENT block's own entry lines
+for three authoring shapes that each silently drop a path from the harvester's output rather
+than erroring — surfaced at plan-acceptance time, where the author can still fix them, instead
+of at implement time via a `git-commit-phase.sh` drop. advisory-first, by the same pattern as
+`Verification Tier` and the per-phase `Files to modify` presence tier above: each hit emits a
+warning, never an error, so default-mode validation exits 0 on these warnings alone; `--strict`
+mode enforces it today via the same `total_issues = errors + warnings` branch.
+
+- **Wrapped-continuation shape**: an entry line whose immediately following line, leading
+  whitespace stripped, itself begins with a backtick. The harvester's entry grammar requires a
+  leading `- ` marker, so this line is read as prose, not a second entry — the author's likely
+  intent (a second path) is dropped without any error.
+- **Comma-join shape**: an entry line carrying a second backtick-delimited path joined by a
+  comma. Only the first path is harvested; the second is silently dropped.
+- **Deployed-tree-path shape**: an entry naming a path equal to `.claude`/`.claude/` or prefixed
+  `.claude/` instead of the `` `__WHOLE_TREE__` `` sentinel (see "Whole-tree-claim declaration
+  rule" above and `scripts/plan-file-scope-harvest.sh`'s own deployed-tree refusal, which drops
+  such an entry at harvest time rather than erroring).
+
+**Promotion criterion**: promote these three warnings to errors once a plan-time sweep of the
+active-plan corpus under `specs/` finds no occurrence of any of the three shapes outside this
+task's own fixtures. Not yet measured as of this check's introduction — re-measure before
+promoting rather than assuming the residue is zero.
+
+See `scripts/plan-file-scope-harvest.sh`'s "Deployed-tree refusal" header subsection for the
+harvest-time enforcement this check is advisory-side of, and `test-validate-artifact.sh` for the
+fixture pinning each shape's warning, its `--strict` promotion, and the no-false-positive
+negative case for a correctly-authored block.
+
 ### Enforcement level (Tier Justification measurement)
 
 The measurement obligation above — that a `**Tier Justification**:` line naming a suite subset or

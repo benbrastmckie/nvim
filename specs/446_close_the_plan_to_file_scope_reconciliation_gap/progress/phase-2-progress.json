@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Advisory authoring-shape detection at plan acceptance",
+  "started_at": "2026-11-09T13:46:00Z",
+  "last_updated": "2026-11-09T14:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive line numbers for per-phase loop in validate-artifact.sh", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add Files to modify block scan emitting log_warn for the three shapes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "Anchor patterns to line-start with same leading-list-marker tolerance", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm new warnings route through existing warnings counter and --strict branch", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add Enforcement level subsection to plan-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 6, "description": "Extend test-validate-artifact.sh with fixtures for each shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 7, "description": "Re-read plan-format.md before editing, stage only this phase's hunks", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh: 59/59 pass (50 pre-existing + 9 new: FTM-shape(g) x6, FTM-shape(h) x3). Ran via $VALIDATE_SRC (source-store) for the new cases, matching the existing TJ(negative)/ceiling(f) precedent, since the deployed core tree is stale per this dispatch's deploy-freshness-context. Manual fixture checks confirmed: all three shapes warn independently, default-mode exit 0, --strict exit non-zero, no log_error added (grep diff), no new script-level exit path (the only new 'exit' tokens are inside the awk block-capture subshell). check-task-references.sh and check-record-versioning.sh both 0 BLOCKING on all three touched files (pre-existing ADVISORY-only hits, unrelated lines). ISSUE: scoped Tier Justification suite set (run-all.sh --only ...) surfaced test-orchestrate-cycle-postflight.sh failing (25/304) -- confirmed PRE-EXISTING and unrelated (no diff for that suite or its targets since this task's own Phase 1 commit; failures are status-name/persisted_status mismatches bearing no relation to this phase's change). Recorded via issue-record.sh, not fixed (out of this task's declared file_scope)."
+}
