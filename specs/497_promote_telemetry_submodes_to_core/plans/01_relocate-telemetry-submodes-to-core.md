@@ -387,7 +387,7 @@ and vice versa.
 
 ---
 
-### Phase 3: Repoint Every Cross-Extension Guardrails Citation [NOT STARTED]
+### Phase 3: Repoint Every Cross-Extension Guardrails Citation [COMPLETED]
 
 **Goal**: Make every file outside memory's `/distill` surface that cites
 `context/project/memory/telemetry-guardrails.md` or the three old sub-mode basenames resolve
@@ -395,24 +395,28 @@ against the new core paths.
 
 **Tasks**:
 
-- [ ] Re-read each file immediately before editing (concurrent siblings are live on this tree),
+- [x] Re-read each file immediately before editing (concurrent siblings are live on this tree),
       then repoint `agent-system/extensions/core/context/formats/dispatch-metrics.md`'s three
-      guardrails citations to `context/standards/telemetry-guardrails.md`.
-- [ ] Repoint `agent-system/extensions/core/context/formats/events-format.md`'s three guardrails
+      guardrails citations to `context/standards/telemetry-guardrails.md`. *(completed)*
+- [x] Repoint `agent-system/extensions/core/context/formats/events-format.md`'s three guardrails
       citations, and drop the "in the memory extension" qualifier that accompanies two of them —
-      the document is core-owned after this move.
-- [ ] Repoint `agent-system/extensions/books/context/project/books/patterns/books-review-submode.md`'s
-      single guardrails citation.
-- [ ] Repoint `agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md`'s
+      the document is core-owned after this move. *(completed; also fixed a resulting
+      index-entries.json line_count drift mechanically)*
+- [x] Repoint `agent-system/extensions/books/context/project/books/patterns/books-review-submode.md`'s
+      single guardrails citation. *(completed)*
+- [x] Repoint `agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md`'s
       single guardrails citation **and** its five `distill-meta-submode.md` references (lines 11,
-      84, 239, 247, 265 at plan time) to `context/patterns/telemetry-meta-submode.md`.
-- [ ] Repoint `agent-system/extensions/memory/context/project/memory/patterns/distill-learn-submode.md`'s
+      84, 239, 247, 265 at plan time) to `context/patterns/telemetry-meta-submode.md`. *(completed;
+      also fixed a resulting index-entries.json line_count drift mechanically)*
+- [x] Repoint `agent-system/extensions/memory/context/project/memory/patterns/distill-learn-submode.md`'s
       single guardrails citation at the core path. A memory-extension file citing a core file is
-      the correct direction: core is the permanent extension.
-- [ ] Repoint `agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md`'s
+      the correct direction: core is the permanent extension. *(completed)*
+- [x] Repoint `agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md`'s
       four guardrails citations, and its `distill-meta-submode.md` reference, at the core paths.
       Leave its own `## Classification` three-strikes prose as-is — it is `--revise`'s own
-      content and already cites `context/contracts/convergence.md` correctly.
+      content and already cites `context/contracts/convergence.md` correctly. *(completed;
+      deviation: altered -- found TWO distill-meta-submode.md references, not the one the plan's
+      Scope Hypothesis counted (lines 10 and 230 at plan time); repointed both, see issue log)*
 
 **Timing**: 1.5 hours
 

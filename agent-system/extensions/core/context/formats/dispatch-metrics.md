@@ -209,7 +209,7 @@ is tracked as its own work item.
 ## The 30-Day Retention Window — Capture at Postflight Time, Not Later
 
 Tier 4 transcripts (see
-`context/project/memory/telemetry-guardrails.md`'s "Tier 4: Transcripts and `.meta.json`
+`context/standards/telemetry-guardrails.md`'s "Tier 4: Transcripts and `.meta.json`
 Sidecars" section) have a **measured 30-day retention window**. Token and tool-call figures are
 therefore perishable: they MUST be read and written at **postflight time**, while the transcript
 is still on disk. A design that defers transcript reading to report time silently produces empty
@@ -275,7 +275,7 @@ bash .claude/scripts/dispatch-metrics.sh ... \
 
 ## Cross-References (Not Duplicated Here)
 
-- `context/project/memory/telemetry-guardrails.md`'s "Tier 4: Transcripts and `.meta.json`
+- `context/standards/telemetry-guardrails.md`'s "Tier 4: Transcripts and `.meta.json`
   Sidecars" section — the 30-day window and blind-spot statement this document's own retention
   section is built on. This document does not attempt the absent `sess_*`-to-OTel join that
   telemetry-guardrails.md records as a structural gap, and respects its

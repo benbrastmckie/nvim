@@ -37,7 +37,7 @@ For each archived task with unharvested `memory_candidates`:
 - If the task's completion falls within the **30-day transcript replay window**: primary source
   is Tier 4 (the task's transcript + `.meta.json` sidecar). Reuse existing transcript parsers
   (e.g. `ccusage` / `claude-code-log` parsing approaches) rather than writing one from scratch --
-  per `telemetry-guardrails.md`'s OSS-tooling position. Note explicitly: these parsers extract no
+  per `context/standards/telemetry-guardrails.md`'s OSS-tooling position. Note explicitly: these parsers extract no
   success/failure signal, so outcome evidence (if wanted at all) must come from the OTel tier, not
   from the transcript parse.
 - If the task's completion falls **outside** the 30-day window: fall back to Tier 3

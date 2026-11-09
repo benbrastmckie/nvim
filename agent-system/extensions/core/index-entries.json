@@ -239,7 +239,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Unified events/reflection JSONL store schema: specs/events.jsonl field contract, lazy creation, category enum, and cross-link conventions",
-      "line_count": 302,
+      "line_count": 301,
       "keywords": [
         "events",
         "jsonl",

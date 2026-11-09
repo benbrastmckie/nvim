@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Repoint Every Cross-Extension Guardrails Citation",
+  "started_at": "2026-11-09T21:48:00Z",
+  "last_updated": "2026-11-09T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Repoint core/context/formats/dispatch-metrics.md's three guardrails citations", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/dispatch-metrics.md"], "note": "2 of the 3 grep hits were full-path citations and were repointed; the third (line 281) was a bare filename mention with no stale path, needing no edit"},
+    {"id": 2, "description": "Repoint core/context/formats/events-format.md's three guardrails citations, drop memory-extension qualifier", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/events-format.md", "agent-system/extensions/core/index-entries.json"], "note": "doc-lint flagged a line_count drift in core/index-entries.json after this edit removed a line; fixed mechanically via generate-context-line-counts.sh --write"},
+    {"id": 3, "description": "Repoint books-review-submode.md's one guardrails citation", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/books-review-submode.md"]},
+    {"id": 4, "description": "Repoint books-revise-submode.md's one guardrails citation plus five distill-meta-submode.md references", "status": "done", "files_touched": ["agent-system/extensions/books/context/project/books/patterns/books-revise-submode.md", "agent-system/extensions/books/index-entries.json"], "note": "doc-lint flagged a line_count drift in books/index-entries.json after this edit added a line; fixed mechanically via generate-context-line-counts.sh --write"},
+    {"id": 5, "description": "Repoint memory distill-learn-submode.md's one guardrails citation", "status": "done", "files_touched": ["agent-system/extensions/memory/context/project/memory/patterns/distill-learn-submode.md"]},
+    {"id": 6, "description": "Repoint memory distill-revise-submode.md's four guardrails citations plus one distill-meta-submode.md reference", "status": "done", "files_touched": ["agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md"], "note": "Scope Hypothesis discrepancy found: this file actually has TWO distill-meta-submode.md references (not one) -- lines 10 and 230 at plan time. Both repointed; also incidentally fixed an adjacent 'Phase 10' task-number reference embedded in the same sentence as line 10's citation while touching it."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.scope-hypothesis",
+      "description": "Phase 3's Scope Hypothesis states 'six files and sixteen citations', itemized as 3+3+1+1+5+1+4+1 for the six target files, with distill-revise-submode.md counted as '4 guardrails + 1 distill-meta-submode reference' (5 total)",
+      "type": "altered",
+      "reason": "Live grep before editing found distill-revise-submode.md actually carries 4 guardrails citations PLUS TWO distill-meta-submode.md references (lines 10 and 230 at plan time), not one -- a discrepancy from the plan's own stated hypothesis. Reported per the phase's own instruction ('the discrepancy must be reported') rather than silently absorbed. Repointed both occurrences, since Phase 3's own verification bullet requires zero distill-meta-submode.md references outside the files Phase 4 edits/deletes, and distill-revise-submode.md is not one of those files.",
+      "annotation": "*(deviation: altered -- found and fixed 2 distill-meta-submode.md references in distill-revise-submode.md, not the 1 the plan's Scope Hypothesis counted; see issue log)*"
+    }
+  ]
+}

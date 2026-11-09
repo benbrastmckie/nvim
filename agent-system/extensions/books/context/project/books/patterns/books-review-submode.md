@@ -141,7 +141,7 @@ was captured at each task's own postflight, not live telemetry read now. This mi
 document states the metrics record "produces the record only" and that "any reporting,
 aggregation, dashboard, or cross-task rollup ... is a separate, later concern" — this review IS
 that separate, later concern, consuming the record rather than reproducing it live. It is also
-bounded the same way `context/project/memory/telemetry-guardrails.md`'s Tier 4 describes for
+bounded the same way `context/standards/telemetry-guardrails.md`'s Tier 4 describes for
 transcripts: evidence this old may already have rolled out of any live replay window, so a figure
 reported here is permanently fixed at whatever each task's postflight measured, not re-verifiable
 against a live session once that window has passed.

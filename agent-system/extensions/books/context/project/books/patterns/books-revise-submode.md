@@ -8,13 +8,14 @@ stub pointer, which sends an agent here whenever `--revise` is dispatched.
 Interactive proposal of research-and-revision tasks against the books convention, evaluated from
 observation evidence accumulated since the last `--revise` run. Follows the Shared Sub-Mode
 Skeleton in `skill-books-review/SKILL.md`; deltas below. Structural models for this file are
-`distill-meta-submode.md` (the AskUserQuestion / create-note-skip / confirmation-gate shape, and
-delegation-rather-than-reimplementation discipline) and `distill-revise-submode.md` (the
-watermark mechanism) — both in the memory extension's own pattern directory.
+`telemetry-meta-submode.md` (the AskUserQuestion / create-note-skip / confirmation-gate shape,
+and delegation-rather-than-reimplementation discipline), in core's own pattern directory, and
+`distill-revise-submode.md` (the watermark mechanism), in the memory extension's own pattern
+directory.
 
 ## Books Telemetry Posture
 
-Cited by path, not restated in full: `context/project/memory/telemetry-guardrails.md`. Two
+Cited by path, not restated in full: `context/standards/telemetry-guardrails.md`. Two
 principles from it apply directly to this sub-mode:
 
 - **Evaluator outside the loop.** Propose-then-human-review, never auto-apply. `--revise` never
@@ -81,7 +82,7 @@ Rank candidates by:
 
 **This is a closed discovery rule.** `--revise` does not invent new detection logic beyond
 recurrence and paired-burden asymmetry over the admitted records — mirroring `--meta`'s own
-refusal clause ("Do not write new detection logic here"; see `distill-meta-submode.md`). A
+refusal clause ("Do not write new detection logic here"; see `telemetry-meta-submode.md`). A
 pattern this rule does not surface is not a candidate this run, however suggestive it might look
 on manual inspection.
 
@@ -236,7 +237,7 @@ Four admissible outcomes per comparison, and no fifth:
 Before anything is actually written, show the full list of confirmed "Create as task" candidates
 **with their reconciled outcome from Backlog Reconciliation above** (never the raw
 pre-reconciliation candidate) and require an explicit "Yes, create/apply" confirmation — Multi-
-Task Creation Standard Component 7, mirroring `distill-meta-submode.md`'s own confirmation gate.
+Task Creation Standard Component 7, mirroring `telemetry-meta-submode.md`'s own confirmation gate.
 This is the Shared Sub-Mode Skeleton's Interactive Selection (MANDATORY STOP) step, completed:
 **no task is created, no dependency edge added, and no file scope narrowed without this explicit
 confirmation.**
@@ -244,7 +245,7 @@ confirmation.**
 ## Execution: Delegation to `/task`
 
 **Task creation delegates to the existing `/task` primitive. Do not reimplement it inline** —
-mirroring `distill-meta-submode.md`'s identical delegation discipline for `meta-builder-agent`.
+mirroring `telemetry-meta-submode.md`'s identical delegation discipline for `meta-builder-agent`.
 This sub-mode passes the reconciled outcome (create / widen / dependency edge / narrow scope),
 the Decision's durable heading text and verbatim marker, the research-and-escalate framing when
 the binding fork applies, and the evidence `record_path` list; `/task` (or, for an escalation
@@ -262,7 +263,7 @@ After the confirmed batch (create/widen/dependency-edge/narrow-scope decisions, 
 recordings, and skips) is fully applied — and **only** after, never per-candidate — advance the
 watermark by writing one new entry to `specs/books-evidence/revise-log.json` (a file sibling to
 `specs/books-evidence/observations.jsonl` and `specs/books-evidence/runs.jsonl`, not a
-`.memory/`-dependent store), modelled on `distill-meta-submode.md`'s Meta Log Schema:
+`.memory/`-dependent store), modelled on `telemetry-meta-submode.md`'s Meta Log Schema:
 
 ```json
 {

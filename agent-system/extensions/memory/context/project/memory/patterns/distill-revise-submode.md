@@ -5,12 +5,11 @@ This file is the COMPLETE and ONLY specification for skill-distill's `--revise` 
 Event-and-OTel-correlated review and revision of the memory vault. `--revise` inherits, in
 substance unchanged, the current `dream` section's Event Ingestion, Event-to-Memory Correlation,
 corroborated/contradicted/gap Classification (three-strikes threshold), the `AskUserQuestion`
-UPDATE/TOMBSTONE/CREATE gate, and Batch Index Regeneration -- this content is relocated from
-`dream` (Phase 10 removes the now-duplicated copy from `dream` once this section and `--meta`
-(`distill-meta-submode.md`) fully contain it). **New in this sub-mode**: Tier 1 (OTel) supplies
-outcome evidence, joined on `cc_session_id`, alongside the existing Tier 2 (`events.jsonl`)
+UPDATE/TOMBSTONE/CREATE gate, and Batch Index Regeneration, distinct from `--meta`'s own
+(`context/patterns/telemetry-meta-submode.md`) system-improvement-proposal charter. Tier 1
+(OTel) supplies outcome evidence, joined on `cc_session_id`, alongside Tier 2 (`events.jsonl`)
 correlation. Follows the Shared Sub-Mode Skeleton in `skill-distill/SKILL.md`; deltas below. See
-`context/project/memory/telemetry-guardrails.md` for the miss-rate expectation and the
+`context/standards/telemetry-guardrails.md` for the miss-rate expectation and the
 never-auto-apply rule -- not restated here.
 
 ## Edge Case Checks
@@ -227,7 +226,8 @@ CREATE, apply the escalation discriminator:
   TECHNIQUE/PATTERN/CONFIG/WORKFLOW/INSIGHT taxonomy, offer **CREATE** via the existing
   `### CREATE Operation` template, sourced from the event's `detail`/`message` content.
 - If the gap instead represents a *system change* (a skill, hook, rule, or doc that should
-  differ), it escalates to an **Improvement Proposal** (`--meta`, `distill-meta-submode.md`)
+  differ), it escalates to an **Improvement Proposal** (`--meta`,
+  `context/patterns/telemetry-meta-submode.md`)
   instead of a memory
   CREATE -- `--revise` never creates a memory to paper over a system defect.
 

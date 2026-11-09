@@ -165,9 +165,9 @@ tiers with an exact join key between them. This section settles field ownership 
 reader can tell, for any signal, which side owns it and how to join across.
 
 For the full four-tier source model (OTel, `events.jsonl`, `history.jsonl`, transcripts) and the
-binding design constraints for telemetry-consuming `/distill` sub-modes, see
-`context/project/memory/telemetry-guardrails.md` in the memory extension -- this section covers
-only the `events.jsonl` half of that model.
+binding design constraints for telemetry-consuming sub-modes, see
+`context/standards/telemetry-guardrails.md` -- this section covers only the `events.jsonl` half
+of that model.
 
 ### What OTel Owns
 
@@ -297,6 +297,5 @@ reliable source for either field.
 - [Events Schema](../schemas/events-schema.json) -- formal draft-07 JSON Schema for a single line
 - [Return Metadata Format](return-metadata-file.md) -- `session_id`/`duration_seconds` convention
 - [Error Handling Rule](../../rules/error-handling.md) -- `errors.json` schema and `error_ref` target
-- Telemetry Guardrails (`context/project/memory/telemetry-guardrails.md` in the memory
-  extension) -- the full four-tier source model and binding design constraints for
-  telemetry-consuming `/distill` sub-modes
+- [Telemetry Guardrails](../standards/telemetry-guardrails.md) -- the full four-tier source
+  model and binding design constraints for telemetry-consuming sub-modes
