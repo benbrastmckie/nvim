@@ -537,7 +537,7 @@
     },
     {
       "path": "project/books/patterns/books-revise-submode.md",
-      "line_count": 309,
+      "line_count": 310,
       "load_when": {
         "agents": [],
         "task_types": []
