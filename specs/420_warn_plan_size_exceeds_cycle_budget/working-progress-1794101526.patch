@@ -1,0 +1,895 @@
+diff --git a/.claude-extensions.json b/.claude-extensions.json
+index c9ce854ac..0dd705f7d 100644
+--- a/.claude-extensions.json
++++ b/.claude-extensions.json
+@@ -1,79 +1,10 @@
+ {
+   "version": "1.0.0",
+   "extensions": {
+-    "email": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/email",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:36Z",
+-      "status": "active",
+-      "installed_files": [
+-        ".claude/agents/email-implementation-agent.md",
+-        ".claude/commands/email.md",
+-        ".claude/skills/skill-email-implementation/SKILL.md",
+-        ".claude/skills/skill-email-cleanup/SKILL.md",
+-        ".claude/skills/skill-email-sync/SKILL.md",
+-        ".claude/context/project/email/design/email-to-memory-preferences.md",
+-        ".claude/context/project/email/domain/archive-mode-risk.md",
+-        ".claude/context/project/email/domain/index-architecture.md",
+-        ".claude/context/project/email/domain/safety-invariants.md",
+-        ".claude/context/project/email/domain/staleness-detection.md",
+-        ".claude/context/project/email/domain/wrapper-contracts.md",
+-        ".claude/context/project/email/email-preferences.md",
+-        ".claude/context/project/email/patterns/bulk-bucket-review.md",
+-        ".claude/context/project/email/patterns/email-cleanup-all-mode.md",
+-        ".claude/context/project/email/patterns/propose-review-confirm-execute.md",
+-        ".claude/context/project/email/standards/recall-on-keep-bias.md",
+-        ".claude/scripts/email-preference-harvest.sh",
+-        ".claude/hooks/mail-guard.sh",
+-        ".claude/extensions/email/manifest.json"
+-      ],
+-      "data_skeleton_files": [],
+-      "merged_sections": {
+-        "index": {
+-          "paths": [
+-            "project/email/email-preferences.md",
+-            "project/email/domain/wrapper-contracts.md",
+-            "project/email/domain/safety-invariants.md",
+-            "project/email/domain/index-architecture.md",
+-            "project/email/domain/staleness-detection.md",
+-            "project/email/domain/archive-mode-risk.md",
+-            "project/email/patterns/bulk-bucket-review.md",
+-            "project/email/patterns/propose-review-confirm-execute.md",
+-            "project/email/standards/recall-on-keep-bias.md",
+-            "project/email/design/email-to-memory-preferences.md",
+-            "project/email/patterns/email-cleanup-all-mode.md"
+-          ]
+-        },
+-        "settings": {
+-          "permissions": {
+-            "type": "merged",
+-            "children": {
+-              "deny": {
+-                "type": "appended",
+-                "items": []
+-              }
+-            }
+-          },
+-          "hooks": {
+-            "type": "merged",
+-            "children": {
+-              "PreToolUse": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              }
+-            }
+-          }
+-        }
+-      },
+-      "installed_dirs": [],
+-      "source_git_head": "0ba82875c3c8088a1d0ce6944520cb801a1b8a6b"
+-    },
+     "memory": {
++      "source_git_head": "edf9a01d61f9635eeead318ef2eec7ade7d6d4fb",
+       "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/memory",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
+-      "status": "active",
++      "loaded_at": "2026-11-08T00:38:46Z",
+       "installed_files": [
+         ".claude/commands/learn.md",
+         ".claude/commands/distill.md",
+@@ -104,7 +35,9 @@
+         ".claude/scripts/bootstrap-harvest-attribution.sh",
+         ".claude/extensions/memory/manifest.json"
+       ],
++      "version": "1.0.0",
+       "data_skeleton_files": [],
++      "status": "active",
+       "merged_sections": {
+         "index": {
+           "paths": [
+@@ -128,14 +61,12 @@
+           ]
+         }
+       },
+-      "installed_dirs": [],
+-      "source_git_head": "edf9a01d61f9635eeead318ef2eec7ade7d6d4fb"
++      "installed_dirs": []
+     },
+     "core": {
++      "source_git_head": "76133bac6c494ad68f440e0adccf553e306a8e46",
+       "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/core",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:36Z",
+-      "status": "active",
++      "loaded_at": "2026-11-08T00:38:45Z",
+       "installed_files": [
+         ".claude/agents/code-reviewer-agent.md",
+         ".claude/agents/general-implementation-agent.md",
+@@ -811,8 +742,52 @@
+         ".claude/.gitignore",
+         ".claude/extensions/core/manifest.json"
+       ],
++      "version": "1.0.0",
+       "data_skeleton_files": [],
++      "status": "active",
+       "merged_sections": {
++        "settings": {
++          "hooks": {
++            "children": {
++              "PreToolUse": {
++                "type": "hook_merged",
++                "hook_items": [],
++                "items": []
++              },
++              "SessionStart": {
++                "type": "hook_merged",
++                "hook_items": [],
++                "items": []
++              },
++              "Stop": {
++                "type": "hook_merged",
++                "hook_items": [],
++                "items": []
++              },
++              "SubagentStop": {
++                "type": "hook_merged",
++                "hook_items": [],
++                "items": []
++              },
++              "Notification": {
++                "type": "hook_merged",
++                "hook_items": [],
++                "items": []
++              },
++              "UserPromptSubmit": {
++                "type": "hook_merged",
++                "hook_items": [],
++                "items": []
++              },
++              "PostToolUse": {
++                "type": "hook_merged",
++                "hook_items": [],
++                "items": []
++              }
++            },
++            "type": "merged"
++          }
++        },
+         "index": {
+           "paths": [
+             "architecture/component-checklist.md",
+@@ -987,58 +962,14 @@
+             "standards/repo-level-declarations.md",
+             "patterns/backlog-reconciliation.md"
+           ]
+-        },
+-        "settings": {
+-          "hooks": {
+-            "type": "merged",
+-            "children": {
+-              "Notification": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "PreToolUse": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "UserPromptSubmit": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "PostToolUse": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "SessionStart": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "Stop": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "SubagentStop": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              }
+-            }
+-          }
+         }
+       },
+-      "installed_dirs": [],
+-      "source_git_head": "fe7966ab06314392973bfed428d7f4108361c780"
++      "installed_dirs": []
+     },
+     "lean": {
++      "source_git_head": "d3e2b1b42647baf9c8685b3c491403901a82efbe",
+       "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/lean",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
+-      "status": "active",
++      "loaded_at": "2026-11-08T00:38:46Z",
+       "installed_files": [
+         ".claude/agents/lean-research-agent.md",
+         ".claude/agents/lean-implementation-agent.md",
+@@ -1153,8 +1084,21 @@
+         ".claude/hooks/lean-lsp-register-project.sh",
+         ".claude/extensions/lean/manifest.json"
+       ],
++      "version": "1.0.0",
+       "data_skeleton_files": [],
++      "status": "active",
+       "merged_sections": {
++        "settings": {
++          "permissions": {
++            "children": {
++              "allow": {
++                "items": [],
++                "type": "appended"
++              }
++            },
++            "type": "merged"
++          }
++        },
+         "index": {
+           "paths": [
+             "project/lean4/domain/mathlib-overview.md",
+@@ -1201,7 +1145,75 @@
+             "project/lean4/domain/sentence-translation-contract.md",
+             "project/lean4/domain/ladder-counter-observables.md"
+           ]
+-        },
++        }
++      },
++      "installed_dirs": []
++    },
++    "approvals": {
++      "source_git_head": "bd580e406218b4c277217e8bdcc2be34b46274ea",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/approvals",
++      "loaded_at": "2026-11-08T00:38:45Z",
++      "installed_files": [
++        ".claude/commands/approve.md",
++        ".claude/skills/skill-approve/SKILL.md",
++        ".claude/context/project/approvals/README.md",
++        ".claude/context/project/approvals/patterns/approve-interaction-design.md",
++        ".claude/context/project/approvals/standards/approval-artifact-convention.md",
++        ".claude/context/project/approvals/standards/confidence-vocabulary.md",
++        ".claude/scripts/approve-classify.sh",
++        ".claude/scripts/approve-guard.sh",
++        ".claude/scripts/approve-paths.sh",
++        ".claude/scripts/tests/test-approve-classify.sh",
++        ".claude/scripts/tests/test-approve-paths.sh",
++        ".claude/scripts/tests/test-approve-refusals.sh",
++        ".claude/scripts/tests/test-approve-structural.sh",
++        ".claude/extensions/approvals/manifest.json"
++      ],
++      "version": "1.0.0",
++      "data_skeleton_files": [],
++      "status": "active",
++      "merged_sections": {
++        "index": {
++          "paths": [
++            "project/approvals/README.md",
++            "project/approvals/standards/approval-artifact-convention.md",
++            "project/approvals/standards/confidence-vocabulary.md",
++            "project/approvals/patterns/approve-interaction-design.md"
++          ]
++        }
++      },
++      "installed_dirs": []
++    },
++    "nix": {
++      "source_git_head": "0ee0f6dddb2a07a429c9adf7d2a35e15ab67c447",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nix",
++      "loaded_at": "2026-11-08T00:38:46Z",
++      "installed_files": [
++        ".claude/agents/nix-research-agent.md",
++        ".claude/agents/nix-implementation-agent.md",
++        ".claude/rules/nix.md",
++        ".claude/skills/skill-nix-research/SKILL.md",
++        ".claude/skills/skill-nix-implementation/SKILL.md",
++        ".claude/context/project/nix/README.md",
++        ".claude/context/project/nix/domain/flakes.md",
++        ".claude/context/project/nix/domain/home-manager.md",
++        ".claude/context/project/nix/domain/nix-language.md",
++        ".claude/context/project/nix/domain/nixos-modules.md",
++        ".claude/context/project/nix/patterns/derivation-patterns.md",
++        ".claude/context/project/nix/patterns/module-patterns.md",
++        ".claude/context/project/nix/patterns/overlay-patterns.md",
++        ".claude/context/project/nix/standards/nix-style-guide.md",
++        ".claude/context/project/nix/tools/home-manager-guide.md",
++        ".claude/context/project/nix/tools/mcp-nixos-integration.md",
++        ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
++        ".claude/scripts/nix-preflight.sh",
++        ".claude/scripts/nix-context.sh",
++        ".claude/extensions/nix/manifest.json"
++      ],
++      "version": "1.0.0",
++      "data_skeleton_files": [],
++      "status": "active",
++      "merged_sections": {
+         "settings": {
+           "permissions": {
+             "type": "merged",
+@@ -1212,35 +1224,121 @@
+               }
+             }
+           }
++        },
++        "index": {
++          "paths": [
++            "project/nix/README.md",
++            "project/nix/domain/nix-language.md",
++            "project/nix/domain/flakes.md",
++            "project/nix/domain/nixos-modules.md",
++            "project/nix/domain/home-manager.md",
++            "project/nix/patterns/module-patterns.md",
++            "project/nix/patterns/overlay-patterns.md",
++            "project/nix/patterns/derivation-patterns.md",
++            "project/nix/standards/nix-style-guide.md",
++            "project/nix/tools/nixos-rebuild-guide.md",
++            "project/nix/tools/home-manager-guide.md",
++            "project/nix/tools/mcp-nixos-integration.md"
++          ]
+         }
+       },
+-      "installed_dirs": [],
+-      "source_git_head": "6ffc0f22735d986d36e6483f3b657df20ff5e07b"
++      "installed_dirs": []
+     },
+-    "literature": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/literature",
+-      "version": "2.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
+-      "status": "active",
++    "nvim": {
++      "source_git_head": "67fb373e5fd8bbd42272ba8f4f58f7ff8aaec50d",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nvim",
++      "loaded_at": "2026-11-08T00:38:46Z",
+       "installed_files": [
+-        ".claude/agents/literature-agent.md",
+-        ".claude/commands/literature.md",
+-        ".claude/commands/cite.md",
+-        ".claude/skills/skill-literature/SKILL.md",
+-        ".claude/skills/skill-cite/SKILL.md",
+-        ".claude/context/project/literature/domain/corpus-directory-conventions.md",
+-        ".claude/context/project/literature/domain/extension-dependencies.md",
+-        ".claude/context/project/literature/domain/format-decision.md",
+-        ".claude/context/project/literature/domain/fts5-query-semantics.md",
+-        ".claude/context/project/literature/domain/literature-index.md",
+-        ".claude/context/project/literature/domain/pymupdf4llm-fragmentation.md",
+-        ".claude/context/project/literature/domain/sparse-coverage.md",
+-        ".claude/context/project/literature/domain/tier3-provider-fallback.md",
+-        ".claude/context/project/literature/domain/zotero-integration.md",
+-        ".claude/context/project/literature/patterns/adhoc-navigation-directive.md",
+-        ".claude/context/project/literature/patterns/agent-exploration.md",
+-        ".claude/context/project/literature/patterns/chunk-file-conventions.md",
+-        ".claude/context/project/literature/patterns/cite-workflow.md",
++        ".claude/agents/neovim-research-agent.md",
++        ".claude/agents/neovim-implementation-agent.md",
++        ".claude/rules/neovim-lua.md",
++        ".claude/skills/skill-neovim-research/SKILL.md",
++        ".claude/skills/skill-neovim-implementation/SKILL.md",
++        ".claude/context/project/neovim/README.md",
++        ".claude/context/project/neovim/domain/extension-deploy-modes.md",
++        ".claude/context/project/neovim/domain/lsp-overview.md",
++        ".claude/context/project/neovim/domain/lua-patterns.md",
++        ".claude/context/project/neovim/domain/neovim-api.md",
++        ".claude/context/project/neovim/domain/plugin-ecosystem.md",
++        ".claude/context/project/neovim/guides/neovim-integration.md",
++        ".claude/context/project/neovim/guides/tts-stt-integration.md",
++        ".claude/context/project/neovim/hooks/wezterm-integration.md",
++        ".claude/context/project/neovim/patterns/autocommand-patterns.md",
++        ".claude/context/project/neovim/patterns/ftplugin-patterns.md",
++        ".claude/context/project/neovim/patterns/keymap-patterns.md",
++        ".claude/context/project/neovim/patterns/plugin-spec.md",
++        ".claude/context/project/neovim/standards/box-drawing-guide.md",
++        ".claude/context/project/neovim/standards/documentation-policy.md",
++        ".claude/context/project/neovim/standards/emoji-policy.md",
++        ".claude/context/project/neovim/standards/lua-assertion-patterns.md",
++        ".claude/context/project/neovim/standards/lua-style-guide.md",
++        ".claude/context/project/neovim/standards/testing-patterns.md",
++        ".claude/context/project/neovim/templates/ftplugin-template.md",
++        ".claude/context/project/neovim/templates/plugin-template.md",
++        ".claude/context/project/neovim/tools/lazy-nvim-guide.md",
++        ".claude/context/project/neovim/tools/telescope-guide.md",
++        ".claude/context/project/neovim/tools/treesitter-guide.md",
++        ".claude/scripts/nvim-context.sh",
++        ".claude/extensions/nvim/manifest.json"
++      ],
++      "version": "1.0.0",
++      "data_skeleton_files": [],
++      "status": "active",
++      "merged_sections": {
++        "index": {
++          "paths": [
++            "project/neovim/README.md",
++            "project/neovim/domain/lua-patterns.md",
++            "project/neovim/domain/neovim-api.md",
++            "project/neovim/domain/plugin-ecosystem.md",
++            "project/neovim/domain/lsp-overview.md",
++            "project/neovim/patterns/autocommand-patterns.md",
++            "project/neovim/patterns/ftplugin-patterns.md",
++            "project/neovim/patterns/keymap-patterns.md",
++            "project/neovim/patterns/plugin-spec.md",
++            "project/neovim/standards/lua-style-guide.md",
++            "project/neovim/standards/testing-patterns.md",
++            "project/neovim/templates/ftplugin-template.md",
++            "project/neovim/templates/plugin-template.md",
++            "project/neovim/tools/lazy-nvim-guide.md",
++            "project/neovim/tools/telescope-guide.md",
++            "project/neovim/tools/treesitter-guide.md",
++            "project/neovim/standards/box-drawing-guide.md",
++            "project/neovim/standards/documentation-policy.md",
++            "project/neovim/standards/emoji-policy.md",
++            "project/neovim/standards/lua-assertion-patterns.md",
++            "project/neovim/hooks/wezterm-integration.md",
++            "project/neovim/guides/neovim-integration.md",
++            "project/neovim/guides/tts-stt-integration.md",
++            "project/neovim/domain/extension-deploy-modes.md"
++          ]
++        }
++      },
++      "installed_dirs": []
++    },
++    "literature": {
++      "source_git_head": "eae45beaccc460531e8e63fec74b3ac5b6882b2b",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/literature",
++      "loaded_at": "2026-11-08T00:38:46Z",
++      "installed_files": [
++        ".claude/agents/literature-agent.md",
++        ".claude/commands/literature.md",
++        ".claude/commands/cite.md",
++        ".claude/skills/skill-literature/SKILL.md",
++        ".claude/skills/skill-cite/SKILL.md",
++        ".claude/context/project/literature/domain/corpus-directory-conventions.md",
++        ".claude/context/project/literature/domain/extension-dependencies.md",
++        ".claude/context/project/literature/domain/format-decision.md",
++        ".claude/context/project/literature/domain/fts5-query-semantics.md",
++        ".claude/context/project/literature/domain/literature-index.md",
++        ".claude/context/project/literature/domain/pymupdf4llm-fragmentation.md",
++        ".claude/context/project/literature/domain/sparse-coverage.md",
++        ".claude/context/project/literature/domain/tier3-provider-fallback.md",
++        ".claude/context/project/literature/domain/zotero-integration.md",
++        ".claude/context/project/literature/patterns/adhoc-navigation-directive.md",
++        ".claude/context/project/literature/patterns/agent-exploration.md",
++        ".claude/context/project/literature/patterns/chunk-file-conventions.md",
++        ".claude/context/project/literature/patterns/cite-workflow.md",
+         ".claude/context/project/literature/patterns/literature-command-modes.md",
+         ".claude/context/project/literature/patterns/literature-convert-mode.md",
+         ".claude/context/project/literature/patterns/literature-import-pipeline-mode.md",
+@@ -1314,7 +1412,9 @@
+         ".claude/scripts/tests/fixtures/tier3-unpaywall-200.json",
+         ".claude/extensions/literature/manifest.json"
+       ],
++      "version": "2.0.0",
+       "data_skeleton_files": [],
++      "status": "active",
+       "merged_sections": {
+         "index": {
+           "paths": [
+@@ -1349,111 +1449,91 @@
+           ]
+         }
+       },
+-      "installed_dirs": [],
+-      "source_git_head": "eae45beaccc460531e8e63fec74b3ac5b6882b2b"
++      "installed_dirs": []
+     },
+-    "sapience": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/sapience",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
+-      "status": "active",
++    "email": {
++      "source_git_head": "0ba82875c3c8088a1d0ce6944520cb801a1b8a6b",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/email",
++      "loaded_at": "2026-11-08T00:38:45Z",
+       "installed_files": [
+-        ".claude/context/project/sapience/README.md",
+-        ".claude/context/project/sapience/domain/review-gate-boundary.md",
+-        ".claude/context/project/sapience/domain/subagent-orientation.md",
+-        ".claude/context/project/sapience/domain/transcript-filter-ceiling.md",
+-        ".claude/context/project/sapience/domain/vault-model.md",
+-        ".claude/extensions/sapience/manifest.json"
++        ".claude/agents/email-implementation-agent.md",
++        ".claude/commands/email.md",
++        ".claude/skills/skill-email-implementation/SKILL.md",
++        ".claude/skills/skill-email-cleanup/SKILL.md",
++        ".claude/skills/skill-email-sync/SKILL.md",
++        ".claude/context/project/email/design/email-to-memory-preferences.md",
++        ".claude/context/project/email/domain/archive-mode-risk.md",
++        ".claude/context/project/email/domain/index-architecture.md",
++        ".claude/context/project/email/domain/safety-invariants.md",
++        ".claude/context/project/email/domain/staleness-detection.md",
++        ".claude/context/project/email/domain/wrapper-contracts.md",
++        ".claude/context/project/email/email-preferences.md",
++        ".claude/context/project/email/patterns/bulk-bucket-review.md",
++        ".claude/context/project/email/patterns/email-cleanup-all-mode.md",
++        ".claude/context/project/email/patterns/propose-review-confirm-execute.md",
++        ".claude/context/project/email/standards/recall-on-keep-bias.md",
++        ".claude/scripts/email-preference-harvest.sh",
++        ".claude/hooks/mail-guard.sh",
++        ".claude/extensions/email/manifest.json"
+       ],
++      "version": "1.0.0",
+       "data_skeleton_files": [],
++      "status": "active",
+       "merged_sections": {
+         "settings": {
+-          "permissions": {
+-            "type": "merged",
++          "hooks": {
+             "children": {
+-              "allow": {
+-                "type": "appended",
++              "PreToolUse": {
++                "type": "hook_merged",
++                "hook_items": [],
+                 "items": []
+               }
+-            }
++            },
++            "type": "merged"
++          },
++          "permissions": {
++            "children": {
++              "deny": {
++                "items": [],
++                "type": "appended"
++              }
++            },
++            "type": "merged"
+           }
+         },
+         "index": {
+           "paths": [
+-            "project/sapience/README.md",
+-            "project/sapience/domain/vault-model.md",
+-            "project/sapience/domain/review-gate-boundary.md",
+-            "project/sapience/domain/transcript-filter-ceiling.md",
+-            "project/sapience/domain/subagent-orientation.md"
++            "project/email/email-preferences.md",
++            "project/email/domain/wrapper-contracts.md",
++            "project/email/domain/safety-invariants.md",
++            "project/email/domain/index-architecture.md",
++            "project/email/domain/staleness-detection.md",
++            "project/email/domain/archive-mode-risk.md",
++            "project/email/patterns/bulk-bucket-review.md",
++            "project/email/patterns/propose-review-confirm-execute.md",
++            "project/email/standards/recall-on-keep-bias.md",
++            "project/email/design/email-to-memory-preferences.md",
++            "project/email/patterns/email-cleanup-all-mode.md"
+           ]
+         }
+       },
+-      "installed_dirs": [],
+-      "source_git_head": "b2e67d392494c0835efb5f7c396dcc55684ab948"
++      "installed_dirs": []
+     },
+-    "approvals": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/approvals",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:36Z",
+-      "status": "active",
++    "sapience": {
++      "source_git_head": "b2e67d392494c0835efb5f7c396dcc55684ab948",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/sapience",
++      "loaded_at": "2026-11-08T00:38:46Z",
+       "installed_files": [
+-        ".claude/commands/approve.md",
+-        ".claude/skills/skill-approve/SKILL.md",
+-        ".claude/context/project/approvals/README.md",
+-        ".claude/context/project/approvals/patterns/approve-interaction-design.md",
+-        ".claude/context/project/approvals/standards/approval-artifact-convention.md",
+-        ".claude/context/project/approvals/standards/confidence-vocabulary.md",
+-        ".claude/scripts/approve-classify.sh",
+-        ".claude/scripts/approve-guard.sh",
+-        ".claude/scripts/approve-paths.sh",
+-        ".claude/scripts/tests/test-approve-classify.sh",
+-        ".claude/scripts/tests/test-approve-paths.sh",
+-        ".claude/scripts/tests/test-approve-refusals.sh",
+-        ".claude/scripts/tests/test-approve-structural.sh",
+-        ".claude/extensions/approvals/manifest.json"
++        ".claude/context/project/sapience/README.md",
++        ".claude/context/project/sapience/domain/review-gate-boundary.md",
++        ".claude/context/project/sapience/domain/subagent-orientation.md",
++        ".claude/context/project/sapience/domain/transcript-filter-ceiling.md",
++        ".claude/context/project/sapience/domain/vault-model.md",
++        ".claude/extensions/sapience/manifest.json"
+       ],
+-      "data_skeleton_files": [],
+-      "merged_sections": {
+-        "index": {
+-          "paths": [
+-            "project/approvals/README.md",
+-            "project/approvals/standards/approval-artifact-convention.md",
+-            "project/approvals/standards/confidence-vocabulary.md",
+-            "project/approvals/patterns/approve-interaction-design.md"
+-          ]
+-        }
+-      },
+-      "installed_dirs": [],
+-      "source_git_head": "bd580e406218b4c277217e8bdcc2be34b46274ea"
+-    },
+-    "nix": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nix",
+       "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
+-      "status": "active",
+-      "installed_files": [
+-        ".claude/agents/nix-research-agent.md",
+-        ".claude/agents/nix-implementation-agent.md",
+-        ".claude/rules/nix.md",
+-        ".claude/skills/skill-nix-research/SKILL.md",
+-        ".claude/skills/skill-nix-implementation/SKILL.md",
+-        ".claude/context/project/nix/README.md",
+-        ".claude/context/project/nix/domain/flakes.md",
+-        ".claude/context/project/nix/domain/home-manager.md",
+-        ".claude/context/project/nix/domain/nix-language.md",
+-        ".claude/context/project/nix/domain/nixos-modules.md",
+-        ".claude/context/project/nix/patterns/derivation-patterns.md",
+-        ".claude/context/project/nix/patterns/module-patterns.md",
+-        ".claude/context/project/nix/patterns/overlay-patterns.md",
+-        ".claude/context/project/nix/standards/nix-style-guide.md",
+-        ".claude/context/project/nix/tools/home-manager-guide.md",
+-        ".claude/context/project/nix/tools/mcp-nixos-integration.md",
+-        ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
+-        ".claude/scripts/nix-preflight.sh",
+-        ".claude/scripts/nix-context.sh",
+-        ".claude/extensions/nix/manifest.json"
+-      ],
+       "data_skeleton_files": [],
++      "status": "active",
+       "merged_sections": {
+         "settings": {
+           "permissions": {
+@@ -1468,95 +1548,15 @@
+         },
+         "index": {
+           "paths": [
+-            "project/nix/README.md",
+-            "project/nix/domain/nix-language.md",
+-            "project/nix/domain/flakes.md",
+-            "project/nix/domain/nixos-modules.md",
+-            "project/nix/domain/home-manager.md",
+-            "project/nix/patterns/module-patterns.md",
+-            "project/nix/patterns/overlay-patterns.md",
+-            "project/nix/patterns/derivation-patterns.md",
+-            "project/nix/standards/nix-style-guide.md",
+-            "project/nix/tools/nixos-rebuild-guide.md",
+-            "project/nix/tools/home-manager-guide.md",
+-            "project/nix/tools/mcp-nixos-integration.md"
+-          ]
+-        }
+-      },
+-      "installed_dirs": [],
+-      "source_git_head": "0ee0f6dddb2a07a429c9adf7d2a35e15ab67c447"
+-    },
+-    "nvim": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nvim",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
+-      "status": "active",
+-      "installed_files": [
+-        ".claude/agents/neovim-research-agent.md",
+-        ".claude/agents/neovim-implementation-agent.md",
+-        ".claude/rules/neovim-lua.md",
+-        ".claude/skills/skill-neovim-research/SKILL.md",
+-        ".claude/skills/skill-neovim-implementation/SKILL.md",
+-        ".claude/context/project/neovim/README.md",
+-        ".claude/context/project/neovim/domain/extension-deploy-modes.md",
+-        ".claude/context/project/neovim/domain/lsp-overview.md",
+-        ".claude/context/project/neovim/domain/lua-patterns.md",
+-        ".claude/context/project/neovim/domain/neovim-api.md",
+-        ".claude/context/project/neovim/domain/plugin-ecosystem.md",
+-        ".claude/context/project/neovim/guides/neovim-integration.md",
+-        ".claude/context/project/neovim/guides/tts-stt-integration.md",
+-        ".claude/context/project/neovim/hooks/wezterm-integration.md",
+-        ".claude/context/project/neovim/patterns/autocommand-patterns.md",
+-        ".claude/context/project/neovim/patterns/ftplugin-patterns.md",
+-        ".claude/context/project/neovim/patterns/keymap-patterns.md",
+-        ".claude/context/project/neovim/patterns/plugin-spec.md",
+-        ".claude/context/project/neovim/standards/box-drawing-guide.md",
+-        ".claude/context/project/neovim/standards/documentation-policy.md",
+-        ".claude/context/project/neovim/standards/emoji-policy.md",
+-        ".claude/context/project/neovim/standards/lua-assertion-patterns.md",
+-        ".claude/context/project/neovim/standards/lua-style-guide.md",
+-        ".claude/context/project/neovim/standards/testing-patterns.md",
+-        ".claude/context/project/neovim/templates/ftplugin-template.md",
+-        ".claude/context/project/neovim/templates/plugin-template.md",
+-        ".claude/context/project/neovim/tools/lazy-nvim-guide.md",
+-        ".claude/context/project/neovim/tools/telescope-guide.md",
+-        ".claude/context/project/neovim/tools/treesitter-guide.md",
+-        ".claude/scripts/nvim-context.sh",
+-        ".claude/extensions/nvim/manifest.json"
+-      ],
+-      "data_skeleton_files": [],
+-      "merged_sections": {
+-        "index": {
+-          "paths": [
+-            "project/neovim/README.md",
+-            "project/neovim/domain/lua-patterns.md",
+-            "project/neovim/domain/neovim-api.md",
+-            "project/neovim/domain/plugin-ecosystem.md",
+-            "project/neovim/domain/lsp-overview.md",
+-            "project/neovim/patterns/autocommand-patterns.md",
+-            "project/neovim/patterns/ftplugin-patterns.md",
+-            "project/neovim/patterns/keymap-patterns.md",
+-            "project/neovim/patterns/plugin-spec.md",
+-            "project/neovim/standards/lua-style-guide.md",
+-            "project/neovim/standards/testing-patterns.md",
+-            "project/neovim/templates/ftplugin-template.md",
+-            "project/neovim/templates/plugin-template.md",
+-            "project/neovim/tools/lazy-nvim-guide.md",
+-            "project/neovim/tools/telescope-guide.md",
+-            "project/neovim/tools/treesitter-guide.md",
+-            "project/neovim/standards/box-drawing-guide.md",
+-            "project/neovim/standards/documentation-policy.md",
+-            "project/neovim/standards/emoji-policy.md",
+-            "project/neovim/standards/lua-assertion-patterns.md",
+-            "project/neovim/hooks/wezterm-integration.md",
+-            "project/neovim/guides/neovim-integration.md",
+-            "project/neovim/guides/tts-stt-integration.md",
+-            "project/neovim/domain/extension-deploy-modes.md"
++            "project/sapience/README.md",
++            "project/sapience/domain/vault-model.md",
++            "project/sapience/domain/review-gate-boundary.md",
++            "project/sapience/domain/transcript-filter-ceiling.md",
++            "project/sapience/domain/subagent-orientation.md"
+           ]
+         }
+       },
+-      "installed_dirs": [],
+-      "source_git_head": "81dc3cb287c243cf35c41fd8797bc01544cc3015"
++      "installed_dirs": []
+     }
+   }
+ }
+diff --git a/.memory/memory-index.json b/.memory/memory-index.json
+index ad7dffe7d..a88e40d30 100644
+--- a/.memory/memory-index.json
++++ b/.memory/memory-index.json
+@@ -151,7 +151,7 @@
+       "created": "2026-05-22",
+       "modified": "2026-05-22",
+       "last_retrieved": "2026-11-07",
+-      "retrieval_count": 186
++      "retrieval_count": 188
+     },
+     {
+       "id": "MEM-technique-validate-context-budgets-budget",
+diff --git a/agent-system/extensions/core/index-entries.json b/agent-system/extensions/core/index-entries.json
+index 2f6a9a1ca..58b12a6f8 100644
+--- a/agent-system/extensions/core/index-entries.json
++++ b/agent-system/extensions/core/index-entries.json
+@@ -2822,7 +2822,7 @@
+       "domain": "core",
+       "subdomain": "patterns",
+       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
+-      "line_count": 2295,
++      "line_count": 2296,
+       "keywords": [
+         "patterns",
+         "orchestrate",
+diff --git a/specs/430_feed_undeclared_implement_paths_into_file_scope/plans/01_implement-phase-scope-feedback.md b/specs/430_feed_undeclared_implement_paths_into_file_scope/plans/01_implement-phase-scope-feedback.md
+index 0a0cda18b..a20915d0a 100644
+--- a/specs/430_feed_undeclared_implement_paths_into_file_scope/plans/01_implement-phase-scope-feedback.md
++++ b/specs/430_feed_undeclared_implement_paths_into_file_scope/plans/01_implement-phase-scope-feedback.md
+@@ -2,7 +2,7 @@
+ 
+ - **Task**: 430 - Feed observed-but-undeclared implement paths back into a task's declared
+   `file_scope` instead of silently dropping them from phase commits
+-- **Status**: [NOT STARTED]
++- **Status**: [IMPLEMENTING]
+ - **Effort**: 7 hours
+ - **Dependencies**: None (362, 394, 395, 425, 428, 494 all confirmed `[COMPLETED]`/archived by the
+   research round)
+diff --git a/specs/TODO.md b/specs/TODO.md
+index 2ab682967..9b4368962 100644
+--- a/specs/TODO.md
++++ b/specs/TODO.md
+@@ -6,7 +6,7 @@ next_project_number: 528
+ 
+ ## Task Order
+ 
+-*Updated 2026-11-07. Generated from state.json dependency graph.*
++*Updated 2026-11-08. Generated from state.json dependency graph.*
+ 
+ **Dependency Waves**:
+ | Wave | Tasks | Blocked by | Topics |
+@@ -98,7 +98,7 @@ next_project_number: 528
+ 
+ ### File Scope Lifecycle
+ 
+-430 [PLANNED] — Feed observed-but-undeclared implement paths back into a task...
++430 [IMPLEMENTING] — Feed observed-but-undeclared implement paths back into a task...
+   └─ 446 [NOT STARTED] — Close the plan-to-file\_scope reconciliation gap and make a...
+     └─ 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
+     └─ 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
+@@ -5055,7 +5055,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
+ ---
+ 
+ ### 430. Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits
+-- **Status**: [PLANNED]
++- **Status**: [IMPLEMENTING]
+ - **Task Type**: meta
+ - **Topic**: file-scope-lifecycle
+ - **Dependencies**: Task 362, Task 394, Task 395, Task 425, Task 428, Task 494
+diff --git a/specs/events.jsonl b/specs/events.jsonl
+index b53b6cfd4..32d21a36d 100644
+--- a/specs/events.jsonl
++++ b/specs/events.jsonl
+@@ -7934,3 +7934,35 @@
+ {"event_id":"evt_1794029829513_CwvWIR","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T05:37:09.518Z","duration_seconds":6.831,"session_id":"sess_1794023900_f4ac5a","task":418,"checkpoint":"postflight","message":"Postflight stage completed for implement (status: implemented)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
+ {"event_id":"evt_1794037940947_gYOiau","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T07:52:20.951Z","duration_seconds":null,"session_id":"sess_1794023900_f4ac5a","task":418,"checkpoint":null,"message":"Session stop observed for task 418","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"d35e354f-643e-455e-b444-04455f6a91cf"}
+ {"event_id":"evt_1794038932128_42pzIH","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T08:08:52.132Z","duration_seconds":null,"session_id":"sess_1794023900_f4ac5a","task":418,"checkpoint":null,"message":"Session stop observed for task 418","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"d35e354f-643e-455e-b444-04455f6a91cf"}
++{"event_id":"evt_1794089707112_A8qBHW","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:15:07.117Z","duration_seconds":9.698,"session_id":"sess_1794089641_e5bee5_420","task":420,"checkpoint":"preflight","message":"Preflight stage completed for research","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794089720218_cpaW8E","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:15:20.223Z","duration_seconds":9.774,"session_id":"sess_1794089641_e5bee5_430","task":430,"checkpoint":"preflight","message":"Preflight stage completed for research","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794089733013_DjoEeG","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:15:33.018Z","duration_seconds":9.537,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":"preflight","message":"Preflight stage completed for research","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794089768992_Ynf7No","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:16:08.997Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090247602_M7xHm7","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:24:07.608Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090251570_bgcuuw","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:24:11.576Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090309262_6m2Tim","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:25:09.268Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090315410_acmVJ2","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:25:15.416Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090355410_nQkx1C","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:25:55.415Z","duration_seconds":9.113,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":"postflight","message":"Postflight stage completed for research (status: researched)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794090380157_bpdweu","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:26:20.162Z","duration_seconds":10.150,"session_id":"sess_1794089641_e5bee5","task":430,"checkpoint":"postflight","message":"Postflight stage completed for research (status: researched)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794090401936_wL5HO1","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:26:41.941Z","duration_seconds":9.229,"session_id":"sess_1794089641_e5bee5","task":435,"checkpoint":"postflight","message":"Postflight stage completed for research (status: researched)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794090450050_LRXYgL","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:27:30.055Z","duration_seconds":9.993,"session_id":"sess_1794089641_e5bee5_420","task":420,"checkpoint":"preflight","message":"Preflight stage completed for plan","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794090462269_VSYIrZ","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:27:42.274Z","duration_seconds":9.047,"session_id":"sess_1794089641_e5bee5_430","task":430,"checkpoint":"preflight","message":"Preflight stage completed for plan","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794090474449_tHl73z","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:27:54.459Z","duration_seconds":8.929,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":"preflight","message":"Preflight stage completed for plan","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794090494158_dbu2vU","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:28:14.167Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090497065_yWTKlR","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:28:17.074Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090515137_MfRHMt","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:28:35.142Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_420","task":420,"checkpoint":null,"message":"Session stop observed for task 420","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"ff18e944-ad97-46a9-8d50-edeed01227c4"}
++{"event_id":"evt_1794090913634_zlqye8","event_type":"artifact_write","category":"success","timestamp":"2026-11-07T22:35:13.642Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_430","task":430,"checkpoint":null,"message":"Artifact metadata written with status 'planned'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090933952_KcvSFw","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:35:33.959Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090958188_nSIH4y","event_type":"artifact_write","category":"success","timestamp":"2026-11-07T22:35:58.199Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_420","task":420,"checkpoint":null,"message":"Artifact metadata written with status 'planned'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794090986440_0UUANu","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:36:26.446Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5_435","task":435,"checkpoint":null,"message":"Session stop observed for task 435","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794091222466_zTPEw8","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:40:22.478Z","duration_seconds":20.744,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":"postflight","message":"Postflight stage completed for plan (status: planned)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794091251543_4Rppp4","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:40:51.549Z","duration_seconds":10.647,"session_id":"sess_1794089641_e5bee5","task":430,"checkpoint":"postflight","message":"Postflight stage completed for plan (status: planned)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794091277469_bM2RQP","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:41:17.476Z","duration_seconds":12.067,"session_id":"sess_1794089641_e5bee5","task":435,"checkpoint":"postflight","message":"Postflight stage completed for plan (status: planned)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794091331645_Qk5q62","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-07T22:42:11.652Z","duration_seconds":12.877,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":"preflight","message":"Preflight stage completed for implement","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794091352150_AD2Rk2","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:42:32.158Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":null,"message":"Session stop observed for task 420","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794091354587_kkghl0","event_type":"session_stop","category":"milestone","timestamp":"2026-11-07T22:42:34.594Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":null,"message":"Session stop observed for task 420","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794091403719_kBgQdq","event_type":"artifact_write","category":"milestone","timestamp":"2026-11-07T22:43:23.726Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":null,"message":"Artifact metadata written with status 'in_progress'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794098265861_rSjdDz","event_type":"system_defect","category":"deviation","timestamp":"2026-11-08T00:37:45.869Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":null,"message":"handoff mtime 1794090966 predates this dispatch window (1794091318)","detail":{"defect_class":"HANDOFF_STALE_OR_ABSENT","attributed_source_path":"agent-system/extensions/core/skills/skill-orchestrate/SKILL.md","detecting_site":"skill-orchestrate/SKILL.md:cycle-postflight-stale-handoff","dispatched_agent":null,"defect_key":"HANDOFF_STALE_OR_ABSENT:agent-system/extensions/core/skills/skill-orchestrate/SKILL.md","linked_task_number":null},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794098291098_7s4mMd","event_type":"session_stop","category":"milestone","timestamp":"2026-11-08T00:38:11.107Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":null,"message":"Session stop observed for task 420","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"2cc9c493-2f01-49c9-9882-a3b2549397db"}
++{"event_id":"evt_1794101436657_KZpMoI","event_type":"system_defect","category":"deviation","timestamp":"2026-11-08T01:30:36.664Z","duration_seconds":null,"session_id":"sess_1794089641_e5bee5","task":420,"checkpoint":null,"message":"handoff mtime 1794090966 predates this dispatch window (1794091318)","detail":{"defect_class":"HANDOFF_STALE_OR_ABSENT","attributed_source_path":"agent-system/extensions/core/skills/skill-orchestrate/SKILL.md","detecting_site":"skill-orchestrate/SKILL.md:cycle-postflight-stale-handoff","dispatched_agent":null,"defect_key":"HANDOFF_STALE_OR_ABSENT:agent-system/extensions/core/skills/skill-orchestrate/SKILL.md","linked_task_number":null},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794101500881_Jsvo3I","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-08T01:31:40.889Z","duration_seconds":13.945,"session_id":"sess_1794089641_e5bee5","task":430,"checkpoint":"preflight","message":"Preflight stage completed for implement","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
+diff --git a/specs/state.json b/specs/state.json
+index 06303c29d..6c43b42ea 100644
+--- a/specs/state.json
++++ b/specs/state.json
+@@ -3637,7 +3637,7 @@
+     {
+       "project_number": 430,
+       "project_name": "feed_undeclared_implement_paths_into_file_scope",
+-      "status": "planned",
++      "status": "implementing",
+       "task_type": "meta",
+       "title": "Feed observed-but-undeclared implement paths back into a task declared file_scope instead of silently dropping them from phase commits",
+       "topic": "file-scope-lifecycle",
+@@ -3676,7 +3676,7 @@
+         }
+       ],
+       "created": "2026-10-16T23:40:01Z",
+-      "last_updated": "2026-11-07T22:40:41Z",
++      "last_updated": "2026-11-08T01:31:27Z",
+       "session_id": "sess_1794089641_e5bee5",
+       "next_artifact_number": 2
+     },
