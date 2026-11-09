@@ -3207,7 +3207,7 @@
     {
       "project_number": 369,
       "project_name": "orphan_sweep_for_removed_merge_target_entries",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Orphan sweep for deployed entries removed from the source store: the deploy adds and changes but cannot delete",
@@ -3223,13 +3223,19 @@
         "lua/neotex/plugins/ai/shared/extensions/init.lua",
         "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md"
       ],
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/reports/01_orphan-sweep-hook-registrations.md",
+          "type": "report",
+          "summary": "Grounds the hook-registration orphan sweep in merge.lua's existing remove_orphaned_index_entries precedent and call-siting, reconciles the hook_identity()/lint identity divergence, and directly re-verifies all claimed live instances across five real deployed repos (finding Logos/Theory's prior hand-repair incomplete and a new cross-event defect shape)."
+        }
+      ],
+      "next_artifact_number": 2,
       "created": "2026-10-07T21:40:00Z",
-      "last_updated": "2026-11-08T00:00:00Z",
+      "last_updated": "2026-11-09T07:41:54Z",
       "effort": null,
       "priority": null,
-      "session_id": null
+      "session_id": "sess_1794209498_570cdb"
     },
     {
       "project_number": 383,

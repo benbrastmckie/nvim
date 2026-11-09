@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794209498_570cdb_369",
+  "dispatch_seq": 1,
+  "task_number": 369,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/reports/01_orphan-sweep-hook-registrations.md",
+      "summary": "Grounds the hook-registration orphan sweep in merge.lua's existing remove_orphaned_index_entries precedent and call-siting, reconciles the hook_identity()/lint identity divergence, and directly re-verifies all claimed live instances across five real deployed repos (finding Logos/Theory's prior hand-repair incomplete and a new cross-event defect shape)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "This repo's extension loader (lua/neotex/plugins/ai/shared/extensions/) already has a working orphan-sweep precedent for merge-target content removal: merge.lua's remove_orphaned_index_entries, called from init.lua's manager.load per-extension loop immediately BEFORE process_merge_targets re-adds that extension's own fresh entries, using a valid-set-excluding-self pattern. Any new merge-target orphan sweep (e.g. for settings.json hook registrations) should mirror this exact call-siting and convergence property rather than inventing a new one, since it is already proven order-independent across a resync_all loop.",
+      "category": "PATTERN",
+      "source_artifact": "specs/369_orphan_sweep_for_removed_merge_target_entries/reports/01_orphan-sweep-hook-registrations.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["merge.lua", "orphan sweep", "extension loader", "remove_orphaned_index_entries", "manager.load"]
+    },
+    {
+      "content": "merge.lua's hook_identity() (hooks/*.sh only) and lint-hook-registration-paths.sh's normalize_identity() (any invoked script path, ~/-anchored paths explicitly exempt) are a documented, deliberate divergence in this codebase (lint script's own D4 comment). A ~/-anchored hook command (e.g. claude-ready-signal.sh invoked as ~/.config/nvim/scripts/claude-ready-signal.sh) is identity-ineligible under both today and must stay ineligible under any broadened/reconciled identity function -- it is a real, externally-provided integration point found live in three deployed repos, not a hypothetical edge case.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/369_orphan_sweep_for_removed_merge_target_entries/reports/01_orphan-sweep-hook-registrations.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["hook_identity", "lint-hook-registration-paths", "tilde anchor", "custom hook carve-out", "settings.json"]
+    },
+    {
+      "content": "A hook-registration drift shape exists that current tooling/tasks do not name: the same hook script surviving registered under a DIFFERENT EVENT (e.g. stale PostToolUse copy alongside a current PreToolUse registration), not just a different matcher within one event. deep_merge in merge.lua processes each top-level hooks.<EVENT> array independently, so nothing compares across events. Observed live in Logos/Theory's validate-no-task-references.sh (runs twice per Write/Edit as a result). Worth checking for when evaluating any hook-registration health/drift question in this codebase.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/369_orphan_sweep_for_removed_merge_target_entries/reports/01_orphan-sweep-hook-registrations.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["cross-event duplicate", "hook registration drift", "deep_merge", "validate-no-task-references"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 369 to create implementation plan"
+}
