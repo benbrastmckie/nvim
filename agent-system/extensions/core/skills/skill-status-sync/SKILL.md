@@ -25,7 +25,7 @@ Workflow skills (skill-orchestrate, skill-reviser, skill-spawn, etc.) now handle
 - Recovery operations when workflow skills fail
 - Testing status update behavior in isolation
 
-**Do NOT use this skill in workflow commands** (/research, /plan, /implement, /revise) - those commands now invoke a single skill that handles its own status updates.
+**Do NOT use this skill in workflow dispatches** (the research, plan, and implement phases, plus /revise) - those dispatches now invoke a single skill that handles its own status updates.
 
 ## Trigger Conditions
 

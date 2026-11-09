@@ -481,5 +481,5 @@ For self-hosted instances, ensure:
 ## Related Commands
 
 - `/task` - Create a task for the work
-- `/implement` - Implement the task
+- `/orchestrate --implement` - Implement the task
 - `/review` - Review code before merging

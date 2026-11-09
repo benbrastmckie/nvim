@@ -236,7 +236,7 @@ Selected tasks are created in TODO.md and state.json.
 Next Steps:
 1. Review tasks in TODO.md
 2. Run /orchestrate 650 to begin
-3. Progress through /research -> /plan -> /implement cycle
+3. Progress through the research -> plan -> implement dispatch cycle
 ```
 
 ### No Tags Found

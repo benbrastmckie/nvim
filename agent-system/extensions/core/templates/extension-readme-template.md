@@ -125,7 +125,7 @@ section:
 <Complex only; optional for simple.>
 
 ```
-/research <task>    (task_type: <type>)
+research-phase dispatch for <task>    (task_type: <type>)
     |
     v
 skill-<name>-research -> <name>-research-agent
@@ -134,7 +134,7 @@ skill-<name>-research -> <name>-research-agent
 specs/{NNN}_{SLUG}/reports/MM_{slug}.md
     |
     v
-/plan -> /implement
+plan phase -> implement phase
 ```
 
 ## Output Artifacts

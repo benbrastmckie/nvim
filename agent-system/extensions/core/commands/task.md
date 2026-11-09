@@ -21,7 +21,7 @@ Unified task lifecycle management. Parse $ARGUMENTS to determine operation mode.
 
 **Example**: If $ARGUMENTS is "Investigate foo.py and fix the bug", you create a task entry with that description. You do NOT read foo.py or fix anything.
 
-**Workflow**: After `/task` creates the entry, the user runs `/research`, `/plan`, `/implement` separately.
+**Workflow**: After `/task` creates the entry, the user runs the research, plan, and implement phases separately (via `/orchestrate --research`, `--plan`, `--implement`).
 
 ---
 

@@ -141,7 +141,7 @@ Write to `specs/{NNN}_{SLUG}/reports/{NN}_spawn-analysis.md`:
 
 ## After Completion
 
-Once all spawned tasks are complete, resume the parent task #{N} with `/implement {N}`.
+Once all spawned tasks are complete, resume the parent task #{N} via `/orchestrate {N} --implement`.
 
 The blocker will be resolved because: {explanation of how completing these tasks removes the blocker}.
 ```

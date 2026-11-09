@@ -9,7 +9,7 @@ context: direct
 
 Direct execution skill for analyzing a repository and creating a task with research artifact to generate `project-overview.md`. Uses a 3-stage workflow: auto-scan, interactive interview, and task+artifact creation.
 
-**Key behavior**: The skill does NOT write `project-overview.md` directly. It creates a task and research artifact, then guides the user to `/plan` and `/implement` for the actual file generation.
+**Key behavior**: The skill does NOT write `project-overview.md` directly. It creates a task and research artifact, then guides the user to the plan and implement phases for the actual file generation.
 
 ## Context References
 
@@ -469,7 +469,7 @@ Alternatively, if you want to skip the plan step:
 ## Notes
 
 - The skill intentionally does NOT write project-overview.md directly
-- It creates a task in [RESEARCHED] status, ready for /plan and /implement
+- It creates a task in [RESEARCHED] status, ready for the plan and implement phases
 - The task type is "meta" since it modifies .claude/ content
 - The auto-scan uses simple bash commands (ls, find, file checks) to keep execution fast
 - The interactive interview uses AskUserQuestion for multi-turn dialogue

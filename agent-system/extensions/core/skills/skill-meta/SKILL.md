@@ -33,7 +33,7 @@ This skill activates when:
 
 ## Anti-Bypass Constraint
 
-**PROHIBITION**: This skill and its delegated agent (meta-builder-agent) MUST NOT write to `.claude/` paths using Write or Edit tools. The /meta workflow creates TASKS only. All `.claude/` file modifications happen through the /implement lifecycle with proper skill delegation.
+**PROHIBITION**: This skill and its delegated agent (meta-builder-agent) MUST NOT write to `.claude/` paths using Write or Edit tools. The /meta workflow creates TASKS only. All `.claude/` file modifications happen through the implement-phase lifecycle with proper skill delegation.
 
 **Detected by**: PostToolUse hook `validate-meta-write.sh` provides corrective context if bypass is attempted.
 

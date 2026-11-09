@@ -1,0 +1,79 @@
+{
+  "phase": 8,
+  "phase_name": "core/commands, agents, skills, templates and README",
+  "started_at": "2026-11-08T20:00:00Z",
+  "last_updated": "2026-11-08T20:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 17 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/general-implementation-agent.md",
+        "agent-system/extensions/core/agents/general-research-agent.md",
+        "agent-system/extensions/core/agents/meta-builder-agent.md",
+        "agent-system/extensions/core/agents/planner-agent.md",
+        "agent-system/extensions/core/agents/spawn-agent.md",
+        "agent-system/extensions/core/commands/fix-it.md",
+        "agent-system/extensions/core/commands/merge.md",
+        "agent-system/extensions/core/commands/meta.md",
+        "agent-system/extensions/core/commands/spawn.md",
+        "agent-system/extensions/core/commands/task.md",
+        "agent-system/extensions/core/README.md",
+        "agent-system/extensions/core/skills/skill-fix-it/SKILL.md",
+        "agent-system/extensions/core/skills/skill-meta/SKILL.md",
+        "agent-system/extensions/core/skills/skill-project-overview/SKILL.md",
+        "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+        "agent-system/extensions/core/skills/skill-status-sync/SKILL.md",
+        "agent-system/extensions/core/templates/extension-readme-template.md"
+      ],
+      "note": "31 occurrences measured (vs. 18-file/unspecified-count Scope Hypothesis minus revise.md, owned by Phase 1), all 17 files treated, zero remaining dead-command tokens. No index-entries.json line_count sync needed: none of agents/, commands/, skills/, or templates/extension-readme-template.md carries a tracked entry in agent-system/extensions/core/index-entries.json (confirmed by grep), and the one 'README.md' entry that does exist there (domain=core, subdomain=root, summary 'Context directory documentation index') resolves to context/README.md, not the top-level core/README.md edited in this phase -- verified unaffected."
+    },
+    {
+      "id": 2,
+      "description": "general-implementation-agent.md sibling-collision check (task 430)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"],
+      "note": "Re-read immediately before editing. Single hunk: the `@`-import bullet's 'command=`/implement`' annotation reworded to 'phase=`implement`' (and the matching pattern applied to general-research-agent.md and planner-agent.md for consistency, since all three agent files share the identical annotation convention naming a dead command). No collision with task 430's own hunks in this file."
+    },
+    {
+      "id": 3,
+      "description": "Commands documenting live commands: distinguish class 1 (phase meaning) from a genuine stale reference, per file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/commands/fix-it.md",
+        "agent-system/extensions/core/commands/merge.md",
+        "agent-system/extensions/core/commands/meta.md",
+        "agent-system/extensions/core/commands/spawn.md",
+        "agent-system/extensions/core/commands/task.md"
+      ],
+      "note": "merge.md's '## Related Commands' bullet list literally named `/implement` as a related command alongside the live `/task` and `/review`; corrected to `/orchestrate --implement` rather than reworded to bare phase prose, since a bullet list of invocable commands reads correctly only with an invocable form. spawn.md's 'Next Steps' numbered list (4 lines) similarly needed the invocable `/orchestrate ... --plan`/`--implement` form, not bare phase names, since it is literal copy-paste guidance for the user to run. fix-it.md, meta.md (x3 sites) and task.md's occurrences were architectural/narrative (a cycle description, a prohibition statement, a workflow description) and took ordinary phase-framing rewords consistent with other phases' established style."
+    },
+    {
+      "id": 4,
+      "description": "README.md's command table: a verified factual defect beyond ordinary phase-framing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/README.md"],
+      "note": "The '## Commands' table literally listed `/research`, `/plan`, `/implement` as rows in a 'All 17 commands use checkpoint-based execution' table with invocable 'Usage' syntax (`/research N [focus]` etc.) -- not phase-versus-command prose but a data-table row asserting non-existent invocable syntax. Per the Non-Goals' no-restructuring constraint, the 3 rows were NOT deleted (which could read as restructuring the command inventory); instead each row's Command-column value was changed to the phase name ('research phase'/'plan phase'/'implement phase') and its Usage column corrected to the real `/orchestrate N --research/--plan/--implement` invocation, preserving every row and its Description column untouched. Residue noted, not fixed (out of this task's charter): the table's row count (now 17, including 3 phase rows) still does not match the page's own top-of-file 'Commands | 15' overview count, and `/orchestrate` itself is absent from the detailed table -- both are pre-existing content-completeness defects unrelated to dead-command naming, confirmed unaffected by this edit (row count and /orchestrate's absence predate this phase; this edit only corrected the 3 false command-identity/usage claims, strictly reducing defects, not reducing the pre-existing count mismatch, which this task's charter does not cover)."
+    },
+    {
+      "id": 5,
+      "description": "Repeated-phrase occurrences across meta-builder-agent.md, meta.md, fix-it.md, skill-fix-it/SKILL.md: same literal 'Progress through /research -> /plan -> /implement cycle' template line",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/meta-builder-agent.md",
+        "agent-system/extensions/core/commands/meta.md",
+        "agent-system/extensions/core/commands/fix-it.md",
+        "agent-system/extensions/core/skills/skill-fix-it/SKILL.md"
+      ],
+      "note": "The identical line '3. Progress through /research -> /plan -> /implement cycle for each task' (meta-builder-agent.md, 3 occurrences) and its closely-related sibling '3. Progress through /research -> /plan -> /implement cycle' (meta.md, fix-it.md, skill-fix-it/SKILL.md) were all reworded identically to 'the research -> plan -> implement dispatch cycle' for consistency across the four files, since they are copy-derived variants of the same template text and a divergent per-file wording would read as an unexplained inconsistency to a future reader."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24). Residual FAILs are the same ones already confirmed: gate 24's 2 pre-existing /ide violations; gate 3's validate-state.sh and state-schema.json pre-existing drift, plus the 18 Phase-7-edited scripts' now-expected 'deployed != source' drift (unresolved only because no redeploy has run since Phase 7 -- carried forward unchanged by this phase, which touched no scripts/ files). No new FAIL introduced by Phase 8."
+  ]
+}

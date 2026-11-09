@@ -35,7 +35,7 @@ Interactive system builder that delegates to `skill-meta` for creating TASKS for
 
 ## Anti-Bypass Constraint
 
-**PROHIBITION**: The /meta command and its delegated agents MUST NOT create or modify files in `.claude/` directly using Write or Edit tools. All `.claude/` file creation and modification MUST happen through the standard task lifecycle: /meta creates tasks, then /research -> /plan -> /implement executes them via the Skill tool delegation chain.
+**PROHIBITION**: The /meta command and its delegated agents MUST NOT create or modify files in `.claude/` directly using Write or Edit tools. All `.claude/` file creation and modification MUST happen through the standard task lifecycle: /meta creates tasks, then the research -> plan -> implement dispatch cycle executes them via the Skill tool delegation chain.
 
 **Scope**: This prohibition covers all paths under `.claude/` including:
 - `.claude/commands/*`
@@ -186,7 +186,7 @@ High Priority:
 Next Steps:
 1. Review tasks in TODO.md
 2. Run /orchestrate {N} to begin work on first task
-3. Progress through /research -> /plan -> /implement cycle
+3. Progress through the research -> plan -> implement dispatch cycle
 ```
 
 ### Analysis Output
@@ -219,13 +219,13 @@ Run /meta again when ready.
 
 ## Reference Templates
 
-These templates are provided for reference when creating tasks. Actual file creation happens during `/implement`, not `/meta`.
+These templates are provided for reference when creating tasks. Actual file creation happens during the implement phase, not `/meta`.
 
 ### Command Template Reference
 
-Model tiering guidance: `opus` is reserved for context-accumulating orchestrators
-(`/research`, `/plan`, `/implement`, `/orchestrate`) and deep-reasoning commands (`/meta`,
-`/revise`). Pure-delegation commands (dispatch only to a skill/agent that declares its own
+Model tiering guidance: `opus` is reserved for context-accumulating phases
+(research, plan, implement -- all dispatched via `/orchestrate`) and deep-reasoning commands
+(`/meta`, `/revise`). Pure-delegation commands (dispatch only to a skill/agent that declares its own
 model) should omit the `model:` line entirely. All other inline/single-shot utility commands
 default to `model: sonnet`, as scaffolded below.
 

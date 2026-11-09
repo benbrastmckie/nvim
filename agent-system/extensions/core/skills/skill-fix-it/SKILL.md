@@ -672,7 +672,7 @@ Show summary of created tasks:
 **Next Steps**:
 1. Review tasks in TODO.md
 2. Run `/orchestrate {first_task}` to begin
-3. Progress through /research -> /plan -> /implement cycle
+3. Progress through the research -> plan -> implement dispatch cycle
 ```
 
 ### Step 11: Git Commit (Postflight)

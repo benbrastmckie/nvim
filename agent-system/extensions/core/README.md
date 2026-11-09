@@ -28,9 +28,9 @@ All 17 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 |---------|-------|-------------|
 | `/task` | `/task "Description"` | Create, recover, expand, sync, or abandon tasks |
 | `/please` | `/please push origin feature-x` | Authorize one otherwise-blocked git push or destructive action for this invocation (user-only) |
-| `/research` | `/research N [focus]` | Research task(s), route by task type |
-| `/plan` | `/plan N` | Create phased implementation plan(s) |
-| `/implement` | `/implement N` | Execute plan(s) with phase resume support |
+| research phase | `/orchestrate N --research [focus]` | Research task(s), route by task type |
+| plan phase | `/orchestrate N --plan` | Create phased implementation plan(s) |
+| implement phase | `/orchestrate N --implement` | Execute plan(s) with phase resume support |
 | `/todo` | `/todo` | Archive completed/abandoned tasks, sync metrics |
 | `/meta` | `/meta` | Interactive system builder for .claude/ changes |
 | `/review` | `/review` | Analyze codebase and create analysis reports |
@@ -44,7 +44,7 @@ All 17 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 | `/tag` | `/tag` | Create semantic version tag (user-only) |
 | `/zulip` | `/zulip` | Fetch a Zulip thread via API and write formatted JSON to a file |
 
-Multi-task syntax: `/research`, `/plan`, and `/implement` accept comma-separated and range task numbers (e.g., `/research 7, 22-24`). Flags like `--force`, `--fast`, `--hard` modify behavior.
+Multi-task syntax: the research, plan, and implement phases (dispatched via `/orchestrate`) accept comma-separated and range task numbers (e.g., `/orchestrate 7,22-24 --research`). Flags like `--force`, `--fast`, `--hard` modify behavior.
 
 ## Agents
 

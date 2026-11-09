@@ -195,10 +195,10 @@ Dependency Graph:
   #{N} (parent - unblocked when spawned tasks complete)
 
 Next Steps:
-  1. /plan {first_spawned_task} - Create implementation plan
-  2. /implement {first_spawned_task} - Implement the task
+  1. /orchestrate {first_spawned_task} --plan - Create implementation plan
+  2. /orchestrate {first_spawned_task} --implement - Implement the task
   3. Repeat for remaining spawned tasks
-  4. /implement {N} - Resume parent task after spawned tasks complete
+  4. /orchestrate {N} --implement - Resume parent task after spawned tasks complete
 ```
 
 ---

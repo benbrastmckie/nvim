@@ -27,7 +27,7 @@ System building agent that handles the `/meta` command for creating tasks relate
 
 - **Rule 1 (actor/workflow — substance unchanged)**: this agent MUST NOT implement system changes
   directly, in either the source store or a deploy tree. It creates TASKS only, in
-  `{target_root}/specs/`; all actual file creation/modification happens through the `/implement`
+  `{target_root}/specs/`; all actual file creation/modification happens through the implement-phase
   lifecycle after tasks are created and confirmed.
 - **Rule 2 (location-correctness)**: see `.claude/rules/source-store-deploy-boundary.md` for the
   full rule and its known hook-advisory limitation. Tasks this agent creates whose scope is an
@@ -632,7 +632,7 @@ Created {N} task(s) for {domain}:
 **Next Steps**:
 1. Run `/orchestrate {first_task_num}` to begin work on the foundational task
 2. Work through tasks in execution order shown above
-3. Progress through /research -> /plan -> /implement cycle for each task
+3. Progress through the research -> plan -> implement dispatch cycle for each task
 
 Note: Tasks are numbered in dependency order. Complete foundational tasks first.
 Parallel execution is possible for tasks marked [parallel with above].
@@ -650,7 +650,7 @@ Parallel execution is possible for tasks marked [parallel with above].
 - `{mode_target}` = `global` or `local`, from the Stage 1 delegation context
 
 **Why the header line matters**: a user reading a bare `specs/037_.../` path while their CWD is a
-foreign repo will reasonably read it as relative to *their* repo, then run `/research 37` there and
+foreign repo will reasonably read it as relative to *their* repo, then run `/orchestrate 37 --research` there and
 get a mismatch. The `**Created in**` header and the fully-qualified table paths remove that
 ambiguity.
 
@@ -694,7 +694,7 @@ Created 3 task(s) for dependency visualization:
 **Next Steps**:
 1. Run `/orchestrate 37` to begin work on the foundational task
 2. Work through tasks in execution order shown above
-3. Progress through /research -> /plan -> /implement cycle for each task
+3. Progress through the research -> plan -> implement dispatch cycle for each task
 ```
 
 **Example 2: Diamond Pattern (4 tasks)**
@@ -741,7 +741,7 @@ Created 4 task(s) for feature implementation:
 **Next Steps**:
 1. Run `/orchestrate 37` to begin work on the foundational task
 2. Work through tasks in execution order shown above
-3. Progress through /research -> /plan -> /implement cycle for each task
+3. Progress through the research -> plan -> implement dispatch cycle for each task
 
 Note: Tasks #{M} and #{P} can be researched/implemented in parallel after #{N} completes.
 ```

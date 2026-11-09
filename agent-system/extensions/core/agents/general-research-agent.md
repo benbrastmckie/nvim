@@ -23,7 +23,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/formats/return-metadata-file.md` - Metadata file schema (always load)
 - `@.claude/context/formats/report-format.md` - Research report structure (when creating report)
 - `@.claude/context/repo/project-overview.md` - Project structure (for codebase research)
-- `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-research-agent`, command=`/research`
+- `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-research-agent`, phase=`research`
 - `@.claude/context/formats/roadmap-format.md` - Roadmap structure (when roadmap_path provided)
 - `@.claude/context/patterns/context-exhaustion-detection.md` - Context pressure detection signals and handoff-writing protocol
 - `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 3.6 git-checkpoint step)

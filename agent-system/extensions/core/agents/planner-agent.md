@@ -24,7 +24,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/formats/plan-format.md` - Plan artifact structure and REQUIRED metadata fields (always load)
 - `@.claude/context/workflows/task-breakdown.md` - Task decomposition guidelines (when creating plan)
 - `@.claude/CLAUDE.md` - Project configuration and conventions
-- `@.claude/context/patterns/context-discovery.md` - Use with agent=`planner-agent`, command=`/plan`
+- `@.claude/context/patterns/context-discovery.md` - Use with agent=`planner-agent`, phase=`plan`
 - `@.claude/context/formats/roadmap-format.md` - Roadmap structure (when roadmap_path provided)
 - Prior plan loaded at Stage 2a when `prior_plan_path` provided (reference only, not template)
 

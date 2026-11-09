@@ -24,7 +24,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/formats/summary-format.md` - Summary structure (when creating summary)
 - `@.claude/context/formats/handoff-artifact.md` - Handoff document template (when writing handoffs)
 - `@.claude/context/formats/progress-file.md` - Progress tracking schema (when tracking progress)
-- `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-implementation-agent`, command=`/implement`
+- `@.claude/context/patterns/context-discovery.md` - Use with agent=`general-implementation-agent`, phase=`implement`
 - `@.claude/context/contracts/phase-closure.md` - depth-first phase closure: close one phase before opening the next; no fan-out to phase sub-agents; bidirectional marker/commit synchrony (always load)
 - `@.claude/context/contracts/pre-edit-gate.md` - per-item evidence before applying a mechanical-list edit (always load)
 - `@.claude/context/patterns/subagent-continuation-loop.md` - When continuing from handoffs

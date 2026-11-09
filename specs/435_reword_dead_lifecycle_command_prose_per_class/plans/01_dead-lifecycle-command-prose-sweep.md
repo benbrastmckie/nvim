@@ -678,20 +678,28 @@ confirm `skill-base.sh` by reading the `skill_cleanup()` doc-comment directly.
 
 ---
 
-### Phase 8: core/commands, agents, skills, templates and README [NOT STARTED]
+### Phase 8: core/commands, agents, skills, templates and README [COMPLETED]
 
 **Goal**: Treat the remaining `core` surface outside `context/` and `scripts/`.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `general-implementation-agent.md` is a declared `file_scope` entry of sibling task 430,
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 31
+      occurrences across all 17 files, zero remaining)*
+- [x] `general-implementation-agent.md` is a declared `file_scope` entry of sibling task 430,
       dispatched this same cycle: re-read it immediately before editing and stage only this
-      task's own hunks.
-- [ ] `commands/` files describe live commands; an occurrence naming a dead command inside a live
+      task's own hunks. *(completed: re-read, no collision)*
+- [x] `commands/` files describe live commands; an occurrence naming a dead command inside a live
       command's own documentation is almost always class 1 (the sentence means the phase) — check
-      each rather than assuming.
-- [ ] `meta-builder-agent.md` (11 occurrences) and `README.md` (10) are the heaviest here.
+      each rather than assuming. *(completed: merge.md and spawn.md needed an invocable
+      `/orchestrate ...` form rather than bare phase prose since both are literal command-list/
+      next-steps copy; the rest took ordinary phase framing -- see phase-8 progress file
+      objective 3)*
+- [x] `meta-builder-agent.md` (11 occurrences at plan time; 5 measured at this resumption) and
+      `README.md` (10 at plan time; 4 measured at this resumption, including a literal command
+      table with invocable 'Usage' syntax needing a corrected `/orchestrate` form, not just a
+      reword) are the heaviest here. *(completed; occurrence-count drift between plan time and
+      this resumption recorded, not silently absorbed, per the established per-phase convention)*
 
 **Timing**: 1.5 hours
 

@@ -64,7 +64,7 @@ description=$(echo "$task_data" | jq -r '.description // ""')
 
 No intermediate "revising" status is needed for revision. The task transitions directly to "planned" on success (via postflight). Skip preflight status update.
 
-**Rationale**: Unlike `/plan` which sets "planning" as an intermediate status, `/revise` is lightweight enough that an intermediate status adds no value. The postflight script handles the final status update.
+**Rationale**: Unlike the plan phase, which sets "planning" as an intermediate status, `/revise` is lightweight enough that an intermediate status adds no value. The postflight script handles the final status update.
 
 ---
 
