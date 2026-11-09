@@ -1,0 +1,51 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 tasks (#834, #835) from an approved five-defect agent-system change request; three of the five defects were already owned by open records (#767, #768/#813, #785/#827) and were not duplicated.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/Projects/BimodalLogic/specs/TODO.md",
+      "summary": "Tasks #834 and #835 added to TODO.md and state.json"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/Projects/BimodalLogic/specs/834_orchestrate_aux_carrier_and_implement_readmission/",
+      "summary": "Task directory created (no artifacts yet)"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/Projects/BimodalLogic/specs/835_plan_format_baseline_relative_gate_criteria/",
+      "summary": "Task directory created (no artifacts yet)"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1793651515_3f23fb",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": [
+      "orchestrator",
+      "meta",
+      "meta-builder-agent"
+    ],
+    "mode": "prompt",
+    "mode_target": "local",
+    "target_root": "/home/benjamin/Projects/BimodalLogic",
+    "tasks_created": 2,
+    "parent_task": 761,
+    "topic": "agent-system",
+    "covers": "defects 1 and 2 (one shared root cause: the aux blocker-research carrier is unverified, and nothing refuses an implement re-dispatch when a plan revision is owed)"
+  },
+  "modified_files": [
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+  ],
+  "next_steps": "Run /research 834 once its dependency #823 has cleared"
+}

@@ -892,7 +892,7 @@ KNOWN_ENTRY_FIELDS=(
   priority created last_updated dependencies parent_task file_scope artifacts next_artifact_number
   completion_summary roadmap_items memory_candidates
   hold_reason held_at prior_status research_questions
-  blockers previous_status resume_phase researched
+  blockers previous_status resume_phase researched migrated_from
 )
 unknown_entry=$(jq -r '.active_projects[] | keys[]' "$STATE_FILE" 2>/dev/null | sort -u | while IFS= read -r k; do
   known=0

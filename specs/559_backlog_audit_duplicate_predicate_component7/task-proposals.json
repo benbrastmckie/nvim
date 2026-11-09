@@ -1,0 +1,23 @@
+[
+  {
+    "id": "lean_plan_gate_surfaces_six_collisions",
+    "title": "Record the six measured Lean gate surfaces a plan must name before it is written",
+    "description": "Record, in the lean extension's plan-authoring gate-collision guidance, six gate surfaces measured across two Lean implementation runs that no plan named in advance and that each blocked a commit until repaired at implement time: typst-sync-check.sh Check 2 staleness on typst/generated/status.typ; check-metalogic-cycles.sh assertion B asserting upward-import-set EQUALITY against a frozen allowlist and failing on surplus; check-module-invariants.sh C26's non-trailing-underscore rule on def/abbrev names; the package longFile 1500-line ceiling and its baselining convention; the show-tactic lint under --wfail; and C5's module-path regex being unable to distinguish declaration names from module paths.",
+    "file_scope": [
+      "agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md",
+      "agent-system/extensions/lean/index-entries.json",
+      "agent-system/extensions/lean/EXTENSION.md"
+    ]
+  },
+  {
+    "id": "backlog_audit_duplicate_predicate_component7",
+    "title": "Stop one low-specificity shared path from producing duplicate-of-open, and settle Component 7 under /orchestrate",
+    "description": "Two changes to the task-creation pipeline, one mechanical and one contractual. Mechanical: tune audit-task-proposals.sh's duplicate-of-open predicate so a single low-specificity shared path (a catch-all README) cannot alone produce that verdict at a low semantic score. Contractual: state in the Multi-Task Creation Standard's Component 7 how foreground user confirmation resolves when task filing happens autonomously inside an /orchestrate dispatch whose own task description pre-authorizes it.",
+    "file_scope": [
+      "agent-system/extensions/core/scripts/audit-task-proposals.sh",
+      "agent-system/extensions/core/context/patterns/backlog-reconciliation.md",
+      "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+      "agent-system/extensions/core/scripts/tests/test-audit-task-proposals.sh"
+    ]
+  }
+]

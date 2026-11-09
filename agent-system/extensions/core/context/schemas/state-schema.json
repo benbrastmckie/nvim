@@ -402,6 +402,57 @@
         "researched": {
           "type": "string",
           "description": "Documented-optional, informational-only. An ISO8601 phase-completion TIMESTAMP, not a boolean and not to be confused with the unrelated status: \"researched\" enum value. No current writer (the template that minted it predates skill-status-sync's actual postflight_update operation, which sets only status and last_updated) and no current reader. Retained because entry-level last_updated is overwritten by every subsequent status change, so this is the only remaining record of when research completed for a task that has since moved on."
+        },
+        "migrated_from": {
+          "type": "object",
+          "description": "Documented-optional. Provenance stamped on a record relocated from another repository by the cross-repo task migration procedure (context/patterns/cross-repo-task-migration.md). Purely informational: it MUST never affect dispatch eligibility, dependency waves, or admission. Records where the record came from and which migration-time decisions were taken, so a reader can audit the move without the source repository. The number in project_number is the source repository number AT MIGRATION TIME and is not stable under that repository vault renumbering -- project_name is the durable anchor.",
+          "properties": {
+            "repo": {
+              "type": "string",
+              "description": "Source repository name or path."
+            },
+            "project_number": {
+              "type": "integer",
+              "description": "The record number in the source repository at migration time. Unstable; prefer project_name."
+            },
+            "project_name": {
+              "type": "string",
+              "description": "The source slug -- the durable anchor across renumbering."
+            },
+            "parent_task": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "The source parent, retained when it did not migrate and so could not be expressed as a local number."
+            },
+            "dropped_dependencies": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "description": "Source-repository dependency edges not carried: referent completed, archived, or stayed behind."
+            },
+            "non_source_scope_dropped": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "file_scope entries not carried because they resolve only in the source repository -- fixtures, not edit targets."
+            },
+            "scope_derived": {
+              "type": "boolean",
+              "description": "True when file_scope was derived from the description because the record declared none or declared only deploy-mirror paths."
+            },
+            "duplicate_transplant_owed": {
+              "type": "boolean",
+              "description": "True when the record was assessed as a duplicate of a local record and content it uniquely holds has not yet been transplanted."
+            },
+            "migrated": {
+              "type": "string",
+              "description": "Migration date."
+            }
+          }
         }
       },
       "additionalProperties": false
