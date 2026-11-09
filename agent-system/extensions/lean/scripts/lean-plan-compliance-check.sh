@@ -52,6 +52,24 @@
 #   component is a file extension (`Refinement.lean`) is a filename. Verdict strings and exit
 #   codes are unchanged; only which names are checked and how a present declaration is recognised.
 #
+#   CHALLENGE-STATEMENTS-PREFERRED HARVEST (must-exist polarity only): when the plan carries a
+#   `## Lean Challenge Statements` section with at least one ```lean fenced block, the identifier
+#   set to check is harvested from that section's own top-level declaration lines (the same
+#   `theorem`/`lemma`/`def`/... shapes `find_decl_files` below recognises), NOT from backticked
+#   tokens in **Goals** prose. A Goals bullet routinely backtick-quotes a non-declaration prose
+#   token -- a gate id (`C14`) or a schema's display name (`LCU`, whose real Lean identifier is
+#   `lcU`) -- and the old prose harvest could not tell such a token apart from a real identifier,
+#   producing a spurious [MISSING] / `COMPLIANCE_CHECK: failed` even though every actual
+#   declaration was present (see iss_1794251527154_Tj96mP). A ```lean fenced block cannot contain
+#   that kind of prose noise, so harvesting from it structurally excludes the false-positive
+#   class without weakening the check for a genuinely missing declaration: a name the Challenge
+#   Statements block names but the tree does not declare is still reported [MISSING]. Falls back
+#   unchanged to the legacy **Goals**-prose harvest whenever no such section is present, the
+#   section has no ```lean fenced block, or the fenced block(s) yield zero declaration names --
+#   every plan predating this section keeps its current verdict. Never applied under refutation
+#   polarity (see GOAL POLARITY above): a refutation plan's named identifiers must be ABSENT, so
+#   there is no Challenge Statements code demonstrating them to harvest from.
+#
 # See test-lean-plan-compliance-check.sh's characterization cases (which this phase's new cases
 # sit alongside) for the pre-existing quirks this extraction otherwise still preserves.
 #
@@ -150,23 +168,12 @@ is_excluded_token() {
   return 1
 }
 
-goal_names_raw=$(sed -n '/^\*\*Goals\*\*/,/^\*\*/p' "$plan_file" \
-  | grep -oP '`'"$IDENT_PCRE"'`' | tr -d '`' | sort -u)
-
-goal_names=""
-for name in $goal_names_raw; do
-  is_excluded_token "$name" && continue
-  goal_names="$goal_names $name"
-done
-goal_names=$(printf '%s\n' $goal_names | sort -u)
-
-if [ -z "$goal_names" ]; then
-  echo "COMPLIANCE_CHECK: skipped (no non-keyword backticked identifiers found under **Goals** in $plan_file)"
-  exit 0
-fi
-
 # ---------------------------------------------------------------------------------------------
-# Declaration lookup -- see the header comment's DECLARATION-KIND AND DOTTED-NAME WIDENING.
+# Declaration-line ERE fragments -- see the header comment's DECLARATION-KIND AND DOTTED-NAME
+# WIDENING. Defined here (ahead of the harvest below, rather than alongside find_decl_files
+# further down) so the CHALLENGE-STATEMENTS-PREFERRED HARVEST immediately below can reuse the
+# identical declaration-line shape the per-name lookup uses -- the harvest and the lookup can
+# never recognise different declaration shapes.
 #
 # A declaration line is recognised as: optional indentation, zero or more `@[...]` attribute
 # groups, zero or more modifiers, a declaration kind, whitespace, the name, and a terminator that
@@ -184,6 +191,55 @@ decl_line_ere() {
   printf '^[[:space:]]*%s%s%s[[:space:]]+%s%s' \
     "$DECL_ATTR_ERE" "$DECL_MOD_ERE" "$DECL_KINDS_ERE" "$(escape_dots "$1")" "$NAME_END_ERE"
 }
+
+# ---------------------------------------------------------------------------------------------
+# CHALLENGE-STATEMENTS-PREFERRED HARVEST -- see the header comment's own section for the full
+# rationale (false-positive class this removes, and why it never applies under refutation
+# polarity). Extracts the `## Lean Challenge Statements` section (if any), then every ```lean
+# fenced block within it (possibly several, concatenated in document order -- mirrors
+# lean-challenge-snapshot.sh's own extract_r1()), then the declared NAME of every top-level
+# declaration line in that body using the identical DECL_ATTR_ERE/DECL_MOD_ERE/DECL_KINDS_ERE
+# fragments decl_line_ere above uses. Yields nothing (never an error) when the section is
+# absent, has no ```lean fence, or the fence has no top-level declaration -- the caller below
+# falls back to the legacy Goals-prose harvest in every such case.
+challenge_names_raw=""
+if [ "$goal_polarity" != "refutation" ]; then
+  challenge_names_raw=$(
+    awk '
+      started && /^## / { exit }
+      started { print }
+      /^## Lean Challenge Statements[[:space:]]*$/ { started = 1 }
+    ' "$plan_file" \
+    | awk '
+        infence && /^```[[:space:]]*$/ { infence = 0; next }
+        infence { print }
+        /^```lean[[:space:]]*$/ { infence = 1 }
+      ' \
+    | grep -oP "^[[:space:]]*${DECL_ATTR_ERE}${DECL_MOD_ERE}${DECL_KINDS_ERE}[[:space:]]+\\K${IDENT_PCRE}" \
+    | sort -u
+  )
+fi
+
+if [ -n "$challenge_names_raw" ]; then
+  goal_names_raw="$challenge_names_raw"
+  harvest_source="the '## Lean Challenge Statements' section's declaration lines"
+else
+  goal_names_raw=$(sed -n '/^\*\*Goals\*\*/,/^\*\*/p' "$plan_file" \
+    | grep -oP '`'"$IDENT_PCRE"'`' | tr -d '`' | sort -u)
+  harvest_source="backticked tokens under **Goals**"
+fi
+
+goal_names=""
+for name in $goal_names_raw; do
+  is_excluded_token "$name" && continue
+  goal_names="$goal_names $name"
+done
+goal_names=$(printf '%s\n' $goal_names | sort -u)
+
+if [ -z "$goal_names" ]; then
+  echo "COMPLIANCE_CHECK: skipped (no non-keyword identifiers found via $harvest_source in $plan_file)"
+  exit 0
+fi
 
 # find_decl_files NAME -> prints every file under the resolved roots that declares NAME, one per
 # line; prints nothing when none does.

@@ -250,6 +250,14 @@ ALL_BOUND_NAMES=()
 # above and the dedicated section below, after the transform, for the full contract).
 AUDIT_VERDICT_FILE=""
 AUDIT_OVERRIDE_REASON=""
+# AUDIT_VERDICT_NORMALIZED_FILE: private mktemp path holding the normalized (array-shaped)
+# verdict JSON -- always bound into jq via --slurpfile (never --argjson) at every one of the
+# three audit-evidence-gate call sites below, so an arbitrarily large --audit-verdict FILE is
+# always read from disk rather than passed as a process argument. A large payload previously hit
+# the argv-length limit when the normalized JSON was round-tripped through a bash variable and
+# re-passed via `--argjson verdicts "$AUDIT_VERDICT_JSON"`. Populated even when --audit-verdict is
+# not given (holding the literal `[]`), so every call site can use the identical `--slurpfile
+# verdicts ... | $verdicts[0]` binding unconditionally -- no separate small-payload code path.
 
 # --- Oversized --argjson transparent spill (D1/D2: report Shape 2, threshold below MAX_ARG_STRLEN) ---
 # Any --argjson value at or under SPILL_THRESHOLD bytes is forwarded to jq exactly as before, byte
@@ -497,7 +505,16 @@ fi
 
 # --- Audit-evidence gate: usage validation for --audit-verdict (read and parse eagerly, before
 # the mutex, so a bad FILE fails fast exactly like every other usage error above) ---
-AUDIT_VERDICT_JSON='[]'
+# AUDIT_VERDICT_NORMALIZED_FILE is always created -- holding the literal `[]` when --audit-verdict
+# is not given -- so every downstream call site can bind it via --slurpfile unconditionally. This
+# keeps the normalized verdict JSON on disk end to end: it is never round-tripped through a bash
+# variable and re-passed as a jq --argjson process argument, which is what previously hit the
+# argv-length limit on a large (observed: 145KB/159KB) --audit-verdict FILE.
+AUDIT_VERDICT_NORMALIZED_FILE=$(mktemp "$TMP_DIR/state-write-audit-verdict.XXXXXX") || {
+  echo "Error: failed to create private audit-verdict normalization file under $TMP_DIR" >&2
+  exit 1
+}
+SPILL_FILES+=("$AUDIT_VERDICT_NORMALIZED_FILE")
 if [ -n "$AUDIT_VERDICT_FILE" ]; then
   if [ ! -r "$AUDIT_VERDICT_FILE" ]; then
     echo "Error: --audit-verdict FILE '$AUDIT_VERDICT_FILE' does not exist or is not readable" >&2
@@ -507,12 +524,19 @@ if [ -n "$AUDIT_VERDICT_FILE" ]; then
   # jq -s tolerates BOTH a single JSON array and NDJSON (one object per line, as
   # audit-task-proposals.sh emits) -- -s slurps every top-level value on stdin into one array
   # regardless of which shape the file uses, then flattens one level so a file that is ALREADY
-  # an array of verdict objects (rather than NDJSON of them) is not double-wrapped.
-  if ! AUDIT_VERDICT_JSON="$(jq -c -s '[.[] | if type == "array" then .[] else . end]' "$AUDIT_VERDICT_FILE" 2>&1)"; then
-    echo "Error: --audit-verdict FILE '$AUDIT_VERDICT_FILE' is not valid JSON/NDJSON: $AUDIT_VERDICT_JSON" >&2
+  # an array of verdict objects (rather than NDJSON of them) is not double-wrapped. Output goes
+  # straight to AUDIT_VERDICT_NORMALIZED_FILE on disk (never into a bash variable); only stderr is
+  # captured for the failure message, matching this script's existing
+  # `err=$(cmd 2>&1 > file) || status=$?` idiom used elsewhere (e.g. the dry-run branch below).
+  audit_verdict_status=0
+  audit_verdict_err=$(jq -c -s '[.[] | if type == "array" then .[] else . end]' "$AUDIT_VERDICT_FILE" 2>&1 > "$AUDIT_VERDICT_NORMALIZED_FILE") || audit_verdict_status=$?
+  if [ "$audit_verdict_status" -ne 0 ]; then
+    echo "Error: --audit-verdict FILE '$AUDIT_VERDICT_FILE' is not valid JSON/NDJSON: $audit_verdict_err" >&2
     usage
     exit 1
   fi
+else
+  printf '[]' > "$AUDIT_VERDICT_NORMALIZED_FILE"
 fi
 
 # --- EFFECTIVE_FILTER: prefix the caller's filter with an `as` binding for every spilled
@@ -766,10 +790,10 @@ if [ "$DRY_RUN" = true ]; then
         AUDIT_UNCOVERED_DRY="$(jq -c -n \
           --argjson newnums "$AUDIT_NEW_NUMBERS_DRY" \
           --slurpfile stagearr "$DRYRUN_OUT" \
-          --argjson verdicts "$AUDIT_VERDICT_JSON" \
+          --slurpfile verdicts "$AUDIT_VERDICT_NORMALIZED_FILE" \
           '
           ($stagearr[0]) as $staged |
-          ([$verdicts[] | .proposal.id] | map(select(. != null))) as $covered_ids |
+          ([$verdicts[0][] | .proposal.id] | map(select(. != null))) as $covered_ids |
           [ $newnums[] as $n |
             (($staged.active_projects[] | select(.project_number == $n) | .project_name) // null) as $pname |
             select(($pname == null) or (($covered_ids | index($pname)) == null)) |
@@ -898,10 +922,10 @@ if [ "$IS_DEFAULT_TARGET" = true ] && [ "$INIT_MODE" = false ]; then
       AUDIT_UNCOVERED="$(jq -c -n \
         --argjson newnums "$AUDIT_NEW_NUMBERS" \
         --slurpfile stagearr "$STAGE_FILE" \
-        --argjson verdicts "$AUDIT_VERDICT_JSON" \
+        --slurpfile verdicts "$AUDIT_VERDICT_NORMALIZED_FILE" \
         '
         ($stagearr[0]) as $staged |
-        ([$verdicts[] | .proposal.id] | map(select(. != null))) as $covered_ids |
+        ([$verdicts[0][] | .proposal.id] | map(select(. != null))) as $covered_ids |
         [ $newnums[] as $n |
           (($staged.active_projects[] | select(.project_number == $n) | .project_name) // null) as $pname |
           select(($pname == null) or (($covered_ids | index($pname)) == null)) |
@@ -931,10 +955,10 @@ if [ "$IS_DEFAULT_TARGET" = true ] && [ "$INIT_MODE" = false ]; then
     }
     if ! jq \
       --argjson newnums "$AUDIT_NEW_NUMBERS" \
-      --argjson verdicts "$AUDIT_VERDICT_JSON" \
+      --slurpfile verdicts "$AUDIT_VERDICT_NORMALIZED_FILE" \
       --arg override "$AUDIT_OVERRIDE_REASON" \
       '
-      ([$verdicts[] | select(.proposal.id != null)] | map({key: .proposal.id, value: .}) | from_entries) as $by_id |
+      ([$verdicts[0][] | select(.proposal.id != null)] | map({key: .proposal.id, value: .}) | from_entries) as $by_id |
       .active_projects |= map(
         .project_number as $pn |
         if ($newnums | index($pn)) != null then
