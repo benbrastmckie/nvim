@@ -1,6 +1,6 @@
 # Summary Artifact Standard
 
-**Scope:** Implementation summaries, plan summaries, research summaries, and project rollups produced by /implement, /plan, /research, /review, and related agents.
+**Scope:** Implementation summaries, plan summaries, research summaries, and project rollups produced by the implement, plan, and research dispatches, /review, and related agents.
 
 ## Metadata (required)
 - **Task**: `{id} - {title}`

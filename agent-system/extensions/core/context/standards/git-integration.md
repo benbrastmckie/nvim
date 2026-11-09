@@ -14,7 +14,7 @@ Create git commits for:
 - Task expansion (`/task --expand`)
 - Task synchronization (`/task --sync`)
 - Task abandonment (`/task --abandon`)
-- Status updates (`/implement`, `/research`, `/plan`, etc.)
+- Status updates (research, plan, and implement dispatches, etc.)
 
 ### Delegation Pattern
 

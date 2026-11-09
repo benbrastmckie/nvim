@@ -189,7 +189,7 @@ nest identically; see the `phases_completed`/`phases_total` callout immediately 
 where they deliberately do not.
 
 **Absent means**: the writer predates this contract, or is a call path (e.g. a non-`/orchestrate`
-`/research`/`/plan`/`/implement` invocation) that never received a `dispatch_seq` to echo. A
+research/plan/implement dispatch) that never received a `dispatch_seq` to echo. A
 consumer gating on this field MUST degrade gracefully on an absent value — emit a named `WARN`
 and fall back to mtime-only discrimination — never treat absence as a hard failure. See
 `orchestrate-recover-outcome.sh`'s own header for the consumer-side contract.
@@ -891,7 +891,7 @@ Written when implementation is interrupted or fails mid-execution:
       "type": "execution",
       "message": "Build failed: missing dependency in configuration",
       "recoverable": true,
-      "recommendation": "Install dependency and run /implement 1 to resume from phase 3"
+      "recommendation": "Install dependency and resume the implement dispatch via /orchestrate 1 --implement (phase 3)"
     }
   ],
   "metadata": {

@@ -420,7 +420,7 @@ delegation:
 ```yaml
 lifecycle:
   stage: 4
-  command: "/research"
+  command: "research"
   return_format: "subagent-return.md"
 ```
 
@@ -519,7 +519,7 @@ delegation:
   timeout_max: 3600
 lifecycle:
   stage: 4
-  command: "/research"
+  command: "research"
   return_format: "subagent-return.md"
 ---
 ```
@@ -567,7 +567,7 @@ delegation:
   timeout_max: 7200
 lifecycle:
   stage: 4
-  command: "/implement"
+  command: "implement"
   return_format: "subagent-return.md"
 ---
 ```

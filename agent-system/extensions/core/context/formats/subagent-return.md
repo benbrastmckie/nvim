@@ -197,7 +197,7 @@ If validation fails:
       "type": "timeout",
       "message": "external API API request timed out after 30s",
       "recoverable": true,
-      "recommendation": "Check network connection and retry with /research 245"
+      "recommendation": "Check network connection and retry via /orchestrate 245 --research"
     }
   ],
   "next_steps": "Retry after checking network connection"
@@ -238,7 +238,7 @@ If validation fails:
       "type": "timeout",
       "message": "Implementation timed out after 7200s during phase 3",
       "recoverable": true,
-      "recommendation": "Resume with /implement 246 to continue from phase 3"
+      "recommendation": "Resume via /orchestrate 246 --implement to continue from phase 3"
     }
   ],
   "next_steps": "Run /orchestrate 246 to resume from phase 3"
@@ -276,7 +276,7 @@ plain text instead of JSON, validation will fail with "Return is not valid JSON"
 
 ### Enforcement Flow
 
-1. **User invokes command**: `/research 269`
+1. **User invokes command**: `/orchestrate 269 --research`
 2. **Orchestrator Stage 1**: Validates command and extracts task number
 3. **Orchestrator Stage 2**: Determines target agent (researcher)
 4. **Orchestrator Stage 3**: Invokes researcher via task tool with:

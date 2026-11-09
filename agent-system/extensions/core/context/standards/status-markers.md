@@ -48,8 +48,8 @@ this document and the schema/library ever disagree, the schema/library wins.
 **Timestamps**: Always include `- **Researched**: YYYY-MM-DD` when started
 
 **Two producers**: `preflight:research` (an ordinary research dispatch — `/orchestrate`'s own
-research-first default for a `not_started` task, its own `--research` forcing it, or a direct
-`/research` call) is the original producer. Under `/orchestrate`'s `--fast`-only escape hatch
+research-first default for a `not_started` task, or its own `--research` forcing it) is the
+original producer. Under `/orchestrate`'s `--fast`-only escape hatch
 (see "The Effort-Conditional Default with a `--fast` Escape Hatch" below), this resting state
 also has a SECOND producer: `postflight:needs_research`, written when a planner declines to plan
 and returns a `needs_research` verdict. Both producers resolve to the identical `researching`
@@ -180,7 +180,7 @@ marker on this page has. `[BLOCKED]`'s own "Valid Transitions" line above states
 "any command (research, plan, implement, revise) can run from this status" — a later
 `/orchestrate` run resumes a blocked task anyway. `[HOLD]` is the deliberate exception: it is
 excluded from `/orchestrate`'s default status-derived dispatch and from single-command gate-in
-(`/research`, `/plan`, `/implement`) until a human lifts it. `/revise` remains exempt from the
+(research, plan, and implement dispatches) until a human lifts it. `/revise` remains exempt from the
 hold guard (skill-reviser's documented contract is "no status-based ABORT rules"), identical to
 its exemption from the terminal-status guard above.
 
@@ -214,9 +214,14 @@ the hold for one dispatch, without needing a separate `unhold` round-trip. This 
 EXISTING `task_has_forced_phase()` predicate and `effective_group` precedence in
 `orchestrate-cycle-plan.sh` — both already resolve a forced phase before `triage_group[$t]` is
 even consulted, so no second override mechanism was minted. `scripts/command-gate-in.sh`
-deliberately has NO such override: that gate serves one bare `/research`, `/plan`, or
-`/implement` call with no forcing-flag plumbing of its own, so a held task simply ABORTs there
-until lifted, or until routed through `/orchestrate`'s forcing-flag path instead. The actual
+deliberately has NO such override: that gate serves one bare research, plan, or
+implement dispatch with no forcing-flag plumbing of its own, so a held task simply ABORTs there
+until lifted, or until routed through `/orchestrate`'s forcing-flag path instead. **Residue note
+(recorded, not restructured here)**: `command-gate-in.sh` is sourced by `/revise` alone today
+(see `context/patterns/task-lock.md`'s residue note on the same "SIX command files" count); a
+bare single-command research/plan/implement call this paragraph describes as hitting that gate
+may therefore be unreachable in practice. Re-verifying this is a restructure beyond this record's
+per-site reword scope; flagged as a named follow-up. The actual
 mechanism that keeps `status == "hold"` across a forced live dispatch is NOT the rank-based
 `monotonic-max` clamp (`skill-base.sh`/`orchestrate-cycle-plan.sh`) — `hold` is deliberately
 UNRANKED in `scripts/lib/status-vocabulary.sh`'s `STATUS_VOCABULARY_LIFECYCLE_RANK`, so that
@@ -381,14 +386,14 @@ agent contract states the mechanism.
 
 ---
 
-## Command → Status Mapping
+## Phase/Command → Status Mapping
 
-| Command | Preflight Status | Postflight Status | Notes |
+| Phase/Command | Preflight Status | Postflight Status | Notes |
 |---------|------------------|-------------------|-------|
-| `/research` | `[RESEARCHING]` | `[RESEARCHED]` | Creates research report |
-| `/plan` | `[PLANNING]` | `[PLANNED]` | Creates implementation plan |
+| research dispatch | `[RESEARCHING]` | `[RESEARCHED]` | Creates research report |
+| plan dispatch | `[PLANNING]` | `[PLANNED]` | Creates implementation plan |
 | `/revise` | N/A (preflight status update skipped by design) | `[PLANNED]` | Creates new plan version; `skill-reviser/SKILL.md` documents skipping the intermediate mid-revision status entirely (see the removal note above) |
-| `/implement` | `[IMPLEMENTING]` | `[COMPLETED]` or `[PARTIAL]` | Executes implementation |
+| implement dispatch | `[IMPLEMENTING]` | `[COMPLETED]` or `[PARTIAL]` | Executes implementation |
 | `/review` | N/A | N/A | Creates new tasks |
 | `update-task-status.sh preflight ... hold` | `[HOLD]` | N/A (preflight-only) | Operator-initiated pause; sets `hold_reason`/`held_at`/`prior_status` |
 | `update-task-status.sh preflight ... unhold` | `[{prior_status}]` | N/A (preflight-only) | Lifts the hold; restores the recorded `prior_status` exactly, clears the three hold fields |
@@ -408,7 +413,7 @@ research is needed anyway (an opening assessment step in `agents/planner-agent.m
 a research phase on demand — via the `needs_research` verdict noted under `[RESEARCHING]`'s "Two
 producers" above — only when its own assessment says the description does not suffice. `--hard`
 does NOT skip research (only the literal effort value `fast` alters routing); `--research` (the
-phase-forcing flag) still runs `/research` unconditionally first, independent of and overriding
+phase-forcing flag) still runs the research phase unconditionally first, independent of and overriding
 this default, even under `--fast`. See `docs/architecture/orchestrate-state-machine.md`'s "The
 `needs_research` Fork" section for the full routing narrative, the worked-example flows, and the
 state table detail — this document only notes the status-marker-level consequence (a second
@@ -448,7 +453,7 @@ permits unconditionally only for `task_type == "pr"`.
               ┌────────────────────┼────────────────────┐
               │                    │                     │
               ▼                    ▼                     ▼
-        /research             /plan, /revise        /implement
+   research dispatch     plan dispatch, /revise   implement dispatch
               │                    │                     │
               ▼                    ▼                     ▼
         [RESEARCHING]        [PLANNING]           [IMPLEMENTING]
@@ -457,14 +462,14 @@ permits unconditionally only for `task_type == "pr"`.
         [RESEARCHED]         [PLANNED]      [COMPLETED]   [PARTIAL]
 
     Note: /revise skips the intermediate status update on preflight by design (see the
-    removal note above) and lands directly on [PLANNED] via postflight, same as /plan.
+    removal note above) and lands directly on [PLANNED] via postflight, same as a plan dispatch.
 
     Terminal states (no further transitions):
     [COMPLETED], [ABANDONED], [EXPANDED]
 ```
 
 **`[HOLD]` is deliberately drawn OUTSIDE the "Any Non-Terminal Status" box above, not added as a
-member of it.** That box's whole premise is "/research, /plan, /implement all work from here" —
+member of it.** That box's whole premise is "research, plan, and implement dispatches all work from here" —
 precisely false for `[HOLD]`, which is excluded from ordinary dispatch by design. Two edges exist,
 neither of which the diagram above can express without misrepresenting it as just another
 resumable non-terminal state:
@@ -506,14 +511,14 @@ For manual corrections and recovery operations outside the normal workflow, use 
 **When**: BEFORE work begins  
 **Path**: `skill_preflight_update()` in `skill-base.sh` -> `update-task-status.sh`  
 **Purpose**: Signal work has started  
-**Example**: `/research` calls `skill_preflight_update()` to set `[RESEARCHING]` before beginning research
+**Example**: a research dispatch calls `skill_preflight_update()` to set `[RESEARCHING]` before beginning research
 
 ### Postflight Status Update
 
 **When**: AFTER work completes  
 **Path**: `skill_postflight_update()` in `skill-base.sh` -> `update-task-status.sh`  
 **Purpose**: Signal work has finished and link artifacts  
-**Example**: `/research` calls `skill_postflight_update()` to set `[RESEARCHED]` after creating research report
+**Example**: a research dispatch calls `skill_postflight_update()` to set `[RESEARCHED]` after creating research report
 
 ---
 

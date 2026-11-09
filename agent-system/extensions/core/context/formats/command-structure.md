@@ -27,6 +27,12 @@ This pattern enables:
 
 ## Command File Anatomy
 
+**Note on the worked example below:** it illustrates the general command-file-with-workflow
+pattern using `/plan` as a stand-in. `/plan`, `/research` and `/implement` are not themselves
+runnable commands today — those lifecycle phases are dispatched internally by `/orchestrate` —
+but the commands that remain standalone (`/revise`, `/review`, `/task`, `/todo`, and others)
+follow this same anatomy.
+
 ### Complete Structure
 
 ```markdown
@@ -247,9 +253,9 @@ Problem: Orchestrator does too much, hard to test, inflexible
 **With Command Workflows** (three-layer):
 ```
 Orchestrator:
-  - Route to /implement command
+  - Route to the implement-phase dispatch
 
-Command File (/implement):
+Implement-Phase Dispatch:
   - Parse task_number
   - Validate task
   - Delegate to task-executor
@@ -346,7 +352,7 @@ Benefit: Clear separation, easy to test, flexible composition
 </workflow_execution>
 ```
 
-**Example**: `/research 197` → researcher → return report
+**Example**: a research-phase dispatch for 197 → researcher → return report
 
 ### Pattern 2: Sequential Delegation
 
@@ -375,7 +381,7 @@ Benefit: Clear separation, easy to test, flexible composition
 </workflow_execution>
 ```
 
-**Example**: `/plan 196` → planner → status-sync-manager → return
+**Example**: a plan-phase dispatch for 196 → planner → status-sync-manager → return
 
 ### Pattern 3: Conditional Delegation
 
@@ -467,7 +473,7 @@ Benefit: Clear separation, easy to test, flexible composition
 </workflow_execution>
 ```
 
-**Example**: `/implement 259` → preflight → task-executor → postflight → return
+**Example**: an implement-phase dispatch for 259 → preflight → task-executor → postflight → return
 
 **See Also**: `workflows/preflight-postflight.md` for detailed timing requirements
 

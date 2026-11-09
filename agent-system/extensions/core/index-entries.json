@@ -193,7 +193,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Slash command file structure and organization",
-      "line_count": 985,
+      "line_count": 991,
       "keywords": [
         "format",
         "command",
@@ -1968,7 +1968,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Task status marker conventions",
-      "line_count": 574,
+      "line_count": 579,
       "keywords": [
         "standards",
         "status",

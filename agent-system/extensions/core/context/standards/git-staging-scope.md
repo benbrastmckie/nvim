@@ -3,7 +3,7 @@
 ## Overview
 
 This standard defines the operation-type commit-scope contract for the single-agent commit
-pipeline (`/research`, `/plan`, `/implement`). It replaces repo-wide `git add -A` staging with
+pipeline (the research, plan, and implement dispatches). It replaces repo-wide `git add -A` staging with
 targeted, work-scoped staging so every commit contains only the files the operation actually
 produced — never a concurrent session's stray edits.
 

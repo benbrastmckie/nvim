@@ -1,0 +1,65 @@
+{
+  "phase": 4,
+  "phase_name": "core/context/standards and core/context/formats",
+  "started_at": "2026-11-07T20:15:00Z",
+  "last_updated": "2026-11-08T17:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply shared per-phase procedure to the 17 declared files (15 already reworded by the prior, stalled dispatch; 2 remaining -- command-structure.md, plan-format.md -- completed this resumption)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/command-structure.md",
+        "agent-system/extensions/core/context/formats/errors-format.md",
+        "agent-system/extensions/core/context/formats/frontmatter.md",
+        "agent-system/extensions/core/context/formats/plan-format.md",
+        "agent-system/extensions/core/context/formats/report-format.md",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/core/context/formats/subagent-return.md",
+        "agent-system/extensions/core/context/formats/summary-format.md",
+        "agent-system/extensions/core/context/standards/ci-workflow.md",
+        "agent-system/extensions/core/context/standards/error-handling.md",
+        "agent-system/extensions/core/context/standards/error-recovery-strategies.md",
+        "agent-system/extensions/core/context/standards/git-integration.md",
+        "agent-system/extensions/core/context/standards/git-staging-scope.md",
+        "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+        "agent-system/extensions/core/context/standards/status-markers.md",
+        "agent-system/extensions/core/context/standards/task-management.md",
+        "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "73-occurrence Scope Hypothesis for this tranche reconciled. The 15 formats/standards files other than command-structure.md and plan-format.md were already reworded, uncommitted, by the prior stalled dispatch; verified each against the measurement command -- zero remaining dead-command tokens in any of the 15, consistent with the plan's class treatment. command-structure.md and plan-format.md completed in this resumption (see class decisions below). index-entries.json line_count entries for command-structure.md (985->991) and status-markers.md (574->579) hand-corrected to stay in sync with the content edits, matching the precedent set by Phase 3's commit (139b49099) which hand-corrected architecture.md's entry the same way rather than deferring to Phase 15's deploy-headless.sh regen."
+    },
+    {
+      "id": 2,
+      "description": "plan-format.md:3 (class 2) -- reword the stale per-command scope line to phase framing",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"],
+      "note": "'/plan, /revise, /implement (phase planning), /review' -> 'a plan-phase dispatch, /revise, an implement-phase dispatch (phase planning), /review'. /revise and /review are live commands and kept verbatim; only the two dead-command tokens were reworded."
+    },
+    {
+      "id": 3,
+      "description": "plan-format.md:455 (class 2) -- reword 'a bare /implement N' to a single-task implement dispatch",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"],
+      "note": "'the standalone path (a bare /implement N, or a single-task /orchestrate N, ...)' -> 'the standalone path (a single-task implement-phase dispatch, or a single-task /orchestrate N, ...)'. The contrast with /orchestrate N is preserved."
+    },
+    {
+      "id": 4,
+      "description": "command-structure.md -- per-site class decisions across 7 occurrences",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/command-structure.md"],
+      "note": "This document's entire 'Command File Anatomy' worked example (frontmatter `command: plan`, the /plan usage string, the /plan status-validation sentence -- all inside one fenced code block, now lines ~38-206) is built on the premise that /plan is itself a standalone command file. That premise is stale (plan/research/implement are phases dispatched by /orchestrate, not command files), but the Non-Goals section forbids restructuring any document whose premise a dead command sits inside. Per that same section's guidance ('rewords the occurrences and records the residual incoherence'), a disclaimer was inserted immediately before the worked example (new lines ~30-34) stating plainly that /plan/research/implement are not runnable commands and that the example is illustrative of the general anatomy pattern still followed by live commands. The worked example's internal values were left untouched under that disclaimer rather than hand-edited piecemeal, which would have been a partial restructure. Outside the fenced example, four standalone 'Example:' lines (Pattern 1/2/5 illustrations and the two-vs-three-layer comparison diagram) were reworded individually to phase-dispatch framing: '/research 197' -> 'a research-phase dispatch for 197'; '/plan 196' -> 'a plan-phase dispatch for 196'; '/implement 259' -> 'an implement-phase dispatch for 259'; 'Route to /implement command' / 'Command File (/implement):' -> 'Route to the implement-phase dispatch' / 'Implement-Phase Dispatch:'. Class-1/2 judgment throughout; no class-3 sites in this file. Residual incoherence recorded: the document's title and 'Command File Anatomy' framing still treat /plan/research/implement as command files in spirit even with the disclaimer; a full restructure separating 'command files' from 'phase dispatch' is out of this task's Non-Goals and is named here as residue for a follow-up record, same as the core/docs/ scope-amendment precedent."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24) run twice (before and after the index-entries.json line_count fix). Residual FAILs confirmed pre-existing and out of this phase's scope via git log/diff, logged via issue-record.sh (kind=issue, class='gate collision', severity=minor):",
+    "(1) gate 24: 2 violations, both '/ide has no definition file' in memory-setup.md:93 and memory-troubleshooting.md:34 -- /ide is unrelated to this task's /implement,/research,/plan charter; introduced by commit a146cba6 (task 29), predates this task entirely.",
+    "(2) gate 3: 'deployed script content drift' for scripts/validate-state.sh, and a line_count mismatch for schemas/state-schema.json -- both caused by the most-recent commit ebc532373 ('specs: migrate 35 mis-sited meta records from BimodalLogic'), which touched neither of this phase's declared files and is unrelated to this task.",
+    "No remaining FAIL in the gate subset is attributable to this phase's own edits."
+  ]
+}

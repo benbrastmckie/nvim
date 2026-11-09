@@ -1,6 +1,6 @@
 # Report Artifact Standard
 
-**Scope:** Research, analysis, verification, and review reports produced by /research, /review, /analyze, and related agents.
+**Scope:** Research, analysis, verification, and review reports produced by the research dispatch, /review, /analyze, and related agents.
 
 ## Metadata (required)
 - **Task**: `{id} - {title}`

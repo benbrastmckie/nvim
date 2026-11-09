@@ -55,10 +55,10 @@ The marker can appear anywhere in the commit message:
 
 | Operation | Default CI | Override |
 |-----------|-----------|----------|
-| `/research` complete | Skip | Add `[ci]` if needed |
-| `/plan` complete | Skip | Add `[ci]` if needed |
-| `/implement` phase complete | Skip | Add `[ci]` for source code phases |
-| `/implement` task complete | Skip (unless source changes) | Add `[ci]` for final verification |
+| research dispatch complete | Skip | Add `[ci]` if needed |
+| plan dispatch complete | Skip | Add `[ci]` if needed |
+| implement-phase complete | Skip | Add `[ci]` for source code phases |
+| implement dispatch complete | Skip (unless source changes) | Add `[ci]` for final verification |
 | `/task` create/archive | Skip | Rarely needed |
 
 ### Language-Based Defaults

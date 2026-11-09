@@ -1,6 +1,6 @@
 # Plan Artifact Standard
 
-**Scope:** All plan artifacts produced by /plan, /revise, /implement (phase planning), /review (when drafting follow-on work), and related agents.
+**Scope:** All plan artifacts produced by a plan-phase dispatch, /revise, an implement-phase dispatch (phase planning), /review (when drafting follow-on work), and related agents.
 
 ## Metadata (Markdown block, required)
 - Use a single **Status** field with status markers (`[NOT STARTED]`, `[IMPLEMENTING]`, `[PARTIAL]`, `[BLOCKED]`, `[ABANDONED]`, `[COMPLETED]`) per status-markers.md.
@@ -452,7 +452,7 @@ that dispatch is one of several `implement`-phase dispatches inside one `/orches
 invocation. The override is carried on the dispatch file itself — a `## Batch Gate Deferral`
 section the engine composes alongside dispatch-time payloads such as `concurrent_siblings`
 territory — never by editing the plan's own `**Verification Tier**:` field. The plan's declared
-tier is the CEILING the standalone path (a bare `/implement N`, or a single-task
+tier is the CEILING the standalone path (a single-task implement-phase dispatch, or a single-task
 `/orchestrate N`, neither of which ever carries the override) must meet, unchanged.
 
 **What the override changes**: the final phase's own in-dispatch obligation narrows from the

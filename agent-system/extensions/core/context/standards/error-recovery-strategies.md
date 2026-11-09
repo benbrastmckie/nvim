@@ -15,7 +15,7 @@ writes it under `flock`:
 ```bash
 .claude/scripts/errors-append.sh append \
   --type error_type --severity critical|high|medium|low --message "Error description" \
-  --session "$session_id" --command /implement --task "$task_number" --phase 2 \
+  --session "$session_id" --command implement --task "$task_number" --phase 2 \
   --checkpoint GATE_OUT \
   --suggested-action "How to recover" --auto-recoverable true
 ```
@@ -41,7 +41,7 @@ Errors with the same session_id belong to the same operation. Use session_id to:
 1. Save partial progress
 2. Mark current phase [PARTIAL]
 3. Git commit progress
-4. Next /implement resumes
+4. Next implement dispatch resumes
 ```
 
 ### State Sync Recovery

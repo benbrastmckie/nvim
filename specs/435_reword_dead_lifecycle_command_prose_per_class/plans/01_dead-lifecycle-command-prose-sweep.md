@@ -381,20 +381,32 @@ measurement command restricted to `agent-system/extensions/core/context/orchestr
 
 ---
 
-### Phase 4: core/context/standards and core/context/formats [IN PROGRESS]
+### Phase 4: core/context/standards and core/context/formats [COMPLETED]
 
 **Goal**: Treat the standards and format documents, including the two verified class-2 sites in
 `plan-format.md`.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `plan-format.md:3` — reword the stale per-command scope line to phase framing.
-- [ ] `plan-format.md:455` — reword ``a bare `/implement N` `` to a single-task implement dispatch.
-- [ ] `return-metadata-file.md` and `git-staging-scope.md` are declared `file_scope` entries of
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 15 of 17
+      files were already reworded, uncommitted, by the prior stalled dispatch; re-verified
+      against the measurement command with zero remaining dead-command tokens; the remaining 2
+      -- command-structure.md, plan-format.md -- completed in this resumption)*
+- [x] `plan-format.md:3` — reword the stale per-command scope line to phase framing. *(completed:
+      "/plan, /revise, /implement (phase planning), /review" -> "a plan-phase dispatch, /revise,
+      an implement-phase dispatch (phase planning), /review")*
+- [x] `plan-format.md:455` — reword ``a bare `/implement N` `` to a single-task implement dispatch. *(completed)*
+- [x] `return-metadata-file.md` and `git-staging-scope.md` are declared `file_scope` entries of
       sibling task 430, dispatched this same cycle: re-read each immediately before editing and
-      stage only this task's own hunks.
-- [ ] `status-markers.md` (19 occurrences) is the heaviest file in this tranche.
+      stage only this task's own hunks. *(completed by the prior dispatch; re-confirmed clean of
+      dead-command tokens, no re-collision with 430's own hunks found)*
+- [x] `status-markers.md` (19 occurrences) is the heaviest file in this tranche. *(completed by
+      the prior dispatch)*
+- [x] `command-structure.md` — 7 occurrences, all inside a single worked example built on the
+      stale premise that /plan is itself a standalone command file; a disclaimer was added ahead
+      of the example (Non-Goals-compliant: reworded, not restructured) and 4 standalone
+      "Example:" lines outside the fence were reworded to phase-dispatch framing. Residual
+      incoherence recorded per-site in the phase-4 progress file rather than restructured. *(completed)*
 
 **Timing**: 1.5 hours
 

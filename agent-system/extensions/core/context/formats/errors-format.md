@@ -141,7 +141,7 @@ base lifecycle plan skill, since deleted) into one. The key decisions:
       "message": "jq parse error in postflight artifact linking",
       "context": {
         "session_id": "sess_1736700000_abc123",
-        "command": "/plan",
+        "command": "plan",
         "task": 259,
         "checkpoint": "GATE_OUT"
       },

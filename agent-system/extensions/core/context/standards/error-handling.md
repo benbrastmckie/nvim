@@ -64,13 +64,13 @@ Error: {brief_description}
 ```
 Error: Task number required
 
-The /research command requires a task number as the first argument.
+The /orchestrate command requires a task number as the first argument.
 
-Usage: /research TASK_NUMBER [PROMPT]
+Usage: /orchestrate TASK_NUMBER[,TASK_NUMBER...] [--lit] [--research] [--plan] [--implement]
 
 Examples:
-- /research 197
-- /research 197 'Focus on CLI integration'
+- /orchestrate 197
+- /orchestrate 197 --research
 ```
 
 ### Warning Messages
@@ -220,8 +220,8 @@ The task number argument must be a valid integer.
 
 Got: 'abc'
 
-Usage: /research TASK_NUMBER [PROMPT]
-Example: /research 197
+Usage: /orchestrate TASK_NUMBER[,TASK_NUMBER...] [--lit] [--research] [--plan] [--implement]
+Example: /orchestrate 197
 ```
 
 ### 2. File Operation Errors
@@ -781,7 +781,7 @@ def parseConfig (json : Json) : Except ParseError Config :=
   "type": "validation_failure",
   "message": "Task number must be an integer",
   "context": {
-    "command": "/research",
+    "command": "/orchestrate",
     "input": "abc",
     "session_id": "sess_123",
     "user": "developer"

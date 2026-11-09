@@ -275,7 +275,7 @@ this skill MUST proceed immediately to postflight. The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill
 > MUST NOT attempt to continue, complete, or "fill in" the subagent's work. Report
-> the partial/failed status and let the user re-run `/implement` to resume.
+> the partial/failed status and let the user re-run an implement dispatch (via `/orchestrate`) to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file
