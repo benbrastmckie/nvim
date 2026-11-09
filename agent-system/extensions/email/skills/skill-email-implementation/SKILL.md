@@ -14,7 +14,7 @@ context and dispatches.
 
 This skill activates when:
 - Task type is "email"
-- `/implement` command targets an email task
+- An implement-phase dispatch targets an email task
 - A census/classify/archive/delete/unsubscribe-extract plan needs wrapper-only execution
 
 ## Execution Flow

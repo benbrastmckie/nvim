@@ -19,11 +19,11 @@ self-verification), and H5 (divergence audit) behavioral contracts. Cost is appr
 
 This skill activates when:
 - Task type is "lean4" or "lean" (either accepted)
-- `/research N --hard` is invoked for a lean4 task
+- `/orchestrate N --research --hard` is invoked for a lean4 task
 - Not currently routing-reachable: the routing-ladder collapse retired the skill-side `routing`/
   `routing_hard` manifest blocks and their resolver. This skill is pending migration onto
   `hard_contracts` (a separate, not-yet-dispatched follow-on); until then it is reachable only by
-  direct invocation, not through `/research --hard` dispatch
+  direct invocation, not through a `--research --hard` dispatch
 
 ---
 

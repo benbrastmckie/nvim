@@ -333,8 +333,8 @@ candidates as: `retrieval_count==0 AND days_since_created > 30`. **Chosen mechan
 topic-prefix exemption to that
 condition — `retrieval_count==0 AND days_since_created > 30 AND NOT topic starts_with
 "email/preferences/"`. Rejected alternative: making email-side reads increment
-`retrieval_count`. Rationale: `memory-retrieve.sh` is invoked only by `/research`/`/plan`/
-`/implement` preflight (verified: no other caller exists in this repo); teaching
+`retrieval_count`. Rationale: `memory-retrieve.sh` is invoked only by the research/plan/
+implement-phase preflight (verified: no other caller exists in this repo); teaching
 `skill-email-cleanup` to independently mutate `memory-index.json`'s `retrieval_count` on every
 lookup introduces a second uncoordinated writer to that file for a benefit (staleness signal
 accuracy) fully achievable with a one-line filter-scope addition to the existing purge query.
@@ -352,7 +352,7 @@ map(select(
 ))
 ```
 
-Since `/research`/`/plan`/`/implement` never invoke this script with `task_type == "email"`
+Since the research/plan/implement phases never invoke this script with `task_type == "email"`
 (the email extension is direct-execution, not task-typed — confirmed no `email` task type
 exists in the core routing table), this is effectively an **unconditional exclusion** from the
 general auto-retrieval path today, while leaving the door open for a deliberate future
@@ -383,8 +383,8 @@ following Stage 6 Verify in default mode) — reusing skill-todo's harvest -> de
 - **Tier 2** (shown, not pre-selected): keys newly crossing the rolling-N threshold this round.
 - Fuzzy near-miss suggestions (§4.2) surfaced as a labeled option, not auto-selected.
 
-Independent of the `--clean` flag: `--clean` only suppresses *auto-retrieval* for
-`/research`/`/plan`/`/implement` preflight (per CLAUDE.md's Memory Extension section); it has no
+Independent of the `--clean` flag: `--clean` only suppresses *auto-retrieval* for the
+research/plan/implement-phase preflight (per CLAUDE.md's Memory Extension section); it has no
 relationship to this harvest-side *write* gate, which always runs when the evidentiary threshold
 is met, `--clean` or not.
 

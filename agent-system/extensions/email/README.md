@@ -29,8 +29,8 @@ execute the approved archive/delete/unsubscribe-extract actions. The agent never
 | `README.md` | This file |
 | `index-entries.json` | Context index entries for `context/project/email/` |
 | `settings-fragment.json` | PreToolUse hook registration + permissions.deny entries |
-| `agents/email-implementation-agent.md` | Wrapper-only executor for `/implement` |
-| `skills/skill-email-implementation/SKILL.md` | `/implement` target skill (dispatches to the agent) |
+| `agents/email-implementation-agent.md` | Wrapper-only executor for the implement phase |
+| `skills/skill-email-implementation/SKILL.md` | implement-phase target skill (dispatches to the agent) |
 | `skills/skill-email-cleanup/SKILL.md` | Direct-execution `/email` cleanup skill (default 50-step mode, `--all` mode, `--archive` scope) |
 | `skills/skill-email-sync/SKILL.md` | Direct-execution `/email --sync` server-reconcile skill |
 | `commands/email.md` | The `/email` slash command (default/`--all`/`--archive` cleanup, or `--sync`) |
@@ -103,7 +103,7 @@ Neither layer is sufficient alone — this is why both exist.
 Run `/email` to trigger a triage pass via `skill-email-cleanup`: census, classify, present the
 candidates for review, then (on confirmation) execute the approved
 archive/delete/unsubscribe-extract actions. `/email` is direct-execution — no `subagent_type`
-dispatch — while the `/implement` path for `email`-typed tasks routes through
+dispatch — while the implement-phase path for `email`-typed tasks routes through
 `skill-email-implementation` and `email-implementation-agent` instead.
 
 ### Accounts

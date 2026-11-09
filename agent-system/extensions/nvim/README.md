@@ -17,7 +17,7 @@ Loaded via the extension picker. Since the repository itself is a Neovim configu
 
 ## Commands
 
-This extension provides no commands of its own. Use the core `/research`, `/plan`, and `/implement` commands with tasks typed as `neovim`.
+This extension provides no commands of its own. Use the core research, plan, and implement phases (dispatched via `/orchestrate`) with tasks typed as `neovim`.
 
 ## Architecture
 
@@ -64,7 +64,7 @@ nvim/
 ## Workflow
 
 ```
-/research <task>            (task_type: neovim)
+/orchestrate <task> --research   (task_type: neovim)
     |
     v
 skill-neovim-research -> neovim-research-agent
@@ -73,13 +73,13 @@ skill-neovim-research -> neovim-research-agent
 specs/{NNN}_{SLUG}/reports/MM_{slug}.md
     |
     v
-/plan <task>
+/orchestrate <task> --plan
     |
     v
 specs/{NNN}_{SLUG}/plans/MM_{slug}.md
     |
     v
-/implement <task>
+/orchestrate <task> --implement
     |
     v
 skill-neovim-implementation -> neovim-implementation-agent

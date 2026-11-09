@@ -87,13 +87,13 @@ environment management (`check`, `upgrade`, `rollback`, `doctor`).
 
 **Syntax**:
 ```bash
-/research <task>           # Research Lean/Mathlib topic (routes to lean-research-agent)
-/plan <task>               # Plan Lean implementation
-/implement <task>          # Execute Lean implementation
+/orchestrate <task> --research   # Research Lean/Mathlib topic (routes to lean-research-agent)
+/orchestrate <task> --plan       # Plan Lean implementation
+/orchestrate <task> --implement  # Execute Lean implementation
 /lean doctor               # Probe the Comparator environment (binaries + C3 version match)
 ```
 
-**Delegation**: The standard `/research`, `/plan`, `/implement` commands route to lean-specific skills and agents when the task has `task_type: "lean4"`. `/lean [check|upgrade|rollback|doctor]` executes directly via `skill-lean-version` (no agent dispatch). See `context/project/lean4/tools/comparator-guide.md` for what a green Comparator result does and does not certify.
+**Delegation**: The standard research, plan, and implement phases route to lean-specific skills and agents when the task has `task_type: "lean4"`. `/lean [check|upgrade|rollback|doctor]` executes directly via `skill-lean-version` (no agent dispatch). See `context/project/lean4/tools/comparator-guide.md` for what a green Comparator result does and does not certify.
 
 ## Architecture
 
@@ -146,7 +146,7 @@ lean/
 ## Workflow
 
 ```
-/research <task>            (task_type: lean4)
+/orchestrate <task> --research   (task_type: lean4)
     |
     v
 skill-lean-research -> lean-research-agent
@@ -155,13 +155,13 @@ skill-lean-research -> lean-research-agent
 specs/{NNN}_{SLUG}/reports/MM_{slug}.md
     |
     v
-/plan <task>
+/orchestrate <task> --plan
     |
     v
 specs/{NNN}_{SLUG}/plans/MM_{slug}.md
     |
     v
-/implement <task>
+/orchestrate <task> --implement
     |
     v
 skill-lean-implementation -> lean-implementation-agent

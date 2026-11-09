@@ -332,7 +332,7 @@ require('neotex.plugins.tools.stt').setup({
 ### Using TTS with Multiple WezTerm Tabs
 
 1. Open multiple WezTerm tabs with Claude Code sessions
-2. Start a long-running task (e.g., `/implement` or code review)
+2. Start a long-running task (e.g., an implement-phase dispatch or code review)
 3. Switch to another tab to work
 4. When the task completes, hear "Tab 2 completed"
 5. Switch back to that tab to continue

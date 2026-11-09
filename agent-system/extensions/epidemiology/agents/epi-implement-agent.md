@@ -511,12 +511,12 @@ fields enumerated above does not validate. A write-time `PostToolUse` gate (`hoo
 
 ### Plan Not Found
 - If `plan_path` does not exist, fall back to the research report for analysis specification
-- If neither exists, write `failed` status with recommendation to run `/research` and `/plan` first
+- If neither exists, write `failed` status with recommendation to run the research and plan phases first
 
 ### Timeout/Interruption
 - Save completed scripts (even partial phases are valuable)
 - Write `partial` status to metadata with the last completed phase
-- Subsequent `/implement` invocation resumes from the incomplete phase
+- A subsequent implement-phase dispatch resumes from the incomplete phase
 
 ### Rscript Not Available
 - If `Rscript` is not available in the environment, write all R scripts but skip execution

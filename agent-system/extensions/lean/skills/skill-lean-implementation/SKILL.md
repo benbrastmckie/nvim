@@ -15,7 +15,7 @@ this skill handles all postflight operations (status update, artifact linking, g
 
 This skill activates when:
 - Task type is "lean4" or "lean" (either accepted)
-- /implement command targets a Lean task
+- An implement-phase dispatch targets a Lean task
 - Plan exists and task is ready for implementation
 
 ---
@@ -388,7 +388,7 @@ After the agent returns, this skill MUST NOT:
 
 See `context/standards/postflight-tool-restrictions.md` § "MUST NOT Section Template"
 for the full PROHIBITION clause (the lead skill must not continue, complete, or "fill in" a
-partial/failed subagent's work; report the status and let the user re-run `/implement`) and the
+partial/failed subagent's work; report the status and let the user re-run the implement-phase dispatch) and the
 postflight-phase allowed-operations list (read metadata, state.json/TODO.md updates, artifact
 linking, git commit, cleanup).
 

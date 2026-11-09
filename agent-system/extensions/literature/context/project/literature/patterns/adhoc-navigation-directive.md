@@ -4,7 +4,7 @@
 
 The user asks conversationally to consult/search "the literature", a specific paper, or
 otherwise invokes `--lit`-like behavior while the primary/root session is **not** inside a
-`/research|/plan|/implement|/orchestrate --lit` dispatch — i.e. skill Stage 4a did not run for
+`/orchestrate --lit` dispatch (with `--research`/`--plan`/`--implement`) — i.e. skill Stage 4a did not run for
 this request. Without this directive, the primary session has no documented path to reproduce
 Stage 4a's literature navigation, so it either fabricates ad-hoc behavior or silently does
 nothing. Neither is acceptable.

@@ -1,0 +1,81 @@
+{
+  "phase": 13,
+  "phase_name": "literature, lean, epidemiology, nvim and email",
+  "started_at": "2026-11-08T23:05:00Z",
+  "last_updated": "2026-11-09T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 25 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/email/README.md",
+        "agent-system/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+        "agent-system/extensions/email/skills/skill-email-cleanup/SKILL.md",
+        "agent-system/extensions/email/skills/skill-email-implementation/SKILL.md",
+        "agent-system/extensions/epidemiology/README.md",
+        "agent-system/extensions/epidemiology/agents/epi-implement-agent.md",
+        "agent-system/extensions/epidemiology/commands/epi.md",
+        "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
+        "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
+        "agent-system/extensions/lean/README.md",
+        "agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md",
+        "agent-system/extensions/lean/context/project/lean4/standards/proof-debt-policy.md",
+        "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+        "agent-system/extensions/lean/skills/skill-lean-implementation/SKILL.md",
+        "agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md",
+        "agent-system/extensions/literature/README.md",
+        "agent-system/extensions/literature/context/guides/literature-organization.md",
+        "agent-system/extensions/literature/context/project/literature/domain/zotero-integration.md",
+        "agent-system/extensions/literature/context/project/literature/patterns/adhoc-navigation-directive.md",
+        "agent-system/extensions/literature/index-entries.json",
+        "agent-system/extensions/literature/merge-sources/claudemd.md",
+        "agent-system/extensions/nvim/README.md",
+        "agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md",
+        "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md"
+      ],
+      "note": "108 occurrences measured (literature 26 incl. index-entries.json, lean 17, epidemiology 17, nvim 10, email 15 -- roughly matching the plan's Scope Hypothesis of 108 across the five extension roots). All 24 of the 25 declared files treated (the 25th, `nvim/context/project/neovim/hooks/wezterm-integration.md`, carries 3 intentional class-3 leave-alone sites, see objective 3). Verified clean (apart from those 3) by the measurement command restricted to all five extension roots."
+    },
+    {
+      "id": 2,
+      "description": "literature/index-entries.json (densest file, 20 occurrences) -- structured registration data, class-3 test applied and found NOT class-3",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/index-entries.json"],
+      "note": "All 20 occurrences are `load_when.commands` registration values across 7 context entries. Investigated each entry's companion `agents` array (via a read-only Python inspection) and found every one of them ALREADY lists the exact agent(s) the dead command would have routed to (e.g. the entry listing '/research' in commands also lists 'general-research-agent' in agents) -- confirmed by validate-context-budgets.sh's own Double-Loading Check partition logic (read directly from the script) that these entries are NOT flagged as redundant today only because each one's commands array also contains a genuinely-direct command (`/literature`, which the script's own `dlc_direct_commands` allowlist exempts from the redundancy test) alongside the dead ones -- the dead tokens were never load-bearing for reachability even before this edit. Per the dispatch's own instruction ('the correct fix is to make the entry reachable under the live command set rather than to reword prose'), and since reachability was ALREADY guaranteed by the agents array, the correct fix was to DROP the three dead command strings from each commands array (not invent a replacement live-command value, since no per-phase live command exists to substitute) -- performed via a line-level script that also stripped the resulting trailing comma on the new last array element, then verified the whole file re-parses as valid JSON (`json.load` succeeded, 28 entries) and that `bash .claude/scripts/tests/run-all.sh --only test-index-entries-schema.sh` still passes. One entry (`guides/literature-organization.md`'s) already carried a live `/orchestrate` alongside the dead tokens; after the drop it correctly retains just `['/orchestrate']`."
+    },
+    {
+      "id": 3,
+      "description": "literature/merge-sources/claudemd.md -- the reword propagates into the generated root CLAUDE.md on redeploy",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/literature/merge-sources/claudemd.md"],
+      "note": "Both occurrences reworded to the `/orchestrate --lit` (with --research/--plan/--implement) framing established across this phase. Flagged per the plan's own instruction to check the rendered result in Phase 15 after redeploy; not independently verified here since the deployed root CLAUDE.md does not yet reflect this phase's source-store edit (same expected pre-redeploy state as every other phase)."
+    },
+    {
+      "id": 4,
+      "description": "Class-3 leave-alone (investigated, not merely assumed): nvim/context/project/neovim/hooks/wezterm-integration.md's 3-line command-pattern list",
+      "status": "done",
+      "files_touched": [],
+      "note": "Documents the SAME live wezterm-task-number.sh regex-matching behavior already treated as class 3 in Phase 7 (core/hooks/wezterm-task-number.sh) and Phase 13's own nvim-extension copy -- the hook still literally pattern-matches '/research N'/'/plan N'/'/implement N' text in the raw user prompt for cosmetic tab-title display, independent of whether a real command exists. Left unchanged for the same reason: rewording would misdescribe the actual matching behavior of live, unchanged code."
+    },
+    {
+      "id": 5,
+      "description": "lean's hard-mode and proof-debt documents: class-2 rewords checked against the live --hard composition model",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md",
+        "agent-system/extensions/lean/context/project/lean4/standards/proof-debt-policy.md",
+        "agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md",
+        "agent-system/extensions/lean/skills/skill-lean-research-hard/SKILL.md"
+      ],
+      "note": "Every '/research --hard'/'/plan --hard'/'/implement --hard' occurrence reworded to the '/orchestrate --research --hard' (etc.) composition already established as the correct live form in Phase 12's cslib treatment, consistent across both extensions rather than inventing a second phrasing."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24). None of the five extension roots (email, epidemiology, lean, literature, nvim) report a new FAIL in check-extension-docs.sh. Gate 24 unchanged: the same 2 pre-existing /ide violations (in memory/, a different extension than any touched this phase). No new FAIL introduced by Phase 13.",
+    "`bash .claude/scripts/tests/run-all.sh --only test-index-entries-schema.sh` confirmed passing after the literature/index-entries.json edit (note: this runs the DEPLOYED copy, same pre-redeploy limitation already documented in Phase 7's gate_notes -- the direct `json.load` validation against the source-store file is the stronger, source-targeted verification for this specific edit)."
+  ]
+}

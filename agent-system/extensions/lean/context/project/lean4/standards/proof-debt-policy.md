@@ -74,7 +74,7 @@ decision to be made on evidence from real runs, not something this policy pre-em
 
 **NOT a Blocker (continue or handoff)**:
 - Context exhaustion (write handoff, successor continues)
-- Timeout (mark [PARTIAL], next /implement resumes)
+- Timeout (mark [PARTIAL], next implement-phase dispatch resumes)
 - MCP tool transient failure (retry, continue)
 
 ## Forbidden Patterns

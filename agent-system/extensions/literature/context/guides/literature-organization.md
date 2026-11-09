@@ -5,8 +5,8 @@ Reference guide for the `specs/literature/` directory and the `--lit` injection 
 ## Overview
 
 The `specs/literature/` directory holds reference documents (papers, specifications, algorithm
-descriptions) that agents can consult when the `--lit` flag is passed to `/research`, `/plan`,
-`/implement`, or `/orchestrate`. The directory is user-maintained and not created automatically.
+descriptions) that agents can consult when the `--lit` flag is passed to `/orchestrate`
+(with `--research`, `--plan`, or `--implement`). The directory is user-maintained and not created automatically.
 
 Literature injection uses keyword scoring to select the most relevant files for a given task,
 staying within a fixed token budget. If no `index.json` exists, the system falls back to a
@@ -338,7 +338,7 @@ Run a command with `--lit` and a relevant task description to verify the paper a
 
 ```bash
 # Example: verify injection for a research task
-/research 123 --lit
+/orchestrate 123 --research --lit
 ```
 
 Check the agent context for a `<literature-context>` block containing the paper.

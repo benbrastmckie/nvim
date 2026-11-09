@@ -47,7 +47,7 @@ re-prompting, and the `orchestrator_mode` dual-consumer contract are canonically
 verbatim, rather than each maintaining its own copy. Read that file for the full mechanics; this
 section is a pointer, not a second copy.
 
-Outside a `/research|/plan|/implement|/orchestrate --lit` dispatch, a conversational request to
+Outside an `/orchestrate --lit` dispatch (with `--research`/`--plan`/`--implement`), a conversational request to
 consult "the literature" is handled by the primary/root session via
 `context/project/literature/patterns/adhoc-navigation-directive.md`, which surfaces the same
 interactive options defined in `lit-stage4a-flow.md`.
@@ -88,6 +88,6 @@ The two flags are independent:
 
 ### Per-Invocation Only
 
-`--lit` has no persistent state. Each invocation of `/research`, `/plan`, `/implement`, or
-`/orchestrate` must explicitly pass `--lit` to activate literature injection.
+`--lit` has no persistent state. Each `/orchestrate` invocation (whichever of `--research`,
+`--plan`, or `--implement` it carries) must explicitly pass `--lit` to activate literature injection.
 

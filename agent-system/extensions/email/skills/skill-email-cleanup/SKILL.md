@@ -261,7 +261,7 @@ unconfirmed) and never an approved-but-not-yet-executed manifest.
 8. **Batch index regeneration** (design §4.4): regenerate `.memory/memory-index.json` **once**
    after the entire harvest round (all confirmed keys in one gate response), never per
    individual CREATE/UPDATE/EXTEND — independent of the `--clean` flag (`--clean` only suppresses
-   `/research`/`/plan`/`/implement` auto-retrieval; it has no relationship to this write-side
+   research/plan/implement-phase auto-retrieval; it has no relationship to this write-side
    gate).
 9. **Feedback-loop cap (design §5.3, MUST NOT)**: the harvest never mutates `proposed_action` or
    raises `confidence` on any future classify pass — it may only ever contribute as a surfaced

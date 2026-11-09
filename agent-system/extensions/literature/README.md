@@ -50,7 +50,7 @@ Sub-index operations are provided by `/literature` (Mode B) and `skill-literatur
 
 ### Briefing+Tools Pattern for Agents
 
-When `--lit` is passed to `/research`, `/plan`, `/implement`, or `/orchestrate`:
+When `--lit` is passed to `/orchestrate` (with `--research`, `--plan`, or `--implement`):
 
 1. `literature-briefing.sh` reads `specs/literature-index.json`
 2. Resolves each `doc_id` against `$LITERATURE_DIR/index.json` to get metadata
@@ -114,8 +114,8 @@ If conversion is gate-rejected, see `context/guides/literature-organization.md`'
 Pass `--lit` to any research/plan/implement command to enable literature context:
 
 ```bash
-/research 42 --lit        # Research with literature briefing
-/implement 42 --lit       # Implement with literature briefing
+/orchestrate 42 --research --lit        # Research with literature briefing
+/orchestrate 42 --implement --lit       # Implement with literature briefing
 /orchestrate 42 --lit     # Full lifecycle with literature briefing
 ```
 

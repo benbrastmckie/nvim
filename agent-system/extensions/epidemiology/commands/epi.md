@@ -11,7 +11,7 @@ Epidemiology study creation command with structured scoping and task system inte
 
 ## Overview
 
-This command initiates epidemiology study tasks through a 10-question forcing flow. It asks essential scoping questions BEFORE creating the task, storing gathered data in task metadata. After task creation, the user runs `/research`, `/plan`, and `/implement` to complete the workflow. The command focuses on collecting study design parameters, data sources, and analysis preferences for R-based epidemiological analysis.
+This command initiates epidemiology study tasks through a 10-question forcing flow. It asks essential scoping questions BEFORE creating the task, storing gathered data in task metadata. After task creation, the user runs the research, plan, and implement phases (via `/orchestrate`) to complete the workflow. The command focuses on collecting study design parameters, data sources, and analysis preferences for R-based epidemiological analysis.
 
 ## Syntax
 
@@ -337,9 +337,9 @@ Study Design: {study_design}
 Artifacts path: specs/{NNN}_{SLUG}/ (created on first artifact)
 
 Recommended workflow:
-1. /research {N} - Analyze materials and design study
-2. /plan {N} - Create implementation plan
-3. /implement {N} - Execute analysis in R
+1. /orchestrate {N} --research - Analyze materials and design study
+2. /orchestrate {N} --plan - Create implementation plan
+3. /orchestrate {N} --implement - Execute analysis in R
 ```
 
 ---
@@ -389,8 +389,8 @@ Status: [RESEARCHED]
 Report: specs/{NNN}_{SLUG}/reports/{MM}_epi-research.md
 
 Next steps:
-1. /plan {N} - Create implementation plan
-2. /implement {N} - Execute analysis in R
+1. /orchestrate {N} --plan - Create implementation plan
+2. /orchestrate {N} --implement - Execute analysis in R
 ```
 
 ---

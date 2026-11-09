@@ -984,22 +984,31 @@ time. Confirm by running the measurement command restricted to
 
 ---
 
-### Phase 13: literature, lean, epidemiology, nvim and email [NOT STARTED]
+### Phase 13: literature, lean, epidemiology, nvim and email [COMPLETED]
 
 **Goal**: Treat the five mid-sized extensions.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `literature/index-entries.json` (20 occurrences) is the densest file in this tranche and is
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 108
+      occurrences across the five extension roots, zero remaining apart from 3 intentional
+      class-3 sites)*
+- [x] `literature/index-entries.json` (20 occurrences) is the densest file in this tranche and is
       structured data: its occurrences are most likely `load_when.commands` registration values,
       which are matched by the context-discovery machinery. Apply the class-3 test before editing,
       and if a registration value names a dead command, the correct fix is to make the entry
-      reachable under the live command set rather than to reword prose.
-- [ ] `literature/merge-sources/claudemd.md` is a merge source for the generated root
+      reachable under the live command set rather than to reword prose. *(completed: found NOT
+      class-3 -- every entry's reachability was already guaranteed by its own `agents` array, so
+      the dead command strings were dropped outright rather than reworded or replaced; see
+      phase-13 progress file objective 2 for the full validate-context-budgets.sh-grounded
+      evidence)*
+- [x] `literature/merge-sources/claudemd.md` is a merge source for the generated root
       `.claude/CLAUDE.md`: a reword here propagates into that generated file on redeploy, so
-      check the rendered result in Phase 15.
-- [ ] lean's hard-mode and proof-debt documents reference lifecycle phases: class 2 rewords.
+      check the rendered result in Phase 15. *(completed: both occurrences reworded; rendered
+      result deferred to Phase 15 as instructed)*
+- [x] lean's hard-mode and proof-debt documents reference lifecycle phases: class 2 rewords.
+      *(completed, using the same `/orchestrate --research --hard` composition style
+      established in Phase 12's cslib treatment)*
 
 **Timing**: 2 hours
 

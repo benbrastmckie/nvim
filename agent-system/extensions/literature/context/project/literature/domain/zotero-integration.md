@@ -38,7 +38,7 @@ it, the search tier silently ages out as the library grows.
 
 **Decision: defer.** `54yyyu/zotero-mcp` (the de-facto standard Zotero MCP server, ~4.6k stars,
 hybrid mode = local-API reads + Web-API writes, add-by-DOI/URL/ISBN with an OA-PDF cascade) is
-evaluated as an interactive complement for `/research --lit` sessions and NOT adopted at this
+evaluated as an interactive complement for `/orchestrate --research --lit` sessions and NOT adopted at this
 time.
 
 **Reasons**:

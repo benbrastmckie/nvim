@@ -61,10 +61,7 @@
           "planner-agent"
         ],
         "commands": [
-          "/literature",
-          "/research",
-          "/plan",
-          "/implement"
+          "/literature"
         ]
       }
     },
@@ -100,10 +97,7 @@
           "planner-agent"
         ],
         "commands": [
-          "/literature",
-          "/research",
-          "/plan",
-          "/implement"
+          "/literature"
         ]
       }
     },
@@ -173,10 +167,7 @@
           "planner-agent"
         ],
         "commands": [
-          "/literature",
-          "/research",
-          "/plan",
-          "/implement"
+          "/literature"
         ]
       }
     },
@@ -281,10 +272,7 @@
           "planner-agent"
         ],
         "commands": [
-          "/literature",
-          "/research",
-          "/plan",
-          "/implement"
+          "/literature"
         ]
       }
     },
@@ -486,9 +474,6 @@
           "general-implementation-agent"
         ],
         "commands": [
-          "/research",
-          "/plan",
-          "/implement",
           "/orchestrate"
         ]
       },
@@ -552,9 +537,7 @@
           "planner-agent"
         ],
         "commands": [
-          "/literature",
-          "/plan",
-          "/implement"
+          "/literature"
         ]
       }
     },
@@ -676,10 +659,7 @@
           "planner-agent"
         ],
         "commands": [
-          "/literature",
-          "/research",
-          "/plan",
-          "/implement"
+          "/literature"
         ]
       },
       "on_demand": true

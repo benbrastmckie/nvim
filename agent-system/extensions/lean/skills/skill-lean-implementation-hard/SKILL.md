@@ -21,14 +21,14 @@ standard lean4 implementation.
 
 This skill activates when:
 - Task type is "lean4" or "lean" (either accepted)
-- `/implement N --hard` is invoked for a lean4 task
+- `/orchestrate N --implement --hard` is invoked for a lean4 task
 - Dispatched from `skill-orchestrate`'s hard-mode per-phase dispatch (H1) branch — the
   formerly-separate standalone hard-mode engine that used to own this dispatch is deleted and
   merged into `skill-orchestrate` itself
 - Not currently routing-reachable: the routing-ladder collapse retired the skill-side `routing`/
   `routing_hard` manifest blocks and their resolver. This skill is pending migration onto
   `hard_contracts` (a separate, not-yet-dispatched follow-on); until then it is reachable only by
-  direct invocation, not through `/implement --hard` dispatch
+  direct invocation, not through an `--implement --hard` dispatch
 
 ---
 
@@ -543,7 +543,7 @@ After the agent returns, this skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/implement` to resume.
+> status and let the user re-run the implement-phase dispatch to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

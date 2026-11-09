@@ -29,7 +29,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 ## Trigger Conditions
 
 This skill activates when:
-- `/research` on a task with `task_type: "epi"` or `task_type: "epi:study"`
+- A research-phase dispatch on a task with `task_type: "epi"` or `task_type: "epi:study"`
 - Epidemiology extension is available
 
 ---

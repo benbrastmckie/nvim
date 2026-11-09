@@ -4,7 +4,7 @@ R-based epidemiology research and implementation. Covers study design, statistic
 
 ## Command
 
-`/epi` -- Stage 0 interactive command. Presents study design options and routes to the appropriate task type for downstream `/research`, `/plan`, `/implement` workflows.
+`/epi` -- Stage 0 interactive command. Presents study design options and routes to the appropriate task type for downstream research, plan, and implement-phase workflows.
 
 ## Compound Routing
 
