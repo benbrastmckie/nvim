@@ -1,5 +1,5 @@
 ---
-next_project_number: 563
+next_project_number: 564
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 563
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,420,423,431,437,445,446,448,453,456,459,472,473,475,477,483,488,490,491,497,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,420,423,431,437,445,446,448,453,456,459,472,473,475,477,483,488,490,491,497,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 360,384,391,398,439,444,451,455,458,461,463,474,476,484,492,500,507,516,518,523,527,540,541,542,543,544,553 | 369,383,397,412,420,423,431,445,446,448,459,472,491,504,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,452,454,457,462,479,486,517,547,552 | 313,360,391,398,439,444,446,448,451,455,458,484,515,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 4 | 421,450,480,481,487,501,508,509,513,561 | 390,402,420,449,452,461,472,476,479,486,552 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -81,6 +81,7 @@ next_project_number: 563
 497 [NOT STARTED] — Promote the three vault-independent distill telemetry...
   └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
+563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
   └─ 498 [NOT STARTED] — Replace the email preference harvest tally substrate
@@ -181,6 +182,35 @@ next_project_number: 563
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 563. Make the extension repo registry usable for deploy enumeration: rule between refusing test-fixture registration and pruning on read
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: The cross-repo extension registry at ~/.local/share/nvim/neotex-ai/extension-repo-registry.json is unusable as a deploy-enumeration source. Measured 2026-11-08: 313 entries, of which 311 are /tmp paths and only 2 are real repositories (/home/benjamin/Projects/BimodalLogic and /home/benjamin/Projects/Logos/Theory). The /tmp entries are genuine test-fixture residue -- agent scratchpad trees (/tmp/claude-1000/.../scratchpad/wt435-pre, .../opencode-test/e2e_project) and `mktemp -d` deploy fixtures (/tmp/tmp.00uM2fRkwI/deployed, /tmp/tmp.0k6Zm9RlyP/fixture) -- written by test runs that loaded an extension into a temporary project directory. For comparison, a bounded filesystem scan (`find $HOME -maxdepth 5 -name .claude-extensions.json`) finds 16 repositories carrying a deploy manifest.
+
+Consequence: any consumer that needs to enumerate deployed repos -- a before/after measurement, a fleet-wide sweep, or a control set -- cannot use the registry and must fall back to filesystem enumeration. The immediate consumer already worked around this: the orphan-sweep plan at specs/369_orphan_sweep_for_removed_merge_target_entries/plans/01_orphan-sweep-hook-registrations.md specifies filesystem enumeration rather than the registry as its control-set source. The workaround is in place, so this is not urgent; what remains unfixed is the registry itself.
+
+DECIDE between two candidate shapes rather than assuming one:
+(1) Refuse test-fixture registration at write time, so /tmp paths never enter the registry. Addresses the cause; leaves the existing 311 stale entries needing a one-off cleanup. Open sub-question the task must answer: what the refusal predicate actually keys on. A bare /tmp prefix test is the obvious candidate but is not obviously right -- it would also reject a legitimate project a user happens to keep under /tmp, and it would not catch a fixture rooted elsewhere (TMPDIR pointed at a non-/tmp path, or a scratchpad under $XDG_RUNTIME_DIR). Consider instead keying on the fixture's own marker, or on an explicit opt-out the test harness sets, and rule on which is defensible.
+(2) Prune non-existent and /tmp-anchored entries on read or on a maintenance pass. Self-healing, but keeps writing entries that will later be discarded.
+A combination is plausible and should be considered on its merits, not excluded by default.
+
+GROUNDING the task must not re-derive, and must not duplicate: shape (2) is PARTIALLY BUILT ALREADY. `M.prune_unreachable()` exists at lua/neotex/plugins/ai/shared/extensions/repo_registry.lua:182 and removes every registered row whose directory no longer exists on disk. It is wired, but only from one site -- lua/neotex/plugins/ai/claude/commands/picker/init.lua:343 -- inside the interactive `Global Update` picker action, and only when that action has already observed at least one unreachable row (`if #unreachable > 0 then`). So the pruning MECHANISM is not the gap; its TRIGGER is. Nothing prunes on read (`M.read()` at repo_registry.lua:57 returns the file as-is), which is why 311 dead fixture rows have accumulated. Scoping shape (2) as "write prune_unreachable" would be rework; the real shape-(2) question is whether `M.read()`, `M.list()`, or a scheduled maintenance pass should call it, and what that costs on every read.
+
+The registration write path is `M.upsert()` at repo_registry.lua:114, called via `pcall(repo_registry.upsert, project_dir, extension_name)` from lua/neotex/plugins/ai/shared/extensions/init.lua:736 on every successful extension load. `M.upsert` already has one exclusion precedent to follow rather than invent: the HOST-REPO EXCLUSION (`M.is_host_repo`, repo_registry.lua:46), which returns early with success and registers nothing. A shape-(1) fixture exclusion is structurally the same move and should match that shape, including its non-fatal posture -- a registry refusal must never fail an otherwise-successful extension load.
+
+SCOPE NOTE: the registry file itself is runtime state under ~/.local/share/nvim/, not source-controlled content. The fix lands in the Lua code that writes and reads it -- repo_registry.lua, and picker/init.lua if the prune trigger moves -- never in the registry JSON as a checked-in artifact. The one-off cleanup of the 311 existing stale entries is a runtime-state operation, not a repo edit, and should be specified as such (a documented one-shot invocation, not a committed file change).
+
+TASK TYPE RATIONALE: filed as task_type `neovim`, not `meta`. The change request reached this backlog through the agent-system channel, but the implementation site is plain Neovim Lua under lua/neotex/plugins/ai/, so `neovim` routing (neovim-research-agent / planner-agent / neovim-implementation-agent) is the honest routing. No file under .claude/** or agent-system/extensions/** is in scope.
+
+BACKLOG RECONCILIATION, already run (scripts/audit-task-proposals.sh, verdict recorded on this entry's audit_verdict field): the mechanically-corroborated matches are closed tasks that BUILT this registry, not ones that fixed it. Task 45 ("Picker fixes: Global Update extension-repo registry, and honest [Reload All]/[Regenerate] entries", mechanical_class subset, discharging_artifact null) and task 22 created repo_registry.lua and prune_unreachable itself -- task 22's plan records both as completed checklist items. Neither addressed test-fixture pollution or the prune trigger, so this is a follow-up defect on closed work, not a duplicate of it. The 15 duplicate-of-open verdicts are all pure-semantic with mechanical_class "none", no shared paths, and scores 0.42-0.52; per the matcher's own stated posture these are recall-biased shortlist noise, and none concerns the registry.
+
+EVIDENCE CITATION: recorded during task 369's plan phase as issue-log entry iss_1794210505854_rff529 (class: tooling, severity: minor) in specs/369_orphan_sweep_for_removed_merge_target_entries/issues.jsonl.
+
+---
 
 ### 562. conclusion stage drops null-resolution issue-log entries
 - **Status**: [NOT STARTED]
