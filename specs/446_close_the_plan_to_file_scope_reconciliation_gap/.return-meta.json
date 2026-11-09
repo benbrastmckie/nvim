@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794228960_78281f_446",
+  "dispatch_seq": 1,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/reports/01_plan_to_file_scope_reconciliation_gap.md",
+      "summary": "Root-causes all six cited plan-to-file_scope divergences: #417 is a plan-authoring grammar deviation (confirmed by re-running the harvester against the real archived plan), #413's three citations and four of #417's eight paths are genuinely incomplete declarations deferred to completed task 430, and #424 is a since-fixed predicate bug that also exposed a still-live .claude/** containment loophole. Gives explicit PART A/B rulings, recommendations, and a defense-in-depth test plan."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "plan-file-scope-harvest.sh's 'one Files-to-modify path per backtick-dash line; a continuation line belongs to the preceding entry' grammar is not a parsing limitation -- it is the literal, intentionally mirrored contract documented in context/formats/plan-format.md. Before proposing to widen this grammar (e.g. to scan every backtick token in a block), check whether the same block legitimately contains non-path backtick tokens in descriptive prose (quoted headings, bare basenames) -- widening indiscriminately trades a silent-drop failure for a silent-garbage file_scope entry, which is worse because it can falsely legitimize an unrelated future edit under the Containment predicate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/reports/01_plan_to_file_scope_reconciliation_gap.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["plan-file-scope-harvest", "file_scope", "plan-format", "harvester-grammar", "containment"]
+    },
+    {
+      "content": "context/formats/plan-format.md reserves a __WHOLE_TREE__ sentinel for a plan phase that invokes whole-tree regeneration (deploy-headless.sh / extension-picker reload), deliberately slashless so it is structurally inert against both the Overlap and Containment file_scope predicates. A plan phase that instead names .claude/** directly in its Files-to-modify block gets that literal path harvested into file_scope, and -- after git-commit-phase.sh's 2026-11-04 trailing-slash normalization fix (commit 2a945dca3) -- a bare '.claude/' file_scope entry now matches (contains) every .claude/** path, which is the opposite of the deploy-boundary rule's intent. Neither plan-file-scope-harvest.sh nor validate-artifact.sh currently refuses a harvested .claude/** path.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/reports/01_plan_to_file_scope_reconciliation_gap.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["WHOLE_TREE", "deploy-boundary", "file_scope", "containment", "claude-directory-loophole"]
+    },
+    {
+      "content": "Technique for root-causing a historical scope-excursion/containment issue.jsonl entry: cross-reference the issue's ISO8601 timestamp against `git log --all --format=\"%H %ad %s\" --date=iso -- specs/state.json` (and the relevant script's own git log) to place the drop event precisely relative to (a) when file_scope was last written for that task and (b) when any later bugfix to the containment predicate landed. This distinguished a genuine plan-authoring/harvester gap from a since-fixed implementation bug in task 446's research, where a naive reading of the issue text alone would have misattributed the cause.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/446_close_the_plan_to_file_scope_reconciliation_gap/reports/01_plan_to_file_scope_reconciliation_gap.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["root-cause", "git-log", "state.json-history", "scope-excursion", "timestamp-correlation"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 446 to create implementation plan"
+}
