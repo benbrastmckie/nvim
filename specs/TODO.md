@@ -1,5 +1,5 @@
 ---
-next_project_number: 564
+next_project_number: 567
 ---
 
 # TODO
@@ -11,10 +11,10 @@ next_project_number: 564
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,420,423,431,437,445,446,448,453,456,459,472,473,475,477,483,488,490,491,497,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 360,384,391,398,439,444,451,455,458,461,463,474,476,484,492,500,507,516,518,523,527,540,541,542,543,544,553 | 369,383,397,412,420,423,431,445,446,448,459,472,491,504,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 313,338,342,369,383,397,410,412,420,423,431,437,445,446,448,453,456,459,472,473,475,477,483,488,490,491,497,502,503,504,505,506,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 360,384,391,398,439,444,451,455,458,461,463,474,476,484,492,500,507,516,518,523,527,540,541,542,543,544,553,564 | 369,383,397,412,420,423,431,445,446,448,459,472,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,452,454,457,462,479,486,517,547,552 | 313,360,391,398,439,444,446,448,451,455,458,484,515,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 4 | 421,450,480,481,487,501,508,509,513,561 | 390,402,420,449,452,461,472,476,479,486,552 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 421,450,480,481,487,501,508,509,513,561,566 | 390,402,420,449,452,461,472,476,479,486,552 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 496,524 | 450,487,488,501 | core-agent-system, extensions |
 | 6 | 498 | 496 | extensions |
 | 7 | 499 | 497,498 | extensions |
@@ -41,6 +41,7 @@ next_project_number: 564
   └─ 527 [NOT STARTED] — Assert the deployed hook registration SET matches the... (see above)
 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
+    └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
   └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
   └─ 500 [NOT STARTED] — Dependency-edge backfill is unreachable for a not-started task
   └─ 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
@@ -56,6 +57,7 @@ next_project_number: 564
 502 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
+  └─ 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
 515 [NOT STARTED] — Rebase the bounded-wait guidance on the measured...
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the... (see above)
@@ -65,6 +67,7 @@ next_project_number: 564
 521 [NOT STARTED] — lint-agent-contracts.sh Check N completeness-net glob does...
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
+565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
 360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
   └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -182,6 +185,103 @@ next_project_number: 564
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 566. Document that the validate-state.sh cycle check requires --deep at every call site that specifies it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 452
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change) of an /orchestrate invocation over BimodalLogic:#902 (re-assess the L-plus ZTime completeness NO-GO against CSLib omega-automata), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, matching the standing precedent set by the records for the settled-user-decision route and baseline-relative gate criteria, both filed here from this same channel. BimodalLogic carries only the deployed, disposable .claude/ tree; a record filed there whose edit targets resolve only under this store cannot be worked or committed from there, which is why the audit-verdict argv record filed there was abandoned as mis-sited by owner direction, and why the mis-sited-delta migration records exist.
+
+RESOLVING THE SOURCE STORE, because the originating session got this wrong and the correction is load-bearing: source_dir is a PER-EXTENSION key, not a top-level one. Resolve with `jq -r '.extensions.core.source_dir' .claude-extensions.json`, which yields /home/benjamin/.config/nvim/agent-system/extensions/core. The originating issue entry read the top level, found no source_dir, and concluded the source store was unreachable; that conclusion is FALSE -- the store exists and every file named below was confirmed present at filing time.
+
+CITATION: the plan-defect cluster in BimodalLogic:specs/902_reassess_lplus_ztime_nogo_cslib_omega_automata/issues.jsonl -- entries iss_1794232152215_azaeZh, iss_1794232152239_LNegjQ, iss_1794232478589_ECQN4Z, iss_1794232478611_zThTVn, iss_1794232627189_lpNGZD. The load-bearing one is iss_1794232478589_ECQN4Z. Read these before editing; the cluster as a whole is the evidence that unsatisfiable and vacuous verification criteria are a recurring authoring failure in that session, not a single slip.
+
+THE DEFECT. The dependency-cycle check is Check D5, inside validate-state.sh's --deep block. A bare `bash .claude/scripts/validate-state.sh` runs only the base-mode checks, NEVER reaches D5, and exits 0 either way. Nothing in the usage text a caller reads says so. Measured: a plan specified "validate-state.sh exits 0, cycle check included" as a phase verification criterion with a bare invocation. That criterion WOULD HAVE PASSED VACUOUSLY. Re-run as `validate-state.sh --deep` it reported 19 passed / 19 warnings / 0 failed, exit 0, with "No dependency cycles detected among active_projects" explicitly observed -- so the claim happened to be true, and the criterion that asserted it was still worthless. A verification criterion that cannot fail is worse than no criterion, because it manufactures confidence that nothing checked.
+
+THE ASK, two surfaces:
+(1) validate-state.sh's own usage output and --help must state that the dependency-cycle check requires --deep and is NOT run in base mode. The script's doc header already distinguishes base from --deep checks; the usage text a caller actually reads does not. Additionally, make the base-mode summary output name that deep checks were not run, so a reader of the OUTPUT -- not only a reader of the flag list -- can tell that a cycle check did not happen. The output-side notice is the part that would actually have caught the cited plan, since the plan author read output, not usage.
+(2) Plan-authoring guidance (context/formats/plan-format.md, with the planner agent's verification-criteria guidance pointing at it rather than restating it) must state that a cycle-check verification criterion MUST specify --deep, naming the vacuous-pass failure mode as the reason. State the rule once; point to it from the second surface.
+
+GENERALIZE EXACTLY ONE STEP, NO FURTHER. While here, check whether any OTHER check a plan is likely to cite as a verification criterion is likewise gated behind a flag that a bare invocation never reaches. The --strict and --archive modes are the obvious candidates, and the script's doc header notes that no current caller passes --strict. Name whichever ones are real in the same guidance sentence. Do NOT restructure the flag layout and do NOT promote D5 into base mode: the fix is honest documentation of a real gate, not a change to what the gate is or what it costs.
+
+VERIFY: `validate-state.sh --help` states the --deep requirement for the cycle check; a base-mode run's output names that deep checks did not run; plan-format.md states that a cycle-check criterion must specify --deep and names the vacuous-pass failure mode; the planner agent points at that rule without duplicating it; and a grep of the guidance surfaces shows no remaining example specifying a bare validate-state.sh as a cycle-check criterion. Extend the existing validate-state.sh suite with a fixture pinning the base-mode "deep checks not run" notice.
+
+TERRITORY AND ORDERING. This record declares context/formats/plan-format.md and agents/planner-agent.md, both also declared by the baseline-relative-gate-criteria record and the evidence-discipline record in this backlog. The baseline-relative record edits the same verification-criteria guidance in the same two files, so a dependency edge is FILED on it: land it first and write this rule into the structure it leaves behind, rather than having two records edit that guidance concurrently. Its subject is distinct (an absolute criterion over a gate carrying standing pre-existing findings, versus a criterion naming a check that a bare invocation cannot reach), so this is a serialization edge, not a duplication claim. The evidence-discipline record's overlap is on different sections of the same files; no edge filed, re-check at admission.
+
+NON-GOALS. No hand-authored file under any deployed .claude/** tree; no change to which checks run in which mode and no promotion of D5 into base mode; no attempt to fix the pre-existing legacy file_scope warnings the deep run reports; no new validation script.
+
+---
+
+### 565. Resolve archived prior-art paths when composing dispatch and task-description context
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change) of an /orchestrate invocation over BimodalLogic:#902 (re-assess the L-plus ZTime completeness NO-GO against CSLib omega-automata), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, matching the standing precedent set by the records for the settled-user-decision route and baseline-relative gate criteria, both filed here from this same channel. BimodalLogic carries only the deployed, disposable .claude/ tree; a record filed there whose edit targets resolve only under this store cannot be worked or committed from there, which is why the audit-verdict argv record filed there was abandoned as mis-sited by owner direction, and why the mis-sited-delta migration records exist.
+
+RESOLVING THE SOURCE STORE, because the originating session got this wrong and the correction is load-bearing: source_dir is a PER-EXTENSION key, not a top-level one. Resolve with `jq -r '.extensions.core.source_dir' .claude-extensions.json`, which yields /home/benjamin/.config/nvim/agent-system/extensions/core. The originating issue entry read the top level, found no source_dir, and concluded the source store was unreachable; that conclusion is FALSE -- the store exists and every file named below was confirmed present at filing time.
+
+CITATION: entry iss_1794230655121_OUsWrN in BimodalLogic:specs/902_reassess_lplus_ztime_nogo_cslib_omega_automata/issues.jsonl (class: stale path in composed dispatch, severity minor, resolution worked_around by one extra find call). Read that entry's what_happened before editing.
+
+THE DEFECT. Task descriptions and composed dispatch context cite prior art by its LIVE task-directory path, specs/{NNN}_{SLUG}/.... The /todo archival step MOVES that directory to specs/archive/{NNN}_{SLUG}/, so every such citation becomes a dead path the moment the cited task is archived. Measured instance: a dispatch cited prior art at specs/736_.../summaries/01_cslib-omega-automata-survey-summary.md while the real path was specs/archive/736_cslib_omega_automata_survey_and_e3_reopen_check/summaries/01_cslib-omega-automata-survey-summary.md.
+
+WHY THE MEASURED COST UNDERSTATES THE DEFECT. In the cited run the cost was one extra find call, because that agent searched. The failure mode that matters is the silent one: a dispatched agent that reads the named path, gets nothing, and proceeds on a thinner evidence base than the composer intended -- without ever reporting that the prior art it was pointed at was unreadable. The citation looks authoritative and resolves to nothing. This is systematic, not incidental: every prior-art citation in every description ages into this state as its cited task archives.
+
+WHY THIS IS CHEAP. The archive-awareness rule is already defined as executable data in agent-system/extensions/core/scripts/lib/task-lookup-lib.sh, whose task_lookup_dir <project_number> <project_name> <repo_root> resolves active-then-archive-then-new, and whose own header states that every consumer sources it rather than hand-copying the jq. What is missing is a resolver for a LITERAL specs/{NNN}_{SLUG}/... PATH STRING -- the form that actually appears in prose -- plus its use at the surfaces that compose prior-art paths into a dispatch.
+
+THE ASK:
+(1) Add the string-path resolver as a function in task-lookup-lib.sh itself, not as a second copy of the archive-normalization rule anywhere else. It takes a literal specs/{NNN}_{SLUG}/... path and returns the path that EXISTS, resolving the directory half through the same active-then-archive precedence task_lookup_dir already implements while preserving the remainder of the path verbatim.
+(2) Add a resolve-on-compose step: before a prior-art path is emitted into a dispatch prompt, resolve it and emit the resolved path.
+(3) Where a path cannot be resolved, say so EXPLICITLY in the composed context rather than passing an unverified path through. A named miss is recoverable by the receiving agent; a plausible dead path is not. This is the half that turns the silent failure mode into a loud one, and it is the more important half.
+(4) Enumerate the composition surfaces by grepping the source store for literal specs/ path interpolation in the dispatch-composing scripts, skills and agents, and wire each one. Do not special-case a single caller. Re-derive the surface list at implement time rather than trusting any list written into this description.
+
+VERIFY: extend the existing suite covering task-lookup-lib.sh with fixtures pinning (a) a literal specs/{NNN}_{SLUG}/reports/... path whose task is archived resolving to its specs/archive/... location, (b) an active task's path resolving unchanged, (c) an unresolvable path reported as unresolved rather than passed through, and (d) a path whose trailing segments do not exist under either location still reported as unresolved rather than silently half-resolved. Confirm by grep that no second copy of the archive-normalization rule was introduced.
+
+TERRITORY. Mechanical overlap with the settled-user-decision-route record on skills/skill-orchestrate/SKILL.md; the two touch different sections of that file and the subject matter is disjoint, so no dependency edge is filed, matching how this backlog treats shared-file-disjoint-subject pairs. Re-check at admission time and file an edge if either has narrowed onto the same section. The concrete composition-surface list this task will edit is not yet fixed (see ask (4)), so re-run the overlap predicates once it is derived.
+
+NON-GOALS. No hand-authored file under any deployed .claude/** tree; no un-archiving and no change to what /todo archival moves; no rewriting of prior-art citations already frozen in completed task artifacts, which are historical records; no change to task_lookup_dir's existing signature or precedence.
+
+---
+
+### 564. Fix validate-artifact.sh Tier Justification false positive from sentinel path-set membership
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 505
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change) of an /orchestrate invocation over BimodalLogic:#902 (re-assess the L-plus ZTime completeness NO-GO against CSLib omega-automata), user-approved at the lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, matching the standing precedent set by the records for the settled-user-decision route and baseline-relative gate criteria, both filed here from this same channel. BimodalLogic carries only the deployed, disposable .claude/ tree; a record filed there whose edit targets resolve only under this store cannot be worked or committed from there, which is why the audit-verdict argv record filed there was abandoned as mis-sited by owner direction, and why the mis-sited-delta migration records exist.
+
+RESOLVING THE SOURCE STORE, because the originating session got this wrong and the correction is load-bearing: source_dir is a PER-EXTENSION key, not a top-level one. Resolve with `jq -r '.extensions.core.source_dir' .claude-extensions.json`, which yields /home/benjamin/.config/nvim/agent-system/extensions/core. The originating issue entry read the top level, found no source_dir, and concluded the source store was unreachable; that conclusion is FALSE -- the store exists and every file named below was confirmed present at filing time.
+
+CITATION: entry iss_1794231891214_RHng07 in BimodalLogic:specs/902_reassess_lplus_ztime_nogo_cslib_omega_automata/issues.jsonl (class: tooling false positive, severity minor, plan phase, resolution worked_around). Read that entry's what_happened before editing.
+
+THE DEFECT. suite_selection_select returns the __FULL_SWEEP__ sentinel for any path SET that CONTAINS a sentinel-mapped path. A set's sentinel membership therefore overrides all of its non-sentinel members. Measured consequence: a plan phase whose "Files to modify" listed the plan's own bookkeeping path alongside a real narrow target (specs/ROADMAP.md) had its selector output collapse to the sentinel, so validate-artifact.sh's Tier Justification check warned that the phase's honest two-suite claim was unsupported. A narrow, truthful claim read as fabricated.
+
+WHAT WAS DONE INSTEAD, AND WHY IT MUST NOT BECOME THE PRACTICE. The cited plan excluded the plan-notes bookkeeping path from that phase's "Files to modify" and said so explicitly in the Scope Hypothesis; the plan then validated with 0 warnings. That is a per-plan workaround with a bad incentive: it pressures authors to UNDER-DECLARE real file scope to satisfy a checker, which degrades exactly the file_scope data that territory contention and the overlap predicates depend on.
+
+THIS IS A SECOND, DISTINCT ESCALATION MODE -- NOT THE ONE THE NON-CORE SELECTION RECORD OWNS. That record (planned, this backlog, titled for making covering-suite selection resolve a non-core extension's source-store scripts) addresses a path that is NOT MAPPED AT ALL because its extension's scripts tree is not walked. This record addresses a path that IS mapped, in a set alongside another mapped path, where the sentinel member dominates the non-sentinel member. Both are false sweep escalations in the same library; the causes are disjoint. That record's own point (3) states the shared principle this one also honours: keep __FULL_SWEEP__ as the honest answer where no suite covers a path; the defect is a false escalation for a path that DOES have a covering suite, never the sentinel itself.
+
+THE ASK -- make set semantics compositional rather than sentinel-dominated:
+(1) A set containing both sentinel-mapped and non-sentinel members must yield the union of what its members require, not the sentinel alone. Treat the sentinel as a floor contributed by its own member, not a ceiling imposed on the set.
+(2) Decide which layer owns the change -- the selector in suite-selection-lib.sh, or validate-artifact.sh's consumption of its output -- and state the reasoning in the implementing commit. Do not fix it in both.
+(3) Do not narrow what the selector admits today: a set that resolves to a suite now must resolve to the same suite after the change, and a set whose only members are sentinel-mapped must still return __FULL_SWEEP__.
+
+VERIFY: extend agent-system/extensions/core/scripts/tests/test-run-all-selection.sh (the existing suite for this library -- there is no test-suite-selection-lib.sh) with fixtures pinning (a) a mixed set of one sentinel-mapped bookkeeping path and one narrow real target resolving to the narrow target's suite, (b) an all-sentinel set still returning __FULL_SWEEP__, and (c) an honest two-suite Tier Justification over the mixed set validating with 0 warnings WITHOUT the author dropping the bookkeeping path from "Files to modify". Run from both a source-store and a deployed vantage point.
+
+TERRITORY AND ORDERING. This record declares the same two files as the non-core selection record (suite-selection-lib.sh and tests/test-run-all-selection.sh), which states it holds them alone. That record is already planned and changes the same resolution function, so a dependency edge is FILED rather than relying on a bare exclusion: land it first, then re-derive this defect against the changed selector before editing, since its mapping-walk change may alter which paths are sentinel-mapped at all. Mechanical overlap also exists with the evidence-discipline record and the baseline-relative-criteria record on validate-artifact.sh and tests/test-validate-artifact.sh; subject matter is disjoint, so no edge is filed for those -- re-check at admission time, matching how this backlog treats broad-prefix declarations.
+
+NON-GOALS. No hand-authored file under any deployed .claude/** tree; no redeploy claimed as complete by this task beyond the required deploy-headless.sh run; no broadening of what __FULL_SWEEP__ means for a genuinely repo-wide change; no change to the non-core mapping walk that the other record owns.
+
+---
 
 ### 563. Make the extension repo registry usable for deploy enumeration: rule between refusing test-fixture registration and pruning on read
 - **Status**: [NOT STARTED]
