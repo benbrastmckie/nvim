@@ -1121,25 +1121,36 @@ measurement command restricted to each of the nine extension roots.
 
 ---
 
-### Phase 15: Corpus Reconciliation, Redeploy and Full Gate Set [NOT STARTED]
+### Phase 15: Corpus Reconciliation, Redeploy and Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Reconcile the whole corpus against the baseline, redeploy the source store into the
 deployed tree to `RESULT=landed_verify_clean`, and leave the full gate set green.
 
 **Tasks**:
 
-- [ ] Re-run the corpus-wide measurement command. Every remaining occurrence must map to a
+- [x] Re-run the corpus-wide measurement command. Every remaining occurrence must map to a
       recorded class-3 decision from Phases 1-14. Any occurrence without one is an unfinished
-      phase, not an acceptable residue.
-- [ ] Collate the per-site class decisions from all fourteen phases into a single record, so the
+      phase, not an acceptable residue. *(completed: 11 files, every hit matched to the
+      collated class-decision record in reports/02_class-decision-collation.md)*
+- [x] Collate the per-site class decisions from all fourteen phases into a single record, so the
       "per-class treatment with a per-site decision recorded for each class" the dispatch requires
-      is checkable in one place.
-- [ ] Collate any Phase 5 or Phase 10 coherence residue into a named follow-up scope.
-- [ ] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh`, with the Bash tool timeout
+      is checkable in one place. *(completed: reports/02_class-decision-collation.md, already
+      committed)*
+- [x] Collate any Phase 5 or Phase 10 coherence residue into a named follow-up scope.
+      *(completed: reports/02_class-decision-collation.md's "Residue Named for a Follow-Up
+      Record" section, items 1-7)*
+- [x] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh`, with the Bash tool timeout
       raised to 600000ms per the bounded-wait idiom. Confirm `RESULT=landed_verify_clean`.
-- [ ] Verify the generated root `.claude/CLAUDE.md` renders correctly after the
-      `literature/merge-sources/claudemd.md` reword from Phase 13.
-- [ ] Run the complete gate set and confirm it is green.
+      *(deviation: landed at `RESULT=landed_verify_red`, not clean — see Reasoned Exclusions
+      below; the redeploy itself landed correctly, only the fast-gate verification is red, on
+      three pre-existing, out-of-scope findings)*
+- [x] Verify the generated root `.claude/CLAUDE.md` renders correctly after the
+      `literature/merge-sources/claudemd.md` reword from Phase 13. *(completed: the Literature
+      Mode section renders correctly, confirmed by direct read of the deployed file)*
+- [x] Run the complete gate set and confirm it is green. *(deviation: altered — the fast-gate
+      set (33 of 41, gate 8 deferred by deploy-headless.sh's own `--skip-slow` design plus this
+      dispatch's Batch Gate Deferral directive) ran green except for 3 pre-existing findings; see
+      Reasoned Exclusions below)*
 
 **Timing**: 1 hour
 
@@ -1170,6 +1181,25 @@ tranche, not re-declared here, so this phase declares no real path of its own.
   decision.
 - No file under `agent-system/extensions/core/docs/` appears in this task's diff.
 - `git diff --stat` shows no file outside this plan's declared `Files to modify` union.
+
+#### Reasoned Exclusions
+
+`deploy-headless.sh` (fast gates) ran clean through the whole-tree redeploy and reported
+`RESULT=landed_verify_red`, not `landed_verify_clean`: 3 of 41 checks failed. Each is excluded
+below rather than fixed here, per the five-condition admission test in
+`context/standards/status-markers.md`'s `[COMPLETED WITH EXCLUSIONS]` subsection.
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Eager-load context budget (gate 20: `measure-eager-context.sh --check`) reports 67169 B against a 66800 B baseline. | Pre-existing overage, not introduced by this sweep. | Deployed the commit immediately preceding this task's first commit (`f475ff22c^`) in an isolated git worktree and re-ran `deploy-headless.sh` there: eager-load was already 67096 B (over baseline) before any Phase-1 edit landed. This task's own edits (the literature `claudemd.md` reword, Phase 13) added only 42 of the remaining 73 bytes; the budget was already red beforehand. |
+| Gate 22 (`lint-shellcheck.sh`) reports one finding: SC2155 in `agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh:207`. | File outside this task's declared scope (not `core/`, not touched by any Phase 1-14 edit). | `git log` on the file shows its most recent commits are task 810's ("lean: widen plan-compliance declaration and dotted-name detection", "task 810 phase 6/5: ..."); no task-435 commit appears in its history. |
+| Gate 24 (`lint-dead-command-recommendations.sh`) reports 2 violations: `memory-setup.md:93` and `memory-troubleshooting.md:34`, both naming `/ide`. | `/ide` is not one of the three lifecycle commands (`/implement`, `/research`, `/plan`) this task owns; the lines predate this task and were deliberately left untouched by its own reword of the adjacent lines. | `git show 1db024210` (Phase 12's own commit) confirms it reworded the adjacent `/research` line in each of these same two files on the same diff hunk, leaving the unrelated `/ide` line unchanged. `git log` traces that `/ide` line to commit `a146cba6` (task 29), which predates task 435 entirely. |
+
+The heavy shell test suite (gate 8, `tests/run-all.sh`, invoked by `verify-deploy.sh` without
+`--skip-slow`) is deferred to the once-per-batch orchestrator-level run per this dispatch's own
+Batch Gate Deferral directive, and was not independently re-run inside this phase beyond what
+`deploy-headless.sh`'s fast-gate pass already covers; `deploy-headless.sh` defers it
+(`--skip-slow`) by design, independent of batching.
 
 ---
 

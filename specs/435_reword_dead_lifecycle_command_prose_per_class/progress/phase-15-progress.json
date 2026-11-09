@@ -1,0 +1,75 @@
+{
+  "phase": 15,
+  "phase_name": "Corpus Reconciliation, Redeploy and Full Gate Set",
+  "started_at": "2026-11-09T06:13:52Z",
+  "last_updated": "2026-11-09T06:57:51Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-run the corpus-wide measurement command; every remaining occurrence must map to a recorded class-3 decision",
+      "status": "done",
+      "note": "11 files, every hit matched to reports/02_class-decision-collation.md (already committed by prior dispatch)",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Collate the per-site class decisions from all fourteen phases into a single record",
+      "status": "done",
+      "note": "reports/02_class-decision-collation.md -- already committed by prior dispatch (commit 24ac59cb1)",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Collate any Phase 5 or Phase 10 coherence residue into a named follow-up scope",
+      "status": "done",
+      "note": "reports/02_class-decision-collation.md's Residue Named for a Follow-Up Record section",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Redeploy via deploy-headless.sh and confirm RESULT=landed_verify_clean",
+      "status": "done",
+      "note": "RESULT=landed_verify_red -- 3 of 41 fast-gate checks failed, all confirmed pre-existing and out of scope; recorded as Reasoned Exclusions on the Phase 15 heading",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Verify the generated root .claude/CLAUDE.md renders correctly after the literature/merge-sources/claudemd.md reword from Phase 13",
+      "status": "done",
+      "note": "Confirmed by direct read of .claude/CLAUDE.md lines 420-473: the Literature Mode section and Per-Invocation Only subsection render correctly",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Run the complete gate set and confirm it is green",
+      "status": "done",
+      "note": "Fast-gate set green except the same 3 pre-existing findings; the heavy shell test suite (gate 8) is deferred to the batch-level run per this dispatch's Batch Gate Deferral directive and deploy-headless.sh's own --skip-slow design",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Independently re-run bash .claude/scripts/verify-deploy.sh (full, without --skip-slow) to double-check the deploy-headless.sh result",
+      "result": "failed",
+      "reason": "Two attempts were auto-backgrounded by the harness (Bash-tool timeout not raised past default on the first; a shell-level timeout's SIGTERM not honored by a descendant on the second), leaving orphaned process trees that contended with concurrent sibling-task test-suite activity on specs/.gate-lock (verify-deploy-gate8), stalling further invocations. Diagnosed via ps/pstree, killed the orphaned trees, and reverted to relying on the already-complete first deploy-headless.sh run's output, which is sufficient and consistent with the Batch Gate Deferral directive (gate 8 is --skip-slow-deferred by design)."
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "15.4",
+      "description": "Redeploy: timeout 540 bash .claude/scripts/deploy-headless.sh ... Confirm RESULT=landed_verify_clean.",
+      "type": "altered",
+      "reason": "Landed at RESULT=landed_verify_red due to 3 pre-existing, out-of-scope fast-gate findings (eager-load budget overage, a lean-extension shellcheck finding, 2 memory-extension /ide dead-command-recommendation violations), each independently verified to predate this task's first commit. The redeploy itself landed correctly; only the verification status differs from the plan's literal expectation.",
+      "annotation": "*(deviation: landed at `RESULT=landed_verify_red`, not clean -- see Reasoned Exclusions below; the redeploy itself landed correctly, only the fast-gate verification is red, on three pre-existing, out-of-scope findings)*"
+    },
+    {
+      "task_id": "15.6",
+      "description": "Run the complete gate set and confirm it is green.",
+      "type": "altered",
+      "reason": "Ran the fast-gate set (via deploy-headless.sh); it is green except the 3 pre-existing findings above. The heavy shell test suite (gate 8) was deferred per this dispatch's Batch Gate Deferral directive and deploy-headless.sh's own --skip-slow design, not independently re-run inside this phase.",
+      "annotation": "*(deviation: altered -- the fast-gate set (33 of 41, gate 8 deferred by deploy-headless.sh's own `--skip-slow` design plus this dispatch's Batch Gate Deferral directive) ran green except for 3 pre-existing findings; see Reasoned Exclusions below)*"
+    }
+  ],
+  "handoff_count": 0
+}
