@@ -1082,7 +1082,7 @@ echo "mod a" > "$repo26/src/a.txt"
 out26="$(run_phase_commit "$repo26" --task 999 --project probe --phase 1 --message "case26" --session sess_26 2>&1)"
 proposed26="$(jq -c '.proposed_file_scope // []' "$repo26/specs/999_probe/.return-meta.json" 2>/dev/null)"
 
-if ! echo "$out26" | grep -q "git-commit-phase.sh: dropping out-of-scope path"; then
+if ! echo "$out26" | grep -q "WARNING: .*: dropping out-of-scope path"; then
   common_test_pass "Case 26: git-commit-phase.sh's OWN Containment Self-Check never fires its drop warning (fails open at Site 2)"
 else
   common_test_fail "Case 26: git-commit-phase.sh's own Self-Check should have failed open (skipped itself) for a claude-only file_scope; got out=$out26"
