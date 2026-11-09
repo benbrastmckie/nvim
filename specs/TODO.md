@@ -11,7 +11,7 @@ next_project_number: 572
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,448,451,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,448,451,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,444,452,455,458,461,462,463,474,476,479,486,492,500,516,518,523,527,540,541,542,543,544,553,564 | 360,369,383,397,412,423,431,445,448,451,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,454,457,480,501,508,509,517,547,552,566,570 | 313,360,391,398,439,444,448,452,455,458,461,472,476,479,486,515,519,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 4 | 421,450,481,487,513,524,561 | 390,402,449,479,501,552 | core-agent-system, orchestrator, agent-system |
@@ -169,6 +169,8 @@ next_project_number: 572
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
 569 [NOT STARTED] — Four fixture-based test suites fail because their curated...
+572 [NOT STARTED] — Make a declared 'Verification Tier: full' actually honorable...
+573 [NOT STARTED] — Diagnose and fix one failing assertion in each of two suites,...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
@@ -186,6 +188,28 @@ next_project_number: 572
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 573. Fix two single assertion suite failures
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Diagnose and fix one failing assertion in each of two suites, cause unknown. Standalone results: test-deploy-baseline-lib.sh 29 passed 1 failed; test-lint-deploy-caller-wrap.sh 10 passed 1 failed. These were initially grouped with the stale-fixture-dependency cluster (repair_stale_fixture_lib_dependency_lists), but neither suite uses the REQUIRED_LIBS/REQUIRED_SCRIPTS fixture-copy mechanism at all, so that cause does not apply and these two are uncovered by it. Both failures reproduce standalone and are not contention artifacts. Determine for each whether the assertion or the subject behaviour is wrong before changing either.
+
+---
+
+### 572. Make full gate viable under batch concurrency
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Make a declared 'Verification Tier: full' actually honorable inside a multi-task /orchestrate batch. Measured this run: task 497 abandoned one unscoped 'bash verify-deploy.sh' after roughly 10 minutes and a second after roughly 18 minutes (test-gate-cache-equivalence.sh alone exceeded 10 minutes against a normal cost far below that), and the batch gate stage itself took roughly 28 minutes at load average 10.4. Both batch tasks therefore substituted scoped --only-gate runs for their plans' declared full tier and recorded the deviation. Gate timeouts in this state are indistinguishable from real failures at the call site: several suites that time out under load pass cleanly standalone (test-gate-lock.sh 16/16, test-lint-state-writer-boundary.sh 28/0), so contention manufactures false findings that then require manual triage. Candidate directions: a shared gate lock or admission token so sibling dispatches serialize their gate runs rather than multiplying them; per-gate cost budgets with an explicit contention-detected outcome distinct from FAIL; gate-level parallelism caps; or making the batch gate stage the single sanctioned full-gate run per invocation with per-task tiers downgraded by contract rather than by each agent's own judgment. Scope deliberately includes the tier-declaration contract, since the present situation has agents routinely deviating from a tier the environment cannot deliver.
+
+---
 
 ### 571. Invalidate an in-flight dispatch whose dispatch_seq has been superseded, at consumption time
 - **Status**: [NOT STARTED]
