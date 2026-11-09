@@ -473,7 +473,7 @@ documentation into line with Phases 3 and 4.
 
 ---
 
-### Phase 6: End-to-end reconciliation proof, redeploy, and full gate [NOT STARTED]
+### Phase 6: End-to-end reconciliation proof, redeploy, and full gate [COMPLETED]
 
 **Goal**: Prove the merged `file_scope` equals the plan's authoritative list with the refusal
 active -- not merely that the harvest exits 0 -- then redeploy the source store and run the
@@ -481,27 +481,44 @@ complete gate set.
 
 **Tasks**:
 
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`'s Group 4a
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh`'s Group 4a
       (the live plan-postflight harvest group, around line 535) with a fixture plan whose
       `Files to modify` blocks carry a mix of real source paths, one `.claude/**` path, and one
       `` `__WHOLE_TREE__` `` sentinel entry; assert the resulting `active_projects[].file_scope`
       equals exactly the real paths plus the sentinel, with the deployed-tree path absent.
-- [ ] Assert in the same group that the harvest's refusal warning reached stderr and that the
-      postflight exited 0 -- a refusal is never an error.
-- [ ] Confirm the existing Group 4a positive case and the no-`plans/`-directory degenerate case
-      (`file_scope` stays null, never a bogus `[]`) both still pass unchanged.
-- [ ] Redeploy the source store: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool
+      *(completed)*
+- [x] Assert in the same group that the harvest's refusal warning reached stderr and that the
+      postflight exited 0 -- a refusal is never an error. *(deviation: altered -- skill-base.sh's
+      plan-branch call site redirects the harvester's stderr to /dev/null by design (unedited by
+      this task), so the refusal warning is asserted directly against the harvester for this same
+      fixture plan instead of through skill_postflight_update; the exit-0 half is asserted through
+      the live call site as planned. See Phase 6 progress file's `deviations`.)*
+- [x] Confirm the existing Group 4a positive case and the no-`plans/`-directory degenerate case
+      (`file_scope` stays null, never a bogus `[]`) both still pass unchanged. *(completed:
+      72/72 total passing)*
+- [x] Redeploy the source store: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool
       `timeout` parameter raised to 600000 per `context/patterns/external-process-wait.md` Rule 1),
       then confirm the deployed copies of all six edited files match their source-store
-      counterparts (ten files: the six non-test files plus the four test suites).
-- [ ] Run the complete gate set unnarrowed: `bash .claude/scripts/tests/run-all.sh`, the
+      counterparts (ten files: the six non-test files plus the four test suites). *(completed:
+      all ten files byte-identical after redeploy; verify-deploy reported 3 pre-existing,
+      unrelated failures -- see Phase 6 progress file's `verification_notes`)*
+- [x] Run the complete gate set unnarrowed: `bash .claude/scripts/tests/run-all.sh`, the
       repo-wide task-reference and record-version lints, and `bash .claude/scripts/validate-state.sh`.
-- [ ] Re-run `bash .claude/scripts/validate-artifact.sh` against this plan file itself and confirm
+      *(deviation: altered -- per this dispatch's Batch Gate Deferral directive, `run-all.sh` ran
+      SCOPED to `suite_selection_select`'s output for this phase's touched path (10 suites, 9/10
+      pass; the one failure is a pre-existing, unrelated defect) rather than unnarrowed, with the
+      complete unnarrowed run deferred to the batch-level stage. The repo-wide task-reference lint
+      and `validate-state.sh` DID run unnarrowed and are clean for this task; the repo-wide
+      record-version lint also ran unnarrowed and found 3 pre-existing BLOCKING hits, all in
+      unrelated Himalaya plugin docs never touched by this task.)*
+- [x] Re-run `bash .claude/scripts/validate-artifact.sh` against this plan file itself and confirm
       the Phase 2 advisory checks emit no warning against it (the plan must satisfy the authoring
-      discipline it introduces).
-- [ ] Re-measure the live `specs/state.json` for `.claude/**` `file_scope` residue and record the
+      discipline it introduces). *(completed: zero Phase-2-authoring-shape warnings; 3 unrelated
+      pre-existing Tier-Justification-measurement warnings remain)*
+- [x] Re-measure the live `specs/state.json` for `.claude/**` `file_scope` residue and record the
       count in the summary, noting that the containment-site strip neutralizes it without mutating
-      any other task's declaration.
+      any other task's declaration. *(completed: 4 entries across 2 tasks (483, 512), unchanged
+      from the plan's own research-time measurement)*
 
 **Timing**: 1.5 hours
 

@@ -595,6 +595,64 @@ else
 fi
 cd "$ORIG_PWD" || true
 
+# --- End-to-end reconciliation proof: a mixed-entry plan (real source paths, one deployed-tree
+# .claude/** path, and the __WHOLE_TREE__ sentinel) harvests through the SAME live
+# skill_postflight_update plan-branch call site above, proving the merged file_scope equals the
+# plan's authoritative real paths plus the sentinel -- with the deployed-tree path absent --
+# not merely that the harvest exits 0. plan-file-scope-harvest.sh's own deployed-tree refusal
+# must have reached this fixture's copy of the harvester for this to pass, which requires a
+# redeploy ahead of this suite's own run (build_fixture_repo copies from the DEPLOYED tree,
+# $DEPLOY_SCRIPTS_SRC, unconditionally -- see that function's own header note). ---------------
+MIXED_ROOT="$WORKDIR/harvest-mixed-fixture"
+build_fixture_repo "$MIXED_ROOT"
+mkdir -p "$MIXED_ROOT/specs/001_fixture_task/plans"
+cat > "$MIXED_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md" << 'MIXEDPLANEOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `scripts/harvested-one.sh` - a legitimate source-store path
+- `scripts/harvested-two.sh` - a second legitimate source-store path
+- `.claude/scripts/stray.sh` - a deployed-tree path, must be refused by the harvester
+- `__WHOLE_TREE__` - this phase invokes whole-tree regeneration
+
+**Verification**:
+- ok
+MIXEDPLANEOF
+
+cd "$MIXED_ROOT" || { common_test_fail "could not cd into mixed harvest fixture repo"; }
+skill_postflight_update 1 "plan" "sess_test_harvest_mixed" "planned" "" "specs/001_fixture_task" \
+  2>"$WORKDIR/harvest-mixed-postflight-stderr.log"
+MIXED_POSTFLIGHT_EXIT=$?
+MIXED_FILE_SCOPE="$(jq -c '.active_projects[0].file_scope' "$MIXED_ROOT/specs/state.json" 2>/dev/null)"
+cd "$ORIG_PWD" || true
+
+if [[ "$MIXED_POSTFLIGHT_EXIT" -eq 0 ]]; then
+  common_test_pass "skill_postflight_update (plan, mixed-entry fixture): exits 0 -- a harvester refusal is never an error"
+else
+  common_test_fail "skill_postflight_update (plan, mixed-entry fixture) exited $MIXED_POSTFLIGHT_EXIT (see $WORKDIR/harvest-mixed-postflight-stderr.log)"
+fi
+
+if [[ "$(echo "$MIXED_FILE_SCOPE" | jq -c 'sort')" == '["__WHOLE_TREE__","scripts/harvested-one.sh","scripts/harvested-two.sh"]' ]]; then
+  common_test_pass "skill_postflight_update (plan, mixed-entry fixture): merged file_scope equals the plan's real paths plus the sentinel, with the deployed-tree path absent ($MIXED_FILE_SCOPE)"
+else
+  common_test_fail "skill_postflight_update (plan, mixed-entry fixture): expected [\"__WHOLE_TREE__\",\"scripts/harvested-one.sh\",\"scripts/harvested-two.sh\"], got '$MIXED_FILE_SCOPE' (see $WORKDIR/harvest-mixed-postflight-stderr.log)"
+fi
+
+# NOTE: skill-base.sh's own plan-branch harvest call site deliberately redirects the
+# harvester's stderr to /dev/null (`bash .claude/scripts/plan-file-scope-harvest.sh "$_plan_file"
+# 2>/dev/null`) -- a design choice this task does not change (the plan edits the harvester, not
+# either call site, so both dual-copy sites inherit the new behavior unedited). The refusal
+# warning therefore does NOT reach an operator through skill_postflight_update itself; it is
+# asserted directly against the harvester instead, against the SAME fixture plan file, as the
+# achievable half of this proof -- the stderr-propagation half is already separately pinned by
+# test-plan-file-scope-harvest.sh's own Cases 24/25.
+MIXED_DIRECT_STDERR="$(bash "$MIXED_ROOT/.claude/scripts/plan-file-scope-harvest.sh" "$MIXED_ROOT/specs/001_fixture_task/plans/01_fixture-plan.md" 2>&1 1>/dev/null)"
+if echo "$MIXED_DIRECT_STDERR" | grep -q "refused '.claude/scripts/stray.sh'"; then
+  common_test_pass "skill_postflight_update (plan, mixed-entry fixture): the harvester itself emits the deployed-tree refusal warning for this same fixture plan (not propagated through skill_postflight_update's own 2>/dev/null call site, by design)"
+else
+  common_test_fail "skill_postflight_update (plan, mixed-entry fixture): expected the harvester's own refusal warning on stderr for a direct invocation; got: $MIXED_DIRECT_STDERR"
+fi
+
 # =====================================================================
 # Group 4c: skill_postflight_update's implement-branch file_scope forwarding -- the
 # proposed_file_scope field git-commit-phase.sh deposits mid-dispatch at containment-drop time,

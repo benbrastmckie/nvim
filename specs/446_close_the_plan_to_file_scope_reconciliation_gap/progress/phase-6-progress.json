@@ -1,0 +1,28 @@
+{
+  "phase": 6,
+  "phase_name": "End-to-end reconciliation proof, redeploy, and full gate",
+  "started_at": "2026-11-09T16:28:00Z",
+  "last_updated": "2026-11-09T17:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend test-skill-base-lifecycle.sh's Group 4a with mixed-entry fixture (real paths + .claude/** path + __WHOLE_TREE__ sentinel)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 2, "description": "Assert refusal warning reached stderr and postflight exited 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh"]},
+    {"id": 3, "description": "Confirm existing Group 4a positive case and no-plans-directory degenerate case still pass unchanged", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Redeploy source store via deploy-headless.sh, confirm deployed copies match source for all edited files", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run gate set per Batch Gate Deferral directive (scoped narrowing, not independent full run)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-run validate-artifact.sh against this plan file itself, confirm no Phase 2 advisory warnings", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Re-measure live state.json for .claude/** file_scope residue, record count in summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "Assert in the same group that the harvest's refusal warning reached stderr and that the postflight exited 0.",
+      "type": "altered",
+      "reason": "skill-base.sh's own plan-branch harvest call site deliberately redirects the harvester's stderr to /dev/null (bash .claude/scripts/plan-file-scope-harvest.sh \"$_plan_file\" 2>/dev/null) -- a design this task does not change (the plan edits the harvester, not either call site). The refusal warning therefore cannot reach an operator through skill_postflight_update itself. Asserted instead: the harvester itself, invoked directly against the same fixture plan, emits the refusal warning on stderr (proving the mechanism fires for this exact fixture), while the merged file_scope and the postflight's own exit 0 are asserted through the live skill_postflight_update call site as originally planned.",
+      "annotation": "*(deviation: altered -- stderr propagation asserted against the harvester directly, not through skill_postflight_update's own 2>/dev/null call site)*"
+    }
+  ],
+  "verification_notes": "bash agent-system/extensions/core/scripts/tests/test-skill-base-lifecycle.sh: 72/72 pass (3 new Group 4a mixed-entry assertions plus all pre-existing cases unchanged). Redeployed via deploy-headless.sh (RESULT=landed_verify_red -- 3 pre-existing, unrelated failures: eager-load baseline overage not caused by any file in this task's declared file_scope; a lean-extension shellcheck finding (lean-plan-compliance-check.sh, SC2155); and two memory-extension dead-command-recommendation hits (/ide) -- all recorded via issue-record.sh, none in this task's file_scope, confirmed via git log as last touched by unrelated tasks). All ten edited source-store files verified byte-identical to their deployed counterparts after redeploy. Batch Gate Deferral scoped suite (suite_selection_select over test-skill-base-lifecycle.sh, 10 suites) run via the deployed run-all.sh per the dispatch's literal directive: 9/10 pass; the sole failure (test-task-type-detect.sh) is a pre-existing, unrelated defect in common_test_resolve_candidate() ([ -f ... ] used against a directory candidate), confirmed via git log as last touched by a different task, not in this task's declared file_scope, and recorded via issue-record.sh. validate-artifact.sh against this plan file itself emits zero Phase-2-authoring-shape warnings (3 unrelated pre-existing Tier-Justification-measurement warnings remain, orthogonal to this task's own Phase 2 checks). Live state.json .claude/** file_scope residue re-measured: 4 entries across 2 tasks (483: 2 entries under .claude/context/guides/ and .claude/docs/guides/; 512: 2 entries under .claude/scripts/lint/ and .claude/scripts/tests/) -- unchanged from the plan's own research-time measurement, left untouched per the Non-Goals (never narrowing another task's declaration), now neutralized at the containment site by Phase 3's strip whenever those tasks' own phase commits run."
+}
