@@ -1,0 +1,51 @@
+{
+  "phase": 9,
+  "phase_name": "founder/skills",
+  "started_at": "2026-11-08T20:35:00Z",
+  "last_updated": "2026-11-08T20:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 14 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/founder/skills/skill-analyze/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-deck-implement/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-deck-plan/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-deck-research/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-finance/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-financial-analysis/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-founder-implement/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-founder-plan/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-founder-spreadsheet/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-legal/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-market/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-meeting/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-project/SKILL.md",
+        "agent-system/extensions/founder/skills/skill-strategy/SKILL.md"
+      ],
+      "note": "33 occurrences measured (vs. the plan's 14-file Scope Hypothesis, no count given), all 14 files treated via batch sed substitutions on 9 highly-repetitive shared template patterns (one per research-type skill's '### Direct Invocation'/'re-run to resume' pair, one per plan-type skill, one per implement-type skill), confirmed clean afterward by the measurement command restricted to founder/skills/. Zero remaining dead-command tokens. Spot-checked 5 files' exact rendered text post-edit to confirm the sed anchoring did not mis-fire on any line beyond its intended target."
+    },
+    {
+      "id": 2,
+      "description": "Distinguish a phase-named skill (e.g. skill-founder-plan, skill-deck-research) from a dead-command reference, per the plan's explicit warning",
+      "status": "done",
+      "files_touched": [],
+      "note": "No miscategorization occurred: every skill FILE NAME and SKILL.md frontmatter `name:` field (e.g. `skill-founder-plan`, `skill-deck-research`) was left completely untouched throughout -- these are live, correctly-named skill identifiers, not dead-command references, and none of them matched the measurement pattern in the first place (no leading-slash token). Only the prose INSIDE each skill describing how a /research, /plan, or /implement command would route to it was reworded; the skill's own name was never a candidate for editing."
+    },
+    {
+      "id": 3,
+      "description": "Per-site class decisions for the two repeated structural patterns: '### Direct Invocation' command description and 'Task-Type-Based Routing' restatement",
+      "status": "done",
+      "files_touched": [],
+      "note": "Class 2 (architectural/routing description) throughout. Each skill's '### Direct Invocation' bullet ('User runs `/research` on a founder task with task_type: X' / '`/plan` command on a task with language: founder' / '`/implement` command on a task with language: founder') and the paired '### Task-Type-Based Routing' restatement ('`/plan {N}` where task {N} has language=...') both describe the SAME underlying mechanism (task_type/language-based routing resolved by /orchestrate's phase dispatch, per manifest.json's routing_agents), so both were reworded to the identical 'A {phase}-phase dispatch (via `/orchestrate`)' framing established in Phase 3's orchestrator.md treatment, rather than treated as two different claims needing different fixes."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24). founder extension reports OK (no FAIL) in check-extension-docs.sh -- only pre-existing WARN-tier routing_agents/README-drift advisories unrelated to this phase. Residual overall-FAILs are the same core-extension items already confirmed in Phases 4/7/8 (gate 24's 2 /ide violations; gate 3's pre-existing drift plus Phase 7's still-undeployed script edits). No new FAIL introduced by Phase 9. founder/index-entries.json line-count tracking (if any) unaffected: all edits were same-line-count text substitutions via sed, confirmed by the OK verdict with zero line_count-mismatch FAILs for founder."
+  ]
+}

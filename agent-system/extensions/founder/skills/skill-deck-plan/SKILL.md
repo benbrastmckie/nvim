@@ -26,12 +26,12 @@ Reference (do not load eagerly):
 This skill activates when:
 
 ### Direct Invocation
-- `/plan` command on a task with `language: founder` and `task_type: deck`
+- A plan-phase dispatch (via `/orchestrate`) on a task with `language: founder` and `task_type: deck`
 - Extension routing lookup finds `routing.plan["founder:deck"]`
 
 ### Task-Type-Based Routing
 - Task type is "founder" AND task_type is "deck"
-- `/plan {N}` where task {N} has language="founder" and task_type="deck"
+- A plan-phase dispatch for {N} where task {N} has language="founder" and task_type="deck"
 
 ### When NOT to trigger
 
@@ -484,7 +484,7 @@ proceed immediately to postflight (Stage 6). The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/plan` to resume.
+> status and let the user re-run the plan-phase dispatch (via `/orchestrate`) to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file
@@ -530,7 +530,7 @@ Return error with guidance to check task number.
 Pass through the agent's error return verbatim.
 
 ### User Abandonment (during AskUserQuestion)
-If user cancels any interactive question, return partial status with progress made. Keep status as "planning" so the user can re-run `/plan {N}` to restart.
+If user cancels any interactive question, return partial status with progress made. Keep status as "planning" so the user can re-run a plan-phase dispatch for {N} to restart.
 
 ### All Slides Deselected (during content selection)
 If user deselects all slides in Question 3, present a confirmation question offering to restart slide selection or cancel planning.

@@ -22,12 +22,12 @@ Note: This skill is a thin wrapper. Context is loaded by the delegated agent, no
 This skill activates when:
 
 ### Direct Invocation
-- `/implement` command on a task with `language: founder` and `task_type: deck`
+- An implement-phase dispatch (via `/orchestrate`) on a task with `language: founder` and `task_type: deck`
 - Extension routing lookup finds `routing.implement["founder:deck"]`
 
 ### Task-Type-Based Routing
 - Task type is "founder" AND task_type is "deck"
-- `/implement {N}` where task {N} has language="founder", task_type="deck"
+- An implement-phase dispatch for {N} where task {N} has language="founder", task_type="deck"
 
 ### When NOT to trigger
 
@@ -261,7 +261,7 @@ After the agent returns -- whether with status implemented, partial, or failed -
 
 See `context/standards/postflight-tool-restrictions.md` § "MUST NOT Section Template"
 for the full PROHIBITION clause (the lead skill must not continue, complete, or "fill in" a
-partial/failed subagent's work; report the status and let the user re-run `/implement`) and the
+partial/failed subagent's work; report the status and let the user re-run the implement-phase dispatch) and the
 postflight-phase allowed-operations list (read metadata, state.json/TODO.md updates, artifact
 linking, git commit, cleanup).
 
@@ -314,7 +314,7 @@ Deck implementation partially completed for task {N}:
 Return immediately with failed status.
 
 ### Plan Not Found
-Return error with guidance to run /plan first.
+Return error with guidance to run the plan phase first.
 
 ### Task Not Found
 Return error with guidance to check task number.

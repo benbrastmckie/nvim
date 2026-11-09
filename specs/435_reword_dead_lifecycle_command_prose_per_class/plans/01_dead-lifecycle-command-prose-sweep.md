@@ -744,16 +744,19 @@ which Phase 1 owns). Confirm by running the measurement command restricted to
 
 ---
 
-### Phase 9: founder/skills [NOT STARTED]
+### Phase 9: founder/skills [COMPLETED]
 
 **Goal**: Treat the founder extension's skill definitions.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] Several of these skills are themselves named for a lifecycle phase
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 33
+      occurrences across all 14 files, zero remaining)*
+- [x] Several of these skills are themselves named for a lifecycle phase
       (`skill-founder-plan`, `skill-founder-implement`, `skill-deck-research`): a reference to the
-      skill is not a reference to a dead command. Distinguish the two at each site.
+      skill is not a reference to a dead command. Distinguish the two at each site. *(completed:
+      no skill name or frontmatter `name:` field was ever a candidate for editing -- none matched
+      the measurement pattern; only the prose describing command-to-skill routing was reworded)*
 
 **Timing**: 1.25 hours
 

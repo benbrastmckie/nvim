@@ -22,12 +22,12 @@ Note: This skill is a thin wrapper. Context is loaded by the delegated agent, no
 This skill activates when:
 
 ### Direct Invocation
-- `/plan` command on a task with `language: founder`
+- A plan-phase dispatch (via `/orchestrate`) on a task with `language: founder`
 - Extension routing lookup finds `routing.plan.founder`
 
 ### Task-Type-Based Routing
 - Task type is "founder"
-- `/plan {N}` where task {N} has language="founder"
+- A plan-phase dispatch for {N} where task {N} has language="founder"
 
 ### When NOT to trigger
 
@@ -222,7 +222,7 @@ proceed immediately to postflight (Stage 6). The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/plan` to resume.
+> status and let the user re-run the plan-phase dispatch (via `/orchestrate`) to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

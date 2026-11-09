@@ -26,7 +26,7 @@ This skill activates when:
 
 ### Direct Invocation
 - User explicitly runs `/finance` command with task number
-- User runs `/research` on a founder task with `task_type: "finance"`
+- A research-phase dispatch (via `/orchestrate`) on a founder task with `task_type: "finance"`
 
 ### Implicit Invocation (during task implementation)
 
@@ -313,7 +313,7 @@ proceed immediately to postflight (Stage 6). The skill MUST NOT:
 
 > **PROHIBITION**: If the subagent returned partial or failed status, the lead skill MUST NOT
 > attempt to continue, complete, or "fill in" the subagent's work. Report the partial/failed
-> status and let the user re-run `/research` to resume.
+> status and let the user re-run the research-phase dispatch (via `/orchestrate`) to resume.
 
 The postflight phase is LIMITED TO:
 - Reading agent metadata file

@@ -24,7 +24,7 @@ Note: This skill is a thin wrapper. Context is loaded by the delegated agent, no
 This skill activates when:
 
 ### Direct Invocation
-- User runs `/research` on a task with language `founder:financial-analysis`
+- A research-phase dispatch (via `/orchestrate`) on a task with language `founder:financial-analysis`
 
 ### When NOT to trigger
 
