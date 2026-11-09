@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "operations": [
+    {
+      "id": "review_1794261970543",
+      "timestamp": "2026-11-09T22:06:01Z",
+      "type": "review",
+      "session_id": "sess_1794255075_c95572",
+      "pre_metrics": {
+        "total_memories": 0,
+        "total_tokens": 0,
+        "health_score": 100,
+        "purge_candidates": 0,
+        "merge_candidates": 0,
+        "compress_candidates": 0
+      },
+      "post_metrics": {
+        "total_memories": 0,
+        "total_tokens": 0,
+        "health_score": 100,
+        "purge_candidates": 0,
+        "merge_candidates": 0,
+        "compress_candidates": 0
+      },
+      "notes": "Phase 5 live verification run for task 497. Question: most recurring handoff-related defect pattern. Tiers consulted: Tier 2 (events.jsonl, via events-query.sh) and Tier 1 (OTel, degraded path announced -- not enabled on this machine)."
+    }
+  ],
+  "summary": {
+    "total_operations": 1,
+    "last_operation": "2026-11-09T22:06:01Z"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "operations": [
+    {
+      "id": "dream_1794261970543",
+      "timestamp": "2026-11-09T22:06:01Z",
+      "type": "dream",
+      "session_id": "sess_1794255075_c95572",
+      "since": null,
+      "prompts_scanned": 4273,
+      "themes_surfaced": 1,
+      "themes_with_existing_coverage_skipped": 0,
+      "notes": "Phase 5 live verification run for task 497. Surfaced theme: user hand-audits batch dependencies before dispatching (3 matching prompts in this repo's history.jsonl slice, no existing specs/TODO.md coverage found)."
+    }
+  ],
+  "summary": {
+    "total_dreamed": 1,
+    "total_themes_surfaced": 1,
+    "last_operation": "2026-11-09T22:06:01Z"
+  }
+}

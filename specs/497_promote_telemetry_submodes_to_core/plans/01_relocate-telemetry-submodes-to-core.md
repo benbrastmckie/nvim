@@ -557,7 +557,7 @@ covers for the others.
 
 ---
 
-### Phase 5: Redeploy, Prune Orphans, and Verify All Three Sub-Modes Live [NOT STARTED]
+### Phase 5: Redeploy, Prune Orphans, and Verify All Three Sub-Modes Live [COMPLETED]
 
 **Goal**: Regenerate the deployed tree, confirm no orphaned deployed copies of the deleted
 source files remain, and demonstrate end to end that each relocated sub-mode is invocable at its
@@ -565,36 +565,54 @@ new location and produces its documented output shape against this repo's real d
 
 **Tasks**:
 
-- [ ] Redeploy the source store with the bounded-wait idiom required by
+- [x] Redeploy the source store with the bounded-wait idiom required by
       `context/patterns/external-process-wait.md` Rule 1:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, with the Bash tool's `timeout`
       parameter raised to 600000. The dispatch's deploy-freshness context already reports core
-      as stale, so this also clears a pre-existing divergence.
-- [ ] Confirm the deployed tree gained `.claude/commands/telemetry.md`,
+      as stale, so this also clears a pre-existing divergence. *(completed; ran twice -- first
+      pass surfaced orphans, second pass confirmed clean)*
+- [x] Confirm the deployed tree gained `.claude/commands/telemetry.md`,
       `.claude/skills/skill-telemetry/SKILL.md`,
       `.claude/context/standards/telemetry-guardrails.md` and
-      `.claude/context/patterns/telemetry-{meta,review,dream}-submode.md`.
-- [ ] Check for orphaned deployed copies of the four deleted source files
+      `.claude/context/patterns/telemetry-{meta,review,dream}-submode.md`. *(completed)*
+- [x] Check for orphaned deployed copies of the four deleted source files
       (`.claude/context/project/memory/telemetry-guardrails.md`,
       `.claude/context/project/memory/patterns/distill-{meta,review,dream}-submode.md`). If
       `deploy-headless.sh` did not prune them, remove them explicitly — do not leave them for
-      `test-deploy-orphans.sh` to flag.
-- [ ] Run `/telemetry --meta` against this repo and confirm it surfaces the handoff-schema
+      `test-deploy-orphans.sh` to flag. *(completed: deploy-headless.sh did not prune them;
+      removed explicitly, plus their ghost rows in the deployed context/index.json aggregate,
+      which cleared on the second redeploy pass)*
+- [x] Run `/telemetry --meta` against this repo and confirm it surfaces the handoff-schema
       cluster the dispatch describes (the `dispatch_status`-instead-of-`status` off-schema
       writes and the "handoff mtime predates this dispatch window" occurrences), demonstrating
       the signal path works at the new location. Use `--dry-run` so no task is created, and
       access Tier 2 only through `bash .claude/scripts/events-query.sh`, never hand-rolled `jq`.
-- [ ] Run `/telemetry --dream` against this repo and confirm it reads
+      *(completed: live run confirmed 23 handoff-mtime-predates-window occurrences, 4
+      dispatch_status off-schema, 3 dispatch_seq mismatches, attributing to
+      skill-orchestrate/SKILL.md and general-implementation-agent.md)*
+- [x] Run `/telemetry --dream` against this repo and confirm it reads
       `~/.claude/history.jsonl`, slices by the `project` field, and produces the documented
       surfacing output shape. Confirm its MANDATORY STOP exemption is stated in the output.
-- [ ] Run `/telemetry --review "<question>"` and confirm it (a) answers in prose with per-tier
+      *(completed: live history.jsonl slice, 4273 prompts for this repo, confirmed the
+      batch-dependency-auditing theme with no existing TODO.md coverage; logged a real operation
+      to specs/telemetry/dream-log.json)*
+- [x] Run `/telemetry --review "<question>"` and confirm it (a) answers in prose with per-tier
       evidence citations, (b) announces the Tier 1 degraded path explicitly as "OTel not enabled
       for this session/repo -- outcome evidence unavailable for this question." rather than
       silently omitting it, and (c) states its MANDATORY STOP exemption and its funnel rule.
-- [ ] Confirm `specs/telemetry/` was created with the expected log file(s) in the documented
+      *(completed: confirmed OTel unset on this machine; announced the exact required degraded
+      path string; logged optional audit entry to specs/telemetry/review-log.json)*
+- [x] Confirm `specs/telemetry/` was created with the expected log file(s) in the documented
       shape, and that nothing was written under `.memory/` by any of the three runs.
-- [ ] Run the complete gate set and resolve any finding by fixing forward in the source store,
+      *(completed; both log files parse, .memory/ dirty state pre-dates this dispatch)*
+- [x] Run the complete gate set and resolve any finding by fixing forward in the source store,
       never by hand-patching `.claude/**`.
+      *(completed; deviation: altered -- ran verify-deploy.sh --skip-slow --only-gate 3,4,13
+      instead of the unscoped full run, deferred to batch-end per this phase's own named Batch
+      Gate Deferral directive; 3 unrelated pre-existing/concurrent findings (eager-budget,
+      shellcheck in lean, dead-command-recommendation in memory-setup.md/
+      memory-troubleshooting.md) surfaced during two earlier unscoped attempts and recorded in
+      the issue log rather than fixed here -- see issue log)*
 
 **Timing**: 1.5 hours
 

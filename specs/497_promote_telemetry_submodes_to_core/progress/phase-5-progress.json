@@ -1,0 +1,30 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy, Prune Orphans, and Verify All Three Sub-Modes Live",
+  "started_at": "2026-11-09T23:05:00Z",
+  "last_updated": "2026-11-09T22:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy source store via deploy-headless.sh (bounded wait)", "status": "done", "files_touched": ["__WHOLE_TREE__"], "note": "ran twice: first pass surfaced 4 orphaned deployed files + ghost index rows; second pass (after removing orphans) confirmed clean"},
+    {"id": 2, "description": "Confirm deployed tree gained the six new files", "status": "done", "files_touched": [], "note": "confirmed .claude/commands/telemetry.md, skill-telemetry/SKILL.md, standards/telemetry-guardrails.md, patterns/telemetry-{meta,review,dream}-submode.md all present"},
+    {"id": 3, "description": "Check for and remove orphaned deployed copies of the four deleted files", "status": "done", "files_touched": [".claude/context/project/memory/telemetry-guardrails.md", ".claude/context/project/memory/patterns/distill-meta-submode.md", ".claude/context/project/memory/patterns/distill-review-submode.md", ".claude/context/project/memory/patterns/distill-dream-submode.md"], "note": "deploy-headless.sh did not prune them on the first pass; removed explicitly, then a second redeploy also cleaned up the stale ghost rows in the deployed aggregate .claude/context/index.json"},
+    {"id": 4, "description": "Run /telemetry --meta --dry-run, confirm handoff-schema cluster surfaces", "status": "done", "files_touched": [], "note": "live events-query.sh run confirmed real evidence: 23 handoff-mtime-predates-window occurrences, 4 dispatch_status off-schema, 3 dispatch_seq mismatches, all attributing to skill-orchestrate/SKILL.md and general-implementation-agent.md -- matches dispatch's described cluster"},
+    {"id": 5, "description": "Run /telemetry --dream, confirm MANDATORY STOP exemption stated", "status": "done", "files_touched": ["specs/telemetry/dream-log.json"], "note": "live history.jsonl slice (4273 prompts for this repo) confirmed the batch-dependency-auditing theme (3 real matches), no existing specs/TODO.md coverage; logged a real operation entry"},
+    {"id": 6, "description": "Run /telemetry --review, confirm OTel degraded path and funnel rule stated", "status": "done", "files_touched": ["specs/telemetry/review-log.json"], "note": "confirmed CLAUDE_CODE_ENABLE_TELEMETRY unset on this machine (env + settings files); announced the exact required degraded-path string; logged optional audit entry"},
+    {"id": 7, "description": "Confirm specs/telemetry/ created with expected log files, nothing under .memory/", "status": "done", "files_touched": [], "note": "specs/telemetry/{dream,review}-log.json both parse; git status confirms .memory/memory-index.json's dirty state pre-dates this dispatch (present in session-start gitStatus), not caused by these runs"},
+    {"id": 8, "description": "Run complete gate set (deferred to batch end per dispatch directive)", "status": "done", "files_touched": [], "note": "ran verify-deploy.sh --skip-slow --only-gate 3,4,13 (doc-lint, task-reference lint, whole-tree orphan detection -- the gate directly relevant to this phase's own orphan-pruning task) -- all PASS. Complete gate set (Gate 8's full shell-suite battery, and the three unrelated pre-existing/concurrent findings discovered during the earlier unscoped attempts: Gate 20 eager-budget, Gate 22 shellcheck in lean, Gate 24 dead-command-recommendation in memory-setup.md/memory-troubleshooting.md) deferred to the single batch-end full run per this phase's own explicitly-named Batch Gate Deferral directive."}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "two unscoped 'bash verify-deploy.sh' full runs during redeploy", "result": "partial", "reason": "both completed (unlike Phases 2/4's contention-driven aborts) and were genuinely useful: first pass found the 4 orphaned deployed files + ghost index rows (fixed); second pass confirmed those clean but surfaced 3 further findings (eager-budget, shellcheck, dead-command-recommendation) that are pre-existing/concurrent and out of this task's scope, deferred per the phase's own Batch Gate Deferral directive rather than fixed here"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.complete-gate-set",
+      "description": "Phase 5's own Verification criterion calls for the complete gate set green with no --skip-slow and no --only-gate narrowing",
+      "type": "altered",
+      "reason": "This phase's own dispatch directive (Batch Gate Deferral section) explicitly names THIS phase (the plan's declared final phase) for scoped-tier discharge: 'THIS dispatch discharges that phase against a SCOPED tier instead of independently running the complete gate set.' Ran the scoped verify-deploy.sh --skip-slow --only-gate 3,4,13 instead (the gates directly relevant to what this phase itself touched), deferring the complete gate set -- including three pre-existing/concurrent findings discovered during two earlier unscoped attempts (Gate 20 eager-load budget overage mostly unrelated to this task's ~244B marginal contribution; Gate 22 shellcheck finding in the unrelated lean extension; Gate 24 dead-command-recommendation findings in pre-existing memory-setup.md/memory-troubleshooting.md '/ide' references) -- to the single batch-end full run this directive already promises.",
+      "annotation": "*(deviation: altered -- ran verify-deploy.sh --skip-slow --only-gate 3,4,13 instead of the unscoped full run, deferred to batch-end per this phase's own named Batch Gate Deferral directive; 3 unrelated pre-existing/concurrent findings surfaced during two earlier unscoped attempts and recorded in the issue log rather than fixed here)*"
+    }
+  ]
+}
