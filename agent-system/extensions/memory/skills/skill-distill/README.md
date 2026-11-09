@@ -18,15 +18,15 @@ Memory *creation* is a separate concern owned by the sibling `skill-learn` skill
 | refine | `--refine` | Improve metadata quality: Tier 1 (auto) + Tier 2 (interactive) |
 | gc | `--gc` | Hard-delete tombstoned memories past 7-day grace period |
 | auto | `--auto` | Automated Tier 1 refine only (non-interactive) |
-| meta | `--meta` | Cross-repo agent-system improvement proposals, delegated to `meta-builder-agent` |
-| review | `--review` | Read-only ad hoc inquiry over the vault and all four telemetry source tiers |
 | revise | `--revise` | Event-and-OTel-correlated memory refactoring proposals |
 | learn | `--learn` | Retroactive, batch harvest across already-completed tasks |
-| dream | `--dream` | Speculative direction-finding over `history.jsonl`'s recurring themes |
+
+`--meta`, `--review`, and `--dream` moved to `/telemetry` -- see `skill-telemetry/SKILL.md`
+(core extension).
 
 See `SKILL.md`'s Shared Sub-Mode Skeleton and per-sub-mode sections for the full specification
-of each, and `context/project/memory/telemetry-guardrails.md` for the binding design constraints
-shared by the five telemetry-sourced sub-modes.
+of each, and `context/standards/telemetry-guardrails.md` for the binding design constraints
+shared by the telemetry-sourced sub-modes that remain.
 
 ## Scoring Engine
 

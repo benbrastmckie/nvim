@@ -25,15 +25,16 @@ Everything in this extension comes down to three operations:
 and implement preflight stages (dispatched via `/orchestrate`) call `memory-retrieve.sh` to inject relevant memories into
 agent context. Use the `--clean` flag to suppress auto-retrieval for a specific invocation.
 
-**`/distill` now spans 12 sub-modes**, not only vault-hygiene maintenance: the seven original
-sub-modes (`report`/`purge`/`merge`/`compress`/`refine`/`gc`/`auto`) are joined by five
-telemetry-sourced sub-modes -- `--revise` (event-and-OTel-correlated memory refactoring),
-`--meta` (cross-repo agent-system improvement proposals), `--review` (read-only inquiry over the
-vault and all four source tiers), `--learn` (retroactive batch harvest across already-completed
-tasks), and a redefined `--dream` (speculative direction-finding over `history.jsonl`). See
-`skills/skill-distill/SKILL.md`'s Shared Sub-Mode Skeleton for the common shape, and
-`context/project/memory/telemetry-guardrails.md` for the binding design constraints the five
-telemetry-sourced sub-modes share.
+**`/distill` spans 9 sub-modes**, not only vault-hygiene maintenance: the seven original
+sub-modes (`report`/`purge`/`merge`/`compress`/`refine`/`gc`/`auto`) are joined by two
+telemetry-sourced sub-modes that stay coupled to the vault store -- `--revise`
+(event-and-OTel-correlated memory refactoring) and `--learn` (retroactive batch harvest across
+already-completed tasks). `--meta` (cross-repo agent-system improvement proposals), `--review`
+(read-only inquiry over all four source tiers), and `--dream` (speculative direction-finding
+over `history.jsonl`) touch no vault store and moved to `/telemetry` -- see
+`skill-telemetry/SKILL.md` (core extension). See `skills/skill-distill/SKILL.md`'s Shared
+Sub-Mode Skeleton for the common shape, and `context/standards/telemetry-guardrails.md` for the
+binding design constraints the telemetry-sourced sub-modes share.
 
 ---
 

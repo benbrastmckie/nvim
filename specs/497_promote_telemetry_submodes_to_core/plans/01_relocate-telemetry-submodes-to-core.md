@@ -460,47 +460,52 @@ so no suite covers it and the honest check is sub-case (b) —
 
 ---
 
-### Phase 4: Retire the Three Sub-Modes from the Memory Extension Surface [NOT STARTED]
+### Phase 4: Retire the Three Sub-Modes from the Memory Extension Surface [COMPLETED]
 
 **Goal**: Reduce `/distill` to its nine remaining sub-modes, point its documentation at
 `/telemetry` for the three that moved, and delete the four relocated source files.
 
 **Tasks**:
 
-- [ ] Re-read every file in this phase immediately before editing. Tasks 328 (`implementing`
+- [x] Re-read every file in this phase immediately before editing. Tasks 328 (`implementing`
       across memory `commands/` and `skills/`) and 435 (declares memory `context/` and
       `skills/`) are live on these same directories; stage only this task's own hunks with an
-      explicit file list, never a directory or glob `git add`.
-- [ ] Edit `agent-system/extensions/memory/commands/distill.md`: remove `--meta`, `--review` and
+      explicit file list, never a directory or glob `git add`. *(completed)*
+- [x] Edit `agent-system/extensions/memory/commands/distill.md`: remove `--meta`, `--review` and
       `--dream` from the Sub-Mode Dispatch list, the parsing pseudocode, the availability table,
       the Present Results block, the Error Handling flag lists, and the State Management
       reads/writes. Change "12 sub-modes" to nine throughout. Add a one-line pointer that those
-      three now live at `/telemetry --meta|--review|--dream`.
-- [ ] Edit `agent-system/extensions/memory/skills/skill-distill/SKILL.md`: delete the three
+      three now live at `/telemetry --meta|--review|--dream`. *(completed)*
+- [x] Edit `agent-system/extensions/memory/skills/skill-distill/SKILL.md`: delete the three
       `### Sub-Mode: meta|review|dream` stub pointers and their Sub-Mode Dispatch table rows;
       update the header paragraph and frontmatter `description` to name only the remaining
       sub-modes; repoint its `## Context References` guardrails path at the core copy; amend the
       Shared Sub-Mode Skeleton's non-mutating-sub-mode paragraph so it names `report` (and
       `auto`) without citing `distill-review-submode.md`; and update the `## State Integration`
       field-update table and the Distill Log Schema's `review` note to drop the three departed
-      sub-modes.
-- [ ] Edit `agent-system/extensions/memory/context/project/memory/distill-usage.md`: remove the
+      sub-modes. *(completed; also fixed a pre-existing stale "--review" mention in auto's own
+      inline spec and dropped the now-orphaned last_dream/dream_count memory_health coupling)*
+- [x] Edit `agent-system/extensions/memory/context/project/memory/distill-usage.md`: remove the
       `### Meta`, `### Review` and `### Dream` sections, their Quick Reference lines, their
       "when to use" table rows and their log-file table rows; repoint the guardrails citation at
-      the core copy; add a pointer line naming `/telemetry` as their host.
-- [ ] Edit `agent-system/extensions/memory/README.md` and
+      the core copy; add a pointer line naming `/telemetry` as their host. *(completed; also
+      fixed a resulting index-entries.json line_count drift mechanically)*
+- [x] Edit `agent-system/extensions/memory/README.md` and
       `agent-system/extensions/memory/skills/skill-distill/README.md`: repoint the guardrails
       citation at the core copy and reduce "the five telemetry-sourced sub-modes" to the two that
-      remain (`--revise`, `--learn`).
-- [ ] Edit `agent-system/extensions/memory/EXTENSION.md`'s `/distill` command-table row to name
-      the nine remaining sub-modes.
-- [ ] Remove the four stale entries from
+      remain (`--revise`, `--learn`). *(completed)*
+- [x] Edit `agent-system/extensions/memory/EXTENSION.md`'s `/distill` command-table row to name
+      the nine remaining sub-modes. *(completed)*
+- [x] Remove the four stale entries from
       `agent-system/extensions/memory/index-entries.json`:
       `project/memory/telemetry-guardrails.md` and
-      `project/memory/patterns/distill-{dream,review,meta}-submode.md`.
-- [ ] Delete `agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md`,
+      `project/memory/patterns/distill-{dream,review,meta}-submode.md`. *(completed)*
+- [x] Delete `agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md`,
       `distill-review-submode.md`, `distill-dream-submode.md`, and
       `agent-system/extensions/memory/context/project/memory/telemetry-guardrails.md`.
+      *(completed; deviation: altered -- ran verify-deploy.sh --skip-slow --only-gate 3,4 plus
+      targeted lint/grep/JSON checks instead of the unscoped full run, deferred to batch-end due
+      to measured concurrent gate contention; see issue log)*
 
 **Timing**: 2 hours
 

@@ -4,7 +4,7 @@ description: Analyze memory vault health, score memories for maintenance, and ru
 
 # Command: /distill
 
-**Purpose**: Analyzes the memory vault, scores each memory on staleness/retrieval/size/duplication, generates a health report, and dispatches maintenance and telemetry-sourced sub-modes (purge, merge, compress, refine, gc, auto, revise, meta, review, learn, dream).
+**Purpose**: Analyzes the memory vault, scores each memory on staleness/retrieval/size/duplication, generates a health report, and dispatches maintenance and telemetry-sourced sub-modes (purge, merge, compress, refine, gc, auto, revise, learn). The `--meta`, `--review`, and `--dream` sub-modes now live at `/telemetry --meta|--review|--dream` -- they touch no vault store and were moved so they survive this extension's eventual retirement.
 **Layer**: 2 (Command File - Argument Parsing Agent)
 **Delegates To**: skill-distill mode=distill (direct execution)
 
@@ -18,7 +18,7 @@ description: Analyze memory vault health, score memories for maintenance, and ru
   <step_1>
     Parse arguments with sub-mode priority:
 
-    **Sub-Mode Dispatch** (first match wins, 12 sub-modes total):
+    **Sub-Mode Dispatch** (first match wins, 9 sub-modes total):
     1. No arguments (bare invocation) -> Report mode (health report)
     2. `--purge` -> Purge mode (tombstone stale/zero-retrieval memories)
     3. `--merge` -> Merge mode (combine duplicate memories)
@@ -26,13 +26,11 @@ description: Analyze memory vault health, score memories for maintenance, and ru
     5. `--refine` -> Refine mode (improve memory quality)
     6. `--gc` -> Garbage collection (hard-delete tombstoned memories past grace period)
     7. `--auto` -> Automated distillation (Tier 1 refine only)
-    8. `--meta` -> Cross-repo agent-system improvement proposals, delegated to `meta-builder-agent`
-    9. `--review` -> Read-only ad hoc inquiry over the vault and all four telemetry source tiers
-    10. `--revise` -> Event-and-OTel-correlated memory refactoring proposals
-    11. `--learn` -> Retroactive, batch harvest across already-completed tasks
-    12. `--dream` -> Speculative direction-finding over `history.jsonl`'s recurring themes
+    8. `--revise` -> Event-and-OTel-correlated memory refactoring proposals
+    9. `--learn` -> Retroactive, batch harvest across already-completed tasks
 
-    All 12 sub-modes are available.
+    All 9 sub-modes are available. `--meta`, `--review`, and `--dream` now live at
+    `/telemetry --meta|--review|--dream`.
 
     **Additional Flags**:
     - `--dry-run` -> Show what would happen without making changes
@@ -53,16 +51,10 @@ description: Analyze memory vault health, score memories for maintenance, and ru
       sub_mode = "gc"
     elif "--auto" in $ARGUMENTS:
       sub_mode = "auto"
-    elif "--meta" in $ARGUMENTS:
-      sub_mode = "meta"
-    elif "--review" in $ARGUMENTS:
-      sub_mode = "review"
     elif "--revise" in $ARGUMENTS:
       sub_mode = "revise"
     elif "--learn" in $ARGUMENTS:
       sub_mode = "learn"
-    elif "--dream" in $ARGUMENTS:
-      sub_mode = "dream"
 
     dry_run = "--dry-run" in $ARGUMENTS
     verbose = "--verbose" in $ARGUMENTS
@@ -78,7 +70,7 @@ description: Analyze memory vault health, score memories for maintenance, and ru
   <step_1>
     <action>Validate Sub-Mode Availability</action>
     <process>
-      Check if the requested sub-mode is implemented. All 12 sub-modes are available; each
+      Check if the requested sub-mode is implemented. All 9 sub-modes are available; each
       row's "Section" column is the durable anchor into `skill-distill/SKILL.md` -- never a
       task number, which is ephemeral and renumbered by vault operations:
 
@@ -92,10 +84,10 @@ description: Analyze memory vault health, score memories for maintenance, and ru
       | gc | `### GC Sub-Mode` |
       | auto | `### Sub-Mode: auto` |
       | revise | `### Sub-Mode: revise` |
-      | meta | `### Sub-Mode: meta` |
-      | review | `### Sub-Mode: review` |
       | learn | `### Sub-Mode: learn` |
-      | dream | `### Sub-Mode: dream` |
+
+      `--meta`, `--review`, and `--dream` are dispatched by `/telemetry` instead -- see
+      `skill-telemetry/SKILL.md` (core extension).
     </process>
   </step_1>
 
@@ -176,33 +168,12 @@ description: Analyze memory vault health, score memories for maintenance, and ru
         - Log the revise operation to .memory/revise-log.json (type: "revise")
         - Update memory_health (last_revise, revise_count) in state.json
 
-      Meta mode:
-        - Resolve target_root via $GLOBAL_ROOT (or --local for the invoking repo only)
-        - Surface recurring agent-system improvement candidates via AskUserQuestion (Create as
-          task / Note in report only / Skip), delegating any task creation to meta-builder-agent
-        - State the single-repo signal limitation in the output
-        - Log the meta operation to .memory/meta-log.json (type: "meta")
-
-      Review mode:
-        - Strictly read-only: answer the user's free-text question by querying whichever of the
-          four source tiers are relevant, with evidence citations naming the tier
-        - No AskUserQuestion mutation gate (nothing mutates) -- state this exemption in output
-        - Funnel any actionable finding to --meta, --revise, or /learn -- never act directly
-
       Learn mode:
         - Scan already-archived tasks for unharvested memory_candidates
         - Source from the task's transcript within the 30-day window, falling back to
           history.jsonl + archived specs/ artifacts beyond it
         - Present classified candidates via AskUserQuestion; never auto-create memories
         - Log the operation to .memory/learn-harvest-log.json (type: "learn_harvest")
-
-      Dream mode:
-        - Read history.jsonl (global), sliced to this repo via each line's `project` field
-        - Surface recurring themes/interests with no existing memory or task coverage
-        - No AskUserQuestion mutation gate (nothing mutates) -- state this exemption in output
-        - Funnel any actionable finding to --meta or /learn -- never act directly
-        - Log the dream operation to .memory/dream-log.json (type: "dream")
-        - Update memory_health (last_dream, dream_count) in state.json
     </process>
   </step_3>
 
@@ -211,12 +182,11 @@ description: Analyze memory vault health, score memories for maintenance, and ru
     <process>
       After any distill operation:
       1. Update memory_health in specs/state.json (sub-modes that track their own run
-         bookkeeping -- revise, meta, review, learn -- use their own log file's summary instead;
-         see State Integration in skill-distill/SKILL.md)
+         bookkeeping -- revise, learn -- use their own log file's summary instead; see State
+         Integration in skill-distill/SKILL.md)
       2. Append operation entry to the sub-mode's own log file (.memory/distill-log.json for the
-         seven hygiene sub-modes; .memory/revise-log.json, .memory/meta-log.json,
-         .memory/learn-harvest-log.json, .memory/dream-log.json for the five telemetry-sourced
-         sub-modes)
+         seven hygiene sub-modes; .memory/revise-log.json, .memory/learn-harvest-log.json for the
+         two remaining telemetry-sourced sub-modes)
       3. Git commit changes
     </process>
   </step_4>
@@ -228,8 +198,8 @@ description: Analyze memory vault health, score memories for maintenance, and ru
 
 <error_handling>
   <argument_errors>
-    - Unknown flag -> "Unknown flag: {flag}. Available: --purge, --merge, --compress, --refine, --gc, --auto, --meta, --review, --revise, --learn, --dream, --dry-run, --verbose"
-    - Unknown sub-mode -> "Unknown sub-mode. Available: /distill (report), /distill --purge, --merge, --compress, --refine, --gc, --auto, --meta, --review, --revise, --learn, --dream"
+    - Unknown flag -> "Unknown flag: {flag}. Available: --purge, --merge, --compress, --refine, --gc, --auto, --revise, --learn, --dry-run, --verbose (--meta/--review/--dream moved to /telemetry)"
+    - Unknown sub-mode -> "Unknown sub-mode. Available: /distill (report), /distill --purge, --merge, --compress, --refine, --gc, --auto, --revise, --learn (--meta/--review/--dream moved to /telemetry)"
   </argument_errors>
 
   <execution_errors>
@@ -252,10 +222,8 @@ description: Analyze memory vault health, score memories for maintenance, and ru
     - specs/state.json (current memory_health)
     - specs/events.jsonl (revise mode only, via events-query.sh -- never hand-rolled jq)
     - Claude Code OTel outcome records (revise mode only, joined on cc_session_id)
-    - history.jsonl (dream mode only, global, sliced via each line's project field)
     - specs/archive/ and specs/vault/ task directories (learn mode only, unharvested memory_candidates)
     - .memory/revise-log.json (revise mode only, prior run history for --since {last_revise})
-    - .memory/dream-log.json (dream mode only, prior run history for --since {last_dream})
   </reads>
 
   <writes>
@@ -266,9 +234,6 @@ description: Analyze memory vault health, score memories for maintenance, and ru
     - .memory/20-Indices/index.md (regeneration for merge/compress/refine/auto/revise/learn)
     - .memory/10-Memories/README.md (regeneration for merge/compress/refine/auto/revise/learn)
     - .memory/revise-log.json (revise mode only, operation log entries)
-    - .memory/meta-log.json (meta mode only, operation log entries)
     - .memory/learn-harvest-log.json (learn mode only, operation log entries)
-    - .memory/dream-log.json (dream mode only, operation log entries)
-    - specs/{NNN}_{SLUG}/ task directories (meta mode only, delegated to meta-builder-agent -- this command never writes them directly)
   </writes>
 </state_management>

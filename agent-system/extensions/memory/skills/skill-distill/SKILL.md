@@ -1,19 +1,19 @@
 ---
 name: skill-distill
-description: Memory vault analysis and maintenance - scoring, health reporting, purge/merge/compress/refine/gc/auto, and telemetry-sourced review/revise/meta/learn/dream sub-modes. Invoke for /distill command operations.
+description: Memory vault analysis and maintenance - scoring, health reporting, purge/merge/compress/refine/gc/auto, and telemetry-sourced revise/learn sub-modes. Invoke for /distill command operations.
 allowed-tools: Bash, Grep, Read, Write, Edit, AskUserQuestion
 ---
 
 # Distill Skill (Direct Execution)
 
-Direct execution skill for memory vault analysis and maintenance. Handles the `/distill` command's sub-modes: the seven existing hygiene sub-modes (`report`/`purge`/`merge`/`compress`/`refine`/`gc`/`auto`) plus five new or redefined telemetry-sourced sub-modes (`--revise`/`--meta`/`--review`/`--learn`/`--dream`). Memory *creation* is a separate concern owned by the sibling `skill-learn` skill.
+Direct execution skill for memory vault analysis and maintenance. Handles the `/distill` command's sub-modes: the seven existing hygiene sub-modes (`report`/`purge`/`merge`/`compress`/`refine`/`gc`/`auto`) plus two telemetry-sourced sub-modes that stay coupled to the vault store (`--revise`/`--learn`). `--meta`, `--review`, and `--dream` touch no vault store and are dispatched by `/telemetry` instead -- see `skill-telemetry/SKILL.md` (core extension). Memory *creation* is a separate concern owned by the sibling `skill-learn` skill.
 
 ## Context References
 
 Reference (do not load eagerly):
 - Path: `@.memory/memory-index.json` - Machine-queryable memory index
 - Path: `@.claude/context/project/memory/distill-usage.md` - Usage guide
-- Path: `@.claude/context/project/memory/telemetry-guardrails.md` - Binding design constraints for the telemetry-sourced sub-modes (four-tier source model, evaluator-outside-the-loop rule, six failure modes, `gen_ai.*` borrowing rule, cross-repo invocation discipline)
+- Path: `@.claude/context/standards/telemetry-guardrails.md` - Binding design constraints for the telemetry-sourced sub-modes (four-tier source model, evaluator-outside-the-loop rule, six failure modes, `gen_ai.*` borrowing rule, cross-repo invocation discipline)
 - Path: `@.claude/skills/skill-learn/SKILL.md` - the sibling skill this file was split from. Its "Validate-on-Read" and "JSON Index Maintenance" sections are the shared procedures this file's body cites as "above" or "below" throughout -- both skills operate on the same `.memory/memory-index.json`, and those two procedures were not duplicated by the split; they live in `skill-learn/SKILL.md` only.
 
 ---
@@ -38,12 +38,11 @@ Memory vault distillation: scoring, health reporting, and maintenance operations
 | `gc` | Hard-delete tombstoned memories past grace period | Available |
 | `auto` | Automated distillation (Tier 1 refine only) | Available |
 | `revise` | Event-and-OTel-correlated memory refactoring proposals | Available |
-| `meta` | Cross-repo agent-system improvement proposals | Available |
-| `review` | Read-only ad hoc inquiry over the vault and all four source tiers | Available |
 | `learn` | Retroactive batch harvest across already-completed tasks | Available |
-| `dream` | Speculative direction-finding over `history.jsonl`'s recurring themes | Available |
 
-All 12 sub-modes are now available. No placeholder responses needed.
+All 9 sub-modes are now available. No placeholder responses needed. `--meta`, `--review`, and
+`--dream` are dispatched by `/telemetry` instead -- see `skill-telemetry/SKILL.md` (core
+extension).
 
 ### Scoring Engine
 
@@ -277,17 +276,14 @@ These thresholds mirror `repository_health.status` vocabulary in state.json.
 
 ## Shared Sub-Mode Skeleton
 
-Every mutating `/distill` sub-mode (`purge`, `gc`, `merge`, `compress`, `refine`, `auto`,
-and the telemetry-sourced sub-modes added after them) follows the same seven-step shape. This
-section states that shape once, with named, generic placeholders; each sub-mode's own
-specification -- inline below for `gc` and `auto`, or in its extracted
-`distill-<submode>-submode.md` file (reached via the stub pointer at that sub-mode's heading
-below) for `purge`, `merge`, `compress`, `refine`, `revise`, `meta`, `review`, `learn`, and
-`dream` -- states only its deltas from this skeleton: its specific candidate logic, prompts,
-execution steps, and log payload, rather than restating the shape itself. This generalizes a
-convention this file already used once for the `dream` section's `### Overlap Scoring`
-cross-reference ("reference the section by name -- do not restate or fork the formula") into a
-file-wide rule.
+Every mutating `/distill` sub-mode (`purge`, `gc`, `merge`, `compress`, `refine`, `auto`, and the
+telemetry-sourced sub-modes added after them) follows the same seven-step shape. This section
+states that shape once, with named, generic placeholders; each sub-mode's own specification --
+inline below for `gc` and `auto`, or in its extracted `distill-<submode>-submode.md` file
+(reached via the stub pointer at that sub-mode's heading below) for `purge`, `merge`, `compress`,
+`refine`, `revise`, and `learn` -- states only its deltas from this skeleton: its specific
+candidate logic, prompts, execution steps, and log payload, rather than restating the shape
+itself.
 
 1. **Edge Case Checks** -- Validate preconditions before identifying candidates (e.g. run
    validate-on-read, confirm a minimum count of eligible memories). If a precondition fails,
@@ -313,11 +309,10 @@ file-wide rule.
    below, and update the relevant `summary` counter. Also update `memory_health` in
    `specs/state.json` per the State Integration section below.
 
-**Non-mutating sub-modes** (`report`, and `--review`) do not carry step 4's mandatory stop,
-since nothing is proposed for the user to confirm -- each such sub-mode states this exemption
-explicitly, rather than leaving it as a silent omission, in `report`'s inline specification below
-or (for `--review`) in `distill-review-submode.md`, reached via the "Sub-Mode: review" stub
-pointer below.
+**`report` and `auto`** do not carry step 4's mandatory stop -- `report` because nothing is
+proposed for the user to confirm, `auto` because it runs only safe, non-interactive Tier 1 fixes
+by design. Each states this exemption explicitly, rather than leaving it as a silent omission, in
+its own inline specification below.
 
 ### Purge Sub-Mode
 
@@ -601,7 +596,7 @@ READ .claude/context/project/memory/patterns/distill-refine-submode.md now and f
 
 ### Sub-Mode: auto
 
-Automated non-interactive maintenance that runs only safe Tier 1 refine fixes. The auto mode is designed for routine maintenance without human oversight -- it explicitly excludes compress (requires AI-generated summaries that need review), purge, and merge. Its steps are a restricted delta against the Shared Sub-Mode Skeleton above: it has no Interactive Selection step by design (that is the whole point of "automated non-interactive"), so this is one of the sanctioned MANDATORY-STOP exemptions alongside `report` and (once specified) `--review`.
+Automated non-interactive maintenance that runs only safe Tier 1 refine fixes. The auto mode is designed for routine maintenance without human oversight -- it explicitly excludes compress (requires AI-generated summaries that need review), purge, and merge. Its steps are a restricted delta against the Shared Sub-Mode Skeleton above: it has no Interactive Selection step by design (that is the whole point of "automated non-interactive"), so this is one of the sanctioned MANDATORY-STOP exemptions alongside `report`.
 
 #### Auto Execution Flow
 
@@ -701,21 +696,12 @@ Note: Auto mode uses `type: "refine"` (not a separate type) with `"notes"` conta
 
 READ .claude/context/project/memory/patterns/distill-revise-submode.md now and follow it exactly.
 
-### Sub-Mode: meta
-
-READ .claude/context/project/memory/patterns/distill-meta-submode.md now and follow it exactly.
-
-### Sub-Mode: review
-
-READ .claude/context/project/memory/patterns/distill-review-submode.md now and follow it exactly.
-
 ### Sub-Mode: learn
 
 READ .claude/context/project/memory/patterns/distill-learn-submode.md now and follow it exactly.
 
-### Sub-Mode: dream
-
-READ .claude/context/project/memory/patterns/distill-dream-submode.md now and follow it exactly.
+`--meta`, `--review`, and `--dream` are dispatched by `/telemetry` instead -- see
+`skill-telemetry/SKILL.md` (core extension) for their stub pointers.
 
 ### Distill Log Schema
 
@@ -730,7 +716,7 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
     {
       "id": "distill_{timestamp}",
       "timestamp": "ISO8601",
-      "type": "report|purge|merge|compress|refine|gc|review",
+      "type": "report|purge|merge|compress|refine|gc",
       "session_id": "sess_...",
       "pre_metrics": {
         "total_memories": 0,
@@ -759,7 +745,6 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
     "total_compressed": 0,
     "total_refined": 0,
     "total_gc_deleted": 0,
-    "total_reviewed": 0,
     "last_operation": null
   }
 }
@@ -776,11 +761,11 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
 | `refine` | Memory quality improved | `.memory/distill-log.json` |
 | `gc` | Hard-delete tombstoned memories past grace period | `.memory/distill-log.json` |
 
-`revise`, `meta`, `learn`, and `dream` log to their own dedicated files
-(`.memory/revise-log.json`, `.memory/meta-log.json`, `.memory/learn-harvest-log.json`,
-`.memory/dream-log.json` respectively -- see each sub-mode's own Log Schema subsection above) and
-are not part of this shared enum. `review` is optionally logged here for audit purposes only
-(see the `--review` sub-mode's own Log Entry subsection).
+`revise` and `learn` log to their own dedicated files (`.memory/revise-log.json`,
+`.memory/learn-harvest-log.json` respectively -- see each sub-mode's own Log Schema subsection
+above) and are not part of this shared enum. `--meta`, `--review`, and `--dream` log to
+`specs/telemetry/` instead -- see `skill-telemetry/SKILL.md`'s Telemetry Log Schemas (core
+extension).
 
 For `report` operations, `pre_metrics` and `post_metrics` are identical (no changes made).
 
@@ -796,41 +781,31 @@ After each distill operation, update `memory_health` in `specs/state.json`:
     "total_memories": 5,
     "never_retrieved": 2,
     "health_score": 85,
-    "status": "healthy",
-    "last_dream": "ISO8601 timestamp or null (never dreamed)",
-    "dream_count": 0
+    "status": "healthy"
   }
 }
 ```
 
-The `memory_health` field is a top-level sibling of `repository_health` in state.json. Update it after every distill operation (including report-only operations).
+The `memory_health` field is a top-level sibling of `repository_health` in state.json. Update it after every distill operation (including report-only operations). There is no `last_dream`/`dream_count` coupling here any more: `--dream` moved to `/telemetry` and its own log file (`specs/telemetry/dream-log.json`) is its sole `--since` cursor, with no `state.json` coupling at all.
 
 **Field update rules by sub-mode**:
 
-| Field | report / dream (redefined) / review | purge/merge/compress/refine/gc/auto/revise | dream (pre-redefinition, historical) |
-|-------|--------------------------------------|---------------------------------------------|----------------------------------------|
-| `last_distilled` | Updated | Updated | Updated |
-| `distill_count` | NOT incremented | Incremented | Incremented |
-| `total_memories` | Updated | Updated | Updated |
-| `never_retrieved` | Updated | Updated | Updated |
-| `health_score` | Updated | Updated | Updated |
-| `status` | Updated | Updated | Updated |
-| `last_dream` | Updated (dream only; NOT updated by report/review) | NOT updated | Updated |
-| `dream_count` | Incremented (dream only; NOT incremented by report/review) | NOT incremented | Incremented |
+| Field | report | purge/merge/compress/refine/gc/auto/revise |
+|-------|--------|---------------------------------------------|
+| `last_distilled` | Updated | Updated |
+| `distill_count` | NOT incremented | Incremented |
+| `total_memories` | Updated | Updated |
+| `never_retrieved` | Updated | Updated |
+| `health_score` | Updated | Updated |
+| `status` | Updated | Updated |
 
-**Rationale**: The redefined `dream` and `report`/`--review` are read-only with respect to the
-memory vault -- none of the three modifies any `.memory/10-Memories/*.md` file, so none
-increments `distill_count` (which tracks maintenance operations that actually changed the
-vault). `--revise` inherited the old `dream`'s vault-mutating role and is grouped with the other
-mutating sub-modes for `distill_count` purposes. The `last_distilled` timestamp is still updated
-by every sub-mode listed because it tracks when the vault was last assessed at all (a lightweight
-existing-coverage check counts as an assessment), not only when it was last modified.
-`last_dream`/`dream_count` mirror `last_distilled`/`distill_count` but scoped to `dream` runs
-specifically (still updated by the redefined `dream`, which retains its own `--since {last_dream}`
-incremental-scan bookkeeping over `history.jsonl` even though it no longer mutates memories) --
-they are untouched by every other sub-mode, including `report` and `--review`, since those never
-run `dream`'s own history-ingestion logic. `--meta`, `--review`, and `--learn` track their own
-run bookkeeping in their own log files (`meta-log.json`, and optionally `distill-log.json` for
-`--review`, `learn-harvest-log.json` for `--learn`) rather than in this shared table, since none
-of the three is a vault-scoring/maintenance operation in the sense this table was designed for.
+**Rationale**: `report` is read-only with respect to the memory vault -- it modifies no
+`.memory/10-Memories/*.md` file, so it does not increment `distill_count` (which tracks
+maintenance operations that actually changed the vault). The `last_distilled` timestamp is still
+updated by `report` because it tracks when the vault was last assessed at all (a lightweight
+scoring pass counts as an assessment), not only when it was last modified. `--learn` does not
+touch `memory_health` at all (it tracks its own run bookkeeping in `learn-harvest-log.json`
+instead), which is why it is absent from this table. `--meta`, `--review`, and `--dream` moved to
+`/telemetry` and track their own run bookkeeping in `specs/telemetry/` log files -- see
+`skill-telemetry/SKILL.md` -- not in this table at all.
 

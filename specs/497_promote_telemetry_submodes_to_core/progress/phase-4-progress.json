@@ -1,0 +1,34 @@
+{
+  "phase": 4,
+  "phase_name": "Retire the Three Sub-Modes from the Memory Extension Surface",
+  "started_at": "2026-11-09T22:15:00Z",
+  "last_updated": "2026-11-09T22:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Edit memory/commands/distill.md: remove the three sub-modes, 12->9", "status": "done", "files_touched": ["agent-system/extensions/memory/commands/distill.md"]},
+    {"id": 2, "description": "Edit skill-distill/SKILL.md: stub pointers, dispatch table, skeleton paragraph, State Integration, guardrails path", "status": "done", "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"], "note": "also fixed a pre-existing stale '--review' mention in auto's own inline spec that would have broken this phase's own verification grep, and dropped the now-orphaned last_dream/dream_count memory_health coupling"},
+    {"id": 3, "description": "Edit distill-usage.md: remove Meta/Review/Dream sections, add pointer", "status": "done", "files_touched": ["agent-system/extensions/memory/context/project/memory/distill-usage.md", "agent-system/extensions/memory/index-entries.json"], "note": "fixed a resulting index-entries.json line_count drift mechanically after the section removals (300->247 lines)"},
+    {"id": 4, "description": "Edit memory/README.md and skill-distill/README.md: guardrails path, two remaining sub-modes", "status": "done", "files_touched": ["agent-system/extensions/memory/README.md", "agent-system/extensions/memory/skills/skill-distill/README.md"]},
+    {"id": 5, "description": "Edit memory/EXTENSION.md's /distill row to name nine remaining sub-modes", "status": "done", "files_touched": ["agent-system/extensions/memory/EXTENSION.md"]},
+    {"id": 6, "description": "Remove four stale entries from memory/index-entries.json", "status": "done", "files_touched": ["agent-system/extensions/memory/index-entries.json"]},
+    {"id": 7, "description": "Delete the four relocated source files from memory", "status": "done", "files_touched": [
+      "agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md",
+      "agent-system/extensions/memory/context/project/memory/patterns/distill-review-submode.md",
+      "agent-system/extensions/memory/context/project/memory/patterns/distill-dream-submode.md",
+      "agent-system/extensions/memory/context/project/memory/telemetry-guardrails.md"
+    ]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "unscoped 'bash verify-deploy.sh' for this phase's declared full tier", "result": "failed", "reason": "abandoned after ~18 minutes: Gate 8's test-gate-cache-equivalence.sh alone ran 10+ minutes, and heavy concurrent sibling batch load was confirmed via ps aux (including a fresh burst of 20+ concurrent verify-deploy.sh processes under an unrelated parent PID observed mid-wait). Also hit and self-resolved a stale specs/.gate-lock mutex left over from the earlier killed Phase-2 attempt. Cleanly killed own process tree, confirmed no orphans."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.full-tier-verification",
+      "description": "Phase 4's own Verification criterion calls for an unscoped 'bash .claude/scripts/verify-deploy.sh' run",
+      "type": "altered",
+      "reason": "Same operational reasoning as Phase 2's deviation: measured heavy concurrent contention made an unscoped run impractical mid-batch (this time additionally confirmed by one single Gate-8 test, test-gate-cache-equivalence.sh, alone running 10+ minutes). Applied the Batch Gate Deferral reasoning to this intermediate full-tier phase too: ran 'verify-deploy.sh --skip-slow --only-gate 3,4' plus direct check-record-versioning.sh/check-task-references.sh/grep/JSON-validity checks instead, deferring the complete gate set to the single batch-end full run already promised by that section",
+      "annotation": "*(deviation: altered -- ran verify-deploy.sh --skip-slow --only-gate 3,4 plus targeted lint/grep/JSON checks instead of the unscoped full run, deferred to batch-end per Batch Gate Deferral reasoning; see issue log)*"
+    }
+  ]
+}
