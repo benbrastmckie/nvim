@@ -11,13 +11,13 @@ next_project_number: 572
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,448,451,453,456,459,472,473,475,477,483,484,488,490,491,497,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,448,451,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,444,452,455,458,461,462,463,474,476,479,486,492,500,516,518,523,527,540,541,542,543,544,553,564 | 360,369,383,397,412,423,431,445,448,451,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,454,457,480,501,508,509,517,547,552,566,570 | 313,360,391,398,439,444,448,452,455,458,461,472,476,479,486,515,519,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 4 | 421,450,481,487,513,524,561 | 390,402,449,479,501,552 | core-agent-system, orchestrator, agent-system |
 | 5 | 496,571 | 450,487,488,518 | extensions, agent-system |
 | 6 | 498 | 496 | extensions |
-| 7 | 499 | 497,498 | extensions |
+| 7 | 499 | 498 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -81,14 +81,12 @@ next_project_number: 572
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
-497 [IMPLEMENTING] — Promote the three vault-independent distill telemetry...
-  └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
   └─ 498 [NOT STARTED] — Replace the email preference harvest tally substrate
-    └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the... (see above)
+    └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 
 ### Literature
 
@@ -5405,7 +5403,7 @@ Whichever is chosen, preserve: the exact-key (not fuzzy) dedup semantics for the
 ---
 
 ### 497. Promote the three vault-independent distill telemetry sub-modes into core
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 328, Task 420, Task 435

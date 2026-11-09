@@ -49,21 +49,37 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/497_promote_telemetry_submodes_to_core/summaries/01_relocate-telemetry-submodes-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["scope-hypothesis", "plan-verification", "grep-before-edit", "discrepancy-reporting"]
+      "suggested_keywords": [
+        "scope-hypothesis",
+        "plan-verification",
+        "grep-before-edit",
+        "discrepancy-reporting"
+      ]
     },
     {
       "content": "During a multi-task /orchestrate batch, an intermediate (non-final) implementation phase declaring Verification Tier: full can hit the same severe gate-8 contention the dispatch's Batch Gate Deferral section anticipates for the plan's literal final phase -- one single meta-test (test-gate-cache-equivalence.sh) was observed running 10+ minutes under concurrent sibling load. When ps aux confirms genuine heavy concurrent verify-deploy.sh/run-all.sh activity from other dispatched tasks, applying the same scoped-tier-plus-deferral treatment by analogy to an intermediate full-tier phase (not just the literal final one) is a reasonable, explicitly-recorded deviation -- run the narrowest --only-gate selection that covers the phase's own touched files, defer the rest, and record the reasoning as both an issue-log entry and a progress-file deviation.",
       "category": "PATTERN",
       "source_artifact": "specs/497_promote_telemetry_submodes_to_core/summaries/01_relocate-telemetry-submodes-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["batch-gate-deferral", "gate-contention", "verify-deploy", "multi-task-batch"]
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "gate-contention",
+        "verify-deploy",
+        "multi-task-batch"
+      ]
     },
     {
       "content": "After deleting source-store markdown files that have deployed copies AND removing their index-entries.json entries, a single deploy-headless.sh redeploy pass may leave the deployed .claude/context/index.json aggregate still carrying 'ghost index row' findings for the removed entries, even after the orphaned deployed .md files themselves are explicitly removed. A second redeploy pass (after the explicit orphan-file removal) correctly regenerates the aggregate index.json fresh and clears the ghost rows. Plan for two redeploy passes when a phase both deletes source files and prunes their index entries in the same dispatch.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/497_promote_telemetry_submodes_to_core/summaries/01_relocate-telemetry-submodes-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless", "orphan-detection", "ghost-index-row", "context-index-json", "redeploy"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "orphan-detection",
+        "ghost-index-row",
+        "context-index-json",
+        "redeploy"
+      ]
     }
   ],
   "metadata": {

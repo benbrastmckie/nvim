@@ -1,7 +1,7 @@
 # Implementation Plan: Task #497
 
 - **Task**: 497 - Promote telemetry sub-modes to core
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.5 hours
 - **Dependencies**: None (re-sequences 421 to depend on this task; declared edges with 328, 435)
 - **Research Inputs**: specs/497_promote_telemetry_submodes_to_core/reports/01_relocate-telemetry-submodes-research.md
