@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Make the drop non-advisory in the implementer's own protocol",
+  "started_at": "2026-11-09T15:48:00Z",
+  "last_updated": "2026-11-09T16:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read general-implementation-agent.md around Containment Self-Check and Phase Checkpoint Protocol commit step", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add follow-up-commit trigger at the Phase Checkpoint Protocol commit step", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 3, "description": "State the trigger is mechanical/additive", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 4, "description": "Mirror the trigger at the per-objective green-substep site", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 5, "description": "Update Self-Check step-3/step-4 prose to record the actual shipped Phase 3/4 behavior (strip + annotation lookup, not union)", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 6, "description": "Update git-staging-scope.md's Three Containment sites section and site-2 paragraph to match", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 7, "description": "Re-read both files before editing, stage only this phase's hunks", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.5",
+      "description": "Update the Self-Check's step-3/step-4 prose to record Phase 3's strip and Phase 4's union: the predicate's input is this task's declared file_scope unioned with its own currently-deposited proposed_file_scope, with every deployed-tree entry stripped first.",
+      "type": "altered",
+      "reason": "Phase 4 did not ship a union (see Phase 4's own recorded deviation). The documentation here instead accurately describes what shipped: the predicate's input is the declared file_scope with the deployed-tree strip only; proposed_file_scope is consulted separately and read-only, solely to annotate a repeat drop's warning text, never to widen the predicate.",
+      "annotation": "*(deviation: altered -- documents the annotation-lookup design actually shipped, not a union)*"
+    }
+  ],
+  "verification_notes": "bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh: 421 passed, 15 pre-existing warnings (none newly introduced; general-implementation-agent.md itself shows all PASS, zero warnings for this file specifically). check-task-references.sh and check-record-versioning.sh both 0 BLOCKING on both touched files (the 9 git-staging-scope.md ADVISORY hits and 1 general-implementation-agent.md ADVISORY hit are all pre-existing lines, verified by line number against the diff -- none fall inside this phase's new paragraphs). Scoped suite (test-lint-agent-contracts.sh, test-lint-agent-contracts-heartbeat.sh, test-todo-move-pair-staging.sh) via source-store run-all.sh: 3/3 pass. test-orchestrate-cycle-postflight.sh was not re-run for this phase -- it is the SAME pre-existing, unrelated failure already recorded and investigated in Phase 2's progress file (markdown-only edits in this phase cannot affect it)."
+}

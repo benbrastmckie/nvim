@@ -410,7 +410,7 @@ and without introducing a second state writer.
 
 ---
 
-### Phase 5: Make the drop non-advisory in the implementer's own protocol [NOT STARTED]
+### Phase 5: Make the drop non-advisory in the implementer's own protocol [COMPLETED]
 
 **Goal**: Replace "verify the phase-closing commit's WARNING output names every expected file"
 with a mechanical trigger an implementing agent cannot miss, and bring the durable containment
@@ -418,30 +418,36 @@ documentation into line with Phases 3 and 4.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` around the
+- [x] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md` around the
       Phase-Commit Containment Self-Check (around line 402) and the Phase Checkpoint Protocol's
-      rc-code case statement (around line 946).
-- [ ] At the Phase Checkpoint Protocol's commit step, add a step following the `case "$rc"` block:
+      rc-code case statement (around line 946). *(completed)*
+- [x] At the Phase Checkpoint Protocol's commit step, add a step following the `case "$rc"` block:
       after `git-commit-phase.sh` returns, compare this task's `.return-meta.json`
       `proposed_file_scope` array against its value before the call; a newly-appeared entry means
       a path was dropped from the commit just made, and the agent immediately issues a scoped
       follow-up commit of that specific path -- never a widened pathspec, never a directory or
       glob `git add`. Phrase the trigger as a comparison of two observed values, not as a
-      reminder to read stdout.
-- [ ] State in the same place that the trigger is mechanical and additive: the warning and the
+      reminder to read stdout. *(completed)*
+- [x] State in the same place that the trigger is mechanical and additive: the warning and the
       issue row still fire, and the follow-up commit is what closes the loop the warning only
-      reports.
-- [ ] Mirror the same trigger at the per-objective green-substep site (around line 447), since
-      both sites invoke the same wrapper and both can drop.
-- [ ] Update the Self-Check's step-3/step-4 prose to record Phase 3's strip and Phase 4's union:
+      reports. *(completed)*
+- [x] Mirror the same trigger at the per-objective green-substep site (around line 447), since
+      both sites invoke the same wrapper and both can drop. *(completed)*
+- [x] Update the Self-Check's step-3/step-4 prose to record Phase 3's strip and Phase 4's union:
       the predicate's input is this task's declared `file_scope` unioned with its own
       currently-deposited `proposed_file_scope`, with every deployed-tree entry stripped first.
-- [ ] Update `agent-system/extensions/core/context/standards/git-staging-scope.md`'s
+      *(deviation: altered -- documents what Phase 4 actually shipped (a read-only, exact-string
+      `proposed_file_scope_lookup` used only to annotate a repeat drop's warning, never unioned
+      into the predicate) rather than the union this bullet describes; see Phase 4's own recorded
+      deviation and `approaches_tried` for why the union was rejected)*
+- [x] Update `agent-system/extensions/core/context/standards/git-staging-scope.md`'s
       "Three Containment sites, not one" section (around line 342) and its site-2 paragraph
       (around line 350) with the same two facts, so the durable standard and the agent prose do
-      not diverge.
-- [ ] Re-read both files immediately before editing (task 430 owns both;
+      not diverge. *(completed: new "A third asymmetry, deliberately left open" paragraph pair,
+      consistent with the deviation above and with Phase 3's own recorded Site-3 residual)*
+- [x] Re-read both files immediately before editing (task 430 owns both;
       `general-implementation-agent.md` especially) and stage only this phase's own hunks.
+      *(completed)*
 
 **Timing**: 1 hour
 

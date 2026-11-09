@@ -406,17 +406,24 @@ green-substep site and the per-phase site in the Phase Checkpoint Protocol below
 nothing left for the agent to apply by hand. The predicate itself is recorded here because it
 remains the durable description of the policy the wrapper implements:
 
-1. Read this task's own declared `file_scope` array from its entry in `specs/state.json`.
+1. Read this task's own declared `file_scope` array from its entry in `specs/state.json`, then
+   strip every entry equal to `.claude`/`.claude/` or prefixed `.claude/` from it: a deployed-tree
+   path is never a legitimate `file_scope` member (`rules/source-store-deploy-boundary.md`) and
+   must never admit a deployed-tree path into this predicate, however it reached the declaration.
+   This is a pure structural prefix test on the string, never a filesystem/existence check. If
+   the strip leaves nothing, the check falls through to step 5's fail-open path exactly as a
+   missing/empty `file_scope` does.
 2. Carve out of the check entirely: this task's own task directory (`specs/{NNN}_{SLUG}/`),
    `specs/TODO.md`, `specs/state.json`, and the plan path. These four are unconditionally staged
    by the wrapper and are never themselves task deliverables, so testing them for containment
    would produce a guaranteed false positive on every single commit.
 3. For every remaining `files_touched` entry, apply the Containment predicate: a path is
-   CONTAINED if it exactly matches a `file_scope` entry, or either path is a directory/glob
-   ancestor of the other. Note what this predicate is NOT: `file_scope` membership by two-or-more
-   declaring tasks (that is the separate, Overlap-family `--task` check inside
+   CONTAINED if it exactly matches a (post-strip) `file_scope` entry, or either path is a
+   directory/glob ancestor of the other. Note what this predicate is NOT: `file_scope` membership
+   by two-or-more declaring tasks (that is the separate, Overlap-family `--task` check inside
    `git-commit-scoped.sh`) — Containment tests one concrete path against one task's own declared
-   scope.
+   scope. Also note what it is NOT widened by: this task's own `proposed_file_scope` deposits
+   (step 4 below) are never unioned into this predicate — see the next step for why.
 4. Drop any uncontained entry from the commit, emit a loud warning (`WARNING:
    git-commit-phase.sh: dropping out-of-scope path '{path}' from phase commit — not in this
    task's declared file_scope`), and record it non-fatally via `issue-record.sh` with
@@ -429,11 +436,19 @@ remains the durable description of the policy the wrapper implements:
    (skip-if-absent, never create) — this is strictly additive to, and never a substitute for,
    the warning and the issue row above, both of which still fire unconditionally on every drop.
    The agent applies nothing by hand here: the deposit, like the predicate itself, is mechanical.
-   See `@.claude/context/formats/return-metadata-file.md`'s `proposed_file_scope` field
-   specification for the full producer/consumer contract on this path.
-5. If `file_scope` is missing, empty, unreadable, or malformed, or the check hits any internal
-   error, the wrapper proceeds exactly as if the check were absent — fail OPEN, never block a
-   commit over a guard defect.
+   If the dropped path is already a member of this task's `proposed_file_scope` from an earlier
+   drop in this same dispatch, the warning is additionally ANNOTATED to point at the already-known
+   status and the scoped-follow-up-commit remedy below — this is a read-only, exact-string lookup
+   against `proposed_file_scope` used ONLY to annotate the warning text; it never admits the path
+   into the Containment predicate itself (a design that was tried and rejected: `git-commit-scoped.sh`
+   carries its own, separate, un-patched Site-3 containment guard that independently vetoes based
+   on the still-unwidened `file_scope`, so admitting the path here would not make it land — it
+   would instead make this wrapper falsely report success for a path that is silently dropped one
+   layer downstream). See `@.claude/context/formats/return-metadata-file.md`'s `proposed_file_scope`
+   field specification for the full producer/consumer contract on this path.
+5. If `file_scope` is missing, empty, unreadable, or malformed, strips to nothing, or the check
+   hits any internal error, the wrapper proceeds exactly as if the check were absent — fail OPEN,
+   never block a commit over a guard defect.
 
 **Why this moved, recorded once here rather than per call site:** this self-check used to be a
 prose instruction for the agent to apply by hand before each hand-typed `stage_paths` call,
@@ -464,6 +479,25 @@ If nothing is staged (e.g. a verification-only objective that touched no files),
 no-op (exit 1) — do not force an empty commit. Skip this step ONLY if the objective's status is
 still `in_progress` (not yet green) or if it was marked `blocked`/failed — those stay
 uncommitted per the Do Not Commit rule.
+
+**Mechanical follow-up-commit trigger (replaces "read the WARNING output").** Immediately after
+the `case "$rc"` block above, compare this task's `.return-meta.json` `proposed_file_scope`
+array against its value from BEFORE this `git-commit-phase.sh` call. A newly-appeared entry
+means a path was just dropped from the commit the call above made. This is a comparison of two
+OBSERVED VALUES, not a reminder to read stdout: the drop-and-warn guard's `WARNING:` line is
+easy to miss across a long run, but a before/after array diff is not. On a newly-appeared entry,
+immediately issue a scoped follow-up commit of that one specific path — never a widened
+pathspec, never a directory or glob `git add` — landing it via `.claude/scripts/git-commit-scoped.sh`
+directly (not a second `git-commit-phase.sh` call for the same path: that would re-run the SAME
+Containment Self-Check against the SAME still-unwidened declared `file_scope` and drop it again).
+This trigger is mechanical and additive: the `WARNING:` and the `issue-record.sh` scope-excursion
+row from the Containment Self-Check still fire unconditionally on every drop, exactly as before —
+the follow-up commit is what closes the loop the warning only reports. A path ALREADY present in
+`proposed_file_scope` from an earlier phase in this same dispatch draws an ANNOTATED repeat-drop
+warning (`... already recorded in proposed_file_scope earlier in this dispatch -- land it with a
+scoped follow-up commit`) rather than a silent, indistinguishable-from-new incident — see
+`@.claude/context/standards/git-staging-scope.md`'s site-2 paragraph for why this is a read-only
+annotation, not an admission into the Containment check itself.
 
 **C. Verify Phase Completion**
 
@@ -962,6 +996,18 @@ For each phase in the implementation plan:
    marker, the progress file, the self-review annotations, and the phase-end handoff under
    `handoffs/` — this is the ONLY commit this phase produces. No second, provenance-only commit
    follows it.
+
+   **Mechanical follow-up-commit trigger**: the SAME trigger documented at the per-objective
+   green-substep site above (Phase-Commit Containment Self-Check's "Mechanical follow-up-commit
+   trigger" paragraph) applies here too, since both sites invoke the same `git-commit-phase.sh`
+   wrapper and both can drop a path. Immediately after the `case "$rc"` block above, compare this
+   task's `.return-meta.json` `proposed_file_scope` array against its value from before this
+   call; a newly-appeared entry means a path was just dropped from the commit just made, and the
+   agent immediately issues a scoped follow-up commit of that specific path via
+   `.claude/scripts/git-commit-scoped.sh` directly — never a widened pathspec, never a directory
+   or glob `git add`, and never a second `git-commit-phase.sh` call for the same path (that would
+   re-run the same Containment Self-Check against the same still-unwidened declared `file_scope`
+   and drop it again).
 6. **Proceed to next phase** or return if blocked
 
 **This ensures**:

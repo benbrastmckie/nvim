@@ -408,6 +408,32 @@ not a redundant pair the way sites 2 and 3 are for the phase-commit surface's en
 allowlist gap. See "Phase Commit (mid-dispatch)" below for the full asymmetry this landing
 closes.
 
+**A third asymmetry, deliberately left open: the deployed-tree strip and the within-dispatch
+`proposed_file_scope` lookup are site-2-only.** Site 2's `file_scope_arr` has every entry equal
+to `.claude`/`.claude/` or prefixed `.claude/` stripped before the own-task-directory and
+engine-written-state splices run (a deployed-tree path is never a legitimate `file_scope`
+member — `rules/source-store-deploy-boundary.md`), with a post-strip non-emptiness re-test
+falling through to the existing fail-open path when nothing survives. Site 2 additionally
+carries a read-only, exact-string `proposed_file_scope_lookup`, consulted ONLY to annotate a
+repeat drop's warning text ("already recorded ... land it with a scoped follow-up commit") for
+a path already deposited earlier in the same dispatch — it is NEVER unioned into
+`file_scope_arr`, and never changes the admit/reject decision itself. (An admitting union was
+built and rejected: it regressed `test-git-commit-phase.sh`'s own idempotence fixture, because
+V10 at site 3 independently vetoes a path site 2 admits only on the STRENGTH of a not-yet-merged
+deposit, making site 2 either falsely report success or hard-fail on a path that genuinely never
+lands — see `git-commit-phase.sh`'s own "WITHIN-DISPATCH proposed_file_scope LOOKUP (PART B)"
+header subsection for the full reasoning.)
+
+Neither of these two site-2 mechanisms is mirrored at site 3. A `file_scope` carrying a bare
+`.claude/` entry is therefore stripped (and the whole check falls open if nothing else survives)
+at site 2, but V10's own `containment_scope_arr` resolution at site 3 still reads that same bare
+`.claude/` entry unstripped — today's un-normalized `is_contained_v10()` composition can still
+read it as covering every deployed-tree path, the EXACT loophole site 2's strip was built to
+close, just one layer downstream. This is a recorded, out-of-scope residual (site 3 and its own
+test suite are outside the file_scope of the task that landed the site-2 strip and lookup) for a
+future task to close by porting the SAME strip into site 3's V10 resolution block — not a defect
+in site 2's own, narrower closure.
+
 **The staging-seed/containment asymmetry the own-task-directory member closes.**
 `git-commit-phase.sh`'s unconditional `stage_paths` seed (`stage_paths=("${task_dir}/"
 "specs/TODO.md" "specs/state.json")`, described in "Phase Commit (mid-dispatch)" below) already
