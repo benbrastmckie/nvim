@@ -3999,6 +3999,109 @@
         "commands": []
       },
       "on_demand": true
+    },
+    {
+      "path": "standards/telemetry-guardrails.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Binding design constraints for telemetry-consuming sub-modes across /telemetry and /distill: four-tier source model, evaluator-outside-the-loop rule, six failure modes, gen_ai borrowing rule, and cross-repo invocation discipline",
+      "line_count": 176,
+      "keywords": [
+        "telemetry",
+        "otel",
+        "guardrails",
+        "four-tier",
+        "cc_session_id",
+        "gen_ai",
+        "evaluator-outside-loop"
+      ],
+      "topics": [
+        "telemetry",
+        "otel",
+        "guardrails"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [
+          "/telemetry"
+        ],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "patterns/telemetry-meta-submode.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Complete specification for /telemetry --meta sub-mode (cross-repo agent-system improvement proposals: candidate discovery from recurring deviations/blockers and reflection phrases, delegated to meta-builder-agent for task creation) -- extracted from skill-telemetry/SKILL.md per the mode-gated section loading convention",
+      "line_count": 196,
+      "keywords": [
+        "telemetry",
+        "meta-submode",
+        "meta-builder-agent",
+        "system-improvement"
+      ],
+      "topics": [
+        "telemetry",
+        "meta"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [
+          "/telemetry"
+        ],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "patterns/telemetry-review-submode.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Complete specification for /telemetry --review sub-mode (read-only ad hoc inquiry over all four telemetry source tiers, funneling actionable findings to --meta/distill --revise/learn) -- extracted from skill-telemetry/SKILL.md per the mode-gated section loading convention",
+      "line_count": 89,
+      "keywords": [
+        "telemetry",
+        "review-submode",
+        "ad-hoc-inquiry"
+      ],
+      "topics": [
+        "telemetry",
+        "review"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [
+          "/telemetry"
+        ],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
+      "path": "patterns/telemetry-dream-submode.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Complete specification for /telemetry --dream sub-mode (speculative recurring-theme surfacing over history.jsonl with no existing memory/task coverage; no mutation, no AskUserQuestion gate) -- extracted from skill-telemetry/SKILL.md per the mode-gated section loading convention",
+      "line_count": 137,
+      "keywords": [
+        "telemetry",
+        "dream-submode",
+        "history.jsonl",
+        "recurring-themes"
+      ],
+      "topics": [
+        "telemetry",
+        "dream"
+      ],
+      "load_when": {
+        "agents": [],
+        "commands": [
+          "/telemetry"
+        ],
+        "task_types": []
+      },
+      "on_demand": true
     }
   ]
 }

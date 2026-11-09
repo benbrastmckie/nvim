@@ -117,6 +117,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/spawn` | `/spawn N [blocker description]` | Spawn new tasks to unblock a blocked task |
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
 | `/please` | `/please push origin feature-x` | Authorize one blocked push (user-only) |
+| `/telemetry` | `/telemetry --meta\|--review "<question>"\|--dream` | Cross-repo agent-system improvement proposals, read-only ad hoc telemetry inquiry, and speculative prompt-history theme surfacing |
 
 ### Batching
 
@@ -169,6 +170,7 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-fix-it | (direct execution) |
 | skill-zulip | (direct execution) |
 | skill-project-overview | (direct execution) |
+| skill-telemetry | (direct execution) |
 | /review | (direct execution) — code-reviewer-agent available for future skill integration |
 
 **Model Enforcement**: Agents declare preferred models via `model:` frontmatter using a tiered policy (Opus for deep-reasoning agents, Sonnet for workers), overridable per-invocation by independent effort (`--fast`, `--hard`) and model (`--haiku`, `--sonnet`, `--opus`, `--fable`) flags. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for the full tier table and flag semantics.

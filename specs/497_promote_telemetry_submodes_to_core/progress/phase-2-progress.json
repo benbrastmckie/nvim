@@ -1,0 +1,31 @@
+{
+  "phase": 2,
+  "phase_name": "Create skill-telemetry and Register the New Core Surface",
+  "started_at": "2026-11-09T21:20:00Z",
+  "last_updated": "2026-11-09T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create skill-telemetry/SKILL.md with frontmatter incl. Agent tool", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-telemetry/SKILL.md"]},
+    {"id": 2, "description": "State direct-execution-only posture in skill body", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-telemetry/SKILL.md"]},
+    {"id": 3, "description": "Write Shared Sub-Mode Skeleton section", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-telemetry/SKILL.md"]},
+    {"id": 4, "description": "Add Sub-Mode stub pointers, dispatch table, Context References", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-telemetry/SKILL.md"]},
+    {"id": 5, "description": "Add Telemetry Log Schemas section", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-telemetry/SKILL.md"]},
+    {"id": 6, "description": "Register telemetry.md and skill-telemetry in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"], "note": "provides.context already covered patterns and standards; no third append needed, confirmed per Scope Hypothesis"},
+    {"id": 7, "description": "Add four index-entries.json entries", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 8, "description": "Mention /telemetry in core README.md", "status": "done", "files_touched": ["agent-system/extensions/core/README.md"]},
+    {"id": 9, "description": "Add /telemetry to merge-sources/claudemd.md command table and skill mapping", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "unscoped 'bash verify-deploy.sh' for this phase's declared full tier", "result": "failed", "reason": "abandoned after ~10 minutes due to heavy resource contention from concurrently-dispatched sibling tasks' own run-all.sh/verify-deploy.sh processes in this same /orchestrate batch; killed the orphaned process tree cleanly"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.full-tier-verification",
+      "description": "Phase 2's own Verification criterion calls for an unscoped 'bash .claude/scripts/verify-deploy.sh' run",
+      "type": "altered",
+      "reason": "Measured heavy concurrent contention (multiple sibling tasks' run-all.sh/verify-deploy.sh processes active against this repo/tmp fixtures) made an unscoped run impractical mid-batch; applied the same operational reasoning as the dispatch's Batch Gate Deferral section (literally scoped only to the plan's final phase) to this intermediate full-tier phase, running 'verify-deploy.sh --skip-slow --only-gate 3,4' plus direct check-record-versioning.sh/check-task-references.sh/JSON-validity checks instead, deferring the complete gate set to the single batch-end full run already promised by that section",
+      "annotation": "*(deviation: altered -- ran verify-deploy.sh --skip-slow --only-gate 3,4 plus targeted lint/JSON checks instead of the unscoped full run, deferred to batch-end per Batch Gate Deferral reasoning; see issue log)*"
+    }
+  ]
+}

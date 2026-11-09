@@ -46,6 +46,7 @@
       "spawn.md",
       "tag.md",
       "task.md",
+      "telemetry.md",
       "todo.md",
       "zulip.md",
       "project-overview.md",
@@ -74,6 +75,7 @@
       "skill-spawn",
       "skill-status-sync",
       "skill-tag",
+      "skill-telemetry",
       "skill-todo",
       "skill-zulip",
       "skill-project-overview"

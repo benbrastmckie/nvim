@@ -6,7 +6,7 @@ Foundational system payload providing the base agent infrastructure for Claude C
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| Commands | 15 | Full task lifecycle from creation through archival |
+| Commands | 16 | Full task lifecycle from creation through archival |
 | Agents | 8 | Research, implementation, planning, review, meta, revision, spawn |
 | Skills | 16 | Orchestration, team mode, utilities, and domain routing |
 | Rules | 6 | Auto-applied rules for state, git, artifacts, workflows, errors |
@@ -22,7 +22,7 @@ Core is not a domain extension and is never loaded via the extension picker. It 
 
 ## Commands
 
-All 17 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (skill/agent) -> GATE OUT (postflight) -> COMMIT. (`/please` is the one exception: it is a direct-execution, user-only confirmation surface with no GATE IN/OUT lifecycle of its own — see its own doc.)
+All 18 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (skill/agent) -> GATE OUT (postflight) -> COMMIT. (`/please` is the one exception: it is a direct-execution, user-only confirmation surface with no GATE IN/OUT lifecycle of its own — see its own doc.)
 
 | Command | Usage | Description |
 |---------|-------|-------------|
@@ -39,6 +39,7 @@ All 17 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 | `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
 | `/refresh` | `/refresh` | Clean orphaned processes and old files |
 | `/spawn` | `/spawn N` | Spawn new tasks to unblock a blocked task |
+| `/telemetry` | `/telemetry --meta\|--review "<question>"\|--dream` | Cross-repo improvement proposals, ad hoc telemetry inquiry, and prompt-history theme surfacing |
 | `/merge` | `/merge` | Create pull/merge request for current branch |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
 | `/tag` | `/tag` | Create semantic version tag (user-only) |

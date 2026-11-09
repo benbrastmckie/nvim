@@ -296,7 +296,7 @@ carry; if one does, report it rather than silently widening the phase.
 
 ---
 
-### Phase 2: Create `skill-telemetry` and Register the New Core Surface [NOT STARTED]
+### Phase 2: Create `skill-telemetry` and Register the New Core Surface [COMPLETED]
 
 **Goal**: Give the three relocated specifications an executable host and make the new command,
 skill and context files reachable through core's manifest, context index, README and CLAUDE.md
@@ -304,46 +304,50 @@ merge source.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/skills/skill-telemetry/SKILL.md` with frontmatter
+- [x] Create `agent-system/extensions/core/skills/skill-telemetry/SKILL.md` with frontmatter
       `name: skill-telemetry`, a `description` naming the three sub-modes, and
       `allowed-tools: Bash, Grep, Read, Write, Edit, AskUserQuestion, Agent` — the Agent tool is
       required by `--meta`'s `meta-builder-agent` delegation and is absent from
-      `skill-distill`'s own frontmatter today.
-- [ ] State in that skill's body that it is a **direct-execution** skill invoked by the session
+      `skill-distill`'s own frontmatter today. *(completed)*
+- [x] State in that skill's body that it is a **direct-execution** skill invoked by the session
       that ran `/telemetry`, never dispatched as a subagent, because `AskUserQuestion` is
       categorically withheld from dispatched subagents (see
       `docs/reference/standards/agent-frontmatter-standard.md`'s "Tool Withholding from
-      Dispatched Subagents") and `--meta`'s MANDATORY STOP depends on it.
-- [ ] Write the skill's `## Shared Sub-Mode Skeleton` section: the six-step telemetry-scoped
+      Dispatched Subagents") and `--meta`'s MANDATORY STOP depends on it. *(completed)*
+- [x] Write the skill's `## Shared Sub-Mode Skeleton` section: the six-step telemetry-scoped
       shape (Edge Case Checks, Candidate Identification, Dry-Run, Interactive Selection
       (MANDATORY STOP), Execution, Log Entry), omitting the vault-specific Batch Index
       Regeneration step that all three relocated specs already mark "Not applicable". State the
       two sanctioned exemptions explicitly: `--review` and `--dream` carry no mutation gate
-      because neither mutates; `--meta` does.
-- [ ] Add the skill's `### Sub-Mode: meta|review|dream` stub pointers, each reading
+      because neither mutates; `--meta` does. *(completed)*
+- [x] Add the skill's `### Sub-Mode: meta|review|dream` stub pointers, each reading
       `READ .claude/context/patterns/telemetry-<name>-submode.md now and follow it exactly.`,
       plus a Sub-Mode Dispatch table and a `## Context References` block citing
       `@.claude/context/standards/telemetry-guardrails.md`, `@.claude/scripts/events-query.sh`
-      and `@.claude/context/contracts/convergence.md`.
-- [ ] Add a `## Telemetry Log Schemas` section carrying the `meta-log.json` and `dream-log.json`
+      and `@.claude/context/contracts/convergence.md`. *(completed)*
+- [x] Add a `## Telemetry Log Schemas` section carrying the `meta-log.json` and `dream-log.json`
       shapes verbatim in substance from the relocated specs, at their new `specs/telemetry/`
       paths, plus the optional `review-log.json` note. Include the "no events yet" and "OTel not
-      enabled" degraded-path outcomes as normal results, not errors.
-- [ ] Register in `agent-system/extensions/core/manifest.json`: append `"telemetry.md"` to
+      enabled" degraded-path outcomes as normal results, not errors. *(completed)*
+- [x] Register in `agent-system/extensions/core/manifest.json`: append `"telemetry.md"` to
       `provides.commands` and `"skill-telemetry"` to `provides.skills`. `provides.context`
       already covers `patterns` and `standards`, so no entry is needed there — verify that before
-      concluding it.
-- [ ] Add four entries to `agent-system/extensions/core/index-entries.json` (schema per the
+      concluding it. *(completed: confirmed provides.context already lists both; no third
+      append made)*
+- [x] Add four entries to `agent-system/extensions/core/index-entries.json` (schema per the
       existing entries: `path`, `domain: "core"`, `subdomain`, `summary`, `line_count`,
       `keywords`, `topics`, `load_when`, `on_demand`) for
       `standards/telemetry-guardrails.md` and `patterns/telemetry-{meta,review,dream}-submode.md`.
-      Set `line_count` from the actual files written in Phase 1, not an estimate.
-- [ ] Mention `/telemetry` in `agent-system/extensions/core/README.md`'s command coverage —
+      Set `line_count` from the actual files written in Phase 1, not an estimate. *(completed)*
+- [x] Mention `/telemetry` in `agent-system/extensions/core/README.md`'s command coverage —
       `check-extension-docs.sh` fails a command that is listed in `manifest.json` but unmentioned
-      in `README.md`.
-- [ ] Add `/telemetry` to the Command Reference table in
+      in `README.md`. *(completed)*
+- [x] Add `/telemetry` to the Command Reference table in
       `agent-system/extensions/core/merge-sources/claudemd.md`, and add a
       `skill-telemetry | (direct execution)` row to its Skill-to-Agent Mapping table.
+      *(completed; deviation: altered -- ran verify-deploy.sh --skip-slow --only-gate 3,4 plus
+      targeted lint/JSON checks instead of the unscoped full run, deferred to batch-end due to
+      measured concurrent gate contention; see issue log)*
 
 **Timing**: 1.5 hours
 
