@@ -15,7 +15,7 @@ Loaded via the extension picker. Once loaded, `z3` becomes a recognized task typ
 
 ## Commands
 
-No dedicated commands. Use core `/research`, `/plan`, `/implement` with `task_type: "z3"`.
+No dedicated commands. Use the core research, plan, and implement phases (dispatched via `/orchestrate`) with `task_type: "z3"`.
 
 ## Skill-Agent Mapping
 

@@ -27,7 +27,7 @@ Reference (do not load eagerly):
 ## Trigger Conditions
 
 This skill activates when:
-- `/research N --hard` is invoked and task type is `books` (or `books:certify`)
+- `/orchestrate N --research --hard` is invoked and task type is `books` (or `books:certify`)
 - `skill-orchestrate`'s own hard-mode dispatch resolves and dispatches the AGENT
   (`books-research-hard-agent`) directly via `command-route-agent.sh`, not this SKILL file —
   this skill's own activation above is for direct invocation

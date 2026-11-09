@@ -16,7 +16,7 @@ Loaded via the extension picker. Once loaded, `rust` becomes a recognized task t
 
 ## Commands
 
-No dedicated commands. Use core `/research`, `/plan`, `/implement` with `task_type: "rust"`.
+No dedicated commands. Use the core research, plan, and implement phases (dispatched via `/orchestrate`) with `task_type: "rust"`.
 
 ## Skill-Agent Mapping
 

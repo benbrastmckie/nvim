@@ -15,7 +15,7 @@ Loaded via the extension picker. Once loaded, `python` becomes a recognized task
 
 ## Commands
 
-No dedicated commands. Use core `/research`, `/plan`, `/implement` with `task_type: "python"`.
+No dedicated commands. Use the core research, plan, and implement phases (dispatched via `/orchestrate`) with `task_type: "python"`.
 
 ## Skill-Agent Mapping
 

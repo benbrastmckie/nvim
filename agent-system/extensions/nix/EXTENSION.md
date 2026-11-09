@@ -19,8 +19,8 @@ validation.
 ### Commands
 
 This extension provides no dedicated slash commands. Tasks with `task_type: nix` route through
-the core lifecycle commands (`/research N`, `/plan N`, `/implement N`) using the skill-agent
-mappings above.
+the core lifecycle phases (research, plan, implement -- dispatched via `/orchestrate`) using the
+skill-agent mappings above.
 
 ### Context
 

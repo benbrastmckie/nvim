@@ -1,0 +1,58 @@
+{
+  "phase": 14,
+  "phase_name": "the nine remaining extensions (web, rust, nix, books, z3, typst, python, latex, formal)",
+  "started_at": "2026-11-09T00:15:00Z",
+  "last_updated": "2026-11-09T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Apply the shared per-phase procedure to the 21 declared files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/skills/skill-books-implementation-hard/SKILL.md",
+        "agent-system/extensions/books/skills/skill-books-implementation/SKILL.md",
+        "agent-system/extensions/books/skills/skill-books-research-hard/SKILL.md",
+        "agent-system/extensions/formal/README.md",
+        "agent-system/extensions/latex/README.md",
+        "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md",
+        "agent-system/extensions/nix/EXTENSION.md",
+        "agent-system/extensions/nix/README.md",
+        "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
+        "agent-system/extensions/python/README.md",
+        "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md",
+        "agent-system/extensions/rust/EXTENSION.md",
+        "agent-system/extensions/rust/README.md",
+        "agent-system/extensions/rust/skills/skill-rust-implementation/SKILL.md",
+        "agent-system/extensions/typst/README.md",
+        "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
+        "agent-system/extensions/web/README.md",
+        "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+        "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
+        "agent-system/extensions/z3/README.md",
+        "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md"
+      ],
+      "note": "44 occurrences measured (vs. the plan's Scope Hypothesis of 59 -- drift recorded, not silently absorbed), all 21 files treated. All nine implementation/research skill files (books, latex, nix, python, z3, rust, web x2, plus books' hard variants) share the exact same 'An implement-phase dispatch targets a {domain} task' / 'report the status and let the user re-run the implement-phase dispatch' template already established across Phases 9/12/13, handled via batch sed. The eight simple README/EXTENSION.md 'No dedicated commands. Use core ...' one-liners (rust, latex, typst, z3, python) were handled via one shared sed pattern; nix, web, and formal's richer workflow-diagram READMEs were handled individually. Verified clean afterward by the measurement command restricted to all nine extension roots."
+    },
+    {
+      "id": 2,
+      "description": "formal/README.md (8 occurrences) -- the densest in this tranche; a research-only extension whose implement-phase prose needed consistent phrasing across 4 separate sentences",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/formal/README.md"],
+      "note": "All 4 sentences describing the deliberate research-only design (no implementation agents/skills; the implement phase falls through to general-implementation-agent) reworded consistently to 'the implement phase' / 'implement-phase dispatch' framing, preserving the substantive claim (this extension intentionally has no domain-specific implementer) unchanged."
+    },
+    {
+      "id": 3,
+      "description": "Each extension README's routing table names live research/implementation SKILLS per language, distinguished from a dead command token at each site",
+      "status": "done",
+      "files_touched": [],
+      "note": "No skill name (skill-nix-research, skill-web-implementation, skill-{domain}-research, etc.) was ever a candidate for editing throughout this phase -- none match the measurement pattern (no leading-slash token), confirmed by the same verification used in Phase 9. Only the command-name tokens describing how a user or /orchestrate reaches those skills were reworded."
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "gate_notes": [
+    "Gate subset (--only-gate 3,4,24). None of the nine extension roots (books, formal, latex, nix, python, rust, typst, web, z3) report a new FAIL in check-extension-docs.sh. No new FAIL introduced by Phase 14."
+  ]
+}

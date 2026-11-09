@@ -11,7 +11,7 @@ Formal reasoning extension for mathematical logic, mathematics, and physics rese
 | `math` | math-research-agent | Algebra, lattice theory, category theory, topology |
 | `physics` | physics-research-agent | Dynamical systems, flows, bifurcations |
 
-This extension is **research-only**: it provides no dedicated implementation agents or skills. `/implement` on a formal/logic/math/physics task routes directly to the core `general-implementation-agent` (no per-function skill layer). See the Research-Only Pattern section below for why this is intentional.
+This extension is **research-only**: it provides no dedicated implementation agents or skills. The implement phase on a formal/logic/math/physics task routes directly to the core `general-implementation-agent` (no per-function skill layer). See the Research-Only Pattern section below for why this is intentional.
 
 ## Installation
 
@@ -19,7 +19,7 @@ Loaded via the extension picker. Once loaded, `formal`, `logic`, `math`, and `ph
 
 ## Commands
 
-This extension provides no commands of its own. Use the core `/research`, `/plan`, and `/implement` commands with tasks typed as `formal`, `logic`, `math`, or `physics`.
+This extension provides no commands of its own. Use the core research, plan, and implement phases (dispatched via `/orchestrate`) with tasks typed as `formal`, `logic`, `math`, or `physics`.
 
 ## Architecture
 
@@ -85,7 +85,7 @@ Tasks that span two or more of the above domains, or that require coordination a
 ## Workflow
 
 ```
-/research <task>            (task_type: formal | logic | math | physics)
+/orchestrate <task> --research   (task_type: formal | logic | math | physics)
     |
     v
 skill-{domain}-research -> {domain}-research-agent
@@ -94,13 +94,13 @@ skill-{domain}-research -> {domain}-research-agent
 specs/{NNN}_{SLUG}/reports/MM_{slug}.md
     |
     v
-/plan <task>
+/orchestrate <task> --plan
     |  (uses core planner-agent)
     v
 specs/{NNN}_{SLUG}/plans/MM_{slug}.md
     |
     v
-/implement <task>
+/orchestrate <task> --implement
     |  (falls through to general-implementation-agent)
     v
 specs/{NNN}_{SLUG}/summaries/MM_{slug}-summary.md
@@ -108,7 +108,7 @@ specs/{NNN}_{SLUG}/summaries/MM_{slug}-summary.md
 
 ## Research-Only Pattern
 
-**Important**: This extension provides only research agents. It deliberately omits implementation agents and skills. When you run `/implement` on a formal/logic/math/physics task, dispatch routes directly to the core `general-implementation-agent` instead of a domain-specific implementer.
+**Important**: This extension provides only research agents. It deliberately omits implementation agents and skills. When the implement phase dispatches on a formal/logic/math/physics task, it routes directly to the core `general-implementation-agent` instead of a domain-specific implementer.
 
 ### Why This Is Intentional
 

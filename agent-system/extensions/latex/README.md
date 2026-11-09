@@ -15,7 +15,7 @@ Loaded via the extension picker. Once loaded, `latex` becomes a recognized task 
 
 ## Commands
 
-No dedicated commands. Use core `/research`, `/plan`, `/implement` with `task_type: "latex"`.
+No dedicated commands. Use the core research, plan, and implement phases (dispatched via `/orchestrate`) with `task_type: "latex"`.
 
 ## Skill-Agent Mapping
 

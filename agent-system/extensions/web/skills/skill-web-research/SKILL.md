@@ -262,5 +262,5 @@ Research partially completed for task {N}:
 - Found local project patterns
 - Web search failed due to network error
 - Partial report created at specs/412_add_blog_section/reports/01_blog-section-research.md
-- Status remains [RESEARCHING] - run /research 412 to continue
+- Status remains [RESEARCHING] - run /orchestrate 412 --research to continue
 ```

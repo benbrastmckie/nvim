@@ -35,7 +35,7 @@ Reference (do not load eagerly):
 ## Trigger Conditions
 
 This skill activates when:
-- `/implement N --hard` is invoked and task type is `books` (or `books:certify`)
+- `/orchestrate N --implement --hard` is invoked and task type is `books` (or `books:certify`)
 - Note: `skill-orchestrate`'s own hard-mode dispatch (both effort modes, one engine) resolves
   and dispatches the AGENT (`books-implementation-hard-agent`) directly via
   `command-route-agent.sh`, not this SKILL file; this skill's own activation is via direct

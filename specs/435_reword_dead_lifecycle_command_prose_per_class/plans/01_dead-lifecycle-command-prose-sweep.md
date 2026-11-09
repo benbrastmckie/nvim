@@ -1061,18 +1061,20 @@ restricted to each of the five extension roots.
 
 ---
 
-### Phase 14: the nine remaining extensions [NOT STARTED]
+### Phase 14: the nine remaining extensions [COMPLETED]
 
 **Goal**: Treat the low-density tail: web, rust, nix, books, z3, typst, python, latex and formal.
 
 **Tasks**:
 
-- [ ] Apply the shared per-phase procedure to every file listed below.
-- [ ] `formal/README.md` carries 8 occurrences in a single file — the densest point in this
-      otherwise sparse tranche.
-- [ ] Each extension's README carries a routing table whose rows name research/plan/implement
+- [x] Apply the shared per-phase procedure to every file listed below. *(completed: 44
+      occurrences across all 21 files, zero remaining)*
+- [x] `formal/README.md` carries 8 occurrences in a single file — the densest point in this
+      otherwise sparse tranche. *(completed: all 4 sentences reworded consistently)*
+- [x] Each extension's README carries a routing table whose rows name research/plan/implement
       skills per language. Those rows describe live skills, not dead commands: distinguish a
-      skill name from a command token at each site before editing.
+      skill name from a command token at each site before editing. *(completed: no skill name
+      was ever a candidate for editing)*
 
 **Timing**: 1.5 hours
 

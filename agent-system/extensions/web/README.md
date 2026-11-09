@@ -59,7 +59,7 @@ web/
 ## Workflow
 
 ```
-/research <task>            (task_type: web)
+/orchestrate <task> --research   (task_type: web)
     |
     v
 skill-web-research -> web-research-agent
@@ -68,13 +68,13 @@ skill-web-research -> web-research-agent
 specs/{NNN}_{SLUG}/reports/MM_{slug}.md
     |
     v
-/plan <task>
+/orchestrate <task> --plan
     |
     v
 specs/{NNN}_{SLUG}/plans/MM_{slug}.md
     |
     v
-/implement <task>
+/orchestrate <task> --implement
     |
     v
 skill-web-implementation -> web-implementation-agent

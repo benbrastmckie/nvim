@@ -48,7 +48,7 @@ registration/permission split. Requires `uv` to be installed on your system (`cu
 
 ## Commands
 
-This extension provides no commands of its own. Use the core `/research`, `/plan`, and `/implement` commands with tasks typed as `nix`.
+This extension provides no commands of its own. Use the core research, plan, and implement phases (dispatched via `/orchestrate`) with tasks typed as `nix`.
 
 ## Architecture
 
@@ -96,7 +96,7 @@ nix/
 ## Workflow
 
 ```
-/research <task>            (task_type: nix)
+/orchestrate <task> --research   (task_type: nix)
     |
     v
 skill-nix-research -> nix-research-agent
@@ -105,13 +105,13 @@ skill-nix-research -> nix-research-agent
 specs/{NNN}_{SLUG}/reports/MM_{slug}.md
     |
     v
-/plan <task>
+/orchestrate <task> --plan
     |
     v
 specs/{NNN}_{SLUG}/plans/MM_{slug}.md
     |
     v
-/implement <task>
+/orchestrate <task> --implement
     |
     v
 skill-nix-implementation -> nix-implementation-agent

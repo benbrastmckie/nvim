@@ -25,7 +25,7 @@ Note: This skill is a thin wrapper with internal postflight. Context is loaded b
 
 This skill activates when:
 - Task type is "web"
-- /implement command targets a web (Astro/Tailwind/TypeScript) task
+- An implement-phase dispatch targets a web (Astro/Tailwind/TypeScript) task
 - Pages, components, layouts, or web styling needs to be created or modified
 
 ---
@@ -343,7 +343,7 @@ Web implementation partially completed for task {N}:
 - Phases 1-2 of 3 executed
 - Phase 3 blocked: TypeScript error in ContactForm component
 - Partial summary at specs/10_create_about_page/summaries/01_web-feature-summary.md
-- Status remains [IMPLEMENTING] - run /implement 10 to resume
+- Status remains [IMPLEMENTING] - run /orchestrate 10 --implement to resume
 ```
 
 ---
@@ -372,6 +372,6 @@ After the agent returns, this skill MUST NOT:
 
 See `context/standards/postflight-tool-restrictions.md` § "MUST NOT Section Template"
 for the full PROHIBITION clause (the lead skill must not continue, complete, or "fill in" a
-partial/failed subagent's work; report the status and let the user re-run `/implement`) and the
+partial/failed subagent's work; report the status and let the user re-run the implement-phase dispatch) and the
 postflight-phase allowed-operations list (read metadata, state.json/TODO.md updates, artifact
 linking, git commit, cleanup).
