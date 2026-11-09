@@ -1,5 +1,5 @@
 ---
-next_project_number: 570
+next_project_number: 572
 ---
 
 # TODO
@@ -13,9 +13,9 @@ next_project_number: 570
 |------|-------|------------|--------|
 | 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,448,451,453,456,459,472,473,475,477,483,484,488,490,491,497,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,444,452,455,458,461,462,463,474,476,479,486,492,500,516,518,523,527,540,541,542,543,544,553,564 | 360,369,383,397,412,423,431,445,448,451,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 390,399,402,436,438,449,454,457,480,501,508,509,517,547,552,566 | 313,360,391,398,439,444,448,452,455,458,461,472,476,479,486,515,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 390,399,402,436,438,449,454,457,480,501,508,509,517,547,552,566,570 | 313,360,391,398,439,444,448,452,455,458,461,472,476,479,486,515,519,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 4 | 421,450,481,487,513,524,561 | 390,402,449,479,501,552 | core-agent-system, orchestrator, agent-system |
-| 5 | 496 | 450,487,488 | extensions |
+| 5 | 496,571 | 450,487,488,518 | extensions, agent-system |
 | 6 | 498 | 496 | extensions |
 | 7 | 499 | 497,498 | extensions |
 
@@ -144,6 +144,7 @@ next_project_number: 570
 534 [NOT STARTED] — postflight writes detail-free blocking issue entry on partial...
   └─ 543 [NOT STARTED] — Tell the re-prompted dispatch to distrust the error count it...
     └─ 547 [NOT STARTED] — Confirm the blocker-research aux carrier landed, and refuse...
+    └─ 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
 535 [NOT STARTED] — Carve a task's own specs/ artifacts out of...
   └─ 541 [NOT STARTED] — Stop git-snapshot.sh --no-revert artifacts from contaminating...
 536 [NOT STARTED] — Source-store-aware commit path and plan-time...
@@ -175,6 +176,7 @@ next_project_number: 570
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
+571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
 
 ### Repo Hygiene
 
@@ -186,6 +188,107 @@ next_project_number: 570
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 571. Invalidate an in-flight dispatch whose dispatch_seq has been superseded, at consumption time
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 450, Task 487, Task 518
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system change request) of an /orchestrate run over BimodalLogic tasks 893 and 901, session sess_1794246177_f0f988. User-approved at the orchestrate-lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC, per the mis-siting correction recorded under this repo's #390.
+
+SEVERITY: costly. No corruption resulted -- the receiving agent refused on its own initiative -- but a full plan dispatch was spent on a task that had already finished, and the refusal depended on the agent noticing an output-path collision rather than on any contract.
+
+## The defect
+
+A dispatch whose dispatch_seq has been superseded is still deliverable, and is still delivered.
+
+MEASURED: a plan dispatch at dispatch_seq 2 reached a planner-agent after its task had completed its entire lifecycle. At delivery time the loop guard already recorded `dispatch_seq_counter` 3; the plan file was marked [COMPLETED] with all four phases closed; and both `.return-meta.json` and `.orchestrator-handoff.json` carried `dispatch_seq` 3 with `status: implemented`. Every piece of state needed to recognise the dispatch as superseded was already on disk and already consistent.
+
+The planner behaved correctly: it refused to write any artifact, because its assigned output path collided exactly with the plan that had already been executed, and it left a report instead. That refusal is a fortunate consequence of a path collision, not an enforced contract -- a dispatch whose output path happened not to collide would have proceeded and overwritten live state.
+
+## Where the gap is
+
+dispatch_seq freshness is checked only on the RETURN side. The closed record under this repo's #143 built `orchestrate-cycle-postflight.sh` around an mtime staleness gate plus a dispatch_seq identity gate on the handoff read, and gave `orchestrate-recover-outcome.sh` the same identity check; #33 gave `.orchestrator-handoff.json` per-dispatch identity in the first place. Read both records' artifacts before re-deriving any of this. Both operate on what comes BACK. Nothing validates identity at dispatch CONSUMPTION time, so the loop guard can know the counter has advanced while an in-flight dispatch carrying the old seq remains perfectly deliverable.
+
+## Scope
+
+Add an identity check an agent performs before doing any work, and give it a defined no-op outcome. Shape, to be settled during the work:
+
+- The dispatch file written by `scripts/orchestrate-build-dispatch.sh` already carries an Identity section with a `dispatch_seq:` line; the receiving agent already echoes that value verbatim into its handoff and return-meta. Extend that contract so the agent first COMPARES it against the live `.orchestrator-loop-guard` `dispatch_seq_counter` and the task's persisted status.
+- On a superseded dispatch, abort as an explicit no-op: write a terminal return-meta naming the supersession, author no artifact, and make no status transition. Define how postflight classifies that outcome so a correct no-op is not then recorded as a work failure.
+- The check belongs wherever it cannot be skipped. Prose in each dispatched agent's own file is the cheapest route and matches how `dispatch_seq` echoing is already specified; a script-side preflight the dispatch body invokes is the stronger route. Decide which, and say why in the record.
+
+## Hard constraints
+
+- MUST NOT weaken the existing return-side staleness and identity gates.
+- MUST NOT make a legitimately re-dispatched same-seq retry look superseded: the stall/strand re-prompt relay deliberately re-dispatches at the SAME dispatch_seq, and that path must keep working.
+- A superseded dispatch MUST NOT write an artifact, and MUST NOT rely on an output-path collision to stop itself.
+
+## Durable evidence anchors
+
+- BimodalLogic specs/893_lcu_until_form_schema_ztime_validity/issues.jsonl: iss_1794254863132_W2Q6md
+- the refusing agent's own report: specs/893_lcu_until_form_schema_ztime_validity/stale-dispatch-2-plan-report.md in BimodalLogic
+- closed prior art to read first: this repo's #143 and #33
+
+## Overlapping open file territory
+
+#450 (validate_settled_route_before_dispatch) declares orchestrate-build-dispatch.sh, its test, skill-orchestrate/SKILL.md and handoff-schema.md -- a near-complete overlap with this record. #487 (identical_dispatch_halt_despite_phase_progress) declares orchestrate-build-dispatch.sh. #518 (handoff_blockers_admission_contract_at_authoring_sites) declares all four dispatched-agent files and handoff-schema.md. All three are declared as dependencies so batch admission orders rather than parallelizes them.
+
+---
+
+### 570. Stop the stall signal firing on commits it cannot attribute to the dispatch under judgement
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 519, Task 543
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system change request) of an /orchestrate run over BimodalLogic tasks 893 and 901, session sess_1794246177_f0f988. User-approved at the orchestrate-lead level and dispatched to the meta builder for task creation only. FILED HERE, NOT IN BIMODALLOGIC: an agent-system change belongs in the repository that owns the source store, per the mis-siting correction recorded under this repo's #390.
+
+SEVERITY: costly. The signal is advisory, so it changes no verdict, but a false firing routes a dead dispatch into the one-re-prompt relay and spends a cycle re-prompting an agent that produced nothing.
+
+## The defect
+
+`stall_suspected` fires for a dispatch that did no work at all, because its commit probe attributes nothing.
+
+In `scripts/orchestrate-cycle-postflight.sh` the trigger is a conjunction of (phase is plan or implement) AND (no outcome recovered) AND (at least one commit touching the task directory since `dispatch_start_ts`). The commit half is a bare existence count:
+
+    stall_commit_count=$(git -C "${SKILL_REPO_ROOT:-.}" log --oneline \
+      --since="@${dispatch_start_ts}" -- "$TASK_DIR" 2>/dev/null | grep -c . )
+
+Nothing ties a counted commit to the dispatch under judgement. Two distinct provenances therefore trip it:
+
+1. A commit from an EARLIER dispatch_seq whose own phase commit landed inside this dispatch's window. This is the measured case: a plan dispatch died of an API transport error (ESERVFAIL) having authored nothing, and `stall_suspected=true` was raised on the strength of one commit carried over from the previous phase.
+2. Postflight's OWN per-task commit. The script's `rd_stall_*` record-time block already documents this asymmetry in its own comment -- it states that WORK (i)'s per-task commit "lands strictly between this point and that later computation, so a commit this block sees here is necessarily the DISPATCHED AGENT's own work, never postflight's". The canonical `stall_suspected` computation runs AFTER that commit and carries no equivalent guarantee.
+
+## Why the existing comment does not already cover this
+
+Read `stall_suspected`'s own DELIBERATE NON-WIDENING comment before editing; it is adjacent enough to misjudge. That comment refuses to OR a stale-dispatch_seq signal INTO the trigger as an additional disjunct, on the ground that a stale seq cannot distinguish an abandoned wrap-up from an instant death. This record asks for the opposite operation on the other half of the conjunction: NARROW the existing commit term by attributing each counted commit, so a commit that cannot belong to this dispatch stops satisfying it. That strengthens the discrimination the comment exists to protect rather than dissolving it, and the non-widening ruling stands unchanged.
+
+## Scope
+
+Decide the attribution mechanism and implement it. Candidates, not a mandate: key the probe on the commit message's own task/phase marker; bound the window below by this dispatch's own start rather than relying on `--since` alone; or compare against the commit set already present at dispatch start and count only the delta. Whatever is chosen must also close the postflight-own-commit leak, or state in the code why that leak is acceptable at the canonical site when the record-time site took care to avoid it.
+
+## Hard constraints
+
+- MUST preserve the commit-gated conjunction as the field's only discrimination (see the DELIBERATE NON-WIDENING comment).
+- MUST NOT make a genuine abandoned wrap-up stop firing: the measured symptom this field exists to catch is an agent that committed real work and then ended its turn on an unresolved background wait.
+- `stranded_suspected` is a lexically separate field and is NOT in scope; do not merge the two.
+
+## Durable evidence anchors
+
+- BimodalLogic specs/893_lcu_until_form_schema_ztime_validity/issues.jsonl: iss_1794248764333_aYwsfu, iss_1794248927414_qePymU
+- detecting site: scripts/orchestrate-cycle-postflight.sh, the `stall_suspected` block
+
+## Overlapping open file territory
+
+This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling half of the same measured misdiagnosis -- it owns the `transport_error` + `status=in_progress` cycle-charge question and may restructure the branch whose message this field's corroboration feeds. #543 owns the stall/strand re-prompt REMEDY TEXT in the same script and the same test file. Both are declared as dependencies so batch admission orders rather than parallelizes them. #551, #501 and #472 also declare this script; no edge is asserted for those, the overlap is recorded so admission can order it.
+
+---
 
 ### 569. Repair stale fixture lib dependency lists
 - **Effort**: small
