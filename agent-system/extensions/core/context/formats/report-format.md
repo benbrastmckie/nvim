@@ -126,14 +126,73 @@ therefore a reviewer obligation. Reviewer prompt:
 > PRESENT? Does any risk or prediction stated as a constraint contradict a measured result stated
 > elsewhere in the same document? Flag each pair, quoting both halves verbatim.
 
-**Enforcement level**: this is an authoring-side obligation today. Validation that every
-`CARRIED-UNVERIFIED` names a source is a named future item, not built here.
+**Enforcement level**: a well-formedness check exists in `scripts/validate-artifact.sh`: every
+mark of the literal token names a non-empty source designator before its closing bracket. It is
+advisory-only (`log_warn`, never `log_error`), gated to `report` and `plan` artifacts only
+(`summary-format.md` carries no carried-figure obligation), and carries its own
+promotion-criterion comment stating what would have to be true before it is promoted to
+blocking — promotion to blocking is explicitly NOT part of this change. The check is a
+well-formedness test on a fixed literal token's syntax, never semantic contradiction detection;
+two closely related questions were considered and are each ruled out of scope, as reasoned
+exclusions rather than open items:
+
+- **Does the named source resolve?** Ruled NO. The mark's own specification above permits "a
+  source path or record identifier", and prose-only designators (a session description, a
+  dispatch's own instructions) already exist in the live corpus — there is no single resolvable
+  form to check against. Attempting to extract a path-shaped candidate from an arbitrary prose
+  designator and test its existence would reproduce, in miniature, the heuristic semantic
+  extraction that sank the rejected general contradiction detector (see "Internal consistency"
+  above); a mark that merely fails to resolve is not evidence the figure itself is wrong.
+- **Is a mark owed where a figure was carried without one?** Ruled NO. Establishing that a given
+  claim *was* carried from another record — as opposed to independently derived in this
+  session — requires comparing the claim's prose against an unbounded set of candidate prior
+  records, with no fixed literal anchor to match against. The six trigger-class shapes above
+  describe how to recognize a carried figure once a human or reviewer already suspects one; they
+  give a mechanical check nothing to grep for before that judgment is made.
+
+A deliberately malformed illustrative example written in prose to demonstrate the mark's syntax
+(for instance, in a document that discusses this convention itself) will still draw the
+well-formedness advisory; this is accepted for an advisory-level check and is not treated as a
+false positive worth suppressing.
 
 **Placement record**: this section is the authoritative statement for both report and plan
 artifacts; `context/formats/plan-format.md` points here rather than restating, so the two cannot
 drift. Two other placements were considered and rejected: a new standalone contract document
 (rejected — raises the net document count and adds a third place for the rule to drift), and
 stating the full rule in both format documents (rejected — duplicated normative text drifts).
+
+## Amending a Prior Verdict: Ground Overturned vs. Outcome Overturned
+
+When a report re-tests a verdict recorded in an earlier artifact (a NO-GO, a GO, a pass/fail
+gate result, a recommendation), distinguish two different kinds of amendment before writing the
+`## Decisions` section:
+
+- **Outcome overturned**: re-testing shows the prior verdict's conclusion was wrong. The new
+  report states the new conclusion plainly; no special framing is needed beyond ordinary
+  decision-recording.
+- **Ground overturned, outcome preserved**: re-testing shows the prior verdict's *conclusion*
+  still holds, but the *reason it gave* does not — the stated obstruction, divergence count, or
+  inference that originally justified the verdict turns out to be wrong, incomplete, or
+  differently characterized, while the verdict itself (NO-GO, blocked, do-not-adopt, or
+  whatever it was) remains correct under a different and now-correct reason.
+
+These are not the same event, and conflating them misleads a later reader. A reader who sees
+only "the verdict still holds" with no comment on the reason may reasonably infer the original
+reasoning was re-confirmed; a reader who sees the reasoning silently swapped without comment may
+mistake a ground correction for a reopened question. Neither inference is safe to leave
+implicit.
+
+**When ground is overturned but the outcome is preserved, say so explicitly and name both
+halves**: state the preserved outcome, name the specific component of the original reasoning
+that was wrong, and give the corrected reasoning that now supports the same outcome. Do this in
+`## Decisions`, as its own bullet, not folded silently into `## Findings` where a skimming
+reader could miss that the ground changed at all. A verdict amended this way is a complete,
+freestanding outcome in its own right — it is not a partial or deferred result requiring further
+work to "finish" the amendment, unless further open questions independently remain.
+
+**Do not describe this as reopening, lifting, or walking back the original verdict.** Those
+words describe outcome-overturning amendments; using them for a ground-only correction invites
+exactly the misreading this section exists to prevent.
 
 ## Example Skeleton
 ```

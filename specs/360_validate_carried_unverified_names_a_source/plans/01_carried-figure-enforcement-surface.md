@@ -263,34 +263,36 @@ sites still pass unchanged after the signature extension.
 
 ---
 
-### Phase 3: Record the Enforcement Map and Both Reasoned Exclusions [NOT STARTED]
+### Phase 3: Record the Enforcement Map and Both Reasoned Exclusions [COMPLETED]
 
 **Goal**: Rewrite `report-format.md`'s Enforcement-level paragraph so it states what actually
 shipped and names each excluded check with its reason, closing both "ALSO SETTLE" questions in
 writing.
 
 **Tasks**:
-- [ ] Replace the Enforcement-level paragraph's single forward-looking sentence about validation
+- [x] Replace the Enforcement-level paragraph's single forward-looking sentence about validation
       being a named future item. State instead: the well-formedness check exists in
       `scripts/validate-artifact.sh`; it is advisory-only (`log_warn`); it is gated to report and
       plan artifacts; it carries a promotion criterion; and promotion to blocking is explicitly
       not part of this change.
-- [ ] Name the first exclusion, does-the-source-resolve, and rule it NO with its reason: the
+- [x] Name the first exclusion, does-the-source-resolve, and rule it NO with its reason: the
       mark's own specification permits a record identifier rather than a path, prose-only
       designators exist in the live corpus today, and heuristic path extraction from arbitrary
       prose reproduces in miniature the semantic-extraction problem that sank the rejected general
       detector.
-- [ ] Name the second exclusion, is-a-mark-OWED, and rule it NO with its reason: establishing that
+- [x] Name the second exclusion, is-a-mark-OWED, and rule it NO with its reason: establishing that
       a claim was carried rather than independently derived requires comparing prose against an
       unbounded set of candidate prior records, and there is no fixed literal anchor to match, so
       no greppable surface exists. Record it as a reasoned exclusion, not an open question.
-- [ ] If Phase 1 shipped only the empty-designator condition, name the no-closing-bracket
+- [x] If Phase 1 shipped only the empty-designator condition, name the no-closing-bracket
       condition's exclusion here too, with the measured reason (a bare token mention in a document
       that discusses the convention is indistinguishable from a dropped bracket without
-      markdown-context judgment).
-- [ ] Note that a deliberately-malformed illustrative example written in prose will draw an
+      markdown-context judgment). *(deviation: skipped — condition did not apply; Phase 1's
+      corpus sweep showed zero flags for either condition after mention-suppression, so both
+      shipped together and no exclusion is needed here)*
+- [x] Note that a deliberately-malformed illustrative example written in prose will draw an
       advisory, and that this is accepted for an advisory-level check.
-- [ ] Change nothing else: not the six trigger shapes, not the mark syntax, not the reviewer
+- [x] Change nothing else: not the six trigger shapes, not the mark syntax, not the reviewer
       prompt, not the section's placement.
 
 **Timing**: 0.75 hours

@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Record the Enforcement Map and Both Reasoned Exclusions",
+  "started_at": "2026-11-10T02:08:00Z",
+  "last_updated": "2026-11-10T02:18:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Enforcement-level paragraph stating what shipped", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 2, "description": "Name does-the-source-resolve exclusion, ruled NO", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 3, "description": "Name is-a-mark-OWED exclusion, ruled NO", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 4, "description": "Name no-closing-bracket exclusion if only empty-designator shipped", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Note deliberately-malformed illustrative examples still draw advisory", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 6, "description": "Change nothing else in the section", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Name the no-closing-bracket condition's exclusion if Phase 1 shipped only the empty-designator condition",
+      "type": "skipped",
+      "reason": "Not applicable: Phase 1's real-corpus sweep showed zero flags for either the empty-designator or the no-closing-bracket condition after mention-suppression, so both conditions shipped together in Phase 1. No exclusion is needed for a condition that was not excluded.",
+      "annotation": "*(deviation: skipped -- condition did not apply; Phase 1's corpus sweep showed zero flags for either condition after mention-suppression, so both shipped together and no exclusion is needed here)*"
+    }
+  ],
+  "notes": "Rewrote report-format.md's Enforcement-level paragraph (previously a single forward-looking sentence) into a full statement of what shipped plus both named reasoned exclusions (does-the-source-resolve: NO; is-a-mark-OWED: NO), and a closing note that a deliberately-malformed illustrative example still draws the advisory. Verified by grep that the six trigger shapes, the mark specification, the reviewer prompt, and the Placement record are all byte-unchanged (confirmed via sed excerpts matching the pre-edit text verbatim). Verified plan-format.md still only points to report-format.md by name (around its own carried-figure paragraph) and restates nothing -- grep for CARRIED-UNVERIFIED/Carried-Figure in plan-format.md shows only the pointer paragraph, unchanged. Ran the 'Internal consistency' reviewer prompt against the full amended section by hand: no assertion requires the ABSENCE of a string a mandated literal requires PRESENT, and no risk/prediction stated as a constraint contradicts a measured result elsewhere in the section -- no contradiction found."
+}
