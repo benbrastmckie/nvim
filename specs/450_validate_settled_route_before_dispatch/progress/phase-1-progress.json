@@ -11,7 +11,7 @@
     {"id": 5, "description": "Update script header usage/help text for --obligation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
     {"id": 6, "description": "Update handoff-schema.md Decisions File Schema section with obligation field", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
     {"id": 7, "description": "Update utility-scripts-inventory.md writer usage line", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
-    {"id": 8, "description": "Extend test-orchestrate-record-decision.sh with five new cases", "status": "not_started", "files_touched": []}
+    {"id": 8, "description": "Extend test-orchestrate-record-decision.sh with five new cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh"]}
   ],
   "current_objective": 8,
   "approaches_tried": [],

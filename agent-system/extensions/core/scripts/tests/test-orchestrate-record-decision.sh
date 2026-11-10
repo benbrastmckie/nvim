@@ -219,6 +219,107 @@ DEMO_DESCRIPTION="Demo task description text for fingerprinting tests."
 }
 
 # =====================================================================================
+# Case (c3): a four-field legacy-shaped call (no --obligation) still validates and still
+# appends -- re-confirms backward compatibility is preserved after the obligation field was
+# added, independent of the description_fingerprint cases above.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$DECISIONS_REL"
+  if run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
+      --question "Q" --answer "A" >/dev/null 2>&1; then
+    if jq -e '.[0] | (has("question") and has("answer") and has("cycle") and has("timestamp"))' "$doc" >/dev/null 2>&1 \
+      && jq -e '.[0] | (has("obligation") | not)' "$doc" >/dev/null 2>&1; then
+      common_test_pass "(c3) legacy-call-still-validates: a call with no --obligation still appends all four required fields with no obligation key"
+    else
+      common_test_fail "(c3) legacy-call-still-validates: $(cat "$doc")"
+    fi
+  else
+    common_test_fail "(c3) legacy-call-still-validates: expected exit 0, got nonzero"
+  fi
+}
+
+# =====================================================================================
+# Case (c4): an entry written with --obligation round-trips with the field present and its
+# text intact.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$DECISIONS_REL"
+  obligation_text="Phase 2's constancy obligation is discharged once Phase 4 runs first."
+  run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
+    --question "Q" --answer "A" --obligation "$obligation_text" >/dev/null 2>&1
+  actual_obligation="$(jq -r '.[0].obligation // "MISSING"' "$doc")"
+  if [ "$actual_obligation" = "$obligation_text" ]; then
+    common_test_pass "(c4) obligation-round-trip: obligation text round-trips intact"
+  else
+    common_test_fail "(c4) obligation-round-trip: expected '$obligation_text', got '$actual_obligation'"
+  fi
+}
+
+# =====================================================================================
+# Case (c5): an entry written WITHOUT --obligation has no obligation key at all (asserted by
+# has("obligation"), not by string absence), matching description_fingerprint's documented
+# omission rule.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$DECISIONS_REL"
+  run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
+    --question "Q" --answer "A" >/dev/null 2>&1
+  if jq -e '.[0] | (has("obligation") | not)' "$doc" >/dev/null 2>&1; then
+    common_test_pass "(c5) obligation-omission: no --obligation supplied produces no obligation key at all"
+  else
+    common_test_fail "(c5) obligation-omission: obligation key unexpectedly present: $(jq -c '.[0]' "$doc" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case (c6): a pre-existing object-wrapped {"decisions": [...]} file is still refused and left
+# byte-identical even when --obligation is supplied -- proves the new optional argument does
+# not bypass the existing shape-validation refusal path.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$DECISIONS_REL"
+  printf '%s' '{"decisions": []}' > "$doc"
+  before="$(md5sum "$doc")"
+  if run_ord "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
+      --question "Q" --answer "A" --obligation "Some obligation" >/dev/null 2>&1; then
+    common_test_fail "(c6) object-wrapper-refusal-with-obligation: expected nonzero exit, got exit 0"
+  else
+    after="$(md5sum "$doc")"
+    if [ "$before" = "$after" ]; then
+      common_test_pass "(c6) object-wrapper-refusal-with-obligation: a {\"decisions\": [...]} file is refused and left byte-identical even with --obligation supplied"
+    else
+      common_test_fail "(c6) object-wrapper-refusal-with-obligation: refused but the target file changed"
+    fi
+  fi
+}
+
+# =====================================================================================
+# Case (c7): with sha256sum unavailable, --obligation still works and is recorded while
+# description_fingerprint is still omitted -- proves the two optional fields are independent.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$DECISIONS_REL"
+  obligation_text="Independent of description_fingerprint availability."
+  if run_ord_no_sha256sum "$scratch" --task 1 --session sess_1000000000_aaaaaa --cycle 1 \
+      --question "Q" --answer "A" --obligation "$obligation_text" >/dev/null 2>&1; then
+    actual_obligation="$(jq -r '.[0].obligation // "MISSING"' "$doc")"
+    if [ "$actual_obligation" = "$obligation_text" ] \
+      && jq -e '.[0] | (has("description_fingerprint") | not)' "$doc" >/dev/null 2>&1; then
+      common_test_pass "(c7) obligation-independent-of-fingerprint: --obligation is recorded while description_fingerprint stays omitted with sha256sum unavailable"
+    else
+      common_test_fail "(c7) obligation-independent-of-fingerprint: $(cat "$doc")"
+    fi
+  else
+    common_test_fail "(c7) obligation-independent-of-fingerprint: expected exit 0 (graceful degrade), got nonzero"
+  fi
+}
+
+# =====================================================================================
 # Case (d): concurrent appends (background invocations, then wait) lose nothing.
 # =====================================================================================
 {
