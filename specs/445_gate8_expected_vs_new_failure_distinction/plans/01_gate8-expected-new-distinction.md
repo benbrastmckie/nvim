@@ -257,48 +257,77 @@ this task to pick up — the exclusion is final, not a deferral.
 
 ---
 
-### Phase 3: Consumer re-verification and the baseline-skew answer [NOT STARTED]
+### Phase 3: Consumer re-verification and the baseline-skew answer [COMPLETED]
 
 **Goal**: Every consumer of the shared Gate 8 verdict is re-verified against both fixture shapes,
 and the dispatch's pre/post baseline-skew question is answered with evidence rather than
 inference.
 
 **Tasks**:
-- [ ] `orchestrate-batch-gate.sh` (the one consumer that runs Gate 8 for real — no `--skip-slow`):
+- [x] `orchestrate-batch-gate.sh` (the one consumer that runs Gate 8 for real — no `--skip-slow`):
       confirm against Case A that `deploy_findings_snapshot` returns zero `gate8` rows, so the
       known-expected failure never reaches the unattributed-finding blocking branch; and against
       Case D (mixed) that exactly the NEW finding is returned and attribution still functions.
-- [ ] `orchestrate-cycle-plan.sh`'s inter-cycle redeploy checkpoint and `command-gate-out.sh`'s
+      *(completed: confirmed empirically via `deploy_findings_snapshot` against the fixtures.
+      Note: "exactly the NEW finding" is read as "the NEW finding is present, attribution
+      works" rather than "ONLY the NEW finding" — the accepted mixed-failure residual (this
+      phase's own Decisions section) means the EXPECTED suite's line may also appear in a mixed
+      run, and it does; the Testing & Validation section's wording — "the NEW finding reaches
+      deploy_findings_snapshot" — matches the implemented and tested behavior)*
+- [x] `orchestrate-cycle-plan.sh`'s inter-cycle redeploy checkpoint and `command-gate-out.sh`'s
       pre/post pair: confirm by read that every `deploy_findings_snapshot` call site still passes
       `--skip-slow`, under which Gate 8 is deferred on BOTH sides of the comparison, leaving both
       consumers structurally unaffected. Record this as the reason no behavioral test is owed for
-      them, rather than leaving the omission unexplained.
-- [ ] `verify-deploy.sh`'s own direct-invocation path (the consumer the measured evidence actually
+      them, rather than leaving the omission unexplained. *(completed: confirmed by direct read —
+      every call site in both files passes `--skip-slow`; see Research Integration/Decisions
+      update below)*
+- [x] `verify-deploy.sh`'s own direct-invocation path (the consumer the measured evidence actually
       names): confirm Case A's `[WARN]` narrative makes the all-expected outcome legible at the
       point where a phase closure would previously have needed a hand-written Reasoned Exclusions
-      record.
-- [ ] Pre/post baseline skew: establish by two captures over Case A that an all-expected outcome
+      record. *(completed: confirmed via direct fixture invocation — the `[WARN]` narrative names
+      the all-expected outcome and quotes the tally line)*
+- [x] Pre/post baseline skew: establish by two captures over Case A that an all-expected outcome
       emits no `FINDING gate8` line in EITHER capture, so it cannot appear in one and not the
       other. State the conclusion as a construction argument plus the observed captures, not an
-      assertion.
-- [ ] `--skip-unchanged` gate cache (a consumer the dispatch does not name; gate 8 is in
+      assertion. *(completed: two successive `deploy_findings_snapshot` captures over the
+      unchanged Case A fixture both show zero `gate8` rows — now a committed regression
+      assertion, not just an ad hoc observation)*
+- [x] `--skip-unchanged` gate cache (a consumer the dispatch does not name; gate 8 is in
       `CACHEABLE_GATES`): confirm Case A leaves gate 8 cache-write-INELIGIBLE via
       `warn_advisory()`'s `GATE_DIRTY_LIST` append, matching today's invalidation behavior exactly.
-- [ ] Zero-check-under-filter (also unnamed in the dispatch): confirm `--only-gate 8` on Case A
-      exits 0 with one check counted, not 2 ("the run attested to nothing").
-- [ ] Re-verify the two files this design does NOT change — `tests/run-all.sh` and
+      *(completed: a second `--skip-unchanged` run against the unchanged Case A fixture still
+      executes the real check — no `[SKIP-CACHED] gate8` line — confirmed empirically and as a
+      committed assertion)*
+- [x] Zero-check-under-filter (also unnamed in the dispatch): confirm `--only-gate 8` on Case A
+      exits 0 with one check counted, not 2 ("the run attested to nothing"). *(completed: exit 0,
+      `PASS -- 1 check(s), 0 failure(s)`, confirmed empirically and as a committed assertion)*
+- [x] Re-verify the two files this design does NOT change — `tests/run-all.sh` and
       `lib/deploy-baseline-lib.sh` — against both fixture shapes, confirming the
       `WARN-FINDING`/`FINDING` separation holds end-to-end through `deploy_findings_snapshot` with
-      no edit to either.
-- [ ] Add a roster-header format-stability assertion to
+      no edit to either. *(completed: neither file's diff touches these paths; both suites named
+      in the Tier Justification — `test-run-all-failure-reporting.sh`,
+      `test-deploy-baseline-lib.sh` — pass unmodified in their own pre-existing assertions, plus
+      this phase's own new consumer-level assertions)*
+- [x] Add a roster-header format-stability assertion to
       `test-run-all-failure-reporting.sh` (the existing suite that already owns the roster and
       `--fail-on-new` contracts), so the discriminator Phase 1 relies on cannot silently change
-      shape.
-- [ ] Non-vacuousness, per case, each confirmed to bite and then reverted: for Case A, remove the
-      fixture's `known-failures.txt` row and confirm the assertion flips to blocking; for Case B,
-      add a matching row and confirm it flips to non-blocking; for the Case C clean assertion,
-      inject a failure and confirm the `[PASS]` assertion fails; for the baseline-skew assertion,
-      force the all-expected branch through `fail()` and confirm a `FINDING gate8` line appears.
+      shape. *(completed: three assertions — prefix present default, prefix survives `--quiet`,
+      prefix absent on an all-green run)*
+- [x] Non-vacuousness, per case, each confirmed to bite: for Case A, remove the fixture's
+      `known-failures.txt` row and confirm the assertion flips to blocking; for Case B, add a
+      matching row and confirm it flips to non-blocking; for the Case C clean assertion, inject a
+      failure and confirm the `[PASS]` assertion fails; for the baseline-skew assertion, force the
+      all-expected branch through `fail()` and confirm a `FINDING gate8` line appears. *(completed,
+      4/4 probes, all confirmed to bite. Implementation deviation from the literal "revert" verb:
+      each probe builds its OWN independent fixture copy (`*-novac` suffix) rather than mutating
+      and reverting the original Case A-D fixture in place — the original fixtures stay pristine
+      for every other assertion in the suite, which achieves the same evidentiary purpose
+      (confirming each assertion is sensitive to fixture content, not vacuously true) without a
+      mutate/restore step that could leave a fixture dirty if interrupted mid-test. The
+      "force the all-expected branch through fail()" baseline-skew probe is literally identical
+      to the Case A non-vacuousness probe — both remove the manifest row and reclassify the
+      failure as NEW, which IS forcing it through fail() — so one probe discharges both items;
+      no separate probe was added)*
 
 **Timing**: 1 hour
 
@@ -315,11 +344,19 @@ verdict across four scripts, so the enumerated dependents must actually run —
 - `agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh` - add the consumer-level assertions (snapshot filtering over Cases A and D, the two-capture skew check, the `--only-gate 8` check-count check)
 
 **Verification**:
-- The suite set named in Tier Justification passes.
-- Each non-vacuousness probe is recorded as observed-to-bite, then reverted, with the reverted
-  state re-run green.
-- The three consumers confirmed by read (not by test) each carry a written reason for why no
-  behavioral test is owed.
+- The suite set named in Tier Justification passes — confirmed: 5/5 suites pass
+  (`test-deploy-baseline-lib.sh`, `test-gate8-expected-new-distinction.sh` [22/22 assertions],
+  `test-gate-out-self-attribution.sh`, `test-orchestrate-batch-gate.sh`,
+  `test-run-all-failure-reporting.sh` [now with 3 new format-stability assertions]).
+- Each non-vacuousness probe is recorded as observed-to-bite (4/4: Case A, Case B, Case C,
+  Case D). Per the task check-off above, each probe uses its own independent fixture copy
+  rather than a mutate-then-revert of the shared Case A-D fixtures — the original fixtures are
+  never mutated, so there is no "reverted state" to separately re-run; every other assertion in
+  the suite already re-runs against those untouched originals within the same suite execution.
+- The three consumers confirmed by read (not by test) — `orchestrate-cycle-plan.sh`,
+  `command-gate-out.sh`, and (for the attribution/cache/zero-check axes) `verify-deploy.sh`'s own
+  unmodified `tests/run-all.sh`/`lib/deploy-baseline-lib.sh` — each carry a written reason above
+  for why no behavioral test is owed for the `--skip-slow`-deferred pair.
 
 ---
 

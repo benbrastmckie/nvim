@@ -239,6 +239,31 @@ else
   common_test_fail "deleting known-failures.txt did not restore the original output: $(diff <(echo "$default_out") <(echo "$post_delete_out"))"
 fi
 
+# =====================================================================
+# Roster-header format-stability assertion: verify-deploy.sh's gate8_run() discriminates a
+# clean run from an all-expected run SOLELY by the line-initial PRESENCE of this exact literal
+# prefix -- "[run-all] Failing suites (" -- never by parsing the numeric tally. Pinning this
+# exact string here (in the suite that already owns the roster contract) means a future format
+# change to the roster header fails this suite loudly instead of silently breaking Gate 8's
+# clean-vs-all-expected discriminator. Checked under --quiet too, since gate8_run() always
+# passes --quiet to its child invocation.
+# =====================================================================
+if printf '%s\n' "$default_out" | grep -qE '^\[run-all\] Failing suites \('; then
+  common_test_pass "roster-header format-stability: the line-initial '[run-all] Failing suites (' prefix is present when failures occur (default)"
+else
+  common_test_fail "roster-header format-stability: expected a line-initial '[run-all] Failing suites (' prefix" "$default_out"
+fi
+if printf '%s\n' "$quiet_out" | grep -qE '^\[run-all\] Failing suites \('; then
+  common_test_pass "roster-header format-stability: the prefix survives --quiet (gate8_run()'s own invocation shape)"
+else
+  common_test_fail "roster-header format-stability: expected the prefix to survive --quiet" "$quiet_out"
+fi
+if printf '%s\n' "$green_out" | grep -qE '^\[run-all\] Failing suites \('; then
+  common_test_fail "roster-header format-stability: an all-green run unexpectedly carries the roster-header prefix" "$green_out"
+else
+  common_test_pass "roster-header format-stability: an all-green run never carries the roster-header prefix (the discriminator's clean-case safety)"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

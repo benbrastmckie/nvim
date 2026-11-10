@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Consumer re-verification and the baseline-skew answer",
+  "started_at": "2026-11-10T02:32:32Z",
+  "last_updated": "2026-11-10T02:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "orchestrate-batch-gate.sh re-verification against Case A and Case D", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 2, "description": "orchestrate-cycle-plan.sh and command-gate-out.sh --skip-slow confirmation by read", "status": "done", "files_touched": []},
+    {"id": 3, "description": "verify-deploy.sh direct-invocation path legibility confirmation", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Pre/post baseline skew: two captures over Case A, zero gate8 rows in both", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 5, "description": "--skip-unchanged gate cache: Case A stays cache-write-ineligible", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 6, "description": "Zero-check-under-filter: --only-gate 8 on Case A counts 1 check, exits 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 7, "description": "Re-verify run-all.sh and deploy-baseline-lib.sh unchanged against both fixture shapes", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Add roster-header format-stability assertion to test-run-all-failure-reporting.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh"]},
+    {"id": 9, "description": "Non-vacuousness probes for Cases A, B, C, D", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.9",
+      "description": "Non-vacuousness probes: 'each confirmed to bite and then reverted'",
+      "type": "altered",
+      "reason": "Each probe builds an independent *-novac fixture copy rather than mutating and reverting the shared Case A-D fixtures in place. Same evidentiary purpose (confirms each assertion is content-sensitive, not vacuous) without a mutate/restore step.",
+      "annotation": "*(deviation: altered -- non-vacuousness probes use independent fixture copies rather than mutate-then-revert; see Phase 3 task check-off for full reasoning)*"
+    }
+  ]
+}
