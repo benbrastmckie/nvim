@@ -1,5 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/488_mcp_write_tool_grant_ownership_scope/summaries/01_mcp-ownership-scope-carveout-summary.md",
+      "summary": "Amended mcp-server-ownership.md with a nix-enforced-settings carve-out verdict, made the sapience disclosure pointer symmetric, and redeployed with the scoped gate green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an explicit carve-out verdict to mcp-server-ownership.md covering a server whose matching user-scope settings file is externally nix-enforced, repaired the Composition table and Decision procedure for consistency, made the sapience extension's disclosure pointer symmetric, and redeployed with the scoped gate set (verify-deploy.sh --only-gate 3,4) green. settings-fragment.json was correctly left unchanged, matching the research verdict."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+    "agent-system/extensions/core/docs/guides/permission-configuration.md",
+    "agent-system/extensions/sapience/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When generate-context-line-counts.sh --write must run against the SOURCE store (agent-system/extensions/<ext>/index-entries.json) rather than a deployed .claude/scripts/ copy, it refuses by default with a deploy-root-guard error. Bypass with `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` -- the script explicitly supports this bypass for a deliberate source-store invocation, and it is the only way to regenerate line_count drift without a full redeploy first.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/488_mcp_write_tool_grant_ownership_scope/summaries/01_mcp-ownership-scope-carveout-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "generate-context-line-counts.sh",
+        "REPO_ROOT",
+        "source-store"
+      ]
+    },
+    {
+      "content": "git-commit-scoped.sh's V10 file_scope-Containment guard is opt-in via the --task flag. When git-commit-phase.sh drops a files_touched path as out-of-scope and deposits it into proposed_file_scope, the mechanical follow-up commit MUST invoke git-commit-scoped.sh WITHOUT --task -- passing --task re-triggers the same containment check against the same still-unwidened declared file_scope and refuses the commit a second time with 'zero positive pathspec entries remain'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/488_mcp_write_tool_grant_ownership_scope/summaries/01_mcp-ownership-scope-carveout-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "git-commit-scoped.sh",
+        "git-commit-phase.sh",
+        "proposed_file_scope",
+        "containment",
+        "V10"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
@@ -8,9 +54,10 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   },
-  "dispatch_seq": 13,
   "proposed_file_scope": [
     "agent-system/extensions/core/index-entries.json",
     "agent-system/extensions/sapience/index-entries.json"

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #488
 
 - **Task**: 488 - MCP write-tool grant ownership scope
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md

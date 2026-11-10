@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "summary": "Wrote a 3-phase plan implementing the research verdict: amend mcp-server-ownership.md with an explicit carve-out for a narrower-than-registration grant when the matching user-scope settings file is externally owned and nix-enforced, rather than moving the sapience grant to ~/.dotfiles. Phase 1 adds the carve-out subsection plus three same-file consistency repairs (forward pointer, Composition table fix column, Decision procedure step 3, which currently asserts project-scope registration is the only exception). Phase 2 makes the disclosure pointer symmetric across review-gate-boundary.md and permission-configuration.md. Phase 3 redeploys with the bounded-wait idiom and runs the full verify-deploy.sh gate set; settings-fragment.json is deliberately untouched.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "Amended mcp-server-ownership.md with an explicit carve-out verdict for a server whose matching user-scope settings file is externally nix-enforced and cannot be durably written by this repository's deploy: an extension may grant the withheld tier at its own project scope instead, under three stated requirements, naming widening to the enforced file as the WRONG fix. Repaired the Composition table and Decision procedure step 3 for internal consistency, and made the disclosure pointer symmetric between the standard and the sapience extension's own docs. Redeployed via deploy-headless.sh; all three edited files confirmed byte-identical between source store and deployed tree. settings-fragment.json was deliberately left unchanged, matching the research verdict.",
+  "phases_completed": 3,
   "phases_total": 3,
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/488_mcp_write_tool_grant_ownership_scope/plans/01_mcp-ownership-scope-carveout.md",
-      "summary": "3-phase plan: standard carve-out amendment + symmetric disclosure links + redeploy and full gate verification."
+      "type": "summary",
+      "path": "specs/488_mcp_write_tool_grant_ownership_scope/summaries/01_mcp-ownership-scope-carveout-summary.md",
+      "summary": "Amended mcp-server-ownership.md with a nix-enforced-settings carve-out verdict, made the sapience disclosure pointer symmetric, and redeployed with the scoped gate green."
     }
   ],
-  "dispatch_seq": 4
+  "dispatch_seq": 13
 }

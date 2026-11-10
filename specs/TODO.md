@@ -11,13 +11,13 @@ next_project_number: 576
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,451,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,451,453,456,459,472,473,475,477,483,484,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,444,458,462,463,474,476,479,486,492,516,518,527,540,541,542,543,544,553,564 | 360,369,383,397,412,423,431,445,451,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,448,454,480,508,547,552,570 | 313,360,391,398,439,444,458,479,486,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,449,452,455,461,481,500,523,561 | 390,402,448,552 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 450,457,501,509,513,517,566 | 449,452,455,461,472,476,479,486,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 6 | 487,524 | 450,501 | core-agent-system, orchestrator |
-| 7 | 496,571 | 487,488,518 | extensions, agent-system |
+| 7 | 496,571 | 487,518 | extensions, agent-system |
 | 8 | 498 | 496 | extensions |
 | 9 | 499 | 421,498 | extensions |
 
@@ -135,7 +135,6 @@ next_project_number: 576
 
 ### Agent System
 
-488 [IMPLEMENTING] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
 512 [PLANNED] — verify-deploy gate 24 reports two findings against lines that...
@@ -5791,13 +5790,14 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 
 ### 488. Adjudicate where MCP write-tool permission grants belong: repo-scoped extension fragment vs. the server owner's own configuration
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Parent**: Task 482
 - **Research**: [488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md]
 - **Plan**: [488_mcp_write_tool_grant_ownership_scope/plans/01_mcp-ownership-scope-carveout.md]
+- **Summary**: [488_mcp_write_tool_grant_ownership_scope/summaries/01_mcp-ownership-scope-carveout-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). Re-derive every quoted clause from the source store, never from a deployed copy. No task-number references and no record-versioning language in any file landing under agent-system/** .
 
