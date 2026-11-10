@@ -10,9 +10,7 @@
   "provides": {
     "agents": [
       "lean-research-agent.md",
-      "lean-implementation-agent.md",
-      "lean-research-hard-agent.md",
-      "lean-implementation-hard-agent.md"
+      "lean-implementation-agent.md"
     ],
     "skills": [
       "skill-lean-research",

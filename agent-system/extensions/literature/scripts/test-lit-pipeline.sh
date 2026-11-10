@@ -294,8 +294,6 @@ section_c() {
   local agents=(
     "cslib-research-agent"
     "cslib-implementation-agent"
-    "cslib-research-hard-agent"
-    "cslib-implementation-hard-agent"
   )
 
   for agent in "${agents[@]}"; do

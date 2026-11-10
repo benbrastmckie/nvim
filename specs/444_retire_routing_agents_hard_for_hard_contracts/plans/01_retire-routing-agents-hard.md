@@ -582,36 +582,58 @@ report any count divergence rather than proceeding on these figures.
 
 ---
 
-### Phase 6: Retire the six hard agent files and converge every roster that names them [NOT STARTED]
+### Phase 6: Retire the six hard agent files and converge every roster that names them [COMPLETED]
 
 **Goal**: the six `-hard` agent files are gone and no roster, index row, lint array, fixture or
 illustrative citation still names them.
 
 **Tasks**:
-- [ ] Before deleting, re-diff each hard agent against its standard counterpart one final time and
+- [x] Before deleting, re-diff each hard agent against its standard counterpart one final time and
       confirm every behaviour it carries now reaches the standard agent either through its own
       body or through a Phase 2/3 contract. Fold anything that does not into the relevant contract
       file rather than deleting it — this is the last point at which the content is recoverable
-      without git archaeology.
-- [ ] Delete the six agent files under `books/agents/`, `cslib/agents/` and `lean/agents/`.
-- [ ] Remove their six entries from the three manifests' `provides.agents` arrays, in the same
-      change.
-- [ ] Remove the `-hard` agent rows from `books/index-entries.json`, `cslib/index-entries.json`
+      without git archaeology. *(completed: re-diffed books-research-{agent,hard-agent}.md and
+      cslib-implementation-{agent,hard-agent}.md in full; confirmed each hard variant's unique
+      content is either the generic H2/H3/H4/H7/H9 contract text now injected via hard_contracts,
+      content already folded into a Phase 2 contract file, or (for books' 3-tier H3 elaboration)
+      the already-decided droppable-as-duplicative content. No new foldable content found.)*
+- [x] Delete the six agent files under `books/agents/`, `cslib/agents/` and `lean/agents/`.
+      *(completed)*
+- [x] Remove their six entries from the three manifests' `provides.agents` arrays, in the same
+      change. *(completed)*
+- [x] Remove the `-hard` agent rows from `books/index-entries.json`, `cslib/index-entries.json`
       and `lean/index-entries.json`, and any core `index-entries.json` row whose `load_when.agents`
-      names one.
-- [ ] Remove the `-hard` agent entries from `books/opencode-agents.json`.
-- [ ] Edit every roster array in `lint-agent-contracts.sh` that lists a `-hard` agent path — the
+      names one. *(completed: no extension declared a standalone index ROW for a -hard agent
+      itself -- all six only ever appeared inside load_when.agents arrays belonging to OTHER
+      rows (docs/standards referencing them as readers); confirmed every such array's
+      reachability is preserved via its co-present task_types entry (OR semantics) before
+      removing)*
+- [x] Remove the `-hard` agent entries from `books/opencode-agents.json`. *(completed)*
+- [x] Edit every roster array in `lint-agent-contracts.sh` that lists a `-hard` agent path — the
       lint `log_fail`s on a rostered file that does not exist, so this is a hard failure, not a
       vacuous pass — and update its three roster tests
       (`test-lint-agent-contracts.sh`, `test-lint-agent-contracts-handoff-section.sh`,
       `test-lint-agent-contracts-heartbeat.sh`) plus any header comment that cites a hard agent as
-      an exemplar.
-- [ ] Retarget `lint/collapsed-blocks/registry.tsv` row 12, which uses
+      an exemplar. *(completed: six roster-array lines removed across the file's six arrays;
+      every stale "N of M"/"currently N files" narrative comment whose claim became actively
+      false updated, dated historical measurement snapshots left untouched per the convention
+      already established in Phase 2/5; test-lint-agent-contracts.sh's two books-hard fixtures
+      and their PASS assertions removed, its Check M not-found loop's two hard entries dropped
+      (11->9 array size); test-lint-agent-contracts-heartbeat.sh's OWNERSHIP_PATHS mirror and its
+      two hardcoded WARN-count expectations corrected (12/11, matching the now-13-entry
+      inventory); test-lint-agent-contracts-handoff-section.sh needed no change (its one mention
+      is historical motivating-incident narrative only). All three roster tests pass.)*
+- [x] Retarget `lint/collapsed-blocks/registry.tsv` row 12, which uses
       `cslib/agents/cslib-implementation-hard-agent.md` as its collapsed-block exemplar, onto a
       surviving agent that carries the same shared block, and regenerate the corresponding
       `collapsed-blocks/*.txt` fixture (renaming it to match the new exemplar). Delete the stale
-      `early-metadata-stage0-cslib-agents-cslib-implementation-hard-agent.txt`.
-- [ ] Sweep the illustrative citations in core context/docs that name a `-hard` agent as an
+      `early-metadata-stage0-cslib-agents-cslib-implementation-hard-agent.txt`. *(completed:
+      retargeted onto python/agents/python-implementation-agent.md, whose current Stage 0 is the
+      terse collapsed form with no long-form JSON block present -- confirmed safe before
+      registering. core/manifest.json's provides.scripts array, which explicitly enumerates every
+      collapsed-blocks .txt fixture for deployment, updated to match. lint-anchor-pointer-collapse.sh
+      passes, 78 rows checked, 0 violations.)*
+- [x] Sweep the illustrative citations in core context/docs that name a `-hard` agent as an
       example: `context/architecture/context-layers.md`,
       `context/contracts/modified-files-bullet.md`,
       `context/contracts/no-task-references-bullet.md`,
@@ -621,7 +643,21 @@ illustrative citation still names them.
       `docs/architecture/handoff-schema.md`, plus `books/context/project/books/domain/approvals-detection.md`,
       `books/scripts/tests/test-books-approvals-signal.sh` and
       `cslib/context/contracts/cslib-adversarial-verification.md`. Derive the list from a fresh
-      grep at implementation time, not from this enumeration.
+      grep at implementation time, not from this enumeration. *(completed for every named file.
+      cslib-adversarial-verification.md was already clean from Phase 2's fix. context-layers.md
+      needed a substantive addition, not just a citation swap: its "no central injection point"
+      finding now has a genuine narrower exception (hard_contracts) worth documenting, and its
+      illustrative example (the now-deleted hard agent) has no surviving replacement -- confirmed
+      by repo-wide grep. bounded-build-waiter.md's research-agent measured-scope section had its
+      counts corrected (23->20 total, 11->9 in-scope, 2->1 Lean exclusion) since three of the
+      measured `*research*agent.md` files are now retired. Also fixed, beyond the plan's
+      enumeration: books/README.md and cslib/README.md's Architecture-tree agent comments and
+      cslib/README.md's agents/ listing, deferred from Phase 5 specifically because they named
+      AGENT files that still existed then; core/manifest.json's provides.scripts array (see
+      registry.tsv task above); and the two freshly-discovered stale deployed-tree orphans
+      (.claude/agents/lean-{research,implementation}-hard-agent.md) plus the stale deployed .txt
+      fixture, caught by gate 13 post-redeploy, per deploy-orphan-detection.md's
+      detect-never-auto-delete design.)*
 - [ ] Re-grep for all six agent names and confirm nothing survives.
 
 **Timing**: 2 hours

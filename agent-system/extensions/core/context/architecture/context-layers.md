@@ -115,15 +115,29 @@ dispatch prompt, not the other way around. There is no shared dispatch-prompt bu
 contract could hook into once to reach every consumer — each `SKILL.md` and each agent file
 constructs its own dispatch prompt and its own Context References section inline.
 
+**Narrower exception, --hard only.** `hard_contracts` (a manifest block, resolved by
+`orchestrate-build-dispatch.sh`'s Stage 3.5 via `routing_lookup_flat()`) IS a genuinely central,
+non-per-agent-hardcoded injection point — but only for the `<hard-mode-contracts>` block of a
+`--hard` dispatch, never for a base-mode dispatch of any task_type. It does not contradict
+Finding (ii) above: it resolves WHICH CONTRACT FILES to inject for a `--hard` dispatch of a given
+`task_type`, read once per dispatch from the manifest, rather than letting each agent body
+hand-copy `@`-reference bullets for the contracts it wants — see
+`context/guides/manifest-routing-schema.md`'s "The `hard_contracts` Block" section. A core
+contract added today still reaches no extension implementer "for free" outside `--hard`, and even
+under `--hard` it reaches an extension only if that extension's manifest explicitly lists it.
+
 **Consequence.** Propagating any core `context/contracts/` file to extension implementation
-agents is manual, per-file work with no shortcut through either the adaptive query or the
-`context_injection` hook. The durable in-repo precedent for how this propagation is actually done
-is `extensions/cslib/agents/cslib-implementation-hard-agent.md`, which hand-copies core's
-`anti-analysis.md`, `wrap-up.md`, and `territory.md` as individually listed
-`@.claude/context/contracts/...` bullets in its own `## Context References` section. Any future
-task that adds a core contract and assumes it now reaches extension implementers "for free"
-because a central hook exists is working from a false premise; this file is where that premise
-gets checked.
+agents, OUTSIDE the narrow `hard_contracts` exception above, is manual, per-file work with no
+shortcut through either the adaptive query or the `context_injection` hook. The in-repo precedent
+for how this kind of manual propagation used to be done by hand — before `hard_contracts`
+existed — was a now-retired `-hard`-suffixed agent family (e.g. the former
+`cslib-implementation-hard-agent.md`) hand-copying core's `anti-analysis.md`, `wrap-up.md`, and
+`territory.md` as individually listed `@.claude/context/contracts/...` bullets in its own
+`## Context References` section; no surviving agent file does this today (a repo-wide
+`grep -rl '@.claude/context/contracts/anti-analysis.md' agent-system/extensions/*/agents/*.md`
+returns nothing). Any future task that adds a core contract and assumes it now reaches extension
+implementers "for free" — whether via a central hook, or via `hard_contracts` for a task_type
+that has not declared it — is working from a false premise.
 
 ## Eager vs. Lazy Loading Channels
 

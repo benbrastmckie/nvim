@@ -156,8 +156,7 @@
       "line_count": 50,
       "load_when": {
         "agents": [
-          "lean-implementation-agent",
-          "lean-implementation-hard-agent"
+          "lean-implementation-agent"
         ],
         "task_types": [
           "lean4"
@@ -774,10 +773,7 @@
       "path": "project/lean4/domain/hard-mode.md",
       "line_count": 74,
       "load_when": {
-        "agents": [
-          "lean-research-hard-agent",
-          "lean-implementation-hard-agent"
-        ],
+        "agents": [],
         "task_types": [
           "lean4"
         ]
@@ -868,9 +864,7 @@
       "load_when": {
         "agents": [
           "lean-research-agent",
-          "lean-implementation-agent",
-          "lean-research-hard-agent",
-          "lean-implementation-hard-agent"
+          "lean-implementation-agent"
         ],
         "task_types": [
           "lean4"
@@ -942,9 +936,7 @@
       "load_when": {
         "agents": [
           "lean-research-agent",
-          "lean-implementation-agent",
-          "lean-research-hard-agent",
-          "lean-implementation-hard-agent"
+          "lean-implementation-agent"
         ],
         "task_types": [
           "lean4"

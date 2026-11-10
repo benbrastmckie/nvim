@@ -86,13 +86,10 @@ by copying this list forward unexamined:
 ```
 core/agents/general-implementation-agent.md
 books/agents/books-implementation-agent.md
-books/agents/books-implementation-hard-agent.md
 cslib/agents/cslib-implementation-agent.md
-cslib/agents/cslib-implementation-hard-agent.md
 founder/agents/founder-implement-agent.md
 latex/agents/latex-implementation-agent.md
 lean/agents/lean-implementation-agent.md
-lean/agents/lean-implementation-hard-agent.md
 nix/agents/nix-implementation-agent.md
 nvim/agents/neovim-implementation-agent.md
 python/agents/python-implementation-agent.md
@@ -101,6 +98,12 @@ typst/agents/typst-implementation-agent.md
 web/agents/web-implementation-agent.md
 z3/agents/z3-implementation-agent.md
 ```
+
+(The two `-hard`-suffixed counterparts previously listed here, `books/agents/
+books-implementation-hard-agent.md` and `cslib/agents/cslib-implementation-hard-agent.md`, are
+retired along with the rest of the per-domain `-hard` agent files — `routing_agents_hard` ->
+`hard_contracts` migration. They are dropped from this list rather than left dangling, matching
+`lint-agent-contracts.sh`'s own `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` array this list mirrors.)
 
 **Sweep result diverges from this task's own planning-time hypothesis of 13 files**:
 `founder/agents/founder-implement-agent.md` was recorded during planning as "correctly out of
@@ -117,15 +120,15 @@ anywhere in the file):
 `cslib/agents/pr-review-implementation-agent.md`,
 `email/agents/email-implementation-agent.md`.
 
-**14 -> 16 files, a later curated-array coverage-gap closure**: `books/agents/books-
-implementation-agent.md` and `books/agents/books-implementation-hard-agent.md` were absent from
-this enumeration despite both genuinely instructing phase-heading marker edits via the Edit tool
-(`### Phase {P}: {Phase Name} [MARKER]`, Stage 4 "A. Mark Phase In Progress" / "D. Mark Phase
-Complete" in both files) — a pure omission, not a classification dispute. Both are now included.
-`books-implementation-agent.md` already carried the bullet's content (wrapped across physical
-lines, misplaced in its MUST DO list, with two extraneous backtick pairs around the two script
-names); `books-implementation-hard-agent.md` was missing the bullet outright. Both were
-normalized to the canonical single-physical-line MUST NOT text before being added here.
+**14 -> 15 files (then 13 after the `-hard` retirement), a later curated-array coverage-gap
+closure**: `books/agents/books-implementation-agent.md` (and, at the time, its now-retired
+`-hard` counterpart) was absent from this enumeration despite genuinely instructing
+phase-heading marker edits via the Edit tool (`### Phase {P}: {Phase Name} [MARKER]`, Stage 4
+"A. Mark Phase In Progress" / "D. Mark Phase Complete") — a pure omission, not a classification
+dispute. It is now included. `books-implementation-agent.md` already carried the bullet's
+content (wrapped across physical lines, misplaced in its MUST DO list, with two extraneous
+backtick pairs around the two script names) and was normalized to the canonical
+single-physical-line MUST NOT text before being added here.
 
 ## Placement
 

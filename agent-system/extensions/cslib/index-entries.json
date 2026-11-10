@@ -238,9 +238,7 @@
       "path": "project/cslib/standards/citation-conventions.md",
       "line_count": 144,
       "load_when": {
-        "agents": [
-          "cslib-research-hard-agent"
-        ],
+        "agents": [],
         "task_types": [
           "cslib"
         ]
@@ -260,9 +258,7 @@
       "path": "project/cslib/standards/ci-pipeline.md",
       "line_count": 135,
       "load_when": {
-        "agents": [
-          "cslib-implementation-hard-agent"
-        ],
+        "agents": [],
         "task_types": [
           "cslib"
         ]
@@ -306,8 +302,7 @@
       "line_count": 98,
       "load_when": {
         "agents": [
-          "cslib-implementation-agent",
-          "cslib-implementation-hard-agent"
+          "cslib-implementation-agent"
         ],
         "task_types": [
           "cslib"
@@ -327,10 +322,7 @@
       "path": "project/cslib/domain/hard-mode-selection.md",
       "line_count": 50,
       "load_when": {
-        "agents": [
-          "cslib-research-hard-agent",
-          "cslib-implementation-hard-agent"
-        ],
+        "agents": [],
         "task_types": [
           "cslib",
           "pr"

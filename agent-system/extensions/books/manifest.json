@@ -16,9 +16,7 @@
   "provides": {
     "agents": [
       "books-research-agent.md",
-      "books-implementation-agent.md",
-      "books-research-hard-agent.md",
-      "books-implementation-hard-agent.md"
+      "books-implementation-agent.md"
     ],
     "skills": [
       "skill-books-research",

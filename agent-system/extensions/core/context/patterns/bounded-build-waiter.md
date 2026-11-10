@@ -275,23 +275,27 @@ file is a recorded exclusion, for a per-file reason rather than an oversight:
   full prose block the bullet pair above is condensed from; it is deliberately not edited to
   carry the condensed copy of its own source text.
 
-`lean/agents/lean-implementation-agent.md` and `lean/agents/lean-implementation-hard-agent.md` now
-carry the canonical bullet pair verbatim and are in `BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS` like
-every other in-scope agent — they are no longer exclusions.
+`lean/agents/lean-implementation-agent.md` now carries the canonical bullet pair verbatim and is
+in `BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS` like every other in-scope agent — it is no longer an
+exclusion. Its retired `-hard`-suffixed counterpart was never itself a separate roster member by
+the time of its deletion.
 
 A future agent addition must be classified by this rule and added to the lint's curated
 in-scope array explicitly — the check does not infer scope from a filename glob.
 
-### Item 3 Ruling: Hard Variants Do Not Inherit
+### Item 3 Ruling: Hard Variants Did Not Inherit (Historical — Category Now Retired)
 
-Hard-mode agent files (e.g. `*-implementation-hard-agent.md`) do not inherit this bullet pair
-from their non-hard sibling. A hard-mode file's "Extends `{sibling}-implementation-agent`"
-language is prose documentation of intent, not a file-inclusion or generation mechanism — nothing
-mechanically copies the sibling's `## Critical Requirements` list into the hard variant. The
-evidence is direct: both measured hard variants (`books-implementation-hard-agent.md`,
-`cslib-implementation-hard-agent.md`) are missing the bullet pair independently of their non-hard
-sibling's own coverage state. Each hard-mode agent file therefore carries its own literal copy
-and is listed independently in the lint's curated in-scope array.
+Per-domain `-hard`-suffixed agent files (`*-implementation-hard-agent.md`) no longer exist as a
+category: `routing_agents_hard` is retired in favor of `hard_contracts` contract injection onto
+the standard agent (see `context/guides/manifest-routing-schema.md`). While they existed, they
+did NOT inherit this bullet pair from their non-hard sibling merely by prose convention — a
+hard-mode file's "Extends `{sibling}-implementation-agent`" language was documentation of
+intent, not a file-inclusion or generation mechanism, so nothing mechanically copied the
+sibling's `## Critical Requirements` list into the hard variant. The measured evidence (both
+`books-implementation-hard-agent.md` and `cslib-implementation-hard-agent.md` were missing the
+bullet pair independently of their non-hard sibling's own coverage state) is retained here as
+the durable lesson for any future file that claims to "extend" another by prose alone: that
+claim never substitutes for an explicit, independently-verified requirement listing.
 
 ### Item 4 Ruling: Research Agents Are Out of Scope Here, Not Dismissed
 
@@ -315,20 +319,22 @@ lint's `BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS` array / Check M.
 ### Research-Agent Bounded-Wait Scope (Measured)
 
 Determined by a per-file classification of all 23 names matching `*research*agent.md` across
-`agent-system/extensions/*/agents/`: read each file's own `## Allowed Tools` / tool-grant section,
+`agent-system/extensions/*/agents/` AT THE TIME OF THIS MEASUREMENT. Now 20: the three
+per-domain `-hard`-suffixed research agents measured below (`books-research-hard-agent.md`,
+`cslib-research-hard-agent.md`, `lean-research-hard-agent.md`) are since retired
+(`routing_agents_hard` -> `hard_contracts` migration) and dropped from the counts below rather
+than left dangling. Read each file's own `## Allowed Tools` / tool-grant section,
 then grep the full file body for a concrete local build/test invocation actually named anywhere
 (not merely implied by a generic phrase). The single-physical-line convention and the
 no-divergent-second-copy constraint stated in "Copy this exact text" above apply identically to
 this propagation — this section references that block rather than repeating it.
 
-**In scope (11) — a concrete local build/test command is named, or Bash is wholly unrestricted**:
+**In scope (9) — a concrete local build/test command is named, or Bash is wholly unrestricted**:
 
 | File | Evidence |
 |---|---|
 | `books/agents/books-research-agent.md` | `Bash - Run \`lake build\`, \`books-tool validate\|check\|levels\`, and the certify driver` for verification |
-| `books/agents/books-research-hard-agent.md` | same family, live-tree `lake build`/certify invocation |
 | `cslib/agents/cslib-research-agent.md` | `Bash - Run \`lake build\` for verification` — no guard/detach language anywhere |
-| `cslib/agents/cslib-research-hard-agent.md` | same |
 | `nix/agents/nix-research-agent.md` | `Bash - Run verification commands, nix flake check, nixos-rebuild, home-manager build` |
 | `nvim/agents/neovim-research-agent.md` | `Bash - Run verification commands, nvim --headless tests` |
 | `web/agents/web-research-agent.md` | `Bash - Run verification commands, pnpm build/check`; `Local build first (pnpm check && pnpm build)` |
@@ -337,10 +343,10 @@ this propagation — this section references that block rather than repeating it
 | `z3/agents/z3-research-agent.md` | `` `pytest -k "z3" -v` - Run Z3-related tests `` named explicitly |
 | `core/agents/general-research-agent.md` | **No `## Allowed Tools` section at all** — Bash is unrestricted, a strictly *wider* exposure than any scoped grant above. Already carries `external-process-wait.md`'s remote-wait discipline (its own "External Process Wait Discipline" section) but neither half of the local bounded-wait bullet pair until this propagation — the exact partial-coverage shape this change closes. |
 
-**Excluded — Lean's separate sanctioned mechanism (2), not instances of the defect**:
+**Excluded — Lean's separate sanctioned mechanism (1), not an instance of the defect**:
 
-- `lean/agents/lean-research-agent.md`, `lean/agents/lean-research-hard-agent.md`: both route
-  their `lake build` through `lake-build-guard.sh` (detached as a shell-level background job,
+- `lean/agents/lean-research-agent.md`: routes
+  its `lake build` through `lake-build-guard.sh` (detached as a shell-level background job,
   guarded, blocked on with the bounded single-call idiom — see
   `../../../lean/context/project/lean4/operations/long-builds.md`), the same domain-adapted
   mechanism this file's own "Conforming Examples" section already names as prior art, not a gap.
@@ -375,8 +381,9 @@ this propagation — this section references that block rather than repeating it
   build into any one of these four changes only that file's own classification, reviewable
   against this recorded reason — never "formal family, see above" as the whole justification.
 
-11 + 2 + 10 = 23, accounting for every `*research*agent.md` file in the source store at the time
-of this measurement. None of the 11 in-scope files carried any bounded-wait-adjacent text before
+11 + 2 + 10 = 23 (now 9 + 1 + 10 = 20, after the three retired `-hard` research agents),
+accounting for every `*research*agent.md` file in the source store at the time of this
+measurement. None of the then-11 in-scope files carried any bounded-wait-adjacent text before
 this propagation (`bounded-build-waiter`/`kill -0`: zero hits across all 11), making this a clean
 propagation for every file except `general-research-agent.md`, whose one existing half is the
 remote-wait discipline, not a collision with the new local-wait bullet pair.

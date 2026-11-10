@@ -10,7 +10,7 @@
       "implement",
       "general-implementation-agent"
     ],
-    "phases_completed": 4,
+    "phases_completed": 5,
     "phases_total": 8
   },
   "proposed_file_scope": [
@@ -18,6 +18,8 @@
     "agent-system/extensions/lean/context/contracts/lean4-anti-analysis.md",
     "agent-system/extensions/lean/context/contracts/lean4-context-hygiene.md",
     "agent-system/extensions/lean/context/contracts/lean4-reference-grounding.md",
-    "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"
+    "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lint/collapsed-blocks/early-metadata-stage0-python-agents-python-implementation-agent.txt"
   ]
 }

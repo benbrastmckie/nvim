@@ -71,7 +71,8 @@ they do not restate it:
 - `context/contracts/territory.md`'s Territory Declaration Template
 - `context/standards/orchestrator-runtime-files.md`'s `.orchestrator-handoff.json` tracking
   rationale entry
-- the lean extension's `agents/lean-implementation-agent.md`'s Final Verification Stage build
-  step ("Verify build passes")
-- the lean extension's `agents/lean-implementation-hard-agent.md`'s Stage 4 step D ("Verify Phase
-  Completion") and Stage 6 step 4 ("Verify build passes")
+- the lean extension's `agents/lean-implementation-agent.md`'s Stage 4 step D ("Verify Phase
+  Completion") and Final Verification Stage build step ("Verify build passes") — the sole
+  surviving lean4 implementation agent; its retired `-hard`-suffixed counterpart carried the
+  identical build-verification steps before `--hard` moved to `hard_contracts` contract
+  injection on this same agent

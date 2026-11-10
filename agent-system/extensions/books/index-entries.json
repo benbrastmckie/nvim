@@ -6,9 +6,7 @@
       "load_when": {
         "agents": [
           "books-research-agent",
-          "books-implementation-agent",
-          "books-research-hard-agent",
-          "books-implementation-hard-agent"
+          "books-implementation-agent"
         ],
         "task_types": [
           "books"
@@ -207,7 +205,7 @@
     },
     {
       "path": "project/books/domain/approvals-detection.md",
-      "line_count": 202,
+      "line_count": 204,
       "load_when": {
         "agents": [],
         "task_types": []
@@ -311,9 +309,7 @@
       "load_when": {
         "agents": [
           "books-research-agent",
-          "books-implementation-agent",
-          "books-research-hard-agent",
-          "books-implementation-hard-agent"
+          "books-implementation-agent"
         ],
         "task_types": [
           "books"

@@ -49,22 +49,22 @@ for req in "$LINT_SRC" "$FRAGMENT_SRC" "$ARTIFACTS_FRAGMENT_SRC" "$STATUS_LIB_SR
   fi
 done
 
-# The exact 16-entry OWNERSHIP_IN_SCOPE_RELATIVE_PATHS set, kept here as a plain data list (not
+# The exact 13-entry OWNERSHIP_IN_SCOPE_RELATIVE_PATHS set, kept here as a plain data list (not
 # sourced from the script) so a drift between this list and the real one surfaces as a
 # "in-scope agent file not found" FAIL inside Check I's own section below (case 1c / 2c) rather
-# than silently assumed. books/agents/books-implementation-agent.md and
-# books/agents/books-implementation-hard-agent.md were added to both the real array and here by
-# a later curated-array coverage-gap closure.
+# than silently assumed. books/agents/books-implementation-agent.md was added to both the real
+# array and here by a later curated-array coverage-gap closure. The three `-hard`-suffixed
+# counterparts formerly listed here (books-implementation-hard-agent.md,
+# cslib-implementation-hard-agent.md, lean-implementation-hard-agent.md) are retired along with
+# the rest of the per-domain `-hard` agent files -- routing_agents_hard -> hard_contracts
+# migration -- and dropped from both the real array and this mirror.
 OWNERSHIP_PATHS=(
   "core/agents/general-implementation-agent.md"
   "books/agents/books-implementation-agent.md"
-  "books/agents/books-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
-  "cslib/agents/cslib-implementation-hard-agent.md"
   "founder/agents/founder-implement-agent.md"
   "latex/agents/latex-implementation-agent.md"
   "lean/agents/lean-implementation-agent.md"
-  "lean/agents/lean-implementation-hard-agent.md"
   "nix/agents/nix-implementation-agent.md"
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
@@ -140,10 +140,10 @@ rc1=$?
 check_i_section=$(echo "$out1" | sed -n '/--- Check I:/,/^$/p')
 
 warn_count=$(echo "$check_i_section" | grep -c '\[WARN\].*does not invoke update-phase-status.sh')
-if [ "$warn_count" -eq 15 ]; then
-  common_test_pass "(1a) exactly 15 WARN lines for the 15 inventoried offenders"
+if [ "$warn_count" -eq 12 ]; then
+  common_test_pass "(1a) exactly 12 WARN lines for the 12 inventoried offenders"
 else
-  common_test_fail "(1a) expected 15 WARN lines, got $warn_count"
+  common_test_fail "(1a) expected 12 WARN lines, got $warn_count"
 fi
 
 # grep -F cannot be used here: log_pass() wraps "[PASS]" in ANSI color codes, inserting an
@@ -221,10 +221,10 @@ fi
 # Every other (still-inventoried) offender must still WARN, not FAIL -- proves the patch is
 # scoped to exactly the one removed entry.
 warn_count2=$(echo "$check_i_section2" | grep -c '\[WARN\].*does not invoke update-phase-status.sh')
-if [ "$warn_count2" -eq 14 ]; then
-  common_test_pass "(2c) the remaining 14 still-inventoried offenders still WARN (patch scoped to z3 only)"
+if [ "$warn_count2" -eq 11 ]; then
+  common_test_pass "(2c) the remaining 11 still-inventoried offenders still WARN (patch scoped to z3 only)"
 else
-  common_test_fail "(2c) expected 14 WARN lines for the remaining inventoried offenders, got $warn_count2"
+  common_test_fail "(2c) expected 11 WARN lines for the remaining inventoried offenders, got $warn_count2"
 fi
 rm -rf "$ROOT2" "$PATCH_DIR"
 

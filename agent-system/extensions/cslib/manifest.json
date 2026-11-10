@@ -12,8 +12,6 @@
     "agents": [
       "cslib-research-agent.md",
       "cslib-implementation-agent.md",
-      "cslib-research-hard-agent.md",
-      "cslib-implementation-hard-agent.md",
       "pr-review-research-agent.md",
       "pr-review-implementation-agent.md",
       "cslib-vet-agent.md"

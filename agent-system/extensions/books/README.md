@@ -30,7 +30,7 @@ Loaded via the extension picker. Once loaded, `books` becomes a recognized task 
 ```
 books/
 ├── manifest.json               # task_type, dependencies, provides, routing, keyword_overrides
-├── agents/                     # four agents (base pair + --hard pair, all model: sonnet)
+├── agents/                     # two agents (research/implementation pair, model: sonnet)
 ├── skills/                     # two lifecycle skills + two direct-execution skills
 ├── commands/                   # /book, /certify, /books (--review/--revise)
 ├── rules/                      # books.md -- the non-negotiables

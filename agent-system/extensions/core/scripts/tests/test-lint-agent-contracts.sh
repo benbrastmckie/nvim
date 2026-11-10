@@ -837,12 +837,15 @@ $ARTIFACTS_TEMPLATE_BLOCK
 EOF
 
 # =====================================================================
-# Books PASS fixtures (added alongside Checks C/G's registration of the two real books files):
-# dedicated scratch fixtures standing in for books-implementation-agent.md and
-# books-implementation-hard-agent.md, carrying BOTH bullets correctly (single physical line,
-# no stray backticks) -- asserted to explicitly PASS Check C and Check G by name. Both are also
-# real Check H and Check L members, so each carries those canonical lines too, producing a
-# fully clean (zero-FAIL) fixture rather than an unexplained Check H/L FAIL alongside the PASS.
+# Books PASS fixture (added alongside Check C/G's registration of the real books file): a
+# dedicated scratch fixture standing in for books-implementation-agent.md, carrying BOTH
+# bullets correctly (single physical line, no stray backticks) -- asserted to explicitly PASS
+# Check C and Check G by name. Also a real Check H and Check L member, so it carries those
+# canonical lines too, producing a fully clean (zero-FAIL) fixture rather than an unexplained
+# Check H/L FAIL alongside the PASS. (Its former `-hard`-suffixed sibling fixture is removed,
+# not retargeted: routing_agents_hard -> hard_contracts retired the real
+# books-implementation-hard-agent.md, dropping it from every curated in-scope array this lint
+# reads, so a fixture built for it would test a path the lint no longer considers in-scope.)
 # =====================================================================
 mkdir -p "$WORKDIR/agent-system/extensions/books/agents"
 
@@ -854,33 +857,6 @@ model: sonnet
 ---
 
 # Books Implementation Agent
-
-## Write Metadata
-
-$ARTIFACTS_TEMPLATE_BLOCK
-"modified_files": []
-
-## Critical Requirements
-
-**MUST**:
-1. $MODIFIED_FILES_BULLET_LINE
-2. $MODIFIED_FILES_TRACK_LINE
-3. $BOUNDED_WAIT_MUST_LINE
-
-**MUST NOT**:
-1. $BULLET_LINE
-2. $OWNERSHIP_BULLET_LINE
-3. $BOUNDED_WAIT_MUSTNOT_LINE
-EOF
-
-cat > "$WORKDIR/agent-system/extensions/books/agents/books-implementation-hard-agent.md" <<EOF
----
-name: books-implementation-hard-agent
-description: fixture standing in for the real books-implementation-hard-agent, carrying both the Check C and Check G bullets correctly
-model: sonnet
----
-
-# Books Implementation Hard Agent
 
 ## Write Metadata
 
@@ -1267,16 +1243,16 @@ else
   common_test_fail "(b) positive: expected Check M failure for rust-research-agent.md near-miss fixture, not found in output"
 fi
 
-# (c) Not-found assertions: the remaining 9 of the 11 BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS
+# (c) Not-found assertions: the remaining 7 of the 9 BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS
 # entries have no dedicated fixture in this scratch tree -- each must produce an explicit,
 # named "in-scope agent file not found" Check M line rather than an unexplained FAIL silently
-# absorbed by the suite's own exit-1 expectation.
+# absorbed by the suite's own exit-1 expectation. (The array was 11 before the two
+# `-hard`-suffixed research agents it used to carry -- books-research-hard-agent.md,
+# cslib-research-hard-agent.md -- were retired: routing_agents_hard -> hard_contracts.)
 for rel in \
   "books/agents/books-research-agent.md" \
-  "books/agents/books-research-hard-agent.md" \
   "core/agents/general-research-agent.md" \
   "cslib/agents/cslib-research-agent.md" \
-  "cslib/agents/cslib-research-hard-agent.md" \
   "nvim/agents/neovim-research-agent.md" \
   "python/agents/python-research-agent.md" \
   "web/agents/web-research-agent.md" \
@@ -1305,9 +1281,9 @@ else
 fi
 
 # =====================================================================
-# Books PASS assertions: dedicated scratch fixtures standing in for the two real books files
-# explicitly PASS Check C and Check G by name (the scratch tree does not contain the real repo,
-# so these are fixtures named to the real array paths, not the real files themselves).
+# Books PASS assertions: a dedicated scratch fixture standing in for the real books file
+# explicitly PASSes Check C and Check G by name (the scratch tree does not contain the real
+# repo, so this is a fixture named to the real array path, not the real file itself).
 # =====================================================================
 if echo "$out" | grep -qF "books/agents/books-implementation-agent.md: carries the no-task-references bullet"; then
   common_test_pass "books: books-implementation-agent.md fixture explicitly passes Check C"
@@ -1318,16 +1294,6 @@ if echo "$out" | grep -qF "books/agents/books-implementation-agent.md: carries t
   common_test_pass "books: books-implementation-agent.md fixture explicitly passes Check G"
 else
   common_test_fail "books: expected an explicit Check G PASS line for books-implementation-agent.md, not found in output"
-fi
-if echo "$out" | grep -qF "books/agents/books-implementation-hard-agent.md: carries the no-task-references bullet"; then
-  common_test_pass "books: books-implementation-hard-agent.md fixture explicitly passes Check C"
-else
-  common_test_fail "books: expected an explicit Check C PASS line for books-implementation-hard-agent.md, not found in output"
-fi
-if echo "$out" | grep -qF "books/agents/books-implementation-hard-agent.md: carries the plan-level-Status ownership bullet"; then
-  common_test_pass "books: books-implementation-hard-agent.md fixture explicitly passes Check G"
-else
-  common_test_fail "books: expected an explicit Check G PASS line for books-implementation-hard-agent.md, not found in output"
 fi
 
 # =====================================================================

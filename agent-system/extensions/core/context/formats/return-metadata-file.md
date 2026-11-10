@@ -291,8 +291,10 @@ Contains fields needed for task completion processing. Skills extract this data 
 `"ran": false` "not requested" record; `"ran": false` is reserved for a request that reached
 preflight and stopped there without invoking the runner.
 
-Carries the result of the advisory Comparator gate run by `lean-implementation-agent.md` /
-`lean-implementation-hard-agent.md`'s Final Verification Stage against the snapshot Challenge
+Carries the result of the advisory Comparator gate run by `lean-implementation-agent.md`'s
+Final Verification Stage (the sole surviving lean4 implementation agent — its retired
+`-hard`-suffixed counterpart ran the identical gate before `--hard` moved to `hard_contracts`
+contract injection on this same agent) against the snapshot Challenge
 and the implemented Solution, scoped to the plan's named theorems. This block is lean-only and
 does not alter the pre-existing `verification` block's keys (`verification_passed`,
 `sorry_count`, `vacuous_count`, `axiom_count`, `build_passed`).
@@ -337,8 +339,11 @@ otherwise — a run where `--gate` was not passed records no `gate` block at all
 agent and stopped before the wrapper was invoked.
 
 Carries the result of the advisory intermediate verification tier run by
-`books-implementation-agent.md` / `books-implementation-hard-agent.md`'s Final Verification
-Stage via `books-gate.sh --json`: the cheap regex layer lint plus the `Books.Meta` import-closure
+`books-implementation-agent.md`'s Final Verification Stage (the sole surviving books
+implementation agent — its retired `-hard`-suffixed counterpart ran the identical gate before
+`--hard` moved to `hard_contracts` contract injection on this same agent, though books declares
+no `hard_contracts` block of its own) via `books-gate.sh --json`: the cheap regex layer lint
+plus the `Books.Meta` import-closure
 check. The tier sits between `lake build` (which invokes neither) and the fail-closed full gate.
 This block does not alter the pre-existing `verification` block's keys
 (`verification_passed`, `sorry_count`, `vacuous_count`, `axiom_count`, `build_passed`).

@@ -30,8 +30,6 @@ Loaded via the extension picker. Once loaded, `cslib` and `pr` become recognized
     +-- agents/
     |   +-- cslib-research-agent.md           # CSLib formalization research (opus)
     |   +-- cslib-implementation-agent.md      # CSLib proof implementation (sonnet)
-    |   +-- cslib-research-hard-agent.md       # Hard-mode CSLib research (opus)
-    |   +-- cslib-implementation-hard-agent.md # Hard-mode CSLib implementation (sonnet)
     |   +-- pr-review-research-agent.md        # Fetch/synthesize GitHub PR + Zulip (sonnet)
     |   +-- pr-review-implementation-agent.md  # Compose pr-response.md + zulip-response.md (sonnet)
     |   +-- cslib-vet-agent.md                 # Vet CSLib tasks against standards (sonnet)

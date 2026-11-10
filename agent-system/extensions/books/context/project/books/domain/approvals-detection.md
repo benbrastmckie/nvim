@@ -7,8 +7,10 @@ lives, the options offered, their semantics, and the prohibitions that keep the 
 
 ## The ruling: detection lives in the books agent definitions, not postflight
 
-**The seam is the books implementation agent definitions** (`books-implementation-agent.md`,
-`books-implementation-hard-agent.md`), never `orchestrate-cycle-postflight.sh`, and never both.
+**The seam is the books implementation agent definition** (`books-implementation-agent.md` — the
+sole surviving books implementation agent; its retired `-hard`-suffixed counterpart carried the
+identical detection logic before `--hard` moved to `hard_contracts` contract injection on this
+same agent), never `orchestrate-cycle-postflight.sh`, and never both.
 
 **Reason, which is the durable part**: postflight's verdict derivation is a flat lookup from the
 agent's own reported `status` string (plus a small set of fixed artifact/git probes) and has no

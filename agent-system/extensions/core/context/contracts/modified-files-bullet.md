@@ -43,15 +43,15 @@ An agent MUST carry both lines **if and only if it is a dispatchable implementat
 writes `.return-meta.json` for an `implement` operation**. This is a decision, stated explicitly,
 not an omission.
 
-**In scope** (the thirteen agents this fragment is propagated into):
+**In scope** (the ten agents this fragment is propagated into -- the three `-hard`-suffixed
+counterparts previously listed here are retired; `--hard` dispatches the same standard agents
+below, with behavioral differences injected via `hard_contracts` rather than carried by a
+separate agent body):
 - `agent-system/extensions/books/agents/books-implementation-agent.md`
-- `agent-system/extensions/books/agents/books-implementation-hard-agent.md`
 - `agent-system/extensions/cslib/agents/cslib-implementation-agent.md`
-- `agent-system/extensions/cslib/agents/cslib-implementation-hard-agent.md`
 - `agent-system/extensions/cslib/agents/pr-review-implementation-agent.md`
 - `agent-system/extensions/latex/agents/latex-implementation-agent.md`
 - `agent-system/extensions/lean/agents/lean-implementation-agent.md`
-- `agent-system/extensions/lean/agents/lean-implementation-hard-agent.md`
 - `agent-system/extensions/python/agents/python-implementation-agent.md`
 - `agent-system/extensions/rust/agents/rust-implementation-agent.md`
 - `agent-system/extensions/typst/agents/typst-implementation-agent.md`

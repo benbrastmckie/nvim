@@ -26,7 +26,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "Context layer architecture overview",
-      "line_count": 222,
+      "line_count": 236,
       "keywords": [
         "context",
         "layers",
@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 920,
+      "line_count": 925,
       "keywords": [
         "format",
         "metadata",
@@ -944,7 +944,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Bounded, PID-liveness, one-waiter-per-log idiom for blocking on a detached local command",
-      "line_count": 492,
+      "line_count": 499,
       "keywords": [
         "bounded-wait",
         "kill-0",
@@ -2686,7 +2686,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Canonical source text for the plan-level-Status ownership MUST-NOT bullet carried by in-scope implementation agents; a generated-copy source read by humans and by lint-agent-contracts.sh Check G, never an @-import resolved at spawn time. States that the plan METADATA `- **Status**:` field is owned by update-plan-status.sh, never hand-edited by an implementation agent, whose plan-file write authority is limited to phase-heading markers and checklist items",
-      "line_count": 135,
+      "line_count": 138,
       "keywords": [
         "plan-status-ownership",
         "canonical-fragment",
@@ -2715,7 +2715,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Canonical source text for the no-task-references MUST-NOT bullet carried by in-scope agents; a generated-copy source read by humans and by lint-agent-contracts.sh Check C, never an @-import resolved at spawn time",
-      "line_count": 74,
+      "line_count": 73,
       "keywords": [
         "no-task-references",
         "canonical-fragment",
@@ -2982,7 +2982,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Shared root cause: a dispatched agent's report is not proof of termination; two named instances (late handoff write, unsound territory assertion)",
-      "line_count": 77,
+      "line_count": 78,
       "keywords": [
         "dispatch-seq",
         "handoff",
@@ -3871,9 +3871,7 @@
         "agents": [
           "general-implementation-agent",
           "books-implementation-agent",
-          "books-implementation-hard-agent",
           "cslib-implementation-agent",
-          "cslib-implementation-hard-agent",
           "pr-review-implementation-agent",
           "email-implementation-agent",
           "latex-implementation-agent",

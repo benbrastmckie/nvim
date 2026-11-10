@@ -1,0 +1,64 @@
+{
+  "phase": 6,
+  "phase_name": "Retire the six hard agent files and converge every roster that names them",
+  "started_at": "2026-11-10T08:00:00Z",
+  "last_updated": "2026-11-10T09:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Final re-diff of each hard agent against its standard counterpart", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Delete the six agent files", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Remove six provides.agents entries across three manifests", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/manifest.json",
+        "agent-system/extensions/cslib/manifest.json",
+        "agent-system/extensions/lean/manifest.json"
+      ]},
+    {"id": 4, "description": "Remove -hard agent load_when.agents references from index-entries.json files", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/index-entries.json",
+        "agent-system/extensions/cslib/index-entries.json",
+        "agent-system/extensions/lean/index-entries.json",
+        "agent-system/extensions/core/index-entries.json"
+      ]},
+    {"id": 5, "description": "Remove -hard entries from books/opencode-agents.json", "status": "done",
+      "files_touched": ["agent-system/extensions/books/opencode-agents.json"]},
+    {"id": 6, "description": "Edit lint-agent-contracts.sh roster arrays and its three roster tests", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh"
+      ]},
+    {"id": 7, "description": "Retarget collapsed-blocks registry.tsv row 12 and regenerate fixture", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/collapsed-blocks/registry.tsv",
+        "agent-system/extensions/core/scripts/lint/collapsed-blocks/early-metadata-stage0-python-agents-python-implementation-agent.txt",
+        "agent-system/extensions/core/manifest.json"
+      ]},
+    {"id": 8, "description": "Sweep illustrative citations in core context/docs naming a hard agent", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/architecture/context-layers.md",
+        "agent-system/extensions/core/context/contracts/modified-files-bullet.md",
+        "agent-system/extensions/core/context/contracts/no-task-references-bullet.md",
+        "agent-system/extensions/core/context/contracts/plan-status-ownership.md",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+        "agent-system/extensions/core/context/patterns/dispatch-report-not-termination.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/books/context/project/books/domain/approvals-detection.md",
+        "agent-system/extensions/books/scripts/tests/test-books-approvals-signal.sh",
+        "agent-system/extensions/books/README.md",
+        "agent-system/extensions/cslib/README.md",
+        "agent-system/extensions/literature/scripts/test-lit-pipeline.sh"
+      ]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Scope Hypothesis (~48 referencing files) roughly matches measured reality; the sweep touched source files plus several deployed-tree stale-artifact cleanups (two agent files, one .txt fixture) caught by gate 13 post-redeploy.",
+    "test-lit-pipeline.sh's Section C agents array (cslib hard AGENT names) was deferred from Phase 5 to this phase since it names agent files, not skill files; fixed here now that the agent files are actually deleted.",
+    "books/README.md, cslib/README.md Architecture-tree agent comments similarly deferred from Phase 5 to this phase for the same reason.",
+    "Final verification: lint-agent-contracts.sh (377 passed, 12 pre-existing WARN, 0 FAIL), lint-anchor-pointer-collapse.sh (78 rows, 0 violations), lint-routing-wiring.sh, lint-task-lookup-adoption.sh, gate 3/5/6/7/13/16/18 all PASS post-redeploy. Targeted test-suite run (test-lint-agent-contracts.sh, test-lint-agent-contracts-handoff-section.sh, test-lint-agent-contracts-heartbeat.sh, test-lit-pipeline.sh, test-lint-anchor-pointer-collapse.sh, test-books-approvals-signal.sh) all green.",
+    "Repo-wide re-grep for all six agent names confirms only deliberate historical prose (dated measurement snapshots, motivating-incident narratives) and Phase 8's explicitly-deferred files (hard-mode-routing.md, manifest-routing-schema.md's routing_agents_hard table row) survive."
+  ]
+}

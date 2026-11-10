@@ -19,7 +19,6 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WRAPPER="${SCRIPT_DIR}/../books-approvals-signal.sh"
 AGENT_BASE="${SCRIPT_DIR}/../../agents/books-implementation-agent.md"
-AGENT_HARD="${SCRIPT_DIR}/../../agents/books-implementation-hard-agent.md"
 
 PASSED=0
 FAILED=0
@@ -357,13 +356,15 @@ else
   fail "probe-readonly-detector: the injected forbidden invocation was NOT detected -- the structural check is vacuous"
 fi
 
-# ─── Structural assertions over the two books implementation agent definitions ─────────────────
-# Each agent file must: invoke the recognizer; instruct copying its object VERBATIM into
+# ─── Structural assertions over the books implementation agent definition ──────────────────────
+# The agent file must: invoke the recognizer; instruct copying its object VERBATIM into
 # user_decision; carry each MUST-NOT prohibition from the cross-cutting rule; and point at
-# Phase 1's record. Neither must contain an instruction to invoke /approve as a command (as
+# Phase 1's record. It must not contain an instruction to invoke /approve as a command (as
 # opposed to merely naming it in a MUST-NOT prohibition, or in the recognizer's own generated
-# text, which these agent files never reproduce literally).
-info "Structural assertions over books-implementation-agent.md and books-implementation-hard-agent.md"
+# text, which this agent file never reproduces literally). The former `-hard`-suffixed
+# counterpart carried the identical rules before being retired (routing_agents_hard ->
+# hard_contracts migration); there is now exactly one books implementation agent to check.
+info "Structural assertions over books-implementation-agent.md"
 
 required_agent_substrings=(
   "books-approvals-signal.sh"
@@ -395,7 +396,6 @@ assert_agent_file_contains() {
 }
 
 assert_agent_file_contains "books-implementation-agent.md" "$AGENT_BASE"
-assert_agent_file_contains "books-implementation-hard-agent.md" "$AGENT_HARD"
 
 # Forgery probe: for ONE representative required substring per file, construct a mutated COPY
 # with that line removed and assert the SAME check, re-applied to the mutated copy, now FAILS.
@@ -411,7 +411,7 @@ probe_agent_missing_rule() {
   fi
 }
 probe_agent_missing_rule "agent-base-recognizer-ref" "$AGENT_BASE" "books-approvals-signal.sh"
-probe_agent_missing_rule "agent-hard-record-ref" "$AGENT_HARD" "approvals-detection.md"
+probe_agent_missing_rule "agent-base-record-ref" "$AGENT_BASE" "approvals-detection.md"
 
 info "Suite complete"
 

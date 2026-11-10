@@ -314,16 +314,13 @@ check_b_model_presence() {
 IN_SCOPE_RELATIVE_PATHS=(
   "core/agents/general-implementation-agent.md"
   "books/agents/books-implementation-agent.md"
-  "books/agents/books-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
-  "cslib/agents/cslib-implementation-hard-agent.md"
   "cslib/agents/pr-review-implementation-agent.md"
   "email/agents/email-implementation-agent.md"
   "epidemiology/agents/epi-implement-agent.md"
   "founder/agents/founder-implement-agent.md"
   "latex/agents/latex-implementation-agent.md"
   "lean/agents/lean-implementation-agent.md"
-  "lean/agents/lean-implementation-hard-agent.md"
   "nix/agents/nix-implementation-agent.md"
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
@@ -593,22 +590,21 @@ check_e_terminal_metadata_presence() {
 # agent addition that should carry the bullet must be added to this list by a human/agent
 # applying the same classification rule; this check does not infer scope on its own.
 #
-# The set is 16 files. founder/agents/founder-implement-agent.md was re-swept at implementation
+# The set is 13 files. founder/agents/founder-implement-agent.md was re-swept at implementation
 # time and found to genuinely instruct editing `### Phase N: {Phase Name} [MARKER]` headings via
 # the Edit tool -- see plan-status-ownership.md's own "Sweep result diverges..." note for that
-# evidence. books/agents/books-implementation-agent.md and
-# books/agents/books-implementation-hard-agent.md were added by a later sweep: both instruct
-# phase-heading marker edits via the Edit tool, identically to the other 14 confirmed agents.
+# evidence. books/agents/books-implementation-agent.md was added by a later sweep: it instructs
+# phase-heading marker edits via the Edit tool, identically to the other confirmed agents. Its
+# `-hard`-suffixed counterpart, added alongside it by that same sweep, is since retired along
+# with the rest of the per-domain `-hard` agent files (routing_agents_hard -> hard_contracts
+# migration).
 OWNERSHIP_IN_SCOPE_RELATIVE_PATHS=(
   "core/agents/general-implementation-agent.md"
   "books/agents/books-implementation-agent.md"
-  "books/agents/books-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
-  "cslib/agents/cslib-implementation-hard-agent.md"
   "founder/agents/founder-implement-agent.md"
   "latex/agents/latex-implementation-agent.md"
   "lean/agents/lean-implementation-agent.md"
-  "lean/agents/lean-implementation-hard-agent.md"
   "nix/agents/nix-implementation-agent.md"
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
@@ -659,10 +655,11 @@ check_g_plan_status_ownership_bullet() {
 # (b) The one recorded exclusion and its reason: core/agents/general-implementation-agent.md --
 #   the contract's authoritative home: the full prose block the bullet pair below is condensed
 #   from. Deliberately not edited to carry the condensed copy of its own source text.
-#   lean/agents/lean-implementation-agent.md and lean/agents/lean-implementation-hard-agent.md
-#   now carry the canonical bullet pair verbatim and are IN this in-scope array below -- they are
-#   no longer excluded. Their prior exclusion reason ("a different legitimate mechanism") no
-#   longer applies once they use the canonical idiom.
+#   lean/agents/lean-implementation-agent.md now carries the canonical bullet pair verbatim and
+#   is IN this in-scope array below -- it is no longer excluded. Its prior exclusion reason ("a
+#   different legitimate mechanism") no longer applies once it uses the canonical idiom. Its
+#   `-hard`-suffixed counterpart is since retired (routing_agents_hard -> hard_contracts
+#   migration) and was never itself a separate roster member.
 # (c) Re-audit reproduce command (verbatim, so a future auditor can re-derive the set):
 #   cd agent-system/extensions && for f in $(find . -name '*implementation*agent.md' | sort); do
 #     echo "$(grep -c run_in_background "$f") $(grep -c bounded-build-waiter "$f") $f"; done
@@ -671,14 +668,11 @@ check_g_plan_status_ownership_bullet() {
 #   on its own.
 BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS=(
   "books/agents/books-implementation-agent.md"
-  "books/agents/books-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
-  "cslib/agents/cslib-implementation-hard-agent.md"
   "cslib/agents/pr-review-implementation-agent.md"
   "email/agents/email-implementation-agent.md"
   "latex/agents/latex-implementation-agent.md"
   "lean/agents/lean-implementation-agent.md"
-  "lean/agents/lean-implementation-hard-agent.md"
   "nix/agents/nix-implementation-agent.md"
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
@@ -749,22 +743,20 @@ check_h_bounded_wait_contract_bullet() {
 # it from this list -- a dated entry remaining here after its own migration lands would mask a
 # regression (a re-introduced gap in that specific file) behind a stale WARN instead of a FAIL.
 #
-# books/agents/books-implementation-agent.md and books/agents/books-implementation-hard-agent.md
-# were appended to this inventory, not to the 2026-10-08 dated set, when a later curated-array
-# coverage-gap closure registered both files in OWNERSHIP_IN_SCOPE_RELATIVE_PATHS for Check G:
-# both use the same raw Edit-tool phase-heading mechanics the other 13 inventoried agents use
-# (grep for "update-phase-status.sh" is 0 in both), and the same dispatch-boundary pulse
-# (orchestrate-build-dispatch.sh/orchestrate-cycle-postflight.sh) already covers their heartbeat
-# independently of this per-agent invocation. This is the identical pre-existing shape as the
-# other 13 entries, not a new gap introduced by the registration -- hence WARN via this
-# inventory, not FAIL.
+# books/agents/books-implementation-agent.md was appended to this inventory, not to the
+# 2026-10-08 dated set, when a later curated-array coverage-gap closure registered it in
+# OWNERSHIP_IN_SCOPE_RELATIVE_PATHS for Check G: it uses the same raw Edit-tool phase-heading
+# mechanics the other inventoried agents use (grep for "update-phase-status.sh" is 0), and the
+# same dispatch-boundary pulse (orchestrate-build-dispatch.sh/orchestrate-cycle-postflight.sh)
+# already covers its heartbeat independently of this per-agent invocation. This is the identical
+# pre-existing shape as the other 13 entries, not a new gap introduced by the registration --
+# hence WARN via this inventory, not FAIL. Its `-hard`-suffixed counterpart, appended alongside
+# it by that same closure, is since retired (routing_agents_hard -> hard_contracts migration).
 HEARTBEAT_ADOPTION_MIGRATION_INVENTORY_DATED_20261008=(
   "cslib/agents/cslib-implementation-agent.md"
-  "cslib/agents/cslib-implementation-hard-agent.md"
   "founder/agents/founder-implement-agent.md"
   "latex/agents/latex-implementation-agent.md"
   "lean/agents/lean-implementation-agent.md"
-  "lean/agents/lean-implementation-hard-agent.md"
   "nix/agents/nix-implementation-agent.md"
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
@@ -773,7 +765,6 @@ HEARTBEAT_ADOPTION_MIGRATION_INVENTORY_DATED_20261008=(
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
   "books/agents/books-implementation-agent.md"
-  "books/agents/books-implementation-hard-agent.md"
 )
 
 _heartbeat_adoption_is_inventoried() {
@@ -1155,13 +1146,10 @@ check_k_await_notification_antipattern() {
 # classification rule; this check does not infer scope on its own.
 MODIFIED_FILES_IN_SCOPE_RELATIVE_PATHS=(
   "books/agents/books-implementation-agent.md"
-  "books/agents/books-implementation-hard-agent.md"
   "cslib/agents/cslib-implementation-agent.md"
-  "cslib/agents/cslib-implementation-hard-agent.md"
   "cslib/agents/pr-review-implementation-agent.md"
   "latex/agents/latex-implementation-agent.md"
   "lean/agents/lean-implementation-agent.md"
-  "lean/agents/lean-implementation-hard-agent.md"
   "python/agents/python-implementation-agent.md"
   "rust/agents/rust-implementation-agent.md"
   "typst/agents/typst-implementation-agent.md"
@@ -1218,9 +1206,11 @@ check_l_modified_files_bullet() {
 # (b) Recorded exclusions and their reasons (12 of the 23 `*research*agent.md` files, all in
 # agent-system/extensions/core/context/patterns/bounded-build-waiter.md's "Research-Agent
 # Bounded-Wait Scope (Measured)" section, not repeated here):
-#   - lean/agents/lean-research-agent.md, lean/agents/lean-research-hard-agent.md: the separate
-#     sanctioned bounded single-call idiom documented in
-#     ../../lean/context/project/lean4/operations/long-builds.md, not an instance of the defect.
+#   - lean/agents/lean-research-agent.md: the separate sanctioned bounded single-call idiom
+#     documented in ../../lean/context/project/lean4/operations/long-builds.md, not an instance
+#     of the defect. (Its `-hard`-suffixed counterpart, never itself a member of either this
+#     array or the in-scope array below, is since retired -- routing_agents_hard ->
+#     hard_contracts migration.)
 #   - cslib/agents/pr-review-research-agent.md, epidemiology/agents/epi-research-agent.md,
 #     founder/agents/deck-research-agent.md, latex/agents/latex-research-agent.md,
 #     present/agents/slides-research-agent.md, typst/agents/typst-research-agent.md,
@@ -1237,10 +1227,8 @@ check_l_modified_files_bullet() {
 # its own.
 BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS=(
   "books/agents/books-research-agent.md"
-  "books/agents/books-research-hard-agent.md"
   "core/agents/general-research-agent.md"
   "cslib/agents/cslib-research-agent.md"
-  "cslib/agents/cslib-research-hard-agent.md"
   "nix/agents/nix-research-agent.md"
   "nvim/agents/neovim-research-agent.md"
   "python/agents/python-research-agent.md"
@@ -1315,7 +1303,6 @@ CHECK_M_EXCLUDED_RELATIVE_PATHS=(
   # Separate sanctioned mechanism (the bounded single-call idiom in
   # ../../lean/context/project/lean4/operations/long-builds.md), not an instance of the defect.
   "lean/agents/lean-research-agent.md"
-  "lean/agents/lean-research-hard-agent.md"
   # Bash scoped only to gh api (remote) and a python3 Zulip client -- no local build/test surface.
   "cslib/agents/pr-review-research-agent.md"
   # Bash scoped only to file operations/data inspection -- no build/test words anywhere.

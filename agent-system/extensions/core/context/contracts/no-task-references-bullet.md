@@ -67,8 +67,7 @@ not decided in this fragment.
 
 Insert the bullet as the **last numbered item** of the target agent's existing MUST NOT list,
 matching the placement already used in the compliant agents
-(`general-implementation-agent`, `cslib-implementation-agent`,
-`cslib-implementation-hard-agent`, `lean-implementation-agent`, `books-implementation-agent`,
-`books-implementation-hard-agent`). Where an agent has no MUST NOT list, add one under
+(`general-implementation-agent`, `cslib-implementation-agent`, `lean-implementation-agent`,
+`books-implementation-agent`). Where an agent has no MUST NOT list, add one under
 `## Critical Requirements` with a `**MUST NOT**:` heading rather than inventing a new section
 shape. Do not renumber or reword any surrounding bullet.
