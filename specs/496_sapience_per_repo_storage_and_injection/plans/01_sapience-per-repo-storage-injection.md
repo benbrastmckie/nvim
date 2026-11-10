@@ -660,35 +660,35 @@ to add to them.)*
 
 ---
 
-### Phase 7: Final redeploy, end-to-end degradation checks, and the full gate set [NOT STARTED]
+### Phase 7: Final redeploy, end-to-end degradation checks, and the full gate set [COMPLETED]
 
 **Goal**: The whole change deployed and verified together: `--clean` still suppresses, an
 unreachable host still yields a building dispatch with empty injection, the envelope is
 shape-comparable to the one it replaces, and the complete gate set is green.
 
 **Tasks**:
-- [ ] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`,
+- [x] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`, *(completed)*
       invoked through the Bash tool with its `timeout` parameter raised to 600000.
-- [ ] Confirm the deployed `orchestrate-build-dispatch.sh` carries the swapped call line and that
+- [x] Confirm the deployed `orchestrate-build-dispatch.sh` carries the swapped call line and that *(completed)*
       both deployed sapience scripts are present and executable.
-- [ ] **V5 — outage degrades, never breaks.** Build a real dispatch for a scratch task with
+- [x] **V5 — outage degrades, never breaks.** Build a real dispatch for a scratch task with *(completed)*
       `SAPIENCE_HOST` pointed at an unroutable address, and confirm the dispatch file is produced,
       the builder exits 0, and the dispatch contains no `<memory-context>` block — the exact
       behavior the preserved `|| memory_context=""` wrapper provides. Confirm the elapsed time
       stays inside the script's `--max-time` bound rather than hanging.
-- [ ] **V6 — `--clean` still suppresses.** Build the same dispatch with `--clean` and confirm no
+- [x] **V6 — `--clean` still suppresses.** Build the same dispatch with `--clean` and confirm no *(completed)*
       `<memory-context>` block appears, with the host reachable.
-- [ ] **V7 — envelope shape comparison.** Capture `sapience-retrieve.sh`'s output and
+- [x] **V7 — envelope shape comparison.** Capture `sapience-retrieve.sh`'s output and *(completed)*
       `memory-retrieve.sh`'s output for an equivalent corpus and diff their *structure*: identical
       open and close tags, identical preamble sentence, identical
       `### <title> (relevance: <score>)` heading form, identical blank-line separation. Only the
       per-entry content differs, so no consumer needs changing. Record the diff result.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`, and confirm it exits 0
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`, and confirm it exits 0 *(completed)*
       with Gate 8's full shell-suite battery green.
-- [ ] Record the manual app.spnc.ai cleanup item for the completion summary: the two orphaned
+- [x] Record the manual app.spnc.ai cleanup item for the completion summary: the two orphaned *(completed)*
       probe KOs (`806180dc43c5cb34`, `9ba2b479b5e4a7e2`) plus any permanent KO Phase 4's V2 wrote,
       all unremovable via API.
-- [ ] Record issue-log entries for anything that arose during the task and was not already logged.
+- [x] Record issue-log entries for anything that arose during the task and was not already logged. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -710,26 +710,43 @@ shape-comparable to the one it replaces, and the complete gate set is green.
   separation.
 - `bash .claude/scripts/verify-deploy.sh` exits 0 — the complete gate set, including gate 3
   (doc-lint), gate 4 (task-reference lint), and Gate 8's full suite battery, with no `--skip-slow`
-  and no `--only-gate` narrowing.
+  and no `--only-gate` narrowing. *(deviation: altered — 7 of 42 checks failed: gate3/4/10 60s
+  timeouts, gate8 (run-all.sh) failing/undiscoverable suites, gate20 eager-load budget, gate22
+  shellcheck (3 findings, none in this task's two new scripts), gate24 dead-command-recommendation
+  (no sapience match). Gate 5 (manifest/deploy parity — the one gate this task's own changes could
+  regress) PASSES cleanly. All 7 are the identical baseline set observed at every full-battery run
+  across this dispatch (Phase 3 pre-deploy, Phase 4 post-deploy, Phase 7 final); this task's own
+  Phase 5 nine-suite and Phase 6 five-suite scoped `run-all.sh --only` subsets — covering every
+  file this task actually touched — are both 100% green. Task 476 independently tracks this
+  repo's known baseline gate8-adjacent red state. Not fixed here; out of this task's `file_scope`
+  and Non-Goals.)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `shellcheck` clean on both new scripts.
-- [ ] A repo-tagged, `explicit: true` write reports `written >= 1`; a repo-filtered read returns
+- [x] `shellcheck` clean on both new scripts. *(completed)*
+- [x] A repo-tagged, `explicit: true` write reports `written >= 1`; a repo-filtered read returns *(completed)*
       it; a read filtered to a different repo tag does not.
-- [ ] A response carrying `gated >= 1` makes `sapience-remember.sh` exit non-zero and name the
+- [x] A response carrying `gated >= 1` makes `sapience-remember.sh` exit non-zero and name the *(completed)*
       triggering field, with nothing permanent written.
-- [ ] A `set_aside` response is treated the same way, not swallowed.
-- [ ] With the retrieval endpoint unreachable, a dispatch still builds and runs with an empty
+- [x] A `set_aside` response is treated the same way, not swallowed. *(completed: code-reviewed
+      only — the script's branch order checks `set_aside` before `gated`/`written`, matching the
+      vendor client's own order, confirmed by direct reading and by the `--dry-run` body-shape
+      check in Phase 2; no live `set_aside` response was observed to trigger during this task's
+      verification, since no reliable way to deliberately provoke that specific noise-gate
+      outcome — distinct from `gated` — was found)*
+- [x] With the retrieval endpoint unreachable, a dispatch still builds and runs with an empty *(completed)*
       `memory_context`, inside the script's timeout bound.
-- [ ] `--clean` still suppresses injection after the swap.
-- [ ] The emitted `<memory-context>` block is shape-comparable to `memory-retrieve.sh`'s for an
+- [x] `--clean` still suppresses injection after the swap. *(completed)*
+- [x] The emitted `<memory-context>` block is shape-comparable to `memory-retrieve.sh`'s for an *(completed)*
       equivalent corpus, so no consumer needs changing.
-- [ ] `sync-manifest-scripts.sh --check` exits 0.
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 with no narrowing flags.
-- [ ] No deliverable under `agent-system/**` cites a task number or carries record-versioning
+- [x] `sync-manifest-scripts.sh --check` exits 0. *(completed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0 with no narrowing flags. *(deviation:
+      altered — 7 of 42 pre-existing/unrelated checks fail identically at every full-battery run
+      across this dispatch; gate 5 passes; see Phase 7's own deviation note for the full detail
+      and the task-476 cross-reference)*
+- [x] No deliverable under `agent-system/**` cites a task number or carries record-versioning *(completed)*
       language outside a dated `**Amended by**` note.
 
 ## Artifacts & Outputs
@@ -749,8 +766,10 @@ shape-comparable to the one it replaces, and the complete gate set is green.
   `index-entries.json`, `EXTENSION.md` (updated)
 - A regenerated deployed `.claude/` tree (gitignored deploy artifact, not a committed output)
 - **Manual cleanup item for the completion summary**: KO hashes `806180dc43c5cb34` and
-  `9ba2b479b5e4a7e2`, plus any permanent KO written during Phase 4's V2, all require manual
-  removal at app.spnc.ai because no delete API exists.
+  `9ba2b479b5e4a7e2` (orphaned research probes), plus `aeea7c9425b7ffb2` (Phase 4's V2 write,
+  "Sapience per-repo scoping mechanism" -- a genuinely useful note, not a throwaway probe, so it
+  does not necessarily need removal but is recorded per this plan's instruction). All three
+  require manual review/removal at app.spnc.ai because no delete API exists.
 
 ## Rollback/Contingency
 

@@ -1,0 +1,41 @@
+{
+  "phase": 7,
+  "phase_name": "Final redeploy, end-to-end degradation checks, and the full gate set",
+  "started_at": "2026-11-10T02:10:00Z",
+  "last_updated": "2026-11-10T02:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Final redeploy; confirm deployed call site and both scripts; V5 outage-degrades (0.19s elapsed, dispatch produced, no memory-context block); V6 --clean still suppresses; V7 envelope shape-comparable to memory-retrieve.sh's (identical tags, preamble, heading form, blank-line separation); full unqualified verify-deploy.sh run; manual cleanup hashes recorded",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.verification",
+      "description": "bash .claude/scripts/verify-deploy.sh exits 0 -- the complete gate set, no narrowing",
+      "type": "altered",
+      "reason": "7 of 42 checks failed: gate3/4/10 60s timeouts, gate8 (run-all.sh) failing/undiscoverable suites, gate20 eager-load budget, gate22 shellcheck (3 findings, none in this task's two new scripts -- re-confirmed), gate24 dead-command-recommendation (no sapience match -- re-confirmed). Gate 5 (manifest/deploy parity) PASSES. Identical baseline set at every full-battery run across this dispatch (Phase 3/4/7); this task's own scoped suite subsets (Phase 5's nine, Phase 6's five) are 100% green. Task 476 independently tracks the known gate8-adjacent baseline red state.",
+      "annotation": "*(deviation: altered — 7 of 42 checks failed ...)*"
+    },
+    {
+      "task_id": "testing-validation.set_aside",
+      "description": "A set_aside response is treated the same way, not swallowed",
+      "type": "altered",
+      "reason": "Code-reviewed only (branch order checks set_aside before gated/written, matching the vendor client); no live set_aside response was observed during verification since no reliable way to deliberately provoke that specific noise-gate outcome (distinct from gated) was found.",
+      "annotation": "*(completed: code-reviewed only ...)*"
+    }
+  ],
+  "verification_results": {
+    "redeploy": "landed; deploy-freshness drift for core cleared (doc-lint confirmed clean via direct re-run)",
+    "v5_outage": "elapsed 0.19s, dispatch file produced, exit 0, no <memory-context> block, SAPIENCE_HOST=http://127.0.0.1:1",
+    "v6_clean": "no <memory-context> block with --clean, real host reachable",
+    "v7_shape": "identical open/close tags, preamble sentence, heading form, blank-line separation; only per-entry content differs",
+    "full_gate_set": "7 of 42 failed, all pre-existing/unrelated (gate5 passes); see deviation note",
+    "manual_cleanup_hashes": ["806180dc43c5cb34", "9ba2b479b5e4a7e2", "aeea7c9425b7ffb2"]
+  }
+}
