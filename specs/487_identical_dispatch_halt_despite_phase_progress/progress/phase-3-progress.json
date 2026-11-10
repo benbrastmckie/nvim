@@ -1,0 +1,83 @@
+{
+  "phase": 3,
+  "phase_name": "Pin both outcomes with regression fixtures",
+  "started_at": "2026-11-10T13:32:00Z",
+  "last_updated": "2026-11-10T13:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm next available group number by reading group headers",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Clone Group 29's fixture-helper shapes (g29_write_task_fixture / g29_seed_state_and_mt)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Arm A: non-halt pin",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Arm B: still-halts companion",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Arm C: unavailable-signal degradation",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Arm D: seed-not-freeze",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Follow file's fixture-numbering convention, task-ref-ok markers, distinct file_scope",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Clone Group 29 fixture-helper shapes",
+      "type": "altered",
+      "reason": "Used Group 27 Case C/D lighter inline shape instead; Group 29 helpers simulate deploy_pending/reconcile machinery irrelevant to this signal",
+      "annotation": "*(deviation: altered -- used Group 27 Case C/D shape instead)*"
+    },
+    {
+      "task_id": "3.9",
+      "description": "Distinct disjoint file_scope per candidate",
+      "type": "altered",
+      "reason": "Each arm dispatches one candidate per cycle so absent-scope defer cannot fire regardless; followed Group 27 single-candidate precedent (file_scope: [])",
+      "annotation": "*(deviation: altered -- followed Group 27 precedent)*"
+    }
+  ]
+}

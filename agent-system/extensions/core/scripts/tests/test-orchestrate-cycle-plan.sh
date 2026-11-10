@@ -6018,6 +6018,253 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 37: phase-progress signal and streak freeze -- pins the non-halt case (a cycle that
+# closed a real plan phase between two hash-identical compositions is not halted), its
+# still-halts companion (a cycle that closed nothing genuinely halts, unmodified), the
+# unavailable-signal degradation (D5: a non-conforming heading never reads as an advance), and
+# the seed-not-freeze case (D4: a first-ever measurement seeds the persisted count and takes no
+# freeze). Maps onto this guard's own description's VERIFY arms, in order (Arm A/B/C/D).
+#
+# Fixture numbering note: every project_number below is synthetic fixture data for this suite
+# only (see this file's own numbering convention note above Group 11) -- messages accordingly
+# say "candidate #N", never "task N". A handful of assertions below match the SUT's own REAL
+# stderr wording verbatim, which legitimately contains "task #N" as literal runtime output;
+# those lines carry an inline task-ref-ok marker.
+#
+# Additive only: every assertion below is new. No existing Group 1-36 case is modified.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Group 37: phase-progress signal and streak freeze (non-halt, still-halts, unavailable-signal, seed-not-freeze)"
+
+# g37_write_two_phase_plan <task_dir> <phase2_status> -- Phase 1 [COMPLETED], Phase 2 at the
+# given status (default [NOT STARTED]).
+g37_write_two_phase_plan() {
+  local task_dir="$1" phase2_status="${2:-NOT STARTED}"
+  mkdir -p "$task_dir/plans"
+  cat > "$task_dir/plans/01_fixture-plan.md" <<EOF
+# Fixture plan
+
+### Phase 1: First phase [COMPLETED]
+### Phase 2: Second phase [${phase2_status}]
+EOF
+}
+
+# ── Arm A (the required non-halt pin): a two-phase plan; cycle 1 dispatches and seeds the hash
+# plus the persisted phase-progress count; Phase 2 is then flipped to [COMPLETED] IN PLACE
+# (simulating a real phase closing between cycles); cycle 2 -- despite hashing identically to
+# cycle 1, since the composed body carries no phase-progress content for an ordinary multi-phase
+# implement dispatch -- is NOT halted: the strictly-increased plan-file count freezes the streak
+# instead of charging it as churn. ──────────────────────────────────────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9301, "project_name": "g37_arm_a", "task_type": "general", "status": "implementing", "description": "phase-progress freeze: non-halt pin", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/9301_g37_arm_a"
+g37_write_two_phase_plan "$WORKDIR/specs/9301_g37_arm_a" "NOT STARTED"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g37a.json"
+
+run_sut --session g37a --no-plan-cache -- 9301
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 9301)) | length')" = "1" ]; then
+  common_test_pass "Arm A: cycle 1 dispatches candidate #9301 normally"
+else
+  common_test_fail "Arm A: cycle 1 did not dispatch candidate #9301 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+g37a_mt="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g37a.json"
+g37a_streak_after_1=$(jq -r '.identical_dispatch_streak["9301"] // 0' "$g37a_mt")
+g37a_progress_after_1=$(jq -r '.last_dispatch_phases_completed["9301"] // "absent"' "$g37a_mt")
+if [ "$g37a_progress_after_1" = "1" ]; then
+  common_test_pass "Arm A: the persisted phase-progress count is seeded to 1 after cycle 1"
+else
+  common_test_fail "Arm A: expected last_dispatch_phases_completed[9301]=1 after cycle 1, got '$g37a_progress_after_1'"
+fi
+
+# Phase 2 closes between cycles -- a real plan phase landing, not a dispatch-body change.
+sed -i -E 's/^### Phase 2: Second phase \[NOT STARTED\]$/### Phase 2: Second phase [COMPLETED]/' \
+  "$WORKDIR/specs/9301_g37_arm_a/plans/01_fixture-plan.md"
+
+run_sut --session g37a --no-plan-cache -- 9301
+if [ "$(jqf '.blocked | map(select(.task == 9301)) | length')" = "0" ]; then
+  common_test_pass "Arm A: cycle 2 is NOT halted despite the hash matching cycle 1's dispatch"
+else
+  common_test_fail "Arm A: candidate #9301 was unexpectedly blocked/halted on cycle 2 (stdout: $LAST_STDOUT)"
+fi
+if [[ "$LAST_STDERR" != *"IDENTICAL DISPATCH HALT"* ]]; then
+  common_test_pass "Arm A: no IDENTICAL DISPATCH HALT notice fires on cycle 2"
+else
+  common_test_fail "Arm A: unexpected IDENTICAL DISPATCH HALT notice on cycle 2: $LAST_STDERR"
+fi
+if [[ "$LAST_STDERR" == *"completed-phase count advanced 1 -> 2 -- streak frozen at"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
+  common_test_pass "Arm A: the frozen-streak stderr notice fires, naming the before/after counts"
+else
+  common_test_fail "Arm A: expected the frozen-streak notice, got: $LAST_STDERR"
+fi
+g37a_streak_after_2=$(jq -r '.identical_dispatch_streak["9301"] // 0' "$g37a_mt")
+if [ "$g37a_streak_after_2" = "$g37a_streak_after_1" ]; then
+  common_test_pass "Arm A: the persisted identical_dispatch_streak is held, not incremented, by the freeze (still $g37a_streak_after_1)"
+else
+  common_test_fail "Arm A: expected identical_dispatch_streak to stay at $g37a_streak_after_1, got $g37a_streak_after_2"
+fi
+g37a_progress_after_2=$(jq -r '.last_dispatch_phases_completed["9301"] // "absent"' "$g37a_mt")
+if [ "$g37a_progress_after_2" = "2" ]; then
+  common_test_pass "Arm A: the persisted phase-progress count re-arms to 2 after cycle 2"
+else
+  common_test_fail "Arm A: expected last_dispatch_phases_completed[9301]=2 after cycle 2, got '$g37a_progress_after_2'"
+fi
+
+# ── Arm B (the required still-halts companion): the SAME fixture shape, mutation step omitted --
+# a genuine non-convergence (nothing landed between cycles) still halts exactly as today, with
+# every back-out assertion intact (mirrors Group 28's own assertions: pre-dispatch status
+# restored, dispatch_seq_counter unchanged, cycle_counts unchanged, lock released). ─────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9302, "project_name": "g37_arm_b", "task_type": "general", "status": "implementing", "description": "phase-progress freeze: still-halts companion", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/9302_g37_arm_b"
+g37_write_two_phase_plan "$WORKDIR/specs/9302_g37_arm_b" "NOT STARTED"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g37b.json"
+
+run_sut --session g37b --no-plan-cache -- 9302
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 9302)) | length')" = "1" ]; then
+  common_test_pass "Arm B: cycle 1 dispatches candidate #9302 normally"
+else
+  common_test_fail "Arm B: cycle 1 did not dispatch candidate #9302 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+g37b_mt="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g37b.json"
+g37b_dispatch_seq_before=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/9302_g37_arm_b/.orchestrator-loop-guard")
+g37b_cycle_counts_before=$(jq -c '.cycle_counts["9302"] // 0' "$g37b_mt")
+g37b_status_before=$(jq -r '.active_projects[] | select(.project_number == 9302) | .status' "$STATE_FILE")
+
+run_sut --session g37b --no-plan-cache -- 9302
+if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.blocked | map(select(.task == 9302)) | length')" = "1" ]; then
+  common_test_pass "Arm B: cycle 2 (identical content, no progress advance) IS halted -- genuine non-convergence unmodified"
+else
+  common_test_fail "Arm B: expected cycle 2 to halt candidate #9302, got: $LAST_STDOUT"
+fi
+if [[ "$LAST_STDERR" == *"IDENTICAL DISPATCH HALT: task #9302"* ]]; then  # task-ref-ok test fixture asserting exact literal orchestrator stderr wording
+  common_test_pass "Arm B: the IDENTICAL DISPATCH HALT notice fires on stderr"
+else
+  common_test_fail "Arm B: expected the IDENTICAL DISPATCH HALT notice for candidate #9302, got: $LAST_STDERR"
+fi
+if [[ "$LAST_STDERR" != *"streak frozen"* ]]; then
+  common_test_pass "Arm B: no frozen-streak notice fires (no progress advanced)"
+else
+  common_test_fail "Arm B: unexpected frozen-streak notice on a genuine non-convergence: $LAST_STDERR"
+fi
+g37b_status_after=$(jq -r '.active_projects[] | select(.project_number == 9302) | .status' "$STATE_FILE")
+if [ "$g37b_status_after" = "$g37b_status_before" ]; then
+  common_test_pass "Arm B: the pre-dispatch status is restored on halt (state.json unchanged)"
+else
+  common_test_fail "Arm B: expected status restored to '$g37b_status_before', got '$g37b_status_after'"
+fi
+g37b_dispatch_seq_after=$(jq -r '.dispatch_seq_counter // 0' "$WORKDIR/specs/9302_g37_arm_b/.orchestrator-loop-guard")
+if [ "$g37b_dispatch_seq_after" = "$g37b_dispatch_seq_before" ]; then
+  common_test_pass "Arm B: the durable per-task dispatch_seq_counter did not advance past the halted cycle (no --flush-seq)"
+else
+  common_test_fail "Arm B: expected the durable dispatch_seq_counter to stay at $g37b_dispatch_seq_before, got $g37b_dispatch_seq_after"
+fi
+g37b_cycle_counts_after=$(jq -c '.cycle_counts["9302"] // 0' "$g37b_mt")
+if [ "$g37b_cycle_counts_after" = "$g37b_cycle_counts_before" ]; then
+  common_test_pass "Arm B: cycle_counts is unchanged by the halt (no budget charge)"
+else
+  common_test_fail "Arm B: expected cycle_counts unchanged at $g37b_cycle_counts_before, got $g37b_cycle_counts_after"
+fi
+if [ ! -d "$WORKDIR/specs/9302_g37_arm_b/.lock" ] || [ -z "$(ls -A "$WORKDIR/specs/9302_g37_arm_b/.lock" 2>/dev/null)" ]; then
+  common_test_pass "Arm B: the task lock is released on halt"
+else
+  common_test_fail "Arm B: expected the task lock to be released on halt"
+fi
+
+# ── Arm C (D5's unavailable-signal degradation): the same two-cycle shape, but the plan file
+# carries a non-conforming phase heading throughout -- the signal must read as UNAVAILABLE, never
+# as zero or as an advance, so cycle 2 still halts exactly like Arm B. ───────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9303, "project_name": "g37_arm_c", "task_type": "general", "status": "implementing", "description": "phase-progress freeze: unavailable-signal degradation", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/9303_g37_arm_c"
+mkdir -p "$WORKDIR/specs/9303_g37_arm_c/plans"
+cat > "$WORKDIR/specs/9303_g37_arm_c/plans/01_fixture-plan.md" <<'EOF'
+# Fixture plan
+
+### Phase 1: First phase [COMPLETED]
+### Phase 3a: Bad heading [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g37c.json"
+
+run_sut --session g37c --no-plan-cache -- 9303
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 9303)) | length')" = "1" ]; then
+  common_test_pass "Arm C: cycle 1 dispatches candidate #9303 normally (base mode is never H1-gated by the non-conforming heading)"
+else
+  common_test_fail "Arm C: cycle 1 did not dispatch candidate #9303 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+if [[ "$LAST_STDERR" == *"NON-CONFORMING PHASE HEADING [orchestrate-cycle-plan-identical-dispatch-progress-signal]"* ]]; then
+  common_test_pass "Arm C: the non-conforming heading is warned on cycle 1 via the progress-signal's own label"
+else
+  common_test_fail "Arm C: expected the progress-signal's warn_nonconforming label on cycle 1, got: $LAST_STDERR"
+fi
+
+run_sut --session g37c --no-plan-cache -- 9303
+if [ "$(jqf '.dispatch | length')" = "0" ] && [ "$(jqf '.blocked | map(select(.task == 9303)) | length')" = "1" ]; then
+  common_test_pass "Arm C: cycle 2 still halts -- an unavailable signal is never read as an advance"
+else
+  common_test_fail "Arm C: expected cycle 2 to halt candidate #9303 despite the unresolvable signal, got: $LAST_STDOUT"
+fi
+if [[ "$LAST_STDERR" != *"streak frozen"* ]]; then
+  common_test_pass "Arm C: no frozen-streak notice fires when the signal is unavailable"
+else
+  common_test_fail "Arm C: unexpected frozen-streak notice with an unavailable signal: $LAST_STDERR"
+fi
+
+# ── Arm D (D4's seed-not-freeze): a task's first-ever measurement seeds the persisted count and
+# takes no freeze -- there is no prior value to compare against, so nothing can be frozen yet. ───
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9304, "project_name": "g37_arm_d", "task_type": "general", "status": "implementing", "description": "phase-progress freeze: seed-not-freeze", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/9304_g37_arm_d"
+mkdir -p "$WORKDIR/specs/9304_g37_arm_d/plans"
+cat > "$WORKDIR/specs/9304_g37_arm_d/plans/01_fixture-plan.md" <<'EOF'
+# Fixture plan
+
+### Phase 1: First phase [COMPLETED]
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g37d.json"
+
+run_sut --session g37d --no-plan-cache -- 9304
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.dispatch | map(select(.task == 9304)) | length')" = "1" ]; then
+  common_test_pass "Arm D: the first-ever cycle dispatches candidate #9304 normally"
+else
+  common_test_fail "Arm D: the first-ever cycle did not dispatch candidate #9304 (exit=$LAST_EXIT stdout: $LAST_STDOUT)"
+fi
+if [[ "$LAST_STDERR" != *"streak frozen"* ]]; then
+  common_test_pass "Arm D: no frozen-streak notice fires on a task's first-ever measurement"
+else
+  common_test_fail "Arm D: unexpected frozen-streak notice on a first-ever measurement: $LAST_STDERR"
+fi
+g37d_mt="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g37d.json"
+g37d_progress_after_1=$(jq -r '.last_dispatch_phases_completed["9304"] // "absent"' "$g37d_mt")
+if [ "$g37d_progress_after_1" = "1" ]; then
+  common_test_pass "Arm D: the persisted phase-progress count is seeded to 1 on the first-ever cycle"
+else
+  common_test_fail "Arm D: expected last_dispatch_phases_completed[9304]=1 after the first-ever cycle, got '$g37d_progress_after_1'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

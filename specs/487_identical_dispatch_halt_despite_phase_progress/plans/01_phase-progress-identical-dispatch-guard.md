@@ -373,41 +373,68 @@ is the specific covering check; no suite exercises comment text.
 
 ---
 
-### Phase 3: Pin both outcomes with regression fixtures [NOT STARTED]
+### Phase 3: Pin both outcomes with regression fixtures [COMPLETED]
 
 **Goal**: A cycle that closed a phase is pinned as NOT halted; a companion cycle that closed
 nothing is pinned as still halted.
 
 **Tasks**:
-- [ ] Confirm the next available group number by reading the test file's own group headers rather
+- [x] Confirm the next available group number by reading the test file's own group headers rather
       than assuming (see Scope Hypothesis), then add a new group at the end of
       `tests/test-orchestrate-cycle-plan.sh` with a header comment in the established style:
       what it pins, which arms map to which verification item, and an explicit additive-only note.
-- [ ] Clone Group 29's fixture-helper shapes (`g29_write_task_fixture` /
+      *(completed: confirmed 37 via fresh grep of group headers, matching the Scope Hypothesis)*
+- [x] Clone Group 29's fixture-helper shapes (`g29_write_task_fixture` /
       `g29_seed_state_and_mt`) rather than Group 27/28's per-file hash-only fixtures: this
       behavior is only observable end-to-end through `run_sut` across two real cycles with a
-      plan-file mutation in between.
-- [ ] Arm A (the required non-halt pin): seed a two-phase plan (Phase 1 `[COMPLETED]`, Phase 2
+      plan-file mutation in between. *(deviation: altered — used Group 27 Case C/D's lighter
+      inline `write_state`/`reset_lock_dirs`/plain-plan-file two-cycle `run_sut` shape instead of
+      Group 29's heavier helpers. Rationale: `g29_write_task_fixture`/`g29_seed_state_and_mt`
+      exist specifically to simulate the `deploy_pending`/reconcile machinery (a fake source-store
+      repo, `.claude-extensions.json`, summary/handoff artifacts, `reconcile-task-status.sh`)
+      Group 29 itself tests -- irrelevant overhead for this phase's own signal, which is
+      independent of `deploy_pending` entirely (D6 scopes it to plain `implement` dispatches).
+      Group 27 Case C/D already demonstrates the exact "two real cycles via `run_sut`, plan-file
+      content varying in between" shape this phase's own arms need, with none of Group 29's
+      unrelated plumbing. This is the SAME end-to-end `run_sut`-across-two-cycles observability
+      the task item calls for, via a more precisely-scoped borrow.)*
+- [x] Arm A (the required non-halt pin): seed a two-phase plan (Phase 1 `[COMPLETED]`, Phase 2
       `[IN PROGRESS]`) on an `implement` candidate, run cycle 1 (dispatches normally; seeds
       `last_dispatch_hash` and the new count), mutate the plan file in place to flip Phase 2 to
       `[COMPLETED]`, run cycle 2, and assert: the candidate is NOT in `blocked[]`, no
       `IDENTICAL DISPATCH HALT` appears on stderr, the frozen-streak notice does appear, and the
-      persisted `identical_dispatch_streak` was held rather than incremented.
-- [ ] Arm B (the required still-halts companion): the same fixture with the mutation step
+      persisted `identical_dispatch_streak` was held rather than incremented. *(completed with a
+      harmless deviation: Phase 2 seeded as `[NOT STARTED]` rather than `[IN PROGRESS]` --
+      both are members of `PHASE_STATUS_OPEN_ALT` and neither matches
+      `PHASE_HEADING_DONE_ERE`, so the two are behaviorally identical for this signal; all five
+      named assertions pass, plus two extra pins (the seeded count after cycle 1, and the
+      re-armed count after cycle 2))*
+- [x] Arm B (the required still-halts companion): the same fixture with the mutation step
       omitted, asserting cycle 2 DOES halt, mirroring Group 28's existing assertions — zero
       dispatch rows, one `blocked[]` row naming the guard, the named stderr notice, and the
       back-out set (pre-dispatch status restored in `state.json`, dispatch file removed, lock
-      released, `dispatch_seq_counter` unchanged, `cycle_counts` unchanged).
-- [ ] Arm C (D5's unavailable-signal degradation): the same two-cycle shape over a plan file
+      released, `dispatch_seq_counter` unchanged, `cycle_counts` unchanged). *(completed: all
+      back-out assertions pass, reading the durable per-task `dispatch_seq_counter` from
+      `.orchestrator-loop-guard` -- the same file Group 28's own equivalent assertion reads --
+      rather than the in-session mt_state field, which increments on every mint regardless of a
+      later halt and is not what "no --flush-seq" actually guards)*
+- [x] Arm C (D5's unavailable-signal degradation): the same two-cycle shape over a plan file
       carrying a non-conforming phase heading, asserting cycle 2 still halts — an unavailable
-      signal must not read as an advance.
-- [ ] Arm D (D4's seed-not-freeze): assert that with no prior persisted count, the first cycle
-      seeds the field and takes no freeze.
-- [ ] Follow the file's own fixture-numbering convention: synthetic `project_number` values,
+      signal must not read as an advance. *(completed: also pins that `warn_nonconforming` fires
+      with this phase's own label, and that no frozen-streak notice appears)*
+- [x] Arm D (D4's seed-not-freeze): assert that with no prior persisted count, the first cycle
+      seeds the field and takes no freeze. *(completed)*
+- [x] Follow the file's own fixture-numbering convention: synthetic `project_number` values,
       messages saying "candidate #N" rather than "task N", and an inline `task-ref-ok` marker on
       any assertion matching the SUT's real stderr wording that legitimately contains `task #N`.
-- [ ] Give each seeded candidate a distinct, disjoint `file_scope` (never an empty array), as
+      *(completed)*
+- [x] Give each seeded candidate a distinct, disjoint `file_scope` (never an empty array), as
       Group 29's helper comment requires, so the batch-admission absent-scope defer does not fire.
+      *(deviation: altered — each arm dispatches exactly ONE candidate per cycle (never 2+
+      concurrent non-exempt candidates sharing a cycle), so the absent-scope in-batch defer this
+      requirement guards against cannot fire regardless of `file_scope` content; Group 27 Case
+      C/D's own single-candidate fixtures use the same `"file_scope": []` for the identical
+      reason. Followed Group 27's precedent instead.)*
 
 **Timing**: 1.5 hours
 
@@ -432,14 +459,26 @@ cosmetic, but a collision with an existing group's helper-function names would n
   group with the four arms above and its own fixture helpers.
 
 **Verification**:
-- [ ] `bash -n` on the test file exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only <the 11-suite set named
+- [x] `bash -n` on the test file exits 0. *(completed: confirmed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only <the 11-suite set named
       in this phase's Tier Justification>` exits 0 with every new arm green. Resolve the list
       freshly via `scripts/lib/suite-selection-lib.sh`'s `suite_selection_select` rather than
-      transcribing it, and check the invoked command's exit status.
-- [ ] Arm A fails when Phase 1's freeze branch is temporarily reverted (confirm the fixture
-      actually pins the new behavior rather than passing vacuously), then restore.
-- [ ] Groups 27, 28 and 29 remain green and textually unmodified.
+      transcribing it, and check the invoked command's exit status. *(completed with the SAME
+      documented, confirmed-pre-existing and unrelated exception already logged in Phase 1:
+      `suite_selection_select` resolved the identical 11-suite set named above;
+      `test-orchestrate-cycle-plan.sh` PASSED (all 420 cases, including every new Group 37 arm);
+      the overall invocation exited 1 solely because `test-orchestrate-cycle-postflight.sh`
+      failed -- the SAME suite, with the SAME failure signature, already confirmed pre-existing
+      and unrelated to this plan's edits during Phase 1's verification.)*
+- [x] Arm A fails when Phase 1's freeze branch is temporarily reverted (confirm the fixture
+      actually pins the new behavior rather than passing vacuously), then restore. *(completed:
+      temporarily replaced the freeze `elif` condition with `elif false; then`, re-ran the suite
+      -- Arm A failed on 4 of its assertions as expected (halted when it should not be, missing
+      the frozen-streak notice, streak incremented to 2 instead of held at 1), confirming the
+      fixture is load-bearing. Restored from backup immediately after; `bash -n` and the full
+      suite re-run both confirmed clean restoration (420 passed, 0 failed.)*
+- [x] Groups 27, 28 and 29 remain green and textually unmodified. *(completed: all pass in the
+      420/420 run; `git diff --stat` shows 247 insertions, 0 deletions for the whole test file)*
 
 ---
 
