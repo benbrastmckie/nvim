@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase plan implementing candidate mechanism (1): hoist the `## Batch Gate Deferral` emission block in orchestrate-build-dispatch.sh to sit immediately after `## Description`, ahead of `## Artifact Round` and the whole `## Plan`/`## Continuation`/`## Phase Mission` group, with an explicit implement-phase guard replacing the block nesting it loses. Options (2) and (3) are recorded as considered-and-rejected: (2) cannot reach the ordinary non-hard-mode dispatch shape that actually failed, (3) cannot be built fail-open today. The plan also adds the unmappable-criterion clause the folded-in evidence shows missing, pins the emitted POSITION plus the heading string in the composer's fixture suite, records the decision in three contracts, and redeploys. Every carried figure in the dispatch was re-validated and the result stated; the plan validates with zero warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/449_hoist_batch_gate_deferral_directive/plans/01_hoist-batch-gate-deferral-siting.md",
+      "summary": "5-phase, 3.25-hour plan hoisting the Batch Gate Deferral directive ahead of the plan body, pinning its emitted position, and recording the chosen mechanism."
+    }
+  ],
+  "dispatch_seq": 24
+}
