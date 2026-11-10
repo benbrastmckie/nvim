@@ -12,6 +12,7 @@
   },
   "dispatch_seq": 13,
   "proposed_file_scope": [
-    "agent-system/extensions/core/index-entries.json"
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/sapience/index-entries.json"
   ]
 }

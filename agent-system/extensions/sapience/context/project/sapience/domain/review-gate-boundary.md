@@ -37,14 +37,19 @@ review gate the rest of this machine's sapience workflow relies on.
 `context/patterns/mcp-server-ownership.md`) would put a user-scope server's permission grant in
 user-scope `~/.claude/settings.json` -- but that file is reset from `~/.dotfiles` by
 `home.activation.claudeSettings` on every home-manager switch, so a direct edit there would be
-silently reverted. The project-scoped grant in this extension is a deliberate tradeoff: it closes
-the gap for autonomous dispatches inside this repository (this task's actual blocker) without
-touching the enforced file. The consequence is real and should not be read as "gap 1 is fully
-closed": a sapience session in any other project on this machine still hits an interactive
-permission prompt on these four tools, because that project's own
-`.claude/settings.local.json` never receives this grant. Closing the gap machine-wide would mean
-adding the same four entries to `~/.dotfiles/config/claude/settings.json` -- a different
-repository, and deliberately out of this extension's scope.
+silently reverted. This is exactly the case `mcp-server-ownership.md`'s "Carve-out: a
+nix-enforced user-scope settings file cannot receive a new grant" subsection (under its
+`## Permission` section) sanctions: the project-scoped grant here is not merely the only
+placement this extension can reach, it is the VERDICT the standard reaches for a nix-enforced
+settings file, with this extension as the worked example the subsection names by path. The
+consequence is real and should not be read as "gap 1 is fully closed": a sapience session in any
+other project on this machine still hits an interactive permission prompt on these four tools,
+because that project's own `.claude/settings.local.json` never receives this grant. Closing the
+gap machine-wide would mean adding the same four entries to
+`~/.dotfiles/config/claude/settings.json` -- a different repository, and the carve-out subsection
+itself names this as the WRONG fix, not merely out of this extension's scope: it would enlarge
+the blast radius for these four mutating, unreviewed tools from one opted-in repository to every
+project on the machine.
 
 ## Explicit Grants, Not a Wildcard
 

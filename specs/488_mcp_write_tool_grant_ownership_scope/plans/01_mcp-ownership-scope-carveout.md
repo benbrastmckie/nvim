@@ -195,7 +195,7 @@ to.
 
 ---
 
-### Phase 2: Make the Disclosure Pointer Symmetric [NOT STARTED]
+### Phase 2: Make the Disclosure Pointer Symmetric [COMPLETED]
 
 **Goal**: A reader starting from either side — the sapience extension's own docs or the central
 standard — reaches the other side. The author-facing permission guide's carve-out summary names
@@ -203,21 +203,22 @@ both carve-outs rather than only the safe/unsafe one.
 
 **Tasks**:
 
-- [ ] Re-read both target files immediately before editing.
-- [ ] In `agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md`,
+- [x] Re-read both target files immediately before editing. *(completed)*
+- [x] In `agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md`,
       section "The Permission Grant's Repository-Scoped Tradeoff": keep the existing factual
       narrative and add the back-link naming the new `mcp-server-ownership.md` subsection by its
       heading, so the deliberate-exception claim points at the section that sanctions it instead
-      of only at the rule it departs from.
-- [ ] In the same section, state the verdict plainly: the repository-scoped placement is the
+      of only at the rule it departs from. *(completed)*
+- [x] In the same section, state the verdict plainly: the repository-scoped placement is the
       sanctioned placement for this tier, not merely the only one the extension can reach. Keep
-      the existing honest caveat that other projects on the machine still prompt.
-- [ ] In `agent-system/extensions/core/docs/guides/permission-configuration.md`, extend the
+      the existing honest caveat that other projects on the machine still prompt. *(completed)*
+- [x] In `agent-system/extensions/core/docs/guides/permission-configuration.md`, extend the
       existing `**Carve-out**:` paragraph (which today names only the safe/unsafe split) with a
       one-sentence second carve-out plus a link to the new subsection, matching the paragraph's
-      existing link style.
-- [ ] Confirm no task-number reference and no record-versioning language was introduced in either
-      file.
+      existing link style. *(completed)*
+- [x] Confirm no task-number reference and no record-versioning language was introduced in either
+      file. *(completed: check-task-references.sh PASS on both files; diff contains no
+      record-versioning language)*
 
 **Timing**: 0.5 hours
 
