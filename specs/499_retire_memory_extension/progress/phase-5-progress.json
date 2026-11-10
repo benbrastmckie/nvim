@@ -1,0 +1,14 @@
+{
+  "phase": 5,
+  "phase_name": "Strip the archive-time memory harvest from /todo",
+  "started_at": "2026-11-10T02:15:00Z",
+  "last_updated": "2026-11-10T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove Stage 7 (HarvestMemories) and Stage 14 (CreateMemories) in full; remove Stage 8's preview line and Stage 9's memory-harvest sub-step with renumbering; remove the CHANGE_LOG harvest note; fix Stage 15's dangling Stage-14/.memory/ and memories-count cross-references; record the rationale as an XML comment", "status": "done",
+     "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

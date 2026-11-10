@@ -315,47 +315,6 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
     </process>
   </stage>
   
-  <stage id="7" name="HarvestMemories">
-    <action>Collect, deduplicate, and classify memory candidates from state.json</action>
-    <process>
-      Note: this stage stays scoped to completed tasks and is not widened to expanded tasks —
-      an expanded task's work product and memory candidates belong to its subtasks, which are
-      harvested (or already were harvested) in their own right when they complete.
-
-      1. Collect candidates from state.json:
-         - For each completed task in the archival batch:
-           - Read `memory_candidates // []` from the task's state.json entry
-           - Flatten into a single list, tagging each candidate with `task_number` provenance
-         - If no candidates across all tasks, set `harvest_candidates = []` and skip to Stage 8
-
-      2. Deduplicate against existing memory-index.json:
-         - Read `.memory/memory-index.json` (if missing or empty, skip dedup -- all candidates are CREATE)
-         - For each candidate, compute keyword overlap against every index entry:
-           ```
-           overlap = |candidate.suggested_keywords INTERSECT entry.keywords| / |candidate.suggested_keywords|
-           ```
-         - Classify dedup action:
-           - overlap > 90%: mark `dedup_action = "NOOP"` (exclude from prompt)
-           - overlap > 60%: mark `dedup_action = "UPDATE"` (present with warning label)
-           - overlap <= 60%: mark `dedup_action = "CREATE"` (standard new memory)
-         - If ALL candidates are NOOP after dedup, set `harvest_candidates = []` and skip to Stage 8
-
-      3. Apply three-tier classification:
-         - **Tier 1** (pre-selected): category in [PATTERN, CONFIG] AND confidence >= 0.8
-         - **Tier 2** (shown, not pre-selected): category in [WORKFLOW, TECHNIQUE] AND confidence >= 0.5
-         - **Tier 3** (hidden by default): category == INSIGHT OR confidence < 0.5
-         - Assign `tier` (1, 2, or 3) to each non-NOOP candidate
-
-      4. Store the classified candidate list as `harvest_candidates`:
-         Each entry contains: `task_number`, `content`, `category`, `source_artifact`, `confidence`, `suggested_keywords`, `tier`, `dedup_action`
-
-      Note: the state.json `reflection` field this stage used to read here has been retired
-      (zero live writers; see `context/formats/issue-log.md`'s relation table). Do NOT wire this
-      harvest to `issues.jsonl` as a replacement -- surfacing that log is explicitly out of scope
-      here and belongs exclusively to the separate orchestration conclusion stage.
-    </process>
-  </stage>
-  
   <stage id="8" name="DryRunOutput">
     <action>Display dry run preview if requested</action>
     <process>
@@ -373,9 +332,6 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          - Orphaned directories count
          - Misplaced directories count
          - README.md suggestions count
-         - Memory candidates: tiered breakdown from `harvest_candidates`
-           - Format: `Memory candidates: {T1} Tier 1, {T2} Tier 2, {T3} Tier 3 ({after_dedup} after dedup, {noop_count} NOOP excluded)`
-           - If no candidates: `Memory candidates: none`
          - Status reconciliation: one summary line from `reconcile_candidates` (Stage 1.5)
            - Format: `Status reconciliation: {N} task(s) stranded with artifacts on disk`
            - If `reconcile_candidates` is empty: `Status reconciliation: none`
@@ -390,26 +346,8 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
       1. **Orphaned directories**: track/skip options per directory
       2. **Misplaced directories**: move/skip options per directory
       3. **TODO.md orphans**: multiSelect list of completed/abandoned tasks not in state.json; store as `selected_todo_orphans`
-      4. **Memory harvest candidates** (from `harvest_candidates`):
-         - If `harvest_candidates` is empty (no candidates or all NOOP), skip this sub-step entirely
-         - Build multiSelect option list, ordered by tier:
-           a. **Tier 1 candidates first** (pre-selected): Format each as:
-              `[PRE-SELECTED] [TIER 1] [{CATEGORY}] Task {N}: {content first 80 chars}... (confidence: {X.XX})`
-              If `dedup_action == "UPDATE"`, append: ` [WARNING: similar memory exists]`
-           b. **Tier 2 candidates** (shown, not pre-selected): Format each as:
-              `[TIER 2] [{CATEGORY}] Task {N}: {content first 80 chars}... (confidence: {X.XX})`
-              If `dedup_action == "UPDATE"`, append: ` [WARNING: similar memory exists]`
-           c. **Tier 3 expansion option**: If Tier 3 candidates exist, add a final option:
-              `Show {count} more candidates (Tier 3 -- low confidence/insight)`
-         - Present AskUserQuestion with multiSelect
-         - If user selected the Tier 3 expansion option:
-           - Re-prompt with ALL tiers visible (Tier 1 + Tier 2 + Tier 3), Tier 1 still pre-selected
-           - Tier 3 candidates formatted as:
-             `[TIER 3] [{CATEGORY}] Task {N}: {content first 80 chars}... (confidence: {X.XX})`
-         - Store user-approved candidates as `approved_memories` for Stage 14
-      5. **Status reconciliation candidates** (from `reconcile_candidates`, Stage 1.5):
-         - If `reconcile_candidates` is empty, skip this sub-step entirely (mirrors how the memory
-           harvest sub-step above handles its empty case)
+      4. **Status reconciliation candidates** (from `reconcile_candidates`, Stage 1.5):
+         - If `reconcile_candidates` is empty, skip this sub-step entirely
          - Build a multiSelect option list, one option per candidate, showing the task number, its
            current status, the artifact found, and the promotion that would result:
            `Task {N}: status={current_status}, artifact={artifact_basename} -- would promote to
@@ -924,49 +862,17 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          - `status` here already flows straight through from the task's state.json entry, so an
            `expanded` entry is recorded exactly as `completed`/`abandoned` entries are — expanded
            is a valid archived status in CHANGE_LOG entries, no separate handling needed
-      3. Append memory harvest note if memories were suggested
     </process>
   </stage>
 
-  <stage id="14" name="CreateMemories">
-    <action>Create approved memory files and regenerate indexes</action>
-    <process>
-      If `approved_memories` is empty, skip this stage entirely.
-
-      For each candidate in `approved_memories`:
-
-      1. **Generate slug**:
-         - Derive from candidate category + content first few words (lowercase, hyphens, no special chars)
-         - Example: `pattern-jq-safe-not-operator`, `config-lean4-lake-env`
-         - Collision check: if `MEM-{slug}.md` exists in `.memory/10-Memories/`, append numeric suffix (`-2`, `-3`, ...)
-
-      2. **Create memory file** at `.memory/10-Memories/MEM-{slug}.md`:
-         - Use template from `.memory/30-Templates/memory-template.md`
-         - Field mapping from candidate:
-           - `{{title}}` -> descriptive title derived from content (first ~60 chars, cleaned)
-           - `{{date}}` -> current date (YYYY-MM-DD)
-           - `{{tags}}` -> `[{category}]` (e.g., `[PATTERN]`)
-           - `{{topic}}` -> derived from category (lowercase, e.g., "pattern", "configuration")
-           - `{{source}}` -> `"Task {N}: {source_artifact}"`
-           - `{{last_updated}}` -> current date (YYYY-MM-DD)
-           - `retrieval_count` -> `0`
-           - `last_retrieved` -> `null`
-           - `keywords` -> candidate's `suggested_keywords` array
-           - `summary` -> first 60 characters of `content`
-           - `token_count` -> `word_count(content) * 1.3` (rounded to integer)
-           - `{{content}}` -> candidate's `content` field
-
-      3. After ALL memory files are created, **batch-regenerate indexes**:
-         - `.memory/memory-index.json`: Rebuild from filesystem scan of `.memory/10-Memories/MEM-*.md`
-           - Parse frontmatter of each file to populate entries array
-           - Update `entry_count`, `total_tokens`, `generated_at`
-         - `.memory/20-Indices/index.md`: Rebuild table of contents from all memory files
-         - `.memory/10-Memories/README.md`: Update memory listing
-
-      Note: `memory_candidates` field is implicitly cleaned when the task entry is removed from
-      active_projects and moved to archive during Stage 10.
-    </process>
-  </stage>
+  <!-- No CreateMemories stage here. A task's recorded `memory_candidates` are harvested by
+       `/distill --learn`'s retroactive sweep across already-archived tasks, which is bounded
+       per invocation and gated interactively, rather than at archival time, where one `/todo`
+       run can archive many tasks at once and would otherwise write permanent, unreviewed
+       knowledge objects in bulk. `memory_candidates` is still recorded on each task entry and is
+       still implicitly cleaned when the entry moves to archive during Stage 10 -- nothing is
+       lost by not harvesting here, since `/distill --learn` reads it from the archived record
+       directly. -->
 
   <stage id="14.5" name="ReapRuntimeFiles">
     <action>Reap stale session-scoped orchestration runtime files and stale session-registry
@@ -1024,8 +930,8 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          Stage 10 accumulated into `moved_paths[]` (both endpoints of every directory move this
          run performed — the enumerated destinations AND their vacated sources):
          `git add specs/TODO.md specs/state.json "${moved_paths[@]}"`, then conditionally add
-         `specs/CHANGE_LOG.md` (Stage 12), any
-         `README.md` files updated (Stage 13), and `.memory/` (Stage 14 memory harvest) — each
+         `specs/CHANGE_LOG.md` (Stage 12) and any
+         `README.md` files updated (Stage 13) — each
          only when that stage reports it made changes. Deliberately **do not** stage a bare
          `specs/archive/` directory token here: a directory token cannot reach the vacated
          source side by construction (it only ever covered the destination incidentally when a
@@ -1035,7 +941,7 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
          so an empty `moved_paths[]` never degenerates into a bare, pathspec-less `git add`:
          when `moved_paths[]` is empty, omit `"${moved_paths[@]}"` from the invocation entirely
          rather than passing it unexpanded.
-      3. Commit: `todo: archive {N} tasks` with counts for completed, abandoned, expanded, orphans, misplaced, readme, memories
+      3. Commit: `todo: archive {N} tasks` with counts for completed, abandoned, expanded, orphans, misplaced, readme
     </process>
   </stage>
   

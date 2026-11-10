@@ -1,0 +1,71 @@
+{
+  "phase": 4,
+  "phase_name": "Delete the orphaned core scripts and update every reference",
+  "started_at": "2026-11-10T01:40:00Z",
+  "last_updated": "2026-11-10T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Gate on Phase 1 (grep returns zero); delete the two scripts; prune core/manifest.json", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/core/scripts/memory-retrieve.sh",
+       "agent-system/extensions/core/scripts/memory-harvest.sh",
+       "agent-system/extensions/core/manifest.json"
+     ]},
+    {"id": 2, "description": "Repoint test-orchestrate-build-aux-dispatch.sh negative assertion and orchestrate-build-aux-dispatch.sh header comment", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+       "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh"
+     ]},
+    {"id": 3, "description": "Update lib/common.sh, sweep-invalidated-claims.sh, lib/task-reference-patterns.sh comments", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/core/scripts/lib/common.sh",
+       "agent-system/extensions/core/scripts/sweep-invalidated-claims.sh",
+       "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh"
+     ]},
+    {"id": 4, "description": "Sweep remaining prose reference files (10 declared + sapience-retrieve.sh header, out-of-plan-list fix)", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/core/README.md",
+       "agent-system/extensions/core/docs/guides/creating-extensions.md",
+       "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+       "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+       "agent-system/extensions/core/context/standards/telemetry-guardrails.md",
+       "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+       "agent-system/extensions/core/context/standards/shell-script-testing.md",
+       "agent-system/extensions/core/context/meta/meta-guide.md",
+       "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+       "agent-system/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+       "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
+     ]},
+    {"id": 5, "description": "Update memory/EXTENSION.md, memory/README.md, skill-learn/README.md, skill-distill/SKILL.md stale comment", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/memory/EXTENSION.md",
+       "agent-system/extensions/memory/README.md",
+       "agent-system/extensions/memory/skills/skill-learn/README.md",
+       "agent-system/extensions/memory/skills/skill-distill/SKILL.md"
+     ]},
+    {"id": 6, "description": "Resync stale index-entries.json line_count declarations caused by this phase's edits (email-to-memory-preferences.md, shell-script-testing.md, task-reference-exemptions.md), carefully excluding unrelated sibling-drift corrections the same regen tool run also touched", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/email/index-entries.json",
+       "agent-system/extensions/core/index-entries.json"
+     ]},
+    {"id": 7, "description": "Run complete gate set (verify-deploy.sh, no flags) per this phase's full tier", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra",
+      "description": "Touch agent-system/extensions/sapience/scripts/sapience-retrieve.sh, not declared in this phase's Files to modify list",
+      "type": "altered",
+      "reason": "Its own header comments attributed four separate design facts to memory-retrieve.sh by name (the envelope shape, the token-budget constant, the keyword-extraction stage, the greedy-selection reduce shape). Left unfixed, this phase's own verification ('grep -rn memory-retrieve\\.sh|memory-harvest\\.sh agent-system/ returns zero matches') would have failed on a file this phase's declared list omitted. Fixed in place; covered by this task's declared agent-system/extensions/sapience/ territory via the sibling sapience-remember.sh declaration and the general __WHOLE_TREE__ scope entry.",
+      "annotation": "see plan Phase 4's final checklist item annotation"
+    },
+    {
+      "task_id": "4.deferred",
+      "description": "Left agent-system/extensions/email/context/project/email/design/email-to-memory-preferences.md section 5.1's citation of the now-deleted Purge Sub-Mode unresolved",
+      "type": "deferred",
+      "reason": "Repointing the memory-retrieve.sh/memory-harvest.sh references in this file (the six-reference count this phase scoped) is a prose reference update, in scope. Section 5.1 additionally cites skill-distill/SKILL.md's 'Purge Sub-Mode' and its 'Purge Candidate Identification' OR-condition, both removed by this task's own Phase 3. Re-deriving whether the G4 guardrail design remains valid against a vault with no local purge/merge/compress/gc sub-modes is a substantive judgment call about the email extension's own design, explicitly excluded by this task's Non-Goals ('any change to the email extension's behavior beyond a prose reference update'). Recorded via issue-record.sh (class: deferred cleanup) for a future task rather than resolved here.",
+      "annotation": "see issues.jsonl"
+    }
+  ]
+}

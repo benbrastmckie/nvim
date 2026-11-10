@@ -535,30 +535,32 @@ after the edits; any surviving live reference means a file this estimate missed.
 
 ---
 
-### Phase 4: Delete the orphaned core scripts and update every reference [NOT STARTED]
+### Phase 4: Delete the orphaned core scripts and update every reference [IN PROGRESS]
 
 **Goal**: Neither `memory-retrieve.sh` nor `memory-harvest.sh` exists in the source store, and no
 reference anywhere in it — executable, test, manifest or prose — points at either.
 
 **Tasks**:
 
-- [ ] Gate on Phase 1: confirm
+- [x] Gate on Phase 1: confirm
       `grep -rn 'bash .claude/scripts/memory-retrieve.sh' agent-system/` returns zero before
-      deleting anything. If it does not, stop and complete Phase 1 first.
-- [ ] Delete `scripts/memory-retrieve.sh` and `scripts/memory-harvest.sh`.
-- [ ] Remove both entries from `core/manifest.json`'s `provides.scripts` array.
-- [ ] Update `test-orchestrate-build-aux-dispatch.sh`'s negative assertion, which greps the aux
+      deleting anything. If it does not, stop and complete Phase 1 first. *(completed: confirmed
+      zero)*
+- [x] Delete `scripts/memory-retrieve.sh` and `scripts/memory-harvest.sh`. *(completed)*
+- [x] Remove both entries from `core/manifest.json`'s `provides.scripts` array. *(completed)*
+- [x] Update `test-orchestrate-build-aux-dispatch.sh`'s negative assertion, which greps the aux
       dispatch builder for the retired script name. The assertion's purpose is that the aux
       builder never shells out to a retrieval script, so repoint its pattern at
       `sapience-retrieve.sh`; leaving it naming a script that no longer exists would make the
-      assertion vacuously true.
-- [ ] Update the matching comment in `orchestrate-build-aux-dispatch.sh`'s header so the script it
-      promises never to call is the one that exists.
-- [ ] Update `scripts/lib/common.sh`'s sourcer-inventory comment, which lists both scripts.
-- [ ] Update `scripts/sweep-invalidated-claims.sh`'s header, which describes `memory-harvest.sh`
+      assertion vacuously true. *(completed)*
+- [x] Update the matching comment in `orchestrate-build-aux-dispatch.sh`'s header so the script it
+      promises never to call is the one that exists. *(completed)*
+- [x] Update `scripts/lib/common.sh`'s sourcer-inventory comment, which lists both scripts.
+      *(completed)*
+- [x] Update `scripts/sweep-invalidated-claims.sh`'s header, which describes `memory-harvest.sh`
       as an existing potential caller, and `scripts/lib/task-reference-patterns.sh`'s comment
-      attributing harvest-written data to it.
-- [ ] Sweep the remaining prose references: `core/README.md`,
+      attributing harvest-written data to it. *(completed)*
+- [x] Sweep the remaining prose references: `core/README.md`,
       `core/docs/guides/creating-extensions.md`, `core/context/patterns/skill-lifecycle.md`,
       `core/context/patterns/context-protective-lead.md`,
       `core/context/standards/telemetry-guardrails.md`,
@@ -568,15 +570,26 @@ reference anywhere in it — executable, test, manifest or prose — points at e
       `literature/skills/skill-literature/SKILL.md`, and
       `email/context/project/email/design/email-to-memory-preferences.md`. Repoint each at the
       sapience retrieval script where it describes a live mechanism; remove the reference where it
-      describes a mechanism that no longer exists.
-- [ ] While editing `core/context/patterns/skill-lifecycle.md`, take the research report's context
+      describes a mechanism that no longer exists. *(completed: additionally fixed a stale
+      prose comment in `agent-system/extensions/sapience/scripts/sapience-retrieve.sh` itself,
+      not declared in this phase's file list, whose own header attributed its design to
+      `memory-retrieve.sh` by name -- left unfixed it would have been exactly the kind of
+      residual reference the phase's own verification grep is designed to catch. A deeper,
+      substantive staleness in the email design doc's §5.1 Purge-Sub-Mode citation was left
+      unresolved as an out-of-scope deviation -- see progress file and issue log -- since
+      re-deriving the G4 guardrail design against a vault with no local purge/merge/compress/gc
+      sub-modes is a substantive email-extension behavior change, not a prose reference update)*
+- [x] While editing `core/context/patterns/skill-lifecycle.md`, take the research report's context
       recommendation: state in its Stage 4a row that the retrieval call site is duplicated once
       per extension skill rather than centralized, so a future sweep for every memory-context
-      injection point does not have to re-derive that from a repo-wide grep.
-- [ ] Update the memory extension's own references in `memory/EXTENSION.md`'s
+      injection point does not have to re-derive that from a repo-wide grep. *(completed)*
+- [x] Update the memory extension's own references in `memory/EXTENSION.md`'s
       Memory-Augmented Research paragraph, `memory/README.md` and
       `memory/skills/skill-learn/README.md`, and the stale comment in `skill-distill/SKILL.md`.
-      `memory/EXTENSION.md` is eager-loaded, so this edit must not grow it.
+      `memory/EXTENSION.md` is eager-loaded, so this edit must not grow it. *(completed: also
+      corrected two substantive inaccuracies this fix surfaced in memory/README.md -- its
+      Automatic Retrieval and Reserved-Topic-Namespaces sections had claimed the auto-retrieval
+      script reads `.memory/` directly, which was never true of sapience-retrieve.sh)*
 
 **Timing**: 2 hours
 
@@ -636,7 +649,7 @@ return zero, and any file it names that is absent from the list below is one thi
 
 ---
 
-### Phase 5: Strip the archive-time memory harvest from `/todo` [NOT STARTED]
+### Phase 5: Strip the archive-time memory harvest from `/todo` [COMPLETED]
 
 **Goal**: `/todo` archival no longer reads memory candidates, dedups against the local index,
 prompts for them, or writes record files and regenerates local indices — and the archival flow's
@@ -644,24 +657,30 @@ own accounting of what it touches matches.
 
 **Tasks**:
 
-- [ ] Remove Stage 7 (`HarvestMemories`) in full, including its collection, keyword-overlap dedup
-      against `.memory/memory-index.json`, and three-tier classification.
-- [ ] Remove Stage 14 (`CreateMemories`) in full, including record-file creation from the local
+- [x] Remove Stage 7 (`HarvestMemories`) in full, including its collection, keyword-overlap dedup
+      against `.memory/memory-index.json`, and three-tier classification. *(completed)*
+- [x] Remove Stage 14 (`CreateMemories`) in full, including record-file creation from the local
       template, the per-candidate field mapping, and the batch regeneration of
-      `memory-index.json`, `20-Indices/index.md` and `10-Memories/README.md`.
-- [ ] Remove Stage 8's `Memory candidates:` dry-run preview line.
-- [ ] Remove Stage 9's memory-harvest sub-step and renumber the sub-steps after it, so the
-      status-reconciliation sub-step keeps a correct ordinal.
-- [ ] Remove the CHANGE_LOG stage's "append memory harvest note if memories were suggested" step.
-- [ ] Renumber or re-anchor any stage cross-reference that named a removed stage by number, and
+      `memory-index.json`, `20-Indices/index.md` and `10-Memories/README.md`. *(completed)*
+- [x] Remove Stage 8's `Memory candidates:` dry-run preview line. *(completed)*
+- [x] Remove Stage 9's memory-harvest sub-step and renumber the sub-steps after it, so the
+      status-reconciliation sub-step keeps a correct ordinal. *(completed: sub-steps now 1-4
+      consecutively)*
+- [x] Remove the CHANGE_LOG stage's "append memory harvest note if memories were suggested" step.
+      *(completed)*
+- [x] Renumber or re-anchor any stage cross-reference that named a removed stage by number, and
       confirm no surviving stage references `harvest_candidates` or `approved_memories`.
-- [ ] Record the reason the archival flow does not harvest, stated as a current-design fact: a
+      *(completed: Stage 15's commit-scope and commit-message text also updated to drop its
+      Stage 14/.memory/ and memories-count mentions -- not separately itemized above, but
+      required by this same checklist item's "any stage cross-reference" scope)*
+- [x] Record the reason the archival flow does not harvest, stated as a current-design fact: a
       task's recorded candidates are harvested by `/distill --learn`'s retroactive sweep across
       already-archived tasks, which is bounded per invocation and gated interactively, rather than
       at archival time where one `/todo` run archives many tasks at once and would write
       permanent, unreviewed notes in bulk. Note that `memory_candidates` is still recorded on each
       task entry and is still implicitly cleaned when the entry moves to archive, so nothing is
-      lost by not harvesting here.
+      lost by not harvesting here. *(completed: recorded as an XML comment in place of the
+      removed CreateMemories stage)*
 
 **Timing**: 1 hour
 
@@ -691,7 +710,7 @@ is the cheapest combination that actually reaches.
 
 ---
 
-### Phase 6: Close the tagged-write half of the sapience retrieval loop [NOT STARTED]
+### Phase 6: Close the tagged-write half of the sapience retrieval loop [COMPLETED]
 
 **Goal**: The task-boundary moment that already writes vault notes writes repo-tagged ones that
 `sapience-retrieve.sh` can see, under an enforced 3-8-note-per-completed-task bound, with the
@@ -699,44 +718,50 @@ eager-context budget no larger than before.
 
 **Tasks**:
 
-- [ ] Record the pre-edit baseline:
+- [x] Record the pre-edit baseline:
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`,
-      and the byte count of `agent-system/extensions/sapience/EXTENSION.md`.
-- [ ] Amend `EXTENSION.md`'s Postflight wrapup instruction per D3: at the
+      and the byte count of `agent-system/extensions/sapience/EXTENSION.md`. *(completed: baseline
+      TOTAL 68574 B; EXTENSION.md 2065 B)*
+- [x] Amend `EXTENSION.md`'s Postflight wrapup instruction per D3: at the
       `[IMPLEMENTING]` -> `[COMPLETED]` transition, write 3-8 distilled notes from the summary
       artifact just written by calling `scripts/sapience-remember.sh` once per note, replacing the
       `sapience_wrapup` call. State the bound at the call site, because the script deliberately
       does not enforce it and every write is permanent and unreviewed. Keep the existing
-      prohibition on proactive mid-run `sapience_remember` calls.
-- [ ] Offset the addition: the "What this extension adds" paragraph's claim that
+      prohibition on proactive mid-run `sapience_remember` calls. *(completed)*
+- [x] Offset the addition: the "What this extension adds" paragraph's claim that
       `sapience-remember.sh` "is not wired into any call site by this extension" becomes wrong and
       can be replaced by a shorter statement of where it is called from. The net byte count of
       `EXTENSION.md` must be unchanged or smaller **on its own**, without borrowing headroom from
-      Phase 3's `memory/EXTENSION.md` shrink.
-- [ ] Put the detail in `domain/per-repo-scoping.md`, which is read-on-demand rather than
+      Phase 3's `memory/EXTENSION.md` shrink. *(completed: EXTENSION.md 2065 B -> 1875 B, a
+      self-contained shrink)*
+- [x] Put the detail in `domain/per-repo-scoping.md`, which is read-on-demand rather than
       eager-loaded: the call-site contract, the 3-8 bound and why it is load-bearing at the call
       site rather than in the script, the dry-run-before-real-write requirement, and the degrade
       rule (a failed write is logged and stepped over, never failing postflight or blocking the
-      status transition).
-- [ ] Record in `per-repo-scoping.md` the D3 replace-not-both reasoning and its evidence: an
+      status transition). *(completed: new "The Tagged-Write Call Site" section)*
+- [x] Record in `per-repo-scoping.md` the D3 replace-not-both reasoning and its evidence: an
       unfiltered vault read returns repo-tagged knowledge objects, so the tag narrows only reads
       that request the `source=` filter, making a tagged write strictly more reachable than an
       untagged one. Update that file's own statement that `sapience-remember.sh` is unwired.
-      State this as a property of the current design, not as a change narrative.
-- [ ] Do **not** add a `hooks.postflight` entry to the sapience manifest. It can never fire: hook
+      State this as a property of the current design, not as a change narrative. *(completed: new
+      "D3: Why Replace, Not Both" section)*
+- [x] Do **not** add a `hooks.postflight` entry to the sapience manifest. It can never fire: hook
       resolution is gated on the extension declaring a `task_type`, and this extension is
       deliberately typeless. Record that constraint in `per-repo-scoping.md` so the question is
-      not reopened.
-- [ ] Leave `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` untouched. It
+      not reopened. *(completed: new "No Lifecycle Hook" section; manifest.json left untouched,
+      confirmed via git diff --stat)*
+- [x] Leave `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` untouched. It
       is declared in `file_scope` only so that shape (b) would not have produced an
-      undeclared-path drop; shape (a) is chosen.
-- [ ] Update `context/project/sapience/README.md`'s index entry for `per-repo-scoping.md` if its
-      summary no longer describes the file's contents.
-- [ ] Dry-run the wiring before Phase 7's real write:
+      undeclared-path drop; shape (a) is chosen. *(completed: confirmed untouched)*
+- [x] Update `context/project/sapience/README.md`'s index entry for `per-repo-scoping.md` if its
+      summary no longer describes the file's contents. *(completed)*
+- [x] Dry-run the wiring before Phase 7's real write:
       `bash .claude/scripts/sapience-remember.sh --subject "..." --value "..." --dry-run` exits 0
       and prints a request body whose `provenance` carries `[repo:nvim]` and whose token is
-      redacted.
-- [ ] Re-run the eager-context check and confirm the TOTAL has not grown.
+      redacted. *(completed: confirmed)*
+- [x] Re-run the eager-context check and confirm the TOTAL has not grown. *(completed: TOTAL
+      68384 B, below both the phase's own 68574 B pre-edit figure and the plan's 68606 B
+      original baseline)*
 
 **Timing**: 1.5 hours
 
