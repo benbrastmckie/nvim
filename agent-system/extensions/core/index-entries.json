@@ -2895,12 +2895,13 @@
       "path": "guides/hard-mode-routing.md",
       "domain": "core",
       "subdomain": "guides",
-      "summary": "Hard-mode routing resolution precedence used by command-route-agent.sh for --hard, against routing_agents_hard",
-      "line_count": 205,
+      "summary": "Hard-mode contract-injection model: --hard dispatches the same agent as standard mode, with domain-specific behavioral contracts injected via hard_contracts; per-domain worked examples (lean4/cslib/books)",
+      "line_count": 170,
       "keywords": [
         "hard-mode",
         "routing",
-        "routing_agents_hard"
+        "hard_contracts",
+        "contract-injection"
       ],
       "topics": [
         "routing"
@@ -2916,13 +2917,13 @@
       "path": "guides/manifest-routing-schema.md",
       "domain": "core",
       "subdomain": "guides",
-      "summary": "Collapsed routing model: the two surviving routing_agents/routing_agents_hard blocks plus the unrelated hard_contracts key, the shared five-step ladder, core identification, and the declared-not-derived agent-name rule",
-      "line_count": 320,
+      "summary": "Collapsed routing model: the single surviving routing_agents block plus the unrelated hard_contracts key, the shared five-step ladder, core identification, the declared-not-derived agent-name rule, and the override-contract placement convention",
+      "line_count": 326,
       "keywords": [
         "routing",
         "manifest",
         "routing_agents",
-        "routing_agents_hard",
+        "hard_contracts",
         "command-route-agent"
       ],
       "topics": [

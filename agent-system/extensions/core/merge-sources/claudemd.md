@@ -185,11 +185,13 @@ Hard mode activates 9 behavioral contracts (H2-H9: anti-analysis, reference grou
 adversarial verification, divergence audit, convergence policing, territory contracts, phase
 sizing, wrap-up discipline) distilled from high-complexity task orchestration, at roughly a
 3-5x cost multiplier. Composable with model flags (`--hard --opus`, `--hard --fable`) and with
-extension routing (`routing_agents_hard`); per-invocation only, no sticky state. Routing is
-resolved by `scripts/lib/manifest-routing-lib.sh` as a 4th `effort_flag` argument. See
-`context/guides/hard-mode-routing.md` for the full technique list, the "when to use" criteria,
-and the routing-resolution detail, and `context/guides/manifest-routing-schema.md` for the full
-routing model.
+per-domain contract injection (`hard_contracts`); per-invocation only, no sticky state.
+`--hard` dispatches the SAME agent as standard mode — there is no separate `-hard`-suffixed
+agent any more — with domain-specific behavioral contracts injected into the dispatch prompt via
+`orchestrate-build-dispatch.sh`'s Stage 3.5, resolved by `scripts/lib/manifest-routing-lib.sh`'s
+`routing_lookup_flat()`. See `context/guides/hard-mode-routing.md` for the full technique list,
+the "when to use" criteria, and the contract-injection detail, and
+`context/guides/manifest-routing-schema.md` for the full routing model.
 
 ## Literature Mode (`--lit`) — Extension Pointer
 

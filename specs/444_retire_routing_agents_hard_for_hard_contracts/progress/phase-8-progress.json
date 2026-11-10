@@ -1,0 +1,38 @@
+{
+  "phase": 8,
+  "phase_name": "Documentation convergence, redeploy, and full gate set",
+  "started_at": "2026-11-10T10:50:00Z",
+  "last_updated": "2026-11-10T11:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Full rewrite of hard-mode-routing.md for the contract-injection model", "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/guides/hard-mode-routing.md"]},
+    {"id": 2, "description": "Collapse manifest-routing-schema.md to the one-block model", "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 3, "description": "Update merge-sources/claudemd.md's Hard Mode section", "status": "done",
+      "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 4, "description": "Update check-extension-docs.sh Rule B/C header, decide keep-as-reappearance-guard", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/check-extension-docs.sh"]},
+    {"id": 5, "description": "Sweep remaining doc mentions (copy-claude-directory.md, creating-commands.md, utility-scripts-inventory.md)", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/guides/copy-claude-directory.md",
+        "agent-system/extensions/core/docs/guides/creating-commands.md",
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+      ]},
+    {"id": 6, "description": "Regenerate index-entries.json summaries/keywords/line_counts", "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 7, "description": "Redeploy", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run gate set (scoped per Batch Gate Deferral) plus lint-routing-wiring.sh, re-demonstrate per-domain --hard", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Record the one deliberate behavior change for the summary", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "cslib/README.md and docs/architecture/handoff-schema.md needed no further change -- already converged in earlier phases / already accurate.",
+    "check-extension-docs.sh's routing_agents_hard arm KEPT deliberately as a reappearance guard, not removed -- costs nothing to run over an always-empty object, documented explicitly with a STATUS block.",
+    "Final re-grep: grep -r 'routing_agents_hard|routing_hard' agent-system/ returns 19 files, every one confirmed deliberate (gate16's absence guard + registry row + its tests, the schema guide's own retirement note, check-extension-docs.sh's reappearance guard, and historical motivating-incident/measurement-snapshot prose established across phases 2-7).",
+    "Post-redeploy fast-gate pass: only the 3 pre-existing/unrelated findings (eager-load budget, shellcheck, dead-command-recommendation) remain, consistent with every prior phase's triage.",
+    "Final per-domain --hard re-demonstration against the fully deployed tree: lean4/cslib/books/meta all resolve identically to Phase 3's original demonstration."
+  ]
+}

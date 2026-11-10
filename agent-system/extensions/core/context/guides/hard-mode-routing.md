@@ -1,154 +1,109 @@
-# Hard-Mode Routing: Composition Model
+# Hard-Mode Routing: Contract-Injection Model
 
-This document describes the `--hard` routing resolution implemented in the shared
-`manifest-routing-lib.sh` ladder and consumed by `command-route-agent.sh` (agent resolution) —
-the sole surviving routing resolver since the routing-ladder collapse retired the parallel
-skill-level resolver (now removed from the source store entirely) and its `routing`/`routing_hard` manifest
-blocks. It covers the 4-step precedence against `routing_agents_hard`, the "extension overrides
-core" rule, and the standard-block fallback that prevents a hard-mode miss from discarding a
-declared domain agent. See `context/guides/manifest-routing-schema.md` for the full routing model
-(the two surviving routing blocks plus the unrelated one-level `hard_contracts` key, core
-identification, and the declared-not-derived agent-name rule); this document focuses
-specifically on the `--hard` resolution path.
+This document describes how `--hard` changes dispatch behavior today: by injecting
+domain-specific behavioral contracts into the dispatch prompt via the manifest's `hard_contracts`
+block, NEVER by resolving a different agent. `routing_agents_hard` — the former agent-level ladder
+this document used to describe in full — is retired: every manifest that used to declare it
+(`books`, `cslib`, `lean`) has had the block removed, and `command-route-agent.sh`'s own hard-mode
+branch is collapsed away entirely (there is no longer an `if effort_flag == "hard"` conditional in
+that script at all). `--hard` and standard-mode dispatches resolve the exact same `AGENT_NAME` for
+every `(op, task_type)` pair, via the single `routing_agents` lookup both modes now share.
 
-**Scope**: This document is the sole canonical home for the `--hard` routing-precedence rules.
-CLAUDE.md's "Routing Mechanism" subsection carries only a pointer to this document (and to
-`context/guides/manifest-routing-schema.md`) — the 5-step precedence list itself is maintained
-here only, not duplicated there. The rest of CLAUDE.md's "Hard Mode" section (What Hard Mode
-Does, When to Use, Cost Impact, Composability, Per-Invocation Only) is unrelated to this
+See `context/guides/manifest-routing-schema.md` for the full routing model (the single surviving
+`routing_agents` block, core identification, the declared-not-derived agent-name rule, and the
+`hard_contracts` block's own resolution mechanics in detail); this document focuses on what
+`--hard` specifically changes and why, with a worked example per domain.
+
+**Scope**: This document is the sole canonical home for the `--hard` contract-injection model.
+CLAUDE.md's "Hard Mode" subsection carries only a pointer to this document (and to
+`context/guides/manifest-routing-schema.md`). The rest of CLAUDE.md's "Hard Mode" section (What
+Hard Mode Does, When to Use, Cost Impact, Composability, Per-Invocation Only) is unrelated to this
 document's scope and is maintained directly in CLAUDE.md.
 
 ---
 
 ## Overview
 
-When a command is invoked with `--hard`, `command-route-agent.sh` receives
-`effort_flag="hard"` as its 4th argument. It first resolves the standard `routing_agents` value
-unconditionally (so a fallback value is already in hand), then applies a 4-step hard-mode
-resolution against `routing_agents_hard` to try to override `AGENT_NAME` with the appropriate
-hard-mode agent, falling back to the standard value — never to nothing — on a hard-mode miss.
+When a command is invoked with `--hard`, two things happen, and only two:
+
+1. **Agent resolution is UNCHANGED.** `command-route-agent.sh` resolves `AGENT_NAME` from
+   `routing_agents` exactly as it would for a standard dispatch — `effort_flag` is passed through
+   only as a `routing_trace` argument (so a trace log can still show which effort mode a dispatch
+   ran under), never as a second lookup rung. There is no `-hard`-suffixed agent name anywhere in
+   the source store any more.
+2. **`orchestrate-build-dispatch.sh`'s Stage 3.5 injects behavioral contracts into the dispatch
+   prompt.** For each phase (`research`/`plan`/`implement`), a fixed list of core contract
+   basenames is the starting point; the manifest's `hard_contracts.{task_type}` array (resolved
+   once via `routing_lookup_flat()`, the same 4-step non-core/core × exact/compound-base
+   precedence `routing_agents` itself uses) then either `replace:`s a core entry in place or
+   appends an additive entry after it. The resulting `<hard-mode-contracts>` block is what the
+   dispatched agent actually reads differently under `--hard` — never a different agent body.
 
 ---
 
-## 4-Step Resolution Precedence
+## Worked Example Per Domain
 
-Resolution proceeds in order; the **first match wins** and short-circuits
-all remaining steps.
+Each row shows the resolved `<hard-mode-contracts>` list for an `implement`-phase dispatch (core
+starting list: `anti-analysis.md`, `wrap-up.md`, `recovery.md`, `phase-closure.md`,
+`pre-edit-gate.md`):
 
-```
-Given: operation ("research"|"plan"|"implement"), task_type, effort_flag="hard"
+| `task_type` | Resolved list | Mechanism |
+|-------------|----------------|-----------|
+| `lean4` | `lean4-anti-analysis.md` (replaces `anti-analysis.md`), `wrap-up.md`, `recovery.md`, `phase-closure.md`, `pre-edit-gate.md`, `lean4-context-hygiene.md` (additive), `lean4-sorry-discipline.md` (additive) | `hard_contracts.lean4` in lean's manifest |
+| `cslib` | `anti-analysis.md` (unchanged — `cslib`'s one `replace:` targets `adversarial-verification.md`, which implement's core list does not include), `wrap-up.md`, `recovery.md`, `phase-closure.md`, `pre-edit-gate.md`, `lean4-context-hygiene.md` (additive, a deliberate cross-extension dependency — cslib's `--hard` dispatches edit Lean theorem files too) | `hard_contracts.cslib` in cslib's manifest |
+| `books` | `anti-analysis.md`, `wrap-up.md`, `recovery.md`, `phase-closure.md`, `pre-edit-gate.md` (unchanged — books declares NO `hard_contracts` block; its own H2/H3/H4 content was judged duplicative of the generic core contracts and never extracted into an override) | miss — pure core list |
+| `meta` (or any task_type no extension overrides) | `anti-analysis.md`, `wrap-up.md`, `recovery.md`, `phase-closure.md`, `pre-edit-gate.md` (unchanged — the generic path) | miss — pure core list |
 
-Step 1: Search non-core extension manifests for routing_agents_hard[$op][$task_type]
-        → First non-core manifest hit → AGENT_NAME = that agent; DONE
-
-Step 2: If no hit and task_type contains ":", compute base_type (split on ":")
-        Search non-core extension manifests for routing_agents_hard[$op][$base_type]
-        → First non-core manifest hit → AGENT_NAME = that agent; DONE
-
-Step 3: Search core manifest (identified by .name == "core") for routing_agents_hard[$op][$task_type]
-        → Hit → AGENT_NAME = that agent; DONE
-
-Step 4: If no hit and task_type contains ":", compound-key fallback against core
-        Search core manifest for routing_agents_hard[$op][$base_type]
-        → Hit → AGENT_NAME = that agent; DONE
-
-Fallback (reaches here only if all 4 steps above missed): AGENT_NAME = the already-resolved
-standard routing_agents value (via="hard-miss-standard-fallback"), never the caller's generic
-hard default -- that default is reached only on a genuine total miss of BOTH blocks.
-```
+The `meta` row is the regression check for a defect this document's own prior history caused: both
+`core` and `lean` once declared the bare, unprefixed `provides.context: ["contracts"]` directory
+entry, and the deploy copier's directory-level merge let lean's content silently clobber core's at
+the shared `context/contracts/anti-analysis.md` path — so a `--hard` dispatch of ANY task type
+read lean's proof-specific override by accident. The fix was the domain-prefixed basename
+convention (`lean4-anti-analysis.md`, `cslib-adversarial-verification.md`, ...) documented in
+`context/guides/manifest-routing-schema.md`'s "Override Contract Placement Convention"
+subsection — not a change to the renderer or the deploy copier.
 
 ---
 
-## "Extension Overrides Core" Rule
+## "Extension Overrides Core" Rule (Still Applies, Now to `hard_contracts`)
 
-Non-core extensions (Steps 1-2) are scanned **before** the core extension
-(Steps 3-4). This is deterministic regardless of glob ordering because the
-core manifest is identified by `.name == "core"` and explicitly skipped during
-the non-core pass (`routing_exempt: true` is also set on `core`, but is not
-unique to it -- `literature` and `slidev` set it too, for their own,
-independently-scoped exemption semantics; it is no longer used for core
-identification).
-
-**Consequence**: If both a non-core extension and the core manifest declare a
-`routing_agents_hard` entry for the same `($op, $task_type)` pair, the non-core
-extension's entry wins unconditionally.
-
-**Example** (hypothetical override):
-```
-Core:    routing_agents_hard.implement.mytype = "mytype-implementation-hard-agent"
-Non-core: routing_agents_hard.implement.mytype = "myext-implementation-hard-agent"
-Result:  AGENT_NAME = "myext-implementation-hard-agent"
-```
+`routing_lookup_flat()` scans non-core extension manifests before the core manifest, exactly like
+`routing_agents`'s own `routing_lookup()`. If a non-core extension and the core manifest ever both
+declared a `hard_contracts` entry for the same `task_type` (hypothetical — no such collision
+exists today), the non-core extension's entry would win unconditionally. The core manifest is
+identified by `.name == "core"`, never by `routing_exempt: true` (which `literature` and `slidev`
+also set, for their own unrelated exemption semantics).
 
 ---
 
-## Standard-Block Fallback (Never a Bare Undeployed Guess)
+## Deployed `hard_contracts` Declarations (Current Inventory)
 
-Unlike the now-retired skill-level resolver's `-hard` append-fallback step (which speculatively
-guessed at an undeployed skill name and gated the guess on `SKILL.md` existence),
-`command-route-agent.sh`'s hard-mode miss path never guesses a name: it falls back to the
-ALREADY-RESOLVED standard `routing_agents` value for that same `(op, task_type)` — a value that,
-by Check B / `verify-deploy` gate 7, is already guaranteed to name an existing agent file. There
-is no name-guessing step and so no existence gate is needed on this path. The caller's generic
-hard default is reached only if BOTH `routing_agents_hard` and `routing_agents` miss entirely for
-the given task_type (see `test-routing-resolution.sh`'s Assert 3 semantic cases for the three
-rungs this produces: hard-hit, standard-fallback, and total-miss).
+| Extension | `task_type` | Declares `hard_contracts`? | Override contracts |
+|-----------|-------------|------------------------------|---------------------|
+| `lean` | `lean4` | Yes | `lean4-anti-analysis.md`, `lean4-reference-grounding.md`, `lean4-adversarial-verification.md` (all `replace:`), `lean4-context-hygiene.md`, `lean4-sorry-discipline.md` (additive) |
+| `cslib` | `cslib` | Yes | `cslib-adversarial-verification.md` (`replace:`), `lean4-context-hygiene.md` (additive, cross-extension) |
+| `books` | `books` | No — deliberate | none; generic core contracts fully cover books' hard-mode behavior |
 
----
-
-## Deployed Hard Agents (current inventory)
-
-Core's own four standalone lifecycle-stage `-hard` skills (the research/plan/implement stage
-skills plus the standalone hard-mode orchestrator) were deleted: `--hard` behavior for
-`general`/`meta`/`markdown` task types is now a `hard_mode` flag inside the single
-`skill-orchestrate` engine (`orchestrate-build-dispatch.sh`'s Stage 3.5 hard-mode contract injection, `orchestrate-cycle-plan.sh`'s H1 per-phase dispatch selection), not a separate skill file or a separate manifest routing table. Core's
-own `routing_agents_hard` manifest block was removed along with the skills.
-
-Extensions that still declare their own domain-specific `-hard` agents remain reachable via
-manifest routing exactly as before -- transitionally; see the `hard_contracts` successor note
-below:
-
-| Agent | Reachable via |
-|-------|---------------|
-| `cslib-research-hard-agent` | CSLib extension manifest `routing_agents_hard` |
-| `cslib-implementation-hard-agent` | CSLib extension manifest `routing_agents_hard` |
-| `lean-research-hard-agent` | Lean extension manifest `routing_agents_hard` |
-| `lean-implementation-hard-agent` | Lean extension manifest `routing_agents_hard` |
-
-The four hard-mode SKILL.md files these agents are documented alongside
-(`skill-cslib-research-hard`, `skill-cslib-implementation-hard`, `skill-lean-research-hard`,
-`skill-lean-implementation-hard`) are themselves no longer routing-reachable by any command --
-the skill-level `routing_hard` block they depended on was retired. Their provenance lines were
-corrected to state this; the skills and agents are untouched otherwise.
+No extension declares `routing_agents_hard` any more — `grep -r routing_agents_hard
+agent-system/extensions/*/manifest.json` returns nothing. The twelve files this migration retired
+(six `-hard`-suffixed agents, six orphaned `-hard`-suffixed skill wrappers) are gone from the
+source store entirely, along with every roster, index row, lint array, fixture, and illustrative
+citation that named them.
 
 ---
 
-## Orchestrate Hard Mode: One Engine, Effort-Gated
+## Orchestrate Hard Mode: One Engine, One Agent-Resolution Path
 
-`skill-orchestrate` (invoked by `/orchestrate --hard`) resolves AGENT names via
-`command-route-agent.sh` — the shared `manifest-routing-lib.sh` ladder, called with
-`effort_flag="hard"` against each manifest's `routing_agents_hard` block instead of
-`routing_agents`. There is no longer a second, standalone engine file: base mode and hard mode
-share `orchestrate-cycle-plan.sh`'s `resolve_agent()` resolution calls and diverge only on the
-`$hard_mode` variable (derived once per invocation from `effort_flag == "hard"`) — see
+`skill-orchestrate` (invoked by `/orchestrate --hard`) resolves `AGENT_NAME` via
+`command-route-agent.sh` — the shared `manifest-routing-lib.sh` ladder against `routing_agents`,
+identically for every effort mode. There is no second routing block it reads for hard mode any
+more. Base mode and hard mode share `orchestrate-cycle-plan.sh`'s `resolve_agent()` resolution
+calls and diverge only on the `$hard_mode` variable (derived once per invocation from
+`effort_flag == "hard"`), which gates Stage 3.5's `hard_contracts` injection and the H1/H4/H5/H6
+behavioral techniques below — never which agent gets dispatched. See
 `docs/architecture/orchestrate-state-machine.md` for the full mapping of which script now owns
-each hard-mode technique (H1/H4/H5/H6/etc.). See `context/guides/manifest-routing-schema.md` for
-the full routing model.
-
----
-
-## `routing_agents_hard` Is Transitional: `hard_contracts` Is Its Successor
-
-`routing_agents_hard` remains live today for exactly two extensions (`cslib`, `lean`) and is
-itself slated for outright removal once a separate, not-yet-dispatched follow-on migrates them
-onto `hard_contracts` — the mechanism `--hard` dispatch prep now uses for every OTHER task type's
-hard-mode behavior (injecting behavioral-contract files into the dispatch prompt, per the
-`hard_contracts` block documented in `context/guides/manifest-routing-schema.md`). Until that
-follow-on lands, `verify-deploy.sh` gate 16 keeps emitting a non-blocking warning for `cslib` and
-`lean` as a removal-is-coming nudge. This is NOT a migration of `routing_agents_hard`'s VALUES
-onto `hard_contracts` — the two mechanisms resolve fundamentally different things (an agent name
-vs. a list of contract file paths) — it is a replacement of the mechanism cslib/lean's hard-mode
-behavior is expressed through.
+each hard-mode technique. See `context/guides/manifest-routing-schema.md` for the full routing
+model.
 
 ---
 
@@ -167,6 +122,10 @@ behavioral contracts and routing changes, distilled from high-complexity task or
 - **Territory contracts (H7)**: Parallel dispatch with explicit file ownership
 - **Phase sizing (H8)**: Each phase bounded to one agent run (~100-500 lines output)
 - **Wrap-up discipline (H9)**: Orchestrator handoff JSON + incremental commits at every green milestone
+
+All nine are core, generic contracts injected into every `--hard` dispatch regardless of
+`task_type`; a domain's own `hard_contracts` entry only adds or replaces the DOMAIN-SPECIFIC
+elaboration of these (e.g. lean4's formal-proof-specific H2 read-budget bar), never the base set.
 
 ## When to Use `--hard` (Full Criteria List)
 
@@ -188,18 +147,24 @@ Use `--hard` when one or more of the following apply:
 
 - `--hard` works with model flags: `--hard --opus` uses Opus model with hard-mode contracts (also
   composable with `--fable`, e.g. `--hard --fable`)
-- `--hard` works with extension routing: extensions declare `routing_agents_hard` in their manifest
-- Graceful fallback: commands without hard variants silently use standard behavior
+- `--hard` works with extension-specific contract injection: an extension declares
+  `hard_contracts` in its manifest to add or override behavioral contracts for its own
+  `task_type`; declaring nothing (as `books` does) is a valid, deliberate choice, not a gap
+- Graceful fallback: a `task_type` with no `hard_contracts` entry still receives the full set of
+  generic core contracts under `--hard` — there is no "hard mode does nothing" failure mode
 - Per-invocation only: there is no sticky hard mode or `effort_mode` field in `state.json`. Each
   invocation of `/orchestrate` must explicitly pass `--hard` to activate hard mode.
 
 ## Related Files
 
-- `.claude/scripts/lib/manifest-routing-lib.sh` — Shared ladder implementation
+- `.claude/scripts/lib/manifest-routing-lib.sh` — Shared ladder implementation (`routing_lookup()`
+  for `routing_agents`, `routing_lookup_flat()` for `hard_contracts`)
 - `.claude/scripts/command-route-agent.sh` — Agent resolution (called from
-  orchestrate-cycle-plan.sh's resolve_agent(), both effort modes) — the sole surviving resolver
-- `.claude/extensions/cslib/manifest.json` — CSLib `routing_agents_hard` entries (transitional)
-- `.claude/extensions/lean/manifest.json` — Lean `routing_agents_hard` entries (transitional)
-- `context/guides/manifest-routing-schema.md` — Full routing model (the two surviving routing
-  blocks plus the one-level `hard_contracts` block this document otherwise does not cover — a
-  different mechanism, contract-text injection rather than agent resolution)
+  orchestrate-cycle-plan.sh's resolve_agent(), identical for every effort mode)
+- `.claude/scripts/orchestrate-build-dispatch.sh` — Stage 3.5 builds the `<hard-mode-contracts>`
+  block from the resolved `hard_contracts` list
+- `.claude/extensions/lean/manifest.json` — Lean's `hard_contracts.lean4` declaration
+- `.claude/extensions/cslib/manifest.json` — CSLib's `hard_contracts.cslib` declaration (not
+  deployed in every repo; cslib must be loaded for this to apply)
+- `context/guides/manifest-routing-schema.md` — Full routing model, including the
+  `hard_contracts` block's resolution mechanics and the override-contract placement convention

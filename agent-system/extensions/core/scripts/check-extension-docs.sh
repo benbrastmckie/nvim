@@ -1010,6 +1010,16 @@ check_claudemd_size_budget() {
 
 # Rules B + C: Routing target consistency and deployment
 #
+# STATUS: routing_agents_hard is retired (routing_agents_hard -> hard_contracts migration) -- no
+# manifest declares it any more, so the `.routing_agents_hard` arm below (lines ~1106-1122) walks
+# an always-empty object today and finds zero targets. Deliberately KEPT, not removed: it costs
+# nothing to run (a no-op over an empty jq result) and stands as a reappearance guard -- if a
+# future extension manifest ever copy-pastes a stale template carrying the key back in, this arm
+# still fires exactly the same validation it always did, rather than silently admitting a
+# resurrected routing_agents_hard target with no check at all. The policy rationale below is
+# retained as the historical and FORWARD-APPLICABLE specification for that arm, not a claim that
+# any manifest currently exercises it.
+#
 # Policy rationale (restored after a later sync reverted it from the stale extension-source
 # copy; this restores it in both copies):
 #   Both routing_agents and routing_agents_hard share the same deployment-dimension severity

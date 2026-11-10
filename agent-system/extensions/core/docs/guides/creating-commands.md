@@ -105,8 +105,9 @@ agent_name="$AGENT_NAME"
 ```
 
 `command-route-agent.sh` resolves the task type to the appropriate AGENT name directly, using
-extension manifests' `routing_agents`/`routing_agents_hard` blocks and a caller-supplied fallback
-default (there is no intervening skill-dispatch layer: `/orchestrate` dispatches agents
+extension manifests' `routing_agents` block and a caller-supplied fallback default — identically
+for every effort mode; `--hard`'s own behavioral differences are injected separately via
+`hard_contracts` (there is no intervening skill-dispatch layer: `/orchestrate` dispatches agents
 directly). Then dispatch the agent via the Agent tool:
 
 ```
