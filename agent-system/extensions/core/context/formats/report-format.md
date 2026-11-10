@@ -220,6 +220,63 @@ artifact to compare against — the composer emits nothing when the task directo
 earlier research/plan/implementation artifact, matching the Prior Decisions block's own
 no-input-no-change precedent in the same dispatch-composition function.
 
+**Enumeration completeness.** A self-derived enumeration carries an implicit completeness claim
+when it asserts or implies that the listed set is COMPLETE — "every", "all", "exact", "the N
+sites", or a closed table a later phase will treat as its work list — as opposed to presenting
+illustrative examples. A bare count of occurrences ("19 sites") IS such a claim: a later consumer
+cannot otherwise distinguish a confirmed-exhaustive count from a sample.
+
+**The obligation**, three complementary parts, all three adopted:
+1. State the search pattern(s) used, inline and verbatim, wherever a completeness claim is made,
+   so coverage is auditable without re-derivation.
+2. Require a second, differently-shaped pattern before a completeness claim may be asserted
+   (for example, a loose structural pattern alongside the literal one), with both recorded.
+3. Mark an enumeration the author believes complete but did not cross-check with a second
+   pattern with the token `COVERAGE-UNVERIFIED`, naming the search pattern used and why a second
+   pattern was not run:
+
+       {enumeration} [COVERAGE-UNVERIFIED: {search pattern used} / {reason a second pattern was not cross-checked}]
+
+   `COVERAGE-UNVERIFIED` carries the same required-named-argument rule and the same
+   greppability terms as `CARRIED-UNVERIFIED` and `CORPUS-UNVERIFIED`
+   (`grep -rn 'COVERAGE-UNVERIFIED' specs/`).
+
+**The verification-independence rule**: a verification sweep MUST NOT reuse the pattern family
+of the sweep it verifies. A sweep and the check meant to confirm it are not independent evidence
+when they share a pattern family — the second inherits the first's blind spot and converts an
+open gap into a false green. This rule governs both this section and
+`context/formats/plan-format.md`'s verification-criteria guidance; it is stated here once, and
+`plan-format.md` points to it rather than restating.
+
+**Enforcement level (enumeration completeness)**: `COVERAGE-UNVERIFIED`'s required-argument rule
+is mechanically checkable on the same terms as `CARRIED-UNVERIFIED` and `CORPUS-UNVERIFIED` (see
+Enforcement level above) — the shared well-formedness check applies uniformly to any token in
+its list. The differently-shaped-second-pattern obligation (part 2 above) is deliberately NOT
+mechanized: nothing can verify that two stated patterns are genuinely differently shaped rather
+than cosmetically different, for the same reason this section already records for internal
+consistency (a semantic judgment, not an enumerable pattern). This is an authoring-side
+obligation honestly labelled as such, not a gap pretending to be covered.
+
+**Worked check against both cited instances.** A research report's "Exact Edit Sites" section
+enumerated hand-typed count statements needing correction, built from the sweep patterns
+`seven|7 line|7 recorded|upward`; two live sites (a hyphenated form, and a bare-word ASCII
+diagram label) could not match any of them and were omitted, but were caught by the planner's
+own independent re-verification before any edit was authored. The same report separately stated
+that exactly two live mentions existed outside the task's file scope; there were three, and the
+miss survived research, planning, implementation, AND an acceptance check that re-grepped for
+the same literal pattern family and found nothing, producing a false green.
+- **Instance one (caught downstream)** is the clause this amendment's obligation part 1
+  addresses: had the sweep pattern been stated inline and verbatim in the enumeration itself, a
+  reviewer could audit it directly — grepping the corpus for anything the stated pattern does
+  not match is exactly how the two omissions were, in fact, eventually found.
+- **Instance two (not caught — the false green)** is NOT reached by part 1 alone: the
+  verification step that produced the false green restated the SAME pattern family, so a
+  disclosed pattern changes nothing about this instance. It is the verification-independence
+  rule that reaches it: requiring the re-verification step to use a differently-shaped pattern
+  (obligation part 2) is exactly what, in fact, surfaced the third site afterward — a loose
+  structural pattern ("a bare count near the word 'allowlist'") catching what the literal
+  pattern family structurally could not.
+
 **Placement record**: this section is the authoritative statement for both report and plan
 artifacts; `context/formats/plan-format.md` points here rather than restating, so the two cannot
 drift. Two other placements were considered and rejected: a new standalone contract document

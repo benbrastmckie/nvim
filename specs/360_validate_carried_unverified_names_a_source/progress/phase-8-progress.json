@@ -1,0 +1,20 @@
+{
+  "phase": 8,
+  "phase_name": "A Self-Derived Enumeration Must State and Stress-Test Its Pattern",
+  "started_at": "2026-11-10T03:42:00Z",
+  "last_updated": "2026-11-10T03:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "State the completeness trigger", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 2, "description": "State the three-part obligation and define COVERAGE-UNVERIFIED", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 3, "description": "State the verification-independence rule, pointer from plan-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md", "agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 4, "description": "State the enforcement level honestly", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 5, "description": "Write the worked check against both cited instances", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 6, "description": "Pointer in general-research-agent.md", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Wrapped the pointer phrase \"The verification-independence rule\" across two markdown source lines in plan-format.md", "result": "failed", "reason": "a plain grep for the exact phrase does not match text split across two lines, even though markdown rendering would display it as one phrase. Reflowed the paragraph so the quoted phrase sits entirely on one source line, matching the greppability standard this whole task applies to every other quoted label."}
+  ],
+  "handoff_count": 0,
+  "notes": "Added five new bolded paragraphs to report-format.md's Carried-Figure Discipline section (inserted between the existing Cost paragraph and the Placement record, so the section is NOT relocated and carries no new ## heading): Enumeration completeness (trigger), The obligation (three parts, defining the new COVERAGE-UNVERIFIED token with the same required-argument/greppability rule as the other two tokens), The verification-independence rule, Enforcement level (enumeration completeness) (honest -- mark is mechanically checkable, the differently-shaped-pattern obligation is authoring-side only and deliberately not mechanized), and Worked check against both cited instances (instance one: caught downstream, reached by obligation part 1 (pattern disclosure); instance two: the false green that survived the acceptance check, reached ONLY by the verification-independence rule since the pattern-disclosure obligation alone changes nothing when the re-check reuses the same pattern family). Added a pointer-only '### Verification sweep independence' subsection to plan-format.md, placed as the next subsection after the existing 'Naming a tool's entry point in verification criteria' subsection (both are the final subsections under '## Verification Tiers'). Added a pointer-only paragraph to general-research-agent.md's Stage 6, directly after Phase 4's existing Part-A pointer. Verified by grep: the quoted phrase 'The verification-independence rule' appears intact (not line-split) in both report-format.md and plan-format.md after a wording fix; the amended section carries no new '## ' heading between 'Carried-Figure Discipline' and 'Amending a Prior Verdict' (confirmed via an awk range scan), proving no relocation; plan-format.md's new subsection points by name and copies no normative text. Ran the Internal-consistency reviewer prompt by hand against the full amended section (Definition through all of Phases 3/4/6/8's additions): no assertion requires the ABSENCE of a string a mandated literal requires PRESENT, and no stated risk/prediction contradicts a measured result elsewhere -- no contradiction found."
+}

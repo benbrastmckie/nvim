@@ -398,6 +398,14 @@ against the live corpus and report the result inline, or mark the recommendation
 section's own designated disclosure token when deferring that check. This is a pointer, not a
 restatement; the section itself is the authoritative text.
 
+**A self-derived enumeration this report presents as complete (`every`, `all`, `exact`, a bare
+count, or a closed work-list table) carries its own completeness obligation** — see
+`report-format.md`'s `## Carried-Figure Discipline` section, "Enumeration completeness"
+subsection, for the trigger, the three-part obligation (stating the search pattern, cross-checking
+with a differently-shaped second pattern, or marking the enumeration with its own disclosure
+token), and the verification-independence rule for any later re-check of it. This is a pointer,
+not a restatement.
+
 ### Stage 7: Write Metadata File
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `findings_count`. Include `memory_candidates` array (from Stage 5) at the top level of the JSON output. Set `next_steps` to `"Run /orchestrate {N} to create implementation plan"`.

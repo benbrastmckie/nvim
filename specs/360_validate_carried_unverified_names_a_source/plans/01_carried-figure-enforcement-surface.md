@@ -508,38 +508,38 @@ function before editing; the line numbers cited in the research report will have
 
 ---
 
-### Phase 8: A Self-Derived Enumeration Must State and Stress-Test Its Pattern [NOT STARTED]
+### Phase 8: A Self-Derived Enumeration Must State and Stress-Test Its Pattern [COMPLETED]
 
 **Goal**: State the completeness trigger, the chosen obligation, and the verification-independence
 rule, each with its reasoning, and rule honestly on what any of it can mechanically check.
 
 **Tasks**:
-- [ ] State the trigger: an enumeration carries an implicit completeness claim when it asserts or
+- [x] State the trigger: an enumeration carries an implicit completeness claim when it asserts or
       implies totality -- "every", "all", "exact", "the N sites", or a closed table a later phase
       will treat as its work list -- as opposed to presenting examples. Rule explicitly that a bare
       count of occurrences IS such a claim, because a later consumer cannot otherwise distinguish a
       confirmed-exhaustive count from a sample.
-- [ ] State the obligation, adopting all three parts and recording why each earns its place: state
+- [x] State the obligation, adopting all three parts and recording why each earns its place: state
       the search patterns used, inline and verbatim, wherever a completeness claim is made, so
       coverage is auditable without re-derivation; require a second, differently-shaped pattern
       before completeness may be asserted, with both recorded; and provide a parallel disclosure
       mark for an enumeration the author believes complete but did not cross-check, carrying the
       same required-argument rule and the same greppability terms as the existing token.
-- [ ] State the verification-independence rule in its own right: a verification sweep MUST NOT
+- [x] State the verification-independence rule in its own right: a verification sweep MUST NOT
       reuse the pattern family of the sweep it verifies, because the second then inherits the
       first's blind spot and converts an open gap into a false green. Place it in
       `report-format.md`'s discipline section, with a pointer from `plan-format.md`'s
       verification-criteria guidance -- a pointer only, never a restatement.
-- [ ] State the enforcement level honestly: the disclosure mark's required argument is greppable on
+- [x] State the enforcement level honestly: the disclosure mark's required argument is greppable on
       the same terms as the other tokens and is brought under the existing advisory by Phase 9,
       while the differently-shaped-pattern obligation is authoring-side only and is deliberately
       NOT mechanized, because nothing can verify that two patterns are genuinely differently
       shaped. Do not over-claim.
-- [ ] Write the worked check the dispatch requires: state, from the convention's text alone, which
+- [x] Write the worked check the dispatch requires: state, from the convention's text alone, which
       clause would now have caught each of the two cited instances -- including the second, the one
       that survived research, planning, implementation and the acceptance check by reusing the
       pattern family that produced the omission.
-- [ ] Add the completeness obligation to `general-research-agent.md` as a pointer to the section by
+- [x] Add the completeness obligation to `general-research-agent.md` as a pointer to the section by
       name, not a copy.
 
 **Timing**: 1.75 hours

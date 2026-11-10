@@ -766,6 +766,14 @@ broken identically on both sides of that diff makes "no new findings" vacuously 
 nothing distinguishes that from a genuine clean pass. **Enforcement level**: advisory prose only
 — there is no corresponding `scripts/validate-artifact.sh` check today.
 
+### Verification sweep independence
+
+A phase's verification criteria that re-sweep an enumeration a prior phase or artifact already
+produced MUST NOT reuse that enumeration's own pattern family to confirm it — see
+`context/formats/report-format.md`'s `## Carried-Figure Discipline` section, "The verification-independence rule" paragraph, for the full rule and the worked example of the false-green
+failure mode it closes. This is a pointer only; the rule itself is stated once, there, not
+restated here.
+
 ## Planned Strategic Sorries (format, hard-mode skeleton plans only)
 
 Present only when `plan_metadata.skeleton: true` (see Plan Metadata Schema above). Placed
