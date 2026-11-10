@@ -211,7 +211,7 @@ difference means the block was not self-contained and the finding is recorded be
 
 ---
 
-### Phase 2: Close the unmappable-criterion gap in the directive text [NOT STARTED]
+### Phase 2: Close the unmappable-criterion gap in the directive text [COMPLETED]
 
 **Goal**: the emitted directive tells the implementer what to do in the two cases the folded-in
 evidence shows it does not cover: the plan it constrains is named further down the file, and the
@@ -219,21 +219,22 @@ phase's own declared verification criterion may name a check with no `--only`/`-
 mapping in this repository.
 
 **Tasks**:
-- [ ] Add one forward-pointer clause to the directive: it constrains the final phase of the plan
+- [x] Add one forward-pointer clause to the directive: it constrains the final phase of the plan
       named under `## Plan` below, so the reader who meets the directive before the plan body
-      knows what it attaches to.
-- [ ] Add one clause covering the unmappable-criterion case: when the phase's own declared
+      knows what it attaches to. *(completed)*
+- [x] Add one clause covering the unmappable-criterion case: when the phase's own declared
       verification criterion names a repository-specific check that neither narrowing invocation
       can express (no matching suite basename for `--only`, no matching gate number for
       `--only-gate`), run that named check directly — scoped to this phase's own files where the
       check supports scoping — and record it as the scoped discharge. State explicitly that an
       unmappable criterion is never waived, dropped, or treated as satisfied by a narrowing that
-      does not reach it.
-- [ ] Keep both clauses free of any literal `agent-system/extensions/core/scripts/` path, so
+      does not reach it. *(completed: added only inside the resolved branch, since the degraded
+      branch already runs the complete gate set and has no scoped tier to miss a check)*
+- [x] Keep both clauses free of any literal `agent-system/extensions/core/scripts/` path, so
       Group 19's `assert_not_contains` on that string still holds in both the degraded and the
-      resolved-path arms.
-- [ ] Re-read the emitted section end to end and confirm it still reads as a narrowing of the
-      verification, never a permission to skip it.
+      resolved-path arms. *(completed: verified by manual composed-dispatch smoke test, both arms)*
+- [x] Re-read the emitted section end to end and confirm it still reads as a narrowing of the
+      verification, never a permission to skip it. *(completed)*
 
 **Timing**: 0.5 hours
 

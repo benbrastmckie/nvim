@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Close the unmappable-criterion gap in the directive text",
+  "started_at": "2026-11-10T08:16:00Z",
+  "last_updated": "2026-11-10T08:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add forward-pointer clause: directive constrains final phase of plan named under ## Plan below", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 2, "description": "Add unmappable-criterion clause: run the named check directly, scoped where possible, never waived", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Keep both clauses free of literal agent-system/extensions/core/scripts/ path", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-read emitted section end to end to confirm it narrows, never permits skipping, verification", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Manual composed-dispatch smoke test (both degraded and resolved-candidate arms) confirmed both new clauses present, no literal source-store path, and section order Description < Batch Gate Deferral < Artifact Round < Plan. run-all.sh --only <9 suites> re-run: test-orchestrate-build-dispatch.sh PASS; test-orchestrate-unwind-dispatch.sh still fails for the same pre-existing, unrelated reason recorded in Phase 1's issue log entry."
+}

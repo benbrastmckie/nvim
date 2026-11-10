@@ -631,6 +631,10 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     echo "\`**Verification Tier**: full\` — that field is NOT edited by this directive and stays"
     echo "exactly as written in the plan file."
     echo ""
+    echo "This directive constrains the FINAL phase of the plan named under \`## Plan\` below —"
+    echo "read it now, before reaching that plan body, so the constraint is already in hand when"
+    echo "that phase's own verification step runs."
+    echo ""
     if [ -n "$resolved_run_all" ] || [ -n "$resolved_verify_deploy" ]; then
       echo "THIS dispatch discharges that phase against a SCOPED tier instead of independently"
       echo "running the complete gate set: run the narrowing invocation that actually covers the"
@@ -646,6 +650,14 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
       fi
       echo "— and record in this phase's own verification notes that the full"
       echo "set was deferred to the batch stage rather than independently run."
+      echo ""
+      echo "UNMAPPABLE CRITERION: if the phase's own declared verification criterion names a"
+      echo "repository-specific check that neither narrowing invocation above can express (no"
+      echo "matching suite basename for --only, no matching gate number for --only-gate), run"
+      echo "that named check directly instead — scoped to this phase's own touched files where"
+      echo "the check itself supports scoping — and record THAT as the scoped discharge. An"
+      echo "unmappable criterion is never waived, dropped, or treated as satisfied by a"
+      echo "narrowing that does not actually reach it."
     else
       # DEGRADATION: neither candidate exists at ${SKILL_REPO_ROOT} (no deployed .claude/
       # mirror and no agent-system/ source-store tree). Naming a path that cannot resolve
