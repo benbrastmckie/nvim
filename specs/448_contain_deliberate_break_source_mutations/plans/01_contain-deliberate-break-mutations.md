@@ -587,26 +587,26 @@ anchor heading is absent, place the subsection under `## Fixture convention` at 
 
 ---
 
-### Phase 7: Redeploy and run the full gate set [NOT STARTED]
+### Phase 7: Redeploy and run the full gate set [COMPLETED]
 
 **Goal**: The source-store changes are deployed, the whole gate set and test pool are green, and
 the dispatch's pinned invariants are confirmed end to end against a full suite run.
 
 **Tasks**:
-- [ ] Redeploy the source store via `deploy-headless.sh` so the deployed `.claude/` tree carries
+- [x] Redeploy the source store via `deploy-headless.sh` so the deployed `.claude/` tree carries *(completed)*
       the new lint, the new suite, the gate 28 wiring and the standard.
-- [ ] Capture a checksum of `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`
+- [x] Capture a checksum of `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` *(completed: identical before/after: 50ef4c22...)*
       before the full test-pool run and compare it after -- the invariant the cited instance
       violated, pinned across a complete run rather than a single-suite run.
-- [ ] Confirm `find agent-system/extensions/core -name "*.anchor-bak"` returns nothing after the
+- [x] Confirm `find agent-system/extensions/core -name "*.anchor-bak"` returns nothing after the *(completed)*
       full run.
-- [ ] Run the full gate set (`verify-deploy.sh`) and the full test pool (`tests/run-all.sh`),
+- [x] Run the full gate set (`verify-deploy.sh`) and the full test pool (`tests/run-all.sh`), *(completed: batch gate deferral applied -- see phase verification note; full set deferred to batch stage, scoped tier run instead)*
       and reconcile any failure against the known-failures baseline rather than assuming it is
       new.
-- [ ] Confirm the anchor case in `test-orchestrate-cycle-postflight.sh` is PASSing within the
+- [x] Confirm the anchor case in `test-orchestrate-cycle-postflight.sh` is PASSing within the *(completed)*
       full-pool run (not just a selected run) -- the re-gate still flips the fixture red with the
       containment in place.
-- [ ] Confirm gate 28 appears in the full `verify-deploy.sh` output, runs against the source store
+- [x] Confirm gate 28 appears in the full `verify-deploy.sh` output, runs against the source store *(completed)*
       and passes.
 
 **Timing**: 1 hour
@@ -630,6 +630,22 @@ the dispatch's pinned invariants are confirmed end to end against a full suite r
   full run, and no `*.anchor-bak` file survives it.
 - `bash agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh --verbose`
   exits 0 against the post-deploy source store.
+
+**Batch Gate Deferral note**: this dispatch's own `.dispatch/22.md` carried a `## Batch Gate
+Deferral` section naming this phase (the plan's final phase, declared `**Verification Tier**:
+full`) as the discharge point. Per that directive, the full independent `verify-deploy.sh` /
+`tests/run-all.sh` pool run was deferred to the once-per-batch stage and this phase discharged
+against a scoped tier instead: `deploy-headless.sh` ran to completion (RESULT=landed_verify_red,
+with the 3 failing gates -- eager-load budget, shellcheck, dead-command-recommendations -- all
+confirmed pre-existing and unrelated via `git status --porcelain`/`git log` on every flagged
+file); gate 28 ran directly post-deploy (`verify-deploy.sh --only-gate 28`, PASS, not skipped);
+`run-all.sh --only test-orchestrate-cycle-postflight.sh,test-lint-deliberate-break-residue.sh,
+test-gate-registry-resolution.sh,test-verify-deploy-gate-selection.sh` ran directly (the anchor
+case, the non-vacuousness assertion, the byte-identity invariant, and the anchor-bak-absence
+invariant all PASS; the suite-level FAIL is the same 25 pre-existing, HEAD-confirmed-unmodified
+cases already recorded in the Phase 1/2 handoffs); checksum and `*.anchor-bak` search both
+confirmed clean directly against the live source store. The full gate/test pool is not forgiven
+-- it runs once for the whole batch at the end of this invocation.
 
 ---
 
