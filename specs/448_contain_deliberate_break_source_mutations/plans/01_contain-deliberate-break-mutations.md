@@ -1,7 +1,7 @@
 # Implementation Plan: Task #448
 
 - **Task**: 448 - Contain the regression-anchor source-store mutation so a concurrent session cannot observe or inherit it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: 328 (SATISFIED -- landed and archived, see Premise Re-Validation)
 - **Research Inputs**: specs/448_contain_deliberate_break_source_mutations/reports/01_contain-deliberate-break-mutations.md
@@ -162,31 +162,31 @@ set, so no roadmap consultation was performed and no roadmap phases are added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Relocate the regression-anchor mutation onto the sandbox copy [NOT STARTED]
+### Phase 1: Relocate the regression-anchor mutation onto the sandbox copy [COMPLETED]
 
 **Goal**: The regression-anchor check never writes `$CORE_DIR`. The mutation is applied to the
 sandbox copy at `$SUT` after `setup_sandbox()` has produced it, and the anchor's red-flip
 guarantee is preserved and proven non-vacuous.
 
 **Tasks**:
-- [ ] Re-derive the block's live line range before editing (`grep -n "ANCHOR_SRC\|anchor_restore"
+- [x] Re-derive the block's live line range before editing (`grep -n "ANCHOR_SRC\|anchor_restore" *(completed: anchor block at 2652-2695, marker at 2659, ANCHOR_SRC at 2660)*
       agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`); line
       numbers in this plan are a hypothesis, not a fact.
-- [ ] Reorder the block: move the existing `setup_sandbox` call to the top of the `if` body, then
+- [x] Reorder the block: move the existing `setup_sandbox` call to the top of the `if` body, then *(completed)*
       apply the identical `sed -i` substitution to `$SUT` instead of `$ANCHOR_SRC`. Place the
       `sed` after `setup_sandbox` and before `commit_fixture`.
-- [ ] Keep `anchor_marker` and the `grep -qF "$anchor_marker" "$ANCHOR_SRC"` guard exactly as
+- [x] Keep `anchor_marker` and the `grep -qF "$anchor_marker" "$ANCHOR_SRC"` guard exactly as *(completed)*
       they are (a read of the source store, not a write), including the `else` arm's
       `common_test_fail` message.
-- [ ] Remove the now-unneeded `cp "$ANCHOR_SRC" "${ANCHOR_SRC}.anchor-bak"`, the
+- [x] Remove the now-unneeded `cp "$ANCHOR_SRC" "${ANCHOR_SRC}.anchor-bak"`, the *(completed)*
       `anchor_restore()` definition, the `trap 'anchor_restore; cleanup' EXIT` installation, the
       `anchor_restore` call, and the `trap cleanup EXIT` reset. Leave the suite-level
       `common_test_workdir_init` EXIT trap untouched.
-- [ ] Add a non-vacuousness assertion immediately after the `sed`: confirm `$SUT` now contains a
+- [x] Add a non-vacuousness assertion immediately after the `sed`: confirm `$SUT` now contains a *(completed)*
       line matching `^[[:space:]]*while false[[:space:]]*&&`, and `common_test_fail` with a clear
       message if it does not (a `sed` that matched nothing would otherwise produce a
       silently-vacuous anchor).
-- [ ] Rewrite the block's header comment (lines 2652-2657 today) to state the current mechanism:
+- [x] Rewrite the block's header comment (lines 2652-2657 today) to state the current mechanism: *(completed)*
       the mutation is applied to the sandbox copy that `run_sut` executes, after
       `setup_sandbox()` has populated it, so the shared source store is never written and no
       restore step is required. State the `setup_sandbox` re-copy constraint as the reason the
@@ -195,7 +195,7 @@ guarantee is preserved and proven non-vacuous.
       itself); do not narrate this file's own edit history, and do not reference a task number --
       see `rules/no-record-versioning-in-deliverables.md` and
       `rules/no-task-references-in-deliverables.md`.
-- [ ] Confirm no `setup_sandbox` call is introduced or left between the new `sed` and `run_sut`
+- [x] Confirm no `setup_sandbox` call is introduced or left between the new `sed` and `run_sut` *(completed)*
       (such a call would erase the mutation and silently vacate the anchor).
 
 **Timing**: 0.75 hours

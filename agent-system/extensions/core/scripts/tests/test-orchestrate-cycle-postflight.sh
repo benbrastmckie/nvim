@@ -2650,22 +2650,27 @@ else
 fi
 
 # ─── Regression-anchor check: temporarily re-gate the WORK (j) accumulation block on a
-# deliberately-false condition, confirm the same fixture goes RED, then revert -- proves this
-# case actually exercises the block rather than passing vacuously. Operates on $CORE_DIR's own
-# source file via a backup/restore pair (setup_sandbox always re-copies FROM $CORE_DIR, so the
-# mutation must live there, not on the already-copied $SUT, to survive the next setup_sandbox
-# call) and is guaranteed to be reverted even on an early exit via the trap below. ───────────────
+# deliberately-false condition, confirm the same fixture goes RED, then rely on the next
+# setup_sandbox call to discard it -- proves this case actually exercises the block rather than
+# passing vacuously. The mutation is applied to $SUT, the sandbox copy setup_sandbox produces,
+# after setup_sandbox has already populated it: setup_sandbox always re-copies $SUT from
+# $CORE_DIR, so a mutation applied before setup_sandbox runs would be erased by it. Because the
+# real source-store file is never written, there is no window in which a concurrent reader can
+# observe a broken collaborator script, and no backup/restore step or EXIT trap is needed. ──────
 common_test_info "Characterization: regression-anchor self-check (temporarily re-gating WORK (j) must flip this case red)"
 anchor_marker='# Accumulate modified_files into cycle_modified_files HERE (not re-read later)'
 ANCHOR_SRC="$CORE_DIR/orchestrate-cycle-postflight.sh"
+setup_sandbox
 if grep -qF "$anchor_marker" "$ANCHOR_SRC"; then
-  cp "$ANCHOR_SRC" "${ANCHOR_SRC}.anchor-bak"
-  anchor_restore() { [ -f "${ANCHOR_SRC}.anchor-bak" ] && mv -f "${ANCHOR_SRC}.anchor-bak" "$ANCHOR_SRC"; }
-  trap 'anchor_restore; cleanup' EXIT
-  # Wrap the accumulation loop's own `while` line in a deliberately-false condition.
-  sed -i "s/^    while IFS= read -r f; do\$/    while false \&\& IFS= read -r f; do/" "$ANCHOR_SRC"
+  # Wrap the accumulation loop's own `while` line in a deliberately-false condition, applied to
+  # the sandbox copy under test ($SUT) rather than to $ANCHOR_SRC.
+  sed -i "s/^    while IFS= read -r f; do\$/    while false \&\& IFS= read -r f; do/" "$SUT"
+  if grep -qE '^[[:space:]]*while false[[:space:]]*&&' "$SUT"; then
+    common_test_pass "characterization: the deliberate-false re-gate applied to the sandbox copy under test (sed was not a silent no-op)"
+  else
+    common_test_fail "characterization: the deliberate-false re-gate sed matched nothing in $SUT -- the anchor would pass vacuously"
+  fi
 
-  setup_sandbox
   mkdir -p "$WORKDIR/specs/${dp_candidate_num}_candidate"
   write_state <<EOF
 {"next_project_number": 2, "active_projects": [{"project_number": ${dp_candidate_num}, "project_name": "candidate", "task_type": "meta", "status": "implementing", "description": "candidate #${dp_candidate_num} -- deploy-pending refusal characterization (anchor check)", "dependencies": [], "file_scope": []}]}
@@ -2681,9 +2686,6 @@ EOF
 EOF
   run_sut "specs/${dp_candidate_num}_candidate" --session sess_709 --phase implement --task-type meta \
     --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$dp_candidate_num"
-
-  anchor_restore
-  trap cleanup EXIT
 
   if jq -e '.cycle_modified_files == []' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_709.json" >/dev/null 2>&1; then
     common_test_pass "characterization: artificially re-gating the WORK (j) block flips this case red (anchor confirmed live)"

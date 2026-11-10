@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Relocate the regression-anchor mutation onto the sandbox copy",
+  "started_at": "2026-11-09T22:49:00Z",
+  "last_updated": "2026-11-09T23:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive live line range before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Reorder block: setup_sandbox first, then sed on $SUT", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Keep anchor_marker guard verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Remove backup/trap/restore machinery", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Add non-vacuousness assertion after sed", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Rewrite block header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 7, "description": "Confirm no setup_sandbox call between sed and run_sut", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

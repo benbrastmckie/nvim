@@ -1,22 +1,14 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/448_contain_deliberate_break_source_mutations/plans/01_contain-deliberate-break-mutations.md",
-      "summary": "7-phase containment plan: relocate the regression-anchor mutation onto the sandbox copy, pin source-store byte-identity in-suite, add a gate-28 residue detector with its own suite, and state the safe pattern in the testing standard."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 22,
+  "artifacts": [],
   "memory_candidates": [],
   "metadata": {
-    "session_id": "sess_1794272256_212466_448",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 7,
-    "dependency_waves": 4
-  },
-  "next_steps": "Run /orchestrate 448 to execute the plan",
-  "dispatch_seq": 21
+    "session_id": "sess_1794272256_212466",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 7
+  }
 }
