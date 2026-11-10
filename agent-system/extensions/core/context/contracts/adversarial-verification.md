@@ -97,7 +97,9 @@ into element 3 of the Claim Verification Bar without altering the bar itself:
 - **lean4**: A `lean_hover_info`-confirmed type signature is a valid "Verification
   Method" value for Mathlib/CSLib API claims; `lean_local_search` confirmation is the
   minimum bar for "does X exist" claims (see
-  `@.claude/extensions/lean/context/contracts/adversarial-verification.md` for the
+  `@.claude/context/contracts/lean4-adversarial-verification.md` for the
   parity copy used by lean-only deployments).
 - Extension overrides live in
-  `.claude/extensions/{domain}/context/contracts/adversarial-verification.md`.
+  `.claude/context/contracts/{domain}-adversarial-verification.md` (a flat,
+  domain-prefixed basename under the shared directory -- never a nested or
+  extension-namespaced path).

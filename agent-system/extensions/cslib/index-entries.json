@@ -386,7 +386,7 @@
     },
     {
       "path": "contracts/cslib-adversarial-verification.md",
-      "line_count": 114,
+      "line_count": 116,
       "load_when": {
         "agents": [],
         "commands": [],

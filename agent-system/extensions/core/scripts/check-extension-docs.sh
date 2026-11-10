@@ -1320,6 +1320,18 @@ check_referenced_scripts_declared() {
 # implemented here (left as a documented, disabled extension point below) to avoid false
 # positives on legitimately extension-conditional references (e.g. lean-only context files
 # referenced only from lean-scoped skills, which are correctly absent in non-lean projects).
+#
+# Pattern covers two shapes, not one: the flat deployed shape (`.claude/context/contracts/`,
+# matched directly after `.claude/`) AND the extension-namespaced shape
+# (`.claude/extensions/{ext}/context/contracts/`) that `manifest-routing-schema.md`'s "Override
+# Contract Placement Convention" documents as never produced by any deploy -- the renderer only
+# ever emits a flat, domain-prefixed basename under the shared `context/contracts/` directory, so
+# a reference shaped like `.claude/extensions/lean/context/contracts/adversarial-verification.md`
+# is unconditionally dangling regardless of which extensions are loaded. Omitting this second
+# alternative was itself a defect: a reference in exactly this shape slipped past Rule G in four
+# lean/cslib hard agents (since fixed) and in two contracts mirror files purely because the
+# original single-shape regex required the literal substring `.claude/context/contracts/`
+# immediately after `.claude/`, which an extension-namespaced path never satisfies.
 check_dangling_contract_references() {
   local f ref refs
   for f in "$REPO_ROOT"/.claude/skills/*/SKILL.md \
@@ -1327,7 +1339,7 @@ check_dangling_contract_references() {
            "$REPO_ROOT"/.claude/rules/*.md \
            "$REPO_ROOT"/.claude/commands/*.md; do
     [[ -f "$f" ]] || continue
-    refs=$(grep -oE '\.claude/context/contracts/[a-zA-Z0-9_-]+\.md' "$f" 2>/dev/null | sort -u)
+    refs=$(grep -oE '\.claude/(context/contracts|extensions/[a-zA-Z0-9_-]+/context/contracts)/[a-zA-Z0-9_-]+\.md' "$f" 2>/dev/null | sort -u)
     for ref in $refs; do
       if [[ ! -f "$REPO_ROOT/$ref" ]]; then
         fail "dangling contract reference in ${f#"$REPO_ROOT"/}: $ref"

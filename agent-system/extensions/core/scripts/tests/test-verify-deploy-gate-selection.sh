@@ -473,9 +473,18 @@ fi
 #       deployed check-task-references.sh) still appears on ^FINDING, proving the `grep
 #       '^FINDING '` filter still passes a genuine blocking finding through unaffected.
 # =====================================================================
-gate16_stdout="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_GATE16_WARN" 2>/dev/null)"
+# Single invocation capturing BOTH streams (not two separate runs of the same expensive
+# fixture process) -- this closed a logged flaky-test class: run-all.sh observed this exact
+# case (r-a2/r-b) transiently fail under resource contention with a concurrently-running
+# sibling /orchestrate task's own verify-deploy.sh fixture processes, and re-running in
+# isolation always passed cleanly. Spawning the fixture process TWICE back-to-back for what is
+# otherwise an identical invocation doubled this case's exposure to that contention window for
+# no benefit -- stdout and stderr of the SAME run are captured together via a scratch file
+# (inside $WORKDIR, so the existing EXIT trap cleans it up) rather than re-running the command.
+gate16_stderr_file="$(mktemp -p "$WORKDIR" gate16-stderr.XXXXXX)"
+gate16_stdout="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_GATE16_WARN" 2>"$gate16_stderr_file")"
 gate16_rc=$?
-gate16_stderr="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_GATE16_WARN" 2>&1 1>/dev/null)"
+gate16_stderr="$(cat "$gate16_stderr_file")"
 
 if ! printf '%s\n' "$gate16_stdout" | grep -q '^FINDING gate16'; then
   common_test_pass "case(r-a): gate16's routing_hard/routing_agents_hard notice emits no ^FINDING gate16 line"

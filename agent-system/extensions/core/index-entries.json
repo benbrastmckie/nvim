@@ -2356,7 +2356,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H4 adversarial verification contract: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol, Forbidden Verification Outputs, and domain specialization for cslib/lean4",
-      "line_count": 103,
+      "line_count": 105,
       "keywords": [
         "adversarial-verification",
         "claim-verification-bar",
