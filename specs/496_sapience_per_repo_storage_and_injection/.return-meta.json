@@ -1,16 +1,62 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/496_sapience_per_repo_storage_and_injection/summaries/01_sapience-per-repo-storage-injection-summary.md",
+      "summary": "All 7 phases completed: two new sapience scripts (repo-filtered read, explicit:true write), manifest declaration, the orchestrate-build-dispatch.sh retrieval swap, design-record amendment, and the full live verification round trip plus end-to-end degradation checks."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Gave the sapience extension repo-scoped storage and per-dispatch context injection via two new scripts (sapience-retrieve.sh, sapience-remember.sh), swapped core's orchestrate-build-dispatch.sh Stage 3.5 memory_context call site to the new retrieval script with guard/wrapper/argument shape unchanged, and amended the extension's design record to document the shipped mechanism and its three hazards (no delete API, unreviewed permanent writes, two differently-shaped vault populations)."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
+    "agent-system/extensions/sapience/scripts/sapience-remember.sh",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/subagent-orientation.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+    "agent-system/extensions/sapience/context/project/sapience/README.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/EXTENSION.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A deployed .claude/scripts/<name>.sh that sources lib/common.sh relative to its own SCRIPT_DIR cannot be invoked standalone from its agent-system/extensions/<ext>/scripts/ source-store location before a deploy, because lib/common.sh only exists in the shared deployed tree. Pre-deploy verification of a brand-new sibling script is limited to shellcheck plus argument-validation paths that return before the source line; deeper invocation checks (real network calls, --dry-run body shape) must wait for the first deploy.",
+      "category": "PATTERN",
+      "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/summaries/01_sapience-per-repo-storage-injection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-root-guard", "lib/common.sh", "pre-deploy verification", "new script", "extension scripts"]
+    },
+    {
+      "content": "verify-deploy.sh's full gate battery (especially gate 8's shell-suite run-all.sh, timeout_s=1500) can take 10-25+ minutes end to end, more under concurrent repo contention from another active session. The honest, fast covering check for a narrow change is a suite_selection_select-driven run-all.sh --only subset (or a scoped --only-gate N invocation), not a routine full unqualified run; reserve the full run for the phase(s) whose own Verification Tier is 'full' and genuinely has no cheaper subset.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/summaries/01_sapience-per-repo-storage-injection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy.sh", "gate8", "run-all.sh", "verification tier", "bounded wait"]
+    },
+    {
+      "content": "On the Sapience hosted vault, /v1/search's source= parameter matches a substring of each KO's provenance field as a hard pre-filter (not a ranking signal), while the structured project field is silently ignored and source_loc is not search-matchable at all. Any per-repo or per-tenant scoping scheme against this vault must embed the scope marker directly in provenance text and write through POST /ingest-kos (never the MCP sapience_remember tool, whose provenance string is connector-fixed with no injectable marker).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/summaries/01_sapience-per-repo-storage-injection-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sapience", "provenance", "source filter", "ingest-kos", "per-repo scoping"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794326188_f2c11d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   },
-  "dispatch_seq": 3,
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
     "agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md"
