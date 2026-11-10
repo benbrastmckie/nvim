@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "artifacts": [
     {
       "type": "plan",
@@ -13,18 +13,49 @@
       "category": "PATTERN",
       "source_artifact": "specs/499_retire_memory_extension/plans/01_retarget-distill-submodes-and-cleanup.md",
       "confidence": 0.85,
-      "suggested_keywords": ["hosted-store-migration", "enumeration-to-query", "correlation-inversion", "reachability-probe", "ambiguous-failure-signal"]
+      "suggested_keywords": [
+        "hosted-store-migration",
+        "enumeration-to-query",
+        "correlation-inversion",
+        "reachability-probe",
+        "ambiguous-failure-signal"
+      ]
     }
   ],
   "metadata": {
-    "session_id": "sess_1794343931_696ebd_499",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "session_id": "sess_1794343931_696ebd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phase_count": 7,
     "estimated_hours": 10.5,
-    "dependency_waves": [[1, 2, 6], [3], [4, 5], [7]]
+    "dependency_waves": [
+      [
+        1,
+        2,
+        6
+      ],
+      [
+        3
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        7
+      ]
+    ]
   },
   "next_steps": "Run /orchestrate 499 to execute the plan",
-  "dispatch_seq": 10
+  "dispatch_seq": 10,
+  "started_at": "2026-11-10T21:36:49Z",
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Dispatch 13 implement phase starting; parsing plan with 7 phases across 4 waves"
+  }
 }

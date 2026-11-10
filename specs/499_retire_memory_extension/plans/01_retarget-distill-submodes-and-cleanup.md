@@ -1,7 +1,7 @@
 # Implementation Plan: Task #499
 
 - **Task**: 499 - Retarget the store-coupled distill sub-modes and retire the memory extension (Parts A, B, C, C2 only; Part D out of scope per the dispatch's SCOPE NARROWING section)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10.5 hours
 - **Dependencies**: 496 (completed), 497 (completed)
 - **Research Inputs**: specs/499_retire_memory_extension/reports/01_retarget-distill-submodes-and-cleanup.md
@@ -233,7 +233,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Migrate the extension Stage 4a retrieval call sites [NOT STARTED]
+### Phase 1: Migrate the extension Stage 4a retrieval call sites [IN PROGRESS]
 
 **Goal**: Every per-extension research/implementation skill reaches memory context through the
 sapience retrieval script, so the local retrieval script can be deleted in Phase 4 without

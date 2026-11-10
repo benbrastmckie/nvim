@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Migrate the extension Stage 4a retrieval call sites",
+  "started_at": "2026-11-10T00:00:00Z",
+  "last_updated": "2026-11-10T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive live call-site set via grep (25 files across 12 extensions, confirmed)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Substitute script name in books extension", "status": "done", "files_touched": ["agent-system/extensions/books/skills/skill-books-implementation/SKILL.md", "agent-system/extensions/books/skills/skill-books-research/SKILL.md"]},
+    {"id": 3, "description": "Substitute script name in cslib extension", "status": "done", "files_touched": ["agent-system/extensions/cslib/skills/skill-cslib-implementation/SKILL.md", "agent-system/extensions/cslib/skills/skill-cslib-research/SKILL.md", "agent-system/extensions/cslib/skills/skill-pr-review-implementation/SKILL.md", "agent-system/extensions/cslib/skills/skill-pr-review-research/SKILL.md"]},
+    {"id": 4, "description": "Substitute script name in email extension", "status": "done", "files_touched": ["agent-system/extensions/email/skills/skill-email-implementation/SKILL.md"]},
+    {"id": 5, "description": "Substitute script name in epidemiology extension", "status": "done", "files_touched": ["agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md", "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md"]},
+    {"id": 6, "description": "Substitute script name in latex extension", "status": "done", "files_touched": ["agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md", "agent-system/extensions/latex/skills/skill-latex-research/SKILL.md"]},
+    {"id": 7, "description": "Substitute script name in nix extension", "status": "done", "files_touched": ["agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md", "agent-system/extensions/nix/skills/skill-nix-research/SKILL.md"]},
+    {"id": 8, "description": "Substitute script name in nvim extension", "status": "done", "files_touched": ["agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md", "agent-system/extensions/nvim/skills/skill-neovim-research/SKILL.md"]},
+    {"id": 9, "description": "Substitute script name in python extension", "status": "done", "files_touched": ["agent-system/extensions/python/skills/skill-python-implementation/SKILL.md", "agent-system/extensions/python/skills/skill-python-research/SKILL.md"]},
+    {"id": 10, "description": "Substitute script name in rust extension", "status": "done", "files_touched": ["agent-system/extensions/rust/skills/skill-rust-implementation/SKILL.md", "agent-system/extensions/rust/skills/skill-rust-research/SKILL.md"]},
+    {"id": 11, "description": "Substitute script name in typst extension", "status": "done", "files_touched": ["agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md", "agent-system/extensions/typst/skills/skill-typst-research/SKILL.md"]},
+    {"id": 12, "description": "Substitute script name in web extension", "status": "done", "files_touched": ["agent-system/extensions/web/skills/skill-web-implementation/SKILL.md", "agent-system/extensions/web/skills/skill-web-research/SKILL.md"]},
+    {"id": 13, "description": "Substitute script name in z3 extension", "status": "done", "files_touched": ["agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md", "agent-system/extensions/z3/skills/skill-z3-research/SKILL.md"]},
+    {"id": 14, "description": "Confirm sapience-retrieve.sh declared in sapience manifest provides.scripts", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 14,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
