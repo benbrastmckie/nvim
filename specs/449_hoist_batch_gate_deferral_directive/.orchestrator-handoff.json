@@ -1,15 +1,21 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 5,
-  "summary": "Wrote a 5-phase plan implementing candidate mechanism (1): hoist the `## Batch Gate Deferral` emission block in orchestrate-build-dispatch.sh to sit immediately after `## Description`, ahead of `## Artifact Round` and the whole `## Plan`/`## Continuation`/`## Phase Mission` group, with an explicit implement-phase guard replacing the block nesting it loses. Options (2) and (3) are recorded as considered-and-rejected: (2) cannot reach the ordinary non-hard-mode dispatch shape that actually failed, (3) cannot be built fail-open today. The plan also adds the unmappable-criterion clause the folded-in evidence shows missing, pins the emitted POSITION plus the heading string in the composer's fixture suite, records the decision in three contracts, and redeploys. Every carried figure in the dispatch was re-validated and the result stated; the plan validates with zero warnings.",
-  "blockers": [],
+  "status": "implemented",
+  "dispatch_seq": 25,
+  "phase": "implement",
+  "summary": "Hoisted orchestrate-build-dispatch.sh's ## Batch Gate Deferral section to sit immediately after ## Description, ahead of the Plan/Phase Mission group it constrains, under an explicit implement-phase guard, and added a forward-pointer plus an unmappable-criterion clause. Pinned the new position and heading string in test-orchestrate-build-dispatch.sh (201/0 passing), recorded the decision and two rejected alternatives in the durable contracts, and redeployed with all 5 plan phases verified and committed.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/449_hoist_batch_gate_deferral_directive/summaries/01_hoist-batch-gate-deferral-siting-summary.md",
+      "summary": "Full implementation summary covering all 5 phases, decisions, deviations, and verification evidence."
+    },
     {
       "type": "plan",
       "path": "specs/449_hoist_batch_gate_deferral_directive/plans/01_hoist-batch-gate-deferral-siting.md",
-      "summary": "5-phase, 3.25-hour plan hoisting the Batch Gate Deferral directive ahead of the plan body, pinning its emitted position, and recording the chosen mechanism."
+      "summary": "5-phase plan, all phases [COMPLETED]."
     }
   ],
-  "dispatch_seq": 24
+  "phases_completed": 5,
+  "phases_total": 5,
+  "blockers": []
 }
