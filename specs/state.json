@@ -24421,6 +24421,11 @@
           "path": "specs/499_retire_memory_extension/plans/01_retarget-distill-submodes-and-cleanup.md",
           "type": "plan",
           "summary": "Seven phases in four waves, 10.5h estimated: Phase 1 migrates the 25 extension Stage 4a retrieval call sites; Phase 2 retargets --revise and --learn onto hosted knowledge objects; Phase 3 deletes the six hosted-store-redundant sub-modes with a surgical scoring-engine prune; Phase 4 deletes the two orphaned core scripts and updates every reference; Phase 5 strips /todo's archive-time harvest; Phase 6 closes the tagged-write loop; Phase 7 redeploys and runs the complete gate set."
+        },
+        {
+          "path": "specs/499_retire_memory_extension/summaries/01_retarget-distill-submodes-and-cleanup-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 7 phases, decisions, plan deviations, verification evidence, and follow-ups (notably the external Sapience write-hang observation)."
         }
       ],
       "project_number": 499,
@@ -25048,7 +25053,8 @@
         ]
       },
       "session_id": "sess_1794343931_696ebd",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Retargeted /distill's --revise and --learn onto the hosted Sapience knowledge store, deleted the six sub-modes the hosted store already performs server-side, removed the two orphaned core scripts (memory-retrieve.sh, memory-harvest.sh) and ~27 reference files, stripped /todo's archive-time memory harvest, and wired the sapience postflight wrapup to write repo-tagged notes. All 7 plan phases closed; Phase 7 closed COMPLETED WITH EXCLUSIONS with four reasoned, fully-investigated exclusions, none attributable to this task's own deliverable."
     },
     {
       "project_number": 500,

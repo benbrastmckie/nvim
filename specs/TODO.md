@@ -6063,6 +6063,7 @@ Recorded here so research does not revisit them:
 - **Dependencies**: Task 496, Task 497
 - **Research**: [499_retire_memory_extension/reports/01_retarget-distill-submodes-and-cleanup.md]
 - **Plan**: [499_retire_memory_extension/plans/01_retarget-distill-submodes-and-cleanup.md]
+- **Summary**: [499_retire_memory_extension/summaries/01_retarget-distill-submodes-and-cleanup-summary.md]
 
 **Description**: Retarget the two store-coupled `/distill` sub-modes onto the hosted store, drop the six that the hosted store already performs, remove core's now-orphaned callers, and retire the memory extension.
 
