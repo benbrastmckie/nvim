@@ -111,7 +111,7 @@ next_project_number: 578
 
 ### Orchestrator
 
-450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
+450 [RESEARCHED] — Require a settled user-decision route to name the obligation...
   └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
@@ -8104,10 +8104,11 @@ rules/plan-compliance.md is added to file_scope: its "Mechanical check" paragrap
 ---
 
 ### 450. Require a settled user-decision route to name the obligation it discharges, and check that claim before a dispatch spends a cycle on it
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 274, Task 275, Task 328, Task 360, Task 378, Task 407, Task 420, Task 435, Task 443, Task 448, Task 449
+- **Research**: [450_validate_settled_route_before_dispatch/reports/01_validate-settled-route-before-dispatch.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

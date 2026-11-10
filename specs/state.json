@@ -4474,7 +4474,7 @@
     {
       "project_number": 450,
       "project_name": "validate_settled_route_before_dispatch",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Require a settled user-decision route to name the obligation it discharges, and check that claim before a dispatch spends a cycle on it",
       "topic": "orchestrator",
@@ -4502,9 +4502,17 @@
         "agent-system/extensions/core/docs/architecture/handoff-schema.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/450_validate_settled_route_before_dispatch/reports/01_validate-settled-route-before-dispatch.md",
+          "type": "report",
+          "summary": "Confirms the decision-pipeline gap (no obligation field, no validity check) field-for-field against the live source store; reconciles with the adjacent composer feature (premise re-validation) and rules it does NOT already cover a settled route as an acted-on premise (different data source, different claim shape); finds the decisive Owner-ruling precedent (composer emits, receiving agent adjudicates; general conflict detection explicitly excluded in writing) and recommends candidates (1)+(3) over (1)+(2) on architectural-precedent grounds, with the mirror-image fixture folded in as a proposal-time self-check rather than a schema-side check."
+        }
+      ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-04T23:00:33Z"
+      "last_updated": "2026-11-10T08:41:17Z",
+      "session_id": "sess_1794272256_212466",
+      "next_artifact_number": 2
     },
     {
       "project_number": 451,
