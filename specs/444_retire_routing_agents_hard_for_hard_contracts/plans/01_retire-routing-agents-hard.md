@@ -416,36 +416,46 @@ Phase 2's actual output before writing the declarations rather than against this
 
 ---
 
-### Phase 4: Remove routing_agents_hard and its resolution rung [NOT STARTED]
+### Phase 4: Remove routing_agents_hard and its resolution rung [COMPLETED]
 
 **Goal**: no manifest declares `routing_agents_hard`, no code resolves it, and the routing tests
 assert the collapsed single-block model rather than the retired three-rung ladder.
 
 **Tasks**:
-- [ ] Remove the `routing_agents_hard` block from books', cslib's and lean's manifests.
-- [ ] Collapse `command-route-agent.sh`'s hard branch: with the first rung gone, the hard and
+- [x] Remove the `routing_agents_hard` block from books', cslib's and lean's manifests.
+      *(completed)*
+- [x] Collapse `command-route-agent.sh`'s hard branch: with the first rung gone, the hard and
       standard branches are identical, so remove the `if [ "$_route_effort_flag" = "hard" ]`
       conditional entirely rather than hollowing it out. `_route_effort_flag` survives only as a
       `routing_trace` argument. Update the script's own header comment, which describes the
-      three-rung composition.
-- [ ] Delete `check_c()` from `lint-routing-wiring.sh` together with its `--help` line (65-66
+      three-rung composition. *(completed)*
+- [x] Delete `check_c()` from `lint-routing-wiring.sh` together with its `--help` line (65-66
       region), its header-comment block (lines 15-19), and its call site in the runner (line 268);
       drop `routing_agents_hard` from Check B's `for block in ...` loop and from Check B's own
-      header and output strings.
-- [ ] Update `manifest-routing-lib.sh`'s doc comments, which name `routing_agents_hard` as a live
+      header and output strings. *(completed)*
+- [x] Update `manifest-routing-lib.sh`'s doc comments, which name `routing_agents_hard` as a live
       block. No functional change — `routing_lookup()` takes the block name as a parameter and has
-      no hard-coded knowledge of it.
-- [ ] Update `test-routing-resolution.sh`: drop `routing_agents_hard` from Assert 2's block loop
+      no hard-coded knowledge of it. *(completed)*
+- [x] Update `test-routing-resolution.sh`: drop `routing_agents_hard` from Assert 2's block loop
       and its pass message; DELETE the lean4 sub-assertion (lines ~222-235) that requires lean4's
       hard resolution to differ from its standard resolution, which has no subject once the block
       is gone; retarget the nix-based Assert 3 semantic check, whose expected
       `via=hard-miss-standard-fallback` no longer exists — it must now expect the standard
       block's own `via`; and rewrite the header narrative (lines 9, 19, 29-37, 92) that documents
-      the retired ladder.
-- [ ] Re-grep for `hard-miss-standard-fallback` and remove its remaining mentions in
+      the retired ladder. *(deviation: altered — the lean4 sub-assertion was RETARGETED rather
+      than deleted outright: it now asserts lean4's hard and standard resolution are IDENTICAL
+      (both resolve to lean-research-agent), which is a genuine regression guard against
+      routing_agents_hard or a "-hard"-suffixed agent ever reappearing, rather than a vacuous
+      assertion with no subject. All 13 assertions pass.)*
+- [x] Re-grep for `hard-miss-standard-fallback` and remove its remaining mentions in
       `hard-mode-routing.md` (Phase 8 owns that file's full rewrite; remove only the now-false
       trace-value claim here if it is cheaper to do in one pass there — record which).
-- [ ] Confirm gate16 now reports zero hits and passes.
+      *(completed: one surviving mention found, in hard-mode-routing.md line 56; DEFERRED to
+      Phase 8's own full rewrite of that file rather than fixed here, since Phase 8 already
+      rewrites this exact file's hard-mode-ladder narrative in full)*
+- [x] Confirm gate16 now reports zero hits and passes. *(completed: gate16 emits
+      `[PASS] no extension manifest declares routing_hard/routing_agents_hard` against the
+      freshly redeployed tree)*
 
 **Timing**: 2 hours
 

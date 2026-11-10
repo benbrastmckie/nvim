@@ -57,14 +57,6 @@
       "pr": "pr-review-implementation-agent"
     }
   },
-  "routing_agents_hard": {
-    "research": {
-      "cslib": "cslib-research-hard-agent"
-    },
-    "implement": {
-      "cslib": "cslib-implementation-hard-agent"
-    }
-  },
   "hard_contracts": {
     "_comment": "lean4-context-hygiene.md is a DELIBERATE cross-extension dependency, not a copy-paste error: cslib's --hard dispatches edit Lean theorem files and reuse lean's goal-state/hypothesis-pruning discipline wholesale (see agent-system/extensions/lean/context/contracts/lean4-context-hygiene.md, which declares itself a standalone Lean4/CSLib contract with no core baseline). This requires the lean extension to be loaded alongside cslib for the path to resolve at deploy time.",
     "cslib": [

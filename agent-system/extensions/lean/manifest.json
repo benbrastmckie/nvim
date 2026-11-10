@@ -110,14 +110,6 @@
       "lean4:version": "lean-implementation-agent"
     }
   },
-  "routing_agents_hard": {
-    "research": {
-      "lean4": "lean-research-hard-agent"
-    },
-    "implement": {
-      "lean4": "lean-implementation-hard-agent"
-    }
-  },
   "hard_contracts": {
     "lean4": [
       "replace:anti-analysis.md:lean4-anti-analysis.md",

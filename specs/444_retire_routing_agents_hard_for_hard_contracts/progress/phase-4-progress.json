@@ -1,0 +1,49 @@
+{
+  "phase": 4,
+  "phase_name": "Remove routing_agents_hard and its resolution rung",
+  "started_at": "2026-11-10T06:00:00Z",
+  "last_updated": "2026-11-10T06:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove routing_agents_hard from books/cslib/lean manifests", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/manifest.json",
+        "agent-system/extensions/cslib/manifest.json",
+        "agent-system/extensions/lean/manifest.json"
+      ]},
+    {"id": 2, "description": "Collapse command-route-agent.sh's hard branch", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/command-route-agent.sh"]},
+    {"id": 3, "description": "Delete lint-routing-wiring.sh Check C and narrow Check B", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-routing-wiring.sh"]},
+    {"id": 4, "description": "Update manifest-routing-lib.sh doc comments", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh"]},
+    {"id": 5, "description": "Update test-routing-resolution.sh for the collapsed single-rung model", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]},
+    {"id": 6, "description": "Re-grep hard-miss-standard-fallback, defer hard-mode-routing.md fix to Phase 8", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm gate16 reports zero hits and passes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "DELETE the lean4 sub-assertion in test-routing-resolution.sh that requires lean4's hard resolution to differ from its standard resolution",
+      "type": "altered",
+      "reason": "Retargeted instead of deleted: the assertion now confirms lean4's hard and standard resolution are IDENTICAL, which is a genuine regression guard (catches routing_agents_hard or a -hard agent name ever reappearing) rather than dead code with no subject.",
+      "annotation": "*(deviation: altered -- the lean4 sub-assertion was RETARGETED rather than deleted outright ...)*"
+    },
+    {
+      "task_id": "4.6",
+      "description": "Re-grep for hard-miss-standard-fallback and remove its remaining mentions in hard-mode-routing.md",
+      "type": "deferred",
+      "reason": "One surviving mention (line 56) deferred to Phase 8, which already owns this file's full rewrite of the hard-mode-ladder narrative -- cheaper to fix once there than twice.",
+      "annotation": "*(completed: ... DEFERRED to Phase 8's own full rewrite ...)*"
+    }
+  ],
+  "notes": [
+    "grep -rn routing_agents_hard|routing_hard agent-system/extensions/*/manifest.json confirms empty.",
+    "test-routing-resolution.sh: all 13 assertions pass (verified by direct invocation).",
+    "lint-routing-wiring.sh --verbose: 262 passed, 0 failed, no Check C output, no remaining reference to it.",
+    "Post-Phase-4 deploy-headless.sh fast-gate pass: 3/41 failed, all three the same pre-existing/unrelated findings triaged in Phase 2 (eager-load budget, shellcheck, dead-command-recommendation). Gate 16 now [PASS] (was [WARN] before this phase)."
+  ]
+}

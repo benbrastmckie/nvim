@@ -9,14 +9,9 @@
 #      resolve to non-existent files. Keys present in `plan`/`implement` but absent from
 #      `research` (including an extension-specific op's own keys, e.g. `present`'s bare `slides`
 #      key) are REPORTed, never failed.
-#   B. Every value in `.routing_agents` / `.routing_agents_hard` names an agent file that exists
-#      somewhere under agent-system/extensions/*/agents/ in the source store. A declaration
-#      pointing at a non-existent agent is a FAIL.
-#   C. `routing_agents_hard` internal completeness: every task_type declared under any
-#      `.routing_agents_hard.{op}` has a same-op counterpart key under `.routing_agents.{op}` (a
-#      hard-mode entry for a task_type standard mode cannot route is the gap this catches). Plan
-#      parity is NOT required in `routing_agents_hard` -- `cslib` and `lean` legitimately declare
-#      `research` + `implement` only.
+#   B. Every value in `.routing_agents` names an agent file that exists somewhere under
+#      agent-system/extensions/*/agents/ in the source store. A declaration pointing at a
+#      non-existent agent is a FAIL.
 #   D. (Report, never fail) Every `(op, task_type)` pair whose declared routing_agents value is a
 #      `general-*` agent, so deliberate general-routing stays visible and auditable rather than
 #      indistinguishable from an accidental gap.
@@ -62,8 +57,7 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Checks:"
       echo "  A. Every routing_agents.research task_type has routing_agents.plan/.implement counterparts"
-      echo "  B. Every routing_agents/routing_agents_hard value names an agent file that exists"
-      echo "  C. Every routing_agents_hard.{op} task_type has a routing_agents.{op} counterpart"
+      echo "  B. Every routing_agents value names an agent file that exists"
       echo "  D. (Report only) general-* agent declarations, for visibility"
       echo ""
       echo "Exit codes: 0 = all pass, 1 = failures found, 2 = environment/usage error"
@@ -177,41 +171,17 @@ check_a() {
   fi
 }
 
-# ── Check C: routing_agents_hard.{op}.{tt} has a same-op routing_agents.{op}.{tt} counterpart ──
-check_c() {
-  echo ""
-  echo "--- Check C: routing_agents_hard.{op} task_types have routing_agents.{op} counterparts ---"
-
-  while IFS= read -r manifest; do
-    [[ -z "$manifest" ]] && continue
-    local rel
-    rel="$(rel_path "$manifest")"
-
-    while IFS=$'\t' read -r op tt; do
-      [[ -z "$op" ]] && continue
-      local has_counterpart
-      has_counterpart=$(jq -r --arg op "$op" --arg tt "$tt" \
-        '((.routing_agents[$op] // {}) | has($tt))' "$manifest" 2>/dev/null)
-      if [[ "$has_counterpart" == "true" ]]; then
-        log_pass "$rel: routing_agents_hard.$op.$tt has a routing_agents.$op counterpart"
-      else
-        log_fail "$rel: routing_agents_hard.$op.$tt has NO routing_agents.$op counterpart"
-      fi
-    done < <(jq -r '(.routing_agents_hard // {}) | to_entries[] | .key as $op | (.value | keys[]) as $tt | "\($op)\t\($tt)"' "$manifest" 2>/dev/null)
-  done < <(find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort)
-}
-
-# ── Check B: every routing_agents/routing_agents_hard value names an agent that exists ─────────
+# ── Check B: every routing_agents value names an agent that exists ─────────────────────────────
 check_b() {
   echo ""
-  echo "--- Check B: every routing_agents/routing_agents_hard value names an existing agent file ---"
+  echo "--- Check B: every routing_agents value names an existing agent file ---"
 
   while IFS= read -r manifest; do
     [[ -z "$manifest" ]] && continue
     local rel
     rel="$(rel_path "$manifest")"
 
-    for block in routing_agents routing_agents_hard; do
+    for block in routing_agents; do
       while IFS=$'\t' read -r op tt agent; do
         [[ -z "$op" ]] && continue
         local found=false
@@ -265,7 +235,6 @@ main() {
 
   check_a
   check_b
-  check_c
   check_d
 
   echo ""

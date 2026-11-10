@@ -76,14 +76,6 @@
       "books:certify": "books-implementation-agent"
     }
   },
-  "routing_agents_hard": {
-    "research": {
-      "books": "books-research-hard-agent"
-    },
-    "implement": {
-      "books": "books-implementation-hard-agent"
-    }
-  },
   "keyword_overrides": {
     "books": {
       "keywords": [

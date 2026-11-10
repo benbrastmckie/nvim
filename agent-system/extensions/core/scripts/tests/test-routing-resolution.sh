@@ -26,12 +26,17 @@
 #     call site, invoked once per candidate with a phase-derived default_agent, rather than three
 #     separate call sites) -- Assert 3 below checks that site instead of SKILL.md's now-absent
 #     Stage 1b, plus that SKILL.md's single Move 2 site still dispatches the row's resolved
-#     `agent` field. Separately, hard-mode agent resolution
-#     (command-route-agent.sh itself, exercised directly, not via the SKILL.md prose) still falls
-#     back to the extension's own standard (non-hard) routing_agents block on a routing_agents_hard
-#     miss -- via="hard-miss-standard-fallback" -- rather than discarding the declared domain
-#     agent, and only reaches the caller's generic hard default on a genuine total miss of both
-#     blocks.
+#     `agent` field. Separately, hard-mode agent resolution (command-route-agent.sh itself,
+#     exercised directly, not via the SKILL.md prose) is now asserted to be IDENTICAL to standard
+#     resolution for every task_type: `routing_agents_hard` is retired (see
+#     context/guides/manifest-routing-schema.md's "Override Contract Placement Convention" and
+#     "Current status" sections), so the three-rung hard-mode ladder this suite used to exercise
+#     (hard-hit -> standard-fallback -> caller default) has collapsed to the SAME single
+#     `routing_agents` lookup standard mode already uses; a `--hard` dispatch's domain-specific
+#     behavior is now provided entirely by `hard_contracts` contract injection
+#     (orchestrate-build-dispatch.sh's Stage 3.5), a parallel mechanism this suite does not cover.
+#     The only rung that remains is the genuine total miss, which still falls back to the
+#     caller's default.
 #   Assert 4 (precedence direction): a synthetic fixture where a non-core manifest and a
 #     core-named manifest both declare the same (op, task_type) confirms the non-core entry wins
 #     -- pinning first-match-wins against a regression to the former standalone hard-mode
@@ -88,8 +93,8 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 # =====================================================================
-# Assert 2: agent existence -- command-route-agent.sh resolves every declared routing_agents /
-# routing_agents_hard pair to a file that exists on disk.
+# Assert 2: agent existence -- command-route-agent.sh resolves every declared routing_agents
+# pair to a file that exists on disk.
 # =====================================================================
 echo ""
 echo "--- Assert 2: agent existence ---"
@@ -98,7 +103,7 @@ assert2_failures=0
 assert2_checked=0
 while IFS= read -r manifest; do
   [ -z "$manifest" ] && continue
-  for block in routing_agents routing_agents_hard; do
+  for block in routing_agents; do
     while IFS=$'\t' read -r op tt agent; do
       [ -z "$op" ] && continue
       assert2_checked=$((assert2_checked + 1))
@@ -117,7 +122,7 @@ while IFS= read -r manifest; do
 done < <(find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort)
 
 if [ "$assert2_failures" -eq 0 ]; then
-  common_test_pass "Assert 2: all $assert2_checked routing_agents/routing_agents_hard declarations name an existing agent file"
+  common_test_pass "Assert 2: all $assert2_checked routing_agents declarations name an existing agent file"
 fi
 
 # =====================================================================
@@ -175,19 +180,10 @@ else
   common_test_fail "Assert 3 (branch-aware): could not locate Move 2/Move 3 region boundaries in skill-orchestrate/SKILL.md (move2_start=${move2_start:-MISSING} move3_start=${move3_start:-MISSING})"
 fi
 
-# Semantic: for task types with NO routing_agents_hard entry anywhere, hard-mode resolution must
-# fall back to the extension's own declared standard routing_agents agent (via
-# "hard-miss-standard-fallback") rather than discarding it in favor of the caller's generic hard
-# default -- this is the corrected contract this task's fix implements. `neovim` -> expects
-# neovim-research-agent; `nix` -> expects nix-research-agent.
-#
-# Fixture-coupling note: `nix` is currently one of the 14 extensions that declare routing_agents
-# without routing_agents_hard (see the research report), so today it exercises the
-# standard-fallback rung. If a future task declares a routing_agents_hard block for `nix`, this
-# fixture's expected value must move from `nix-research-agent` (standard-fallback rung, via
-# "hard-miss-standard-fallback") to that new hard-block value (hard-hit rung, via from
-# routing_lookup). The fixture is pinned to nix's CURRENT absence of a hard block, not to nix as
-# a permanent no-hard-block example.
+# Semantic: routing_agents_hard is retired, so hard-mode resolution is now IDENTICAL to standard
+# resolution for every task_type -- there is no second lookup rung left to miss. `neovim` ->
+# expects neovim-research-agent; `nix` -> expects nix-research-agent; both via=noncore-exact
+# (the standard block's own via, not a "fallback" rung -- that trace value no longer exists).
 declare -A _assert3_semantic_expected=( [neovim]="neovim-research-agent" [nix]="nix-research-agent" )
 for tt in neovim nix; do
   expected="${_assert3_semantic_expected[$tt]}"
@@ -200,14 +196,14 @@ for tt in neovim nix; do
       bash -c "source '$ROUTE_AGENT_SRC' 'research' '$tt' 'general-research-agent' 'hard' 2>&1 1>/dev/null"
   )
   hard_via=$(echo "$hard_trace" | grep -o 'via=[a-zA-Z-]*' | tail -n 1 | cut -d= -f2)
-  if [ "$hard_actual" = "$expected" ] && [ "$hard_via" = "hard-miss-standard-fallback" ]; then
-    common_test_pass "Assert 3 (semantic): $tt has no routing_agents_hard entry, hard-mode falls back to the standard block's own agent ($expected, via=hard-miss-standard-fallback), not the caller's generic hard default"
+  if [ "$hard_actual" = "$expected" ] && [ "$hard_via" = "noncore-exact" ]; then
+    common_test_pass "Assert 3 (semantic): $tt resolves identically under hard and standard mode ($expected, via=noncore-exact) -- no separate hard-mode rung remains"
   else
-    common_test_fail "Assert 3 (semantic): $tt hard-mode resolved '$hard_actual' (via=$hard_via), expected standard-fallback to '$expected' (via=hard-miss-standard-fallback)"
+    common_test_fail "Assert 3 (semantic): $tt hard-mode resolved '$hard_actual' (via=$hard_via), expected '$expected' (via=noncore-exact)"
   fi
 done
 
-# Fourth semantic case: a never-declared task_type must still resolve to the caller-supplied
+# Second semantic case: a never-declared task_type must still resolve to the caller-supplied
 # default under hard mode -- the genuine total-miss rung, which no existing fixture exercises.
 _total_miss_actual=$(
   cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
@@ -219,8 +215,10 @@ else
   common_test_fail "Assert 3 (semantic): never-declared task_type under hard mode resolved '$_total_miss_actual', expected caller default 'general-research-agent'"
 fi
 
-# lean4 DOES have a routing_agents_hard entry, and it must differ from the standard entry
-# (proving hard mode reads a different block, not the same one twice under different names).
+# Third semantic case: lean4 (whose --hard dispatches now receive contract injection via
+# hard_contracts rather than a separate agent) resolves to the SAME agent under hard and
+# standard mode -- the regression guard for the retired ladder: hard mode must never again
+# resolve a "-hard"-suffixed agent name, since no manifest declares one any more.
 lean_std=$(
   cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
     bash -c "source '$ROUTE_AGENT_SRC' 'research' 'lean4' 'general-research-agent' '' 2>/dev/null; echo \"\$AGENT_NAME\""
@@ -229,10 +227,10 @@ lean_hard=$(
   cd "$REPO_ROOT" && ROUTE_MANIFEST_ROOT=agent-system \
     bash -c "source '$ROUTE_AGENT_SRC' 'research' 'lean4' 'general-research-agent' 'hard' 2>/dev/null; echo \"\$AGENT_NAME\""
 )
-if [ "$lean_std" = "lean-research-agent" ] && [ "$lean_hard" = "lean-research-hard-agent" ] && [ "$lean_std" != "$lean_hard" ]; then
-  common_test_pass "Assert 3 (semantic): lean4 standard ($lean_std) and hard ($lean_hard) resolve to distinct, correctly-declared agents"
+if [ "$lean_std" = "lean-research-agent" ] && [ "$lean_hard" = "lean-research-agent" ] && [ "$lean_std" = "$lean_hard" ]; then
+  common_test_pass "Assert 3 (semantic): lean4 standard and hard mode both resolve to lean-research-agent ($lean_std) -- no separate -hard agent is resolved any more"
 else
-  common_test_fail "Assert 3 (semantic): lean4 standard='$lean_std' hard='$lean_hard' did not match expected lean-research-agent / lean-research-hard-agent"
+  common_test_fail "Assert 3 (semantic): lean4 standard='$lean_std' hard='$lean_hard' -- expected both to equal lean-research-agent"
 fi
 
 # =====================================================================
