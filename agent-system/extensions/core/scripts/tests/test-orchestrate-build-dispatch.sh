@@ -1383,8 +1383,9 @@ fi
 
 # Heading-string case: the exact literal "## Batch Gate Deferral" must still be present in every
 # known prose consumer. Resolve each via the suite's existing deploy-first / source-store-fallback
-# convention (common_test_resolve_subject-style: try the deployed mirror under REPO_ROOT, fall
-# back to the source-store tree under SCRIPT_DIR/../..), skipping with an explicit note rather
+# convention (the same deployed-mirror-then-source-store-tree order the SUT/library resolution
+# helper above uses: try the deployed mirror under REPO_ROOT, fall back to the source-store tree
+# under SCRIPT_DIR/../..), skipping with an explicit note rather
 # than failing when a consumer is genuinely absent from this repository shape.
 bgd_consumers=(
   "context/contracts/batch-gate-stage.md"
