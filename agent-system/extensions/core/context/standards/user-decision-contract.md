@@ -44,7 +44,8 @@ Set on `.return-meta.json` (always) and, when the same dispatch also writes
     "question": "One or two sentences naming the exact choice.",
     "options": ["Option A — one line", "Option B — one line"],
     "recommended": "Option A — one line",
-    "blocking": false
+    "blocking": false,
+    "obligation": "The specific obligation the recommended route is claimed to discharge."
   }
 }
 ```
@@ -55,6 +56,20 @@ Set on `.return-meta.json` (always) and, when the same dispatch also writes
 | `options` | array of strings | Yes | Every option genuinely on the table (2+) |
 | `recommended` | string | Yes | The agent's own best-judgment pick, one of `options` verbatim |
 | `blocking` | boolean | Yes | Whether the loop must stop and wait, or may proceed on `recommended` |
+| `obligation` | string | **Required for a ROUTE decision**, omitted for a pure-preference decision | The specific obligation the recommended route is claimed to discharge, named concretely enough that the receiving agent can check it against the phase's own artifacts |
+
+A decision is a **ROUTE decision** when the question is "which way do we go to get past this
+obstruction" — the options are candidate ways around a concrete blocker, and one of them is about
+to be acted on as if it resolves that blocker. A decision is a **pure-preference decision** when
+the question is "which of these equally-workable things do you want" — nothing is being resolved,
+only chosen. `obligation` is required for the former and omitted for the latter.
+
+**Downstream path**: `orchestrate-cycle-postflight.sh` relays the whole `user_decision` object
+verbatim into the `ask_user` verdict (it neither validates nor strips unknown keys), the loop's
+batched relay (`skill-orchestrate/SKILL.md`'s Move 4) passes the recorded `obligation` value to
+`orchestrate-record-decision.sh`'s `--obligation` argument when present, and the dispatch
+composer (`orchestrate-build-dispatch.sh`) renders the stored value into the next dispatch's
+`## Prior Decisions` section for the receiving agent to verify.
 
 ## Blocking vs. Non-Blocking
 
@@ -101,3 +116,23 @@ pending question, and do not treat an entry in `decisions_made` as satisfying th
   the decision and its reasoning instead.
 - The question is really "did I do this right" self-doubt, not a genuine fork in the road.
 - A prior artifact in this task already answered the same question — cite it, don't re-ask.
+- **The mirror-polarity self-check — an option set presented as open when it is not.** Before
+  listing `options`, confirm that each one is not already structurally excluded by facts already
+  present in the task's own artifacts (a prior report's or plan's findings). An option set
+  asserted to have several live members when it actually has one is the same defect, in mirror
+  image, as a route asserted to discharge an obligation it does not: both reach a dispatch
+  carrying authority and no checkability. Worked shape: a plan proposes routing a proof through
+  an intermediate lemma as an "implementer's call" alternative to a direct proof, when the
+  intermediate lemma's own module already imports (directly or transitively) the module the
+  direct proof would need — an import cycle the plan's own findings already record. There is only
+  one live option, not two, and it should never have been offered as a choice.
+
+This proposal-time self-check, and the `obligation` requirement above, are never a license to
+re-litigate a question a prior cycle already recorded an answer to — see "Distinction from
+`decisions_made`" above and the "## Prior Decisions" rendering's own "do not re-ask" instruction.
+Both are checks the agent performs **before** raising a NEW question, not an invitation to
+re-open a settled one. Relatedly: an agent's informed adjudication that a route recorded in an
+earlier cycle does not actually discharge its stated obligation is the intended **working case**
+for this contract, not a false refusal — the fail-open posture that governs *mechanical*
+validation (no such validator exists in this pipeline) does not apply to an agent's own judgment
+call.

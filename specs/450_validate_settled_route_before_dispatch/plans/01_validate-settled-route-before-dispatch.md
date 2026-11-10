@@ -244,7 +244,7 @@ block, the hypothesis is wrong and the deviation is recorded in place.
 
 ---
 
-### Phase 2: Require the Claim at Proposal Time — Contract Amendment [NOT STARTED]
+### Phase 2: Require the Claim at Proposal Time — Contract Amendment [IN PROGRESS]
 
 **Goal**: `user-decision-contract.md` requires an option offered as a ROUTE to name the obligation
 it discharges, and requires the proposing agent to confirm each listed option is not already

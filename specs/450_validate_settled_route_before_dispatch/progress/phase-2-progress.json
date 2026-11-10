@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Require the Claim at Proposal Time — Contract Amendment",
+  "started_at": "2026-11-10T01:10:00Z",
+  "last_updated": "2026-11-10T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add obligation to Field Shape section in user-decision-contract.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/user-decision-contract.md"]},
+    {"id": 2, "description": "State downstream path for the field (one or two sentences)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/user-decision-contract.md"]},
+    {"id": 3, "description": "Extend When NOT to Raise One with mirror-polarity self-check", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/user-decision-contract.md"]},
+    {"id": 4, "description": "Add paragraph distinguishing from re-litigation license and fail-open", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/user-decision-contract.md"]},
+    {"id": 5, "description": "Update return-metadata-file.md user_decision shape line", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 6, "description": "Re-read both files for task-number/record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

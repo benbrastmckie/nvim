@@ -649,7 +649,8 @@ any later writer's read-modify-write update to this file untouched.
 the artifacts cannot infer, an external cost or risk the user must accept, or an ambiguity
 research cannot resolve). Absent in every other case — this is not a routine field.
 
-Shape: `{question, options: [...], recommended, blocking: true|false}`. See
+Shape: `{question, options: [...], recommended, blocking: true|false, obligation}` (`obligation`
+optional, required for a ROUTE decision). See
 `context/standards/user-decision-contract.md` for the full contract — when to set it, when NOT
 to, the blocking/non-blocking distinction, and how postflight relays it as an `ask_user` verdict.
 This subsection does not restate that contract. For the git-push-consent specialization of this
