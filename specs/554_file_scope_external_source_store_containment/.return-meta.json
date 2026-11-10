@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794343931_696ebd_554",
+  "dispatch_seq": 14,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md",
+      "summary": "Confirms both compounding causes (genuinely-external source store in a consumer repository; an unexpanded $SD token authored directly in plan prose and harvested verbatim), identifies V9's existing out-of-repository classification in git-commit-scoped.sh as directly reusable precedent, maps the open-backlog boundary against tasks 508/517/548, and recommends a sanctioned source-store marker plus a Site-2 out-of-repository pre-check and second-repository commit step."
+    }
+  ],
+  "next_steps": "Run /orchestrate 554 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "git-commit-scoped.sh's V9 gate already classifies a pathspec resolving outside the repository root as a distinct case (its own out_of_repo_dropped ledger, exit code, and textually-distinct WARN), separate from V10's file_scope containment drop. When investigating a 'not contained in declared file_scope' drop for a path that might actually be outside the repository entirely, check whether the drop happened upstream (e.g. git-commit-phase.sh's Containment Self-Check) before V9 ever got a chance to classify it correctly -- the upstream site's generic message can mask a genuinely different root cause.",
+      "category": "PATTERN",
+      "source_artifact": "specs/554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file_scope", "containment", "git-commit-scoped.sh", "V9", "out-of-repository", "source store"]
+    },
+    {
+      "content": ".claude-extensions.json's source_dir is resolved per-extension (jq -r '.extensions.<name>.source_dir'); a top-level jq -r '.source_dir' returns null and must never be read as the key being absent. Whether a given extension's source_dir is 'external' depends entirely on which repository you resolve it from: the same absolute path can sit inside one repository's own git root (the canonical source-store repository itself) while sitting genuinely outside a different consumer repository's root. Any fix or test for source-store containment must be validated against a genuinely-disjoint consumer-repo scenario, not just the canonical source-store repository's own tree.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["source_dir", ".claude-extensions.json", "deploy boundary", "consumer repository", "per-extension resolution"]
+    }
+  ]
+}
