@@ -1,12 +1,43 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/461_v7_refuses_cached_untracking_pathspec/summaries/01_cached-untracking-commit-path-summary.md",
+      "summary": "Implemented the plan's ruling: git-commit-scoped.sh now classifies, guards, and commits the git rm --cached untracking shape end-to-end, with a regression suite, documentation, and a verified redeploy."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a V11/V12 classification-and-guarded-commit path to git-commit-scoped.sh so a `git rm -r --cached <dir>` untracking (content left on disk) commits cleanly in both gitignored and non-gitignored repos without relocating any file, corrected the V8 intent-snapshot false-positive this shape would otherwise trigger, added a six-case regression cluster with a FAILS-before/PASSES-after demonstration, documented the sanctioned recipe in git-staging-scope.md, and confirmed the REQUIRED OUTCOME end-to-end against the redeployed script."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Pattern for adding a new committable shape to a scoped-commit wrapper (git-commit-scoped.sh) without weakening existing gates: (1) classify the new shape in the PRE-add loop, routing it into the commit-pathspec set but explicitly OUT of the add-pathspec set -- this is what stops `git add` from silently reverting/re-tracking content that must stay untracked; (2) before switching to a wider commit primitive (e.g. a bare `git commit` instead of a pathspec-scoped one) to express a shape the narrower form structurally cannot, add an index-equivalence guard comparing the whole staged-index diff against the same diff restricted to the declared pathspecs -- equal proceeds, unequal refuses, so the wider primitive can never commit outside the caller's declared scope; (3) audit every pre-existing snapshot/intent gate (e.g. a pre-commit hash snapshot used for a post-commit integrity check) for a false-positive against the NEW shape's correct terminal state, and correct it via an explicit membership test (e.g. `git ls-tree` resolving HEAD-tracked members) rather than a string-prefix heuristic.",
+      "category": "PATTERN",
+      "source_artifact": "specs/461_v7_refuses_cached_untracking_pathspec/summaries/01_cached-untracking-commit-path-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-commit-scoped", "scoped commit", "classification gate", "index-equivalence guard", "pre-commit intent snapshot"]
+    },
+    {
+      "content": "To demonstrate a new regression suite's FAILS-before property without ever running a red suite against the live source store: capture the pre-fix file via `git show <pre-fix-sha>:path > scratch-copy`, temporarily `cp` the scratch copy over the real file, run the full suite (new cases should fail, pre-existing cases should still pass), then immediately `cp` the known-good fixed copy (saved beforehand) back over the real file and re-verify with a final full run. This proves the new cases actually exercise the defect without ever leaving the working tree red or requiring a git checkout/stash that could disrupt concurrent writers on a shared tree.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/461_v7_refuses_cached_untracking_pathspec/summaries/01_cached-untracking-commit-path-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["FAILS-before", "regression test", "test suite demonstration", "shared working tree", "pre-fix script extraction"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794343931_696ebd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 5,
     "phases_total": 5
   }
 }

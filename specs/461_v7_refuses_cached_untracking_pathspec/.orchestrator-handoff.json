@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 461,
-  "phase": "plan",
-  "session_id": "sess_1794343931_696ebd_461",
-  "dispatch_seq": 9,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1794343931_696ebd",
+  "dispatch_seq": 12,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Ruled option (2): the --cached untracking gets its own narrow carve-out, kept distinct from the directory-move carve-out, with options (1) and (3) rejected on recorded evidence. A plan-phase probe superseded the research report's recommended fix as a complete fix: no pathspec-scoped 'git commit -- <paths>' form can carry an untracking whose content remains on disk, so the plan handles the shape end-to-end at three sites in git-commit-scoped.sh (V2 pre-add classification, a guarded index-equivalence-verified commit path, and a V8 intent-snapshot correction), leaving V7's exact-exit-code discrimination untouched. Five sequential phases, 8 hours, covering the fix, the Y-cluster regression suite, the git-staging-scope.md record, and a redeploy plus full gate run.",
+  "summary": "Implemented the plan's ruling end-to-end: git-commit-scoped.sh now classifies the git rm --cached untracking shape (content present on disk) before git add via a new V11 predicate, commits it through a guarded bare-commit path (V12) proven index-equivalent to the declared pathspec scope, and corrects the V8 pre-commit intent snapshot so a correctly landed untracking is never misreported as a partial commit. A six-case regression cluster (Y1-Y6) was added with a FAILS-before/PASSES-after demonstration, a durable recipe was documented in git-staging-scope.md, and the source store was redeployed with the REQUIRED OUTCOME confirmed end-to-end against the deployed script. Phase 5's full-gate verification was discharged per this dispatch's own Batch Gate Deferral directive via the scoped run-all.sh --only covering set (14 passed, 2 failed, both pre-existing and out of scope); an exploratory independent full verify-deploy.sh run surfaced 4 additional failures, all root-caused to cross-task noise from this same batch's concurrently-scheduled sibling tasks or an already-documented pre-existing finding, none attributable to this task's own three changed files.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/461_v7_refuses_cached_untracking_pathspec/plans/01_cached-untracking-commit-path.md",
-      "summary": "Five-phase plan ruling option (2) and fixing the --cached untracking shape end-to-end in git-commit-scoped.sh, with regression tests, documentation, and a full-gate redeploy."
+      "type": "summary",
+      "path": "specs/461_v7_refuses_cached_untracking_pathspec/summaries/01_cached-untracking-commit-path-summary.md",
+      "summary": "Implementation summary covering all five phases, plan deviations, verification results, and the cross-task-noise findings from the exploratory full gate run."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/461_v7_refuses_cached_untracking_pathspec/handoffs/phase-4-handoff-20261110T222300Z.md",
+      "summary": "Phase 4 completion handoff (most recent phase-end handoff written; Phase 5 was this task's final phase)."
     }
   ]
 }
