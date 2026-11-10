@@ -1,5 +1,5 @@
 ---
-next_project_number: 578
+next_project_number: 579
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 578
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,578 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,476,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,423,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571 | 313,391,398,439,458,461,472,476,486,518,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577 | 390,402,501,547,552 | core-agent-system, agent-system |
@@ -84,6 +84,10 @@ next_project_number: 578
 
 437 [NOT STARTED] — Repair the Zotero sqlite-reconstruction export path: lost CSL...
 453 [NOT STARTED] — Carry the degraded-retrieval signal into the zero-result...
+
+### Neovim
+
+578 [NOT STARTED] — Build an in-config sf1 (Sapience terminal chat) Neovim...
 
 ### File Scope Lifecycle
 
@@ -178,6 +182,34 @@ next_project_number: 578
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 578. Sf1 neovim virtual plugin with split position
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: Build an in-config sf1 (Sapience terminal chat) Neovim integration as a lazy.nvim virtual plugin, following the existing stt-plugin.lua / himalaya-plugin.lua convention, kept fully separate from the claude-code and opencode integrations.
+
+Scope (v0):
+- New `lua/neotex/plugins/ai/sapience-plugin.lua`: lazy.nvim virtual plugin spec with `dir = vim.fn.stdpath('config') .. '/lua/neotex/plugins/ai/sapience'`, `name = 'sapience-sf1'`, `event = 'VeryLazy'`, `config = function(_, opts) require('neotex.plugins.ai.sapience.init').setup(opts) end`. Model it on `lua/neotex/plugins/tools/stt-plugin.lua`.
+- New `lua/neotex/plugins/ai/sapience/init.lua`: `M.setup(opts)` plus `M.toggle()`, `M.open()`, `M.close()`, `M.set_position(pos)`. Opts schema with defaults: `cmd = "sf1"`, `position = "bottom"` (one of "bottom"|"right"|"left"|"float"), `size = 0.35` (fraction; maps to window height for bottom, width for right/left), `project = "cwd"` (one of "cwd"|"git"|false|function returning string). Validate opts with `vim.validate`.
+- New `lua/neotex/plugins/ai/sapience/terminal.lua`: ALL window/split handling behind a small interface (`open`, `close`, `find`) so the snacks.terminal backend can be swapped later. Maps `position`/`size` onto snacks.terminal `win.position` and `win.height`/`win.width`. Load snacks via pcall and degrade gracefully if absent.
+- New `lua/neotex/plugins/ai/sapience/README.md` per the repo documentation policy.
+- Register by adding `"sapience-plugin"` to the `ai_plugins` list in `lua/neotex/plugins/ai/init.lua`. The existing `safe_require` validation should already pass a spec table that has `dir=` and no `[1]` and no `.setup` field, so no loader change is expected -- verify this rather than assume it.
+- Project scoping: derive the `--project` argument from the resolved `project` opt and pass it to sf1 as `sf1 --project <name>`, shell-escaped with `vim.fn.shellescape`. The `cwd` strategy uses `vim.fn.fnamemodify(vim.fn.getcwd(), ":t")`.
+- A `:Sf1` user command (toggle) and a `<leader>a`-prefixed keymap registered via which-key alongside the other `<leader>a` AI maps, with a descriptive `desc`. Pick a free suffix -- check `lua/neotex/plugins/editor/which-key.lua` for what is already taken under `<leader>a`.
+- Add an `is_sf1` branch to `_G.set_terminal_keymaps` in `lua/neotex/config/keymaps.lua`, detected by matching the snacks terminal cmd against "sf1" the same way `is_opencode` matches "opencode%s+%-%-port". sf1 runs a readline REPL where `<C-h>` is backspace, so leave `<C-h>`/`<C-j>`/`<C-k>`/`<C-l>` unmapped for sf1 buffers the way the `is_aerc` branch does. This is the only shared-territory file the task touches.
+
+Hard constraints:
+- `sapience/init.lua` and `sapience/terminal.lua` MUST NOT require anything from `neotex.*`. Keep them dependency-free so the directory can later be lifted into a standalone repo unchanged -- this is the primary design constraint. `lua/neotex/plugins/tools/stt/init.lua` obeys this rule and is the model; himalaya does not and is the anti-pattern.
+- MUST NOT modify `lua/neotex/plugins/ai/shared/picker/ai-tool-picker.lua` or `shared/picker/config.lua`, and MUST NOT add an sf1 entry to the `<C-CR>` two-stage tool picker. That picker enforces mutual exclusion between Claude Code and OpenCode (both claim the same 40% right sidebar); sf1 is read-only, edits no buffers, and is meant to coexist with a coding agent rather than replace it. Keeping it off the picker is deliberate.
+- MUST NOT build any `/state` or `/delegate` affordances. Verified against the live server on 2026-11-10: `GET /v1/sf1/state` and `GET /v1/sf1/delegate` both return 404 for this account (only `/v1/sf1/handoff` and `/v1/work` are live), and sf1's `/delegate` additionally requires a Mac-side runner. Any UI for those is dead code.
+- sf1 writes no knowledge objects and ingests nothing; it only creates a chat server-side. The `sapience review` gate and `auto_approve: false` are unaffected, so this task needs no safety gating.
+
+Verification: `nvim --headless -c "lua require('neotex.plugins.ai.sapience')" -c "q"` loads clean; the plugin appears in `:Lazy`; `:Sf1` opens a working sf1 REPL in a bottom split; `M.set_position("right")` then `:Sf1` opens it as a right split; sf1 and Claude Code can be visible simultaneously; `<C-h>` in the sf1 buffer sends backspace to the REPL rather than switching windows.
+
+---
 
 ### 577. Make a blocker-triggered aux plan-revision consumable by triage, and stop the same-cycle failed_tasks charge from killing dependents
 - **Effort**: high
@@ -9163,6 +9195,8 @@ Spawned from the ambient-host-state-isolation audit's corpus triage ledger (spec
 LIVE SYMPTOM (reproduced deterministically): `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` reports `[FAIL] could not compute a safe eager-load pad amount (current_eager='67088', baseline_bytes='66100')`, and `[FAIL] baseline fixture is not clean (rc=1, gate20 finding lines=1) -- fixture setup is broken; later cases are unreliable` -- 2 of 13 cases. Directly re-measured live (2026-10-16): `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` from `agent-system/extensions/core/` reports `TOTAL: 67088 B`, confirming the suite's captured figure exactly and that genuine eager-loaded content has grown 988 B past the baseline recorded in `agent-system/extensions/core/context/config/orchestrator-context-budget.json`'s `eager_load.baseline_bytes` (last deliberately moved 2026-10-09 to 66,100 B after the previous overage's trim).
 
 SCOPE: follow the exact established precedent already recorded in `orchestrator-context-budget.json`'s own `eager_load.note` history (nine prior entries, each either (a) identifying genuinely redistributable bloat and relocating it to a non-eager-loaded file with the relocated content verified present at its new location before the eager copy is cut, or (b) when no such slack exists, a reviewed, dated, deliberately-small baseline move with written justification). Determine which of the two applies to the current 988 B overage by diffing `measure-eager-context.sh`'s own per-file breakdown against the 2026-10-09 measurement, identify what specifically grew, and either trim-and-relocate or move the baseline with a dated justification entry appended to the config file's own `note` field (never silently re-derived from the fresh measurement, per that field's explicit warning). Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-verify-deploy-context-budget.sh` plus `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`. Remove the `known-failures.txt` row for this suite once fixed.
+
+RE-MEASURED 2026-11-10 (figures above are stale; baseline_bytes has since moved to 66,800 B per the config's own 2026-10-16 note entry): `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` now reports `TOTAL: 68624 B` -- 1,824 B over the current 66,800 B baseline, not the 988 B over 66,100 B recorded above. Per-subtotal breakdown at that measurement: parent_chain 2,982 B, claudemd 34,953 B, at_import 0 B, rules 30,689 B. Volatile-file hits: 0 (sub-check A passes; only sub-check B, the baseline regression, fails). Of the current overage, 658 B is attributable to the sapience extension's EXTENSION.md growing from 1,407 B to 2,065 B when per-repo storage and injection were added -- that file is merged verbatim into the predicted assembled .claude/CLAUDE.md and is therefore eager-loaded. Subtracting it leaves 1,166 B of overage that predates it, so the breach is genuinely pre-existing and was not introduced by that work; the contribution is recorded here only so the trim-versus-move decision starts from an accurate attribution. Re-measure before acting: this figure will drift again with any further eager-set edit.
 
 ---
 

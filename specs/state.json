@@ -1,7 +1,396 @@
 {
   "version": "1.1.0",
-  "next_project_number": 578,
+  "next_project_number": 579,
   "active_projects": [
+    {
+      "project_number": 578,
+      "project_name": "sf1_neovim_virtual_plugin_with_split_position",
+      "status": "not_started",
+      "task_type": "neovim",
+      "description": "Build an in-config sf1 (Sapience terminal chat) Neovim integration as a lazy.nvim virtual plugin, following the existing stt-plugin.lua / himalaya-plugin.lua convention, kept fully separate from the claude-code and opencode integrations.\n\nScope (v0):\n- New `lua/neotex/plugins/ai/sapience-plugin.lua`: lazy.nvim virtual plugin spec with `dir = vim.fn.stdpath('config') .. '/lua/neotex/plugins/ai/sapience'`, `name = 'sapience-sf1'`, `event = 'VeryLazy'`, `config = function(_, opts) require('neotex.plugins.ai.sapience.init').setup(opts) end`. Model it on `lua/neotex/plugins/tools/stt-plugin.lua`.\n- New `lua/neotex/plugins/ai/sapience/init.lua`: `M.setup(opts)` plus `M.toggle()`, `M.open()`, `M.close()`, `M.set_position(pos)`. Opts schema with defaults: `cmd = \"sf1\"`, `position = \"bottom\"` (one of \"bottom\"|\"right\"|\"left\"|\"float\"), `size = 0.35` (fraction; maps to window height for bottom, width for right/left), `project = \"cwd\"` (one of \"cwd\"|\"git\"|false|function returning string). Validate opts with `vim.validate`.\n- New `lua/neotex/plugins/ai/sapience/terminal.lua`: ALL window/split handling behind a small interface (`open`, `close`, `find`) so the snacks.terminal backend can be swapped later. Maps `position`/`size` onto snacks.terminal `win.position` and `win.height`/`win.width`. Load snacks via pcall and degrade gracefully if absent.\n- New `lua/neotex/plugins/ai/sapience/README.md` per the repo documentation policy.\n- Register by adding `\"sapience-plugin\"` to the `ai_plugins` list in `lua/neotex/plugins/ai/init.lua`. The existing `safe_require` validation should already pass a spec table that has `dir=` and no `[1]` and no `.setup` field, so no loader change is expected -- verify this rather than assume it.\n- Project scoping: derive the `--project` argument from the resolved `project` opt and pass it to sf1 as `sf1 --project <name>`, shell-escaped with `vim.fn.shellescape`. The `cwd` strategy uses `vim.fn.fnamemodify(vim.fn.getcwd(), \":t\")`.\n- A `:Sf1` user command (toggle) and a `<leader>a`-prefixed keymap registered via which-key alongside the other `<leader>a` AI maps, with a descriptive `desc`. Pick a free suffix -- check `lua/neotex/plugins/editor/which-key.lua` for what is already taken under `<leader>a`.\n- Add an `is_sf1` branch to `_G.set_terminal_keymaps` in `lua/neotex/config/keymaps.lua`, detected by matching the snacks terminal cmd against \"sf1\" the same way `is_opencode` matches \"opencode%s+%-%-port\". sf1 runs a readline REPL where `<C-h>` is backspace, so leave `<C-h>`/`<C-j>`/`<C-k>`/`<C-l>` unmapped for sf1 buffers the way the `is_aerc` branch does. This is the only shared-territory file the task touches.\n\nHard constraints:\n- `sapience/init.lua` and `sapience/terminal.lua` MUST NOT require anything from `neotex.*`. Keep them dependency-free so the directory can later be lifted into a standalone repo unchanged -- this is the primary design constraint. `lua/neotex/plugins/tools/stt/init.lua` obeys this rule and is the model; himalaya does not and is the anti-pattern.\n- MUST NOT modify `lua/neotex/plugins/ai/shared/picker/ai-tool-picker.lua` or `shared/picker/config.lua`, and MUST NOT add an sf1 entry to the `<C-CR>` two-stage tool picker. That picker enforces mutual exclusion between Claude Code and OpenCode (both claim the same 40% right sidebar); sf1 is read-only, edits no buffers, and is meant to coexist with a coding agent rather than replace it. Keeping it off the picker is deliberate.\n- MUST NOT build any `/state` or `/delegate` affordances. Verified against the live server on 2026-11-10: `GET /v1/sf1/state` and `GET /v1/sf1/delegate` both return 404 for this account (only `/v1/sf1/handoff` and `/v1/work` are live), and sf1's `/delegate` additionally requires a Mac-side runner. Any UI for those is dead code.\n- sf1 writes no knowledge objects and ingests nothing; it only creates a chat server-side. The `sapience review` gate and `auto_approve: false` are unaffected, so this task needs no safety gating.\n\nVerification: `nvim --headless -c \"lua require('neotex.plugins.ai.sapience')\" -c \"q\"` loads clean; the plugin appears in `:Lazy`; `:Sf1` opens a working sf1 REPL in a bottom split; `M.set_position(\"right\")` then `:Sf1` opens it as a right split; sf1 and Claude Code can be visible simultaneously; `<C-h>` in the sf1 buffer sends backspace to the REPL rather than switching windows.",
+      "topic": "neovim",
+      "created": "2026-11-10T19:29:33Z",
+      "last_updated": "2026-11-10T19:29:33Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "sf1_neovim_virtual_plugin_with_split_position",
+          "project_number": null,
+          "title": "Build in-config sf1 Neovim virtual plugin with configurable split position"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 567,
+            "project_name": "port_containment_strip_to_git_commit_scoped",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.07692307692307693
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 568,
+            "project_name": "repair_orchestrate_cycle_postflight_suite",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.038461538461538464
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 22,
+            "project_name": "silence_opencode_fragment_validation_spam",
+            "discharging_artifact": {
+              "path": "specs/022_silence_opencode_fragment_validation_spam/summaries/01_silence-opencode-validation-spam-summary.md",
+              "type": "summary",
+              "summary": "Full implementation summary covering all 6 phases, decisions, deviations, and verification evidence."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.46153846153846156
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 433,
+            "project_name": "revise_plan_for_markdown_corpus_phases",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.038461538461538464
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 432,
+            "project_name": "reconcile_inverted_gate_cost_dependency_edge",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.07692307692307693
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 248,
+            "project_name": "revise_typst_viewing_commands",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.19230769230769232
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 240,
+            "project_name": "restore_verify_deploy_green",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.07692307692307693
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 235,
+            "project_name": "rebaseline_or_reduce_eager_context_budget",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.07692307692307693
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 222,
+            "project_name": "add_rust_extension_to_agent_system",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.07692307692307693
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 205,
+            "project_name": "per_project_lean_lsp_registration",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.15384615384615385
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 134,
+            "project_name": "tag_branch_reachability_gate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.11538461538461539
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 131,
+            "project_name": "tag_annotated_and_changelog_preflight",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.15384615384615385
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 101,
+            "project_name": "fix_tts_only_announces_tab_1",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.038461538461538464
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 62,
+            "project_name": "restrict_typst_latex_task_types_to_formatting_only",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 47,
+            "project_name": "clear_failing_gates_and_reconcile_ledgers",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.11538461538461539
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 49,
+            "project_name": "cut_context_cost_orchestrate_skills_and_eager_rules",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2692307692307692
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 36,
+            "project_name": "audit_context_loading_efficiency",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.038461538461538464
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 95,
+            "project_name": "audit_literature_index_resolver_keying",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 31,
+            "project_name": "opencode_extensions_sync_mechanism",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 94,
+            "project_name": "wire_lit_flag_through_team_skills",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 115,
+            "project_name": "mirror_model_flag_into_hard_orchestrate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 132,
+            "project_name": "register_ambient_binding_defect_class",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 195,
+            "project_name": "replace_handoff_writer_allowlist_predicate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 198,
+            "project_name": "lean_agents_mandate_no_revert_snapshot",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 214,
+            "project_name": "stop_forced_phase_fallthrough_dispatch",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 216,
+            "project_name": "per_run_cycle_bound_artifact_admission",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 218,
+            "project_name": "refresh_lean_cpu_delta_idle_cost_gate",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 219,
+            "project_name": "refresh_idle_lean_tree_notify_prompt",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 220,
+            "project_name": "guard_machine_readable_build_status",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 225,
+            "project_name": "please_command_rule_and_docs",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 229,
+            "project_name": "carry_reason_on_dependency_edges",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 230,
+            "project_name": "decide_disposition_for_terminal_dependency_edges",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 231,
+            "project_name": "post_creation_burst_dependency_analysis_pass",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 232,
+            "project_name": "surface_dependency_graph_health_metrics",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 233,
+            "project_name": "file_scope_derived_dependency_edge_inference",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 202,
+            "project_name": "picker_reload_regenerate_clarity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 208,
+            "project_name": "explain_zotero_path1_pagination_shortfall",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 224,
+            "project_name": "please_grant_integrity_and_git_guards",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 256,
+            "project_name": "validate_wiring_skip_missing_tree_root",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 264,
+            "project_name": "relay_push_consent_through_user_decision",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 267,
+            "project_name": "suppress_inline_verify_in_deploy_headless",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 45,
+            "project_name": "global_update_extension_repo_registry",
+            "discharging_artifact": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4230769230769231
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 187,
+            "project_name": "unify_commit_attribution_convention",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 168,
+            "project_name": "correct_opencode_mcp_scoping_claim",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.11538461538461539
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 138,
+            "project_name": "orchestrate_multitask_phase_forcing_gap",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.038461538461538464
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 567 (port_containment_strip_to_git_commit_scoped) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 568 (repair_orchestrate_cycle_postflight_suite) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 433 (revise_plan_for_markdown_corpus_phases) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 432 (reconcile_inverted_gate_cost_dependency_edge) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 248 (revise_typst_viewing_commands) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 240 (restore_verify_deploy_green) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 235 (rebaseline_or_reduce_eager_context_budget) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 222 (add_rust_extension_to_agent_system) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 205 (per_project_lean_lsp_registration) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 134 (tag_branch_reachability_gate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 131 (tag_annotated_and_changelog_preflight) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 101 (fix_tts_only_announces_tab_1) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 62 (restrict_typst_latex_task_types_to_formatting_only) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 47 (clear_failing_gates_and_reconcile_ledgers) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 49 (cut_context_cost_orchestrate_skills_and_eager_rules) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 36 (audit_context_loading_efficiency) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 95 (audit_literature_index_resolver_keying) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 31 (opencode_extensions_sync_mechanism) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 94 (wire_lit_flag_through_team_skills) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 115 (mirror_model_flag_into_hard_orchestrate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 132 (register_ambient_binding_defect_class) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 195 (replace_handoff_writer_allowlist_predicate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 198 (lean_agents_mandate_no_revert_snapshot) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 214 (stop_forced_phase_fallthrough_dispatch) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 216 (per_run_cycle_bound_artifact_admission) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 218 (refresh_lean_cpu_delta_idle_cost_gate) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 219 (refresh_idle_lean_tree_notify_prompt) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 220 (guard_machine_readable_build_status) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 225 (please_command_rule_and_docs) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 229 (carry_reason_on_dependency_edges) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 230 (decide_disposition_for_terminal_dependency_edges) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 231 (post_creation_burst_dependency_analysis_pass) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 232 (surface_dependency_graph_health_metrics) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 233 (file_scope_derived_dependency_edge_inference) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 202 (picker_reload_regenerate_clarity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 208 (explain_zotero_path1_pagination_shortfall) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 224 (please_grant_integrity_and_git_guards) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 256 (validate_wiring_skip_missing_tree_root) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 264 (relay_push_consent_through_user_decision) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 267 (suppress_inline_verify_in_deploy_headless) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 187 (unify_commit_attribution_convention) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      }
+    },
     {
       "project_number": 527,
       "project_name": "hook_registration_set_lint_assertion",
@@ -3762,7 +4151,7 @@
       "task_type": "meta",
       "title": "Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (measured 67,088 B vs. baseline_bytes 66,100 B)",
       "topic": "core-agent-system",
-      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).\n\nSpawned from the ambient-host-state-isolation audit's corpus triage ledger (specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md), which found this defect while sweeping the full 153-suite shell test corpus for ambient-host-state coupling and confirmed it is NOT that defect class: it is a deterministic, load-independent content-size regression check, reproducing identically in isolation and in the full corpus run.\n\nLIVE SYMPTOM (reproduced deterministically): `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` reports `[FAIL] could not compute a safe eager-load pad amount (current_eager='67088', baseline_bytes='66100')`, and `[FAIL] baseline fixture is not clean (rc=1, gate20 finding lines=1) -- fixture setup is broken; later cases are unreliable` -- 2 of 13 cases. Directly re-measured live (2026-10-16): `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` from `agent-system/extensions/core/` reports `TOTAL: 67088 B`, confirming the suite's captured figure exactly and that genuine eager-loaded content has grown 988 B past the baseline recorded in `agent-system/extensions/core/context/config/orchestrator-context-budget.json`'s `eager_load.baseline_bytes` (last deliberately moved 2026-10-09 to 66,100 B after the previous overage's trim).\n\nSCOPE: follow the exact established precedent already recorded in `orchestrator-context-budget.json`'s own `eager_load.note` history (nine prior entries, each either (a) identifying genuinely redistributable bloat and relocating it to a non-eager-loaded file with the relocated content verified present at its new location before the eager copy is cut, or (b) when no such slack exists, a reviewed, dated, deliberately-small baseline move with written justification). Determine which of the two applies to the current 988 B overage by diffing `measure-eager-context.sh`'s own per-file breakdown against the 2026-10-09 measurement, identify what specifically grew, and either trim-and-relocate or move the baseline with a dated justification entry appended to the config file's own `note` field (never silently re-derived from the fresh measurement, per that field's explicit warning). Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-verify-deploy-context-budget.sh` plus `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`. Remove the `known-failures.txt` row for this suite once fixed.",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).\n\nSpawned from the ambient-host-state-isolation audit's corpus triage ledger (specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md), which found this defect while sweeping the full 153-suite shell test corpus for ambient-host-state coupling and confirmed it is NOT that defect class: it is a deterministic, load-independent content-size regression check, reproducing identically in isolation and in the full corpus run.\n\nLIVE SYMPTOM (reproduced deterministically): `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` reports `[FAIL] could not compute a safe eager-load pad amount (current_eager='67088', baseline_bytes='66100')`, and `[FAIL] baseline fixture is not clean (rc=1, gate20 finding lines=1) -- fixture setup is broken; later cases are unreliable` -- 2 of 13 cases. Directly re-measured live (2026-10-16): `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` from `agent-system/extensions/core/` reports `TOTAL: 67088 B`, confirming the suite's captured figure exactly and that genuine eager-loaded content has grown 988 B past the baseline recorded in `agent-system/extensions/core/context/config/orchestrator-context-budget.json`'s `eager_load.baseline_bytes` (last deliberately moved 2026-10-09 to 66,100 B after the previous overage's trim).\n\nSCOPE: follow the exact established precedent already recorded in `orchestrator-context-budget.json`'s own `eager_load.note` history (nine prior entries, each either (a) identifying genuinely redistributable bloat and relocating it to a non-eager-loaded file with the relocated content verified present at its new location before the eager copy is cut, or (b) when no such slack exists, a reviewed, dated, deliberately-small baseline move with written justification). Determine which of the two applies to the current 988 B overage by diffing `measure-eager-context.sh`'s own per-file breakdown against the 2026-10-09 measurement, identify what specifically grew, and either trim-and-relocate or move the baseline with a dated justification entry appended to the config file's own `note` field (never silently re-derived from the fresh measurement, per that field's explicit warning). Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-verify-deploy-context-budget.sh` plus `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`. Remove the `known-failures.txt` row for this suite once fixed.\n\nRE-MEASURED 2026-11-10 (figures above are stale; baseline_bytes has since moved to 66,800 B per the config's own 2026-10-16 note entry): `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` now reports `TOTAL: 68624 B` -- 1,824 B over the current 66,800 B baseline, not the 988 B over 66,100 B recorded above. Per-subtotal breakdown at that measurement: parent_chain 2,982 B, claudemd 34,953 B, at_import 0 B, rules 30,689 B. Volatile-file hits: 0 (sub-check A passes; only sub-check B, the baseline regression, fails). Of the current overage, 658 B is attributable to the sapience extension's EXTENSION.md growing from 1,407 B to 2,065 B when per-repo storage and injection were added -- that file is merged verbatim into the predicted assembled .claude/CLAUDE.md and is therefore eager-loaded. Subtracting it leaves 1,166 B of overage that predates it, so the breach is genuinely pre-existing and was not introduced by that work; the contribution is recorded here only so the trim-versus-move decision starts from an accurate attribution. Re-measure before acting: this figure will drift again with any further eager-set edit.",
       "dependencies": [],
       "file_scope": [
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
@@ -3771,7 +4160,7 @@
         "agent-system/extensions/core/scripts/tests/known-failures.txt"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-10-16T13:45:00Z"
+      "last_updated": "2026-11-10T19:29:06Z"
     },
     {
       "project_number": 430,
