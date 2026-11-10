@@ -2383,7 +2383,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "H2 anti-analysis contract: read budget enforcement, forbidden conclusions, defect bar, settled-design preamble protocol",
-      "line_count": 112,
+      "line_count": 118,
       "keywords": [
         "anti-analysis",
         "read-budget",
@@ -2917,7 +2917,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Collapsed routing model: the two surviving routing_agents/routing_agents_hard blocks plus the unrelated hard_contracts key, the shared five-step ladder, core identification, and the declared-not-derived agent-name rule",
-      "line_count": 269,
+      "line_count": 315,
       "keywords": [
         "routing",
         "manifest",
