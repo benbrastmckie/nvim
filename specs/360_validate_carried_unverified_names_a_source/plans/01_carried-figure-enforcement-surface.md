@@ -209,32 +209,32 @@ before relying on it, and report the actual numbers.
 
 ---
 
-### Phase 2: Fixture Coverage for Every Recall-Failure Shape [NOT STARTED]
+### Phase 2: Fixture Coverage for Every Recall-Failure Shape [COMPLETED]
 
 **Goal**: Pin the Phase 1 check in both the fires and does-not-fire directions across every shape
 that could defeat it, so the recall failure mode that sank the rejected detector is tested rather
 than assumed away.
 
 **Tasks**:
-- [ ] Give `make_plan_fixture` an optional second parameter appended after the
+- [x] Give `make_plan_fixture` an optional second parameter appended after the
       `## Rollback/Contingency` section, leaving every existing single-argument call site
       byte-identical in behaviour. Report fixtures need no new builder: `make_report_fixture`'s
       existing trailing-content parameter suffices, provided each case also supplies
       `## Recommendations` so no unrelated missing-section error pollutes the assertion.
-- [ ] Add, for both a report fixture and a plan fixture, a well-formed and a malformed variant of
+- [x] Add, for both a report fixture and a plan fixture, a well-formed and a malformed variant of
       each shape: plain inline; inside markdown emphasis; inside a markdown table cell; wrapped
       across two or more source lines with the designator continuing on a later line; and the
       closing bracket alone on its own line with only whitespace before it.
-- [ ] Add a mention-suppression case: a backticked bare token and a `grep` command literal in
+- [x] Add a mention-suppression case: a backticked bare token and a `grep` command literal in
       ordinary prose, asserting that NO advisory fires.
-- [ ] Add the hide-a-following-mark case: an unclosed mention earlier in the document followed by
+- [x] Add the hide-a-following-mark case: an unclosed mention earlier in the document followed by
       a genuinely malformed mark later, asserting the later mark is still flagged.
-- [ ] Assert exit code 0 in default mode for every fixture whose only issue is the advisory, and
+- [x] Assert exit code 0 in default mode for every fixture whose only issue is the advisory, and
       assert the advisory message text by name.
-- [ ] Drive every new case through `$VALIDATE_SRC`, not `$VALIDATE`, following the precedent the
+- [x] Drive every new case through `$VALIDATE_SRC`, not `$VALIDATE`, following the precedent the
       cross-phase-ceiling and Files-to-modify cases already set: the check does not exist in the
       deployed tree until Phase 9 redeploys.
-- [ ] Run the whole suite, then sweep the real corpus and report the flag count. If it exceeds a
+- [x] Run the whole suite, then sweep the real corpus and report the flag count. If it exceeds a
       triageable handful, stop and treat that as a finding about the corpus rather than shipping
       an untriageable advisory.
 

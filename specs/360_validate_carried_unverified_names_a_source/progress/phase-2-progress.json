@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture Coverage for Every Recall-Failure Shape",
+  "started_at": "2026-11-10T01:50:00Z",
+  "last_updated": "2026-11-10T02:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Give make_plan_fixture an optional second parameter", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 2, "description": "Add WF/MF variants of each shape (plain, emphasis, table cell, line-wrapped, bracket-alone) for report and plan", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 3, "description": "Add mention-suppression case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 4, "description": "Add hide-a-following-mark case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 5, "description": "Assert default-mode exit 0 and advisory message text for every malformed fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 6, "description": "Drive all new cases through VALIDATE_SRC", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 7, "description": "Run whole suite; sweep real corpus and report flag count", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Added a direct bounded-window-exceeded fixture (600-char filler, no mention, no bracket within window) in addition to the plan-named shapes", "result": "worked", "reason": "validates boundedness directly rather than only implicitly via the wrapped/bracket-alone shapes"}
+  ],
+  "handoff_count": 0,
+  "notes": "Added run_cfd_case/assert_cfd_silent/assert_cfd_empty/assert_cfd_unclosed helpers plus 5 shapes (plain inline, markdown emphasis, table cell, line-wrapped, closing-bracket-alone) x WF/MF x {report, plan} = 20 cases, plus mention-suppression (both types), hide-a-following-mark (report), and a direct bounded-window-exceeded case (report) -- 25 new assertions total driving the specific CFD label, plus the exit-code/--strict sub-assertions folded into the shared assert_cfd_empty/assert_cfd_unclosed helpers. Full suite: 108 PASSED, 0 FAILED. Confirmed the suite genuinely pins the check (not just inspects it): temporarily disabled the Phase 1 check in validate-artifact.sh (changed its gate to `if false; then`), re-ran the suite, and every CFD malformed-variant assertion correctly flipped to FAILED (19 failures), then restored the file byte-identical to its pre-disable state (diffed against a backup copy to confirm). shellcheck on the test file: only pre-existing SC1091 (sourced lib not shellcheck-followed) and SC2016 info-level findings (backtick/$ literals inside single-quoted fixture content) -- the same info-level pattern two pre-existing lines in this file already carry; no new warning/error severity introduced. Real-corpus sweep (via VALIDATE_SRC against the five actual report/plan files under specs/ carrying the token) reports flag count ZERO -- a triageable (empty) count, consistent with Phase 1's finding that mention-suppression closes every corpus flag."
+}

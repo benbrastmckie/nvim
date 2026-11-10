@@ -88,6 +88,10 @@ checksum() { md5sum "$1" | cut -d' ' -f1; }
 # pollutes the assertions below. ──────────────────────────────────────────────────────────────
 make_plan_fixture() {
   local status_line="$1"
+  # Optional second parameter (CFD = carried-figure-discipline shapes): appended verbatim after
+  # the Rollback/Contingency section. Every existing single-argument call site is unaffected --
+  # an unset/empty $2 appends nothing beyond the trailing blank line already there.
+  local trailing_content="${2:-}"
   local f
   f="$(mktemp --tmpdir="$WORKDIR" plan-XXXXXX.md)"
   cat > "$f" <<EOF
@@ -128,6 +132,7 @@ x
 
 ## Rollback/Contingency
 x
+${trailing_content}
 EOF
   echo "$f"
 }
@@ -681,6 +686,133 @@ f=$(make_tj_fixture "**Files to modify**:
 - none planned - pure verification phase" "\`suite_selection_select\` is not applicable; this justification intentionally names a suite that does not exist, to prove the skip-case fires before any comparison is attempted: \`test-should-never-be-compared.sh\`.")
 out=$("$VALIDATE_SRC" "$f" plan 2>&1)
 if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ(skip-case, prose sentinel): incorrectly drew a Tier Justification finding: $out"; else common_test_pass "TJ(skip-case, prose sentinel): draws no Tier Justification finding"; fi
+
+# ─── Carried-figure source-naming well-formedness (CFD): fixtures covering the recall-failure
+# shapes that sank the rejected general detector -- plain inline, markdown emphasis, a table
+# cell, a line-wrapped designator, and a closing bracket alone on its own line -- each in both a
+# well-formed and a malformed variant, driven through BOTH report and plan fixtures via
+# $VALIDATE_SRC (the check does not exist in the deployed tree until the redeploy phase). Plus a
+# mention-suppression case and the hide-a-following-mark case the Risk table names explicitly. ──
+
+run_cfd_case() {
+  # Builds a fixture of the given type ("report" or "plan") carrying $2 as its body, drives it
+  # through $VALIDATE_SRC in default and --strict modes, and leaves LAST_OUT/LAST_RC/LAST_STRICT_RC
+  # set for the caller's assertions.
+  local type="$1" body="$2" f
+  if [[ "$type" == "report" ]]; then
+    f=$(make_report_fixture "
+${body}
+
+## Recommendations
+x")
+  else
+    f=$(make_plan_fixture '- **Status**: [IMPLEMENTING]' "
+
+${body}")
+  fi
+  LAST_OUT=$("$VALIDATE_SRC" "$f" "$type" 2>&1)
+  LAST_RC=0; "$VALIDATE_SRC" "$f" "$type" >/dev/null 2>&1 || LAST_RC=$?
+  LAST_STRICT_RC=0; "$VALIDATE_SRC" "$f" "$type" --strict >/dev/null 2>&1 || LAST_STRICT_RC=$?
+}
+
+assert_cfd_silent() {
+  local label="$1"
+  if echo "$LAST_OUT" | grep -qF "CARRIED-UNVERIFIED mark(s)"; then
+    common_test_fail "$label: unexpected CARRIED-UNVERIFIED advisory: $LAST_OUT"
+  else
+    common_test_pass "$label: no CARRIED-UNVERIFIED advisory"
+  fi
+}
+
+assert_cfd_empty() {
+  local label="$1"
+  if echo "$LAST_OUT" | grep -qF "empty or whitespace-only source designator"; then
+    common_test_pass "$label: empty-designator advisory fires"
+  else
+    common_test_fail "$label: expected empty-designator advisory missing: $LAST_OUT"
+  fi
+  if [[ $LAST_RC -eq 0 ]]; then common_test_pass "$label: default-mode exit stays 0 (advisory only)"; else common_test_fail "$label: unexpected non-zero default-mode exit: rc=$LAST_RC"; fi
+  if [[ $LAST_STRICT_RC -ne 0 ]]; then common_test_pass "$label: --strict escalates to non-zero exit"; else common_test_fail "$label: --strict did not escalate"; fi
+}
+
+assert_cfd_unclosed() {
+  local label="$1"
+  if echo "$LAST_OUT" | grep -qF "no closing bracket within the designator window"; then
+    common_test_pass "$label: unclosed-bracket advisory fires"
+  else
+    common_test_fail "$label: expected unclosed-bracket advisory missing: $LAST_OUT"
+  fi
+  if [[ $LAST_RC -eq 0 ]]; then common_test_pass "$label: default-mode exit stays 0 (advisory only)"; else common_test_fail "$label: unexpected non-zero default-mode exit: rc=$LAST_RC"; fi
+  if [[ $LAST_STRICT_RC -ne 0 ]]; then common_test_pass "$label: --strict escalates to non-zero exit"; else common_test_fail "$label: --strict did not escalate"; fi
+}
+
+# Shape A: plain inline
+cfd_a_wf='A measured count was carried here [CARRIED-UNVERIFIED: reports/01_source.md].'
+cfd_a_mf='A measured count was carried here [CARRIED-UNVERIFIED: ].'
+
+# Shape B: inside markdown emphasis
+cfd_b_wf='**A measured count was carried here [CARRIED-UNVERIFIED: reports/01_source.md].**'
+cfd_b_mf='**A measured count was carried here [CARRIED-UNVERIFIED: ].**'
+
+# Shape C: inside a markdown table cell
+cfd_c_wf='| Claim | Note |
+|-------|------|
+| A measured count [CARRIED-UNVERIFIED: reports/01_source.md] | n/a |'
+cfd_c_mf='| Claim | Note |
+|-------|------|
+| A measured count [CARRIED-UNVERIFIED: ] | n/a |'
+
+# Shape D: wrapped across two or more source lines, designator continuing on a later line
+cfd_d_wf='A measured count was carried here [CARRIED-UNVERIFIED: reports/01_source.md,
+via a re-read of the prior session artifact performed at authoring time].'
+cfd_d_mf='A measured count was carried here [CARRIED-UNVERIFIED:
+   ].'
+
+# Shape E: the closing bracket alone on its own line, only whitespace before it
+cfd_e_wf='A measured count was carried here [CARRIED-UNVERIFIED: reports/01_source.md
+].'
+cfd_e_mf='A measured count was carried here [CARRIED-UNVERIFIED:
+].'
+
+for _cfd_type in report plan; do
+  run_cfd_case "$_cfd_type" "$cfd_a_wf"; assert_cfd_silent "CFD-A($_cfd_type) plain-inline WF"
+  run_cfd_case "$_cfd_type" "$cfd_a_mf"; assert_cfd_empty  "CFD-A($_cfd_type) plain-inline MF"
+
+  run_cfd_case "$_cfd_type" "$cfd_b_wf"; assert_cfd_silent "CFD-B($_cfd_type) emphasis WF"
+  run_cfd_case "$_cfd_type" "$cfd_b_mf"; assert_cfd_empty  "CFD-B($_cfd_type) emphasis MF"
+
+  run_cfd_case "$_cfd_type" "$cfd_c_wf"; assert_cfd_silent "CFD-C($_cfd_type) table-cell WF"
+  run_cfd_case "$_cfd_type" "$cfd_c_mf"; assert_cfd_empty  "CFD-C($_cfd_type) table-cell MF"
+
+  run_cfd_case "$_cfd_type" "$cfd_d_wf"; assert_cfd_silent "CFD-D($_cfd_type) line-wrapped WF"
+  run_cfd_case "$_cfd_type" "$cfd_d_mf"; assert_cfd_empty  "CFD-D($_cfd_type) line-wrapped MF"
+
+  run_cfd_case "$_cfd_type" "$cfd_e_wf"; assert_cfd_silent "CFD-E($_cfd_type) bracket-alone-on-own-line WF"
+  run_cfd_case "$_cfd_type" "$cfd_e_mf"; assert_cfd_empty  "CFD-E($_cfd_type) bracket-alone-on-own-line MF"
+done
+
+# ─── CFD mention-suppression: a backticked bare token and a grep command literal in ordinary
+# prose draw NO advisory at all ──────────────────────────────────────────────────────────────
+cfd_mention_body='This section discusses the `[CARRIED-UNVERIFIED:` token and the search command `grep -rl "\[CARRIED-UNVERIFIED:" specs/` used to find it.'
+run_cfd_case "report" "$cfd_mention_body"; assert_cfd_silent "CFD-mention(report) backtick and grep-literal mentions"
+run_cfd_case "plan" "$cfd_mention_body"; assert_cfd_silent "CFD-mention(plan) backtick and grep-literal mentions"
+
+# ─── CFD hide-a-following-mark: an unclosed MENTION earlier in the document, followed later by
+# a genuinely malformed (empty-designator) real mark -- the later mark must still be flagged,
+# and the suppressed mention must draw nothing of its own (it is never searched for a closing
+# bracket at all, so it cannot absorb the later mark's bracket into itself). ────────────────
+cfd_hide_body='This section mentions `[CARRIED-UNVERIFIED:` informally without ever closing the reference, in a sentence that continues on at some length before the next paragraph begins. Later in the same document a real claim was carried [CARRIED-UNVERIFIED: ] with no source named at all.'
+run_cfd_case "report" "$cfd_hide_body"
+if echo "$LAST_OUT" | grep -qF "no closing bracket"; then common_test_fail "CFD-hide(report): the suppressed mention incorrectly drew its own unclosed-bracket advisory: $LAST_OUT"; else common_test_pass "CFD-hide(report): the suppressed mention draws no unclosed-bracket advisory of its own"; fi
+assert_cfd_empty "CFD-hide(report) later malformed mark"
+
+# ─── CFD bounded window: a genuinely unclosed (non-mention) occurrence followed, beyond the
+# bounded designator window, by an unrelated closing bracket -- must still report UNCLOSED
+# rather than silently treating the distant bracket as this occurrence's own close. ─────────
+cfd_filler=""
+for _cfd_i in $(seq 1 600); do cfd_filler="${cfd_filler}x"; done
+cfd_bounded_body="A measured count was carried here [CARRIED-UNVERIFIED: ${cfd_filler} and only much later does an unrelated bracket appear]."
+run_cfd_case "report" "$cfd_bounded_body"; assert_cfd_unclosed "CFD-bounded-window(report) bracket beyond the 500-char window"
 
 echo ""
 common_test_info "Target scripts: $VALIDATE ; $VALIDATE_SRC ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"
