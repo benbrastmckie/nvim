@@ -74,7 +74,7 @@ next_project_number: 578
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
-496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
+496 [RESEARCHED] — Add per-repo storage and injection to the sapience extension
   └─ 498 [HOLD] — Replace the email preference harvest tally substrate
     └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
@@ -6148,10 +6148,11 @@ Three further `duplicate-of-open` verdicts (459, 451, 360) were ruled NOT duplic
 ---
 
 ### 496. Add per-repo storage and injection to the sapience extension
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 360, Task 449, Task 450, Task 487, Task 488
+- **Research**: [496_sapience_per_repo_storage_and_injection/reports/01_sapience-per-repo-storage-injection.md]
 
 **Description**: Give the sapience extension repo-scoped knowledge storage and per-dispatch context injection, so it can replace the memory extension's local vault substrate. This is the essential piece of the migration -- the other three tasks in this batch depend on it.
 
