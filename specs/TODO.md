@@ -11,14 +11,13 @@ next_project_number: 578
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,423,431,437,444,451,453,456,459,472,473,475,477,479,483,484,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,448,458,462,463,474,476,480,486,492,516,518,527,540,541,542,543,544,553,564,576 | 369,383,397,412,423,431,444,451,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 390,399,402,436,438,449,452,454,455,461,500,508,523,547,552,570 | 313,391,398,439,448,458,486,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,450,457,481,501,509,513,517,561,566,577 | 390,402,449,452,455,461,472,476,479,486,515,547,552 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 5 | 487,524 | 450,501 | core-agent-system, orchestrator |
-| 6 | 496,571 | 487,518 | extensions, agent-system |
-| 7 | 498 | 496 | extensions |
-| 8 | 499 | 421,498 | extensions |
+| 1 | 313,338,342,369,383,397,410,412,423,431,437,448,451,453,456,459,472,473,475,477,479,483,484,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,449,452,455,458,461,462,463,474,476,480,486,492,500,516,518,523,527,540,541,542,543,544,553,564,576 | 369,383,397,412,423,431,448,451,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 390,399,402,436,438,450,454,457,501,508,509,513,517,547,552,566,570 | 313,391,398,439,449,452,455,458,461,472,476,479,486,515,519,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 4 | 421,481,487,524,561,577 | 390,402,450,501,547,552 | core-agent-system, orchestrator, agent-system |
+| 5 | 496,571 | 487,518 | extensions, agent-system |
+| 6 | 498 | 496 | extensions |
+| 7 | 499 | 421,498 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -36,13 +35,12 @@ next_project_number: 578
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
-444 [IMPLEMENTING] — Retire routing\_agents\_hard in favour of hard\_contracts...
-  └─ 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
-    └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
-      └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
-    └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
-    └─ 500 [NOT STARTED] — Dependency-edge backfill is unreachable for a not-started task
-    └─ 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
+448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
+  └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
+    └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
+  └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
+  └─ 500 [NOT STARTED] — Dependency-edge backfill is unreachable for a not-started task
+  └─ 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
@@ -8485,7 +8483,7 @@ Severity: minor in isolation, but it taxes every phase closure in the repository
 ---
 
 ### 444. Retire routing agents hard for hard contracts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 445
