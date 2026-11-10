@@ -1,6 +1,49 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/487_identical_dispatch_halt_despite_phase_progress/summaries/01_phase-progress-identical-dispatch-guard-summary.md",
+      "summary": "Independent-signal streak freeze added to the identical-dispatch convergence guard, with a corrected hash-normalizer header and four new regression fixtures; full gate set run per the Batch Gate Deferral directive."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a persisted plan-file phase-progress signal and a sibling streak-freeze branch to orchestrate-cycle-plan.sh's identical-dispatch guard, modelled on the existing deploy_pending freeze, so a cycle that closes a real plan phase is no longer misread as non-convergence; corrected cycle_plan_dispatch_hash()'s header with the exception and a third DECIDED AND RECORDED entry, and pinned both outcomes (non-halt and still-halts) plus two edge cases with four new regression fixtures (Group 37). Redeployed and confirmed byte-identical; the full gate set was discharged against a scoped narrowing per this dispatch's Batch Gate Deferral directive, reducing to the same pre-existing, confirmed-unrelated findings already logged in Phase 1."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding a second, independent guard-bypass signal alongside a content-hash-identity guard, check whether the new signal's own gate predicate would coincide with the content divergence it could also cause. If a progress signal is BOTH (a) rendered into the hashed content and (b) read as an independent freeze signal, the two share one gate: the content divergence fires first on every cycle the freeze would have fired, making the freeze branch dead code while correctness rests entirely on that content line staying out of the hash's strip pattern. Prefer a persisted side-channel signal (per-task state, re-armed every cycle via unconditional persistence after every measurement) over hashed-content divergence when the content path is governed by a strip-pattern obligation a future change could silently violate. Freeze-not-suppress semantics (hold the current streak, never reset it, persist the new measurement so the next comparison re-arms) avoid both 'forgive forever' and losing a pre-existing genuine streak. A missing prior measurement must SEED, never freeze -- treating 'no prior data' as 'zero progress' would forgive the very first repeat for free, and treating an unresolvable/non-conforming data source as zero (rather than UNAVAILABLE) would silently neuter the guard the moment any later measurement appeared.",
+      "category": "PATTERN",
+      "source_artifact": "specs/487_identical_dispatch_halt_despite_phase_progress/summaries/01_phase-progress-identical-dispatch-guard-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "convergence-guard",
+        "content-hash",
+        "independent-signal",
+        "freeze-not-suppress",
+        "strip-pattern",
+        "dead-branch",
+        "seed-not-freeze"
+      ]
+    },
+    {
+      "content": "When a shell-script test fixture asserts a durable, cross-cycle counter did NOT advance across a halted/aborted operation, read the counter from the DURABLE, per-task file the production code actually persists it to (e.g. a `.orchestrator-loop-guard` file), never from an in-session/in-memory state file that may increment unconditionally on every attempt regardless of a later rollback (e.g. a dispatch-seq counter that is minted BEFORE a late-stage guard check runs, so the in-session copy increments even when the attempt is ultimately backed out). Confirm which file an existing, working sibling assertion in the same test suite reads before writing a new one that looks superficially similar -- a test asserting the wrong source for a 'this stayed the same' claim passes in the common case and only fails once the specific divergent code path is exercised.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/487_identical_dispatch_halt_despite_phase_progress/summaries/01_phase-progress-identical-dispatch-guard-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "test-fixture",
+        "durable-counter",
+        "dispatch-seq",
+        "mt-state",
+        "back-out-assertion"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
@@ -9,7 +52,9 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   },
   "dispatch_seq": 31,
   "proposed_file_scope": [

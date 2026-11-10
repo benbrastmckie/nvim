@@ -1,7 +1,7 @@
 # Implementation Plan: Task #487
 
 - **Task**: 487 - Stop the identical-dispatch convergence guard halting a task on cycle 2 even when cycle 1 closed a real plan phase
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None (territory edge against task 451 to be re-checked at admission; see Risks)
 - **Research Inputs**: specs/487_identical_dispatch_halt_despite_phase_progress/reports/01_phase-progress-identical-dispatch-guard.md
