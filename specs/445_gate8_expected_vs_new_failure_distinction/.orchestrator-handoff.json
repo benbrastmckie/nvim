@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Created a five-phase, four-wave implementation plan for Gate 8's expected-versus-new failure distinction. The design is consumer-side only: pass run-all.sh's existing --fail-on-new flag and branch three ways (pass / warn_advisory / fail), requiring zero code change to tests/run-all.sh or lib/deploy-baseline-lib.sh. The plan states the chosen semantics explicitly (an all-expected run exits zero but stays distinguishable via a [WARN] narrative, a WARN-FINDING line invisible to deploy_findings_snapshot's '^FINDING ' filter, and a GATE_DIRTY_LIST cache-invalidation append) and justifies it against six consumers, two of which the dispatch did not name.",
+  "summary": "Gave verify-deploy.sh's Gate 8 a three-way verdict (pass/warn_advisory/fail) driven by run-all.sh's own --fail-on-new EXPECTED/NEW accounting, so an all-declared-expected failing run is non-blocking and visible rather than a bare FAIL while a NEW failure still blocks unconditionally. Added a 22-assertion fixture regression suite, a roster-header format-stability pin, consumer re-verification (deploy_findings_snapshot, --skip-unchanged cache, zero-check-under-filter), documentation of the new semantics and its accepted mixed-failure residual, and redeployed with a scoped --only-gate 3,4,9 verification pass.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/445_gate8_expected_vs_new_failure_distinction/plans/01_gate8-expected-new-distinction.md",
-      "summary": "Five-phase plan: Gate 8 three-way branch; fixture suite with four cases plus non-vacuousness probes; consumer re-verification and the baseline-skew answer; documentation convergence; redeploy and full gate set."
+      "summary": "Five-phase plan, all phases closed (Phase 2 as COMPLETED WITH EXCLUSIONS for one pre-existing, unrelated lint-suite failure)."
+    },
+    {
+      "type": "summary",
+      "path": "specs/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md",
+      "summary": "Implementation summary covering all 5 phases, decisions, deviations, verification evidence, and follow-ups."
     }
   ],
-  "dispatch_seq": 11
+  "dispatch_seq": 16
 }

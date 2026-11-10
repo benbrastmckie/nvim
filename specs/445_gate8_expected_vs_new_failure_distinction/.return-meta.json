@@ -1,16 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "task_number": 445,
   "dispatch_seq": 16,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md",
+      "summary": "Gate 8 now passes --fail-on-new and branches three ways (pass/warn_advisory/fail) on run-all.sh's own EXPECTED/NEW accounting; new fixture regression suite (22 assertions), roster-header format-stability pin, consumer re-verification, and documentation convergence all landed; redeployed and scoped-verified."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Gave verify-deploy.sh's Gate 8 a three-way verdict (pass/warn_advisory/fail) driven by run-all.sh's existing --fail-on-new accounting, so an all-declared-expected failing run is non-blocking and visible rather than a bare FAIL. Added a fixture regression suite (22 assertions across 4 required shapes, consumer-level checks, and non-vacuousness probes), a roster-header format-stability pin, documentation of the new semantics and its accepted mixed-failure residual, and redeployed with a scoped post-deploy verification pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-run-all-failure-reporting.sh",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a verify-deploy.sh gate wraps a child tool that already computes an expected-vs-new (or similarly graded) classification of its own failures, give the gate a three-way verdict (pass/warn_advisory/fail) that consumes the child's existing flag/output rather than re-deriving the classification. Use warn_advisory() (not plain warn() or pass()) for the non-blocking-but-visible branch: it increments CHECKS (avoiding the zero-check-under-filter exit-2 branch under --only-gate), appends to GATE_DIRTY_LIST (preserving --skip-unchanged cache-invalidation so a warm PASS is never cached over a genuinely-failing corpus), and emits a WARN-FINDING line that deploy_findings_snapshot's strict grep '^FINDING ' filter does not match -- so the outcome never reaches a batch-blocking pre/post findings comparison. Discriminate the clean-vs-graded-failure cases by the PRESENCE of a stable marker line (never a numeric tally), choosing the degrade direction so a format change degrades to under-reporting (safe) rather than silently swallowing a real failure.",
+      "category": "PATTERN",
+      "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy.sh", "warn_advisory", "gate verdict", "deploy_findings_snapshot", "expected-vs-new"]
+    },
+    {
+      "content": "generate-context-line-counts.sh refuses to run from the agent-system source-store scripts/ directory (its own relative repo-root resolution would be bogus there) and must be invoked via the DEPLOYED copy (.claude/scripts/generate-context-line-counts.sh --write) -- but it still writes the corrected line_count back into the SOURCE STORE's own index-entries.json (e.g. agent-system/extensions/core/index-entries.json), not a deployed-tree file. A doc edit that grows/shrinks a file under agent-system/**/context/ needs this repair before gate 3 (doc-lint)'s Rule R passes, and the repair call itself must go through the deployed path even though its effect lands in source.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["generate-context-line-counts.sh", "index-entries.json", "doc-lint", "gate 3", "line_count"]
+    },
+    {
+      "content": "When /orchestrate runs a multi-task batch, a dispatch's full, unscoped verify-deploy.sh run can surface NEW test failures in suites completely outside that dispatch's own file_scope -- confirmed via git log to belong to unrelated, already-completed tasks -- alongside several minutes of specs/.gate-lock contention from a concurrent sibling session. This is exactly the scenario a dispatch file's 'Batch Gate Deferral' directive exists to handle: close the phase against a SCOPED --only-gate/--only invocation covering only the files that phase actually touched, record that the full battery was deferred to the once-per-batch stage, and do not treat an unrelated suite's failure as this task's own defect to fix or exclude.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["Batch Gate Deferral", "orchestrate batch", "specs/.gate-lock", "file_scope", "scoped verification"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/index-entries.json"
