@@ -11,15 +11,13 @@ hooks in `~/.dotfiles`, enforced every home-manager switch -- never rebuilt here
 project scope -- repository-scoped, not machine-wide; see `domain/review-gate-boundary.md`. It
 also provides two scripts, `scripts/sapience-retrieve.sh` and `scripts/sapience-remember.sh`,
 deployed to `.claude/scripts/`: the first is called from core's `orchestrate-build-dispatch.sh`
-Stage 3.5 `memory_context` block, giving every dispatch a repo-tag-filtered, per-dispatch
-retrieval injection from this vault; the second posts a repo-tagged, `explicit: true` KO via
-`POST /ingest-kos` and is not wired into any call site by this extension. See
-`domain/per-repo-scoping.md` for the scoping mechanism, both scripts' contracts, and the
-no-delete-API / unreviewed-write / two-population hazards.
+Stage 3.5 `memory_context` block; the second is called from the postflight wrapup below. See
+`domain/per-repo-scoping.md` for both scripts' contracts and hazards.
 
-**Postflight wrapup**: at the `[IMPLEMENTING]` -> `[COMPLETED]` transition, call
-`sapience_wrapup` with 3-8 distilled notes from the summary artifact just written. Do NOT call
-`sapience_remember` proactively mid-run -- see `domain/review-gate-boundary.md` for why.
+**Postflight wrapup**: at the `[IMPLEMENTING]` -> `[COMPLETED]` transition, write 3-8 distilled
+notes via `scripts/sapience-remember.sh` (bound enforced at this call site), replacing the
+untagged `sapience_wrapup` call. Do NOT call `sapience_remember` proactively mid-run -- see
+`domain/review-gate-boundary.md` for why.
 
 **No task type, no routing, no slash command**: review/sync/coverage/pending/stats are already
 covered by the GNOME desktop launchers the nix module installs.

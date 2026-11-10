@@ -12,7 +12,7 @@ on demand, never eager-loaded by a hook or an index `load_when` entry -- see
 | `domain/review-gate-boundary.md` | Need to understand what "staged" vs. "direct" means for a sapience write, or why the permission grant is scoped the way it is |
 | `domain/transcript-filter-ceiling.md` | Need to understand why orchestrated/subagent work cannot reach the vault except by an explicit tool call |
 | `domain/subagent-orientation.md` | Need the full refutation of the gap-3 context-injection-hook approach and the accepted per-dispatch retrieval injection |
-| `domain/per-repo-scoping.md` | Need the repo-tag-filtered scoping mechanism, `sapience-retrieve.sh`/`sapience-remember.sh`'s contracts, or the no-delete-API / unreviewed-write / two-population hazards |
+| `domain/per-repo-scoping.md` | Need the repo-tag-filtered scoping mechanism, `sapience-retrieve.sh`/`sapience-remember.sh`'s contracts, the postflight-wrapup tagged-write call site's bound/dry-run/degrade rules, or the no-delete-API / unreviewed-write / two-population hazards |
 
 None of these files is auto-loaded for any agent or command. Read one explicitly, or `grep`
 across `context/project/sapience/` when a sapience-related question arises mid-task.

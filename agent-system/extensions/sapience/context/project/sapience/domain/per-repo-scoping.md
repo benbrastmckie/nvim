@@ -53,9 +53,47 @@ arbitrary `provenance` string verbatim — this is what `sapience-remember.sh` d
 Both scripts are declared in this extension's `manifest.json` `provides.scripts` array and are
 deployed to `.claude/scripts/`. `sapience-retrieve.sh` is called from core's
 `orchestrate-build-dispatch.sh` Stage 3.5 `memory_context` block, replacing the local-memory-vault
-call at that one site; `sapience-remember.sh` is not wired into any call site by this record —
-its sanctioned call site is task-boundary postflight, writing a bounded 3-8-note set per
-completed task, the same bound the existing `sapience_wrapup` gap-2 instruction already uses.
+call at that one site.
+
+## The Tagged-Write Call Site
+
+`sapience-remember.sh` is called from `EXTENSION.md`'s postflight wrapup instruction, at the
+`[IMPLEMENTING]` -> `[COMPLETED]` transition, **replacing** the untagged `sapience_wrapup` MCP
+call rather than keeping both (D3, below). The call-site contract:
+
+- **Bound**: 3-8 notes per completed task, one `sapience-remember.sh` call per note. The script
+  itself deliberately does not enforce this bound (it is a general-purpose write primitive with
+  other future callers); the call site is the only place it is enforced, and it is load-bearing
+  there because every write is both permanent (no delete API) and unreviewed (bypasses the
+  `auto_approve: false` review gate — see Hazards below).
+- **Dry-run before real write**: `sapience-remember.sh --subject S --value V --dry-run` exits 0
+  and prints the request body (provenance carrying `[repo:<slug>]`, token redacted) without
+  making a network call. Verify the dry-run output before the first real rollout, and after any
+  change to the call site, rather than discovering a defect from a landed, permanent write.
+- **Degrade rule**: a failed `sapience-remember.sh` call (non-zero exit, a `gated >= 1` or
+  non-empty `set_aside` response, or `written: 0`) is logged and stepped over — it never fails
+  the postflight step, never blocks the `[IMPLEMENTING]` -> `[COMPLETED]` status transition, and
+  never retries automatically (a retry of a write that failed the noise gate is not expected to
+  succeed differently).
+
+## No Lifecycle Hook
+
+A `hooks.postflight` manifest entry was considered and rejected: `skill-base.sh`'s
+`skill_get_extension_dir()` gates hook resolution on `[ -n "$ext_task_type" ] && [
+"$ext_task_type" = "$task_type" ]`, and this extension declares no `task_type` at all (it is
+deliberately typeless, applying to every task regardless of domain), so the hook path fails the
+`-n` test unconditionally and silently — it can never fire. This is not a gap to close; it is why
+the call site lives in the instruction-level postflight wrapup text instead.
+
+## D3: Why Replace, Not Both
+
+A live, unfiltered `sapience_search` returns a repo-tagged knowledge object alongside untagged
+ones, confirming that the `[repo:<slug>]` provenance tag narrows only reads that explicitly
+request the `source=` filter — an unfiltered read sees both populations, a repo-filtered read
+sees only the tagged one. A tagged write is therefore strictly more reachable than an untagged
+one: keeping both call sites would double permanent, unreviewed write volume for zero added
+reachability. The bound above is a bound on the shared note set per completed task, not per
+write path, so replacing rather than adding keeps that bound meaningful.
 
 ## Hazards
 
