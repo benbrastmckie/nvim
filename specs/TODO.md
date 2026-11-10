@@ -1,5 +1,5 @@
 ---
-next_project_number: 577
+next_project_number: 578
 ---
 
 # TODO
@@ -14,7 +14,7 @@ next_project_number: 577
 | 1 | 313,338,342,369,383,397,410,412,423,431,437,444,451,453,456,459,472,473,475,477,479,483,484,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,448,458,462,463,474,476,480,486,492,516,518,527,540,541,542,543,544,553,564,576 | 369,383,397,412,423,431,444,451,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,452,454,455,461,500,508,523,547,552,570 | 313,391,398,439,448,458,486,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,450,457,481,501,509,513,517,561,566 | 390,402,449,452,455,461,472,476,479,486,515,552 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 4 | 421,450,457,481,501,509,513,517,561,566,577 | 390,402,449,452,455,461,472,476,479,486,515,547,552 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 5 | 487,524 | 450,501 | core-agent-system, orchestrator |
 | 6 | 496,571 | 487,518 | extensions, agent-system |
 | 7 | 498 | 496 | extensions |
@@ -139,6 +139,7 @@ next_project_number: 577
 534 [NOT STARTED] — postflight writes detail-free blocking issue entry on partial...
   └─ 543 [NOT STARTED] — Tell the re-prompted dispatch to distrust the error count it...
     └─ 547 [NOT STARTED] — Confirm the blocker-research aux carrier landed, and refuse...
+      └─ 577 [NOT STARTED] — Make a blocker-triggered aux plan-revision consumable by...
     └─ 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
 535 [NOT STARTED] — Carve a task's own specs/ artifacts out of...
   └─ 541 [NOT STARTED] — Stop git-snapshot.sh --no-revert artifacts from contaminating...
@@ -186,6 +187,57 @@ next_project_number: 577
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 577. Make a blocker-triggered aux plan-revision consumable by triage, and stop the same-cycle failed_tasks charge from killing dependents
+- **Effort**: high
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 547
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system change request) of an /orchestrate run over BimodalLogic tasks 838 and 853, session sess_1794289705_1b4c8a. Defect class AUX_REVISION_CANNOT_CLEAR_HANDOFF_BLOCKER.
+
+## Goal
+
+A blocker-triggered aux plan-revision must be CONSUMABLE. Today the orchestrate loop prepares an aux plan-revision for exactly the condition that an aux revision is architecturally incapable of clearing, so the revision succeeds and changes nothing. Close that, and stop the same-cycle failed_tasks charge from killing the stranded task's dependents.
+
+## The mechanism, measured end to end -- RE-DERIVE rather than trusting this snapshot
+
+Observed live over two cycles of one invocation, and reproduced by a fresh --dry-run on a clean session (so this is NOT session-local state: the deadlock survives re-invocation).
+
+  1. The task was `partial`. `scripts/orchestrate-cycle-plan.sh` cycle 1 classified it `needs_human` ("is partial with 1 unresolved blocker(s) and no continuation; needs human"), charged it into `failed_tasks`, AND -- in the same cycle -- prepared an `aux_dispatch[]` row `kind: plan-revision`, `agent: reviser-agent`, precisely to address that blocker.
+
+  2. The aux dispatch RAN AND SUCCEEDED. It re-derived the blocker against the Lean source, found it mis-anchored, withdrew it, revised the plan (a Phase moved `[BLOCKED]` -> `[NOT STARTED]` with a BLOCKER WITHDRAWN record), and wrote the `.plan-revised.json` sentinel.
+
+  3. The triage verdict is keyed on `.orchestrator-handoff.json`'s `blockers[]` via `$hinfo`, not on the plan and not on the revision sentinel. In `scripts/orchestrate-triage-classify.sh`'s `elif $status == "partial"` branch the order is: `if $cont` -> implement; `elif ($bc > 0)` -> needs_human; else implement. Nothing in that branch can see that a revision newer than the handoff has withdrawn the blocker. An `aux_dispatch[]` row carries `orchestrator_mode: false` and NO `handoff_path`, and is contractually FORBIDDEN to write that file (skills/skill-orchestrate/SKILL.md Move 2: "an aux dispatch never writes .orchestrator-handoff.json"; docs/architecture/handoff-schema.md Postflight Boundary). An aux row also never reaches Move 3, so no postflight clears the blocker either.
+
+  4. Therefore cycle 2 re-read the same stale handoff, reached the same `needs_human` verdict, and -- because the task was already in `failed_tasks` -- emitted for its dependent "a predecessor dependency reached a non-completed terminal status or is itself failed; this task can never proceed". Zero dispatches; both tasks dead for the run.
+
+## Candidate remedies -- EVALUATE, do not assume one
+
+  (i) Have triage also consult `.plan-revised.json` / the revised plan's phase markers, so a revision NEWER than the handoff supersedes the handoff's `blockers[]`. Settle the freshness comparison explicitly (mtime is not obviously the right key).
+  (ii) Give the aux plan-revision path a narrow, SANCTIONED way to retract the specific blocker it addressed -- e.g. a retraction sidecar the handoff reader honors -- WITHOUT granting aux rows general handoff-write access. The Postflight Boundary must survive whatever is chosen.
+  (iii) Stop charging a `needs_human` task into `failed_tasks` in the SAME cycle that prepares its own aux remedy, so the revision has a cycle in which to be consumed.
+
+ALSO IN SCOPE -- the cascade amplifier: a dependent is declared to "never proceed" on the strength of a `failed_tasks` entry that a same-invocation aux remedy was still working on. A dependent must not be written off while its predecessor's own remedy is in flight.
+
+## Relationship to adjacent records -- SHARED TERRITORY, READ BEFORE STARTING
+
+This record shares `scripts/orchestrate-triage-classify.sh` and `scripts/orchestrate-cycle-plan.sh` with the aux-carrier record named in `dependencies`, which closes the INVERSE failure (the carrier dead-drop: the blocker-research file is never written, so the plan-revision row is never emitted at all). This record is the next failure along the same chain: the row IS emitted, the reviser DOES succeed, and the result cannot be consumed. Per .claude/CLAUDE.md's "Batching Is the Default" guardrail the overlap is handled with a dependency edge and a sequence, not an exclusion -- do the carrier record first and build on its test fixtures.
+
+Two further adjacent records to read, not duplicate: the blockers[] admission-contract record (what may legitimately be PLACED in blockers[], and continuation-on-partial at authoring sites) and the dispatch_seq consumption-time supersession record (the same consumption-time staleness shape, different key). Neither covers triage's inability to see a successful revision.
+
+## Acceptance
+
+A regression test in `scripts/tests/test-orchestrate-triage-classify.sh` that fails on today's code: a `partial` task with a non-empty handoff `blockers[]` AND a newer plan revision withdrawing that blocker must NOT classify `needs_human`. Plus a `scripts/tests/test-orchestrate-cycle-plan.sh` case proving a dependent is not declared unreachable while its predecessor's aux remedy is in flight. Update docs/architecture/orchestrate-state-machine.md and docs/architecture/handoff-schema.md to state whatever supersession rule is chosen.
+
+NOTE ON THE ORIGINATING INSTANCE: it was unblocked by hand (blockers[] cleared on that task's handoff), so this record is about the MECHANISM, not about recovering any particular task.
+
+DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic): specs/events.jsonl; specs/.orchestration/.return-meta-multi-sess_1794289705_1b4c8a.json (metadata.detected_defects[0], class AUX_REVISION_CANNOT_CLEAR_HANDOFF_BLOCKER); specs/838_two_sided_open_core_pin_free_pigeonhole/issues.jsonl entry iss_1794290566064_eorL8P.
+
+---
 
 ### 576. Record the Lean verification-tier gate-naming rule, the Constraints-consumed marker duty, and the build-guard replay window
 - **Status**: [NOT STARTED]
