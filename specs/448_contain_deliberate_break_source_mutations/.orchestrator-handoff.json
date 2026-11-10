@@ -1,21 +1,26 @@
 {
-  "status": "planned",
-  "dispatch_seq": 21,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 22,
+  "phases_completed": 7,
   "phases_total": 7,
-  "summary": "Wrote a 7-phase plan containing the regression-anchor source-store mutation. The containment is a reorder of the one unsafe call site: call setup_sandbox() first, then apply the identical sed to $SUT instead of $CORE_DIR, so the shared source store is never written and the backup/trap/restore machinery becomes unnecessary. Paired with a new source-store-scoped residue detector (anchored-start `while false &&` guard plus leftover *.anchor-bak), registered as gate 28 with its own suite, in-suite byte-identity and residue invariants, and a safe-pattern rule added to the testing standard. Premise re-validation found the declared must-land-first territory edge (328) already completed and archived, so the task is unblocked.",
+  "summary": "Implemented all 7 plan phases: relocated the regression-anchor's deliberate-false mutation from the real source-store file onto the already-copied sandbox file under test, eliminating the backup/trap/restore machinery and the concurrency hazard it only partially mitigated. Added a mechanical detector (gate 28, lint-deliberate-break-residue.sh) with its own four-case suite, in-suite byte-identity and anchor-bak-absence invariants, and a stated safe-pattern rule in the testing standard. Redeployed via deploy-headless.sh; every load-bearing check (the regression-anchor case, the non-vacuousness assertion, both invariants, the new detector/suite, gate 28) passes. Per the dispatch's Batch Gate Deferral directive, the complete independent gate/test pool run was deferred to the batch stage; three unrelated, pre-existing verify-deploy.sh gate failures (eager-load budget drift, a shellcheck finding, a dead-command-recommendation finding) were confirmed untouched by this dispatch via git history.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/448_contain_deliberate_break_source_mutations/summaries/01_contain-deliberate-break-mutations-summary.md",
+      "summary": "Full implementation summary covering all 7 phases, decisions, verification, and the Batch Gate Deferral deviation."
+    },
+    {
       "type": "plan",
       "path": "specs/448_contain_deliberate_break_source_mutations/plans/01_contain-deliberate-break-mutations.md",
-      "summary": "7-phase containment plan: anchor-mutation reorder onto the sandbox copy, in-suite source-store invariants, a gate-28 residue detector with its own suite, and a safe-pattern rule in the testing standard."
+      "summary": "7-phase containment plan, all phases marked [COMPLETED] with per-task completion annotations."
     }
   ],
   "metadata": {
-    "session_id": "sess_1794272256_212466_448",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1794272256_212466",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
