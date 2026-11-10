@@ -254,7 +254,7 @@ this phase, and by grepping both files for the Phase 1 heading text to prove the
 
 ---
 
-### Phase 3: Redeploy and Verify the Full Gate Set [NOT STARTED]
+### Phase 3: Redeploy and Verify the Full Gate Set [COMPLETED]
 
 **Goal**: The deployed `.claude/` tree is regenerated from the source store (clearing the
 pre-existing `core`/`lean` staleness alongside this task's edits) and the complete
@@ -262,20 +262,27 @@ pre-existing `core`/`lean` staleness alongside this task's edits) and the comple
 
 **Tasks**:
 
-- [ ] Confirm Phases 1 and 2 are committed (the deploy regenerates the deployed tree from the
+- [x] Confirm Phases 1 and 2 are committed (the deploy regenerates the deployed tree from the
       source store; uncommitted source edits still deploy, but committing first keeps the
-      post-deploy diff readable).
-- [ ] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`,
+      post-deploy diff readable). *(completed)*
+- [x] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`,
       invoked with the Bash tool's `timeout` parameter raised to 600000 (NOT its 120000ms
-      default), per `context/patterns/external-process-wait.md` Rule 1.
+      default), per `context/patterns/external-process-wait.md` Rule 1. *(completed)*
 - [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (no `--only-gate` narrowing)
-      and confirm it exits 0.
-- [ ] Spot-check that the deployed copies of all three edited files now match their source-store
+      and confirm it exits 0. *(deviation: altered -- discharged via `--only-gate 3,4` per the
+      dispatch file's Batch Gate Deferral directive; the full run surfaced 3 pre-existing
+      failures unrelated to this task's file_scope (eager-load baseline, shellcheck in a lean
+      script, dead-command-recommendation in z3 agent files), confirmed via `git log` as not
+      authored by task 488; the complete gate set is deferred to the batch-level stage, not
+      forgiven)*
+- [x] Spot-check that the deployed copies of all three edited files now match their source-store
       counterparts (the carve-out subsection is present in
-      `.claude/context/patterns/mcp-server-ownership.md`).
-- [ ] If a gate fails in a file outside this task's `file_scope`, check `git log` to confirm the
+      `.claude/context/patterns/mcp-server-ownership.md`). *(completed: diff confirms all three
+      files identical between source store and deployed tree)*
+- [x] If a gate fails in a file outside this task's `file_scope`, check `git log` to confirm the
       work is not this task's own, then STOP and report rather than repairing a sibling's
-      in-flight edit.
+      in-flight edit. *(completed: confirmed via git log, recorded in issue log and this phase's
+      progress file; did not repair the unrelated failures)*
 
 **Timing**: 0.5 hours
 
@@ -302,20 +309,23 @@ pre-existing `core`/`lean` staleness alongside this task's edits) and the comple
 
 ## Testing & Validation
 
-- [ ] `mcp-server-ownership.md` states a verdict that explicitly covers the
-      nix-enforced-settings case (acceptance criterion 1).
-- [ ] The sapience extension's grant placement matches that verdict — i.e.
+- [x] `mcp-server-ownership.md` states a verdict that explicitly covers the
+      nix-enforced-settings case (acceptance criterion 1). *(completed)*
+- [x] The sapience extension's grant placement matches that verdict — i.e.
       `settings-fragment.json` is unchanged and the standard now sanctions it (acceptance
-      criterion 2).
-- [ ] `bash .claude/scripts/verify-deploy.sh` gate set is green after redeploy (acceptance
-      criterion 3).
-- [ ] The standard is internally consistent: no remaining sentence asserts that project-scope
-      registration is the only exception to the same-scope rule.
-- [ ] The disclosure pointer is symmetric in both directions.
-- [ ] No file under `agent-system/**` gained a task-number reference or record-versioning
-      language.
-- [ ] No edit was made to `~/.dotfiles/config/claude/settings.json`, `~/.claude/settings.json`, or
-      `agent-system/extensions/sapience/settings-fragment.json`.
+      criterion 2). *(completed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` gate set is green after redeploy (acceptance
+      criterion 3). *(completed: scoped tier `--only-gate 3,4` green per this dispatch's Batch
+      Gate Deferral directive; the complete gate set is deferred to the once-per-invocation
+      batch-level stage, not independently run here -- see Phase 3's Reasoned-Exclusions-style
+      note in its own progress file)*
+- [x] The standard is internally consistent: no remaining sentence asserts that project-scope
+      registration is the only exception to the same-scope rule. *(completed)*
+- [x] The disclosure pointer is symmetric in both directions. *(completed)*
+- [x] No file under `agent-system/**` gained a task-number reference or record-versioning
+      language. *(completed)*
+- [x] No edit was made to `~/.dotfiles/config/claude/settings.json`, `~/.claude/settings.json`, or
+      `agent-system/extensions/sapience/settings-fragment.json`. *(completed)*
 
 ## Artifacts & Outputs
 
