@@ -1,7 +1,7 @@
 # Implementation Plan: Task #423
 
 - **Task**: 423 - Fix verify-deploy context budget byte-count drift
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (see Risks for the cross-owned gate 24 residual, which is NOT a blocking dependency)
 - **Research Inputs**: specs/423_fix_verify_deploy_context_budget_byte_count_drift/reports/01_eager-budget-overage-attribution.md
@@ -106,28 +106,31 @@ consulted and is not modified by this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-measure and move the eager-load baseline with a dated note entry [NOT STARTED]
+### Phase 1: Re-measure and move the eager-load baseline with a dated note entry [COMPLETED]
 
 **Goal**: `measure-eager-context.sh --check`'s fresh TOTAL sits at or under
 `eager_load.baseline_bytes`, with the move justified by a dated entry appended to the config's
 own `note` field.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/config/orchestrator-context-budget.json` from
+- [x] Re-read `agent-system/extensions/core/context/config/orchestrator-context-budget.json` from
       disk immediately before editing (sibling-concurrency discipline — a sibling may have
       touched it since this plan was written), and confirm `git status --short` shows it
-      unmodified by anyone else.
-- [ ] Take a fresh live measurement from the repo root:
+      unmodified by anyone else. *(completed: git status --short showed it clean before editing)*
+- [x] Take a fresh live measurement from the repo root:
       `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`.
       Record the `TOTAL: <N> B` figure and the four `SUBTOTAL` lines verbatim; this figure, not
       any figure carried in this plan or in the report, is what the edit is derived from.
-- [ ] Compute the new baseline: the fresh TOTAL rounded **up to the next 100 B** (the convention
-      every prior `note` entry follows). Do not round further.
-- [ ] Edit `eager_load.baseline_bytes` (currently `66800`), `eager_load.measured_bytes`
+      *(completed: TOTAL 68606 B; parent_chain 2982, claudemd 34953, at_import 0, rules 30671 —
+      matches the planning-time figure exactly)*
+- [x] Compute the new baseline: the fresh TOTAL rounded **up to the next 100 B** (the convention
+      every prior `note` entry follows). Do not round further. *(completed: 68606 -> 68700)*
+- [x] Edit `eager_load.baseline_bytes` (currently `66800`), `eager_load.measured_bytes`
       (currently `65312`, set to the fresh TOTAL), and `eager_load.measured_at` (currently
       `"2026-10-18"`, set to today's date) with three targeted `Edit` string replacements on
       lines 18-20. Do not rewrite the file through jq or a JSON dumper.
-- [ ] Append a dated entry to the end of the `eager_load.note` string (line 21, immediately
+      *(completed: baseline_bytes=68700, measured_bytes=68606, measured_at=2026-11-10)*
+- [x] Append a dated entry to the end of the `eager_load.note` string (line 21, immediately
       before its closing quote), in the voice and shape of the nine entries already there. It
       must state: the date; that this is a **route (b)** reviewed, dated baseline move, not a
       trim; the per-file attribution (the sapience extension's entirely new `EXTENSION.md` as a
@@ -139,17 +142,20 @@ own `note` field.
       that the margin is thin and the gate is expected to re-fire on the next ordinary eager
       addition, which is its design intent; and that both per-file `ceiling_bytes` entries
       remain unmoved, this move being scoped to `eager_load` only. Use backticks or single
-      quotes — never a `"` — inside the appended prose.
-- [ ] Validate the file parses: `python3 -m json.tool <path> >/dev/null` (or
+      quotes — never a `"` — inside the appended prose. *(completed: tenth note entry dated
+      2026-11-10 appended, using backticks only)*
+- [x] Validate the file parses: `python3 -m json.tool <path> >/dev/null` (or
       `jq -e . <path> >/dev/null`), and confirm
       `jq -r '.eager_load.baseline_bytes' <path>` reads back the intended integer.
-- [ ] Do **not** copy the edited config into the deployed `.claude/` tree and do not redeploy.
+      *(completed: python3 -m json.tool OK; jq readback = 68700)*
+- [x] Do **not** copy the edited config into the deployed `.claude/` tree and do not redeploy.
       Gate 20 resolves this config at
       `$TARGET/agent-system/extensions/core/context/config/orchestrator-context-budget.json`
       (`verify-deploy.sh:1777`) — the source store, never the deployed copy — so the source edit
       alone is what every gate and every measurement in this plan reads. The deployed copy goes
       stale until the next ordinary deploy, which is this repo's normal steady state.
-- [ ] Commit this green sub-step, staging the single source config path explicitly.
+      *(completed: deployed .claude/ copy left untouched; no redeploy run)*
+- [x] Commit this green sub-step, staging the single source config path explicitly. *(completed)*
 
 **Timing**: 0.75 hours
 

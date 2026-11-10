@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/plans/01_eager-baseline-move-and-row-rewrite.md",
-      "summary": "Two-phase route-(b) plan: a fresh-measurement-derived eager_load.baseline_bytes move with a dated note entry, then a known-failures.txt row rewrite (not removal) re-attributing the residual suite failure to the cross-owned gate 24 /ide findings."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1794343931_696ebd_423",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 2,
-    "estimated_hours": 1.5,
-    "dependency_waves": 2
-  },
-  "memory_candidates": [
-    {
-      "content": "verify-deploy.sh gate 20 reads orchestrator-context-budget.json from $TARGET/agent-system/extensions/core/context/config/ (verify-deploy.sh:1777) -- the SOURCE STORE, never the deployed .claude/ copy -- so an eager-budget baseline move needs no deploy sync. Separately: test-verify-deploy-context-budget.sh's baseline-fixture-clean case asserts baseline_rc -eq 0 from a full '--max-cost moderate' verify-deploy run, not merely zero gate20 findings. Any unrelated moderate-class gate finding on the real corpus (e.g. gate 24's dead-command-recommendation hits) therefore keeps that case red no matter what the budget config says. Before planning a fix for a suite whose failure looks single-caused, read its baseline block's actual predicate: an absolute rc==0 assertion over a repo-wide gate couples the suite to every standing pre-existing finding in the corpus.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/plans/01_eager-baseline-move-and-row-rewrite.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["gate20", "verify-deploy", "eager-context-budget", "known-failures", "baseline-relative-verification"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 423 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1794343931_696ebd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
