@@ -5109,7 +5109,7 @@
     {
       "project_number": 461,
       "project_name": "v7_refuses_cached_untracking_pathspec",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Rule on and close the V7 refusal of a positive directory pathspec for a git rm --cached untracking whose content is still on disk",
       "topic": "core-agent-system",
@@ -5122,20 +5122,26 @@
         448
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/context/standards/git-staging-scope.md",
         "agent-system/extensions/core/scripts/git-commit-scoped.sh",
-        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
-        "agent-system/extensions/core/context/standards/git-staging-scope.md"
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
       ],
       "artifacts": [
         {
           "path": "specs/461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md",
           "type": "report",
           "summary": "Root-cause confirmation plus a new silent-revert-hazard finding, recommended ruling (2) sited pre-add in V2's classification loop, predicate design, test-suite naming convention (Y free), and a git-staging-scope.md doc recommendation."
+        },
+        {
+          "path": "specs/461_v7_refuses_cached_untracking_pathspec/plans/01_cached-untracking-commit-path.md",
+          "type": "plan",
+          "summary": "Five-phase plan ruling option (2) and fixing the --cached untracking shape end-to-end in git-commit-scoped.sh, with regression tests, documentation, and a full-gate redeploy."
         }
       ],
       "created": "2026-11-04T00:55:28Z",
-      "last_updated": "2026-11-10T21:17:12Z",
-      "session_id": "sess_1794343931_696ebd_461",
+      "last_updated": "2026-11-10T21:34:03Z",
+      "session_id": "sess_1794343931_696ebd",
       "next_artifact_number": 2
     },
     {
