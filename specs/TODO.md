@@ -467,6 +467,46 @@ NON-GOALS: no change to how the budget is computed, clamped, charged, or enforce
 
 **Description**: Make a declared 'Verification Tier: full' actually honorable inside a multi-task /orchestrate batch. Measured this run: task 497 abandoned one unscoped 'bash verify-deploy.sh' after roughly 10 minutes and a second after roughly 18 minutes (test-gate-cache-equivalence.sh alone exceeded 10 minutes against a normal cost far below that), and the batch gate stage itself took roughly 28 minutes at load average 10.4. Both batch tasks therefore substituted scoped --only-gate runs for their plans' declared full tier and recorded the deviation. Gate timeouts in this state are indistinguishable from real failures at the call site: several suites that time out under load pass cleanly standalone (test-gate-lock.sh 16/16, test-lint-state-writer-boundary.sh 28/0), so contention manufactures false findings that then require manual triage. Candidate directions: a shared gate lock or admission token so sibling dispatches serialize their gate runs rather than multiplying them; per-gate cost budgets with an explicit contention-detected outcome distinct from FAIL; gate-level parallelism caps; or making the batch gate stage the single sanctioned full-gate run per invocation with per-task tiers downgraded by contract rather than by each agent's own judgment. Scope deliberately includes the tier-declaration contract, since the present situation has agents routinely deviating from a tier the environment cannot deliver.
 
+=== ADDENDUM: SECOND SAMPLE, GATE-LOCK CONTENTION PATH (conclusion stage, channel b, session sess_1794272256_212466) ===
+
+A later /orchestrate conclusion stage raised this class again as a new change request. Backlog
+reconciliation ruled it subset-of-open against this record (audit-task-proposals.sh,
+mechanical_class subset, 3 shared paths: verify-deploy.sh, orchestrate-batch-gate.sh,
+context/contracts/batch-gate-stage.md), so no second record was created.
+
+WHAT THIS SAMPLE ADDS: the first sample above recorded the failure as gate TIMEOUT under load
+(roughly 10 and 18 minutes for unscoped runs, batch gate stage roughly 28 minutes at load average
+10.4). This sample shows the same unhonorable-full-tier outcome reached through a DIFFERENT and
+more diagnosable mechanism -- explicit `specs/.gate-lock` contention, with gate 8 (shell test
+suite runner) failing after a bounded 120s wait rather than hanging. Both land in the same place:
+a declared full tier substituted by a scoped narrowing. A remedy that only addresses load-induced
+slowness would leave this path open, so treat lock contention and timeout as two surfaces of the
+one defect.
+
+PRIMARY CITATION: specs/450_validate_settled_route_before_dispatch/issues.jsonl,
+iss_1794315150204_driCoz (class "verification gate collision", severity minor, implement phase).
+Recorded there: Phase 5's independently-run full verify-deploy.sh FAILed gate 8 because
+specs/.gate-lock was contended by another concurrent run, timing out after 120s. The dispatching
+agent diagnosed this as a process violation rather than a tool fault -- its own .dispatch file
+carried the Batch Gate Deferral directive instructing scoped narrowing instead of an independent
+full-aggregator run -- and discharged the phase with run-all.sh --only over the union of Phases
+1-4's Tier Justification suites (17/17), verify-deploy.sh --skip-slow --only-gate 3,4 (PASS), and
+a byte-identical diff of all 10 touched files against their deployed copies.
+
+THAT DIRECTIVE IS NOW CLOSED PRIOR ART: hoist_batch_gate_deferral_directive, discharged by
+specs/449_hoist_batch_gate_deferral_directive/summaries/01_hoist-batch-gate-deferral-siting-summary.md.
+The directive worked as designed here, which sharpens this record's question: the deferral makes
+the collision survivable but does not make a declared full tier honorable, which is what this
+record asks for. Also closed: share_one_verify_deploy_gate_run_per_batch
+(specs/403_share_one_verify_deploy_gate_run_per_batch/summaries/01_batch-shared-verify-deploy-gate-summary.md).
+
+CLASSIFICATION NOISE WORTH KNOWING, not part of this record's ask: three further entries in the
+same batch carry the same "verification gate collision" class but are not collisions at all --
+iss_1794301062914_L4X9Mj (expected pre-redeploy source-vs-deployed drift, self-resolving) and
+iss_1794312565196_Gzmb8y plus iss_1794315150227_smcsiR (pre-existing failures unrelated to the
+dispatching task, each confirmed by isolating the task's own edit). Only driCoz above is a genuine
+gate collision. Do not price this record's frequency at 4 entries.
+
 ---
 
 ### 571. Invalidate an in-flight dispatch whose dispatch_seq has been superseded, at consumption time
@@ -1572,6 +1612,64 @@ Read every bare specs/... path above as repo-qualified to /home/benjamin/Project
 FILE SCOPE (procedure step 6, DERIVED): this record declared none, or declared only deployed paths. The scope
 above was derived from the edit targets its own text names, and each path was verified to exist in this
 repository before being written.
+
+
+=== ADDENDUM: SECOND, LARGER SAMPLE -- DERIVED EXTENSION METADATA (conclusion stage, channel b, session sess_1794272256_212466) ===
+
+A later /orchestrate conclusion stage raised this class again as its largest recurring class and
+dispatched it to the meta builder. Backlog reconciliation ruled it superset-of-open against this
+record (audit-task-proposals.sh, mechanical_class superset, 2 shared paths), so no second record
+was created and the evidence is folded here. 21 entries across 6 of the 8 tasks in one batch --
+the batch's single largest recurring class, and a substantially larger sample than the 13 entries
+recorded above.
+
+THE DOMINANT DROPPED PATH IS DERIVED, NOT HAND-EDITED, which is the part this sample adds. The
+file most often dropped is `agent-system/extensions/<name>/index-entries.json` (core and sapience
+observed), with `agent-system/extensions/core/manifest.json` also seen. These are REGENERATED
+surfaces: a source-store markdown edit stales their line_count rows, the implementing agent must
+run generate-context-line-counts.sh --write to satisfy the Rule R gate, and the resulting
+modification is then dropped as uncontained. No per-phase `Files to modify` list would plausibly
+name them, so this is a composition/derivation defect in how file_scope is built, not six
+independent authoring mistakes.
+
+CITATIONS. specs/360_validate_carried_unverified_names_a_source/issues.jsonl:
+iss_1794276867746_JLHrwl. specs/445_gate8_expected_vs_new_failure_distinction/issues.jsonl:
+iss_1794278643940_eqErJM. specs/488_mcp_write_tool_grant_ownership_scope/issues.jsonl:
+iss_1794272633409_uYE5Jr, iss_1794272643243_lBDki6, iss_1794272832182_MlgULd.
+specs/487_identical_dispatch_halt_despite_phase_progress/issues.jsonl: iss_1794318999348_l33QKJ.
+specs/450_validate_settled_route_before_dispatch/issues.jsonl: iss_1794301402738_XmQwjQ.
+specs/444_retire_routing_agents_hard_for_hard_contracts/issues.jsonl: iss_1794283817389_ukoCKV,
+iss_1794284032902_Agquro, iss_1794287219915_DWgvQG, iss_1794287220093_QBgQMC,
+iss_1794287220303_PaISiw, iss_1794287220510_EDpUPr, iss_1794287220699_nbcFuX,
+iss_1794287232939_KjI1hF, iss_1794287233133_66WTwW, iss_1794287233306_NBKIt7,
+iss_1794287233518_XFieAs, iss_1794287233725_hLNkLR, iss_1794290166904_yfbGLv,
+iss_1794290167083_fKGEOD. All class "scope excursion", severity minor.
+
+TWO ENTRIES IN THAT LIST ARE A DIFFERENT SHAPE and should not be counted toward the containment
+drop: iss_1794283817389_ukoCKV and iss_1794284032902_Agquro record stale index-entries.json ROWS
+(a dangling @-reference and a row naming a pre-rename basename that never corresponded to a
+deployed file) repaired opportunistically in-phase. They are metadata-hygiene findings, not
+pathspec drops.
+
+ONE ENTRY SHOWS THE COLLATERAL-WRITE HAZARD this record's remedy must not create:
+iss_1794301402738_XmQwjQ records that running generate-context-line-counts.sh --write to fix the
+Rule R mismatch also rewrote three unrelated foreign index-entries.json rows already dirty in the
+working tree from a concurrent session. The agent committed only its own two rows via a targeted
+edit and restored the foreign three. Any remedy that auto-stages regenerated metadata must stage
+the dispatching task's own rows only -- a whole-file add would sweep in a concurrent writer's
+uncommitted work.
+
+RELATED OPEN TERRITORY, no edge filed here because each owns a different surface of the one
+mechanism: plan_contingency_file_scope_and_containment_drop holds the HARVEST side and its Item 2
+is this same drop on "a file class no plan phase would ever name";
+shared_extension_metadata_commit_containment holds the containment-allowlist ruling for shared
+extension metadata; stage_regenerated_derived_files_in_phase_commits holds the
+regenerate-and-stage obligation. Settle the allowlist/harvest question with those rather than in
+isolation. Closed prior art, both discharged in the batch this sample comes from:
+feed_undeclared_implement_paths_into_file_scope
+(specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md)
+and close_the_plan_to_file_scope_reconciliation_gap
+(specs/446_close_the_plan_to_file_scope_reconciliation_gap/summaries/01_close-plan-file-scope-gap-summary.md).
 
 ---
 
@@ -4758,6 +4856,45 @@ REMEDY DIRECTIONS (to evaluate, not prescriptive). (a) Re-site the guard below t
 
 SCOPE NOTE: the declared file_scope overlaps #420 (same 3 paths) and #487 (2 paths, orchestrate-cycle-plan.sh and its test suite). These are distinct defects, not duplicates; the overlap is a batching/serialization concern and the admission gate's file-scope collision deferral will serialize them mechanically at dispatch time.
 
+=== ADDENDUM: CORRECTING ENTRY FOLDED IN (conclusion stage, channel b, session sess_1794272256_212466) ===
+
+A later /orchestrate conclusion stage raised this class again as a new change request. Backlog
+reconciliation ruled it duplicate-of-open against this record with the strongest available
+corroboration -- audit-task-proposals.sh returned mechanical_class `exact` (identical declared
+file_scope, 3 shared paths) at semantic score 0.85 -- and the citing entry below names this very
+task directory as its own durable remediation record. No second record was created.
+
+SECOND CITATION, previously unrecorded here:
+specs/445_gate8_expected_vs_new_failure_distinction/issues.jsonl, iss_1793992615868_8eUtJB
+(class "orchestrator convergence guard blind spot", severity minor, conclusion phase, resolution
+worked_around, suggested_channel agent_system). It is an explicit CORRECTION to
+iss_1793992157216_ZCSwKL, already cited above, and it narrows the mechanism materially. Read it
+before planning, because it retracts the mechanism the first entry asserted:
+
+WHAT THE CORRECTION RETRACTS: the first entry claimed the self-modification tie-breaker and the
+__WHOLE_TREE__ ordering deferral are applied DOWNSTREAM of the convergence guard. Verification
+against the live script shows the opposite. The admission defer at orchestrate-cycle-plan.sh:2084
+fires BEFORE probed_dispatch is built at line 2124, so deferred candidates correctly leave
+probed_dispatch empty and WOULD increment the counter. __WHOLE_TREE__ does not appear in
+orchestrate-cycle-plan.sh at all -- it lives in scripts/lib/file-scope-overlap.sh.
+
+THE ACTUAL BLIND SPOT, narrower than first recorded: probed_dispatch is populated from the
+read-only `task-lock.sh check` probe, while the real acquire happens later in the live per-task
+loop whose sole out_dispatch_rows append site is at line 2880. Six exclusion paths sit between
+the guard and that emission, all invisible to it: unresolvable project_name, LOCKED BY ANOTHER
+SESSION AT ACQUIRE TIME, acquire error, orchestrate-build-dispatch.sh failure, identity-seq
+mismatch, and the identical-dispatch halt. This explains the recorded evidence exactly -- the two
+tasks that passed check and failed acquire left probed_dispatch at 2, matching the observed
+"83 path(s) contended across 2 dispatched task(s)" manifest, so the guard saw non-empty and reset
+consecutive_no_dispatch_cycles to 0 while dispatch[] emitted empty.
+
+ALSO IN SCOPE per the correction: the guard's own stop_message is self-contradicting -- it names
+the tie-breaker class it does cover and omits the acquire class that actually stalls runs.
+
+REMEDY DIRECTION, as recorded: compare the emitted dispatch[] length rather than probed_dispatch,
+or evaluate the guard after the acquire-time exclusion paths. Line numbers above were accurate
+when the correction was written; re-derive them rather than trusting them.
+
 ---
 
 ### 513. Mechanically detect a plan phase that closed without its own commit
@@ -5171,6 +5308,43 @@ VERIFY: the deliverable is a ruling in prose, so verification is documentary -- 
 TERRITORY EDGES -- context/patterns/batch-orchestration-guardrails.md is SHARED FILE TERRITORY, so edges are declared rather than raced (that same document's own rule: shared territory is serialized with an edge, never a bare exclusion). Two open records declare it: explicit_lint_fixture_test_subject_resolution and warn_plan_size_exceeds_cycle_budget. The latter also declares orchestrate-cycle-plan.sh, which a supersede ruling would eventually touch. Both edges are filed as dependencies.
 
 MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_lifecycle_command_prose_per_class declares whole directory prefixes (core/agents/, core/commands/, core/context/, core/hooks/, core/index-entries.json, core/manifest.json) and contain_deliberate_break_source_mutations declares core/scripts/tests/ and core/scripts/lint/ as prefixes, so the directory-prefix overlap predicate reports both against most agent-system records, including every record created in this batch. No dependency edge is filed, matching how the rest of this backlog treats those two blanket declarations. Re-check at admission time and file an edge if either has narrowed to a concrete file this record also touches.
+
+=== ADDENDUM: SECOND INDEPENDENT BATCH MEASUREMENT (conclusion stage, channel b, session sess_1794272256_212466) ===
+
+A later /orchestrate conclusion stage raised this same class again and dispatched it to the meta
+builder as a new change request. Backlog reconciliation ruled it superset-of-open against this
+record (audit-task-proposals.sh, mechanical_class superset, shared path
+context/patterns/batch-orchestration-guardrails.md), so no second record was created and the
+evidence is folded here instead. This is the derived frequency figure ask (2) above requires to be
+shown rather than asserted -- it is a second, independent sample, not a re-citation of the first.
+
+MEASURED, 8-task batch: the completion-deploy gate refused the postflight completion write with
+exit 6 on 4 of 8 tasks -- every task in the batch whose implement dispatch touched
+agent-system/extensions/**. Each was parked at `implementing` and promoted one cycle later by the
+Inter-Cycle Redeploy Checkpoint, exactly as documented. Citations, each class
+"stale deploy or source-store boundary", severity costly, resolution worked_around,
+suggested_channel fix_now:
+  - specs/360_validate_carried_unverified_names_a_source/issues.jsonl, iss_1794276928199_Obk81f
+  - specs/444_retire_routing_agents_hard_for_hard_contracts/issues.jsonl, iss_1794292046697_UfnipF
+  - specs/449_hoist_batch_gate_deferral_directive/issues.jsonl, iss_1794299540099_QttTEY
+  - specs/450_validate_settled_route_before_dispatch/issues.jsonl, iss_1794315419896_Hodpax
+
+VISIBLE HINT OVERRIDE, restated for this sample as the change request required: all four entries
+carry suggested_channel fix_now. The orchestrate lead overrode it to the agent-system channel on
+the ground that the class recurred on 4 of 8 tasks as the identical completion-deploy-gate
+interaction -- a systemic sequencing property of the gate, not a per-task defect a one-off fix
+would close. This matches, independently, the override reasoning recorded for the first sample.
+
+FREQUENCY NOW DERIVABLE FROM TWO SAMPLES: 1 of 7 tasks in the first batch, 4 of 8 in this one.
+Ground (c) above characterizes the removed cost as "one additional, largely empty cycle round
+trip"; ruling (3) should price that against both samples rather than either alone.
+
+PRIOR ART, closed: the negative verdict this record re-adjudicates was reached under
+deploy_before_implement_postflight_to_avoid_cycle_cost, discharged by
+specs/archive/442_deploy_before_implement_postflight_to_avoid_cycle_cost/summaries/01_pre-postflight-deploy-evaluation-record-summary.md,
+which records the trigger as evaluated and intentionally not built. A related closed record is
+reduce_deploy_staleness_completion_round_trip
+(specs/367_reduce_deploy_staleness_completion_round_trip/summaries/01_deploy-pending-systemwide-sweep-summary.md).
 
 ---
 
