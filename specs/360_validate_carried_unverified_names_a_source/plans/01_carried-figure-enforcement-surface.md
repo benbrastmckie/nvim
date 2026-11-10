@@ -374,22 +374,22 @@ rather than contradicting the new rule.
 
 ---
 
-### Phase 5: Extend the Advisory Over the New Token [NOT STARTED]
+### Phase 5: Extend the Advisory Over the New Token [COMPLETED]
 
 **Goal**: Bring Phase 4's new token under the same single mechanical surface, so the convention
 has one advisory rather than two, and keep every addition advisory.
 
 **Tasks**:
-- [ ] Parameterize the Phase 1 check over a token list rather than one hard-coded literal, so the
+- [x] Parameterize the Phase 1 check over a token list rather than one hard-coded literal, so the
       flattening, mention-suppression, and bounded-window properties are shared and cannot drift
       between tokens.
-- [ ] Add Phase 4's token to that list, with the same required-named-argument rule and the same
+- [x] Add Phase 4's token to that list, with the same required-named-argument rule and the same
       `log_warn` level. Add no second mechanism, and add no blocking gate.
-- [ ] Extend the promotion-criterion comment to cover both tokens.
-- [ ] Add fixtures for the new token in both directions -- well-formed draws no advisory, an empty
+- [x] Extend the promotion-criterion comment to cover both tokens.
+- [x] Add fixtures for the new token in both directions -- well-formed draws no advisory, an empty
       argument draws a named one -- plus one mention-suppression case, driven through
       `$VALIDATE_SRC`.
-- [ ] Confirm the existing token's fixtures still pass unchanged, so parameterization altered no
+- [x] Confirm the existing token's fixtures still pass unchanged, so parameterization altered no
       behaviour for the shipped check.
 
 **Timing**: 1 hour

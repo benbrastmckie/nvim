@@ -200,10 +200,14 @@ done
 # context/formats/report-format.md's "## Carried-Figure Discipline" / "Enforcement level"
 # subsection for the full rule). Scoped to report and plan artifacts only --
 # summary-format.md carries no carried-figure obligation. This checks only that every mark of
-# the fixed literal token CARRIED-UNVERIFIED names a non-empty source designator before its
-# closing bracket: a well-formedness check on a literal token's syntax, never a semantic
-# contradiction check (see that subsection's Reasoned Exclusions for why resolve-checking the
-# named source and missing-mark detection are both out of scope).
+# a fixed literal token in CFD_TOKENS below names a non-empty designator before its closing
+# bracket: a well-formedness check on each token's syntax, never a semantic contradiction check
+# (see that subsection's Reasoned Exclusions for why resolve-checking the named source and
+# missing-mark detection are both out of scope). CARRIED-UNVERIFIED is the original token
+# (Carried-Figure Discipline's own mark); CORPUS-UNVERIFIED is the Out-of-scope paragraph's new
+# token for a recommendation that asserts a measurable property of the live corpus -- a
+# different claim shape, sharing the same mechanical surface because both are "a literal token
+# must name a non-empty designator" checks with no semantic component.
 #
 # Newlines are flattened before matching because real marks in the corpus wrap across source
 # lines; a per-line `grep -E` would miss them. An occurrence immediately preceded by a backtick
@@ -215,56 +219,58 @@ done
 # consume text up to an arbitrarily distant later closing bracket, which would otherwise hide a
 # genuinely malformed mark that follows it.
 #
-# PROMOTION CRITERION (do not promote either condition from log_warn to log_error as part of an
-# unrelated change): promote only once a corpus-wide sweep confirms zero advisories fire across
-# every non-terminal report/plan artifact under specs/ -- the same bar already applied to the
-# Verification Tier and Files to modify advisories above. Promotion to blocking is explicitly
-# NOT part of this change.
+# PROMOTION CRITERION (do not promote either condition, for either token, from log_warn to
+# log_error as part of an unrelated change): promote only once a corpus-wide sweep confirms zero
+# advisories fire across every non-terminal report/plan artifact under specs/ -- the same bar
+# already applied to the Verification Tier and Files to modify advisories above. Promotion to
+# blocking is explicitly NOT part of this change.
 if [ "$artifact_type" = "report" ] || [ "$artifact_type" = "plan" ]; then
-  _cfd_token="CARRIED-UNVERIFIED"
+  CFD_TOKENS=("CARRIED-UNVERIFIED" "CORPUS-UNVERIFIED")
   _cfd_window=500
-  _cfd_counts=$(awk -v token="$_cfd_token" -v win="$_cfd_window" '
-    { flat = flat $0 " " }
-    END {
-      tok = "[" token ":"
-      toklen = length(tok)
-      n = length(flat)
-      pos = 1
-      empty_n = 0
-      unclosed_n = 0
-      while (1) {
-        rel = index(substr(flat, pos), tok)
-        if (rel == 0) break
-        idx = pos + rel - 1
-        pre = (idx > 1) ? substr(flat, idx - 1, 1) : ""
-        if (pre != "`" && pre != "\\") {
-          wstart = idx + toklen
-          wlen = win
-          if (wstart + wlen - 1 > n) wlen = n - wstart + 1
-          if (wlen < 0) wlen = 0
-          window = substr(flat, wstart, wlen)
-          close_pos = index(window, "]")
-          if (close_pos == 0) {
-            unclosed_n++
-          } else {
-            desig = substr(window, 1, close_pos - 1)
-            gsub(/^[ \t]+/, "", desig)
-            gsub(/[ \t]+$/, "", desig)
-            if (desig == "") empty_n++
+  for _cfd_token in "${CFD_TOKENS[@]}"; do
+    _cfd_counts=$(awk -v token="$_cfd_token" -v win="$_cfd_window" '
+      { flat = flat $0 " " }
+      END {
+        tok = "[" token ":"
+        toklen = length(tok)
+        n = length(flat)
+        pos = 1
+        empty_n = 0
+        unclosed_n = 0
+        while (1) {
+          rel = index(substr(flat, pos), tok)
+          if (rel == 0) break
+          idx = pos + rel - 1
+          pre = (idx > 1) ? substr(flat, idx - 1, 1) : ""
+          if (pre != "`" && pre != "\\") {
+            wstart = idx + toklen
+            wlen = win
+            if (wstart + wlen - 1 > n) wlen = n - wstart + 1
+            if (wlen < 0) wlen = 0
+            window = substr(flat, wstart, wlen)
+            close_pos = index(window, "]")
+            if (close_pos == 0) {
+              unclosed_n++
+            } else {
+              desig = substr(window, 1, close_pos - 1)
+              gsub(/^[ \t]+/, "", desig)
+              gsub(/[ \t]+$/, "", desig)
+              if (desig == "") empty_n++
+            }
           }
+          pos = idx + toklen
         }
-        pos = idx + toklen
+        print empty_n, unclosed_n
       }
-      print empty_n, unclosed_n
-    }
-  ' "$artifact_path")
-  read -r _cfd_empty_count _cfd_unclosed_count <<< "$_cfd_counts"
-  if [ "${_cfd_empty_count:-0}" -gt 0 ]; then
-    log_warn "${_cfd_empty_count} ${_cfd_token} mark(s) have an empty or whitespace-only source designator -- a named source is mandatory (context/formats/report-format.md's Carried-Figure Discipline)"
-  fi
-  if [ "${_cfd_unclosed_count:-0}" -gt 0 ]; then
-    log_warn "${_cfd_unclosed_count} ${_cfd_token} mark(s) have no closing bracket within the designator window -- an unclosed mark cannot be confirmed to name a source"
-  fi
+    ' "$artifact_path")
+    read -r _cfd_empty_count _cfd_unclosed_count <<< "$_cfd_counts"
+    if [ "${_cfd_empty_count:-0}" -gt 0 ]; then
+      log_warn "${_cfd_empty_count} ${_cfd_token} mark(s) have an empty or whitespace-only source designator -- a named source is mandatory (context/formats/report-format.md's Carried-Figure Discipline)"
+    fi
+    if [ "${_cfd_unclosed_count:-0}" -gt 0 ]; then
+      log_warn "${_cfd_unclosed_count} ${_cfd_token} mark(s) have no closing bracket within the designator window -- an unclosed mark cannot be confirmed to name a source"
+    fi
+  done
 fi
 
 # --- Plan-specific checks ---

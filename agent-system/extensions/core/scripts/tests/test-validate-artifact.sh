@@ -716,11 +716,13 @@ ${body}")
 }
 
 assert_cfd_silent() {
+  # Matches either token this check covers (CARRIED-UNVERIFIED or CORPUS-UNVERIFIED) -- see
+  # CFD_TOKENS in validate-artifact.sh.
   local label="$1"
-  if echo "$LAST_OUT" | grep -qF "CARRIED-UNVERIFIED mark(s)"; then
-    common_test_fail "$label: unexpected CARRIED-UNVERIFIED advisory: $LAST_OUT"
+  if echo "$LAST_OUT" | grep -qE "(CARRIED-UNVERIFIED|CORPUS-UNVERIFIED) mark\(s\)"; then
+    common_test_fail "$label: unexpected CFD advisory: $LAST_OUT"
   else
-    common_test_pass "$label: no CARRIED-UNVERIFIED advisory"
+    common_test_pass "$label: no CFD advisory"
   fi
 }
 
@@ -813,6 +815,25 @@ cfd_filler=""
 for _cfd_i in $(seq 1 600); do cfd_filler="${cfd_filler}x"; done
 cfd_bounded_body="A measured count was carried here [CARRIED-UNVERIFIED: ${cfd_filler} and only much later does an unrelated bracket appear]."
 run_cfd_case "report" "$cfd_bounded_body"; assert_cfd_unclosed "CFD-bounded-window(report) bracket beyond the 500-char window"
+
+# ─── CFD second token (CORPUS-UNVERIFIED): the Phase 1 mechanism parameterized over a token
+# list, per CFD_TOKENS in validate-artifact.sh -- well-formed draws no advisory, an empty
+# argument draws a named one, and a backticked mention of the token draws nothing, through the
+# SAME mechanism already pinned above for CARRIED-UNVERIFIED. ─────────────────────────────────
+cfd_corpus_wf='A recommendation to tighten the parser was checked against the corpus [CORPUS-UNVERIFIED: specs/ test suites / depth-counter marker rule].'
+cfd_corpus_mf='A recommendation to tighten the parser was checked against the corpus [CORPUS-UNVERIFIED: ].'
+cfd_corpus_mention='This section discusses the `[CORPUS-UNVERIFIED:` token and its required argument.'
+
+run_cfd_case "report" "$cfd_corpus_wf"; assert_cfd_silent "CFD-CORPUS(report) well-formed"
+run_cfd_case "report" "$cfd_corpus_mf"; assert_cfd_empty  "CFD-CORPUS(report) empty designator"
+run_cfd_case "plan" "$cfd_corpus_wf"; assert_cfd_silent "CFD-CORPUS(plan) well-formed"
+run_cfd_case "plan" "$cfd_corpus_mf"; assert_cfd_empty  "CFD-CORPUS(plan) empty designator"
+run_cfd_case "report" "$cfd_corpus_mention"; assert_cfd_silent "CFD-CORPUS(report) mention-suppression"
+
+# ─── CFD second token: confirm the existing CARRIED-UNVERIFIED fixtures still pass unchanged
+# after parameterization -- re-run two of the earlier representative cases (one WF, one MF). ──
+run_cfd_case "report" "$cfd_a_wf"; assert_cfd_silent "CFD-A(report) plain-inline WF (post-parameterization re-check)"
+run_cfd_case "report" "$cfd_a_mf"; assert_cfd_empty  "CFD-A(report) plain-inline MF (post-parameterization re-check)"
 
 echo ""
 common_test_info "Target scripts: $VALIDATE ; $VALIDATE_SRC ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"

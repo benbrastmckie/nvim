@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Extend the Advisory Over the New Token",
+  "started_at": "2026-11-10T02:38:00Z",
+  "last_updated": "2026-11-10T02:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Parameterize the check over a CFD_TOKENS array", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 2, "description": "Add CORPUS-UNVERIFIED to the token list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "Extend the promotion-criterion comment to cover both tokens", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 4, "description": "Add fixtures for the new token in both directions plus mention-suppression", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 5, "description": "Confirm existing token's fixtures still pass unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Converted the Phase 1 single-token check into a `for _cfd_token in \"${CFD_TOKENS[@]}\"` loop over CFD_TOKENS=(\"CARRIED-UNVERIFIED\" \"CORPUS-UNVERIFIED\"); the flattening/mention-suppression/bounded-window awk body is unchanged, only parameterized by the loop variable already used for the awk -v token=. Extended the header comment block to explain both tokens' shared mechanical surface and updated the promotion-criterion comment to say 'either condition, for either token'. Added 13 new test cases (CORPUS-UNVERIFIED WF/MF for report and plan, a mention-suppression case, plus 2 explicit post-parameterization re-checks of the original CARRIED-UNVERIFIED cases) and generalized assert_cfd_silent's grep pattern to match either token's 'mark(s)' message. Full suite: 121 PASSED, 0 FAILED (up from 108 before this phase). bash -n and shellcheck both clean on validate-artifact.sh (same 3 pre-existing info-level findings as Phase 1, no new ones) and on test-validate-artifact.sh (same info-level SC1091/SC2016 pattern, one additional SC2016 hit at the new cfd_corpus_mention line, same class as pre-existing ones). Real-corpus sweep for CORPUS-UNVERIFIED across every file under specs/*/reports/ and specs/*/plans/: zero occurrences, as expected since the token does not yet exist in any artifact."
+}
