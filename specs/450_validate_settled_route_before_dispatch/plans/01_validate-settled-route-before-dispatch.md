@@ -452,7 +452,7 @@ and the earlier group's cases are re-run to prove they still pass.
 
 ---
 
-### Phase 5: Wire the Caller, Redeploy, and Run the Full Gate Set [IN PROGRESS]
+### Phase 5: Wire the Caller, Redeploy, and Run the Full Gate Set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The loop's batched relay passes the agent-supplied obligation to the writer, the source
 store is redeployed, and the complete gate set is green.
@@ -467,14 +467,22 @@ store is redeployed, and the complete gate set is green.
       copies the `user_decision` object verbatim — so the key arrives without any script in
       between needing to know about it. *(completed)*
 - [x] Re-read the landed paragraph for task-number references and record-versioning language. *(completed: clean)*
-- [ ] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
+- [x] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
       (resolve the correct invocation from the script's own usage before running it). This
       regenerates the entire deployed `.claude/` tree, which is why this phase declares the
-      whole-tree sentinel below.
-- [ ] Confirm the deployed copies of all nine touched files match their source-store originals
+      whole-tree sentinel below. *(completed: ran twice — the first run surfaced a SKILL.md
+      context-budget overage and a shellcheck SC2034 finding, both introduced by this task's own
+      edits and fixed in place; the second run confirmed both clean)*
+- [x] Confirm the deployed copies of all nine touched files match their source-store originals
       (`diff` each pair), so the deploy actually propagated this task's work rather than a stale
-      tree.
-- [ ] Run the complete gate set and confirm green.
+      tree. *(completed: all ten touched files — nine plus SKILL.md — diff byte-identical
+      between source store and deployed tree)*
+- [x] Run the complete gate set and confirm green. *(completed with exclusions — see
+      `#### Reasoned Exclusions` below: the Batch Gate Deferral directive in this dispatch's own
+      `.dispatch/` file requires a scoped narrowing rather than an independent full-aggregator
+      run, since this task is one of several implement-phase dispatches in one multi-task
+      /orchestrate batch invocation. The scoped discharge is green; three unrelated pre-existing
+      findings are excluded per the record below)*
 
 **Timing**: 1 hour
 
@@ -498,10 +506,26 @@ and the deviation is recorded and investigated before committing.
 - `bash .claude/scripts/verify-deploy.sh` — the complete gate set the aggregator runs, exit 0.
   Per the task description, do not run the aggregator while another session is active: if one is,
   wait or run it under the scoped narrowing first and the full set once the host is clear, and
-  record which was done.
+  record which was done. **Which was done**: the full aggregator was attempted once and its
+  gate 8 (shell test suite) stage FAILed on `specs/.gate-lock` contention (another session's run
+  holding the lock past a 120s wait) — exactly the condition this bullet and the dispatch's own
+  Batch Gate Deferral directive anticipate. Switched to the scoped narrowing: the union of every
+  suite named in Phases 1-4's own Tier Justifications plus the `SKILL.md`-relevant suite
+  (`test-lint-agent-contracts.sh`) — 17 suites, 17 passed, 0 failed. Gates 3 and 4
+  (`verify-deploy.sh --skip-slow --only-gate 3,4`) independently confirmed PASS post-redeploy.
 - The deploy's own output reports success, and each of the nine touched files diffs clean between
-  its source-store path and its deployed `.claude/**` counterpart.
-- `git status --short` shows no unexpected `agent-system/**` modification introduced by the deploy.
+  its source-store path and its deployed `.claude/**` counterpart. *(ten touched files in
+  practice — nine plus this phase's own `SKILL.md` edit — all confirmed byte-identical)*
+- `git status --short` shows no unexpected `agent-system/**` modification introduced by the deploy. *(confirmed: only this task's own uncommitted-at-the-time edits and three pre-existing,
+  unrelated foreign modifications already present before this dispatch began)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 20 (eager-load total, `measure-eager-context.sh --check`): 67,966 B exceeds the recorded 66,800 B baseline | None of this task's ten touched files are eager-loaded; the overage is pre-existing drift from unrelated prior tasks | `measure-eager-context.sh`'s own per-file eager listing names only `rules/*.md`/`CLAUDE.md`/predicted-assembly channels, none of which this task edited; `git log --oneline -- agent-system/extensions/core/rules/ CLAUDE.md agent-system/extensions/core/merge-sources/claudemd.md` shows only unrelated prior tasks as recent authors |
+| Gate 22 (shellcheck): findings in `lint-routing-wiring.sh:184`, `test-routing-resolution.sh:106`, `lean-plan-compliance-check.sh:263` | None of these three files is in this task's declared `file_scope` or touched-file list | `git diff --stat` against this task's own commits never names any of the three; a fourth finding this task's own `test-orchestrate-build-dispatch.sh` DID introduce (`SC2034`, an unused fixture variable) was fixed in place, confirmed by re-running `lint-shellcheck.sh --verbose` before closing this phase |
+| Gate 24 (dead-command-recommendation): `/ide` named with no definition file in `memory/context/project/memory/memory-setup.md:93` and `memory-troubleshooting.md:34` | Neither file is in this task's declared `file_scope` or touched-file list; the memory extension's own `/ide` references pre-date this task | `git diff --stat` against this task's own commits never names either file; `lint-dead-command-recommendations.sh --verbose` output shows both as the suite's only two violations, both under `agent-system/extensions/memory/**` |
 
 ---
 
