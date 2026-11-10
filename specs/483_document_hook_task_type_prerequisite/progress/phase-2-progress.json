@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Warn in extension-development.md that omitting task_type forfeits hooks",
+  "started_at": "2026-11-10T21:07:44Z",
+  "last_updated": "2026-11-10T21:07:44Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read extension-development.md around Resource-Only Extensions and task_type field table row", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add pointer warning paragraph with relative link", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/extension-development.md"]},
+    {"id": 3, "description": "Confirm linked heading text matches Phase 1 exactly", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Verify and commit phase 2", "status": "done", "files_touched": ["specs/483_document_hook_task_type_prerequisite/plans/01_hook-task-type-prerequisite.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2-gate3",
+      "description": "Phase 2's edit triggered a doc-lint line_count mismatch in agent-system/extensions/core/index-entries.json (declared 388, actual 394 for extension-development.md).",
+      "type": "altered",
+      "reason": "Ran generate-context-line-counts.sh --write to correct the line_count, which fixed the working-tree content needed for this phase's own gate 3 verification (doc-lint reads the working tree directly). That script also corrected 3 other pre-existing, unrelated mismatches already dirty in the shared working tree before this dispatch started and outside this task's file_scope. Since git-commit-scoped.sh stages a whole named path with no sub-file hunk granularity, committing index-entries.json under task 483 would over-stage those 3 unrelated hunks into this task's history. Left the working-tree fix in place (satisfies gate 3) but did NOT commit index-entries.json under task 483; unstaged the index back to HEAD afterward via 'git restore --staged' to avoid leaving a partial stage lying around.",
+      "annotation": "recorded via issue-record.sh (class scope-deviation, severity minor)"
+    }
+  ],
+  "handoff_count": 0
+}

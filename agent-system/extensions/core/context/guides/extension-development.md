@@ -324,6 +324,12 @@ The unload is refused entirely. To unload a dependency, first unload all extensi
 
 Extensions that only provide shared resources (no agents, commands, or routing) can omit `task_type` entirely. Example: the `slidev` extension provides animation and CSS style files consumed by both `founder` and `present`.
 
+**Omitting `task_type` also forfeits every lifecycle hook.** A top-level `hooks` declaration in
+a manifest with no `task_type` has no firing path for `preflight`, `context_injection`,
+`verification`, or `postflight` — it is dead on arrival, regardless of how it is populated. See
+[Prerequisite: A Declared task_type](../../docs/guides/creating-extensions.md#prerequisite-a-declared-task_type)
+for the mechanical reason (the `task_type` string-equality gate inside `skill_get_extension_dir()`).
+
 ```json
 {
   "name": "slidev",

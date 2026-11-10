@@ -192,7 +192,7 @@ hypothesis and anchor the edit on the heading text, not on the numbers.
 
 ---
 
-### Phase 2: Warn in extension-development.md that omitting task_type forfeits hooks [NOT STARTED]
+### Phase 2: Warn in extension-development.md that omitting task_type forfeits hooks [COMPLETED]
 
 **Goal**: `extension-development.md`'s `### Resource-Only Extensions` prose, where authors are
 told they may omit `task_type`, carries a pointer warning that doing so forfeits all four
@@ -200,21 +200,21 @@ lifecycle hooks, linking to the Phase 1 subsection — satisfying acceptance cri
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/guides/extension-development.md` around the
+- [x] Re-read `agent-system/extensions/core/context/guides/extension-development.md` around the
       `### Resource-Only Extensions` heading and the manifest field table's `task_type` row
-      immediately before editing.
-- [ ] Add a short paragraph directly after the existing "can omit `task_type` entirely"
+      immediately before editing. *(completed)*
+- [x] Add a short paragraph directly after the existing "can omit `task_type` entirely"
       sentence, stating that omitting `task_type` also forfeits every lifecycle hook: a
       top-level `hooks` declaration in such a manifest has no firing path and is dead on
-      arrival.
-- [ ] Link the warning to the Phase 1 subsection by file and section name, using the relative
-      link style already present in this file (`../../docs/guides/creating-extensions.md`).
-- [ ] Keep the manifest field table's `task_type` row as a one-line schema reference; do not
+      arrival. *(completed)*
+- [x] Link the warning to the Phase 1 subsection by file and section name, using the relative
+      link style already present in this file (`../../docs/guides/creating-extensions.md`). *(completed)*
+- [x] Keep the manifest field table's `task_type` row as a one-line schema reference; do not
       rewrite it (the "and/or" in the acceptance criterion is satisfied by the prose location,
-      which is where an author is actively granted the permission).
-- [ ] Confirm the linked section heading text matches what Phase 1 actually wrote, character for
-      character.
-- [ ] Commit this phase's single file with an explicit pathspec.
+      which is where an author is actively granted the permission). *(completed: table row left untouched)*
+- [x] Confirm the linked section heading text matches what Phase 1 actually wrote, character for
+      character. *(completed)*
+- [x] Commit this phase's single file with an explicit pathspec. *(completed)*
 
 **Timing**: 0.2 hours
 
