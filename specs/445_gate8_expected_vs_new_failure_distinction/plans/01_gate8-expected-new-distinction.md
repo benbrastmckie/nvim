@@ -164,43 +164,46 @@ set must be built, not just the edited file — covered by
 
 ---
 
-### Phase 2: Fixture regression suite for both required shapes [NOT STARTED]
+### Phase 2: Fixture regression suite for both required shapes [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: A committed suite that exercises Gate 8's real `run-all.sh` invocation against a
 synthetic corpus in both required shapes — all-expected and genuinely-NEW — and asserts the
 chosen semantics on each.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh`,
       structurally modelled on `test-run-all-failure-reporting.sh` (the `common.sh` helpers,
       `common_test_workdir_init`, a synthetic `$WORKDIR` tree with `core/manifest.json` as `{}`
       and the REAL `run-all.sh` copied into the fixture's own `scripts/tests/`) combined with
-      `test-verify-deploy-gate-selection.sh`'s fixture-target invocation pattern.
-- [ ] Build the fixture target so Gate 8 actually runs: `<fx>/agent-system/extensions/core/` with
+      `test-verify-deploy-gate-selection.sh`'s fixture-target invocation pattern. *(completed)*
+- [x] Build the fixture target so Gate 8 actually runs: `<fx>/agent-system/extensions/core/` with
       `manifest.json` and `scripts/tests/{run-all.sh, test-pass-*.sh, test-fail-*.sh}`, plus a
       hand-built `<fx>/.claude/scripts/` that deliberately omits `task-lock.sh` (gate0 requires
       `.claude/` to exist; Gate 8's missing-`task-lock.sh` path is fail-open and avoids contending
-      for the real `specs/.gate-lock`).
-- [ ] Invoke the SOURCE-STORE `verify-deploy.sh` with `--only-gate 8 <fixture>` for every case, so
+      for the real `specs/.gate-lock`). *(completed: confirmed via direct ad-hoc invocation that
+      gate8_run() took the real-check branch, not the SKIP/deploy-consumer branch)*
+- [x] Invoke the SOURCE-STORE `verify-deploy.sh` with `--only-gate 8 <fixture>` for every case, so
       no other gate runs and the real repository corpus is never reached (ANTI-RECURSION
       INVARIANT, as documented by `test-deploy-verify-wiring.sh` and
-      `test-verify-deploy-gate-selection.sh`).
-- [ ] Case A (all-expected): a fixture-local `known-failures.txt` row matching the single
+      `test-verify-deploy-gate-selection.sh`). *(completed)*
+- [x] Case A (all-expected): a fixture-local `known-failures.txt` row matching the single
       deliberately-failing fixture suite. Assert exit 0, a `[WARN]` narrative on stderr, and —
       under `--findings` — a `WARN-FINDING gate8` line on stdout with zero `^FINDING gate8` lines.
-- [ ] Case B (genuinely-NEW): the same broken fixture suite with no matching manifest row. Assert
+      *(completed: 4/4 assertions pass)*
+- [x] Case B (genuinely-NEW): the same broken fixture suite with no matching manifest row. Assert
       non-zero exit, a `[FAIL]` narrative, and at least one `^FINDING gate8` line naming the
-      broken fixture suite.
-- [ ] Case C (clean): all fixture suites passing, no roster header emitted. Assert exit 0 and a
+      broken fixture suite. *(completed: 3/3 assertions pass)*
+- [x] Case C (clean): all fixture suites passing, no roster header emitted. Assert exit 0 and a
       `[PASS]` narrative, confirming the all-expected branch did not swallow the clean case.
-- [ ] Case D (mixed): two failing fixture suites, one manifest-listed and one not. Assert
+      *(completed: 3/3 assertions pass)*
+- [x] Case D (mixed): two failing fixture suites, one manifest-listed and one not. Assert
       non-zero exit and at least one `^FINDING gate8` line — the behavior Phase 3 re-verifies for
-      attribution.
-- [ ] Register the suite: add `"tests/test-gate8-expected-new-distinction.sh"` to
+      attribution. *(completed: 2/2 assertions pass)*
+- [x] Register the suite: add `"tests/test-gate8-expected-new-distinction.sh"` to
       `agent-system/extensions/core/manifest.json`'s `provides.scripts` array in alphabetical
       position, and add its row to
       `agent-system/extensions/core/scripts/tests/suite-classification.data` as
-      `integration` with `invokes:verify-deploy.sh,run-all.sh`.
+      `integration` with `invokes:verify-deploy.sh,run-all.sh`. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -226,11 +229,31 @@ without any data edit.
 - `agent-system/extensions/core/scripts/tests/suite-classification.data` - add the new suite's `integration` row
 
 **Verification**:
-- The new suite exits 0 standalone.
-- `test-manifest-scripts-sync.sh`, `test-lint-unit-integration-boundary.sh`, and
-  `test-script-inventory.sh` pass, confirming both registration rows landed correctly.
-- The new suite's own output confirms `[run-all] Mode: source-store` against the fixture, proving
-  the real corpus was never discovered.
+- The new suite exits 0 standalone — confirmed (12/12 case assertions pass).
+- `test-manifest-scripts-sync.sh` and `test-script-inventory.sh` pass, confirming both
+  registration rows landed correctly. `test-lint-unit-integration-boundary.sh` fails against the
+  live corpus, but on 3 violations wholly unrelated to this phase's registration — see Reasoned
+  Exclusions below.
+- The new suite's own ad-hoc confirmation (a standalone `--only-gate 8` invocation against the
+  same fixture shape, outside `--quiet`) shows gate8_run() took the real-check `[PASS]` branch,
+  not the `[SKIP] ... deploy consumer` branch — proving the fixture is treated as source-store.
+  `gate8_run()` always passes `--quiet` to the child `run-all.sh`, which suppresses its
+  `[run-all] Mode:` header line, so that literal line is not observable through the gate; this
+  real-check-vs-SKIP branch is gate8_run()'s own equivalent confirmation of the Scope
+  Hypothesis's fixture-shape claim.
+- `suite_selection_select agent-system/extensions/core/scripts/verify-deploy.sh` lists the new
+  suite with no `suite-selection-lib.sh` data edit — confirmed by direct invocation.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-lint-unit-integration-boundary.sh`'s live-corpus check (named in this phase's own Verification Tier suite set) | The suite fails on 3 violations (`test-mcp-merge-target.sh`, `test-validate-artifact.sh`, `test-validate-no-python-state-write.sh`) that are pre-existing and wholly unrelated to this phase's own two registration edits (one `manifest.json` entry, one `suite-classification.data` row) — this phase's own new suite is not named in the violation list, and the registration-specific suites (`test-manifest-scripts-sync.sh`, `test-script-inventory.sh`) both pass independently, so registration is confirmed correct without this suite's cooperation. Out of scope: fixing those 3 pre-existing classification/boundary gaps belongs to whichever task introduced them, not to this task's Decisions/Non-Goals. | `git log --oneline -3` on each of the 3 named files shows they were last touched under unrelated, already-completed tasks (29, 360, 419) with a clean working tree (`git status --porcelain` empty for all three) and zero overlap with this phase's own `git diff --stat` (one line in `suite-classification.data`, one line in `manifest.json`, one new file). Re-run of `test-lint-unit-integration-boundary.sh` standalone after staging this phase's two registration edits reproduces the identical 3-violation set, confirming the registration itself introduced no new violation. |
+
+This is tightly scoped to one suite's one check (never "the rest of the phase"), decided (the 3
+named pre-existing gaps are out of scope for this task), documented with a stated reason, and
+evidenced by git history plus a diff-scope comparison; nothing remains for a future dispatch of
+this task to pick up — the exclusion is final, not a deferral.
 
 ---
 

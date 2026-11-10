@@ -84,6 +84,7 @@ test-gate-out-derived-staleness.sh	unit	-
 test-gate-out-repair-reporting.sh	unit	-
 test-gate-out-self-attribution.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
 test-gate-registry-resolution.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-gate8-expected-new-distinction.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-generate-task-order.sh	unit	-
 test-git-commit-phase.sh	unit	-
 test-git-commit-scoped.sh	unit	-

@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture regression suite for both required shapes",
+  "started_at": "2026-11-10T02:25:00Z",
+  "last_updated": "2026-11-10T02:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-gate8-expected-new-distinction.sh, structurally modelled on existing fixture suites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 2, "description": "Build fixture target so Gate 8 actually runs (manifest.json, copied run-all.sh, hand-built .claude/scripts/ omitting task-lock.sh)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 3, "description": "Invoke SOURCE-STORE verify-deploy.sh with --only-gate 8 <fixture> for every case", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Case A (all-expected): exit 0, [WARN] narrative, WARN-FINDING gate8 line, zero FINDING gate8 lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 5, "description": "Case B (genuinely-NEW): non-zero exit, [FAIL] narrative, FINDING gate8 line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 6, "description": "Case C (clean): exit 0, [PASS] narrative, no WARN", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 7, "description": "Case D (mixed): non-zero exit, FINDING gate8 line present", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-expected-new-distinction.sh"]},
+    {"id": 8, "description": "Register the suite in manifest.json provides.scripts and suite-classification.data", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/scripts/tests/suite-classification.data"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.verification",
+      "description": "Verification Tier's named suite set: test-gate8-expected-new-distinction.sh, test-manifest-scripts-sync.sh, test-lint-unit-integration-boundary.sh, test-script-inventory.sh",
+      "type": "altered",
+      "reason": "test-lint-unit-integration-boundary.sh fails against the live corpus on 3 suites unrelated to this phase's registration (test-mcp-merge-target.sh, test-validate-artifact.sh, test-validate-no-python-state-write.sh) -- confirmed pre-existing via git log (committed under unrelated tasks 29/360/419, clean working tree, zero overlap with this phase's diff, which touches only one new row plus one new manifest entry). Recorded as a Reasoned Exclusion rather than blocking phase closure.",
+      "annotation": "*(deviation: altered -- test-lint-unit-integration-boundary.sh's 3 pre-existing, unrelated violations recorded as a Reasoned Exclusion; test-gate8-expected-new-distinction.sh, test-manifest-scripts-sync.sh, and test-script-inventory.sh all pass)*"
+    }
+  ]
+}
