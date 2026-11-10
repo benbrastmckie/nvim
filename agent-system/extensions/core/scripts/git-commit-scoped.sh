@@ -566,6 +566,65 @@ is_contained_v10() {
   return 1
 }
 
+# --- V11: cached-untracking shape classifier (evaluated inside the V2 loop below, AFTER V9/V10,
+# BEFORE case 1's existence test) ---
+# is_cached_untracking_shape <path> -- true only for the full `git rm -r --cached <path>`
+# untracking shape: every file HEAD tracks under <path> has been removed from the index, while
+# every one of them remains PRESENT on disk. This is the OPPOSITE premise of the V7
+# fully-staged-deletion carve-out further below in the git-add verification loop (content gone
+# from the working tree) -- here content is still present, which is exactly why this shape needs
+# its OWN classification rather than widening that carve-out's predicate (see this script's
+# header for the full ruling). A cheap existence test would wrongly match a PARTIALLY-untracked
+# directory, so every one of the following conjuncts is required (enumerate-and-verify, never a
+# shortcut):
+#   1. HEAD must exist -- an untracking commit is meaningless as a repository's first commit.
+#   2. `git ls-tree -r --name-only HEAD -- "$p"` must be non-empty -- HEAD actually tracks at
+#      least one file under "$p"; otherwise there is nothing to untrack and this predicate must
+#      not match (an ordinary new, never-tracked path falls through here).
+#   3. EVERY file that ls-tree lists must fail `git ls-files --error-unmatch` -- not one survivor
+#      remains registered in the index. A single tracked survivor (a partially-untracked
+#      directory: one file restored to the index, or left modified) fails this conjunct and the
+#      predicate correctly refuses, falling through to case 1/2/3 below.
+#   4. `git ls-files -- "$p"` itself must also be empty -- defensive, catches a tracked sibling
+#      under the same pathspec that the HEAD-only ls-tree enumeration in conjunct 2 would not see.
+#   5. `git diff --cached --name-status HEAD -- "$p"` must be non-empty, and every line's status
+#      column must be exactly "D" -- every staged change under this pathspec is a pure deletion,
+#      never a modification, add, rename, copy, or type-change mixed in.
+# Written `set -e`-safe: every subshell capture below is guarded by an `if`/`||` so a nonzero exit
+# (a routine, expected outcome for several of these calls) never aborts the script under
+# `set -euo pipefail`, matching this script's existing capture idiom.
+is_cached_untracking_shape() {
+  local p="$1" head_tracked tracked_f ls_files_out diff_out status_col rest
+
+  git rev-parse --verify -q HEAD >/dev/null 2>&1 || return 1
+
+  head_tracked="$(git ls-tree -r --name-only HEAD -- "$p" 2>/dev/null)" || head_tracked=""
+  [ -n "$head_tracked" ] || return 1
+
+  while IFS= read -r tracked_f; do
+    [ -n "$tracked_f" ] || continue
+    if git ls-files --error-unmatch -- "$tracked_f" >/dev/null 2>&1; then
+      return 1
+    fi
+  done <<< "$head_tracked"
+
+  ls_files_out="$(git ls-files -- "$p" 2>/dev/null)" || ls_files_out=""
+  [ -z "$ls_files_out" ] || return 1
+
+  diff_out="$(git diff --cached --name-status HEAD -- "$p" 2>/dev/null)" || diff_out=""
+  [ -n "$diff_out" ] || return 1
+
+  while IFS=$'\t' read -r status_col rest; do
+    [ -n "$status_col" ] || continue
+    case "$status_col" in
+      D) ;;
+      *) return 1 ;;
+    esac
+  done <<< "$diff_out"
+
+  return 0
+}
+
 # --- V2 safety gate: classify each positive pathspec into one of THREE outcomes, not two ---
 # Exclude pathspecs pass through unvalidated into BOTH arrays below (git itself never resolves
 # them against the working tree the way it does a positive entry, and validating them would
@@ -595,6 +654,13 @@ out_of_repo_dropped=()
 # decision far below can tell "a commit survived despite a Containment drop" apart from the V2
 # and V9 drop classes, which must NOT emit V10's own exit code.
 containment_dropped=()
+# cached_untracking_pathspecs (V11): every pathspec classified as the cached-untracking shape by
+# is_cached_untracking_shape above -- index deletions with content still present on disk (e.g.
+# `git rm -r --cached <dir>`). Routed to filtered_pathspecs only, NEVER add_pathspecs or
+# dropped_pathspecs: this is not a drop (V6 must not see it as one), and it must never reach
+# `git add`, which would silently RE-TRACK the content and revert the untracking. Consulted by
+# the guarded commit path and the V8 intent-snapshot correction further below.
+cached_untracking_pathspecs=()
 for p in "${pathspecs[@]}"; do
   case "$p" in
     :\(exclude\)*)
@@ -674,6 +740,21 @@ for p in "${pathspecs[@]}"; do
             >/dev/null 2>&1 || true
           continue
         fi
+      fi
+
+      # V11 — cached-untracking classification, evaluated AFTER V9/V10 and BEFORE case 1's
+      # existence test, so case 1 cannot claim a content-present directory first. Premise is the
+      # OPPOSITE of case 2 below and of the V7 fully-staged-deletion carve-out further down in the
+      # git-add verification loop: those two both require content GONE from the working tree;
+      # this one requires content STILL PRESENT on disk, with every tracked file already removed
+      # from the index. Routed to filtered_pathspecs only, never add_pathspecs -- git add on a
+      # path that exists on disk but is already correctly staged as deleted would silently
+      # RE-TRACK it, which is the non-gitignored "silent revert" symptom this case exists to stop.
+      # Never appended to dropped_pathspecs: this is not a drop, and V6 must not treat it as one.
+      if is_cached_untracking_shape "$p"; then
+        filtered_pathspecs+=("$p")
+        cached_untracking_pathspecs+=("$p")
+        continue
       fi
 
       if [ -e "$p" ] || git ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then

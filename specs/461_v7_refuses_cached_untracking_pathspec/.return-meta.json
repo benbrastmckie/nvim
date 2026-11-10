@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/461_v7_refuses_cached_untracking_pathspec/plans/01_cached-untracking-commit-path.md",
-      "summary": "Five-phase plan ruling option (2) and fixing the --cached untracking shape end-to-end in git-commit-scoped.sh, with regression tests, documentation, and a full-gate redeploy."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1794343931_696ebd_461",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 8,
-    "dependency_waves": 5
-  },
-  "memory_candidates": [
-    {
-      "content": "git commit -- <pathspec> has --only semantics and re-reads the working tree for each named path at commit time. A consequence verified empirically across four variants: a 'git rm --cached <dir>' untracking whose content REMAINS on disk cannot be committed by ANY pathspec-scoped form -- a directory pathspec, an explicit HEAD-tracked file list, and 'git commit --only -- <files>' all exit 1 ('nothing to commit') with HEAD unmoved. Only a bare 'git commit' (whole index) lands the deletion. Pathspec granularity is irrelevant; the constraint is in --only semantics. Any scoped-commit wrapper that must support untracking therefore needs a guarded bare-commit path proven index-equivalent to the declared pathspec set (compare 'git diff --cached --name-only HEAD' against the same restricted to the declared pathspecs, using git's own resolver so :(exclude) entries are honored), not a widened pathspec predicate.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/461_v7_refuses_cached_untracking_pathspec/plans/01_cached-untracking-commit-path.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-commit-scoped", "git rm --cached", "untracking", "commit --only semantics", "scoped commit", "staged deletion"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 461 to execute the plan",
-  "dispatch_seq": 9
+    "session_id": "sess_1794343931_696ebd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
+  }
 }

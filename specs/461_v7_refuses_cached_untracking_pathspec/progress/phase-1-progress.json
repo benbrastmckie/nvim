@@ -1,0 +1,42 @@
+{
+  "phase": 1,
+  "phase_name": "Classify the --cached untracking shape before git add",
+  "started_at": "2026-11-10T21:30:00Z",
+  "last_updated": "2026-11-10T21:43:19Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read the V2 classification loop in git-commit-scoped.sh",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add is_cached_untracking_shape helper predicate (five-conjunct enumerate-and-verify)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Insert new V11 case ahead of case 1, after V9/V10, routing matches into filtered_pathspecs + cached_untracking_pathspecs ledger, never add_pathspecs or dropped_pathspecs",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Add contrasting block comments stating the new case's premise (content present) vs. case 2/V7 carve-out's premise (content gone)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Verify bash -n and run scratch probe (gitignored + non-gitignored repos)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Scratch probe confirmed: git rm -r --cached sub with content on disk no longer exits 2 (genuinely_failed_adds refusal) in either gitignored or non-gitignored repo. git ls-files -- sub is empty after the script runs in both cases (non-gitignored silent revert is gone). Script exits 1 'nothing to commit' in both cases -- this is the documented, expected intermediate state closed by Phase 2's guarded bare-commit path, not a regression. Scoped suite run (run-all.sh --only <Tier Justification list>) surfaced 2 pre-existing failing suites (test-orchestrate-cycle-postflight.sh, test-redeploy-checkpoint-promotion.sh) unrelated to this edit -- verified identical failure counts against the unmodified HEAD copy of git-commit-scoped.sh; recorded in issue log, not fixed here (outside file_scope). test-git-commit-scoped.sh itself passed, confirming no regression to existing V2/V7/V9/V10 cases."
+}

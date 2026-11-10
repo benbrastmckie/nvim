@@ -1,7 +1,7 @@
 # Implementation Plan: Task #461
 
 - **Task**: 461 - Rule on and close the V7 refusal of a positive directory pathspec for a `git rm --cached` untracking whose content is still on disk
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: 328, 430, 435, 446, 448 (SERIALIZATION-only or OPERATOR-LIFTABLE per the task's territory edges; none contests the ruling)
 - **Research Inputs**: specs/461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md
@@ -183,7 +183,7 @@ phase's verification depends on the previous phase's behavior change being prese
 
 ---
 
-### Phase 1: Classify the `--cached` untracking shape before `git add` [NOT STARTED]
+### Phase 1: Classify the `--cached` untracking shape before `git add` [COMPLETED]
 
 **Goal**: stop the non-gitignored silent revert and the gitignored refusal at their shared
 source, by recognizing the untracking shape in the V2 classification loop and keeping it out of
@@ -191,29 +191,34 @@ source, by recognizing the untracking shape in the V2 classification loop and ke
 
 **Tasks**:
 
-- [ ] Re-read the V2 classification loop in
+- [x] Re-read the V2 classification loop in
   `agent-system/extensions/core/scripts/git-commit-scoped.sh` (currently the `for p in
   "${pathspecs[@]}"` loop; case 1's `[ -e "$p" ] || git ls-files --error-unmatch` test, case 2's
   already-staged-deletion branch, and case 3's unmatched drop). Line numbers in this plan are
-  indicative only — re-derive before editing.
-- [ ] Add a helper function (near the script's other helpers, not inline in the loop) that
+  indicative only — re-derive before editing. *(completed)*
+- [x] Add a helper function (near the script's other helpers, not inline in the loop) that
   returns 0 only for the untracking shape. All four conjuncts are required: HEAD exists;
   `git ls-tree -r --name-only HEAD -- "$p"` is non-empty; every file it lists fails
   `git ls-files --error-unmatch`; `git ls-files -- "$p"` is empty; and
   `git diff --cached --name-status HEAD -- "$p"` is non-empty with **every** line a `D` entry
   (no `M`/`A`/`R`/`C`/`T`). Write it `set -e`-safe (capture rather than test bare failing
-  assignments, matching the script's existing `-e`-exempt capture idiom).
-- [ ] Insert the new case in the positive-pathspec branch **after** the V9 repository-containment
+  assignments, matching the script's existing `-e`-exempt capture idiom). *(completed: added
+  `is_cached_untracking_shape()` right after `is_contained_v10`, labelled V11 in its header block
+  comment)*
+- [x] Insert the new case in the positive-pathspec branch **after** the V9 repository-containment
   guard and the V10 containment guard, and **before** case 1's existence test — the ordering is
   load-bearing: case 1 would otherwise claim a content-present directory first, and V9 must keep
-  dropping an out-of-repository path before any enumeration runs.
-- [ ] Route a matching pathspec into `filtered_pathspecs` only, **never** `add_pathspecs`, and
+  dropping an out-of-repository path before any enumeration runs. *(completed)*
+- [x] Route a matching pathspec into `filtered_pathspecs` only, **never** `add_pathspecs`, and
   record it in a new dedicated ledger array (e.g. `cached_untracking_pathspecs`). Do **not**
-  append it to `dropped_pathspecs` — V6 must not see it as a drop.
-- [ ] Add a block comment at the new case stating its premise explicitly ("index deletions WITH
+  append it to `dropped_pathspecs` — V6 must not see it as a drop. *(completed)*
+- [x] Add a block comment at the new case stating its premise explicitly ("index deletions WITH
   content still present on disk"), contrasted against case 2's and the V7 carve-out's premise
-  ("content gone from the working tree"), so a future reader cannot conflate them.
-- [ ] Verify `bash -n` on the edited script, then run the scratch probe below.
+  ("content gone from the working tree"), so a future reader cannot conflate them. *(completed)*
+- [x] Verify `bash -n` on the edited script, then run the scratch probe below. *(completed: both
+  gitignored and non-gitignored scratch repos confirmed no exit-2 refusal and an empty
+  `git ls-files -- sub` afterward; exit 1 "nothing to commit" is the documented intermediate
+  state Phase 2 closes)*
 
 **Timing**: 1.5 hours
 
