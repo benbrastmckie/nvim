@@ -1,7 +1,7 @@
 # Implementation Plan: Task #496
 
 - **Task**: 496 - Add per-repo storage and injection to the sapience extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.5 hours
 - **Dependencies**: 360, 449, 450, 487, 488 (all `completed` in `specs/state.json` — edges satisfied, retained as shared-territory record)
 - **Research Inputs**: specs/496_sapience_per_repo_storage_and_injection/reports/01_sapience-per-repo-storage-injection.md

@@ -32,28 +32,50 @@
       "category": "PATTERN",
       "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/summaries/01_sapience-per-repo-storage-injection-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-root-guard", "lib/common.sh", "pre-deploy verification", "new script", "extension scripts"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "lib/common.sh",
+        "pre-deploy verification",
+        "new script",
+        "extension scripts"
+      ]
     },
     {
       "content": "verify-deploy.sh's full gate battery (especially gate 8's shell-suite run-all.sh, timeout_s=1500) can take 10-25+ minutes end to end, more under concurrent repo contention from another active session. The honest, fast covering check for a narrow change is a suite_selection_select-driven run-all.sh --only subset (or a scoped --only-gate N invocation), not a routine full unqualified run; reserve the full run for the phase(s) whose own Verification Tier is 'full' and genuinely has no cheaper subset.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/summaries/01_sapience-per-repo-storage-injection-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy.sh", "gate8", "run-all.sh", "verification tier", "bounded wait"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "gate8",
+        "run-all.sh",
+        "verification tier",
+        "bounded wait"
+      ]
     },
     {
       "content": "On the Sapience hosted vault, /v1/search's source= parameter matches a substring of each KO's provenance field as a hard pre-filter (not a ranking signal), while the structured project field is silently ignored and source_loc is not search-matchable at all. Any per-repo or per-tenant scoping scheme against this vault must embed the scope marker directly in provenance text and write through POST /ingest-kos (never the MCP sapience_remember tool, whose provenance string is connector-fixed with no injectable marker).",
       "category": "INSIGHT",
       "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/summaries/01_sapience-per-repo-storage-injection-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["sapience", "provenance", "source filter", "ingest-kos", "per-repo scoping"]
+      "suggested_keywords": [
+        "sapience",
+        "provenance",
+        "source filter",
+        "ingest-kos",
+        "per-repo scoping"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794326188_f2c11d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   },

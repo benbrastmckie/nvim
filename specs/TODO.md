@@ -11,8 +11,8 @@ next_project_number: 578
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,496,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,457,458,462,463,474,476,480,486,492,498,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,423,431,451,452,455,459,472,479,484,491,496,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,457,458,462,463,474,476,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,423,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571 | 313,391,398,439,458,461,472,476,486,518,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577 | 390,402,501,547,552 | core-agent-system, agent-system |
 | 5 | 499 | 421,498 | extensions |
@@ -74,9 +74,8 @@ next_project_number: 578
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
-496 [IMPLEMENTING] — Add per-repo storage and injection to the sapience extension
-  └─ 498 [HOLD] — Replace the email preference harvest tally substrate
-    └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
+498 [HOLD] — Replace the email preference harvest tally substrate
+  └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
@@ -6148,12 +6147,13 @@ Three further `duplicate-of-open` verdicts (459, 451, 360) were ruled NOT duplic
 ---
 
 ### 496. Add per-repo storage and injection to the sapience extension
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 360, Task 449, Task 450, Task 487, Task 488
 - **Research**: [496_sapience_per_repo_storage_and_injection/reports/01_sapience-per-repo-storage-injection.md]
 - **Plan**: [496_sapience_per_repo_storage_and_injection/plans/01_sapience-per-repo-storage-injection.md]
+- **Summary**: [496_sapience_per_repo_storage_and_injection/summaries/01_sapience-per-repo-storage-injection-summary.md]
 
 **Description**: Give the sapience extension repo-scoped knowledge storage and per-dispatch context injection, so it can replace the memory extension's local vault substrate. This is the essential piece of the migration -- the other three tasks in this batch depend on it.
 
