@@ -360,19 +360,22 @@ verdict across four scripts, so the enumerated dependents must actually run —
 
 ---
 
-### Phase 4: Documentation convergence [NOT STARTED]
+### Phase 4: Documentation convergence [COMPLETED]
 
 **Goal**: A reader of the existing known-failures documentation can discover Gate 8's new
 `[WARN]`-versus-`[FAIL]` behavior, and the accepted scope boundary is recorded rather than left
 implicit.
 
 **Tasks**:
-- [ ] Extend `context/standards/shell-script-testing.md`'s existing
+- [x] Extend `context/standards/shell-script-testing.md`'s existing
       `### End-of-run failure roster and the known-failures baseline` section with a short
       consumer-side paragraph: Gate 8 passes `--fail-on-new`, an all-expected run is non-blocking
       and `WARN-FINDING`-channelled, a NEW failure is unchanged, and the manifest's accuracy is
-      now load-bearing for that distinction.
-- [ ] Record the mixed-failure residual there (or in the gate's header comment, whichever reads
+      now load-bearing for that distinction. *(completed: added the "Consumer side: verify-deploy.sh's
+      Gate 8" paragraph. Written as a current-design statement without before/after or
+      previously/no-longer framing, per no-record-versioning-in-deliverables.md -- confirmed 0
+      BLOCKING via check-record-versioning.sh)*
+- [x] Record the mixed-failure residual there (or in the gate's header comment, whichever reads
       better alongside the surrounding material) as a named, accepted scope boundary: in a run
       containing at least one NEW failure, the `[FAIL]`-anchored extraction still folds every
       failing suite's line into `FINDINGS_LIST`, expected ones included. State why this is
@@ -380,8 +383,10 @@ implicit.
       steps in `orchestrate-batch-gate.sh` and `orchestrate-cycle-plan.sh` already exist to catch
       an inconsistently-reproducing finding) and what closing it would cost (a second NEW-specific
       anchor emitted by `run-all.sh`, or a roster cross-reference inside `gate8_run()`).
-- [ ] Point at `tests/known-failures.txt` as the single source of truth for the row list; do not
-      restate any row's contents in prose.
+      *(completed: added the "Accepted scope boundary: the mixed-failure residual" paragraph)*
+- [x] Point at `tests/known-failures.txt` as the single source of truth for the row list; do not
+      restate any row's contents in prose. *(completed: no row basename, category, reason, or
+      owner text was copied into the new prose)*
 
 **Timing**: 0.5 hours
 
@@ -401,8 +406,23 @@ than SKIP).
 
 **Verification**:
 - Diff read-through confirms every changed hunk is prose inside the named section.
-- `--only-gate 3,4 <repo_root>` passes (doc-lint, task-reference lint), confirming no task-number
-  reference and no record-versioning language landed under `agent-system/**`.
+- `--only-gate 3,4 <repo_root>` (deployed `.claude/scripts/verify-deploy.sh`) was run against the
+  repository root. Gate 4 (task-reference lint) passes clean. Gate 3 (doc-lint) surfaces 3
+  deployed-vs-source drift findings and 1 never-deployed advisory, all exclusively naming the
+  files Phases 1-3 already edited and committed in the source store
+  (`scripts/verify-deploy.sh`, `scripts/tests/test-run-all-failure-reporting.sh`,
+  `scripts/tests/suite-classification.data`, the new
+  `scripts/tests/test-gate8-expected-new-distinction.sh`) -- this is the expected, self-resolving
+  state of a multi-phase source-store task before its own Phase 5 redeploy, not a defect in this
+  phase's documentation edit. Confirmed by running `check-task-references.sh` and
+  `check-record-versioning.sh` directly against the edited doc file: 0 unexempted task-reference
+  occurrences, 0 BLOCKING record-versioning occurrences (8 pre-existing ADVISORY hits elsewhere
+  in the file, none inside the new paragraphs).
+- An index-entries.json `line_count` mismatch for `shell-script-testing.md` (introduced by this
+  phase's own edit growing the file) was discovered via the same gate-3 run and repaired via
+  `bash .claude/scripts/generate-context-line-counts.sh --write` against the deployed tree,
+  writing the corrected count back into the source store's
+  `agent-system/extensions/core/index-entries.json` -- re-run confirmed the mismatch is gone.
 - No `known-failures.txt` row contents were copied into prose.
 
 ---

@@ -766,6 +766,30 @@ Regression coverage for all of the above (naming, roster, the double-count guard
 `--jobs N` parity, and the manifest/`--fail-on-new` cases) lives in
 `tests/test-run-all-failure-reporting.sh`.
 
+**Consumer side: `verify-deploy.sh`'s Gate 8.** Gate 8 (`gate8_run()`) passes `--fail-on-new` to
+`run-all.sh` and reads only two signals from the captured output: the exit code, and whether the
+`[run-all] Failing suites (` roster header is present. A clean run (exit 0, no header) passes; an
+all-declared-expected run (exit 0, header present — every failure classified EXPECTED) is
+non-blocking but visible via `warn_advisory()`, which emits a `WARN-FINDING gate8` line (never
+`FINDING gate8`) and still counts toward `CHECKS` and `GATE_DIRTY_LIST`; any run containing at
+least one NEW failure (non-zero exit) fails the gate via the `fail()` branch and its
+`verify_deploy_extract_verdict_lines '[FAIL]' ...` extraction loop. `scripts/lib/deploy-baseline-lib.sh`'s
+`deploy_findings_snapshot` filters strictly on `^FINDING `, so an all-expected Gate 8 run
+contributes zero rows to a pre/post findings comparison in any capture — it cannot appear in one
+capture and not another, because it never appears at all. `tests/known-failures.txt`'s accuracy
+is load-bearing for Gate 8's verdict: a stale EXPECTED row understates how much of a failing run
+is genuinely new, rather than merely mislabeling an already-blocking failure's category.
+
+**Accepted scope boundary: the mixed-failure residual.** In a run containing at least one NEW
+failure, the `fail()`-branch extraction folds every failing suite's roster line into
+`FINDINGS_LIST`, EXPECTED ones included alongside the NEW one(s) — Gate 8 does not suppress the
+EXPECTED line once at least one NEW failure has already made the run blocking. Closing this would
+need either a second, NEW-specific anchor emitted by `run-all.sh` itself, or a roster
+cross-reference built into `gate8_run()`, and the cost is judged to exceed the benefit — the
+flaky-reproduction confirmation steps in `orchestrate-batch-gate.sh` and `orchestrate-cycle-plan.sh`
+exist precisely to catch an inconsistently-reproducing finding, which covers the practical
+consequence of this residual.
+
 ### Known pre-existing failures and flakes (baseline, not regressions)
 
 **Source of truth: `scripts/tests/known-failures.txt`**, not this section. Maintaining the same
