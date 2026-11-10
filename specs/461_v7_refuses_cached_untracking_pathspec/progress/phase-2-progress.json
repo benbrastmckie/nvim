@@ -1,0 +1,54 @@
+{
+  "phase": 2,
+  "phase_name": "Commit the untracking, and keep V8 from false-positiving on it",
+  "started_at": "2026-11-10T21:50:00Z",
+  "last_updated": "2026-11-10T22:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read the commit invocation and the V8 pre-commit intent snapshot block",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add the V12 index-equivalence guard, non-empty only for cached_untracking_pathspecs, refusing exit 2 on a discrepancy",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add the guarded bare `git commit` branch (run_scoped_commit helper), leaving the pathspec-scoped form unchanged for every other invocation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Block comment recording why the pathspec-scoped form cannot express this shape",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Correct the V8 intent snapshot: cached-untracking members recorded as absent via git ls-tree membership test",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Emit the distinct untracking NOTE alongside (never merged into) the fully-staged-deletion NOTE",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Verify bash -n, scratch probes (positive both gitignore modes, negative foreign-staged-content refusal)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Scratch probes (both gitignored and non-gitignored): exit 0, HEAD advances by one commit, git show --name-status HEAD records every file as D, git ls-files -- sub is empty afterward, files remain present on disk, no exit 5 (V8 false positive gone), new NOTE ('Verified Finding V11') present, the OTHER fully-staged-deletion-acceptance NOTE absent. Negative probe: a foreign staged file (other.txt) outside the declared 'sub' pathspec makes the V12 guard refuse with exit 2, naming the foreign path, HEAD unchanged. Full existing test-git-commit-scoped.sh suite: 70 passed, 0 failed (no regression). Scoped Tier Justification suite run: same 2 pre-existing out-of-scope failures already recorded in Phase 1's issue-log entry (test-orchestrate-cycle-postflight.sh, test-redeploy-checkpoint-promotion.sh), unrelated to this change.\n\nCLARIFICATION for Phase 3's NOTE-distinctness test design: the new untracking NOTE's own text, per this phase's task list, explicitly states 'this is NOT the source half of a directory move' -- which necessarily CONTAINS that literal substring in negated form. A literal substring search for 'source half of a directory move' in stderr therefore always matches (the new NOTE itself uses the phrase to draw the contrast). Phase 3's NOTE-distinctness assertion must instead check for the OTHER note's own distinguishing wording (e.g. 'accepted ... positive pathspec(s) as fully-staged deletions'), confirming that note is NOT ALSO emitted for the same invocation -- not a blind substring check against the shared contrastive phrase. Verified this distinction in this phase's own scratch probe."
+}

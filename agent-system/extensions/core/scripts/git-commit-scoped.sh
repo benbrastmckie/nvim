@@ -870,6 +870,16 @@ fi
 # check must never become the reason a commit cannot be reported at all, mirroring the
 # --honest-index-rows block's existing failure tolerance.
 declare -A v8_intent
+# v8_cached_untracking_members (V11/V12 correction): every file HEAD tracks under a
+# cached_untracking_pathspecs entry, keyed for O(1) membership testing below -- consulted by the
+# v8_intent assembly loop so a cached-untracking member is recorded as "absent" (its correct
+# intended post-commit state) regardless of its on-disk presence, instead of the ordinary
+# `[ -e "$v8_f" ]` branch's `git hash-object` of working-tree content, which would otherwise
+# misclassify this shape and produce a V8 false positive once the untracking commit lands
+# correctly. Always declared (mirrors v8_intent immediately above), populated below only when
+# cached_untracking_pathspecs is non-empty -- an empty/absent population leaves every lookup a
+# safe `:-` default miss, never an unbound-variable error under `set -u`.
+declare -A v8_cached_untracking_members
 v8_enabled="true"
 
 if ! git rev-parse --verify -q HEAD >/dev/null 2>&1; then
@@ -893,10 +903,24 @@ if [ "$v8_enabled" = "true" ]; then
   fi
 fi
 
+if [ "$v8_enabled" = "true" ] && [ "${#cached_untracking_pathspecs[@]}" -gt 0 ]; then
+  v8_cu_list=""
+  v8_cu_list="$(git ls-tree -r --name-only HEAD -- "${cached_untracking_pathspecs[@]}" 2>/dev/null)" || v8_cu_list=""
+  while IFS= read -r v8_cu_f; do
+    [ -n "$v8_cu_f" ] && v8_cached_untracking_members["$v8_cu_f"]=1
+  done <<< "$v8_cu_list"
+fi
+
 if [ "$v8_enabled" = "true" ] && [ -n "${v8_enum_files:-}" ]; then
   while IFS= read -r v8_f; do
     [ -n "$v8_f" ] || continue
-    if [ -e "$v8_f" ]; then
+    if [ -n "${v8_cached_untracking_members[$v8_f]:-}" ]; then
+      # Cached-untracking member (Verified Finding V11/V12): the correct INTENDED post-commit
+      # state is "absent from HEAD" regardless of on-disk presence -- this file is being
+      # untracked while remaining present on disk, the OPPOSITE premise of an ordinary case-1
+      # path. Membership decided via git's own ls-tree resolver, never a string prefix match.
+      v8_intent["$v8_f"]="absent"
+    elif [ -e "$v8_f" ]; then
       if v8_hash=$(git hash-object -- "$v8_f" 2>/dev/null); then
         v8_intent["$v8_f"]="$v8_hash"
       else
@@ -1032,6 +1056,40 @@ full_message="${final_message}
 Session: ${session_id}
 "
 
+# --- V12: index-equivalence guard for the cached-untracking shape (only when
+# cached_untracking_pathspecs is non-empty; a no-op array check otherwise) ---
+# `git commit -- <pathspec>` cannot express this shape at all: it has `--only` semantics and
+# re-reads the working tree fresh for each named path AT COMMIT TIME, so a path staged as deleted
+# but still present on disk yields "nothing to commit" with HEAD unmoved -- verified empirically
+# across a directory pathspec, an explicit HEAD-tracked file list, and an explicit `--only`
+# invocation alike; pathspec granularity is irrelevant, the hazard is in `--only` semantics
+# itself. The only form that CAN commit it is a BARE `git commit` (the whole staged index) --
+# exactly the hazard this script exists to prevent for every OTHER caller (see this script's own
+# top-of-file rationale). This guard proves the staged index is EXACTLY the declared scope before
+# taking that bare-commit path, so it can only ever commit what the caller actually asked for,
+# never anything wider: `git diff --cached --name-only HEAD` (the WHOLE staged index) must equal
+# `git diff --cached --name-only HEAD -- "${filtered_pathspecs[@]}"` (the SAME diff restricted to
+# the declared pathspec set, via git's own resolver -- honors `:(exclude)` entries exactly as
+# `git commit --` would have). Any discrepancy means foreign staged content outside the declared
+# scope slipped in (e.g. a concurrent writer sharing this working tree) -- refuse with `exit 2`,
+# naming the offending paths, textually distinct from both the V3 and V7 refusals, rather than
+# ever widen the commit to cover them.
+cached_untracking_bare_commit="false"
+if [ "${#cached_untracking_pathspecs[@]}" -gt 0 ]; then
+  v12_whole_index=""
+  v12_scoped_index=""
+  v12_whole_index="$(git diff --cached --name-only HEAD 2>/dev/null | sort -u)" || v12_whole_index=""
+  v12_scoped_index="$(git diff --cached --name-only HEAD -- "${filtered_pathspecs[@]}" 2>/dev/null | sort -u)" || v12_scoped_index=""
+  if [ "$v12_whole_index" = "$v12_scoped_index" ]; then
+    cached_untracking_bare_commit="true"
+    echo "NOTE: git-commit-scoped.sh is committing ${#cached_untracking_pathspecs[@]} pathspec(s) as a cached-untracking shape (Verified Finding V11) — every file HEAD tracks under them is staged as a pure deletion (e.g. \`git rm -r --cached\`) while remaining present on disk. This is NOT the source half of a directory move (the separate fully-staged-deletion carve-out elsewhere in this script): that shape requires content GONE from the working tree; this one requires it PRESENT. Committed via a bare 'git commit' proven index-equivalent to the declared pathspec set (Verified Finding V12). Path(s): ${cached_untracking_pathspecs[*]}" >&2
+  else
+    v12_foreign="$(comm -23 <(printf '%s\n' "$v12_whole_index") <(printf '%s\n' "$v12_scoped_index") 2>/dev/null)" || v12_foreign=""
+    echo "ERROR: git-commit-scoped.sh refuses to commit — this invocation includes a cached-untracking pathspec (Verified Finding V11), which can only be committed via a bare 'git commit' covering the WHOLE staged index (Verified Finding V12), but the staged index also carries content OUTSIDE the declared pathspec set, which a bare commit would widen into -- rather than commit wider, this refuses. Foreign staged path(s): ${v12_foreign}" >&2
+    exit 2
+  fi
+fi
+
 # --- git commit, with one bounded retry (short randomized backoff) specifically for an
 # index.lock failure — the residual race that remains when the mutex fails open above. ---
 # `if VAR=$(cmd); then ... else status=$?; fi` rather than a bare `VAR=$(cmd)` followed by
@@ -1041,7 +1099,19 @@ Session: ${session_id}
 # could run, or this script's own documented exit-code contract could be honored. Wrapping the
 # assignment in the `if` test is `-e`-exempt and preserves the captured status exactly, mirroring
 # the same fix applied to state-write.sh and task-lock.sh's cmd_acquire_retry.
-if commit_output=$(git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1); then
+#
+# run_scoped_commit: selects the bare `git commit` form (V12 above, the cached-untracking shape)
+# or the ordinary pathspec-scoped form -- a single choice point so both the first attempt and the
+# index.lock retry below stay in sync without duplicating the branch.
+run_scoped_commit() {
+  if [ "$cached_untracking_bare_commit" = "true" ]; then
+    git commit -m "$full_message" 2>&1
+  else
+    git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1
+  fi
+}
+
+if commit_output=$(run_scoped_commit); then
   commit_exit=0
 else
   commit_exit=$?
@@ -1051,7 +1121,7 @@ if [ "$commit_exit" -ne 0 ] && echo "$commit_output" | grep -qi 'index\.lock'; t
   echo "$commit_output" >&2
   echo "NOTE: git commit hit index.lock contention; retrying once after a short backoff." >&2
   sleep "0.$(( (RANDOM % 5) + 1 ))"
-  if commit_output=$(git commit -m "$full_message" -- "${pathspecs[@]}" 2>&1); then
+  if commit_output=$(run_scoped_commit); then
     commit_exit=0
   else
     commit_exit=$?

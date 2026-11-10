@@ -254,7 +254,7 @@ restructuring more than one branch.
 
 ---
 
-### Phase 2: Commit the untracking, and keep V8 from false-positiving on it [NOT STARTED]
+### Phase 2: Commit the untracking, and keep V8 from false-positiving on it [COMPLETED]
 
 **Goal**: make the untracking actually land in HEAD. Add a guarded commit path for the untracking
 shape that is provably equivalent in scope to the pathspec-scoped commit it replaces, and correct
@@ -263,36 +263,45 @@ partial commit.
 
 **Tasks**:
 
-- [ ] Re-read the commit invocation (`git commit -m "$full_message" -- "${pathspecs[@]}"`,
-  including its index.lock retry) and the V8 pre-commit intent snapshot block.
-- [ ] Add the index-equivalence guard, evaluated only when `cached_untracking_pathspecs` is
+- [x] Re-read the commit invocation (`git commit -m "$full_message" -- "${pathspecs[@]}"`,
+  including its index.lock retry) and the V8 pre-commit intent snapshot block. *(completed)*
+- [x] Add the index-equivalence guard, evaluated only when `cached_untracking_pathspecs` is
   non-empty: compare `git diff --cached --name-only HEAD` against
   `git diff --cached --name-only HEAD -- "${filtered_pathspecs[@]}"` (both sorted). Equal means
   the staged set is exactly the declared scope, honoring `:(exclude)` entries via git's own
   resolver. Unequal means foreign staged content — refuse with `exit 2` and a message textually
   distinct from both the V7 refusal and the V3 refusal, naming the staged paths that fall outside
-  the declared pathspec set.
-- [ ] When the guard passes, commit with a **bare** `git commit -m "$full_message"` (no `--
+  the declared pathspec set. *(completed: labelled V12; `comm -23` names the foreign paths)*
+- [x] When the guard passes, commit with a **bare** `git commit -m "$full_message"` (no `--
   pathspecs`), preserving the existing `-e`-exempt capture idiom, the `commit_exit` semantics,
   and the one bounded index.lock retry. Leave the unchanged `git commit -- "${pathspecs[@]}"`
   path in place for every invocation with no untracking pathspec — this is an alternate branch,
-  not a replacement.
-- [ ] Add a block comment recording why the pathspec-scoped form cannot express this shape:
+  not a replacement. *(completed: factored into a `run_scoped_commit` helper so the first attempt
+  and the index.lock retry share one branch point)*
+- [x] Add a block comment recording why the pathspec-scoped form cannot express this shape:
   `git commit -- <pathspec>` has `--only` semantics and re-reads the working tree for each named
   path, so a path present on disk but staged as deleted yields "nothing to commit"; this was
   verified for a directory pathspec, an explicit HEAD-tracked file list, and an explicit
-  `--only` invocation alike.
-- [ ] Correct the V8 intent snapshot: for every enumerated file that lies under a pathspec in
+  `--only` invocation alike. *(completed)*
+- [x] Correct the V8 intent snapshot: for every enumerated file that lies under a pathspec in
   `cached_untracking_pathspecs`, record the `absent` sentinel instead of a
   `git hash-object` of its working-tree content. Use git's own resolver to decide membership
   (e.g. enumerate `git ls-tree -r --name-only HEAD -- "${cached_untracking_pathspecs[@]}"` once
   and test membership against it), never a string prefix match. Leave the fail-safe behavior,
   the `absent`-for-missing-file branch, and the post-commit comparison logic untouched.
-- [ ] Emit the distinct NOTE when `cached_untracking_pathspecs` is non-empty, alongside (never
+  *(completed: via a `v8_cached_untracking_members` associative-array membership set)*
+- [x] Emit the distinct NOTE when `cached_untracking_pathspecs` is non-empty, alongside (never
   merged into) the existing fully-staged-deletion NOTE: name the count, name the paths, state
   that every file HEAD tracks under them is staged as a pure deletion with content still present
   on disk, and state explicitly that this is **not** the source half of a directory move.
-- [ ] Verify `bash -n`, then run the scratch probes below.
+  *(completed — NOTE: by design this NOTE's own text contains the literal substring "source half
+  of a directory move" in NEGATED form, per this task's own instruction. Phase 3's
+  NOTE-distinctness test must assert absence of the OTHER note's own distinguishing wording
+  ("accepted ... positive pathspec(s) as fully-staged deletions"), not a blind substring search
+  against the shared contrastive phrase — recorded in this phase's progress-file notes.)*
+- [x] Verify `bash -n`, then run the scratch probes below. *(completed: positive probes in both
+  gitignored and non-gitignored repos, plus a negative foreign-staged-content probe, all pass;
+  full existing `test-git-commit-scoped.sh` suite: 70/70 passed, no regression)*
 
 **Timing**: 2 hours
 
