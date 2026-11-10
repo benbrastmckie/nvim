@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794343931_696ebd_499",
-  "dispatch_seq": 7,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/499_retire_memory_extension/reports/01_retarget-distill-submodes-and-cleanup.md",
-      "summary": "Research on retargeting --revise/--learn to the hosted sapience store, deleting the six redundant local-vault sub-modes, removing orphaned core callers, and wiring the tagged-write half of the retrieval loop. Key finding: the dispatch's claim that memory-retrieve.sh is already dead is refuted -- 25 live call sites across 12 extensions' SKILL.md files still invoke it directly and must be updated (mechanically, since sapience-retrieve.sh is a confirmed drop-in replacement)."
+      "type": "plan",
+      "path": "specs/499_retire_memory_extension/plans/01_retarget-distill-submodes-and-cleanup.md",
+      "summary": "Seven-phase plan across four waves covering Parts A, B, C and C2: retarget --revise/--learn onto hosted knowledge objects, delete the six hosted-store-redundant sub-modes with a surgical scoring-engine prune, remove the two orphaned core callers and the archive-time harvest, and close the tagged-write half of the sapience retrieval loop via instruction-level shape (a)."
     }
   ],
   "memory_candidates": [
     {
-      "content": "sapience-retrieve.sh and memory-retrieve.sh share an identical CLI signature (<description> <task_type> [focus_prompt]) and emit the identical <memory-context> envelope, so any caller of the latter can be migrated to the former by a pure script-name substitution with no surrounding logic change.",
+      "content": "When retargeting a consumer that enumerates a local store onto a hosted store that offers only a capped keyword query (no enumeration endpoint), invert the correlation direction rather than adding an enumeration read path: instead of 'enumerate every stored item, then correlate evidence onto it', do 'cluster the evidence first, apply the recurrence threshold, then query the store once per surviving cluster'. This preserves every classification outcome, needs no new read surface, and is strictly cheaper because only clusters past the threshold are queried. Mandatory companion: if the query path returns the same signal (non-zero exit, empty stdout) for both a zero-hit result and a transport failure, the consumer must open with a reachability probe against a known-present item, or a network failure silently reclassifies every cluster as a gap.",
       "category": "PATTERN",
-      "source_artifact": "specs/499_retire_memory_extension/reports/01_retarget-distill-submodes-and-cleanup.md",
+      "source_artifact": "specs/499_retire_memory_extension/plans/01_retarget-distill-submodes-and-cleanup.md",
       "confidence": 0.85,
-      "suggested_keywords": ["memory-retrieve", "sapience-retrieve", "drop-in-replacement", "migration"]
-    },
-    {
-      "content": "In this agent system, core task types (general/meta/markdown) route memory-context injection through a single shared call site in orchestrate-build-dispatch.sh's Stage 3.5, but every domain extension's own research/implementation SKILL.md carries an independent, inline Stage 4a block making the same call directly. Swapping the shared call site does not touch the per-extension ones -- they must be updated separately, one per extension skill file.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/499_retire_memory_extension/reports/01_retarget-distill-submodes-and-cleanup.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["stage-4a", "memory-retrieval", "extension-architecture", "dispatch-duplication"]
+      "suggested_keywords": ["hosted-store-migration", "enumeration-to-query", "correlation-inversion", "reachability-probe", "ambiguous-failure-signal"]
     }
   ],
-  "next_steps": "Run /orchestrate 499 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1794343931_696ebd_499",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 10.5,
+    "dependency_waves": [[1, 2, 6], [3], [4, 5], [7]]
+  },
+  "next_steps": "Run /orchestrate 499 to execute the plan",
+  "dispatch_seq": 10
 }

@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "summary": "Authored a seven-phase, four-wave plan for Parts A, B, C and C2 (Part D remains out of scope per the dispatch's SCOPE NARROWING section). Settled the three decisions research left open: --revise's CONTRADICTED outcome collapses to one superseding-note write, --revise inverts its correlation direction to evidence-to-store with a mandatory reachability probe, and Part C2 takes instruction-level shape (a) replacing rather than keeping the untagged wrapup call. Re-derived every carried figure live, correcting the dispatch's premise that memory-retrieve.sh is already dead: 25 call sites across 12 extensions are still live, so Phase 1 migrates them before Phase 4 deletes the script.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/499_retire_memory_extension/plans/01_retarget-distill-submodes-and-cleanup.md",
+      "summary": "Seven phases in four waves, 10.5h estimated: Phase 1 migrates the 25 extension Stage 4a retrieval call sites; Phase 2 retargets --revise and --learn onto hosted knowledge objects; Phase 3 deletes the six hosted-store-redundant sub-modes with a surgical scoring-engine prune; Phase 4 deletes the two orphaned core scripts and updates every reference; Phase 5 strips /todo's archive-time harvest; Phase 6 closes the tagged-write loop; Phase 7 redeploys and runs the complete gate set."
+    }
+  ],
+  "dispatch_seq": 10
+}
