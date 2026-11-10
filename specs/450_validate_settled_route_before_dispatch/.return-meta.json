@@ -1,33 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 450,
-  "session_id": "sess_1794272256_212466_450",
-  "dispatch_seq": 26,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/450_validate_settled_route_before_dispatch/reports/01_validate-settled-route-before-dispatch.md",
-      "summary": "Confirms the decision-pipeline gap (no obligation field, no validity check) field-for-field against the live source store; reconciles with the adjacent composer feature (premise re-validation) and rules it does NOT already cover a settled route as an acted-on premise (different data source, different claim shape); finds the decisive Owner-ruling precedent (composer emits, receiving agent adjudicates; general conflict detection explicitly excluded in writing) and recommends candidates (1)+(3) over (1)+(2) on architectural-precedent grounds, with the mirror-image fixture folded in as a proposal-time self-check rather than a schema-side check."
+      "type": "plan",
+      "path": "specs/450_validate_settled_route_before_dispatch/plans/01_validate-settled-route-before-dispatch.md",
+      "summary": "Five-phase plan adopting the recordable-obligation plus propagate-to-implementer mechanism; central pre-dispatch validation rejected with reasoning."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "This codebase's pattern for adding a new OPTIONAL field to an existing append-only JSON schema (orchestrate-record-decision.sh's .decisions.json writer): branch the jq -c -n record-construction call in two (with-field / without-field), never apply an unconditional `+ {field: $val}` merge, and omit the field entirely (never write an empty string) when its value cannot be computed on the writing host. Demonstrated by the existing `description_fingerprint` field; keeps legacy entries valid and the schema backward compatible.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/450_validate_settled_route_before_dispatch/reports/01_validate-settled-route-before-dispatch.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["jq", "optional-field", "schema-backward-compatibility", "decisions.json", "additive-write"]
-    },
-    {
-      "content": "orchestrate-build-dispatch.sh (the dispatch composer) has an explicit, written Owner ruling (report-format.md, 'Owner ruling -- split by capability'): the composer only EMITS known facts (description text, prior artifact pointers) alongside each other; it never ADJUDICATES whether two claims agree or whether a claim is true. General semantic conflict/validity detection was explicitly rejected for this composer on the grounds that contradiction/validity is a semantic relation between arbitrary spans, not an enumerable pattern. Any future task proposing a composer-side validation step for anything semantic (not just carried figures) should check this precedent first -- it generalizes past the feature it was written for.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/450_validate_settled_route_before_dispatch/reports/01_validate-settled-route-before-dispatch.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-build-dispatch", "owner-ruling", "composer-emits-never-adjudicates", "semantic-validation-rejected", "architecture-precedent"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 450 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1794272256_212466_450",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 6,
+    "dependency_waves": [[1, 2], [3], [4], [5]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 450 to execute the plan",
+  "dispatch_seq": 27
 }
