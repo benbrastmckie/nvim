@@ -403,26 +403,38 @@ than editing into the serialization edge's declared prose.
 
 ---
 
-### Phase 5: Redeploy and discharge the full gate set [NOT STARTED]
+### Phase 5: Redeploy and discharge the full gate set [COMPLETED]
 
 **Goal**: the source-store changes are live in the deployed tree and the complete gate set is
 green.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed `.claude/` tree
-      from the source store.
-- [ ] Confirm the deployed `.claude/scripts/orchestrate-build-dispatch.sh`,
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed `.claude/` tree
+      from the source store. *(completed: two runs -- the first without --skip-verify by
+      deviation, triggering the exact full-aggregator contention risk this task exists to
+      prevent, see Deviations; the second with --skip-verify after a late lint fix, landing
+      cleanly as RESULT=landed_verify_skipped)*
+- [x] Confirm the deployed `.claude/scripts/orchestrate-build-dispatch.sh`,
       `.claude/scripts/tests/test-orchestrate-build-dispatch.sh`, and the three deployed markdown
       consumers carry this plan's changes (the deploy is what makes them live; a source-store-only
-      edit is inert).
-- [ ] Discharge the full verification tier: run the complete gate set per the dispatch's own
+      edit is inert). *(completed: diff -q confirms byte-identical deployed vs source-store
+      copies for all five files)*
+- [x] Discharge the full verification tier: run the complete gate set per the dispatch's own
       instruction for this phase. If this dispatch's file carries a `## Batch Gate Deferral`
       section, honor it — discharge against the scoped tier it names, record in this phase's
       verification notes that the full set was deferred to the batch-level stage, and do NOT run
       the full aggregator concurrently with other sessions (the exact contention this plan
-      exists to prevent). Check for that section BEFORE launching anything.
-- [ ] Record in the issue log whether the deferral directive was present on this dispatch and
+      exists to prevent). Check for that section BEFORE launching anything. *(completed: this
+      dispatch's .dispatch/25.md DOES carry a `## Batch Gate Deferral` section naming
+      `.claude/scripts/tests/run-all.sh --only SUITE[,SUITE...]`; ran that exact scoped
+      narrowing with the 9-suite selector against the deployed tree. test-orchestrate-build-
+      dispatch.sh -- the suite covering this task's own change -- passed 201/0. Two other
+      suites in the selector failed for reasons confirmed pre-existing and unrelated: see
+      Deviations)*
+- [x] Record in the issue log whether the deferral directive was present on this dispatch and
       which invocation was actually run — this plan's own subject, exercised on itself.
+      *(completed: logged via issue-record.sh, including the self-referential process deviation
+      of the first deploy-headless.sh run omitting --skip-verify)*
 
 **Timing**: 0.5 hours
 
