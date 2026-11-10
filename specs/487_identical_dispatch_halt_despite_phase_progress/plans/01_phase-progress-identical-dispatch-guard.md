@@ -301,39 +301,47 @@ sourcing site and checking it precedes the Fix 2 block in file order before rely
 
 ---
 
-### Phase 2: Correct the hash normalizer's over-general header assertion [NOT STARTED]
+### Phase 2: Correct the hash normalizer's over-general header assertion [COMPLETED]
 
 **Goal**: `cycle_plan_dispatch_hash()`'s header states the exception its current assertion
 silently assumes away, and names what keeps the guard correct despite it.
 
 **Tasks**:
-- [ ] Locate the header sentence asserting that "a real behavioral change to the dispatch (a
+- [x] Locate the header sentence asserting that "a real behavioral change to the dispatch (a
       different phase_number, a different territory payload, a different focus string) changes
       some OTHER line and therefore still changes the digest". It was confirmed present at
       authoring time in `orchestrate-cycle-plan.sh`'s `cycle_plan_dispatch_hash()` header comment
       (~line 2190). If the sentence is not found verbatim, do not invent a replacement target:
       locate the equivalent assertion by its claim rather than its wording, and if no such
       assertion remains in the header, record that in the phase's handoff and add the exception
-      note as a standalone header paragraph instead.
-- [ ] Immediately after that sentence, add the exception in durable technical terms: the
+      note as a standalone header paragraph instead. *(completed: found verbatim at line 2190,
+      re-derived fresh after Phase 1 shifted line numbers)*
+- [x] Immediately after that sentence, add the exception in durable technical terms: the
       enumerated dimensions hold, but an ordinary (non-hard-mode) multi-phase `implement` dispatch
       closing a plan phase changes no line of the body at all, because the only phase-progress
       interpolation in a composed dispatch is gated on a `phase_number` that is set for a
-      hard-mode phase-scoped candidate only.
-- [ ] Name what keeps the guard correct despite the exception: the per-task persisted
+      hard-mode phase-scoped candidate only. *(completed)*
+- [x] Name what keeps the guard correct despite the exception: the per-task persisted
       plan-file completed-phase count read by the Fix 2 block, cited by its own field name and
-      the section it lives in, not by a line number.
-- [ ] Add a DECIDED AND RECORDED entry, in the same style and register as the two existing ones,
+      the section it lives in, not by a line number. *(completed: cited as
+      `last_dispatch_phases_completed`, "the Fix 2 streak-accounting block immediately below this
+      function")*
+- [x] Add a DECIDED AND RECORDED entry, in the same style and register as the two existing ones,
       stating that this signal is deliberately a persisted side-channel rather than dispatch-body
       content: it is per-PROGRESS-varying, not per-cycle-varying, so the STANDING OBLIGATION to
       extend the strip pattern does not apply to it, and it must never be added to the strip
-      pattern nor converted into a hashed body line.
-- [ ] Leave the two existing DECIDED AND RECORDED rulings (`## Batch Gate Deferral`,
+      pattern nor converted into a hashed body line. *(completed: third
+      "DECIDED AND RECORDED (phase-progress signal)" entry added)*
+- [x] Leave the two existing DECIDED AND RECORDED rulings (`## Batch Gate Deferral`,
       `## Outstanding Gate Finding`), the STANDING OBLIGATION paragraph, the three-location
-      enumeration, and the function body itself byte-for-byte unchanged.
-- [ ] Use no task-number references and no record-versioning language anywhere in the added prose
+      enumeration, and the function body itself byte-for-byte unchanged. *(completed: confirmed
+      via `git diff` — zero removed/modified lines, only additions; both existing rulings and the
+      STANDING OBLIGATION paragraph grepped present verbatim)*
+- [x] Use no task-number references and no record-versioning language anywhere in the added prose
       (both are prohibited under `agent-system/**`); describe the exception by its durable
-      technical shape only.
+      technical shape only. *(completed: verified via check-task-references.sh (0 occurrences)
+      and check-record-versioning.sh (0 BLOCKING, 20 pre-existing ADVISORY findings none of which
+      are on added lines))*
 
 **Timing**: 0.5 hours
 
@@ -350,13 +358,18 @@ is the specific covering check; no suite exercises comment text.
   own header comment with the exception note and the third DECIDED AND RECORDED entry.
 
 **Verification**:
-- [ ] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` exits 0.
-- [ ] `git diff` over the function confirms only comment lines were added and the function body is
-      byte-for-byte unchanged.
-- [ ] `grep` confirms both pre-existing DECIDED AND RECORDED headings and the STANDING OBLIGATION
-      paragraph survive verbatim.
-- [ ] `bash .claude/scripts/check-task-references.sh` (or the repo's current equivalent) reports no
-      new task-number occurrence under `agent-system/**`.
+- [x] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` exits 0.
+      *(completed: confirmed)*
+- [x] `git diff` over the function confirms only comment lines were added and the function body is
+      byte-for-byte unchanged. *(completed: `git diff` over the whole edited file shows zero
+      removed/modified lines across both Phase 1 and Phase 2's edits, only additions; the
+      `cycle_plan_dispatch_hash()` executable body (the three statements after the closing
+      comment) is untouched)*
+- [x] `grep` confirms both pre-existing DECIDED AND RECORDED headings and the STANDING OBLIGATION
+      paragraph survive verbatim. *(completed: grepped — both pre-existing entries plus the
+      STANDING OBLIGATION paragraph present verbatim, alongside the new third entry)*
+- [x] `bash .claude/scripts/check-task-references.sh` (or the repo's current equivalent) reports no
+      new task-number occurrence under `agent-system/**`. *(completed: 0 occurrences, PASS)*
 
 ---
 

@@ -1,0 +1,59 @@
+{
+  "phase": 2,
+  "phase_name": "Correct the hash normalizer's over-general header assertion",
+  "started_at": "2026-11-10T13:30:00Z",
+  "last_updated": "2026-11-10T13:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Locate the header sentence asserting that a real behavioral change changes some OTHER line",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add the exception in durable technical terms immediately after that sentence",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Name what keeps the guard correct despite the exception (the persisted plan-file completed-phase count)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Add a third DECIDED AND RECORDED entry stating the signal is a persisted side-channel never added to the strip pattern",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Leave the two existing DECIDED AND RECORDED rulings, STANDING OBLIGATION paragraph, and function body byte-for-byte unchanged",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "No task-number references or record-versioning language in added prose",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -2196,6 +2196,30 @@ fi
 # the regression fixture pinning this failure mode in
 # scripts/tests/test-orchestrate-cycle-plan.sh's "Group 27 Case F".
 #
+# EXCEPTION to the assertion directly above: the enumerated dimensions ("a different
+# phase_number, a different territory payload, a different focus string") hold as stated, but an
+# ordinary (non-hard-mode) multi-phase `implement` dispatch closing a plan phase is a case the
+# assertion does not cover at all -- it changes NO line of the composed body, because the only
+# phase-progress interpolation a composed dispatch ever carries (the `## Phase Mission` section's
+# `PHASES COMPLETED: <n> of <m>` line) is gated on a `phase_number` that is set for a hard-mode
+# phase-scoped candidate only. Two dispatches straddling a real, committed phase closure therefore
+# hash identically for this case, exactly as if nothing had happened. What keeps the guard correct
+# despite this: the caller (the Fix 2 streak-accounting block immediately below this function)
+# additionally reads a per-task persisted plan-file completed-phase count
+# (`last_dispatch_phases_completed`) and freezes the streak, rather than charging it as churn,
+# whenever that count strictly increased between two hash-identical compositions -- see that
+# block's own inline comment for the full mechanism.
+#
+# DECIDED AND RECORDED (phase-progress signal): the `last_dispatch_phases_completed` persisted
+# field the Fix 2 block reads to resolve the exception above is deliberately NOT added to the
+# strip pattern below, and must never be converted into a hashed dispatch-body line. It is
+# per-PROGRESS-varying, not per-cycle-varying -- the composed dispatch body genuinely does not
+# change line-for-line with phase progress for this case, so there is no body line to strip in the
+# first place, and the STANDING OBLIGATION above (which governs new per-cycle-varying BODY
+# content) does not apply to it. It is read instead as an independent, persisted side-channel
+# signal, exactly as `deploy_pending` is read as an independent per-task signal by the sibling
+# freeze branch in the same block.
+#
 # Reuses lib/deploy-ledger-lib.sh's degrade idiom verbatim in spirit: `sha256sum` unavailable (or
 # the file unreadable) returns exit 2, never a silent skip and never fatal — the caller surfaces a
 # named stderr notice and disables the guard for the run.
