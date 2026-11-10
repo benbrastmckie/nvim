@@ -60,7 +60,11 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
+# Depth-independent resolution (git-toplevel-first, falling back to a fixed-depth guess only
+# outside a git tree) -- a hardcoded "../../../.." assumes the source-store depth
+# (agent-system/extensions/core/scripts) and overshoots by two levels when this suite runs from
+# its deployed copy (.claude/scripts), which sits two levels shallower.
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
 
@@ -115,6 +119,30 @@ echo '{}' > "$FIXTURE_CHEAP/.claude/settings.json"
 git init -q "$FIXTURE_CHEAP"
 git -C "$FIXTURE_CHEAP" config user.email "test@example.com"
 git -C "$FIXTURE_CHEAP" config user.name "Test"
+
+# =====================================================================
+# FIXTURE_GATE16_WARN: a dedicated synthetic fixture, built ONLY for case (r)'s WARN-channel
+# demonstration, declaring routing_agents_hard itself in its own manifest rather than reading
+# the REAL deployed lean manifest (which no longer declares either retired key, now that
+# routing_agents_hard -> hard_contracts has landed). Deliberately NOT added to FIXTURE_CHEAP,
+# which other cases share and must stay a clean "nothing to find" shape. Shares FIXTURE_CHEAP's
+# minimal .claude/ skeleton so gate16 (which runs unconditionally) has the same non-extension
+# surface to inspect; the one synthetic extension manifest is the only difference.
+# =====================================================================
+FIXTURE_GATE16_WARN="$WORKDIR/gate16-warn"
+mkdir -p "$FIXTURE_GATE16_WARN/.claude/scripts" "$FIXTURE_GATE16_WARN/.claude/hooks" "$FIXTURE_GATE16_WARN/.claude/context/schemas" "$FIXTURE_GATE16_WARN/.claude/context/formats" "$FIXTURE_GATE16_WARN/.claude/extensions/zzz-synthetic"
+echo '{}' > "$FIXTURE_GATE16_WARN/.claude/settings.json"
+cat > "$FIXTURE_GATE16_WARN/.claude/extensions/zzz-synthetic/manifest.json" <<'EOF'
+{
+  "name": "zzz-synthetic",
+  "routing_agents_hard": {
+    "research": { "zzztest": "zzz-synthetic-research-hard-agent" }
+  }
+}
+EOF
+git init -q "$FIXTURE_GATE16_WARN"
+git -C "$FIXTURE_GATE16_WARN" config user.email "test@example.com"
+git -C "$FIXTURE_GATE16_WARN" config user.name "Test"
 
 # =====================================================================
 # FIXTURE_CONSUMER: deploy-consumer shape (no agent-system/extensions, like FIXTURE_CHEAP) whose
@@ -433,9 +461,11 @@ fi
 # Case (r): gate16's WARN-level finding (routing_hard/routing_agents_hard) stays on the
 # non-blocking `WARN-FINDING ` channel instead of escalating into the blocking `^FINDING `
 # channel the batch-gate stage's deploy_findings_snapshot filters on with `grep '^FINDING '`.
-# FIXTURE_RICH's real-copy lean/manifest.json genuinely declares routing_agents_hard, so this
-# exercises warn_advisory()'s real call site, not a synthetic fixture. Four sub-assertions,
-# matching this task's own Defect 5 acceptance evidence:
+# FIXTURE_GATE16_WARN's synthetic manifest declares routing_agents_hard itself (the REAL deployed
+# lean manifest no longer does, now that routing_agents_hard -> hard_contracts has landed), so
+# this exercises warn_advisory()'s real call site against a fixture-independent trigger rather
+# than depending on live manifest content. Four sub-assertions, matching this task's own Defect 5
+# acceptance evidence:
 #   (a) --findings --quiet emits NO ^FINDING gate16 line;
 #   (b) the [WARN] stderr line is still emitted (unconditional, not gated by --quiet);
 #   (c) the exit code is unchanged (0 -- warn_advisory() never increments FAILURES);
@@ -443,9 +473,9 @@ fi
 #       deployed check-task-references.sh) still appears on ^FINDING, proving the `grep
 #       '^FINDING '` filter still passes a genuine blocking finding through unaffected.
 # =====================================================================
-gate16_stdout="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_RICH" 2>/dev/null)"
+gate16_stdout="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_GATE16_WARN" 2>/dev/null)"
 gate16_rc=$?
-gate16_stderr="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_RICH" 2>&1 1>/dev/null)"
+gate16_stderr="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_GATE16_WARN" 2>&1 1>/dev/null)"
 
 if ! printf '%s\n' "$gate16_stdout" | grep -q '^FINDING gate16'; then
   common_test_pass "case(r-a): gate16's routing_hard/routing_agents_hard notice emits no ^FINDING gate16 line"
@@ -476,6 +506,31 @@ if printf '%s\n' "$gate4_findings_out" | grep -q '^FINDING gate4'; then
   common_test_pass "case(r-d): a real fail()-level finding from another gate (gate4) still appears on ^FINDING, unaffected by gate16's channel split"
 else
   common_test_fail "case(r-d): expected a ^FINDING gate4 line against FIXTURE_CHEAP" "$gate4_findings_out"
+fi
+
+# (r-e) Green side: against a fixture with no declaring manifest at all (FIXTURE_CHEAP's
+# .claude/extensions/ is created but left empty), gate16 emits the `pass` line and no WARN
+# finding of any kind -- the absence-guard's normal, expected outcome now that both keys are
+# fully retired. The `pass` line itself is suppressed under `--quiet` (pass() routes through
+# say(), which --quiet gates) -- a NON-quiet run checks for it; the --findings --quiet run
+# checks for the finding-channel absence and the exit code, matching cases (r-a)-(r-c) above.
+gate16_green_plain_stdout="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 "$FIXTURE_CHEAP" 2>/dev/null)"
+if printf '%s\n' "$gate16_green_plain_stdout" | grep -q 'no extension manifest declares routing_hard/routing_agents_hard'; then
+  common_test_pass "case(r-e): gate16 emits the pass line against a fixture with no declaring manifest"
+else
+  common_test_fail "case(r-e): expected gate16's pass line, not found" "$gate16_green_plain_stdout"
+fi
+gate16_green_stdout="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate 16 --findings --quiet "$FIXTURE_CHEAP" 2>/dev/null)"
+gate16_green_rc=$?
+if ! printf '%s\n' "$gate16_green_stdout" | grep -qE '^(WARN-)?FINDING gate16'; then
+  common_test_pass "case(r-e): no WARN-FINDING or FINDING gate16 line against the no-declaration fixture"
+else
+  common_test_fail "case(r-e): unexpected gate16 finding line against the no-declaration fixture" "$gate16_green_stdout"
+fi
+if [ "$gate16_green_rc" -eq 0 ]; then
+  common_test_pass "case(r-e): exit code 0 against the no-declaration fixture"
+else
+  common_test_fail "case(r-e): expected exit 0, got $gate16_green_rc" "$gate16_green_stdout"
 fi
 
 # =====================================================================

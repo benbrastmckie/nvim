@@ -135,7 +135,7 @@
 13	Whole-tree orphan detection (find_orphans, headless nvim)	gate13_run	-	true	30	free	false	@extensions,.claude
 14	Orchestrator runtime-file tracking policy (check-runtime-file-tracking.sh)	gate14_run	-	false	30	free	false	-
 15	Lifecycle status-var lint (lint-lifecycle-status-var.sh)	gate15_run	-	true	30	free	false	agent-system/extensions/*/skills/*/SKILL.md,agent-system/extensions/*/context/patterns/*
-16	hard_contracts migration warning (routing_hard/routing_agents_hard)	gate16_run	-	false	30	free	false	.claude/extensions/*/manifest.json
+16	routing_hard/routing_agents_hard absence guard	gate16_run	-	false	30	free	false	.claude/extensions/*/manifest.json
 17	Scoped-commit boundary lint (lint-scoped-commit-boundary.sh)	gate17_run	-	true	40	moderate	false	@extensions
 18	Task-lookup adoption lint (lint-task-lookup-adoption.sh)	gate18_run	-	true	30	free	false	@extensions
 19	Branch-gated section threshold lint (lint-branch-gated-sections.sh)	gate19_run	-	true	30	free	false	@extensions

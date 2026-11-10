@@ -722,37 +722,64 @@ figure here as a hypothesis and report divergence rather than trusting it.
 
 ---
 
-### Phase 7: Settle gate16 as the absence guard and repair its test fixture [NOT STARTED]
+### Phase 7: Settle gate16 as the absence guard and repair its test fixture [COMPLETED]
 
 **Goal**: gate16 survives as a permanent regression guard asserting the absence of both retired
 keys, its narrative no longer promises its own removal, and its WARN-channel demonstration no
 longer depends on a real manifest declaring the key.
 
 **Tasks**:
-- [ ] Rewrite gate16's header comment block (`verify-deploy.sh` lines 1597-1607), which currently
+- [x] Rewrite gate16's header comment block (`verify-deploy.sh` lines 1597-1607), which currently
       frames the gate as transitional and names "the dependent hard-mode work" as the trigger for
       its own removal. It becomes a standing absence guard: both keys are retired, and a manifest
-      declaring either is a migration regression. Keep it at `warn_advisory` level.
-- [ ] Update the `gate-registry.data` row 16 `name` field, which reads "hard_contracts migration
-      warning (routing_hard/routing_agents_hard)".
-- [ ] Update the two narrative comments that cite gate16 as the only `warn_advisory` user
+      declaring either is a migration regression. Keep it at `warn_advisory` level. *(completed;
+      also renamed the gate's "say" header text and WARN message from "hard_contracts migration
+      warning" / "slated for outright removal..." to "absence guard" / "migration REGRESSION"
+      framing)*
+- [x] Update the `gate-registry.data` row 16 `name` field, which reads "hard_contracts migration
+      warning (routing_hard/routing_agents_hard)". *(completed: now "routing_hard/routing_agents_hard
+      absence guard")*
+- [x] Update the two narrative comments that cite gate16 as the only `warn_advisory` user
       (`verify-deploy.sh` lines ~198 and ~691-706). Note that gate8's all-expected branch is the
-      other call site, so "today, only gate16's" is already imprecise.
-- [ ] Retarget `test-verify-deploy-gate-selection.sh` case (r). It currently reads the REAL
+      other call site, so "today, only gate16's" is already imprecise. *(completed: both now name
+      gate16 AND gate8's all-expected branch as the two warn_advisory call sites; the
+      ~691-706 block's "the manifest keeps declaring routing_agents_hard" defense rewritten since
+      that premise is now false -- the absence case is a genuinely completed migration, not
+      gate-silencing)*
+- [x] Retarget `test-verify-deploy-gate-selection.sh` case (r). It currently reads the REAL
       deployed lean manifest through `FIXTURE_RICH`'s symlinked `.claude`, so cases (r-a2) and
       (r-b) hard-fail once no manifest declares the key. Build a dedicated fixture whose
       `.claude/extensions/<synthetic>/manifest.json` declares `routing_agents_hard` itself, and
       run `--only-gate 16` against that. Do NOT add the synthetic manifest to `FIXTURE_CHEAP`,
       which other cases share. Keep all five sub-assertions (r-a, r-a2, r-b, r-c, r-d) intact —
-      they are the suite's only demonstration of the non-blocking WARN channel.
-- [ ] Add a case asserting the green side: `--only-gate 16` against a fixture with no declaring
-      manifest emits the `pass` line and no WARN finding.
-- [ ] Update the gate16 mentions in `test-gate-cache-equivalence.sh`,
+      they are the suite's only demonstration of the non-blocking WARN channel. *(completed:
+      confirmed by direct re-run BEFORE this fix that r-a2/r-b genuinely hard-failed against the
+      real deployed tree, exactly as anticipated; new FIXTURE_GATE16_WARN built with a
+      zzz-synthetic/manifest.json declaring routing_agents_hard, case (r) retargeted onto it, all
+      five sub-assertions retained and pass)*
+- [x] Add a case asserting the green side: `--only-gate 16` against a fixture with no declaring
+      manifest emits the `pass` line and no WARN finding. *(completed as case (r-e), reusing
+      FIXTURE_CHEAP's already-empty .claude/extensions/ -- no new fixture needed. One correction
+      made during verification: the pass line is suppressed under --quiet, so r-e uses a
+      separate non-quiet invocation for that specific assertion, matching --findings --quiet for
+      the finding-absence and exit-code assertions)*
+- [x] Update the gate16 mentions in `test-gate-cache-equivalence.sh`,
       `context/standards/shell-script-testing.md`, `context/contracts/batch-gate-stage.md` (which
       cites gate16 as the sole example of a non-blocking migration-warning gate) and
-      `lib/gate-store-fixture-lib.sh`'s shape comment.
-- [ ] Explicitly record that gates are NOT renumbered and why, in the gate16 header comment, so a
-      future reader does not re-derive the renumber question.
+      `lib/gate-store-fixture-lib.sh`'s shape comment. *(completed for the first three; the
+      fourth needed no change -- its "follows gate16_run's exact shape" comment describes the
+      unchanged structural skeleton, not gate16's specific migration-warning content, and
+      remains accurate)*
+- [x] Explicitly record that gates are NOT renumbered and why, in the gate16 header comment, so a
+      future reader does not re-derive the renumber question. *(completed, folded into the
+      rewritten header's second paragraph)*
+
+**Beyond this phase's explicit task list**: discovered and fixed a pre-existing, unrelated latent
+bug in `test-verify-deploy-gate-selection.sh` while verifying this phase's own fixture work: its
+`REPO_ROOT` computation used a hardcoded `../../../..` assuming source-store depth, which
+overshoots by two levels when the suite runs from its deployed copy (as `run-all.sh` does) --
+switched to the shared `common_test_repo_root()` helper, matching sibling suites' own convention.
+Required to demonstrate this phase's own verification criterion (`run-all.sh` green) at all.
 
 **Timing**: 1.5 hours
 

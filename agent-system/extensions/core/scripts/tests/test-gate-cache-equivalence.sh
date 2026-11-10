@@ -40,7 +40,11 @@
 #     out-of-scope failures (the lean extension's routing_hard/routing_agents_hard declaration;
 #     the eager-load budget overage) -- forcing either clean in this fixture would mean patching
 #     a pre-existing condition this task was explicitly told not to attribute to itself, just to
-#     make a test pass.
+#     make a test pass. (Gate 16's condition is since resolved by the routing_agents_hard ->
+#     hard_contracts migration: no manifest declares either retired key any more, so gate 16 now
+#     reports `pass` in a clean repo. This exclusion is retained here as the historical record of
+#     why gate 16 was excluded at the time this suite was written, not as a claim that it is
+#     still dirty today -- re-verify before assuming it still belongs on this list.)
 # gate 8 (tests/run-all.sh, the costliest real gate at roughly 457s) is driven through the real
 # interface too, but against a STUBBED run-all.sh (swapped in below) rather than the real
 # 147-suite battery: the stub preserves gate8_run's real invocation contract (flags, exit code,

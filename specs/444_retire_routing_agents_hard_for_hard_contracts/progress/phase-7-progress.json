@@ -1,0 +1,36 @@
+{
+  "phase": 7,
+  "phase_name": "Settle gate16 as the absence guard and repair its test fixture",
+  "started_at": "2026-11-10T09:40:00Z",
+  "last_updated": "2026-11-10T10:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite gate16 header comment, say/WARN text", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Update gate-registry.data row 16 name field", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 3, "description": "Update the two warn_advisory narrative comments", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Retarget test-verify-deploy-gate-selection.sh case (r) onto a synthetic fixture", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 5, "description": "Add green-side case (r-e)", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 6, "description": "Update gate16 mentions in test-gate-cache-equivalence.sh, shell-script-testing.md, batch-gate-stage.md", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "agent-system/extensions/core/context/contracts/batch-gate-stage.md"
+      ]},
+    {"id": 7, "description": "Record gates are not renumbered and why", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Fix pre-existing REPO_ROOT depth bug discovered during verification", "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Confirmed by direct re-run BEFORE the fix: test-verify-deploy-gate-selection.sh's case (r-a2)/(r-b) genuinely hard-failed against the real deployed tree once lean's manifest no longer declared routing_agents_hard (post Phase 4) -- exactly the failure mode this phase anticipated, not a surprise.",
+    "Discovered a pre-existing, unrelated bug (hardcoded source-store-depth REPO_ROOT computation) while verifying this phase's work via run-all.sh's deployed-mode invocation. Fixed using the shared common_test_repo_root() helper.",
+    "Final verification: lint-gate-registry.sh (7/7 pass, ids contiguous 1..27), verify-deploy.sh --only-gate 16 PASS against the real repo, test-verify-deploy-gate-selection.sh 27/27 pass (direct and via run-all.sh deployed mode), test-gate-cache-equivalence.sh's EXPECTED failure (git worktree creation error) is unrelated and pre-existing per run-all.sh's own baseline tracking."
+  ]
+}

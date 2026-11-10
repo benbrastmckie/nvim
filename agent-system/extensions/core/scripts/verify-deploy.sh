@@ -195,9 +195,9 @@
 #   already-failing gate. This mode is purely additive: with --findings absent, default-mode
 #   narrative output and exit codes are byte-for-byte unchanged.
 #
-#   A SEPARATE, NON-BLOCKING CHANNEL: a `warn_advisory()`-level notice (today, only gate16's
-#   routing_hard/routing_agents_hard migration nudge) begins with the literal token
-#   `WARN-FINDING ` instead -- deliberately NOT matched by the `^FINDING ` consumer filter above,
+#   A SEPARATE, NON-BLOCKING CHANNEL: a `warn_advisory()`-level notice (gate16's
+#   routing_hard/routing_agents_hard absence guard, and gate8's all-expected branch) begins with
+#   the literal token `WARN-FINDING ` instead -- deliberately NOT matched by the `^FINDING ` consumer filter above,
 #   so it never escalates into the blocking findings set that filter feeds a batch-gate consumer.
 #   It is still printed under --findings (visible to a human reader or a future severity-aware
 #   reader) and still drives every one of `warn()`'s other effects (the `[WARN]` stderr
@@ -688,25 +688,31 @@ warn() {
 # line prefix: "WARN-FINDING " instead of "FINDING ", a token the documented consumer filter
 # `grep '^FINDING '` (deploy-baseline-lib.sh's deploy_findings_snapshot, reached from
 # orchestrate-batch-gate.sh) does not match. Use this, never plain warn(), for a notice that must
-# NEVER escalate into the batch-blocking findings channel -- today, only gate16's
-# routing_hard/routing_agents_hard migration nudge, which is unattributable to any one task and
-# would otherwise block every batch perpetually until an unrelated, deferred migration lands.
+# NEVER escalate into the batch-blocking findings channel -- gate16's
+# routing_hard/routing_agents_hard absence guard (a reappearance of either retired key is
+# unattributable to any one task, since it could land via any extension's manifest edit) and
+# gate8's all-expected branch (a declared-expected test failure is visible but never
+# batch-blocking) are the two call sites.
 #
 # Deliberately a SEPARATE function rather than a shared severity parameter on warn(): warn()'s
 # other caller (gate20's per-file budget-ceiling check) relies on today's FINDING-based tracking
 # to stay batch-attributable (the finding names a specific file a task's own modified_files can
 # match), even though that WARN never fails the run either -- collapsing both callers onto one
 # severity-parameterized function would make it too easy to flip gate20's attributability by
-# accident while touching gate16. Giving the non-escalating case its own name keeps the two
-# intentions separable at every call site.
+# accident while touching gate16 or gate8. Giving the non-escalating case its own name keeps the
+# two intentions separable at every call site.
 #
 # This is NOT the gate-silencing the source-store boundary task's defect record forbids: that
-# refers specifically to deleting the manifest declaration (e.g. extensions/lean/manifest.json's
-# routing_agents_hard key) to make gate16 stop noticing. Here the manifest keeps declaring
-# routing_agents_hard, gate16_run() keeps running and keeps emitting its [WARN] stderr narrative,
-# its CHECKS increment, and its GATE_DIRTY_LIST cache-ineligibility side effect -- all unchanged.
-# Only the escalation of a deliberately non-blocking warning into the batch-blocking `^FINDING `
-# channel changes.
+# refers specifically to deleting a manifest declaration purely to stop a gate from noticing it,
+# while the underlying behavior the declaration controlled stays live. gate16's absence case is
+# the opposite: routing_agents_hard is retired as a genuinely completed migration -- the
+# resolution code path (`command-route-agent.sh`'s former hard branch) is deleted too, not merely
+# the manifest declaration that fed it -- so the `pass` line it now emits reports a real, durable
+# absence, not a silenced symptom of a still-live mechanism. The WARN path above remains ready for
+# the day either key regresses: `gate16_run()` keeps running, keeps emitting its `[WARN]` stderr
+# narrative, its CHECKS increment, and its GATE_DIRTY_LIST cache-ineligibility side effect on a
+# hit, unconditionally. Only the escalation of a deliberately non-blocking warning into the
+# batch-blocking `^FINDING ` channel changes.
 warn_advisory() {
   CHECKS=$((CHECKS + 1))
   GATE_RAN_LIST+=("$CURRENT_GATE")
@@ -1594,20 +1600,28 @@ say ""
 
 fi
 }
-# ── 16. hard_contracts migration warning (non-blocking) ───────────────────────
-# routing_hard was retired by the routing-ladder collapse (no manifest declares it any longer;
-# this gate's jq check keeps looking for it defensively, in case it ever reappears). The
-# surviving block, routing_agents_hard, is itself slated for outright removal once the one
-# remaining follow-on (migrating cslib/lean onto hard_contracts) lands -- NOT a migration of
-# routing_agents_hard's VALUES onto hard_contracts, which is an unrelated manifest key: it
-# resolves the list of behavioral-contract files injected into a --hard dispatch's prompt, never
-# a skill or agent name (see context/guides/manifest-routing-schema.md). This gate WARNS, never
-# fails: routing_agents_hard remains genuinely consulted by command-route-agent.sh until that
-# follow-on lands, so declaring it today is not yet an error -- only a removal-is-coming nudge
-# for new/updated extensions.
+# ── 16. routing_hard/routing_agents_hard absence guard (non-blocking) ─────────────────────────
+# STANDING REGRESSION GUARD, not a migration-in-progress warning: both keys are fully retired.
+# routing_hard was retired by the routing-ladder collapse; routing_agents_hard was retired by the
+# routing_agents_hard -> hard_contracts migration (every --hard dispatch now resolves the SAME
+# standard agent as base mode, with domain-specific behavioral differences injected via
+# hard_contracts -- an unrelated manifest key that resolves the list of behavioral-contract files
+# injected into a --hard dispatch's prompt, never a skill or agent name; see
+# context/guides/manifest-routing-schema.md). No manifest declares either key today, and this
+# gate's `pass` line confirms it. A manifest declaring either key again -- e.g. a new extension
+# copy-pasting a stale template, or a reverted edit -- is a migration REGRESSION, not a pending
+# follow-on. Gates are NOT renumbered to close the id this gate occupies: lint-gate-registry.sh
+# Check E requires contiguous ids, so deleting this gate would force renumbering every gate from
+# 17 onward across the full gate-id reference surface (verify-deploy.sh itself,
+# test-verify-deploy-gate-selection.sh, the gate cache, and seven other files) for a gate that
+# already costs nothing to keep -- it is the cheapest, fixture-selectable `warn_advisory` gate in
+# the registry and the ONLY gate case (q)'s own regression-test infrastructure (see
+# test-verify-deploy-gate-selection.sh's case r) uses to demonstrate the non-blocking WARN
+# channel exists at all. Stays at `warn_advisory` level deliberately: a reappearance is a defect
+# worth flagging loudly, but never one that should block a deploy on its own.
 gate16_run() {
 if gate_selected 16; then
-say "16. hard_contracts migration warning (routing_hard/routing_agents_hard)"
+say "16. routing_hard/routing_agents_hard absence guard"
 CURRENT_GATE="gate16"
 gate16_hits=0
 for gate16_manifest in "$CLAUDE_DIR"/extensions/*/manifest.json; do
@@ -1617,7 +1631,7 @@ for gate16_manifest in "$CLAUDE_DIR"/extensions/*/manifest.json; do
   if [ "$gate16_declares" = "true" ]; then
     gate16_hits=$((gate16_hits + 1))
     warn_advisory "${gate16_ext:-$gate16_manifest} still declares routing_hard/routing_agents_hard" \
-         "slated for outright removal once the dependent hard-mode work lands -- NOT a migration to hard_contracts, which is unrelated (it resolves injected contract files, not skill or agent names; see context/guides/manifest-routing-schema.md)"
+         "both keys are retired -- this is a migration REGRESSION, not a pending follow-on; see context/guides/manifest-routing-schema.md"
   fi
 done
 if [ "$gate16_hits" -eq 0 ]; then

@@ -1136,9 +1136,11 @@ A cold `--skip-unchanged` pass (empty `specs/.gate-cache/`, every gate actually 
 `test-gate-cache-equivalence.sh` flake under this host's concurrent load -- see below, not a
 cache-correctness defect), gate 10 (`validate-state.sh --deep` exceeded its pre-existing 30s
 timeout, unrelated to this task's `file_scope`), gate 14 (declares no `input_corpus`, `-`, by
-design -- never cache-eligible), and gate 16 (a `warn()`-only, always-firing pre-existing lean
-`routing_hard` advisory, which dirties the gate the same way a `fail()` would, per
-`gate-registry-lib.sh`'s own `GATE_DIRTY_LIST` contract).
+design -- never cache-eligible), and gate 16 (at the time of this measurement, a `warn()`-only,
+always-firing pre-existing lean `routing_hard` advisory, which dirtied the gate the same way a
+`fail()` would, per `gate-registry-lib.sh`'s own `GATE_DIRTY_LIST` contract -- since resolved by
+the routing_agents_hard -> hard_contracts migration: no manifest declares either retired key any
+more, so gate 16 now reports `pass` and caches cleanly in an otherwise-clean repo).
 
 A SECOND `--skip-unchanged` pass immediately afterward, with every input byte-identical, skipped
 **17 of those 20** cached gates outright (`[verify-deploy] ... (17 gate(s) skipped -- cached,
