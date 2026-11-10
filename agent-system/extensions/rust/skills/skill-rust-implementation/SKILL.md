@@ -38,7 +38,7 @@ operation="implement"
 
 ```bash
 if [ "$clean_flag" != "true" ]; then
-  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "" 2>/dev/null) || memory_context=""
+  memory_context=$(bash .claude/scripts/sapience-retrieve.sh "$description" "$task_type" "" 2>/dev/null) || memory_context=""
 fi
 ```
 
