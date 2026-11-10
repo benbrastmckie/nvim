@@ -531,28 +531,30 @@ and the deviation is recorded and investigated before committing.
 
 ## Testing & Validation
 
-- [ ] A four-field legacy `.decisions.json` entry still validates and still appends (writer suite).
-- [ ] An entry carrying `obligation` round-trips with the field and its text intact (writer suite).
-- [ ] An entry written without `--obligation` has no `obligation` key at all, asserted by
+- [x] A four-field legacy `.decisions.json` entry still validates and still appends (writer suite).
+- [x] An entry carrying `obligation` round-trips with the field and its text intact (writer suite).
+- [x] An entry written without `--obligation` has no `obligation` key at all, asserted by
       `jq 'has("obligation")'` rather than by string absence (writer suite).
-- [ ] An object-wrapped pre-existing decisions file is still refused and left byte-identical, with
+- [x] An object-wrapped pre-existing decisions file is still refused and left byte-identical, with
       `--obligation` supplied (writer suite).
-- [ ] The `flock` / additive-append / validate-both-sides / atomic-`mv` sequence is unchanged,
+- [x] The `flock` / additive-append / validate-both-sides / atomic-`mv` sequence is unchanged,
       confirmed by diff read and by the suite's existing mechanics cases still passing.
-- [ ] `## Prior Decisions` is still emitted with its exact heading string, and both preamble forms
+- [x] `## Prior Decisions` is still emitted with its exact heading string, and both preamble forms
       (plain and `POTENTIALLY SUPERSEDED` variant) are still emitted verbatim (composer suite).
-- [ ] An obligation-bearing entry renders an `Obligation:` line and the receiving-agent
+- [x] An obligation-bearing entry renders an `Obligation:` line and the receiving-agent
       instruction appears exactly once (composer suite).
-- [ ] A decisions file with no obligation-bearing entry renders byte-identically to pre-change
+- [x] A decisions file with no obligation-bearing entry renders byte-identically to pre-change
       output, with no instruction emitted (composer suite).
-- [ ] Regression polarity one: a route that does not discharge its stated obligation, with the
+- [x] Regression polarity one: a route that does not discharge its stated obligation, with the
       contrary dependency already in the plan's own findings, reaches the dispatch file carrying
       both the obligation and the duty to check it (composer suite).
-- [ ] Regression polarity two: the contract states the proposal-time structural-exclusion
+- [x] Regression polarity two: the contract states the proposal-time structural-exclusion
       self-check for an option set presented as open (composer suite, structural assertion).
-- [ ] No file landing under `agent-system/**` contains a task-number reference or
+- [x] No file landing under `agent-system/**` contains a task-number reference or
       record-versioning language (gate 4 plus a manual grep per phase).
-- [ ] The complete `verify-deploy.sh` gate set is green after the redeploy.
+- [x] The complete `verify-deploy.sh` gate set is green after the redeploy. *(completed with
+      exclusions — see Phase 5's `#### Reasoned Exclusions`: scoped narrowing is green; three
+      pre-existing, unrelated findings are excluded with evidence)*
 
 ## Artifacts & Outputs
 

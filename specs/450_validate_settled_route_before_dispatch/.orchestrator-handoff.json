@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 450,
-  "phase": "plan",
-  "dispatch_seq": 27,
-  "session_id": "sess_1794272256_212466_450",
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 28,
+  "session_id": "sess_1794272256_212466",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan adopting candidates (1)+(3) and recording the rejection of (2) on the Owner-ruling precedent found during research. Phase 1 adds an optional obligation field to the decisions writer plus schema/inventory docs and writer tests; Phase 2 amends user-decision-contract.md for the route-obligation requirement and the mirror-polarity proposal-time self-check; Phase 3 renders the obligation inside the existing Prior Decisions section with a verify-before-start instruction; Phase 4 pins both regression polarities; Phase 5 wires Move 4, redeploys, and runs the full gate set. All five Verification Tiers measured against suite_selection_select; plan validates clean with zero warnings.",
+  "summary": "Implemented all five plan phases: added an optional obligation field to .decisions.json (writer, schema, inventory, five new tests), required it at proposal time for ROUTE decisions in user-decision-contract.md with a mirror-polarity self-check, propagated it inline into the dispatch composer's Prior Decisions section with a verify-before-you-start instruction (seventeen new composer tests covering both regression polarities), wired Move 4's batched relay to pass it through to the writer, and redeployed the source store. All ten touched files confirmed byte-identical between source store and deployed tree.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md",
+      "summary": "Five-phase implementation making a settled route's obligation recordable, required, propagated, and pinned by regression tests for both polarities; redeployed and verified."
+    },
+    {
       "type": "plan",
       "path": "specs/450_validate_settled_route_before_dispatch/plans/01_validate-settled-route-before-dispatch.md",
-      "summary": "Five-phase plan to make a settled user-decision route's obligation recordable, required at proposal time, and propagated to the receiving agent; candidate (2) central validation rejected with the reasoning recorded."
+      "summary": "Five-phase plan, now fully terminal (four COMPLETED, one COMPLETED WITH EXCLUSIONS with a recorded Reasoned Exclusions block for three pre-existing unrelated gate findings)."
     }
   ]
 }

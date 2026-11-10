@@ -1,12 +1,58 @@
 {
-  "status": "in_progress",
-  "artifacts": [],
+  "status": "implemented",
+  "dispatch_seq": 28,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md",
+      "summary": "Five-phase implementation making a settled route's obligation recordable (writer), required at proposal time (contract), propagated to the implementer (composer), pinned by regression tests for both polarities, and wired through the loop's relay plus redeployed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an optional obligation field to .decisions.json entries (writer, schema, inventory, five new tests), required it at proposal time for ROUTE decisions in user-decision-contract.md with a mirror-polarity self-check, propagated it inline into the dispatch composer's Prior Decisions section with a verify-before-you-start instruction (seventeen new tests covering both regression polarities), wired Move 4's batched relay to pass it through, and redeployed with all ten touched files confirmed byte-identical between source store and deployed tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/standards/user-decision-contract.md",
+    "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-record-decision.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a test suite's subject-under-test resolution is deploy-tree-first (scripts/lib/common.sh's common_test_resolve_subject, mode absent or \"deploy-tree-first\"), running the suite with no environment override silently exercises the STALE deployed copy whenever a deployed file already exists -- it never falls back to the source-store edit until after a redeploy. To validate a source-store-only change ahead of a deliberately-batched final redeploy, set CORE_TEST_SUBJECT_MODE=source-store for that invocation. This is a documented, intentional PREFERENCE override (never on a caller that passed an explicit 'deployed' or 'source-store' mode, which are correctness requirements), existing specifically to support the pre/post-redeploy divergence signal multi-phase plans rely on.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-subject-resolution", "deploy-tree-first", "CORE_TEST_SUBJECT_MODE", "source-store", "redeploy"]
+    },
+    {
+      "content": "A plan phase whose own Verification instructs 'do not run the full verify-deploy.sh aggregator while another session is active; use the scoped narrowing' is not merely advisory -- in a multi-task /orchestrate batch, the dispatch's own .dispatch/ file may ALSO carry a Batch Gate Deferral directive requiring the same substitution for the exact same reason (concurrent-session gate-lock contention). When the final full-tier phase's independent full-aggregator run hits specs/.gate-lock contention, the fix is not to wait longer or retry -- it is to switch to the scoped discharge: the union of every suite named across the plan's own per-phase Tier Justifications (already proven passing), plus --only-gate for any doc/task-ref concern, plus direct diff/git-status checks for deploy-cleanliness. The complete gate set is deferred to the once-per-invocation batch stage, never independently re-attempted by one task's own dispatch.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["batch-gate-deferral", "gate-lock-contention", "scoped-narrowing", "verify-deploy", "multi-task-batch"]
+    },
+    {
+      "content": "When a shared, auto-generated index file (e.g. index-entries.json driving a line-count lint) needs a surgical fix for just this task's own entries, but running the regenerator tool over the whole repo also 'fixes' OTHER entries that are pre-existing, unrelated, uncommitted foreign changes already dirty in the working tree, do not blindly git-add the whole file. Instead: snapshot the working-tree file, run the regenerator, then programmatically revert every entry NOT belonging to this task back to its HEAD value (leaving only this task's own entries changed), commit that narrowed diff via git-commit-scoped.sh, then restore the full original working-tree content (with the foreign pending changes intact) so no other session's uncommitted work is swept into or lost from this task's commit.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["shared-index-file", "scope-containment", "surgical-commit", "foreign-uncommitted-changes", "line-count-regenerator"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "memory_candidates": [],
-  "dispatch_seq": 28
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
