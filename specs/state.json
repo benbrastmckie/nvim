@@ -62600,22 +62600,37 @@
     },
     {
       "project_name": "test_sweep_external_source_store_failures",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "agent-system",
       "effort": "medium",
       "title": "Test sweep permanently red where the source store is external",
       "description": "MEASURED during task 846's Phase 5. `run-all.sh` with no filter reported 26 failing suites of 156 (130 passed). Citations, from task 846's `issues.jsonl`: iss_1793736739875_sDC3Vt, iss_1793740991529_beV238.\n\nTwo of the 26 are the repo's own `known-failures.txt` baseline (`.claude/scripts/tests/known-failures.txt`) and are expected. The remaining 24 all trace to ONE cause: this repository has never had a local `agent-system/extensions` directory, its source store being external via `.claude-extensions.json`. Independently re-confirmed here: `agent-system/` does not exist at this repository's root.\n\nThat cause was confirmed directly on 7 of the 24: `test-askuserquestion-rehome.sh`, `test-deploy-propagation.sh`, `test-gate-cache-lib.sh`, `test-orchestrate-build-aux-dispatch.sh`, `test-routing-resolution.sh`, `test-update-task-status.sh`, `test-lint-dead-command-recommendations.sh`. A separate instance of the same cause: `test-manifest-scripts-sync.sh`'s no-`REPO_ROOT`-override assertion fails because `sync-manifest-scripts.sh` assumes a local extensions directory; its other 18 of 19 assertions pass.\n\nWHY IT MATTERS. A permanently-red sweep masks real findings: a genuinely new failure does not change the exit code and is invisible to anyone reading only the exit status. This is the same pathology the existing record `state_counter_archive_numbering_reconciliation` (see `specs/821_state_counter_archive_numbering_reconciliation/`) documented for `validate-state.sh`. Read that record for the argument rather than re-deriving it.\n\nDESIGN SPACE. Either (a) teach the affected suites to resolve the source store through `.claude-extensions.json`, or (b) declare the external-source-store case a recognised SKIP with a reason rather than a failure, or (c) extend the `known-failures.txt` baseline mechanism to cover it. Prefer a fix that makes the suites actually RUN over one that merely silences them, and say why if you choose silencing.\n\nVERIFY THE COUNT INDEPENDENTLY before implementing -- do not trust the 24/26/156 figures in this description. Re-run `run-all.sh` with no filter and re-derive them.\n\nACCEPTANCE: (1) `run-all.sh` in this repository either passes or fails only on genuine findings, with every environmental failure either fixed or explicitly declared with a reason. (2) The exit code again discriminates a new failure from the standing baseline. (3) No suite is silenced without a recorded reason.\n\nSOURCE STORE AND PROSE CONSTRAINTS. Resolve the source store via `jq -r '.extensions.core.source_dir' .claude-extensions.json`; `source_dir` is PER-EXTENSION, so a top-level `jq -r '.source_dir'` returns `null`, which must NOT be read as the key being absent. This repository resolves it to `/home/benjamin/.config/nvim/agent-system/extensions/core`. Edits land under `agent-system/extensions/core/**` and reach `.claude/**` only by deploy; never hand-author the deployed tree. The edited files lie outside `specs/**`, so no task-number references and no record-versioning language may appear in the deliverables (.claude/rules/no-task-references-in-deliverables.md, .claude/rules/no-record-versioning-in-deliverables.md). Durable anchors citable freely: script names, flag spellings, check names, exit codes, key names, message texts. The originating task number and the issue entry_ids belong in this description only, never in deliverable prose.\n\nPROVENANCE: raised during an orchestration run and approved at the orchestrate-lead level as an agent-system change request, dispatched through the conclusion stage's agent-system channel. No `suggested_channel` hint was carried on any citation, so there is no hint-versus-decision override to record.\n\n=== MIGRATION PROVENANCE (appended on migration; every line above this marker is the record verbatim) ===\nMigrated from the BimodalLogic repository, where this record was #848 (project_name `test_sweep_external_source_store_failures`), on 2026-11-08, under the ruling that all meta records live in this repository, following\ncontext/patterns/cross-repo-task-migration.md.\n\nCITATION RESOLVABILITY (procedure step 3, discharged by repo-qualified absolute path): the 2 iss_* id(s) cited above resolve ONLY in the source repository. Resolve with:\n  grep -l '<iss_id>' /home/benjamin/Projects/BimodalLogic/specs/*/issues.jsonl\nRead every bare specs/... path above as repo-qualified to /home/benjamin/Projects/BimodalLogic/.\nFILE SCOPE (procedure step 6, DERIVED): this record declared none, or declared only deployed paths. The scope\nabove was derived from the edit targets its own text names, and each path was verified to exist in this\nrepository before being written.\n",
       "dependencies": [],
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md",
+          "type": "report",
+          "summary": "Independently re-derives the run-all.sh failure counts (174 suites/37 failing in the external-source-store repro env, not 26/156), confirms 6 of the 8 originally-named suites are genuinely caused by the missing-local-agent-system condition, shows 2 are misattributed (they fail identically in a repo with a local source store), flags a separate ~29-suite unrelated regression cluster as out of scope, and recommends extending each confirmed suite's path resolution through .claude-extensions.json's source_dir (the same read deploy-freshness-lib.sh already performs) rather than silencing them via known-failures.txt."
+        }
+      ],
+      "next_artifact_number": 2,
       "project_number": 555,
       "created": "2026-11-03T21:35:11Z",
-      "last_updated": "2026-11-10T23:20:09Z",
+      "last_updated": "2026-11-10T23:42:53Z",
       "parent_task": null,
       "file_scope": [
+        "agent-system/extensions/core/scripts/deploy-root-guard.sh",
+        "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh",
+        "agent-system/extensions/core/scripts/sync-manifest-scripts.sh",
+        "agent-system/extensions/core/scripts/tests/known-failures.txt",
         "agent-system/extensions/core/scripts/tests/run-all.sh",
-        "agent-system/extensions/core/scripts/tests/known-failures.txt"
+        "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh",
+        "agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh",
+        "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-update-task-status.sh"
       ],
       "migrated_from": {
         "repo": "BimodalLogic",
@@ -62628,7 +62643,7 @@
         "migrated": "2026-11-08"
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
-      "session_id": "sess_1794343931_696ebd_555"
+      "session_id": "sess_1794343931_696ebd"
     },
     {
       "project_number": 556,
