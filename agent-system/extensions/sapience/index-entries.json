@@ -29,7 +29,7 @@
       "topics": ["sapience", "review-gate", "permissions", "staging"],
       "keywords": ["auto_approve", "sapience_remember", "sapience_wrapup", "sapience_handoff", "sapience_adddoc", "settings-fragment"],
       "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools, and the repository-scoped permission-grant tradeoff",
-      "line_count": 55,
+      "line_count": 60,
       "load_when": {},
       "on_demand": true
     },
