@@ -181,22 +181,21 @@ check_b() {
     local rel
     rel="$(rel_path "$manifest")"
 
-    for block in routing_agents; do
-      while IFS=$'\t' read -r op tt agent; do
-        [[ -z "$op" ]] && continue
-        local found=false
-        while IFS= read -r agent_file; do
-          [[ -n "$agent_file" ]] && found=true && break
-        done < <(find "$EXT_ROOT" -maxdepth 3 -path "*/agents/${agent}.md" -type f 2>/dev/null)
-        if [[ "$found" == true ]]; then
-          log_pass "$rel: $block.$op.$tt = $agent (agent file exists)"
-        else
-          log_fail "$rel: $block.$op.$tt = $agent (no such agent file under any extension's agents/)"
-        fi
-      done < <(jq -r --arg b "$block" \
-        '(.[$b] // {}) | to_entries[] | .key as $op | (.value | to_entries[]) | "\($op)\t\(.key)\t\(.value)"' \
-        "$manifest" 2>/dev/null)
-    done
+    local block="routing_agents"
+    while IFS=$'\t' read -r op tt agent; do
+      [[ -z "$op" ]] && continue
+      local found=false
+      while IFS= read -r agent_file; do
+        [[ -n "$agent_file" ]] && found=true && break
+      done < <(find "$EXT_ROOT" -maxdepth 3 -path "*/agents/${agent}.md" -type f 2>/dev/null)
+      if [[ "$found" == true ]]; then
+        log_pass "$rel: $block.$op.$tt = $agent (agent file exists)"
+      else
+        log_fail "$rel: $block.$op.$tt = $agent (no such agent file under any extension's agents/)"
+      fi
+    done < <(jq -r --arg b "$block" \
+      '(.[$b] // {}) | to_entries[] | .key as $op | (.value | to_entries[]) | "\($op)\t\(.key)\t\(.value)"' \
+      "$manifest" 2>/dev/null)
   done < <(find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort)
 }
 

@@ -103,22 +103,21 @@ assert2_failures=0
 assert2_checked=0
 while IFS= read -r manifest; do
   [ -z "$manifest" ] && continue
-  for block in routing_agents; do
-    while IFS=$'\t' read -r op tt agent; do
-      [ -z "$op" ] && continue
-      assert2_checked=$((assert2_checked + 1))
-      found=false
-      while IFS= read -r agent_file; do
-        [ -n "$agent_file" ] && found=true && break
-      done < <(find "$EXT_ROOT" -maxdepth 3 -path "*/agents/${agent}.md" -type f 2>/dev/null)
-      if [ "$found" != true ]; then
-        common_test_fail "Assert 2: $block.$op.$tt = $agent (manifest: ${manifest#"$EXT_ROOT"/}) names no existing agent file"
-        assert2_failures=$((assert2_failures + 1))
-      fi
-    done < <(jq -r --arg b "$block" \
-      '(.[$b] // {}) | to_entries[] | .key as $op | (.value | to_entries[]) | "\($op)\t\(.key)\t\(.value)"' \
-      "$manifest" 2>/dev/null)
-  done
+  block="routing_agents"
+  while IFS=$'\t' read -r op tt agent; do
+    [ -z "$op" ] && continue
+    assert2_checked=$((assert2_checked + 1))
+    found=false
+    while IFS= read -r agent_file; do
+      [ -n "$agent_file" ] && found=true && break
+    done < <(find "$EXT_ROOT" -maxdepth 3 -path "*/agents/${agent}.md" -type f 2>/dev/null)
+    if [ "$found" != true ]; then
+      common_test_fail "Assert 2: $block.$op.$tt = $agent (manifest: ${manifest#"$EXT_ROOT"/}) names no existing agent file"
+      assert2_failures=$((assert2_failures + 1))
+    fi
+  done < <(jq -r --arg b "$block" \
+    '(.[$b] // {}) | to_entries[] | .key as $op | (.value | to_entries[]) | "\($op)\t\(.key)\t\(.value)"' \
+    "$manifest" 2>/dev/null)
 done < <(find "$EXT_ROOT" -maxdepth 2 -name "manifest.json" -type f | sort)
 
 if [ "$assert2_failures" -eq 0 ]; then

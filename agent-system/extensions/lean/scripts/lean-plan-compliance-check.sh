@@ -260,7 +260,8 @@ find_decl_files() {
       prefix="${prefix:+$prefix.}${rest%%.*}"
       rest="${rest#*.}"
       local prefix_last="${prefix##*.}"
-      local ns_ere="^[[:space:]]*namespace[[:space:]]+([A-Za-z_][A-Za-z0-9_']*\.)*($(escape_dots "$prefix")|${prefix_last})[[:space:]]*$"
+      local ns_ere
+      ns_ere="^[[:space:]]*namespace[[:space:]]+([A-Za-z_][A-Za-z0-9_']*\.)*($(escape_dots "$prefix")|${prefix_last})[[:space:]]*$"
       while IFS= read -r f; do
         [ -n "$f" ] || continue
         grep -qE "$ns_ere" "$f" 2>/dev/null && files="${files:+$files
