@@ -35,6 +35,11 @@ require_file() {
 
 SUT_SRC="$CORE_DIR/orchestrate-cycle-postflight.sh"
 require_file "$SUT_SRC"
+# Source-store byte-identity invariant: this checksum is re-captured at the very end of the
+# suite and compared, so any future edit that reintroduces a write to the real source-store
+# file (rather than the sandbox copy under test) fails this suite loudly instead of relying on
+# an external observer noticing a concurrency window.
+SUT_SRC_CHECKSUM_BEFORE="$(sha256sum "$SUT_SRC" | awk '{print $1}')"
 for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
          dispatch-strand-probe.sh \
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
@@ -4415,6 +4420,22 @@ if jq -e --arg t "$imf4_num" '.invocation_modified_files[$t] == ["/tmp/absolute/
   common_test_pass "invocation_modified_files (4): the absolute-path entry is recorded under its task's key unmodified"
 else
   common_test_fail "invocation_modified_files (4): expected the absolute-path entry recorded verbatim: $(cat "$imf4_mt_file" 2>/dev/null)"
+fi
+
+# ─── Source-store invariants: unconditional, never skipped -- the whole point of each check is
+# that it must run every time, so a check that could silently no-op would provide no guarantee.
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+sut_src_checksum_after="$(sha256sum "$SUT_SRC" | awk '{print $1}')"
+if [ "$sut_src_checksum_after" = "$SUT_SRC_CHECKSUM_BEFORE" ]; then
+  common_test_pass "invariant: $SUT_SRC is byte-identical before and after this full run (the real source store was never written)"
+else
+  common_test_fail "invariant: $SUT_SRC changed during this run -- before=$SUT_SRC_CHECKSUM_BEFORE after=$sut_src_checksum_after"
+fi
+anchor_bak_residue="$(find "$CORE_DIR" -name "*.anchor-bak" 2>/dev/null)"
+if [ -z "$anchor_bak_residue" ]; then
+  common_test_pass "invariant: no *.anchor-bak file survives under $CORE_DIR"
+else
+  common_test_fail "invariant: *.anchor-bak residue found under $CORE_DIR: $anchor_bak_residue"
 fi
 
 echo ""

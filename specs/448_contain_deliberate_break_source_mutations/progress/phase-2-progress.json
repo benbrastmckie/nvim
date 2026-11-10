@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Pin the source-store byte-identity invariant inside the suite",
+  "started_at": "2026-11-09T23:16:00Z",
+  "last_updated": "2026-11-09T23:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture checksum of CORE_DIR SUT near top", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Recompute checksum at end, emit byte-identity case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Add anchor-bak absence case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Make both cases unconditional", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm both counted into PASSED/FAILED", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -234,23 +234,23 @@ proceeding.
 
 ---
 
-### Phase 2: Pin the source-store byte-identity invariant inside the suite [NOT STARTED]
+### Phase 2: Pin the source-store byte-identity invariant inside the suite [COMPLETED]
 
 **Goal**: The suite itself fails loudly if any future edit reintroduces a write to the real
 source-store file, rather than relying on an external observer noticing.
 
 **Tasks**:
-- [ ] Near the suite's top (after `CORE_DIR` is resolved and before the first `setup_sandbox`),
+- [x] Near the suite's top (after `CORE_DIR` is resolved and before the first `setup_sandbox`), *(completed)*
       capture a checksum of `$CORE_DIR/orchestrate-cycle-postflight.sh` into a variable.
-- [ ] At the very end of the suite (before the pass/fail summary), recompute the checksum and
+- [x] At the very end of the suite (before the pass/fail summary), recompute the checksum and *(completed)*
       emit a counted `common_test_pass`/`common_test_fail` case asserting byte-identity, with the
       failure message naming the file and both checksums.
-- [ ] Add a second counted case at the same point asserting that no `*.anchor-bak` file exists
+- [x] Add a second counted case at the same point asserting that no `*.anchor-bak` file exists *(completed)*
       anywhere under `$CORE_DIR` (`find "$CORE_DIR" -name "*.anchor-bak"` yields nothing),
       failing with the offending paths listed.
-- [ ] Make both cases unconditional (never skipped), per the standard's loud-skip discipline --
+- [x] Make both cases unconditional (never skipped), per the standard's loud-skip discipline -- *(completed)*
       a check that can silently do nothing provides no guarantee.
-- [ ] Confirm both new cases are counted into `$PASSED`/`$FAILED` so the suite's exit code
+- [x] Confirm both new cases are counted into `$PASSED`/`$FAILED` so the suite's exit code *(completed)*
       reflects them.
 
 **Timing**: 0.5 hours
