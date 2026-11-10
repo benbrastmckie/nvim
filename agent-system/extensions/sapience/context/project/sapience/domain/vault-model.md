@@ -32,7 +32,9 @@ desktop launchers. Its complete set of CLI modes is:
 - `--refresh-cache` -- background cache refresh for the statusline fast path.
 
 **There is no `--search` mode and no `--ask` mode.** Any shell-side query that needs the vault's
-own search or question-answering must go through the separate `sf1 "question"` one-shot CLI, or
-a direct HTTPS call to `/v1/ask` -- both are a network round-trip, never a local lookup. This is
-why no per-dispatch, shell-invoked retrieval mechanism for Sapience exists in this extension; see
-`subagent-orientation.md` for the full reasoning.
+own search or question-answering must go through the separate `sf1 "question"` one-shot CLI, a
+direct HTTPS call to `/v1/ask`, or `GET /v1/search` -- each a network round-trip, never a local
+lookup. The one per-dispatch, shell-invoked retrieval mechanism this extension does provide,
+`sapience-retrieve.sh`, calls `/v1/search` directly rather than through `mcp.py`; see
+`per-repo-scoping.md` for its repo-tag-filtered scoping mechanism and `subagent-orientation.md`
+for why a per-dispatch injection is the accepted shape.
