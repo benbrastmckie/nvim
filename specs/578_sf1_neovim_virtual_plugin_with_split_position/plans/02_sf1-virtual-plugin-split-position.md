@@ -466,29 +466,29 @@ read-through confirming every hunk is prose.
 
 ---
 
-### Phase 6: Verification and Acceptance [NOT STARTED]
+### Phase 6: Verification and Acceptance [COMPLETED]
 
 **Goal**: Prove the whole integration loads clean, the design constraints hold mechanically, and
 hand the user the short interactive checklist that cannot be run headlessly.
 
 **Tasks**:
-- [ ] Run the full headless suite below and record each result.
-- [ ] Assert the primary design constraint mechanically, not by reading:
+- [x] Run the full headless suite below and record each result.
+- [x] Assert the primary design constraint mechanically, not by reading:
       `grep -rn "require(.neotex" lua/neotex/plugins/ai/sapience/` must return **exactly one**
       line (the backend require in `init.lua`), and `grep -rn "vim.g.neotex\|neotex\.plugins\.ai\.shared"
       lua/neotex/plugins/ai/sapience/` must return none.
-- [ ] Assert the prohibitions mechanically: `git status --short` shows no modification to
+- [x] Assert the prohibitions mechanically: `git status --short` shows no modification to
       `lua/neotex/plugins/ai/shared/picker/ai-tool-picker.lua` or `shared/picker/config.lua`,
       and `grep -rn "sf1\|Sf1" lua/neotex/plugins/ai/shared/` returns nothing.
-- [ ] Assert no `/state` or `/delegate` affordance was built:
+- [x] Assert no `/state` or `/delegate` affordance was built:
       `grep -rniE "delegate|/state|v1/sf1" lua/neotex/plugins/ai/sapience/` returns nothing
       outside the README's own prose, if anything at all.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Before acting on any
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. *(deviation: altered -- the full run failed 5 of 43 checks (gates 8, 10, 20, 22, 24); every failure was attributed to pre-existing core-extension deploy staleness or unrelated repository state, none to a path this task touched, and recorded via issue-record.sh per this phase's own instruction rather than repaired)* Before acting on any
       failure, attribute it to a path this task touched; a failure tracing solely to the
       pre-existing core-extension deploy staleness flagged in this dispatch's context is recorded
       via `issue-record.sh` and reported, **not** repaired here (a redeploy is whole-tree
       regeneration, outside this plan's declared scope).
-- [ ] Write the manual acceptance checklist into the implementation summary for the user to run
+- [x] Write the manual acceptance checklist into the implementation summary for the user to run
       interactively, verbatim from the task's own verification line: `:Sf1` opens a working sf1
       REPL in a bottom split; `:lua require('neotex.plugins.ai.sapience.init').set_position("right")`
       then `:Sf1` shows it as a right split; sf1 and Claude Code are visible simultaneously;
