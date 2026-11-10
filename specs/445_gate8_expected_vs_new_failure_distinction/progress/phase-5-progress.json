@@ -1,0 +1,25 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and full gate set",
+  "started_at": "2026-11-10T03:06:00Z",
+  "last_updated": "2026-11-10T03:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read every touched file immediately before redeploy, check for foreign changes", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh to regenerate the deployed .claude/ tree", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run the complete gate set with an explicit source-store TARGET", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm Gate 8's own line reports the expected real-world outcome", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Stage and commit only this task's own files by explicit file list", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.3-4",
+      "description": "Plan's own expectation: Gate 8's real-world outcome today is a clean [WARN] all-expected verdict, and the complete gate set passes.",
+      "type": "altered",
+      "reason": "The dispatch carries a Batch Gate Deferral directive narrowing this phase's own closure to a scoped --only-gate 3,4,9 check rather than requiring the full battery clean. Independently, the live corpus today carries 7 NEW failures (unrelated to this task's own file_scope, confirmed via git log against tasks 409/418/328/435) alongside the 2 declared-expected ones -- a premise shift from the plan's original expectation of a clean all-expected corpus. Gate 8 correctly FAILs given these NEW failures, which is the fix working as designed; resolving the 7 unrelated failures is out of this task's scope and deferred to the once-per-batch stage per the dispatch directive.",
+      "annotation": "*(deviation: altered -- see Phase 5 task check-off and Verification for the full evidence and the Batch Gate Deferral application)*"
+    }
+  ]
+}
