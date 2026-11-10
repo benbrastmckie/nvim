@@ -1269,9 +1269,14 @@ fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 19: --batch-gate-deferral -- flag absent yields a dispatch file byte-identical to a
-# pre-flag build; flag present on implement emits the "## Batch Gate Deferral" section; flag
-# present on research/plan emits nothing (the section is nested inside this SUT's own
-# `if [ "$phase" = "implement" ]` block, so non-implement phases never even consult the flag).
+# pre-flag build; flag present on implement emits the "## Batch Gate Deferral" section,
+# positioned immediately after "## Description" and ahead of "## Plan"/"## Phase Mission" (so a
+# reader working top-down meets the verification-scoping constraint before the plan body and
+# phase mission it narrows); flag present on research/plan emits nothing -- the SUT's emission
+# guard is now the EXPLICIT conjunction `[ "$phase" = "implement" ] && [ "$batch_gate_deferral_flag"
+# = "true" ]` (no longer block-nesting, since the section was hoisted out of the
+# `if [ "$phase" = "implement" ]` block it used to sit inside), so non-implement phases never
+# emit the section even though the flag itself is phase-agnostic at the CLI layer.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 common_test_info "Group 19: --batch-gate-deferral emits '## Batch Gate Deferral' ONLY on implement (byte-identity otherwise)"
 run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890
@@ -1324,9 +1329,10 @@ fi
 # are unaffected by these two stub files.
 rm -f "$FIXTURE/.claude/scripts/tests/run-all.sh" "$FIXTURE/.claude/scripts/verify-deploy.sh"
 
-# research/plan: this SUT nests the whole batch-gate-deferral emission inside its own
-# `if [ "$phase" = "implement" ]` block (unlike --gate/--compare, which are phase-agnostic
-# Identity-section lines) -- so the flag is a silent no-op on research and plan, by construction.
+# research/plan: the SUT's emission guard is the explicit conjunction
+# `[ "$phase" = "implement" ] && [ "$batch_gate_deferral_flag" = "true" ]` (unlike
+# --gate/--compare, which are phase-agnostic Identity-section lines) -- so the flag is a silent
+# no-op on research and plan, by construction of that conjunct, not by any caller-side scoping.
 run_sut research --clean --seq 19 --batch-gate-deferral
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_research_bgd="$(cat "$LAST_DISPATCH_FILE")"
@@ -1342,6 +1348,71 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
 else
   common_test_fail "plan (--batch-gate-deferral): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi
+
+# Position case: build one dispatch carrying all three headings at once (implement, --hard,
+# --phase-number, and --batch-gate-deferral) and assert, NUMERICALLY, that the deferral heading
+# sits below "## Description" and strictly above both "## Plan" and "## Phase Mission" -- so a
+# later reordering back toward the old (post-Plan) siting fails this suite instead of silently
+# reintroducing the read-too-late defect. Uses the same `grep -n ... | head -1 | cut -d: -f1`
+# positioned-line idiom the hard-mode Wait-Discipline-vs-User-Decision-Contract ordering guard
+# above already uses.
+run_sut implement --clean --hard --phase-number 3 --seq 19pos --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  description_line="$(grep -n "^## Description$" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)"
+  deferral_line="$(grep -n "^## Batch Gate Deferral$" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)"
+  plan_line="$(grep -n "^## Plan$" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)"
+  mission_line="$(grep -n "^## Phase Mission$" "$LAST_DISPATCH_FILE" | head -1 | cut -d: -f1)"
+  if [ -n "$deferral_line" ] && [ -n "$plan_line" ] && [ "$deferral_line" -lt "$plan_line" ]; then
+    common_test_pass "position: Batch Gate Deferral precedes Plan"
+  else
+    common_test_fail "position: expected Batch Gate Deferral ($deferral_line) before Plan ($plan_line)"
+  fi
+  if [ -n "$deferral_line" ] && [ -n "$mission_line" ] && [ "$deferral_line" -lt "$mission_line" ]; then
+    common_test_pass "position: Batch Gate Deferral precedes Phase Mission"
+  else
+    common_test_fail "position: expected Batch Gate Deferral ($deferral_line) before Phase Mission ($mission_line)"
+  fi
+  if [ -n "$description_line" ] && [ -n "$deferral_line" ] && [ "$deferral_line" -gt "$description_line" ]; then
+    common_test_pass "position: Batch Gate Deferral follows Description (cannot drift above it)"
+  else
+    common_test_fail "position: expected Batch Gate Deferral ($deferral_line) after Description ($description_line)"
+  fi
+else
+  common_test_fail "position: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Heading-string case: the exact literal "## Batch Gate Deferral" must still be present in every
+# known prose consumer. Resolve each via the suite's existing deploy-first / source-store-fallback
+# convention (common_test_resolve_subject-style: try the deployed mirror under REPO_ROOT, fall
+# back to the source-store tree under SCRIPT_DIR/../..), skipping with an explicit note rather
+# than failing when a consumer is genuinely absent from this repository shape.
+bgd_consumers=(
+  "context/contracts/batch-gate-stage.md"
+  "agents/general-implementation-agent.md"
+  "context/contracts/phase-closure.md"
+  "context/formats/plan-format.md"
+  "docs/architecture/orchestrate-state-machine.md"
+)
+for consumer_rel in "${bgd_consumers[@]}"; do
+  consumer_deployed="$REPO_ROOT/.claude/$consumer_rel"
+  consumer_source="$SCRIPT_DIR/../../$consumer_rel"
+  if [ -f "$consumer_deployed" ]; then
+    consumer_path="$consumer_deployed"
+  elif [ -f "$consumer_source" ]; then
+    consumer_path="$consumer_source"
+  else
+    consumer_path=""
+  fi
+  if [ -n "$consumer_path" ]; then
+    if grep -qF '## Batch Gate Deferral' "$consumer_path"; then
+      common_test_pass "heading-string: $consumer_rel still matches the literal heading"
+    else
+      common_test_fail "heading-string: $consumer_rel no longer matches the literal '## Batch Gate Deferral' heading"
+    fi
+  else
+    common_test_info "heading-string: $consumer_rel not found in this repository shape (deployed or source-store) -- skipping, not failing"
+  fi
+done
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 20: artifact-round resolution -- an absent next_artifact_number key plus a pre-supplied,

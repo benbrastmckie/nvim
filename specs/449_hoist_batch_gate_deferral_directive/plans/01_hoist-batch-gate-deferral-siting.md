@@ -268,30 +268,34 @@ that and treat it as a scope finding rather than absorbing it silently.
 
 ---
 
-### Phase 3: Pin the emitted position and the heading string [NOT STARTED]
+### Phase 3: Pin the emitted position and the heading string [COMPLETED]
 
 **Goal**: a later reordering, or a rename of the heading, fails `test-orchestrate-build-dispatch.sh`
 instead of silently reintroducing the defect.
 
 **Tasks**:
-- [ ] Extend Group 19 with a position case: build one dispatch carrying all three headings at
+- [x] Extend Group 19 with a position case: build one dispatch carrying all three headings at
       once (`implement` with `--hard`, `--phase-number N`, and `--batch-gate-deferral`), then
       `grep -n` each of `^## Batch Gate Deferral`, `^## Plan`, `^## Phase Mission`, and assert
       numerically that the deferral heading's line number is less than both others — using the
-      same `grep -n ... | head -1 | cut -d: -f1` plus named pass/fail idiom Group 15's
-      positioned-block case already uses.
-- [ ] Add an adjacent assertion that the deferral heading's line number is greater than
+      same `grep -n ... | head -1 | cut -d: -f1` plus named pass/fail idiom the hard-mode
+      Wait-Discipline-vs-User-Decision-Contract ordering guard already uses (the research's
+      "Group 15" reference drifted; the idiom lives in what is now the hard-mode-implement case
+      above Group 15). *(completed)*
+- [x] Add an adjacent assertion that the deferral heading's line number is greater than
       `^## Description`'s, so the section cannot drift up above the description it follows.
-- [ ] Add a heading-string case: assert the exact literal `## Batch Gate Deferral` is present in
+      *(completed)*
+- [x] Add a heading-string case: assert the exact literal `## Batch Gate Deferral` is present in
       each prose consumer — `agents/general-implementation-agent.md`,
       `context/contracts/phase-closure.md`, `context/formats/plan-format.md`,
       `context/contracts/batch-gate-stage.md`,
       `docs/architecture/orchestrate-state-machine.md` — resolving each by the suite's existing
       deploy-first / source-store-fallback convention and skipping with an explicit note rather
-      than failing if a consumer is genuinely absent from this repository shape.
-- [ ] Update Group 19's own header comment and its research/plan absence labels, which currently
+      than failing if a consumer is genuinely absent from this repository shape. *(completed:
+      all five resolved from the deployed tree in this repository shape)*
+- [x] Update Group 19's own header comment and its research/plan absence labels, which currently
       explain the absence by the retired "nested inside this SUT's own `if [ "$phase" =
-      "implement" ]` block" mechanism; state the explicit-guard mechanism instead.
+      "implement" ]` block" mechanism; state the explicit-guard mechanism instead. *(completed)*
 
 **Timing**: 1 hour
 
