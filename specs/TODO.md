@@ -1,5 +1,5 @@
 ---
-next_project_number: 579
+next_project_number: 580
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 579
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,484,490,491,498,499,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,476,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,423,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 390,399,402,436,438,454,501,508,547,552,570,571 | 313,391,398,439,458,461,472,476,486,518,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,461,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577 | 390,402,501,547,552 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -26,7 +26,7 @@ next_project_number: 579
 369 [PLANNED] — Orphan sweep for deployed entries removed from the source...
   └─ 527 [NOT STARTED] — Assert the deployed hook registration SET matches the...
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
-423 [RESEARCHED] — Resolve test-verify-deploy-context-budget.sh's eager-load...
+423 [PLANNING] — Resolve test-verify-deploy-context-budget.sh's eager-load...
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
 431 [PLANNED] — Record the gate-enforced verbatim-duplication exclusion class...
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
@@ -38,7 +38,7 @@ next_project_number: 579
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
-461 [RESEARCHED] — Rule on and close the V7 refusal of a positive directory...
+461 [PLANNING] — Rule on and close the V7 refusal of a positive directory...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -51,6 +51,7 @@ next_project_number: 579
 503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
   └─ 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
+    └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
 515 [NOT STARTED] — Rebase the bounded-wait guidance on the measured...
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the... (see above)
@@ -73,7 +74,7 @@ next_project_number: 579
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 498 [HOLD] — Replace the email preference harvest tally substrate
-499 [RESEARCHED] — Retarget the store-coupled distill sub-modes and retire the...
+499 [PLANNING] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
@@ -176,6 +177,49 @@ next_project_number: 579
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 579. Record the selector's full-path-set aggregation rule in the Tier Justification authoring contract
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 564
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json -- source_dir is a PER-EXTENSION key, not a top-level one: `jq -r '.extensions.core.source_dir' .claude-extensions.json` yields /home/benjamin/.config/nvim/agent-system/extensions/core. Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system change request) of an /orchestrate invocation, session sess_1794339852_4b2213. User-approved at the lead level and dispatched to the meta builder for task creation only.
+
+SEVERITY: minor per the citation, but structurally broad: it affects every planner composing a Tier Justification for any multi-path phase, not one plan.
+
+CITATION: entry iss_1794340746440_jpNxog in specs/578_sf1_neovim_virtual_plugin_with_split_position/issues.jsonl (class verification-gap, severity minor, phase plan, dispatch_seq 2). Verbatim what_happened: "First draft of the plan cited real suite names from suite_selection_select in two Tier Justifications, but validate-artifact.sh flagged both as fabricated: the selector aggregates across ALL of a phase's touched paths, and one path per phase (sapience-plugin.lua, docs/MAPPINGS.md) returns __FULL_SWEEP__, making the whole phase a sentinel case. Fixed by switching both to the sub-case (c) --only-gate 4 form. Lesson: run the selector over the phase's full path set, not per path."
+
+THE DEFECT IS AN AUTHORING-CONTRACT GAP, NOT A MISSING MECHANISM DESCRIPTION. The aggregation rule is already stated canonically in two places, and both were verified present by direct read of the source store at filing time (line numbers move; re-derive before editing):
+  (1) context/standards/shell-script-testing.md, in its "Mapping a touched file to its suite" subsection, stratum 3: "A single unmappable path among several touched paths escalates the entire multi-path call (the aggregation rule is 'union of per-path selections, except one unmappable path escalates everything')."
+  (2) scripts/lib/suite-selection-lib.sh's PUBLIC API header for suite_selection_select: "either the single line $SUITE_SELECTION_FULL_SWEEP_SENTINEL (any touched path unmappable), or the sorted, de-duplicated UNION of resolved suite basenames across every given path".
+The library's implementation agrees: suite_selection_select loops its arguments and returns the sentinel immediately on the first path _ssl_resolve_one cannot map, discarding suites already accumulated for earlier paths.
+
+WHAT THE AUTHORING CONTRACT ACTUALLY SAYS, and why an author following it correctly still gets it wrong. context/formats/plan-format.md's Verification Tiers section already imposes the measurement obligation -- a below-full tier's claim "is honest only when the author ran suite_selection_select over the phase's Files to modify paths and the line's suite names or sentinel match that output verbatim". But its __FULL_SWEEP__ case bullet then describes the sentinel per path: the selector "returns the sentinel __FULL_SWEEP__ for a touched path with no mapped suite". Nothing on that page tells the author the invocation is ONE call over the phase's full declared path set rather than one call per path, and nothing names the mixed-phase consequence. An author who reads "for a touched path", runs the selector path by path, and reads real suite names off the paths that do map has satisfied the letter of the obligation and produced a claim the checker calls fabricated.
+
+THE CHECKER AND THE AUTHOR DISAGREE BY CONSTRUCTION. scripts/validate-artifact.sh's per-phase Tier Justification measurement calls `suite_selection_select "${_tj_touched[@]}"` as a single MULTI-PATH call and compares that output against the author's claim. A per-path-composing author is therefore judged against a different invocation than the one they ran, in both directions: the fabrication warning the citation records, and the symmetric "under-verifies ... additionally returns" warning for the opposite composition.
+
+THE ASK -- state the aggregation rule where plan authors read it, as prose guidance only:
+(1) In context/formats/plan-format.md's Verification Tiers section, make the measurement obligation explicit about invocation shape: the selector is run ONCE over the phase's complete declared Files-to-modify path set, never per path, and per-path results are never composed by hand. Cite shell-script-testing.md's existing canonical statement of the rule by reference; do NOT restate the mechanism a third time or fork its wording.
+(2) In the same section's __FULL_SWEEP__ case bullet, name the mixed-phase consequence: one unmapped path among otherwise-mapped paths makes the WHOLE phase a sentinel case, so the honest justification is the applicable (a)/(b)/(c) sub-case form and not the real suite names the phase's other paths map to. The citation's own fix -- switching to the sub-case (c) --only-gate 4 form -- is the worked instance of this.
+(3) In agents/planner-agent.md, extend the tier bullet's existing one-line pointer (which today names the two narrowing mechanisms and "the __FULL_SWEEP__ honesty case") so it carries the full-path-set invocation rule rather than leaving it to be inferred from plan-format.md.
+(4) Keep every word of the existing measurement obligation intact. This record adds the invocation shape the obligation was always meant to carry; it weakens no tier, relaxes no honesty requirement, and introduces no new field.
+
+NON-GOAL, AND WHERE THAT HALF LIVES INSTEAD: no change to validate-artifact.sh, to its warning text, or to its pass/fail behaviour, and no change to suite-selection-lib.sh or its header. The validator's warning text does not name the aggregation rule that caused the finding, and amending it is a real improvement -- but the open record fix_validateartifactsh_tier_justification_false_po already declares scripts/validate-artifact.sh, scripts/lib/suite-selection-lib.sh and both their suites, already documents this same per-path-versus-multi-path asymmetry in its appended corroboration section, and already flags the caller-facing composition contract as its own loose end ("A line in the header, or in whatever document instructs an author to run the selector for a Tier Justification, would close the authoring half of this defect alongside the mechanical half"). This record IS that authoring half, scoped to the authoring documents alone; the warning-text and library-header halves belong to that record, which owns those files. Do not claim them here.
+
+DEPENDENCY, FILED AS AN EDGE RATHER THAN A NOTE: depends on fix_validateartifactsh_tier_justification_false_po, which is chartered to make the selector's set semantics compositional -- "A set containing both sentinel-mapped and non-sentinel members must yield the union of what its members require, not the sentinel alone. Treat the sentinel as a floor contributed by its own member, not a ceiling imposed on the set." If that lands first, the mixed-phase consequence in ask (2) changes substance: a mixed set would no longer collapse to the sentinel, and a phase like the citation's would resolve to its mapped paths' suites. Documenting today's short-circuit behaviour before that change would produce guidance the change immediately invalidates. Land the mechanical record first, then re-derive the actual set semantics against the changed selector before writing ask (2). Ask (1) and ask (3) -- the one-call-over-the-full-set invocation rule -- hold either way, since the checker calls the selector multi-path under both semantics. That record itself depends on suite_selection_non_core_extension_paths, so this record sits third in that chain.
+
+TERRITORY: context/formats/plan-format.md is declared by many open records (notably baseline_relative_gate_criteria, redeploy_phase_declaration_and_gate_criterion and document_that_the_validatestatesh_cycle_check_requ, each of which also declares agents/planner-agent.md and so is a superset-shaped overlap of this record's whole scope). Subject matter is disjoint in every case -- none touches the Tier Justification measurement obligation's invocation shape -- so no further edges are filed. If any of them is admitted to the same batch as this record, batch them rather than excluding either, per context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default".
+
+VERIFY, bearing in mind this is a pure-guidance markdown change with no executable surface:
+- `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim` (doc-lint and task-reference lint; TARGET must be the repository root holding BOTH a deployed .claude/ tree and the agent-system source store -- passing <source_dir> itself cannot work, since a source-store directory has no .claude/ subdirectory and gate0 exits 2 before gate selection is consulted).
+- Diff read-through of both edited files for the record-versioning and task-reference rules.
+- Self-check the amendment against its own subject: compose a Tier Justification for this task's own plan by running suite_selection_select ONCE over the phase's full declared path set, and confirm the resulting plan validates with 0 Tier Justification warnings under `bash .claude/scripts/validate-artifact.sh <plan-path> plan`. A guidance amendment about running the selector correctly that is itself filed with an unmeasured justification would be self-refuting.
+- Redeploy via deploy-headless.sh and confirm the deployed copies match.
+
+---
 
 ### 578. Sf1 neovim virtual plugin with split position
 - **Status**: [COMPLETED]
@@ -6015,7 +6059,7 @@ Recorded here so research does not revisit them:
 ---
 
 ### 499. Retarget the store-coupled distill sub-modes and retire the memory extension
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 496, Task 497
@@ -7553,7 +7597,7 @@ Do not relitigate the advisory-vs-blocking status of the `--check` verdict. Do n
 ---
 
 ### 461. Rule on and close the V7 refusal of a positive directory pathspec for a git rm --cached untracking whose content is still on disk
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328, Task 430, Task 435, Task 446, Task 448
@@ -9220,7 +9264,7 @@ DUPLICATE CHECK PERFORMED. Three neighbours were read in full and rejected as ab
 ---
 
 ### 423. Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (measured 67,088 B vs. baseline_bytes 66,100 B)
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
