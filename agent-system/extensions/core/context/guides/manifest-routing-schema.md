@@ -93,6 +93,52 @@ Example:
 }
 ```
 
+### Override Contract Placement Convention
+
+Both a plain additive path and a `replace:` directive's `override-path` resolve through the same
+renderer line: `orchestrate-build-dispatch.sh`'s Stage 3.5 emits
+`hard_contracts_block+="- context/contracts/${c}"` verbatim, for every entry `c` in the resolved
+array. There is no extension-namespacing and no subdirectory handling in that line — `${c}` is
+concatenated directly onto the single, flat, deployed `context/contracts/` directory. Consequently
+every entry in a manifest's `hard_contracts` block, additive or override, **must be a flat
+basename that resolves directly under the deployed `context/contracts/` directory**. A nested
+path (`lean4/anti-analysis.md`) or an extension-namespaced path
+(`.claude/extensions/lean/context/contracts/anti-analysis.md`) cannot resolve: the renderer never
+interprets either shape, so the injected line would point at a file the deploy never produces at
+that path.
+
+This constrains where a non-core extension's override file may physically live. The sanctioned
+placement is: the file stays in the owning extension's own source tree
+(`agent-system/extensions/{domain}/context/contracts/{domain}-{name}.md`), the extension declares
+`"contracts"` in its own `provides.context` array so the deploy copier merges that directory's
+contents into the shared deployed `context/contracts/`, and the file's basename carries a
+domain prefix (`lean4-anti-analysis.md`, `cslib-adversarial-verification.md`) rather than
+reusing a core basename unprefixed.
+
+**The domain prefix is mandatory, not stylistic — it exists to prevent a clobber.** When two
+extensions each declare `"contracts"` in `provides.context`, the deploy copier merges both
+directories' contents additively into the one shared destination directory, file by file. Two
+files from different extensions landing at the *same relative path* inside that merge do not
+coexist — the later one in load/copy order silently overwrites the earlier one on disk, with no
+warning and no copier-level conflict detection. A core-named basename placed unprefixed in a
+domain extension's `context/contracts/` therefore does not create a second, domain-specific file
+sitting beside core's: it silently replaces core's file at that shared path for every consumer,
+in every domain, regardless of `--hard` task type. (This is exactly how an unprefixed override
+previously reached the deployed `context/contracts/anti-analysis.md`, before the domain-prefixed
+convention this section records.) A domain-prefixed basename makes the two files structurally
+non-colliding, so both the generic core file and every domain's override coexist in the one
+shared directory and the renderer's per-task_type resolution — not merge order — decides which
+basename a given dispatch's `<hard-mode-contracts>` block names.
+
+**`hard_contracts` is keyed by `task_type` only, with no `phase` dimension.** Unlike the per-phase
+`core_contracts` arrays `orchestrate-build-dispatch.sh` builds internally (`research`/`plan`/
+`implement` each start from a different fixed core list), a domain's `hard_contracts` entry for a
+given `task_type` is looked up once per dispatch via `routing_lookup_flat()` and applied
+identically whichever phase is being built — the same additive/`replace:` list reaches a
+`--hard` research dispatch, a plan dispatch, and an implement dispatch for that task type alike.
+An override or additive contract file's wording should therefore stay phase-agnostic rather than
+assuming it is only ever injected into one phase's prompt.
+
 **Current status**: no extension declares this block today — the mechanism is additive and
 stays unexercised by real data on day one. Its sole consumer is
 `orchestrate-build-dispatch.sh`'s Stage 3.5 Dispatch Prep ("Hard-mode contract injection" subsection),

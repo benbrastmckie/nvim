@@ -1,7 +1,7 @@
 # Implementation Plan: Task #444
 
 - **Task**: 444 - Retire routing_agents_hard in favour of hard_contracts across books, cslib and lean, then remove the ladder rung and gate16
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 13 hours
 - **Dependencies**: 445 (completed; unrelated gate8 work, no interaction)
 - **Research Inputs**: `specs/444_retire_routing_agents_hard_for_hard_contracts/reports/01_retire-routing-agents-hard.md`
@@ -183,30 +183,30 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Record the override-contract convention [NOT STARTED]
+### Phase 1: Record the override-contract convention [COMPLETED]
 
 **Goal**: `manifest-routing-schema.md` states, before any manifest is touched, where a domain
 override contract file lives, what basename it must carry, and why — so the rest of the plan
 implements a written convention rather than inventing one per file.
 
 **Tasks**:
-- [ ] Add a subsection to `manifest-routing-schema.md`'s `## The hard_contracts Block` documenting
+- [x] Add a subsection to `manifest-routing-schema.md`'s `## The hard_contracts Block` documenting
       the renderer-imposed constraint: `orchestrate-build-dispatch.sh` emits
       `- context/contracts/${entry}`, so every additive path and every `replace:` override path
       must be a flat basename resolving directly under the deployed `context/contracts/`
-      directory. A nested or extension-namespaced path cannot resolve.
-- [ ] Document the sanctioned way a non-core extension places an override there: declare
+      directory. A nested or extension-namespaced path cannot resolve. *(completed)*
+- [x] Document the sanctioned way a non-core extension places an override there: declare
       `"contracts"` in `provides.context` and give the file a domain-prefixed basename
-      (`lean4-anti-analysis.md`, `cslib-adversarial-verification.md`).
-- [ ] Document the clobber hazard this prevents: two extensions declaring the same bare
+      (`lean4-anti-analysis.md`, `cslib-adversarial-verification.md`). *(completed)*
+- [x] Document the clobber hazard this prevents: two extensions declaring the same bare
       `provides.context` directory merge additively by directory copy, and two same-basename files
       silently overwrite each other with the winner set by extension load order. Name it as the
-      reason the domain prefix is mandatory, not stylistic.
-- [ ] Document that `hard_contracts` is keyed by `task_type` only, so a domain's additive entry
+      reason the domain prefix is mandatory, not stylistic. *(completed)*
+- [x] Document that `hard_contracts` is keyed by `task_type` only, so a domain's additive entry
       reaches research, plan and implement dispatches alike — and that an override's wording
-      should therefore stay phase-agnostic.
-- [ ] Leave the `**Current status**: no extension declares this block today` paragraph alone in
-      this phase; Phase 3 updates it once declarations exist.
+      should therefore stay phase-agnostic. *(completed)*
+- [x] Leave the `**Current status**: no extension declares this block today` paragraph alone in
+      this phase; Phase 3 updates it once declarations exist. *(completed: left verbatim)*
 
 **Timing**: 1 hour
 

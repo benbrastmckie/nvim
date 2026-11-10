@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/444_retire_routing_agents_hard_for_hard_contracts/plans/01_retire-routing-agents-hard.md",
-      "summary": "Eight-phase migration retiring routing_agents_hard for hard_contracts across books, cslib and lean: wire and demonstrate per-domain contract injection first (fixing a live basename clobber), then remove the routing block and its resolution rung, then retire twelve unreachable wrapper files and converge the ~50 rosters, tests and docs that name them."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 19,
   "metadata": {
-    "session_id": "sess_1794272256_212466_444",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 13,
-    "dependency_waves": [[1], [2], [3], [4], [5, 7], [6], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this agent-system, deleting an extension agent or skill file is never a one-file change: six roster arrays inside lint/lint-agent-contracts.sh log_fail on a rostered agent path that does not exist, lint/collapsed-blocks/registry.tsv pins specific agent files as collapsed-block exemplars (with a matching .txt fixture named after the file), check-extension-docs.sh Rule A fails on a skill directory absent from provides.skills and orphan detection fails in the reverse direction, and index-entries.json load_when.agents arrays plus opencode-agents.json carry per-agent rows. Before planning any agent/skill retirement, grep the full source store for the file's basename and read lint-agent-contracts.sh's roster arrays -- the reference surface is routinely an order of magnitude larger than the files being deleted.",
-      "category": "PATTERN",
-      "source_artifact": "specs/444_retire_routing_agents_hard_for_hard_contracts/plans/01_retire-routing-agents-hard.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["agent-retirement", "lint-agent-contracts", "collapsed-blocks", "provides.skills", "roster-arrays"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 444 to execute the plan",
-  "dispatch_seq": 18
+    "session_id": "sess_1794272256_212466",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

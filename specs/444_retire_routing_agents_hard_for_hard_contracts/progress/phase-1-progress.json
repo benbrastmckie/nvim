@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Record the override-contract convention",
+  "started_at": "2026-11-10T04:10:00Z",
+  "last_updated": "2026-11-10T04:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add override-contract convention subsection to manifest-routing-schema.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
