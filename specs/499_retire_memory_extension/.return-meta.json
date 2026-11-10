@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794343931_696ebd_499",
+  "dispatch_seq": 7,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/499_retire_memory_extension/reports/01_retarget-distill-submodes-and-cleanup.md",
+      "summary": "Research on retargeting --revise/--learn to the hosted sapience store, deleting the six redundant local-vault sub-modes, removing orphaned core callers, and wiring the tagged-write half of the retrieval loop. Key finding: the dispatch's claim that memory-retrieve.sh is already dead is refuted -- 25 live call sites across 12 extensions' SKILL.md files still invoke it directly and must be updated (mechanically, since sapience-retrieve.sh is a confirmed drop-in replacement)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "sapience-retrieve.sh and memory-retrieve.sh share an identical CLI signature (<description> <task_type> [focus_prompt]) and emit the identical <memory-context> envelope, so any caller of the latter can be migrated to the former by a pure script-name substitution with no surrounding logic change.",
+      "category": "PATTERN",
+      "source_artifact": "specs/499_retire_memory_extension/reports/01_retarget-distill-submodes-and-cleanup.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["memory-retrieve", "sapience-retrieve", "drop-in-replacement", "migration"]
+    },
+    {
+      "content": "In this agent system, core task types (general/meta/markdown) route memory-context injection through a single shared call site in orchestrate-build-dispatch.sh's Stage 3.5, but every domain extension's own research/implementation SKILL.md carries an independent, inline Stage 4a block making the same call directly. Swapping the shared call site does not touch the per-extension ones -- they must be updated separately, one per extension skill file.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/499_retire_memory_extension/reports/01_retarget-distill-submodes-and-cleanup.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["stage-4a", "memory-retrieval", "extension-architecture", "dispatch-duplication"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 499 to create implementation plan"
+}
