@@ -316,38 +316,38 @@ writing.
 
 ---
 
-### Phase 4: Part A -- A Recommendation Asserting a Measurable Property of the Corpus [NOT STARTED]
+### Phase 4: Part A -- A Recommendation Asserting a Measurable Property of the Corpus [COMPLETED]
 
 **Goal**: Extend the obligation to a recommendation whose adoption asserts a measurable property
 of the live corpus, and rewrite the Out-of-scope paragraph so it draws the line in its new place
 rather than contradicting the new rule.
 
 **Tasks**:
-- [ ] Rewrite the Out-of-scope paragraph rather than appending to it. The line it draws becomes
+- [x] Rewrite the Out-of-scope paragraph rather than appending to it. The line it draws becomes
       "falsifiable by re-measurement against the live corpus", not "a recommendation"
       categorically. A priority ranking, a design preference, and a quality assessment stay
       excluded, each on its own merits.
-- [ ] State the trigger: a recommendation is in scope when it proposes changing a mechanical rule
+- [x] State the trigger: a recommendation is in scope when it proposes changing a mechanical rule
       applied over a corpus and its soundness as recommended depends on how the current corpus
       responds to that changed rule.
-- [ ] State the discharge: run the proposed rule against the corpus and report the result inline,
+- [x] State the discharge: run the proposed rule against the corpus and report the result inline,
       or, when deferring, mark it with a new distinctly-named literal fixed-case token naming both
       the corpus and the rule it was not checked against. Use a new token rather than the existing
       one, whose definition is keyed to a claim copied or closely paraphrased from another record
       -- here the claim is the artifact's own. Give the new token the same required-named-argument
       rule and the same greppability terms as the existing one.
-- [ ] Keep the convention's stated purpose intact and visible: presenting a carried claim as
+- [x] Keep the convention's stated purpose intact and visible: presenting a carried claim as
       freshly measured is the defect; carrying one openly is not. Neither this phase nor any later
       one turns the convention into a prohibition on carrying.
-- [ ] Give the canonical positive instance (a recommendation to tighten a marker parser to a depth
+- [x] Give the canonical positive instance (a recommendation to tighten a marker parser to a depth
       counter, where plan-time re-measurement showed five source-store test suites end their
       marker parse at nonzero depth, so the recommended rule is not behaviour-preserving) and the
       canonical negative instance (a pure design preference, which asserts nothing the corpus
       could contradict).
-- [ ] Add the obligation to `general-research-agent.md`'s report-writing stage as a pointer to the
+- [x] Add the obligation to `general-research-agent.md`'s report-writing stage as a pointer to the
       section by name. Never copy the section's text -- copying is the mechanism that let one copy
       drift while another was updated.
-- [ ] Confirm the six existing trigger shapes are unchanged in meaning, so no already-written
+- [x] Confirm the six existing trigger shapes are unchanged in meaning, so no already-written
       artifact becomes retroactively non-compliant.
 
 **Timing**: 1.5 hours

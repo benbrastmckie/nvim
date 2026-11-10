@@ -93,11 +93,45 @@ from another record, is a carried figure:
 6. A qualitative claim about mechanical, system, or environmental state — reachability,
    capacity, availability, or a hard "always"/"never"/"cannot"/"is required".
 
-**Out of scope**: a purely interpretive or evaluative claim carried from another record (a
-recommendation, a priority ranking, a design preference, a quality assessment) is not a carried
-figure — it is not falsifiable by re-measurement, so re-derive-or-mark has nothing to act on. A
-figure the author measured in this session is not carried, however many times the report
-restates it.
+**Out of scope**: a purely interpretive or evaluative claim carried from another record — a
+priority ranking, a design preference, a quality assessment — is not a carried figure: it is not
+falsifiable by re-measurement against the live corpus, so re-derive-or-mark has nothing to act
+on. A figure the author measured in this session is not carried, however many times the report
+restates it. The line this paragraph draws is "falsifiable by re-measurement against the live
+corpus", not "a recommendation" categorically — see the next paragraph for the one recommendation
+shape that IS in scope, as the artifact's own new claim rather than something carried from
+elsewhere.
+
+**A recommendation whose adoption asserts a measurable property of the live corpus is in
+scope.** The trigger: a recommendation proposes changing a mechanical rule applied over a
+corpus, and the recommendation's soundness as recommended depends on how the current corpus
+responds to that changed rule. Discharge the obligation either by running the proposed rule
+against the corpus at authoring time and reporting the result inline, or, when deferring that
+check, by marking the recommendation with a distinct literal fixed-case token naming both the
+corpus swept and the rule not checked against:
+
+    {recommendation} [CORPUS-UNVERIFIED: {corpus swept} / {rule not yet checked against it}]
+
+`CORPUS-UNVERIFIED` is deliberately NOT `CARRIED-UNVERIFIED`: that token's definition is keyed to
+a claim copied or closely paraphrased from another record, and here the claim is the artifact's
+own new recommendation, not something carried. `CORPUS-UNVERIFIED` carries the same
+required-named-argument rule and the same greppability terms
+(`grep -rn 'CORPUS-UNVERIFIED' specs/`): an unnamed mark is greppable but not actionable, exactly
+as for `CARRIED-UNVERIFIED`.
+
+**Canonical positive instance**: a recommendation to tighten a marker parser to a depth counter.
+Plan-time re-measurement showed five source-store test suites end their marker parse at nonzero
+depth, so the recommended rule is not behaviour-preserving over the current corpus — the
+recommendation's adoption asserts exactly the measurable property that re-measurement refuted.
+
+**Canonical negative instance**: a pure design preference (for example, preferring a depth
+counter purely for readability, with no claim about corpus behaviour) asserts nothing the corpus
+could contradict, and stays out of scope under the paragraph above.
+
+Neither this paragraph nor any other turns the convention into a prohibition on carrying or
+recommending; the purpose stated in the Definition above still governs: presenting a carried or
+corpus-dependent claim as verified when it is not is the defect, not the carrying or the
+recommending itself.
 
 **The mark**, shown as an indented literal form:
 

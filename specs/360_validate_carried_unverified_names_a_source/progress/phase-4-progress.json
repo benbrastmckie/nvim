@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Part A -- A Recommendation Asserting a Measurable Property of the Corpus",
+  "started_at": "2026-11-10T02:22:00Z",
+  "last_updated": "2026-11-10T02:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite the Out-of-scope paragraph to draw the line at falsifiability-by-corpus-re-measurement", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 2, "description": "State the trigger for an in-scope recommendation", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 3, "description": "State the discharge rule and define the new CORPUS-UNVERIFIED token", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 4, "description": "Keep the convention's purpose intact and visible", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 5, "description": "Give canonical positive and negative instances", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 6, "description": "Add a pointer in general-research-agent.md's report-writing stage", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-research-agent.md"]},
+    {"id": 7, "description": "Confirm six existing trigger shapes unchanged in meaning", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Rewrote the Out-of-scope paragraph so the line it draws is falsifiability-by-re-measurement-against-the-live-corpus rather than a categorical recommendation exclusion, then added a new paragraph stating the in-scope recommendation trigger, the discharge rule (run the proposed rule and report inline, or mark CORPUS-UNVERIFIED naming both the corpus and the rule), the canonical positive instance (the depth-counter marker-parser recommendation that plan-time re-measurement showed non-behaviour-preserving over five source-store test suites) and canonical negative instance (a pure design preference), plus a closing sentence keeping the convention's purpose visible. Defined CORPUS-UNVERIFIED as a new, distinct token (never CARRIED-UNVERIFIED) with the same required-named-argument rule and greppability terms. Added a pointer-only sentence to general-research-agent.md's Stage 6 (Create Research Report), right after the required-section-headings paragraph, naming report-format.md's Carried-Figure Discipline section by name and copying no normative text. Verified by grep: no sentence remains anywhere in report-format.md asserting a recommendation is categorically out of scope or that an interpretive claim is unfalsifiable without the corpus qualification; plan-format.md's own carried-figure paragraph is untouched and still only points by name (it references CARRIED-UNVERIFIED only, not CORPUS-UNVERIFIED, which is correct since Phase 4 only adds the new token to report-format.md's own text, not to plan-format.md); general-research-agent.md's new sentence names the section by name and contains no normative CARRIED-UNVERIFIED-discipline text of its own. The six trigger shapes (lines ~86-94) are confirmed byte-unchanged by direct comparison against the pre-Phase-3/4 text. Ran the 'Internal consistency' reviewer prompt by hand against the full amended section (Definition through the new recommendation paragraphs through Enforcement-level): no assertion requires the ABSENCE of a string a mandated literal requires PRESENT, and no stated risk/prediction contradicts a measured result elsewhere in the section."
+}

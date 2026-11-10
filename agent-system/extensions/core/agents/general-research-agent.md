@@ -389,6 +389,15 @@ full contract: the exact-text, any-depth-prefix matching rule, both named near-m
 (`## Recommended Next Steps` and `## Context Extension Recommendations`, both present in this
 skeleton), and the pre-return grep self-check to run before finalizing a report.
 
+**A `## Recommendations` entry that proposes changing a mechanical rule applied over a corpus,
+where the recommendation's own soundness depends on how the current corpus responds to that
+changed rule, carries the same re-derive-or-mark obligation** that `report-format.md`'s
+`## Carried-Figure Discipline` section states for a carried figure — see that section's
+Out-of-scope paragraph for the exact trigger and the discharge rule. Run the proposed rule
+against the live corpus and report the result inline, or mark the recommendation with the
+section's own designated disclosure token when deferring that check. This is a pointer, not a
+restatement; the section itself is the authoritative text.
+
 ### Stage 7: Write Metadata File
 
 Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `researched`. Agent-specific metadata fields: `findings_count`. Include `memory_candidates` array (from Stage 5) at the top level of the JSON output. Set `next_steps` to `"Run /orchestrate {N} to create implementation plan"`.
