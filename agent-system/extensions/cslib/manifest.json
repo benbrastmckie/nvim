@@ -37,7 +37,8 @@
       "cslib-lint-fix.md"
     ],
     "context": [
-      "project/cslib"
+      "project/cslib",
+      "contracts"
     ],
     "scripts": [],
     "hooks": []

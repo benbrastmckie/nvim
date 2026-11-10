@@ -105,7 +105,7 @@
     },
     {
       "path": "project/lean4/patterns/dependency-tracing.md",
-      "line_count": 229,
+      "line_count": 237,
       "load_when": {
         "agents": [
           "lean-implementation-agent"
@@ -124,6 +124,31 @@
         "environment",
         "reverse-dependency",
         "retirement"
+      ]
+    },
+    {
+      "path": "project/lean4/patterns/external-library-dependency-assessment.md",
+      "line_count": 122,
+      "load_when": {
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Checklist for assessing an external Lean library as a candidate dependency: upstream claims read via git show rather than a fork worktree, two-way git rev-list ahead/behind measurement, lean-toolchain comparison before Mathlib revisions, build-cache freshness before trusting #print axioms, and import closure rather than repository line count",
+      "keywords": [
+        "lean4",
+        "external-library",
+        "dependency-assessment",
+        "upstream",
+        "rev-list",
+        "lean-toolchain",
+        "import-closure"
       ]
     },
     {
@@ -646,20 +671,17 @@
       ]
     },
     {
-      "path": "contracts/reference-grounding.md",
+      "path": "contracts/lean4-reference-grounding.md",
       "line_count": 97,
       "load_when": {
-        "agents": [
-          "lean-research-hard-agent",
-          "lean-implementation-hard-agent"
-        ],
-        "task_types": [
-          "lean4"
-        ]
+        "agents": [],
+        "commands": [],
+        "task_types": []
       },
+      "on_demand": true,
       "domain": "project",
       "subdomain": "lean",
-      "summary": "Lean4 Tier 1 H3 override: lemma-level mapping table (Source, Prop/Location, Lean Identifier, Type Signature, Status); sorry-inventory cross-reference; PDF section citation requirement",
+      "summary": "Lean4 Tier 1 H3 override: lemma-level mapping table (Source, Prop/Location, Lean Identifier, Type Signature, Status); sorry-inventory cross-reference; PDF section citation requirement. Injected via hard_contracts, not loaded at agent spawn",
       "keywords": [
         "lean4",
         "hard-mode",
@@ -669,20 +691,17 @@
       ]
     },
     {
-      "path": "contracts/anti-analysis.md",
+      "path": "contracts/lean4-anti-analysis.md",
       "line_count": 118,
       "load_when": {
-        "agents": [
-          "lean-research-hard-agent",
-          "lean-implementation-hard-agent"
-        ],
-        "task_types": [
-          "lean4"
-        ]
+        "agents": [],
+        "commands": [],
+        "task_types": []
       },
+      "on_demand": true,
       "domain": "project",
       "subdomain": "lean",
-      "summary": "Lean4 H2 override: formal proof line bar (first sorry-free lemma within 30% of tool calls), forbidden conclusions, sub-sorry policy enforcement for leaf-only sorries",
+      "summary": "Lean4 H2 override: formal proof line bar (first sorry-free lemma within 30% of tool calls), forbidden conclusions, sub-sorry policy enforcement for leaf-only sorries. Injected via hard_contracts, not loaded at agent spawn",
       "keywords": [
         "lean4",
         "hard-mode",
@@ -692,19 +711,17 @@
       ]
     },
     {
-      "path": "contracts/adversarial-verification.md",
+      "path": "contracts/lean4-adversarial-verification.md",
       "line_count": 93,
       "load_when": {
-        "agents": [
-          "lean-research-hard-agent"
-        ],
-        "task_types": [
-          "lean4"
-        ]
+        "agents": [],
+        "commands": [],
+        "task_types": []
       },
+      "on_demand": true,
       "domain": "project",
       "subdomain": "lean",
-      "summary": "H4 adversarial verification contract (lean4 parity): Claim Verification Bar, Confidence Taxonomy, Contradiction Resolution Protocol, Forbidden Outputs, lean4 specialization (hover_info, local_search)",
+      "summary": "H4 adversarial verification contract (lean4 parity): Claim Verification Bar, Confidence Taxonomy, Contradiction Resolution Protocol, Forbidden Outputs, lean4 specialization (hover_info, local_search). Injected via hard_contracts, not loaded at agent spawn",
       "keywords": [
         "lean4",
         "hard-mode",
@@ -714,24 +731,42 @@
       ]
     },
     {
-      "path": "contracts/context-hygiene.md",
+      "path": "contracts/lean4-context-hygiene.md",
       "line_count": 75,
       "load_when": {
-        "agents": [
-          "lean-research-hard-agent",
-          "lean-implementation-hard-agent",
-          "cslib-research-hard-agent",
-          "cslib-implementation-hard-agent"
-        ]
+        "agents": [],
+        "commands": [],
+        "task_types": []
       },
+      "on_demand": true,
       "domain": "project",
       "subdomain": "lean",
-      "summary": "Four discipline clauses for Lean/CSLib hard agents: targeted goal queries, bounded file reads, hypothesis pruning, enforcement; cross-refs blocked-mcp-tools.md, context-exhaustion-detection.md",
+      "summary": "Four discipline clauses for Lean/CSLib hard agents: targeted goal queries, bounded file reads, hypothesis pruning, enforcement; cross-refs blocked-mcp-tools.md, context-exhaustion-detection.md. Injected via hard_contracts, not loaded at agent spawn",
       "keywords": [
         "lean4",
         "cslib",
         "hard-mode",
         "context-hygiene",
+        "contracts"
+      ]
+    },
+    {
+      "path": "contracts/lean4-sorry-discipline.md",
+      "line_count": 92,
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "Lean4 hard-only procedural residue: sorry-inventory lifecycle (task-scoped, import-from-handoff-or-initialise-empty), Zero-Debt policy with its two tracked exceptions, single-phase-focus rule for a set phase_number. Injected via hard_contracts, not loaded at agent spawn",
+      "keywords": [
+        "lean4",
+        "hard-mode",
+        "sorry-inventory",
+        "zero-debt",
         "contracts"
       ]
     },
@@ -829,7 +864,7 @@
     },
     {
       "path": "project/lean4/domain/metadata-trust-surfaces.md",
-      "line_count": 194,
+      "line_count": 229,
       "load_when": {
         "agents": [
           "lean-research-agent",

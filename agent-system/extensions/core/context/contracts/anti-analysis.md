@@ -109,4 +109,10 @@ This is the domain-agnostic baseline. Extensions may override with stricter vers
 
 - **lean4**: H2 applies with a formal proof line bar (first sorry-free lemma within 20 tool calls)
 - **z3**: H2 applies with a satisfying-assignment bar (first passing assert within 20 tool calls)
-- Extension overrides live in `.claude/extensions/{domain}/context/contracts/anti-analysis.md`
+- An extension override deploys to a flat, domain-prefixed basename directly under the shared
+  `context/contracts/` directory (e.g. `context/contracts/lean4-anti-analysis.md`), declared by
+  that extension's own `provides.context` entry and reached via its manifest's `hard_contracts`
+  `replace:` directive — never at a nested or extension-namespaced path such as
+  `.claude/extensions/{domain}/context/contracts/anti-analysis.md`, which no deployed tree
+  produces. See `context/guides/manifest-routing-schema.md`'s "Override Contract Placement
+  Convention" subsection for the full convention and the clobber hazard it prevents.

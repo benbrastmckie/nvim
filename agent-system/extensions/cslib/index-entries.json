@@ -371,28 +371,6 @@
       ]
     },
     {
-      "path": "contracts/adversarial-verification.md",
-      "line_count": 120,
-      "load_when": {
-        "agents": [
-          "cslib-research-hard-agent"
-        ],
-        "task_types": [
-          "cslib"
-        ]
-      },
-      "domain": "project",
-      "subdomain": "cslib",
-      "summary": "H4 adversarial verification contract (cslib mirror copy): Claim Verification Bar, Confidence Taxonomy, Contradiction Resolution Protocol, Forbidden Outputs, domain specialization for cslib/lean4. load_when.agents carries cslib-research-hard-agent only -- the core research-hard agent this entry used to also union in was deleted, and core's own copy of this contract is now on-demand only.",
-      "keywords": [
-        "cslib",
-        "hard-mode",
-        "adversarial-verification",
-        "contracts",
-        "H4"
-      ]
-    },
-    {
       "path": "project/cslib/pr-command-workflow.md",
       "domain": "project",
       "subdomain": "cslib",
@@ -413,6 +391,26 @@
           "pr"
         ]
       }
+    },
+    {
+      "path": "contracts/cslib-adversarial-verification.md",
+      "line_count": 114,
+      "load_when": {
+        "agents": [],
+        "commands": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "cslib",
+      "summary": "CSLib H4 override, content identical to core's generic adversarial-verification.md: Claim Verification Bar, Confidence Level Taxonomy, Contradiction Resolution Protocol, Forbidden Verification Outputs. Injected via hard_contracts, not loaded at agent spawn",
+      "keywords": [
+        "cslib",
+        "hard-mode",
+        "adversarial-verification",
+        "contracts",
+        "H4"
+      ]
     }
   ]
 }

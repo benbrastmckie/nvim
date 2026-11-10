@@ -1,0 +1,49 @@
+{
+  "phase": 2,
+  "phase_name": "Rename the override contracts and give the lean residue a home",
+  "started_at": "2026-11-10T04:20:00Z",
+  "last_updated": "2026-11-10T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rename lean's four override files to domain-prefixed basenames", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/contracts/lean4-anti-analysis.md",
+        "agent-system/extensions/lean/context/contracts/lean4-reference-grounding.md",
+        "agent-system/extensions/lean/context/contracts/lean4-adversarial-verification.md",
+        "agent-system/extensions/lean/context/contracts/lean4-context-hygiene.md",
+        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"
+      ]},
+    {"id": 2, "description": "Rename cslib's orphaned override and add contracts to provides.context", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/context/contracts/cslib-adversarial-verification.md",
+        "agent-system/extensions/cslib/manifest.json"
+      ]},
+    {"id": 3, "description": "Author lean4-sorry-discipline.md with sorry-inventory lifecycle, Zero-Debt policy, single-phase-focus", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/contracts/lean4-sorry-discipline.md"
+      ]},
+    {"id": 4, "description": "Fix core anti-analysis.md Domain Specialization bullet", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/anti-analysis.md"
+      ]},
+    {"id": 5, "description": "Update lean's index-entries.json: rename rows, add row, on_demand, regenerate line_count", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/index-entries.json"
+      ]},
+    {"id": 6, "description": "Add cslib-adversarial-verification.md row to cslib's index-entries.json", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/cslib/index-entries.json"
+      ]},
+    {"id": 7, "description": "Confirm duplicate index paths are gone", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Scope Hypothesis confirmed exactly: 4 lean override files + 1 orphaned cslib file, 5 renames total.",
+    "Beyond the plan's explicit file list: fixed a Defect-B-shaped dangling reference in lean4-adversarial-verification.md (self) and mcp-tools-guide.md, both pointing at the old extension-namespaced path; removed a pre-existing stale cslib index-entries.json row for the old unprefixed basename that predated this phase; rewrote cslib-adversarial-verification.md's header narrative, which described the now-retired directory-merge clobber mechanism as still live.",
+    "Post-redeploy, the additive-only deploy copier left two stale artifacts behind that it never auto-removes: .claude/context/contracts/context-hygiene.md (orphan file) and its ghost row in .claude/context/index.json. Both removed manually per deploy-orphan-detection.md's documented detect-never-auto-delete design.",
+    "Full verify-deploy.sh run #1 (pre-redeploy): 7/42 failed. Triaged: 2 genuine (manifest-driven content-hash, orphan detection) fixed via redeploy + manual stale-artifact cleanup; 3 pre-existing/unrelated (eager-load budget, shellcheck, dead-command-recommendation) confirmed by direct re-run against files this phase never touched; 1 transient flakiness (test-verify-deploy-gate-selection.sh case r-a2/r-b) confirmed resolved on isolated re-run, attributed to resource contention with a concurrently-running sibling /orchestrate task's own verify-deploy.sh fixture processes.",
+    "Targeted re-runs of --only-gate 3,5,13 confirm clean. A second full verify-deploy.sh confirmatory run was launched as a detached background process and is being awaited across the phase 2/3 boundary; its result will be recorded before Phase 2's commit if it completes in time, otherwise in Phase 3's own verification."
+  ]
+}

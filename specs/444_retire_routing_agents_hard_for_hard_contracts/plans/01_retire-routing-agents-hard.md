@@ -233,45 +233,52 @@ alongside the tier's diff read-through.
 
 ---
 
-### Phase 2: Rename the override contracts and give the lean residue a home [NOT STARTED]
+### Phase 2: Rename the override contracts and give the lean residue a home [COMPLETED]
 
 **Goal**: every domain override contract file carries a domain-prefixed basename, is declared by
 its own extension, and is indexed on-demand — and lean's genuinely hard-only procedural content
 exists as a contract file instead of only as agent-body text.
 
 **Tasks**:
-- [ ] Rename lean's four override files to domain-prefixed basenames:
+- [x] Rename lean's four override files to domain-prefixed basenames:
       `anti-analysis.md` -> `lean4-anti-analysis.md`, `reference-grounding.md` ->
       `lean4-reference-grounding.md`, `adversarial-verification.md` ->
       `lean4-adversarial-verification.md`, `context-hygiene.md` -> `lean4-context-hygiene.md`
       (all four confirmed present under `agent-system/extensions/lean/context/contracts/`; if one
       is absent at implementation time, report it and continue with the rest rather than
-      recreating it).
-- [ ] Rename cslib's one orphaned override
+      recreating it). *(completed: Scope Hypothesis confirmed exactly, all four present; also
+      fixed two dangling extension-namespaced self-references this rename exposed, in
+      lean4-adversarial-verification.md and mcp-tools-guide.md)*
+- [x] Rename cslib's one orphaned override
       (`agent-system/extensions/cslib/context/contracts/adversarial-verification.md`, confirmed
       present but never deployed) to `cslib-adversarial-verification.md`, and add `"contracts"`
-      to cslib's `provides.context` so it actually deploys.
-- [ ] Author `agent-system/extensions/lean/context/contracts/lean4-sorry-discipline.md` carrying
+      to cslib's `provides.context` so it actually deploys. *(completed; also removed a
+      pre-existing stale index-entries.json row for the old unprefixed basename, and rewrote the
+      file's header narrative which described the now-retired directory-merge clobber mechanism
+      as still live)*
+- [x] Author `agent-system/extensions/lean/context/contracts/lean4-sorry-discipline.md` carrying
       the lean-only procedural residue that the standard `lean-implementation-agent.md` is
       confirmed NOT to contain: the sorry-inventory lifecycle (import from prior handoff or
       initialise empty; task-scoped, not phase-scoped), the Zero-Debt policy with its two tracked
       exceptions, and the single-phase-focus rule for a set `phase_number`. Write it
       phase-agnostically, and point its strategic-sorry test at `lean4-anti-analysis.md` rather
-      than at the extension-namespaced path the hard agent body uses.
-- [ ] Fix core `contracts/anti-analysis.md`'s `## Domain Specialization` bullet, which states
+      than at the extension-namespaced path the hard agent body uses. *(completed, 92 lines)*
+- [x] Fix core `contracts/anti-analysis.md`'s `## Domain Specialization` bullet, which states
       overrides live at `.claude/extensions/{domain}/context/contracts/anti-analysis.md` — a path
       that exists in no deployed tree. Replace with the flat domain-prefixed convention Phase 1
-      recorded.
-- [ ] Update lean's `index-entries.json`: rename the four `contracts/*` paths to their prefixed
+      recorded. *(completed)*
+- [x] Update lean's `index-entries.json`: rename the four `contracts/*` paths to their prefixed
       forms, add a row for `contracts/lean4-sorry-discipline.md`, set every one of the five to
       `on_demand: true` with an EMPTY `load_when.agents` array (matching core's own contract rows,
       so the `hard_contracts` dispatch block is the sole loader and injection stays `--hard`-gated
-      rather than loading at every standard-agent spawn), and regenerate `line_count`.
-- [ ] Add a `contracts/cslib-adversarial-verification.md` row to cslib's `index-entries.json` on
-      the same shape.
-- [ ] Confirm the duplicate index paths are gone: core and lean currently BOTH declare
+      rather than loading at every standard-agent spawn), and regenerate `line_count`. *(completed;
+      matched core's full load_when shape of agents/commands/task_types, all empty)*
+- [x] Add a `contracts/cslib-adversarial-verification.md` row to cslib's `index-entries.json` on
+      the same shape. *(completed)*
+- [x] Confirm the duplicate index paths are gone: core and lean currently BOTH declare
       `contracts/anti-analysis.md`, `contracts/adversarial-verification.md` and
-      `contracts/reference-grounding.md`.
+      `contracts/reference-grounding.md`. *(completed: confirmed gone by direct comparison of all
+      three extensions' contracts/ index rows)*
 
 **Timing**: 2 hours
 

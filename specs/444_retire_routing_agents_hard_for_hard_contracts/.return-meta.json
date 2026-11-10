@@ -5,8 +5,19 @@
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 0,
     "phases_total": 8
-  }
+  },
+  "proposed_file_scope": [
+    "agent-system/extensions/lean/context/contracts/lean4-adversarial-verification.md",
+    "agent-system/extensions/lean/context/contracts/lean4-anti-analysis.md",
+    "agent-system/extensions/lean/context/contracts/lean4-context-hygiene.md",
+    "agent-system/extensions/lean/context/contracts/lean4-reference-grounding.md",
+    "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"
+  ]
 }
