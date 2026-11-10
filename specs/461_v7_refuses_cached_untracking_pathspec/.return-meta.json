@@ -22,21 +22,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/461_v7_refuses_cached_untracking_pathspec/summaries/01_cached-untracking-commit-path-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-commit-scoped", "scoped commit", "classification gate", "index-equivalence guard", "pre-commit intent snapshot"]
+      "suggested_keywords": [
+        "git-commit-scoped",
+        "scoped commit",
+        "classification gate",
+        "index-equivalence guard",
+        "pre-commit intent snapshot"
+      ]
     },
     {
       "content": "To demonstrate a new regression suite's FAILS-before property without ever running a red suite against the live source store: capture the pre-fix file via `git show <pre-fix-sha>:path > scratch-copy`, temporarily `cp` the scratch copy over the real file, run the full suite (new cases should fail, pre-existing cases should still pass), then immediately `cp` the known-good fixed copy (saved beforehand) back over the real file and re-verify with a final full run. This proves the new cases actually exercise the defect without ever leaving the working tree red or requiring a git checkout/stash that could disrupt concurrent writers on a shared tree.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/461_v7_refuses_cached_untracking_pathspec/summaries/01_cached-untracking-commit-path-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["FAILS-before", "regression test", "test suite demonstration", "shared working tree", "pre-fix script extraction"]
+      "suggested_keywords": [
+        "FAILS-before",
+        "regression test",
+        "test suite demonstration",
+        "shared working tree",
+        "pre-fix script extraction"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794343931_696ebd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

@@ -11,9 +11,9 @@ next_project_number: 580
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,461,472,473,475,476,477,479,484,490,491,498,499,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,499,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,461,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577 | 390,402,501,547,552 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -36,7 +36,6 @@ next_project_number: 580
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
-461 [IMPLEMENTING] — Rule on and close the V7 refusal of a positive directory...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
@@ -7597,12 +7596,13 @@ Do not relitigate the advisory-vs-blocking status of the `--check` verdict. Do n
 ---
 
 ### 461. Rule on and close the V7 refusal of a positive directory pathspec for a git rm --cached untracking whose content is still on disk
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328, Task 430, Task 435, Task 446, Task 448
 - **Research**: [461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md]
 - **Plan**: [461_v7_refuses_cached_untracking_pathspec/plans/01_cached-untracking-commit-path.md]
+- **Summary**: [461_v7_refuses_cached_untracking_pathspec/summaries/01_cached-untracking-commit-path-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

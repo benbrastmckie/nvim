@@ -1,7 +1,7 @@
 # Implementation Plan: Task #461
 
 - **Task**: 461 - Rule on and close the V7 refusal of a positive directory pathspec for a `git rm --cached` untracking whose content is still on disk
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: 328, 430, 435, 446, 448 (SERIALIZATION-only or OPERATOR-LIFTABLE per the task's territory edges; none contests the ruling)
 - **Research Inputs**: specs/461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md

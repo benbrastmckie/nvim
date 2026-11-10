@@ -5115,7 +5115,7 @@
     {
       "project_number": 461,
       "project_name": "v7_refuses_cached_untracking_pathspec",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Rule on and close the V7 refusal of a positive directory pathspec for a git rm --cached untracking whose content is still on disk",
       "topic": "core-agent-system",
@@ -5143,12 +5143,18 @@
           "path": "specs/461_v7_refuses_cached_untracking_pathspec/plans/01_cached-untracking-commit-path.md",
           "type": "plan",
           "summary": "Five-phase plan ruling option (2) and fixing the --cached untracking shape end-to-end in git-commit-scoped.sh, with regression tests, documentation, and a full-gate redeploy."
+        },
+        {
+          "path": "specs/461_v7_refuses_cached_untracking_pathspec/summaries/01_cached-untracking-commit-path-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all five phases, plan deviations, verification results, and the cross-task-noise findings from the exploratory full gate run."
         }
       ],
       "created": "2026-11-04T00:55:28Z",
-      "last_updated": "2026-11-10T21:35:15Z",
+      "last_updated": "2026-11-10T23:16:01Z",
       "session_id": "sess_1794343931_696ebd",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a V11/V12 classification-and-guarded-commit path to git-commit-scoped.sh so a `git rm -r --cached <dir>` untracking (content left on disk) commits cleanly in both gitignored and non-gitignored repos without relocating any file, corrected the V8 intent-snapshot false-positive this shape would otherwise trigger, added a six-case regression cluster with a FAILS-before/PASSES-after demonstration, documented the sanctioned recipe in git-staging-scope.md, and confirmed the REQUIRED OUTCOME end-to-end against the redeployed script."
     },
     {
       "project_number": 462,
