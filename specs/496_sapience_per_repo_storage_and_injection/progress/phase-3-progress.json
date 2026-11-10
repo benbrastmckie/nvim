@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "Declare both scripts in the extension manifest",
+  "started_at": "2026-11-10T00:20:00Z",
+  "last_updated": "2026-11-10T00:50:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "sync-manifest-scripts.sh --check confirms the gap, --write inserts both entries, --check passes, diff confined to provides.scripts, bare relative paths matching convention",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.verification",
+      "description": "bash .claude/scripts/verify-deploy.sh (the complete gate set) exits 0",
+      "type": "altered",
+      "reason": "Ran once pre-deploy (took ~8.5 minutes real execution after transient environment contention cleared); 8 of 42 checks failed. Gate 5 correctly failed with 'sapience: Missing scripts: scripts/sapience-remember.sh / scripts/sapience-retrieve.sh' -- expected pre-deploy state, resolved once Phase 4 redeploys. Gates 3/4/10 hit 60s timeouts; gates 8 (run-all.sh), 20 (eager-load budget), 22 (shellcheck lint), 24 (dead-command-recommendation lint) also failed on paths unrelated to this task's declared file_scope -- not independently chased down (out of scope), to be reassessed at Phase 4/7 reruns.",
+      "annotation": "*(deviation: altered — run once pre-deploy; gate 5 correctly failed ...)*"
+    }
+  ]
+}

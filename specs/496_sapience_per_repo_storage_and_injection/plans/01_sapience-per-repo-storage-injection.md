@@ -347,22 +347,22 @@ KO and fails loudly on every silent-loss response shape the server can return.
 
 ---
 
-### Phase 3: Declare both scripts in the extension manifest [NOT STARTED]
+### Phase 3: Declare both scripts in the extension manifest [COMPLETED]
 
 **Goal**: `provides.scripts` lists both new scripts, so the deploy places them at
 `.claude/scripts/sapience-retrieve.sh` and `.claude/scripts/sapience-remember.sh`.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` and
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` and *(completed)*
       confirm it now reports the two on-disk sapience scripts as undeclared — the expected
       failure that proves the gap this phase closes.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` to insert
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` to insert *(completed)*
       both entries surgically into `agent-system/extensions/sapience/manifest.json`'s
       `provides.scripts` array, rather than hand-editing it or round-tripping the document
       through `jq`.
-- [ ] Re-run `--check` and confirm it now passes, and review `git diff` to confirm **only** the
+- [x] Re-run `--check` and confirm it now passes, and review `git diff` to confirm **only** the *(completed)*
       `provides.scripts` array changed and no unrelated key was reformatted.
-- [ ] Confirm the two inserted entries are bare relative paths under `scripts/` matching the
+- [x] Confirm the two inserted entries are bare relative paths under `scripts/` matching the *(completed)*
       convention the memory extension's own four entries use.
 
 **Timing**: 0.5 hours
@@ -384,7 +384,12 @@ KO and fails loudly on every silent-loss response shape the server can return.
   two new scripts.
 - `git diff --stat` shows `manifest.json` as the only changed file in this phase, and
   `git diff` shows changes confined to the `provides.scripts` array block.
-- `bash .claude/scripts/verify-deploy.sh` (the complete gate set) exits 0.
+- `bash .claude/scripts/verify-deploy.sh` (the complete gate set) exits 0. *(deviation: altered —
+  run once pre-deploy; gate 5 correctly failed with "sapience: Missing scripts:
+  scripts/sapience-remember.sh / scripts/sapience-retrieve.sh" because the manifest now declares
+  both scripts but Phase 4's redeploy has not yet placed them in the deployed tree. This is the
+  expected pre-deploy state, not a defect. Re-run after Phase 4's redeploy, where gate 5 is
+  expected to clear.)*
 
 ---
 

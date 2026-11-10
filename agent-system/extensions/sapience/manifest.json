@@ -9,7 +9,10 @@
     "commands": [],
     "skills": [],
     "rules": [],
-    "scripts": [],
+    "scripts": [
+      "sapience-remember.sh",
+      "sapience-retrieve.sh"
+    ],
     "hooks": [],
     "data": [],
     "context": ["project/sapience"]
