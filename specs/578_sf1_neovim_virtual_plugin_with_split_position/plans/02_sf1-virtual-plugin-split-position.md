@@ -201,16 +201,16 @@ single-module load check.
 
 ---
 
-### Phase 2: Module Core (`sapience/init.lua`) [NOT STARTED]
+### Phase 2: Module Core (`sapience/init.lua`) [COMPLETED]
 
 **Goal**: The public API and the whole of the configuration surface — opts schema with
 validation, project-string resolution, command-string construction, and the four lifecycle
 functions — with every window call delegated to Phase 1's backend.
 
 **Tasks**:
-- [ ] Create `lua/neotex/plugins/ai/sapience/init.lua` with a module-local `config` table holding
+- [x] Create `lua/neotex/plugins/ai/sapience/init.lua` with a module-local `config` table holding
       the defaults: `cmd = "sf1"`, `position = "bottom"`, `size = 0.35`, `project = "cwd"`.
-- [ ] `M.setup(opts)`: merge `opts` over the defaults with `vim.tbl_deep_extend("force", ...)`,
+- [x] `M.setup(opts)`: merge `opts` over the defaults with `vim.tbl_deep_extend("force", ...)`,
       then validate. Use the **non-table `vim.validate(name, value, validator, message)`
       signature**, not the deprecated table form: nvim here is v0.12.3, where the table form is
       deprecated (the three existing table-form call sites in this config all live under
@@ -218,7 +218,7 @@ functions — with every window call delegated to Phase 1's backend.
       authoring time, so this is a forward-compatibility choice rather than a necessity.
       Validate: `cmd` string; `position` one of `"bottom"|"right"|"left"|"float"`; `size` a
       number in `(0, 1]`; `project` a string in `{"cwd","git"}`, or `false`, or a function.
-- [ ] Private `_resolve_project()` returning a project name string or `nil`:
+- [x] Private `_resolve_project()` returning a project name string or `nil`:
       - `"cwd"` → `vim.fn.fnamemodify(vim.fn.getcwd(), ":t")`;
       - `"git"` → `vim.fn.system("git rev-parse --show-toplevel 2>/dev/null"):gsub("\n", "")`
         then `vim.fn.fnamemodify(root, ":t")`, falling back to the `"cwd"` derivation when the
@@ -226,23 +226,23 @@ functions — with every window call delegated to Phase 1's backend.
       - `false` → `nil` (bare `sf1`, which resumes the last project from
         `~/.sapience/sf1_state.json`);
       - function → call it, and treat a non-string or empty return as `nil`.
-- [ ] Private `_command()` returning the command **string** (not a table — snacks stores the
+- [x] Private `_command()` returning the command **string** (not a table — snacks stores the
       first argument verbatim in `vim.b.snacks_terminal.cmd`, and Phase 4's detection reads it):
       `config.cmd` alone when `_resolve_project()` is `nil`, else
       `config.cmd .. " --project " .. vim.fn.shellescape(name)`.
-- [ ] `M.open()`, `M.close()`, `M.toggle()`: delegate to the backend's `open`/`close`/`open`
+- [x] `M.open()`, `M.close()`, `M.toggle()`: delegate to the backend's `open`/`close`/`open`
       with `_command()` and the current `config.position`/`config.size`. `M.open` and `M.toggle`
       share the backend's toggle semantics; keep both names since the task's API names both.
-- [ ] `M.set_position(pos)`: validate `pos` against the same four-value enum, assign
+- [x] `M.set_position(pos)`: validate `pos` against the same four-value enum, assign
       `config.position`, then — if `backend.find(_command())` returns a terminal — call
       `backend.reposition(...)` so a **live REPL is re-placed without being restarted**. When no
       terminal exists, the stored value alone is enough and the next `M.open()` picks it up.
-- [ ] Same dependency constraint as Phase 1: no `require` of any `neotex.*` path. Require the
+- [x] Same dependency constraint as Phase 1: no `require` of any `neotex.*` path. Require the
       backend by its full module path (`neotex.plugins.ai.sapience.terminal`) — this is the one
       unavoidable in-tree path reference, so make it a single module-local
       `local backend = require(...)` at the top of the file with a comment naming it as the
       **only** line to edit when the directory is lifted into a standalone repository.
-- [ ] LuaDoc every public function; `pcall` nothing that cannot fail; no global variables.
+- [x] LuaDoc every public function; `pcall` nothing that cannot fail; no global variables.
 
 **Timing**: 1.5 hours
 
