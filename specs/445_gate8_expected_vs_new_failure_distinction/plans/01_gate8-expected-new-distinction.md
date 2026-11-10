@@ -1,7 +1,7 @@
 # Implementation Plan: Task #445
 
 - **Task**: 445 - Give verify-deploy.sh's Gate 8 an expected-versus-new failure distinction
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None blocking. `state.json`'s recorded `dependencies: [414, 415]` are both
   `completed`; the dispatch's coordination constraint (the gate-registry/gate-framework refactor
@@ -110,35 +110,36 @@ roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Three-way verdict branch in `gate8_run()` [NOT STARTED]
+### Phase 1: Three-way verdict branch in `gate8_run()` [COMPLETED]
 
 **Goal**: Gate 8 asks `run-all.sh` for its EXPECTED/NEW accounting and branches three ways on the
 answer, with the NEW-failure path byte-identical to today's.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh` immediately before editing
-      (concurrent sibling claims this file — see Risks).
-- [ ] Add `--fail-on-new` to the existing `run-all.sh` invocation inside `gate8_run()`, leaving
+- [x] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh` immediately before editing
+      (concurrent sibling claims this file — see Risks). *(completed: file was clean, no foreign commit/edit observed)*
+- [x] Add `--fail-on-new` to the existing `run-all.sh` invocation inside `gate8_run()`, leaving
       `--quiet`, `--jobs "$GATE8_JOBS"`, the `cd "$TARGET"` wrapper, and the surrounding
-      `specs/.gate-lock` acquire/release bracket untouched.
-- [ ] After the mutex release, compute an all-expected discriminator from the already-captured
+      `specs/.gate-lock` acquire/release bracket untouched. *(completed)*
+- [x] After the mutex release, compute an all-expected discriminator from the already-captured
       `$run_all_output`: a line-anchored match on the roster header `[run-all] Failing suites (`.
       Its presence alongside `run_all_status -eq 0` means "failures occurred, none of them NEW".
-      Do not parse the numeric tally field.
-- [ ] Replace the two-way `if [ "$run_all_status" -eq 0 ]` branch with three:
+      Do not parse the numeric tally field. *(completed)*
+- [x] Replace the two-way `if [ "$run_all_status" -eq 0 ]` branch with three:
       - `run_all_status -eq 0` and no roster header -> `pass "run-all.sh: all discovered suites passed"` (message unchanged).
       - `run_all_status -eq 0` and roster header present -> `warn_advisory` with a narrative that
         names the all-expected outcome and quotes the tally line, plus a remedy pointing at
         `tests/known-failures.txt` and a full `run-all.sh` re-run for detail.
       - `run_all_status -ne 0` -> the existing `fail()` call and the existing
         `verify_deploy_extract_verdict_lines '[FAIL]' "$run_all_output"` FINDINGS loop, both
-        unmodified, including the exit-2 `VERIFY_DEPLOY_GATE8_JOBS` remedy clause.
-- [ ] Extend `gate8_run()`'s own header comment block with the chosen semantics: `--fail-on-new`
+        unmodified, including the exit-2 `VERIFY_DEPLOY_GATE8_JOBS` remedy clause. *(completed:
+        fail() message and FINDINGS loop confirmed character-for-character unchanged by diff)*
+- [x] Extend `gate8_run()`'s own header comment block with the chosen semantics: `--fail-on-new`
       is now passed; an all-expected run is non-blocking and emits `WARN-FINDING`, never `FINDING`;
       a NEW failure is unchanged; the roster-header discriminator and its safe degrade direction;
       and why `warn_advisory()` rather than `pass()` (the `GATE_DIRTY_LIST` cache-ineligibility and
       the `CHECKS` increment that keeps a `--only-gate 8` all-expected run out of the
-      zero-check-under-filter exit-2 branch).
+      zero-check-under-filter exit-2 branch). *(completed)*
 
 **Timing**: 1 hour
 

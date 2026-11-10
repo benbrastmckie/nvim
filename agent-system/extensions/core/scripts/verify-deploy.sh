@@ -1129,6 +1129,39 @@ fi
 # see that function's own header comment for the full account, including the concrete
 # serialization-breaking test failure that caught it. See
 # context/patterns/batch-orchestration-guardrails.md for the full contract.
+#
+# Expected-versus-NEW verdict (three-way branch, not two): the run-all.sh invocation below passes
+# --fail-on-new, so $run_all_status is 0 whenever run-all.sh classified zero failures as NEW --
+# including a run where one or more EXPECTED failures occurred (a basename match against the
+# committed tests/known-failures.txt manifest; a missing/truncated manifest degrades to today's
+# behavior, every failure classifies NEW). That alone cannot tell "zero failures" apart from
+# "zero NEW failures", so a second signal -- the PRESENCE of run-all.sh's own
+# "[run-all] Failing suites (" roster header, which it prints unconditionally whenever any suite
+# failed -- discriminates the two. Presence is detected only, never the numeric tally, because a
+# header's existence is the more stable contract; the degrade direction is deliberately safe (if
+# the header ever disappeared, an all-expected run would read as PASS -- a visibility loss, never
+# a missed NEW failure, since --fail-on-new independently guarantees a NEW failure yields a
+# non-zero exit). The three branches:
+#   - exit 0, no roster header      -> pass()          (clean: every discovered suite passed)
+#   - exit 0, roster header present -> warn_advisory()  (all-expected: non-blocking but visible)
+#   - exit non-zero                 -> fail()           (at least one NEW failure: unchanged)
+# warn_advisory(), not pass() or plain warn(), for the all-expected branch: pass() would make
+# this gate cache-write-eligible under --skip-unchanged, caching a warm PASS over a corpus that
+# genuinely has failing suites, while warn()'s plain `FINDING ` line would still reach
+# deploy_findings_snapshot's batch-blocking filter. warn_advisory() increments CHECKS (so a
+# --only-gate 8 selection over an all-expected run still counts a check rather than tripping the
+# zero-check-under-filter exit-2 branch), appends to GATE_DIRTY_LIST (preserving today's
+# cache-invalidation behavior exactly), and emits `WARN-FINDING gate8 ...` rather than
+# `FINDING gate8 ...`, a channel deploy_findings_snapshot's strict `grep '^FINDING '` does not
+# match -- so an all-expected run contributes zero rows to that snapshot in any capture, and the
+# NEW-failure fail() branch, its FINDINGS_LIST loop, and its verify_deploy_extract_verdict_lines
+# '[FAIL]' anchored extraction are all unchanged. Known accepted residual: in a run containing at
+# least one NEW failure, that unchanged extraction still folds every failing suite's line into
+# FINDINGS_LIST, EXPECTED ones included -- unchanged from today, and out of scope here (closing it
+# would need a second NEW-specific anchor emitted by run-all.sh, or a roster cross-reference
+# inside this function). known-failures.txt is advisory and human-maintained (see its own header
+# for the needs-owner convention); this gate now trusts its classification more directly than
+# before, so a stale row understates NEW churn until the manifest is corrected.
 _gate8_signal_cleanup() {
   local sig="$1"
   if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ]; then
@@ -1188,7 +1221,7 @@ else
     fi
   fi
 
-  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" 2>&1)
+  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" --fail-on-new 2>&1)
   run_all_status=$?
 
   # Release on every path out of the bracket (success and failure alike) -- explicit, mirroring
@@ -1201,8 +1234,33 @@ else
     trap - INT TERM HUP
   fi
 
-  if [ "$run_all_status" -eq 0 ]; then
+  # Expected-versus-NEW discriminator: --fail-on-new (above) makes $run_all_status reflect
+  # run-all.sh's own EXPECTED/NEW accounting rather than a bare "any failure" exit code --
+  # $run_all_status is 0 whenever no failure was classified NEW, including the case where one
+  # or more EXPECTED failures occurred. That alone collapses "zero failures" and "zero NEW
+  # failures" into the same exit code, so a second, independent signal is needed to tell them
+  # apart: the PRESENCE of run-all.sh's own roster header ("[run-all] Failing suites ("), which
+  # it prints unconditionally whenever any suite failed, EXPECTED or not. Detecting presence
+  # only (never parsing the numeric tally) is deliberate -- see the header comment above
+  # gate8_run() for the full degrade-direction rationale.
+  run_all_had_failing_suites="false"
+  case "$run_all_output" in
+    *$'\n''[run-all] Failing suites ('*) run_all_had_failing_suites="true" ;;
+    '[run-all] Failing suites ('*) run_all_had_failing_suites="true" ;;
+  esac
+
+  if [ "$run_all_status" -eq 0 ] && [ "$run_all_had_failing_suites" = "false" ]; then
     pass "run-all.sh: all discovered suites passed"
+  elif [ "$run_all_status" -eq 0 ] && [ "$run_all_had_failing_suites" = "true" ]; then
+    # All-expected outcome: --fail-on-new already certified zero NEW failures, so this is
+    # non-blocking (never fail()/FAILURES) but still visible and trackable -- warn_advisory(),
+    # not pass() (would make this gate cache-write-eligible under --skip-unchanged, caching a
+    # warm PASS over a corpus that genuinely has failing suites) and not warn() (its plain
+    # `FINDING ` line would still reach deploy_findings_snapshot's batch-blocking filter).
+    run_all_tally_line="$(printf '%s\n' "$run_all_output" | grep -E '^\[run-all\] [0-9]+ passed, ' | tail -n1)"
+    warn_advisory "run-all.sh: all failing suites are declared-expected (no NEW failure)" \
+         "${run_all_tally_line:-see tests/known-failures.txt}; re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh" \
+         "run-all.sh: all failing suites are declared-expected (no NEW failure) -- ${run_all_tally_line:-see tests/known-failures.txt}"
   else
     run_all_remedy="re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh"
     [ "$run_all_status" -eq 2 ] && run_all_remedy="$run_all_remedy (exit 2 may indicate an invalid VERIFY_DEPLOY_GATE8_JOBS value: '$GATE8_JOBS')"

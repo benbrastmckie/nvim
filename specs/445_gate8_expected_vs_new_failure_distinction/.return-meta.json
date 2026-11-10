@@ -1,31 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/445_gate8_expected_vs_new_failure_distinction/plans/01_gate8-expected-new-distinction.md",
-      "summary": "Five-phase, four-wave plan giving Gate 8 a three-way verdict branch (pass / warn_advisory / fail) driven by run-all.sh's existing --fail-on-new accounting; states the chosen all-expected semantics (exits zero, distinguishable on three channels) and justifies it against six consumers, four named in the dispatch plus the gate cache and the zero-check-under-filter branch."
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1793990805_500dd7_445",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4,
-    "dependency_waves": [[1], [2], [3, 4], [5]]
-  },
+  "status": "in_progress",
   "task_number": 445,
-  "dispatch_seq": 11,
-  "memory_candidates": [
-    {
-      "content": "When changing the SEVERITY of a verify-deploy.sh gate's verdict (fail -> warn_advisory, or either -> pass), the consumer set to re-verify is larger than the deploy_findings_snapshot callers a task description typically names. Two further consumers read the verdict's severity side effects rather than its FINDING lines: (1) the --skip-unchanged gate cache -- pass() makes a gate cache-write-ELIGIBLE while fail()/warn()/warn_advisory() all append to GATE_DIRTY_LIST and invalidate, so demoting a failing gate to pass() silently caches a warm PASS over a genuinely failing corpus; (2) the zero-check-under-filter branch -- a --only-gate N selection whose every named gate SKIPs produces CHECKS=0 and exit 2 ('the run attested to nothing'), so a severity change that stops incrementing CHECKS converts a real verdict into an exit-2 error. warn_advisory() is the only non-blocking primitive that preserves both (increments CHECKS, appends to GATE_DIRTY_LIST), which is why it, not pass(), is the correct instrument for 'visible but never batch-blocking'.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/plans/01_gate8-expected-new-distinction.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "gate-severity", "skip-unchanged", "GATE_DIRTY_LIST", "warn_advisory", "zero-check-under-filter"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 445 to execute the plan"
+  "dispatch_seq": 16,
+  "metadata": {
+    "session_id": "sess_1794272256_212466",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Three-way verdict branch in gate8_run()",
+  "started_at": "2026-11-10T02:20:08Z",
+  "last_updated": "2026-11-10T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read verify-deploy.sh immediately before editing (concurrent sibling claims this file)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add --fail-on-new to run-all.sh invocation in gate8_run(), leaving --quiet/--jobs/cd/gate-lock bracket untouched", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Compute all-expected discriminator from captured run_all_output via roster header presence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Replace two-way branch with three: pass/warn_advisory/fail", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 5, "description": "Extend gate8_run()'s header comment with chosen semantics", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
