@@ -4,7 +4,7 @@
 #
 # Usage:
 #   orchestrate-record-decision.sh --task N --session SID --cycle C \
-#     --question "..." --answer "..."
+#     --question "..." --answer "..." [--obligation "..."]
 #
 # Required:
 #   --task N          Bare (unpadded) task/project number.
@@ -14,13 +14,23 @@
 #   --question "..."  The question text exactly as surfaced to AskUserQuestion.
 #   --answer "..."    The user's chosen answer (or free-text response).
 #
+# Optional:
+#   --obligation "..." The specific obligation the recorded route (the --answer) is claimed to
+#                      discharge, named concretely enough that a later receiving agent can check
+#                      it against a phase's own artifacts. Omitted entirely (never an empty
+#                      string) when not supplied -- this script never adjudicates whether the
+#                      route actually discharges it; see
+#                      context/standards/user-decision-contract.md for who proposes the value and
+#                      orchestrate-build-dispatch.sh's "## Prior Decisions" rendering for who
+#                      consumes it.
+#
 # Single responsibility: append exactly one schema-valid entry to that task's
 # specs/{NNN}_{slug}/.decisions.json, per docs/architecture/handoff-schema.md's "Decisions File
 # Schema" section -- a bare top-level JSON array, four required fields per entry (question,
-# answer, cycle [integer], timestamp [ISO 8601 UTC]). NEVER an object wrapper
-# ({"decisions": [...]}) -- that exact shape is the observed failure this script exists to make
-# unreachable. Lazily creates the file ([]) on first use. Additive only: existing entries are
-# never removed or rewritten by a later append.
+# answer, cycle [integer], timestamp [ISO 8601 UTC]), plus optional fields (description_fingerprint,
+# obligation). NEVER an object wrapper ({"decisions": [...]}) -- that exact shape is the observed
+# failure this script exists to make unreachable. Lazily creates the file ([]) on first use.
+# Additive only: existing entries are never removed or rewritten by a later append.
 #
 # Write mechanics follow errors-append.sh's append subcommand exactly: flock -x held across the
 # entire read -> merge -> validate-merged-document -> atomic-mv sequence. The document ROOT (not
@@ -56,7 +66,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'USAGE'
 Usage: orchestrate-record-decision.sh --task N --session SID --cycle C \
-  --question "..." --answer "..."
+  --question "..." --answer "..." [--obligation "..."]
 
 Required:
   --task N          Bare (unpadded) task/project number
@@ -64,6 +74,10 @@ Required:
   --cycle C          Bare non-negative integer loop cycle number
   --question "..."   The question text exactly as surfaced to AskUserQuestion
   --answer "..."     The user's chosen answer (or free-text response)
+
+Optional:
+  --obligation "..." The specific obligation the recorded route (--answer) is claimed to
+                      discharge. Omitted entirely (never an empty string) when not supplied.
 
 Exit codes: 0 appended, 1 argument/validation error (nothing written),
 2 existing-or-merged-document shape validation failure (nothing written).
@@ -78,6 +92,7 @@ session_arg=""
 cycle_arg=""
 question_arg=""
 answer_arg=""
+obligation_arg=""
 
 if [ $# -eq 0 ]; then
   usage
@@ -90,6 +105,7 @@ while [ $# -gt 0 ]; do
     --cycle) cycle_arg="${2:-}"; shift 2 ;;
     --question) question_arg="${2:-}"; shift 2 ;;
     --answer) answer_arg="${2:-}"; shift 2 ;;
+    --obligation) obligation_arg="${2:-}"; shift 2 ;;
     -h|--help) usage ;;
     *) echo "error: unknown argument: $1" >&2; usage ;;
   esac
@@ -160,26 +176,29 @@ if command -v sha256sum >/dev/null 2>&1; then
   description_fingerprint="$(printf '%s' "$description" | sha256sum | awk '{print $1}')"
 fi
 
-# --- Build the entry with jq -c -n (never string concatenation). The optional fifth field is
-#     added only when the digest was computable -- two branches rather than a conditional
-#     `+ {description_fingerprint: $fp}` applied unconditionally, so an empty digest can never
-#     leak in as an empty-string field. ---
+# --- Build the entry with jq -c -n (never string concatenation). A base object carries the
+#     four required fields; each optional field (description_fingerprint, obligation) is merged
+#     in with its own conditional `+ {...}` step applied ONLY inside the branch where that value
+#     is non-empty, never unconditionally -- so an empty/omitted value can never leak in as an
+#     empty-string field. This generalizes the pre-existing two-branch description_fingerprint
+#     pattern to the now four possible combinations (neither optional field, either one alone,
+#     or both) without an unconditional merge anywhere. ---
 timestamp="$(common_timestamp_iso)"
+record="$(jq -c -n \
+  --arg question "$question_arg" \
+  --arg answer "$answer_arg" \
+  --argjson cycle "$cycle_arg" \
+  --arg timestamp "$timestamp" \
+  '{question: $question, answer: $answer, cycle: $cycle, timestamp: $timestamp}')"
+
 if [ -n "$description_fingerprint" ]; then
-  record="$(jq -c -n \
-    --arg question "$question_arg" \
-    --arg answer "$answer_arg" \
-    --argjson cycle "$cycle_arg" \
-    --arg timestamp "$timestamp" \
-    --arg description_fingerprint "$description_fingerprint" \
-    '{question: $question, answer: $answer, cycle: $cycle, timestamp: $timestamp, description_fingerprint: $description_fingerprint}')"
-else
-  record="$(jq -c -n \
-    --arg question "$question_arg" \
-    --arg answer "$answer_arg" \
-    --argjson cycle "$cycle_arg" \
-    --arg timestamp "$timestamp" \
-    '{question: $question, answer: $answer, cycle: $cycle, timestamp: $timestamp}')"
+  record="$(echo "$record" | jq -c --arg description_fingerprint "$description_fingerprint" \
+    '. + {description_fingerprint: $description_fingerprint}')"
+fi
+
+if [ -n "$obligation_arg" ]; then
+  record="$(echo "$record" | jq -c --arg obligation "$obligation_arg" \
+    '. + {obligation: $obligation}')"
 fi
 
 # --- Append under flock -x, holding the lock across the entire read -> merge -> validate ->
