@@ -8204,6 +8204,7 @@ territory edges above.
 - **Dependencies**: Task 328, Task 360, Task 407, Task 414, Task 444, Task 445, Task 446, Task 448
 - **Research**: [449_hoist_batch_gate_deferral_directive/reports/01_batch-gate-deferral-siting.md]
 - **Plan**: [449_hoist_batch_gate_deferral_directive/plans/01_hoist-batch-gate-deferral-siting.md]
+- **Summary**: [449_hoist_batch_gate_deferral_directive/summaries/01_hoist-batch-gate-deferral-siting-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

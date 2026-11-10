@@ -24,29 +24,50 @@
       "category": "PATTERN",
       "source_artifact": "specs/449_hoist_batch_gate_deferral_directive/summaries/01_hoist-batch-gate-deferral-siting-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["dispatch-file-ordering", "position-fixture", "negative-control", "test-authoring"]
+      "suggested_keywords": [
+        "dispatch-file-ordering",
+        "position-fixture",
+        "negative-control",
+        "test-authoring"
+      ]
     },
     {
       "content": "A crude regex-based lint that counts literal string occurrences of a function name (e.g. a MISSING_DECLARATION check counting 'common_test_resolve_subject' vs 'common_test_declare_subject' occurrences) can be false-positived by a mere PROSE COMMENT mentioning the function name stylistically, with no actual call. When adding comments near code that's subject to such a lint, avoid literal mentions of the gated function/pattern names; describe the behavior instead of citing the helper by name.",
       "category": "INSIGHT",
       "source_artifact": "specs/449_hoist_batch_gate_deferral_directive/summaries/01_hoist-batch-gate-deferral-siting-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["lint-false-positive", "regex-lint", "subject-resolution-declaration", "shellcheck-adjacent"]
+      "suggested_keywords": [
+        "lint-false-positive",
+        "regex-lint",
+        "subject-resolution-declaration",
+        "shellcheck-adjacent"
+      ]
     },
     {
       "content": "deploy-headless.sh runs an inline 'verify-deploy.sh --skip-slow' (the full gate aggregator) by DEFAULT unless --skip-verify is passed. When a task's own subject matter is avoiding full-aggregator contention under a multi-task batch (a Batch Gate Deferral directive), always pass --skip-verify to deploy-headless.sh and follow with the dispatch's own named scoped narrowing instead -- forgetting this flag silently runs the exact full-aggregator-under-contention case the task may be trying to prevent.",
       "category": "CONFIG",
       "source_artifact": "specs/449_hoist_batch_gate_deferral_directive/summaries/01_hoist-batch-gate-deferral-siting-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-headless", "skip-verify", "batch-gate-deferral", "verify-deploy-contention"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "skip-verify",
+        "batch-gate-deferral",
+        "verify-deploy-contention"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -4458,12 +4458,18 @@
           "path": "specs/449_hoist_batch_gate_deferral_directive/plans/01_hoist-batch-gate-deferral-siting.md",
           "type": "plan",
           "summary": "5-phase, 3.25-hour plan hoisting the Batch Gate Deferral directive ahead of the plan body, pinning its emitted position, and recording the chosen mechanism."
+        },
+        {
+          "path": "specs/449_hoist_batch_gate_deferral_directive/summaries/01_hoist-batch-gate-deferral-siting-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 5 phases, decisions, deviations, and verification evidence."
         }
       ],
       "created": "2026-10-18T17:24:48Z",
       "last_updated": "2026-11-10T08:01:05Z",
       "session_id": "sess_1794272256_212466",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Relocated orchestrate-build-dispatch.sh's ## Batch Gate Deferral emission to immediately after ## Description (ahead of the Plan/Phase Mission group) under an explicit implement-phase guard, added a forward-pointer and an unmappable-criterion clause to its text, extended test-orchestrate-build-dispatch.sh with position and heading-string regression cases, recorded the decision in batch-gate-stage.md/plan-format.md/orchestrate-state-machine.md, and redeployed with all 5 plan phases verified and committed."
     },
     {
       "project_number": 450,
