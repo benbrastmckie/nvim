@@ -1,5 +1,5 @@
 ---
-next_project_number: 576
+next_project_number: 577
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 576
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,410,412,423,431,437,444,451,453,456,459,472,473,475,477,479,483,484,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,448,458,462,463,474,476,480,486,492,516,518,527,540,541,542,543,544,553,564 | 369,383,397,412,423,431,444,451,459,472,479,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 2 | 384,391,398,439,448,458,462,463,474,476,480,486,492,516,518,527,540,541,542,543,544,553,564,576 | 369,383,397,412,423,431,444,451,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,449,452,454,455,461,500,508,523,547,552,570 | 313,391,398,439,448,458,486,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,450,457,481,501,509,513,517,561,566 | 390,402,449,452,455,461,472,476,479,486,515,552 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 5 | 487,524 | 450,501 | core-agent-system, orchestrator |
@@ -149,13 +149,14 @@ next_project_number: 576
     └─ 552 [NOT STARTED] — Extend the bounded-waiter lint beyond Rule 2 to the...
       └─ 561 [NOT STARTED] — Record the load-sized bound and the diagnostic-preserving...
 539 [NOT STARTED] — State the precedence and snapshot-prerequisite rules for a...
-  └─ 540 [NOT STARTED] — Record the decide-synthesis working form, the axiom-free...
+  └─ 540 [NOT STARTED] — Record five measured lean4 facts: the decide-synthesis...
   └─ 544 [NOT STARTED] — Make a fixture-dependent Lean gate statement expressible and...
 545 [NOT STARTED] — Report a reversed validate-artifact.sh invocation as an...
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 548 [NOT STARTED] — Harvest a plan's declared contingency files into file\_scope,...
   └─ 553 [NOT STARTED] — Name the typst-sync gate as the cause when...
 549 [NOT STARTED] — Give the Lean unusedArguments remedy a narrow route instead...
+  └─ 576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
 554 [NOT STARTED] — file\_scope containment drops external source-store paths...
@@ -185,6 +186,135 @@ next_project_number: 576
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 576. Record the Lean verification-tier gate-naming rule, the Constraints-consumed marker duty, and the build-guard replay window
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 549
+
+**Description**: Add three new conditions to the Lean plan-authoring gate-collisions checklist, each one a fact a
+plan can enumerate in advance rather than discover when a phase's verification turns out not to
+cover what it needed to.
+
+MEASURED, NOT HYPOTHESIZED. All three come from completed Lean work in the consumer repository
+/home/benjamin/Projects/BimodalLogic. Citations are issue-log entries, by entry_id:
+  - specs/898_plus_invariance_base_without_saturation/issues.jsonl  iss_1794279386715_kPDOR6
+  - specs/897_universal_cover_oriented_forest_two_way_bounded/issues.jsonl  iss_1794271994301_33gjJM
+  - specs/897_universal_cover_oriented_forest_two_way_bounded/issues.jsonl  iss_1794271994258_ZM5jTE
+
+CONDITION A -- A PER-PHASE VERIFICATION TIER THAT NAMES ONLY BUILD-SHAPED CHECKS IS SILENT ABOUT
+THE REPOSITORY'S MARKER, INDEX AND LINTER-BASELINE GATES. This is the sharpest of the three and
+the reason this record exists. Four consecutive phases each closed on a green full `lake build`
+plus the plan's own declared interface-tier dependent builds plus `verify-deploy.sh --only-gate 4`,
+and all four were COMMITTED on that evidence. `scripts/check-module-invariants.sh`, which no
+phase's Verification Tier named, then reported five classes of failure introduced by exactly those
+phases: C34 closed-vocabulary marker violations (twelve), C34b (three), C34a (one), C15 (two), C16
+(two), plus a stale invariant baseline. All were repaired in a later phase, so nothing shipped
+broken -- but the evidence four phase commits rested on was silent about real failures those
+phases had introduced. The generalizable fact is that a full build covers NONE of the docstring-
+marker, index-anchoring or linter-baseline gates, so a tier naming only build-shaped checks cannot
+see them.
+
+State the rule with a trigger a plan author can check before writing the criterion, not as a
+blanket instruction. `check-module-invariants.sh` belongs in a phase's Verification Tier when that
+phase does any of three things: (i) touches a `Constraints consumed:` docstring marker; (ii) adds
+or changes a `docs/theorem-index.md` row; or (iii) changes which binders a proof actually reads --
+which is what C16's `unusedArguments` linter detects, and is the least obvious of the three
+because a proof refactor that leaves a signature untouched still meets it.
+
+CONDITION B -- A BRACKETED BUNDLING BINDER PLUS A CONSTRAINT NAMED IN PROSE OWES A MARKER LINE,
+AND THE MARKER VOCABULARY IS CLOSED. Two distinct facts, both observed, that belong together
+because the second is the trap inside the first.
+
+C34b flags any declaration whose docstring names a constraint while the declaration carries a
+bracketed BUNDLING binder: the bundle supplies the constraint, so a prose mention without a marker
+line reads as an unmarked constraint claim. The observed instance was a declaration carrying
+`[F.IsRegular]` whose docstring named Saturation; the gate's own remedy is a
+`Constraints consumed:` line enumerating ALL FOUR constraints that binder supplies --
+Compositionality, Seriality, Limit, Saturation -- so that C34a stays green too. Enumerating only
+the one the prose happened to mention satisfies C34b and then fails C34a. Any new declaration that
+takes such a binder and mentions a constraint name in prose owes this line.
+
+The trap: the `Constraints consumed:` marker vocabulary is CLOSED. A side-attributing form -- the
+shape `source F': <constraints>; base F: none`, which reads naturally and which a plan did in fact
+specify -- is INADMISSIBLE on the marker line, because the parser accepts only vocabulary terms
+there. That is what produced twelve of the C34 violations cited above: a plan specified a marker
+form the gate cannot accept, and every declaration written to that plan inherited it. A plan that
+needs to express side attribution puts it in prose around the marker, never on the marker line.
+
+CONDITION C -- `lake-build-guard.sh` REPLAYS A RECORDED RESULT WITHIN ITS 900s WINDOW, SO A BUILD
+ISSUED RIGHT AFTER AN EDIT CAN REPORT THE PRE-EDIT VERDICT. Observed: the guard replayed a
+recorded result of age 115s for a build issued immediately after an edit, reporting a warning that
+edit had already fixed. `--no-share` is required for any build issued after an edit that lands
+inside the replay window. State the window as the checkable condition (an edit newer than the
+recorded result) rather than as a blanket "always pass --no-share", which would discard the
+sharing the guard exists to provide.
+
+ALREADY DOCUMENTED IN THIS SAME FILE -- DO NOT ADD A CONDITION FOR EITHER, AND DO NOT RESTATE
+THEM. Two further collisions recurred in the same two tasks and are ALREADY covered by this
+checklist's existing conditions, verified by reading the file as it stands:
+  - A Lean line-count change drifting `typst/generated/status.typ`'s `formalsystem-line-count` and
+    being refused by the pre-commit gate is Condition 1's surface (b), including the
+    `--fix`-plus-stage remedy and the file-scope consequence.
+  - `linter.style.longFile` tripping against a file's in-source baseline, and the
+    bump-per-the-documented-convention remedy, is Condition 7, including its acceptance window.
+Both recurred ANYWAY, which makes them evidence about DISCOVERABILITY rather than about missing
+content: the conditions exist and were not reached by the authoring dispatch. Do not treat that as
+licence to restate them more loudly. If research concludes the discoverability gap is the real
+defect, say so as a finding and raise it separately rather than duplicating two conditions.
+
+WHY CONDITIONS A AND B ARE ONE RECORD BUT MUST STAY TWO CONDITIONS. They interact -- the
+`Constraints consumed:` marker is the subject of A's trigger (i) and of all of B -- and they are
+nonetheless different obligations addressed to different readers at different moments: A is about
+WHICH GATE a phase's verification criterion must name, read by a plan author choosing a tier; B is
+about WHAT A DECLARATION'S DOCSTRING OWES, read by an implementer writing the declaration. They
+are filed as one record because they land in one file and would otherwise race it, and they must
+appear as two separately-triggered conditions because a reader checks them separately. A single
+merged condition covering both would be unreachable from either reader's question.
+
+SCOPE BOUND, deliberate. Extend the EXISTING checklist file; no new context file. The core
+plan-format Verification Tiers section is DELIBERATELY EXCLUDED from file_scope: the gate named
+here is a consumer-repository script, not a universal tier rule, and that file is claimed by
+several other open records. If research concludes a core-side cross-reference is genuinely
+required, STOP and raise it rather than taking that territory.
+
+TERRITORY. `agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`
+is also claimed by the open record `lean_unusedarguments_narrow_remedy_route`, whose subject --
+the narrow remedy route for the `unusedArguments` finding -- is adjacent to this record's
+Condition A trigger (iii), which names that same linter as a TRIGGER without prescribing its
+remedy. A dependency edge on that record is declared to serialize the shared file. Read its landed
+state first: if it has already added a condition covering that linter, Condition A cites it for
+the remedy and states only the trigger, rather than restating it.
+
+Extending any of these files changes its recorded `line_count`, so
+`agent-system/extensions/lean/index-entries.json` is part of THIS change and is declared in
+file_scope, not left as a follow-up.
+
+SOURCE-STORE BOUNDARY. Edit under the source store, never under a deployed `.claude/**` tree,
+which is a gitignored artifact regenerated by the next deploy. Re-derive the store rather than
+trusting this note: `jq -r '.extensions.lean.source_dir' .claude-extensions.json` in the consumer
+repository. Note that `source_dir` is PER-EXTENSION, at `.extensions.<name>.source_dir`; a
+top-level `jq -r '.source_dir'` returns null and must not be read as the key being absent.
+
+DELIVERABLE HYGIENE. Every edited file lies outside `specs/**`, so its prose carries no
+task-number references and no record-versioning language. The gate names, check identifiers
+(C34, C34a, C34b, C15, C16), script names, the marker string and the vocabulary terms are durable
+anchors and may be cited; the originating task numbers and issue entry_ids may NOT appear in the
+guidance prose -- they live in this record only. Describe each condition as a fact a plan author
+checks, never as a narration of a past incident.
+
+ACCEPTANCE. (1) Each of the three conditions states a trigger the reader can check BEFORE writing
+a criterion, and names the concrete command or marker form at issue rather than describing one.
+(2) Condition A names all three trigger conditions and says plainly that a full build covers none
+of the gates in question. (3) Condition B states both the enumerate-all-constraints duty and the
+closed-vocabulary inadmissibility of the side-attributing form, and says why satisfying C34b alone
+can still fail C34a. (4) Condition C states the replay window as a checkable condition rather than
+a blanket flag instruction. (5) No condition duplicates existing Condition 1 or Condition 7.
+(6) `index-entries.json`'s `line_count` for the edited file agrees with the file as landed.
+(7) A redeploy reports a clean verify.
+
+---
 
 ### 575. Stop the cross-phase ceiling check reading a stop-word as a unit and false-positiving on N-of-M prose
 - **Status**: [NOT STARTED]
@@ -1945,6 +2075,59 @@ surface, and that rationale does not survive into this repository.
 PARENT: source-repository parent #836 did not migrate; recorded as provenance rather than
 as a number resolving to an unrelated record here.
 
+=== ADDED EVIDENCE (2026-11-09): A SECOND INSTANCE THAT PINS GAP PART 1 EXACTLY ===
+
+A SECOND independent instance, in a different task's research dispatch, and it is sharper than the
+first because this time BOTH values were observed in the same dispatch and they DISAGREED.
+
+The dispatch's injected lean-readiness block reported the reachability tier as `reachable`. The
+FIRST `lean_local_search` of that same dispatch then returned `index: unavailable` with
+`sources_searched: [source_text]` only -- no language server running. Per the block's own
+interpretation rule this put the whole research session in the degraded evidence tier: every
+Mathlib and FormalSystem name in the resulting report is evidenced by a grepped declaration site
+(file:line) rather than an LSP lookup, and no empty result was treated as proof of absence. The
+report states this honestly, so nothing unsound was concluded -- the cost is that an entire
+research round's evidence is weaker than its own readiness block implied, and nothing said so until
+the first search returned.
+
+Provenance: consumer repository /home/benjamin/Projects/BimodalLogic, issue-log entry
+iss_1794262004178_C6fQLK in
+specs/897_universal_cover_oriented_forest_two_way_bounded/issues.jsonl, class `tooling-degraded`,
+severity `minor`, phase `research`. Raised at an orchestrate conclusion stage and approved at the
+lead level as an agent-system change request.
+
+WHY THIS IS THE DECIDING MEASUREMENT FOR GAP PART 1, NOT MERELY A REPEAT. This record already
+states that the probe measures REACHABILITY and never index STATE, and that a server can be
+reachable while its index is `unavailable` or `warming`. That was an inference about a mechanism.
+This instance OBSERVES the disagreement directly: the printed verdict said `reachable` while the
+tool reported `unavailable`, in one dispatch, minutes apart. So the probe's verdict is not merely
+incomplete -- it is affirmatively misleading at the moment a reader most relies on it, because
+`reachable` is the reassuring value and it was printed while the condition that actually degrades
+the evidence was already true.
+
+A DISTINCTION THE FIX MUST PRESERVE, AND WHICH THE PROBE'S OWN DOCUMENTATION ALREADY STATES. The
+probe is honest about its own limits in prose: it records that a live process is a NECESSARY but
+not SUFFICIENT condition, since a live-but-hung server still reports `reachable` from a process
+presence check. The defect is therefore NOT that the probe lies about what it measured; it is that
+the ONE-LINE VERDICT a dispatch actually reads carries a word implying readiness, while the
+qualification that makes it conditional sits in the interpretation prose below it. Whichever
+option this record's planning selects -- obtaining the real index state, or surfacing the degraded
+POSSIBILITY in the verdict line itself -- the fix is about what the verdict LINE says, not about
+adding more interpretation prose. More prose is what already exists and what already failed to
+prevent this.
+
+CONSTRAINTS RESTATED, UNCHANGED BY THIS EVIDENCE. The probe's absolute existing contract still
+binds any warming or state-querying option: always exits 0, always emits exactly one line of valid
+JSON, WARN-never-BLOCK, silent on success, every failure path degrading to a silent empty object
+rather than non-JSON noise, and the measured non-Lean early exit treated as a cost baseline. This
+instance adds no licence to weaken any of those.
+
+GAP PART 2 IS ALSO CORROBORATED, SECOND-HAND. As in the first instance, the research agent DID
+announce the degraded tier -- this issue-log entry is that announcement -- and nothing carried it
+to the planner in machine-readable form. The plan for that task was built on grep-backed absence
+claims with no marker distinguishing them from LSP-backed ones. Both gap parts are now evidenced
+twice, independently.
+
 ---
 
 ### 549. Give the Lean unusedArguments remedy a narrow route instead of the wholesale runLinter --update rewrite
@@ -2859,7 +3042,7 @@ surface, and that rationale does not survive into this repository.
 
 ---
 
-### 540. Record the decide-synthesis working form, the axiom-free maxRecDepth remedy, and the probe guard's total arithmetic
+### 540. Record five measured lean4 facts: the decide-synthesis working form, the axiom-free maxRecDepth remedy, the probe guard's total arithmetic, instance synthesis at a coerced carrier, and structural recursion not reducing by rfl
 - **Effort**: low
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -2960,6 +3143,67 @@ SCOPE ENTRIES NOT CARRIED (they resolve only in the source repository, and are F
 targets here): scripts/README.md. Read them repo-qualified to /home/benjamin/Projects/BimodalLogic/.
 PARENT: source-repository parent #809 did not migrate; recorded as provenance rather than
 as a number resolving to an unrelated record here.
+
+=== ADDED SCOPE (2026-11-09): TWO FURTHER MEASURED ELABORATION FACTS, SAME FILES ===
+
+Two more measured lean4 facts are folded into this record rather than filed separately. The
+backlog-reconciliation audit returned `duplicate-of-open` against this record with mechanical class
+EXACT -- the proposed file_scope was identical to this record's own, all three paths -- and this
+record is the established record-the-measured-facts bucket for exactly these two context files. A
+third record over the same file pair would race it, which is the hazard a sibling record in this
+backlog already documents at length. Both facts were verified ABSENT from the whole source store
+before folding, by searching every relevant term (`inferInstanceAs`, `reducible transparency`,
+`discrimination tree`, `brecOn`, `equation compiler`, `equation lemma`), which returned nothing.
+
+PROVENANCE. Completed Lean work in the consumer repository /home/benjamin/Projects/BimodalLogic,
+task directory specs/897_universal_cover_oriented_forest_two_way_bounded, raised during an
+orchestrate conclusion stage and approved at the lead level as an agent-system change request.
+Citations by entry_id: iss_1794261778524_FaBz8T (fact 4), iss_1794264437834_r64t14 (fact 5).
+
+FACT 4 -- A CLASS APPLIED AT A COERCED CARRIER DOES NOT SYNTHESISE; THE REMEDY IS POSITIONAL.
+Instance search runs at REDUCIBLE transparency. When a structure's carrier field is not
+SYNTACTICALLY the underlying type, the discrimination tree does not see through the projection, so
+an instance of a class at that coerced carrier is invisible to instance search and does not
+synthesise -- even though it is provably available and typechecks when supplied. Observed:
+`SuccOrder (coe intOrder)` failed to synthesise because the order's carrier field is not
+syntactically the integer type for discrimination-tree purposes (recorded at a declaration site in
+FormalSystem/Semantics/ShiftSet.lean). The remedy is to pass the instances POSITIONALLY at the
+application site via `inferInstanceAs`, which elaborates at default transparency. State the
+consequence for a signature, not only the workaround: a theorem taking such classes as
+instance-implicit binders cannot be applied at a coerced carrier by unification alone, so EVERY
+application site at that carrier must supply them. Cite the existing worked call sites in the
+consumer repository as the pattern rather than inventing an example, and name the diagnostic shape
+-- a failed-to-synthesize error for an instance the reader knows exists -- so a reader recognises
+the condition before reaching for a workaround.
+
+FACT 5 -- A DEF BY STRUCTURAL RECURSION OVER A MULTI-INDEX INDUCTIVE DOES NOT REDUCE BY `rfl`.
+The equation compiler routes such a definition through `brecOn`, so it does NOT reduce at its own
+constructors by `rfl`, and every proof that assumed it would fails. The remedy is simp-tagged
+equation lemmas, one per constructor, each proved by `simp` on the definition, which restores the
+reductions; downstream proofs then use `simp` rather than `rfl` for every equation of that
+definition. STATE THE DISCRIMINATING OBSERVATION, because it is what makes this checkable rather
+than a vague warning: a NON-RECURSIVE sibling definition over the same inductive DOES still reduce
+by `rfl`. The trigger is the recursion, not the inductive's shape, so a reader can tell which of
+two neighbouring definitions is affected without experiment. Observed: a walk-length function by
+structural recursion over a three-index inductive needed three such lemmas, while the
+non-recursive parent function beside it reduced normally.
+
+SITING FOR THESE TWO. Both are elaboration behaviour rather than tactic technique, which argues
+for the lean4 syntax-and-elaboration file; fact 5's remedy and the `simp`-not-`rfl` discipline it
+imposes downstream are tactic guidance, which argues for the tactic-patterns file. Decide the split
+during planning and record the rejected alternative. Do not write the same fact into both files:
+one carries it, the other points at it if it needs to.
+
+NO SCOPE WIDENING. Both facts land inside this record's already-declared file_scope -- the two
+context files plus the index -- so no file_scope change is required for this fold. The sibling
+record `lean4_context_three_measured_gotchas` also claims the syntax file and the index; read its
+landed state first and prefer adding to a section it has already created over opening a parallel
+one about elaboration behaviour.
+
+DELIVERABLE HYGIENE FOR THESE TWO, as for the rest of this record. The class names,
+`inferInstanceAs`, `brecOn`, `rfl`, `simp` and the transparency setting are durable anchors and may
+be cited in the guidance prose; the originating task number and the issue entry_ids may NOT -- they
+live in this record only.
 
 ---
 
@@ -3184,6 +3428,64 @@ not as a correction -- they were declared so the source repository overlap gate 
 surface, and that rationale does not survive into this repository.
 DEPENDENCY EDGES (procedure step 8): dropped edge(s) on source-repository task(s) 772 -- each referent is completed, archived, or stays behind, so the edge cannot be expressed in this
 repository numbering space and is recorded here as provenance.
+
+=== ADDED EVIDENCE (2026-11-09): A THIRD INSTANCE, AND IT RESOLVES THIS RECORD'S SITING BRANCH (ii) ===
+
+A THIRD independent instance of the anchor-selection half, same mechanism, same magnitude class,
+in a different repository's plan phase. A python in-place string replace restructuring a plan's
+`## Lean Challenge Statements` section anchored on the FIRST OCCURRENCE of the literal heading
+string -- which was a PROSE MENTION of it inside the Overview, not the heading. The replace deleted
+everything from the Overview through the challenge block: Research Integration, Goals, Risks, all
+seven phases, and the Decisions section. Caught immediately, because the challenge-snapshot tool
+then reported the section absent and fell back to its git-baseline route; the plan was rewritten in
+full and re-validated clean, so nothing shipped broken. Cost: a full plan rewrite.
+
+Provenance: consumer repository /home/benjamin/Projects/BimodalLogic, issue-log entry
+iss_1794263418034_setfrr in
+specs/897_universal_cover_oriented_forest_two_way_bounded/issues.jsonl, class `tooling-misuse`,
+severity `costly`, phase `plan`. Raised at an orchestrate conclusion stage and approved at the lead
+level as an agent-system change request.
+
+WHY THIS IS MORE THAN A THIRD TALLY MARK -- IT SETTLES THE SITING QUESTION THIS RECORD DEFERRED.
+This record's resolution order (ii) says: read the sibling anchor record's landed state; if it has
+already relocated its guidance into a core-extension home, that home is this record's target too;
+if it has NOT, this record's file becomes the shared home that record invited, and the lean-side
+files should POINT at it rather than restate it. That sibling record is now COMPLETED and the
+answer is the second branch. Its guidance landed in the LEAN extension only, as a
+`**Section-anchoring rule for any multi-line plan-file edit**` paragraph inside
+`agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md`, stated
+immediately after that file's Stage 4A marker code fence and cross-referenced once more from its
+Stage 4C text. The rule itself is correct and complete: it requires anchoring both ends on LINES
+beginning with heading markers, searching the end anchor FORWARD from the target section's own
+start line, and it names the exact failure mode -- that the same text commonly recurs in prose
+earlier in the file, for example inside a Goals or Overview paragraph.
+
+SO BRANCH (ii) IS CONFIRMED: no core-extension home exists, and this record's file is the shared
+home that sibling invited.
+
+AND THE THIRD INCIDENT SHOWS WHY THAT MATTERS, WHICH IS THE LOAD-BEARING NEW FACT. The rule was
+already landed, correct, and specific -- and the incident happened anyway, because the rule is
+sited in the LEAN IMPLEMENTATION FLOW and the incident occurred in a PLAN phase. A plan-authoring
+dispatch does not read the implementation flow file, so the one place the rule exists is a place
+the responsible audience never looks. This is an AUDIENCE-REACH defect, not a content defect, and
+it is exactly the defect a shared core home fixes. It also independently confirms this record's
+own both-audiences requirement -- that a plan author must not author a step phrased as a
+slice-and-splice reconstruction in the first place -- with a measured case in which only the plan
+audience was exposed.
+
+CONSEQUENCE FOR THIS RECORD'S PLAN, stated as guidance rather than as a new deliverable. The
+shared core home this record creates should carry the ANCHOR rule as well as this record's
+ASSERTION rule, with the lean implementation-flow paragraph reduced to a pointer rather than left
+as the sole copy -- which is precisely what the sibling record invited and what branch (ii)
+authorises. The two halves are then reachable from one place by both audiences. Do not read this as
+licence to re-derive or reword the anchor rule: it is already correct where it stands, and
+relocating it means moving the landed text and pointing at it, not rewriting it.
+
+ONE FURTHER REMEDY WORTH WEIGHING, ALREADY NAMED IN THIS RECORD. The incident was caught by a tool
+that happened to notice the section was absent, not by the editor. That is the weak form of this
+record's own post-state assertion: an invariant checked by luck rather than in the same breath as
+the write. A section-count or heading-count assertion around a plan-file section edit would have
+caught it at once and is the cheapest available mechanical form.
 
 ---
 
