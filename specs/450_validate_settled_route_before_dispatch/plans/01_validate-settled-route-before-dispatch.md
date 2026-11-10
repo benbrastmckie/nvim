@@ -452,7 +452,7 @@ and the earlier group's cases are re-run to prove they still pass.
 
 ---
 
-### Phase 5: Wire the Caller, Redeploy, and Run the Full Gate Set [NOT STARTED]
+### Phase 5: Wire the Caller, Redeploy, and Run the Full Gate Set [IN PROGRESS]
 
 **Goal**: The loop's batched relay passes the agent-supplied obligation to the writer, the source
 store is redeployed, and the complete gate set is green.
