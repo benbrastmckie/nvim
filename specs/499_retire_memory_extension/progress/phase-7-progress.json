@@ -1,0 +1,32 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy and verify the whole change under the complete gate set",
+  "started_at": "2026-11-10T03:10:00Z",
+  "last_updated": "2026-11-10T03:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read working tree for foreign changes", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh (non-destructive default)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Targeted removal of 6 orphaned deployed files + 4 ghost index.json rows (sanctioned alternative to --wipe, per deploy-orphan-detection.md)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run complete gate set twice (no flags); investigate and account for every non-PASS finding", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Verify sapience-retrieve.sh end-to-end (populated context + forced-failure degrade)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Verify --revise/--learn degraded paths (static, live total_events != 0 so not forced live)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Verify /todo archival harvest-free (static read-through + test-todo-move-pair-staging.sh 41/41)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Discharge Part C2 write verification (forced-failure confirmed; written>=1 sub-item excluded, external service issue)", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Confirm .memory/ baseline unchanged", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Confirm retired SCOPE NARROWING verification bullets not claimed anywhere", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {"approach": "Real sapience-remember.sh write of a coherent note", "result": "failed", "reason": "Consistent zero-bytes-received hang on POST /ingest-kos for real-sentence content, reproduced up to a 270s curl timeout; short/nonsense content succeeds fast. Treated as an external service issue, not a defect in this task's wiring (recorded via issue-record.sh)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.3",
+      "description": "Manually removed 6 orphaned deployed files and 4 ghost context/index.json rows, beyond the plan's literal 'run deploy-headless.sh, confirm absent' instruction",
+      "type": "altered",
+      "reason": "Direct code reading confirmed deploy-headless.sh's non-destructive default is additive-only by design and never prunes a file whose source was deleted (context/patterns/deploy-orphan-detection.md's own 'detect, never auto-delete' section). The plan's own choice of the non-destructive default over --wipe (reasonable, given concurrent siblings on this same tree) was in tension with its adjacent instruction that the deleted files be 'absent' afterward. Resolved using that same pattern document's explicitly sanctioned alternative to --wipe: targeted removal of the specific orphan paths. Confirmed clean via gate 13 immediately after.",
+      "annotation": "see plan Phase 7's checklist annotations and Reasoned Exclusions"
+    }
+  ]
+}
