@@ -377,7 +377,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Metadata file schema for subagent returns",
-      "line_count": 925,
+      "line_count": 926,
       "keywords": [
         "format",
         "metadata",
@@ -3246,7 +3246,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Contract for the agent-authored user_decision field: when to raise one, blocking vs. non-blocking, and how postflight relays it",
-      "line_count": 103,
+      "line_count": 138,
       "keywords": [
         "user-decision",
         "ask-user",
