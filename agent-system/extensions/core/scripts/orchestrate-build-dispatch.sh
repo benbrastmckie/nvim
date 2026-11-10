@@ -517,6 +517,43 @@ if [ -f "$decisions_file" ]; then
   fi
 fi
 
+# ─── Premise re-validation block (report-format.md's "## Carried-Figure Discipline" / "The
+# premise a dispatch acts on" subsection -- Owner ruling: the composer EMITS, it never
+# ADJUDICATES). Byte-identical-when-absent, matching the Prior Decisions block's own
+# no-input-no-change precedent immediately above: emitted ONLY when this task directory already
+# holds at least one prior dispatch's artifact (a report, plan, or summary file), because that is
+# the only case where a prior artifact could possibly already have measured something the
+# current description still asserts. On a task's first dispatch there is nothing to point at, so
+# nothing is emitted and this obligation does no work -- the cost reasoning the same subsection
+# records.
+#
+# This is lexical extraction only, bounded to the six Carried-Figure-Discipline trigger-class
+# shapes' cheap lexical signatures (a numeric count/measurement; a command-output
+# characterization; a file/line citation; a pass/fail/exit-status/gate-outcome claim; an "N of M"
+# ratio; a hard always/never/cannot/is-required claim) -- it NEVER judges whether an extracted
+# claim is true, stale, or contradicted by the prior artifact. That judgment is the receiving
+# agent's to make (ADJUDICATES); deciding agreement/disagreement here would reproduce the
+# semantic-contradiction-detection shape the general detector was rejected for (see
+# report-format.md's "Internal consistency" paragraph).
+premise_revalidation_block=""
+prior_artifact_list=()
+for _prior_subdir in reports plans summaries; do
+  if [ -d "${TASK_DIR_ABS}/${_prior_subdir}" ]; then
+    while IFS= read -r _prior_f; do
+      [ -n "$_prior_f" ] && prior_artifact_list+=("$_prior_f")
+    done < <(find "${TASK_DIR_ABS}/${_prior_subdir}" -maxdepth 1 -type f -name '*.md' 2>/dev/null | sort)
+  fi
+done
+
+if [ "${#prior_artifact_list[@]}" -gt 0 ]; then
+  premise_claims=$(printf '%s\n' "$description" | grep -nE \
+    '[0-9]+[[:space:]]+of[[:space:]]+[0-9]+|exit[[:space:]]+(status[[:space:]]+|code[[:space:]]+)?[0-9]+|\bPASS(ING)?\b|\bFAIL(ING)?\b|\bgate[0-9]+\b|\balways\b|\bnever\b|\bcannot\b|\bis required\b|[0-9]+[[:space:]]*(B|KB|MB|lines?|files?|suites?|cases?|tests?)\b' \
+    2>/dev/null) || premise_claims=""
+  if [ -n "$premise_claims" ]; then
+    premise_revalidation_block="$premise_claims"
+  fi
+fi
+
 # ─── Write specs/{NNN}_{slug}/.dispatch/{seq}.md ────────────────────────────────────────────────
 dispatch_dir="${TASK_DIR_ABS}/.dispatch"
 mkdir -p "$dispatch_dir"
@@ -793,6 +830,28 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     fi
     echo ""
     echo "$prior_decisions_block"
+    echo ""
+  fi
+  if [ -n "$premise_revalidation_block" ]; then
+    echo "## Premise Re-Validation"
+    echo ""
+    echo "A prior dispatch's artifact already exists in this task directory:"
+    for _prior_f in "${prior_artifact_list[@]}"; do
+      echo "- ${_prior_f#"${SKILL_REPO_ROOT}/"}"
+    done
+    echo ""
+    echo "The \`## Description\` above contains the following line(s) matching one of the"
+    echo "Carried-Figure Discipline's six trigger-class shapes (a numeric count/measurement, a"
+    echo "command-output characterization, a file/line citation, a pass/fail/exit-status/"
+    echo "gate-outcome claim, an \"N of M\" ratio, or a hard always/never/cannot/is-required"
+    echo "claim). This is lexical extraction only — it does not judge whether any line below is"
+    echo "still accurate. Before acting on it, check each one against the prior artifact(s)"
+    echo "listed above and against live state, and state the result explicitly even when it"
+    echo "only confirms the description unchanged — see report-format.md's \"## Carried-Figure"
+    echo "Discipline\" section, \"The premise a dispatch acts on\" subsection, for the full"
+    echo "obligation."
+    echo ""
+    echo "$premise_revalidation_block"
     echo ""
   fi
   if [ -n "$pending_gate_finding" ]; then

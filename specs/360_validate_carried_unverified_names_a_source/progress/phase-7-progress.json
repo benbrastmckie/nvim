@@ -1,0 +1,28 @@
+{
+  "phase": 7,
+  "phase_name": "Part B -- Emit the Premise Re-Validation Block",
+  "started_at": "2026-11-10T03:08:00Z",
+  "last_updated": "2026-11-10T03:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Emit bounded premise-re-validation block keyed to six trigger shapes, gated on prior artifact existence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 2, "description": "Byte-identical when nothing to emit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Reuse an existing cheap idiom rather than inventing a second mechanism", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "Emit claims and a pointer only; no conflict detection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "Add fixtures in both directions to test-orchestrate-build-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Literal reuse of the sha256sum description_fingerprint/supersession comparison for premise re-validation", "result": "failed", "reason": "that idiom detects whether a RECORDED past description matches the CURRENT one; no prior artifact in this codebase records a fingerprint of a premise it measured against, so there is nothing to compare a current fingerprint to. Substituted a grep-based lexical extraction over the six trigger-class shapes instead -- cheaper than hashing, no new semantic mechanism, same no-new-measurement spirit."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.3",
+      "description": "Reuse the existing fingerprint-and-supersession idiom in that same function rather than inventing a second mechanism",
+      "type": "altered",
+      "reason": "The sha256sum fingerprint/supersession idiom has no analogue for premise re-validation (no prior artifact records a fingerprint to compare against). Reused the idiom's spirit (no new measurement, a single cheap check, byte-identical-when-absent) via grep-based lexical extraction instead of a literal sha256sum reuse.",
+      "annotation": "*(deviation: altered -- see Phase 7's Task list for the full reasoning)*"
+    }
+  ],
+  "notes": "Added a premise-re-validation code block to orchestrate-build-dispatch.sh, inserted immediately after the existing prior_decisions_block logic and before the dispatch-file write section: detects whether this task directory already holds at least one report/plan/summary *.md file (prior_artifact_list array), and if so, greps the description for lines matching any of the six Carried-Figure-Discipline trigger-class lexical signatures (N-of-M ratio, exit/PASS/FAIL/gateN, always/never/cannot/is-required, numeric-unit counts). When both conditions hold, emits a '## Premise Re-Validation' section listing the prior artifact paths, the extracted claim lines, and a pointer to report-format.md's 'The premise a dispatch acts on' subsection -- never any judgment about whether the claims are still accurate (no conflict detection, per Phase 6's exclusion). Added Group 22 to test-orchestrate-build-dispatch.sh with three cases: (a) prior artifact present + trigger-laden description -> section present, names both prior artifact paths, extracted claims present, pointer present, no adjudication language; (b) no prior artifact + same trigger-laden description -> section completely absent; (c) prior artifact present + non-trigger description -> section completely absent. All 193 suite cases pass (up from 183 before this phase), including every pre-existing Group 1-21 case unchanged, which is itself strong byte-identity evidence for the common (non-triggering) case. Found and fixed two bugs during fixture authoring: the pointer text in the emitted block had been wrapped across two echo lines splitting the phrase 'The premise a dispatch acts on', failing a substring assertion -- rewrapped onto a single echo call; and a test assertion incorrectly expected the extracted claim text to be absent from the WHOLE dispatch file in the no-prior-artifact case, when in fact the unconditional '## Description' section always echoes the raw description verbatim regardless -- removed that over-broad assertion since the section-absence check already covers the real requirement. bash -n and shellcheck clean on both files (same pre-existing info-level findings only, no new ones)."
+}

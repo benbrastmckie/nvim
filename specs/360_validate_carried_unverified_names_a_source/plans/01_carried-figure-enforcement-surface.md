@@ -455,22 +455,31 @@ acts on, and rule on the owner with the reasoning recorded, before any code impl
 
 ---
 
-### Phase 7: Part B -- Emit the Premise Re-Validation Block [NOT STARTED]
+### Phase 7: Part B -- Emit the Premise Re-Validation Block [COMPLETED]
 
 **Goal**: Implement the composer half of the Phase 6 ruling: emit a bounded premise-re-validation
 block, and nothing at all when there is nothing to compare against.
 
 **Tasks**:
-- [ ] Extend `orchestrate-build-dispatch.sh` to emit a bounded premise-re-validation block, keyed
+- [x] Extend `orchestrate-build-dispatch.sh` to emit a bounded premise-re-validation block, keyed
       to the six existing trigger shapes present in the description, and emitted only when the
       task directory already holds a prior dispatch's artifact.
-- [ ] Keep the composer byte-identical when there is nothing to emit -- no block at all, matching
+- [x] Keep the composer byte-identical when there is nothing to emit -- no block at all, matching
       the prior-decisions block's own no-input-no-change precedent in the same function.
-- [ ] Reuse the existing fingerprint-and-supersession idiom in that same function rather than
-      inventing a second mechanism; it already proves this shape is cheap.
-- [ ] Emit claims and a pointer only. Implement no conflict detection, consistent with Phase 6's
+- [x] Reuse the existing fingerprint-and-supersession idiom in that same function rather than
+      inventing a second mechanism; it already proves this shape is cheap. *(deviation: altered
+      -- the sha256sum description_fingerprint/supersession comparison detects whether a
+      recorded PAST description matches the CURRENT one, which has no analogue here (no prior
+      artifact records a fingerprint of the premise it measured against). What this phase
+      reuses instead is the idiom's SPIRIT -- no new measurement, a single cheap existence/text
+      check gating a byte-identical-when-absent block, built from already-available
+      strings -- via a grep-based lexical extraction over the six trigger-class shapes rather
+      than a hash comparison. This is at least as cheap as the fingerprint idiom and invents no
+      second semantic mechanism; it was judged the more faithful implementation of Phase 6's own
+      "composer emits, no new measurement" ruling than a literal sha256sum reuse would have been)*
+- [x] Emit claims and a pointer only. Implement no conflict detection, consistent with Phase 6's
       recorded exclusion.
-- [ ] Add fixtures to `test-orchestrate-build-dispatch.sh` in both directions: a task directory
+- [x] Add fixtures to `test-orchestrate-build-dispatch.sh` in both directions: a task directory
       with a prior artifact emits the block; one without emits nothing and the dispatch file is
       otherwise unchanged.
 

@@ -1503,6 +1503,85 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 22: '## Premise Re-Validation' block (report-format.md's "The premise a dispatch acts
+# on" subsection, composer-emits half) -- emitted ONLY when a prior dispatch artifact already
+# exists in the task directory AND the description carries at least one of the six
+# trigger-class lexical signatures; byte-identical (no section at all) otherwise.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Group 22: Premise Re-Validation block (prior-artifact-gated, lexical extraction only)"
+
+PGF_DESC="Dispatch premise: gate20 is currently failing at current_eager=67088 B against baseline 66100 B, and the context-budget suite is failing 2 of 13 cases. Treat this as settled and never re-measure it."
+cat > "$FIXTURE/specs/state.json" <<EOF
+{
+  "active_projects": [
+    {
+      "project_number": ${TASK_NUM},
+      "project_name": "${PROJECT}",
+      "task_type": "general",
+      "status": "researched",
+      "description": "${PGF_DESC}",
+      "next_artifact_number": 2,
+      "artifacts": [
+        {"type": "report", "path": "${TASK_DIR_REL}/reports/01_fixture-report.md", "summary": "fixture report"}
+      ]
+    }
+  ]
+}
+EOF
+
+# (a) WITH a prior artifact (build_fixture's own reports/01_fixture-report.md and
+# plans/01_fixture-plan.md are already present) -- the block must render, naming both prior
+# artifact paths and the extracted lexical-trigger lines, with no adjudication of its own.
+run_sut implement --clean --seq 22 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_pgf_with="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_pgf_with" "## Premise Re-Validation" "(a) WITH prior artifact: section present"
+  assert_contains "$content_pgf_with" "${TASK_DIR_REL}/reports/01_fixture-report.md" "(a) WITH prior artifact: lists the prior report path"
+  assert_contains "$content_pgf_with" "${TASK_DIR_REL}/plans/01_fixture-plan.md" "(a) WITH prior artifact: lists the prior plan path"
+  assert_contains "$content_pgf_with" "67088 B" "(a) WITH prior artifact: extracted numeric-unit claim present"
+  assert_contains "$content_pgf_with" "2 of 13" "(a) WITH prior artifact: extracted N-of-M ratio claim present"
+  assert_contains "$content_pgf_with" "never" "(a) WITH prior artifact: extracted hard always/never/cannot/is-required claim present"
+  assert_contains "$content_pgf_with" "The premise a dispatch acts on" "(a) WITH prior artifact: points at report-format.md's subsection by name"
+  assert_not_contains "$content_pgf_with" "contradict" "(a) WITH prior artifact: never adjudicates -- no judgment language of its own beyond the pointer"
+else
+  common_test_fail "(a) WITH prior artifact: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# (b) WITHOUT any prior artifact -- same trigger-laden description, but reports/ and plans/ are
+# emptied first. The block must be completely absent (byte-identical to a dispatch built before
+# this feature existed), proving the obligation does no work on a task's first dispatch.
+rm -f "$FIXTURE/${TASK_DIR_REL}/reports"/*.md "$FIXTURE/${TASK_DIR_REL}/plans"/*.md
+run_sut implement --clean --seq 22 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_pgf_without="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_pgf_without" "## Premise Re-Validation" "(b) WITHOUT prior artifact: section absent despite trigger-laden description"
+  # "67088 B" still legitimately appears via the unconditional "## Description" echo above --
+  # that is not this check's business; what matters is that NO SECOND copy of it is emitted
+  # inside a "## Premise Re-Validation" block, which the section-absence assertion above already
+  # establishes.
+else
+  common_test_fail "(b) WITHOUT prior artifact: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# (c) WITH a prior artifact restored, but a description carrying NONE of the six trigger-class
+# shapes -- the block must stay absent even though a prior artifact exists, because there is
+# nothing lexically worth re-validating.
+printf '# Fixture report\n' > "$FIXTURE/${TASK_DIR_REL}/reports/01_fixture-report.md"
+printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
+build_fixture
+run_sut implement --clean --seq 22 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_pgf_notrigger="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_pgf_notrigger" "## Premise Re-Validation" "(c) prior artifact present, no trigger-class text: section absent"
+else
+  common_test_fail "(c) prior artifact present, no trigger-class text: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Restore the original single-description fixture state for symmetry with the other groups'
+# own restore convention, even though no group is appended after this one today.
+build_fixture
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
