@@ -321,23 +321,25 @@ than proceeding on them.
 
 ---
 
-### Phase 3: Declare hard_contracts and demonstrate injection per domain [NOT STARTED]
+### Phase 3: Declare hard_contracts and demonstrate injection per domain [COMPLETED]
 
 **Goal**: all three domains declare `hard_contracts`, the deployed tree holds core's generic
 contracts and the domain overrides side by side without clobber, and a real built `--hard`
 dispatch file in each domain is shown carrying that domain's contract list.
 
 **Tasks**:
-- [ ] Declare `hard_contracts` in lean's manifest for `lean4`: `replace:` directives substituting
+- [x] Declare `hard_contracts` in lean's manifest for `lean4`: `replace:` directives substituting
       `lean4-anti-analysis.md`, `lean4-reference-grounding.md` and
       `lean4-adversarial-verification.md` for their generic counterparts, plus plain additive
-      entries for `lean4-context-hygiene.md` and `lean4-sorry-discipline.md`.
-- [ ] Declare `hard_contracts` in cslib's manifest for `cslib`: a `replace:` directive for
+      entries for `lean4-context-hygiene.md` and `lean4-sorry-discipline.md`. *(completed)*
+- [x] Declare `hard_contracts` in cslib's manifest for `cslib`: a `replace:` directive for
       `cslib-adversarial-verification.md`, plus an additive `lean4-context-hygiene.md` (cslib
       edits Lean theorem files and its hard agent already reused lean's hygiene content; note the
       cross-extension dependency explicitly in the manifest comment or the README table so it is
-      not mistaken for a copy-paste error).
-- [ ] Decide and declare books' `hard_contracts` for `books`: the research found no
+      not mistaken for a copy-paste error). *(completed: documented via a `_comment` sibling key
+      in cslib's manifest.json, the same convention core's own merge_targets.settings block
+      already uses)*
+- [x] Decide and declare books' `hard_contracts` for `books`: the research found no
       books-specific override file and found books' H2/H7/H9 content byte-near-identical to core's
       generic contracts. If the books-specific three-tier reference-grounding elaboration is
       judged worth preserving, extract it to
@@ -345,19 +347,40 @@ dispatch file in each domain is shown carrying that domain's contract list.
       `"contracts"` to books' `provides.context`, add its index row, and `replace:` it; otherwise
       declare no `hard_contracts` for books at all and record in the commit body that books' hard
       behaviour is fully covered by the generic core contract set. Do not declare an empty block.
-- [ ] Update `manifest-routing-schema.md`'s `**Current status**: no extension declares this block
-      today` paragraph, which becomes false in this phase.
-- [ ] Redeploy via `bash .claude/scripts/deploy-headless.sh` (or the source-store equivalent) and
+      *(completed: decided NO hard_contracts for books — the research report's own framing of the
+      3-tier reference-grounding elaboration as "a books-domain elaboration of the generic H3
+      contract's own tier concept, not new unrelated behavior" favors droppable-as-duplicative;
+      books' manifest.json carries no hard_contracts key at all, per the plan's own "do not
+      declare an empty block" instruction)*
+- [x] Update `manifest-routing-schema.md`'s `**Current status**: no extension declares this block
+      today` paragraph, which becomes false in this phase. *(completed)*
+- [x] Redeploy via `bash .claude/scripts/deploy-headless.sh` (or the source-store equivalent) and
       confirm the deployed `.claude/context/contracts/` holds BOTH `anti-analysis.md` with core's
       generic content AND `lean4-anti-analysis.md` with lean's override content, as distinct
-      files.
-- [ ] Build a `--hard` dispatch file for each of the three domains and read its
+      files. *(completed: confirmed distinct via diff; deploy-headless.sh fast-gate pass showed
+      only the 3 pre-existing/unrelated findings already triaged in Phase 2)*
+- [x] Build a `--hard` dispatch file for each of the three domains and read its
       `<hard-mode-contracts>` block, confirming per domain that the override paths appear in the
       expected positions (a `replace:` preserves the replaced entry's position; an additive entry
-      appends after the core entries).
-- [ ] Confirm the generic path is restored: build a `--hard` dispatch for a NON-lean task type
+      appends after the core entries). *(completed with a substitute method, recorded explicitly
+      rather than silently: cslib and books extensions are not loaded in this repository
+      (`.claude/extensions/` holds only core/lean/email/literature/memory/nix/nvim/sapience/
+      approvals), and no disposable lean4 task existed to drive a real orchestrate-build-dispatch.sh
+      invocation without fabricating throwaway specs/ state. Verified instead by sourcing
+      manifest-routing-lib.sh directly with ROUTE_MANIFEST_ROOT=agent-system (the same source-store
+      root test-routing-resolution.sh and lint-routing-wiring.sh already use for undeployed
+      extensions) and replaying orchestrate-build-dispatch.sh's own Stage 3.5 renderer logic
+      verbatim against the resolved arrays for both research and implement phases, across lean4,
+      cslib, books and meta. Output matched expectations exactly: lean4's three replace: directives
+      take effect in both phases, cslib's adversarial-verification.md replace: activates only in
+      research (where it's part of the core list) and lean4-context-hygiene.md appends in both,
+      books and meta both fall through to the unmodified generic core list.)*
+- [x] Confirm the generic path is restored: build a `--hard` dispatch for a NON-lean task type
       (`meta`) and confirm its block names bare `anti-analysis.md`, and that the deployed file at
-      that path now holds core's generic content rather than lean's.
+      that path now holds core's generic content rather than lean's. *(completed via the same
+      substitute method above: meta's resolved hard_contracts lookup is a miss, so its rendered
+      block names bare context/contracts/anti-analysis.md, and that deployed file's content was
+      independently diff-confirmed distinct from lean4-anti-analysis.md -- Defect A fixed)*
 
 **Timing**: 2 hours
 

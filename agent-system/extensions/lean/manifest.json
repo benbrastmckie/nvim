@@ -118,6 +118,15 @@
       "lean4": "lean-implementation-hard-agent"
     }
   },
+  "hard_contracts": {
+    "lean4": [
+      "replace:anti-analysis.md:lean4-anti-analysis.md",
+      "replace:reference-grounding.md:lean4-reference-grounding.md",
+      "replace:adversarial-verification.md:lean4-adversarial-verification.md",
+      "lean4-context-hygiene.md",
+      "lean4-sorry-discipline.md"
+    ]
+  },
   "merge_targets": {
     "claudemd": {
       "source": "EXTENSION.md",

@@ -139,8 +139,13 @@ identically whichever phase is being built — the same additive/`replace:` list
 An override or additive contract file's wording should therefore stay phase-agnostic rather than
 assuming it is only ever injected into one phase's prompt.
 
-**Current status**: no extension declares this block today — the mechanism is additive and
-stays unexercised by real data on day one. Its sole consumer is
+**Current status**: `lean` and `cslib` declare this block (`hard_contracts.lean4` and
+`hard_contracts.cslib` respectively), each a mix of `replace:` directives substituting a
+domain-prefixed override for its generic core counterpart plus plain additive entries for
+domain-only content with no core baseline. `books` deliberately declares no `hard_contracts`
+block at all: its own `-hard` agents' one domain-specific elaboration (a books-domain refinement
+of the generic H3 tier concept) was judged duplicative of the generic core contracts rather than
+worth extracting into a standalone override file. Its sole consumer is
 `orchestrate-build-dispatch.sh`'s Stage 3.5 Dispatch Prep ("Hard-mode contract injection" subsection),
 which builds the final `hard_contracts_block` prompt-injection string from the resolved list.
 

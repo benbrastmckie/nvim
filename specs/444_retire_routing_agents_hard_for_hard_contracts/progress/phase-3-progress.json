@@ -1,0 +1,35 @@
+{
+  "phase": 3,
+  "phase_name": "Declare hard_contracts and demonstrate injection per domain",
+  "started_at": "2026-11-10T05:20:00Z",
+  "last_updated": "2026-11-10T05:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Declare hard_contracts.lean4 in lean's manifest", "status": "done",
+      "files_touched": ["agent-system/extensions/lean/manifest.json"]},
+    {"id": 2, "description": "Declare hard_contracts.cslib in cslib's manifest with cross-extension dependency comment", "status": "done",
+      "files_touched": ["agent-system/extensions/cslib/manifest.json"]},
+    {"id": 3, "description": "Decide books' hard_contracts (decided: none)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Update manifest-routing-schema.md Current status paragraph", "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/guides/manifest-routing-schema.md"]},
+    {"id": 5, "description": "Redeploy and confirm deployed contracts dir holds both generic and prefixed files distinctly", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Demonstrate per-domain hard_contracts resolution (substitute method, see notes)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm generic-path regression check for meta", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6-3.7",
+      "description": "Build a --hard dispatch file for each of the three domains and read its <hard-mode-contracts> block",
+      "type": "altered",
+      "reason": "cslib and books extensions are not loaded in this repository's .claude-extensions.json, and no disposable lean4 task existed in specs/state.json to drive a real orchestrate-build-dispatch.sh invocation without fabricating throwaway task state. Substituted a direct replay of manifest-routing-lib.sh's routing_lookup_flat (ROUTE_MANIFEST_ROOT=agent-system, the same source-store root the repo's own validation-only callers use) plus orchestrate-build-dispatch.sh's own Stage 3.5 renderer logic verbatim, against all four task_types and both research/implement phases.",
+      "annotation": "*(completed with a substitute method, recorded explicitly rather than silently ...)*"
+    }
+  ],
+  "notes": [
+    "Source-store resolution (ROUTE_MANIFEST_ROOT=agent-system) confirmed exact expected arrays: lean4 implement -> [lean4-anti-analysis.md, wrap-up.md, recovery.md, phase-closure.md, pre-edit-gate.md, lean4-context-hygiene.md, lean4-sorry-discipline.md]; cslib implement -> [anti-analysis.md (unchanged -- adversarial-verification.md isn't in implement's core list), wrap-up.md, recovery.md, phase-closure.md, pre-edit-gate.md, lean4-context-hygiene.md]; cslib research -> [anti-analysis.md, reference-grounding.md, cslib-adversarial-verification.md, lean4-context-hygiene.md] (replace: activates here); books -> miss (pure generic core list, no hard_contracts declared); meta -> miss (pure generic core list, Defect A regression check passes).",
+    "Deployed .claude/context/contracts/anti-analysis.md and lean4-anti-analysis.md confirmed byte-distinct via diff.",
+    "Post-manifest-edit deploy-headless.sh fast-gate pass: 3/41 failed, all three pre-existing/unrelated (eager-load budget, shellcheck, dead-command-recommendation), consistent with Phase 2's triage. Gates 3 (doc-lint), 5 (manifest-driven), 7 (routing wiring), 8 (test suite runner), 13 (orphan detection), 16 (hard_contracts migration WARN, still correctly non-blocking since routing_agents_hard remains until Phase 4) all PASS/WARN as expected."
+  ]
+}
