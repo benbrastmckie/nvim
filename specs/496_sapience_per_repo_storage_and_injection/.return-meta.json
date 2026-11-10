@@ -1,53 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/496_sapience_per_repo_storage_and_injection/reports/01_sapience-per-repo-storage-injection.md",
-      "summary": "Grounds the dispatch's live-host-measured Sapience scoping/noise-gate findings in the actual codebase call sites (memory-retrieve.sh, orchestrate-build-dispatch.sh Stage 3.5) and the vendor mcp.py source's exact auth mechanism and /ingest-kos KO shape; flags a direct conflict with subagent-orientation.md's existing anti-goal language."
+      "type": "plan",
+      "path": "specs/496_sapience_per_repo_storage_and_injection/plans/01_sapience-per-repo-storage-injection.md",
+      "summary": "7-phase plan (8.5h, 5 dependency waves) for the two sapience scripts, the manifest declaration, the orchestrate-build-dispatch.sh retrieval swap, and the design-record amendment plus hazard documentation."
     }
   ],
-  "findings_count": 9,
-  "next_steps": "Run /orchestrate 496 to create implementation plan",
+  "next_steps": "Run /orchestrate 496 to execute the plan",
+  "phase_count": 7,
+  "estimated_hours": 8.5,
+  "dependency_waves": 5,
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1794326188_f2c11d_496",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "Sapience's vendor MCP client (~/.sapience/mcp.py) authenticates every HTTP call -- GET /v1/search and POST /ingest-kos alike -- via a token=<TOKEN> query-string parameter appended to the URL (see api() helper), not an Authorization: Bearer header. Token precedence: SAPIENCE_TOKEN env var, else ~/.sapience/config.json's \"token\" field. Host likewise: SAPIENCE_HOST env var, else config.json's \"host\", else https://app.spnc.ai default.",
-      "category": "CONFIG",
-      "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/reports/01_sapience-per-repo-storage-injection.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["sapience", "api-auth", "token-query-param", "mcp.py", "v1-search", "ingest-kos"]
-    },
-    {
-      "content": "Sapience's POST /ingest-kos body shape (confirmed from mcp.py's sapience_remember tool): {\"token\": ..., \"kos\": [{\"subject\", \"predicate\", \"object_value\", \"ko_type\", \"confidence\", \"provenance\", \"explicit\"?, \"source_loc\"?}], \"source\": \"<tag>\"}. A caller's repo-tag and explicit:true flag both belong inside the single KO object in kos[0], not as top-level body fields.",
-      "category": "PATTERN",
-      "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/reports/01_sapience-per-repo-storage-injection.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["sapience", "ingest-kos", "ko-shape", "json-body", "explicit-flag"]
-    },
-    {
-      "content": "An extension manifest's provides.scripts list (e.g. agent-system/extensions/memory/manifest.json) names scripts under that extension's own scripts/ subdirectory that sync-manifest-scripts.sh deploys to .claude/scripts/. A new script referenced by a deployed-path call site (e.g. orchestrate-build-dispatch.sh invoking \"${SKILL_REPO_ROOT}/.claude/scripts/...\") will not actually exist post-deploy unless its owning extension's manifest.json declares it in provides.scripts -- adding the file alone, without the manifest entry, is a silent no-op after redeploy.",
-      "category": "PATTERN",
-      "source_artifact": "specs/496_sapience_per_repo_storage_and_injection/reports/01_sapience-per-repo-storage-injection.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["extension-manifest", "provides-scripts", "sync-manifest-scripts", "deploy", "source-store"]
-    }
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
-    "agent-system/extensions/sapience/scripts/sapience-remember.sh",
-    "agent-system/extensions/sapience/manifest.json",
-    "agent-system/extensions/sapience/EXTENSION.md",
-    "agent-system/extensions/sapience/index-entries.json",
-    "agent-system/extensions/sapience/context/project/sapience/domain/subagent-orientation.md",
-    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
-    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"
-  ]
+  "dispatch_seq": 2
 }
