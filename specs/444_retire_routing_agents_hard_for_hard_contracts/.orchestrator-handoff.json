@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "task_number": 444,
+  "phase": "plan",
+  "session_id": "sess_1794272256_212466_444",
+  "dispatch_seq": 18,
+  "phases_completed": 0,
+  "phases_total": 8,
+  "summary": "Authored an eight-phase plan (13h, waves [1][2][3][4][5,7][6][8]) for the routing_agents_hard -> hard_contracts migration. All ten carried dispatch premises were re-measured: nine confirmed, one contradicted. Ordering is load-bearing: per-domain contract injection lands and is demonstrated against real built dispatch files BEFORE the routing rung is removed, so no intermediate state downgrades a --hard dispatch to a contract-free standard agent. Two deviations from the dispatch's literal scope, both evidence-driven: gate16 is KEPT as the absence-assertion guard the dispatch itself said to decide on separately (lint-gate-registry.sh Check E requires contiguous ids 1..27, so deleting id 16 forces renumbering eleven gates across eight files, while gate16 already passes once no manifest declares the keys); and the retirement scope grows from six agent files to twelve files plus ~48 referencing files, because six orphaned hard skill wrappers must retire with the agents and lint-agent-contracts.sh's six roster arrays log_fail on a missing rostered file.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/444_retire_routing_agents_hard_for_hard_contracts/plans/01_retire-routing-agents-hard.md",
+      "summary": "Eight-phase migration plan: convention record, override-contract rename plus lean residue contract, hard_contracts declaration with per-domain demonstration, routing block and rung removal, hard skill retirement, hard agent retirement, gate16 settlement, docs convergence and full gate set."
+    }
+  ],
+  "next_steps": "Run /orchestrate 444 to execute the plan"
+}

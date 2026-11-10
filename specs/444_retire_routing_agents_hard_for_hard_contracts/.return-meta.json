@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794272256_212466_444",
-  "dispatch_seq": 17,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/444_retire_routing_agents_hard_for_hard_contracts/reports/01_retire-routing-agents-hard.md",
-      "summary": "Confirms the routing_agents_hard->hard_contracts migration premise (all six -hard agents reduce to standard-agent + injected contracts), catalogs the full blast radius beyond the dispatch's named scope, and surfaces two independent pre-existing defects (a deploy-time contracts-directory clobber and a dangling extension-namespaced @-import path) that share root cause with this task's own hard_contracts wiring work."
+      "type": "plan",
+      "path": "specs/444_retire_routing_agents_hard_for_hard_contracts/plans/01_retire-routing-agents-hard.md",
+      "summary": "Eight-phase migration retiring routing_agents_hard for hard_contracts across books, cslib and lean: wire and demonstrate per-domain contract injection first (fixing a live basename clobber), then remove the routing block and its resolution rung, then retire twelve unreachable wrapper files and converge the ~50 rosters, tests and docs that name them."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794272256_212466_444",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 13,
+    "dependency_waves": [[1], [2], [3], [4], [5, 7], [6], [8]]
+  },
   "memory_candidates": [
     {
-      "content": "In this agent-system, a manifest's provides.context entry for a bare top-level directory name (e.g. \"contracts\") merges additively across extensions at deploy time by directory-level copy, not per-file dedup -- two extensions declaring the same directory name with overlapping basenames silently clobber each other, with the winner determined by extension load order. Verify any shared-directory provides.context entry for basename collisions before relying on it for per-domain overrides; use the hard_contracts replace:/additive mechanism (flat, domain-prefixed basenames under the shared directory) instead of a separate same-named directory per extension.",
+      "content": "In this agent-system, deleting an extension agent or skill file is never a one-file change: six roster arrays inside lint/lint-agent-contracts.sh log_fail on a rostered agent path that does not exist, lint/collapsed-blocks/registry.tsv pins specific agent files as collapsed-block exemplars (with a matching .txt fixture named after the file), check-extension-docs.sh Rule A fails on a skill directory absent from provides.skills and orphan detection fails in the reverse direction, and index-entries.json load_when.agents arrays plus opencode-agents.json carry per-agent rows. Before planning any agent/skill retirement, grep the full source store for the file's basename and read lint-agent-contracts.sh's roster arrays -- the reference surface is routinely an order of magnitude larger than the files being deleted.",
       "category": "PATTERN",
-      "source_artifact": "specs/444_retire_routing_agents_hard_for_hard_contracts/reports/01_retire-routing-agents-hard.md",
+      "source_artifact": "specs/444_retire_routing_agents_hard_for_hard_contracts/plans/01_retire-routing-agents-hard.md",
       "confidence": 0.85,
-      "suggested_keywords": ["provides.context", "manifest", "deploy-clobber", "hard_contracts", "contracts-directory"]
-    },
-    {
-      "content": "check-extension-docs.sh Rule G (dangling .claude/context/contracts/*.md reference scan) only matches the literal substring \".claude/context/contracts/\" immediately after \".claude/\" -- it does not catch an extension-namespaced variant like \".claude/extensions/<ext>/context/contracts/*.md\", which never exists in the deployed tree (per-extension deploy dirs under .claude/extensions/<name>/ contain manifest.json only, never a context/ subtree). Any future dangling-contract-reference check should account for this path shape explicitly.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/444_retire_routing_agents_hard_for_hard_contracts/reports/01_retire-routing-agents-hard.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["check-extension-docs", "dangling-reference", "contracts", "deploy-layout", "rule-g"]
+      "suggested_keywords": ["agent-retirement", "lint-agent-contracts", "collapsed-blocks", "provides.skills", "roster-arrays"]
     }
   ],
-  "next_steps": "Run /orchestrate 444 to create implementation plan"
+  "next_steps": "Run /orchestrate 444 to execute the plan",
+  "dispatch_seq": 18
 }
