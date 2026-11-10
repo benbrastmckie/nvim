@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Window Backend (terminal.lua)",
+  "started_at": "2026-11-10T00:00:00Z",
+  "last_updated": "2026-11-10T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Window Backend (terminal.lua) -- file changes",
+      "status": "completed",
+      "files_touched": [
+        "lua/neotex/plugins/ai/sapience/terminal.lua"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

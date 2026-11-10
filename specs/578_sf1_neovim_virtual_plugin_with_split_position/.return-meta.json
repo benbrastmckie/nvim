@@ -1,30 +1,15 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/578_sf1_neovim_virtual_plugin_with_split_position/plans/02_sf1-virtual-plugin-split-position.md",
-      "summary": "Six-phase plan (5.25h) for the sf1 lazy.nvim virtual plugin: terminal backend, module core, spec/loader/:Sf1 registration, is_sf1 keymap branch plus <leader>af, documentation, verification."
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1794339852_4b2213_578",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.25,
-    "dependency_waves": 6
+  "status": "in_progress",
+  "started_at": "2026-11-10T00:00:00Z",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Agent started, beginning work on six-phase plan"
   },
-  "memory_candidates": [
-    {
-      "content": "snacks.nvim terminal/window mechanics relevant to any repositionable snacks terminal in this Neovim config: snacks.terminal derives its terminal id from cmd, cwd, env and vim.v.count1 ONLY -- never from win options -- so changing a window's position/size and re-toggling reuses the same terminal object and re-shows it at the ORIGINAL position. To reposition a live terminal without killing its job, mutate the win object's own opts (opts.position/height/width) and then call term:hide() followed by term:show(): M:open_win() re-reads self.opts.position at open time, and M:hide() is close({buf = false}), which preserves the terminal buffer and its running process. Separately, for a split position (bottom/left/right) open_win() consumes only one dimension (vertical and opts.width or opts.height), so mapping a single size fraction onto both height and width is harmless; for float BOTH apply, yielding a square window, so a single size fraction should be omitted for float and left to the float style defaults. snacks.terminal.get() defaults to create = true, so a pure lookup must pass create = false.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/578_sf1_neovim_virtual_plugin_with_split_position/plans/02_sf1-virtual-plugin-split-position.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["snacks.nvim", "snacks.terminal", "terminal-id", "window-position", "reposition", "neovim-config"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 578 to execute the plan",
-  "dispatch_seq": 2
+  "metadata": {
+    "session_id": "sess_1794339852_4b2213",
+    "agent_type": "neovim-implementation-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "implement", "neovim-implementation-agent"]
+  }
 }

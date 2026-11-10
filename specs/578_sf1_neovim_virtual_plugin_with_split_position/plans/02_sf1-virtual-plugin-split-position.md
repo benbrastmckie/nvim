@@ -1,7 +1,7 @@
 # Implementation Plan: Task #578
 
 - **Task**: 578 - Build in-config sf1 Neovim virtual plugin with configurable split position
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.25 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/578_sf1_neovim_virtual_plugin_with_split_position/reports/02_sf1-split-position-verification.md`, `specs/578_sf1_neovim_virtual_plugin_with_split_position/reports/01_sf1-nvim-plugin-seed.md`
@@ -133,42 +133,45 @@ phase's verification depends on the previous phase's artifact being loadable.
 
 ---
 
-### Phase 1: Window Backend (`terminal.lua`) [NOT STARTED]
+### Phase 1: Window Backend (`terminal.lua`) [COMPLETED]
 
 **Goal**: A dependency-free window layer that maps the plugin's `position`/`size` vocabulary onto
 `snacks.terminal`, behind an `open`/`close`/`find` interface narrow enough that a `termopen`
 backend could replace it by editing this file alone.
 
 **Tasks**:
-- [ ] Create `lua/neotex/plugins/ai/sapience/terminal.lua` returning a module table `M` with
+- [x] Create `lua/neotex/plugins/ai/sapience/terminal.lua` returning a module table `M` with
       exactly three public functions: `M.open(cmd, position, size)`, `M.close(cmd)`,
       `M.find(cmd)`.
-- [ ] Load snacks through `pcall(require, "snacks.terminal")` in a private `_snacks()` helper.
+- [x] Load snacks through `pcall(require, "snacks.terminal")` in a private `_snacks()` helper.
       On failure, `vim.notify` a single WARN naming snacks as the missing dependency and return
       `nil` from the calling public function — never error.
-- [ ] Implement a private `_win_opts(position, size)` that returns `{ win = { position = ...,
+- [x] Implement a private `_win_opts(position, size)` that returns `{ win = { position = ...,
       enter = true, ... } }`:
       - for `"bottom"`, `"left"`, `"right"`: set **both** `height = size` and `width = size`
         (verified safe — a split's `open_win()` consumes only the one dimension its orientation
         needs);
       - for `"float"`: set **neither** `height` nor `width`, letting the snacks `"float"` style
         defaults apply. This is Decision (b) from the Overview; do not map `size` onto a float.
-- [ ] `M.open` calls `snacks.terminal.toggle(cmd, _win_opts(...))` so a second invocation on a
+- [x] `M.open` calls `snacks.terminal.toggle(cmd, _win_opts(...))` so a second invocation on a
       visible window hides it (this is what makes `:Sf1` a toggle without `init.lua` having to
       track visibility itself).
-- [ ] `M.find(cmd)` calls `snacks.terminal.get(cmd, { create = false })` and returns the window
+- [x] `M.find(cmd)` calls `snacks.terminal.get(cmd, { create = false })` and returns the window
       object or `nil`. The `create = false` is load-bearing: `get`'s default is `create = true`,
       which would spawn a terminal from a mere lookup.
-- [ ] `M.close(cmd)` finds via `M.find` and calls `term:close()` when found; no-op otherwise.
-- [ ] Add a `_reposition(term, position, size)` private helper that mutates
+- [x] `M.close(cmd)` finds via `M.find` and calls `term:close()` when found; no-op otherwise.
+- [x] Add a `_reposition(term, position, size)` private helper that mutates
       `term.opts.position`/`height`/`width` per the same `_win_opts` rules and, when
       `term:valid()`, calls `term:hide()` then `term:show()`. Export it as `M.reposition(cmd,
       position, size)` — a fourth function beyond the task's named three, justified because the
       live-reposition mechanic belongs in the window layer, not in `init.lua`, for the backend
       swap to stay a one-file change.
-- [ ] Assert the dependency constraint by construction: the file contains no `require` of any
-      `neotex.*` path, and reads no `vim.g.neotex_*`.
-- [ ] 2-space indent, `~100`-char lines, `snake_case` locals, LuaDoc `---@param`/`---@return`
+- [x] Assert the dependency constraint by construction: the file contains no `require` of any
+      `neotex.*` path, and reads no `vim.g.neotex_*`. *(deviation: altered — the explanatory
+      comment stating this constraint avoids the literal substring "neotex." so the
+      dependency-assertion grep in Verification does not false-positive on its own prose;
+      constraint is still satisfied by construction, confirmed by that grep returning no match)*
+- [x] 2-space indent, `~100`-char lines, `snake_case` locals, LuaDoc `---@param`/`---@return`
       on each public function, per `.claude/rules/neovim-lua.md`.
 
 **Timing**: 1.0 hours
