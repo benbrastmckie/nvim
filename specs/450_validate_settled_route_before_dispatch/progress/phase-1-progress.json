@@ -9,11 +9,11 @@
     {"id": 3, "description": "Extend record build with conditional obligation merge (four combinations)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
     {"id": 4, "description": "Verify write mechanics untouched (flock, atomic-mv, validation)", "status": "done", "files_touched": []},
     {"id": 5, "description": "Update script header usage/help text for --obligation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
-    {"id": 6, "description": "Update handoff-schema.md Decisions File Schema section with obligation field", "status": "not_started", "files_touched": []},
-    {"id": 7, "description": "Update utility-scripts-inventory.md writer usage line", "status": "not_started", "files_touched": []},
+    {"id": 6, "description": "Update handoff-schema.md Decisions File Schema section with obligation field", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/handoff-schema.md"]},
+    {"id": 7, "description": "Update utility-scripts-inventory.md writer usage line", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"]},
     {"id": 8, "description": "Extend test-orchestrate-record-decision.sh with five new cases", "status": "not_started", "files_touched": []}
   ],
-  "current_objective": 6,
+  "current_objective": 8,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": []

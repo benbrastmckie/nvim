@@ -1090,6 +1090,13 @@ state for a task that has never surfaced a `user_decision`.
     "answer": "Use the existing structured-logging module; do not add a new dependency.",
     "cycle": 3,
     "timestamp": "2026-09-08T04:00:00Z"
+  },
+  {
+    "question": "Phase 2 needs a result Phase 4 is supposed to produce. Merge the phases, or reorder so Phase 4 runs first?",
+    "answer": "Reorder: run Phase 4 before Phase 2.",
+    "cycle": 5,
+    "timestamp": "2026-09-09T12:00:00Z",
+    "obligation": "Phase 2's own obligation to a precomputed stability bound is discharged once Phase 4 runs first."
   }
 ]
 ```
@@ -1111,6 +1118,17 @@ state for a task that has never surfaced a `user_decision`.
   recomputes the same digest over the current description at render time and marks a mismatching
   entry `POTENTIALLY SUPERSEDED` — see `orchestrate-state-machine.md`'s "Prior Decisions vs.
   Current Description: Precedence" section for the full rule.
+- `obligation` (string, optional) — the specific obligation the recorded `answer` (the chosen
+  route) is claimed to discharge, named concretely enough that a later receiving agent can check
+  it against a phase's own artifacts. Required by `context/standards/user-decision-contract.md`
+  whenever the decision is a ROUTE decision (an option offered as a way past an obstruction);
+  omitted for a pure-preference decision. Written by `orchestrate-record-decision.sh` via its
+  optional `--obligation` argument, using the same conditional-merge pattern as
+  `description_fingerprint` — present only when supplied, never an empty string. The field's
+  consumer is `orchestrate-build-dispatch.sh`'s "## Prior Decisions" rendering, which emits the
+  value inline together with an instruction to verify the route discharges it before beginning
+  phase work. Neither the writer nor the composer adjudicates whether the route actually
+  discharges the named obligation — that judgment belongs to the receiving agent.
 
 **Writer**: the loop's own branch move, after every other task's postflight has run for the
 cycle, batches every accumulated `ask_user` verdict into one `AskUserQuestion` call and, for each
