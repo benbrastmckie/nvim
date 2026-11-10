@@ -130,7 +130,7 @@ e.g., deciding the next tactic, summarizing state in the transcript, or checking
 hypothesis' shape. Prefer this over `lean_goal`'s local-context dump for hypothesis pruning.
 
 **Role in hypothesis pruning**: this is the primary tool for the hypothesis-pruning clause
-of `@.claude/extensions/lean/context/contracts/context-hygiene.md` — carry forward only
+of `@.claude/context/contracts/lean4-context-hygiene.md` — carry forward only
 hypotheses the planned tactic references, not the full local context.
 
 ```
