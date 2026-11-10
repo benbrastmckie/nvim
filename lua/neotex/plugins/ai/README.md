@@ -25,6 +25,11 @@ MCP-Hub integration plugin configuration (`mcp-hub`) with cross-platform compati
 ### lectic.lua
 Configuration for the Lectic plugin (`gleachkr/lectic`) for markdown editing and management. Handles markdown and lectic.markdown filetypes with dependency installation and runtime path configuration.
 
+### sapience-plugin.lua
+lazy.nvim virtual plugin spec for sf1, the Sapience terminal chat client. Points `dir` at the
+sibling `sapience/` implementation directory and registers the `:Sf1` toggle command. See
+[sapience/](sapience/README.md) for the full module and configuration documentation.
+
 ### opencode.lua
 Configuration for the OpenCode plugin (`NickvanDyke/opencode.nvim`). Provides embedded TUI experience for the OpenCode CLI with powerful context placeholders (@this, @buffer, @diagnostics), built-in prompt library, and statusline integration.
 
@@ -49,6 +54,7 @@ Configuration for the OpenCode plugin (`NickvanDyke/opencode.nvim`). Provides em
 ## Subdirectories
 
 - [claude/](claude/README.md) - Comprehensive internal Claude AI integration system (9,626+ lines across 20 files)
+- [sapience/](sapience/README.md) - sf1 Sapience terminal chat integration
 
 ## Key Features
 
@@ -140,6 +146,7 @@ ai.send_visual_to_claude_with_prompt() -- Visual selection with prompt
 - `<leader>ac` - AI agent picker (Stage 1: choose tool, then session action)
 - `<leader>al` - Load AI commands/agents picker
 - `<leader>as` - Discord sessions
+- `<leader>af` - Toggle sf1 Sapience chat
 - `<leader>ay` - Toggle Claude yolo mode (skip permissions)
 
 **OpenCode Commands** (`<leader>ao` submenu):

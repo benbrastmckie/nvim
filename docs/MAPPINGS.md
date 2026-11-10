@@ -125,6 +125,7 @@ All leader-based mappings use `<Space>` as the leader key and are organized into
 | `<C-CR>` | All | Unified AI tool picker |
 | `<leader>al` | Normal | AI commands/agent loader picker |
 | `<leader>al` | Visual | Send selection with prompt |
+| `<leader>af` | Normal | Toggle sf1 Sapience chat |
 | `<leader>as` | Normal | Browse Claude sessions |
 | `<leader>at` | Normal | Toggle TTS notifications (project-specific) |
 | `<leader>av` | Normal | View git worktrees |

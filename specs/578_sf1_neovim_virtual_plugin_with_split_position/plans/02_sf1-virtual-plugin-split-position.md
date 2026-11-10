@@ -404,36 +404,36 @@ and which the same sweep showed free.
 
 ---
 
-### Phase 5: Documentation [NOT STARTED]
+### Phase 5: Documentation [COMPLETED]
 
 **Goal**: The new directory carries a policy-compliant README, and the two existing documents
 that would otherwise drift are updated.
 
 **Tasks**:
-- [ ] Create `lua/neotex/plugins/ai/sapience/README.md` following the documentation policy's
+- [x] Create `lua/neotex/plugins/ai/sapience/README.md` following the documentation policy's
       structure template and `lua/neotex/plugins/tools/stt/README.md`'s shape: purpose; a
       `## Modules` section documenting `init.lua` and `terminal.lua`; the full opts schema with
       defaults and accepted values; usage examples for `:Sf1`, `<leader>af`, and
       `M.set_position("right")`; a `## Dependencies` note naming `snacks.nvim` and the `sf1`
       binary on `$PATH`; and a `## Navigation` section linking back to `../README.md` (the
       policy's Parent Link requirement).
-- [ ] Document two behaviors in that README that will otherwise read as bugs: (a) `size` applies
+- [x] Document two behaviors in that README that will otherwise read as bugs: (a) `size` applies
       only to `bottom`/`left`/`right` and is ignored for `float`, which uses the snacks float
       style's own defaults; (b) the plugin's default cwd-derived `--project` scoping makes its
       answers differ from the unscoped GNOME `sf1` launcher's — expected, not a defect.
-- [ ] Also state in that README the extraction constraint: both Lua files are dependency-free
+- [x] Also state in that README the extraction constraint: both Lua files are dependency-free
       apart from the single backend require in `init.lua`, and that constraint is the reason the
       directory is shaped this way.
-- [ ] In `lua/neotex/plugins/ai/README.md`, add a `### sapience-plugin.lua` entry under
+- [x] In `lua/neotex/plugins/ai/README.md`, add a `### sapience-plugin.lua` entry under
       `## Modules`, a `- [sapience/](sapience/README.md)` entry under `## Subdirectories`, and a
       `<leader>af` line under the `**Leader-based AI Commands**` list in the Keybindings section.
       **Decision (resolving research Recommendation 7): yes, add the subdirectory entry.** The
       documentation policy requires navigation links to subdirectory READMEs; the existing
       absence of an `opencode/` entry in this same file is a gap, not a precedent worth copying.
       Do not fix the `opencode/` gap here — it is out of scope.
-- [ ] In `docs/MAPPINGS.md`, add a `| <leader>af | Normal | Toggle sf1 Sapience chat |` row to
+- [x] In `docs/MAPPINGS.md`, add a `| <leader>af | Normal | Toggle sf1 Sapience chat |` row to
       the existing AI/ASSISTANT (`<leader>a`) table, matching the surrounding row format.
-- [ ] Cite no task numbers in any of these files (`.claude/rules/no-task-references-in-deliverables.md`),
+- [x] Cite no task numbers in any of these files (`.claude/rules/no-task-references-in-deliverables.md`),
       and state the current design only, with no draft-history or version framing
       (`.claude/rules/no-record-versioning-in-deliverables.md`).
 
