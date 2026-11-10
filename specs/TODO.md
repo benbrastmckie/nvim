@@ -6,18 +6,20 @@ next_project_number: 576
 
 ## Task Order
 
-*Updated 2026-11-09. Generated from state.json dependency graph.*
+*Updated 2026-11-10. Generated from state.json dependency graph.*
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,448,451,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,444,452,455,458,461,462,463,474,476,479,486,492,500,516,518,523,527,540,541,542,543,544,553,564 | 360,369,383,397,412,423,431,445,448,451,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 390,399,402,436,438,449,454,457,480,501,508,509,517,547,552,566,570 | 313,360,391,398,439,444,448,452,455,458,461,472,476,479,486,515,519,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 4 | 421,450,481,487,513,524,561 | 390,402,449,479,501,552 | core-agent-system, orchestrator, agent-system |
-| 5 | 496,571 | 450,487,488,518 | extensions, agent-system |
-| 6 | 498 | 496 | extensions |
-| 7 | 499 | 498 | extensions |
+| 1 | 313,338,342,360,369,383,397,410,412,423,431,437,445,451,453,456,459,472,473,475,477,483,484,488,490,491,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,444,458,462,463,474,476,479,486,492,516,518,527,540,541,542,543,544,553,564 | 360,369,383,397,412,423,431,445,451,459,472,484,491,504,505,515,534,535,538,539,548 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 390,399,402,436,438,448,454,480,508,547,552,570 | 313,360,391,398,439,444,458,479,486,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 421,449,452,455,461,481,500,523,561 | 390,402,448,552 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 5 | 450,457,501,509,513,517,566 | 449,452,455,461,472,476,479,486,515 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 6 | 487,524 | 450,501 | core-agent-system, orchestrator |
+| 7 | 496,571 | 487,488,518 | extensions, agent-system |
+| 8 | 498 | 496 | extensions |
+| 9 | 499 | 421,498 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -26,9 +28,13 @@ next_project_number: 576
 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-360 [NOT STARTED] — Evidence discipline for report and plan artifacts, in three...
-  └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
-    └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
+360 [RESEARCHING] — Evidence discipline for report and plan artifacts, in three...
+  └─ 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
+    └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
+      └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
+    └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
+    └─ 500 [NOT STARTED] — Dependency-edge backfill is unreachable for a not-started task
+    └─ 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
   └─ 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
     └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
 369 [PLANNED] — Orphan sweep for deployed entries removed from the source...
@@ -42,13 +48,9 @@ next_project_number: 576
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
 445 [PLANNED] — Give verify-deploy.sh's Gate 8 an expected-versus-new failure...
   └─ 444 [NOT STARTED] — Retire routing\_agents\_hard in favour of hard\_contracts...
+    └─ 448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a... (see above)
   └─ 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or... (see above)
   └─ 527 [NOT STARTED] — Assert the deployed hook registration SET matches the... (see above)
-448 [NOT STARTED] — Contain the regression-anchor source-store mutation so a...
-  └─ 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with... (see above)
-  └─ 461 [NOT STARTED] — Rule on and close the V7 refusal of a positive directory...
-  └─ 500 [NOT STARTED] — Dependency-edge backfill is unreachable for a not-started task
-  └─ 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
@@ -128,12 +130,12 @@ next_project_number: 576
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
-  └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
+    └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
   └─ 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 
 ### Agent System
 
-488 [PLANNED] — Adjudicate where MCP write-tool permission grants belong:...
+488 [IMPLEMENTING] — Adjudicate where MCP write-tool permission grants belong:...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
 512 [PLANNED] — verify-deploy gate 24 reports two findings against lines that...
@@ -5430,7 +5432,7 @@ Recorded here so research does not revisit them:
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 496, Task 497, Task 498
+- **Dependencies**: Task 421, Task 496, Task 497, Task 498
 
 **Description**: Retarget the two store-coupled `/distill` sub-modes onto the hosted store, drop the six that the hosted store already performs, remove core's now-orphaned callers, and retire the memory extension.
 
@@ -5789,7 +5791,7 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 
 ### 488. Adjudicate where MCP write-tool permission grants belong: repo-scoped extension fragment vs. the server owner's own configuration
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -5813,7 +5815,7 @@ ACCEPTANCE: mcp-server-ownership.md states a verdict covering the nix-enforced-s
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 449
+- **Dependencies**: Task 360, Task 448, Task 449, Task 450
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -7948,7 +7950,7 @@ rather than editing plan-file-scope-harvest.sh here.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 328, Task 418
+- **Dependencies**: Task 328, Task 360, Task 418, Task 444, Task 445
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -10073,7 +10075,7 @@ Fourteen other deployed repos are already clean and serve as the no-change contr
 ---
 
 ### 360. Evidence discipline for report and plan artifacts, in three phases: validate that a CARRIED-UNVERIFIED mark names a source, extend the carried-figure obligation to recommendations and dispatch premises, and require a self-derived enumeration to state and stress-test its search pattern
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328, Task 358, Task 385, Task 407, Task 428, Task 446

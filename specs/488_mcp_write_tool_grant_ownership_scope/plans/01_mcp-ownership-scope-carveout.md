@@ -1,7 +1,7 @@
 # Implementation Plan: Task #488
 
 - **Task**: 488 - MCP write-tool grant ownership scope
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/488_mcp_write_tool_grant_ownership_scope/reports/01_mcp-ownership-scope-verdict.md
@@ -109,7 +109,7 @@ No `roadmap_path` was provided in the delegation context; no roadmap phases are 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Amend the Standard with the Carve-Out Verdict [NOT STARTED]
+### Phase 1: Amend the Standard with the Carve-Out Verdict [COMPLETED]
 
 **Goal**: `mcp-server-ownership.md` carries an explicit, internally consistent verdict covering a
 grant placed at a NARROWER scope than registration because the matching user-scope settings file
@@ -117,40 +117,45 @@ is externally owned and enforced.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/patterns/mcp-server-ownership.md` immediately
-      before editing (a sibling dispatch is live on `core` this cycle).
-- [ ] Add a new `###` subsection under `## Permission`, placed immediately after
+- [x] Re-read `agent-system/extensions/core/context/patterns/mcp-server-ownership.md` immediately
+      before editing (a sibling dispatch is live on `core` this cycle). *(completed)*
+- [x] Add a new `###` subsection under `## Permission`, placed immediately after
       `### Carve-out: safe/unsafe tool splits require enumeration` and before the `---` that opens
       `## Composition`. Adapt the research report's Recommendation 1 draft into the file's own
-      voice and cross-link conventions; do not paste it verbatim.
-- [ ] The subsection MUST state, in its own prose: (a) the governing rule's unstated assumption —
+      voice and cross-link conventions; do not paste it verbatim. *(completed: added "Carve-out: a
+      nix-enforced user-scope settings file cannot receive a new grant")*
+- [x] The subsection MUST state, in its own prose: (a) the governing rule's unstated assumption —
       that the matching user-scope settings file is one this repo's deploy can durably write;
       (b) that a nix-enforced/externally-reset file breaks that assumption, so an edit there is
       silently reverted; (c) the verdict that an extension MAY instead grant the withheld tier at
       its own project scope when the owning system has already drawn a safe/unsafe line;
       (d) explicitly, that widening the grant to the externally-owned file is the WRONG fix for a
       mutating, unreviewed capability, because it enlarges the blast radius from one opted-in
-      repository to every project on the machine.
-- [ ] State the three requirements as requirements, not observations: explicit enumeration (never
+      repository to every project on the machine. *(completed)*
+- [x] State the three requirements as requirements, not observations: explicit enumeration (never
       a wildcard, so a newly added server tool cannot silently inherit the narrow grant); the
       extension's own docs must state the tradeoff and link back to this subsection; never
-      hand-edit the enforced file to "fix" the apparent mismatch.
-- [ ] Distinguish this carve-out from the preceding one in one sentence: the safe/unsafe carve-out
+      hand-edit the enforced file to "fix" the apparent mismatch. *(completed)*
+- [x] Distinguish this carve-out from the preceding one in one sentence: the safe/unsafe carve-out
       leaves the unsafe tier permanently prompting everywhere, whereas this one deliberately
-      grants it in exactly one repository.
-- [ ] Name the worked example by path: `agent-system/extensions/sapience/settings-fragment.json`
+      grants it in exactly one repository. *(completed)*
+- [x] Name the worked example by path: `agent-system/extensions/sapience/settings-fragment.json`
       and `context/project/sapience/domain/review-gate-boundary.md`, with the four tool names.
-- [ ] Add a forward pointer from `### Grant permissions at the same scope where the server is
+      *(completed)*
+- [x] Add a forward pointer from `### Grant permissions at the same scope where the server is
       registered` to the new subsection, so a reader arriving at the governing rule learns an
-      enforced-file exception exists before concluding a narrower grant is broken.
-- [ ] Update the `## Composition` table's first row (Connected-but-prompts) fix cell so it no
+      enforced-file exception exists before concluding a narrower grant is broken. *(completed)*
+- [x] Update the `## Composition` table's first row (Connected-but-prompts) fix cell so it no
       longer reads as if user-scope and owning-extension-fragment were the only two placements.
-- [ ] Update `## Decision procedure` step 3, which currently says "Project-scope registration is
+      *(completed)*
+- [x] Update `## Decision procedure` step 3, which currently says "Project-scope registration is
       the one exception" — make it name both exceptions, or point at the Permission section's
       carve-outs, so the procedure and the new subsection do not contradict each other.
-- [ ] Confirm no task-number reference and no record-versioning language ("previously", "no
+      *(completed)*
+- [x] Confirm no task-number reference and no record-versioning language ("previously", "no
       longer", "v2", supersession framing) was introduced; the file states the current design
-      only.
+      only. *(completed: check-task-references.sh PASS; pre-existing "previously" occurrences at
+      unrelated lines were not touched by this edit)*
 
 **Timing**: 0.75 hours
 

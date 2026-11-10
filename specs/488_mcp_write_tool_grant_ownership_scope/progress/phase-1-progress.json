@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Amend the Standard with the Carve-Out Verdict",
+  "started_at": "2026-11-09T00:00:00Z",
+  "last_updated": "2026-11-09T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read mcp-server-ownership.md immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add new carve-out subsection under ## Permission with required content (a)-(d), three requirements, distinguishing sentence, worked example, forward pointer", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]},
+    {"id": 3, "description": "Update Composition table fix cell and Decision procedure step 3 for consistency", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md"]},
+    {"id": 4, "description": "Confirm no task-number references or record-versioning language introduced; fix index-entries.json line_count drift and confirm verify-deploy.sh --only-gate 3,4 green", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

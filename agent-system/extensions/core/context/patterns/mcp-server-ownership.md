@@ -171,6 +171,11 @@ asymmetry this passage once recorded (grant confined to the `web` and `present` 
 `settings-fragment.json` files, with zero entries in `~/.claude/settings.json` itself) has been
 corrected, not merely noted.
 
+**Before concluding a narrower-than-registration grant is broken**: this rule assumes the
+matching user-scope settings file is one this repository's deploy can durably write. See "Carve-out:
+a nix-enforced user-scope settings file cannot receive a new grant" below (under "Permission") for
+the case where that assumption fails and a project-scope grant is the sanctioned placement instead.
+
 ### Workspace trust (a real friction cost, not a blocker)
 
 Claude Code v2.1.196 added a workspace-trust gate for `.mcp.json`: a fresh clone (or any
@@ -291,6 +296,57 @@ exactly one place (user scope) rather than three is what this document's own cor
 (see "Grant permissions at the same scope where the server is registered" above) was for: a single
 list to update instead of several copies that could silently diverge.
 
+### Carve-out: a nix-enforced user-scope settings file cannot receive a new grant
+
+The governing rule above ("Grant permissions at the same scope where the server is registered")
+rests on an unstated assumption: that the matching user-scope settings file
+(`~/.claude/settings.json`) is one this repository's own deploy can durably write. That
+assumption does not hold on every machine. Where `~/.claude/settings.json`'s `permissions` key is
+itself nix-enforced — reset to its `~/.dotfiles`-held source on every home-manager switch — no
+repository deploy can durably add a grant there: an edit written by hand or by a deploy survives
+only until the next switch, then is silently reverted with no error to signal the loss.
+
+When that is the case, an extension MAY instead grant the withheld tier at its own PROJECT scope,
+in its own `settings-fragment.json`, rather than at the user scope the governing rule would
+otherwise require. This is a narrower-than-registration grant, not a violation of the governing
+rule's intent: the rule exists to make a server's tools reachable from every project that needs
+them, and a mutating, unreviewed capability reaching every project on the machine is itself the
+larger risk being managed here. Widening the grant to the externally-enforced file instead — the
+fix the governing rule would otherwise prescribe — is the WRONG fix for exactly that reason: it
+enlarges the blast radius from the one repository that opted in to every project on the machine,
+the opposite of the narrow-scope intent. Never hand-edit the enforced file to "fix" the apparent
+mismatch; the edit will not survive the next switch, and attempting it misrepresents the actual
+grant surface in the meantime.
+
+This carve-out applies only when all three of the following hold:
+
+1. **The matching user-scope settings file is externally enforced**, reset by a system this
+   repository's deploy does not control (a nix/home-manager activation block is the concrete case
+   on this machine) — never merely inconvenient to edit.
+2. **Explicit enumeration, never a wildcard.** A wildcard would silently inherit every future tool
+   the server adds; an enumeration confines the narrow grant to exactly the tools named today, the
+   same discipline the safe/unsafe carve-out above already requires.
+3. **The owning system has already drawn a safe/unsafe line**, and the grant lifts only the tier
+   that line already judges acceptable to grant somewhere. The carve-out never invents a new
+   safe/unsafe split on this repository's own authority, and the extension's own docs must state
+   the tradeoff and link back to this subsection, rather than leaving the narrower grant looking
+   like an unexplained departure from the governing rule.
+
+This carve-out is distinct from the safe/unsafe split carve-out above: that one leaves the unsafe
+tier permanently prompting in every project on the machine, while this one deliberately grants the
+withheld tier in exactly one repository, in exchange for leaving every other project unaffected.
+
+**Worked example**: the sapience extension's `agent-system/extensions/sapience/settings-fragment.json`
+grants four write tools — `mcp__sapience__sapience_remember`, `mcp__sapience__sapience_wrapup`,
+`mcp__sapience__sapience_handoff`, and `mcp__sapience__sapience_adddoc` — at this repository's own
+project scope rather than at user scope. `~/.claude/settings.json`'s `permissions` key is
+nix-enforced from `~/.dotfiles` on this machine, and the owning system (Sapience) already grants a
+seven-tool read-only allow-list at user scope while deliberately withholding these four
+mutating/unreviewed tools from it — the safe/unsafe line the second requirement above cites. See
+`context/project/sapience/domain/review-gate-boundary.md`'s "The Permission Grant's
+Repository-Scoped Tradeoff" section for the full disclosure this carve-out's third requirement
+asks for.
+
 ---
 
 ## Composition
@@ -301,7 +357,7 @@ name. The two failure shapes point to different fixes:
 
 | Symptom | Registration | Permission | Fix |
 |---|---|---|---|
-| Connected, but every call prompts | OK (`Connected`) | Missing or non-matching grant | Add/correct the `mcp__{server}__*` entry at the SAME scope as registration — the owning extension's `settings-fragment.json` for project-scope, `~/.claude/settings.json` for user-scope |
+| Connected, but every call prompts | OK (`Connected`) | Missing or non-matching grant | Add/correct the `mcp__{server}__*` entry at the SAME scope as registration — the owning extension's `settings-fragment.json` for project-scope, `~/.claude/settings.json` for user-scope — or, when the matching user-scope file is externally enforced and the three-requirement carve-out applies, the owning extension's `settings-fragment.json` at project scope instead (see "Permission"'s nix-enforced-settings carve-out) |
 | Granted, but the tool is simply absent | Missing (not in `~/.claude.json` or project-scoped `.mcp.json`) | Present but moot | Register the server on the appropriate surface — project-scoped `.mcp.json`, a user-scope activation block, or a user-scope setup script — a permission grant cannot conjure a server that was never connected |
 
 Checking only one axis and concluding "it's configured" is the recurring mistake this document
@@ -329,9 +385,14 @@ Follow top to bottom when adding a new server:
    permissions at the same scope where the server is registered" above and the `lean-lsp` Worked
    Pair note): a `~/.claude/settings.json` wildcard grant (`"mcp__{server}__*"`) applies to every
    session on the machine no matter which scope registered the server that session resolves to.
-   Project-scope registration is the one exception — grant in the owning extension's
-   `settings-fragment.json` instead. Never core's settings, and never an enumeration — unless the
-   server needs a safe/unsafe split (see "Carve-out" above).
+   Two exceptions depart from user scope: project-scope registration — grant in the owning
+   extension's `settings-fragment.json` instead — and the nix-enforced-settings carve-out (see
+   "Permission"'s "Carve-out: a nix-enforced user-scope settings file cannot receive a new grant"),
+   where a project-scope grant is sanctioned even though the server registered at user scope,
+   because the matching user-scope file cannot be durably written by this repository's deploy.
+   Never core's settings, and never an enumeration — unless the server needs a safe/unsafe split
+   (see "Carve-out: safe/unsafe tool splits require enumeration" above) or falls under the
+   nix-enforced-settings carve-out, both of which require enumeration.
 4. **Verify both axes from a fresh session** (never an already-running one — see "The
    session-start snapshot trap" above): run `claude mcp list` and confirm the server shows
    `Connected`, then make one real tool call and confirm it does not prompt.
