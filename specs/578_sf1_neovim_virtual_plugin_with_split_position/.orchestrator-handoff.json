@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase, 5.25-hour implementation plan for the sf1 virtual plugin, building bottom-up: snacks-backed window layer, then the dependency-free module core, then spec/loader/:Sf1 registration, then the single shared-territory keymap edit, then documentation, then a verification phase. Settled the three design choices research left open (float omits size and uses snacks float defaults; ai/README.md gains a sapience/ subdirectory entry; set_position mutates a live terminal's opts and hide/show-repositions rather than restarting the REPL) and added two newly-verified snacks mechanics the plan depends on. The plan's per-phase Files to modify blocks harvest to exactly the nine intended paths with neither shared/picker/ file present, which discharges the research recommendation to declare file_scope.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/578_sf1_neovim_virtual_plugin_with_split_position/plans/02_sf1-virtual-plugin-split-position.md",
+      "summary": "Six-phase plan (5.25h) for the sf1 lazy.nvim virtual plugin: terminal backend, module core, spec/loader/:Sf1 registration, is_sf1 keymap branch plus <leader>af, documentation, verification."
+    }
+  ],
+  "dispatch_seq": 2
+}

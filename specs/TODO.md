@@ -87,7 +87,7 @@ next_project_number: 579
 
 ### Neovim
 
-578 [RESEARCHED] — Build an in-config sf1 (Sapience terminal chat) Neovim...
+578 [PLANNED] — Build an in-config sf1 (Sapience terminal chat) Neovim...
 
 ### File Scope Lifecycle
 
@@ -184,11 +184,12 @@ next_project_number: 579
 ## Tasks
 
 ### 578. Sf1 neovim virtual plugin with split position
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: neovim
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [578_sf1_neovim_virtual_plugin_with_split_position/reports/02_sf1-split-position-verification.md]
+- **Plan**: [578_sf1_neovim_virtual_plugin_with_split_position/plans/02_sf1-virtual-plugin-split-position.md]
 
 **Description**: Build an in-config sf1 (Sapience terminal chat) Neovim integration as a lazy.nvim virtual plugin, following the existing stt-plugin.lua / himalaya-plugin.lua convention, kept fully separate from the claude-code and opencode integrations.
 
@@ -6072,6 +6073,26 @@ Note also that the vault data was never tracked in the extension's own installed
 - `/todo` archival completes without the HarvestMemories stage erroring.
 - `.memory/` is present and unmodified at the end of the task.
 - Email triage Stage 7 still accumulates preferences correctly (guaranteed by the dependency on the email tally substrate task).
+
+== PART C2: CLOSE THE TAGGED-WRITE HALF OF THE RETRIEVAL LOOP ==
+
+The sapience retrieval injection is LIVE and unconditional today (`orchestrate-build-dispatch.sh`'s Stage 3.5 `memory_context` block calls `sapience-retrieve.sh` on every research/plan/implement dispatch), but NOTHING routinely writes the repo tag it filters on, so the loop is half-open. Measured 2026-11-10: the entire `[repo:nvim]`-tagged population is 3 knowledge objects, all self-referential artifacts of building the scoping mechanism (two research probes plus one verification note). Every dispatch therefore pays a retrieval round trip and gets back notes about retrieval.
+
+`sapience-remember.sh` is the only write path that can produce a tagged KO and is deployed, live and verified, but is deliberately wired to no call site. Wire it here.
+
+WHY THE EXISTING MCP WRAPUP DOES NOT ALREADY COVER THIS (verified, do not re-derive): `remember_provenance()` in `~/.sapience/mcp.py` builds the provenance string entirely connector-side as `"<Name> via <Tool> session (MCP)"` with no caller-injectable field. Every note written by `sapience_wrapup`/`sapience_remember` is therefore UNTAGGED and invisible to a repo-filtered read. The postflight wrapup instruction already in `EXTENSION.md` is thus writing into the population `sapience-retrieve.sh` can never see. That instruction is the thing to amend, not a new mechanism to invent.
+
+NOT AN EXTENSION LIFECYCLE HOOK -- STRUCTURALLY IMPOSSIBLE, DO NOT ATTEMPT IT. A `hooks.postflight` entry in the sapience manifest can never fire: `skill-base.sh`'s `skill_get_extension_dir()` gates hook resolution on `[ -n "$ext_task_type" ] && [ "$ext_task_type" = "$task_type" ]`, and the sapience manifest declares no `task_type` (it is deliberately typeless), so it fails the `-n` test unconditionally and silently. This exact false premise already cost a full research round during the extension's creation and killed a planned `sapience-context.sh` deliverable before it shipped; the hook-prerequisite documentation task records the mechanism in full.
+
+TWO ADMISSIBLE SHAPES -- the plan phase chooses ONE and records why:
+
+(a) INSTRUCTION-LEVEL (recommended). Amend the existing postflight-wrapup instruction in `agent-system/extensions/sapience/EXTENSION.md` so the same task-boundary moment also writes the tagged copy via `sapience-remember.sh`, with the untagged `sapience_wrapup` call kept, replaced, or both -- decide and record which. Costs no new territory (that file is already in this task's file_scope) and sits exactly where the existing instruction lives. HARD CONSTRAINT: that file is merged verbatim into the assembled `.claude/CLAUDE.md` and is therefore EAGER-LOADED, and the eager-load budget is already over its recorded baseline. Any text added there must be size-neutral or smaller; put the detail in `context/project/sapience/domain/per-repo-scoping.md` (not eager-loaded) and leave a pointer. Verify with `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` before and after.
+
+(b) SCRIPT-LEVEL. Call the script mechanically from `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` at the `[IMPLEMENTING]` -> `[COMPLETED]` transition. Mechanically guaranteed rather than instruction-dependent, but it is a CORE edit in shared, high-traffic territory. The path is declared in this task's file_scope so that choosing this shape does not produce an undeclared-path phase-commit drop; leave it untouched if shape (a) is chosen.
+
+BOUND IS LOAD-BEARING, AND THE CALL SITE MUST ENFORCE IT. There is no delete API on this vault and `/ingest-kos` bypasses the `auto_approve: false` review gate entirely, so every write this wiring lands is both PERMANENT and UNREVIEWED. `sapience-remember.sh` deliberately does not enforce the 3-8-note-per-completed-task bound; whatever call site is added MUST. A wiring defect here writes permanent garbage removable only by hand in the web app, so prefer a dry-run-verified rollout over a write-first one.
+
+VERIFICATION FOR THIS PART: after wiring, complete one task and confirm (i) the tagged write landed (`written >= 1`, no `gated`/`set_aside`), (ii) `sapience-retrieve.sh <description> <task_type>` on a later dispatch returns at least one note originating from that completed task rather than only the three pre-existing build artifacts, and (iii) a forced write failure degrades without breaking postflight or the task's status transition.
 
 ---
 
