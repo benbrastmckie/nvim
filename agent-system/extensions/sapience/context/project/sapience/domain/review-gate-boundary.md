@@ -29,6 +29,18 @@ deliberately does not add -- would instead produce an unreviewed write per decis
 potentially many times across a single `/orchestrate` batch, with no equivalent to the staged
 review gate the rest of this machine's sapience workflow relies on.
 
+## A Third Direct Write Path: `sapience-retrieve.sh`'s Sibling Script
+
+`sapience-remember.sh` (`agent-system/extensions/sapience/scripts/`) posts straight to `POST
+/ingest-kos`, the same endpoint the MCP write-tool path above uses -- so it bypasses the
+`auto_approve: false` review gate exactly the same way: no staging, no review step, every write
+permanent and unreviewed the instant the server returns `written >= 1`. It differs from the four
+MCP tools only in *what* it writes (a repo-tagged KO, for the per-dispatch retrieval injection
+`sapience-retrieve.sh` reads back) and in being called from task-boundary postflight rather than
+mid-session. See `per-repo-scoping.md` for the full scoping mechanism and the bound that keeps
+this path's unreviewed volume per completed task (a 3-8-note set) rather than per decision --
+the same per-task bound this file's gap-2 instruction already applies to `sapience_wrapup`.
+
 ## The Permission Grant's Repository-Scoped Tradeoff
 
 `settings-fragment.json` grants the four write tools at this repository's own project scope

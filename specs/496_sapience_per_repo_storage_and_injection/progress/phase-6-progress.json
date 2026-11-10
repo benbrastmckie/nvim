@@ -1,0 +1,41 @@
+{
+  "phase": 6,
+  "phase_name": "Amend the extension's design record and document the hazards",
+  "started_at": "2026-11-10T01:45:00Z",
+  "last_updated": "2026-11-10T02:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create per-repo-scoping.md (mechanism, project= dead end, MCP-tool limitation, explicit:true, two scripts, three hazards); amend subagent-orientation.md item 3 with a dated Amended-by note; amend vault-model.md's own contradictory framing (additional site found); add review-gate-boundary.md's direct-write-path bypass subsection; add README.md row, index-entries.json entry + refreshed line counts, EXTENSION.md pointers; confirm no task refs or record-versioning language outside the sanctioned note",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/subagent-orientation.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+        "agent-system/extensions/sapience/context/project/sapience/README.md",
+        "agent-system/extensions/sapience/index-entries.json",
+        "agent-system/extensions/sapience/EXTENSION.md"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.scope-hypothesis",
+      "description": "subagent-orientation.md's contradiction confined to item 3 and the altitude-split sentence",
+      "type": "altered",
+      "reason": "vault-model.md's final paragraph independently stated 'no per-dispatch, shell-invoked retrieval mechanism for Sapience exists in this extension' -- a second contradiction the narrower anti-goal-phrase grep missed. Amended it too; review-gate-boundary.md and EXTENSION.md checked clean of similar framing.",
+      "annotation": "*(deviation: altered — the framing DID recur elsewhere ...)*"
+    },
+    {
+      "task_id": "6.verification",
+      "description": "bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 exits 0 with both gates reporting checks run",
+      "type": "altered",
+      "reason": "Both gates ran (not SKIP); gate 4 passed; gate 3 failed with 'deployed script content drift' for Phase 5's three source-store edits, not yet redeployed. Same expected pre-redeploy-drift pattern as Phase 3/4; resolved by Phase 7's final redeploy.",
+      "annotation": "*(deviation: altered — both gates ran (not SKIP) as required ...)*"
+    }
+  ]
+}

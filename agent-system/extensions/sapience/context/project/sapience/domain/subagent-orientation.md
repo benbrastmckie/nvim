@@ -61,12 +61,21 @@ No code change closes this gap. The deliberate resolution is:
 2. **An on-demand escape hatch, explicitly invoked.** When a subagent genuinely needs
    cross-session recall mid-task, it reaches for `sf1 "question"` or a direct `/v1/ask` call
    itself -- a deliberate, visible action, not a silent always-on injection.
-3. **No second per-dispatch retrieval injection.** The one existing cross-cutting,
+3. **A single per-dispatch retrieval injection, repo-filtered, replacing rather than
+   supplementing the local-vault injection.** The one existing cross-cutting,
    task-type-independent injection mechanism in this codebase (`<memory-context>`) is not an
-   extension-declarable hook at all -- it is a hardcoded call to `memory-retrieve.sh` written
-   directly into core's own `orchestrate-build-dispatch.sh`. Building a Sapience equivalent that
-   way would mean editing a shared core script and adding a network round-trip to every dispatch
-   in every batch, which is exactly the second always-on injection path this extension's anti-goal
-   forbids. The memory extension and Sapience are split by altitude instead: the memory
-   extension owns per-dispatch, zero-network local injection; Sapience owns session-level
-   orientation and cross-project recall, reached explicitly, not injected.
+   extension-declarable hook at all -- it is a hardcoded call written directly into core's own
+   `orchestrate-build-dispatch.sh` Stage 3.5 `memory_context` block. That one call site now
+   invokes `sapience-retrieve.sh`, a repo-tag-filtered `GET /v1/search` read emitting the same
+   envelope shape the local-memory script produced, with the same failure-swallowing wrapper and
+   `--clean` suppression unchanged -- see `per-repo-scoping.md` for the scoping mechanism, the
+   script contracts, and the hazards (no delete API, unreviewed permanent writes, two
+   differently-shaped vault populations). This is a single injection point, not a second one
+   added alongside an existing local one: that one call site invokes either the local-memory
+   vault or the Sapience vault, never both at once.
+
+   **Amended by** `per-repo-scoping.md`, 2026-11-10: the alternative above and the "no
+   per-dispatch, shell-invoked retrieval mechanism" framing in `vault-model.md` argued against
+   exactly this shape. The accepted design builds it, accepting the per-dispatch network
+   round-trip (measured at ~0.22s average) as the deliberate tradeoff, bounded by the hazards
+   `per-repo-scoping.md` records.

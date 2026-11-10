@@ -7,7 +7,7 @@
       "topics": ["sapience", "navigation", "index"],
       "keywords": ["sapience", "vault", "on-demand", "index"],
       "summary": "Navigation index for the Sapience extension's domain notes, all read-on-demand with no eager load hook",
-      "line_count": 17,
+      "line_count": 18,
       "load_when": {},
       "on_demand": true
     },
@@ -18,7 +18,7 @@
       "topics": ["sapience", "vault-model", "mcp", "cli"],
       "keywords": ["app.spnc.ai", "mcp.py", "sf1", "sapience_ask", "briefing-text", "statusline"],
       "summary": "Hosted vault model, the MCP thin client, and mcp.py's exact CLI mode inventory (no --search, no --ask)",
-      "line_count": 38,
+      "line_count": 40,
       "load_when": {},
       "on_demand": true
     },
@@ -27,9 +27,20 @@
       "domain": "project",
       "subdomain": "sapience",
       "topics": ["sapience", "review-gate", "permissions", "staging"],
-      "keywords": ["auto_approve", "sapience_remember", "sapience_wrapup", "sapience_handoff", "sapience_adddoc", "settings-fragment"],
-      "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools, and the repository-scoped permission-grant tradeoff",
-      "line_count": 60,
+      "keywords": ["auto_approve", "sapience_remember", "sapience_wrapup", "sapience_handoff", "sapience_adddoc", "settings-fragment", "ingest-kos"],
+      "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools and sapience-remember.sh, and the repository-scoped permission-grant tradeoff",
+      "line_count": 72,
+      "load_when": {},
+      "on_demand": true
+    },
+    {
+      "path": "project/sapience/domain/per-repo-scoping.md",
+      "domain": "project",
+      "subdomain": "sapience",
+      "topics": ["sapience", "per-repo-scoping", "provenance", "ingest-kos"],
+      "keywords": ["provenance", "source=", "repo tag", "sapience-retrieve.sh", "sapience-remember.sh", "explicit", "gated", "set_aside"],
+      "summary": "The provenance repo-tag scoping mechanism, why project= and source_loc are dead ends, the two scripts' contracts, and the no-delete-API / unreviewed-write / two-population hazards",
+      "line_count": 78,
       "load_when": {},
       "on_demand": true
     },
@@ -50,8 +61,8 @@
       "subdomain": "sapience",
       "topics": ["sapience", "subagent-orientation", "context-injection", "lifecycle-hooks"],
       "keywords": ["skill_get_extension_dir", "skill-base.sh", "task_type", "context_injection", "post-task-observers"],
-      "summary": "Why a manifest context_injection hook cannot fire for a task_type-less extension, with the checkable skill-base.sh citation, and the deliberate session-level-plus-on-demand alternative",
-      "line_count": 72,
+      "summary": "Why a manifest context_injection hook cannot fire for a task_type-less extension, with the checkable skill-base.sh citation, and the accepted single per-dispatch retrieval injection",
+      "line_count": 81,
       "load_when": {},
       "on_demand": true
     }

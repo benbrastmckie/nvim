@@ -8,7 +8,14 @@ hooks in `~/.dotfiles`, enforced every home-manager switch -- never rebuilt here
 
 **What this extension adds**: `settings-fragment.json` grants the four MCP write tools
 (`sapience_remember`, `sapience_wrapup`, `sapience_handoff`, `sapience_adddoc`) at this repo's
-project scope -- repository-scoped, not machine-wide; see `domain/review-gate-boundary.md`.
+project scope -- repository-scoped, not machine-wide; see `domain/review-gate-boundary.md`. It
+also provides two scripts, `scripts/sapience-retrieve.sh` and `scripts/sapience-remember.sh`,
+deployed to `.claude/scripts/`: the first is called from core's `orchestrate-build-dispatch.sh`
+Stage 3.5 `memory_context` block, giving every dispatch a repo-tag-filtered, per-dispatch
+retrieval injection from this vault; the second posts a repo-tagged, `explicit: true` KO via
+`POST /ingest-kos` and is not wired into any call site by this extension. See
+`domain/per-repo-scoping.md` for the scoping mechanism, both scripts' contracts, and the
+no-delete-API / unreviewed-write / two-population hazards.
 
 **Postflight wrapup**: at the `[IMPLEMENTING]` -> `[COMPLETED]` transition, call
 `sapience_wrapup` with 3-8 distilled notes from the summary artifact just written. Do NOT call
@@ -26,3 +33,4 @@ Read-on-demand, not eager-loaded:
 - `context/project/sapience/domain/review-gate-boundary.md`
 - `context/project/sapience/domain/transcript-filter-ceiling.md`
 - `context/project/sapience/domain/subagent-orientation.md`
+- `context/project/sapience/domain/per-repo-scoping.md`

@@ -546,13 +546,13 @@ per the plan's Non-Goals, since that script stays on disk and deployed.)*
 
 ---
 
-### Phase 6: Amend the extension's design record and document the hazards [NOT STARTED]
+### Phase 6: Amend the extension's design record and document the hazards [COMPLETED]
 
 **Goal**: The extension's own documentation describes the shipped mechanism accurately, no longer
 contradicts it, and records the three hazards the dispatch names as document-don't-fix.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`
+- [x] Create `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md` *(completed)*
       covering: the repo-tag-in-`provenance` mechanism and why it is the only one that works;
       that `/v1/search` silently ignores `&project=` and the project surfaces are a paid team
       feature on this account, so the `project` field is not an alternative; that the MCP
@@ -561,7 +561,7 @@ contradicts it, and records the three hazards the dispatch names as document-don
       `explicit: true` is mandatory because the server's noise gate otherwise discards a note
       while returning a success-shaped response; and the two new scripts' roles and argument
       contracts.
-- [ ] In the same file, record the three hazards plainly: **no delete API** (three probed routes
+- [x] In the same file, record the three hazards plainly: **no delete API** (three probed routes *(completed)*
       all 404, so every write is permanent and the only remedy is manual removal in the web app);
       **writes through this path bypass the `auto_approve: false` review gate entirely**, which
       governs only the transcript-extraction path, so every write is permanent *and* unreviewed;
@@ -569,7 +569,7 @@ contradicts it, and records the three hazards the dispatch names as document-don
       transcript-extraction path cannot be repo-tagged and therefore keeps writing untagged
       objects that repo-filtered reads never see — stated as a documented asymmetry, explicitly
       not a bug and explicitly not something this design attempts to fix.
-- [ ] Amend `agent-system/extensions/sapience/context/project/sapience/domain/subagent-orientation.md`
+- [x] Amend `agent-system/extensions/sapience/context/project/sapience/domain/subagent-orientation.md` *(completed)*
       (confirmed present, 72 lines). Its "The Deliberate Alternative" section, item 3, currently
       states that a Sapience equivalent of `<memory-context>` built by editing core's
       `orchestrate-build-dispatch.sh` "is exactly the second always-on injection path this
@@ -582,24 +582,24 @@ contradicts it, and records the three hazards the dispatch names as document-don
       `hooks.context_injection` entry is structurally unreachable for a `task_type`-less
       extension, and why post-task observers are the wrong shape) remain correct and are left
       intact.
-- [ ] Add a short subsection to
+- [x] Add a short subsection to *(completed)*
       `agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md`
       (confirmed present, 60 lines) noting that the direct `POST /ingest-kos` write path bypasses
       the same `auto_approve: false` gate its existing "Two Different Paths Into the Vault"
       section describes for the four MCP write tools, and pointing at `per-repo-scoping.md` for
       the bound that keeps unreviewed volume per completed task rather than per decision.
-- [ ] Add the loading-strategy row for `domain/per-repo-scoping.md` to
+- [x] Add the loading-strategy row for `domain/per-repo-scoping.md` to *(completed)*
       `agent-system/extensions/sapience/context/project/sapience/README.md`.
-- [ ] Add the `per-repo-scoping.md` entry to
+- [x] Add the `per-repo-scoping.md` entry to *(completed)*
       `agent-system/extensions/sapience/index-entries.json` with `load_when: {}` and
       `on_demand: true`, matching every sibling entry, and update the `line_count` field on each
       entry whose file this phase changed (the index carries a per-entry `line_count` that goes
       stale on any edit).
-- [ ] Update `agent-system/extensions/sapience/EXTENSION.md` so its context-pointer list includes
+- [x] Update `agent-system/extensions/sapience/EXTENSION.md` so its context-pointer list includes *(completed)*
       the new domain file and its "What this extension adds" paragraph names the two scripts and
       the per-dispatch injection alongside the existing permission-grant and postflight-wrapup
       content.
-- [ ] Confirm no deliverable under `agent-system/**` cites a task number, per
+- [x] Confirm no deliverable under `agent-system/**` cites a task number, per *(completed)*
       `rules/no-task-references-in-deliverables.md`.
 
 **Timing**: 1.5 hours
@@ -611,6 +611,13 @@ contradicts it, and records the three hazards the dispatch names as document-don
 **Tier Justification**: `suite_selection_select` over this phase's touched paths returns the `__FULL_SWEEP__` sentinel, so no suite covers this edit and none is claimed; the honest covering check is sub-case (b)'s gate subset, `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim` (the repository root — the directory holding `.claude-extensions.json` — as `TARGET`, since a source-store directory has no `.claude/` tree), run together with the `local` row's diff read-through.
 
 **Scope Hypothesis**: This phase hypothesises that `subagent-orientation.md`'s contradiction of the shipped mechanism is confined to its "The Deliberate Alternative" section, item 3, and the altitude-split sentence that follows it. Confirm at implementation time by reading the whole file and grepping the extension's other four context files for the same anti-goal framing; if the framing recurs elsewhere, amend those occurrences in this phase too rather than leaving a partial amendment.
+*(deviation: altered — the framing DID recur elsewhere: `vault-model.md`'s final paragraph stated
+"this is why no per-dispatch, shell-invoked retrieval mechanism for Sapience exists in this
+extension," a second, independently-worded contradiction the narrower anti-goal-phrase grep
+missed. Amended that paragraph in this phase too, pointing at `per-repo-scoping.md` and
+`subagent-orientation.md` instead of asserting the mechanism's absence. `review-gate-boundary.md`
+and `EXTENSION.md` were checked and carry no such framing beyond what this phase already plans
+to add to them.)*
 
 **Files to modify**:
 - `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md` - new
@@ -619,6 +626,9 @@ contradicts it, and records the three hazards the dispatch names as document-don
   amend item 3 of "The Deliberate Alternative" with a dated cross-document amendment note
 - `agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md` -
   add the direct-write-path bypass subsection
+- `agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md` - amend the
+  final paragraph's "no per-dispatch, shell-invoked retrieval mechanism" framing (an additional
+  site the Scope Hypothesis's broader grep surfaced; see the deviation note above)
 - `agent-system/extensions/sapience/context/project/sapience/README.md` - add the new file's
   loading-strategy row
 - `agent-system/extensions/sapience/index-entries.json` - add the new entry and refresh every
@@ -636,7 +646,12 @@ contradicts it, and records the three hazards the dispatch names as document-don
   `run-all.sh --only test-context-reachability.sh,test-deploy-orphans.sh,test-index-entries-schema.sh,test-install-uninstall-extension.sh,test-manifest-scripts-sync.sh`
   exits 0.
 - `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
-  exits 0 with both gates reporting checks run (not SKIP).
+  exits 0 with both gates reporting checks run (not SKIP). *(deviation: altered — both gates ran
+  (not SKIP) as required, and gate 4 passed; gate 3 (doc-lint) failed with "deployed script
+  content drift" for the three files Phase 5 edited in the source store
+  (orchestrate-build-dispatch.sh and its two test files), which have not been redeployed since.
+  This is the same expected pre-redeploy-drift pattern as Phase 3's gate 5 and Phase 4; Phase 7's
+  final redeploy clears it.)*
 - `grep -rniE '\b(no longer|previously|formerly|supersed)' ` over the three changed markdown files
   returns nothing outside a dated `**Amended by**` note.
 - `grep -rniE 'task [0-9]{2,}' ` over the six files returns nothing.

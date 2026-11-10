@@ -12,6 +12,7 @@
   },
   "dispatch_seq": 3,
   "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh"
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+    "agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md"
   ]
 }
