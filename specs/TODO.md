@@ -11,12 +11,11 @@ next_project_number: 578
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,423,431,437,449,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,450,457,458,462,463,474,476,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,423,431,449,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
-| 3 | 390,399,402,436,438,454,487,501,508,547,552,570 | 313,391,398,439,450,458,461,472,476,486,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,481,496,524,561,571,577 | 390,402,487,501,518,547,552 | core-agent-system, extensions, agent-system |
-| 5 | 498 | 496 | extensions |
-| 6 | 499 | 421,498 | extensions |
+| 1 | 313,338,342,369,383,397,410,412,423,431,437,450,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,457,458,462,463,474,476,480,486,487,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,423,431,450,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 3 | 390,399,402,436,438,454,496,501,508,547,552,570,571 | 313,391,398,439,458,461,472,476,486,487,518,519,542,543 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 4 | 421,481,498,524,561,577 | 390,402,496,501,547,552 | core-agent-system, extensions, agent-system |
+| 5 | 499 | 421,498 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -112,16 +111,15 @@ next_project_number: 578
 
 ### Orchestrator
 
-449 [IMPLEMENTING] — Site the Batch Gate Deferral directive where it is read...
-  └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
-    └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
-  └─ 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
+450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
+  └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 507 [NOT STARTED] — Re-adjudicate the declined pre-postflight-sweep deploy...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
+513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 
 ### Agent System
 
@@ -8198,7 +8196,7 @@ territory edges above.
 ---
 
 ### 449. Site the Batch Gate Deferral directive where it is read before the phase's verification is launched
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 328, Task 360, Task 407, Task 414, Task 444, Task 445, Task 446, Task 448
