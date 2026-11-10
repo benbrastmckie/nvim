@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Record the audit and state the safe pattern in the testing standard",
+  "started_at": "2026-11-10T00:41:00Z",
+  "last_updated": "2026-11-10T01:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run corpus audit live", "status": "done", "files_touched": []},
+    {"id": 2, "description": "No unplanned third site found", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record test-validate-no-task-references.sh as audited-with-no-action", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 4, "description": "Add new subsection to shell-script-testing.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 5, "description": "Name the two safe-copy precedents", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Cross-reference exact-pid rule", "status": "done", "files_touched": []},
+    {"id": 7, "description": "No task refs / record-versioning phrasing", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

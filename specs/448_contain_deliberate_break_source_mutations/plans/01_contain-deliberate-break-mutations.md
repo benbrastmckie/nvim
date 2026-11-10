@@ -509,28 +509,28 @@ never a path exclusion in the lint.
 
 ---
 
-### Phase 6: Record the audit and state the safe pattern in the testing standard [NOT STARTED]
+### Phase 6: Record the audit and state the safe pattern in the testing standard [COMPLETED]
 
 **Goal**: The corpus-wide audit result is recorded rather than re-derived, and the safe pattern
 is stated as a rule in the testing standard so the next author of a deliberate-break fixture
 reads it instead of copying the nearest example.
 
 **Tasks**:
-- [ ] Re-run the corpus audit live, since the test corpus has changed since the research pass:
+- [x] Re-run the corpus audit live, since the test corpus has changed since the research pass: *(completed: 0 writes to a real-source-dir variable (CORE_DIR/SRC_DIR/SRC_SCRIPTS_DIR/ANCHOR_SRC) found anywhere under agent-system/extensions/*/scripts/tests/*.sh via sed -i, redirection, or cp-as-destination; 35 suites define such a variable, none write to it)*
       (a) grep every `scripts/tests/*.sh` across all extensions for a `sed -i`, `cp`, or
       redirection whose target is a real-source-dir variable (`$CORE_DIR`, `$SRC_DIR`,
       `$SRC_SCRIPTS_DIR`, `$ANCHOR_SRC` or equivalent); (b) enumerate every suite defining a
       real-source-dir variable via `"$(cd "$SCRIPT_DIR/.." && pwd)"` and grep each for a write
       targeting its own variable. Record the resulting count.
-- [ ] If the audit finds a site other than the one Phase 1 fixed, stop and record it explicitly
+- [x] If the audit finds a site other than the one Phase 1 fixed, stop and record it explicitly *(completed: no third site found; audit result recorded)*
       rather than folding an unplanned fix into this phase -- the dispatch requires each such
       site to be brought under the rule or recorded as exempt, and an unexpected third site is a
       scope change, not a detail.
-- [ ] Record `test-validate-no-task-references.sh` as audited-with-no-action: its own
+- [x] Record `test-validate-no-task-references.sh` as audited-with-no-action: its own *(completed)*
       "regression anchor" operates on in-memory fixture strings passed to assertion helpers and
       mutates no file. Say this positively, as a property of that suite, not as a comparison
       against another record's claim.
-- [ ] Add a new `###` subsection to
+- [x] Add a new `###` subsection to *(completed)*
       `agent-system/extensions/core/context/standards/shell-script-testing.md`, placed under
       `## Fixture convention` directly after `### Never resolve a path against the live tree`
       (see Decisions for the placement rationale). State: a suite that deliberately breaks a
@@ -541,15 +541,15 @@ reads it instead of copying the nearest example.
       trap is recovery, not containment -- a trap does not fire on `SIGKILL`, an OOM kill or a
       host crash, and even a perfect restore leaves the mutation observable by any concurrent
       reader for the whole fixture's duration.
-- [ ] In that subsection, name the two established safe-copy precedents in this corpus
+- [x] In that subsection, name the two established safe-copy precedents in this corpus *(completed)*
       (`test-git-commit-scoped.sh`'s inversion probes and `test-lint-deploy-caller-wrap.sh`'s
       self-test) and point at `lint/lint-deliberate-break-residue.sh` as the mechanical guard,
       noting it is gate-level and advisory because a suite legitimately holds such a mutation
       mid-run.
-- [ ] Cross-reference the parallelism-safety sibling rule (`### Exact-pid process checks`) in one
+- [x] Cross-reference the parallelism-safety sibling rule (`### Exact-pid process checks`) in one *(completed)*
       line, so the two concurrency-safety rules for suite authors are discoverable from each
       other.
-- [ ] Write the whole subsection with no task-number reference and no record-versioning
+- [x] Write the whole subsection with no task-number reference and no record-versioning *(completed)*
       phrasing: state the rule and the structural hazard, never this standard's own drafting
       history.
 

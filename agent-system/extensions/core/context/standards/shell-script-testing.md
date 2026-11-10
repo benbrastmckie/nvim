@@ -245,6 +245,45 @@ trustworthy. Enforcement of this rule is therefore currently manual (author/revi
 at fixture-authoring and code-review time), not mechanical — read this section, not a lint
 output, as the source of truth.
 
+### A deliberate-break regression anchor must mutate a sandbox copy, never the source store
+
+A suite's regression-anchor check exists to prove its own fixture is not passing vacuously: it
+temporarily re-gates a block of a real collaborator script on a deliberately-false condition,
+confirms the fixture goes RED, then reverts (or, in the sandbox-copy form below, simply lets the
+next sandbox rebuild discard it). This technique is legitimate and documented. Its hazard is
+blast radius, not existence: applying the mutation to the real source-store file — rather than to
+a sandbox or scratch copy produced by the suite's own setup step — puts that mutated file live in
+the SHARED WORKING TREE for the whole duration of the fixture. Any concurrently running session
+(another task's verification run, a gate, an unrelated orchestration cycle) can read the broken
+collaborator script during that window, with no way to know why. A backup/restore pair plus an
+`EXIT` trap is recovery, not containment: a trap does not fire on `SIGKILL`, an OOM kill, or a
+host crash, and even a perfect restore does not erase the observation window a concurrent reader
+sees mid-run.
+
+**The rule**: a suite that deliberately breaks a production script to prove a case is not passing
+vacuously MUST apply that mutation to a sandbox or scratch copy, never to the real source-store
+file. The mutation must be applied AFTER whatever sandbox-build step (e.g. `setup_sandbox()`)
+copies the collaborator into the sandbox, since such a step re-copies from the source store and
+would silently erase a mutation applied before it ran — reordering the mutation to follow the
+copy, rather than building new override infrastructure, is usually the simplest fix. Add a
+non-vacuousness assertion immediately after the mutation (confirm it actually matched something
+in the sandbox copy) so a future reindent of the collaborator script cannot turn the sed into a
+silent no-op and the anchor into a vacuous pass.
+
+Two established precedents in this corpus already follow the sandbox-copy pattern:
+`test-git-commit-scoped.sh`'s inversion probes (mutating a copy of the script under test, never
+the source-store original) and `test-lint-deploy-caller-wrap.sh`'s self-test (mutating its own
+copied fixture file). `scripts/lint/lint-deliberate-break-residue.sh` is the mechanical guard
+against regression: it reports an anchored-start `while false &&` guard or a leftover
+`*.anchor-bak` file anywhere under the source store. It runs at gate level (gate 28 in
+`verify-deploy.sh`), never as a write-time block, because a suite legitimately holds such a
+mutation in a sandbox copy for the duration of one fixture — a write-time block would make the
+technique unusable mid-run.
+
+See `### Exact-pid process checks: the parallelism-safety rule for leftover/liveness assertions`
+below for the sibling concurrency-safety rule for suite authors (how a suite identifies a live
+process, rather than whether a suite mutates shared source).
+
 ## Loud-skip discipline
 
 A prerequisite that is unavailable (a missing interpreter, a missing script under test, a missing
