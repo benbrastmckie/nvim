@@ -25,16 +25,20 @@ Everything in this extension comes down to three operations:
 and implement preflight stages (dispatched via `/orchestrate`) call `memory-retrieve.sh` to inject relevant memories into
 agent context. Use the `--clean` flag to suppress auto-retrieval for a specific invocation.
 
-**`/distill` spans 9 sub-modes**, not only vault-hygiene maintenance: the seven original
-sub-modes (`report`/`purge`/`merge`/`compress`/`refine`/`gc`/`auto`) are joined by two
-telemetry-sourced sub-modes that stay coupled to the vault store -- `--revise`
-(event-and-OTel-correlated memory refactoring) and `--learn` (retroactive batch harvest across
-already-completed tasks). `--meta` (cross-repo agent-system improvement proposals), `--review`
-(read-only inquiry over all four source tiers), and `--dream` (speculative direction-finding
-over `history.jsonl`) touch no vault store and moved to `/telemetry` -- see
-`skill-telemetry/SKILL.md` (core extension). See `skills/skill-distill/SKILL.md`'s Shared
-Sub-Mode Skeleton for the common shape, and `context/standards/telemetry-guardrails.md` for the
-binding design constraints the telemetry-sourced sub-modes share.
+**`/distill` spans 3 sub-modes**: local `--auto` (Tier 1 scoring/refine against `.memory/`), and
+two telemetry-sourced sub-modes retargeted onto the hosted Sapience knowledge store -- `--revise`
+(event-and-OTel-correlated review of hosted knowledge objects) and `--learn` (retroactive batch
+harvest across already-completed tasks, written to the hosted store). Vault maintenance at the
+scale a `report`/`purge`/`merge`/`compress`/`gc` set once addressed -- consolidation, staleness
+re-confirmation, and conflict detection -- is performed server-side by the hosted store instead,
+so `/distill` provides none of those operations locally; see
+`context/project/memory/distill-usage.md` for the full reasoning. `--meta` (cross-repo
+agent-system improvement proposals), `--review` (read-only inquiry over all four source tiers),
+and `--dream` (speculative direction-finding over `history.jsonl`) touch no vault store and moved
+to `/telemetry` -- see `skill-telemetry/SKILL.md` (core extension). See
+`skills/skill-distill/SKILL.md`'s Shared Sub-Mode Skeleton for the common shape, and
+`context/standards/telemetry-guardrails.md` for the binding design constraints the
+telemetry-sourced sub-modes share.
 
 ---
 
@@ -180,11 +184,14 @@ Collision handling appends `-2`, `-3`, etc.
 
 #### Tombstoning
 
-Memories are never hard-deleted by `/distill --purge` or `/distill --merge`; instead their
-frontmatter gains `status: tombstoned`, `tombstoned_at`, and `tombstone_reason`. Tombstoned
-memories are excluded from active listings (`index.md`, retrieval scoring) but retained in
-`memory-index.json` with their tombstoned status, and are hard-deleted only by `/distill --gc`
-after a 7-day grace period.
+`status: tombstoned`, `tombstoned_at`, and `tombstone_reason` are a historical frontmatter
+convention: tombstoned memories are excluded from active listings (`index.md`, retrieval
+scoring) but retained in `memory-index.json` with their tombstoned status. No surviving
+`/distill` sub-mode writes a new tombstone or hard-deletes one any more -- that lifecycle moved
+to the hosted Sapience store, which performs its own conflict surfacing and stale-position
+re-confirmation server-side (see `context/project/memory/distill-usage.md`). `--auto`'s own
+Tier 1 refine fixes continue to read and write `.memory/` as before; tombstoning specifically has
+no remaining writer.
 
 #### Reserved Topic Namespaces
 
@@ -340,10 +347,11 @@ Avoid 4+ levels. The index becomes hard to navigate.
 ### Vault Maintenance
 
 The extension is optimized for under 1000 memories. Periodically:
-- Run `/distill` to see a health report with maintenance recommendations
+- Run `/distill --auto` for non-interactive Tier 1 scoring/refine fixes
 - Accept UPDATE/EXTEND over CREATE when content overlaps
-- Use `/distill --purge` to remove low-value memories (when available)
-- Use `/distill --merge` to combine duplicate memories (when available)
+- Run `/distill --revise` or `/distill --learn` to review against the hosted knowledge store
+  (consolidation, duplicate detection, and staleness re-confirmation happen server-side there --
+  see `context/project/memory/distill-usage.md`)
 - Run `/learn --task N` on recent tasks to consolidate learnings
 
 ---

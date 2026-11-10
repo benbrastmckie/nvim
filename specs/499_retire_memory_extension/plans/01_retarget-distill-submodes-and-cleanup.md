@@ -411,7 +411,7 @@ maps to them, and the source-store markdown sub-case adds
 
 ---
 
-### Phase 3: Delete the six hosted-store-redundant sub-modes and prune the scoring engine [NOT STARTED]
+### Phase 3: Delete the six hosted-store-redundant sub-modes and prune the scoring engine [COMPLETED]
 
 **Goal**: `report`, `--purge`, `--merge`, `--compress`, `--refine` and `--gc` are gone; the
 scoring machinery the surviving `auto` sub-mode consumes is retained intact; and the reason vault
@@ -419,32 +419,36 @@ maintenance is absent from `/distill` is recorded where a reader looks for it.
 
 **Tasks**:
 
-- [ ] Delete the four extracted pattern files for `purge`, `merge`, `compress` and `refine`.
-- [ ] In `skill-distill/SKILL.md`, remove the six rows from the Sub-Mode Dispatch table and the
-      sentence that counts the sub-modes, leaving `auto`, `revise` and `learn`.
-- [ ] Remove the Maintenance Candidate Classification table, the Health Report Template body, the
+- [x] Delete the four extracted pattern files for `purge`, `merge`, `compress` and `refine`.
+      *(completed)*
+- [x] In `skill-distill/SKILL.md`, remove the six rows from the Sub-Mode Dispatch table and the
+      sentence that counts the sub-modes, leaving `auto`, `revise` and `learn`. *(completed)*
+- [x] Remove the Maintenance Candidate Classification table, the Health Report Template body, the
       Purge Sub-Mode section together with its Link-Scan Procedure, Retrieval Exclusion and
       Health-Report-Tombstoned-Memories subsections, the GC Sub-Mode section, and the `merge`,
-      `compress` and `refine` stub pointers.
-- [ ] **Retain verbatim**: the Scoring Engine's Input, all four component scores, the Composite
+      `compress` and `refine` stub pointers. *(completed)*
+- [x] **Retain verbatim**: the Scoring Engine's Input, all four component scores, the Composite
       Score, Topic-Cluster Grouping, the Health Score Formula and the Health Status Thresholds.
       `auto` recalculates `health_score` and writes it to `state.json`, so these are live
       consumers, not residue. The Health Score Formula defines its own three counts inline, so it
-      survives the Classification table's removal self-contained.
-- [ ] Update the Shared Sub-Mode Skeleton's own enumeration of which sub-modes it governs, and its
-      mandatory-stop exemption note, so both name only surviving sub-modes.
-- [ ] Prune the Distill Log Schema's Operation Types to the surviving operations, keeping `refine`
+      survives the Classification table's removal self-contained. *(completed: confirmed verbatim
+      retention by grep)*
+- [x] Update the Shared Sub-Mode Skeleton's own enumeration of which sub-modes it governs, and its
+      mandatory-stop exemption note, so both name only surviving sub-modes. *(completed)*
+- [x] Prune the Distill Log Schema's Operation Types to the surviving operations, keeping `refine`
       as `auto`'s own log type (`auto` logs `type: "refine"` with an `"auto mode"` note).
-- [ ] Update the State Integration field-update table's column headers so they name only
-      surviving sub-modes, and drop the `report`-specific rationale paragraph.
-- [ ] In `commands/distill.md`, remove the six flags from the Mode Detection list and the
+      *(completed)*
+- [x] Update the State Integration field-update table's column headers so they name only
+      surviving sub-modes, and drop the `report`-specific rationale paragraph. *(completed)*
+- [x] In `commands/distill.md`, remove the six flags from the Mode Detection list and the
       `sub_mode` parse chain, remove their Section-anchor table rows and their output-contract
-      blocks, and update the Purpose line.
-- [ ] Decide and implement the bare-`/distill` behavior, since `report` was the default: a bare
+      blocks, and update the Purpose line. *(completed: file rewritten in full)*
+- [x] Decide and implement the bare-`/distill` behavior, since `report` was the default: a bare
       invocation prints the surviving sub-mode usage and exits without a default sub-mode. Every
       surviving sub-mode either mutates (`auto`) or requires an interactive gate (`--revise`,
-      `--learn`), so silently defaulting to one is wrong.
-- [ ] In `context/project/memory/distill-usage.md`, rebuild the Quick Reference per-flag table and
+      `--learn`), so silently defaulting to one is wrong. *(completed: Bare-Invocation Usage
+      section added to commands/distill.md)*
+- [x] In `context/project/memory/distill-usage.md`, rebuild the Quick Reference per-flag table and
       the Memory Lifecycle rendering around the surviving sub-modes, and **record the reasoning**
       here, where a reader looks for a missing flag: state as a current-design fact that
       consolidation and compaction, staleness re-confirmation of load-bearing positions, and
@@ -452,18 +456,30 @@ maintenance is absent from `/distill` is recorded where a reader looks for it.
       hosted store, and that `/distill` therefore provides none of them locally. Attribute the
       capability observation to the hosted store's own session briefing as its source. Do not
       restate the three carried figures (2372 objects, 5 structures, 10 conflicts) as current
-      state — they are CARRIED-UNVERIFIED per the re-derivation table above.
-- [ ] Mirror the same positive framing, in one sentence, in `memory/EXTENSION.md`'s `/distill`
+      state — they are CARRIED-UNVERIFIED per the re-derivation table above. *(completed: see "Why
+      report, --purge, --merge, --compress, --refine, and --gc Are Not Here" section; carried
+      figures deliberately not restated)*
+- [x] Mirror the same positive framing, in one sentence, in `memory/EXTENSION.md`'s `/distill`
       command row. This file is merged verbatim into the assembled `.claude/CLAUDE.md` and is
       therefore eager-loaded: the row must come out shorter than it went in, since six flags are
-      leaving it.
-- [ ] Update `memory/README.md` and `memory/context/project/memory/README.md` where they enumerate
-      sub-modes or point at the deleted pattern files.
-- [ ] Remove the four deleted pattern files' entries from `memory/index-entries.json` and update
-      the `distill-usage.md` entry's summary and keyword list.
-- [ ] Re-read every file this phase touched for record-versioning language. The reasoning must
+      leaving it. *(completed: row shrank; whole-file byte count 2788 -> 2720; eager-context
+      TOTAL 68538 B, below the 68606 B baseline)*
+- [x] Update `memory/README.md` and `memory/context/project/memory/README.md` where they enumerate
+      sub-modes or point at the deleted pattern files. *(completed: memory/README.md's sub-mode
+      count paragraph, Tombstoning subsection, and Vault Maintenance bullets updated;
+      memory/context/project/memory/README.md did not actually enumerate sub-modes or point at
+      the deleted files, so it needed no change)*
+- [x] Remove the four deleted pattern files' entries from `memory/index-entries.json` and update
+      the `distill-usage.md` entry's summary and keyword list. *(completed)*
+- [x] Re-read every file this phase touched for record-versioning language. The reasoning must
       read as a statement about the current design, never as a change narrative — no "no longer",
       "previously", "removed", "superseded" or version framing anywhere under `agent-system/**`.
+      *(completed: grep scan clean on all touched files; additionally found and fixed two
+      out-of-plan dangling cross-references this phase's deletions created —
+      skill-distill/README.md's full stale sub-mode table, and skill-learn/SKILL.md's pointer
+      into the now-deleted Purge Sub-Mode "Tombstone Application" subsection — both outside this
+      phase's originally declared file list but necessary for the phase's own verification
+      bullet, which scopes the residual-reference grep to the whole memory/ extension)*
 
 **Timing**: 2 hours
 

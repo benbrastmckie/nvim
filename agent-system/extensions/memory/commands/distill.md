@@ -1,10 +1,17 @@
 ---
-description: Analyze memory vault health, score memories for maintenance, and run distillation operations
+description: Run memory vault auto-maintenance, or telemetry-sourced revise/learn sub-modes against the hosted knowledge store
 ---
 
 # Command: /distill
 
-**Purpose**: Analyzes the memory vault, scores each memory on staleness/retrieval/size/duplication, generates a health report, and dispatches maintenance and telemetry-sourced sub-modes (purge, merge, compress, refine, gc, auto, revise, learn). The `--meta`, `--review`, and `--dream` sub-modes now live at `/telemetry --meta|--review|--dream` -- they touch no vault store and were moved so they survive this extension's eventual retirement.
+**Purpose**: Dispatches `/distill`'s three surviving sub-modes: `--auto` (automated, local
+vault scoring and Tier 1 refine fixes) and the two telemetry-sourced sub-modes retargeted onto
+the hosted Sapience knowledge store (`--revise`, `--learn`). Consolidation and compaction,
+staleness re-confirmation of load-bearing positions, and active conflict detection between a
+person's own notes are performed server-side by the hosted store, so `/distill` provides none of
+those operations locally -- see `context/project/memory/distill-usage.md` for the full reasoning.
+The `--meta`, `--review`, and `--dream` sub-modes live at `/telemetry --meta|--review|--dream` --
+they touch no vault store and were moved so they survive this extension's eventual retirement.
 **Layer**: 2 (Command File - Argument Parsing Agent)
 **Delegates To**: skill-distill mode=distill (direct execution)
 
@@ -18,38 +25,21 @@ description: Analyze memory vault health, score memories for maintenance, and ru
   <step_1>
     Parse arguments with sub-mode priority:
 
-    **Sub-Mode Dispatch** (first match wins, 9 sub-modes total):
-    1. No arguments (bare invocation) -> Report mode (health report)
-    2. `--purge` -> Purge mode (tombstone stale/zero-retrieval memories)
-    3. `--merge` -> Merge mode (combine duplicate memories)
-    4. `--compress` -> Compress mode (reduce oversized memories)
-    5. `--refine` -> Refine mode (improve memory quality)
-    6. `--gc` -> Garbage collection (hard-delete tombstoned memories past grace period)
-    7. `--auto` -> Automated distillation (Tier 1 refine only)
-    8. `--revise` -> Event-and-OTel-correlated memory refactoring proposals
-    9. `--learn` -> Retroactive, batch harvest across already-completed tasks
-
-    All 9 sub-modes are available. `--meta`, `--review`, and `--dream` now live at
-    `/telemetry --meta|--review|--dream`.
+    **Sub-Mode Dispatch** (first match wins, 3 sub-modes total):
+    1. `--auto` -> Automated distillation (Tier 1 refine only)
+    2. `--revise` -> Event-and-OTel-correlated review of hosted knowledge objects
+    3. `--learn` -> Retroactive, batch harvest across already-completed tasks
+    4. No arguments and no recognized sub-mode flag -> print sub-mode usage and exit; there is no
+       default sub-mode.
 
     **Additional Flags**:
     - `--dry-run` -> Show what would happen without making changes
-    - `--verbose` -> Show detailed scoring breakdown per memory
+    - `--verbose` -> Show detailed scoring breakdown per memory (`--auto` only)
 
     ```
-    sub_mode = "report"  # default
+    sub_mode = ""  # no default
 
-    if "--purge" in $ARGUMENTS:
-      sub_mode = "purge"
-    elif "--merge" in $ARGUMENTS:
-      sub_mode = "merge"
-    elif "--compress" in $ARGUMENTS:
-      sub_mode = "compress"
-    elif "--refine" in $ARGUMENTS:
-      sub_mode = "refine"
-    elif "--gc" in $ARGUMENTS:
-      sub_mode = "gc"
-    elif "--auto" in $ARGUMENTS:
+    if "--auto" in $ARGUMENTS:
       sub_mode = "auto"
     elif "--revise" in $ARGUMENTS:
       sub_mode = "revise"
@@ -70,18 +60,13 @@ description: Analyze memory vault health, score memories for maintenance, and ru
   <step_1>
     <action>Validate Sub-Mode Availability</action>
     <process>
-      Check if the requested sub-mode is implemented. All 9 sub-modes are available; each
-      row's "Section" column is the durable anchor into `skill-distill/SKILL.md` -- never a
-      task number, which is ephemeral and renumbered by vault operations:
+      If `sub_mode` is empty, print the Bare-Invocation Usage block below and exit without
+      dispatching to the skill. Otherwise check the requested sub-mode's section; each row's
+      "Section" column is the durable anchor into `skill-distill/SKILL.md` -- never a task
+      number, which is ephemeral and renumbered by vault operations:
 
       | Sub-Mode | Section |
       |----------|---------|
-      | report | `## Memory Vault Health Report` |
-      | purge | `### Purge Sub-Mode` |
-      | merge | `### Sub-Mode: merge` |
-      | compress | `### Sub-Mode: compress` |
-      | refine | `### Sub-Mode: refine` |
-      | gc | `### GC Sub-Mode` |
       | auto | `### Sub-Mode: auto` |
       | revise | `### Sub-Mode: revise` |
       | learn | `### Sub-Mode: learn` |
@@ -101,9 +86,7 @@ description: Analyze memory vault health, score memories for maintenance, and ru
       {
         "status": "completed",
         "mode": "distill",
-        "sub_mode": "report",
-        "health_report": { ... },
-        "scores": [ ... ],
+        "sub_mode": "auto",
         "memory_health": { ... }
       }
     </expected_return>
@@ -112,45 +95,6 @@ description: Analyze memory vault health, score memories for maintenance, and ru
   <step_3>
     <action>Present Results</action>
     <process>
-      Report mode:
-        - Display formatted health report
-        - Show vault overview statistics
-        - List maintenance candidates by category
-        - Show health score with status indicator
-        - Suggest next actions based on scores
-
-      Purge mode:
-        - Display tombstoned memory count and IDs
-        - Show link-scan warnings (stale [[MEM-{slug}]] references)
-        - Log purge operation to distill-log.json (type: "purge")
-        - Update memory_health in state.json
-
-      Merge mode:
-        - Display merged pair count, primary/secondary IDs, overlap scores
-        - Show keyword superset verification results per pair
-        - Show cross-reference updates performed
-        - Log merge operation to distill-log.json (type: "merge")
-        - Update memory_health in state.json
-
-      GC mode:
-        - Display deleted memory count and IDs
-        - Show before/after token counts
-        - Log gc operation to distill-log.json (type: "gc")
-        - Update memory_health in state.json (decrement total_memories)
-
-      Compress mode:
-        - Display compressed memory count and IDs
-        - Show per-memory tokens_before, tokens_after, compression_ratio
-        - Verify keyword preservation per memory
-        - Log compress operation to distill-log.json (type: "compress")
-        - Update memory_health in state.json
-
-      Refine mode:
-        - Display Tier 1 automatic fixes applied (keyword dedup, summary gen, topic normalize)
-        - Present Tier 2 interactive fixes via AskUserQuestion (keyword enrich, category reclassify, topic correct)
-        - Log refine operation to distill-log.json (type: "refine")
-        - Update memory_health in state.json
-
       Auto mode:
         - Run Tier 1 refine fixes only (no interactive operations)
         - Display change summary table
@@ -160,37 +104,61 @@ description: Analyze memory vault health, score memories for maintenance, and ru
       Revise mode:
         - Ingest the unified event store via events-query.sh (never hand-rolled jq), joined on
           `cc_session_id` against OTel outcome records when available
+        - Run the mandatory hosted-store reachability probe before any classification
         - If no events exist yet, display the "no events yet" notice as a normal outcome (not an
-          error); if OTel is not enabled, display that degraded-path notice separately
+          error); if OTel is not enabled, display that degraded-path notice separately; if the
+          reachability probe fails, display that degraded-path notice and classify nothing as a
+          gap
         - Display corroborated/contradicted/gap classification with evidence citations, applied
-          via existing UPDATE/EXTEND/CREATE/tombstone primitives behind a mandatory
-          AskUserQuestion stop
-        - Log the revise operation to .memory/revise-log.json (type: "revise")
-        - Update memory_health (last_revise, revise_count) in state.json
+          via `sapience-remember.sh` (SUPERSEDE/CREATE) behind a mandatory AskUserQuestion stop
+        - Append the revise run record to specs/events.jsonl via events-append.sh
+        - Touches no `memory_health` field and no file under `.memory/`
 
       Learn mode:
         - Scan already-archived tasks for unharvested memory_candidates
         - Source from the task's transcript within the 30-day window, falling back to
           history.jsonl + archived specs/ artifacts beyond it
-        - Present classified candidates via AskUserQuestion; never auto-create memories
-        - Log the operation to .memory/learn-harvest-log.json (type: "learn_harvest")
+        - Present classified candidates via AskUserQuestion; never auto-create a knowledge object
+        - Write confirmed candidates via `sapience-remember.sh`, bounded to 3-8 notes per
+          archived task
+        - Append the learn-harvest run record to specs/events.jsonl via events-append.sh
+        - Touches no `memory_health` field and no file under `.memory/`
     </process>
   </step_3>
 
   <step_4>
     <action>Update State and Log</action>
     <process>
-      After any distill operation:
-      1. Update memory_health in specs/state.json (sub-modes that track their own run
-         bookkeeping -- revise, learn -- use their own log file's summary instead; see State
-         Integration in skill-distill/SKILL.md)
-      2. Append operation entry to the sub-mode's own log file (.memory/distill-log.json for the
-         seven hygiene sub-modes; .memory/revise-log.json, .memory/learn-harvest-log.json for the
-         two remaining telemetry-sourced sub-modes)
+      After `--auto`:
+      1. Update memory_health in specs/state.json
+      2. Append operation entry to .memory/distill-log.json
       3. Git commit changes
+
+      After `--revise` or `--learn`:
+      1. Append one run-record event to specs/events.jsonl via events-append.sh (no
+         memory_health update, no .memory/ write -- see State Integration in
+         skill-distill/SKILL.md)
+      2. Git commit changes
     </process>
   </step_4>
 </workflow_execution>
+
+---
+
+## Bare-Invocation Usage
+
+When `sub_mode` is empty (no recognized sub-mode flag given), print this and exit -- there is no
+default sub-mode, because every surviving sub-mode either mutates the vault (`auto`) or requires
+an interactive gate (`revise`, `learn`), and silently defaulting to one would be wrong:
+
+```
+/distill requires a sub-mode flag:
+  --auto     Automated local vault scoring and Tier 1 refine fixes
+  --revise   Event-and-OTel-correlated review of hosted knowledge objects (interactive)
+  --learn    Retroactive batch harvest across already-completed tasks (interactive)
+
+(--meta, --review, --dream moved to /telemetry)
+```
 
 ---
 
@@ -198,14 +166,24 @@ description: Analyze memory vault health, score memories for maintenance, and ru
 
 <error_handling>
   <argument_errors>
-    - Unknown flag -> "Unknown flag: {flag}. Available: --purge, --merge, --compress, --refine, --gc, --auto, --revise, --learn, --dry-run, --verbose (--meta/--review/--dream moved to /telemetry)"
-    - Unknown sub-mode -> "Unknown sub-mode. Available: /distill (report), /distill --purge, --merge, --compress, --refine, --gc, --auto, --revise, --learn (--meta/--review/--dream moved to /telemetry)"
+    - `--purge`, `--merge`, `--compress`, `--refine`, or `--gc` given -> "Not available: the
+      hosted knowledge store already performs consolidation, compaction, staleness
+      re-confirmation, and conflict detection server-side (see
+      context/project/memory/distill-usage.md). Available: --auto, --revise, --learn."
+    - Unknown flag -> "Unknown flag: {flag}. Available: --auto, --revise, --learn, --dry-run,
+      --verbose (--meta/--review/--dream moved to /telemetry)"
+    - Unknown sub-mode -> print the Bare-Invocation Usage block above
   </argument_errors>
 
   <execution_errors>
-    - No memories found -> "No memories in vault. Use /learn to add memories first."
-    - memory-index.json missing -> "Memory index not found. Run /learn to initialize."
-    - memory-index.json stale -> Auto-regenerate via validate-on-read before scoring
+    - No memories found (`--auto` only) -> "No memories in vault. Use /learn to add memories
+      first."
+    - memory-index.json missing (`--auto` only) -> "Memory index not found. Run /learn to
+      initialize."
+    - memory-index.json stale (`--auto` only) -> Auto-regenerate via validate-on-read before
+      scoring
+    - Hosted store unreachable (`--revise` only) -> announce the degraded path per the
+      reachability probe; classify nothing as a gap this run
     - Skill failure -> Return error details
   </execution_errors>
 </error_handling>
@@ -216,24 +194,25 @@ description: Analyze memory vault health, score memories for maintenance, and ru
 
 <state_management>
   <reads>
-    - .memory/memory-index.json (scoring input)
-    - .memory/10-Memories/*.md (validation, content analysis)
-    - .memory/distill-log.json (operation history, seven hygiene sub-modes)
-    - specs/state.json (current memory_health)
-    - specs/events.jsonl (revise mode only, via events-query.sh -- never hand-rolled jq)
-    - Claude Code OTel outcome records (revise mode only, joined on cc_session_id)
-    - specs/archive/ and specs/vault/ task directories (learn mode only, unharvested memory_candidates)
-    - .memory/revise-log.json (revise mode only, prior run history for --since {last_revise})
+    - .memory/memory-index.json (scoring input, `--auto` only)
+    - .memory/10-Memories/*.md (validation, content analysis, `--auto` only)
+    - .memory/distill-log.json (operation history, `--auto` only)
+    - specs/state.json (current memory_health, `--auto` only)
+    - specs/events.jsonl (`--revise` only, via events-query.sh -- never hand-rolled jq)
+    - Claude Code OTel outcome records (`--revise` only, joined on cc_session_id)
+    - Hosted Sapience knowledge store (`--revise` only, via sapience-retrieve.sh)
+    - specs/archive/ and specs/vault/ task directories (`--learn` only, unharvested
+      memory_candidates)
   </reads>
 
   <writes>
-    - .memory/distill-log.json (operation log entries, seven hygiene sub-modes)
-    - specs/state.json (memory_health field updates)
-    - .memory/10-Memories/*.md (frontmatter mutation for purge/refine/revise; deletion for gc; content merge for merge; content compression for compress; new memories for learn)
-    - .memory/memory-index.json (status field updates for purge; entry removal for gc; regeneration for merge/compress/refine/auto/revise/learn)
-    - .memory/20-Indices/index.md (regeneration for merge/compress/refine/auto/revise/learn)
-    - .memory/10-Memories/README.md (regeneration for merge/compress/refine/auto/revise/learn)
-    - .memory/revise-log.json (revise mode only, operation log entries)
-    - .memory/learn-harvest-log.json (learn mode only, operation log entries)
+    - .memory/distill-log.json (operation log entries, `--auto` only)
+    - specs/state.json (memory_health field updates, `--auto` only)
+    - .memory/10-Memories/*.md (frontmatter mutation, `--auto` only)
+    - .memory/memory-index.json (regeneration, `--auto` only)
+    - .memory/20-Indices/index.md (regeneration, `--auto` only)
+    - .memory/10-Memories/README.md (regeneration, `--auto` only)
+    - Hosted Sapience knowledge store (`--revise`/`--learn`, via sapience-remember.sh)
+    - specs/events.jsonl (`--revise`/`--learn` run records, via events-append.sh)
   </writes>
 </state_management>

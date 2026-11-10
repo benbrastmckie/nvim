@@ -6,7 +6,7 @@ allowed-tools: Bash, Grep, Read, Write, Edit, AskUserQuestion
 
 # Learn Skill (Direct Execution)
 
-Direct execution skill for memory creation. Handles memory creation, similarity search, classification, and index maintenance through content mapping, MCP-based deduplication, and three memory operations (UPDATE, EXTEND, CREATE). This skill owns memory *creation* only; vault analysis and maintenance (scoring, health reporting, purge/merge/compress/refine/gc, and the telemetry-sourced sub-modes) live in the sibling `skill-distill` skill.
+Direct execution skill for memory creation. Handles memory creation, similarity search, classification, and index maintenance through content mapping, MCP-based deduplication, and three memory operations (UPDATE, EXTEND, CREATE). This skill owns memory *creation* only; vault analysis and maintenance (local `--auto` scoring/refine, and the two telemetry-sourced sub-modes retargeted onto the hosted knowledge store) live in the sibling `skill-distill` skill.
 
 **MANDATORY INTERACTIVE REQUIREMENT -- DO NOT SKIP**:
 - STOP at Step 4 and call AskUserQuestion to show files. Write NOTHING to disk until user responds.
@@ -294,11 +294,11 @@ sender's current-inbox dominant action. The archive-scope sub-section carries it
 `{delete_count, archive_count, keep_count, last_seen}` tally, computed and derived identically to
 the inbox-scope tally above, but never merged into it.
 
-**Revocation/edit UX**: a user-invoked "forget this preference" action reuses the existing
-tombstone pattern documented in the sibling `skill-distill/SKILL.md`'s Purge Sub-Mode
-"Tombstone Application" subsection (`status: tombstoned`, `tombstoned_at`, `tombstone_reason`) —
-set `tombstone_reason: "user_revoked"` for this case. This
-is distinct from `/distill --purge` (automatic, staleness-driven) and is never automatic;
+**Revocation/edit UX**: a user-invoked "forget this preference" action applies the same
+tombstone frontmatter fields used elsewhere in this vault (`status: tombstoned`,
+`tombstoned_at`, `tombstone_reason`) directly — set `tombstone_reason: "user_revoked"` for this
+case. This is a user-invoked, one-off edit, never an automatic or scheduled one (no surviving
+`/distill` sub-mode writes a new tombstone; see `context/project/memory/distill-usage.md`);
 `skill-email-cleanup`'s Stage 7 wires the user-invoked trigger for it.
 
 ### Search Result Presentation -- MANDATORY STOP
@@ -621,7 +621,7 @@ done
 | `modified` | string | Frontmatter `modified` (ISO date) |
 | `last_retrieved` | string/null | Frontmatter `last_retrieved` |
 | `retrieval_count` | number | Frontmatter `retrieval_count` |
-| `status` | string | Frontmatter `status` (default: "active" when absent; "tombstoned" for purged memories) |
+| `status` | string | Frontmatter `status` (default: "active" when absent; "tombstoned" when soft-deleted) |
 
 ### Validate-on-Read
 

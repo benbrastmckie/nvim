@@ -17,7 +17,7 @@ Knowledge capture and retrieval via the memory vault. Supports text, file, direc
 | `/learn` | `/learn /path/to/file` | Add file content as memory |
 | `/learn` | `/learn /path/to/dir/` | Scan directory for learnable content |
 | `/learn` | `/learn --task N` | Review task artifacts and create memories |
-| `/distill` | `/distill [flags]` | Vault health report and maintenance (purge, merge, compress, refine, gc, auto, plus the telemetry-sourced revise/learn sub-modes) -- see `context/project/memory/distill-usage.md`'s Quick Reference for the full per-flag table. `--meta`/`--review`/`--dream` moved to `/telemetry` (core extension) |
+| `/distill` | `--auto\|--revise\|--learn` | Local `--auto` refine; `--revise`/`--learn` against the hosted store, which already handles vault maintenance server-side -- see `context/project/memory/distill-usage.md`. `--meta`/`--review`/`--dream` -> `/telemetry` |
 
 ### Memory-Augmented Research
 

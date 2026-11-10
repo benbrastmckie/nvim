@@ -1,0 +1,44 @@
+{
+  "phase": 3,
+  "phase_name": "Delete the six hosted-store-redundant sub-modes and prune the scoring engine",
+  "started_at": "2026-11-10T00:40:00Z",
+  "last_updated": "2026-11-10T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete the four extracted pattern files (purge/merge/compress/refine)", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-purge-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-merge-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-compress-submode.md",
+       "agent-system/extensions/memory/context/project/memory/patterns/distill-refine-submode.md"
+     ]},
+    {"id": 2, "description": "Prune skill-distill/SKILL.md (dispatch table, classification table, health report template, purge/gc sections, stubs, skeleton, log schema, state integration)", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]},
+    {"id": 3, "description": "Rewrite commands/distill.md (flags, parse chain, section anchors, output contracts, bare-invocation usage)", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/commands/distill.md"]},
+    {"id": 4, "description": "Rebuild distill-usage.md quick reference, lifecycle, and recorded server-side-maintenance reasoning", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/context/project/memory/distill-usage.md"]},
+    {"id": 5, "description": "Shrink memory/EXTENSION.md's /distill command row (eager-loaded)", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/EXTENSION.md"]},
+    {"id": 6, "description": "Update memory/README.md sub-mode enumeration and pattern-file pointers", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/README.md"]},
+    {"id": 7, "description": "Remove four deleted-pattern index-entries.json entries; update distill-usage entry", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/index-entries.json"]},
+    {"id": 8, "description": "Fix dangling cross-references created by this phase's deletions in files outside the declared list", "status": "done",
+     "files_touched": [
+       "agent-system/extensions/memory/skills/skill-distill/README.md",
+       "agent-system/extensions/memory/skills/skill-learn/SKILL.md"
+     ]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.extra",
+      "description": "Touch skill-distill/README.md and skill-learn/SKILL.md, neither declared in this phase's Files to modify list",
+      "type": "altered",
+      "reason": "skill-distill/README.md still listed all seven deleted hygiene sub-modes as available (a full stale table), and skill-learn/SKILL.md pointed into skill-distill/SKILL.md's now-deleted 'Purge Sub-Mode' / 'Tombstone Application' subsection -- a dangling cross-reference this phase's own deletions created. Both were required by this phase's own verification bullet ('grep ... returns only intentional survivors' scoped to the whole memory/ extension, and the general correctness requirement that a deletion not leave a dangling pointer). Fixed in place rather than deferred.",
+      "annotation": "see plan Phase 3's final checklist item annotation"
+    }
+  ]
+}

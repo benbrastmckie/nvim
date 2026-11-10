@@ -11,22 +11,20 @@ Memory *creation* is a separate concern owned by the sibling `skill-learn` skill
 
 | Sub-Mode | Flag | Description |
 |----------|------|-------------|
-| report | (bare) | Generate health report with scoring engine analysis |
-| purge | `--purge` | Tombstone stale/zero-retrieval memories (interactive) |
-| merge | `--merge` | Combine memories with >60% keyword overlap (interactive) |
-| compress | `--compress` | Summarize memories with size penalty >0.5 to key points |
-| refine | `--refine` | Improve metadata quality: Tier 1 (auto) + Tier 2 (interactive) |
-| gc | `--gc` | Hard-delete tombstoned memories past 7-day grace period |
-| auto | `--auto` | Automated Tier 1 refine only (non-interactive) |
-| revise | `--revise` | Event-and-OTel-correlated memory refactoring proposals |
-| learn | `--learn` | Retroactive, batch harvest across already-completed tasks |
+| auto | `--auto` | Automated Tier 1 refine only (non-interactive, local vault) |
+| revise | `--revise` | Event-and-OTel-correlated review of hosted knowledge objects (interactive) |
+| learn | `--learn` | Retroactive, batch harvest across already-completed tasks (interactive, writes to hosted knowledge objects) |
 
-`--meta`, `--review`, and `--dream` moved to `/telemetry` -- see `skill-telemetry/SKILL.md`
-(core extension).
+A bare `/distill` (no sub-mode flag) prints usage and exits -- there is no default sub-mode.
+`report`, `--purge`, `--merge`, `--compress`, `--refine`, and `--gc` provide no local
+equivalent: the hosted Sapience knowledge store already performs consolidation and compaction,
+staleness re-confirmation, and conflict detection server-side -- see
+`context/project/memory/distill-usage.md` for the full reasoning. `--meta`, `--review`, and
+`--dream` moved to `/telemetry` -- see `skill-telemetry/SKILL.md` (core extension).
 
 See `SKILL.md`'s Shared Sub-Mode Skeleton and per-sub-mode sections for the full specification
 of each, and `context/standards/telemetry-guardrails.md` for the binding design constraints
-shared by the telemetry-sourced sub-modes that remain.
+shared by the telemetry-sourced sub-modes.
 
 ## Scoring Engine
 
@@ -41,27 +39,24 @@ Each memory is scored on four components to compute a composite maintenance scor
 
 **Composite**: `(staleness * 0.3) + (zero_retrieval * 0.25) + (size_penalty * 0.2) + (duplicate * 0.25)`, clamped to [0, 1].
 
-## Maintenance Classification
+The composite score and its weighted components are retained verbatim because `auto` recomputes
+and writes `health_score` from them on every run -- see `SKILL.md`'s Health Score Formula and
+Health Status Thresholds. There is no local candidate-classification table any more:
+classification against a composite-score band (what the four now-absent sub-modes once acted
+on) has no local action to recommend since those sub-modes have no local equivalent.
 
-| Composite Score | Classification | Recommended Action |
-|-----------------|----------------|-------------------|
-| >= 0.7 | Purge candidate | Tombstone via `--purge` |
-| >= 0.5 | Merge/compress candidate | `--merge` or `--compress` |
-| >= 0.3 | Review candidate | `--refine` |
-| < 0.3 | Healthy | No action needed |
+## Tombstone Field (historical)
 
-## Tombstone Pattern
-
-Purge and merge operations use soft-delete via frontmatter mutation (not file deletion):
-- `status: tombstoned`
-- `tombstoned_at: {ISO date}`
-- `tombstone_reason: "purge"` or `"merged_into:{primary_id}"`
-
-The `--gc` sub-mode performs hard deletion of tombstoned memories past the 7-day grace period.
+`status: tombstoned` / `tombstoned_at` / `tombstone_reason` remain a valid frontmatter shape for
+any already-tombstoned memory on disk, but no surviving sub-mode writes a new one: that
+lifecycle (soft-delete, hard-delete past a grace period) moved to the hosted Sapience store,
+which performs its own conflict surfacing and stale-position re-confirmation server-side.
 
 ## Distill Log
 
-All operations are logged to `.memory/distill-log.json` with pre/post metrics, affected memories, and session ID. The log tracks `total_purged`, `total_merged`, `total_compressed`, `total_refined`, and `total_gc_deleted` counters.
+`auto`'s own operations are logged to `.memory/distill-log.json` (type: `refine`) with pre/post
+metrics, affected memories, and session ID. `revise` and `learn` append their own run records to
+`specs/events.jsonl` via `events-append.sh` instead -- see `SKILL.md`'s Run Record subsections.
 
 ## Additional Flags
 

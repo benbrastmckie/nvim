@@ -1,12 +1,21 @@
 ---
 name: skill-distill
-description: Memory vault analysis and maintenance - scoring, health reporting, purge/merge/compress/refine/gc/auto, and telemetry-sourced revise/learn sub-modes. Invoke for /distill command operations.
+description: Memory vault analysis and maintenance - auto scoring/refine, and telemetry-sourced revise/learn sub-modes against the hosted knowledge store. Invoke for /distill command operations.
 allowed-tools: Bash, Grep, Read, Write, Edit, AskUserQuestion
 ---
 
 # Distill Skill (Direct Execution)
 
-Direct execution skill for memory vault analysis and maintenance. Handles the `/distill` command's sub-modes: the seven existing hygiene sub-modes (`report`/`purge`/`merge`/`compress`/`refine`/`gc`/`auto`) plus two telemetry-sourced sub-modes that stay coupled to the vault store (`--revise`/`--learn`). `--meta`, `--review`, and `--dream` touch no vault store and are dispatched by `/telemetry` instead -- see `skill-telemetry/SKILL.md` (core extension). Memory *creation* is a separate concern owned by the sibling `skill-learn` skill.
+Direct execution skill for memory vault analysis and maintenance. Handles the `/distill`
+command's three surviving sub-modes: `auto` (automated, non-interactive Tier 1 refine fixes
+against the local vault's scoring engine) and two telemetry-sourced sub-modes retargeted onto the
+hosted Sapience knowledge store (`--revise`/`--learn`). Consolidation and compaction, staleness
+re-confirmation of load-bearing positions, and active conflict detection between a person's own
+notes are performed server-side by the hosted store, so `/distill` provides none of those
+operations locally any more -- see `context/project/memory/distill-usage.md` for the full
+reasoning. `--meta`, `--review`, and `--dream` touch no vault store and are dispatched by
+`/telemetry` instead -- see `skill-telemetry/SKILL.md` (core extension). Memory *creation* is a
+separate concern owned by the sibling `skill-learn` skill.
 
 ## Context References
 
@@ -30,19 +39,15 @@ Memory vault distillation: scoring, health reporting, and maintenance operations
 
 | Sub-Mode | Description | Status |
 |----------|-------------|--------|
-| `report` | Generate health report with scoring | Available |
-| `purge` | Tombstone stale/zero-retrieval memories | Available |
-| `merge` | Combine memories with duplicate score > 0.6 | Available |
-| `compress` | Summarize memories with size penalty > 0.5 | Available |
-| `refine` | Improve memory quality (keywords, tags) | Available |
-| `gc` | Hard-delete tombstoned memories past grace period | Available |
 | `auto` | Automated distillation (Tier 1 refine only) | Available |
-| `revise` | Event-and-OTel-correlated memory refactoring proposals | Available |
+| `revise` | Event-and-OTel-correlated hosted-knowledge-object review | Available |
 | `learn` | Retroactive batch harvest across already-completed tasks | Available |
 
-All 9 sub-modes are now available. No placeholder responses needed. `--meta`, `--review`, and
-`--dream` are dispatched by `/telemetry` instead -- see `skill-telemetry/SKILL.md` (core
-extension).
+Three sub-modes are available. `report`, `purge`, `merge`, `compress`, `refine`, and `gc` provide
+no local equivalent, because the hosted Sapience store already performs consolidation and
+compaction, staleness re-confirmation, and conflict detection server-side -- see
+`context/project/memory/distill-usage.md`. `--meta`, `--review`, and `--dream` are dispatched by
+`/telemetry` instead -- see `skill-telemetry/SKILL.md` (core extension).
 
 ### Scoring Engine
 
@@ -143,114 +148,6 @@ cluster_key = topic.split("/")[0]
 # topic "" or null -> cluster "uncategorized"
 ```
 
-### Maintenance Candidate Classification
-
-Based on composite scores, classify each memory:
-
-| Composite Score | Classification | Recommended Action |
-|-----------------|----------------|-------------------|
-| >= 0.7 | Purge candidate | Remove (--purge) |
-| >= 0.5 | Merge/compress candidate | Merge duplicates (--merge) or compress (--compress) |
-| >= 0.3 | Review candidate | May benefit from refinement (--refine) |
-| < 0.3 | Healthy | No action needed |
-
-Additionally, flag specific conditions:
-- `duplicate > 0.6` -> Merge candidate regardless of composite
-- `size_penalty > 0.5` -> Compress candidate regardless of composite
-- `zero_retrieval == 1.0` -> Review for relevance
-
-### Health Report Template
-
-The `report` sub-mode generates a formatted health report displayed to the user. Template:
-
-```
-## Memory Vault Health Report
-
-**Generated**: {today}
-**Vault**: .memory/
-
----
-
-### Overview
-
-| Metric | Value |
-|--------|-------|
-| Total memories | {total_count} |
-| Total tokens | {total_tokens} |
-| Average tokens/memory | {avg_tokens} |
-| Oldest memory | {oldest_date} ({oldest_id}) |
-| Newest memory | {newest_date} ({newest_id}) |
-
----
-
-### Category Distribution
-
-| Category | Count | Tokens | Avg Score |
-|----------|-------|--------|-----------|
-| {category_1} | {count} | {tokens} | {avg_composite} |
-| {category_2} | {count} | {tokens} | {avg_composite} |
-| ... | ... | ... | ... |
-
----
-
-### Topic Clusters
-
-| Cluster | Memories | Avg Staleness | Avg Duplicate |
-|---------|----------|---------------|---------------|
-| {cluster_1} | {count} | {avg_staleness} | {avg_duplicate} |
-| {cluster_2} | {count} | {avg_staleness} | {avg_duplicate} |
-| ... | ... | ... | ... |
-
----
-
-### Retrieval Statistics
-
-| Metric | Value |
-|--------|-------|
-| Never retrieved | {never_retrieved_count} ({never_retrieved_pct}%) |
-| Retrieved 1-3 times | {low_retrieval_count} |
-| Retrieved 4+ times | {high_retrieval_count} |
-| Most retrieved | {most_retrieved_id} ({most_retrieved_count} times) |
-
----
-
-### Maintenance Candidates
-
-#### Purge Candidates (score >= 0.7)
-{purge_list or "None"}
-
-#### Merge Candidates (duplicate > 0.6)
-{merge_list or "None"}
-
-#### Compress Candidates (size > 0.5)
-{compress_list or "None"}
-
-#### Review Candidates (score 0.3-0.7)
-{review_list or "None"}
-
----
-
-### Health Score
-
-**Score**: {health_score}/100
-**Status**: {status_emoji} {status_label}
-
-Formula: `100 - (purge_count * 3) - (merge_count * 5) - (compress_count * 2)`
-
-| Threshold | Status |
-|-----------|--------|
-| 80-100 | Healthy |
-| 60-79 | Manageable |
-| 40-59 | Concerning |
-| 0-39 | Critical |
-
----
-
-### Recommended Actions
-
-{action_list based on candidates found}
-```
-
 #### Health Score Formula
 
 ```
@@ -276,323 +173,49 @@ These thresholds mirror `repository_health.status` vocabulary in state.json.
 
 ## Shared Sub-Mode Skeleton
 
-Every mutating `/distill` sub-mode (`purge`, `gc`, `merge`, `compress`, `refine`, `auto`, and the
-telemetry-sourced sub-modes added after them) follows the same seven-step shape. This section
-states that shape once, with named, generic placeholders; each sub-mode's own specification --
-inline below for `gc` and `auto`, or in its extracted `distill-<submode>-submode.md` file
-(reached via the stub pointer at that sub-mode's heading below) for `purge`, `merge`, `compress`,
-`refine`, `revise`, and `learn` -- states only its deltas from this skeleton: its specific
-candidate logic, prompts, execution steps, and log payload, rather than restating the shape
-itself.
+Every mutating `/distill` sub-mode (`auto`, and the telemetry-sourced sub-modes `revise` and
+`learn`) follows the same seven-step shape. This section states that shape once, with named,
+generic placeholders; each sub-mode's own specification -- inline below for `auto`, or in its
+extracted `distill-<submode>-submode.md` file (reached via the stub pointer at that sub-mode's
+heading below) for `revise` and `learn` -- states only its deltas from this skeleton: its
+specific candidate logic, prompts, execution steps, and log payload, rather than restating the
+shape itself.
 
 1. **Edge Case Checks** -- Validate preconditions before identifying candidates (e.g. run
-   validate-on-read, confirm a minimum count of eligible memories). If a precondition fails,
-   display a specific message and return early without further action.
+   validate-on-read, confirm a minimum count of eligible memories, or -- for `revise` -- the
+   hosted-store reachability probe). If a precondition fails, display a specific message and
+   return early without further action.
 2. **Candidate Identification** -- Compute the sub-mode's specific candidate set from scored or
-   otherwise-derived memory data. If a shared dependency like validate-on-read or the Scoring
-   Engine is used, cite it by name rather than re-deriving it.
+   otherwise-derived data. If a shared dependency like validate-on-read or the Scoring Engine is
+   used, cite it by name rather than re-deriving it.
 3. **Dry-Run** -- When `--dry-run` is active, display what the sub-mode would do (the specific
-   candidate list, with sub-mode-relevant fields) and return early. No file is modified.
+   candidate list, with sub-mode-relevant fields) and return early. No file is modified and no
+   knowledge object is written.
 4. **Interactive Selection (MANDATORY STOP)** -- Present candidates via `AskUserQuestion`
    (`multiSelect: true` for any sub-mode selecting among multiple candidates). **This step is
-   non-negotiable in every sub-mode that mutates the vault: no mutation may proceed without an
-   explicit, user-confirmed selection at this step.** If no candidates exist, or the user selects
-   none, display a specific message and exit without changes.
+   non-negotiable in every sub-mode that mutates the vault or writes a hosted knowledge object: no
+   mutation may proceed without an explicit, user-confirmed selection at this step.** If no
+   candidates exist, or the user selects none, display a specific message and exit without
+   changes.
 5. **Execution** -- Apply the confirmed operation. This step's actual content is the most
    sub-mode-specific of the seven and is stated in full in each sub-mode's own section -- it is
-   never usefully reduced to a generic placeholder, since the tombstone/merge/compress/refine/
-   delete mechanics differ in every case.
-6. **Batch Index Regeneration** -- After the entire batch of confirmed operations completes (not
-   after each individual one), regenerate `memory-index.json` (via the "JSON Index Maintenance"
-   procedure in `skill-learn/SKILL.md`), `index.md`, and `.memory/10-Memories/README.md`.
-7. **Log Entry** -- Log the operation to `.memory/distill-log.json` per the Distill Log Schema
-   below, and update the relevant `summary` counter. Also update `memory_health` in
-   `specs/state.json` per the State Integration section below.
-
-**`report` and `auto`** do not carry step 4's mandatory stop -- `report` because nothing is
-proposed for the user to confirm, `auto` because it runs only safe, non-interactive Tier 1 fixes
-by design. Each states this exemption explicitly, rather than leaving it as a silent omission, in
-its own inline specification below.
-
-### Purge Sub-Mode
-
-READ .claude/context/project/memory/patterns/distill-purge-submode.md now and follow it exactly.
-
-### Link-Scan Procedure
-
-After tombstone application, scan for stale `[[MEM-{slug}]]` references in non-tombstoned memories.
-
-#### Link-Scan Execution
-
-```bash
-# For each tombstoned memory slug
-for slug in "${affected_slugs[@]}"; do
-  # Search non-tombstoned memories for references
-  grep -l "\[\[MEM-${slug}\]\]" .memory/10-Memories/MEM-*.md 2>/dev/null | while read ref_file; do
-    # Check if the referencing file is itself tombstoned
-    ref_status=$(grep -m1 "^status:" "$ref_file" | sed 's/^status: *//')
-    if [ "$ref_status" == "tombstoned" ]; then
-      continue  # Skip tombstoned files
-    fi
-    echo "WARNING: ${ref_file} references tombstoned [[MEM-${slug}]]"
-  done
-done
-```
-
-#### Warning Display
-
-Display link-scan warnings to the user (no automatic modification):
-
-```
-## Link-Scan Warnings
-
-The following active memories reference tombstoned memories:
-- .memory/10-Memories/MEM-http-patterns.md -> [[MEM-requests-retry-patterns]] (tombstoned)
-- .memory/10-Memories/MEM-library-setup.md -> [[MEM-requests-retry-patterns]] (tombstoned)
-
-These references will become stale. Consider manually updating the Connections section
-in the above files to remove or replace the references.
-```
-
-If no stale references are found:
-```
-Link-scan: No stale references found.
-```
-
-#### Link-Scan in Log
-
-Include link-scan warnings in the purge operation's `notes` field in distill-log.json:
-
-```
-"notes": "Tombstoned 3 memories. Link-scan warnings: MEM-http-patterns.md->MEM-slug-1, MEM-library-setup.md->MEM-slug-1"
-```
-
-Or if none:
-```
-"notes": "Tombstoned 3 memories. Link-scan warnings: none"
-```
-
-### Retrieval Exclusion
-
-Tombstoned memories must be excluded from all retrieval paths.
-
-#### MCP Search Path Exclusion
-
-After MCP search returns results, post-filter to exclude tombstoned entries:
-
-```
-For each segment in content_map.segments:
-  query = segment.key_terms.join(" ")
-  results = execute("search", {
-    "query": query,
-    "vault": ".memory",
-    "limit": 5
-  })
-
-  # Post-filter: exclude tombstoned memories
-  filtered_results = []
-  for result in results:
-    id = derive_id_from_result(result)
-    index_entry = memory_index.entries[id]
-    if index_entry.status == "tombstoned":
-      continue  # Skip tombstoned memory
-    filtered_results.append(result)
-  results = filtered_results
-```
-
-#### Grep Fallback Path Exclusion
-
-When using grep-based search, check frontmatter status before including in results:
-
-```bash
-# For each segment
-for keyword in $key_terms; do
-  grep -l -i "$keyword" .memory/10-Memories/*.md 2>/dev/null
-done | sort | uniq -c | sort -rn | head -10 | while read count file; do
-  # Check if memory is tombstoned
-  status=$(grep -m1 "^status:" "$file" | sed 's/^status: *//')
-  if [ "$status" == "tombstoned" ]; then
-    continue  # Skip tombstoned memory
-  fi
-  echo "$count $file"
-done | head -5
-```
-
-#### Scoring Engine Exclusion
-
-In the scoring engine, skip tombstoned memories before computing scores:
-
-```
-for each entry in memory_index.entries:
-  if entry.status == "tombstoned":
-    skip  # Do not score tombstoned memories
-  # Proceed with scoring...
-```
-
-This ensures tombstoned memories do not appear in:
-- Purge candidates (already addressed)
-- Merge candidates
-- Compress candidates
-- Health report statistics (except in a dedicated "Tombstoned Memories" section)
-
-### Health Report -- Tombstoned Memories Section
-
-Add a "Tombstoned Memories" section to the health report template, placed after the "Maintenance Candidates" section:
-
-```
----
-
-### Tombstoned Memories
-
-| Memory | Tombstoned Date | Reason | Days Until GC |
-|--------|----------------|--------|---------------|
-| {memory.id} | {tombstoned_at} | {tombstone_reason} | {7 - days_since_tombstoned} |
-| ... | ... | ... | ... |
-
-**Total tombstoned**: {tombstoned_count}
-**Eligible for GC**: {gc_eligible_count} (past 7-day grace period)
-```
-
-If no tombstoned memories exist:
-```
-### Tombstoned Memories
-
-None.
-```
-
-### GC Sub-Mode
-
-The gc sub-mode performs hard deletion of tombstoned memories that have passed the 7-day grace period. Follows the Shared Sub-Mode Skeleton above; deltas below. Its logical pair is the Purge Sub-Mode (`distill-purge-submode.md`; the "Purge Sub-Mode" stub pointer above dispatches there), with only the Link-Scan/Retrieval-Exclusion/health-report infrastructure immediately below (shared between purge and gc, staying inline here) between them, no other sub-mode -- gc hard-deletes what purge has already tombstoned once the grace period elapses.
-
-#### Grace Period Scan
-
-Identify tombstoned memories eligible for garbage collection:
-
-```
-gc_candidates = []
-for each entry in memory_index.entries:
-  if entry.status == "tombstoned":
-    tombstoned_at = parse_date(entry.tombstoned_at or read from frontmatter)
-    days_since_tombstoned = days_between(today, tombstoned_at)
-    if days_since_tombstoned >= 7:
-      gc_candidates.append(entry)
-```
-
-**Edge Case**: If no tombstoned memories are past the grace period, display:
-```
-No tombstoned memories past the 7-day grace period.
-{tombstoned_count} tombstoned memories are still within the grace period.
-```
-Then exit without further action.
-
-#### GC Interactive Selection -- MANDATORY STOP
-
-**MANDATORY STOP (Shared Sub-Mode Skeleton, Interactive Selection step). Do NOT delete any memories without explicit user confirmation.**
-
-Present eligible memories via AskUserQuestion multiSelect:
-
-```json
-{
-  "question": "Select tombstoned memories to permanently delete. This action cannot be undone.",
-  "header": "GC Candidates ({count} past 7-day grace period)",
-  "multiSelect": true,
-  "options": [
-    {
-      "label": "{memory.id}",
-      "description": "Tombstoned: {tombstoned_at} | Reason: {tombstone_reason} | Original score: {composite_score:.2f} | Tokens: {token_count}"
-    }
-  ]
-}
-```
-
-If the user selects no memories, display:
-```
-No memories selected for deletion. GC cancelled.
-```
-Then exit without changes.
-
-#### Dry-Run Behavior
-
-When `--dry-run` is active, show eligible memories without deleting:
-
-```
-[DRY RUN] Would permanently delete {count} memories:
-  - {memory.id} (tombstoned: {tombstoned_at}, reason: {tombstone_reason})
-  - ...
-
-No changes made.
-```
-
-#### GC Deletion Sequence
-
-For each selected memory, perform hard deletion in this order:
-
-```
-1. Delete the .md file:
-   rm .memory/10-Memories/MEM-{slug}.md
-
-2. Remove the entry from memory-index.json:
-   - Filter out the entry with matching id
-   - Decrement entry_count
-   - Subtract the entry's token_count from total_tokens
-   - Write updated memory-index.json
-
-3. Regenerate index.md:
-   - Use the Index Regeneration Pattern (existing procedure)
-   - Tombstoned+deleted entries will be absent from filesystem scan
-
-4. Regenerate .memory/10-Memories/README.md:
-   - Use the existing README regeneration procedure
-   - Deleted files will be absent from the ls scan
-
-5. Update memory_health in specs/state.json:
-   - Decrement total_memories by the number of deleted memories
-   - Recalculate health_score after removal
-```
-
-#### GC Log Entry
-
-Log the gc operation to `.memory/distill-log.json`:
-
-```json
-{
-  "id": "distill_{timestamp}",
-  "timestamp": "ISO8601",
-  "type": "gc",
-  "session_id": "sess_...",
-  "pre_metrics": {
-    "total_memories": 10,
-    "total_tokens": 5000,
-    "health_score": 78,
-    "purge_candidates": 1,
-    "merge_candidates": 2,
-    "compress_candidates": 1
-  },
-  "post_metrics": {
-    "total_memories": 7,
-    "total_tokens": 3500,
-    "health_score": 85,
-    "purge_candidates": 1,
-    "merge_candidates": 1,
-    "compress_candidates": 1
-  },
-  "affected_memories": ["MEM-slug-1", "MEM-slug-2", "MEM-slug-3"],
-  "notes": "Hard-deleted 3 tombstoned memories"
-}
-```
-
-**Key semantics**: `total_memories` and `total_tokens` are decremented in post_metrics because gc removes files from disk. `health_score` is recalculated after deletion.
-### Sub-Mode: merge
-
-READ .claude/context/project/memory/patterns/distill-merge-submode.md now and follow it exactly.
-
-### Sub-Mode: compress
-
-READ .claude/context/project/memory/patterns/distill-compress-submode.md now and follow it exactly.
-
-### Sub-Mode: refine
-
-READ .claude/context/project/memory/patterns/distill-refine-submode.md now and follow it exactly.
+   never usefully reduced to a generic placeholder, since the refine/SUPERSEDE/CREATE mechanics
+   differ in every case.
+6. **Batch Index Regeneration** -- For `auto` only, after the entire batch of confirmed operations
+   completes (not after each individual one), regenerate `memory-index.json` (via the "JSON Index
+   Maintenance" procedure in `skill-learn/SKILL.md`), `index.md`, and
+   `.memory/10-Memories/README.md`. `revise` and `learn` write hosted knowledge objects directly
+   and need no local index regeneration at all -- see each sub-mode's own Run Record subsection.
+7. **Log Entry** -- For `auto`, log the operation to `.memory/distill-log.json` per the Distill
+   Log Schema below, and update the relevant `summary` counter, then update `memory_health` in
+   `specs/state.json` per the State Integration section below. `revise` and `learn` instead append
+   one `specs/events.jsonl` event per run via `events-append.sh` and touch neither
+   `.memory/distill-log.json` nor `memory_health` -- see each sub-mode's own Run Record
+   subsection.
+
+**`auto`** does not carry step 4's mandatory stop, because it runs only safe, non-interactive
+Tier 1 fixes by design. This exemption is stated explicitly, rather than left as a silent
+omission, in its own inline specification below.
 
 ### Sub-Mode: auto
 
@@ -716,7 +339,7 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
     {
       "id": "distill_{timestamp}",
       "timestamp": "ISO8601",
-      "type": "report|purge|merge|compress|refine|gc",
+      "type": "refine",
       "session_id": "sess_...",
       "pre_metrics": {
         "total_memories": 0,
@@ -740,11 +363,7 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
   ],
   "summary": {
     "total_operations": 0,
-    "total_purged": 0,
-    "total_merged": 0,
-    "total_compressed": 0,
     "total_refined": 0,
-    "total_gc_deleted": 0,
     "last_operation": null
   }
 }
@@ -754,20 +373,17 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
 
 | Type | Description | Log File |
 |------|-------------|----------|
-| `report` | Health report generated (read-only) | `.memory/distill-log.json` |
-| `purge` | Memories removed via tombstone pattern | `.memory/distill-log.json` |
-| `merge` | Duplicate memories combined | `.memory/distill-log.json` |
-| `compress` | Oversized memories summarized | `.memory/distill-log.json` |
-| `refine` | Memory quality improved | `.memory/distill-log.json` |
-| `gc` | Hard-delete tombstoned memories past grace period | `.memory/distill-log.json` |
+| `refine` | `auto` mode's Tier 1 fixes (keyword dedup, summary generation, topic normalization) | `.memory/distill-log.json` |
 
-`revise` and `learn` operate against hosted knowledge objects rather than `.memory/`, and log
-their own run records as `specs/events.jsonl` events via `events-append.sh` instead of a
-dedicated `.memory/` file -- see each sub-mode's own Run Record subsection above -- so they are
-not part of this shared enum. `--meta`, `--review`, and `--dream` log to `specs/telemetry/`
-instead -- see `skill-telemetry/SKILL.md`'s Telemetry Log Schemas (core extension).
-
-For `report` operations, `pre_metrics` and `post_metrics` are identical (no changes made).
+`refine` is the only surviving type in this shared enum: `report`, `purge`, `merge`, `compress`,
+and `gc` provide no local equivalent, because the hosted Sapience store already performs
+consolidation and compaction, staleness re-confirmation, and conflict detection server-side -- see
+`context/project/memory/distill-usage.md`. `revise` and `learn` operate against hosted knowledge
+objects rather than `.memory/`, and log their own run records as `specs/events.jsonl` events via
+`events-append.sh` instead of a dedicated `.memory/` file -- see each sub-mode's own Run Record
+subsection above -- so they are not part of this shared enum either. `--meta`, `--review`, and
+`--dream` log to `specs/telemetry/` instead -- see `skill-telemetry/SKILL.md`'s Telemetry Log
+Schemas (core extension).
 
 ### State Integration
 
@@ -786,27 +402,26 @@ After each distill operation, update `memory_health` in `specs/state.json`:
 }
 ```
 
-The `memory_health` field is a top-level sibling of `repository_health` in state.json. Update it after every distill operation (including report-only operations). There is no `last_dream`/`dream_count` coupling here any more: `--dream` moved to `/telemetry` and its own log file (`specs/telemetry/dream-log.json`) is its sole `--since` cursor, with no `state.json` coupling at all.
+The `memory_health` field is a top-level sibling of `repository_health` in state.json. `auto` is
+the only sub-mode that updates it now. There is no `last_dream`/`dream_count` coupling here any
+more: `--dream` moved to `/telemetry` and its own log file (`specs/telemetry/dream-log.json`) is
+its sole `--since` cursor, with no `state.json` coupling at all.
 
-**Field update rules by sub-mode**:
+**Field update rules**:
 
-| Field | report | purge/merge/compress/refine/gc/auto |
-|-------|--------|---------------------------------------|
-| `last_distilled` | Updated | Updated |
-| `distill_count` | NOT incremented | Incremented |
-| `total_memories` | Updated | Updated |
-| `never_retrieved` | Updated | Updated |
-| `health_score` | Updated | Updated |
-| `status` | Updated | Updated |
+| Field | auto |
+|-------|--------|
+| `last_distilled` | Updated |
+| `distill_count` | Incremented |
+| `total_memories` | Updated |
+| `never_retrieved` | Updated |
+| `health_score` | Updated |
+| `status` | Updated |
 
-**Rationale**: `report` is read-only with respect to the memory vault -- it modifies no
-`.memory/10-Memories/*.md` file, so it does not increment `distill_count` (which tracks
-maintenance operations that actually changed the vault). The `last_distilled` timestamp is still
-updated by `report` because it tracks when the vault was last assessed at all (a lightweight
-scoring pass counts as an assessment), not only when it was last modified. Neither `--revise` nor
-`--learn` touches `memory_health` at all: both operate against hosted knowledge objects, not
-`.memory/`, and each tracks its own run record as a `specs/events.jsonl` event instead (see each
-sub-mode's own Run Record subsection), which is why both are absent from this table. `--meta`,
-`--review`, and `--dream` moved to `/telemetry` and track their own run bookkeeping in
-`specs/telemetry/` log files -- see `skill-telemetry/SKILL.md` -- not in this table at all.
+**Rationale**: Neither `--revise` nor `--learn` touches `memory_health` at all: both operate
+against hosted knowledge objects, not `.memory/`, and each tracks its own run record as a
+`specs/events.jsonl` event instead (see each sub-mode's own Run Record subsection), which is why
+both are absent from this table. `--meta`, `--review`, and `--dream` moved to `/telemetry` and
+track their own run bookkeeping in `specs/telemetry/` log files -- see
+`skill-telemetry/SKILL.md` -- not in this table at all.
 
