@@ -1,0 +1,11 @@
+{
+  "phase": 4,
+  "phase_name": "Terminal Keymap Branch and <leader>af",
+  "started_at": "2026-11-10T00:00:00Z",
+  "last_updated": "2026-11-10T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Terminal Keymap Branch and <leader>af -- file changes", "status": "completed", "files_touched": ["lua/neotex/config/keymaps.lua", "lua/neotex/plugins/editor/which-key.lua"]}
+  ],
+  "current_objective": 1,
+  "handoff_count": 0
+}

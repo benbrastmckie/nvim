@@ -338,26 +338,26 @@ branch.
 
 ---
 
-### Phase 4: Terminal Keymap Branch and `<leader>af` [NOT STARTED]
+### Phase 4: Terminal Keymap Branch and `<leader>af` [COMPLETED]
 
 **Goal**: sf1's readline prompt receives `<C-h>` as backspace, and the toggle is reachable from
 the `<leader>a` AI group. This is the only phase touching shared-territory files.
 
 **Tasks**:
-- [ ] In `_G.set_terminal_keymaps` in `lua/neotex/config/keymaps.lua`, add an `is_sf1` local
+- [x] In `_G.set_terminal_keymaps` in `lua/neotex/config/keymaps.lua`, add an `is_sf1` local
       alongside the existing `is_opencode` detection, reading the same source
       (`vim.b.snacks_terminal.cmd`, normalized to a string the same way the existing code
       normalizes a table cmd) and matching the **start-anchored** pattern `^sf1` — anchored
       deliberately, so a terminal whose cmd merely contains `sf1` later does not capture this
       branch. Reuse the existing `cmd_str` local rather than recomputing it.
-- [ ] Add `is_sf1` as its own arm of the existing three-way `<C-hjkl>` branch, placed after
+- [x] Add `is_sf1` as its own arm of the existing three-way `<C-hjkl>` branch, placed after
       `is_opencode` and before `is_aerc`, with an empty body and a comment stating why: sf1
       drives a readline prompt where `<C-h>` is backspace, so all four keys are left unmapped
       for the application, exactly as the `is_aerc` arm does.
-- [ ] Change nothing else in this function — specifically, leave the
+- [x] Change nothing else in this function — specifically, leave the
       `if not is_claude and not is_aerc` `<Esc>` guard untouched (see Non-Goals) and leave the
       `<M-...>` resize maps below the branch untouched.
-- [ ] In `lua/neotex/plugins/editor/which-key.lua`, add
+- [x] In `lua/neotex/plugins/editor/which-key.lua`, add
       `{ "<leader>af", "<cmd>Sf1<CR>", desc = "sf1 sapience chat", icon = "󰭻" }` inside the
       existing `<leader>a` AI/ASSISTANT group block, adjacent to the other live entries
       (`<leader>ac`, `<leader>ad`, `<leader>as`, `<leader>ar`). Use `<cmd>Sf1<CR>` rather than a

@@ -121,10 +121,14 @@ function M.setup()
     local bufname = vim.api.nvim_buf_get_name(0)
     local is_claude = bufname:match("claude") or bufname:match("ClaudeCode")
     local is_opencode = false
+    local is_sf1 = false
     if vim.b.snacks_terminal then
       local cmd = vim.b.snacks_terminal.cmd or vim.b.snacks_terminal.args or {}
       local cmd_str = type(cmd) == "table" and table.concat(cmd, " ") or tostring(cmd)
       is_opencode = cmd_str:match("opencode%s+%-%-port")
+      -- Anchored at the start so a terminal whose cmd merely *contains* "sf1"
+      -- later does not capture this branch.
+      is_sf1 = cmd_str:match("^sf1") ~= nil
     end
     local is_aerc = bufname:match("aerc") ~= nil
 
@@ -145,6 +149,10 @@ function M.setup()
       buf_map(0, "t", "<C-h>", "<Cmd>wincmd h<CR>", "Navigate left")
       buf_map(0, "t", "<C-l>", "<Cmd>wincmd l<CR>", "Navigate right")
       buf_map(0, "t", "<C-g>", "<cmd>lua require('opencode').toggle()<CR>", "Toggle Opencode")
+    elseif is_sf1 then
+      -- sf1 drives a readline REPL where <C-h> is backspace; leave <C-hjkl>
+      -- unmapped so the application receives them, exactly as the is_aerc
+      -- branch does below.
     elseif is_aerc then
       -- Leave <C-hjkl> unmapped so aerc receives them for its own navigation
     else
