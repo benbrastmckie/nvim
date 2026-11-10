@@ -1911,6 +1911,215 @@ fi
 # task-ref-ok:end
 
 # =====================================================================
+# Y1-Y6: the cached-untracking shape (V11/V12) -- a `git rm -r --cached <dir>` whose content
+# remains on disk. Defect this pins: before V11/V12, this shape hit the OPPOSITE of each other's
+# premise from the existing W-series fully-staged-deletion carve-out (content GONE from the
+# working tree) -- here content is PRESENT -- and was either refused outright (gitignored
+# subdirectory: V2 case 1's bare `[ -e "$p" ]` existence test matched it, `git add` staged
+# nothing new for it since it was already gitignored-and-untracked, and the post-add verification
+# fell through to the `genuinely_failed_adds` refusal, exit 2) or silently REVERTED (non-
+# gitignored subdirectory: `git add` on the still-present, now-untracked content simply re-staged
+# it, reverting the untracking with no error at all). Every assertion below checks the landed (or
+# withheld) commit via `git log`/`git show --name-status`/`git ls-files`, never exit code alone,
+# matching this suite's stated discipline.
+# =====================================================================
+
+# --- build_repo_cached_untracked <gitignored|plain> -- builds a scratch repo with two tracked
+# files under sub/, commits them, then runs `git rm -r --cached sub` (leaving the content on
+# disk, untracked) -- the exact `--cached` untracking shape this Y-series pins. Parameterized on
+# whether sub/ is gitignored, so the gitignored-refusal and non-gitignored-silent-revert symptoms
+# share one builder, per this phase's own task list. Prints the repo path on stdout. ---
+build_repo_cached_untracked() {
+  local mode="$1"
+  local repo
+  repo="$(mktemp -d -p "$TOP_WORKDIR")"
+
+  git -C "$repo" init -q
+  git -C "$repo" config user.email "test@example.com"
+  git -C "$repo" config user.name "Test Suite"
+
+  mkdir -p "$repo/.claude/scripts/lib"
+  local f
+  for f in "${REQUIRED_SCRIPTS[@]}"; do
+    cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+  done
+
+  if [ "$mode" = "gitignored" ]; then
+    echo "sub/" > "$repo/.gitignore"
+    git -C "$repo" add .gitignore
+    git -C "$repo" commit -q -m "add gitignore"
+  fi
+
+  mkdir -p "$repo/sub"
+  echo "a" > "$repo/sub/a.txt"
+  echo "b" > "$repo/sub/b.txt"
+  git -C "$repo" add -f sub/a.txt sub/b.txt
+  git -C "$repo" commit -q -m "add sub"
+
+  git -C "$repo" rm -r --cached -q sub
+
+  echo "$repo"
+}
+
+# --- Y1: the headline regression (gitignored) -- the shape that previously exited 2 with
+# "not present in the index at all" now commits cleanly: HEAD advances by one, both files are
+# recorded as D, git ls-files -- sub is empty (the index no longer tracks them), and both files
+# remain present on disk. ---
+
+repo_y1="$(build_repo_cached_untracked gitignored)"
+before_y1=$(git -C "$repo_y1" rev-list --count HEAD)
+out_y1="$(run_commit "$repo_y1" --message "Y1 cached untracking (gitignored)" --session "sess_y1" \
+  -- sub 2>&1)"
+rc_y1=$?
+after_y1=$(git -C "$repo_y1" rev-list --count HEAD 2>/dev/null || echo "$before_y1")
+show_y1="$(git -C "$repo_y1" show --name-status --format="" HEAD 2>/dev/null)"
+dels_y1=$(echo "$show_y1" | grep -c '^D' || true)
+lsf_y1="$(git -C "$repo_y1" ls-files -- sub)"
+
+if [ "$rc_y1" -eq 0 ] && [ "$after_y1" -eq $((before_y1 + 1)) ] && [ "$dels_y1" -eq 2 ] \
+  && [ -z "$lsf_y1" ] \
+  && [ -f "$repo_y1/sub/a.txt" ] && [ -f "$repo_y1/sub/b.txt" ]; then
+  common_test_pass "Y1: a gitignored cached-untracking directory (git rm -r --cached, content on disk) commits -- HEAD advanced, both files recorded as D, git ls-files -- sub empty, files still present on disk"
+else
+  common_test_fail "Y1: expected rc=0, HEAD+1, 2 deletions, empty ls-files, both files present on disk; got rc=$rc_y1 before=$before_y1 after=$after_y1 dels=$dels_y1 lsf='$lsf_y1' show='$show_y1' output=$out_y1"
+fi
+
+# --- Y2: the silent-revert pin (non-gitignored) -- same headline assertions as Y1, PLUS an
+# explicit check that the files are NOT re-tracked in the index afterward. This is the case that
+# would silently pass against the pre-fix script while the untracking never actually happened
+# (pre-fix, `git add` on the still-present, now-untracked content simply re-staged it with no
+# error at all, so an exit-code-only or HEAD-advanced-only assertion would not catch the revert). ---
+
+repo_y2="$(build_repo_cached_untracked plain)"
+before_y2=$(git -C "$repo_y2" rev-list --count HEAD)
+out_y2="$(run_commit "$repo_y2" --message "Y2 cached untracking (non-gitignored)" --session "sess_y2" \
+  -- sub 2>&1)"
+rc_y2=$?
+after_y2=$(git -C "$repo_y2" rev-list --count HEAD 2>/dev/null || echo "$before_y2")
+show_y2="$(git -C "$repo_y2" show --name-status --format="" HEAD 2>/dev/null)"
+dels_y2=$(echo "$show_y2" | grep -c '^D' || true)
+lsf_y2="$(git -C "$repo_y2" ls-files -- sub)"
+
+if [ "$rc_y2" -eq 0 ] && [ "$after_y2" -eq $((before_y2 + 1)) ] && [ "$dels_y2" -eq 2 ] \
+  && [ -z "$lsf_y2" ] \
+  && [ -f "$repo_y2/sub/a.txt" ] && [ -f "$repo_y2/sub/b.txt" ]; then
+  common_test_pass "Y2: the silent-revert pin (non-gitignored) -- a cached-untracking directory commits cleanly, HEAD advanced, 2 deletions, and the files are NOT re-tracked in the index afterward (git ls-files -- sub empty), proving the untracking was not silently reverted"
+else
+  common_test_fail "Y2: expected rc=0, HEAD+1, 2 deletions, empty ls-files (no silent revert), both files present on disk; got rc=$rc_y2 before=$before_y2 after=$after_y2 dels=$dels_y2 lsf='$lsf_y2' show='$show_y2' output=$out_y2"
+fi
+
+# --- Y3: NOTE-distinctness -- stderr carries the new untracking NOTE (Verified Finding V11) and
+# does NOT carry the OTHER (fully-staged-deletion-acceptance) NOTE's own distinguishing wording.
+# Deliberately NOT a bare substring search for "source half of a directory move": the NEW note's
+# own text (per this phase's task list) states the contrast in NEGATED form ("this is NOT the
+# source half of a directory move"), so that literal substring is ALWAYS present in Y1/Y2's own
+# captured output and a blind search for it would never distinguish anything. The correct,
+# distinguishing check is the OTHER note's own wording, "accepted ... positive pathspec(s) as
+# fully-staged deletions" (see the W2 case above), which must be ABSENT here. Reuses Y1's output. ---
+
+if echo "$out_y1" | grep -q "Verified Finding V11" \
+  && echo "$out_y1" | grep -qF "sub" \
+  && ! echo "$out_y1" | grep -q "accepted .* positive pathspec(s) as fully-staged deletions"; then
+  common_test_pass "Y3: the new cached-untracking NOTE (Verified Finding V11, naming 'sub') is present, and the OTHER fully-staged-deletion-acceptance NOTE's own distinguishing wording is absent -- the two shapes stay textually distinguishable"
+else
+  common_test_fail "Y3: expected the V11 NOTE naming 'sub' and no fully-staged-deletion-acceptance wording; got output=$out_y1"
+fi
+
+# --- Y4: the partial-untracking refusal -- one file under the directory is restored to the
+# index (re-tracked, unmodified content) before the commit, so is_cached_untracking_shape's third
+# conjunct (every HEAD-tracked file under the pathspec fails `git ls-files --error-unmatch`)
+# correctly fails and the predicate does NOT classify this as the cached-untracking shape. This is
+# the concrete check for the "do NOT let a widened predicate accept a genuinely-unstaged
+# directory" constraint: verified behavior is that control falls through unchanged to the
+# pre-existing case-1 handling, which re-stages the restored file (an ordinary `git add`), and
+# since nothing in the resulting tree differs from HEAD (the restored file's content is
+# unchanged), the commit attempt reports "nothing to commit" -- no wrongly-accepted partial
+# deletion lands, and (most importantly) `git ls-files -- sub` is NOT left empty, proving the
+# predicate did not misclassify a genuinely-unstaged directory as a clean untracking. ---
+
+repo_y4="$(build_repo_cached_untracked plain)"
+(cd "$repo_y4" && git add sub/a.txt)
+before_y4=$(git -C "$repo_y4" rev-parse HEAD)
+out_y4="$(run_commit "$repo_y4" --message "Y4 partial untracking" --session "sess_y4" \
+  -- sub 2>&1)"
+rc_y4=$?
+after_y4=$(git -C "$repo_y4" rev-parse HEAD)
+lsf_y4="$(git -C "$repo_y4" ls-files -- sub)"
+
+if [ "$rc_y4" -ne 0 ] && [ "$before_y4" = "$after_y4" ] && [ -n "$lsf_y4" ] \
+  && ! echo "$out_y4" | grep -q "Verified Finding V11"; then
+  common_test_pass "Y4: a partially-untracked directory (one file restored to the index) is NOT classified as the cached-untracking shape -- predicate correctly rejects (no V11 NOTE), HEAD unchanged, git ls-files -- sub non-empty (not wrongly treated as a clean untracking)"
+else
+  common_test_fail "Y4: expected rc!=0, HEAD unchanged, non-empty ls-files, no V11 NOTE; got rc=$rc_y4 before=$before_y4 after=$after_y4 lsf='$lsf_y4' output=$out_y4"
+fi
+
+# --- Y5: the out-of-repository (128) refusal pin -- an absolute pathspec resolving outside the
+# repository, batched alongside a cached-untracking pathspec, still refuses: dropped by the V9
+# repository-containment guard BEFORE V11 classification ever runs (V9 is evaluated earlier in
+# the same positive-pathspec branch), never accepted by the V11 predicate. The untracking itself
+# still lands (V9 drops are observability, not a whole-invocation refusal -- exit 6, matching the
+# header's documented V9 exit-code decision), proving V11/V12 did not weaken V9's own guard. ---
+
+repo_y5="$(build_repo_cached_untracked plain)"
+outside_y5="$(mktemp -d -p "$TOP_WORKDIR")"
+echo "evidence" > "$outside_y5/evidence.txt"
+before_y5=$(git -C "$repo_y5" rev-list --count HEAD)
+out_y5="$(run_commit "$repo_y5" --message "Y5 untracking plus out-of-repo" --session "sess_y5" \
+  -- sub "$outside_y5/evidence.txt" 2>&1)"
+rc_y5=$?
+after_y5=$(git -C "$repo_y5" rev-list --count HEAD 2>/dev/null || echo "$before_y5")
+show_y5="$(git -C "$repo_y5" show --name-status --format="" HEAD 2>/dev/null)"
+dels_y5=$(echo "$show_y5" | grep -c '^D' || true)
+
+if [ "$rc_y5" -eq 6 ] && [ "$after_y5" -eq $((before_y5 + 1)) ] && [ "$dels_y5" -eq 2 ] \
+  && echo "$out_y5" | grep -q "out-of-repository"; then
+  common_test_pass "Y5: an out-of-repository pathspec batched with a cached-untracking pathspec is dropped by V9 (not accepted by V11), stderr names it as out-of-repository, and the untracking still lands -- exit 6, HEAD+1, 2 deletions"
+else
+  common_test_fail "Y5: expected rc=6, HEAD+1, 2 deletions, stderr naming out-of-repository; got rc=$rc_y5 before=$before_y5 after=$after_y5 dels=$dels_y5 output=$out_y5"
+fi
+
+# --- Y6: the foreign-staged-content refusal -- a staged file OUTSIDE the declared pathspec set
+# (never named in the caller's pathspec list at all) makes the V12 index-equivalence guard refuse
+# the whole invocation, proving the guarded bare `git commit` can never widen scope beyond what
+# the caller actually asked for. Nothing is committed; HEAD does not advance. ---
+
+# Built inline (not via build_repo_cached_untracked) because other.txt must already be TRACKED
+# in the same initial commit as sub/, before the `git rm -r --cached sub` step -- committing
+# other.txt afterward would commit the whole index, including the pending sub rm --cached
+# deletions, prematurely landing the untracking before this case ever runs the script.
+repo_y6="$(mktemp -d -p "$TOP_WORKDIR")"
+git -C "$repo_y6" init -q
+git -C "$repo_y6" config user.email "test@example.com"
+git -C "$repo_y6" config user.name "Test Suite"
+mkdir -p "$repo_y6/.claude/scripts/lib"
+for f in "${REQUIRED_SCRIPTS[@]}"; do
+  cp "$SRC_SCRIPTS_DIR/$f" "$repo_y6/.claude/scripts/$f"
+  [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo_y6/.claude/scripts/$f"
+done
+mkdir -p "$repo_y6/sub"
+echo "a" > "$repo_y6/sub/a.txt"
+echo "b" > "$repo_y6/sub/b.txt"
+echo "orig" > "$repo_y6/other.txt"
+git -C "$repo_y6" add -f sub/a.txt sub/b.txt other.txt
+git -C "$repo_y6" commit -q -m "add sub and other.txt"
+git -C "$repo_y6" rm -r --cached -q sub
+echo "modified" > "$repo_y6/other.txt"
+git -C "$repo_y6" add other.txt
+before_y6=$(git -C "$repo_y6" rev-parse HEAD)
+out_y6="$(run_commit "$repo_y6" --message "Y6 untracking plus foreign staged content" --session "sess_y6" \
+  -- sub 2>&1)"
+rc_y6=$?
+after_y6=$(git -C "$repo_y6" rev-parse HEAD)
+
+if [ "$rc_y6" -eq 2 ] && [ "$before_y6" = "$after_y6" ] \
+  && echo "$out_y6" | grep -qF "other.txt"; then
+  common_test_pass "Y6: a staged file outside the declared pathspec set makes the V12 guard refuse the cached-untracking commit -- exit 2, HEAD unchanged, the foreign path named on stderr"
+else
+  common_test_fail "Y6: expected rc=2, HEAD unchanged, other.txt named; got rc=$rc_y6 before=$before_y6 after=$after_y6 output=$out_y6"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

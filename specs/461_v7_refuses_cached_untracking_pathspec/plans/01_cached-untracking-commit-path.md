@@ -336,43 +336,60 @@ CONSTRAINT makes that loop a deliberate no-touch zone.
 
 ---
 
-### Phase 3: Pin the shape, and pin what must keep refusing [NOT STARTED]
+### Phase 3: Pin the shape, and pin what must keep refusing [COMPLETED]
 
 **Goal**: add the regression coverage the task's VERIFY section requires, plus the silent-revert
 pin the research phase's new finding makes necessary, using the suite's own conventions.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`'s existing
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`'s existing
   `W1-W4` section and its `build_repo`/`build_repo_movable` harness helpers, and confirm the
   letter-cluster inventory before choosing a prefix (`Y` was free at planning time: the file's
-  live clusters are `T`, `U`, `V`, `W`, `X`, `Z`).
-- [ ] Add a harness helper that builds a repo, commits content, then runs `git rm -r --cached`
+  live clusters are `T`, `U`, `V`, `W`, `X`, `Z`). *(completed: Y confirmed free, used)*
+- [x] Add a harness helper that builds a repo, commits content, then runs `git rm -r --cached`
   on a subdirectory leaving content on disk — parameterized on whether that subdirectory is
-  gitignored, so the gitignored and non-gitignored symptoms share one builder.
-- [ ] The headline regression case (gitignored): the invocation exits 0, HEAD advanced by one,
+  gitignored, so the gitignored and non-gitignored symptoms share one builder. *(completed:
+  `build_repo_cached_untracked gitignored|plain`)*
+- [x] The headline regression case (gitignored): the invocation exits 0, HEAD advanced by one,
   `git show --name-status HEAD` records every file as `D`, the files remain on disk, and the
-  index no longer tracks them.
-- [ ] The silent-revert pin (non-gitignored): same assertions, plus an explicit assertion that
+  index no longer tracks them. *(completed: Y1)*
+- [x] The silent-revert pin (non-gitignored): same assertions, plus an explicit assertion that
   the files are **not** re-tracked in the index afterward — this is the case that would silently
-  pass against the pre-fix script while the untracking never happened.
-- [ ] The NOTE-distinctness case: stderr carries the new untracking NOTE and does **not** carry
-  the "source half of a directory move" wording.
-- [ ] The partial-untracking refusal: one file under the directory restored to the index (or
+  pass against the pre-fix script while the untracking never happened. *(completed: Y2)*
+- [x] The NOTE-distinctness case: stderr carries the new untracking NOTE and does **not** carry
+  the "source half of a directory move" wording. *(completed: Y3 — adjusted to assert absence of
+  the OTHER note's own distinguishing wording, "accepted ... positive pathspec(s) as fully-staged
+  deletions", rather than a blind substring search for the shared contrastive phrase; see Phase
+  2's progress-file notes for why a literal substring search would always match the new NOTE's
+  own negated text)*
+- [x] The partial-untracking refusal: one file under the directory restored to the index (or
   modified on disk), so the predicate must reject and the script must refuse rather than commit
   — this is the concrete check for the "do NOT let a widened predicate accept a
-  genuinely-unstaged directory" constraint.
-- [ ] The out-of-repository (128) refusal pin: an absolute pathspec resolving outside the
+  genuinely-unstaged directory" constraint. *(completed: Y4 — verified behavior is that the
+  predicate correctly rejects classification and control falls through to the pre-existing case-1
+  handling, which re-stages the restored file; since nothing differs from HEAD the commit reports
+  "nothing to commit" and, critically, `git ls-files -- sub` is left non-empty, proving no
+  partial deletion was wrongly accepted)*
+- [x] The out-of-repository (128) refusal pin: an absolute pathspec resolving outside the
   repository still refuses. Note in the case comment that this is dropped by the V9 containment
-  guard before classification, not by the V7 predicate.
-- [ ] The foreign-staged-content refusal: a staged file outside the declared pathspec set makes
-  the untracking invocation refuse, proving the bare commit can never widen scope.
-- [ ] Confirm `W1` and `W3` (directory-move pair and pure deletion) are present and **unchanged**
-  — the explicit regression guard the task's VERIFY section asks for.
-- [ ] Demonstrate the FAILS-before property without ever committing a red suite: extract the
+  guard before classification, not by the V7 predicate. *(completed: Y5 — dropped by V9 before
+  V11 classification; the untracking pathspec still lands, exit 6, observability per V9's own
+  documented exit-code decision, not a whole-invocation refusal)*
+- [x] The foreign-staged-content refusal: a staged file outside the declared pathspec set makes
+  the untracking invocation refuse, proving the bare commit can never widen scope. *(completed:
+  Y6)*
+- [x] Confirm `W1` and `W3` (directory-move pair and pure deletion) are present and **unchanged**
+  — the explicit regression guard the task's VERIFY section asks for. *(completed: full suite run
+  confirms W1/W3/W2/W4 and every other existing case pass unchanged, 76/76 total)*
+- [x] Demonstrate the FAILS-before property without ever committing a red suite: extract the
   pre-fix script with `git show <pre-Phase-1 sha>:agent-system/extensions/core/scripts/git-commit-scoped.sh`
   into a scratch directory, point the new cases' harness at that copy, observe and record the
   failures in the phase notes, then confirm the same cases pass against the fixed script.
+  *(completed: pre-fix script temporarily swapped into place and immediately restored; Y1/Y2/Y3/
+  Y5/Y6 failed as expected (71 passed, 5 failed), Y4 correctly passed against both versions since
+  it pins pre-existing unrelated behavior; full suite re-confirmed green (76/76) after restoring
+  the fixed script — see progress/phase-3-progress.json for the full detail)*
 
 **Timing**: 2 hours
 

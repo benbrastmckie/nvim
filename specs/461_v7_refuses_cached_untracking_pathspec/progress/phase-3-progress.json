@@ -1,0 +1,78 @@
+{
+  "phase": 3,
+  "phase_name": "Pin the shape, and pin what must keep refusing",
+  "started_at": "2026-11-10T22:00:00Z",
+  "last_updated": "2026-11-10T22:14:33Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read W1-W4 section, build_repo/build_repo_movable helpers, confirm letter-cluster inventory (T,U,V,W,X,Z used; Y free)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add build_repo_cached_untracked harness helper (gitignored|plain parameter)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Y1 headline regression (gitignored)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Y2 silent-revert pin (non-gitignored)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Y3 NOTE-distinctness case",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Y4 partial-untracking refusal",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Y5 out-of-repository (128) refusal pin",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]
+    },
+    {
+      "id": 8,
+      "description": "Y6 foreign-staged-content refusal",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]
+    },
+    {
+      "id": 9,
+      "description": "Confirm W1/W3 (and the rest of the existing suite) pass unchanged",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 10,
+      "description": "Demonstrate FAILS-before property against the pre-Phase-1 script, then confirm PASSES-after against the fixed script",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {
+      "approach": "Y6 fixture: commit other.txt as a brand-new file AFTER git rm --cached sub, inside the same repo returned by build_repo_cached_untracked",
+      "result": "failed",
+      "reason": "git commit with no pathspec commits the WHOLE index, which prematurely landed the already-staged sub rm --cached deletions as part of the 'add other.txt' commit -- by the time the script ran, HEAD no longer tracked sub at all, so is_cached_untracking_shape's ls-tree conjunct correctly returned false (nothing to untrack), and the case fell through to an ordinary case-1 re-add, producing 'create mode' entries instead of the expected V12 refusal. Fixed by building the Y6 fixture inline with other.txt tracked in the SAME initial commit as sub/, before git rm --cached sub ever runs, so no incidental whole-index commit occurs."
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Deviation from the Scope Hypothesis's '7 new cases' estimate: 6 new cases (Y1-Y6) were sufficient to cover every bullet in this phase's own Tasks list and VERIFY section; no 7th case was needed since 'confirm W1/W3 unchanged' is satisfied by the existing suite (all passed, see below) rather than a new case. Full existing+new test-git-commit-scoped.sh suite: 76 passed, 0 failed with the Phase 1+2 fixed script. FAILS-before demonstration: extracted the pre-Phase-1 script via 'git show <sha before Phase 1 commit>:...git-commit-scoped.sh' into a scratch file, temporarily swapped it into place (restored immediately after), and re-ran the full suite -- Y1, Y2, Y3, Y5, Y6 FAILED against the pre-fix script (71 passed, 5 failed) exactly as expected (each demonstrating one of: the exit-2 refusal, the silent revert, the missing V11 NOTE, the V9-interaction gap, and the missing V12 foreign-content guard). Y4 (partial-untracking rejection) correctly PASSED against both versions, since that behavior was already correct pre-fix (an ordinary case-1 fallback, unrelated to the untracking fix) -- not a regression in the demonstration, a confirmation that Y4 pins pre-existing correct behavior rather than this phase's own change. Restored the fixed script immediately after; verified bash -n and a final full suite re-run (76 passed, 0 failed) before proceeding. Scoped Tier Justification suite (run-all.sh --only test-claude-refresh-matcher.sh,test-git-commit-phase.sh,test-git-commit-scoped.sh,test-lint-scoped-commit-boundary.sh,test-orchestrate-unwind-dispatch.sh): 5/5 passed, 0 failed -- this phase's own narrower suite list does not include the two Phase-1/2-identified pre-existing out-of-scope failures (test-orchestrate-cycle-postflight.sh, test-redeploy-checkpoint-promotion.sh), so nothing further to report here."
+}
