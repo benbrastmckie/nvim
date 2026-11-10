@@ -11,11 +11,10 @@ next_project_number: 579
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,578 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,498,499,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,578 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,476,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,423,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571 | 313,391,398,439,458,461,472,476,486,518,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577 | 390,402,501,547,552 | core-agent-system, agent-system |
-| 5 | 499 | 421,498 | extensions |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -75,7 +74,7 @@ next_project_number: 579
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
 498 [HOLD] — Replace the email preference harvest tally substrate
-  └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
+499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
@@ -87,7 +86,7 @@ next_project_number: 579
 
 ### Neovim
 
-578 [PLANNED] — Build an in-config sf1 (Sapience terminal chat) Neovim...
+578 [IMPLEMENTING] — Build an in-config sf1 (Sapience terminal chat) Neovim...
 
 ### File Scope Lifecycle
 
@@ -184,7 +183,7 @@ next_project_number: 579
 ## Tasks
 
 ### 578. Sf1 neovim virtual plugin with split position
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: neovim
 - **Topic**: neovim
 - **Dependencies**: None
@@ -6023,7 +6022,7 @@ Recorded here so research does not revisit them:
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 421, Task 496, Task 497, Task 498
+- **Dependencies**: Task 496, Task 497
 
 **Description**: Retarget the two store-coupled `/distill` sub-modes onto the hosted store, drop the six that the hosted store already performs, remove core's now-orphaned callers, and retire the memory extension.
 
@@ -6093,6 +6092,23 @@ TWO ADMISSIBLE SHAPES -- the plan phase chooses ONE and records why:
 BOUND IS LOAD-BEARING, AND THE CALL SITE MUST ENFORCE IT. There is no delete API on this vault and `/ingest-kos` bypasses the `auto_approve: false` review gate entirely, so every write this wiring lands is both PERMANENT and UNREVIEWED. `sapience-remember.sh` deliberately does not enforce the 3-8-note-per-completed-task bound; whatever call site is added MUST. A wiring defect here writes permanent garbage removable only by hand in the web app, so prefer a dry-run-verified rollout over a write-first one.
 
 VERIFICATION FOR THIS PART: after wiring, complete one task and confirm (i) the tagged write landed (`written >= 1`, no `gated`/`set_aside`), (ii) `sapience-retrieve.sh <description> <task_type>` on a later dispatch returns at least one note originating from that completed task rather than only the three pre-existing build artifacts, and (iii) a forced write failure degrades without breaking postflight or the task's status transition.
+
+== SCOPE NARROWING: PART D IS OUT OF SCOPE FOR THIS TASK ==
+
+THIS SECTION OVERRIDES PART D ABOVE. Do not remove the memory extension, do not edit `.claude-extensions.json`, and do not uninstall anything. Parts A, B, C and C2 are the whole of this task's deliverable.
+
+WHY: Part D's removal is gated on the email preference-harvest port, which is paused pending an operator decision about integrating email into Sapience. Email triage still reads the memory substrate, so retiring the extension before that port lands would break it. Rather than wait on that decision, this task delivers everything that does NOT depend on it -- the sub-mode retargeting, the orphaned-caller cleanup, and the tagged-write wiring that closes the retrieval loop -- and leaves the extension installed but no longer load-bearing.
+
+WHAT THIS CHANGES CONCRETELY:
+- The memory extension REMAINS registered and installed at the end of this task. That is the intended end state here, not an unfinished edge.
+- `.claude-extensions.json` is NOT touched and has been removed from this task's file_scope.
+- Parts A and B still edit files INSIDE `agent-system/extensions/memory/` (retargeting `--revise`/`--learn` onto the hosted store; deleting the six sub-modes the hosted store already performs). Editing inside the extension is in scope; removing the extension is not.
+- Part C still removes the orphaned core callers. `memory-retrieve.sh` is already dead regardless of Part D: its sole dispatch call site was swapped to the sapience retrieval script, so nothing reaches it.
+- `.memory/` STAYS ON DISK, READ-ONLY, exactly as the hard sequencing constraint already requires -- now with more reason, since the extension that reads it is still present.
+
+VERIFICATION BULLETS THAT DO NOT APPLY HERE (they belong with Part D, whenever it is taken up): "no remaining reference anywhere in the source store points at the memory extension"; "a full deploy from a clean tree succeeds with the memory extension absent"; and the email-triage Stage 7 bullet, whose guaranteeing dependency this task no longer carries. The remaining verification bullets stand, and the Part C2 verification is additionally required.
+
+STILL REQUIRED: no reference anywhere in the source store points at `memory-retrieve.sh` or `memory-harvest.sh` (both are removed by Part C), `/todo` archival completes without the HarvestMemories stage erroring, and an `/orchestrate` dispatch still receives repo-scoped injected context and still degrades to empty context on failure.
 
 ---
 
@@ -9306,6 +9322,11 @@ failure than the duplication Gap 2 is about.
 ACCEPTANCE, EXTENDED: given a fixture whose issues.jsonl carries a class discharged by a CLOSED
 record, `--meta` renders a cross-reference to that record's project_name and the discharging
 artifact's path, creates nothing, and does NOT drop the proposal silently.
+== TARGET RELOCATION (read before planning; do not re-derive) ==
+
+The sub-mode this task retargets NO LONGER LIVES IN THE MEMORY EXTENSION. The vault-independent telemetry sub-modes were promoted into core: `--meta`, `--review` and `--dream` are dispatched by `/telemetry`, not `/distill`. `agent-system/extensions/memory/context/project/memory/patterns/distill-meta-submode.md` has been DELETED; its successor is `agent-system/extensions/core/context/patterns/telemetry-meta-submode.md`, and the owning skill is `agent-system/extensions/core/skills/skill-telemetry/SKILL.md`. The memory extension's `skill-distill/SKILL.md` now only points at that relocation.
+
+Every reference below to `/distill --meta`, to the memory extension as the edit target, or to the deleted spec path should be read as naming `/telemetry --meta` and its core-resident files instead. The three gaps this task closes are unaffected by the move -- they are properties of the sub-mode's logic, not of its location. file_scope has been retargeted accordingly.
 
 ---
 
