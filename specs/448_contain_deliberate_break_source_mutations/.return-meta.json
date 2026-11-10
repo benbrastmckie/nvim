@@ -1,39 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794272256_212466_448",
-  "dispatch_seq": 20,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/448_contain_deliberate_break_source_mutations/reports/01_contain-deliberate-break-mutations.md",
-      "summary": "Confirms the single unsafe source-store mutation site (test-orchestrate-cycle-postflight.sh's regression-anchor check), recommends a reorder fix (mutate the already-copied $SUT, not $CORE_DIR, eliminating both the EXIT-trap and shared-tree-exposure holes with no new harness infrastructure), finds two existing safe-pattern precedents in the same corpus, audits scripts/tests/ for other sites (none found), verifies an anchored-regex self-exclusion for a paired mechanical detector, and documents the gate-registration conventions (verify-deploy.sh gate28_run + gate-registry.data row) for that detector."
+      "type": "plan",
+      "path": "specs/448_contain_deliberate_break_source_mutations/plans/01_contain-deliberate-break-mutations.md",
+      "summary": "7-phase containment plan: relocate the regression-anchor mutation onto the sandbox copy, pin source-store byte-identity in-suite, add a gate-28 residue detector with its own suite, and state the safe pattern in the testing standard."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In agent-system/extensions/core/scripts/tests/, test suites that sandbox-copy source-store scripts into $WORKDIR (via a per-file setup_sandbox()) already execute the sandboxed copy ($SUT), not the real source-store file ($CORE_DIR), in run_sut. A 'deliberately break X, confirm red, then revert' regression-anchor fixture should therefore mutate $SUT AFTER calling setup_sandbox(), never $CORE_DIR before it -- this closes the shared-working-tree exposure window outright (no concurrent reader can ever observe the mutation) and makes EXIT-trap-based backup/restore unnecessary, since the mutated copy is naturally wiped by the next setup_sandbox() call. Two precedents already use this safe shape: test-git-commit-scoped.sh's X1/X2 inversion probes and test-lint-deploy-caller-wrap.sh's self-test, both via a mktemp -d scratch copy.",
-      "category": "PATTERN",
-      "source_artifact": "specs/448_contain_deliberate_break_source_mutations/reports/01_contain-deliberate-break-mutations.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["test-harness", "setup_sandbox", "regression-anchor", "source-store-mutation", "deliberate-break-fixture"]
-    },
-    {
-      "content": "agent-system/extensions/core/scripts/lib/test-harness-lib.sh does not exist in this repo despite being a plausible-sounding name; setup_sandbox is defined independently per-test-file (34+ files each define their own copy-from-$CORE_DIR-into-$WORKDIR logic). Before assuming a shared test-harness library exists and planning to extend it, grep for the actual function definitions first.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/448_contain_deliberate_break_source_mutations/reports/01_contain-deliberate-break-mutations.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["test-harness-lib", "setup_sandbox", "no-shared-library", "scripts/tests"]
-    },
-    {
-      "content": "An anchored-start regex (^[[:space:]]*while false[[:space:]]*&&) correctly distinguishes a real code-level 'while false &&' anti-pattern guard from a test file's own sed replacement-string text that legitimately contains the same phrase as a quoted argument (e.g. sed -i \"s/.../while false \\&\\& .../\"). The sed line's actual text begins with 'sed -i', not 'while false &&', so a line-start anchor avoids the false positive without needing a blanket path exclusion.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/448_contain_deliberate_break_source_mutations/reports/01_contain-deliberate-break-mutations.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-detector", "self-exclusion", "anchored-regex", "false-positive-avoidance"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 448 to create implementation plan"
+  "memory_candidates": [],
+  "metadata": {
+    "session_id": "sess_1794272256_212466_448",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 7,
+    "dependency_waves": 4
+  },
+  "next_steps": "Run /orchestrate 448 to execute the plan",
+  "dispatch_seq": 21
 }

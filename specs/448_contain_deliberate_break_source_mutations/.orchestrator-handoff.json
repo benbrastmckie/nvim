@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "dispatch_seq": 21,
+  "phases_completed": 0,
+  "phases_total": 7,
+  "summary": "Wrote a 7-phase plan containing the regression-anchor source-store mutation. The containment is a reorder of the one unsafe call site: call setup_sandbox() first, then apply the identical sed to $SUT instead of $CORE_DIR, so the shared source store is never written and the backup/trap/restore machinery becomes unnecessary. Paired with a new source-store-scoped residue detector (anchored-start `while false &&` guard plus leftover *.anchor-bak), registered as gate 28 with its own suite, in-suite byte-identity and residue invariants, and a safe-pattern rule added to the testing standard. Premise re-validation found the declared must-land-first territory edge (328) already completed and archived, so the task is unblocked.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/448_contain_deliberate_break_source_mutations/plans/01_contain-deliberate-break-mutations.md",
+      "summary": "7-phase containment plan: anchor-mutation reorder onto the sandbox copy, in-suite source-store invariants, a gate-28 residue detector with its own suite, and a safe-pattern rule in the testing standard."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794272256_212466_448",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}
