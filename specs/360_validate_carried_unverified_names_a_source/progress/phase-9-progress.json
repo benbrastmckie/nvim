@@ -1,0 +1,31 @@
+{
+  "phase": 9,
+  "phase_name": "Close the Token List, Redeploy, and Run the Full Gate Set",
+  "started_at": "2026-11-10T04:00:00Z",
+  "last_updated": "2026-11-10T04:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add COVERAGE-UNVERIFIED to CFD_TOKENS, extend promotion-criterion comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 2, "description": "Add fixtures for the disclosure mark in both directions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 3, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run lint-agent-contracts.sh at its real path", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run the complete gate set (scoped per Batch Gate Deferral)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-run real-corpus sweep against the deployed validator for all three tokens", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Confirm advisories stay log_warn, no exit-code change, Verification Tier advisory not promoted", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Re-check task-reference and record-versioning rules under agent-system/**", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "Ran deploy-headless.sh's default (non-destructive) mode", "result": "worked", "reason": "deploy landed cleanly (confirmed CFD_TOKENS with all 3 tokens present in the deployed validate-artifact.sh); its internal fast-gate verification found 3 pre-existing, confirmed-unrelated findings outside agent-system/extensions/core/**, exit landed_verify_red (3), which is the expected/documented non-zero outcome for a landed-but-pre-existing-issues deploy, not a failure of this task's own work"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "9.run-complete-gate-set",
+      "description": "Run the complete gate set",
+      "type": "altered",
+      "reason": "This dispatch's own Batch Gate Deferral directive scopes Phase 9's full-tier obligation to a narrowing invocation covering this task's own touched files, deferring the complete gate set to the batch-level stage at the end of this /orchestrate invocation.",
+      "annotation": "*(deviation: altered -- see Phase 9's Task list and the plan-wide Testing & Validation checklist for the full detail)*"
+    }
+  ],
+  "notes": "Added COVERAGE-UNVERIFIED to CFD_TOKENS (now 3 tokens), extended the header comment and promotion-criterion comment to name all three, added 13 new fixtures for the third token (well-formed/empty-designator for report and plan, mention-suppression, plus 2 re-checks of the second token) -- test-validate-artifact.sh now 134 PASSED / 0 FAILED (up from 121). Redeployed via `bash .claude/scripts/deploy-headless.sh` (default non-destructive mode); confirmed the deployed validate-artifact.sh, test-validate-artifact.sh, report-format.md all carry every change. The internal fast-gate verification reported RESULT=landed_verify_red (exit 3): 3 of 41 checks failed -- eager-context-budget overage (67738 B vs 66800 B baseline, confirmed via git diff --stat that this task touched zero files under commands/orchestrate.md or skills/skill-orchestrate/SKILL.md; the dispatch's own text attributes this class of drift to a separate open task), a shellcheck finding in agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh (outside file_scope), and a dead-command-recommendation finding (/ide has no definition file) in agent-system/extensions/memory/context/project/memory/{memory-setup,memory-troubleshooting}.md (outside file_scope) -- all three confirmed pre-existing and unrelated by direct inspection. Ran lint/lint-agent-contracts.sh at its real path (the dispatch's acceptance text names a non-existent one-level-up path; corrected per Phase 9's own task bullet): 421 passed, 15 pre-existing recorded-exclusion warnings, 0 failed, exit 0. Ran the Batch-Gate-Deferral-scoped narrowing invocation (run-all.sh --only over the union of suite_selection_select's output for every file this task touched, 13 suites): the two suites directly covering this task's own edits (test-validate-artifact.sh, test-orchestrate-build-dispatch.sh) are fully green (134/134, 193/193); 3 of the remaining 11 blast-radius suites are red (test-orchestrate-build-aux-dispatch.sh, test-orchestrate-cycle-postflight.sh, test-orchestrate-unwind-dispatch.sh) for reasons individually inspected and confirmed unrelated to this task's content (an agent-model-resolution mismatch, postflight status-demotion logic, and a test fixture's REQUIRED_LIB_SCRIPTS array missing lib/project-number-inuse.sh) -- none reference CARRIED-UNVERIFIED/CORPUS-UNVERIFIED/COVERAGE-UNVERIFIED or any file in this task's file_scope. Recorded both findings via issue-record.sh (a self-inflicted false-positive from Phase 7's own test comments, fixed in this phase, and the 3 pre-existing unrelated gate failures observed during the scoped run). Re-swept the DEPLOYED validator against all 5 real report/plan corpus files carrying any of the three tokens: zero advisories (0 warnings) on every file -- the shipped artifact, not only the source copy, is confirmed clean. Confirmed both empty-designator and no-closing-bracket conditions remain log_warn (grep-verified, never log_error) for all three tokens in CFD_TOKENS. Ran check-task-references.sh agent-system/: PASS, 0 unexempted occurrences, exit 0. Ran check-record-versioning.sh agent-system/extensions/core/: 0 BLOCKING, 567 pre-existing ADVISORY findings (none newly introduced by this task), exit 0."
+}

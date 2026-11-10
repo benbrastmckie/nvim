@@ -716,10 +716,10 @@ ${body}")
 }
 
 assert_cfd_silent() {
-  # Matches either token this check covers (CARRIED-UNVERIFIED or CORPUS-UNVERIFIED) -- see
-  # CFD_TOKENS in validate-artifact.sh.
+  # Matches any token this check covers (CARRIED-UNVERIFIED, CORPUS-UNVERIFIED, or
+  # COVERAGE-UNVERIFIED) -- see CFD_TOKENS in validate-artifact.sh.
   local label="$1"
-  if echo "$LAST_OUT" | grep -qE "(CARRIED-UNVERIFIED|CORPUS-UNVERIFIED) mark\(s\)"; then
+  if echo "$LAST_OUT" | grep -qE "(CARRIED-UNVERIFIED|CORPUS-UNVERIFIED|COVERAGE-UNVERIFIED) mark\(s\)"; then
     common_test_fail "$label: unexpected CFD advisory: $LAST_OUT"
   else
     common_test_pass "$label: no CFD advisory"
@@ -834,6 +834,24 @@ run_cfd_case "report" "$cfd_corpus_mention"; assert_cfd_silent "CFD-CORPUS(repor
 # after parameterization -- re-run two of the earlier representative cases (one WF, one MF). ──
 run_cfd_case "report" "$cfd_a_wf"; assert_cfd_silent "CFD-A(report) plain-inline WF (post-parameterization re-check)"
 run_cfd_case "report" "$cfd_a_mf"; assert_cfd_empty  "CFD-A(report) plain-inline MF (post-parameterization re-check)"
+
+# ─── CFD third token (COVERAGE-UNVERIFIED): Phase 8's enumeration-completeness disclosure mark,
+# brought under CFD_TOKENS by Phase 9 -- same WF/MF/mention-suppression coverage as the second
+# token above, through the SAME parameterized mechanism. ──────────────────────────────────────
+cfd_coverage_wf='Every call site was found by this enumeration [COVERAGE-UNVERIFIED: grep -rn FOO; not cross-checked with a second pattern].'
+cfd_coverage_mf='Every call site was found by this enumeration [COVERAGE-UNVERIFIED: ].'
+cfd_coverage_mention='This section discusses the `[COVERAGE-UNVERIFIED:` token and its required argument.'
+
+run_cfd_case "report" "$cfd_coverage_wf"; assert_cfd_silent "CFD-COVERAGE(report) well-formed"
+run_cfd_case "report" "$cfd_coverage_mf"; assert_cfd_empty  "CFD-COVERAGE(report) empty designator"
+run_cfd_case "plan" "$cfd_coverage_wf"; assert_cfd_silent "CFD-COVERAGE(plan) well-formed"
+run_cfd_case "plan" "$cfd_coverage_mf"; assert_cfd_empty  "CFD-COVERAGE(plan) empty designator"
+run_cfd_case "report" "$cfd_coverage_mention"; assert_cfd_silent "CFD-COVERAGE(report) mention-suppression"
+
+# Confirm the first two tokens' fixtures still pass unchanged after this second parameterization
+# extension.
+run_cfd_case "report" "$cfd_corpus_wf"; assert_cfd_silent "CFD-CORPUS(report) well-formed (post-third-token re-check)"
+run_cfd_case "report" "$cfd_corpus_mf"; assert_cfd_empty  "CFD-CORPUS(report) empty designator (post-third-token re-check)"
 
 echo ""
 common_test_info "Target scripts: $VALIDATE ; $VALIDATE_SRC ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"

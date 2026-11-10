@@ -566,31 +566,41 @@ rule, each with its reasoning, and rule honestly on what any of it can mechanica
 
 ---
 
-### Phase 9: Close the Token List, Redeploy, and Run the Full Gate Set [NOT STARTED]
+### Phase 9: Close the Token List, Redeploy, and Run the Full Gate Set [COMPLETED]
 
 **Goal**: Bring Phase 8's disclosure mark under the same advisory, regenerate the deployed tree
 from the source store, and confirm the whole repository is green with every advisory still
 advisory and every default-mode exit code unchanged.
 
 **Tasks**:
-- [ ] Add Phase 8's disclosure mark to the Phase 5 token list, with the same required-argument rule
+- [x] Add Phase 8's disclosure mark to the Phase 5 token list, with the same required-argument rule
       and the same `log_warn` level, and extend the promotion-criterion comment to cover all three
       tokens. Add no blocking gate.
-- [ ] Add fixtures for the disclosure mark in both directions, driven through `$VALIDATE_SRC`.
-- [ ] Redeploy from the source store with `deploy-headless.sh`, resolving whichever entry point
+- [x] Add fixtures for the disclosure mark in both directions, driven through `$VALIDATE_SRC`.
+- [x] Redeploy from the source store with `deploy-headless.sh`, resolving whichever entry point
       exists in this repository.
-- [ ] Run the agent-contract lint at its real path, `scripts/lint/lint-agent-contracts.sh` --
+- [x] Run the agent-contract lint at its real path, `scripts/lint/lint-agent-contracts.sh` --
       resolved under `.claude/scripts/lint/` after redeploy, or its source-store sibling. The
       dispatch's own acceptance text names it one directory level higher, at
       `scripts/lint-agent-contracts.sh`, where no such file exists; use the real path and note the
       correction in the summary rather than reporting a missing gate.
-- [ ] Run the complete gate set.
-- [ ] Re-run the real-corpus sweep against the DEPLOYED validator for all three tokens and report
+- [x] Run the complete gate set. *(deviation: altered -- this dispatch's own Batch Gate Deferral
+      directive scopes this to a narrowing invocation covering the files this task touched
+      instead: `deploy-headless.sh`'s own fast-gate pass, `lint/lint-agent-contracts.sh` (421
+      passed, 15 pre-existing recorded-exclusion warnings, 0 failed), and
+      `run-all.sh --only` over the suite_selection_select blast radius of every file this task
+      touched (13 suites; the 2 suites directly covering this task's own edits --
+      test-validate-artifact.sh and test-orchestrate-build-dispatch.sh -- are fully green at
+      134/134 and 193/193 respectively). 3 of the 13 blast-radius suites are red for reasons
+      confirmed unrelated to this task (recorded as an issue; see the phase-9 progress notes).
+      The complete gate set runs once for the whole batch at the end of this /orchestrate
+      invocation per that directive.)*
+- [x] Re-run the real-corpus sweep against the DEPLOYED validator for all three tokens and report
       the flag count, so the shipped artifact and not only the source copy is measured.
-- [ ] Confirm every advisory added by this task is still `log_warn`, that no artifact's
+- [x] Confirm every advisory added by this task is still `log_warn`, that no artifact's
       default-mode exit code changed on an advisory alone, and that the pre-existing Verification
       Tier advisory was not promoted.
-- [ ] Re-check both deliverable rules over everything landing under `agent-system/**`: no
+- [x] Re-check both deliverable rules over everything landing under `agent-system/**`: no
       task-number references, and no record-versioning language.
 
 **Timing**: 1.25 hours
@@ -617,27 +627,34 @@ advisory and every default-mode exit code unchanged.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with
       every pre-existing case passing and every new case passing.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` exits 0.
-- [ ] Fixtures cover the plain shape, markdown emphasis, a table cell, and a line-wrapped mark, in
+- [x] `bash agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` exits 0.
+- [x] Fixtures cover the plain shape, markdown emphasis, a table cell, and a line-wrapped mark, in
       both the fires and does-not-fire directions, for each token brought under the advisory.
-- [ ] Fixtures cover token mentions (backticked and escaped) drawing no advisory, and an unclosed
+- [x] Fixtures cover token mentions (backticked and escaped) drawing no advisory, and an unclosed
       mention not hiding a malformed mark that follows it.
-- [ ] A report or plan whose only issue is an advisory exits 0 in default mode and 1 under
+- [x] A report or plan whose only issue is an advisory exits 0 in default mode and 1 under
       `--strict`, through the pre-existing branch and no new strictness logic.
-- [ ] `validate-artifact.sh` and `orchestrate-build-dispatch.sh` stay shellcheck clean per
+- [x] `validate-artifact.sh` and `orchestrate-build-dispatch.sh` stay shellcheck clean per
       `context/standards/shell-strict-mode.md`.
-- [ ] A dispatch file built where no prior artifact exists is byte-identical to one built before
+- [x] A dispatch file built where no prior artifact exists is byte-identical to one built before
       Phase 7.
-- [ ] The real-corpus flag count is reported as a number, twice: against the source-store copy at
+- [x] The real-corpus flag count is reported as a number, twice: against the source-store copy at
       Phase 2 and against the deployed copy at Phase 9.
-- [ ] `report-format.md`'s own "Internal consistency" reviewer prompt has been run against each
+- [x] `report-format.md`'s own "Internal consistency" reviewer prompt has been run against each
       amended section, with results recorded.
-- [ ] `plan-format.md` points rather than restating, confirmed by grep after every phase that
+- [x] `plan-format.md` points rather than restating, confirmed by grep after every phase that
       touches either file.
-- [ ] The six existing trigger shapes are unchanged in meaning.
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 after redeploy.
+- [x] The six existing trigger shapes are unchanged in meaning.
+- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 after redeploy. *(deviation: deferred to
+      the batch-level stage per this dispatch's own Batch Gate Deferral directive -- see Phase
+      9's own "Run the complete gate set" annotation for the full detail. `deploy-headless.sh`'s
+      internal fast-gate pass found the deploy landed but 3 pre-existing, confirmed-unrelated
+      findings outside this task's file_scope (eager-context-budget overage attributed to
+      another open task; a dead-command-recommendation finding in the memory extension; a
+      shellcheck finding in the lean extension) keep full `verify-deploy.sh` from exiting 0
+      right now. The scoped invocations covering this task's own touched files all pass.)*
 
 ## Artifacts & Outputs
 

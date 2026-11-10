@@ -205,9 +205,12 @@ done
 # (see that subsection's Reasoned Exclusions for why resolve-checking the named source and
 # missing-mark detection are both out of scope). CARRIED-UNVERIFIED is the original token
 # (Carried-Figure Discipline's own mark); CORPUS-UNVERIFIED is the Out-of-scope paragraph's new
-# token for a recommendation that asserts a measurable property of the live corpus -- a
-# different claim shape, sharing the same mechanical surface because both are "a literal token
-# must name a non-empty designator" checks with no semantic component.
+# token for a recommendation that asserts a measurable property of the live corpus;
+# COVERAGE-UNVERIFIED is the Enumeration-completeness paragraph's new disclosure mark for an
+# enumeration the author believes complete but did not cross-check with a second,
+# differently-shaped pattern. All three are different claim shapes, sharing the same mechanical
+# surface because each is "a literal token must name a non-empty designator" with no semantic
+# component.
 #
 # Newlines are flattened before matching because real marks in the corpus wrap across source
 # lines; a per-line `grep -E` would miss them. An occurrence immediately preceded by a backtick
@@ -219,13 +222,13 @@ done
 # consume text up to an arbitrarily distant later closing bracket, which would otherwise hide a
 # genuinely malformed mark that follows it.
 #
-# PROMOTION CRITERION (do not promote either condition, for either token, from log_warn to
+# PROMOTION CRITERION (do not promote either condition, for any token in CFD_TOKENS, from log_warn to
 # log_error as part of an unrelated change): promote only once a corpus-wide sweep confirms zero
 # advisories fire across every non-terminal report/plan artifact under specs/ -- the same bar
 # already applied to the Verification Tier and Files to modify advisories above. Promotion to
 # blocking is explicitly NOT part of this change.
 if [ "$artifact_type" = "report" ] || [ "$artifact_type" = "plan" ]; then
-  CFD_TOKENS=("CARRIED-UNVERIFIED" "CORPUS-UNVERIFIED")
+  CFD_TOKENS=("CARRIED-UNVERIFIED" "CORPUS-UNVERIFIED" "COVERAGE-UNVERIFIED")
   _cfd_window=500
   for _cfd_token in "${CFD_TOKENS[@]}"; do
     _cfd_counts=$(awk -v token="$_cfd_token" -v win="$_cfd_window" '
