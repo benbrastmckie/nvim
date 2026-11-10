@@ -1,15 +1,34 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 6,
-  "summary": "Wrote a 6-phase, 5.25-hour implementation plan for the sf1 virtual plugin, building bottom-up: snacks-backed window layer, then the dependency-free module core, then spec/loader/:Sf1 registration, then the single shared-territory keymap edit, then documentation, then a verification phase. Settled the three design choices research left open (float omits size and uses snacks float defaults; ai/README.md gains a sapience/ subdirectory entry; set_position mutates a live terminal's opts and hide/show-repositions rather than restarting the REPL) and added two newly-verified snacks mechanics the plan depends on. The plan's per-phase Files to modify blocks harvest to exactly the nine intended paths with neither shared/picker/ file present, which discharges the research recommendation to declare file_scope.",
-  "blockers": [],
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "Implemented the sf1 (Sapience terminal chat) Neovim integration as a lazy.nvim virtual plugin with a dependency-free sapience/ implementation directory, position/size configuration, :Sf1 toggle, <leader>af keymap, and an is_sf1 terminal-keymap branch. All six plan phases completed and committed individually. The full verify-deploy.sh gate set surfaced 5 pre-existing, unrelated failures (core-extension deploy staleness and repo-wide lint findings) that were attributed and logged, not repaired, per the plan's explicit scope.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/578_sf1_neovim_virtual_plugin_with_split_position/plans/02_sf1-virtual-plugin-split-position.md",
-      "summary": "Six-phase plan (5.25h) for the sf1 lazy.nvim virtual plugin: terminal backend, module core, spec/loader/:Sf1 registration, is_sf1 keymap branch plus <leader>af, documentation, verification."
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/sapience-plugin.lua",
+      "summary": "lazy.nvim virtual plugin spec and :Sf1 user command"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/sapience/init.lua",
+      "summary": "Public API: setup/open/close/toggle/set_position, opts validation, --project resolution"
+    },
+    {
+      "type": "implementation",
+      "path": "lua/neotex/plugins/ai/sapience/terminal.lua",
+      "summary": "Window backend: open/close/find/reposition over snacks.terminal"
+    },
+    {
+      "type": "summary",
+      "path": "specs/578_sf1_neovim_virtual_plugin_with_split_position/summaries/02_sf1-virtual-plugin-split-position-summary.md",
+      "summary": "Implementation summary with deviations, full-gate findings, and the manual acceptance checklist"
     }
   ],
-  "dispatch_seq": 2
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Hand the manual acceptance checklist in the summary to the user; the 5 pre-existing full-gate failures logged via issue-record.sh remain outstanding for a separate task."
 }

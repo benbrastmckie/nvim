@@ -1,7 +1,7 @@
 # Implementation Plan: Task #578
 
 - **Task**: 578 - Build in-config sf1 Neovim virtual plugin with configurable split position
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.25 hours
 - **Dependencies**: None
 - **Research Inputs**: `specs/578_sf1_neovim_virtual_plugin_with_split_position/reports/02_sf1-split-position-verification.md`, `specs/578_sf1_neovim_virtual_plugin_with_split_position/reports/01_sf1-nvim-plugin-seed.md`
