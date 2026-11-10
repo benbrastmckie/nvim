@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Add the deliberate-break residue detector",
+  "started_at": "2026-11-09T23:31:00Z",
+  "last_updated": "2026-11-09T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create lint-deliberate-break-residue.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh"]},
+    {"id": 2, "description": "Implement check A (while false && guard)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh"]},
+    {"id": 3, "description": "Implement check B (*.anchor-bak)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh"]},
+    {"id": 4, "description": "Emit [VIOLATION] lines", "status": "done", "files_touched": []},
+    {"id": 5, "description": "KNOWN LIMITATION section", "status": "done", "files_touched": []},
+    {"id": 6, "description": "advisory/gate-level header statement", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Register in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 8, "description": "Structural hazard description, no task refs/versioning", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

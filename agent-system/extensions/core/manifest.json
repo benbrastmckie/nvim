@@ -243,6 +243,7 @@
       "lint/lint-branch-gated-sections.sh",
       "lint/lint-contract-compliance.sh",
       "lint/lint-dead-command-recommendations.sh",
+      "lint/lint-deliberate-break-residue.sh",
       "lint/lint-directory-pathspec-boundary.sh",
       "lint/lint-extension-readme-table.sh",
       "lint/lint-gate-registry.sh",

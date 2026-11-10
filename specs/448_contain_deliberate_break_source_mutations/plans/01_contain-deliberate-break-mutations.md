@@ -284,38 +284,38 @@ code.
 
 ---
 
-### Phase 3: Add the deliberate-break residue detector [NOT STARTED]
+### Phase 3: Add the deliberate-break residue detector [COMPLETED]
 
 **Goal**: A source-store-scoped lint reports both unambiguous residue signals of the
 anti-pattern, following the established `scripts/lint/` family conventions, with its limitations
 stated rather than implied.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh`,
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh`, *(completed)*
       modelled structurally on `lint-scoped-commit-boundary.sh`: a header naming the anti-pattern
       and why it matters, an explicit `KNOWN LIMITATION` section, a `DETECTION MODEL` section,
       `--verbose` and `--help` flags, and exit codes 0 (clean) / 1 (findings) / 2
       (environment/usage error).
-- [ ] Implement check A: any line under `agent-system/extensions/` matching
+- [x] Implement check A: any line under `agent-system/extensions/` matching *(completed)*
       `^[[:space:]]*while false[[:space:]]*&&` in a `*.sh` file is a finding. Use the anchored
       start deliberately -- it is what separates a real bash guard from a quoted `sed`
       replacement string containing the same phrase, with no path exclusion.
-- [ ] Implement check B: any `*.anchor-bak` file under `agent-system/extensions/` is a finding
+- [x] Implement check B: any `*.anchor-bak` file under `agent-system/extensions/` is a finding *(completed)*
       (a surviving backup implies a crashed or incorrect restore step).
-- [ ] Emit each finding as a `[VIOLATION]` line so
+- [x] Emit each finding as a `[VIOLATION]` line so *(completed)*
       `verify_deploy_extract_verdict_lines '[VIOLATION]' ...` can harvest it, matching gate 27's
       consumer shape.
-- [ ] State in the `KNOWN LIMITATION` section that the check is regex-only and line-oriented: it
+- [x] State in the `KNOWN LIMITATION` section that the check is regex-only and line-oriented: it *(completed)*
       cannot see an indirected mutation (a pattern held in a variable, or assembled across
       lines), and a clean run means "the known bad shapes are not present", never "no source
       mutation exists".
-- [ ] State in the header that the detector is advisory/gate-level by construction -- it runs as
+- [x] State in the header that the detector is advisory/gate-level by construction -- it runs as *(completed)*
       part of an explicit gate pass, never as a write-time block, because a suite legitimately
       holds such a mutation for the duration of one fixture.
-- [ ] Register the script in `agent-system/extensions/core/manifest.json`'s `provides.scripts`
+- [x] Register the script in `agent-system/extensions/core/manifest.json`'s `provides.scripts` *(completed)*
       array as `lint/lint-deliberate-break-residue.sh`, subdirectory-qualified, matching the
       other `lint/lint-*.sh` entries.
-- [ ] Describe the motivating hazard structurally in the header, with no task number and no
+- [x] Describe the motivating hazard structurally in the header, with no task number and no *(completed)*
       record-versioning phrasing.
 
 **Timing**: 1.5 hours
