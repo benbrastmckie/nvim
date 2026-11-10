@@ -415,52 +415,52 @@ taken, use the next free contiguous id and adjust the function name to match.
 
 ---
 
-### Phase 5: Give the detector its own suite [NOT STARTED]
+### Phase 5: Give the detector its own suite [COMPLETED]
 
 **Goal**: Both detector directions are pinned mechanically, including the self-exclusion
 property, and the new suite itself follows the safe-copy pattern it exists to protect.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-deliberate-break-residue.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-deliberate-break-residue.sh` *(completed)*
       following the standard's required structural model: `set -uo pipefail`, `SCRIPT_DIR`,
       `source "$SCRIPT_DIR/../lib/common.sh"`, `common_test_repo_root`,
       `common_test_workdir_init` called bare, `common_test_pass`/`_fail`/`_info`, and the
       conventional `Passed:`/`Failed:` summary with exit 0/1. Do not define local
       `pass()`/`fail()`/`info()`.
-- [ ] Resolve the lint under test through `common_test_resolve_subject` with an explicit mode and
+- [x] Resolve the lint under test through `common_test_resolve_subject` with an explicit mode and *(completed)*
       pair it with `common_test_declare_subject`, per the mandatory subject-resolution
       declaration enforced by gate 27. Do not hand-roll a candidate lookup or an inline
       `*CANDIDATES*=()` array.
-- [ ] Case 1 (positive, check A): build a scratch tree under `$WORKDIR` mirroring
+- [x] Case 1 (positive, check A): build a scratch tree under `$WORKDIR` mirroring *(completed)*
       `agent-system/extensions/...`, plant a file containing a line that begins with the
       `while false &&` guard, run the lint against that scratch root, assert exit 1 and a
       `[VIOLATION]` line naming the planted file.
-- [ ] Construct that planted line so no line of this suite's own source begins (after leading
+- [x] Construct that planted line so no line of this suite's own source begins (after leading *(completed)*
       whitespace) with `while false &&` -- assemble it from two pieces at write time, so the
       detector reports nothing against this suite file itself. This is the explicit solution to
       the self-exclusion problem; a path exclusion is not acceptable, since it would also blind
       the detector to a real mutation planted in a test file.
-- [ ] Case 2 (positive, check B): plant an empty `*.anchor-bak` file in the scratch tree, run the
+- [x] Case 2 (positive, check B): plant an empty `*.anchor-bak` file in the scratch tree, run the *(completed)*
       lint, assert exit 1 and a `[VIOLATION]` line naming it.
-- [ ] Case 3 (negative control, self-exclusion): run the lint against the real source store and
+- [x] Case 3 (negative control, self-exclusion): run the lint against the real source store and *(completed)*
       assert exit 0 -- in particular that it does NOT fire on
       `test-orchestrate-cycle-postflight.sh`'s own `sed` replacement string, nor on this new
       suite's own fixture-construction code.
-- [ ] Case 4 (clean-tree control): run the lint against a scratch tree containing a `.sh` file
+- [x] Case 4 (clean-tree control): run the lint against a scratch tree containing a `.sh` file *(completed)*
       whose text includes `while false &&` only inside a quoted string on a line that starts with
       something else, and assert exit 0.
-- [ ] Never write to `$CORE_DIR` or any real source-store path from this suite: every fixture is
+- [x] Never write to `$CORE_DIR` or any real source-store path from this suite: every fixture is *(completed)*
       a scratch copy under `$WORKDIR`, matching the precedent in `test-git-commit-scoped.sh` and
       `test-lint-deploy-caller-wrap.sh`.
-- [ ] Register the suite in `agent-system/extensions/core/manifest.json`'s `provides.scripts` as
+- [x] Register the suite in `agent-system/extensions/core/manifest.json`'s `provides.scripts` as *(completed)*
       `tests/test-lint-deliberate-break-residue.sh`.
-- [ ] Add a row to `agent-system/extensions/core/scripts/tests/suite-classification.data`:
+- [x] Add a row to `agent-system/extensions/core/scripts/tests/suite-classification.data`: *(completed)*
       `test-lint-deliberate-break-residue.sh`, class `unit`, reason `-`. Confirm the suite does
       not reference `deploy-headless.sh`, `verify-deploy.sh`, or `run-all.sh` by literal basename
       anywhere in its text (including comments and fixture strings) -- if it does, the correct
       remedy is to classify it `integration` with a stated `invokes:` reason, never to suppress
       the finding.
-- [ ] Confirm no `suite-selection-lib.sh` or `suite-cost-hints.txt` edit is needed: stratum (a)
+- [x] Confirm no `suite-selection-lib.sh` or `suite-cost-hints.txt` edit is needed: stratum (a) *(completed)*
       basename pairing maps `lint-deliberate-break-residue.sh` to
       `test-lint-deliberate-break-residue.sh` automatically, and the cost-hints file is advisory
       and optional.

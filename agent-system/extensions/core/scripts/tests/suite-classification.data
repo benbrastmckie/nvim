@@ -114,6 +114,7 @@ test-lint-anchor-pointer-collapse.sh	unit	-
 test-lint-branch-gated-sections.sh	integration	invokes:verify-deploy.sh
 test-lint-corpus-scan-lib.sh	unit	-
 test-lint-dead-command-recommendations.sh	unit	-
+test-lint-deliberate-break-residue.sh	unit	-
 test-lint-deploy-caller-wrap.sh	integration	invokes:deploy-headless.sh
 test-lint-directory-pathspec-boundary.sh	unit	-
 test-lint-extension-readme-table.sh	unit	-

@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Give the detector its own suite",
+  "started_at": "2026-11-10T00:11:00Z",
+  "last_updated": "2026-11-10T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-lint-deliberate-break-residue.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-deliberate-break-residue.sh"]},
+    {"id": 2, "description": "Declared subject resolution", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Case 1 positive check A", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Self-exclusion-safe planted line", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Case 2 positive check B", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Case 3 negative control", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Case 4 clean-tree control", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Never write to CORE_DIR", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Register suite in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 10, "description": "Add classification row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data"]},
+    {"id": 11, "description": "Confirm no suite-selection-lib edit needed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
