@@ -1445,10 +1445,17 @@ task), confirms candidate findings against a second fresh capture to drop flaky 
 attributes each confirmed finding to the task(s) whose own accumulated `modified_files` plausibly
 caused it — a finding matching no task's files is recorded as a batch-level unattributed finding
 and stays blocking. Its companion, Mechanism A, is the `## Batch Gate Deferral` directive
-`orchestrate-build-dispatch.sh` composes onto a final implement-phase dispatch when
-`orchestrate-cycle-plan.sh`'s `build_args` composition sees a genuine multi-task batch
-(`.task_numbers | length > 1`); that directive narrows the dispatch's own in-dispatch obligation
-to a scoped tier, deferring the complete gate set's discharge to this stage.
+`orchestrate-build-dispatch.sh` composes onto EVERY `implement`-phase dispatch — not only a
+plan's final phase — whenever `orchestrate-cycle-plan.sh`'s `build_args` composition sees a
+genuine multi-task batch (`.task_numbers | length > 1`); the composer's own gate is on phase and
+batch size alone. The final-phase-only RESTRICTION on what the directive actually narrows is the
+consuming implementation agent's own obligation, applied at Stage 4 of
+`general-implementation-agent.md`: only a plan's declared-`full` final phase discharges against
+the directive's scoped tier, and every earlier phase's own (typically narrower) verification tier
+runs exactly as declared, deferral or not. Together the two halves mean: the flag reaches every
+implement-phase dispatch of the batch, but only the one dispatch whose phase is the plan's final,
+`full`-tiered phase actually narrows its in-dispatch obligation to a scoped tier, deferring the
+complete gate set's discharge to this stage.
 
 **Single-task and bare-`/implement` invariance, stated once here for the authoritative Move 4/5
 boundary reference**: Mechanism A's gate (`.task_numbers | length > 1`) means a single-task

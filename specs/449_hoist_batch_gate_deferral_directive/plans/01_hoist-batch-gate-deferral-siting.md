@@ -328,33 +328,40 @@ further site found is fixed in this same phase and the count recorded.
 
 ---
 
-### Phase 4: Record the decision in the durable contracts [NOT STARTED]
+### Phase 4: Record the decision in the durable contracts [COMPLETED]
 
 **Goal**: the chosen mechanism, the two rejected options, the directive's siting, and the
 unmappable-criterion rule are readable from the contracts rather than only from this plan.
 
 **Tasks**:
-- [ ] In `context/contracts/batch-gate-stage.md`, record Mechanism A's siting (emitted
+- [x] In `context/contracts/batch-gate-stage.md`, record Mechanism A's siting (emitted
       immediately after `## Description`, ahead of the plan body it constrains) and why: a reader
       working top-down must meet the constraint before the work it constrains. Record the two
       rejected alternatives on their own merits — a restatement inside `## Phase Mission` cannot
       reach the ordinary dispatch shape, since that section is emitted only for a per-phase
       hard-mode dispatch; a batch-aware aggregator cannot be made fail-open today because the
       invocation-scoped batch-state file has no cleanup path and its mere presence is therefore
-      not evidence of a live batch.
-- [ ] In `context/formats/plan-format.md`'s "Batch-aware deferral" subsection, add the
+      not evidence of a live batch. *(completed: new "## Mechanism A's Dispatch-Time Siting"
+      section appended)*
+- [x] In `context/formats/plan-format.md`'s "Batch-aware deferral" subsection, add the
       unmappable-criterion rule: a declared criterion naming a check that neither narrowing
       invocation can express is discharged by running that named check directly, scoped where the
-      check supports scoping, and is never waived by the override.
-- [ ] In `docs/architecture/orchestrate-state-machine.md`'s batch-gate-stage description, correct
+      check supports scoping, and is never waived by the override. *(completed)*
+- [x] In `docs/architecture/orchestrate-state-machine.md`'s batch-gate-stage description, correct
       the claim that Mechanism A is composed onto "a final implement-phase dispatch": the
       composer sets the flag for every `implement`-phase dispatch of a genuine multi-task batch,
       and the final-phase-only restriction is the consuming agent's own obligation. State both
-      halves so the division of responsibility is unambiguous.
-- [ ] Confirm no edit renames or re-cases the heading string, and that no added prose implies the
-      deferral may skip verification.
-- [ ] Confirm no task-number reference and no record-versioning language lands in any edited
-      file (these are `agent-system/**` deliverables).
+      halves so the division of responsibility is unambiguous. *(completed: confirmed against
+      orchestrate-cycle-plan.sh's actual build_args gate, `[ "$g" = "implement" ] &&
+      [ "$_bgd_task_count" -gt 1 ]`, with no per-phase-number condition)*
+- [x] Confirm no edit renames or re-cases the heading string, and that no added prose implies the
+      deferral may skip verification. *(completed: grep -c confirms all 5 consumers still match
+      the exact literal; both new prose sections state the full gate set is deferred, never
+      forgiven)*
+- [x] Confirm no task-number reference and no record-versioning language lands in any edited
+      file (these are `agent-system/**` deliverables). *(completed: check-task-references.sh and
+      check-record-versioning.sh both exit 0 clean on all three edited files; one advisory
+      "previously relied on" phrase this phase itself introduced was rephrased to avoid it)*
 
 **Timing**: 0.75 hours
 

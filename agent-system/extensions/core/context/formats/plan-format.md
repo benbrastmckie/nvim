@@ -494,6 +494,17 @@ the once-per-invocation batch-level stage (`context/contracts/batch-gate-stage.m
 forgiven. A phase closing under the override records, in its own verification notes, that the
 full set was deferred to the batch stage rather than independently run.
 
+**Unmappable criterion**: a phase's own declared verification criterion sometimes names a
+repository-specific check that neither narrowing invocation above can express — no suite
+basename the `run-all.sh --only` form resolves, no gate number the `verify-deploy.sh
+--only-gate` form resolves. The override's narrowing does not reach a check it cannot name. In
+that case the implementer runs the named check directly instead of either narrowing invocation
+— scoped to this phase's own touched files where the check itself supports scoping — and
+records that direct run as the scoped discharge. An unmappable criterion is never waived,
+dropped, or treated as satisfied by a narrowing that does not actually reach it; the override
+narrows which invocation covers a phase's verification, it never shrinks the set of checks a
+phase's own criteria require.
+
 This is not a fifth tier and not a weakening of the vocabulary above — exactly parallel to the
 "`--skip-slow` is never a tier" ruling two paragraphs above: narrowing *which dispatch* runs the
 full set, for cost and contention reasons under concurrency, is never read as equivalent to

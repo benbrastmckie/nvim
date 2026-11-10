@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Record the decision in the durable contracts",
+  "started_at": "2026-11-10T08:53:00Z",
+  "last_updated": "2026-11-10T09:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record Mechanism A siting and rejected alternatives in batch-gate-stage.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]},
+    {"id": 2, "description": "Add unmappable-criterion rule to plan-format.md's Batch-aware deferral subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "Correct which-dispatches-carry-Mechanism-A claim in orchestrate-state-machine.md", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 4, "description": "Confirm no heading rename, no skip-verification implication", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm no task-number reference and no record-versioning language in edited files", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "check-task-references.sh and check-record-versioning.sh both exit 0 clean on all three edited files (one advisory record-versioning hit this phase itself introduced -- 'previously relied on' -- was rephrased and re-confirmed clean). verify-deploy.sh --skip-slow --only-gate 3,4: Gate 3 (doc-lint) currently FAILs for reasons unrelated to content correctness -- pending-deploy drift on Phase 1-3's edited scripts and stale index-entries.json line counts for the two markdown files this phase edited; generate-context-line-counts.sh --write (the mechanical remedy) refuses to run pre-deploy by design. Recorded via issue-record.sh; deferred to Phase 5's post-redeploy re-check, not a Phase 4 blocker. Gate 4 (task-reference lint) PASSES cleanly."
+}

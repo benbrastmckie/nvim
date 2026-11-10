@@ -164,3 +164,39 @@ issue-log entries — a verify-deploy finding is not an issue-log entry and clas
 of three unrelated channels would strain that design's own exactly-one-channel rule for no
 benefit. This stage's job is strictly narrower (run once, attribute, record, render) and ends
 before Move 5 begins, by design.
+
+## Mechanism A's Dispatch-Time Siting
+
+Mechanism A's `## Batch Gate Deferral` section is emitted immediately after `## Description` in
+the composed dispatch file, ahead of the entire `## Artifact Round` / `## Plan` / `## Continuation`
+/ `## Phase Mission` group. The reason is readability order, not mechanism: a dispatched agent
+reads a composed dispatch file top-down, and the plan body (typically the single largest section
+in the file) together with the phase mission both describe the WORK; the directive constrains HOW
+that work's own verification step is run. An agent that reaches the plan and the phase mission
+before reaching the constraint on their verification can — and, in the motivating incident, did —
+start the phase's full verification run before ever reading the directive that would have scoped
+it. Siting the directive ahead of the sections it constrains removes that ordering hazard
+structurally, rather than relying on a careful top-to-bottom read to happen to reach it in time.
+
+Emission remains confined to `implement`-phase dispatches via an explicit guard conjunction
+(`[ "$phase" = "implement" ] && [ "$batch_gate_deferral_flag" = "true" ]`), independent of where
+in the composer's output stream the section is written. The heading string,
+`## Batch Gate Deferral`, and the final-phase-only consumption scoping documented above are both
+unchanged by this siting decision.
+
+**Two alternatives were considered and rejected**:
+
+- **Restating the directive inside `## Phase Mission`.** Rejected because `## Phase Mission` is
+  emitted only for hard mode's per-phase dispatch (gated on `--phase-number` being set) — it does
+  not exist in the ordinary, non-hard-mode dispatch shape, which is exactly the shape the
+  motivating incident occurred under. A restatement there could not have reached the dispatch that
+  actually needed it.
+- **Making the verification aggregator itself batch-aware** (having `verify-deploy.sh`, or a
+  dispatch-side wrapper, detect an active multi-task batch and auto-narrow or refuse). This is the
+  only alternative that would survive a reader who never reads the dispatch file's directive
+  section at all, and so is the most robust in principle — but it requires a reliable,
+  identity-scoped signal that a batch is currently live, and the nearest such signal (an
+  `.orchestrator-multi-state-*.json` file's mere presence) has no cleanup path and so cannot be
+  trusted as evidence of liveness without risking a false-positive narrowing on a genuinely
+  standalone run. Rejected as not buildable fail-open today; left for a future record if a
+  reliable liveness signal is designed.
