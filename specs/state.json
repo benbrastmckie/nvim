@@ -4369,7 +4369,7 @@
     {
       "project_number": 448,
       "project_name": "contain_deliberate_break_source_mutations",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Contain the regression-anchor source-store mutation so a concurrent session cannot observe or inherit it",
       "topic": "core-agent-system",
@@ -4388,9 +4388,17 @@
         "agent-system/extensions/core/scripts/lint/",
         "agent-system/extensions/core/scripts/tests/"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/448_contain_deliberate_break_source_mutations/reports/01_contain-deliberate-break-mutations.md",
+          "type": "report",
+          "summary": "Confirms the single unsafe source-store mutation site (test-orchestrate-cycle-postflight.sh's regression-anchor check), recommends a reorder fix (mutate the already-copied $SUT, not $CORE_DIR, eliminating both the EXIT-trap and shared-tree-exposure holes with no new harness infrastructure), finds two existing safe-pattern precedents in the same corpus, audits scripts/tests/ for other sites (none found), verifies an anchored-regex self-exclusion for a paired mechanical detector, and documents the gate-registration conventions (verify-deploy.sh gate28_run + gate-registry.data row) for that detector."
+        }
+      ],
       "created": "2026-10-18T17:24:48Z",
-      "last_updated": "2026-11-03T23:05:41Z"
+      "last_updated": "2026-11-10T06:38:04Z",
+      "session_id": "sess_1794272256_212466",
+      "next_artifact_number": 2
     },
     {
       "project_number": 449,
