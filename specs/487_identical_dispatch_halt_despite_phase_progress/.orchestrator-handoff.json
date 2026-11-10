@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase plan implementing the identical-dispatch guard fix as an independent-signal streak freeze modelled on the existing deploy_pending freeze: a per-task persisted plan-file completed-phase count (via lib/phase-heading-patterns.sh's DONE regex) freezes the streak when the hash matches but progress advanced. Re-derived every root-cause line citation from the description (all had drifted; corrected in the plan's Premise Re-Validation table) and confirmed both flagged premise lines. Departed from the research report's layered recommendation: emitting phase progress into the hashed dispatch body would share the freeze's exact gate predicate, making the freeze branch dead in base mode while leaving correctness resting on a body line staying out of the strip pattern, and would additionally break an existing deliberate pin that asserts the implement dispatch body is insensitive to plan-file content. Plan validates clean (0 warnings) with measured per-phase suite-selection narrowings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/487_identical_dispatch_halt_despite_phase_progress/plans/01_phase-progress-identical-dispatch-guard.md",
+      "summary": "4-phase plan: persisted plan-file progress signal and streak freeze, hash-normalizer header correction, four-arm regression group, redeploy plus full gate set."
+    }
+  ],
+  "dispatch_seq": 30
+}
