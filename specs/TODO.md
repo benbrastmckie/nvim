@@ -75,7 +75,7 @@ next_project_number: 578
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
 496 [NOT STARTED] — Add per-repo storage and injection to the sapience extension
-  └─ 498 [NOT STARTED] — Replace the email preference harvest tally substrate
+  └─ 498 [HOLD] — Replace the email preference harvest tally substrate
     └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
@@ -6044,7 +6044,8 @@ Note also that the vault data was never tracked in the extension's own installed
 ---
 
 ### 498. Replace the email preference harvest tally substrate
-- **Status**: [NOT STARTED]
+- **Status**: [HOLD]
+- **Held**: 2026-11-10
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 496

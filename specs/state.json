@@ -23355,7 +23355,7 @@
     },
     {
       "project_name": "replace_email_preference_tally_substrate",
-      "status": "not_started",
+      "status": "hold",
       "task_type": "meta",
       "title": "Replace the email preference harvest tally substrate",
       "description": "Port `skill-email-cleanup`'s Stage 7 sender/domain preference harvest off the local knowledge vault, so the memory extension can be retired without breaking email triage. This is the hardest break in the migration and it BLOCKS retirement.\n\nSOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/email/**`, never a deployed `.claude/**` tree, which is a gitignored disposable deploy artifact regenerated from the source store (see `rules/source-store-deploy-boundary.md`). Resolve `source_dir` from `<project-root>/.claude-extensions.json` and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via `deploy-headless.sh`.\n\n== WHAT CURRENTLY DEPENDS ON THE LOCAL VAULT ==\n\nStage 7 of `skill-email-cleanup` is live, executable prose, not a design sketch. It calls `email-preference-harvest.sh dedup .memory/memory-index.json \"email/preferences/${ACCOUNT}/${KEY}\"` to decide CREATE vs EXTEND vs UPDATE, then applies tally arithmetic via that script's `tally-op` subcommand, gates on its `threshold` subcommand, and resolves mixed senders via `dominant`. It depends on four things the local store provides and the hosted store does not:\n\n1. NAMESPACE-SCOPED TALLY ARITHMETIC -- CREATE once, then UPDATE/EXTEND an accumulating per-sender action count, never one record per message.\n2. EXACT-KEY DEDUP FOR RESERVED NAMESPACES -- an exact hit/miss lookup on the key `email/preferences/{account}/{key}`, not a fuzzy or semantic match.\n3. ARCHIVE-SCOPE TALLY ISOLATION -- an archive-scope pass records its delta in a separate sub-section and must never merge into the inbox-scope tally.\n4. A READABLE INDEX -- the ground-truth tally is read back from the record body before each update.\n\nThe hosted store offers none of these. Its write tool is a freeform note with no tally arithmetic, no exact-key namespace dedup, and no local index to read back; and as established in the sapience per-repo storage task, there is no delete API, so a mis-accumulated tally cannot be removed.\n\n== WHAT THIS TASK MUST SETTLE ==\n\nThe ruling is deliberately NOT pre-made and is the first thing to decide at plan time: whether the tally substrate becomes (a) a small local state file owned by the email extension itself, with the hosted store receiving only the settled preference as a durable note, or (b) a fully hosted representation read back through repo-filtered search. Argue it both ways and record the verdict with its reason.\n\nConsiderations for (a): tally accumulation is high-frequency, low-value intermediate state -- exactly what should NOT go to a store with permanent, undeletable, unreviewed writes. The hosted store's noise gate would also judge most intermediate tally updates operational chatter. Considerations for (b): a second local store is the substrate the migration exists to remove, and reintroducing one under a different name needs justifying.\n\nWhichever is chosen, preserve: the exact-key (not fuzzy) dedup semantics for the reserved namespace, archive-scope isolation as a first-class separate accumulator, the evidentiary threshold gate (uniform-batch this round, or rolling N>=3 at >=80% against the post-update tally), the mixed-sender branch that splits or declines rather than averaging into a false scalar action, and the single consolidated never-silent approval gate.\n\n== CONSTRAINTS ==\n\n- Stage 7 must keep firing ONLY after Stage 6, reading ONLY the Stage 6 executed diff -- never the Stage 2 candidate manifest and never an approved-but-not-yet-executed manifest. The migration must not relax this.\n- `.memory/` is READ-ONLY for the duration of the whole migration. This task may read the existing tallies to carry them forward; it must not write to them.\n- The deterministic subcommands of `email-preference-harvest.sh` (`normalize`, `freemail`, `identity`, `tally-op`, `dominant`, `threshold`) are pure and should be REUSED unchanged wherever possible. Only `dedup`'s substrate changes. Do not fork the tally arithmetic.\n\n== VERIFICATION ==\n\n- A uniform-batch pass over a fixture produces a CREATE, and a second pass over the same sender produces an EXTEND or UPDATE with a correctly accumulated count -- never a second parallel record.\n- An archive-scope pass's delta lands in the archive accumulator and does not perturb the inbox tally.\n- A mixed-sender group with no uniform majority either splits by token into distinct keys or declines to aggregate, and never averages.\n- A sender below both evidentiary bars is tallied but NOT presented as a strong preference.\n- The existing tallies in `.memory/` are carried forward without loss, and `.memory/` is not written to.",
@@ -23370,7 +23370,7 @@
         "agent-system/extensions/email/context/project/email/design/email-to-memory-preferences.md"
       ],
       "created": "2026-11-05T19:59:29Z",
-      "last_updated": "2026-11-05T19:59:29Z",
+      "last_updated": "2026-11-10T15:54:10Z",
       "artifacts": [],
       "project_number": 498,
       "audit_verdict": {
@@ -23832,7 +23832,11 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "session_id": "sess_1794272256_212466",
+      "hold_reason": "Operator not ready to integrate email into Sapience; email preference-harvest port paused pending that decision. Lift with: update-task-status.sh preflight 498 unhold <session_id>",
+      "held_at": "2026-11-10",
+      "prior_status": "not_started"
     },
     {
       "project_name": "retire_memory_extension",
