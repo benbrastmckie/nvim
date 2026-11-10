@@ -4474,7 +4474,7 @@
     {
       "project_number": 450,
       "project_name": "validate_settled_route_before_dispatch",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Require a settled user-decision route to name the obligation it discharges, and check that claim before a dispatch spends a cycle on it",
       "topic": "orchestrator",
@@ -4518,7 +4518,7 @@
         }
       ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-10T08:49:35Z",
+      "last_updated": "2026-11-10T08:50:12Z",
       "session_id": "sess_1794272256_212466",
       "next_artifact_number": 2
     },

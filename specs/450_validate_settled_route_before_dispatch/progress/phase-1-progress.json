@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Make the Obligation Recordable — Writer, Schema, Inventory, Writer Tests",
+  "started_at": "2026-11-10T00:50:00Z",
+  "last_updated": "2026-11-10T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive current line numbers in orchestrate-record-decision.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add optional --obligation argument to the parse case block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
+    {"id": 3, "description": "Extend record build with conditional obligation merge (four combinations)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
+    {"id": 4, "description": "Verify write mechanics untouched (flock, atomic-mv, validation)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Update script header usage/help text for --obligation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
+    {"id": 6, "description": "Update handoff-schema.md Decisions File Schema section with obligation field", "status": "not_started", "files_touched": []},
+    {"id": 7, "description": "Update utility-scripts-inventory.md writer usage line", "status": "not_started", "files_touched": []},
+    {"id": 8, "description": "Extend test-orchestrate-record-decision.sh with five new cases", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

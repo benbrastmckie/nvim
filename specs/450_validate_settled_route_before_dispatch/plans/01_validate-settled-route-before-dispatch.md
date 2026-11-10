@@ -1,7 +1,7 @@
 # Implementation Plan: Make a Settled Route's Obligation Recordable, Required, and Propagated
 
 - **Task**: 450 - Require a settled user-decision route to name the obligation it discharges, and check that claim before a dispatch spends a cycle on it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None blocking. Territory edges declared in the task description: 447 (semantic — reconciled during research, see Overview), 449/407/443/274/275/378/328/435/448 (serialization-only; 328/435/448 operator-liftable)
 - **Research Inputs**: `specs/450_validate_settled_route_before_dispatch/reports/01_validate-settled-route-before-dispatch.md`
@@ -170,7 +170,7 @@ modified by any phase.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Make the Obligation Recordable — Writer, Schema, Inventory, Writer Tests [NOT STARTED]
+### Phase 1: Make the Obligation Recordable — Writer, Schema, Inventory, Writer Tests [IN PROGRESS]
 
 **Goal**: An optional `obligation` field exists on `.decisions.json` entries, written only by the
 single sanctioned writer, documented in the one authoritative schema section and in the writer's

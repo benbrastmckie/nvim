@@ -111,7 +111,7 @@ next_project_number: 578
 
 ### Orchestrator
 
-450 [PLANNED] — Require a settled user-decision route to name the obligation...
+450 [IMPLEMENTING] — Require a settled user-decision route to name the obligation...
   └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
@@ -8104,7 +8104,7 @@ rules/plan-compliance.md is added to file_scope: its "Mechanical check" paragrap
 ---
 
 ### 450. Require a settled user-decision route to name the obligation it discharges, and check that claim before a dispatch spends a cycle on it
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 274, Task 275, Task 328, Task 360, Task 378, Task 407, Task 420, Task 435, Task 443, Task 448, Task 449
