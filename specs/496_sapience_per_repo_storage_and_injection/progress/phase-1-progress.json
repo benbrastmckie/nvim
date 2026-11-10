@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Author sapience-retrieve.sh",
+  "started_at": "2026-11-10T00:00:00Z",
+  "last_updated": "2026-11-10T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create sapience-retrieve.sh with standard bootstrap, argument contract, keyword extraction (copied from memory-retrieve.sh), repo-slug derivation, host/token resolution, curl request with timeout bounds, token-budget selection, and <memory-context> envelope emission; shellcheck clean",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

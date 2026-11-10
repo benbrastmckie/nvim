@@ -74,7 +74,7 @@ next_project_number: 578
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 483 [PLANNED] — Document that an extension lifecycle hook can never fire...
-496 [PLANNED] — Add per-repo storage and injection to the sapience extension
+496 [IMPLEMENTING] — Add per-repo storage and injection to the sapience extension
   └─ 498 [HOLD] — Replace the email preference harvest tally substrate
     └─ 499 [NOT STARTED] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
@@ -6148,7 +6148,7 @@ Three further `duplicate-of-open` verdicts (459, 451, 360) were ruled NOT duplic
 ---
 
 ### 496. Add per-repo storage and injection to the sapience extension
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 360, Task 449, Task 450, Task 487, Task 488

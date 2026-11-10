@@ -1,7 +1,7 @@
 # Implementation Plan: Task #496
 
 - **Task**: 496 - Add per-repo storage and injection to the sapience extension
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: 360, 449, 450, 487, 488 (all `completed` in `specs/state.json` — edges satisfied, retained as shared-territory record)
 - **Research Inputs**: specs/496_sapience_per_repo_storage_and_injection/reports/01_sapience-per-repo-storage-injection.md
@@ -205,49 +205,49 @@ deployed tree. Neither may actually run concurrently with any other phase, so Wa
 
 ---
 
-### Phase 1: Author `sapience-retrieve.sh` [NOT STARTED]
+### Phase 1: Author `sapience-retrieve.sh` [IN PROGRESS]
 
 **Goal**: A standalone, shellcheck-clean retrieval script that queries `/v1/search` filtered to
 this repo's tag and emits the existing `<memory-context>` envelope under the existing budget.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/scripts/` and write `sapience-retrieve.sh` with
+- [x] Create `agent-system/extensions/sapience/scripts/` and write `sapience-retrieve.sh` with *(completed)*
       the bootstrap every sibling in `.claude/scripts/` uses: `SCRIPT_DIR` resolution,
       `source "${SCRIPT_DIR}/lib/common.sh"`, `PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"`,
       `. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1`, and `set -euo pipefail`.
-- [ ] Mirror `memory-retrieve.sh`'s argument contract exactly: `<description> <task_type>
+- [x] Mirror `memory-retrieve.sh`'s argument contract exactly: `<description> <task_type> *(completed)*
       [focus_prompt]`, exiting 1 when either of the first two is empty — so the Phase 5 swap
       changes only the script path, never the argument list or count.
-- [ ] Declare `TOKEN_BUDGET=2000` and `MAX_ENTRIES=5` as named constants, as the existing script
+- [x] Declare `TOKEN_BUDGET=2000` and `MAX_ENTRIES=5` as named constants, as the existing script *(completed)*
       does, and send `limit=5` on the request so the entry cap is satisfied server-side.
-- [ ] Reuse `memory-retrieve.sh`'s keyword-extraction stage verbatim (its lines 58-68: the
+- [x] Reuse `memory-retrieve.sh`'s keyword-extraction stage verbatim (its lines 58-68: the *(completed)*
       `STOP_WORDS` alternation, `tr '[:upper:]' '[:lower:]'`, `tr -cs '[:alpha:]' '\n'`, the
       stop-word `grep -v -E`, `awk 'length > 3'`, `sort -u`, `head -10`), copied rather than
       reinvented. Exit 1 when the extraction yields nothing.
-- [ ] Derive the repo slug as `basename "$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel)"`,
+- [x] Derive the repo slug as `basename "$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel)"`, *(completed)*
       exiting 1 if that fails for any reason, so the script works unmodified in every repo the
       system deploys into.
-- [ ] Resolve host and token with `mcp.py`'s own precedence: `SAPIENCE_HOST` env, else
+- [x] Resolve host and token with `mcp.py`'s own precedence: `SAPIENCE_HOST` env, else *(completed)*
       `~/.sapience/config.json`'s `.host`, else the `https://app.spnc.ai` literal; `SAPIENCE_TOKEN`
       env, else that file's `.token`. Exit 1 when no token resolves. Never echo, log, `set -x`,
       or write the token.
-- [ ] Issue `curl -sS --connect-timeout 3 --max-time 8 -H 'X-Sapience-Client: …'` against
+- [x] Issue `curl -sS --connect-timeout 3 --max-time 8 -H 'X-Sapience-Client: …'` against *(completed)*
       `${HOST}/v1/search?q=<urlencoded keywords>&source=%5Brepo%3A<slug>%5D&limit=5&token=<token>`,
       URL-encoding the filter's brackets rather than relying on the bracket-free substring form.
-- [ ] Synthesize a title and body per hit from the returned KO's `subject`/`predicate`/
+- [x] Synthesize a title and body per hit from the returned KO's `subject`/`predicate`/ *(completed)*
       `object_value` fields (there is no local file per hit), estimate each hit's token cost with
       the same rough heuristic the existing script applies, and greedily select within
       `TOKEN_BUDGET` in the same shape as that script's reduce-based selection.
-- [ ] Emit the envelope with real newlines and `printf '%s'` (never `printf '%b'`, which would
+- [x] Emit the envelope with real newlines and `printf '%s'` (never `printf '%b'`, which would *(completed)*
       reinterpret backslashes in server-sourced text): the literal `<memory-context>` open tag,
       the same one-line preamble sentence, one `### <title> (relevance: <score>)` heading per hit
       followed by its body and a blank line, then `</memory-context>`.
-- [ ] Omit any retrieval-metadata update stage — there is no server-side counterpart to
+- [x] Omit any retrieval-metadata update stage — there is no server-side counterpart to *(completed)*
       `memory-retrieve.sh`'s local `retrieval_count`/`last_retrieved` write.
-- [ ] Honour the exit-code contract: exit 1 with empty stdout on every failure or empty-result
+- [x] Honour the exit-code contract: exit 1 with empty stdout on every failure or empty-result *(completed)*
       path (no token, no slug, no keywords, curl non-zero, non-JSON body, zero hits, zero hits
       surviving the budget); exit 0 with the envelope otherwise.
-- [ ] Run `shellcheck` on the new file and fix every finding.
+- [x] Run `shellcheck` on the new file and fix every finding. *(completed)*
 
 **Timing**: 1.5 hours
 
