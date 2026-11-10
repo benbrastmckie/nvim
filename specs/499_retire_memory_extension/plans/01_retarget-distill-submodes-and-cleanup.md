@@ -233,7 +233,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Migrate the extension Stage 4a retrieval call sites [IN PROGRESS]
+### Phase 1: Migrate the extension Stage 4a retrieval call sites [COMPLETED]
 
 **Goal**: Every per-extension research/implementation skill reaches memory context through the
 sapience retrieval script, so the local retrieval script can be deleted in Phase 4 without
@@ -241,18 +241,25 @@ breaking context injection for any non-core task type.
 
 **Tasks**:
 
-- [ ] Re-derive the live call-site set with `grep -rln 'bash .claude/scripts/memory-retrieve.sh' agent-system/`
+- [x] Re-derive the live call-site set with `grep -rln 'bash .claude/scripts/memory-retrieve.sh' agent-system/`
       and work from that output, not from the enumeration in this plan or the research report.
-- [ ] In each file found, substitute the script name `memory-retrieve.sh` -> `sapience-retrieve.sh`
+      *(completed: live grep returned exactly 25 files across 12 extensions, matching the plan's
+      Scope Hypothesis exactly)*
+- [x] In each file found, substitute the script name `memory-retrieve.sh` -> `sapience-retrieve.sh`
       in the Stage 4a invocation. Change nothing else: the three positional arguments, the
       `2>/dev/null`, the `|| memory_context=""` degradation and the `clean_flag` gate are all
-      already correct for the replacement script.
-- [ ] Update any surrounding prose in the same Stage 4a block that names the local memory vault as
-      the source, so the block describes the hosted store it now reads.
-- [ ] Confirm `sapience-retrieve.sh` is declared in the sapience manifest's `provides.scripts`
+      already correct for the replacement script. *(completed: sed-applied script-name-only
+      substitution across all 25 files)*
+- [x] Update any surrounding prose in the same Stage 4a block that names the local memory vault as
+      the source, so the block describes the hosted store it now reads. *(completed: inspected
+      all 25 Stage 4a blocks for "local"/"vault"/".memory/" prose; none were found — every block's
+      surrounding prose is already generic ("Memory Retrieval", "Skip memory retrieval if") and
+      requires no further edit)*
+- [x] Confirm `sapience-retrieve.sh` is declared in the sapience manifest's `provides.scripts`
       array, so the deployed path each migrated call site uses will exist after Phase 7's deploy.
-- [ ] Commit per extension (12 commits), not per file, so each commit is one coherent
-      research/implementation skill pair.
+      *(completed: confirmed present at agent-system/extensions/sapience/manifest.json)*
+- [x] Commit per extension (12 commits), not per file, so each commit is one coherent
+      research/implementation skill pair. *(completed: 12 commits landed, one per extension)*
 
 **Timing**: 1 hour
 
