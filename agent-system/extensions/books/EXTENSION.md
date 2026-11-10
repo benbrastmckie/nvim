@@ -28,8 +28,6 @@ not the content itself. **Detection note**: a `books` task naming a `.lean` file
 |-------|-------|---------|
 | skill-books-research | books-research-agent | Books research |
 | skill-books-implementation | books-implementation-agent | Books implementation (also serves `books:certify`) |
-| skill-books-research-hard | books-research-hard-agent | Hard-mode books research |
-| skill-books-implementation-hard | books-implementation-hard-agent | Hard-mode books implementation |
 | skill-books-build | (direct execution) | `/book` single-book developer loop |
 | skill-books-certify | (direct execution) | `/certify` graph-wide passthrough |
 | skill-books-review | (direct execution) | `/books --review`/`--revise` convention health |

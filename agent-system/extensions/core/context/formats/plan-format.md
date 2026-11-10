@@ -267,15 +267,18 @@ and take a named INCONCLUSIVE branch on a hit; checking conformance only on the 
 (rather than the whole file) leaves the check structurally unreachable. This is not a new rule —
 it is what "closed contract, not an aspiration" above requires end-to-end — but it is worth
 stating explicitly because the failure mode is silent: the resume-scan sites now run
-`has_nonconforming_phase_headings` before selection, closing the gap. Sites that stop hard on an
-inconclusive scan (`skill-lean-implementation-hard`'s resume-point scan — a single-shot leaf
-worker whose check runs strictly before any subagent is dispatched, so no handoff write is owed
-yet; core's own standalone hard-mode implementer skill once had an equivalent scan, before it was
-merged into `skill-orchestrate` and deleted) are deliberately postured differently from the
+`has_nonconforming_phase_headings` before selection, closing the gap. A site that stops hard on
+an inconclusive scan — a single-shot leaf worker whose check runs strictly before any subagent is
+dispatched, so no handoff write is owed yet — is deliberately postured differently from the
 long-running orchestration loop (`skill-orchestrate`'s H1 per-phase dispatch branch), which
 instead routes an inconclusive scan to its own established `EXIT (partial, ...)` terminal-condition
 convention rather than a raw process exit — the difference is leaf-worker precondition vs.
-orchestration-loop terminal state, not an inconsistency.
+orchestration-loop terminal state, not an inconsistency. (Two former leaf-worker examples of this
+posture — core's own standalone hard-mode implementer skill, and the per-domain `-hard`
+implementation skills, e.g. `skill-lean-implementation-hard` — are both now deleted outright:
+the former was merged into `skill-orchestrate`'s H1 branch, and the latter's domain-specific
+behavior migrated onto `hard_contracts` contract injection into the standard skills, which carry
+no equivalent pre-dispatch resume-point scan of their own.)
 
 **`[DESCOPED]` is not a recognized phase-heading status marker and must not be used.** Whole-phase
 descoping uses `[COMPLETED WITH EXCLUSIONS]` with a `#### Reasoned Exclusions` record (below)
@@ -305,9 +308,8 @@ enumeration, phase-number extraction, and marker-enum validation), `update-phase
 (the one deliberately parameter-driven site), `general-implementation-agent.md`'s Stage 5a
 marker-repair block (both effort modes — core's own standalone hard-mode implementation agent is
 deleted and merged into this one),
-`commands/task.md`'s `/task --review` Step 3 phase enumeration, `skill-lean-implementation-hard`'s
-resume-point scan, and `skill-orchestrate`'s recovery-count and `next_phase` greps (both effort
-modes, one engine). Reference sites by
+`commands/task.md`'s `/task --review` Step 3 phase enumeration, and `skill-orchestrate`'s
+recovery-count and `next_phase` greps (both effort modes, one engine). Reference sites by
 script/skill and function/stage name, never by line number — line numbers drift on every edit and
 are not a stable anchor.
 

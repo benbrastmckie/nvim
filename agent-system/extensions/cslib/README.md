@@ -8,10 +8,10 @@ CSLib Lean 4 computer science library formalization support. Provides research a
 
 ## Overview
 
-| Task Type | Research | Plan | Implementation | Hard-mode routing |
-|-----------|----------|------|----------------|-------------------|
-| `cslib` | skill-cslib-research | planner-agent (direct) | skill-cslib-implementation | skill-cslib-research-hard / skill-cslib-implementation-hard |
-| `pr` | skill-pr-review-research | planner-agent (direct) | skill-pr-review-implementation | none — falls back to standard skills under `--hard` |
+| Task Type | Research | Plan | Implementation | Hard-mode behavior |
+|-----------|----------|------|----------------|---------------------|
+| `cslib` | skill-cslib-research | planner-agent (direct) | skill-cslib-implementation | SAME skills/agents; `hard_contracts.cslib` injects behavioral contracts into the dispatch prompt |
+| `pr` | skill-pr-review-research | planner-agent (direct) | skill-pr-review-implementation | SAME skills/agents; no `hard_contracts` entry for `pr`, so `--hard` reads core's generic contracts only |
 
 The extension routes `cslib` task types through dedicated agents that enforce CSLib coding conventions, use the CI verification pipeline, and follow the project's reuse-first and proof-readability principles from CONTRIBUTING.md. The `pr` task type handles both PR submission preparation and PR review response workflows.
 
@@ -40,8 +40,6 @@ Loaded via the extension picker. Once loaded, `cslib` and `pr` become recognized
     |   +-- skill-cslib-research/              # Research skill wrapper
     |   +-- skill-cslib-implementation/        # Implementation skill wrapper
     |   +-- skill-pr-implementation/           # PR description preparation (pr-submission path)
-    |   +-- skill-cslib-research-hard/         # Hard-mode research skill wrapper
-    |   +-- skill-cslib-implementation-hard/   # Hard-mode implementation skill wrapper
     |   +-- skill-pr-review-research/          # PR review research skill wrapper
     |   +-- skill-pr-review-implementation/    # PR review implementation skill wrapper
     |   +-- skill-cslib-vet/                   # Vet skill wrapper
@@ -69,8 +67,6 @@ Loaded via the extension picker. Once loaded, `cslib` and `pr` become recognized
 | skill-cslib-research | cslib-research-agent | opus | CSLib formalization research with lean-lsp MCP |
 | skill-cslib-implementation | cslib-implementation-agent | sonnet | CSLib proof implementation with CI verification |
 | skill-pr-implementation | cslib-implementation-agent | sonnet | PR description preparation only -- produces pr-description.md, transitions task to [PR READY]; branch creation and CI handled by /pr |
-| skill-cslib-research-hard | cslib-research-hard-agent | opus | Hard-mode CSLib research: adversarial verification (H4), BibKey citation grounding (H3) |
-| skill-cslib-implementation-hard | cslib-implementation-hard-agent | sonnet | Hard-mode CSLib proof implementation: anti-analysis (H2), sorry_inventory (H9), territory (H7) |
 | skill-pr-review-research | pr-review-research-agent | sonnet | Fetch and synthesize GitHub PR and Zulip discussion for review tasks |
 | skill-pr-review-implementation | pr-review-implementation-agent | sonnet | Compose pr-response.md and zulip-response.md for pr-type review tasks; falls back to legacy pr-description workflow when sources are absent |
 | skill-cslib-vet | cslib-vet-agent | sonnet | Vet CSLib tasks against standards; run CI; create fix tasks with user confirmation |
@@ -101,27 +97,29 @@ Use `/orchestrate N --research --hard`, `--plan --hard`, or `--implement --hard`
 4. **Proof requires BibKey citation traceability** against CSLib's `references.bib`
 5. **Task involves multiple parallel proof obligations** requiring territory contracts (H7) to prevent file conflicts between agents
 
-**Hard mode adds** (over standard cslib skills):
+**Hard mode adds** (over standard cslib skills, same agent, injected as behavioral contracts
+rather than carried by a separate agent body):
 - H2: Strict read budget -- first proof write within 20% of tool calls
 - H3: BibKey verification against `references.bib` for all cited theorems
-- H4: Adversarial self-verification pass challenging every recommendation
+- H4: Adversarial self-verification pass challenging every recommendation (cslib's own
+  `cslib-adversarial-verification.md` override, content identical to core's generic H4 contract)
 - H7: Territory contracts for parallel implementation phases
 - H9: `sorry_inventory` in every orchestrator handoff JSON
+- Goal-state context hygiene (targeted `lean_goal` queries, bounded file reads, hypothesis
+  pruning) via lean's `lean4-context-hygiene.md`, reused as a deliberate cross-extension
+  dependency since cslib's `--hard` dispatches edit Lean theorem files too
 
 **Cost impact**: `--hard` multiplies token cost ~3-5x over standard cslib skills. Use for formally complex or previously-deflected tasks only.
 
-**Hard-mode routing entries** (from manifest.json `routing_agents_hard` — the skill-level
-`routing_hard` block this used to read from the `skill-cslib-*-hard` SKILL.md files is retired;
-`/orchestrate --hard` dispatches the agents below directly):
-- `cslib` research: `cslib-research-hard-agent`
-- `cslib` implement: `cslib-implementation-hard-agent`
-- `pr` research/implement: no `routing_agents_hard` entry — falls back to the standard
-  `pr-review-research-agent`/`pr-review-implementation-agent` agents under `--hard`. The `pr` task
-  type used to route through core's own standalone hard-mode research/implement skills, which
-  have since been deleted; core's `--hard` planning/research/implement for
-  `general`/`meta`/`markdown` now resolves through `skill-orchestrate`'s own hard-mode branch
-  instead of a separate skill, and `pr` was never given its own dedicated hard-mode agent to fall
-  back to.
+**Hard-mode mechanism**: there is no separate `-hard`-suffixed agent or skill any more --
+`routing_agents_hard` (the agent-level ladder rung this section used to describe) is retired.
+`--hard` dispatches the SAME agent as standard mode (`cslib-research-agent` /
+`cslib-implementation-agent`), and the domain-specific behavioral difference is provided by
+manifest.json's `hard_contracts.cslib` block, injected into the dispatch prompt as a
+`<hard-mode-contracts>` list — see `context/guides/manifest-routing-schema.md`'s "Override
+Contract Placement Convention" subsection and "The `hard_contracts` Block" section for the full
+mechanism. `pr` declares no `hard_contracts` entry, so a `pr` task's `--hard` dispatch reads
+core's generic contracts only, with no cslib-specific override.
 
 ## PR Review Workflow
 

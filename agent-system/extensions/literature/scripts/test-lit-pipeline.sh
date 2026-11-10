@@ -244,8 +244,6 @@ section_b() {
   local skills=(
     "skill-cslib-research"
     "skill-cslib-implementation"
-    "skill-cslib-research-hard"
-    "skill-cslib-implementation-hard"
   )
 
   for skill in "${skills[@]}"; do

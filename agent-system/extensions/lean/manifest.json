@@ -18,9 +18,7 @@
       "skill-lean-research",
       "skill-lean-implementation",
       "skill-lake-repair",
-      "skill-lean-version",
-      "skill-lean-research-hard",
-      "skill-lean-implementation-hard"
+      "skill-lean-version"
     ],
     "commands": [
       "lake.md",

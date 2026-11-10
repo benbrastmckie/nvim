@@ -487,31 +487,52 @@ surface no single-suite subset covers.
 
 ---
 
-### Phase 5: Retire the six orphaned hard skill directories [NOT STARTED]
+### Phase 5: Retire the six orphaned hard skill directories [COMPLETED]
 
 **Goal**: the six hard skill wrappers — already unrouted before this task, since no routing block
 names a skill any more — are gone along with every declaration and enumeration that reaches them.
 
 **Tasks**:
-- [ ] Delete the six skill directories:
+- [x] Delete the six skill directories:
       `books/skills/skill-books-{research,implementation}-hard`,
       `cslib/skills/skill-cslib-{research,implementation}-hard`,
       `lean/skills/skill-lean-{research,implementation}-hard` (all six confirmed present; report
-      and continue if one is already absent).
-- [ ] Remove their six entries from the three manifests' `provides.skills` arrays, in the same
+      and continue if one is already absent). *(completed; also removed the two stale deployed
+      skill directories the additive-only copier left behind under .claude/skills/, caught by
+      gate 13's orphan detection)*
+- [x] Remove their six entries from the three manifests' `provides.skills` arrays, in the same
       change as the directory deletions — `check-extension-docs.sh` Rule A fails on a skill
       directory absent from `provides.skills`, and orphan detection fails in the other direction.
-- [ ] Update the lint and test enumerations that name a hard skill:
+      *(completed; check-extension-docs.sh passes Rule A for all extensions)*
+- [x] Update the lint and test enumerations that name a hard skill:
       `lint/lint-task-lookup-adoption.sh`, `tests/test-resume-scan-nonconformance.sh`, and the
-      literature extension's `scripts/test-lit-pipeline.sh`.
-- [ ] Update the docs that name a hard skill as live:
+      literature extension's `scripts/test-lit-pipeline.sh`. *(completed. The resume-scan suite
+      required a larger rewrite than a simple enumeration edit: its "Site C" was the sentinel
+      region inside the now-deleted skill-lean-implementation-hard/SKILL.md, woven through the
+      fixture-driven execution harness and all three fixtures (A/B/C). Removed Site C entirely,
+      following the file's own established "removed, not retargeted" precedent for Sites A/B --
+      confirmed via hard-mode-routing.md that these skills were already routing-unreachable
+      before this task, so this is a loss of dead-code test coverage, not live behavior. Site D
+      (update-task-status.sh) and the repo-wide racy-pipe-form check are untouched and still
+      pass.)*
+- [x] Update the docs that name a hard skill as live:
       `core/docs/reference/utility-scripts-inventory.md`,
       `core/context/contracts/phase-closure.md`, `core/context/formats/plan-format.md`,
       `cslib/context/project/cslib/domain/hard-mode-selection.md`,
       `lean/context/project/lean4/domain/hard-mode.md`, and the three extensions'
-      `EXTENSION.md` / `README.md` skill tables.
-- [ ] Re-grep for all six skill names across the source store and confirm nothing survives except
-      deliberate historical prose, if any.
+      `EXTENSION.md` / `README.md` skill tables. *(completed for all named files. lean's
+      hard-mode.md and cslib's hard-mode-selection.md got full rewrites for the contract-injection
+      model, not just a skill-name strike-through, since their "Routing"/"What Hard Mode Adds"
+      sections described the retired agent-dispatch mechanism in detail. books/README.md and
+      cslib/README.md needed more than their skill tables -- both carried a "Hard-mode routing" /
+      "Hard Mode for..." section describing the same retired mechanism; both rewritten. Agent-file
+      mentions (books-*-hard-agent, cslib-*-hard-agent in Architecture trees, and
+      test-lit-pipeline.sh's Section C agents array) are explicitly DEFERRED to Phase 6, which
+      retires those agent files -- fixing them now would describe a future state not yet true.)*
+- [x] Re-grep for all six skill names across the source store and confirm nothing survives except
+      deliberate historical prose, if any. *(completed: only hard-mode-routing.md (Phase 8's own
+      full rewrite, deliberately deferred) and this suite's own historical "former Site C, now
+      deleted" prose survive)*
 
 **Timing**: 1.5 hours
 

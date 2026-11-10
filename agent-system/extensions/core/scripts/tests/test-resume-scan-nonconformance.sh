@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 # test-resume-scan-nonconformance.sh - Fixture-driven regression suite for the resume-scan
-# conformance gate wired into the remaining hard-mode per-phase dispatch sites
-# (skill-lean-implementation-hard's Site C; core's Site D structural check). Exercises the
-# ordering contract directly: PHASE_HEADING_ERE-filtered scans MUST run
-# has_nonconforming_phase_headings over the whole plan file first, or a non-conforming heading is
-# silently invisible to the scan rather than merely unmatched by it -- see
+# conformance gate wired into the remaining hard-mode per-phase dispatch site (core's Site D
+# structural check). Exercises the ordering contract directly: PHASE_HEADING_ERE-filtered scans
+# MUST run has_nonconforming_phase_headings over the whole plan file first, or a non-conforming
+# heading is silently invisible to the scan rather than merely unmatched by it -- see
 # scripts/lib/phase-heading-patterns.sh's "Ordering contract for filtered scans" header note and
 # context/formats/plan-format.md's "Canonical phase-heading shape" subsection.
 #
@@ -20,33 +19,36 @@
 # (non-conforming heading -> blocked; marker/handoff mismatch -> blocked + downgrade; successful
 # phase selection; no-open-heading fallthrough; --dry-run parity), by
 # `scripts/tests/test-orchestrate-cycle-plan.sh`'s own "Group 9: H1 hard-mode per-phase dispatch".
-# Retargeting this suite's sentinel-extraction harness onto that script (a very different shape --
-# multiple tasks via associative arrays, not a single result variable per plan file) would
-# duplicate coverage that already exists there in a more thorough form; per this task's own
-# guidance, the duplicate is deleted rather than retargeted. Site C is unaffected: its own file
-# was never touched by that rewrite.
+#
+# Former Site C (skill-lean-implementation-hard/SKILL.md's sentinel-delimited
+# `resume-scan-conformance-gate:begin`/`:end` region, plus its fixture-driven execution harness
+# and Fixtures A/B/C which existed solely to drive it) is ALSO now REMOVED, not retargeted: the
+# routing_agents_hard-to-hard_contracts migration task retired the six orphaned hard skill
+# directories outright, including skill-lean-implementation-hard itself. That file's logic was
+# already routing-unreachable before its deletion -- no routing block has named a skill by a
+# "-hard" suffix convention since an earlier retirement of the skill-level router (see Site A's
+# own history above) -- so this is a loss of dead-code test coverage, not of live behavior. The
+# standard (non-hard) skill-lean-implementation/SKILL.md carries no equivalent
+# resume-scan-conformance-gate region to retarget onto: the standard skill dispatches the whole
+# implementation agent, which resolves its own resume point internally (see
+# lean-implementation-agent.md's own "Stage 3: Find Resume Point"), rather than the skill layer
+# pre-scanning for a phase number the way the hard-mode per-phase dispatch skill did.
 #
 # Structural model: scripts/tests/test-phase-heading-patterns.sh (pass()/fail()/info() helpers,
 # PASSED/FAILED integer counters, exit 0 all-pass / 1 any-fail / 2 environment error,
 # deploy-tree-first then source-store-fallback library resolution).
 #
-# HONEST SCOPE LIMIT: the enclosing markdown fence in Site C's SKILL.md below contains
-# `Agent tool:` / `EXIT (...)` pseudo-syntax and is NOT valid bash -- this is pre-existing and
-# expected, not a defect this suite works around. This suite extracts and executes only the
-# sentinel-delimited `resume-scan-conformance-gate:begin`/`:end` region (pure, executable bash),
-# plus a structural (grep-based) assertion on the posture branch that immediately follows it,
-# which contains pseudo-syntax and cannot itself be executed. Site D
-# (update-task-status.sh) is covered by `bash -n` and structural grep only in this suite, not by
-# execution -- it is a real standalone script; see Phase 4 of the implementation plan this suite
-# originally verified. The preflight phase auto-advance convenience Site D used to guard (the
-# first_phase_heading path, and its has_nonconforming_phase_headings guard) has since been
-# deleted outright -- update_plan_file() no longer writes any per-phase marker, on any path, so
-# Site D now asserts the ABSENCE of that deleted path's guard invocation rather than its
-# presence, confirming a full deletion rather than a partial edit that left the guard behind
-# without its caller.
+# HONEST SCOPE LIMIT: Site D (update-task-status.sh) is covered by `bash -n` and structural grep
+# only in this suite, not by execution -- it is a real standalone script; see Phase 4 of the
+# implementation plan this suite originally verified. The preflight phase auto-advance
+# convenience Site D used to guard (the first_phase_heading path, and its
+# has_nonconforming_phase_headings guard) has since been deleted outright -- update_plan_file()
+# no longer writes any per-phase marker, on any path -- so Site D now asserts the ABSENCE of that
+# deleted path's guard invocation rather than its presence, confirming a full deletion rather
+# than a partial edit that left the guard behind without its caller.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (library
-# or a required SKILL.md file not found, or a sentinel marker pair missing).
+# or Site D's required file not found).
 
 set -uo pipefail
 
@@ -65,291 +67,18 @@ LIB="$(common_test_resolve_subject "phase-heading-patterns.sh" "deploy-tree-firs
   "$SCRIPT_DIR/../lib/phase-heading-patterns.sh")" || exit 2
 common_test_declare_subject "$LIB"
 
-SITE_C_FILE="$REPO_ROOT/agent-system/extensions/lean/skills/skill-lean-implementation-hard/SKILL.md"
 SITE_D_FILE="$REPO_ROOT/agent-system/extensions/core/scripts/update-task-status.sh"
 
-for f in "$SITE_C_FILE" "$SITE_D_FILE"; do
-  if [[ ! -f "$f" ]]; then
-    echo "ERROR: required file not found: $f" >&2
-    exit 2
-  fi
-done
+if [[ ! -f "$SITE_D_FILE" ]]; then
+  echo "ERROR: required file not found: $SITE_D_FILE" >&2
+  exit 2
+fi
 
 PASSED=0
 FAILED=0
 
 
 common_test_workdir_init
-
-BEGIN_MARKER='resume-scan-conformance-gate:begin'
-END_MARKER='resume-scan-conformance-gate:end'
-
-# ─── Region extraction ─────────────────────────────────────────────────────────────────────────
-# Fails loudly (not a silent skip) if a marker pair is missing from a file.
-extract_region() {
-  local file="$1" label="$2"
-  if ! grep -q "$BEGIN_MARKER" "$file"; then
-    echo "ERROR: ${BEGIN_MARKER} not found in ${label} (${file})" >&2
-    return 1
-  fi
-  if ! grep -q "$END_MARKER" "$file"; then
-    echo "ERROR: ${END_MARKER} not found in ${label} (${file})" >&2
-    return 1
-  fi
-  awk -v b="$BEGIN_MARKER" -v e="$END_MARKER" '
-    $0 ~ b { flag=1 }
-    flag { print }
-    $0 ~ e { flag=0 }
-  ' "$file"
-}
-
-# Note on the library sourcing line: at Site C, `. .claude/scripts/lib/phase-heading-
-# patterns.sh` sits immediately BEFORE the `resume-scan-conformance-gate:begin` marker (per the
-# canonical snippet -- see Phase 1 of the implementation plan), so it is deliberately NOT part of
-# the extracted region. Rather than textually rewriting an in-region sourcing line that does not
-# exist, the harness sources $LIB directly in run_region() below before eval'ing the extracted
-# region -- behaviorally identical (the region's own logic never re-sources the library), and
-# correct regardless of deploy-tree vs. source-store checkout since $LIB was already resolved
-# above.
-region_c="$(extract_region "$SITE_C_FILE" "Site C (skill-lean-implementation-hard)")" || exit 2
-
-# =====================================================================
-# bash -n: the extracted region must be independently syntax-clean.
-#
-# Only Site C remains to check here -- Site A and Site B were removed rather than retargeted
-# (see the header note above), so this is a single direct check rather than a loop over a
-# one-element, colon-delimited pseudo-list (which shellcheck correctly flags as SC2066: a quoted
-# string never word-splits, so a "for x in $single_string" loop only ever runs once by
-# construction, not by iteration). A future Site E/F would be added as its own direct block
-# below, following the same shape, rather than reintroducing a word-split-dependent loop.
-# =====================================================================
-site="C"
-region="$region_c"
-script_file="$WORKDIR/syntax-${site}.sh"
-{
-  echo '#!/usr/bin/env bash'
-  echo 'plan_path="/tmp/fixture.md"'
-  echo 'plan_file="/tmp/fixture.md"'
-  printf '%s\n' "$region"
-} > "$script_file"
-if bash -n "$script_file" 2>"$WORKDIR/syntax-${site}.err"; then
-  common_test_pass "Site ${site}: extracted sentinel region is bash -n clean"
-else
-  common_test_fail "Site ${site}: extracted sentinel region failed bash -n: $(cat "$WORKDIR/syntax-${site}.err")"
-fi
-
-# ─── Region execution harness ──────────────────────────────────────────────────────────────────
-# Runs an extracted region in a subshell with the given bind variable pointed at a fixture file,
-# then reports the region's own result variable and phase_scan_inconclusive via stdout so the
-# caller (which only sees the subshell's captured stdout/stderr, not its variable bindings) can
-# assert on them. Stdout and stderr are captured to separate files. Sources $LIB and initializes
-# the result variable / phase_scan_inconclusive first, mirroring the two lines that precede the
-# sentinel-delimited region at each live site (see the note above run_region's siblings).
-run_region() {
-  # shellcheck disable=SC2034  # fixture_path IS read below, via `eval "${bind_var}=\"\$fixture_path\""`
-  # -- shellcheck cannot trace a variable reference constructed inside an eval string.
-  local region="$1" bind_var="$2" fixture_path="$3" result_var="$4" out_file="$5" err_file="$6"
-  (
-    # shellcheck disable=SC1090
-    . "$LIB"
-    eval "${bind_var}=\"\$fixture_path\""
-    eval "${result_var}=\"\""
-    phase_scan_inconclusive=false
-    eval "$region"
-    echo "__RESULT_VALUE__=${!result_var}"
-    echo "__RESULT_INCONCLUSIVE__=${phase_scan_inconclusive:-}"
-  ) > "$out_file" 2> "$err_file"
-}
-
-result_value() { grep '^__RESULT_VALUE__=' "$1" | tail -1 | sed 's/^__RESULT_VALUE__=//'; }
-result_inconclusive() { grep '^__RESULT_INCONCLUSIVE__=' "$1" | tail -1 | sed 's/^__RESULT_INCONCLUSIVE__=//'; }
-
-# =====================================================================
-# Fixture A: the task's verification bar. A [COMPLETED] conforming phase, then a non-conforming
-# "4C" heading IN PROGRESS, then a conforming "5" heading NOT STARTED. Asserts the non-conforming
-# heading is named by line number and phase 5 is never silently selected.
-# =====================================================================
-fixture_a="$WORKDIR/fixture-a.md"
-cat > "$fixture_a" <<'EOF'
-# Fixture A: verification bar
-
-### Phase 1: Setup [COMPLETED]
-
-Body text for phase 1.
-
-### Phase 4C: Sub-step needing loud detection [IN PROGRESS]
-
-Body text for the non-conforming heading.
-
-### Phase 5: Wrap-up [NOT STARTED]
-
-Body text for phase 5.
-EOF
-fixture_a_4c_line="$(grep -n '^### Phase 4C:' "$fixture_a" | head -1 | cut -d: -f1)"
-common_test_info "Fixture A: '### Phase 4C' heading is at line ${fixture_a_4c_line}"
-
-declare -A SITE_REGION=( [C]="$region_c" )
-declare -A SITE_BINDVAR=( [C]="plan_file" )
-declare -A SITE_RESULTVAR=( [C]="phase_number" )
-declare -A SITE_LABEL=( [C]="Site C (skill-lean-implementation-hard)" )
-
-# shellcheck disable=SC2043  # Single-element today (only Site C is populated in this
-# sentinel-extraction family), but the array-driven dispatch (SITE_REGION/SITE_BINDVAR/
-# SITE_RESULTVAR/SITE_LABEL) is deliberate symmetry for a list expected to grow -- a future
-# Site D/E sentinel region extends this to "for site in C D; do" with no further change.
-for site in C; do
-  region="${SITE_REGION[$site]}"
-  bind_var="${SITE_BINDVAR[$site]}"
-  result_var="${SITE_RESULTVAR[$site]}"
-  label="${SITE_LABEL[$site]}"
-  out="$WORKDIR/a-${site}.out"
-  err="$WORKDIR/a-${site}.err"
-  run_region "$region" "$bind_var" "$fixture_a" "$result_var" "$out" "$err"
-
-  if grep -q '4C' "$err"; then
-    common_test_pass "${label}: Fixture A stderr names the non-conforming '4C' heading"
-  else
-    common_test_fail "${label}: Fixture A stderr does NOT name '4C' -- got: $(cat "$err")"
-  fi
-
-  if grep -q "${fixture_a_4c_line}" "$err"; then
-    common_test_pass "${label}: Fixture A stderr carries the fixture line number (${fixture_a_4c_line}) of the 4C heading"
-  else
-    common_test_fail "${label}: Fixture A stderr does NOT carry line number ${fixture_a_4c_line} -- got: $(cat "$err")"
-  fi
-
-  inconclusive="$(result_inconclusive "$out")"
-  if [[ "$inconclusive" == "true" ]]; then
-    common_test_pass "${label}: Fixture A phase_scan_inconclusive is true"
-  else
-    common_test_fail "${label}: Fixture A phase_scan_inconclusive expected true, got '${inconclusive}'"
-  fi
-
-  value="$(result_value "$out")"
-  if [[ -z "$value" ]]; then
-    common_test_pass "${label}: Fixture A result variable (${result_var}) is empty"
-  else
-    common_test_fail "${label}: Fixture A result variable (${result_var}) expected empty, got '${value}'"
-  fi
-  if [[ "$value" != "5" ]]; then
-    common_test_pass "${label}: Fixture A result variable is specifically NOT '5'"
-  else
-    common_test_fail "${label}: Fixture A result variable was '5' -- phase 5 was silently selected despite the non-conforming 4C heading"
-  fi
-done
-
-# =====================================================================
-# Fixture B: happy path. A fully conforming plan: phase 1 COMPLETED, phase 2 IN PROGRESS,
-# phase 3 NOT STARTED. Required no-behavior-change assertion: next_phase resolves to exactly
-# '2', phase_scan_inconclusive is false, and stderr is empty.
-# =====================================================================
-fixture_b="$WORKDIR/fixture-b.md"
-cat > "$fixture_b" <<'EOF'
-# Fixture B: happy path
-
-### Phase 1: Setup [COMPLETED]
-
-Body text for phase 1.
-
-### Phase 2: Middle work [IN PROGRESS]
-
-Body text for phase 2.
-
-### Phase 3: Wrap-up [NOT STARTED]
-
-Body text for phase 3.
-EOF
-
-# shellcheck disable=SC2043  # Single-element today (only Site C is populated in this
-# sentinel-extraction family), but the array-driven dispatch (SITE_REGION/SITE_BINDVAR/
-# SITE_RESULTVAR/SITE_LABEL) is deliberate symmetry for a list expected to grow -- a future
-# Site D/E sentinel region extends this to "for site in C D; do" with no further change.
-for site in C; do
-  region="${SITE_REGION[$site]}"
-  bind_var="${SITE_BINDVAR[$site]}"
-  result_var="${SITE_RESULTVAR[$site]}"
-  label="${SITE_LABEL[$site]}"
-  out="$WORKDIR/b-${site}.out"
-  err="$WORKDIR/b-${site}.err"
-  run_region "$region" "$bind_var" "$fixture_b" "$result_var" "$out" "$err"
-
-  value="$(result_value "$out")"
-  if [[ "$value" == "2" ]]; then
-    common_test_pass "${label}: Fixture B (happy path) resolves ${result_var}=2"
-  else
-    common_test_fail "${label}: Fixture B (happy path) expected ${result_var}=2, got '${value}'"
-  fi
-
-  inconclusive="$(result_inconclusive "$out")"
-  if [[ "$inconclusive" == "false" ]]; then
-    common_test_pass "${label}: Fixture B phase_scan_inconclusive is false"
-  else
-    common_test_fail "${label}: Fixture B phase_scan_inconclusive expected false, got '${inconclusive}'"
-  fi
-
-  if [[ ! -s "$err" ]]; then
-    common_test_pass "${label}: Fixture B stderr is empty (no-behavior-change on the happy path)"
-  else
-    common_test_fail "${label}: Fixture B stderr expected empty, got: $(cat "$err")"
-  fi
-done
-
-# =====================================================================
-# Fixture C: decimal sub-phase. A conforming plan whose open phase is 3.1 -- guards against a
-# regression that silently drops decimal support while adding the gate.
-# =====================================================================
-fixture_c="$WORKDIR/fixture-c.md"
-cat > "$fixture_c" <<'EOF'
-# Fixture C: decimal sub-phase
-
-### Phase 1: Setup [COMPLETED]
-
-Body text for phase 1.
-
-### Phase 3.1: Decimal sub-phase [IN PROGRESS]
-
-Body text for phase 3.1.
-
-### Phase 4: Wrap-up [NOT STARTED]
-
-Body text for phase 4.
-EOF
-
-# shellcheck disable=SC2043  # Single-element today (only Site C is populated in this
-# sentinel-extraction family), but the array-driven dispatch (SITE_REGION/SITE_BINDVAR/
-# SITE_RESULTVAR/SITE_LABEL) is deliberate symmetry for a list expected to grow -- a future
-# Site D/E sentinel region extends this to "for site in C D; do" with no further change.
-for site in C; do
-  region="${SITE_REGION[$site]}"
-  bind_var="${SITE_BINDVAR[$site]}"
-  result_var="${SITE_RESULTVAR[$site]}"
-  label="${SITE_LABEL[$site]}"
-  out="$WORKDIR/c-${site}.out"
-  err="$WORKDIR/c-${site}.err"
-  run_region "$region" "$bind_var" "$fixture_c" "$result_var" "$out" "$err"
-
-  value="$(result_value "$out")"
-  if [[ "$value" == "3.1" ]]; then
-    common_test_pass "${label}: Fixture C (decimal sub-phase) resolves ${result_var}=3.1"
-  else
-    common_test_fail "${label}: Fixture C (decimal sub-phase) expected ${result_var}=3.1, got '${value}'"
-  fi
-done
-
-# =====================================================================
-# Structural assertions on the posture branches (pseudo-syntax; not executable).
-# =====================================================================
-
-# Site A's structural posture-branch assertions were removed along with Site A itself (see the
-# header comment) -- equivalent coverage lives in test-orchestrate-cycle-plan.sh's Group 9.
-
-# Site C: return error guarded by the sentinel.
-site_c_guard_line=$(grep -n 'phase_scan_inconclusive" = "true"' "$SITE_C_FILE" | head -1 | cut -d: -f1)
-if [[ -n "$site_c_guard_line" ]] && sed -n "${site_c_guard_line},$((site_c_guard_line + 3))p" "$SITE_C_FILE" | grep -q 'return error'; then
-  common_test_pass "Site C: posture branch guarded by phase_scan_inconclusive contains 'return error'"
-else
-  common_test_fail "Site C: could not confirm posture branch contains 'return error' near line ${site_c_guard_line:-MISSING}"
-fi
 
 # =====================================================================
 # Repo-wide assertion: zero occurrences of the racy `nonconforming_phase_headings | grep -q`

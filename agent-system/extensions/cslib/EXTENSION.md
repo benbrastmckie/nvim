@@ -9,12 +9,17 @@ PR submission, PR review, and quality vetting. Inherits `lean-lsp` MCP from the 
 |-----------|-------|-------|-------|---------|
 | `cslib` | skill-cslib-research | cslib-research-agent | opus | Formalization research with lean-lsp MCP |
 | `cslib` | skill-cslib-implementation | cslib-implementation-agent | sonnet | Proof implementation with CI verification |
-| `cslib` | skill-cslib-research-hard | cslib-research-hard-agent | opus | Hard-mode research: H4 verification, H3 BibKey grounding |
-| `cslib` | skill-cslib-implementation-hard | cslib-implementation-hard-agent | sonnet | Hard-mode implementation: H2 anti-analysis, H9 sorry_inventory, H7 territory |
 | `cslib` | skill-cslib-vet | cslib-vet-agent | sonnet | Vet tasks against standards; run CI; create fix tasks |
 | `pr` | skill-pr-implementation | cslib-implementation-agent | sonnet | PR description only -- writes pr-description.md, moves task to [PR READY] |
 | `pr` | skill-pr-review-research | pr-review-research-agent | sonnet | Fetch and synthesize GitHub PR and Zulip discussion |
 | `pr` | skill-pr-review-implementation | pr-review-implementation-agent | sonnet | Compose pr-response.md and zulip-response.md; falls back to pr-description |
+
+`--hard` dispatches the SAME `cslib` agents above; the domain-specific behavioral difference is
+provided by the `hard_contracts.cslib` manifest block (a `replace:` override for the generic H4
+contract, plus lean's `lean4-context-hygiene.md` additively), injected into the dispatch prompt
+rather than resolved to a separate `-hard`-suffixed agent or skill — see
+`context/guides/manifest-routing-schema.md`'s "Override Contract Placement Convention"
+subsection.
 
 ### Commands
 

@@ -1,0 +1,52 @@
+{
+  "phase": 5,
+  "phase_name": "Retire the six orphaned hard skill directories",
+  "started_at": "2026-11-10T06:40:00Z",
+  "last_updated": "2026-11-10T07:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete the six skill directories", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Remove six provides.skills entries across three manifests", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/books/manifest.json",
+        "agent-system/extensions/cslib/manifest.json",
+        "agent-system/extensions/lean/manifest.json"
+      ]},
+    {"id": 3, "description": "Update lint/test enumerations naming a hard skill", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-task-lookup-adoption.sh",
+        "agent-system/extensions/core/scripts/tests/test-resume-scan-nonconformance.sh",
+        "agent-system/extensions/literature/scripts/test-lit-pipeline.sh"
+      ]},
+    {"id": 4, "description": "Update docs naming a hard skill as live", "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+        "agent-system/extensions/core/context/contracts/phase-closure.md",
+        "agent-system/extensions/core/context/formats/plan-format.md",
+        "agent-system/extensions/cslib/context/project/cslib/domain/hard-mode-selection.md",
+        "agent-system/extensions/lean/context/project/lean4/domain/hard-mode.md",
+        "agent-system/extensions/books/EXTENSION.md",
+        "agent-system/extensions/books/README.md",
+        "agent-system/extensions/cslib/EXTENSION.md",
+        "agent-system/extensions/cslib/README.md"
+      ]},
+    {"id": 5, "description": "Re-grep for all six skill names, confirm only deliberate survivors", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.3",
+      "description": "Update tests/test-resume-scan-nonconformance.sh's hard-skill enumeration",
+      "type": "altered",
+      "reason": "This was not a simple enumeration edit: Site C was the sentinel-delimited resume-scan-conformance-gate region inside skill-lean-implementation-hard/SKILL.md itself, woven through the file's fixture-driven execution harness (run_region/extract_region) and all three fixtures (A/B/C), which existed solely to drive Site C. Removed Site C entirely rather than retargeting, following the file's own established precedent for Sites A and B (both previously 'removed, not retargeted' when their underlying mechanism was deleted/centralized elsewhere). Verified via hard-mode-routing.md's own text that these skills were already routing-unreachable before this task, confirming the lost coverage was for dead code, not live behavior.",
+      "annotation": "see plan checklist item for task 5.3 annotation"
+    }
+  ],
+  "notes": [
+    "Scope Hypothesis confirmed exactly: six skill directories present, six provides.skills entries across three manifests, three lint/test enumerations.",
+    "Agent-file mentions in Architecture trees (books-*-hard-agent, cslib-*-hard-agent) and test-lit-pipeline.sh's Section C agents array are DEFERRED to Phase 6, which retires those agent files -- fixing them now would describe a future state not yet true.",
+    "Post-redeploy, gate 13 (orphan detection) found two stale deployed skill directories the additive-only copier left behind (.claude/skills/skill-lean-{research,implementation}-hard/) -- removed manually, same pattern as Phase 2's stale context-hygiene.md.",
+    "Full gate re-check (gates 3,5,7,13,16) and targeted test-suite run (test-resume-scan-nonconformance.sh, test-lit-pipeline.sh, test-routing-resolution.sh) all PASS. check-extension-docs.sh passes for all extensions (Rule A included)."
+  ]
+}

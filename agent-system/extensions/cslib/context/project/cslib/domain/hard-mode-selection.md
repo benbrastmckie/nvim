@@ -23,16 +23,22 @@ are deflection signals and are strongest in combination.
 
 ## What Hard Mode Adds
 
-Over the standard cslib skills (`skill-cslib-research`, `skill-cslib-implementation`), the hard
-variants (`skill-cslib-research-hard`, `skill-cslib-implementation-hard`) add:
+`--hard` dispatches the SAME standard cslib skills/agents (`skill-cslib-research` /
+`cslib-research-agent`, `skill-cslib-implementation` / `cslib-implementation-agent`) as standard
+mode -- there is no separate `-hard`-suffixed skill or agent any more. The behavioral difference
+is provided by manifest.json's `hard_contracts.cslib` block, which injects the following into
+the dispatch prompt as a `<hard-mode-contracts>` list (see
+`context/guides/manifest-routing-schema.md`'s "The `hard_contracts` Block" section for the
+mechanism):
 
 | Contract | Effect |
 |----------|--------|
-| H2 (anti-analysis) | Strict read budget -- first proof write within 20% of tool calls |
-| H3 (reference grounding) | BibKey verification against `references.bib` for all cited theorems |
-| H4 (adversarial verification) | Self-verification pass challenging every recommendation |
-| H7 (territory contracts) | Explicit file ownership for parallel implementation phases |
-| H9 (wrap-up discipline) | `sorry_inventory` in every orchestrator handoff JSON |
+| H2 (anti-analysis) | Strict read budget -- first proof write within 20% of tool calls (core's generic contract; cslib declares no H2 override) |
+| H3 (reference grounding) | BibKey verification against `references.bib` for all cited theorems (core's generic contract) |
+| H4 (adversarial verification) | Self-verification pass challenging every recommendation (cslib's own `cslib-adversarial-verification.md` override -- content identical to core's generic version, deployed under a domain-prefixed basename) |
+| H7 (territory contracts) | Explicit file ownership for parallel implementation phases (core's generic contract) |
+| H9 (wrap-up discipline) | `sorry_inventory` in every orchestrator handoff JSON (core's generic contract) |
+| Goal-state context hygiene | Targeted `lean_goal` queries, bounded file reads, hypothesis pruning -- a deliberate cross-extension additive dependency on lean's `lean4-context-hygiene.md`, since cslib's `--hard` dispatches edit Lean theorem files too |
 
 See `standards/citation-conventions.md` for the BibKey format and the `references.bib`
 verification procedure that H3 depends on, and `patterns/lint-fix-wave-assignment.md` for the

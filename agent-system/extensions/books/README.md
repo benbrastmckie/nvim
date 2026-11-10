@@ -12,8 +12,13 @@ from judgments (`book.toml`) with everything else computed by the certifier into
 |-----------|-------|---------|
 | `books` | books-research-agent | Books research |
 | `books` | books-implementation-agent | Books implementation (also serves `books:certify`) |
-| `books` (`--hard`) | books-research-hard-agent | Hard-mode books research |
-| `books` (`--hard`) | books-implementation-hard-agent | Hard-mode books implementation |
+
+`--hard` dispatches the SAME agents above (books declares no `hard_contracts` block, so a
+`--hard` dispatch receives core's generic behavioral contracts rather than a books-specific
+override or a separate `-hard`-suffixed agent — see
+`context/guides/manifest-routing-schema.md`'s "Override Contract Placement Convention"
+subsection for why: books' own hard-mode elaboration was judged duplicative of the generic core
+contracts and was not extracted into one).
 
 ## Installation
 
@@ -26,7 +31,7 @@ Loaded via the extension picker. Once loaded, `books` becomes a recognized task 
 books/
 ├── manifest.json               # task_type, dependencies, provides, routing, keyword_overrides
 ├── agents/                     # four agents (base pair + --hard pair, all model: sonnet)
-├── skills/                     # four lifecycle skills + two direct-execution skills
+├── skills/                     # two lifecycle skills + two direct-execution skills
 ├── commands/                   # /book, /certify, /books (--review/--revise)
 ├── rules/                      # books.md -- the non-negotiables
 ├── scripts/                    # books-certify.sh, books-observe.sh (the post-task observer) + tests
@@ -63,8 +68,6 @@ evidence.
 |-------|-------|---------|
 | skill-books-research | books-research-agent | Books research |
 | skill-books-implementation | books-implementation-agent | Books implementation (also serves `books:certify`) |
-| skill-books-research-hard | books-research-hard-agent | Hard-mode books research |
-| skill-books-implementation-hard | books-implementation-hard-agent | Hard-mode books implementation |
 | skill-books-build | (direct execution) | `/book` |
 | skill-books-certify | (direct execution) | `/certify` |
 | skill-books-review | (direct execution) | `/books --review` / `/books --revise` |
