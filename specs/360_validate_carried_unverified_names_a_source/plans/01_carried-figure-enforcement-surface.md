@@ -4,7 +4,7 @@
   validate that a `CARRIED-UNVERIFIED` mark names a source, extend the carried-figure obligation
   to a recommendation's mechanical claim and a dispatch's acted-on premise, and require a
   self-derived enumeration to state and stress-test its search pattern
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11.5 hours
 - **Dependencies**: 328 (SERIALIZATION only, per the dispatch's territory edges)
 - **Research Inputs**: specs/360_validate_carried_unverified_names_a_source/reports/01_carried-unverified-source-naming-validation.md
@@ -141,44 +141,44 @@ the chain is fully serial, and deliberately so. Every phase after the first eith
 describes, so two phases running concurrently would mean the second rewriting what the first just
 wrote. That is the same reasoning that merged three separate records into this one.
 
-### Phase 1: Advisory Source-Naming Well-Formedness Check [NOT STARTED]
+### Phase 1: Advisory Source-Naming Well-Formedness Check [COMPLETED]
 
 **Goal**: Add the narrow, advisory-only check to the source-store `validate-artifact.sh`: every
 mark of the fixed literal token in a report or plan artifact names a non-empty source designator.
 
 **Tasks**:
-- [ ] Re-derive the corpus before writing any code: run `grep -rl '\[CARRIED-UNVERIFIED:' specs/`
+- [x] Re-derive the corpus before writing any code: run `grep -rl '\[CARRIED-UNVERIFIED:' specs/`
       and, per file, count opening-token occurrences, complete bracket matches, and
       empty-designator matches over the newline-flattened content. Record the actual numbers; do
       not inherit this plan's.
-- [ ] Re-derive the two insertion-point anchors with `grep -n` rather than the line numbers cited
+- [x] Re-derive the two insertion-point anchors with `grep -n` rather than the line numbers cited
       below: the end of the `--- Check required sections ---` loop, and the opening of the
       `if [ "$artifact_type" = "plan" ]; then` block.
-- [ ] Insert the new check as a sibling block AFTER the required-sections loop and BEFORE the
+- [x] Insert the new check as a sibling block AFTER the required-sections loop and BEFORE the
       plan-only block, gated on `[ "$artifact_type" = "report" ] || [ "$artifact_type" = "plan" ]`.
       It must not go inside the plan-only block, and it must not touch the `summary` path —
       `summary-format.md` carries no carried-figure obligation.
-- [ ] Flatten newlines before matching. A per-line `grep -E` is rejected as the design, on the
+- [x] Flatten newlines before matching. A per-line `grep -E` is rejected as the design, on the
       evidence that real marks in the corpus wrap across two and three source lines.
-- [ ] Restrict the match surface to the fixed literal token. No semantic component, no
+- [x] Restrict the match surface to the fixed literal token. No semantic component, no
       contradiction detection, no heuristic path extraction.
-- [ ] Apply mention-suppression: skip an occurrence whose token is immediately preceded by a
+- [x] Apply mention-suppression: skip an occurrence whose token is immediately preceded by a
       backtick or a backslash. This is a required property, measured against the live corpus, not
       an optimization.
-- [ ] Bound the designator window so one unclosed occurrence cannot consume text up to an
+- [x] Bound the designator window so one unclosed occurrence cannot consume text up to an
       arbitrarily distant later bracket.
-- [ ] Emit the empty-or-whitespace-only-designator condition via `log_warn` with a message naming
+- [x] Emit the empty-or-whitespace-only-designator condition via `log_warn` with a message naming
       the check, never `log_error`.
-- [ ] Implement the no-closing-bracket condition as a distinct `log_warn` message (a dropped
+- [x] Implement the no-closing-bracket condition as a distinct `log_warn` message (a dropped
       bracket is a different authoring defect from an unnamed source). Then sweep the real corpus:
       if it still fires on token mentions after suppression, ship the empty-designator condition
       alone and carry the exclusion forward to Phase 3's paragraph with its measured reason.
-- [ ] Add a promotion-criterion comment in the idiom the Verification Tier and Files-to-modify
+- [x] Add a promotion-criterion comment in the idiom the Verification Tier and Files-to-modify
       checks in the same script already use, stating what would have to be true before promotion
       and that promotion is not part of this change. Add no `--strict` special-casing: the
       existing `total_issues = errors + warnings` branch already folds warnings in under
       `--strict` for free.
-- [ ] Use the `var=$((var + 1))` counter form, per the script's own header NOTE about bare
+- [x] Use the `var=$((var + 1))` counter form, per the script's own header NOTE about bare
       post-increment aborting under `set -euo pipefail`.
 
 **Timing**: 1.25 hours

@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Advisory Source-Naming Well-Formedness Check",
+  "started_at": "2026-11-10T01:28:00Z",
+  "last_updated": "2026-11-10T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive corpus counts before writing code", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-derive insertion-point anchors via grep -n", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Insert new advisory check block gated to report/plan", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 4, "description": "Flatten newlines, restrict to literal token, mention-suppression, bounded window", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 5, "description": "Emit log_warn for empty-designator and no-closing-bracket conditions; corpus sweep decision", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 6, "description": "Add promotion-criterion comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "awk variable named 'close' for bracket position", "result": "failed", "reason": "awk treats close as the builtin close() function name; using it as a scalar variable produces a syntax error on the line computing index(window, \"]\") -- renamed to close_pos"}
+  ],
+  "handoff_count": 0,
+  "notes": "Corpus re-derivation (via a scratch Python sweep script, informational only, not shipped) over every specs/ file carrying '[CARRIED-UNVERIFIED:' found 7 files: TODO.md, state.json (both task-management mirrors, not report/plan artifacts so untested against the shipped validator), the 360 report (13 opens, 9 mentions, 4 non-mention complete, 0 empty/unclosed after suppression), the 360 plan (3 opens, 1 mention, 2 non-mention complete), the 476 report (1 open, 0 mentions, 1 complete), and the archived 358 report/plan/summary (all complete, no mentions). The plan's own Research Integration section asserted '13 opens against 8 complete bracket matches' on the 360 report; re-derivation finds 7 complete (non-mention) matches, not 8 -- recorded here per the plan's own Scope-Hypothesis instruction to re-derive rather than inherit. After mention-suppression, every real corpus file yields zero empty-designator and zero unclosed-bracket flags, confirming both conditions can ship together in Phase 1 (no need to defer the no-closing-bracket condition to Phase 3 as a measured exclusion). Hand-ran the shipped check against all 5 report/plan corpus files: all [PASS] with 0 warnings. Built three throwaway fixtures (empty designator, unclosed bracket, mention-only) confirming the advisory fires correctly in both positive directions and stays silent on mentions; confirmed default-mode exit 0 and --strict exit 1 via the pre-existing total_issues branch, no new strictness logic added. bash -n and shellcheck both clean (shellcheck's only findings -- SC2329 on log_info and SC2016 on two unrelated pre-existing lines -- predate this change and are outside this phase's touched region)."
+}

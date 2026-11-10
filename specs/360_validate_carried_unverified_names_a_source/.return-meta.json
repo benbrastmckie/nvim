@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/360_validate_carried_unverified_names_a_source/plans/01_carried-figure-enforcement-surface.md",
-      "summary": "Nine-phase plan (11.5h) building the advisory CARRIED-UNVERIFIED source-naming check, recording both reasoned exclusions, and landing the three convention amendments plus redeploy."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794272256_212466_360",
-    "agent_type": "planner-agent",
+    "session_id": "sess_1794272256_212466",
+    "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 9,
-    "estimated_hours": 11.5,
-    "dependency_waves": 9
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "When a shell check greps for a mandated literal token across a document corpus, the densest source of false positives is the documents that DISCUSS the token rather than use it: a backticked bare token, a grep command literal, and a regex literal all match the token pattern but are mentions, not instances. Measured on one real artifact: 13 opening-token occurrences against 8 complete bracket matches, where 9 of the 13 were mentions. Two literal, cheap discriminators suppress them all without any semantic judgment: skip an occurrence whose token is immediately preceded by a backtick or a backslash. Pair this with a bounded match window, because flattening newlines before matching (needed so a line-wrapped instance is not missed) otherwise lets one unclosed mention consume text up to an arbitrarily distant later bracket, absorbing and hiding a genuinely malformed instance that follows. A token-mention suppression case and a hide-the-following-instance case belong in the fixture suite of any such check.",
-      "category": "PATTERN",
-      "source_artifact": "specs/360_validate_carried_unverified_names_a_source/plans/01_carried-figure-enforcement-surface.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["literal-token-lint", "false-positive-suppression", "newline-flattening", "grep-mention-vs-use", "advisory-check-boundedness"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 360 to execute the plan",
-  "dispatch_seq": 14
+  "dispatch_seq": 15
 }
