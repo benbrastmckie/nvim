@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 3,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Created a three-phase, documentation-only implementation plan for the lifecycle-hook task_type prerequisite. Phase 1 inserts a new 'Prerequisite: A Declared task_type' subsection at the head of creating-extensions.md's Lifecycle Hooks section, carrying the prerequisite claim, the verbatim skill_get_extension_dir() gate expression, the per-domain nvim/nix framing, the core-only memory-retrieve.sh cross-cutting precedent, and a brief observer cross-reference. Phase 2 adds a pointer warning to extension-development.md's Resource-Only Extensions prose. Phase 3 redeploys and diffs the deployed copies against the source store under the full gate set, declaring the __WHOLE_TREE__ sentinel for the regeneration claim. No code changes; skill-base.sh stays read-only.",
+  "summary": "Completed all three phases of the lifecycle-hook task_type prerequisite documentation task. creating-extensions.md's Lifecycle Hooks section now carries a new 'Prerequisite: A Declared task_type' subsection stating the prerequisite, quoting the skill_get_extension_dir() gate verbatim, framing nvim/nix as per-domain precedents, and naming the hardcoded <memory-context> call in orchestrate-build-dispatch.sh (currently scripts/sapience-retrieve.sh, re-verified against live source rather than the plan's stale memory-retrieve.sh citation) as the only real cross-cutting pre-dispatch injection. extension-development.md carries a pointer warning in Resource-Only Extensions. Redeployed and confirmed both deployed copies byte-identical to the source store. skill-base.sh is unmodified.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/483_document_hook_task_type_prerequisite/plans/01_hook-task-type-prerequisite.md",
-      "summary": "Three-phase documentation plan covering all eight acceptance criteria, with per-phase verification tiers (prose, prose, full)."
+      "type": "summary",
+      "path": "specs/483_document_hook_task_type_prerequisite/summaries/01_hook-task-type-prerequisite-summary.md",
+      "summary": "Full implementation summary covering all three phases, decisions, deviations, and verification evidence."
     }
   ]
 }

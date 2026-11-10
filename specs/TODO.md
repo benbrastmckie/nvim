@@ -11,7 +11,7 @@ next_project_number: 579
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,483,484,490,491,498,499,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,423,431,437,451,452,453,455,456,459,461,472,473,475,477,479,484,490,491,498,499,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,476,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,423,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571 | 313,391,398,439,458,461,472,476,486,518,519,542,543 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577 | 390,402,501,547,552 | core-agent-system, agent-system |
@@ -72,7 +72,6 @@ next_project_number: 579
 342 [HOLD] — Refactor the books extension's context corpus against the...
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
-483 [IMPLEMENTING] — Document that an extension lifecycle hook can never fire...
 498 [HOLD] — Replace the email preference harvest tally substrate
 499 [RESEARCHING] — Retarget the store-coupled distill sub-modes and retire the...
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
@@ -6589,7 +6588,7 @@ file_scope here overlaps #430, #446 and #469 on git-commit-phase.sh, git-commit-
 ---
 
 ### 483. Document that an extension lifecycle hook can never fire without a declared task_type
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #483
 
 - **Task**: 483 - Document that an extension lifecycle hook can never fire without a declared `task_type`
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.1 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/483_document_hook_task_type_prerequisite/reports/01_hook-task-type-prerequisite.md

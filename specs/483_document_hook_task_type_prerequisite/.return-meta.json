@@ -1,9 +1,58 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/483_document_hook_task_type_prerequisite/summaries/01_hook-task-type-prerequisite-summary.md",
+      "summary": "Documented the task_type prerequisite for lifecycle hooks in creating-extensions.md and added a pointer warning in extension-development.md; redeployed and confirmed deployed copies match the source store."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a new 'Prerequisite: A Declared task_type' subsection to creating-extensions.md's Lifecycle Hooks section (quoting the skill_get_extension_dir() gate verbatim, naming nvim/nix as per-domain precedents, and naming the hardcoded <memory-context> call in orchestrate-build-dispatch.sh as the only real cross-cutting pre-dispatch injection) and a pointer warning in extension-development.md's Resource-Only Extensions prose. Redeployed and confirmed both deployed copies are byte-identical to the source store."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/context/guides/extension-development.md",
+    "specs/483_document_hook_task_type_prerequisite/plans/01_hook-task-type-prerequisite.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Editing an indexed context/docs markdown file in this repo (one listed in an extension's index-entries.json) requires its line_count entry to stay in sync or doc-lint (gate 3) fails. Fix with: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write (must run with REPO_ROOT set when invoked from the source store, not the deployed copy). If the same index-entries.json file already carries other sibling tasks' unrelated uncommitted line_count corrections (common in a multi-task /orchestrate batch), fix your own entry's content in the working tree (satisfies gate verification, which reads the working tree directly) but do not commit the whole file via git-commit-scoped.sh -- it stages a whole named path with no sub-file hunk granularity, so committing would over-stage the unrelated hunks into your task's history. Leave the file dirty for a later commit to pick up, and use `git restore --staged -- <path>` to undo any exploratory `git apply --cached` staging rather than leaving a stray partial stage.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/483_document_hook_task_type_prerequisite/summaries/01_hook-task-type-prerequisite-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "doc-lint",
+        "git-commit-scoped.sh",
+        "sub-file staging"
+      ]
+    },
+    {
+      "content": "A plan/report's cited file/line or script-name claim (a 'carried figure') can go stale within the same /orchestrate batch if a concurrently or previously dispatched sibling task lands a same-day commit touching that exact call site. Before writing a claim into a documentation deliverable, re-grep the live source for the cited symbol/script rather than trusting the plan's citation verbatim -- e.g. orchestrate-build-dispatch.sh's memory-context call site was swapped from memory-retrieve.sh to sapience-retrieve.sh by a same-day prior commit, after the plan and report for this task had already cited the old name.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/483_document_hook_task_type_prerequisite/summaries/01_hook-task-type-prerequisite-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "carried-figure",
+        "premise-revalidation",
+        "stale-citation",
+        "orchestrate-build-dispatch"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794343931_696ebd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
