@@ -4474,7 +4474,7 @@
     {
       "project_number": 450,
       "project_name": "validate_settled_route_before_dispatch",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Require a settled user-decision route to name the obligation it discharges, and check that claim before a dispatch spends a cycle on it",
       "topic": "orchestrator",
@@ -4523,7 +4523,7 @@
         }
       ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-10T08:50:12Z",
+      "last_updated": "2026-11-10T12:59:46Z",
       "session_id": "sess_1794272256_212466",
       "next_artifact_number": 2,
       "completion_summary": "Added an optional obligation field to .decisions.json entries (writer, schema, inventory, five new tests), required it at proposal time for ROUTE decisions in user-decision-contract.md with a mirror-polarity self-check, propagated it inline into the dispatch composer's Prior Decisions section with a verify-before-you-start instruction (seventeen new tests covering both regression polarities), wired Move 4's batched relay to pass it through, and redeployed with all ten touched files confirmed byte-identical between source store and deployed tree."
