@@ -1,0 +1,54 @@
+{
+  "phase": 4,
+  "phase_name": "Record the untracking shape and the sanctioned recipe",
+  "started_at": "2026-11-10T22:18:00Z",
+  "last_updated": "2026-11-10T22:21:36Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read git-staging-scope.md immediately before editing (contested territory); append sibling section, never overwrite",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add 'Cached-Untracking Staging' section modeled on Rename and Directory-Move Staging's structure",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]
+    },
+    {
+      "id": 3,
+      "description": "State the sanctioned recipe sentence; state relocation is not required/sanctioned",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]
+    },
+    {
+      "id": 4,
+      "description": "Document both gitignore-dependent symptoms and that an explicit file list is not a workaround",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]
+    },
+    {
+      "id": 5,
+      "description": "Note the two premises side by side; cross-reference the two distinct NOTE strings",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]
+    },
+    {
+      "id": 6,
+      "description": "Add V11/V12 header finding-list entry to git-commit-scoped.sh (comment only)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Check edited prose against no-task-references and no-record-versioning rules",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "git-staging-scope.md re-read immediately before editing; no sibling-task changes landed in the interim, section appended cleanly after 'Rename and Directory-Move Staging', before 'Commit-Level Path Scoping and Cross-Process Serialization'. git-commit-scoped.sh's V11/V12 header entries verified comment-only via 'git diff | grep ^+ | grep -v ^+#' (zero non-comment added lines) and bash -n (exit 0). check-task-references.sh --quiet: 0 occurrences in both edited files. check-record-versioning.sh: 0 BLOCKING in both; all ADVISORY findings fall on pre-existing lines outside this phase's added ranges (confirmed by line-number cross-check against the diff). Added a dedicated 'Identifying this shape in a log' paragraph quoting both historical symptom texts ('not present in the index at all' for the gitignored refusal; the silent ls-files reappearance for the non-gitignored case) in present-tense, non-versioning phrasing, satisfying the task's 'so a reader encountering either in an older log can identify it' requirement without violating the no-record-versioning rule's forbidden word list (no 'previously'/'no longer'/'used to'/'formerly'). Scoped Tier Justification suite (run-all.sh --only <16-suite list>): 14 passed, 2 failed -- the same 2 pre-existing out-of-scope failures already recorded in Phase 1's issue-log entry (test-orchestrate-cycle-postflight.sh, test-redeploy-checkpoint-promotion.sh); test-git-commit-scoped.sh and test-todo-move-pair-staging.sh both passed."
+}

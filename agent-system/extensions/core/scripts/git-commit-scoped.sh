@@ -254,6 +254,41 @@
 #        which disables this entire check by construction, the same single-disable-switch shape
 #        V5's own fail-open posture already uses. See exit code 7 above for the resulting
 #        observable outcome on a commit that nonetheless succeeds.
+#   V11 - a positive pathspec whose every HEAD-tracked file has been removed from the index (e.g.
+#        `git rm -r --cached <dir>`) while remaining PRESENT on disk -- the cached-untracking
+#        shape, the OPPOSITE premise of case 2 above and of V7's fully-staged-deletion carve-out
+#        below (both of which require content GONE from the working tree). Classified by
+#        `is_cached_untracking_shape()`, evaluated after V9/V10 and before case 1, via five
+#        enumerate-and-verify conjuncts (never a cheap existence test, which would wrongly match a
+#        partially-untracked directory): HEAD exists; `git ls-tree -r --name-only HEAD -- "$p"`
+#        is non-empty; every file it lists fails `git ls-files --error-unmatch`; `git ls-files --
+#        "$p"` is itself empty; and `git diff --cached --name-status HEAD -- "$p"` is non-empty
+#        with every status column exactly `D`. A matching pathspec is routed into
+#        `filtered_pathspecs` and the dedicated `cached_untracking_pathspecs` ledger only, NEVER
+#        `add_pathspecs` (which would let `git add` silently RE-TRACK the still-present content,
+#        reverting the untracking) and NEVER `dropped_pathspecs` (this is not a drop). See
+#        context/standards/git-staging-scope.md's "Cached-Untracking Staging" section for the
+#        sanctioned recipe this classification enables.
+#   V12 - once V11 classifies a pathspec, it still cannot be committed via any pathspec-scoped
+#        `git commit -- <pathspec>` form -- that form has `--only` semantics and re-reads the
+#        working tree fresh for each named path at commit time, so a path staged as deleted but
+#        still present on disk always yields "nothing to commit" with HEAD unmoved (verified
+#        across a directory pathspec, an explicit HEAD-tracked file list, and an explicit `--only`
+#        invocation alike; pathspec granularity is irrelevant). This script therefore commits a
+#        cached-untracking pathspec via a BARE `git commit` (the whole staged index) instead --
+#        exactly the hazard this script exists to prevent for every OTHER caller -- but ONLY after
+#        an index-equivalence guard proves the staged index is EXACTLY the declared scope:
+#        `git diff --cached --name-only HEAD` (the whole staged index) must equal the same diff
+#        restricted to `filtered_pathspecs`. Equal commits via the bare form; unequal refuses with
+#        exit 2, naming the foreign staged paths, rather than ever committing wider than what the
+#        caller asked for. V11 also corrects the V8 pre-commit intent snapshot below: every file
+#        HEAD tracks under a `cached_untracking_pathspecs` entry is recorded as `absent`
+#        (resolved via `git ls-tree`, never a string prefix match) regardless of its on-disk
+#        presence, since that is its correct intended post-commit state -- the ordinary
+#        `[ -e "$v8_f" ]` branch would otherwise misclassify it and produce a V8 false positive
+#        once the untracking commit lands correctly. A distinct stderr NOTE, textually
+#        disjoint from the fully-staged-deletion NOTE above, names the count and the paths and
+#        states explicitly that this is NOT the source half of a directory move.
 #
 # Git semantics discovered empirically while diagnosing V8 (undocumented elsewhere in this
 # script, and load-bearing for why V8 exists at all): `git commit -- <pathspec>` RE-READS the

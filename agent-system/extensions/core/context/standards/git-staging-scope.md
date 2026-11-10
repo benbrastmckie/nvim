@@ -649,6 +649,60 @@ Both mechanisms satisfy the same rule; which one a given recipe uses is a functi
 already carries a pathspec accumulator or builds its `git add` invocation inline — not a reason
 to relax the pairing requirement itself.
 
+## Cached-Untracking Staging (`git rm --cached` with content left on disk)
+
+**Rule**: to commit a `git rm -r --cached <dir>` untracking — index deletions whose content
+remains present on disk — invoke `git-commit-scoped.sh` with an ordinary positive pathspec naming
+`<dir>`, exactly as for any other scoped commit. No relocation of any file out of the working
+tree is required or sanctioned; relocating content out of the repository to work around a
+refusal is not a recipe and MUST NOT be used.
+
+**Failure mode this rule prevents**: `git commit -- <pathspec>` (and every other pathspec-scoped
+commit form, including an explicit file list or an `--only` invocation) has `--only` semantics
+and re-reads the working tree fresh for each named path at commit time. A path staged as deleted
+but still present on disk therefore always resolves to "nothing to commit" under that form, with
+HEAD unmoved — pathspec granularity does not matter here, because the hazard is in `--only`
+commit semantics, not in how narrowly the pathspec names its targets. An explicit file list is
+not a workaround for this shape for the same reason a directory pathspec is not: neither can
+express a committed deletion whose content remains on disk. `git-commit-scoped.sh` instead
+commits this shape via a bare `git commit` (the whole staged index) ONLY after proving the staged
+index is exactly the declared pathspec scope — the whole-index diff compared against the same
+diff restricted to the declared pathspecs — so the commit can never land wider than what the
+caller actually asked for, even though the underlying mechanism is a bare commit.
+
+**Why no existing gate catches it**: this shape's premise is the OPPOSITE of "Rename and
+Directory-Move Staging" above. That section, and the fully-staged-deletion carve-out it
+documents, both require content GONE from the working tree — the vacated source half of a
+directory move. A cached-untracking requires content PRESENT on disk, with every tracked file
+already removed from the index. A single predicate cannot honor both premises without blurring
+them, so `git-commit-scoped.sh` classifies the two shapes separately (Verified Findings V11 and
+V12 in the script's own header) and emits two textually distinct stderr NOTEs so a reader can map
+a given invocation's note to the correct shape: the fully-staged-deletion NOTE names "the source
+half of a directory move"; the cached-untracking NOTE names "a cached-untracking shape" and
+states explicitly that it is NOT the source half of a directory move. The two NOTEs are never
+both emitted for the same invocation.
+
+**Identifying this shape in a log**: this shape surfaces as one of two gitignore-dependent
+symptom texts, which both identify the same cached-untracking shape. For a gitignored directory,
+the symptom is a refusal whose message includes "not present in the index at all" — the
+directory's content is present on disk, which is the opposite of the fully-staged-deletion
+conjunct that symptom's classification path checks for. For a non-gitignored directory, the
+symptom is no error at all: the untracked files simply reappear in `git ls-files` after the
+commit, because `git add` restages whatever is still present on disk. A reader who maps either
+symptom text to this section has correctly identified the shape; `git-commit-scoped.sh` resolves
+both via the same Verified Finding V11/V12 classification above, with no relocation and no
+special-cased recipe beyond the ordinary invocation below.
+
+**Canonical illustration**:
+
+```bash
+# Untrack a stale deploy tree whose content remains on disk -- no relocation needed.
+git rm -r --cached .opencode
+bash agent-system/extensions/core/scripts/git-commit-scoped.sh \
+  --message "untrack stale .opencode deploy tree" --session "$session_id" \
+  -- .opencode
+```
+
 ## Commit-Level Path Scoping and Cross-Process Serialization
 
 Staging narrowly is necessary but not sufficient: a narrowed `git add` followed by a **bare**

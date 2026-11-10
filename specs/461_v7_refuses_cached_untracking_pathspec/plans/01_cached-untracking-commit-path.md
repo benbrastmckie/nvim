@@ -420,7 +420,7 @@ guard this phase exists to provide.
 
 ---
 
-### Phase 4: Record the untracking shape and the sanctioned recipe [NOT STARTED]
+### Phase 4: Record the untracking shape and the sanctioned recipe [COMPLETED]
 
 **Goal**: leave a durable, discoverable record so no future agent re-derives the
 relocate-the-directory workaround, and so the new carve-out's premise is documented beside the
@@ -428,28 +428,35 @@ directory-move carve-out's rather than inside it.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` immediately
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` immediately
   before editing — this file is contested territory with task 446, which may have landed changes.
-  Append a sibling section; merge, never overwrite.
-- [ ] Add a new section modeled on the existing "Rename and Directory-Move Staging" section's
+  Append a sibling section; merge, never overwrite. *(completed: re-read immediately before
+  editing, no sibling changes present; appended cleanly)*
+- [x] Add a new section modeled on the existing "Rename and Directory-Move Staging" section's
   structure (Rule / Failure mode this rule prevents / Why no existing gate catches it /
   Canonical illustration), covering the `--cached` untracking shape: index deletions with content
-  still present on disk.
-- [ ] State the sanctioned recipe in one unambiguous sentence: `git rm -r --cached <dir>`, then
+  still present on disk. *(completed: "Cached-Untracking Staging" section)*
+- [x] State the sanctioned recipe in one unambiguous sentence: `git rm -r --cached <dir>`, then
   an ordinary `git-commit-scoped.sh --message ... -- <dir>`. State explicitly that relocating
-  content out of the working tree is **not** required and should not be used.
-- [ ] Document both gitignore-dependent symptoms the fix closes (the refusal and the silent
+  content out of the working tree is **not** required and should not be used. *(completed)*
+- [x] Document both gitignore-dependent symptoms the fix closes (the refusal and the silent
   revert) so a reader encountering either in an older log can identify it, and document that an
   explicit file list is **not** a workaround for an unfixed script, since the hazard is in
-  `--only` commit semantics rather than pathspec granularity.
-- [ ] Note the two premises side by side — directory move: content gone from the working tree;
+  `--only` commit semantics rather than pathspec granularity. *(completed: added an "Identifying
+  this shape in a log" paragraph quoting both symptom texts in present-tense, non-versioning
+  phrasing)*
+- [x] Note the two premises side by side — directory move: content gone from the working tree;
   untracking: content present — and cross-reference the script's two distinct NOTE strings so a
-  stderr reader can map a note to a shape.
-- [ ] Add a brief entry to the script's own header finding list describing the untracking case,
-  consistent with how the existing V-findings are summarized there.
-- [ ] Check the edited prose against `rules/no-task-references-in-deliverables.md` and
+  stderr reader can map a note to a shape. *(completed)*
+- [x] Add a brief entry to the script's own header finding list describing the untracking case,
+  consistent with how the existing V-findings are summarized there. *(completed: V11 and V12
+  entries added after V10, comment-only, verified via diff)*
+- [x] Check the edited prose against `rules/no-task-references-in-deliverables.md` and
   `rules/no-record-versioning-in-deliverables.md`: no task numbers, and no "previously /
-  no longer / used to" framing — state the current design only.
+  no longer / used to" framing — state the current design only. *(completed:
+  check-task-references.sh --quiet reports 0 occurrences in both edited files;
+  check-record-versioning.sh reports 0 BLOCKING in both, with every ADVISORY finding confirmed
+  to fall on a pre-existing line outside this phase's own added ranges)*
 
 **Timing**: 1 hour
 
