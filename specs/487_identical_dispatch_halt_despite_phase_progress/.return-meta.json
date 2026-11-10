@@ -5,7 +5,14 @@
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
-  "dispatch_seq": 31
+  "dispatch_seq": 31,
+  "proposed_file_scope": [
+    ".claude (deployed tree, regenerated)"
+  ]
 }
