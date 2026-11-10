@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 8,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "phases_completed": 2,
   "phases_total": 2,
-  "summary": "Wrote a two-phase plan for the Gate 20 eager-load baseline regression. Phase 1 takes a fresh measure-eager-context.sh reading, moves eager_load.baseline_bytes up to the next 100 B, and appends a dated route-(b) justification entry to the config's own note field. Phase 2 rewrites (does not remove) the known-failures.txt row and runs the full gate set baseline-relative. Live re-validation corrected two carried premises: the dispatch's 68,624 B figure is 18 B stale (live TOTAL is 68,606 B, matching the research report exactly), and the suite's baseline-fixture-clean case asserts rc==0 over a full --max-cost moderate verify-deploy run, so the separately-owned gate 24 /ide findings keep that one case red regardless of this fix -- which is why the row is re-attributed rather than deleted.",
+  "summary": "Resolved the Gate 20 eager-load baseline regression by route (b): moved orchestrator-context-budget.json's eager_load.baseline_bytes from 66,800 B to 68,700 B (fresh TOTAL 68,606 B, matching the planning-time figure exactly) with a dated justification entry, then rewrote the known-failures.txt row for test-verify-deploy-context-budget.sh to attribute its single residual failure to the cross-owned gate 24 /ide findings rather than removing the row. Both plan phases completed and verified; this dispatch's Batch Gate Deferral directive was used to discharge Phase 2's declared full tier via a scoped 5-suite run (4 passed, 1 failed, 1 expected, 0 NEW) instead of an independent full verify-deploy.sh --findings run.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/summaries/01_eager-baseline-move-and-row-rewrite-summary.md",
+      "summary": "Implementation summary: eager-load baseline move plus known-failures.txt row re-attribution, with verification evidence and the Batch Gate Deferral discharge."
+    },
+    {
       "type": "plan",
       "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/plans/01_eager-baseline-move-and-row-rewrite.md",
-      "summary": "Two-phase route-(b) baseline move plus known-failures row re-attribution, with live-verified figures and selector-verified covering suites."
+      "summary": "Two-phase route-(b) baseline move plus known-failures row re-attribution, with live-verified figures and selector-verified covering suites. Both phases now [COMPLETED]."
     }
   ]
 }

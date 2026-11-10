@@ -1,7 +1,7 @@
 # Implementation Plan: Task #423
 
 - **Task**: 423 - Fix verify-deploy context budget byte-count drift
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None (see Risks for the cross-owned gate 24 residual, which is NOT a blocking dependency)
 - **Research Inputs**: specs/423_fix_verify_deploy_context_budget_byte_count_drift/reports/01_eager-budget-overage-attribution.md

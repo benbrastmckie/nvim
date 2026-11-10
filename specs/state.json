@@ -4178,7 +4178,7 @@
     {
       "project_number": 423,
       "project_name": "fix_verify_deploy_context_budget_byte_count_drift",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (measured 67,088 B vs. baseline_bytes 66,100 B)",
       "topic": "core-agent-system",
@@ -4191,7 +4191,7 @@
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-11-10T21:35:01Z",
+      "last_updated": "2026-11-10T23:15:38Z",
       "session_id": "sess_1794343931_696ebd",
       "artifacts": [
         {
@@ -4203,9 +4203,15 @@
           "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/plans/01_eager-baseline-move-and-row-rewrite.md",
           "type": "plan",
           "summary": "Two-phase route-(b) baseline move plus known-failures row re-attribution, with live-verified figures and selector-verified covering suites."
+        },
+        {
+          "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/summaries/01_eager-baseline-move-and-row-rewrite-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: eager-load baseline move plus known-failures.txt row re-attribution, with verification evidence and the Batch Gate Deferral discharge."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Moved eager_load.baseline_bytes from 66,800 B to 68,700 B in orchestrator-context-budget.json with a dated route-(b) justification entry, and rewrote the test-verify-deploy-context-budget.sh known-failures.txt row to attribute its single residual failure to the cross-owned gate 24 /ide findings. Both plan phases completed and verified; the suite's eager-load pad-amount case now passes."
     },
     {
       "project_number": 430,

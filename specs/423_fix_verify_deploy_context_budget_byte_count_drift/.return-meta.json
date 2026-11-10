@@ -1,10 +1,31 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/summaries/01_eager-baseline-move-and-row-rewrite-summary.md",
+      "summary": "Resolved the Gate 20 eager-load baseline regression via a reviewed, dated baseline move (66,800 B -> 68,700 B) and re-attributed the known-failures.txt row to the residual, separately-owned gate 24 /ide findings."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Moved eager_load.baseline_bytes from 66,800 B to 68,700 B in orchestrator-context-budget.json with a dated route-(b) justification entry, and rewrote the test-verify-deploy-context-budget.sh known-failures.txt row to attribute its single residual failure to the cross-owned gate 24 /ide findings. Both plan phases completed and verified; the suite's eager-load pad-amount case now passes."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/scripts/tests/known-failures.txt"
+  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1794343931_696ebd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }
