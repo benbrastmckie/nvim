@@ -772,7 +772,7 @@
     },
     {
       "path": "project/lean4/domain/hard-mode.md",
-      "line_count": 53,
+      "line_count": 74,
       "load_when": {
         "agents": [
           "lean-research-hard-agent",

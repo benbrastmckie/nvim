@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 1141,
+      "line_count": 1143,
       "keywords": [
         "format",
         "plan",
@@ -2917,7 +2917,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Collapsed routing model: the two surviving routing_agents/routing_agents_hard blocks plus the unrelated hard_contracts key, the shared five-step ladder, core identification, and the declared-not-derived agent-name rule",
-      "line_count": 315,
+      "line_count": 320,
       "keywords": [
         "routing",
         "manifest",

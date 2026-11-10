@@ -325,7 +325,7 @@
     },
     {
       "path": "project/cslib/domain/hard-mode-selection.md",
-      "line_count": 44,
+      "line_count": 50,
       "load_when": {
         "agents": [
           "cslib-research-hard-agent",
