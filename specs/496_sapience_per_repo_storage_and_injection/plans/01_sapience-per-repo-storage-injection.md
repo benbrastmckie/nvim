@@ -205,7 +205,7 @@ deployed tree. Neither may actually run concurrently with any other phase, so Wa
 
 ---
 
-### Phase 1: Author `sapience-retrieve.sh` [IN PROGRESS]
+### Phase 1: Author `sapience-retrieve.sh` [COMPLETED]
 
 **Goal**: A standalone, shellcheck-clean retrieval script that queries `/v1/search` filtered to
 this repo's tag and emits the existing `<memory-context>` envelope under the existing budget.
@@ -276,35 +276,35 @@ this repo's tag and emits the existing `<memory-context>` envelope under the exi
 
 ---
 
-### Phase 2: Author `sapience-remember.sh` [NOT STARTED]
+### Phase 2: Author `sapience-remember.sh` [COMPLETED]
 
 **Goal**: A standalone, shellcheck-clean write script that posts a repo-tagged, `explicit: true`
 KO and fails loudly on every silent-loss response shape the server can return.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/sapience/scripts/sapience-remember.sh` with the same
+- [x] Write `agent-system/extensions/sapience/scripts/sapience-remember.sh` with the same *(completed)*
       bootstrap, `set -euo pipefail`, and host/token/slug resolution as Phase 1. The resolution
       block is deliberately **copied, not shared** — a `scripts/lib/` helper would add a path
       outside this task's declared `file_scope`; record the duplication in a header comment
       pointing at the other script.
-- [ ] Define the argument contract: `--subject S --value V` required; `--predicate P` (default
+- [x] Define the argument contract: `--subject S --value V` required; `--predicate P` (default *(completed)*
       `finding is`), `--ko-type T` (default `insight`), `--confidence C` (default `0.8`) — the
       three defaults matching `~/.sapience/mcp.py`'s own `sapience_remember` call site —
       `--source-loc L` optional, and `--dry-run`. Refuse unknown flags with a non-zero exit
       rather than ignoring them.
-- [ ] Build the `provenance` string so it contains the literal `[repo:<slug>]` tag plus a
+- [x] Build the `provenance` string so it contains the literal `[repo:<slug>]` tag plus a *(completed)*
       human-meaningful remainder naming the writing surface, and document the shape in a header
       comment as the one field per-repo scoping depends on.
-- [ ] Build the request body with `jq -n` (never string concatenation) in the confirmed nesting:
+- [x] Build the request body with `jq -n` (never string concatenation) in the confirmed nesting: *(completed)*
       `{"token": …, "kos": [{subject, predicate, object_value, ko_type, confidence, provenance,
       explicit: true, source_loc?}], "source": "…"}`. `explicit: true` is set unconditionally and
       is not switchable off by any flag.
-- [ ] Under `--dry-run`, print the body to stdout **with the token field redacted** and exit 0
+- [x] Under `--dry-run`, print the body to stdout **with the token field redacted** and exit 0 *(completed)*
       without issuing any request.
-- [ ] Otherwise `POST` to `${HOST}/ingest-kos?token=<token>` with
+- [x] Otherwise `POST` to `${HOST}/ingest-kos?token=<token>` with *(completed)*
       `-H 'content-type: application/json' -H 'X-Sapience-Client: …'` and the same
       `--connect-timeout`/`--max-time` bounds.
-- [ ] Interpret the response as a **loud** outcome, not a success, whenever any of these holds:
+- [x] Interpret the response as a **loud** outcome, not a success, whenever any of these holds: *(completed)*
       `gated` is `>= 1`; `set_aside` is a non-empty array (the second silent-loss shape, found in
       the vendor client at `~/.sapience/mcp.py`'s `sapience_remember` call site, which branches on
       it before `gated`); `written` is absent or `0`; `ok` is falsey; or the body is not JSON. In
@@ -312,11 +312,11 @@ KO and fails loudly on every silent-loss response shape the server can return.
       server's own `why` text when `set_aside` supplies one, and exit non-zero — explicitly
       including the `{"ok": true, "written": 0, "gated": 1}` shape, whose `ok: true` must not be
       read as success.
-- [ ] Print a one-line confirmation to stdout on a genuine `written >= 1`, and exit 0.
-- [ ] Add a header comment stating the sanctioned call site (task-boundary postflight, a bounded
+- [x] Print a one-line confirmation to stdout on a genuine `written >= 1`, and exit 0. *(completed)*
+- [x] Add a header comment stating the sanctioned call site (task-boundary postflight, a bounded *(completed)*
       3-8-note set) and the reason for the bound: writes through this path are permanent and
       unreviewed, and no delete API exists.
-- [ ] Run `shellcheck` and fix every finding.
+- [x] Run `shellcheck` and fix every finding. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Author sapience-remember.sh",
+  "started_at": "2026-11-10T00:10:00Z",
+  "last_updated": "2026-11-10T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create sapience-remember.sh with copied bootstrap/host/token/slug resolution, --subject/--value/--predicate/--ko-type/--confidence/--source-loc/--dry-run argument contract, jq -n body construction with explicit:true unconditional, loud gated/set_aside/written==0 failure handling, shellcheck clean",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/sapience-remember.sh"
+      ],
+      "note": "Deep invocation verification (real --dry-run JSON shape, live curl) is structurally deferred to Phase 4 post-deploy, since the script sources lib/common.sh relative to its own SCRIPT_DIR, which exists only in the deployed .claude/scripts/ tree. Pre-deploy verification covered: shellcheck clean, missing --subject/--value exits 1, unknown flag exits 1, no token leak via grep. Logged as a non-blocking issue."
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
