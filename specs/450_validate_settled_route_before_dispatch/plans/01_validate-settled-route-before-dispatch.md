@@ -244,42 +244,43 @@ block, the hypothesis is wrong and the deviation is recorded in place.
 
 ---
 
-### Phase 2: Require the Claim at Proposal Time — Contract Amendment [IN PROGRESS]
+### Phase 2: Require the Claim at Proposal Time — Contract Amendment [COMPLETED]
 
 **Goal**: `user-decision-contract.md` requires an option offered as a ROUTE to name the obligation
 it discharges, and requires the proposing agent to confirm each listed option is not already
 structurally excluded by the task's own artifacts — the mirror polarity.
 
 **Tasks**:
-- [ ] In `context/standards/user-decision-contract.md`'s `## Field Shape` section, add
+- [x] In `context/standards/user-decision-contract.md`'s `## Field Shape` section, add
       `obligation` to the JSON example and to the field table as an optional string: **required
       when the decision is a ROUTE decision** (the question is "which way do we go to get past
       this obstruction"), omitted for a pure-preference decision (the question is "which of these
       equally-workable things do you want"). State what the value must contain: the specific
       obligation the route is claimed to discharge, named concretely enough that the receiving
-      agent can check it against the phase's own artifacts.
-- [ ] In the same section, state the downstream path in one or two sentences so the field is not
+      agent can check it against the phase's own artifacts. *(completed)*
+- [x] In the same section, state the downstream path in one or two sentences so the field is not
       an orphan: postflight relays the whole `user_decision` object verbatim, the loop's batched
       relay passes the value to the decision writer's `--obligation` argument, and the dispatch
-      composer renders it to the next dispatch. Cite the mechanisms by name, not by task number.
-- [ ] Extend `## When NOT to Raise One` with the mirror-polarity self-check: an option belongs in
+      composer renders it to the next dispatch. Cite the mechanisms by name, not by task number. *(completed)*
+- [x] Extend `## When NOT to Raise One` with the mirror-polarity self-check: an option belongs in
       `options` only when its alternatives are not already structurally excluded by facts already
       present in the task's own artifacts (a prior report's or plan's findings). An option set
       asserted to have several live members when it has one is the same defect as a route asserted
       to discharge an obligation it does not — both reach a dispatch carrying authority and no
       checkability. Give the worked shape (an alternative route foreclosed by a dependency
-      direction already recorded in the task's own findings) **without** naming any task number.
-- [ ] Add one short paragraph distinguishing this from a license to re-litigate: this is a
+      direction already recorded in the task's own findings) **without** naming any task number. *(completed: worked shape is an import-cycle-foreclosed alternative proof route)*
+- [x] Add one short paragraph distinguishing this from a license to re-litigate: this is a
       proposal-time self-check performed by the agent about to raise a question, never an
       instruction to re-ask an already-recorded answer; and an informed adjudication that a route
       does not hold is the intended working case, not a mechanical refusal, so the fail-open
-      posture that governs mechanical validation does not apply to it.
-- [ ] Update `context/formats/return-metadata-file.md`'s `### user_decision (optional)` subsection
+      posture that governs mechanical validation does not apply to it. *(completed)*
+- [x] Update `context/formats/return-metadata-file.md`'s `### user_decision (optional)` subsection
       so its one-line shape summary includes the new optional key. That subsection explicitly does
       not restate the contract, so add the key to the shape line and nothing more; the pointer to
-      `user-decision-contract.md` already carries the rest.
-- [ ] Re-read both landed files for task-number references and record-versioning language
-      ("previously", "no longer", "supersedes", a version label) and remove any.
+      `user-decision-contract.md` already carries the rest. *(completed)*
+- [x] Re-read both landed files for task-number references and record-versioning language
+      ("previously", "no longer", "supersedes", a version label) and remove any. *(completed:
+      one "previously-recorded" occurrence found and reworded to "recorded in an earlier cycle")*
 
 **Timing**: 1 hour
 
