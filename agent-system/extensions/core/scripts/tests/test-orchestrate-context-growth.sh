@@ -27,7 +27,7 @@
 # resolves inside the fixture, never the real repo), EXTENDED with orchestrate-build-dispatch.sh
 # itself (real, unstubbed -- this suite exists specifically to measure ITS real output) plus its
 # three SKILL_REPO_ROOT-qualified collaborators stubbed the same deterministic way
-# test-orchestrate-build-dispatch.sh does (memory-retrieve.sh, literature-lit-flag-resolve.sh,
+# test-orchestrate-build-dispatch.sh does (sapience-retrieve.sh, literature-lit-flag-resolve.sh,
 # literature-briefing-invoke.sh), and orchestrate-cycle-postflight.sh's own collaborator set
 # (test-orchestrate-cycle-postflight.sh's sandbox), all merged into ONE fixture tree so the
 # 3-task cycle runs start-to-finish without leaving the fixture.
@@ -95,8 +95,8 @@ chmod +x "$WORKDIR"/.claude/scripts/*.sh
 
 # Deterministic stubs for orchestrate-build-dispatch.sh's three SKILL_REPO_ROOT-qualified
 # collaborators (same contract as test-orchestrate-build-dispatch.sh's stubs) -- this suite is
-# under no obligation to depend on the real memory vault or a real Literature corpus.
-cat > "$WORKDIR/.claude/scripts/memory-retrieve.sh" <<'EOF'
+# under no obligation to depend on the real Sapience vault or a real Literature corpus.
+cat > "$WORKDIR/.claude/scripts/sapience-retrieve.sh" <<'EOF'
 #!/usr/bin/env bash
 echo "<memory-context>"
 echo "STUB_MEMORY_CONTENT"
@@ -119,7 +119,7 @@ echo "<literature-briefing>"
 echo "STUB_LIT_CONTENT"
 echo "</literature-briefing>"
 EOF
-chmod +x "$WORKDIR"/.claude/scripts/memory-retrieve.sh \
+chmod +x "$WORKDIR"/.claude/scripts/sapience-retrieve.sh \
          "$WORKDIR"/.claude/scripts/literature-lit-flag-resolve.sh \
          "$WORKDIR"/.claude/scripts/literature-briefing-invoke.sh
 
