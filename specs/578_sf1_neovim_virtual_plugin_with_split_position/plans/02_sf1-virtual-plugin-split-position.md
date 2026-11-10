@@ -274,25 +274,25 @@ single-module load check.
 
 ---
 
-### Phase 3: Spec File, Loader Registration, and `:Sf1` [NOT STARTED]
+### Phase 3: Spec File, Loader Registration, and `:Sf1` [COMPLETED]
 
 **Goal**: The module becomes a plugin lazy.nvim actually manages, reachable as `:Sf1`.
 
 **Tasks**:
-- [ ] Create `lua/neotex/plugins/ai/sapience-plugin.lua` modeled line-for-line on
+- [x] Create `lua/neotex/plugins/ai/sapience-plugin.lua` modeled line-for-line on
       `lua/neotex/plugins/tools/stt-plugin.lua`: `dir = vim.fn.stdpath('config') ..
       '/lua/neotex/plugins/ai/sapience'`, `name = 'sapience-sf1'`, `event = { 'VeryLazy' }`,
       and a `config = function(_, opts)` body that requires
       `neotex.plugins.ai.sapience.init` through a module-path local (the indirection
       `stt-plugin.lua` uses to avoid static-analysis complaints) and calls `setup(opts)`.
-- [ ] Keep the spec table free of a `[1]` string, an `import` key, and a `setup` function — all
+- [x] Keep the spec table free of a `[1]` string, an `import` key, and a `setup` function — all
       three are `ai/init.lua` `safe_require` rejection conditions, and the third is the trap
       that would silently skip the module with only a DEBUG notify.
-- [ ] Register the `:Sf1` user command inside the spec's `config` body, after `setup`:
+- [x] Register the `:Sf1` user command inside the spec's `config` body, after `setup`:
       `vim.api.nvim_create_user_command("Sf1", function() require('neotex.plugins.ai.sapience.init').toggle() end, { desc = "Toggle sf1 Sapience chat terminal" })`.
       It belongs here rather than in `sapience/init.lua` so the implementation directory stays
       free of editor-integration side effects at require time.
-- [ ] Add `"sapience-plugin"` to the `ai_plugins` list in `lua/neotex/plugins/ai/init.lua`,
+- [x] Add `"sapience-plugin"` to the `ai_plugins` list in `lua/neotex/plugins/ai/init.lua`,
       preserving the existing alphabetical-ish ordering of that list and changing nothing else
       in the file — in particular, add no `sapience`-specific branch to `safe_require`.
 

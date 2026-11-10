@@ -47,6 +47,7 @@ local ai_plugins = {
   "lectic",
   "mcp-hub",
   "opencode",
+  "sapience-plugin",
 }
 
 -- Load each AI plugin spec
