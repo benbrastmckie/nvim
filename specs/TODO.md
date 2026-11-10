@@ -188,6 +188,7 @@ next_project_number: 579
 - **Task Type**: neovim
 - **Topic**: neovim
 - **Dependencies**: None
+- **Research**: [578_sf1_neovim_virtual_plugin_with_split_position/reports/01_sf1-nvim-plugin-seed.md]
 
 **Description**: Build an in-config sf1 (Sapience terminal chat) Neovim integration as a lazy.nvim virtual plugin, following the existing stt-plugin.lua / himalaya-plugin.lua convention, kept fully separate from the claude-code and opencode integrations.
 
