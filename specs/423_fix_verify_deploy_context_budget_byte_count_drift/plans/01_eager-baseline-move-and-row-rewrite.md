@@ -200,18 +200,18 @@ is the cheapest check that covers this edit.
 
 ---
 
-### Phase 2: Re-attribute the known-failures row and run the full gate set [NOT STARTED]
+### Phase 2: Re-attribute the known-failures row and run the full gate set [COMPLETED]
 
 **Goal**: `known-failures.txt`'s row for this suite states the single real residual cause and a
 durable owner anchor, and the complete gate set introduces no finding beyond the pre-existing,
 separately-owned set.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/known-failures.txt` from disk
+- [x] Re-read `agent-system/extensions/core/scripts/tests/known-failures.txt` from disk
       (sibling-concurrency discipline) and locate the `test-verify-deploy-context-budget.sh` row.
       Expected at line 40; if the line number moved, operate on the row matched by basename, not
-      by line number.
-- [ ] Rewrite that row's `reason` and `owner` fields in place, keeping the basename and the
+      by line number. *(completed: confirmed at line 40, matched by basename)*
+- [x] Rewrite that row's `reason` and `owner` fields in place, keeping the basename and the
       `real-defect` category. The new `reason` must state: the eager-load/baseline case is fixed
       (naming the new baseline and the date of the move, pointing at
       `orchestrator-context-budget.json`'s own `eager_load.note` entry as the record); the single
@@ -224,18 +224,26 @@ separately-owned set.
       for `lint-dead-command-recommendations.sh`'s zero-tolerance no-allowlist policy — with **no
       task number anywhere in the row** (the file's own header at lines 12-16 restates that
       prohibition and `no-task-references-in-deliverables.md` governs it, this file living under
-      `agent-system/extensions/**`).
-- [ ] State in the row (or keep it implicit only if the row would otherwise exceed its
+      `agent-system/extensions/**`). *(completed)*
+- [x] State in the row (or keep it implicit only if the row would otherwise exceed its
       neighbours' length) the removal condition: this row becomes removable once gate 24 reports
       no finding against the fixture, at which point the suite reaches `rc -eq 0` and goes fully
-      green with no further change to the budget config.
-- [ ] Do **not** copy the edited row into the deployed `.claude/scripts/tests/known-failures.txt`
+      green with no further change to the budget config. *(completed: stated inline in the
+      rewritten reason field)*
+- [x] Do **not** copy the edited row into the deployed `.claude/scripts/tests/known-failures.txt`
       and do not redeploy. The manifest is matched by suite basename, so a deployed-mode
       `run-all.sh` keeps annotating this suite as EXPECTED from the stale copy; only the row's
-      prose is briefly out of date, until the next ordinary deploy.
-- [ ] Run the complete gate set and compare against the pre-existing finding set recorded below,
-      not against an absolute zero.
-- [ ] Commit this green sub-step with an explicit file list.
+      prose is briefly out of date, until the next ordinary deploy. *(completed: deployed copy
+      left untouched)*
+- [x] Run the complete gate set and compare against the pre-existing finding set recorded below,
+      not against an absolute zero. *(deviation: this dispatch's Batch Gate Deferral directive
+      discharges this phase's declared full tier via the scoped narrowing invocation instead --
+      `run-all.sh --only test-verify-deploy-context-budget.sh,test-gate8-expected-new-distinction.sh,test-orchestrate-cycle-plan.sh,test-run-all-failure-reporting.sh,test-run-all-selection.sh`
+      ran 4 passed, 1 failed (1 expected, 0 NEW); the independent full `verify-deploy.sh
+      --findings` comparison is deferred to the once-per-batch stage at the end of this
+      /orchestrate invocation, per context/formats/plan-format.md's Batch-aware deferral
+      subsection)*
+- [x] Commit this green sub-step with an explicit file list. *(completed)*
 
 **Timing**: 0.75 hours
 
