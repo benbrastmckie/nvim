@@ -633,6 +633,7 @@ mt_json=$(jq -c \
   | .last_dispatch_phase //= {}
   | .identical_dispatch_streak //= {}
   | .identical_dispatch_halted //= []
+  | .last_dispatch_phases_completed //= {}
   ' <<<"$mt_json")
 
 # ─── Item (b): in-session plan cache — replay check (must run before ANY composition side ────
@@ -2866,10 +2867,72 @@ for t in "${probed_dispatch_post_h1[@]}"; do
       fi
     fi
 
+    # ── Streak-freeze backstop #2 (independent phase-progress signal vs. the no-phase-content
+    # composition defect): for an ordinary (non-hard-mode) multi-phase `implement` dispatch, the
+    # composed dispatch body carries NO phase-progress content at all (the dispatch's only
+    # phase-progress interpolation, `## Phase Mission`'s `PHASES COMPLETED: <n> of <m>` line, is
+    # gated on `--phase-number`, which is set for a hard-mode phase-scoped candidate only) -- so
+    # closing a real plan phase between two cycles changes no line of the hashed body, and the
+    # hash-match-twice-in-a-row halt below would read genuine, committed progress as
+    # non-convergence. D1: the independent signal is the plan file's OWN `[COMPLETED]`/
+    # `[COMPLETED WITH EXCLUSIONS]` phase-heading count, never the handoff's self-reported
+    # `phases_completed` -- the plan file is ground truth already committed to the repository by
+    # the time the next cycle composes, whereas the handoff's self-report can be stale, absent on
+    # a `partial` return, or in active disagreement with the markers (the H1 marker/handoff
+    # crosscheck a few hundred lines above exists precisely because the two can diverge). D6:
+    # scoped to `[ "$g" = "implement" ]` only -- research and plan phases have no plan-phase
+    # concept, so their hash accounting is byte-for-byte identical to before this signal existed.
+    # D5: a non-conforming heading, or no resolvable plan file, makes the signal UNAVAILABLE, never
+    # zero -- "unavailable" must never be spelled "0 phases completed", which would read as an
+    # advance the instant any count later appeared, silently neutering the guard for genuine
+    # non-convergence. This is a PERSISTED SIDE-CHANNEL (`last_dispatch_phases_completed`,
+    # initialized above), never dispatch-body content: it is per-PROGRESS-varying, not
+    # per-cycle-varying, so the STANDING OBLIGATION in cycle_plan_dispatch_hash()'s own header
+    # (extend the strip pattern for any new per-cycle-varying dispatch-body content) does not apply
+    # to it, and it must never be added to that strip pattern nor converted into a hashed body
+    # line. Reuses the SAME task-directory resolution the `deploy_pending` branch above just
+    # computed (`_idh_dp_dir`) rather than re-resolving it a second time.
+    _idh_progress_available="false"
+    _idh_progress_count=""
+    if [ "$g" = "implement" ] && [ -n "${_idh_dp_dir:-}" ]; then
+      _idh_plan_path=$(ls -1 "${_idh_dp_dir}/plans/"*.md 2>/dev/null | sort -V | tail -1) || _idh_plan_path=""
+      if [ -n "$_idh_plan_path" ] && [ -f "$_idh_plan_path" ]; then
+        # Whole-file conformance gate BEFORE any filtered scan -- same ordering obligation as H1's
+        # own resume-scan-conformance-gate above (a non-conforming heading is INVISIBLE to
+        # PHASE_HEADING_DONE_ERE, not merely unmatched; D5 requires treating that as "unavailable"
+        # rather than silently under-counting).
+        if has_nonconforming_phase_headings "$_idh_plan_path"; then
+          warn_nonconforming "$_idh_plan_path" "orchestrate-cycle-plan-identical-dispatch-progress-signal" || true
+        else
+          # `x=$(grep -c ...) || x=0` idiom, never `x=$(grep -c ... || echo 0)` -- grep -c already
+          # prints "0" before exiting 1 on zero matches, so the latter form emits two lines and
+          # breaks the numeric `-gt` compare below (the H1 marker-crosscheck site above carries
+          # this same warning inline).
+          _idh_progress_count=$(grep -cE "$PHASE_HEADING_DONE_ERE" "$_idh_plan_path" 2>/dev/null) || _idh_progress_count=0
+          case "$_idh_progress_count" in ''|*[!0-9]*) _idh_progress_count=0 ;; esac
+          _idh_progress_available="true"
+        fi
+      fi
+    fi
+
     if [ -n "$_idh_hash" ] && [ "$_idh_hash" = "$_idh_prev_hash" ] && [ "$g" = "$_idh_prev_phase" ]; then
+      _idh_prev_progress=""
+      [ "$_idh_progress_available" = "true" ] && _idh_prev_progress=$(mt_get --arg t "$t" '.last_dispatch_phases_completed[$t] // ""')
       if [ "$_idh_deploy_pending" = "true" ]; then
         _idh_streak=$(mt_get --arg t "$t" '.identical_dispatch_streak[$t] // 0')
         echo "[orchestrate] IDENTICAL DISPATCH: task #$t $g content matches the previous one, but the task is deploy-pending -- streak frozen at ${_idh_streak}, not charged as churn." >&2
+      elif [ "$_idh_progress_available" = "true" ] && [ -n "$_idh_prev_progress" ] && [ "$_idh_progress_count" -gt "$_idh_prev_progress" ]; then
+        # D3 (freeze, never suppress; re-arm every cycle): a strictly-increased plan-file
+        # completed-phase count between two hash-identical compositions means a real plan phase
+        # landed in between -- the guard's own premise ("re-issuing an identical dispatch means no
+        # progress is being made") is false here. Read the persisted streak WITHOUT incrementing
+        # and WITHOUT resetting it to 1, so a pre-existing genuine streak survives this
+        # interruption intact; the new count is still persisted unconditionally below, so the next
+        # cycle's comparison re-arms and a second non-advancing repeat accumulates normally. D4
+        # (seed, not freeze): a MISSING prior measurement is excluded by the `-n
+        # "$_idh_prev_progress"` test above, so the very first repeat is never forgiven for free.
+        _idh_streak=$(mt_get --arg t "$t" '.identical_dispatch_streak[$t] // 0')
+        echo "[orchestrate] IDENTICAL DISPATCH: task #$t $g content matches the previous one, but the plan file's completed-phase count advanced ${_idh_prev_progress} -> ${_idh_progress_count} -- streak frozen at ${_idh_streak}, not charged as churn." >&2
       else
         _idh_streak=$(( $(mt_get --arg t "$t" '.identical_dispatch_streak[$t] // 0') + 1 ))
         mt_set --arg t "$t" --argjson s "$_idh_streak" '.identical_dispatch_streak[$t] = $s'
@@ -2883,6 +2946,13 @@ for t in "${probed_dispatch_post_h1[@]}"; do
     fi
     mt_set --arg t "$t" --arg h "$_idh_hash" '.last_dispatch_hash[$t] = $h'
     mt_set --arg t "$t" --arg p "$g" '.last_dispatch_phase[$t] = $p'
+    # D3's re-arm: persisted unconditionally whenever the signal is available, regardless of
+    # which branch above fired, so the NEXT cycle's comparison is always against the freshest
+    # measurement -- never only on a freeze, or a stalled-forever task would never resume
+    # incrementing the streak once it stopped advancing.
+    if [ "$_idh_progress_available" = "true" ]; then
+      mt_set --arg t "$t" --argjson c "$_idh_progress_count" '.last_dispatch_phases_completed[$t] = $c'
+    fi
   elif [ "$?" -eq 2 ]; then
     echo "[orchestrate] NOTICE: identical-dispatch convergence guard disabled for this run (sha256sum unavailable, or task #$t's just-written dispatch file was unreadable)." >&2
   fi

@@ -1,29 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/487_identical_dispatch_halt_despite_phase_progress/plans/01_phase-progress-identical-dispatch-guard.md",
-      "summary": "4-phase plan adding a persisted plan-file phase-progress signal and streak freeze to the identical-dispatch convergence guard, correcting the hash normalizer's over-general header assertion, and pinning both outcomes with a four-arm regression group."
-    }
-  ],
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1794272256_212466_487",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 4,
-    "dependency_waves": 3
+    "session_id": "sess_1794272256_212466",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "When adding a second, independent guard-bypass mechanism alongside a hash/content-identity guard, check whether the new mechanism's gate predicate is the SAME as the content-divergence it would also cause. If a progress signal is both (a) rendered into the hashed content and (b) read as an independent freeze signal, the two share one gate: the content divergence fires first on every cycle the freeze would have fired, making the freeze branch dead code while leaving correctness resting entirely on that content line staying out of the hash's strip pattern. Prefer a persisted side-channel signal (per-task state, re-armed every cycle) over hashed-content divergence when the content path is governed by a strip-pattern obligation that a future change can silently violate. Freeze-not-suppress semantics (hold the current streak, never reset it, persist the new measurement so the next comparison re-arms) avoid both 'forgive forever' and losing a pre-existing genuine streak.",
-      "category": "PATTERN",
-      "source_artifact": "specs/487_identical_dispatch_halt_despite_phase_progress/plans/01_phase-progress-identical-dispatch-guard.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["convergence-guard", "content-hash", "independent-signal", "freeze-not-suppress", "strip-pattern", "dead-branch"]
-    }
-  ],
-  "dispatch_seq": 30
+  "dispatch_seq": 31
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #487
 
 - **Task**: 487 - Stop the identical-dispatch convergence guard halting a task on cycle 2 even when cycle 1 closed a real plan phase
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None (territory edge against task 451 to be re-checked at admission; see Risks)
 - **Research Inputs**: specs/487_identical_dispatch_halt_despite_phase_progress/reports/01_phase-progress-identical-dispatch-guard.md
@@ -195,44 +195,50 @@ today's.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add the independent phase-progress signal and the streak freeze [NOT STARTED]
+### Phase 1: Add the independent phase-progress signal and the streak freeze [COMPLETED]
 
 **Goal**: A hash match accompanied by a strictly-increased plan-file completed-phase count freezes
 the identical-dispatch streak instead of charging it as churn, for `implement` dispatches only.
 
 **Tasks**:
-- [ ] Re-derive the current line numbers of the Fix 2 streak block, its `deploy_pending` freeze
+- [x] Re-derive the current line numbers of the Fix 2 streak block, its `deploy_pending` freeze
       branch, and the `//= {}` initializer chain in `orchestrate-cycle-plan.sh` before editing
-      (the Premise Re-Validation table above shows these citations drift).
-- [ ] Add `.last_dispatch_phases_completed //= {}` to the same `//= {}` initializer chain that
+      (the Premise Re-Validation table above shows these citations drift). *(completed: initializer
+      chain at ~589-636, deploy_pending resolution at ~2855-2867, hash-match arm at ~2869-883 as of
+      this dispatch's read)*
+- [x] Add `.last_dispatch_phases_completed //= {}` to the same `//= {}` initializer chain that
       already carries `last_dispatch_hash`, `last_dispatch_phase`, `identical_dispatch_streak`,
-      and `identical_dispatch_halted`.
-- [ ] Inside the Fix 2 block, after `_idh_prev_hash`/`_idh_prev_phase` are read and alongside the
+      and `identical_dispatch_halted`. *(completed)*
+- [x] Inside the Fix 2 block, after `_idh_prev_hash`/`_idh_prev_phase` are read and alongside the
       existing `deploy_pending` per-task resolution, compute the progress signal for
       `[ "$g" = "implement" ]` only: resolve the task directory via the same
       `lookup_project` + `task_lookup_dir` pair the `deploy_pending` branch already uses, resolve
       the plan file via `ls -1 ".../plans/"*.md 2>/dev/null | sort -V | tail -1`, and set a
       three-state result — unavailable (no plan file, or `has_nonconforming_phase_headings`
-      returns true) vs. a numeric count from `grep -cE "$PHASE_HEADING_DONE_ERE"`.
-- [ ] Use the `count=$(grep -cE ...) || count=0` idiom, never `$(grep -c ... || echo 0)` — the
+      returns true) vs. a numeric count from `grep -cE "$PHASE_HEADING_DONE_ERE"`. *(completed:
+      reuses the already-resolved `_idh_dp_dir` from the deploy_pending branch rather than
+      re-resolving the task directory a second time)*
+- [x] Use the `count=$(grep -cE ...) || count=0` idiom, never `$(grep -c ... || echo 0)` — the
       latter emits two lines and breaks the numeric compare (the hard-mode crosscheck site
-      carries this same warning inline).
-- [ ] Read the prior value as `mt_get --arg t "$t" '.last_dispatch_phases_completed[$t] // ""'`,
-      treating empty as "no prior measurement" (D4: seed, do not freeze).
-- [ ] Add the freeze branch as a sibling of the `deploy_pending` branch inside the existing
+      carries this same warning inline). *(completed)*
+- [x] Read the prior value as `mt_get --arg t "$t" '.last_dispatch_phases_completed[$t] // ""'`,
+      treating empty as "no prior measurement" (D4: seed, do not freeze). *(completed)*
+- [x] Add the freeze branch as a sibling of the `deploy_pending` branch inside the existing
       hash-match arm: when the signal is available, a prior value exists, and the current count is
       strictly greater, read the streak via `mt_get ... // 0` without incrementing and without
       resetting, and emit a named stderr notice in the same shape as the `deploy_pending` one
       (naming the before/after counts and stating the streak was frozen, not charged as churn).
-- [ ] Persist the new count unconditionally wherever the signal is available, next to the existing
-      unconditional `last_dispatch_hash`/`last_dispatch_phase` writes (D3's re-arm).
-- [ ] Write an inline comment block above the new branch, in the same register as the
+      *(completed)*
+- [x] Persist the new count unconditionally wherever the signal is available, next to the existing
+      unconditional `last_dispatch_hash`/`last_dispatch_phase` writes (D3's re-arm). *(completed)*
+- [x] Write an inline comment block above the new branch, in the same register as the
       `deploy_pending` freeze's own, recording D1, D3, D4, D5 and D6 — in particular that an
       unavailable signal is deliberately NOT spelled zero, and that the count is per-PROGRESS-
       varying rather than per-cycle-varying and therefore is a persisted side-channel, never
-      dispatch-body content subject to the strip pattern.
-- [ ] Leave the `deploy_pending` branch, the degradation `elif`, and the entire
-      `_idh_streak -ge 2` halt block textually untouched.
+      dispatch-body content subject to the strip pattern. *(completed)*
+- [x] Leave the `deploy_pending` branch, the degradation `elif`, and the entire
+      `_idh_streak -ge 2` halt block textually untouched. *(completed: confirmed via `git diff`
+      showing zero removed lines in the edited file)*
 
 **Timing**: 1.25 hours
 
@@ -262,15 +268,36 @@ sourcing site and checking it precedes the Fix 2 block in file order before rely
   hash-match arm, and add the inline decision-record comment.
 
 **Verification**:
-- [ ] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` exits 0.
-- [ ] `shellcheck` on the edited script reports no new findings versus its pre-edit baseline.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only <the 25-suite set named
+- [x] `bash -n agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh` exits 0.
+      *(completed: confirmed)*
+- [x] `shellcheck` on the edited script reports no new findings versus its pre-edit baseline.
+      *(completed: 4 new info-level hits (SC2012 x1, SC2016 x3), all on lines this phase added,
+      all the SAME already-accepted idiom pre-existing elsewhere in the file at 6/66 occurrences
+      respectively (e.g. the H1 branch's own `ls -1 ... | sort -V | tail -1` and `mt_get`'s own
+      single-quoted jq filters) — no new finding CLASS introduced.)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only <the 25-suite set named
       in this phase's Tier Justification>` exits 0, with Groups 27, 28 and 29 green and
       unmodified. Resolve the list freshly via `scripts/lib/suite-selection-lib.sh`'s
       `suite_selection_select` rather than transcribing it, and check the invoked command's exit
-      status, not just its stdout.
-- [ ] The halt block, the `deploy_pending` branch, and the degradation `elif` are confirmed
-      textually unchanged (`git diff` review of the Fix 2 block).
+      status, not just its stdout. *(completed with a documented, confirmed-pre-existing and
+      unrelated exception: `suite_selection_select` resolved the identical 25-suite set named
+      above; `test-orchestrate-cycle-plan.sh` — the suite owning Groups 27/28/29 — PASSED (exit
+      0), confirming no regression from this phase's edit. The overall invocation exited 1
+      because 5 OTHER suites failed (test-orchestrate-cycle-postflight.sh,
+      test-orchestrate-predispatch-review.sh, test-orchestrate-unwind-dispatch.sh,
+      test-postflight-deploy-gate.sh, test-redeploy-checkpoint-promotion.sh), none of which this
+      phase touches or whose SUBJECT lines name this phase's edited file. Verified
+      pre-existing and unrelated: the edited file was temporarily restored to its pre-phase
+      content (`git show HEAD:...`) and the same 5-suite set re-run — byte-identical 5 failures,
+      including `test-redeploy-checkpoint-promotion.sh`'s "ERROR: deployed scripts tree not
+      found" dependency-chain error, confirming these suites fail independently of this phase's
+      change. Edited content restored immediately after the comparison; `bash -n` re-confirmed.
+      Logged via issue-record.sh (class test-infra, severity minor). The complete, unscoped gate
+      set is independently run at Phase 4 per this plan's own Batch Gate Deferral directive.)*
+- [x] The halt block, the `deploy_pending` branch, and the degradation `elif` are confirmed
+      textually unchanged (`git diff` review of the Fix 2 block). *(completed: `git diff` over
+      the edited file shows zero removed/modified lines, only additions — the halt block and
+      both existing branches are untouched)*
 
 ---
 
