@@ -4178,7 +4178,7 @@
     {
       "project_number": 423,
       "project_name": "fix_verify_deploy_context_budget_byte_count_drift",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (measured 67,088 B vs. baseline_bytes 66,100 B)",
       "topic": "core-agent-system",
@@ -4191,8 +4191,16 @@
         "agent-system/extensions/core/scripts/tests/known-failures.txt"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-11-10T20:52:57Z",
-      "session_id": "sess_1794343931_696ebd_423"
+      "last_updated": "2026-11-10T21:14:58Z",
+      "session_id": "sess_1794343931_696ebd",
+      "artifacts": [
+        {
+          "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/reports/01_eager-budget-overage-attribution.md",
+          "type": "report",
+          "summary": "Attributes the full 3,294 B eager-context growth since the last reviewed 2026-10-18 measurement to six specific files (sapience extension's entirely-new EXTENSION.md, core/lean/literature/memory/nix additions), finds no redistributable duplication in any of them, and recommends a route (b) reviewed/dated baseline move rather than a trim-and-relocate."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 430,

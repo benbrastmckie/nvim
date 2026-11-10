@@ -1,0 +1,25 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794343931_696ebd_423",
+  "dispatch_seq": 4,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/reports/01_eager-budget-overage-attribution.md",
+      "summary": "Attributes the full 3,294 B eager-context growth since the last reviewed 2026-10-18 measurement to six specific files (sapience extension's entirely-new EXTENSION.md, core/lean/literature/memory/nix additions), finds no redistributable duplication in any of them, and recommends a route (b) reviewed/dated baseline move rather than a trim-and-relocate."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "measure-eager-context.sh's 'claudemd' channel = core/templates/claudemd-header.md (prepended untrimmed) + each ACTIVE extension's own merge_targets.claudemd.source file (from its manifest.json), trailing-whitespace-trimmed per fragment. Active-extension set comes from .claude-extensions.json's top-level 'extensions' keys, not from scanning agent-system/extensions/*. To attribute an eager-budget regression, diff this per-extension file list against the last reviewed measurement commit (found via 'git log -- .../orchestrator-context-budget.json') rather than guessing from aggregate totals -- a brand-new extension (0 B at baseline) contributes its entire EXTENSION.md as pure growth, distinct from an existing extension's incremental edit.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/reports/01_eager-budget-overage-attribution.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["eager-context-budget", "measure-eager-context.sh", "claudemd-channel", "orchestrator-context-budget.json", "gate20"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 423 to create implementation plan"
+}
