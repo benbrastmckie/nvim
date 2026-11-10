@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 9,
+  "summary": "Wrote a nine-phase plan for the folded carried-figure evidence-discipline record. Phase order follows the folded records' own edges: the narrow advisory well-formedness check and its fixtures first, then the enforcement map with both ALSO-SETTLE questions ruled NO as named exclusions, then Part A's recommendation trigger, then Part B's acted-on premise, then the enumeration-completeness and verification-independence rules, closing with redeploy and the full gate set. Prose and code phases are deliberately unmixed so every tier claim is honest; the plan validates with zero warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/360_validate_carried_unverified_names_a_source/plans/01_carried-figure-enforcement-surface.md",
+      "summary": "Nine-phase plan: advisory source-naming check in validate-artifact.sh over three literal tokens, both reasoned exclusions recorded, the three convention amendments, and a final redeploy plus full gate set."
+    }
+  ],
+  "dispatch_seq": 14
+}

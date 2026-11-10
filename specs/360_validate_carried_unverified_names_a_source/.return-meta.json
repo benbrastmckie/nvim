@@ -1,34 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/360_validate_carried_unverified_names_a_source/reports/01_carried-unverified-source-naming-validation.md",
-      "summary": "Research for all three folded phases: Phase 1 well-formedness check design (validate-artifact.sh, advisory, newline-flattened matching), both ALSO-SETTLE rulings (resolve-check and mark-owed detection both excluded with corpus evidence), Phase 2 Part A/B + further B-case designs, and Phase 3 enumeration-completeness design."
+      "type": "plan",
+      "path": "specs/360_validate_carried_unverified_names_a_source/plans/01_carried-figure-enforcement-surface.md",
+      "summary": "Nine-phase plan (11.5h) building the advisory CARRIED-UNVERIFIED source-naming check, recording both reasoned exclusions, and landing the three convention amendments plus redeploy."
     }
   ],
-  "next_steps": "Run /orchestrate 360 to create implementation plan",
   "metadata": {
     "session_id": "sess_1794272256_212466_360",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 9,
+    "estimated_hours": 11.5,
+    "dependency_waves": 9
   },
-  "findings_count": 12,
   "memory_candidates": [
     {
-      "content": "When validating a fixed-case literal bracket-delimited token (e.g. `[TOKEN: source]`) that may legitimately span multiple markdown source lines, a per-line `grep -E` recall-misses any occurrence whose closing bracket is on a later line -- this is the same failure class that sank a prior general carried-figure-contradiction detector (markdown bold splitting a literal trigger phrase). Fix: flatten newlines (e.g. `tr '\\n' ' '`) before matching with `[^]]*\\]`, which also passes markdown emphasis and table pipes through for free since neither is a `]` character.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/360_validate_carried_unverified_names_a_source/reports/01_carried-unverified-source-naming-validation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["validate-artifact.sh", "multiline-match", "recall-failure", "markdown-flatten", "carried-figure"]
-    },
-    {
-      "content": "scripts/validate-artifact.sh has a reusable advisory-first idiom for a new per-artifact well-formedness check: log_warn only (never log_error) in default mode, gated by artifact_type, with an explicit comment stating the promotion-to-error criterion -- modeled on the existing per-phase Verification Tier and Files-to-modify checks. --strict already folds warnings into the exit-affecting total for free; no new --strict wiring needed.",
+      "content": "When a shell check greps for a mandated literal token across a document corpus, the densest source of false positives is the documents that DISCUSS the token rather than use it: a backticked bare token, a grep command literal, and a regex literal all match the token pattern but are mentions, not instances. Measured on one real artifact: 13 opening-token occurrences against 8 complete bracket matches, where 9 of the 13 were mentions. Two literal, cheap discriminators suppress them all without any semantic judgment: skip an occurrence whose token is immediately preceded by a backtick or a backslash. Pair this with a bounded match window, because flattening newlines before matching (needed so a line-wrapped instance is not missed) otherwise lets one unclosed mention consume text up to an arbitrarily distant later bracket, absorbing and hiding a genuinely malformed instance that follows. A token-mention suppression case and a hide-the-following-instance case belong in the fixture suite of any such check.",
       "category": "PATTERN",
-      "source_artifact": "specs/360_validate_carried_unverified_names_a_source/reports/01_carried-unverified-source-naming-validation.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["validate-artifact.sh", "advisory-first", "log_warn", "verification-tier", "promotion-criterion"]
+      "source_artifact": "specs/360_validate_carried_unverified_names_a_source/plans/01_carried-figure-enforcement-surface.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["literal-token-lint", "false-positive-suppression", "newline-flattening", "grep-mention-vs-use", "advisory-check-boundedness"]
     }
-  ]
+  ],
+  "next_steps": "Run /orchestrate 360 to execute the plan",
+  "dispatch_seq": 14
 }
