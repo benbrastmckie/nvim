@@ -591,6 +591,81 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     echo "User focus: ${focus_prompt}"
   fi
   echo ""
+  # Emitted here, immediately after Description and ahead of the Plan/Continuation/Phase
+  # Mission group, so a reader working the dispatch file top-down meets this
+  # verification-scoping constraint before the plan body and phase mission it narrows. This
+  # block previously sat nested inside the `[ "$phase" = "implement" ]` guard below
+  # "## Phase Mission"; now that it is no longer nested there, the explicit
+  # `[ "$phase" = "implement" ]` conjunct on the next line is what confines emission to
+  # implement-phase dispatches only -- research- and plan-phase dispatches must still never
+  # carry this section, even when --batch-gate-deferral is passed.
+  if [ "$phase" = "implement" ] && [ "$batch_gate_deferral_flag" = "true" ]; then
+    # Resolve the two narrowing-invocation paths across the deploy/source-store boundary,
+    # using the SAME two-candidate, existence-checked pattern as hb_lib_candidates above: try
+    # the deployed mirror first ("${SKILL_REPO_ROOT}/.claude/scripts/...", what a deploy-target
+    # repository actually carries), fall back to the source-store path (for when this composer
+    # runs inside the agent-system repo itself). Neither hardcoded "agent-system/..." path on
+    # its own exists in a deploy-target repository -- see context/contracts/batch-gate-stage.md
+    # for the contract this discharges.
+    run_all_candidates=(
+      "${SKILL_REPO_ROOT}/.claude/scripts/tests/run-all.sh"
+      "${SKILL_REPO_ROOT}/agent-system/extensions/core/scripts/tests/run-all.sh"
+    )
+    verify_deploy_candidates=(
+      "${SKILL_REPO_ROOT}/.claude/scripts/verify-deploy.sh"
+      "${SKILL_REPO_ROOT}/agent-system/extensions/core/scripts/verify-deploy.sh"
+    )
+    resolved_run_all=""
+    for _bgd_candidate in "${run_all_candidates[@]}"; do
+      if [ -f "$_bgd_candidate" ]; then resolved_run_all="$_bgd_candidate"; break; fi
+    done
+    resolved_verify_deploy=""
+    for _bgd_candidate in "${verify_deploy_candidates[@]}"; do
+      if [ -f "$_bgd_candidate" ]; then resolved_verify_deploy="$_bgd_candidate"; break; fi
+    done
+
+    echo "## Batch Gate Deferral"
+    echo ""
+    echo "This task is one of several \`implement\`-phase dispatches inside one multi-task"
+    echo "/orchestrate batch invocation. The plan's final phase declares"
+    echo "\`**Verification Tier**: full\` — that field is NOT edited by this directive and stays"
+    echo "exactly as written in the plan file."
+    echo ""
+    if [ -n "$resolved_run_all" ] || [ -n "$resolved_verify_deploy" ]; then
+      echo "THIS dispatch discharges that phase against a SCOPED tier instead of independently"
+      echo "running the complete gate set: run the narrowing invocation that actually covers the"
+      echo "files this phase touched in THIS repository —"
+      if [ -n "$resolved_run_all" ]; then
+        echo "\`bash ${resolved_run_all} --only SUITE[,SUITE...]\`"
+      fi
+      if [ -n "$resolved_run_all" ] && [ -n "$resolved_verify_deploy" ]; then
+        echo "or"
+      fi
+      if [ -n "$resolved_verify_deploy" ]; then
+        echo "\`bash ${resolved_verify_deploy} --only-gate N[,M...]\`"
+      fi
+      echo "— and record in this phase's own verification notes that the full"
+      echo "set was deferred to the batch stage rather than independently run."
+    else
+      # DEGRADATION: neither candidate exists at ${SKILL_REPO_ROOT} (no deployed .claude/
+      # mirror and no agent-system/ source-store tree). Naming a path that cannot resolve
+      # would be unfollowable, so this directive degrades to the dispatch's own sanctioned
+      # alternative -- state the full gate set as such -- rather than printing a dead path.
+      echo "THIS dispatch cannot resolve either narrowing invocation in this repository: neither"
+      echo "a deployed \`.claude/scripts/...\` mirror nor an agent-system source-store tree was"
+      echo "found under ${SKILL_REPO_ROOT}. Discharge this phase's declared"
+      echo "\`full\` verification tier against the COMPLETE gate set instead, stating that choice as"
+      echo "such in this phase's own verification notes — never silently narrowed to an invocation"
+      echo "that cannot exist here."
+    fi
+    echo ""
+    echo "The complete gate set still runs — exactly once, for the whole batch, at the end of"
+    echo "this invocation — and its result is attributed back to this task by its own"
+    echo "\`modified_files\`. The full gate is deferred here, never forgiven: see"
+    echo "\`context/formats/plan-format.md\`'s \"Batch-aware deferral\" subsection and"
+    echo "\`context/contracts/phase-closure.md\`'s no-promotion-without-evidence carve-out."
+    echo ""
+  fi
   echo "## Artifact Round"
   echo ""
   echo "- artifact_number: ${ARTIFACT_NUMBER}"
@@ -652,73 +727,6 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
       echo "2. Settled Design Preamble: State the decided design before first tool call."
       echo ""
       echo "PHASES COMPLETED: ${phases_completed_for_mission} of ${phases_total_for_mission}"
-      echo ""
-    fi
-    if [ "$batch_gate_deferral_flag" = "true" ]; then
-      # Resolve the two narrowing-invocation paths across the deploy/source-store boundary,
-      # using the SAME two-candidate, existence-checked pattern as hb_lib_candidates above: try
-      # the deployed mirror first ("${SKILL_REPO_ROOT}/.claude/scripts/...", what a deploy-target
-      # repository actually carries), fall back to the source-store path (for when this composer
-      # runs inside the agent-system repo itself). Neither hardcoded "agent-system/..." path on
-      # its own exists in a deploy-target repository -- see context/contracts/batch-gate-stage.md
-      # for the contract this discharges.
-      run_all_candidates=(
-        "${SKILL_REPO_ROOT}/.claude/scripts/tests/run-all.sh"
-        "${SKILL_REPO_ROOT}/agent-system/extensions/core/scripts/tests/run-all.sh"
-      )
-      verify_deploy_candidates=(
-        "${SKILL_REPO_ROOT}/.claude/scripts/verify-deploy.sh"
-        "${SKILL_REPO_ROOT}/agent-system/extensions/core/scripts/verify-deploy.sh"
-      )
-      resolved_run_all=""
-      for _bgd_candidate in "${run_all_candidates[@]}"; do
-        if [ -f "$_bgd_candidate" ]; then resolved_run_all="$_bgd_candidate"; break; fi
-      done
-      resolved_verify_deploy=""
-      for _bgd_candidate in "${verify_deploy_candidates[@]}"; do
-        if [ -f "$_bgd_candidate" ]; then resolved_verify_deploy="$_bgd_candidate"; break; fi
-      done
-
-      echo "## Batch Gate Deferral"
-      echo ""
-      echo "This task is one of several \`implement\`-phase dispatches inside one multi-task"
-      echo "/orchestrate batch invocation. The plan's final phase declares"
-      echo "\`**Verification Tier**: full\` — that field is NOT edited by this directive and stays"
-      echo "exactly as written in the plan file."
-      echo ""
-      if [ -n "$resolved_run_all" ] || [ -n "$resolved_verify_deploy" ]; then
-        echo "THIS dispatch discharges that phase against a SCOPED tier instead of independently"
-        echo "running the complete gate set: run the narrowing invocation that actually covers the"
-        echo "files this phase touched in THIS repository —"
-        if [ -n "$resolved_run_all" ]; then
-          echo "\`bash ${resolved_run_all} --only SUITE[,SUITE...]\`"
-        fi
-        if [ -n "$resolved_run_all" ] && [ -n "$resolved_verify_deploy" ]; then
-          echo "or"
-        fi
-        if [ -n "$resolved_verify_deploy" ]; then
-          echo "\`bash ${resolved_verify_deploy} --only-gate N[,M...]\`"
-        fi
-        echo "— and record in this phase's own verification notes that the full"
-        echo "set was deferred to the batch stage rather than independently run."
-      else
-        # DEGRADATION: neither candidate exists at ${SKILL_REPO_ROOT} (no deployed .claude/
-        # mirror and no agent-system/ source-store tree). Naming a path that cannot resolve
-        # would be unfollowable, so this directive degrades to the dispatch's own sanctioned
-        # alternative -- state the full gate set as such -- rather than printing a dead path.
-        echo "THIS dispatch cannot resolve either narrowing invocation in this repository: neither"
-        echo "a deployed \`.claude/scripts/...\` mirror nor an agent-system source-store tree was"
-        echo "found under ${SKILL_REPO_ROOT}. Discharge this phase's declared"
-        echo "\`full\` verification tier against the COMPLETE gate set instead, stating that choice as"
-        echo "such in this phase's own verification notes — never silently narrowed to an invocation"
-        echo "that cannot exist here."
-      fi
-      echo ""
-      echo "The complete gate set still runs — exactly once, for the whole batch, at the end of"
-      echo "this invocation — and its result is attributed back to this task by its own"
-      echo "\`modified_files\`. The full gate is deferred here, never forgiven: see"
-      echo "\`context/formats/plan-format.md\`'s \"Batch-aware deferral\" subsection and"
-      echo "\`context/contracts/phase-closure.md\`'s no-promotion-without-evidence carve-out."
       echo ""
     fi
   fi

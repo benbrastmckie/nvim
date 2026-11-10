@@ -4421,7 +4421,7 @@
     {
       "project_number": 449,
       "project_name": "hoist_batch_gate_deferral_directive",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Site the Batch Gate Deferral directive where it is read before the phase's verification is launched",
       "topic": "orchestrator",
@@ -4461,7 +4461,7 @@
         }
       ],
       "created": "2026-10-18T17:24:48Z",
-      "last_updated": "2026-11-10T08:00:25Z",
+      "last_updated": "2026-11-10T08:01:05Z",
       "session_id": "sess_1794272256_212466",
       "next_artifact_number": 2
     },

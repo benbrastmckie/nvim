@@ -1,7 +1,7 @@
 # Implementation Plan: Task #449
 
 - **Task**: 449 - Site the Batch Gate Deferral directive where it is read before the phase's verification is launched
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: 328, 407, 445, 446, 447 (territory/serialization edges declared in the task description)
 - **Research Inputs**: specs/449_hoist_batch_gate_deferral_directive/reports/01_batch-gate-deferral-siting.md
@@ -147,29 +147,32 @@ was performed and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Hoist the emission block [NOT STARTED]
+### Phase 1: Hoist the emission block [COMPLETED]
 
 **Goal**: `## Batch Gate Deferral` is emitted immediately after `## Description`, ahead of
 `## Artifact Round` and the whole `## Plan`/`## Continuation`/`## Phase Mission` group, with
 emission still confined to the `implement` phase and the directive's body text byte-unchanged.
 
 **Tasks**:
-- [ ] Re-derive the current line numbers of `echo "## Description"`, `echo "## Artifact Round"`,
+- [x] Re-derive the current line numbers of `echo "## Description"`, `echo "## Artifact Round"`,
       and the `if [ "$batch_gate_deferral_flag" = "true" ]` block in
       `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` before editing.
-- [ ] Move the entire block — the `run_all_candidates`/`verify_deploy_candidates` resolution
+      *(completed: Description 586, Artifact Round 594, flag block 657-723 pre-edit)*
+- [x] Move the entire block — the `run_all_candidates`/`verify_deploy_candidates` resolution
       preamble, its CANDIDATE-RESOLUTION comment, every `echo` through the closing blank line —
       as one unit to sit after the `## Description` emission (including its optional
-      `User focus:` line) and before `echo "## Artifact Round"`.
-- [ ] Change the block's own guard to the explicit conjunction
+      `User focus:` line) and before `echo "## Artifact Round"`. *(completed)*
+- [x] Change the block's own guard to the explicit conjunction
       `if [ "$phase" = "implement" ] && [ "$batch_gate_deferral_flag" = "true" ]; then`, since it
       no longer inherits the enclosing `if [ "$phase" = "implement" ]` block's guard.
-- [ ] Update the block's leading comment to state the new siting and why it is sited there (read
+      *(completed)*
+- [x] Update the block's leading comment to state the new siting and why it is sited there (read
       before the plan body it constrains), and that the explicit phase conjunct is what now
-      carries the implement-only emission the nesting used to provide.
-- [ ] Confirm the directive's emitted body text is otherwise unchanged in this phase (a
+      carries the implement-only emission the nesting used to provide. *(completed)*
+- [x] Confirm the directive's emitted body text is otherwise unchanged in this phase (a
       character-level diff of the moved lines against their prior content) — body-text changes
-      belong to Phase 2.
+      belong to Phase 2. *(completed: git diff shows only relocation, guard conjunct, and new
+      leading comment -- no body-text change)*
 
 **Timing**: 0.5 hours
 

@@ -112,7 +112,7 @@ next_project_number: 578
 
 ### Orchestrator
 
-449 [PLANNED] — Site the Batch Gate Deferral directive where it is read...
+449 [IMPLEMENTING] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
     └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
   └─ 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -8198,7 +8198,7 @@ territory edges above.
 ---
 
 ### 449. Site the Batch Gate Deferral directive where it is read before the phase's verification is launched
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 328, Task 360, Task 407, Task 414, Task 444, Task 445, Task 446, Task 448
