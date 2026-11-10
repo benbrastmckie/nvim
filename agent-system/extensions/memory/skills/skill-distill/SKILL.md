@@ -761,11 +761,11 @@ Operations are logged to `.memory/distill-log.json` for tracking maintenance his
 | `refine` | Memory quality improved | `.memory/distill-log.json` |
 | `gc` | Hard-delete tombstoned memories past grace period | `.memory/distill-log.json` |
 
-`revise` and `learn` log to their own dedicated files (`.memory/revise-log.json`,
-`.memory/learn-harvest-log.json` respectively -- see each sub-mode's own Log Schema subsection
-above) and are not part of this shared enum. `--meta`, `--review`, and `--dream` log to
-`specs/telemetry/` instead -- see `skill-telemetry/SKILL.md`'s Telemetry Log Schemas (core
-extension).
+`revise` and `learn` operate against hosted knowledge objects rather than `.memory/`, and log
+their own run records as `specs/events.jsonl` events via `events-append.sh` instead of a
+dedicated `.memory/` file -- see each sub-mode's own Run Record subsection above -- so they are
+not part of this shared enum. `--meta`, `--review`, and `--dream` log to `specs/telemetry/`
+instead -- see `skill-telemetry/SKILL.md`'s Telemetry Log Schemas (core extension).
 
 For `report` operations, `pre_metrics` and `post_metrics` are identical (no changes made).
 
@@ -790,8 +790,8 @@ The `memory_health` field is a top-level sibling of `repository_health` in state
 
 **Field update rules by sub-mode**:
 
-| Field | report | purge/merge/compress/refine/gc/auto/revise |
-|-------|--------|---------------------------------------------|
+| Field | report | purge/merge/compress/refine/gc/auto |
+|-------|--------|---------------------------------------|
 | `last_distilled` | Updated | Updated |
 | `distill_count` | NOT incremented | Incremented |
 | `total_memories` | Updated | Updated |
@@ -803,9 +803,10 @@ The `memory_health` field is a top-level sibling of `repository_health` in state
 `.memory/10-Memories/*.md` file, so it does not increment `distill_count` (which tracks
 maintenance operations that actually changed the vault). The `last_distilled` timestamp is still
 updated by `report` because it tracks when the vault was last assessed at all (a lightweight
-scoring pass counts as an assessment), not only when it was last modified. `--learn` does not
-touch `memory_health` at all (it tracks its own run bookkeeping in `learn-harvest-log.json`
-instead), which is why it is absent from this table. `--meta`, `--review`, and `--dream` moved to
-`/telemetry` and track their own run bookkeeping in `specs/telemetry/` log files -- see
-`skill-telemetry/SKILL.md` -- not in this table at all.
+scoring pass counts as an assessment), not only when it was last modified. Neither `--revise` nor
+`--learn` touches `memory_health` at all: both operate against hosted knowledge objects, not
+`.memory/`, and each tracks its own run record as a `specs/events.jsonl` event instead (see each
+sub-mode's own Run Record subsection), which is why both are absent from this table. `--meta`,
+`--review`, and `--dream` moved to `/telemetry` and track their own run bookkeeping in
+`specs/telemetry/` log files -- see `skill-telemetry/SKILL.md` -- not in this table at all.
 

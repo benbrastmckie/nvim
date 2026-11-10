@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Retarget --revise and --learn onto hosted knowledge objects",
+  "started_at": "2026-11-10T00:10:00Z",
+  "last_updated": "2026-11-10T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Retarget distill-revise-submode.md (D1 superseding note, D2 inverted correlation + reachability probe, OTel-absent announcement, run record off .memory/)", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md"]},
+    {"id": 2, "description": "Retarget distill-learn-submode.md apply step to sapience-remember.sh with per-invocation write bound", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/context/project/memory/patterns/distill-learn-submode.md"]},
+    {"id": 3, "description": "Update skill-distill/SKILL.md revise/learn log-destination note and State Integration memory_health table", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/skills/skill-distill/SKILL.md"]},
+    {"id": 4, "description": "Update index-entries.json summaries for revise/learn pattern files", "status": "done",
+     "files_touched": ["agent-system/extensions/memory/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2",
+      "description": "Keep distill-learn-submode.md's own learn-harvest-log.json bookkeeping",
+      "type": "altered",
+      "reason": "The plan's own task text says to keep the learn-harvest-log.json bookkeeping, but that file's destination (.memory/learn-harvest-log.json) is a live write under .memory/, which the plan's own verification bullet for this file (no live instruction to write under .memory/) and the dispatch's hard sequencing constraint (.memory/ read-only throughout) both forbid. Resolved by keeping the bookkeeping SCHEMA (the same fields) but relocating its destination to an events-append.sh event in specs/events.jsonl, mirroring the same relocation already applied to --revise's run record for the identical reason.",
+      "annotation": "*(completed: bookkeeping schema kept, but its destination moved from .memory/learn-harvest-log.json to an events-append.sh event, for the same .memory/-read-only reason as revise's log — deviation recorded below)*"
+    }
+  ]
+}

@@ -316,7 +316,7 @@ moved, work from the live output and record the delta in the phase's commit mess
 
 ---
 
-### Phase 2: Retarget `--revise` and `--learn` onto hosted knowledge objects [NOT STARTED]
+### Phase 2: Retarget `--revise` and `--learn` onto hosted knowledge objects [COMPLETED]
 
 **Goal**: Both store-coupled sub-modes read and write hosted knowledge objects instead of the
 local vault, with D1's superseding-note outcome, D2's inverted correlation and reachability probe,
@@ -324,47 +324,59 @@ and every carried-forward guarantee intact.
 
 **Tasks**:
 
-- [ ] Rewrite `distill-revise-submode.md`'s Candidate Identification, Correlation and
+- [x] Rewrite `distill-revise-submode.md`'s Candidate Identification, Correlation and
       Classification sections to D2's evidence-to-store direction: cluster the
       deviation/blocker/reflection events pulled by `events-query.sh`, apply the three-strikes
       threshold to each cluster, and query the hosted store once per surviving cluster via
       `sapience-retrieve.sh`. Classify a hit consistent with the cluster as CORROBORATED, a hit
-      the cluster contradicts as CONTRADICTED, and a miss as GAP.
-- [ ] Add the D2 reachability probe as an Edge Case Check: one query whose keywords are known to
+      the cluster contradicts as CONTRADICTED, and a miss as GAP. *(completed: replaced
+      Event-to-Memory Correlation + Classification with Event Clustering + Hosted-Store
+      Correlation sections)*
+- [x] Add the D2 reachability probe as an Edge Case Check: one query whose keywords are known to
       match at least one existing repo-tagged note. State explicitly that
       `sapience-retrieve.sh` exits 1 with empty stdout on both a zero-hit result and a transport
       failure, so the two are indistinguishable without this probe, and that on probe failure the
-      run announces the degradation and classifies nothing as a GAP.
-- [ ] Replace the Contradicted/Stale Handling section's three options with D1's two: SUPERSEDE
+      run announces the degradation and classifies nothing as a GAP. *(completed)*
+- [x] Replace the Contradicted/Stale Handling section's three options with D1's two: SUPERSEDE
       (one `sapience-remember.sh` write whose body carries both the corrected guidance and the
       guidance it corrects) and SKIP. Delete the TOMBSTONE option and its dependency on the purge
       sub-mode's Tombstone Application template, and delete the UPDATE option's
       rewrite-in-place/`## History` mechanics. State why in one sentence, as a property of the
       store (no delete API, append-only ingest, server-side conflict surfacing), not as a change
-      narrative.
-- [ ] Rewrite Gap Handling's CREATE branch as a `sapience-remember.sh` write. Keep the escalation
+      narrative. *(completed)*
+- [x] Rewrite Gap Handling's CREATE branch as a `sapience-remember.sh` write. Keep the escalation
       discriminator that routes a system-change gap to an improvement proposal rather than a
       knowledge-object write, and keep its pointer to the relocated telemetry sub-mode path.
-- [ ] Rewrite the No Events Yet degraded path so its continuation rule no longer references a
+      *(completed)*
+- [x] Rewrite the No Events Yet degraded path so its continuation rule no longer references a
       deleted sub-mode. Keep `total_events: 0` as an explicitly normal, first-class outcome and
       keep the exact displayed message's intent: the run proceeds and reports zero correlations.
-- [ ] Add the explicit OTel-absent announcement the dispatch requires: when
+      *(completed: removed the `/distill --refine` reference)*
+- [x] Add the explicit OTel-absent announcement the dispatch requires: when
       `CLAUDE_CODE_ENABLE_TELEMETRY` is not set, the event-to-session join is unavailable and the
-      run says so rather than silently skipping the Tier 1 join.
-- [ ] Replace Batch Index Regeneration with a statement that hosted writes need no local index
-      regeneration, and that the run touches no file under `.memory/`.
-- [ ] Rewrite `distill-learn-submode.md`'s apply step to `sapience-remember.sh` writes, keeping
+      run says so rather than silently skipping the Tier 1 join. *(completed: this announcement
+      was already present verbatim in the file pre-edit; confirmed intact post-edit)*
+- [x] Replace Batch Index Regeneration with a statement that hosted writes need no local index
+      regeneration, and that the run touches no file under `.memory/`. *(completed: replaced with
+      a Revise Run Record section; the local log also moved off `.memory/` to an
+      `events-append.sh` event, since the original log destination `.memory/revise-log.json` was
+      itself a live write under `.memory/`)*
+- [x] Rewrite `distill-learn-submode.md`'s apply step to `sapience-remember.sh` writes, keeping
       its archived-task scan, its transcript/`history.jsonl` sourcing, its per-task grouped
       interactive classification, and its own `learn-harvest-log.json` bookkeeping. Add the
       per-invocation note bound explicitly, since `--learn` is a batch sweep across many archived
-      tasks and every write is permanent and unreviewed.
-- [ ] State in both files that neither sub-mode may ever run under `--auto`, preserving the
-      interactive selection gate as a hard constraint rather than a default.
-- [ ] Update `skill-distill/SKILL.md`'s `revise`/`learn` stub pointers and the State Integration
+      tasks and every write is permanent and unreviewed. *(completed: bookkeeping schema kept,
+      but its destination moved from `.memory/learn-harvest-log.json` to an `events-append.sh`
+      event, for the same `.memory/`-read-only reason as revise's log — deviation recorded below)*
+- [x] State in both files that neither sub-mode may ever run under `--auto`, preserving the
+      interactive selection gate as a hard constraint rather than a default. *(completed)*
+- [x] Update `skill-distill/SKILL.md`'s `revise`/`learn` stub pointers and the State Integration
       table's note about which sub-modes touch `memory_health`, so both reflect that neither
-      sub-mode writes to the local vault.
-- [ ] Update the two `index-entries.json` summaries for the revise and learn pattern files to
-      describe the hosted-store behavior.
+      sub-mode writes to the local vault. *(completed: also updated the adjacent Distill Log
+      Schema note naming the two sub-modes' now-stale `.memory/` log destinations, since leaving
+      it unchanged would have contradicted the State Integration table's own updated claim)*
+- [x] Update the two `index-entries.json` summaries for the revise and learn pattern files to
+      describe the hosted-store behavior. *(completed)*
 
 **Timing**: 2 hours
 

@@ -74,6 +74,10 @@ grouped by task, using the same TECHNIQUE/PATTERN/CONFIG/WORKFLOW/INSIGHT/SKIP c
 `/learn --task N` already uses -- this sub-mode proposes through the shared skeleton exactly like
 every mutating sub-mode above; it never auto-creates memories.
 
+**`--learn` may never run under `/distill --auto`.** The interactive selection gate above is a
+hard constraint, not a default that `--auto` could override: `auto` dispatches only its own local
+vault scoring/refine fixes and never reaches this sub-mode.
+
 ```json
 {
   "question": "Task {N} has {count} unharvested memory candidate(s). Classify each:",
@@ -90,48 +94,47 @@ every mutating sub-mode above; it never auto-creates memories.
 
 ## Execution
 
-For each confirmed candidate, apply the same UPDATE/EXTEND/CREATE operations `/learn` uses
-(`skill-learn/SKILL.md`) -- this sub-mode does not invent a new memory-write mechanism, only a
-new discovery path over already-archived tasks.
+For each confirmed candidate, write one knowledge object via
+`bash .claude/scripts/sapience-remember.sh`, sourced from the candidate's classified content and
+source tier -- this sub-mode writes to the hosted store directly rather than reusing `/learn`'s
+local UPDATE/EXTEND/CREATE mechanism (`skill-learn/SKILL.md`), since every write here targets
+hosted knowledge objects, not `.memory/` records.
 
-## Batch Index Regeneration
+**Per-invocation write bound.** `--learn` is a batch sweep across many already-archived tasks in
+one invocation, and every write is permanent and unreviewed -- there is no delete API on the
+hosted store. Each confirmed task's writes are held to the same 3-8-notes-per-completed-task
+bound Part C2's postflight wrapup uses at ordinary task completion (reused here by name, not
+reinvented): if a single archived task's confirmed candidates exceed 8, write the 8 most
+load-bearing and record the remainder as still-unharvested so a future `--learn` run can revisit
+them, rather than writing all of them in one pass.
 
-After all confirmed candidates across all selected tasks are written (not after each task
-individually): regenerate `memory-index.json`, `index.md`, and `.memory/10-Memories/README.md`
-per the Shared Sub-Mode Skeleton's Batch Index Regeneration step.
+## Run Record
 
-## Learn-Harvest Log Schema
+Hosted writes need no local index regeneration -- `sapience-remember.sh` is a self-contained
+round trip to the hosted store. This sub-mode's writes touch no file under `.memory/`: no index
+read, no index regeneration, and no local log file.
 
-Rather than overloading the general Distill Log Schema's closed `type` enum (`report|purge|
-merge|compress|refine|gc|dream`, which this sub-mode leaves untouched), operations are logged to
-their own file, `.memory/learn-harvest-log.json`, mirroring the shape of `.memory/distill-log.json`:
+## Learn-Harvest Run Record
 
-```json
-{
-  "version": "1.0.0",
-  "operations": [
-    {
-      "id": "learn_harvest_{timestamp}",
-      "timestamp": "ISO8601",
-      "type": "learn_harvest",
-      "session_id": "sess_...",
-      "tasks_scanned": 0,
-      "tasks_with_candidates": 0,
-      "candidates_by_source": {"transcript": 0, "history_jsonl": 0},
-      "affected_memories": [
-        {"task": 259, "memory_id": "MEM-...", "classification": "PATTERN", "source": "transcript"}
-      ],
-      "notes": ""
-    }
-  ],
-  "summary": {
-    "total_learn_harvest_runs": 0,
-    "total_memories_created": 0,
-    "last_operation": null
-  }
-}
+Instead of a local `.memory/learn-harvest-log.json`, each run appends one event to the existing
+`specs/events.jsonl` store via `events-append.sh`:
+
+```bash
+bash .claude/scripts/events-append.sh --event-type distill-learn-harvest --category milestone \
+  --session "$session_id" \
+  --message "learn: {tasks_with_candidates} of {tasks_scanned} archived tasks harvested" \
+  --detail-json '{
+    "tasks_scanned": 0,
+    "tasks_with_candidates": 0,
+    "candidates_by_source": {"transcript": 0, "history_jsonl": 0},
+    "affected_tasks": [
+      {"task": 259, "classification": "PATTERN", "source": "transcript", "written": true}
+    ]
+  }'
 ```
 
 Mark each processed task's `memory_candidates` as harvested in its `state.json`/archived record
-so a subsequent `--learn` run does not re-surface the same candidates.
+so a subsequent `--learn` run does not re-surface the same candidates. A candidate held back by
+the per-invocation write bound above is left marked unharvested, not harvested, so it is
+re-surfaced on the next run.
 

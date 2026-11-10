@@ -177,13 +177,14 @@
       "path": "project/memory/patterns/distill-learn-submode.md",
       "domain": "project",
       "subdomain": "memory",
-      "summary": "Complete specification for /distill --learn sub-mode (retroactive batch harvest of unharvested memory_candidates across already-archived tasks, distinguished from /learn --task N and /todo's archive-time harvest) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
-      "line_count": 137,
+      "summary": "Complete specification for /distill --learn sub-mode (retroactive batch harvest of unharvested memory_candidates across already-archived tasks, written to hosted knowledge objects via sapience-remember.sh under a per-task write bound, distinguished from /learn --task N and /todo's archive-time harvest) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 140,
       "keywords": [
         "distill",
         "learn-submode",
         "memory_candidates",
-        "batch-harvest"
+        "batch-harvest",
+        "sapience-remember"
       ],
       "load_when": {
         "commands": [
@@ -195,14 +196,16 @@
       "path": "project/memory/patterns/distill-revise-submode.md",
       "domain": "project",
       "subdomain": "memory",
-      "summary": "Complete specification for /distill --revise sub-mode (event-and-OTel-correlated memory vault review/revision: Event Ingestion, Event-to-Memory Correlation, three-strikes Classification, UPDATE/TOMBSTONE/CREATE gate, Batch Index Regeneration) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
-      "line_count": 300,
+      "summary": "Complete specification for /distill --revise sub-mode (event-and-OTel-correlated review of hosted knowledge objects: Event Clustering, three-strikes threshold, Hosted-Store Correlation via sapience-retrieve.sh with a mandatory reachability probe, SUPERSEDE/SKIP gate via sapience-remember.sh) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
+      "line_count": 291,
       "keywords": [
         "distill",
         "revise-submode",
         "otel",
         "event-correlation",
-        "classification"
+        "classification",
+        "sapience-retrieve",
+        "reachability-probe"
       ],
       "load_when": {
         "commands": [

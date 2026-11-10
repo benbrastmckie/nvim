@@ -2,24 +2,34 @@
 
 This file is the COMPLETE and ONLY specification for skill-distill's `--revise` sub-mode execution. It MUST be followed exactly -- there is no fuller version of this content anywhere else. The `Sub-Mode: revise` section of `skill-distill/SKILL.md` was extracted here per `context/patterns/mode-gated-section-loading.md`; the pointer at that section's former location in `SKILL.md` sends an agent here whenever `--revise` is dispatched.
 
-Event-and-OTel-correlated review and revision of the memory vault. `--revise` inherits, in
-substance unchanged, the current `dream` section's Event Ingestion, Event-to-Memory Correlation,
-corroborated/contradicted/gap Classification (three-strikes threshold), the `AskUserQuestion`
-UPDATE/TOMBSTONE/CREATE gate, and Batch Index Regeneration, distinct from `--meta`'s own
-(`context/patterns/telemetry-meta-submode.md`) system-improvement-proposal charter. Tier 1
-(OTel) supplies outcome evidence, joined on `cc_session_id`, alongside Tier 2 (`events.jsonl`)
-correlation. Follows the Shared Sub-Mode Skeleton in `skill-distill/SKILL.md`; deltas below. See
-`context/standards/telemetry-guardrails.md` for the miss-rate expectation and the
-never-auto-apply rule -- not restated here.
+Event-and-OTel-correlated review of hosted knowledge objects in the Sapience vault. `--revise`
+correlates evidence to the hosted store rather than enumerating a local population: it clusters
+recurring `events.jsonl` evidence first, applies the three-strikes recurrence threshold, and
+queries the hosted store once per surviving cluster via `sapience-retrieve.sh`. This is the
+evidence-to-store direction (not store-to-evidence): there is no hosted enumeration endpoint, only
+a capped keyword query, so the correlation direction inverts relative to a local-vault design.
+Tier 1 (OTel) supplies outcome evidence, joined on `cc_session_id`, alongside Tier 2
+(`events.jsonl`) correlation. Follows the Shared Sub-Mode Skeleton in `skill-distill/SKILL.md`;
+deltas below. See `context/standards/telemetry-guardrails.md` for the miss-rate expectation and
+the never-auto-apply rule -- not restated here. Distinct from `--meta`'s own
+(`context/patterns/telemetry-meta-submode.md`) system-improvement-proposal charter.
 
 ## Edge Case Checks
 
+**Reachability probe (mandatory, before any classification).** `sapience-retrieve.sh` exits 1
+with empty stdout on both a zero-hit result and a transport or credential failure -- the two are
+indistinguishable without a prior probe. Before classifying any cluster, run one probe query
+whose keywords are known to match at least one existing `[repo:nvim]`-tagged knowledge object:
+
 ```
-1. Run validate-on-read to ensure memory-index.json is consistent with the filesystem
-2. Count non-tombstoned memories (status != "tombstoned" or status absent)
-3. If no non-tombstoned memories:
-   Display: "No memories in vault to revise. Use /learn to add memories first."
-   Return early.
+1. probe=$(bash .claude/scripts/sapience-retrieve.sh "sapience per-repo scoping" meta 2>/dev/null)
+2. If the probe call fails (non-zero exit, empty stdout):
+   Display: "Hosted knowledge store unreachable -- revise proceeds using events.jsonl evidence
+   only, with zero hosted-store correlations this run. No cluster is classified as a gap."
+   Classify every surviving cluster's store-correlation as skipped (not gap, not corroborated,
+   not contradicted) and continue to the Interactive Selection step with only prior, already-known
+   corroborated/contradicted buckets, if any.
+3. If the probe succeeds: proceed to classification normally.
 ```
 
 ## Candidate Identification: Event Ingestion (Tier 2)
@@ -109,58 +119,69 @@ both exiting 0. This is the expected day-one experience.
 When the summary-counts gate reports `total_events: 0`, display:
 
 ```
-No events captured yet in specs/events.jsonl -- revise proceeds using vault scoring alone
-(staleness/duplicate/size), with zero event correlations this run.
+No events captured yet in specs/events.jsonl -- revise has no recurring pattern to cluster and
+nothing to correlate against the hosted store, with zero correlations this run.
 ```
 
-Continuation rule: `--revise` does NOT stop or treat this as an error. It proceeds exactly as
-`/distill --refine` would, using only the existing Scoring Engine, and reports zero
-corroborated/contradicted/gap correlations.
+Continuation rule: `--revise` does NOT stop or treat this as an error. It proceeds, running
+Stage 4b's bookkeeping and the run-record write below, and reports zero
+corroborated/contradicted/gap correlations. (Local vault scoring, where it still applies, is
+`auto`'s own concern -- see `skill-distill/SKILL.md`'s Scoring Engine -- and is untouched by
+`--revise`'s degraded path, since `--revise` never reads or writes `.memory/`.)
 
-## Event-to-Memory Correlation
+## Event Clustering
 
-Two-tier correlation, reusing existing formulas rather than inventing a new one:
+Two-tier clustering, reusing existing formulas rather than inventing a new one, groups the pulled
+events into recurring pattern clusters at checkpoint/event_type granularity:
 
 - **Tier (a) -- task-number substring match**: for each pulled event with a non-null `task`
-  field, substring-match the task number against each memory's free-text `source` frontmatter
-  field (e.g. an event with `"task": 259` matches a memory whose `source` contains `"259"` in a
-  task-directory-shaped context). This is the high-confidence tier.
+  field, group by that task number. This is the high-confidence tier.
 - **Tier (b) -- keyword/topic overlap fallback**: for events with no task-number match (or no
   `task` field), fall back to the existing overlap formula from `### Overlap Scoring` above,
-  scoring the event's `message`/`detail` text against each memory's `keywords`. Reference that
-  section by name -- do not restate or fork the formula here.
+  grouping events whose `message`/`detail` text overlaps on keywords. Reference that section by
+  name -- do not restate or fork the formula here.
 
-## Classification
+**Recurrence threshold**: a cluster must contain **three or more** occurrences at the same
+checkpoint/event_type combination to proceed to hosted-store correlation below (rather than being
+discarded as a one-off). This three-strikes threshold is the same one the Convergence Policing
+Contract's Divergence Audit precedent (`context/contracts/convergence.md`) uses for churn
+detection -- reused here by name, not reinvented.
 
-Each memory with at least one correlated event (Tier 2) or OTel outcome record (Tier 1) is
-classified into exactly one bucket:
+Clusters that never cross the threshold are discarded; nothing is queried or written for them.
+
+## Hosted-Store Correlation
+
+For each cluster that crosses the three-strikes threshold (and only after the reachability probe
+in Edge Case Checks has succeeded), query the hosted store once via `sapience-retrieve.sh`, using
+the cluster's representative task number or overlap keywords as the query description:
+
+```bash
+bash .claude/scripts/sapience-retrieve.sh "{cluster keywords/task description}" meta
+```
+
+Classify the result into exactly one bucket:
 
 | Classification | Meaning |
 |-----------------|---------|
-| Corroborated | Correlated evidence is consistent with the memory's existing guidance -- no contradiction found. |
-| Contradicted | Correlated evidence (deviation/blocker event, optionally sharpened by an OTel error outcome from the same `cc_session_id`) shows the memory's guidance no longer holds, or is stale relative to captured evidence. |
-| Gap | Correlated evidence points at a recurring pattern with no existing memory covering it. |
+| Corroborated | The hosted store returned a note whose guidance is consistent with the cluster's evidence -- no contradiction found. |
+| Contradicted | The hosted store returned a note whose guidance the cluster's evidence (deviation/blocker event, optionally sharpened by an OTel error outcome from the same `cc_session_id`) shows no longer holds, or is stale relative to captured evidence. |
+| Gap | The query returned no note (after the reachability probe confirmed the store itself is reachable), so the cluster's recurring pattern has no existing hosted coverage. |
 
-**Recurrence threshold**: a pattern must occur **three or more times** at the same
-checkpoint/event_type combination to be treated as `contradicted` (rather than a one-off) or
-surfaced as a `gap` candidate. This three-strikes threshold is the same one the Convergence
-Policing Contract's Divergence Audit precedent (`context/contracts/convergence.md`) uses for
-churn detection -- reused here by name, not reinvented.
-
-Memories with zero correlated evidence are left out of this classification entirely; they are
-still covered by the ordinary Scoring Engine as usual.
+This preserves every classification outcome a local-vault design would have produced, and is
+strictly cheaper: only clusters that already crossed the threshold are queried, rather than
+enumerating a whole local population.
 
 ## Dry-Run
 
 When `--dry-run` is active, print the full three-bucket classification (corroborated /
-contradicted / gap) with per-memory counts and the specific correlated event IDs/messages (and
+contradicted / gap) with per-cluster counts and the specific correlated event IDs/messages (and
 any OTel-sourced `detail` citations) cited as evidence, and perform **zero writes**:
 
 ```
 [DRY RUN] Revise classification:
-  Corroborated: {count} memories (no action)
-  Contradicted: {count} memories -- would prompt UPDATE/tombstone/skip
-  Gap: {count} candidate memories -- would prompt CREATE
+  Corroborated: {count} clusters (no action)
+  Contradicted: {count} clusters -- would prompt SUPERSEDE/skip
+  Gap: {count} clusters -- would prompt CREATE
 
 No changes made.
 ```
@@ -171,35 +192,41 @@ Exit after displaying the dry-run summary.
 
 **MANDATORY STOP (Shared Sub-Mode Skeleton, Interactive Selection step). YOU MUST call
 `AskUserQuestion` for the contradicted and gap buckets before writing anything. Do NOT infer what
-the user wants. Do NOT apply any UPDATE/CREATE/tombstone without explicit user selection.** This
-is the evaluator-outside-the-loop rule from `telemetry-guardrails.md`: no sub-mode may treat its
-own prior output as primary evidence, and mutation never proceeds without this stop.
+the user wants. Do NOT apply any SUPERSEDE/CREATE without explicit user selection.** This is the
+evaluator-outside-the-loop rule from `telemetry-guardrails.md`: no sub-mode may treat its own
+prior output as primary evidence, and mutation never proceeds without this stop. Every SUPERSEDE
+and CREATE write is permanent and unreviewed -- there is no delete API on the hosted store -- so
+this stop is load-bearing, not advisory.
+
+**`--revise` may never run under `/distill --auto`.** The interactive selection gate above is a
+hard constraint, not a default that `--auto` could override: `auto` dispatches only its own local
+vault scoring/refine fixes and never reaches this sub-mode.
 
 ### Corroborated Handling
 
-No write. The memory and its corroborating evidence (event IDs, and OTel citations if present)
-are recorded in the revise summary/log only (see Revise Log Schema below) -- corroboration is
+No write. The cluster and its corroborating evidence (event IDs, and OTel citations if present)
+are recorded in the run record only (see Revise Run Record below) -- corroboration is
 informational, not actionable.
 
 ### Contradicted / Stale Handling
 
-Present each contradicted memory via `AskUserQuestion`, with three options. Each option's
-`description` MUST cite the specific correlated evidence, and the UPDATE option MUST show the
-**proposed new memory body** for review -- never a bare yes/no confirmation:
+Present each contradicted cluster via `AskUserQuestion`, with two options -- SUPERSEDE and SKIP.
+Neither of the hosted store's write primitives supports the other branches a local vault would
+offer: there is no delete API, so a contradicted note cannot be tombstoned, and `/ingest-kos`
+appends rather than rewrites, so an in-place update has no mechanism either. Both branches a
+local design would have offered therefore collapse into one write. Each option's `description`
+MUST cite the specific correlated evidence, and SUPERSEDE MUST show the **proposed superseding
+body** for review -- never a bare yes/no confirmation:
 
 ```json
 {
-  "question": "Memory '{memory.id}' appears contradicted by {N} captured events. How should it be handled?",
-  "header": "Contradicted: {memory.id}",
+  "question": "The cluster at checkpoint '{checkpoint}' ({N} occurrences) appears contradicted by hosted note '{ko_id}'. How should it be handled?",
+  "header": "Contradicted: {cluster_label}",
   "multiSelect": false,
   "options": [
     {
-      "label": "UPDATE",
-      "description": "Evidence: {event_id_1} ({message_1}), {event_id_2} ({message_2})[, OTel: {error.type}]. Proposed new body:\n\n{proposed_new_memory_body}"
-    },
-    {
-      "label": "TOMBSTONE",
-      "description": "Mark superseded by revise evidence: {event_id_1} ({message_1})"
+      "label": "SUPERSEDE",
+      "description": "Evidence: {event_id_1} ({message_1}), {event_id_2} ({message_2})[, OTel: {error.type}]. Proposed superseding note:\n\n{proposed_superseding_body}"
     },
     {
       "label": "SKIP",
@@ -209,92 +236,56 @@ Present each contradicted memory via `AskUserQuestion`, with three options. Each
 }
 ```
 
-- **UPDATE**: apply via the existing `### UPDATE Operation` template -- old guidance moves to
-  `## History`, the corrected guidance (sourced from event/OTel evidence) becomes the new main
-  content.
-- **TOMBSTONE**: apply via the existing tombstone frontmatter pattern (see the Purge Sub-Mode's
-  `#### Tombstone Application` above) with `tombstone_reason: "revise_superseded"` -- a new
-  *value* for the existing field, not a new schema.
+- **SUPERSEDE**: write exactly one new knowledge object via
+  `bash .claude/scripts/sapience-remember.sh`, whose body states the corrected guidance first and
+  then a clearly marked section quoting the superseded guidance it corrects, citing the evidence
+  that contradicted it. The superseded note is left in place in the hosted store -- that is the
+  store's own designed behavior (it performs its own conflict surfacing and stale-position
+  re-confirmation server-side), not a leak this sub-mode must clean up.
 - **SKIP**: no write.
 
 ### Gap Handling
 
-Present each gap candidate via `AskUserQuestion`, evidence-cited the same way. Before offering
+Present each gap cluster via `AskUserQuestion`, evidence-cited the same way. Before offering
 CREATE, apply the escalation discriminator:
 
 - If the gap represents durable domain/technique knowledge that fits the existing
-  TECHNIQUE/PATTERN/CONFIG/WORKFLOW/INSIGHT taxonomy, offer **CREATE** via the existing
-  `### CREATE Operation` template, sourced from the event's `detail`/`message` content.
+  TECHNIQUE/PATTERN/CONFIG/WORKFLOW/INSIGHT taxonomy, offer **CREATE**: one
+  `bash .claude/scripts/sapience-remember.sh` write sourced from the cluster's representative
+  event `detail`/`message` content.
 - If the gap instead represents a *system change* (a skill, hook, rule, or doc that should
   differ), it escalates to an **Improvement Proposal** (`--meta`,
-  `context/patterns/telemetry-meta-submode.md`)
-  instead of a memory
-  CREATE -- `--revise` never creates a memory to paper over a system defect.
+  `context/patterns/telemetry-meta-submode.md`) instead of a knowledge-object write -- `--revise`
+  never creates a knowledge object to paper over a system defect.
 
-## Batch Index Regeneration
+## Revise Run Record
 
-After all UPDATE/TOMBSTONE/CREATE writes for this revise run are complete (and only after --
-never per-memory):
+Hosted writes need no local index regeneration -- `sapience-remember.sh` and
+`sapience-retrieve.sh` are both self-contained round trips to the hosted store. This run touches
+no file under `.memory/`: no index read, no index regeneration, and no local log file.
 
-```
-1. Regenerate memory-index.json using "JSON Index Maintenance" procedure
-2. Regenerate index.md using "Index Regeneration Pattern"
-3. Regenerate .memory/10-Memories/README.md
-```
+Instead of a local `.memory/revise-log.json`, each run appends one event to the existing
+`specs/events.jsonl` store via `events-append.sh`, so the run record lives beside the same event
+data `--revise` already reads rather than introducing a second, `.memory/`-scoped log:
 
-## Revise Log Schema
-
-Operations are logged to `.memory/revise-log.json`, mirroring the shape of
-`.memory/distill-log.json`:
-
-```json
-{
-  "version": "1.0.0",
-  "operations": [
-    {
-      "id": "revise_{timestamp}",
-      "timestamp": "ISO8601",
-      "type": "revise",
-      "session_id": "sess_...",
-      "since": "ISO8601 or null (first run)",
-      "events_ingested": {
-        "total_events": 0,
-        "deviation": 0,
-        "blocker": 0,
-        "reflection": 0
-      },
-      "otel_joins": {
-        "sessions_with_cc_session_id": 0,
-        "otel_enabled": true,
-        "outcome_records_matched": 0
-      },
-      "classification": {
-        "corroborated": 0,
-        "contradicted": 0,
-        "gap": 0
-      },
-      "affected_memories": [
-        {
-          "id": "{memory.id}",
-          "classification": "contradicted",
-          "action": "updated|tombstoned|skipped",
-          "evidence_event_ids": ["evt_..."],
-          "otel_evidence": {"error.type": "ENOENT"}
-        }
-      ],
-      "notes": ""
-    }
-  ],
-  "summary": {
-    "total_revised": 0,
-    "total_corroborated": 0,
-    "total_contradicted": 0,
-    "total_gaps_created": 0,
-    "last_operation": null
-  }
-}
+```bash
+bash .claude/scripts/events-append.sh --event-type distill-revise --category milestone \
+  --session "$session_id" \
+  --message "revise: {corroborated} corroborated, {contradicted} contradicted, {gap} gap" \
+  --detail-json '{
+    "since": "ISO8601 or null (first run)",
+    "events_ingested": {"total_events": 0, "deviation": 0, "blocker": 0, "reflection": 0},
+    "otel_joins": {"sessions_with_cc_session_id": 0, "otel_enabled": true, "outcome_records_matched": 0},
+    "reachability_probe": "ok|unreachable",
+    "classification": {"corroborated": 0, "contradicted": 0, "gap": 0},
+    "affected_clusters": [
+      {"cluster_label": "...", "classification": "contradicted", "action": "superseded|skipped", "evidence_event_ids": ["evt_..."], "otel_evidence": {"error.type": "ENOENT"}}
+    ]
+  }'
 ```
 
 `otel_joins.otel_enabled: false` records the degraded path explicitly rather than leaving the
-absence of OTel-sourced evidence ambiguous with "OTel was checked and found nothing."
+absence of OTel-sourced evidence ambiguous with "OTel was checked and found nothing", and
+`reachability_probe: "unreachable"` records the degraded path from the Edge Case Checks probe
+explicitly in the same way.
 
