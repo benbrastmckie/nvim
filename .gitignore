@@ -1,1 +1,110 @@
-sub/
+# The .claude/ deploy tree is a disposable build artifact regenerated from the
+# source store in agent-system/extensions/ (selection pinned by the project-root
+# .claude-extensions.json). Nothing under it is hand-authored — every deployed
+# file has a source, enforced by the check-extension-docs.sh hard gate — so it is
+# not tracked. Wipe and regenerate from the <leader>al picker at any time.
+/.claude/
+# Runtime logs relocated out of .claude/.opencode so they survive a wipe (see
+# agent-system/extensions/core/docs/architecture/extension-system.md)
+**/.agent-logs/
+# Staging directory for the settings.json/settings.local.json backup/restore
+# wrapper (settings_backup.lua) used across a full .claude/.opencode wipe.
+/.claude-settings-backup/
+/.opencode-settings-backup/
+/specs/tmp
+# /.claude/tmp/ is covered by the blanket /.claude/ rule above
+/.opencode/tmp/
+**/.postflight-pending
+**/.git-snapshot-marker
+# git-snapshot.sh --no-revert mode's untracked-file backup: ignoring it keeps a later
+# `git stash -u` and `git clean -fd` from removing it, keeps task-scoped staging from
+# committing it, and keeps `git ls-files --others --exclude-standard` from nesting
+# backups of backups on repeat runs.
+**/untracked-backup-*/
+# Ephemeral orchestrator runtime state: per-dispatch scratch, mutex directories, and loop
+# guards. Ignored because none of these have a freshness gate on read — a git-restored copy
+# would silently corrupt in-flight cycle/churn state (see
+# .claude/context/standards/orchestrator-runtime-files.md for the full two-class policy and the
+# freshness-gate rationale). Deliberately does NOT include .orchestrator-handoff.json or the
+# bare .return-meta.json — those are durable, freshness-gated provenance and MUST stay tracked;
+# see that same standard's "Untracking Already-Committed Ephemeral Files" section before ever
+# adding either back here.
+**/.lock/
+**/.dispatch/
+**/.orchestrator-loop-guard
+**/.continuation-loop-guard
+**/.orchestrator-churn-state.json
+**/.postflight-loop-guard
+**/.orchestrator-multi-state*.json
+**/.drift-inspection.json
+**/.return-meta-*.json
+# Archived copies of the two ephemeral files above, written by the loop-guard-staleness
+# detector (hard mode only) and the budget-continuation override (both modes) before
+# reinitializing at cycle_count=0 / total_churn=0. Same freshness-gate rationale as the live
+# files they archive.
+**/.stale-loop-guard-*.json
+**/.stale-churn-state-*.json
+**/.exhausted-loop-guard-*.json
+**/.events.lock
+**/.errors.lock
+**/.decisions.lock
+**/.issues.lock
+**/.metrics.lock
+**/.return-meta.lock
+# The books extension's two repo-level append locks, guarding specs/books-evidence/runs.jsonl
+# and observations.jsonl. Structurally identical to **/.metrics.lock above but at a FIXED
+# repo-level path rather than per-task; their non-lock siblings are durable evidence and stay
+# tracked.
+**/.runs.lock
+**/.observations.lock
+/specs/tmp/
+**/.orchestration/
+**/.commit-lock/
+**/.deploy-lock/
+**/.scope-lock/
+**/.gate-lock/
+**/.sessions/
+**/.freshness-warn-streak.json
+# Contended-path manifest (orchestrate-cycle-plan.sh's build_contended_manifest, Option 3(ii)'s
+# cheap precondition): one file per session, overwritten every multi-task cycle. No freshness
+# gate on read -- see orchestrator-runtime-files.md's Class Table for the full rationale.
+**/.contention-manifest/
+# Contended-path claims (task-lock.sh's claim-acquire/claim-release, consulted by
+# git-commit-scoped.sh's --task-gated V5 refusal check): one mutex directory per declared
+# manifest path currently claimed. No freshness gate on read -- see
+# orchestrator-runtime-files.md's Class Table for the full rationale.
+**/.contention-claims/
+# Durable redeploy ledger (specs/.orchestrator-deploy-ledger.json by default): a machine-local,
+# cross-invocation record, distinct in KIND from every other pattern in this block above. It is
+# gitignored not because it is disposable per-cycle scratch, but because it describes THIS
+# machine's own .claude/ deploy state and would mislead if committed and read on another clone.
+# Every read is hash-gated (see agent-system/extensions/core/scripts/lib/deploy-ledger-lib.sh),
+# so a stale or git-restored copy can only ever trigger an extra redeploy, never a wrong skip.
+# See .claude/context/standards/orchestrator-runtime-files.md's Class Table for the full note.
+**/.orchestrator-deploy-ledger.json
+# Gate invalidation cache (specs/.gate-cache/ by default): a machine-local, cross-invocation
+# record, the SAME kind as the deploy ledger immediately above (not disposable per-cycle
+# scratch) -- it describes THIS machine's own last-known-green state per gate, keyed by a
+# content-addressed digest (never mtime), and would mislead if committed and read on another
+# clone. verify-deploy.sh's --skip-unchanged consults it; every read is format-version- and
+# key-gated (see agent-system/extensions/core/scripts/lib/gate-cache-lib.sh), so a stale,
+# corrupted, or git-restored entry can only ever trigger an extra (real) gate run, never a false
+# skip. Deliberately NOT placed under .claude/**, which deploy-headless.sh regenerates
+# immediately before every verify-deploy.sh run that matters -- a cache there would always read
+# back empty on exactly the runs this flag exists to speed up.
+**/.gate-cache/
+# Note: specs/events.jsonl and specs/errors.json are deliberately NOT ignored — they are
+# durable stores (see .claude/context/formats/events-format.md and errors-format.md). Do not
+# add either here.
+.syncprotect
+specs/literature/**/*.pdf
+specs/literature/**/*.djvu
+# Literature SQLite databases (ephemeral - rebuilt from chunk files)
+.literature.db
+.literature.db.tmp
+specs/literature/.literature.db
+specs/literature/.literature.db.tmp
+# (.claude/scripts/literature-pyenv/ is covered by the blanket /.claude/ rule above)
+agent-system/extensions/literature/scripts/literature-pyenv/
+__pycache__/
+*.pyc
