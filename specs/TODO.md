@@ -8491,6 +8491,7 @@ Severity: minor in isolation, but it taxes every phase closure in the repository
 - **Dependencies**: Task 445
 - **Research**: [444_retire_routing_agents_hard_for_hard_contracts/reports/01_retire-routing-agents-hard.md]
 - **Plan**: [444_retire_routing_agents_hard_for_hard_contracts/plans/01_retire-routing-agents-hard.md]
+- **Summary**: [444_retire_routing_agents_hard_for_hard_contracts/summaries/01_retire-routing-agents-hard-summary.md]
 
 **Description**: Retire routing_agents_hard in favour of hard_contracts across books, cslib and lean, then remove the ladder rung and gate16
 

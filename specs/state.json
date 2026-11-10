@@ -3139,9 +3139,15 @@
           "path": "specs/444_retire_routing_agents_hard_for_hard_contracts/plans/01_retire-routing-agents-hard.md",
           "type": "plan",
           "summary": "Eight-phase migration plan: convention record, override-contract rename plus lean residue contract, hard_contracts declaration with per-domain demonstration, routing block and rung removal, hard skill retirement, hard agent retirement, gate16 settlement, docs convergence and full gate set."
+        },
+        {
+          "path": "specs/444_retire_routing_agents_hard_for_hard_contracts/summaries/01_retire-routing-agents-hard-summary.md",
+          "type": "summary",
+          "summary": "All eight plan phases completed: routing_agents_hard retired in favor of hard_contracts contract injection across books, cslib and lean; the twelve now-unreachable -hard agent/skill files and the roughly fifty files referencing them converged; gate16 settled as a standing absence guard; hard-mode-routing.md and manifest-routing-schema.md fully rewritten for the collapsed single-block model."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Retired routing_agents_hard across books, cslib and lean in favor of hard_contracts contract injection onto the standard agents, removed the agent-level resolution rung and the twelve now-unreachable -hard agent/skill wrapper files, settled gate16 as a standing absence guard with a fixture-independent WARN-channel test, and converged every roster, index row, lint array, and doc that named the retired mechanism. All 8 plan phases closed [COMPLETED]."
     },
     {
       "project_number": 439,

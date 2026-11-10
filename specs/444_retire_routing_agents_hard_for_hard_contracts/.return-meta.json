@@ -92,21 +92,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/444_retire_routing_agents_hard_for_hard_contracts/summaries/01_retire-routing-agents-hard-summary.md",
       "confidence": 0.88,
-      "suggested_keywords": ["routing-migration", "hard-mode", "contract-injection", "ordering", "defect-prevention"]
+      "suggested_keywords": [
+        "routing-migration",
+        "hard-mode",
+        "contract-injection",
+        "ordering",
+        "defect-prevention"
+      ]
     },
     {
       "content": "This agent-system's deploy copier is additive-only: deleting or renaming a source-store file never removes its stale counterpart from an already-deployed tree (.claude/**). After every source-store rename/deletion plus redeploy, run gate 13 (whole-tree orphan detection) and expect it to surface exactly these stale artifacts -- both orphan FILES (the old deployed path still on disk) and GHOST INDEX ROWS (a stale entry in the merged .claude/context/index.json pointing at a path whose source row no longer exists). Both must be removed manually; this is documented, deliberate behavior (deploy-orphan-detection.md's 'detect, never auto-delete' design), not a bug to route around.",
       "category": "PATTERN",
       "source_artifact": "specs/444_retire_routing_agents_hard_for_hard_contracts/summaries/01_retire-routing-agents-hard-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["deploy-copier", "orphan-detection", "gate13", "additive-only", "stale-artifact"]
+      "suggested_keywords": [
+        "deploy-copier",
+        "orphan-detection",
+        "gate13",
+        "additive-only",
+        "stale-artifact"
+      ]
     },
     {
       "content": "When editing a load_when.agents array inside index-entries.json, check whether a co-present load_when.task_types (or commands) array already covers the same reachability before deciding an agent-name removal needs a replacement entry -- context-discovery's own loader ORs every load_when sub-array together (any(.load_when.agents) OR any(.load_when.task_types) OR any(.load_when.commands) OR .load_when.always), so removing a now-stale agent name from one sub-array is often a pure no-op for reachability, not a change requiring a substitute.",
       "category": "INSIGHT",
       "source_artifact": "specs/444_retire_routing_agents_hard_for_hard_contracts/summaries/01_retire-routing-agents-hard-summary.md",
       "confidence": 0.82,
-      "suggested_keywords": ["index-entries.json", "load_when", "context-discovery", "OR-semantics", "reachability"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "load_when",
+        "context-discovery",
+        "OR-semantics",
+        "reachability"
+      ]
     }
   ],
   "metadata": {
@@ -129,5 +147,7 @@
     "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
     "agent-system/extensions/core/manifest.json",
     "agent-system/extensions/core/scripts/lint/collapsed-blocks/early-metadata-stage0-python-agents-python-implementation-agent.txt"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
