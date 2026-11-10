@@ -353,28 +353,28 @@ adjudicate on its merits, not evidence of a lint defect.
 
 ---
 
-### Phase 4: Register the detector as gate 28 [NOT STARTED]
+### Phase 4: Register the detector as gate 28 [COMPLETED]
 
 **Goal**: The detector runs as part of the gate set, scoped to the source store, selectable via
 `--only-gate 28`, and structurally valid against the registry lint.
 
 **Tasks**:
-- [ ] Add `gate28_run()` to `agent-system/extensions/core/scripts/verify-deploy.sh` immediately
+- [x] Add `gate28_run()` to `agent-system/extensions/core/scripts/verify-deploy.sh` immediately *(completed)*
       after `gate27_run()`, following that function's template exactly: `gate_selected 28`, a
       `say "28. ..."` line, `CURRENT_GATE="gate28"`, the
       `[ ! -d "$TARGET/agent-system/extensions" ]` SKIP branch (this is the required
       "scoped to the SOURCE STORE" mechanism), a `[ ! -f ... ]` `fail` branch for a missing lint
       script, the `--verbose` invocation with `REPO_ROOT="$TARGET"`, `pass`/`fail`, and the
       `FINDINGS_LIST` population via `verify_deploy_extract_verdict_lines '[VIOLATION]'`.
-- [ ] Add a single TAB-separated row with id 28 to
+- [x] Add a single TAB-separated row with id 28 to *(completed)*
       `agent-system/extensions/core/scripts/gate-registry.data`, 9 fields, copying gate 27's
       field shapes: name `Deliberate-break residue lint
       (lint-deliberate-break-residue.sh)`, invoke `gate28_run`, dependencies `-`,
       requires_source_store `true`, timeout_s `30`, cost_class `free`, serialized `false`,
       input_corpus `@extensions`.
-- [ ] Verify the row uses real TAB characters (not spaces) and has exactly 8 tabs, per the
+- [x] Verify the row uses real TAB characters (not spaces) and has exactly 8 tabs, per the *(completed)*
       registry lint's Check F.
-- [ ] Confirm no total-gate-count literal needs updating: `--only-gate`'s maximum derives from
+- [x] Confirm no total-gate-count literal needs updating: `--only-gate`'s maximum derives from *(completed)*
       `gate_registry_max_id`, and `test-verify-deploy-gate-selection.sh` reads
       `REGISTRY_MAX="$(gate_registry_max_id)"`. Re-grep to confirm no literal `27` bound was
       introduced elsewhere since.

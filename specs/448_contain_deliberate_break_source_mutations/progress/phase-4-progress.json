@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Register the detector as gate 28",
+  "started_at": "2026-11-09T23:51:00Z",
+  "last_updated": "2026-11-10T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add gate28_run() to verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Add id-28 row to gate-registry.data", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 3, "description": "Verify real TABs, 8 tabs", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no literal 27 bound elsewhere", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

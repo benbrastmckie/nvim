@@ -2075,6 +2075,34 @@ say ""
 fi
 }
 
+gate28_run() {
+if gate_selected 28; then
+say "28. Deliberate-break residue lint (lint-deliberate-break-residue.sh)"
+CURRENT_GATE="gate28"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- deliberate-break residue lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh" ]; then
+  fail "lint-deliberate-break-residue.sh not found in source store"
+else
+  deliberate_break_residue_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh" --verbose 2>&1)
+  deliberate_break_residue_lint_status=$?
+  if [ "$deliberate_break_residue_lint_status" -eq 0 ]; then
+    pass "deliberate-break residue lint reports no while-false-guard or anchor-backup residue"
+  else
+    fail "deliberate-break residue lint reported source-store residue" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-deliberate-break-residue.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r deliberate_break_residue_lint_line; do
+        FINDINGS_LIST+=("FINDING gate28 $deliberate_break_residue_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$deliberate_break_residue_lint_output")
+    fi
+  fi
+fi
+
+say ""
+fi
+}
+
 # Per-gate bounded execution (Phase 6, "Uniform Bounded Timeouts Per Gate and Per Suite"): each
 # gate's declared `timeout_s` (gate-registry.data) is now enforced via
 # gate_registry_exec_bounded, which runs the gate's invoke function and, on a clean finish,
