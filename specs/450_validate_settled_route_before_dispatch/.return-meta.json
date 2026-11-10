@@ -30,29 +30,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["test-subject-resolution", "deploy-tree-first", "CORE_TEST_SUBJECT_MODE", "source-store", "redeploy"]
+      "suggested_keywords": [
+        "test-subject-resolution",
+        "deploy-tree-first",
+        "CORE_TEST_SUBJECT_MODE",
+        "source-store",
+        "redeploy"
+      ]
     },
     {
       "content": "A plan phase whose own Verification instructs 'do not run the full verify-deploy.sh aggregator while another session is active; use the scoped narrowing' is not merely advisory -- in a multi-task /orchestrate batch, the dispatch's own .dispatch/ file may ALSO carry a Batch Gate Deferral directive requiring the same substitution for the exact same reason (concurrent-session gate-lock contention). When the final full-tier phase's independent full-aggregator run hits specs/.gate-lock contention, the fix is not to wait longer or retry -- it is to switch to the scoped discharge: the union of every suite named across the plan's own per-phase Tier Justifications (already proven passing), plus --only-gate for any doc/task-ref concern, plus direct diff/git-status checks for deploy-cleanliness. The complete gate set is deferred to the once-per-invocation batch stage, never independently re-attempted by one task's own dispatch.",
       "category": "WORKFLOW",
       "source_artifact": "specs/450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["batch-gate-deferral", "gate-lock-contention", "scoped-narrowing", "verify-deploy", "multi-task-batch"]
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "gate-lock-contention",
+        "scoped-narrowing",
+        "verify-deploy",
+        "multi-task-batch"
+      ]
     },
     {
       "content": "When a shared, auto-generated index file (e.g. index-entries.json driving a line-count lint) needs a surgical fix for just this task's own entries, but running the regenerator tool over the whole repo also 'fixes' OTHER entries that are pre-existing, unrelated, uncommitted foreign changes already dirty in the working tree, do not blindly git-add the whole file. Instead: snapshot the working-tree file, run the regenerator, then programmatically revert every entry NOT belonging to this task back to its HEAD value (leaving only this task's own entries changed), commit that narrowed diff via git-commit-scoped.sh, then restore the full original working-tree content (with the foreign pending changes intact) so no other session's uncommitted work is swept into or lost from this task's commit.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["shared-index-file", "scope-containment", "surgical-commit", "foreign-uncommitted-changes", "line-count-regenerator"]
+      "suggested_keywords": [
+        "shared-index-file",
+        "scope-containment",
+        "surgical-commit",
+        "foreign-uncommitted-changes",
+        "line-count-regenerator"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

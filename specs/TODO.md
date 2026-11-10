@@ -8110,6 +8110,7 @@ rules/plan-compliance.md is added to file_scope: its "Mechanical check" paragrap
 - **Dependencies**: Task 274, Task 275, Task 328, Task 360, Task 378, Task 407, Task 420, Task 435, Task 443, Task 448, Task 449
 - **Research**: [450_validate_settled_route_before_dispatch/reports/01_validate-settled-route-before-dispatch.md]
 - **Plan**: [450_validate_settled_route_before_dispatch/plans/01_validate-settled-route-before-dispatch.md]
+- **Summary**: [450_validate_settled_route_before_dispatch/summaries/01_validate-settled-route-before-dispatch-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
