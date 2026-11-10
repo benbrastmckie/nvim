@@ -57,7 +57,7 @@ PHASE_PATTERN="\\b([Tt]asks?${TASK_SEP}[0-9]+[[:space:]]+[Pp]hase${TASK_SEP}[0-9
 #               memory's frontmatter, and the same string mirrored into memory-index.json), so
 #               the vault reports one finding per memory plus one per index entry -- a count that
 #               grows with every harvest and never reaches zero. That provenance is structured
-#               data written by memory-harvest.sh and /learn, not deliverable prose, and the
+#               data written by /learn, not deliverable prose, and the
 #               alternative (an inline marker on each frontmatter line) cannot hold: the index is
 #               regenerated wholesale, so its markers would be dropped on every rebuild.
 #

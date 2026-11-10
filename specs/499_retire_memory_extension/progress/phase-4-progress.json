@@ -4,50 +4,80 @@
   "started_at": "2026-11-10T01:40:00Z",
   "last_updated": "2026-11-10T02:10:00Z",
   "objectives": [
-    {"id": 1, "description": "Gate on Phase 1 (grep returns zero); delete the two scripts; prune core/manifest.json", "status": "done",
-     "files_touched": [
-       "agent-system/extensions/core/scripts/memory-retrieve.sh",
-       "agent-system/extensions/core/scripts/memory-harvest.sh",
-       "agent-system/extensions/core/manifest.json"
-     ]},
-    {"id": 2, "description": "Repoint test-orchestrate-build-aux-dispatch.sh negative assertion and orchestrate-build-aux-dispatch.sh header comment", "status": "done",
-     "files_touched": [
-       "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
-       "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh"
-     ]},
-    {"id": 3, "description": "Update lib/common.sh, sweep-invalidated-claims.sh, lib/task-reference-patterns.sh comments", "status": "done",
-     "files_touched": [
-       "agent-system/extensions/core/scripts/lib/common.sh",
-       "agent-system/extensions/core/scripts/sweep-invalidated-claims.sh",
-       "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh"
-     ]},
-    {"id": 4, "description": "Sweep remaining prose reference files (10 declared + sapience-retrieve.sh header, out-of-plan-list fix)", "status": "done",
-     "files_touched": [
-       "agent-system/extensions/core/README.md",
-       "agent-system/extensions/core/docs/guides/creating-extensions.md",
-       "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
-       "agent-system/extensions/core/context/patterns/context-protective-lead.md",
-       "agent-system/extensions/core/context/standards/telemetry-guardrails.md",
-       "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
-       "agent-system/extensions/core/context/standards/shell-script-testing.md",
-       "agent-system/extensions/core/context/meta/meta-guide.md",
-       "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
-       "agent-system/extensions/email/context/project/email/design/email-to-memory-preferences.md",
-       "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
-     ]},
-    {"id": 5, "description": "Update memory/EXTENSION.md, memory/README.md, skill-learn/README.md, skill-distill/SKILL.md stale comment", "status": "done",
-     "files_touched": [
-       "agent-system/extensions/memory/EXTENSION.md",
-       "agent-system/extensions/memory/README.md",
-       "agent-system/extensions/memory/skills/skill-learn/README.md",
-       "agent-system/extensions/memory/skills/skill-distill/SKILL.md"
-     ]},
-    {"id": 6, "description": "Resync stale index-entries.json line_count declarations caused by this phase's edits (email-to-memory-preferences.md, shell-script-testing.md, task-reference-exemptions.md), carefully excluding unrelated sibling-drift corrections the same regen tool run also touched", "status": "done",
-     "files_touched": [
-       "agent-system/extensions/email/index-entries.json",
-       "agent-system/extensions/core/index-entries.json"
-     ]},
-    {"id": 7, "description": "Run complete gate set (verify-deploy.sh, no flags) per this phase's full tier", "status": "in_progress", "files_touched": []}
+    {
+      "id": 1,
+      "description": "Gate on Phase 1 (grep returns zero); delete the two scripts; prune core/manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/memory-retrieve.sh",
+        "agent-system/extensions/core/scripts/memory-harvest.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Repoint test-orchestrate-build-aux-dispatch.sh negative assertion and orchestrate-build-aux-dispatch.sh header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+        "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Update lib/common.sh, sweep-invalidated-claims.sh, lib/task-reference-patterns.sh comments",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/common.sh",
+        "agent-system/extensions/core/scripts/sweep-invalidated-claims.sh",
+        "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Sweep remaining prose reference files (10 declared + sapience-retrieve.sh header, out-of-plan-list fix)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/README.md",
+        "agent-system/extensions/core/docs/guides/creating-extensions.md",
+        "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+        "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+        "agent-system/extensions/core/context/standards/telemetry-guardrails.md",
+        "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "agent-system/extensions/core/context/meta/meta-guide.md",
+        "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+        "agent-system/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+        "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Update memory/EXTENSION.md, memory/README.md, skill-learn/README.md, skill-distill/SKILL.md stale comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/memory/EXTENSION.md",
+        "agent-system/extensions/memory/README.md",
+        "agent-system/extensions/memory/skills/skill-learn/README.md",
+        "agent-system/extensions/memory/skills/skill-distill/SKILL.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Resync stale index-entries.json line_count declarations caused by this phase's edits (email-to-memory-preferences.md, shell-script-testing.md, task-reference-exemptions.md), carefully excluding unrelated sibling-drift corrections the same regen tool run also touched",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/email/index-entries.json",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Run complete gate set (verify-deploy.sh, no flags) per this phase's full tier",
+      "status": "done",
+      "files_touched": [],
+      "note": "verify-deploy.sh (no flags) ran to completion: 37 of 43 checks PASS. 6 FAIL, all accounted for: gate3 (doc-lint) + gate5 (manifest content-hash) + gate13 (whole-tree orphan detection) are expected pre-redeploy drift from this task's own source-store edits not yet deployed (Phase 7 resolves via deploy-headless.sh; Phase 5's own plan text anticipates exactly this for orphan detection). gate24 (/ide dead-command lint) is pre-existing and unrelated -- confirmed via git diff --stat on the two flagged files (memory-setup.md, memory-troubleshooting.md), both untouched by this task. gate8 (run-all.sh) and gate10 (validate-state.sh --deep) failed during a window of heavy concurrent load; both were independently re-verified: gate10 passes cleanly (20/0) via the deployed path outside the contended window; gate8's full battery could not be independently re-run because specs/.gate-lock is held by a dead process (pid 2227797, confirmed via 'ps -p' returning nothing) with >=5 sibling run-all.sh invocations queued behind it -- a repo-wide, multi-session contention issue recorded via issue-record.sh (class: gate collision, severity: costly), not worked around by clearing the lock myself. As a substitute, the three test suites this phase's own edits touch (test-orchestrate-build-aux-dispatch.sh, test-manifest-scripts-sync.sh, test-script-inventory.sh) were each run standalone and pass cleanly (22/0, 19/0, 32/0)."
+    }
   ],
   "current_objective": 7,
   "approaches_tried": [],

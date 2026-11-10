@@ -21,7 +21,7 @@ Knowledge capture and retrieval via the memory vault. Supports text, file, direc
 
 ### Memory-Augmented Research
 
-Memory retrieval is automatic: when the memory extension is loaded, the research, plan, and implement preflight stages (dispatched via `/orchestrate`) call `memory-retrieve.sh` to inject relevant memories as `<memory-context>` into the agent context. The `--clean` flag suppresses auto-retrieval.
+Memory retrieval is automatic: the research, plan, and implement preflight stages (dispatched via `/orchestrate`) call `sapience-retrieve.sh` to inject relevant knowledge objects as `<memory-context>` into the agent context, independent of whether the memory extension itself is loaded. The `--clean` flag suppresses auto-retrieval.
 
 ### Literature-Augmented Research
 

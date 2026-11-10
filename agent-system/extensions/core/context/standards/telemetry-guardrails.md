@@ -119,9 +119,9 @@ entire scope of this rule.
 
 ## The Cross-Repo Script Invocation Discipline
 
-`memory-retrieve.sh`, `memory-harvest.sh`, `events-query.sh`, and `events-append.sh` resolve
-`PROJECT_ROOT` from the literal invocation string (`BASH_SOURCE[0]`), not from any explicit
-root argument. The mandatory invocation form for any new sub-mode call site is:
+`sapience-retrieve.sh`, `sapience-remember.sh`, `events-query.sh`, and `events-append.sh`
+resolve `PROJECT_ROOT` from the literal invocation string (`BASH_SOURCE[0]`), not from any
+explicit root argument. The mandatory invocation form for any new sub-mode call site is:
 
 ```bash
 GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"

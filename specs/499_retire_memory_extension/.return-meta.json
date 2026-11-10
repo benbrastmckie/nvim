@@ -57,5 +57,10 @@
   "partial_progress": {
     "stage": "initializing",
     "details": "Dispatch 13 implement phase starting; parsing plan with 7 phases across 4 waves"
-  }
+  },
+  "proposed_file_scope": [
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/email/index-entries.json",
+    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
+  ]
 }

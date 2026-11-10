@@ -20,14 +20,13 @@
 # script. The single integration point is `scripts/orchestrate-cycle-postflight.sh`, at the
 # research-postflight site, deliberately deferred to its own follow-up task rather than wired
 # here (wiring it here would add a serializing edge against a file already in eight other open
-# tasks' declared file_scope for one call line). That follow-up task owes BOTH of the following
-# calls, bundled as one task so as not to double the serializing edges:
-#   1. This script, keyed on the producing dispatch's `.return-meta.json` `claim_invalidations`
-#      array (the NEGATIVE direction: a refutation falsifying a sibling task's filed premise).
-#   2. `memory-harvest.sh <task_number>`, keyed on a non-empty `memory_candidates` array (the
-#      POSITIVE direction: a finding already recorded in one task's artifacts reaching the next
-#      task that would otherwise rediscover it). `memory-harvest.sh` already exists and is
-#      itself presently uncalled for the same reason -- see its own header.
+# tasks' declared file_scope for one call line). That follow-up task owes this script, keyed on
+# the producing dispatch's `.return-meta.json` `claim_invalidations` array (the NEGATIVE
+# direction: a refutation falsifying a sibling task's filed premise). The POSITIVE direction (a
+# finding already recorded in one task's artifacts reaching the next task that would otherwise
+# rediscover it) is `/distill --learn`'s retroactive batch sweep against the hosted knowledge
+# store, which runs independently of this script's own research-postflight site rather than as
+# a bundled second call here.
 #
 # Usage:
 #   sweep-invalidated-claims.sh --name NAME [--name NAME ...] [--self TASK_NUMBER] [--state-file PATH]

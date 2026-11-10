@@ -111,7 +111,7 @@ core/
 ├── scripts/                   # 200 utility scripts
 │   ├── check-extension-docs.sh, export-to-markdown.sh
 │   ├── install-extension.sh, uninstall-extension.sh
-│   ├── memory-retrieve.sh, validate-*.sh
+│   ├── events-query.sh, validate-*.sh
 │   └── lint/
 │
 ├── hooks/                     # 11 lifecycle hooks

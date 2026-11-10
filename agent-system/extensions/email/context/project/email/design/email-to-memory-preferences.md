@@ -68,11 +68,12 @@ message.
   `hooks` key at all (absent, not even declared empty) — neither extension has ever exercised
   this slot; its failure-isolation contract is unproven in this repo. Rejected as a starting
   dependency for a design meant to ship soon; revisit only if a second hook consumer emerges.
-- **Deferred `/todo`-substrate harvest**: `.claude/scripts/memory-harvest.sh` reads
+- **Deferred `/todo`-substrate harvest**: a per-task memory-candidate harvest keyed on
+  `project_number` reads
   `.active_projects[] | select(.project_number == $task) | .memory_candidates` from
-  `specs/state.json` (verified by reading the script) — it is keyed on `project_number`.
-  `/email` is direct-execution with no task directory and no `project_number`; this substrate
-  literally does not exist for it. Rejected, not merely deprioritized.
+  `specs/state.json` for one task directory at a time. `/email` is direct-execution with no task
+  directory and no `project_number`; this substrate literally does not exist for it. Rejected,
+  not merely deprioritized.
 
 ### 1.4 Evidentiary threshold (G1/C1)
 
@@ -217,11 +218,11 @@ without a new skill-learn API verb (Phase 4 §4.3).
 (`sha256(local-part)[:12]`) in the stored key, title, and body — plaintext addresses are never
 written into the vault.
 
-**Rationale**: `memory-retrieve.sh` (verified by reading the script) scores corpus-wide by
-keyword overlap plus a topic/category bonus (lines 74-102) with **no namespace filter at all**
-— before Phase 5's G4 fix ships, a plaintext email address in a preference memory's title/body
-is exactly the kind of >4-char, non-stopword token that would pass the keyword filter and could
-surface in an unrelated task's `<memory-context>`. Even after the G4 fix, hashing is
+**Rationale**: the research/plan/implement auto-retrieval path's corpus-wide keyword-overlap
+scoring (plus a topic/category bonus), with **no namespace filter at all** against this one
+reserved namespace, would otherwise make a plaintext email address in a preference memory's
+title/body exactly the kind of >4-char, non-stopword token that could surface in an unrelated
+task's `<memory-context>`. Hashing is
 defense-in-depth: debugging only needs *consistency* (same input -> same hash, so a dominant
 sender is recognizable across visits and the derived dominant-action trend is auditable), not
 *reversibility* — an operator who genuinely needs the real address can cross-reference the
@@ -333,17 +334,19 @@ candidates as: `retrieval_count==0 AND days_since_created > 30`. **Chosen mechan
 topic-prefix exemption to that
 condition — `retrieval_count==0 AND days_since_created > 30 AND NOT topic starts_with
 "email/preferences/"`. Rejected alternative: making email-side reads increment
-`retrieval_count`. Rationale: `memory-retrieve.sh` is invoked only by the research/plan/
-implement-phase preflight (verified: no other caller exists in this repo); teaching
+`retrieval_count`. Rationale: the research/plan/implement-phase preflight's auto-retrieval
+script is the sole caller of this read path (verified: no other caller exists in this repo);
+teaching
 `skill-email-cleanup` to independently mutate `memory-index.json`'s `retrieval_count` on every
 lookup introduces a second uncoordinated writer to that file for a benefit (staleness signal
 accuracy) fully achievable with a one-line filter-scope addition to the existing purge query.
 
-### 5.2 G4 (part b) — cross-contamination fix in `memory-retrieve.sh`
+### 5.2 G4 (part b) — cross-contamination fix in the local-vault auto-retrieval scoring path
 
-Verified: the scoring block (`memory-retrieve.sh:74-102`) has no namespace/task-type filter; the
-`>4-char` stopword filter (line 54, 60) does not drop proper nouns (`github`, `google`,
-`notifications` all pass). **Chosen mechanism**: add a pre-filter step before scoring —
+Verified against the local-vault auto-retrieval script this section's design is scoped to: its
+scoring block had no namespace/task-type filter; its `>4-char` stopword filter did not drop
+proper nouns (`github`, `google`, `notifications` all passed). **Chosen mechanism**: add a
+pre-filter step before scoring —
 
 ```
 map(select(
@@ -487,7 +490,7 @@ never automatic, and out of scope for both 821 and 822.
 | G1 (evidentiary threshold) | §1.4 | Uniform-batch OR rolling N>=3 at >=80%, evaluated against the stored tally. |
 | G2 (identity key + verification) | §2 | `lower(local@domain)`, plus-tag stripped, freemail never rolled up; verified against 2,128 real tagged messages. |
 | G3 (deterministic dedup) | §4.1-4.3 | Exact `topic==` short-circuit before fuzzy; CREATE/EXTEND/UPDATE mapped to tally arithmetic. |
-| G4 (namespace segregation, distill exemption, cross-contamination) | §5.1-5.2 | Purge-filter topic-prefix exemption; `memory-retrieve.sh` topic-prefix pre-filter. |
+| G4 (namespace segregation, distill exemption, cross-contamination) | §5.1-5.2 | Purge-filter topic-prefix exemption; local-vault auto-retrieval scoring topic-prefix pre-filter. |
 | G5 (redaction) | §3.3 | Domain plaintext, local-part hashed (`sha256[:12]`). |
 | G6 (feedback-loop guardrails) | §5.3 | Advisory-only surfacing, capped below the frozen classifier's own confidence; tally itself is the reversal mechanism. |
 | G7 (`category: preference` field) | §3.4 | Added now, schema-additive, first real use of the field. |

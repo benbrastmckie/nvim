@@ -1023,8 +1023,8 @@ Before this seam, `topic` was read only by presentation/grouping/validation cons
 (`generate-todo.sh`, `generate-task-order.sh`, `manage-topics.sh`, `validate-state.sh`,
 `orchestrate-predispatch-review.sh`) -- nothing dispatched on it. This seam makes
 `active_projects[].topic` a **dispatch-matching** key for the first time (a distinct, same-named
-field from a memory-index entry's own topic taxonomy value, which `scripts/memory-retrieve.sh`
-already reads as a retrieval-scoring bonus -- the two are unrelated).
+field from a memory-index entry's own `topic` taxonomy value, which the memory extension's
+Topic-Cluster Grouping already reads for scoring -- the two are unrelated).
 
 The motivating measurement: in one consuming repository, a 17-task corpus sharing the topic
 `books` carried `task_type` values of `lean4` (14 of them), `general` (2), and `typst` (1) -- NOT

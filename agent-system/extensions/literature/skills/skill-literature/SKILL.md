@@ -481,7 +481,8 @@ See `rules/error-handling.md` for general patterns. Skill-specific behaviors:
 
 ## Standards Reference
 
-- Token counting: `chars / 4 + 20` (matches memory-harvest.sh pattern)
+- Token counting: `chars / 4 + 20` (the standard ~4-chars-per-token estimate used across this
+  repo's own scripts, e.g. `sapience-retrieve.sh`'s token-budget selection)
 - Chunking: content-aware logical splitting at 4,000-line threshold — divide at chapter/section headings; merge small adjacent sections; fall back to mechanical 4,000-line splits when no headings detected
 - Source file convention: PDF/DJVU source files are co-located with their converted markdown in the same `specs/literature/` directory or subdirectory. Source files are gitignored via `specs/literature/**/*.pdf` and `specs/literature/**/*.djvu` patterns. Users must add source files manually after checkout.
 - Index schema: root `specs/literature/index.json` uses `entries[]` with enriched metadata fields (authors, title, year, doc_type, source_format, parent_doc, page_range, bib_key, zotero_key, zotero_path, project_tags)

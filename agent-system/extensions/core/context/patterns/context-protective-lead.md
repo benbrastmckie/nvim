@@ -35,7 +35,7 @@ The reference implementation is `skill-orchestrate`, which grows by a measured 8
 | 1 | **Reading multiple agent outputs inline** | Lead reads all of several agents' finding files to merge them itself | Fork a dedicated synthesis agent with the finding file paths | High (4-12k tokens) |
 | 2 | **Loading format specs** | `cat format-spec.md` in lead preflight for passthrough | Pass `@.claude/context/formats/report-format.md` reference to subagent | Medium (88-426 lines) |
 | 3 | **Eagerly reading context files** | Loading context files into lead's context for passthrough to subagent | Use @-references in subagent prompts; delegate investigation to scouts | Medium-High |
-| 4 | **Loading memory into lead** | `memory_context=$(bash memory-retrieve.sh ...)` in lead preflight | Pass task keywords to subagent; subagent calls memory-retrieve.sh | Low-Medium |
+| 4 | **Loading memory into lead** | `memory_context=$(bash sapience-retrieve.sh ...)` in lead preflight | Pass task keywords to subagent; subagent calls sapience-retrieve.sh | Low-Medium |
 | 5 | **Reading roadmap in lead** | `roadmap_context=$(cat specs/ROADMAP.md)` for passthrough | Pass `@specs/ROADMAP.md` reference to subagent | Low |
 | 6 | **Reading full state.json** | `Read specs/state.json` via Read tool | Use `jq -r '.active_projects[] \| select(.project_number == N) \| .status' specs/state.json` | Low |
 | 7 | **Reading full TODO.md** | Loading entire TODO.md for context | `grep -n "task_number" specs/TODO.md` for specific task line | Low |
@@ -209,7 +209,7 @@ Skill authors should review their lead skills against this checklist:
 
 - [ ] Lead does NOT use `Read` on `reports/*.md`, `plans/*.md`, or `summaries/*.md`
 - [ ] Lead does NOT use `cat` on format spec files (report-format.md, plan-format.md, etc.)
-- [ ] Lead does NOT call `memory-retrieve.sh` -- subagent handles memory loading
+- [ ] Lead does NOT call `sapience-retrieve.sh` -- subagent handles memory loading
 - [ ] Lead does NOT read `specs/ROADMAP.md` -- passes @-reference to subagent
 - [ ] Lead does NOT perform synthesis inline (reading all of several agents' outputs)
 - [ ] Any multi-agent synthesis is delegated to a dedicated synthesis agent

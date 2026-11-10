@@ -751,8 +751,7 @@ this library's job -- this is a pointer caveat only.
 from an earlier report, per this doc's own re-run-don't-cite-frozen-numbers practice): 93 narrow
 + 9 flat core suites; 52/93 (55.9%) deployed-preferring (`grep -l '$REPO_ROOT/.claude'
 tests/*.sh`); a 19-script zero-reference set (the fail-safe fixture population: e.g.
-`memory-harvest.sh`, `migrate-directory-padding.sh` -- re-derive live, these counts drift as the
-corpus grows). On a heavily-loaded host (concurrent sibling sessions active throughout, `uptime`
+`migrate-directory-padding.sh` -- re-derive live, these counts drift as the corpus grows). On a heavily-loaded host (concurrent sibling sessions active throughout, `uptime`
 load average observed between 3.99 and 12.90 across the measurement window -- heavier than this
 doc's own previously recorded "loaded" condition): a representative 5-file touched set spanning
 `lint/`, `lib/`, and flat `scripts/` resolved to 32 suites and ran in 375,669ms (~6.3min)

@@ -56,7 +56,7 @@ one of the categories below, carried on the begin marker (block form) or the inl
 | 4. Quoted historical anti-patterns | Keep verbatim — the point is to show a real past violation as a negative example | Yes | The **Before** block above |
 | 5. Placeholder-bearing prose | Not matched by `TASK_PATTERN` at all; recorded here as a constraint on future pattern changes, never broaden the digit-requirement | No (not applicable — never matches) | `task {N}`, `specs/{NNN}_{SLUG}/`, `MM_{short-slug}.md` |
 | 6. Test fixtures for the reference-pattern detector itself | Keep concrete digits verbatim — the fixture's whole purpose is asserting the shared library's regex triggers (or does not trigger) on a specific literal string; a placeholder would not match `[0-9]+` and would silently disable the assertion | Yes | `assert_triggers "positive: task 788" ... "See task 788 for context"` in `scripts/tests/test-validate-no-task-references.sh` and the five-named-forms fixture block in `scripts/tests/test-census-count.sh` <!-- task-ref-ok quoting the actual fixture strings, category 6 --> |
-| 7. Memory vault (`.memory/**`) provenance fields (`topic`, `source`) | Path-level exemption, no marker — `memory-harvest.sh` and `/learn` write `topic: "task-${task_number}"` / `source: "${source_artifact}"` as structured provenance data, not deliverable prose; a placeholder would misrepresent which task actually produced the memory | No | `source: "Task 101: specs/101_remove_trivial_operator/summaries/01_summary.md"` in a memory's frontmatter, and the same string mirrored into `memory-index.json` <!-- task-ref-ok quoting category 7's own illustrative example --> |
+| 7. Memory vault (`.memory/**`) provenance fields (`topic`, `source`) | Path-level exemption, no marker — `/learn` writes `topic: "task-${task_number}"` / `source: "${source_artifact}"` as structured provenance data, not deliverable prose; a placeholder would misrepresent which task actually produced the memory | No | `source: "Task 101: specs/101_remove_trivial_operator/summaries/01_summary.md"` in a memory's frontmatter, and the same string mirrored into `memory-index.json` <!-- task-ref-ok quoting category 7's own illustrative example --> |
 
 Categories 1 and 7 are the two path-level zones, enforced in `is_exempt_path` and subtracted
 from the lint's repo-wide scope; every other category is marker-bearing. Category 7 is
@@ -100,11 +100,8 @@ repository, in any repo this system deploys into, is a deliverable subject to th
   `guard-destructive-git.sh` for the same pattern). It fails OPEN (exit 0, stderr warning) if its
   own shared pattern library cannot be sourced, so a broken guard never blocks every write in the
   repo. **`.memory/**` coverage, empirically verified**: `skill-todo`'s Stage 14 memory-harvest
-  logic (the live path — distinct from the separate, presently-uncalled `memory-harvest.sh`
-  script) creates new memory files via the `Write` tool with natural-language instructions, not a
+  logic creates new memory files via the `Write` tool with natural-language instructions, not a
   Bash heredoc, so this hook DOES see and can block `.memory/**` memory-candidate harvest writes.
-  The heredoc gap exists only in `memory-harvest.sh` itself, which is not on the live `/todo`
-  path today.
 - **Agent contracts**: every agent that authors deliverable files outside `specs/**` carries an
   explicit MUST-NOT bullet against citing task numbers, sourced from one canonical fragment,
   `agent-system/extensions/core/context/contracts/no-task-references-bullet.md`. That fragment is

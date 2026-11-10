@@ -2,7 +2,7 @@
 # test-orchestrate-build-aux-dispatch.sh - Fixture suite for orchestrate-build-aux-dispatch.sh,
 # proving the fixed-agent-per-kind mapping, the frontmatter-only model resolution, the four
 # kind-specific prompts, the "read your dispatch file first" pointer convention, and the negative
-# assertion that this script NEVER shells out to memory-retrieve.sh, any literature script, or
+# assertion that this script NEVER shells out to sapience-retrieve.sh, any literature script, or
 # command-route-agent.sh (Decision 2's own MUST NOT).
 #
 # Structural model: test-orchestrate-build-dispatch.sh's SKILL_REPO_ROOT-env-override fixture
@@ -241,7 +241,7 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 common_test_info "Negative assertion: no memory/lit/route-agent collaborator calls"
 
-if ! grep -vE '^\s*#' "$SUT" | grep -qE "memory-retrieve\.sh|literature-lit-flag-resolve\.sh|literature-briefing-invoke\.sh|command-route-agent\.sh|orchestrate-build-dispatch\.sh"; then
+if ! grep -vE '^\s*#' "$SUT" | grep -qE "sapience-retrieve\.sh|literature-lit-flag-resolve\.sh|literature-briefing-invoke\.sh|command-route-agent\.sh|orchestrate-build-dispatch\.sh"; then
   common_test_pass "orchestrate-build-aux-dispatch.sh's own EXECUTABLE code never references memory/lit/route-agent/build-dispatch collaborators (header prose mentions them only to disclaim them)"
 else
   common_test_fail "orchestrate-build-aux-dispatch.sh unexpectedly references a forbidden collaborator outside a comment"

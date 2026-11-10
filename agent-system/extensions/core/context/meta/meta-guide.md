@@ -233,7 +233,7 @@ The `meta-builder-agent` is only invoked by `/meta` itself -- it is not used dur
 
 2. **Minimal postflight**: Git commits happen inside the agent (Stage 6), not in skill-meta's postflight. The skill's declared "skill-internal postflight" is limited to reading the agent's return. This differs from other skills where postflight handles status updates, artifact linking, and git commits.
 
-3. **No memory integration**: Unlike the research, plan, and implement phases (which call `memory-retrieve.sh` to inject relevant memories), `/meta` does not retrieve memories. Past decisions, patterns, and anti-patterns from the memory vault are not available during the interview.
+3. **No memory integration**: Unlike the research, plan, and implement phases (which call `sapience-retrieve.sh` to inject relevant memories), `/meta` does not retrieve memories. Past decisions, patterns, and anti-patterns from the memory vault are not available during the interview.
 
 4. **No effort/model flags**: `/meta` does not support `--fast`, `--hard`, `--haiku`, `--sonnet`, `--opus`, or `--fable` flags. It always runs in its default mode.
 
@@ -241,7 +241,7 @@ The `meta-builder-agent` is only invoked by `/meta` itself -- it is not used dur
 
 ## Future Extensions
 
-1. **Memory retrieval during task creation**: Add memory retrieval to skill-meta (similar to the memory-retrieval Stage 4a other lifecycle skills already carry). When creating tasks for familiar domains, retrieved memories about past patterns and decisions would inform the interview. Implementation would use the existing `memory-retrieve.sh` infrastructure.
+1. **Memory retrieval during task creation**: Add memory retrieval to skill-meta (similar to the memory-retrieval Stage 4a other lifecycle skills already carry). When creating tasks for familiar domains, retrieved memories about past patterns and decisions would inform the interview. Implementation would use the existing `sapience-retrieve.sh` infrastructure.
 
 2. **Roadmap-aware priority hints**: Pass `roadmap_path` in delegation context. During ReviewAndConfirm (Stage 5), the agent could check if proposed tasks align with roadmap priorities and surface alignment information.
 

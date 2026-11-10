@@ -264,8 +264,6 @@
       "measure-eager-context.sh",
       "measure-eager-surface.sh",
       "measure-gate-costs.sh",
-      "memory-harvest.sh",
-      "memory-retrieve.sh",
       "migrate-directory-padding.sh",
       "migrate-state-legacy-fields.sh",
       "orchestrate-batch-admit.sh",

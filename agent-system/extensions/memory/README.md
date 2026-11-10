@@ -21,9 +21,10 @@ Everything in this extension comes down to three operations:
 | **Read** | Automatic during the research, plan, and implement phases | Relevant memories injected into agent context |
 | **Maintain** | `/distill` | Periodically, to assess vault health and run maintenance |
 
-**Note**: When this extension is loaded, memory retrieval is automatic. The research, plan,
-and implement preflight stages (dispatched via `/orchestrate`) call `memory-retrieve.sh` to inject relevant memories into
-agent context. Use the `--clean` flag to suppress auto-retrieval for a specific invocation.
+**Note**: Memory retrieval is automatic regardless of whether this extension is loaded. The
+research, plan, and implement preflight stages (dispatched via `/orchestrate`) call
+`sapience-retrieve.sh` to inject relevant knowledge objects into agent context. Use the
+`--clean` flag to suppress auto-retrieval for a specific invocation.
 
 **`/distill` spans 3 sub-modes**: local `--auto` (Tier 1 scoring/refine against `.memory/`), and
 two telemetry-sourced sub-modes retargeted onto the hosted Sapience knowledge store -- `--revise`
@@ -83,10 +84,11 @@ You always see what it wants to do and can override or skip any segment.
 
 ### Automatic Retrieval
 
-When this extension is loaded, memory retrieval happens automatically during the research,
-plan, and implement phases. The preflight stage calls `memory-retrieve.sh` to search the
-vault for memories relevant to the current task and injects them into the agent context
-under a `<memory-context>` section.
+Memory retrieval happens automatically during the research, plan, and implement phases,
+independent of whether this extension is loaded. The preflight stage calls
+`sapience-retrieve.sh` to search the hosted Sapience knowledge store (repo-scoped, not this
+local vault) for knowledge objects relevant to the current task and injects them into the
+agent context under a `<memory-context>` section.
 
 To suppress auto-retrieval for a specific invocation, pass the `--clean` flag:
 
@@ -204,9 +206,10 @@ across `skill-learn` and `skill-distill`:
 
 - **Exact-key dedup**: an exact `topic ==` match short-circuits classification straight to
   UPDATE/EXTEND, bypassing the fuzzy keyword-overlap thresholds used elsewhere.
-- **Retrieval exclusion**: `memory-retrieve.sh` excludes this namespace from general
-  research/plan/implement-phase auto-retrieval (a topic-prefix pre-filter), so these memories
-  never leak into unrelated task context.
+- **Retrieval exclusion**: the research/plan/implement-phase auto-retrieval path reads the
+  hosted Sapience knowledge store, not this local vault at all, so a memory in this namespace
+  cannot leak into unrelated task context through that path regardless of any topic-prefix
+  filter.
 - **Purge/scoring exemption**: `/distill`'s zero-retrieval penalty and purge candidate selection
   both exempt this namespace — a low `retrieval_count` is expected here (auto-retrieval never
   selects it), not a staleness signal.

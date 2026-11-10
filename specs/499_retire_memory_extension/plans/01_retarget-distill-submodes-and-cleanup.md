@@ -535,7 +535,7 @@ after the edits; any surviving live reference means a file this estimate missed.
 
 ---
 
-### Phase 4: Delete the orphaned core scripts and update every reference [IN PROGRESS]
+### Phase 4: Delete the orphaned core scripts and update every reference [COMPLETED]
 
 **Goal**: Neither `memory-retrieve.sh` nor `memory-harvest.sh` exists in the source store, and no
 reference anywhere in it — executable, test, manifest or prose — points at either.

@@ -11,7 +11,7 @@
 # prints `{dispatch_file, agent, model}` so the caller (orchestrate-cycle-plan.sh) can build an
 # `aux_dispatch[]` row without knowing any prompt text itself.
 #
-# Deliberately NEVER calls orchestrate-build-dispatch.sh, memory-retrieve.sh,
+# Deliberately NEVER calls orchestrate-build-dispatch.sh, sapience-retrieve.sh,
 # literature-lit-flag-resolve.sh/literature-briefing-invoke.sh, or command-route-agent.sh — an aux
 # dispatch's agent is fixed by KIND, chosen by the emitting logic below, never task-type-resolved
 # (Decision 2's own MUST NOT). `model` is read from the resolved agent's OWN frontmatter `model:`
