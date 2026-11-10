@@ -710,7 +710,6 @@ fi
 # entry. Three entries: a plain legacy entry (unmarked, no obligation), an obligation-only entry
 # (no fingerprint, unmarked), and an obligation entry whose fingerprint mismatches the CURRENT
 # description (marked POTENTIALLY SUPERSEDED as well as carrying its Obligation line).
-coexist_matching_fp="$(printf '%s' "$fixture_description" | sha256sum | awk '{print $1}')"
 coexist_mismatch_fp="0000000000000000000000000000000000000000000000000000000000000000"
 cat > "$DECISIONS_FILE" <<EOF
 [

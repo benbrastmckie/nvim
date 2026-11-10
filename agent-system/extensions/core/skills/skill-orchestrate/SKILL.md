@@ -310,18 +310,11 @@ failed_count=$(jq -r '.failed_tasks // [] | length' "$mt_state_file")
 `mt_state_file`'s `pending_ask_user[]` is non-empty, call `AskUserQuestion` once per entry
 (question/options/recommended from `.decision`), batched together — never mid-cycle, never one
 call per task. Per answer, call `bash .claude/scripts/orchestrate-record-decision.sh` (see its usage for
-flags); never hand-author this file. When the relayed `.decision` object carries an `obligation`
-key (see `context/standards/user-decision-contract.md`'s Field Shape section — required for a
-ROUTE decision, omitted for a pure-preference one), pass its value to the writer's
-`--obligation` argument; when the key is absent, omit the flag entirely rather than passing an
-empty string. Clear `pending_ask_user` for that task. A non-blocking decision proceeds on the agent's own recommendation instead of asking, and
+flags); never hand-author this file. Pass `.decision.obligation`, when present (see
+user-decision-contract.md), to the writer's `--obligation` argument; omit when absent. Clear `pending_ask_user` for that task. A non-blocking decision proceeds on the agent's own recommendation instead of asking, and
 is surfaced in the consolidated output. Unrelated to `detected_defects` (accumulate-and-render
-only, never prompted).
-
-This relay needs no `orchestrate-cycle-postflight.sh` change to carry `obligation`: postflight
-already copies the whole `user_decision` object verbatim into `pending_ask_user[]`'s `.decision`
-(`jq -c '.user_decision // empty'`), so the key arrives at this Move already present — only this
-one relay instruction needed to learn about it.
+only, never prompted). Needs no postflight change: it already relays `user_decision` verbatim, so
+`obligation` arrives here already present.
 
 **Batched stall re-prompt relay** (same siting as `AskUserQuestion` above; full instructions in
 orchestrate-state-machine.md's "Abandoned Wrap-Up"): one Agent call per

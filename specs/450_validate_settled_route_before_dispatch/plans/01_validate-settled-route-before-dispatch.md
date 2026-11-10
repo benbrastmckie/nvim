@@ -458,15 +458,15 @@ and the earlier group's cases are re-run to prove they still pass.
 store is redeployed, and the complete gate set is green.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md`'s Move 4 batched relay paragraph, extend the
+- [x] In `skills/skill-orchestrate/SKILL.md`'s Move 4 batched relay paragraph, extend the
       record-decision instruction so the obligation from the relayed `user_decision` object is
       passed to the writer's `--obligation` argument when present, and omitted when absent. Keep
       the paragraph's existing instructions intact: one batched `AskUserQuestion` call per
-      invocation, never mid-cycle, never hand-authored JSON.
-- [ ] Add one sentence recording that the relay needs no postflight change because postflight
+      invocation, never mid-cycle, never hand-authored JSON. *(completed)*
+- [x] Add one sentence recording that the relay needs no postflight change because postflight
       copies the `user_decision` object verbatim — so the key arrives without any script in
-      between needing to know about it.
-- [ ] Re-read the landed paragraph for task-number references and record-versioning language.
+      between needing to know about it. *(completed)*
+- [x] Re-read the landed paragraph for task-number references and record-versioning language. *(completed: clean)*
 - [ ] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
       (resolve the correct invocation from the script's own usage before running it). This
       regenerates the entire deployed `.claude/` tree, which is why this phase declares the
