@@ -5,8 +5,8 @@
 #
 # Queries GET /v1/search filtered to this repo's tag (embedded in each KO's `provenance` string
 # as a literal "[repo:<slug>]" substring, filtered on read via `source=`) and emits the SAME
-# <memory-context> envelope memory-retrieve.sh emits, so the dispatch-side consumer contract is
-# unchanged. Repo-scoping works ONLY through that provenance tag; the vault's `project` field is
+# <memory-context> envelope every Stage 4a call site's consumer contract expects. Repo-scoping
+# works ONLY through that provenance tag; the vault's `project` field is
 # a dead end (`/v1/search` silently ignores `&project=`). See
 # context/project/sapience/domain/per-repo-scoping.md for the full mechanism, why it is the only
 # one that works, and the sibling write path (sapience-remember.sh).
@@ -17,7 +17,7 @@
 # hits, or zero hits surviving the token budget.
 #
 # Constants:
-#   TOKEN_BUDGET=2000  - Maximum total tokens to include (mirrors memory-retrieve.sh)
+#   TOKEN_BUDGET=2000  - Maximum total tokens to include
 #   MAX_ENTRIES=5      - Maximum number of entries (also sent as the request's limit=)
 #
 # Credential/host precedence mirrors ~/.sapience/mcp.py exactly: SAPIENCE_HOST env, else
@@ -48,10 +48,8 @@ PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 
-# --- Keyword extraction (verbatim from memory-retrieve.sh's keyword-extraction stage: lowercase,
-# split on non-alpha, stop-word filter, length>3, dedupe, top 10 -- copied rather than
-# reinvented, per the plan's Scope Hypothesis that this stage is self-contained on
-# $combined_text and $STOP_WORDS) ---
+# --- Keyword extraction: lowercase, split on non-alpha, stop-word filter, length>3, dedupe,
+# top 10 -- self-contained on $combined_text and $STOP_WORDS. ---
 combined_text="$description $focus_prompt"
 
 STOP_WORDS="the|a|an|and|or|but|in|on|at|of|to|for|is|are|was|were|be|been|being|have|has|had|do|does|did|will|would|could|should|may|might|can|shall|not|no|with|by|from|as|into|through|during|before|after|above|below|between|out|off|over|under|again|further|then|once|here|there|when|where|why|how|all|both|each|few|more|most|other|some|such|only|own|same|so|than|too|very|just|about|up|its|it|this|that|these|those|what|which|who|whom"
@@ -125,9 +123,8 @@ if [ -z "$hits" ] || [ "$hits" = "[]" ] || [ "$hits" = "null" ]; then
   exit 1
 fi
 
-# --- Greedy selection within the token budget, same reduce shape as memory-retrieve.sh. Each
-# hit's cost is estimated from its rendered text length (~4 chars/token) since there is no local
-# token_count field to read -- a rough heuristic standing in for that script's stored one. ---
+# --- Greedy selection within the token budget. Each hit's cost is estimated from its rendered
+# text length (~4 chars/token) since there is no local token_count field to read. ---
 selected="$(echo "$hits" | jq --argjson budget "$TOKEN_BUDGET" --argjson max "$MAX_ENTRIES" '
   map(
     . as $k |

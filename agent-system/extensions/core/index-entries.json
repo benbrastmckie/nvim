@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 1143,
+      "line_count": 1154,
       "keywords": [
         "format",
         "plan",
@@ -498,7 +498,7 @@
       "domain": "core",
       "subdomain": "guides",
       "summary": "Guide for creating new extensions",
-      "line_count": 388,
+      "line_count": 394,
       "keywords": [
         "guide",
         "extension",
@@ -1917,7 +1917,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 1178,
+      "line_count": 1216,
       "keywords": [
         "standards",
         "shell",
@@ -2631,7 +2631,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Batch gate stage (Move 4): the once-per-invocation shared verify-deploy.sh gate run, with confirmation and per-task finding attribution, for a multi-task /orchestrate batch; single-task/bare-implement invariance; coexistence boundary with the conclusion stage",
-      "line_count": 166,
+      "line_count": 202,
       "keywords": [
         "batch-gate-stage",
         "move-4",
@@ -3202,7 +3202,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 976,
+      "line_count": 1030,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -3317,7 +3317,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full task-reference exemption taxonomy and enforcement narrative, companion to the always-eager no-task-references-in-deliverables.md rule",
-      "line_count": 181,
+      "line_count": 178,
       "keywords": [
         "task-references",
         "exemptions",

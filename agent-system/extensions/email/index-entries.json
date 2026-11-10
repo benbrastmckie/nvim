@@ -153,7 +153,7 @@
         ],
         "commands": []
       },
-      "line_count": 502,
+      "line_count": 505,
       "domain": "project",
       "subdomain": "email",
       "summary": "Design for routing confirmed skill-email-cleanup classify decisions into sender/domain-aggregated memory-vault preferences (create-once, update/extend)"
