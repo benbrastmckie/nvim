@@ -1,25 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794343931_696ebd_423",
-  "dispatch_seq": 4,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/reports/01_eager-budget-overage-attribution.md",
-      "summary": "Attributes the full 3,294 B eager-context growth since the last reviewed 2026-10-18 measurement to six specific files (sapience extension's entirely-new EXTENSION.md, core/lean/literature/memory/nix additions), finds no redistributable duplication in any of them, and recommends a route (b) reviewed/dated baseline move rather than a trim-and-relocate."
+      "type": "plan",
+      "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/plans/01_eager-baseline-move-and-row-rewrite.md",
+      "summary": "Two-phase route-(b) plan: a fresh-measurement-derived eager_load.baseline_bytes move with a dated note entry, then a known-failures.txt row rewrite (not removal) re-attributing the residual suite failure to the cross-owned gate 24 /ide findings."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794343931_696ebd_423",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 1.5,
+    "dependency_waves": 2
+  },
   "memory_candidates": [
     {
-      "content": "measure-eager-context.sh's 'claudemd' channel = core/templates/claudemd-header.md (prepended untrimmed) + each ACTIVE extension's own merge_targets.claudemd.source file (from its manifest.json), trailing-whitespace-trimmed per fragment. Active-extension set comes from .claude-extensions.json's top-level 'extensions' keys, not from scanning agent-system/extensions/*. To attribute an eager-budget regression, diff this per-extension file list against the last reviewed measurement commit (found via 'git log -- .../orchestrator-context-budget.json') rather than guessing from aggregate totals -- a brand-new extension (0 B at baseline) contributes its entire EXTENSION.md as pure growth, distinct from an existing extension's incremental edit.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/reports/01_eager-budget-overage-attribution.md",
+      "content": "verify-deploy.sh gate 20 reads orchestrator-context-budget.json from $TARGET/agent-system/extensions/core/context/config/ (verify-deploy.sh:1777) -- the SOURCE STORE, never the deployed .claude/ copy -- so an eager-budget baseline move needs no deploy sync. Separately: test-verify-deploy-context-budget.sh's baseline-fixture-clean case asserts baseline_rc -eq 0 from a full '--max-cost moderate' verify-deploy run, not merely zero gate20 findings. Any unrelated moderate-class gate finding on the real corpus (e.g. gate 24's dead-command-recommendation hits) therefore keeps that case red no matter what the budget config says. Before planning a fix for a suite whose failure looks single-caused, read its baseline block's actual predicate: an absolute rc==0 assertion over a repo-wide gate couples the suite to every standing pre-existing finding in the corpus.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/plans/01_eager-baseline-move-and-row-rewrite.md",
       "confidence": 0.85,
-      "suggested_keywords": ["eager-context-budget", "measure-eager-context.sh", "claudemd-channel", "orchestrator-context-budget.json", "gate20"]
+      "suggested_keywords": ["gate20", "verify-deploy", "eager-context-budget", "known-failures", "baseline-relative-verification"]
     }
   ],
-  "next_steps": "Run /orchestrate 423 to create implementation plan"
+  "next_steps": "Run /orchestrate 423 to execute the plan",
+  "dispatch_seq": 8
 }

@@ -4178,26 +4178,31 @@
     {
       "project_number": 423,
       "project_name": "fix_verify_deploy_context_budget_byte_count_drift",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Resolve test-verify-deploy-context-budget.sh's eager-load baseline drift (measured 67,088 B vs. baseline_bytes 66,100 B)",
       "topic": "core-agent-system",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).\n\nSpawned from the ambient-host-state-isolation audit's corpus triage ledger (specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md), which found this defect while sweeping the full 153-suite shell test corpus for ambient-host-state coupling and confirmed it is NOT that defect class: it is a deterministic, load-independent content-size regression check, reproducing identically in isolation and in the full corpus run.\n\nLIVE SYMPTOM (reproduced deterministically): `bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh` reports `[FAIL] could not compute a safe eager-load pad amount (current_eager='67088', baseline_bytes='66100')`, and `[FAIL] baseline fixture is not clean (rc=1, gate20 finding lines=1) -- fixture setup is broken; later cases are unreliable` -- 2 of 13 cases. Directly re-measured live (2026-10-16): `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` from `agent-system/extensions/core/` reports `TOTAL: 67088 B`, confirming the suite's captured figure exactly and that genuine eager-loaded content has grown 988 B past the baseline recorded in `agent-system/extensions/core/context/config/orchestrator-context-budget.json`'s `eager_load.baseline_bytes` (last deliberately moved 2026-10-09 to 66,100 B after the previous overage's trim).\n\nSCOPE: follow the exact established precedent already recorded in `orchestrator-context-budget.json`'s own `eager_load.note` history (nine prior entries, each either (a) identifying genuinely redistributable bloat and relocating it to a non-eager-loaded file with the relocated content verified present at its new location before the eager copy is cut, or (b) when no such slack exists, a reviewed, dated, deliberately-small baseline move with written justification). Determine which of the two applies to the current 988 B overage by diffing `measure-eager-context.sh`'s own per-file breakdown against the 2026-10-09 measurement, identify what specifically grew, and either trim-and-relocate or move the baseline with a dated justification entry appended to the config file's own `note` field (never silently re-derived from the fresh measurement, per that field's explicit warning). Verify with `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-verify-deploy-context-budget.sh` plus `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`. Remove the `known-failures.txt` row for this suite once fixed.\n\nRE-MEASURED 2026-11-10 (figures above are stale; baseline_bytes has since moved to 66,800 B per the config's own 2026-10-16 note entry): `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check` now reports `TOTAL: 68624 B` -- 1,824 B over the current 66,800 B baseline, not the 988 B over 66,100 B recorded above. Per-subtotal breakdown at that measurement: parent_chain 2,982 B, claudemd 34,953 B, at_import 0 B, rules 30,689 B. Volatile-file hits: 0 (sub-check A passes; only sub-check B, the baseline regression, fails). Of the current overage, 658 B is attributable to the sapience extension's EXTENSION.md growing from 1,407 B to 2,065 B when per-repo storage and injection were added -- that file is merged verbatim into the predicted assembled .claude/CLAUDE.md and is therefore eager-loaded. Subtracting it leaves 1,166 B of overage that predates it, so the breach is genuinely pre-existing and was not introduced by that work; the contribution is recorded here only so the trim-versus-move decision starts from an accurate attribution. Re-measure before acting: this figure will drift again with any further eager-set edit.",
       "dependencies": [],
       "file_scope": [
-        "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
         "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
         "agent-system/extensions/core/scripts/measure-eager-context.sh",
-        "agent-system/extensions/core/scripts/tests/known-failures.txt"
+        "agent-system/extensions/core/scripts/tests/known-failures.txt",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh"
       ],
       "created": "2026-10-16T13:45:00Z",
-      "last_updated": "2026-11-10T21:16:59Z",
-      "session_id": "sess_1794343931_696ebd_423",
+      "last_updated": "2026-11-10T21:33:42Z",
+      "session_id": "sess_1794343931_696ebd",
       "artifacts": [
         {
           "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/reports/01_eager-budget-overage-attribution.md",
           "type": "report",
           "summary": "Attributes the full 3,294 B eager-context growth since the last reviewed 2026-10-18 measurement to six specific files (sapience extension's entirely-new EXTENSION.md, core/lean/literature/memory/nix additions), finds no redistributable duplication in any of them, and recommends a route (b) reviewed/dated baseline move rather than a trim-and-relocate."
+        },
+        {
+          "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/plans/01_eager-baseline-move-and-row-rewrite.md",
+          "type": "plan",
+          "summary": "Two-phase route-(b) baseline move plus known-failures row re-attribution, with live-verified figures and selector-verified covering suites."
         }
       ],
       "next_artifact_number": 2

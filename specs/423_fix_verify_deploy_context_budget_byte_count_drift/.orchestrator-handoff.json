@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 2,
+  "summary": "Wrote a two-phase plan for the Gate 20 eager-load baseline regression. Phase 1 takes a fresh measure-eager-context.sh reading, moves eager_load.baseline_bytes up to the next 100 B, and appends a dated route-(b) justification entry to the config's own note field. Phase 2 rewrites (does not remove) the known-failures.txt row and runs the full gate set baseline-relative. Live re-validation corrected two carried premises: the dispatch's 68,624 B figure is 18 B stale (live TOTAL is 68,606 B, matching the research report exactly), and the suite's baseline-fixture-clean case asserts rc==0 over a full --max-cost moderate verify-deploy run, so the separately-owned gate 24 /ide findings keep that one case red regardless of this fix -- which is why the row is re-attributed rather than deleted.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/423_fix_verify_deploy_context_budget_byte_count_drift/plans/01_eager-baseline-move-and-row-rewrite.md",
+      "summary": "Two-phase route-(b) baseline move plus known-failures row re-attribution, with live-verified figures and selector-verified covering suites."
+    }
+  ]
+}
