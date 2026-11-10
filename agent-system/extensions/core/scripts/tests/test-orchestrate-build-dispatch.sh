@@ -639,6 +639,182 @@ build_fixture
 rm -f "$DECISIONS_FILE"
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 10b: optional `obligation` field rendering -- an entry carrying it gets an inline
+# `Obligation: ...` line and the receiving-agent instruction is emitted exactly once; an entry
+# without it renders exactly as Group 10 already pinned; the two features (obligation,
+# POTENTIALLY SUPERSEDED) coexist without interfering with each other or with the existing
+# heading/preamble wording.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Group 10b: optional obligation field rendering"
+
+# Case A: a single entry carrying `obligation` (no description_fingerprint) renders the
+# Obligation line verbatim and the receiving-agent instruction exactly once.
+cat > "$DECISIONS_FILE" <<'EOF'
+[
+  {
+    "question": "Phase 2 needs a result Phase 4 is supposed to produce. Merge or reorder?",
+    "answer": "Reorder: run Phase 4 before Phase 2.",
+    "cycle": 5,
+    "timestamp": "2026-09-09T12:00:00Z",
+    "obligation": "Phase 2's constancy obligation is discharged once Phase 4 runs first."
+  }
+]
+EOF
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_obligation="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_obligation" "Obligation: Phase 2's constancy obligation is discharged once Phase 4 runs first." \
+    "obligation-rendering: Obligation line renders the field's text verbatim"
+  instruction_count="$(grep -c "verify the route actually" "$LAST_DISPATCH_FILE")"
+  if [ "$instruction_count" -eq 1 ]; then
+    common_test_pass "obligation-rendering: receiving-agent instruction appears exactly once"
+  else
+    common_test_fail "obligation-rendering: expected exactly 1 instruction occurrence, got $instruction_count"
+  fi
+  assert_contains "$content_obligation" "do NOT re-ask the original question above" "obligation-rendering: instruction forbids re-asking"
+else
+  common_test_fail "obligation-rendering: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case B: a decisions file whose entries all lack `obligation` renders byte-identical to the
+# plain legacy-entry dispatch Group 10 Case C already captured in $content_entries (same fixture
+# state, same entry shape -- re-running produces the identical document), and the
+# receiving-agent instruction is absent -- same byte-identical-diff technique Group 10 Case B
+# already uses against the absent-file dispatch, applied here to the no-obligation case.
+cat > "$DECISIONS_FILE" <<'EOF'
+[
+  {
+    "question": "Which logging backend should the new metrics pipeline use?",
+    "answer": "Use the existing structured-logging module; do not add a new dependency.",
+    "cycle": 3,
+    "timestamp": "2026-09-08T04:00:00Z"
+  }
+]
+EOF
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_no_obligation="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_no_obligation" "Obligation:" "obligation-omission: no Obligation line when the field is absent"
+  assert_not_contains "$content_no_obligation" "verify the route actually" "obligation-omission: receiving-agent instruction absent"
+  if diff -q <(printf '%s\n' "$content_entries") <(printf '%s\n' "$content_no_obligation") >/dev/null 2>&1; then
+    common_test_pass "obligation-omission: byte-identical to Group 10 Case C's pre-obligation-feature rendering"
+  else
+    common_test_fail "obligation-omission: expected byte-identical rendering to Group 10 Case C, got a diff"
+  fi
+else
+  common_test_fail "obligation-omission: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case C: obligation and POTENTIALLY SUPERSEDED coexist without interfering, and the existing
+# heading string / both preamble forms still render verbatim alongside an obligation-bearing
+# entry. Three entries: a plain legacy entry (unmarked, no obligation), an obligation-only entry
+# (no fingerprint, unmarked), and an obligation entry whose fingerprint mismatches the CURRENT
+# description (marked POTENTIALLY SUPERSEDED as well as carrying its Obligation line).
+coexist_matching_fp="$(printf '%s' "$fixture_description" | sha256sum | awk '{print $1}')"
+coexist_mismatch_fp="0000000000000000000000000000000000000000000000000000000000000000"
+cat > "$DECISIONS_FILE" <<EOF
+[
+  {
+    "question": "Plain legacy question with no optional fields",
+    "answer": "Plain legacy answer",
+    "cycle": 1,
+    "timestamp": "2026-09-08T04:00:00Z"
+  },
+  {
+    "question": "Obligation-only question, no fingerprint",
+    "answer": "Obligation-only answer",
+    "cycle": 2,
+    "timestamp": "2026-09-08T05:00:00Z",
+    "obligation": "Obligation-only text, unmarked."
+  },
+  {
+    "question": "Obligation question with a mismatching fingerprint",
+    "answer": "Obligation-and-superseded answer",
+    "cycle": 3,
+    "timestamp": "2026-09-08T06:00:00Z",
+    "description_fingerprint": "${coexist_mismatch_fp}",
+    "obligation": "Obligation-and-superseded text, marked."
+  }
+]
+EOF
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_coexist="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_coexist" "## Prior Decisions" "coexistence: heading string unchanged"
+  assert_contains "$content_coexist" "Treat an **unmarked** answer as" "coexistence: conditional (superseded-variant) preamble fires verbatim"
+  assert_contains "$content_coexist" "Obligation: Obligation-only text, unmarked." "coexistence: obligation-only entry renders its Obligation line"
+  assert_contains "$content_coexist" "Obligation: Obligation-and-superseded text, marked." "coexistence: obligation-and-superseded entry renders its Obligation line"
+  assert_contains "$content_coexist" "POTENTIALLY SUPERSEDED" "coexistence: the mismatching entry still renders the marker alongside its Obligation line"
+  instruction_count_coexist="$(grep -c "verify the route actually" "$LAST_DISPATCH_FILE")"
+  if [ "$instruction_count_coexist" -eq 1 ]; then
+    common_test_pass "coexistence: receiving-agent instruction appears exactly once even with two obligation-bearing entries"
+  else
+    common_test_fail "coexistence: expected exactly 1 instruction occurrence, got $instruction_count_coexist"
+  fi
+else
+  common_test_fail "coexistence: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Regression fixture, polarity one (the cited incident shape): a recorded answer whose route does
+# not discharge its stated obligation, in a task directory that already holds a plan whose own
+# findings state the contrary dependency. This pins what the chosen mechanism actually surfaces
+# -- the dispatch file carries the named obligation and the verify-before-you-start instruction,
+# so the receiving agent is handed both the claim and the duty to check it. It does NOT, and
+# cannot, prove the composer adjudicates the claim -- the composer deliberately does not; see
+# "Owner ruling -- split by capability" in context/formats/report-format.md. This case protects
+# the propagation path only.
+cat > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md" <<'EOF'
+# Fixture plan
+
+### Phase 1: Fixture phase [NOT STARTED]
+
+**Finding**: Phase A's own obligation requires a constancy property that is itself Phase C's
+goal, while Phase C derives its result from Phases A and B -- the three phases are mutually
+circular as decomposed. This finding was recorded before any route was chosen.
+EOF
+cat > "$DECISIONS_FILE" <<'EOF'
+[
+  {
+    "question": "Phase A and Phase C appear circular. Merge the phases, or run Phase C before Phase A?",
+    "answer": "Run Phase C before Phase A.",
+    "cycle": 2,
+    "timestamp": "2026-09-08T07:00:00Z",
+    "obligation": "Running Phase C first discharges Phase A's constancy obligation."
+  }
+]
+EOF
+run_sut implement --clean --seq 10 --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_regression1="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_regression1" "Obligation: Running Phase C first discharges Phase A's constancy obligation." \
+    "regression polarity one: the dispatch carries the route's named obligation verbatim"
+  assert_contains "$content_regression1" "verify the route actually" "regression polarity one: the dispatch carries the verify-before-you-start instruction"
+  assert_contains "$content_regression1" "do NOT re-ask the original question above" "regression polarity one: the dispatch forbids re-asking, directing a NEW question instead"
+else
+  common_test_fail "regression polarity one: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+# Restore the fixture plan to its original content for any suite appended after this one.
+printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
+
+# Regression fixture, polarity two (the mirror shape): this polarity -- an option set presented as
+# open when its alternatives are already structurally excluded by the task's own artifacts --
+# never reaches .decisions.json at all (it is caught, if at all, before any question is raised),
+# so no schema-side fixture in THIS suite can express it. The durable carrier is the contract
+# prose itself; this is a structural assertion over that file, not a dispatch-rendering case.
+contract_file_for_mirror_polarity="$REPO_ROOT/agent-system/extensions/core/context/standards/user-decision-contract.md"
+if [ -f "$contract_file_for_mirror_polarity" ]; then
+  contract_text="$(cat "$contract_file_for_mirror_polarity")"
+  assert_contains "$contract_text" "mirror-polarity self-check" "regression polarity two: user-decision-contract.md states the proposal-time structural-exclusion self-check"
+  assert_contains "$contract_text" "structurally excluded" "regression polarity two: the self-check names structural exclusion by the task's own artifacts"
+else
+  common_test_fail "regression polarity two: $contract_file_for_mirror_polarity not found"
+fi
+
+# Restore the original single-description fixture state for any suite appended after this one.
+build_fixture
+rm -f "$DECISIONS_FILE"
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 11: Phase 5 (artifact-based admission) -- the plan branch's existing_plan_path/
 # revision_reason rendering (reviser-agent.md's own Stage 1/2 field names), and a pin test that
 # a plan dispatch names the NEWEST report after several research rounds (same-type artifact

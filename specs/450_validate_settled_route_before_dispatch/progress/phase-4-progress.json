@@ -1,0 +1,19 @@
+{
+  "phase": 4,
+  "phase_name": "Pin Both Polarities — Composer Tests and Regression Fixtures",
+  "started_at": "2026-11-10T02:00:00Z",
+  "last_updated": "2026-11-10T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend existing decisions fixture group rather than creating a parallel group", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 2, "description": "Case: entry with obligation renders Obligation line and instruction once", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Case: no-obligation decisions file renders byte-identical, no instruction", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "Case: heading/preamble forms still emitted verbatim alongside obligation entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "Regression fixture polarity one: route does not discharge obligation, contrary dependency in plan findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "Regression fixture polarity two: structural assertion over user-decision-contract.md mirror-polarity self-check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]},
+    {"id": 7, "description": "Run suite, confirm every pre-existing case still passes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

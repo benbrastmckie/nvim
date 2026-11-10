@@ -386,28 +386,29 @@ several suites assert against, and `bash agent-system/extensions/core/scripts/te
 
 ---
 
-### Phase 4: Pin Both Polarities — Composer Tests and Regression Fixtures [NOT STARTED]
+### Phase 4: Pin Both Polarities — Composer Tests and Regression Fixtures [COMPLETED]
 
 **Goal**: `test-orchestrate-build-dispatch.sh` pins the new rendering, pins that the existing
 heading and marker wording are unchanged, and pins both regression polarities named in the task
 description.
 
 **Tasks**:
-- [ ] Extend the suite's existing `.decisions.json` fixture group (the absent / present-and-empty /
+- [x] Extend the suite's existing `.decisions.json` fixture group (the absent / present-and-empty /
       present-with-entries group, and the fingerprint group after it) rather than creating a
       parallel group, reusing its `assert_contains` / `assert_not_contains` /
-      byte-identical-`diff -q` helpers and its case-naming style.
-- [ ] Case: an entry **with** `obligation` renders an `Obligation:` line carrying the field's text
-      verbatim, and the receiving-agent instruction appears exactly once in the dispatch file.
-- [ ] Case: a decisions file whose entries all lack `obligation` produces output byte-identical to
+      byte-identical-`diff -q` helpers and its case-naming style. *(completed: added as "Group 10b"
+      immediately after Group 10's own restore point, inside Group 10's own file region)*
+- [x] Case: an entry **with** `obligation` renders an `Obligation:` line carrying the field's text
+      verbatim, and the receiving-agent instruction appears exactly once in the dispatch file. *(completed)*
+- [x] Case: a decisions file whose entries all lack `obligation` produces output byte-identical to
       the pre-change dispatch (same technique Case B already uses against the absent-file
-      dispatch), and the receiving-agent instruction is absent.
-- [ ] Case: `## Prior Decisions` is still emitted with its exact heading string, the plain
+      dispatch), and the receiving-agent instruction is absent. *(completed)*
+- [x] Case: `## Prior Decisions` is still emitted with its exact heading string, the plain
       preamble ("treat these as settled — do not re-ask a question already answered here") is still
       emitted verbatim for a non-superseded set, and the `POTENTIALLY SUPERSEDED` variant is still
       emitted verbatim for a mismatching-fingerprint entry — asserted alongside an obligation-
-      bearing entry, so the two features are proven not to interfere.
-- [ ] **Regression fixture, polarity one** (the cited incident shape): a decisions file carrying a
+      bearing entry, so the two features are proven not to interfere. *(completed: "coexistence" case)*
+- [x] **Regression fixture, polarity one** (the cited incident shape): a decisions file carrying a
       recorded answer whose route does not discharge its stated obligation, in a task directory
       that already holds a plan whose own findings state the contrary dependency. Pin what the
       chosen mechanism actually surfaces: the dispatch file carries the named obligation and the
@@ -415,16 +416,16 @@ description.
       duty to check it. Assert the obligation text, the instruction text, and the
       new-question-not-a-re-ask wording are all present. Add a header comment on this case stating
       plainly what it does and does not prove — it protects the propagation, not an adjudication
-      the composer deliberately does not perform.
-- [ ] **Regression fixture, polarity two** (the mirror shape): a structural assertion over
+      the composer deliberately does not perform. *(completed)*
+- [x] **Regression fixture, polarity two** (the mirror shape): a structural assertion over
       `context/standards/user-decision-contract.md` that the proposal-time structural-exclusion
       self-check is present — an option is listed only when its alternatives are not already
       excluded by facts in the task's own artifacts. This polarity never reaches
       `.decisions.json` (it is caught before any question is raised), so a schema-side fixture
       cannot express it; the contract prose is the only durable carrier, and this suite already
       covers that file per the suite-selection mapping. State that reasoning in the case's header
-      comment.
-- [ ] Run the suite and confirm every pre-existing case still passes, not only the new ones.
+      comment. *(completed)*
+- [x] Run the suite and confirm every pre-existing case still passes, not only the new ones. *(completed: 218 passed (201 pre-existing + 17 new), 0 failed)*
 
 **Timing**: 1.5 hours
 
