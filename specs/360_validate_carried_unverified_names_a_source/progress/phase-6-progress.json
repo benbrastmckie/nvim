@@ -1,0 +1,17 @@
+{
+  "phase": 6,
+  "phase_name": "Part B -- Rule on the Acted-On Premise and Record the Obligation",
+  "started_at": "2026-11-10T02:55:00Z",
+  "last_updated": "2026-11-10T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record owner ruling: composer emits, receiving agent adjudicates", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 2, "description": "Record the mechanical-conflict-detection exclusion", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 3, "description": "State the acted-on-premise obligation keyed to the six trigger shapes", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 4, "description": "Record the cost reasoning (no work on first dispatch)", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 5, "description": "Change nothing else; restate nothing in plan-format.md", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "notes": "Added three new bolded paragraphs to report-format.md's Carried-Figure Discipline section, inserted between the existing 'deliberately malformed illustrative example' sentence and the Placement record: (1) 'The premise a dispatch acts on' stating the obligation itself, keyed to the six trigger shapes, purpose clause preserved; (2) 'Owner ruling' splitting the obligation by capability (dispatch composer emits, receiving agent adjudicates); (3) 'Mechanical conflict DETECTION is excluded' naming the narrowing explicitly, pointing back to the Internal-consistency paragraph's own rejected-detector precedent; (4) 'Cost' stating the obligation does no work on a first dispatch. Verified by grep that 'dispatch composer', 'receiving agent', and 'Mechanical conflict DETECTION' all appear exactly where expected, and that plan-format.md's own carried-figure pointer paragraph is completely untouched (still names only CARRIED-UNVERIFIED, points by name, restates nothing). The six trigger shapes, the mark syntax, and the Internal-consistency reviewer prompt are all byte-unchanged (confirmed by direct line comparison against the pre-Phase-6 text). Ran the Internal-consistency reviewer prompt by hand against the full amended section: no assertion requires the ABSENCE of a string a mandated literal requires PRESENT, and no stated risk/prediction contradicts a measured result elsewhere in the section -- no contradiction found, including between this phase's new paragraphs and the earlier Part A paragraphs from Phase 4."
+}

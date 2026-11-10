@@ -413,26 +413,26 @@ has one advisory rather than two, and keep every addition advisory.
 
 ---
 
-### Phase 6: Part B -- Rule on the Acted-On Premise and Record the Obligation [NOT STARTED]
+### Phase 6: Part B -- Rule on the Acted-On Premise and Record the Obligation [COMPLETED]
 
 **Goal**: Extend the obligation from a figure the artifact restates to the premise the dispatch
 acts on, and rule on the owner with the reasoning recorded, before any code implements it.
 
 **Tasks**:
-- [ ] Record the owner ruling and its reasoning in `report-format.md`: the obligation is split by
+- [x] Record the owner ruling and its reasoning in `report-format.md`: the obligation is split by
       capability, not assigned to one side. The dispatch composer EMITS, because it already holds
       both documents and can do so with no new measurement; the receiving agent ADJUDICATES and
       states the result even when it confirms the premise, because only it can weigh the conflict.
-- [ ] Record the narrowing explicitly: mechanical conflict DETECTION is excluded. Deciding that a
+- [x] Record the narrowing explicitly: mechanical conflict DETECTION is excluded. Deciding that a
       prior artifact's measurement contradicts a description's claim is a semantic relation
       between arbitrary spans, which is the shape the rejected general detector failed on. The
       composer emits the claims and the pointer; it never adjudicates.
-- [ ] State the obligation itself: a premise an agent acts on without restating is in scope, keyed
+- [x] State the obligation itself: a premise an agent acts on without restating is in scope, keyed
       to the six existing trigger shapes already present in the description, with the convention's
       purpose clause intact.
-- [ ] Record the cost reasoning that makes this cheap: the obligation does no work on a task's
+- [x] Record the cost reasoning that makes this cheap: the obligation does no work on a task's
       first dispatch, because there is no prior artifact to compare against.
-- [ ] Change nothing in the six trigger shapes, the mark syntax, or the reviewer prompt, and
+- [x] Change nothing in the six trigger shapes, the mark syntax, or the reviewer prompt, and
       restate nothing in `plan-format.md`.
 
 **Timing**: 0.75 hours

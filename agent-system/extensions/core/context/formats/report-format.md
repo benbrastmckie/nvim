@@ -189,6 +189,37 @@ A deliberately malformed illustrative example written in prose to demonstrate th
 well-formedness advisory; this is accepted for an advisory-level check and is not treated as a
 false positive worth suppressing.
 
+**The premise a dispatch acts on**: everything above governs a figure THIS ARTIFACT restates.
+It says nothing about a premise an agent silently ACTS ON from its own dispatch description
+without ever restating it — and that is exactly the case where a stale premise does the most
+damage, because the resulting work targets a condition that may no longer hold. This is in
+scope, keyed to the same six trigger-class shapes above, with the convention's purpose clause
+unchanged: acting on a premise without re-validating it is the defect only when the premise
+falls into one of those six shapes and nothing re-measures it; restating it openly, or simply
+being silent about figures it never relies on, is not prohibited.
+
+**Owner ruling — split by capability, not assigned to one side:**
+- The *dispatch composer* EMITS: it already holds both the description text and, when a prior
+  dispatch's research or planning artifact already exists in the same task directory, that
+  artifact's own measurements — no new measurement is required to emit the description's own
+  six-trigger-shape claims alongside a pointer to that prior artifact. The composer never
+  adjudicates whether the two agree.
+- The *receiving agent* ADJUDICATES: only it can weigh a conflict between the description's
+  premise and a prior artifact's measurement, and it must state the result even when it only
+  confirms the premise unchanged — silence is not an acceptable outcome once the composer has
+  surfaced the claims.
+
+**Mechanical conflict DETECTION is excluded, in writing.** Deciding that a prior artifact's
+measurement contradicts a description's claim is a semantic relation between arbitrary spans —
+exactly the shape the rejected general contradiction detector failed on (see "Internal
+consistency" above). The composer's emission is bounded to the six trigger shapes already
+present in the description text; it never decides agreement or disagreement on its own.
+
+**Cost**: this obligation does no work on a task's first dispatch, because there is no prior
+artifact to compare against — the composer emits nothing when the task directory holds no
+earlier research/plan/implementation artifact, matching the Prior Decisions block's own
+no-input-no-change precedent in the same dispatch-composition function.
+
 **Placement record**: this section is the authoritative statement for both report and plan
 artifacts; `context/formats/plan-format.md` points here rather than restating, so the two cannot
 drift. Two other placements were considered and rejected: a new standalone contract document
