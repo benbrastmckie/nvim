@@ -1,33 +1,40 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 1 task (#461) in the agent-system source store's repository for the git-commit-scoped.sh V7 refusal of a positive directory pathspec naming a `git rm -r --cached` untracking whose content is still on disk. The reported root cause was re-verified by direct read of the script, not taken on trust.",
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794343931_696ebd_461",
+  "dispatch_seq": 5,
+  "findings_count": 6,
+  "summary": "Confirmed by empirical reproduction (not just script reading) that git-commit-scoped.sh's V7 refusal matches the dispatch's root-cause narrative when the untracked directory is gitignored. Discovered a new, unreported failure mode: when the directory is NOT gitignored, the script silently reverts the git rm --cached untracking instead of refusing (git add re-stages the content, exit 1 'nothing to commit', files tracked again) -- a strictly worse outcome than a refusal. Both symptoms share one root cause (git add running unconditionally on a pathspec whose correct post-state is 'stay staged-deleted'), which argues for ruling (2) sited in the V2 PRE-add classification loop rather than the V7 POST-add loop the dispatch's option (1) literally names -- a post-add fix cannot touch the non-gitignored case since the revert already happened by then. Ruling (3) alone does not solve anything since per-file pathspecs hit the identical hazard.",
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task #461 appended to active_projects; next_project_number bumped to 462"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task #461 entry regenerated via generate-todo.sh"
-    },
-    {
-      "type": "task_directory",
-      "path": "/home/benjamin/.config/nvim/specs/461_v7_refuses_cached_untracking_pathspec/",
-      "summary": "Task directory with reports/, plans/, summaries/"
+      "type": "report",
+      "path": "specs/461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md",
+      "summary": "Root-cause confirmation plus a new silent-revert-hazard finding, recommended ruling (2) sited pre-add in V2's classification loop, predicate design, test-suite naming convention (Y free), and a git-staging-scope.md doc recommendation."
     }
   ],
-  "metadata": {
-    "agent_type": "meta-builder-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrate", "conclusion-stage-channel-b", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1,
-    "task_numbers": [461],
-    "origin_citation": "Vision:#234:iss_1793752881502_Y429oi"
-  },
-  "next_steps": "Run /orchestrate 461 in /home/benjamin/.config/nvim once its declared predecessors are resolved or their serialization-only edges lifted."
+  "memory_candidates": [
+    {
+      "content": "In git-commit-scoped.sh, a positive pathspec whose content a `git rm --cached` left on disk still matches V2's case-1 existence test (`[ -e \"$p\" ]`), so it is routed into add_pathspecs and `git add` runs on it unconditionally. If the path is .gitignore-matched, git add is a no-op and the staged deletion survives (leading to V7's post-add refusal). If it is NOT gitignore-matched, git add silently RE-STAGES the content identically to HEAD, undoing the untracking with no error (exit 1 'nothing to commit', files tracked again). Verified empirically in isolated scratch repos built with the test suite's own build_repo() harness convention (copy script + deploy-root-guard.sh + task-lock.sh into <scratch>/.claude/scripts/).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git-commit-scoped.sh", "git rm --cached", "gitignore advisory", "V7 gate", "silent revert", "untracking"]
+    },
+    {
+      "content": "test-git-commit-scoped.sh's case-letter convention (one letter per concept cluster: T, U, V, W, X, Z are used) has 'Y' free for a new cluster -- useful when scoping a new regression-test addition to this file without needing to invent a scheme from scratch.",
+      "category": "PATTERN",
+      "source_artifact": "specs/461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["test-git-commit-scoped.sh", "test naming convention", "regression test"]
+    },
+    {
+      "content": "A Bash tool call's leading `cd $path` to a directory outside the harness's tracked working directories can silently fail (cd state does not persist across tool calls when it ends outside those directories), leaving subsequent commands in the same call running against the previous cwd. When scripting against a scratch repo outside the project root, prefer `git -C <dir>` for every git invocation and avoid relying on a leading `cd` at all, or verify cwd immediately after the cd before any destructive command.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash tool", "cd persistence", "scratchpad", "git -C", "tool-call safety"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 461 to create an implementation plan ruling on option (2) sited pre-add, per this report's Recommendations."
 }

@@ -38,7 +38,7 @@ next_project_number: 579
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
-461 [RESEARCHING] — Rule on and close the V7 refusal of a positive directory...
+461 [RESEARCHED] — Rule on and close the V7 refusal of a positive directory...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -7551,10 +7551,11 @@ Do not relitigate the advisory-vs-blocking status of the `--check` verdict. Do n
 ---
 
 ### 461. Rule on and close the V7 refusal of a positive directory pathspec for a git rm --cached untracking whose content is still on disk
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328, Task 430, Task 435, Task 446, Task 448
+- **Research**: [461_v7_refuses_cached_untracking_pathspec/reports/01_v7-cached-untracking-ruling.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
