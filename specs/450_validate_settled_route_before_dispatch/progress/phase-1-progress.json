@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Make the Obligation Recordable — Writer, Schema, Inventory, Writer Tests",
   "started_at": "2026-11-10T00:50:00Z",
-  "last_updated": "2026-11-10T00:50:00Z",
+  "last_updated": "2026-11-10T01:05:00Z",
   "objectives": [
     {"id": 1, "description": "Re-derive current line numbers in orchestrate-record-decision.sh before editing", "status": "done", "files_touched": []},
     {"id": 2, "description": "Add optional --obligation argument to the parse case block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},

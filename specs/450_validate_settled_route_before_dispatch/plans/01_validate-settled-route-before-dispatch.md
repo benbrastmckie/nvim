@@ -170,50 +170,50 @@ modified by any phase.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Make the Obligation Recordable — Writer, Schema, Inventory, Writer Tests [IN PROGRESS]
+### Phase 1: Make the Obligation Recordable — Writer, Schema, Inventory, Writer Tests [COMPLETED]
 
 **Goal**: An optional `obligation` field exists on `.decisions.json` entries, written only by the
 single sanctioned writer, documented in the one authoritative schema section and in the writer's
 inventory entry, with every backward-compatibility property pinned by test.
 
 **Tasks**:
-- [ ] Re-derive current line numbers in `scripts/orchestrate-record-decision.sh` before editing
+- [x] Re-derive current line numbers in `scripts/orchestrate-record-decision.sh` before editing
       (the description's provenance instruction); the anchors to locate are the argument-parse
       `case` block, the required-argument error message, the `description_fingerprint` computation,
-      and the two-branch `jq -c -n` record build.
-- [ ] Add an `--obligation "..."` argument to the parse `case` block. It is **optional**: it must
-      NOT be added to the required-argument check, and its absence must not change any exit path.
-- [ ] Extend the record build so the field is present only when the argument was supplied. The
+      and the two-branch `jq -c -n` record build. *(completed)*
+- [x] Add an `--obligation "..."` argument to the parse `case` block. It is **optional**: it must
+      NOT be added to the required-argument check, and its absence must not change any exit path. *(completed)*
+- [x] Extend the record build so the field is present only when the argument was supplied. The
       existing shape is a two-branch `if`/`else` over `description_fingerprint`; with a second
       optional field this becomes four combinations — implement it as a base object plus
       conditional `+ {obligation: $obligation}` / `+ {description_fingerprint: $fp}` merges applied
       **only inside the branch where that value is non-empty**, never unconditionally. An empty or
       omitted `--obligation` must produce an entry with no `obligation` key at all (never an empty
-      string), matching `description_fingerprint`'s documented omission rule.
-- [ ] Verify by read that the write mechanics are untouched: `flock -x` still held across the whole
+      string), matching `description_fingerprint`'s documented omission rule. *(completed: implemented as a base object plus two independent conditional `+ {...}` merges, generalizing the two-branch pattern to four combinations)*
+- [x] Verify by read that the write mechanics are untouched: `flock -x` still held across the whole
       read -> merge -> validate -> atomic-`mv` sequence, the append is still additive-only, the
       root-level array-type validation still runs both before and after merge, and an
-      object-wrapped pre-existing file is still refused rather than coerced.
-- [ ] Update the script's own header usage block and `--help` text to list `--obligation` as
+      object-wrapped pre-existing file is still refused rather than coerced. *(completed: confirmed by diff read-through, no change inside the flock-guarded region)*
+- [x] Update the script's own header usage block and `--help` text to list `--obligation` as
       optional, stating what it means (the specific obligation the recorded route is claimed to
-      discharge) and that it is omitted entirely when not supplied.
-- [ ] Update `docs/architecture/handoff-schema.md`'s `## Decisions File Schema (.decisions.json)`
+      discharge) and that it is omitted entirely when not supplied. *(completed)*
+- [x] Update `docs/architecture/handoff-schema.md`'s `## Decisions File Schema (.decisions.json)`
       section: add `obligation` to the field list in the same prose shape
       `description_fingerprint` already uses there (type, optional, writer, omission rule,
       consumer). Name the consumer as the dispatch composer's `## Prior Decisions` rendering.
       Leave the four required fields and the example block's required entries unchanged (the
-      example may gain the optional field as a second illustrative entry).
-- [ ] Update `docs/reference/utility-scripts-inventory.md`'s entry for the writer so its quoted
+      example may gain the optional field as a second illustrative entry). *(completed: added a second illustrative entry to the example block)*
+- [x] Update `docs/reference/utility-scripts-inventory.md`'s entry for the writer so its quoted
       usage line includes the optional `--obligation` flag; keep the rest of that entry's prose
-      intact.
-- [ ] Extend `scripts/tests/test-orchestrate-record-decision.sh`, modeling each new case on the
+      intact. *(completed)*
+- [x] Extend `scripts/tests/test-orchestrate-record-decision.sh`, modeling each new case on the
       suite's existing `description_fingerprint` fixtures: (a) a four-field legacy entry still
       validates and still appends; (b) an entry written with `--obligation` round-trips with the
       field present and its text intact; (c) an entry written **without** `--obligation` has no
       `obligation` key (asserted by `jq 'has("obligation")'`, not by string absence); (d) an
       object-wrapped pre-existing file is still refused and left byte-identical, with
       `--obligation` supplied; (e) the no-`sha256sum` stub path still works with `--obligation`
-      supplied, proving the two optional fields are independent.
+      supplied, proving the two optional fields are independent. *(completed: cases c3-c7 added, all 16 cases in the suite pass)*
 
 **Timing**: 1.5 hours
 
