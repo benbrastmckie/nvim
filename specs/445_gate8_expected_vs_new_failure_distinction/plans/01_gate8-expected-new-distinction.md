@@ -1,7 +1,7 @@
 # Implementation Plan: Task #445
 
 - **Task**: 445 - Give verify-deploy.sh's Gate 8 an expected-versus-new failure distinction
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None blocking. `state.json`'s recorded `dependencies: [414, 415]` are both
   `completed`; the dispatch's coordination constraint (the gate-registry/gate-framework refactor

@@ -27,28 +27,50 @@
       "category": "PATTERN",
       "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy.sh", "warn_advisory", "gate verdict", "deploy_findings_snapshot", "expected-vs-new"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "warn_advisory",
+        "gate verdict",
+        "deploy_findings_snapshot",
+        "expected-vs-new"
+      ]
     },
     {
       "content": "generate-context-line-counts.sh refuses to run from the agent-system source-store scripts/ directory (its own relative repo-root resolution would be bogus there) and must be invoked via the DEPLOYED copy (.claude/scripts/generate-context-line-counts.sh --write) -- but it still writes the corrected line_count back into the SOURCE STORE's own index-entries.json (e.g. agent-system/extensions/core/index-entries.json), not a deployed-tree file. A doc edit that grows/shrinks a file under agent-system/**/context/ needs this repair before gate 3 (doc-lint)'s Rule R passes, and the repair call itself must go through the deployed path even though its effect lands in source.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["generate-context-line-counts.sh", "index-entries.json", "doc-lint", "gate 3", "line_count"]
+      "suggested_keywords": [
+        "generate-context-line-counts.sh",
+        "index-entries.json",
+        "doc-lint",
+        "gate 3",
+        "line_count"
+      ]
     },
     {
       "content": "When /orchestrate runs a multi-task batch, a dispatch's full, unscoped verify-deploy.sh run can surface NEW test failures in suites completely outside that dispatch's own file_scope -- confirmed via git log to belong to unrelated, already-completed tasks -- alongside several minutes of specs/.gate-lock contention from a concurrent sibling session. This is exactly the scenario a dispatch file's 'Batch Gate Deferral' directive exists to handle: close the phase against a SCOPED --only-gate/--only invocation covering only the files that phase actually touched, record that the full battery was deferred to the once-per-batch stage, and do not treat an unrelated suite's failure as this task's own defect to fix or exclude.",
       "category": "INSIGHT",
       "source_artifact": "specs/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["Batch Gate Deferral", "orchestrate batch", "specs/.gate-lock", "file_scope", "scoped verification"]
+      "suggested_keywords": [
+        "Batch Gate Deferral",
+        "orchestrate batch",
+        "specs/.gate-lock",
+        "file_scope",
+        "scoped verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   },
