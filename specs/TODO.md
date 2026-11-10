@@ -147,8 +147,8 @@ next_project_number: 580
   └─ 576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
-554 [RESEARCHED] — file\_scope containment drops external source-store paths...
-555 [RESEARCHED] — Test sweep permanently red where the source store is external
+554 [PLANNED] — file\_scope containment drops external source-store paths...
+555 [PLANNING] — Test sweep permanently red where the source store is external
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
@@ -1623,7 +1623,7 @@ surface, and that rationale does not survive into this repository.
 
 ### 555. Test sweep permanently red where the source store is external
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -1662,11 +1662,12 @@ repository before being written.
 
 ### 554. file_scope containment drops external source-store paths from phase commits
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md]
+- **Plan**: [554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md]
 
 **Description**: OBSERVED 13 times during task 846's implementation. Every `agent-system/extensions/core/**` path was dropped from its phase-commit pathspec by `git-commit-phase.sh`, each reported with the message text `not contained in this task's declared file_scope` (git-commit-phase.sh, the `--what-happened` string at the excursion-report call site). Citations, all from task 846's `issues.jsonl`: iss_1793736794251_k7Q3J8, iss_1793736794311_yUp8Vp, iss_1793737815724_0ZfGnJ, iss_1793737815788_QHk1wn, iss_1793737815847_SJ3yxu, iss_1793737815907_UKDkzX, iss_1793737815965_izbdkL, iss_1793737816029_P1dXET, iss_1793737816087_3YZSsX, iss_1793738678082_9E2Jin, iss_1793738678146_o1Q504, iss_1793741189717_sYrKgg, iss_1793741189826_eDqokf.
 

@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 16,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase implementation plan adopting design options (b) and (c) together: a shared source-store path classification library reusing the measured parent-only out-of-repository predicate, an out-of-repository pre-check plus repository-naming notice and distinct issue class at the phase-commit site, a single-pathspec second-repository commit step that fails open unconditionally, and a shape-based refusal of unexpanded-variable file_scope entries at the harvest/validation boundary. Premise re-validation corrected the description's central claim: in this repository the core source_dir resolves inside this repository's own git root, so the remedy is designed for the general consumer case and carries an explicit inertness guarantee here. The payload-bearing marker from the research report's recommendation 1 is rejected on its own merits in favour of the source-store-relative path form already in universal use.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md",
+      "summary": "Six-phase plan: classification library, authoring-boundary refusal, phase-commit classification and notice, second-repository commit, documentation, manifest/gate/deploy closure."
+    }
+  ]
+}

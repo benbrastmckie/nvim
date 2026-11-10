@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794343931_696ebd_554",
-  "dispatch_seq": 14,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md",
-      "summary": "Confirms both compounding causes (genuinely-external source store in a consumer repository; an unexpanded $SD token authored directly in plan prose and harvested verbatim), identifies V9's existing out-of-repository classification in git-commit-scoped.sh as directly reusable precedent, maps the open-backlog boundary against tasks 508/517/548, and recommends a sanctioned source-store marker plus a Site-2 out-of-repository pre-check and second-repository commit step."
+      "type": "plan",
+      "path": "specs/554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md",
+      "summary": "Six-phase plan adding a shared source-store path classification library, an out-of-repository pre-check and repository-naming notice at the phase-commit site, a single-pathspec second-repository commit step, an authoring-boundary refusal of unexpanded-variable file_scope entries, and the documentation and gate/deploy closure."
     }
   ],
-  "next_steps": "Run /orchestrate 554 to create implementation plan",
+  "next_steps": "Run /orchestrate 554 to execute the plan",
+  "phase_count": 6,
+  "estimated_hours": 9.5,
+  "dependency_waves": 5,
   "memory_candidates": [
     {
-      "content": "git-commit-scoped.sh's V9 gate already classifies a pathspec resolving outside the repository root as a distinct case (its own out_of_repo_dropped ledger, exit code, and textually-distinct WARN), separate from V10's file_scope containment drop. When investigating a 'not contained in declared file_scope' drop for a path that might actually be outside the repository entirely, check whether the drop happened upstream (e.g. git-commit-phase.sh's Containment Self-Check) before V9 ever got a chance to classify it correctly -- the upstream site's generic message can mask a genuinely different root cause.",
-      "category": "PATTERN",
-      "source_artifact": "specs/554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "containment", "git-commit-scoped.sh", "V9", "out-of-repository", "source store"]
-    },
-    {
-      "content": ".claude-extensions.json's source_dir is resolved per-extension (jq -r '.extensions.<name>.source_dir'); a top-level jq -r '.source_dir' returns null and must never be read as the key being absent. Whether a given extension's source_dir is 'external' depends entirely on which repository you resolve it from: the same absolute path can sit inside one repository's own git root (the canonical source-store repository itself) while sitting genuinely outside a different consumer repository's root. Any fix or test for source-store containment must be validated against a genuinely-disjoint consumer-repo scenario, not just the canonical source-store repository's own tree.",
+      "content": "A file_scope entry naming a source-store path (agent-system/extensions/<name>/...) is NOT a uniform case across repositories: resolve .claude-extensions.json's per-extension source_dir, then that directory's enclosing git toplevel. When that toplevel equals the repository you are committing in, the path is an ordinary in-repo path and every containment check behaves normally; when it differs, the same literal string names a file this repository cannot hold at all. Any remedy for a source-store containment drop must therefore carry an explicit equality guard and be validated against a genuinely disjoint two-repository fixture, never against the repository that owns the source store, where the defect is invisible by construction.",
       "category": "INSIGHT",
-      "source_artifact": "specs/554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md",
+      "source_artifact": "specs/554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md",
       "confidence": 0.85,
-      "suggested_keywords": ["source_dir", ".claude-extensions.json", "deploy boundary", "consumer repository", "per-extension resolution"]
+      "suggested_keywords": ["file_scope", "source_dir", "containment", "consumer repository", "two-repository fixture", "inertness guard"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1794343931_696ebd_554",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 16
 }
