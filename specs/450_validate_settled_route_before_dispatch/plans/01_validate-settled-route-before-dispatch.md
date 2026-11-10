@@ -309,7 +309,7 @@ added and the deviation recorded.
 
 ---
 
-### Phase 3: Propagate the Claim — Composer Emission and Architecture Note [NOT STARTED]
+### Phase 3: Propagate the Claim — Composer Emission and Architecture Note [COMPLETED]
 
 **Goal**: The dispatch file's existing `## Prior Decisions` section renders each entry's named
 obligation inline, with an explicit instruction to verify discharge before beginning phase work
@@ -317,38 +317,41 @@ and to raise a NEW blocking question if it does not hold — adding no new secti
 existing heading or marker wording.
 
 **Tasks**:
-- [ ] Re-derive current line numbers before editing; the anchors are the `prior_decisions_block`
+- [x] Re-derive current line numbers before editing; the anchors are the `prior_decisions_block`
       assignment (three jq branches: with-fingerprint, without-fingerprint) and the
-      `## Prior Decisions` emission block inside the dispatch-file writer.
-- [ ] **Check first, then edit**: confirm the change adds no new `## ` heading and moves no
+      `## Prior Decisions` emission block inside the dispatch-file writer. *(completed)*
+- [x] **Check first, then edit**: confirm the change adds no new `## ` heading and moves no
       existing section. The adjacent task deciding this file's emitted section order must land
       first only if a section is added or moved; rendering inside an existing section pre-empts
-      nothing. Record the confirmation in the phase's commit message.
-- [ ] Extend **every** `prior_decisions_block` jq branch (both the fingerprint-aware and the
+      nothing. Record the confirmation in the phase's commit message. *(completed: confirmed no
+      new heading added, no section moved — change lands entirely inside the existing
+      `## Prior Decisions` section)*
+- [x] Extend **every** `prior_decisions_block` jq branch (both the fingerprint-aware and the
       fingerprint-unavailable branch) to append an `Obligation: ...` line per entry when the field
       is present, using the same `(if ... then ... else "" end)` conditional shape the
       `POTENTIALLY SUPERSEDED` marker already uses. An entry with no `obligation` key must render
-      exactly as today.
-- [ ] Leave the `POTENTIALLY SUPERSEDED` conditional and its wording byte-identical; do not
-      reorder it relative to the new line in a way that changes an existing entry's render.
-- [ ] In the section's emission block, add the receiving-agent instruction — emitted only when at
+      exactly as today. *(completed; verified by hand-built fixture — see Verification)*
+- [x] Leave the `POTENTIALLY SUPERSEDED` conditional and its wording byte-identical; do not
+      reorder it relative to the new line in a way that changes an existing entry's render. *(completed: Obligation line placed before the POTENTIALLY SUPERSEDED conditional, neither changed)*
+- [x] In the section's emission block, add the receiving-agent instruction — emitted only when at
       least one rendered entry carried an obligation, so a dispatch whose decisions all predate the
       field is byte-identical to today. The instruction must: direct the agent to verify the route
       discharges the named obligation before beginning phase work; direct it, if the route does
       not discharge it, to return a NEW, specific blocking `user_decision` naming the second
-      obstruction; and forbid re-asking the original question.
-- [ ] Preserve the existing preamble wording verbatim in both of its forms (the plain
+      obstruction; and forbid re-asking the original question. *(completed)*
+- [x] Preserve the existing preamble wording verbatim in both of its forms (the plain
       "treat these as settled — do not re-ask a question already answered here" and the
-      superseded-variant text). The new instruction is additive text, not a rewrite of either.
-- [ ] Update the script's own header comment block where it describes the Prior Decisions read path
+      superseded-variant text). The new instruction is additive text, not a rewrite of either. *(completed: all 201 pre-existing test-orchestrate-build-dispatch.sh cases still pass)*
+- [x] Update the script's own header comment block where it describes the Prior Decisions read path
       and supersession marking, so the header states that the optional obligation is rendered and
-      that the composer emits it without adjudicating it.
-- [ ] Add a short subsection to `docs/architecture/orchestrate-state-machine.md` recording the
+      that the composer emits it without adjudicating it. *(completed)*
+- [x] Add a short subsection to `docs/architecture/orchestrate-state-machine.md` recording the
       propagation and the emit/adjudicate split: the writer records the claim, the composer emits
       it, the receiving agent adjudicates it, and a failed adjudication surfaces a new question
       rather than a re-ask. Do **not** edit the existing
       "Prior Decisions vs. Current Description: Precedence" section, which governs a different
-      question (staleness, not validity).
+      question (staleness, not validity). *(completed: added as a new "## Recording, Emitting,
+      and Adjudicating a Route's Obligation" subsection; precedence section left untouched)*
 
 **Timing**: 1.5 hours
 

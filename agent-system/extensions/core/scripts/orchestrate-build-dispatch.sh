@@ -81,6 +81,18 @@
 # Description: Precedence" section for the full rule. See that section for the complete
 # precedence statement and its two accepted approximations.
 #
+# Obligation rendering: each entry's optional `obligation` (written by
+# orchestrate-record-decision.sh's `--obligation` argument, schema in handoff-schema.md's
+# "Decisions File Schema" section) is rendered inline as an `Obligation: ...` line when present,
+# in both the fingerprint-aware and fingerprint-unavailable branches below -- this composer only
+# EMITS the claim, it never ADJUDICATES whether the named obligation is actually discharged by
+# the recorded route (see context/formats/report-format.md's "Owner ruling — split by
+# capability" paragraph; the receiving agent adjudicates). When at least one rendered entry
+# carries an obligation, the section additionally emits an instruction to verify discharge
+# before beginning phase work and to raise a NEW, specific blocking question (never a re-ask of
+# the original) if the route does not hold. An entry with no `obligation` key renders exactly as
+# before this field existed.
+#
 # --pending-gate-finding "TEXT": the caller's own resolution (orchestrate-cycle-plan.sh scans
 # this session's verify_deploy_baseline_notices for the latest entry that withheld THIS task via
 # the Inter-Cycle Redeploy Checkpoint's self-attribution screen -- see
@@ -495,10 +507,15 @@ prior_decisions_block=""
 decisions_file="${TASK_DIR_ABS}/.decisions.json"
 cur_fp=""
 any_superseded="false"
+any_obligation="false"
 if [ -f "$decisions_file" ]; then
   decisions_content=$(cat "$decisions_file" 2>/dev/null) || decisions_content="[]"
   decisions_count=$(echo "$decisions_content" | jq 'length' 2>/dev/null) || decisions_count=0
   if [ "$decisions_count" -gt 0 ]; then
+    # any_obligation: independent of fingerprint/sha256sum availability -- obligation is a
+    # separate optional field on the SAME entries, rendered by both branches below.
+    any_obligation=$(echo "$decisions_content" | jq -r \
+      'any(.[]; ((.obligation // "") == "") | not)' 2>/dev/null) || any_obligation="false"
     if command -v sha256sum >/dev/null 2>&1; then
       cur_fp="$(printf '%s' "$description" | sha256sum | awk '{print $1}')"
     fi
@@ -507,12 +524,14 @@ if [ -f "$decisions_file" ]; then
         'any(.[]; (((.description_fingerprint // "") == "") | not) and ((.description_fingerprint == $cur_fp) | not))' 2>/dev/null) || any_superseded="false"
       prior_decisions_block=$(echo "$decisions_content" | jq -r --arg cur_fp "$cur_fp" \
         '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"
+          + (if ((.obligation // "") == "") | not then "\n  Obligation: \(.obligation)" else "" end)
           + (if (((.description_fingerprint // "") == "") | not) and ((.description_fingerprint == $cur_fp) | not)
              then "\n  POTENTIALLY SUPERSEDED — the task description has changed since this answer was recorded; the current `## Description` above governs on conflict."
              else "" end)')
     else
       prior_decisions_block=$(echo "$decisions_content" | jq -r \
-        '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"')
+        '.[] | "- Question: \(.question)\n  Answer: \(.answer)\n  Answered in cycle \(.cycle) at \(.timestamp)"
+          + (if ((.obligation // "") == "") | not then "\n  Obligation: \(.obligation)" else "" end)')
     fi
   fi
 fi
@@ -850,6 +869,15 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     fi
     echo ""
     echo "$prior_decisions_block"
+    if [ "$any_obligation" = "true" ]; then
+      echo ""
+      echo "One or more answers above name an \`Obligation\` — the specific thing that recorded"
+      echo "route is claimed to discharge. Before beginning phase work, verify the route actually"
+      echo "discharges its named obligation against this phase's own artifacts. If it does, proceed"
+      echo "normally. If it does not, do NOT re-ask the original question above — instead return a"
+      echo "NEW, specific blocking \`user_decision\` naming the second obstruction this route leaves"
+      echo "unaddressed."
+    fi
     echo ""
   fi
   if [ -n "$premise_revalidation_block" ]; then

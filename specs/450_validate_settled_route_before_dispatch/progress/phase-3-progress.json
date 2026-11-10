@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Propagate the Claim — Composer Emission and Architecture Note",
+  "started_at": "2026-11-10T01:30:00Z",
+  "last_updated": "2026-11-10T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive line numbers for prior_decisions_block and Prior Decisions emission block", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Check first: confirm no new heading added/moved", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Extend every prior_decisions_block jq branch with Obligation line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "Leave POTENTIALLY SUPERSEDED conditional byte-identical", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add conditional receiving-agent instruction in emission block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "Preserve existing preamble wording verbatim in both forms", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Update script header comment describing Prior Decisions read path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 8, "description": "Add subsection to orchestrate-state-machine.md recording record/emit/adjudicate split", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

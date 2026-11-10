@@ -1284,6 +1284,45 @@ Two further approximations are accepted deliberately, in both directions:
 
 ---
 
+## Recording, Emitting, and Adjudicating a Route's Obligation
+
+A Prior Decision can be more than a settled preference — it can be a **route**: an answer chosen
+specifically to get past a concrete obstruction. A route carries a claim a plain preference does
+not: that the chosen path actually resolves the obstruction it was offered against. Nothing
+described in the precedence rule above checks that claim, because staleness (has the description
+changed?) and discharge (does the route actually solve the problem?) are different questions. This
+section states how the discharge claim is recorded, emitted, and adjudicated, split across three
+mechanisms that each do exactly one part and no more:
+
+1. **The writer records the claim.** `orchestrate-record-decision.sh`'s optional `--obligation`
+   argument lets the agent proposing a route name, concretely, the specific obligation that route
+   is claimed to discharge (schema: `handoff-schema.md`'s "Decisions File Schema" section). The
+   writer never evaluates the claim — it only persists it, exactly as it persists `question` and
+   `answer`.
+2. **The composer emits the claim.** `orchestrate-build-dispatch.sh`'s "## Prior Decisions"
+   rendering carries an entry's `obligation` forward as an inline `Obligation: ...` line, and,
+   when at least one rendered entry carries one, an instruction to verify discharge before
+   beginning phase work. The composer never evaluates whether the route actually discharges the
+   named obligation — it only forwards the claim and the duty to check it, the same
+   emit-never-adjudicate split `context/formats/report-format.md`'s "Owner ruling — split by
+   capability" paragraph already states for this composer's structurally closest existing
+   feature (the Premise Re-Validation block).
+3. **The receiving agent adjudicates the claim.** Only the dispatched agent, with the phase's own
+   artifacts in hand, is positioned to judge whether the route actually resolves the obstruction
+   it names. If it does, the agent proceeds on the settled answer exactly as before. If it does
+   not, the agent does not re-ask the original question — re-litigating a settled answer is
+   exactly what this section's adjacent "Prior Decisions vs. Current Description" rule already
+   guards against — it instead returns a NEW, specific blocking `user_decision` naming the second
+   obstruction the route leaves unaddressed.
+
+This split is why no mechanical validator sits between recording and dispatching: judging whether
+a route discharges an obligation is a semantic relation between two arbitrary spans of text — the
+same shape of judgment the Premise Re-Validation block's own design already declined to automate
+for the same reason. A route's informed adjudication is therefore the intended working case for
+this contract, not a fallback for when something else failed.
+
+---
+
 ## Diagnosing Dispatch Liveness: A Probe for External Watchers
 
 This is guidance for a non-mechanical external watcher of a dispatch -- an operator, an
