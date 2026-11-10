@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "State the task_type prerequisite in creating-extensions.md",
+  "started_at": "2026-11-10T20:58:44Z",
+  "last_updated": "2026-11-10T20:58:44Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read creating-extensions.md around Lifecycle Hooks and Observers vs Lifecycle Hooks", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert new Prerequisite subsection with all required statements", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/creating-extensions.md"]},
+    {"id": 3, "description": "Re-read finished subsection against Observers section for duplication/contradiction", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Verify and commit phase 1", "status": "done", "files_touched": ["specs/483_document_hook_task_type_prerequisite/plans/01_hook-task-type-prerequisite.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.6",
+      "description": "State that the only real cross-cutting pre-dispatch injection is the hardcoded memory-retrieve.sh / <memory-context> call in scripts/orchestrate-build-dispatch.sh",
+      "type": "altered",
+      "reason": "Re-reading current source showed the call site now invokes scripts/sapience-retrieve.sh (commit bea9a9429, same-day prior commit, swapped the retrieval call site away from memory-retrieve.sh). Documented the current accurate script name to keep the claim verifiable against live source, per the task's own goal of grounding claims mechanically; the architectural point (hardcoded core call, not an extension hook) is unaffected.",
+      "annotation": "*(completed: cited current call site -- scripts/sapience-retrieve.sh, the script that replaced memory-retrieve.sh at this exact site in a same-day prior commit -- rather than the stale script name; recorded as a carried-figure correction in the issue log)*"
+    }
+  ],
+  "handoff_count": 0
+}

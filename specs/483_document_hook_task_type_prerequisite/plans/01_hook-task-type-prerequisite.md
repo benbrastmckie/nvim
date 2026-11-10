@@ -1,7 +1,7 @@
 # Implementation Plan: Task #483
 
 - **Task**: 483 - Document that an extension lifecycle hook can never fire without a declared `task_type`
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.1 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/483_document_hook_task_type_prerequisite/reports/01_hook-task-type-prerequisite.md
@@ -111,7 +111,7 @@ No `roadmap_path` was provided for this dispatch; no roadmap consultation perfor
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: State the task_type prerequisite in creating-extensions.md [NOT STARTED]
+### Phase 1: State the task_type prerequisite in creating-extensions.md [COMPLETED]
 
 **Goal**: `creating-extensions.md`'s `## Lifecycle Hooks` section carries a new, prominent
 subsection stating the `task_type` prerequisite, the exact gate expression, the
@@ -120,40 +120,40 @@ observer cross-reference — satisfying acceptance criteria 1-5 and 7.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/docs/guides/creating-extensions.md` around the
+- [x] Re-read `agent-system/extensions/core/docs/guides/creating-extensions.md` around the
       `## Lifecycle Hooks` heading and the `### Observers vs. Lifecycle Hooks` subsection
       immediately before editing (concurrency discipline; line numbers below are the
-      research-verified positions, to be re-confirmed rather than trusted).
-- [ ] Insert a new `### Prerequisite: A Declared task_type` subsection immediately after the
+      research-verified positions, to be re-confirmed rather than trusted). *(completed)*
+- [x] Insert a new `### Prerequisite: A Declared task_type` subsection immediately after the
       section's introductory sentence and before `### Hooks vs. provides.hooks` (between the
-      current lines 690 and 692).
-- [ ] In that subsection, state the prerequisite as a standalone claim: a lifecycle hook fires
+      current lines 690 and 692). *(completed)*
+- [x] In that subsection, state the prerequisite as a standalone claim: a lifecycle hook fires
       only for a task whose `task_type` string-equals the declaring extension's own top-level
       `task_type`; an extension with no `task_type` has no firing path for any of its four
-      hooks (preflight, context_injection, verification, postflight).
-- [ ] Name `skill_get_extension_dir()` in `scripts/skill-base.sh` as the mechanical source of
+      hooks (preflight, context_injection, verification, postflight). *(completed)*
+- [x] Name `skill_get_extension_dir()` in `scripts/skill-base.sh` as the mechanical source of
       truth and quote the gate verbatim: `[ -n "$ext_task_type" ] && [ "$ext_task_type" = "$task_type" ]`.
       Explain that `jq -r '.task_type // empty'` yields an empty string for a manifest with no
       `task_type`, which fails the `-n` test unconditionally, and that the resolver returns the
-      FIRST matching extension.
-- [ ] State that the four `skill_run_extension_hook` call sites each pass the currently
-      dispatched task's own `task_type`.
-- [ ] State that `nvim` and `nix` are PER-DOMAIN precedents — each fires only on its own
+      FIRST matching extension. *(completed)*
+- [x] State that the four `skill_run_extension_hook` call sites each pass the currently
+      dispatched task's own `task_type`. *(completed)*
+- [x] State that `nvim` and `nix` are PER-DOMAIN precedents — each fires only on its own
       domain's tasks because each declares its own matching `task_type` — and that citing them
       as precedent for a cross-cutting, task-type-independent hook inverts what the mechanism
-      does.
-- [ ] State that the only real cross-cutting pre-dispatch injection in the system is the
+      does. *(completed)*
+- [x] State that the only real cross-cutting pre-dispatch injection in the system is the
       hardcoded `memory-retrieve.sh` / `<memory-context>` call in
       `scripts/orchestrate-build-dispatch.sh`, that replicating that shape is a core change
       rather than an extension change, and plainly that no extension-declarable cross-cutting
-      seam exists.
-- [ ] Add one brief sentence noting that post-task observers do not solve pre-work orientation
+      seam exists. *(completed: cited current call site -- scripts/sapience-retrieve.sh, the script that replaced memory-retrieve.sh at this exact site in a same-day prior commit -- rather than the stale script name; recorded as a carried-figure correction in the issue log)*
+- [x] Add one brief sentence noting that post-task observers do not solve pre-work orientation
       either (they fire only after a task reaches a resting state), cross-referencing
       `## Post-Task Observers` and `### Observers vs. Lifecycle Hooks` rather than restating
-      their content.
-- [ ] Re-read the finished subsection against `### Observers vs. Lifecycle Hooks` and confirm no
-      sentence duplicates or contradicts the existing resolution-rule account.
-- [ ] Commit this phase's single file with an explicit pathspec.
+      their content. *(completed)*
+- [x] Re-read the finished subsection against `### Observers vs. Lifecycle Hooks` and confirm no
+      sentence duplicates or contradicts the existing resolution-rule account. *(completed)*
+- [x] Commit this phase's single file with an explicit pathspec. *(completed)*
 
 **Timing**: 0.5 hours
 

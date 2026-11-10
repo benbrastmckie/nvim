@@ -689,6 +689,49 @@ Verify:
 
 Extensions can declare **lifecycle hook scripts** in `manifest.json` under a top-level `hooks` object. These hooks are invoked by `skill-base.sh` at specific points in the skill execution lifecycle, before and after agent delegation.
 
+### Prerequisite: A Declared task_type
+
+**A lifecycle hook can fire at all only if the declaring extension's manifest carries a
+top-level `task_type` field whose value string-equals the `task_type` of the task currently
+being dispatched.** An extension that declares no `task_type` has no firing path for any of its
+four hooks (`preflight`, `context_injection`, `verification`, `postflight`) — not sometimes, not
+conditionally, never, regardless of how carefully `hooks` itself is populated.
+
+The mechanical source of truth is `skill_get_extension_dir()` in `scripts/skill-base.sh`, which
+every lifecycle-hook call site resolves an extension directory through before invoking a hook.
+Its gate is exactly:
+
+```
+[ -n "$ext_task_type" ] && [ "$ext_task_type" = "$task_type" ]
+```
+
+`ext_task_type` is read via `jq -r '.task_type // empty'` against the extension's own
+`manifest.json`: a manifest with no `task_type` key yields the empty string, which fails the
+`-n` test unconditionally — the equality comparison is never reached, and the function moves on
+without resolving a directory for that extension (the function returns the FIRST matching
+extension when the gate does pass). All four `skill_run_extension_hook` call sites
+(`preflight`, `context_injection`, `verification`, `postflight`) pass the currently dispatched
+task's own `task_type` as the value compared against, so this same gate is evaluated identically
+at every one of the four stages.
+
+The `nvim` and `nix` extensions' `context_injection` hooks work precisely because each extension
+declares its own matching `task_type` (`"neovim"`, `"nix"`) — they are **per-domain**
+precedents: each fires only on its own domain's tasks, never on any other `task_type`, and never
+cross-cuts across task types. Citing either as precedent for a hook meant to fire regardless of
+`task_type` inverts what the mechanism actually does.
+
+There is, correspondingly, **no extension-declarable seam for cross-cutting,
+task-type-independent pre-dispatch injection.** The one real instance of that shape in this
+system — the `<memory-context>` block injected ahead of every dispatch — is a hardcoded call
+(currently to `scripts/sapience-retrieve.sh`) inside core's own `scripts/orchestrate-build-dispatch.sh`,
+not an extension hook of any kind. Replicating that shape for a new cross-cutting purpose is a
+**core change, not an extension change**.
+
+Post-task observers (`## Post-Task Observers` below, and the resolution-rule comparison in
+`### Observers vs. Lifecycle Hooks`) are not a substitute either: they fire only after a task
+reaches a resting state, so they cannot serve pre-work orientation no matter how they are
+matched.
+
 ### Hooks vs. provides.hooks
 
 **Important distinction**: Two different `hooks` concepts exist in manifests:
