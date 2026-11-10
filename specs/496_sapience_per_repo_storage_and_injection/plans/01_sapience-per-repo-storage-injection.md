@@ -469,39 +469,39 @@ a different one, and a gated write is reported rather than swallowed.
 
 ---
 
-### Phase 5: Swap the dispatch retrieval call site [NOT STARTED]
+### Phase 5: Swap the dispatch retrieval call site [COMPLETED]
 
 **Goal**: Stage 3.5's `memory_context` block calls `sapience-retrieve.sh` instead of
 `memory-retrieve.sh`, with the `--clean` guard, the failure-swallowing wrapper, the variable
 name, and the argument list all unchanged — and the test suite's fixture stub follows.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`, change **only the
+- [x] In `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`, change **only the *(completed)*
       script basename** on the call line inside the existing `memory_context` block: the
       right-hand side becomes
       `$(bash "${SKILL_REPO_ROOT}/.claude/scripts/sapience-retrieve.sh" "$description" "$task_type" "$memory_arg3" 2>/dev/null) || memory_context=""`.
       Keep the `if [ "$clean_flag" != "true" ]; then` guard, the `memory_arg3` derivation, the
       `2>/dev/null` redirect, the `|| memory_context=""` fallback, the variable name
       `memory_context`, and the three positional arguments exactly as they are.
-- [ ] Leave the consumer check untouched — `memory_context` is read later in the same script as a
+- [x] Leave the consumer check untouched — `memory_context` is read later in the same script as a *(completed)*
       plain string-emptiness test, and keeping the variable name means that site needs no edit at
       all, which is what holds this phase's footprint on a shared-territory file to one line plus
       its comment.
-- [ ] Update the block's section comment so it names the retrieval source accurately without
+- [x] Update the block's section comment so it names the retrieval source accurately without *(completed)*
       narrating the change (no "no longer", no "previously" — see
       `rules/no-record-versioning-in-deliverables.md`) and without citing a task number (see
       `rules/no-task-references-in-deliverables.md`).
-- [ ] In `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`, rename
+- [x] In `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`, rename *(completed)*
       the fixture stub from `$FIXTURE/.claude/scripts/memory-retrieve.sh` to
       `$FIXTURE/.claude/scripts/sapience-retrieve.sh` (both the heredoc target and the `chmod +x`
       line), and update the stub's explanatory comment, which currently calls it a stand-in for
       "the real memory vault". Leave the stub's emitted marker text and every assertion string
       (`<memory-context>`, `STUB_MEMORY_CONTENT`) unchanged — the envelope tag is deliberately
       preserved so no consumer and no assertion needs changing.
-- [ ] Also update the suite's header comment, which enumerates the stubbed scripts by name.
-- [ ] Run the selector-resolved suite subset and confirm green:
+- [x] Also update the suite's header comment, which enumerates the stubbed scripts by name. *(completed)*
+- [x] Run the selector-resolved suite subset and confirm green: *(completed)*
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-force-phases.sh,test-orchestrate-build-aux-dispatch.sh,test-orchestrate-build-dispatch.sh,test-orchestrate-context-growth.sh,test-orchestrate-cycle-plan.sh,test-orchestrate-record-decision.sh,test-orchestrate-recover-message-findings.sh,test-orchestrate-unwind-dispatch.sh,test-routing-resolution.sh`
-- [ ] Confirm by reading the diff that Group 1's `--clean` suppression assertion and Group 2's
+- [x] Confirm by reading the diff that Group 1's `--clean` suppression assertion and Group 2's *(completed)*
       presence assertions both still reference the unchanged envelope tag.
 
 **Timing**: 1 hour
@@ -513,12 +513,26 @@ name, and the argument list all unchanged — and the test suite's fixture stub 
 **Tier Justification**: `suite_selection_select` over this phase's two files returns exactly `test-force-phases.sh test-orchestrate-build-aux-dispatch.sh test-orchestrate-build-dispatch.sh test-orchestrate-context-growth.sh test-orchestrate-cycle-plan.sh test-orchestrate-record-decision.sh test-orchestrate-recover-message-findings.sh test-orchestrate-unwind-dispatch.sh test-routing-resolution.sh`, and `run-all.sh --only` over that list is the specific check covering every enumerated dependent of the changed call site.
 
 **Scope Hypothesis**: This phase hypothesises that `memory-retrieve.sh` is referenced from exactly one call site in `orchestrate-build-dispatch.sh` (its line 354) and from exactly one stub-installation site plus a header comment in the test suite. Confirm at implementation time with `grep -rn 'memory-retrieve' agent-system/extensions/core/scripts/` before editing; if the grep returns a site this plan does not name, handle it in this phase rather than leaving a dangling reference.
+*(deviation: altered — the grep returned ONE additional site this hypothesis did not name:
+`test-orchestrate-context-growth.sh` installs the SAME stub (it also exercises the real
+`orchestrate-build-dispatch.sh` to measure context-growth bytes, per its own header comment
+naming the identical three-collaborator-stub contract). Renamed its stub heredoc target,
+`chmod +x` line, and header-comment enumeration the same way, re-ran that suite, and it still
+passes. Two sites unaffected by the rename because they remain accurate either way:
+`orchestrate-build-aux-dispatch.sh`'s header comment and `test-orchestrate-build-aux-dispatch.sh`'s
+negative assertion both state aux-dispatch never calls `memory-retrieve.sh`, which stays true
+regardless of the swap since aux-dispatch calls neither script; `lib/common.sh`'s historical
+`common_repo_root` migration-caller list and `memory-retrieve.sh`'s own file header are untouched
+per the plan's Non-Goals, since that script stays on disk and deployed.)*
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` - swap the script basename
   on the Stage 3.5 `memory_context` call line; update that block's section comment
 - `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh` - rename the
   fixture stub path and update the stub comment and the suite header's stub enumeration
+- `agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh` - rename the
+  same stub (an additional site the Scope Hypothesis's grep surfaced; see the deviation note
+  above), its header comment, and the `chmod +x` line
 
 **Verification**:
 - `grep -c 'memory-retrieve.sh' agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`

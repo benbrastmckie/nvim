@@ -346,12 +346,13 @@ if [ "$phase" = "implement" ]; then
   fi
 fi
 
-# ─── Stage 3.5 output 1: memory_context (Auto retrieval), skipped when --clean ─────────────────
+# ─── Stage 3.5 output 1: memory_context (repo-scoped Sapience vault retrieval), skipped when
+# --clean ─────────────────────────────────────────────────────────────────────────────────────
 memory_context=""
 if [ "$clean_flag" != "true" ]; then
   memory_arg3=""
   [ "$phase" = "research" ] && memory_arg3="$focus_prompt"
-  memory_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/memory-retrieve.sh" "$description" "$task_type" "$memory_arg3" 2>/dev/null) || memory_context=""
+  memory_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/sapience-retrieve.sh" "$description" "$task_type" "$memory_arg3" 2>/dev/null) || memory_context=""
 fi
 
 # ─── Stage 3.5 output 2: lit_context (headless — orchestrator_mode is always true here, so the

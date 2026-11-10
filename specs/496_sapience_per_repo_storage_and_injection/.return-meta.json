@@ -4,7 +4,14 @@
     "session_id": "sess_1794326188_f2c11d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
-  "dispatch_seq": 3
+  "dispatch_seq": 3,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh"
+  ]
 }

@@ -19,8 +19,8 @@
 # "$SKILL_REPO_ROOT"` inside the SUT lands in the fixture, and every bare-relative path the SUT's
 # collaborators use (specs/state.json, specs/{padded}_{project}/...) resolves there -- never
 # against the real repo. The SUT's own three `${SKILL_REPO_ROOT}/.claude/scripts/*.sh` calls
-# (memory-retrieve.sh, literature-lit-flag-resolve.sh, literature-briefing-invoke.sh) are pointed
-# at deterministic STUBS installed in the fixture, so this suite is immune to the real memory
+# (sapience-retrieve.sh, literature-lit-flag-resolve.sh, literature-briefing-invoke.sh) are pointed
+# at deterministic STUBS installed in the fixture, so this suite is immune to the real Sapience
 # vault's contents and the real (or absent) Literature corpus -- what is under test is the SUT's
 # OWN gating/branching logic, not those collaborators' real behavior. The SUT's `source
 # "${SCRIPT_DIR}/skill-base.sh"` / `lib/manifest-routing-lib.sh` / `lib/continuation-pointer-lib.sh`
@@ -104,15 +104,15 @@ EOF
   printf '# Fixture report\n' > "$FIXTURE/${TASK_DIR_REL}/reports/01_fixture-report.md"
   printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
 
-  # STUB: memory-retrieve.sh -- unconditionally emits a marker, ignoring its 3 positional args.
-  # Deterministic stand-in for the real memory vault, whose contents this suite must not depend on.
-  cat > "$FIXTURE/.claude/scripts/memory-retrieve.sh" <<'EOF'
+  # STUB: sapience-retrieve.sh -- unconditionally emits a marker, ignoring its 3 positional args.
+  # Deterministic stand-in for the real Sapience vault, whose contents this suite must not depend on.
+  cat > "$FIXTURE/.claude/scripts/sapience-retrieve.sh" <<'EOF'
 #!/usr/bin/env bash
 echo "<memory-context>"
 echo "STUB_MEMORY_CONTENT"
 echo "</memory-context>"
 EOF
-  chmod +x "$FIXTURE/.claude/scripts/memory-retrieve.sh"
+  chmod +x "$FIXTURE/.claude/scripts/sapience-retrieve.sh"
 
   # STUB: literature-lit-flag-resolve.sh -- echoes $STUB_LIT_DIRECTIVE (default GLOBAL_MISSING)
   # to stdout and a fixed rationale to stderr, matching the real script's output contract

@@ -1,0 +1,30 @@
+{
+  "phase": 5,
+  "phase_name": "Swap the dispatch retrieval call site",
+  "started_at": "2026-11-10T01:20:00Z",
+  "last_updated": "2026-11-10T01:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Swap orchestrate-build-dispatch.sh's memory_context call-site basename to sapience-retrieve.sh (comment updated, guard/wrapper/variable/args byte-identical); rename the fixture stub in test-orchestrate-build-dispatch.sh and its header comment; discovered and fixed an additional stub site in test-orchestrate-context-growth.sh via the Scope Hypothesis grep; ran the nine-suite selector subset green",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.scope-hypothesis",
+      "description": "memory-retrieve.sh referenced from exactly one call site plus one stub-installation site plus a header comment",
+      "type": "altered",
+      "reason": "grep -rn 'memory-retrieve' agent-system/extensions/core/scripts/ surfaced an additional stub-installation site in test-orchestrate-context-growth.sh (also exercises the real orchestrate-build-dispatch.sh). Renamed its stub, chmod line, and header comment the same way; re-ran the suite, still green.",
+      "annotation": "*(deviation: altered — the grep returned ONE additional site ...)*"
+    }
+  ]
+}
