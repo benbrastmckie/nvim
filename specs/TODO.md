@@ -87,7 +87,7 @@ next_project_number: 579
 
 ### Neovim
 
-578 [NOT STARTED] — Build an in-config sf1 (Sapience terminal chat) Neovim...
+578 [RESEARCHED] — Build an in-config sf1 (Sapience terminal chat) Neovim...
 
 ### File Scope Lifecycle
 
@@ -184,11 +184,11 @@ next_project_number: 579
 ## Tasks
 
 ### 578. Sf1 neovim virtual plugin with split position
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: neovim
 - **Topic**: neovim
 - **Dependencies**: None
-- **Research**: [578_sf1_neovim_virtual_plugin_with_split_position/reports/01_sf1-nvim-plugin-seed.md]
+- **Research**: [578_sf1_neovim_virtual_plugin_with_split_position/reports/02_sf1-split-position-verification.md]
 
 **Description**: Build an in-config sf1 (Sapience terminal chat) Neovim integration as a lazy.nvim virtual plugin, following the existing stt-plugin.lua / himalaya-plugin.lua convention, kept fully separate from the claude-code and opencode integrations.
 

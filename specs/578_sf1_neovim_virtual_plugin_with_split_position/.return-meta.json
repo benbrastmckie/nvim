@@ -1,0 +1,20 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/578_sf1_neovim_virtual_plugin_with_split_position/reports/02_sf1-split-position-verification.md",
+      "summary": "Second-pass research resolving the seed report's open items: verified snacks.win position/size mechanics from source (all four position values valid; height/width uniform for splits but both apply for float, an open design choice), verified the ai/init.lua loader-acceptance claim by headless execution rather than code trace, re-ran capability probes and which-key sweep with no drift, and confirmed a dependency-free git-root idiom already used six times in this repo for the project=\"git\" strategy."
+    }
+  ],
+  "dispatch_seq": 1,
+  "next_steps": "Run /orchestrate 578 to create an implementation plan from both research reports.",
+  "metadata": {
+    "session_id": "sess_1794339852_4b2213_578",
+    "agent_type": "neovim-research-agent",
+    "duration_seconds": 1500,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "neovim-research-agent"],
+    "findings_count": 8
+  }
+}
