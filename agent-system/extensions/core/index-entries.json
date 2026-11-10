@@ -1917,7 +1917,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 1176,
+      "line_count": 1178,
       "keywords": [
         "standards",
         "shell",
@@ -2631,7 +2631,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Batch gate stage (Move 4): the once-per-invocation shared verify-deploy.sh gate run, with confirmation and per-task finding attribution, for a multi-task /orchestrate batch; single-task/bare-implement invariance; coexistence boundary with the conclusion stage",
-      "line_count": 164,
+      "line_count": 166,
       "keywords": [
         "batch-gate-stage",
         "move-4",
