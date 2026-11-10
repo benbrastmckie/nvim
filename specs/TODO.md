@@ -10081,6 +10081,7 @@ Fourteen other deployed repos are already clean and serve as the no-change contr
 - **Dependencies**: Task 328, Task 358, Task 385, Task 407, Task 428, Task 446
 - **Research**: [360_validate_carried_unverified_names_a_source/reports/01_carried-unverified-source-naming-validation.md]
 - **Plan**: [360_validate_carried_unverified_names_a_source/plans/01_carried-figure-enforcement-surface.md]
+- **Summary**: [360_validate_carried_unverified_names_a_source/summaries/01_carried-figure-enforcement-surface-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md); they are permitted in this description and elsewhere in specs/**.
 

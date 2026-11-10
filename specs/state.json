@@ -3211,11 +3211,17 @@
           "path": "specs/360_validate_carried_unverified_names_a_source/plans/01_carried-figure-enforcement-surface.md",
           "type": "plan",
           "summary": "Nine-phase plan: advisory source-naming check in validate-artifact.sh over three literal tokens, both reasoned exclusions recorded, the three convention amendments, and a final redeploy plus full gate set."
+        },
+        {
+          "path": "specs/360_validate_carried_unverified_names_a_source/summaries/01_carried-figure-enforcement-surface-summary.md",
+          "type": "summary",
+          "summary": "Nine-phase implementation summary covering the advisory check, the three convention amendments, and the redeploy/scoped-gate verification."
         }
       ],
       "last_updated": "2026-11-10T01:27:36Z",
       "next_artifact_number": 2,
-      "session_id": "sess_1794272256_212466"
+      "session_id": "sess_1794272256_212466",
+      "completion_summary": "Implemented all nine plan phases: an advisory, parameterized source-naming well-formedness check over three literal tokens in validate-artifact.sh with full fixture coverage of every recall-failure shape; widened report-format.md's Carried-Figure Discipline section in place to cover a corpus-dependent recommendation's mechanical claim, a dispatch's acted-on premise (with the composer-side implementation in orchestrate-build-dispatch.sh), and a self-derived enumeration's completeness obligation plus the verification-independence rule; redeployed and confirmed zero real-corpus advisories against the deployed validator."
     },
     {
       "project_number": 369,
