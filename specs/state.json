@@ -13554,6 +13554,11 @@
           "path": "specs/483_document_hook_task_type_prerequisite/plans/01_hook-task-type-prerequisite.md",
           "type": "plan",
           "summary": "Three-phase documentation plan covering all eight acceptance criteria, with per-phase verification tiers (prose, prose, full)."
+        },
+        {
+          "path": "specs/483_document_hook_task_type_prerequisite/summaries/01_hook-task-type-prerequisite-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all three phases, decisions, deviations, and verification evidence."
         }
       ],
       "next_artifact_number": 2,
@@ -14920,7 +14925,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "completion_summary": "Added a new 'Prerequisite: A Declared task_type' subsection to creating-extensions.md's Lifecycle Hooks section (quoting the skill_get_extension_dir() gate verbatim, naming nvim/nix as per-domain precedents, and naming the hardcoded <memory-context> call in orchestrate-build-dispatch.sh as the only real cross-cutting pre-dispatch injection) and a pointer warning in extension-development.md's Resource-Only Extensions prose. Redeployed and confirmed both deployed copies are byte-identical to the source store."
     },
     {
       "project_number": 484,
