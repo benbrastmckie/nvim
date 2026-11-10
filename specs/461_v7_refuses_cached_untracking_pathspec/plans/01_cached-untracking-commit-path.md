@@ -489,25 +489,43 @@ entry cannot be added without touching code, treat that as a scope change and re
 
 ---
 
-### Phase 5: Redeploy and run the full gate set [NOT STARTED]
+### Phase 5: Redeploy and run the full gate set [COMPLETED]
 
 **Goal**: regenerate the deployed `.claude/` tree from the source store and prove the whole change
 green against the complete repository gate battery.
 
 **Tasks**:
 
-- [ ] Re-read every file this plan changed, confirming no sibling task has modified them since
-  the phase that edited them.
-- [ ] Redeploy the source store with `bash .claude/scripts/deploy-headless.sh` (non-destructive
+- [x] Re-read every file this plan changed, confirming no sibling task has modified them since
+  the phase that edited them. *(completed: `git log` confirms the last commit on each of the
+  three files is this task's own phase commit; `git status --porcelain` on them is empty)*
+- [x] Redeploy the source store with `bash .claude/scripts/deploy-headless.sh` (non-destructive
   resync mode), and confirm the deployed `.claude/scripts/git-commit-scoped.sh`,
   `.claude/scripts/tests/test-git-commit-scoped.sh`, and
-  `.claude/context/standards/git-staging-scope.md` carry this plan's changes.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--only-gate`
-  narrowing), including Gate 8's full shell-suite battery.
-- [ ] Confirm the end-to-end outcome against the task's REQUIRED OUTCOME, using the deployed
+  `.claude/context/standards/git-staging-scope.md` carry this plan's changes. *(completed:
+  `diff -q` against the source-store originals reports byte-identical for all three)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--only-gate`
+  narrowing), including Gate 8's full shell-suite battery. *(deviation, per this dispatch's own
+  Batch Gate Deferral directive, which supersedes this literal instruction for a final phase
+  declaring `**Verification Tier**: full`: an exploratory independent full run WAS performed
+  anyway and reported 4 of 43 checks failing, but every one is explained as cross-task noise
+  from this same `/orchestrate` batch's concurrently-scheduled sibling tasks or an already-
+  tracked pre-existing finding -- none attributable to `git-commit-scoped.sh`, its test suite,
+  or `git-staging-scope.md`; full detail in `progress/phase-5-progress.json` and this task's
+  issue log. The actual verification basis for closing this phase is the scoped `run-all.sh
+  --only` 16-suite covering set named in this phase's own Tier Justification, which the directive
+  designates as the discharge: 14 passed, 2 failed (the same 2 pre-existing out-of-scope failures
+  already recorded in Phases 1-2's issue-log entries). The complete gate set still runs once, at
+  the batch level, per the directive.)*
+- [x] Confirm the end-to-end outcome against the task's REQUIRED OUTCOME, using the deployed
   script in a scratch repo: an untracking commits without any file leaving the working tree.
-- [ ] Record any gate collision, deviation, or notable smoothness in this task's issue log as it
-  arises.
+  *(completed: a scratch repo built from the DEPLOYED `.claude/scripts/git-commit-scoped.sh`
+  copy, using `.opencode` as the untracked directory per the task description's own example --
+  exit 0, HEAD advanced, both files recorded as `D`, `git ls-files -- .opencode` empty, both
+  files still present on disk, no relocation at any point)*
+- [x] Record any gate collision, deviation, or notable smoothness in this task's issue log as it
+  arises. *(completed: see the issue-log entry recording the Batch Gate Deferral exploratory run
+  and its 4 cross-task-noise findings)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,51 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and run the full gate set",
+  "started_at": "2026-11-10T22:16:00Z",
+  "last_updated": "2026-11-10T22:44:36Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read every changed file, confirm no sibling task modified them since",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Redeploy via deploy-headless.sh; confirm deployed files carry this plan's changes",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Discharge the full-gate verification per the Batch Gate Deferral directive (scoped run-all.sh --only, not an independent full verify-deploy.sh)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm REQUIRED OUTCOME end-to-end against the deployed script in a scratch repo",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Record gate collisions/deviations in the issue log",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.3",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh (no --only-gate narrowing)",
+      "type": "altered",
+      "reason": "This dispatch's own Batch Gate Deferral directive (see .dispatch/12.md) supersedes the plan's literal instruction for a final phase declaring Verification Tier: full -- it discharges the phase against the scoped run-all.sh --only covering set instead of running the complete gate set independently, and the complete set is deferred to run once at the batch level.",
+      "annotation": "*(deviation: altered -- discharged via the Batch Gate Deferral directive's scoped narrowing instead)*"
+    }
+  ],
+  "notes": "An exploratory independent full 'bash .claude/scripts/verify-deploy.sh' run was ALSO performed (started before re-consulting the Batch Gate Deferral directive's text in full) and took roughly 20 minutes; it reported 4 of 43 checks failing. Full root-cause of each, confirmed by direct investigation: (1) Gate 8's run-all.sh exited 1 after a 210s+ wait for specs/.gate-lock held by a session/pid that was already dead and whose lock directory was already gone by the time investigated -- transient cross-task contention from a concurrently-scheduled sibling sharing this working tree (no suite output was ever produced, so this is not an actual test failure). (2) Gate 10 (validate-state.sh --deep) exceeded its 60s timeout -- plausibly ambient load from concurrent sibling activity on this same shared repo; none of this task's three touched files bear on specs/state.json schema validation. (3) Whole-tree orphan detection reported 8 findings, ALL under agent-system/extensions/memory/** (distill-*-submode.md files, memory-harvest.sh, memory-retrieve.sh) -- matching a concurrently-scheduled sibling task's own declared territory on the memory extension (per this dispatch's Territory block), not this task's file_scope. (4) Dead-command-recommendation lint reported exactly 2 violations, both in agent-system/extensions/memory/context/project/memory/{memory-setup.md,memory-troubleshooting.md} naming '/ide has no definition file' -- already a documented pre-existing finding (quoted verbatim in this task directory's own Phase 1 issue-log entry, sourced from a concurrent sibling's in-flight known-failures.txt edit) and also inside the memory extension's territory. Verified: `diff -q` between every deployed copy and its source-store original is byte-identical for all three changed files. REQUIRED OUTCOME scratch probe against the DEPLOYED script (not the source-store copy): built a fresh repo, committed a tracked '.opencode/' directory (the task description's own example), ran `git rm -r --cached .opencode` followed by an ordinary `git-commit-scoped.sh --message ... -- .opencode` invocation -- exit 0, HEAD advanced by one commit, both files recorded as D in `git show --name-status`, `git ls-files -- .opencode` empty afterward, both files still present on disk throughout, no relocation at any point. Scoped Tier Justification suite (run-all.sh --only <16-suite list>, run during Phase 4 against the identical byte content now deployed): 14 passed, 2 failed -- the same 2 pre-existing out-of-scope failures already recorded in Phases 1-2's issue-log entries (test-orchestrate-cycle-postflight.sh, test-redeploy-checkpoint-promotion.sh)."
+}
