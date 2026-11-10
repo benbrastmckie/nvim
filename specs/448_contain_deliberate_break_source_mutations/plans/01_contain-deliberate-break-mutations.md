@@ -1,7 +1,7 @@
 # Implementation Plan: Task #448
 
 - **Task**: 448 - Contain the regression-anchor source-store mutation so a concurrent session cannot observe or inherit it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: 328 (SATISFIED -- landed and archived, see Premise Re-Validation)
 - **Research Inputs**: specs/448_contain_deliberate_break_source_mutations/reports/01_contain-deliberate-break-mutations.md

@@ -27,21 +27,36 @@
       "category": "PATTERN",
       "source_artifact": "specs/448_contain_deliberate_break_source_mutations/summaries/01_contain-deliberate-break-mutations-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["regression-anchor", "deliberate-break", "sandbox-copy", "test-fixture-safety", "source-store-mutation"]
+      "suggested_keywords": [
+        "regression-anchor",
+        "deliberate-break",
+        "sandbox-copy",
+        "test-fixture-safety",
+        "source-store-mutation"
+      ]
     },
     {
       "content": "When a mechanical lint must distinguish a real anti-pattern guard from a string literal containing the same text (e.g. a sed replacement string), anchor the regex to the start of the line (after leading whitespace) rather than adding a path exclusion. A path exclusion blinds the detector to a real occurrence of the anti-pattern planted inside the excluded file, which is often exactly where such an anti-pattern's source lives (e.g. in a test fixture). The anchored-start shape separates 'this line IS the guard' from 'this line CONSTRUCTS a string containing the guard's text' without needing to know the file's identity at all.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/448_contain_deliberate_break_source_mutations/summaries/01_contain-deliberate-break-mutations-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["lint-self-exclusion", "anchored-regex", "detector-design", "false-positive-avoidance"]
+      "suggested_keywords": [
+        "lint-self-exclusion",
+        "anchored-regex",
+        "detector-design",
+        "false-positive-avoidance"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   }

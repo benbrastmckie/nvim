@@ -4369,7 +4369,7 @@
     {
       "project_number": 448,
       "project_name": "contain_deliberate_break_source_mutations",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Contain the regression-anchor source-store mutation so a concurrent session cannot observe or inherit it",
       "topic": "core-agent-system",
@@ -4405,12 +4405,18 @@
           "path": "specs/448_contain_deliberate_break_source_mutations/plans/01_contain-deliberate-break-mutations.md",
           "type": "plan",
           "summary": "7-phase containment plan: anchor-mutation reorder onto the sandbox copy, in-suite source-store invariants, a gate-28 residue detector with its own suite, and a safe-pattern rule in the testing standard."
+        },
+        {
+          "path": "specs/448_contain_deliberate_break_source_mutations/summaries/01_contain-deliberate-break-mutations-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 7 phases, decisions, verification, and the Batch Gate Deferral deviation."
         }
       ],
       "created": "2026-10-18T17:24:48Z",
-      "last_updated": "2026-11-10T06:49:29Z",
+      "last_updated": "2026-11-10T07:43:43Z",
       "session_id": "sess_1794272256_212466",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the concurrency hazard in test-orchestrate-cycle-postflight.sh's regression-anchor check by relocating its deliberate-false mutation onto the sandbox copy under test rather than the real source store, removing the backup/trap/restore machinery entirely. Added a mechanical detector (gate 28, lint-deliberate-break-residue.sh) with its own suite, in-suite byte-identity invariants, and a stated safe-pattern rule in the testing standard. Redeployed; all load-bearing checks (anchor case, non-vacuousness assertion, byte-identity invariant, anchor-bak absence, new detector and suite, gate 28) pass, with the full gate/test pool deferred to the batch stage per the dispatch's Batch Gate Deferral directive."
     },
     {
       "project_number": 449,
