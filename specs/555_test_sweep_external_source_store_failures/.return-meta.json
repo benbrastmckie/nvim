@@ -1,54 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md",
-      "summary": "Independently re-derives the run-all.sh failure counts (174 suites/37 failing in the external-source-store repro env, not 26/156), confirms 6 of the 8 originally-named suites are genuinely caused by the missing-local-agent-system condition, shows 2 are misattributed (they fail identically in a repo with a local source store), flags a separate ~29-suite unrelated regression cluster as out of scope, and recommends extending each confirmed suite's path resolution through .claude-extensions.json's source_dir (the same read deploy-freshness-lib.sh already performs) rather than silencing them via known-failures.txt."
+      "type": "plan",
+      "path": "specs/555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md",
+      "summary": "8-phase plan (5 waves, ~11h) adding a shared source-store resolver and threading it through 6 suites and 3 scripts, then re-deriving the sweep and reconciling the known-failures baseline."
     }
   ],
-  "next_steps": "Run /orchestrate 555 to create an implementation plan scoped to the 6 confirmed suites only (test-askuserquestion-rehome.sh, test-deploy-propagation.sh, test-routing-resolution.sh, test-update-task-status.sh, test-lint-dead-command-recommendations.sh, test-manifest-scripts-sync.sh); do not fold in the 2 misattributed suites or the unrelated regression cluster documented in the report.",
-  "metadata": {
-    "session_id": "sess_1794343931_696ebd_555",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
-  "dispatch_seq": 15,
-  "findings_count": 6,
+  "next_steps": "Run /orchestrate 555 to execute the plan",
   "memory_candidates": [
     {
-      "content": "When a shell test suite under agent-system/extensions/core/scripts/tests/ needs real source-store content in a repo whose core extension is deployed from an EXTERNAL source (a repo lacking a local agent-system/ tree), resolve the real location via `jq -r '.extensions.core.source_dir // empty' .claude-extensions.json` rather than assuming `$REPO_ROOT/agent-system/extensions` exists under the git toplevel. This read is already implemented and proven fall-open in agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh's `_deploy_freshness_status_one` (checks source_dir is non-empty and is a directory before using it). deploy-root-guard.sh's opt-in self-correction path independently requires `agent-system/extensions` to exist directly under the git toplevel before accepting it as REPO_ROOT, which is exactly the assumption that breaks for an external-source-store consumer repo.",
+      "content": "run-all.sh's suite verdict is binary on rc==0 (124/137 special-cased as a fired timeout) and its [SKIP] state is reserved exclusively for a non-executable suite file. A suite therefore CANNOT self-declare 'environmentally unrunnable, skipping with reason': exiting 0 to signal a skip is counted as PASS. Consequence for any design that wants to tolerate a missing environment: the only honest options today are (a) make the suite actually resolve the environment, or (b) declare the failure in tests/known-failures.txt, which is advisory, keys on basename, and is mode-insensitive -- so a row also annotates the suite EXPECTED in repositories where it passes, which makes known-failures.txt the wrong instrument for a failure that is topology-dependent rather than repo-independent. The reusable resolution pattern for the source-store-absent topology is the fall-open read deploy-freshness-lib.sh's _deploy_freshness_status_one already performs: jq -r --arg n \"$name\" '.extensions[$n].source_dir // empty' over .claude-extensions.json, then [ -d \"$source_dir\" ], never hard-failing on a miss. source_dir is per-extension, so a top-level read returns null, which must not be read as the key being absent.",
       "category": "PATTERN",
-      "source_artifact": "specs/555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["source_dir", "claude-extensions.json", "deploy-root-guard", "external-source-store", "test-suite-resolution"]
-    },
-    {
-      "content": "known-failures.txt is repo-wide and discovery-mode-insensitive by design (matches on basename, not full path, 'since discovery paths differ between source-store and deployed mode'). It is the wrong mechanism for a failure that is conditional on repo TOPOLOGY (local vs. external source store) rather than a fixed, host-independent defect: adding such a suite to known-failures.txt would silence it everywhere, including in a repo where it currently passes and should keep passing as a live regression signal.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md",
+      "source_artifact": "specs/555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md",
       "confidence": 0.85,
-      "suggested_keywords": ["known-failures.txt", "baseline-manifest", "topology-conditional-failure", "run-all.sh"]
+      "suggested_keywords": ["run-all", "known-failures", "source-store", "claude-extensions", "skip-protocol", "shell-test-suite"]
     }
   ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh",
-    "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
-    "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
-    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
-    "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh",
-    "agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh",
-    "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh",
-    "agent-system/extensions/core/scripts/sync-manifest-scripts.sh",
-    "agent-system/extensions/core/scripts/deploy-root-guard.sh"
-  ],
-  "claim_invalidations": [
-    {
-      "declaration_names": ["test-gate-cache-lib.sh", "test-orchestrate-build-aux-dispatch.sh"],
-      "kind": "refutation",
-      "claim": "test-gate-cache-lib.sh and test-orchestrate-build-aux-dispatch.sh fail because this repository's core extension source store is external (the same cause as 5 other named suites).",
-      "evidence_path": "specs/555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md"
-    }
-  ]
+  "metadata": {
+    "session_id": "sess_1794343931_696ebd_555",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 8,
+    "estimated_hours": 11,
+    "dependency_waves": [[1], [2, 3, 4, 5], [6], [7], [8]]
+  },
+  "dispatch_seq": 17
 }

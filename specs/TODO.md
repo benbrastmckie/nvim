@@ -148,7 +148,7 @@ next_project_number: 580
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
 554 [PLANNED] — file\_scope containment drops external source-store paths...
-555 [PLANNING] — Test sweep permanently red where the source store is external
+555 [PLANNED] — Test sweep permanently red where the source store is external
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
@@ -1623,11 +1623,12 @@ surface, and that rationale does not survive into this repository.
 
 ### 555. Test sweep permanently red where the source store is external
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md]
+- **Plan**: [555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md]
 
 **Description**: MEASURED during task 846's Phase 5. `run-all.sh` with no filter reported 26 failing suites of 156 (130 passed). Citations, from task 846's `issues.jsonl`: iss_1793736739875_sDC3Vt, iss_1793740991529_beV238.
 

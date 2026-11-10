@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 17,
+  "phases_completed": 0,
+  "phases_total": 8,
+  "summary": "Authored an 8-phase plan to close the external-source-store test-sweep failure class. The plan adopts the research report's option (a): one shared fall-open resolver (common_test_ext_root in lib/common.sh) layered on the existing .claude-extensions.json source_dir indirection, threaded through 6 confirmed suites plus sync-manifest-scripts.sh, lint-dead-command-recommendations.sh, and deploy-root-guard.sh's self-correction acceptance test, with a synthetic external-source-store fixture per call site so the condition is reproducible here. Two phases then re-derive the sweep and reconcile known-failures.txt so run-all.sh --fail-on-new discriminates again. Every Tier Justification was produced by running suite_selection_select, and validate-artifact.sh now passes with 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md",
+      "summary": "8-phase plan (5 waves, ~11h) adding a shared source-store resolver and threading it through 6 suites and 3 scripts, then re-deriving the sweep and reconciling the known-failures baseline."
+    }
+  ]
+}

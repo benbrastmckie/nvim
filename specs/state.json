@@ -62619,7 +62619,7 @@
     },
     {
       "project_name": "test_sweep_external_source_store_failures",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "effort": "medium",
@@ -62631,25 +62631,35 @@
           "path": "specs/555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md",
           "type": "report",
           "summary": "Independently re-derives the run-all.sh failure counts (174 suites/37 failing in the external-source-store repro env, not 26/156), confirms 6 of the 8 originally-named suites are genuinely caused by the missing-local-agent-system condition, shows 2 are misattributed (they fail identically in a repo with a local source store), flags a separate ~29-suite unrelated regression cluster as out of scope, and recommends extending each confirmed suite's path resolution through .claude-extensions.json's source_dir (the same read deploy-freshness-lib.sh already performs) rather than silencing them via known-failures.txt."
+        },
+        {
+          "path": "specs/555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md",
+          "type": "plan",
+          "summary": "8-phase plan (5 waves, ~11h) adding a shared source-store resolver and threading it through 6 suites and 3 scripts, then re-deriving the sweep and reconciling the known-failures baseline."
         }
       ],
       "next_artifact_number": 2,
       "project_number": 555,
       "created": "2026-11-03T21:35:11Z",
-      "last_updated": "2026-11-10T23:43:37Z",
+      "last_updated": "2026-11-10T23:56:09Z",
       "parent_task": null,
       "file_scope": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
         "agent-system/extensions/core/scripts/deploy-root-guard.sh",
+        "agent-system/extensions/core/scripts/lib/common.sh",
         "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh",
         "agent-system/extensions/core/scripts/sync-manifest-scripts.sh",
         "agent-system/extensions/core/scripts/tests/known-failures.txt",
         "agent-system/extensions/core/scripts/tests/run-all.sh",
         "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh",
+        "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
         "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+        "agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh",
         "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh",
         "agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh",
         "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
-        "agent-system/extensions/core/scripts/tests/test-update-task-status.sh"
+        "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+        "specs/555_test_sweep_external_source_store_failures/records/sweep-measurement.md"
       ],
       "migrated_from": {
         "repo": "BimodalLogic",
@@ -62662,7 +62672,7 @@
         "migrated": "2026-11-08"
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
-      "session_id": "sess_1794343931_696ebd_555"
+      "session_id": "sess_1794343931_696ebd"
     },
     {
       "project_number": 556,
