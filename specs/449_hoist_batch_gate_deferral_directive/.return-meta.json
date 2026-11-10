@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794272256_212466_449",
+  "dispatch_seq": 23,
+  "task_number": 449,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/449_hoist_batch_gate_deferral_directive/reports/01_batch-gate-deferral-siting.md",
+      "summary": "Confirms the cited miss's phase genuinely carried the Batch Gate Deferral obligation (final, full-tier phase); recommends Option 1 (hoist the section after ## Description) over Option 2 (structurally unavailable for the non-hard-mode dispatch shape that failed) and Option 3 (blocked today by stale, never-cleaned-up multi-task state files causing false-positive risk); reconciles with completed task 445 (no conflict, disjoint mechanism); points to an existing Group 15 test idiom for the required position-pinning fixture."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this agent-system's orchestrate-build-dispatch.sh, '## Phase Mission' is emitted only when $phase_number is set, which is exclusively an H1 hard-mode per-phase-dispatch construct. An ordinary (non-hard-mode) implement dispatch processes ALL plan phases inside one dispatch via general-implementation-agent.md's own internal phase loop, with no per-phase dispatch-file section. Any design proposing to 'restate a directive in the final phase's dispatch-file section' must check which dispatch shape (hard vs. ordinary) actually produced the incident it targets, since the section may not exist in the common case.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/449_hoist_batch_gate_deferral_directive/reports/01_batch-gate-deferral-siting.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-build-dispatch", "phase-mission", "hard-mode", "dispatch-shape", "batch-gate-deferral"]
+    },
+    {
+      "content": "specs/.orchestration/.orchestrator-multi-state-<session_id>.json files (the multi-task batch state file, path from runtime_mt_state_path() in scripts/lib/runtime-file-patterns.sh) are never cleaned up after a batch /orchestrate invocation completes -- no rm call exists in orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, or skill-orchestrate.sh. Any future mechanism that wants to detect 'is there an active multi-task batch right now' by checking for this file's existence will false-positive against stale leftovers (8 observed in one live repository, spanning several days) unless it also threads the invoking session_id through and adds a liveness signal beyond mere presence.",
+      "category": "PATTERN",
+      "source_artifact": "specs/449_hoist_batch_gate_deferral_directive/reports/01_batch-gate-deferral-siting.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["multi-task-state", "orchestrator-multi-state", "batch-detection", "stale-state", "fail-open"]
+    },
+    {
+      "content": "test-orchestrate-build-dispatch.sh (Group 15, Case 2) already has a reusable position-pinning idiom for asserting one dispatch-file section is emitted before another: grep -n '^## HeadingA' and grep -n '^## HeadingB' on the composed dispatch file, cut -d: -f1 each to a line number, then a numeric -lt comparison with a named pass/fail. Reuse this idiom verbatim for any future 'section X must precede section Y' dispatch-file ordering fixture rather than inventing a new technique.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/449_hoist_batch_gate_deferral_directive/reports/01_batch-gate-deferral-siting.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["test-orchestrate-build-dispatch", "position-pinning", "test-idiom", "section-ordering"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 449 to create implementation plan"
+}

@@ -4421,7 +4421,7 @@
     {
       "project_number": 449,
       "project_name": "hoist_batch_gate_deferral_directive",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "title": "Site the Batch Gate Deferral directive where it is read before the phase's verification is launched",
       "topic": "orchestrator",
@@ -4445,9 +4445,17 @@
         "agent-system/extensions/core/context/contracts/phase-closure.md",
         "agent-system/extensions/core/context/contracts/batch-gate-stage.md"
       ],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/449_hoist_batch_gate_deferral_directive/reports/01_batch-gate-deferral-siting.md",
+          "type": "report",
+          "summary": "Confirms the cited miss's phase genuinely carried the Batch Gate Deferral obligation (final, full-tier phase); recommends Option 1 (hoist the section after ## Description) over Option 2 (structurally unavailable for the non-hard-mode dispatch shape that failed) and Option 3 (blocked today by stale, never-cleaned-up multi-task state files causing false-positive risk); reconciles with completed task 445 (no conflict, disjoint mechanism); points to an existing Group 15 test idiom for the required position-pinning fixture."
+        }
+      ],
       "created": "2026-10-18T17:24:48Z",
-      "last_updated": "2026-11-06T06:55:11Z"
+      "last_updated": "2026-11-10T07:51:50Z",
+      "session_id": "sess_1794272256_212466",
+      "next_artifact_number": 2
     },
     {
       "project_number": 450,

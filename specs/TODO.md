@@ -112,7 +112,7 @@ next_project_number: 578
 
 ### Orchestrator
 
-449 [NOT STARTED] — Site the Batch Gate Deferral directive where it is read...
+449 [RESEARCHED] — Site the Batch Gate Deferral directive where it is read...
   └─ 450 [NOT STARTED] — Require a settled user-decision route to name the obligation...
     └─ 487 [NOT STARTED] — Stop the identical-dispatch convergence guard halting a task...
   └─ 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -8198,10 +8198,11 @@ territory edges above.
 ---
 
 ### 449. Site the Batch Gate Deferral directive where it is read before the phase's verification is launched
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 328, Task 360, Task 407, Task 414, Task 444, Task 445, Task 446, Task 448
+- **Research**: [449_hoist_batch_gate_deferral_directive/reports/01_batch-gate-deferral-siting.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
