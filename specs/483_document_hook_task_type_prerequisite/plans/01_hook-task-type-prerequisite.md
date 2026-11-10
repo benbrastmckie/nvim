@@ -249,28 +249,36 @@ implementation time and anchor on heading text rather than line numbers.
 
 ---
 
-### Phase 3: Redeploy and confirm deployed copies match the source store [NOT STARTED]
+### Phase 3: Redeploy and confirm deployed copies match the source store [COMPLETED]
 
 **Goal**: The new guidance reaches `.claude/`, the deployed copies of both edited files match
 the source store, and the full gate set is green — satisfying acceptance criterion 8.
 
 **Tasks**:
 
-- [ ] Run the redeploy with the bounded-wait idiom:
+- [x] Run the redeploy with the bounded-wait idiom:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, with the Bash tool `timeout`
       parameter raised to 600000 (NOT its 120000ms default), per
-      `context/patterns/external-process-wait.md` Rule 1.
-- [ ] Diff the deployed copy against the source store for each edited file and confirm identical
+      `context/patterns/external-process-wait.md` Rule 1. *(completed: deploy landed;
+      RESULT=landed_verify_red on the deploy script's own un-narrowed fast-gate pass -- see
+      deviation note below)*
+- [x] Diff the deployed copy against the source store for each edited file and confirm identical
       content:
       `diff agent-system/extensions/core/docs/guides/creating-extensions.md .claude/docs/guides/creating-extensions.md`
       and
-      `diff agent-system/extensions/core/context/guides/extension-development.md .claude/context/guides/extension-development.md`.
-- [ ] Confirm the new subsection heading and the warning paragraph are both present in the
-      deployed copies by grep, not by inference from the deploy script's exit code alone.
-- [ ] Run the complete gate set and observe it green.
-- [ ] Review `git status --short` and stage only this task's own hunks with an explicit file
+      `diff agent-system/extensions/core/context/guides/extension-development.md .claude/context/guides/extension-development.md`. *(completed: both report no differences)*
+- [x] Confirm the new subsection heading and the warning paragraph are both present in the
+      deployed copies by grep, not by inference from the deploy script's exit code alone. *(completed)*
+- [x] Run the complete gate set and observe it green. *(deviation: scoped -- this dispatch's Batch
+      Gate Deferral directive narrowed this phase's final-phase `full` tier to
+      `verify-deploy.sh --skip-slow --only-gate 3,4`, which PASSed; the un-narrowed full gate
+      reported 4/42 failures all attributable to other in-flight tasks in this same batch
+      (gate10 timeout, eager-load baseline, shellcheck, dead-command-recommendation lint -- none
+      touch this task's two files), deferred to the once-per-invocation batch-level gate stage)*
+- [x] Review `git status --short` and stage only this task's own hunks with an explicit file
       list; never a directory or glob pathspec. Treat any foreign modification as a possible
-      sibling edit and report rather than absorb it.
+      sibling edit and report rather than absorb it. *(completed: reviewed; all other dirty
+      paths belong to sibling tasks already in flight in this batch, left untouched)*
 
 **Timing**: 0.4 hours
 
@@ -303,27 +311,29 @@ the source store, and the full gate set is green — satisfying acceptance crite
 
 ## Testing & Validation
 
-- [ ] Acceptance criterion 1: the prerequisite is stated explicitly and prominently inside
-      `## Lifecycle Hooks`, not only in the observer comparison.
-- [ ] Acceptance criterion 2: `skill_get_extension_dir()` and `scripts/skill-base.sh` are named,
-      and the gate expression is quoted verbatim.
-- [ ] Acceptance criterion 3: `nvim` and `nix` are described as per-domain, not cross-cutting,
-      precedents.
-- [ ] Acceptance criterion 4: the hardcoded `memory-retrieve.sh` / `<memory-context>` call in
+- [x] Acceptance criterion 1: the prerequisite is stated explicitly and prominently inside
+      `## Lifecycle Hooks`, not only in the observer comparison. *(completed)*
+- [x] Acceptance criterion 2: `skill_get_extension_dir()` and `scripts/skill-base.sh` are named,
+      and the gate expression is quoted verbatim. *(completed)*
+- [x] Acceptance criterion 3: `nvim` and `nix` are described as per-domain, not cross-cutting,
+      precedents. *(completed)*
+- [x] Acceptance criterion 4: the hardcoded `<memory-context>` call in
       `scripts/orchestrate-build-dispatch.sh` is named as the only real cross-cutting
       pre-dispatch injection, with the core-change-not-extension-change consequence stated and
-      the absence of any extension-declarable cross-cutting seam stated plainly.
-- [ ] Acceptance criterion 5: a brief observer note is present and cross-references the existing
-      observer sections instead of duplicating them.
-- [ ] Acceptance criterion 6: `extension-development.md` carries the pointer warning, linked to
-      the new subsection.
-- [ ] Acceptance criterion 7: no second account of the resolution rule was forked; the existing
+      the absence of any extension-declarable cross-cutting seam stated plainly. *(completed:
+      named the current, verified script -- scripts/sapience-retrieve.sh -- rather than the
+      stale memory-retrieve.sh citation in this item's own wording above; see Phase 1 deviation)*
+- [x] Acceptance criterion 5: a brief observer note is present and cross-references the existing
+      observer sections instead of duplicating them. *(completed)*
+- [x] Acceptance criterion 6: `extension-development.md` carries the pointer warning, linked to
+      the new subsection. *(completed)*
+- [x] Acceptance criterion 7: no second account of the resolution rule was forked; the existing
       `### Observers vs. Lifecycle Hooks` subsection is cross-referenced, and nothing in the new
-      subsection contradicts it.
-- [ ] Acceptance criterion 8: redeploy run and deployed copies confirmed to match the source
-      store.
-- [ ] `skill-base.sh` is unmodified (`git status --short` shows no change to it from this task).
-- [ ] No task-number references in either edited source-store file (gate 4 passes).
+      subsection contradicts it. *(completed)*
+- [x] Acceptance criterion 8: redeploy run and deployed copies confirmed to match the source
+      store. *(completed)*
+- [x] `skill-base.sh` is unmodified (`git status --short` shows no change to it from this task). *(completed: verified empty diff)*
+- [x] No task-number references in either edited source-store file (gate 4 passes). *(completed: verify-deploy.sh --only-gate 4 PASS)*
 
 ## Artifacts & Outputs
 

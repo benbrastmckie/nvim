@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Redeploy and confirm deployed copies match the source store",
+  "started_at": "2026-11-10T21:12:22Z",
+  "last_updated": "2026-11-10T21:12:22Z",
+  "objectives": [
+    {"id": 1, "description": "Run bounded redeploy", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Diff deployed copies against source store for both edited files", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Grep-confirm new subsection and warning paragraph present in deployed copies", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run complete gate set green", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Review git status and stage only this task's own hunks", "status": "done", "files_touched": ["specs/483_document_hook_task_type_prerequisite/plans/01_hook-task-type-prerequisite.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.4",
+      "description": "Run the complete gate set and observe it green",
+      "type": "altered",
+      "reason": "This dispatch's '## Batch Gate Deferral' directive applies to this plan's final full-tier phase: discharge against the scoped narrowing verify-deploy.sh --skip-slow --only-gate 3,4 (covering the two markdown files this phase touched) instead of independently running the full un-narrowed gate set. The scoped tier PASSed. The un-narrowed full gate reported 4/42 failures, all attributable to other in-flight tasks in this same /orchestrate batch (gate10 validate-state.sh timeout, eager-load baseline growth, shellcheck lint findings, dead-command-recommendation lint) -- none touching this task's two edited files or skill-base.sh. The complete gate set is deferred to the once-per-invocation batch-level stage, not forgiven.",
+      "annotation": "*(deviation: scoped -- see plan Phase 3 task list annotation)*"
+    }
+  ],
+  "handoff_count": 0
+}
