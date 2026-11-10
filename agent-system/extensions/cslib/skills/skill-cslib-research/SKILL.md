@@ -56,7 +56,7 @@ Retrieve relevant memories and literature briefing to inject into the delegation
 ```bash
 # Check clean_flag
 if [ "$clean_flag" != "true" ]; then
-  memory_context=$(bash .claude/scripts/memory-retrieve.sh "$description" "$task_type" "$focus_prompt" 2>/dev/null) || memory_context=""
+  memory_context=$(bash .claude/scripts/sapience-retrieve.sh "$description" "$task_type" "$focus_prompt" 2>/dev/null) || memory_context=""
 fi
 
 # memory_context will be empty string if:

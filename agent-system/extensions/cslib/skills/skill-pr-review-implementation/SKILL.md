@@ -160,7 +160,7 @@ Use the safe `select(.project_number == $num)` pattern (not `!=`) per jq-escapin
 If `--clean` flag is NOT set, retrieve relevant memories:
 
 ```bash
-memory_context=$(bash .claude/scripts/memory-retrieve.sh "pr review response implementation" 2>/dev/null || echo "")
+memory_context=$(bash .claude/scripts/sapience-retrieve.sh "pr review response implementation" 2>/dev/null || echo "")
 ```
 
 Include `memory_context` in the delegation context if non-empty.
