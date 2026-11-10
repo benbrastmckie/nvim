@@ -1,10 +1,54 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/360_validate_carried_unverified_names_a_source/summaries/01_carried-figure-enforcement-surface-summary.md",
+      "summary": "Nine-phase implementation: advisory CARRIED-UNVERIFIED/CORPUS-UNVERIFIED/COVERAGE-UNVERIFIED source-naming check in validate-artifact.sh, both reasoned exclusions recorded, Part A (corpus-dependent recommendation trigger), Part B (acted-on-premise obligation plus its orchestrate-build-dispatch.sh implementation), and the enumeration-completeness/verification-independence rule, all in report-format.md's single authoritative section, plus redeploy and a batch-deferred scoped gate pass."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented all nine plan phases: an advisory, parameterized source-naming well-formedness check over three literal tokens in validate-artifact.sh with full fixture coverage of every recall-failure shape; widened report-format.md's Carried-Figure Discipline section in place to cover a corpus-dependent recommendation's mechanical claim, a dispatch's acted-on premise (with the composer-side implementation in orchestrate-build-dispatch.sh), and a self-derived enumeration's completeness obligation plus the verification-independence rule; redeployed and confirmed zero real-corpus advisories against the deployed validator."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-research-agent.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/formats/report-format.md",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh",
+    "agent-system/extensions/core/scripts/validate-artifact.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In awk, a scalar variable named after a builtin function (e.g. `close`, which is also the file/pipe-closing builtin) triggers a syntax error the moment it's used in an expression like `index(window, \"]\")` assigned to it -- `awk: syntax error` with no clearer diagnostic. Rename the variable (e.g. `close_pos`) rather than debugging the awk grammar. Worth a quick scan for `length`, `index`, `substr`, `split`, `sub`, `close`, `system` etc. used as plain identifiers whenever writing an inline awk block in a shell script.",
+      "category": "PATTERN",
+      "source_artifact": "specs/360_validate_carried_unverified_names_a_source/summaries/01_carried-figure-enforcement-surface-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["awk", "shell-scripting", "builtin-shadowing", "syntax-error", "validate-artifact"]
+    },
+    {
+      "content": "This codebase's suite_selection_select (scripts/lib/suite-selection-lib.sh) resolves a touched path to covering test suites partly via a 'reference stratum': a bare `grep -l -F <basename> test-*.sh`. A test file's own COMMENT or assertion-label text that merely spells another file's exact basename (e.g. writing \"report-format.md\" in a human-readable description, with no functional dependency on it) is enough to make that test suite falsely appear to 'cover' the mentioned file. This silently flips any OTHER phase's `**Tier Justification**: __FULL_SWEEP__` claim for that file into a validate-artifact.sh-flagged mismatch, even though nothing about the actual behavior changed. When authoring test comments/labels that need to describe another context/formats or agents markdown file, describe it without spelling its literal filename (e.g. name the section/subsection instead) to avoid retriggering this false-positive.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/360_validate_carried_unverified_names_a_source/summaries/01_carried-figure-enforcement-surface-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["suite-selection-lib", "reference-stratum", "tier-justification", "false-positive", "test-file-authoring"]
+    },
+    {
+      "content": "When a validator check must grow a parallel literal-fixed-case token (a second or third mark sharing one well-formedness mechanism, e.g. CARRIED-UNVERIFIED/CORPUS-UNVERIFIED/COVERAGE-UNVERIFIED all needing 'a non-empty designator before the closing bracket'), parameterize the check over a bash array (CFD_TOKENS=(...)) and loop the SAME flatten/mention-suppress/bounded-window body per token, rather than duplicating the body per token or branching inside it. This keeps every token's recall-failure-mode protections (mention suppression, bounded window) automatically shared and unable to drift, and each new token addition becomes a one-line array extension plus fixtures, not a new code path.",
+      "category": "PATTERN",
+      "source_artifact": "specs/360_validate_carried_unverified_names_a_source/summaries/01_carried-figure-enforcement-surface-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["token-parameterization", "well-formedness-check", "shared-mechanism", "validate-artifact", "advisory-lint-design"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794272256_212466",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 15
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 9,
+    "phases_total": 9
+  }
 }

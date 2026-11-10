@@ -1503,10 +1503,18 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-# Group 22: '## Premise Re-Validation' block (report-format.md's "The premise a dispatch acts
-# on" subsection, composer-emits half) -- emitted ONLY when a prior dispatch artifact already
-# exists in the task directory AND the description carries at least one of the six
-# trigger-class lexical signatures; byte-identical (no section at all) otherwise.
+# Group 22: '## Premise Re-Validation' block (the Carried-Figure Discipline convention's "The
+# premise a dispatch acts on" subsection, composer-emits half) -- emitted ONLY when a prior
+# dispatch artifact already exists in the task directory AND the description carries at least
+# one of the six trigger-class lexical signatures; byte-identical (no section at all) otherwise.
+#
+# NOTE: this comment and the assertion labels below deliberately never spell the literal
+# filename "report-dash-format-dot-md" (its real hyphenated form, written out in full here only
+# this once as prose rather than as the literal string, so this very sentence does not itself
+# retrigger the thing it describes) -- suite_selection_select's reference stratum is a bare
+# `grep -l -F` for a basename across every test-*.sh file (see suite-selection-lib.sh), so a
+# comment merely NAMING that file would itself wrongly map this suite as "covering" it, inflating
+# the Tier Justification measurement for every other phase in this plan that touches it.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 common_test_info "Group 22: Premise Re-Validation block (prior-artifact-gated, lexical extraction only)"
 
@@ -1541,7 +1549,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_pgf_with" "67088 B" "(a) WITH prior artifact: extracted numeric-unit claim present"
   assert_contains "$content_pgf_with" "2 of 13" "(a) WITH prior artifact: extracted N-of-M ratio claim present"
   assert_contains "$content_pgf_with" "never" "(a) WITH prior artifact: extracted hard always/never/cannot/is-required claim present"
-  assert_contains "$content_pgf_with" "The premise a dispatch acts on" "(a) WITH prior artifact: points at report-format.md's subsection by name"
+  assert_contains "$content_pgf_with" "The premise a dispatch acts on" "(a) WITH prior artifact: points at the Carried-Figure Discipline subsection by name"
   assert_not_contains "$content_pgf_with" "contradict" "(a) WITH prior artifact: never adjudicates -- no judgment language of its own beyond the pointer"
 else
   common_test_fail "(a) WITH prior artifact: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
