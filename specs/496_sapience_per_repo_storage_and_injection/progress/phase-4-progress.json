@@ -1,0 +1,34 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy and verify the live write/read round trip",
+  "started_at": "2026-11-10T00:55:00Z",
+  "last_updated": "2026-11-10T01:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Redeploy, confirm both scripts deployed and executable, V2 live write (written>=1), V3a matching-filter read finds it, V3b non-matching filter does not, V4 gated write loud (temporary local edit, reverted and diff-confirmed identical), record manual cleanup hashes",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.verification",
+      "description": "bash .claude/scripts/verify-deploy.sh (the complete gate set) exits 0",
+      "type": "altered",
+      "reason": "deploy-headless.sh's internal --skip-slow post-check reported 6 of 41 failures. Gate 5 (manifest/deploy parity, the one this phase's own change touches) now PASSES. The other 6 (gate3/4/10 60s timeouts, gate20 eager-load budget, gate22 shellcheck -- 3 findings none in the two new sapience scripts, gate24 dead-command-recommendation -- no sapience match) are pre-existing/unrelated; task 476 independently tracks known baseline gate8-adjacent red state in this repo.",
+      "annotation": "*(deviation: altered — deploy-headless.sh landed the deploy ...)*"
+    }
+  ],
+  "verification_results": {
+    "deploy": "landed (deploy-headless.sh RESULT=landed_verify_red; gate5 passes, 6 pre-existing/unrelated failures documented as deviation)",
+    "v2_write": "written=1, hash=aeea7c9425b7ffb2, subject='Sapience per-repo scoping mechanism'",
+    "v3a_matching_filter": "found (source=[repo:nvim])",
+    "v3b_nonmatching_filter": "empty results (source=[repo:bimodal], vault holds 2163 objects overall)",
+    "v4_gated_write": "server: {ok:true,written:0,gated:1}; patched-script run: exit 2, stderr names gated=1; temporary edit reverted and diff-confirmed identical to backup",
+    "manual_cleanup_hashes": ["806180dc43c5cb34", "9ba2b479b5e4a7e2", "aeea7c9425b7ffb2"]
+  }
+}

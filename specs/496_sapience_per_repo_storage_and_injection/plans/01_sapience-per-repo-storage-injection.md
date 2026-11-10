@@ -393,43 +393,43 @@ KO and fails loudly on every silent-loss response shape the server can return.
 
 ---
 
-### Phase 4: Deploy and verify the live write/read round trip [NOT STARTED]
+### Phase 4: Deploy and verify the live write/read round trip [COMPLETED]
 
 **Goal**: Both scripts present in the deployed tree, and the repo-scoping mechanism verified
 end-to-end against the live host: a tagged write is returned by a matching repo filter and not by
 a different one, and a gated write is reported rather than swallowed.
 
 **Tasks**:
-- [ ] Redeploy with the bounded-wait idiom the dispatch mandates:
+- [x] Redeploy with the bounded-wait idiom the dispatch mandates: *(completed)*
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked through the Bash tool with
       its `timeout` parameter raised to 600000 (not the 120000ms default), per
       `context/patterns/external-process-wait.md` Rule 1. This also clears the `core` staleness
       the dispatch's deploy-freshness notice reports.
-- [ ] Confirm `.claude/scripts/sapience-retrieve.sh` and `.claude/scripts/sapience-remember.sh`
+- [x] Confirm `.claude/scripts/sapience-retrieve.sh` and `.claude/scripts/sapience-remember.sh` *(completed)*
       both exist and are executable in the deployed tree.
-- [ ] **V2 — tagged write.** Issue exactly **one** live write via the deployed
+- [x] **V2 — tagged write.** Issue exactly **one** live write via the deployed *(completed)*
       `sapience-remember.sh`. Because there is no delete API, craft it as a genuinely useful,
       well-formed note about this repo (for example, the measured fact that per-repo scoping in
       this vault works only through a `provenance` repo tag filtered by `source=`), never a
       throwaway probe — an un-gated write cannot be retracted. Confirm the script reports
       `written >= 1` and exits 0.
-- [ ] **V3a — matching filter returns it.** Run the deployed `sapience-retrieve.sh` with a
+- [x] **V3a — matching filter returns it.** Run the deployed `sapience-retrieve.sh` with a *(completed)*
       description whose keywords overlap that note and confirm the emitted `<memory-context>`
       block contains it.
-- [ ] **V3b — non-matching filter does not.** Re-run the same query with the repo filter forced
+- [x] **V3b — non-matching filter does not.** Re-run the same query with the repo filter forced *(completed)*
       to a different repo's tag (via a deliberate one-off override, not a script edit) and
       confirm the note is absent from the result.
-- [ ] **V4 — gated write is loud.** Issue one write whose text is deliberately operational
+- [x] **V4 — gated write is loud.** Issue one write whose text is deliberately operational *(completed)*
       chatter and whose `explicit` flag is suppressed **only** by a temporary local edit reverted
       immediately afterwards (never a permanent flag), or by calling the endpoint directly with
       the same body minus `explicit`. Confirm the response carries `gated >= 1` with
       `written: 0`, that the script exits non-zero and names the triggering field on stderr, and
       that nothing permanent landed. Revert any temporary edit and re-confirm `explicit: true` is
       unconditional.
-- [ ] Record the two orphaned probe KO hashes (`806180dc43c5cb34`, `9ba2b479b5e4a7e2`) plus any
+- [x] Record the two orphaned probe KO hashes (`806180dc43c5cb34`, `9ba2b479b5e4a7e2`) plus any *(completed)*
       permanent KO this phase's V2 wrote, as a manual app.spnc.ai cleanup item for the completion
       summary.
-- [ ] Record an issue-log entry (`issue-record.sh`) for any live-host deviation from the measured
+- [x] Record an issue-log entry (`issue-record.sh`) for any live-host deviation from the measured *(completed)*
       behavior this plan assumes.
 
 **Timing**: 1.5 hours
@@ -456,7 +456,16 @@ a different one, and a gated write is reported rather than swallowed.
 - V4's response carries `gated >= 1`, the script exits non-zero, and its stderr names the
   triggering response field.
 - `git status --short` shows no leftover temporary edit from V4.
-- `bash .claude/scripts/verify-deploy.sh` (the complete gate set) exits 0.
+- `bash .claude/scripts/verify-deploy.sh` (the complete gate set) exits 0. *(deviation: altered —
+  `deploy-headless.sh` landed the deploy (RESULT=landed_verify_red) but its internal
+  `--skip-slow` post-check reported 6 failures. Gate 5 (the one this phase's own change could
+  have affected) now PASSES post-deploy, confirming the manifest/deploy sync is correct. The
+  remaining 6 (gates 3/4/10 60s timeouts; gate 20 eager-load budget; gate 22 shellcheck -- 3
+  findings, none in the two new sapience scripts, confirmed by direct
+  `lint-shellcheck.sh --verbose` re-run; gate 24 dead-command-recommendation, confirmed no
+  "sapience" match) are pre-existing/unrelated to this task's `file_scope` -- task 476
+  ("isolate seven RED gate8 shell suites") independently tracks this repo's known baseline
+  gate8-adjacent red state. Not fixed here; out of scope. Full gate set re-run at Phase 7.)*
 
 ---
 
