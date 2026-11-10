@@ -631,6 +631,21 @@ This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling h
 
 **Description**: Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions. Failures are status-name mismatches (e.g. expecting 'planning' where 'researching' is produced) and persisted_status drift. Confirmed pre-existing and unrelated to the file_scope reconciliation work that surfaced it: no diff exists for the suite or its target scripts (orchestrator-postflight.sh, update-task-status.sh) across that work. Determine whether the suite's expectations or the scripts' behaviour are wrong before changing either.
 
+--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---
+INDEPENDENTLY RE-OBSERVED, with two sibling failures found in the same scoped run. A scoped
+batch-deferral gate run over an unrelated task's blast radius found this suite red at 25 failures,
+corroborating this record's own count, and additionally reported a 'cleanup: command not found'
+shell error inside this suite -- a detail worth checking against the status-name/persisted_status
+drift this record already names, since a shell error can mask or inflate assertion counts.
+Two further pre-existing failures surfaced in the same run and are NOT this record's scope:
+test-orchestrate-unwind-dispatch.sh at 11 failures (its fixture sandbox omits
+lib/project-number-inuse.sh from REQUIRED_LIB_SCRIPTS, so state-write.sh fails inside the test's
+own scratch repo -- being fixed separately as a direct fix), and
+test-orchestrate-build-aux-dispatch.sh at 1 failure (reviser-agent model did not resolve to opus,
+a manifest-routing model-resolution issue independently re-observed by a second task in the same
+batch; it has no owning record yet). Evidence: issue-log entry iss_1794276383199_OBj82P in
+specs/360_validate_carried_unverified_names_a_source/issues.jsonl.
+
 ---
 
 ### 567. Port containment strip to git commit scoped
@@ -1670,6 +1685,19 @@ feed_undeclared_implement_paths_into_file_scope
 (specs/430_feed_undeclared_implement_paths_into_file_scope/summaries/01_implement-phase-scope-feedback-summary.md)
 and close_the_plan_to_file_scope_reconciliation_gap
 (specs/446_close_the_plan_to_file_scope_reconciliation_gap/summaries/01_close-plan-file-scope-gap-summary.md).
+
+--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---
+BLAST-RADIUS DERIVATION, a second shape of the same composition defect. A retirement whose
+declared scope named 6 files measured a true radius of 12 at plan time, with roughly 50
+source-store files citing the twelve by name: lint/lint-agent-contracts.sh carries 6 hardcoded
+roster arrays that log_fail on a missing rostered file; lint/collapsed-blocks/registry.tsv row 12
+pins an exemplar file by name; books/opencode-agents.json, four index-entries.json files, and ten
+core context/doc files cite the retired names illustratively. The declared-vs-true gap was found
+only because planning traced reverse references explicitly. This is the same class as this
+record's regenerated-path drop: the scope a phase declares is narrower than the scope its change
+mechanically forces, and the shortfall is discoverable before dispatch rather than after a
+dropped-excursion warning. Evidence: issue-log entry iss_1794283096539_LtN1n7 in
+specs/444_retire_routing_agents_hard_for_hard_contracts/issues.jsonl.
 
 ---
 
@@ -4475,6 +4503,23 @@ Both citing entries carried `suggested_channel: fix_now`. The orchestrate lead o
 ## Overlapping open file territory
 
 Task 487 (`identical_dispatch_halt_despite_phase_progress`, open) declares orchestrate-build-dispatch.sh in its file_scope, as do open tasks 360, 435, 449 and 450. No dependency edge is asserted here because none of them blocks this work; the overlap is recorded so batch admission orders rather than parallelizes them.
+
+--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---
+BLOCKING OBSTACLE MEASURED, not previously recorded here. test-orchestrate-build-dispatch.sh's
+Group 18 (around lines 1395-1443) deliberately edits the plan file between two implement builds
+(appending a phase heading) and asserts the two dispatch bodies hash EQUAL, on the stated premise
+that the implement dispatch body is insensitive to plan-file content. Any change that emits
+plan-derived or deploy-ordering content into the implement dispatch body makes the body
+deliberately sensitive to exactly what that pin asserts it ignores, so this record's ask cannot
+land without first amending Group 18 with fresh justification -- narrowing the existing pin to
+mtime/size/sha/date-derived content and adding a companion pin for the NEW intended sensitivity --
+rather than silently breaking it. Treat that amendment as its own phase, not a fold into the
+emission edit. Evidence: issue-log entry iss_1794316250238_0MsPzs in
+specs/487_identical_dispatch_halt_despite_phase_progress/issues.jsonl (recorded at plan time,
+dispatch_seq 30). A sibling record reached the same wall independently and chose to reject the
+in-body mechanism outright in favour of a persisted side-channel signal, for the stated reason
+that correctness resting on a body line staying out of a hash strip pattern is drift-fragile;
+weigh that precedent before committing to in-body emission here.
 
 ---
 
