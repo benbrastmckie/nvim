@@ -22,8 +22,8 @@ regeneration — the edit appears to succeed but has no lasting effect.
 
 ## Correct Edit Target
 
-Read `source_dir` from `<project-root>/.claude-extensions.json` and edit under it, at the path
-mirroring the deployed one — never hand-author under `.claude/**` directly. For the full
+Read `.extensions.<name>.source_dir` from `.claude-extensions.json` and edit the mirrored path
+under it — never hand-author under `.claude/**` directly. For the full
 resolution procedure, the unreachable-source-store fallback, a worked example, the Exceptions
 list, and the Enforcement narrative, see
 `context/standards/source-store-deploy-boundary-narrative.md`.
