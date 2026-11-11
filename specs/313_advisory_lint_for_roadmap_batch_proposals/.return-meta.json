@@ -1,33 +1,53 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 1 task (#313) for an advisory lint validating hand-authored /orchestrate batch proposals in ROADMAP.md phase blocks; integrated with existing tasks 306 and 308 rather than duplicating their scope.",
+  "status": "researched",
+  "summary": "Settled the open call-site question for the advisory ROADMAP batch-proposal lint: LIVE SEAM 1 (context/contracts/conclusion-stage.md, hooked after Step 5 / alongside Step 7) is the only live, command-reachable, roadmap-touching seam today. LIVE SEAM 2 (/orient, task 436) does not exist and is not a dependency. Re-verified the roadmap-format.md grammar is now fully specified (classic + stage layouts, auto-detected) and corrected two stale measured figures (lint-script count, consumer-repo '**Run**:' marker claim). Surfaced a major, previously-unflagged risk: task 603 is scheduled to retire the hand-authored '## Next' prose model this lint parses, and a concrete file_scope collision with concurrent sibling task 402 on conclusion-stage.md.",
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
-      "summary": "Task 313 entry added to TODO.md, placed in dependency wave 3"
+      "type": "report",
+      "path": "specs/313_advisory_lint_for_roadmap_batch_proposals/reports/01_roadmap-batch-lint-seam-selection.md",
+      "summary": "Research report settling the LIVE SEAM 1 vs. LIVE SEAM 2 call-site decision, re-verifying the roadmap-format.md grammar and reuse directives, and flagging the task-603 premise risk and the task-402 file_scope collision."
+    }
+  ],
+  "findings_count": 12,
+  "dispatch_seq": 1,
+  "user_decision": {
+    "question": "Task 603 (not_started, scheduled in the roadmap's own next Run batch) will retire the hand-authored '## Next' prose model this lint is built to parse, replacing it with structured state.json batch entries maintained by a new /roadmap command. Should task 313 proceed to planning/implementation now against the current (still-live) grammar, accepting a likely near-term rescoping once 603 ships, or should it be sequenced to wait on 603 first?",
+    "options": [
+      "Proceed now against the current hand-authored '## Next' grammar, treating a post-603 rescoping as an accepted follow-up cost",
+      "Add a dependencies[] edge from 313 onto 603 and defer this task's plan/implement phases until 603 lands and the new representation is known"
+    ],
+    "recommended": "Proceed now against the current hand-authored '## Next' grammar, treating a post-603 rescoping as an accepted follow-up cost",
+    "blocking": false,
+    "obligation": "The recommended route discharges the task's stated GOAL (catch an under-inclusive batch at authoring time instead of only at dispatch or never) against the grammar that is actually live today, since 603 has no dependencies[] edge or file_scope overlap with 313 and has not landed; it does not discharge any obligation to future-proof the lint against 603's eventual landing, which is left as a named, foreseeable follow-up rather than solved here."
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent-system source store, roadmap-integration.sh is a monolithic executable (its own set -euo pipefail, never sourced) -- unlike scripts/lib/file-scope-overlap.sh, it exports no splice-able defs variable. A consumer needing its detect_layout()-style classic/stage discrimination must re-implement the small, already-fully-specified structural predicate from context/formats/roadmap-format.md rather than source or splice the script.",
+      "category": "PATTERN",
+      "source_artifact": "specs/313_advisory_lint_for_roadmap_batch_proposals/reports/01_roadmap-batch-lint-seam-selection.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["roadmap-integration.sh", "detect_layout", "splice", "sourced-library", "shell-strict-mode"]
     },
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/state.json",
-      "summary": "Task 313 active_projects entry with dependencies [306, 308] and 5 file_scope paths"
+      "content": "context/patterns/roadmap-update.md's 'Live Callers' section is a live, load-bearing forward-pointer: it names roadmap-integration.sh's single live command caller (the /orchestrate conclusion stage, Step 5) and explicitly anticipates a planned advisory lint over hand-authored '## Next' batch proposals 'as dependent work elsewhere' -- the strongest textual confirmation of where such a lint is expected to hook, worth checking before assuming a call site needs to be invented from scratch.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/313_advisory_lint_for_roadmap_batch_proposals/reports/01_roadmap-batch-lint-seam-selection.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["roadmap-update.md", "conclusion-stage.md", "call-site", "forward-pointer", "advisory-lint"]
     },
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/.config/nvim/specs/313_advisory_lint_for_roadmap_batch_proposals/",
-      "summary": "Task directory created"
+      "content": "scripts/lint/*.sh in agent-system/extensions/core is not uniformly wired into verify-deploy.sh: as of 2026-11-11, 3 of 22 lint scripts (lint-json-channel-discipline.sh, lint-test-harness-adoption.sh, lint-unit-integration-boundary.sh) are registered in manifest.json and tested but deliberately not part of the verify-deploy.sh battery. An unwired lint script (e.g. one whose subject is a consumer repo's specs/ROADMAP.md rather than the source store/deploy itself) already has live precedent and is not a novel shape requiring justification.",
+      "category": "PATTERN",
+      "source_artifact": "specs/313_advisory_lint_for_roadmap_batch_proposals/reports/01_roadmap-batch-lint-seam-selection.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lint-scripts", "verify-deploy.sh", "manifest.json", "unwired-precedent"]
     }
   ],
   "metadata": {
-    "session_id": "sess_1790878010_2e2fdd",
-    "agent_type": "meta-builder-agent",
-    "duration_seconds": 900,
+    "session_id": "sess_1794431325_7cf647_313",
+    "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 1
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
   },
-  "next_steps": "Task 313 is gated behind tasks 306 and 308; no /research dispatch is useful until 306 specifies the ROADMAP batch-block grammar."
+  "next_steps": "Run /orchestrate 313 to create an implementation plan, carrying forward: the LIVE SEAM 1 call site, the file_scope swap (drop commands/review.md, add context/contracts/conclusion-stage.md), the recommended dependencies[] edge onto task 402 once file_scope is finalized, and the task-603 premise risk recorded in the user_decision field above."
 }
