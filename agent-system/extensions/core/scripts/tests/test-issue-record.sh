@@ -48,6 +48,10 @@ TASK_LOOKUP_SCRIPT="$(common_test_resolve_subject "lib/task-lookup-lib.sh" "depl
   "$REPO_ROOT/.claude/scripts/lib/task-lookup-lib.sh" \
   "$SCRIPT_DIR/../lib/task-lookup-lib.sh")" || exit 2
 common_test_declare_subject "$TASK_LOOKUP_SCRIPT"
+CENTRAL_LOG_SCRIPT="$(common_test_resolve_subject "lib/central-log-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/central-log-lib.sh" \
+  "$SCRIPT_DIR/../lib/central-log-lib.sh")" || exit 2
+common_test_declare_subject "$CENTRAL_LOG_SCRIPT"
 
 PASSED=0
 FAILED=0
@@ -68,6 +72,7 @@ build_scratch() {
   cp "$GUARD_SCRIPT" "$scratch/.claude/scripts/deploy-root-guard.sh"
   cp "$COMMON_SCRIPT" "$scratch/.claude/scripts/lib/common.sh"
   cp "$TASK_LOOKUP_SCRIPT" "$scratch/.claude/scripts/lib/task-lookup-lib.sh"
+  cp "$CENTRAL_LOG_SCRIPT" "$scratch/.claude/scripts/lib/central-log-lib.sh"
   chmod +x "$scratch/.claude/scripts/issue-record.sh"
   cat > "$scratch/specs/state.json" <<'EOF'
 {
@@ -386,6 +391,108 @@ ISSUES_REL="specs/001_demo_task/issues.jsonl"
     common_test_pass "(o) full-field: all optional fields populate correctly and the line parses"
   else
     common_test_fail "(o) full-field: $entry"
+  fi
+}
+
+# =====================================================================================
+# Case (p): central-log promotion -- a kind:"issue" append in a scratch wired to a synthetic
+# foreign owning repo (via .claude-extensions.json) lands exactly one envelope line in that
+# owning repo's central log, stdout stays exactly the entry_id, and the exit code stays 0.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  owning="$(mktemp -d -p "$TOP_WORKDIR")"
+  mkdir -p "$owning/agent-system/extensions/core" "$owning/specs"
+  git -C "$owning" init -q
+  git -C "$owning" config user.email "test@example.com"
+  git -C "$owning" config user.name "test"
+  cat > "$scratch/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$owning/agent-system/extensions/core"}}}
+EOF
+
+  out="$(run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+    --kind issue --class "tooling bug or gap" --severity minor \
+    --what-happened "central log promotion" --session sess_1000000000_bbbbbb)"
+  rc=$?
+  central_log="$owning/specs/central-errors.jsonl"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(p) central promotion: exit 0"
+  else
+    common_test_fail "(p) central promotion: exit 0" "got rc=$rc"
+  fi
+  if [ "$out" = "$(tail -1 "$scratch/$ISSUES_REL" | jq -r .entry_id)" ]; then
+    common_test_pass "(p) central promotion: stdout is still exactly the entry_id"
+  else
+    common_test_fail "(p) central promotion: stdout is still exactly the entry_id" "stdout=$out"
+  fi
+  if [ -f "$central_log" ] && [ "$(wc -l < "$central_log")" -eq 1 ] \
+    && jq -e --arg id "$out" '.entry.entry_id == $id and .origin_store == "issues.jsonl"' \
+      "$central_log" >/dev/null 2>&1; then
+    common_test_pass "(p) central promotion: exactly one well-formed envelope line in the owning repo"
+  else
+    common_test_fail "(p) central promotion: exactly one well-formed envelope line in the owning repo" "$(cat "$central_log" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case (q): a kind:"win" append is NOT promoted to the central log.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  owning="$(mktemp -d -p "$TOP_WORKDIR")"
+  mkdir -p "$owning/agent-system/extensions/core" "$owning/specs"
+  git -C "$owning" init -q
+  git -C "$owning" config user.email "test@example.com"
+  git -C "$owning" config user.name "test"
+  cat > "$scratch/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$owning/agent-system/extensions/core"}}}
+EOF
+
+  run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+    --kind win --class "tooling bug or gap" --severity none \
+    --what-happened "a win, not promoted" --session sess_1000000000_cccccc >/dev/null 2>&1
+  rc=$?
+  central_log="$owning/specs/central-errors.jsonl"
+
+  if [ "$rc" -eq 0 ] && [ ! -f "$central_log" ]; then
+    common_test_pass "(q) kind=win is not promoted: exit 0, central log not created"
+  else
+    common_test_fail "(q) kind=win is not promoted: exit 0, central log not created" "rc=$rc file_exists=$([ -f "$central_log" ] && echo yes || echo no)"
+  fi
+}
+
+# =====================================================================================
+# Case (r): an unwritable central target leaves issue-record.sh's own exit code at 0 and its
+# local append unaffected.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  owning="$(mktemp -d -p "$TOP_WORKDIR")"
+  mkdir -p "$owning/agent-system/extensions/core" "$owning/specs"
+  git -C "$owning" init -q
+  git -C "$owning" config user.email "test@example.com"
+  git -C "$owning" config user.name "test"
+  chmod 555 "$owning/specs"
+  cat > "$scratch/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$owning/agent-system/extensions/core"}}}
+EOF
+
+  run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+    --kind issue --class "tooling bug or gap" --severity minor \
+    --what-happened "unwritable central target" --session sess_1000000000_dddddd >/dev/null 2>&1
+  rc=$?
+  chmod 755 "$owning/specs"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(r) unwritable central target: issue-record.sh's own exit code stays 0"
+  else
+    common_test_fail "(r) unwritable central target: issue-record.sh's own exit code stays 0" "got rc=$rc"
+  fi
+  if [ -s "$scratch/$ISSUES_REL" ]; then
+    common_test_pass "(r) unwritable central target: local issues.jsonl append unaffected"
+  else
+    common_test_fail "(r) unwritable central target: local issues.jsonl append unaffected" "local file missing or empty"
   fi
 }
 

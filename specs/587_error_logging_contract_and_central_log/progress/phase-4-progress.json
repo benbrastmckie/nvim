@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Wire the push into the two shared store writers",
+  "started_at": "2026-11-11T02:00:00Z",
+  "last_updated": "2026-11-11T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Wire central_log_promote into issue-record.sh after the existing append", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 2, "description": "Wire central_log_promote into events-append.sh symmetrically", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/events-append.sh"]},
+    {"id": 3, "description": "Update both scripts' header comments", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh", "agent-system/extensions/core/scripts/events-append.sh"]},
+    {"id": 4, "description": "Extend test-issue-record.sh with promotion/win-filter/stdout/unwritable-target assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-issue-record.sh"]},
+    {"id": 5, "description": "Confirm no call site reads stdout beyond the single id", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -12,6 +12,13 @@
 # use. The append is guarded by `flock` on specs/.events.lock as defense-in-depth beyond
 # POSIX small-write (O_APPEND) atomicity.
 #
+# After the local append, this script also attempts a second, non-fatal promotion of the same
+# line to the cross-repo central log via scripts/lib/central-log-lib.sh's central_log_promote
+# (only a category == "blocker" line is promoted). This CLI's own documented exit codes and its
+# stdout contract (exactly the event_id) are unchanged by that promotion -- it is best-effort and
+# can never fail or alter this script's own behavior. See context/formats/issue-log.md's
+# "Central Cross-Repo Log" section for the full contract.
+#
 # See context/formats/events-format.md for the full field contract and
 # context/schemas/events-schema.json for the formal JSON Schema.
 #
@@ -128,6 +135,7 @@ fi
 # --- Paths ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+source "${SCRIPT_DIR}/lib/central-log-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 EVENTS_FILE="$PROJECT_ROOT/specs/events.jsonl"
@@ -184,6 +192,13 @@ line=$(jq -c -n \
   flock -x 200
   printf '%s\n' "$line" >> "$EVENTS_FILE"
 ) 200> "$LOCK_FILE"
+
+# --- Non-fatal promotion to the cross-repo central log (scripts/lib/central-log-lib.sh). This
+#     is a second, best-effort append that can never change this script's own exit code or
+#     stdout contract (stdout stays exactly the event_id below). See
+#     context/formats/issue-log.md's "Central Cross-Repo Log" section for the envelope and the
+#     promotion filter (only category == "blocker" is promoted). ---
+central_log_promote "events.jsonl" "$line" || true
 
 echo "$event_id"
 exit 0

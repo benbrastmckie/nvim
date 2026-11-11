@@ -18,6 +18,13 @@
 # boundary this script's callers must respect (nothing here surfaces, acts on, or proposes
 # anything -- it only appends a line).
 #
+# After the local append, this script also attempts a second, non-fatal promotion of the same
+# line to the cross-repo central log via scripts/lib/central-log-lib.sh's central_log_promote
+# (only a kind == "issue" line is promoted; a kind == "win" is not). This CLI's own documented
+# exit codes and its stdout contract (exactly the entry_id) are unchanged by that promotion --
+# it is best-effort and can never fail or alter this script's own behavior. See
+# context/formats/issue-log.md's "Central Cross-Repo Log" section for the full contract.
+#
 # Calling this script is now MANDATORY per context/contracts/phase-closure.md's "Record issues
 # and wins during the phase" section (every dispatch kind -- research, plan, implement, aux --
 # MUST attempt it, with an explicit attestation when there is genuinely nothing to record). The
@@ -297,6 +304,7 @@ fi
 # --- Paths ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
+source "${SCRIPT_DIR}/lib/central-log-lib.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"
@@ -397,6 +405,13 @@ line=$(jq -c -n \
   flock -x 200
   printf '%s\n' "$line" >> "$ISSUES_FILE"
 ) 200> "$LOCK_FILE"
+
+# --- Non-fatal promotion to the cross-repo central log (scripts/lib/central-log-lib.sh). This
+#     is a second, best-effort append that can never change this script's own exit code or
+#     stdout contract (stdout stays exactly the entry_id below). See
+#     context/formats/issue-log.md's "Central Cross-Repo Log" section for the envelope and the
+#     promotion filter (only kind == "issue" is promoted; a kind == "win" is not). ---
+central_log_promote "issues.jsonl" "$line" || true
 
 echo "$entry_id"
 exit 0

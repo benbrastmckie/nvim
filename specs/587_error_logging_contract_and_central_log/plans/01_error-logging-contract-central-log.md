@@ -411,31 +411,31 @@ covers.
 
 ---
 
-### Phase 4: Wire the push into the two shared store writers [NOT STARTED]
+### Phase 4: Wire the push into the two shared store writers [COMPLETED]
 
 **Goal**: `issue-record.sh` and `events-append.sh` each promote their just-written line through
 the Phase 3 library, with zero change to any call site and no possibility of a push failure
 affecting the writer's own exit code.
 
 **Tasks**:
-- [ ] In `scripts/issue-record.sh`, after the existing `flock`-guarded append to
+- [x] In `scripts/issue-record.sh`, after the existing `flock`-guarded append to
       `issues.jsonl` and before the `echo "$entry_id"`, source `lib/central-log-lib.sh` and call
       `central_log_promote issues.jsonl "$line"` in a form that cannot propagate a failure:
       guarded so neither `set -e` nor a non-zero return can change the script's own exit status
       or its stdout contract (stdout stays exactly the `entry_id`).
-- [ ] In `scripts/events-append.sh`, make the symmetric change after its `flock`-guarded append
+- [x] In `scripts/events-append.sh`, make the symmetric change after its `flock`-guarded append
       and before `echo "$event_id"`, calling `central_log_promote events.jsonl "$line"` under the
       same guard; stdout stays exactly the `event_id`.
-- [ ] Update both scripts' header comments to document the second, non-fatal promotion append and
+- [x] Update both scripts' header comments to document the second, non-fatal promotion append and
       to point at `context/formats/issue-log.md`'s Central Cross-Repo Log section for the
       envelope and the filter. Do not change either script's documented CLI, exit codes, or
       stdout contract.
-- [ ] Extend `scripts/tests/test-issue-record.sh` with assertions that a `kind: "issue"` append
+- [x] Extend `scripts/tests/test-issue-record.sh` with assertions that a `kind: "issue"` append
       in a synthetic foreign-repo fixture also lands one envelope line in the owning repo's
       central log; that a `kind: "win"` append lands nothing there; that `issue-record.sh`'s own
       stdout is still exactly the `entry_id`; and that an unwritable or absent central target
       leaves `issue-record.sh`'s exit code at 0.
-- [ ] Confirm by reading, not by assumption, that no call site of either script reads a stdout
+- [x] Confirm by reading, not by assumption, that no call site of either script reads a stdout
       line beyond the single id, so the unchanged stdout contract is genuinely unchanged.
 
 **Timing**: 2 hours
