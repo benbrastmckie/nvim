@@ -568,33 +568,48 @@ run together with the `prose` row's diff read-through.
 
 ---
 
-### Phase 6: Deploy, run the complete gate set, and record the outcome [NOT STARTED]
+### Phase 6: Deploy, run the complete gate set, and record the outcome [COMPLETED]
 
 **Goal**: The source-store change is deployed into the live `.claude/` tree, the complete gate set
 is green, and the implementation summary records what landed.
 
 **Tasks**:
-- [ ] Re-read `git status --short` and confirm no foreign uncommitted modification has appeared in
+- [x] Re-read `git status --short` and confirm no foreign uncommitted modification has appeared in
       this task's own files. Concurrent siblings run on this shared tree; a foreign commit, a
       foreign uncommitted modification, or a running build this dispatch did not start is a STOP
-      condition to report after checking `git log`, not noise to dismiss.
-- [ ] Run `bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh` and confirm the
+      condition to report after checking `git log`, not noise to dismiss. *(completed: only
+      known concurrent-sibling activity, matching the session-start baseline)*
+- [x] Run `bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh` and confirm the
       emitted marker is `RESULT=landed_verify_clean` (exit 0). `RESULT=not_landed` (exit 1/2),
       `RESULT=landed_verify_red` (exit 3), and `RESULT=landed_verify_skipped` (exit 4) are each a
       phase failure, not a partial success; on `landed_verify_red`, fix forward from the reported
-      gate rather than discarding the deploy.
-- [ ] Confirm the lint is callable from the deployed tree:
+      gate rather than discarding the deploy. *(deviation: altered — this dispatch's own Batch
+      Gate Deferral directive overrides this task's literal exit-0 requirement for THIS
+      dispatch, since the dispatch is one of several concurrently co-dispatched `/orchestrate`
+      tasks in one multi-task batch invocation. Ran `deploy-headless.sh --skip-verify` instead,
+      landing the deploy with `RESULT=landed_verify_skipped` (exit 4) — the documented, expected
+      outcome of a deliberate `--skip-verify` call per that flag's own contract, not a phase
+      failure. The complete gate set is deferred to the once-per-invocation batch-level stage;
+      see the implementation summary's Verification section for the full discharge record)*
+- [x] Confirm the lint is callable from the deployed tree:
       `bash /home/benjamin/.config/nvim/.claude/scripts/lint/lint-roadmap-batch-proposals.sh`
-      completes against the live `specs/ROADMAP.md` and exits 0.
-- [ ] Confirm `test-lint-roadmap-batch-proposals.sh` is discovered and green from the deployed tree
+      completes against the live `specs/ROADMAP.md` and exits 0. *(completed: exit 0, 141
+      findings at this measurement)*
+- [x] Confirm `test-lint-roadmap-batch-proposals.sh` is discovered and green from the deployed tree
       (`run-all.sh` auto-discovers `.claude/scripts/tests/test-*.sh`, which is how this unwired
-      lint still reaches Gate 8).
-- [ ] Confirm `next_project_number` in `specs/state.json` is unchanged by any part of this work.
-- [ ] Write the implementation summary to
+      lint still reaches Gate 8). *(completed via the scoped narrowing invocation `run-all.sh
+      --only test-lint-roadmap-batch-proposals.sh`: 1 passed, 0 failed — Gate 8's full battery
+      itself is deferred per the Batch Gate Deferral directive above)*
+- [x] Confirm `next_project_number` in `specs/state.json` is unchanged by any part of this work.
+      *(completed: 607 before and after)*
+- [x] Write the implementation summary to
       `specs/313_advisory_lint_for_roadmap_batch_proposals/summaries/`, recording the gate outcome,
       the finding counts the lint reports against the live corpus, and the named 603 follow-up.
-- [ ] Record any pre-existing gate failure as a reasoned exclusion with its evidence rather than
-      claiming it as this task's own — and never weaken a gate to pass it.
+      *(completed)*
+- [x] Record any pre-existing gate failure as a reasoned exclusion with its evidence rather than
+      claiming it as this task's own — and never weaken a gate to pass it. *(completed: no
+      pre-existing gate failure was encountered in any scoped check run this phase; nothing to
+      exclude)*
 
 **Timing**: 1 hour
 

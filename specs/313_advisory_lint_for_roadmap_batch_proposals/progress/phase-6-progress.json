@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Deploy, run the complete gate set, and record the outcome",
+  "started_at": "2026-11-11T23:20:00Z",
+  "last_updated": "2026-11-11T23:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-check git status for foreign changes/commits", "status": "done", "files_touched": [], "note": "Only known concurrent-sibling activity (397/402/412), matching the session-start baseline; no foreign commit on this task's own files"},
+    {"id": 2, "description": "Deploy (scoped per Batch Gate Deferral: --skip-verify, defer full gate to batch-level stage)", "status": "done", "files_touched": [], "note": "RESULT=landed_verify_skipped, exit 4 -- the documented, expected outcome of --skip-verify, not a phase failure"},
+    {"id": 3, "description": "Confirm lint callable from deployed tree", "status": "done", "files_touched": [], "note": "exits 0 against the live specs/ROADMAP.md, 141 findings at this measurement"},
+    {"id": 4, "description": "Confirm test suite discovered and green from deployed tree (scoped: run-all.sh --only)", "status": "done", "files_touched": [], "note": "run-all.sh --only test-lint-roadmap-batch-proposals.sh: 1 passed, 0 failed; also re-ran test-manifest-scripts-sync.sh/test-script-inventory.sh scoped, both green"},
+    {"id": 5, "description": "Confirm next_project_number unchanged", "status": "done", "files_touched": [], "note": "607 before and after"},
+    {"id": 6, "description": "Write implementation summary", "status": "done", "files_touched": ["specs/313_advisory_lint_for_roadmap_batch_proposals/summaries/01_roadmap-batch-proposal-lint-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "Run deploy-headless.sh and confirm RESULT=landed_verify_clean (exit 0)",
+      "type": "altered",
+      "reason": "Dispatch's own Batch Gate Deferral directive overrides this phase's literal full-verification-tier requirement since this dispatch is one of several concurrently co-dispatched /orchestrate tasks in one multi-task batch invocation; the complete gate set is deferred to the once-per-invocation batch-level stage rather than independently run here",
+      "annotation": "*(deviation: altered -- ran deploy-headless.sh --skip-verify instead; RESULT=landed_verify_skipped, exit 4, the documented expected outcome of that flag, not a phase failure)*"
+    }
+  ],
+  "handoff_count": 0
+}
