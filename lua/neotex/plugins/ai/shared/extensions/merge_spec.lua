@@ -744,6 +744,38 @@ describe("shared.extensions.merge orphan sweep for hook registrations", function
     assert.is_nil(result.hooks.Stop) -- the whole event array was pruned, not left as {}
     vim.fn.delete(target_path)
   end)
+
+  it(
+    "M.restore_removed_hook_registrations (Phase 5's rollback-threading primitive) "
+      .. "re-inserts every swept entry, recreating a pruned event array/matcher block",
+    function()
+      local target_path = vim.fn.tempname()
+      local orphan_command = "bash .claude/hooks/zz-fully-orphaned-restore.sh"
+      vim.fn.writefile({
+        vim.json.encode({
+          hooks = {
+            Stop = {
+              { matcher = "*", hooks = { { type = "command", command = orphan_command } } },
+            },
+          },
+        }),
+      }, target_path)
+
+      local ok, removed_count, removed_entries = merge.remove_orphaned_hook_registrations(target_path, {})
+      assert.is_true(ok)
+      assert.equals(1, removed_count)
+      local wiped = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+      assert.is_nil(wiped.hooks.Stop)
+
+      local restore_ok = merge.restore_removed_hook_registrations(target_path, removed_entries)
+      assert.is_true(restore_ok)
+
+      local restored = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+      assert.equals(1, #restored.hooks.Stop)
+      assert.equals("*", restored.hooks.Stop[1].matcher)
+      assert.equals(orphan_command, restored.hooks.Stop[1].hooks[1].command)
+      vim.fn.delete(target_path)
+  end)
 end)
 
 -- Coverage for the merge_targets.mcp mechanism: a project-scoped .mcp.json is merged and
