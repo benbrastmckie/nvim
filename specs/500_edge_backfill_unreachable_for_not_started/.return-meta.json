@@ -1,5 +1,71 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/500_edge_backfill_unreachable_for_not_started/summaries/01_edge-only-admission-token-summary.md",
+      "summary": "Closes the --depends-on-add admission gap for not_started tasks via a new no-op-only preflight:edge_only pair in update-task-status.sh, full test coverage, suggester integration, doc update, and a live end-to-end proof (task 438 now depends on task 500)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a dedicated no-op-only preflight:edge_only operation:target_status pair to update-task-status.sh so --depends-on-add can finally backfill an edge onto a not_started task, with full guarantee-preservation test coverage (Case 18, 7 sub-cases), suggester integration (orchestrate-suggest-next-batch.sh no longer falls back to propose-only for a not_started collision), a one-paragraph doc addition, and a live end-to-end proof: task 438's dependencies[] now includes 500, status unchanged at not_started."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/multi-task-operations.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "specs/500_edge_backfill_unreachable_for_not_started/plans/01_edge-only-admission-token.md",
+    "specs/500_edge_backfill_unreachable_for_not_started/progress/phase-1-premise.json",
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a status-no-op-only operation:target_status pair is needed for a status no real transition produces (e.g. backfilling an edge onto a 'not_started' task), mint a dedicated literal-named pair (e.g. preflight:edge_only) that resolves STATE_STATUS to that literal status, gate it preflight-only alongside similar human/tooling-initiated pairs (hold/unhold), and hard-refuse it outright unless the specific side-effecting flag it exists for (--depends-on-add) is also present on the same call. This avoids inventing a second vehicle for 'touch this entry without moving its phase' while keeping the new token unmistakably non-settable as a lifecycle target.",
+      "category": "PATTERN",
+      "source_artifact": "specs/500_edge_backfill_unreachable_for_not_started/summaries/01_edge-only-admission-token-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "status-no-op",
+        "operation-target-status",
+        "edge-admission-gap",
+        "not_started",
+        "update-task-status.sh"
+      ]
+    },
+    {
+      "content": "Before constructing a cycle-detection test fixture, trace the FULL transitive dependency graph the fixture change creates, not just the direct edge: adding entry A depends_on entry B when B is already (transitively) depended-upon by other fixture entries can accidentally close a real cycle on an unrelated 'valid edge' test case. Pick a predecessor with no dependents and no outgoing dependencies for the acyclic positive-control case; reserve the entry that already has a reverse edge for the dedicated cycle-refusal case.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/500_edge_backfill_unreachable_for_not_started/summaries/01_edge-only-admission-token-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "test-fixture",
+        "cycle-detection",
+        "dependency-graph",
+        "bash-test-suite"
+      ]
+    },
+    {
+      "content": "A one-paragraph prose addition to a context/patterns doc can trip index-entries.json's own line_count drift check (Rule R) at the next verify-deploy gate 3 run. The remedy script (generate-context-line-counts.sh --write) fixes ALL current drifts in the file, not just the one caused by your own edit -- if the file already carries an unrelated pre-existing drift (e.g. from another task's in-flight edit to a different doc), the script's single run will bundle both fixes into your working tree. Revert the unrelated hunk with a targeted sed/jq edit before committing, so only your own task's entry lands in your commit.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/500_edge_backfill_unreachable_for_not_started/summaries/01_edge-only-admission-token-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "generate-context-line-counts.sh",
+        "scoped-commit",
+        "drift"
+      ]
+    }
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/index-entries.json"
+  ],
   "metadata": {
     "session_id": "sess_1794381614_02261f",
     "agent_type": "general-implementation-agent",
@@ -8,10 +74,8 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
-  },
-  "dispatch_seq": 8,
-  "proposed_file_scope": [
-    "agent-system/extensions/core/index-entries.json"
-  ]
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }

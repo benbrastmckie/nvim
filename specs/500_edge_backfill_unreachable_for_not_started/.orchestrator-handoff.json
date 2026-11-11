@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase implementation plan ruling on the dispatch's open design question in favor of shape (a): one new no-op-only operation:target_status pair, preflight:edge_only, resolving STATE_STATUS to not_started and refused outright without --depends-on-add. Re-verified every carried figure against the live tree: the twelve map_status() arms, both quoted error strings, and all six guarantees are unchanged, but task 328 (and 430, 446, 448) have completed and archived since the description was written, and the 421 edge's intended predecessor 497 has archived out of active_projects, making that edge moot and unaddable regardless of this fix. The plan therefore executes acceptance item 5 as one real edge (438 -> 500) plus a recorded mootness finding for 421. Corrected the research report's token suggestion ('backfill' already carries two other senses in this source store) to the collision-free 'edge_only'.",
+  "summary": "Closed the --depends-on-add admission gap for not_started tasks by adding a new no-op-only preflight:edge_only operation:target_status pair to update-task-status.sh, with full guarantee-preservation test coverage (Case 18, 7 sub-cases), suggester integration in orchestrate-suggest-next-batch.sh, and a one-paragraph doc addition to multi-task-operations.md. Redeployed and proved the fix end-to-end on live state: task 438's dependencies[] now contains 500, status unchanged at not_started; the 421->497 edge was confirmed moot (497 completed/archived) and was not attempted. Phase 5 closed [COMPLETED WITH EXCLUSIONS]: per the dispatch's Batch Gate Deferral directive, the full verify-deploy.sh/run-all.sh sweep was deferred to the batch stage in favor of a scoped discharge (run-all.sh --only on the two touched suites, plus validate-state.sh --deep run directly, both zero-failure).",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/500_edge_backfill_unreachable_for_not_started/summaries/01_edge-only-admission-token-summary.md",
+      "summary": "Closes the --depends-on-add admission gap for not_started tasks via a new no-op-only preflight:edge_only pair in update-task-status.sh, full test coverage, suggester integration, doc update, and a live end-to-end proof (task 438 now depends on task 500)."
+    },
+    {
       "type": "plan",
       "path": "specs/500_edge_backfill_unreachable_for_not_started/plans/01_edge-only-admission-token.md",
-      "summary": "Five-phase plan closing the --depends-on-add not_started admission gap via a new no-op-only preflight:edge_only pair, with full guarantee-preservation test coverage, suggester integration, and an end-to-end edge-add proof."
+      "summary": "Five-phase plan closing the --depends-on-add not_started admission gap via a new no-op-only preflight:edge_only pair, with full guarantee-preservation test coverage, suggester integration, and an end-to-end edge-add proof. All five phases closed (4 COMPLETED, Phase 5 COMPLETED WITH EXCLUSIONS)."
     }
   ],
-  "dispatch_seq": 6
+  "dispatch_seq": 8
 }

@@ -11,9 +11,9 @@ next_project_number: 592
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
-| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588 | 313,391,398,439,458,472,476,486,500,509,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588 | 313,391,398,439,458,472,476,486,509,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -47,7 +47,6 @@ next_project_number: 592
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
-500 [IMPLEMENTING] — Dependency-edge backfill is unreachable for a not-started task
 502 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
@@ -6490,12 +6489,13 @@ RELEVANCE TO OUTCOME 3, stated without overstating it: these are SITE 2 drops (g
 ---
 
 ### 500. Dependency-edge backfill is unreachable for a not-started task
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328, Task 430, Task 446, Task 448
 - **Research**: [500_edge_backfill_unreachable_for_not_started/reports/01_depends-on-add-not-started-gap.md]
 - **Plan**: [500_edge_backfill_unreachable_for_not_started/plans/01_edge-only-admission-token.md]
+- **Summary**: [500_edge_backfill_unreachable_for_not_started/summaries/01_edge-only-admission-token-summary.md]
 
 **Description**: `update-task-status.sh --depends-on-add=<json-array>` cannot fire on a task whose status is `not_started` -- which is the single most common status for a task that needs an edge added after the fact. Restore reachability without weakening any of the flag's existing guarantees.
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #500
 
 - **Task**: 500 - edge_backfill_unreachable_for_not_started
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: 328, 430, 446, 448 (all four have completed and archived -- see Prior Plan Reference; 500 is unblocked today)
 - **Research Inputs**: specs/500_edge_backfill_unreachable_for_not_started/reports/01_depends-on-add-not-started-gap.md
