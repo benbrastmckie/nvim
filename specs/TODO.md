@@ -11,7 +11,7 @@ next_project_number: 607
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,383,390,397,402,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,383,390,397,402,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604,607 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,398,421,439,457,458,462,463,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,397,402,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 399,436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,398,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
@@ -183,6 +183,7 @@ next_project_number: 607
     └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
       └─ 594 [NOT STARTED] — Size symmetric-pair phases and iteration obligations separately
         └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans (see above)
+607 [NOT STARTED] — Resolve the gate 20 orchestrator context-budget overage and...
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
 
@@ -199,6 +200,26 @@ next_project_number: 607
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 607. Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+- **Parent**: Task 532
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+verify-deploy.sh gate 20 (orchestrator context budget) reports the eager-load total over its baseline: commands/orchestrate.md plus skills/skill-orchestrate/SKILL.md measure 71712B against a 70400B baseline. Decide between trimming the eager-load footprint of those two files -- moving inline contract prose behind on-demand backticked pointers, the pattern the rest of the system already uses -- and re-baselining the gate to a justified new figure, then apply the chosen remedy in the source store.
+
+Second, narrower question: during a concurrent batch run, gates 8 and 10 of the same sweep were killed by their own 60s per-gate timeout; gate 10's underlying check (validate-state.sh --deep) then passed in 61s when re-run in isolation, confirming resource contention rather than a regression. Assess whether the per-gate timeout should scale with observed concurrency or simply be raised, so a loaded run does not report a timeout as a finding.
+
+OUT OF SCOPE: making the red Gate 8 shell suites green or declared-expected. That is a separate, already-open piece of work and must not be duplicated here.
+
+CHANNEL: /orchestrate conclusion channel (c), follow-up task.
+
+---
 
 ### 606. Scope Sapience context injection to the current repository so a session stops receiving other repos' facts
 - **Status**: [NOT STARTED]
