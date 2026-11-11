@@ -510,6 +510,103 @@ if $VERBOSE; then
   echo "INFO: finding (f) skipped $skipped_shorthand bare-basename candidate(s) and $skipped_cross_repo cross-repository candidate(s)." >&2
 fi
 
+# ---------------------------------------------------------------------------
+# Finding (a): territory under-inclusion — the primary finding. A non-terminal task whose
+# declared file_scope overlaps an in-batch task but which is absent from that batch.
+#
+# REAL OBSERVED FAILURE this finding exists for (recorded here, not merely in this task's own
+# history, so a future reader of just this script understands the stakes): a task was REMOVED
+# from a hand-authored batch because it depended on another task already in that batch. That
+# reasoning was wrong: /orchestrate performs dependency-aware wave dispatch, so an intra-batch
+# dependencies[] edge merely sequences the two tasks into successive waves (see finding (e) in
+# context/formats/roadmap-format.md's "Next Grammar" section). The two tasks ALSO shared file
+# territory (three files under one component's certificate/ directory), which under Rule 1
+# (shared file territory is unconditional) makes batching them MANDATORY, not optional. Nothing
+# caught either error, because the proposed batch existed only as prose in a markdown file.
+#
+# This finding splices $FILE_SCOPE_OVERLAP_JQ_DEFS (norm, scopes_overlap_first) into ONE jq -n
+# program over the whole cross-product (Decision D1) — the same shape orchestrate-batch-admit.sh
+# uses — rather than a per-pair scopes_overlap() shell-out. Nothing about the overlap algorithm
+# is restated, re-derived, or "improved" locally.
+#
+# SUPPRESSIONS (by construction, each for its own reason): a terminal candidate (nothing to
+# batch); a candidate with an absent/empty file_scope (no evidence of overlap — this script's
+# adopted absent-scope posture, see header); the task's own in-batch members (excluded from the
+# candidate pool entirely). Deliberately NEVER suppressed: the presence of a dependencies[] edge
+# between the candidate and an in-batch task — Rule 1's territory requirement is unconditional,
+# and an edge-based suppression would re-admit exactly the reasoning the observed failure used.
+#
+# The reserved __WHOLE_TREE__ sentinel is inert against real paths under scopes_overlap_first
+# (it has no '/' and so satisfies neither the exact-match nor the prefix-containment clause
+# against anything other than another literal __WHOLE_TREE__ declarant) — a hit against it is
+# the intended same-whole-tree-claim detection signal, not a false positive.
+# ---------------------------------------------------------------------------
+BATCHES_JSON_PARTS=()
+for task_list in "${AUTHORED_TASK_LISTS[@]}"; do
+  IFS=',' read -r -a raw_ids <<< "$task_list"
+  ids=()
+  for raw in "${raw_ids[@]}"; do
+    id="$(echo "$raw" | tr -d '[:space:]')"
+    [[ "$id" =~ ^[0-9]+$ ]] && ids+=("$id")
+  done
+  one_batch="[$(printf '%s,' "${ids[@]}")]"
+  one_batch="${one_batch/,]/]}"
+  BATCHES_JSON_PARTS+=("$one_batch")
+done
+BATCHES_JSON="[$(printf '%s,' "${BATCHES_JSON_PARTS[@]}")]"
+BATCHES_JSON="${BATCHES_JSON/,]/]}"
+[[ ${#BATCHES_JSON_PARTS[@]} -eq 0 ]] && BATCHES_JSON='[]'
+
+if [[ "$BATCHES_JSON" != "[]" ]]; then
+  FINDING_A_JQ_PROGRAM='
+def is_terminal: ascii_downcase as $s | ($s == "completed" or $s == "abandoned" or $s == "expanded");
+
+($state_arr[0].active_projects // []) as $all |
+($all | map({key: (.project_number|tostring), value: (.file_scope // [])}) | from_entries) as $scope_by_num |
+$batches as $bs |
+range(0; ($bs|length)) as $bi |
+($bs[$bi]) as $batch_ids |
+($all[] | select((.project_number as $pn | ($batch_ids | index($pn))) == null)) as $cand |
+select(($cand.status // "") | is_terminal | not) |
+select((($cand.file_scope // []) | length) > 0) |
+( [ $batch_ids[] as $bnum |
+    ($scope_by_num[$bnum|tostring] // []) as $bscope |
+    select(($bscope | length) > 0) |
+    scopes_overlap_first($cand.file_scope; $bscope) as $ov |
+    select($ov != null and $ov != "") |
+    {bnum: $bnum, path: $ov}
+  ] | sort_by(.bnum)
+) as $hits |
+select(($hits | length) > 0) |
+{run_line_index: $bi, absent: $cand.project_number, hits: $hits}
+'
+  finding_a_results="$(jq -n -c --argjson batches "$BATCHES_JSON" --slurpfile state_arr "$STATE_PATH" \
+    "${FILE_SCOPE_OVERLAP_JQ_DEFS}${FINDING_A_JQ_PROGRAM}" 2>/dev/null)" || finding_a_results=""
+
+  if [[ -n "$finding_a_results" ]]; then
+    while IFS= read -r result_line; do
+      [[ -z "$result_line" ]] && continue
+      run_line_index="$(echo "$result_line" | jq -r '.run_line_index')"
+      absent_task="$(echo "$result_line" | jq -r '.absent')"
+      first_bnum="$(echo "$result_line" | jq -r '.hits[0].bnum')"
+      first_path="$(echo "$result_line" | jq -r '.hits[0].path')"
+      actual_line_no="${AUTHORED_LINE_NUMBERS[$run_line_index]}"
+      FINDINGS_TOTAL=$((FINDINGS_TOTAL + 1))
+      echo "[Run line $actual_line_no] FINDING (a): task $absent_task is absent from this batch but its declared file_scope overlaps in-batch task $first_bnum at \`$first_path\`. Rule 1 (shared file territory) is unconditional and does not depend on topic cohesion; an intra-batch dependencies[] edge is never grounds to exclude a task (see finding (e) in roadmap-format.md's Next Grammar)."
+      if $VERBOSE; then
+        hit_count="$(echo "$result_line" | jq '.hits | length')"
+        if [[ "$hit_count" -gt 1 ]]; then
+          echo "$result_line" | jq -c '.hits[1:][]' | while IFS= read -r extra_hit; do
+            extra_bnum="$(echo "$extra_hit" | jq -r '.bnum')"
+            extra_path="$(echo "$extra_hit" | jq -r '.path')"
+            echo "  [verbose] also overlaps in-batch task $extra_bnum at \`$extra_path\`"
+          done
+        fi
+      fi
+    done <<< "$finding_a_results"
+  fi
+fi
+
 echo "---"
 echo "Scan complete. layout=$LAYOUT authored_run_lines=${#AUTHORED_TASK_LISTS[@]} findings=$FINDINGS_TOTAL"
 exit 0

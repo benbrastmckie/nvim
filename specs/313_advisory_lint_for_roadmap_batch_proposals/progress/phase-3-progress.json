@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Finding (a) -- territory under-inclusion",
+  "started_at": "2026-11-11T22:10:00Z",
+  "last_updated": "2026-11-11T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Splice $FILE_SCOPE_OVERLAP_JQ_DEFS into a single jq -n program (Decision D1), orchestrate-batch-admit.sh shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"], "note": "Verified standalone before wiring in: correctly distinguished overlapping/non-overlapping/terminal candidates against a hand-built fixture"},
+    {"id": 2, "description": "For each authored Run line, compare in-batch file_scope against every other non-terminal task; report absent overlapping task, naming both tasks and the path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"]},
+    {"id": 3, "description": "Suppress-by-construction: terminal, absent/empty file_scope, own in-batch members; never suppress on dependencies[] edge", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"], "note": "Dependent-with-no-overlap fixture confirms zero findings (rejected finding b genuinely absent)"},
+    {"id": 4, "description": "Dedupe per (Run line, absent task), one line with first overlapping path; --verbose full detail; __WHOLE_TREE__ sentinel comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"], "note": "MEASURED against live specs/ROADMAP.md: 127 finding-a lines across the 11 authored batches (4-29 per batch), dominated by coarse widely-shared paths (__WHOLE_TREE__: 16, plan-format.md: 15, manifest.json: 6, etc.) -- exactly the volume the plan's own Scope Hypothesis anticipated and explicitly sanctioned (tighten rendering, never the predicate); rendering is already at the plan's own floor (one line per absent task, first path, --verbose for the rest)"},
+    {"id": 5, "description": "Add the real-observed-failure comment paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

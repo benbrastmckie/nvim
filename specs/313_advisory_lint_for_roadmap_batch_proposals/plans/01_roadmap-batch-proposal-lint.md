@@ -339,34 +339,41 @@ the new file plus `bash agent-system/extensions/core/scripts/lint/lint-shellchec
 
 ---
 
-### Phase 3: Finding (a) — territory under-inclusion [NOT STARTED]
+### Phase 3: Finding (a) — territory under-inclusion [COMPLETED]
 
 **Goal**: The primary finding works: a non-terminal task whose declared `file_scope` overlaps an
 in-batch task but which is absent from that batch is reported, using the one shared overlap
 predicate and no local copy of it.
 
 **Tasks**:
-- [ ] Source `scripts/lib/file-scope-overlap.sh` and splice `$FILE_SCOPE_OVERLAP_JQ_DEFS` into a
+- [x] Source `scripts/lib/file-scope-overlap.sh` and splice `$FILE_SCOPE_OVERLAP_JQ_DEFS` into a
       single `jq -n` program covering the whole cross-product (Decision D1) — the
       `orchestrate-batch-admit.sh` shape, never per-pair `scopes_overlap()` shell-outs. Use `norm`
       and `scopes_overlap_first` exactly as defined; do not restate, fork, or locally "improve"
-      the predicate, which is deliberately glob-free and symmetric.
-- [ ] For each authored Run line: collect the in-batch tasks' declared `file_scope` entries, then
+      the predicate, which is deliberately glob-free and symmetric. *(completed)*
+- [x] For each authored Run line: collect the in-batch tasks' declared `file_scope` entries, then
       compare every OTHER non-terminal record's `file_scope` against them. Report each absent task
       that overlaps, naming the absent task, the in-batch task it overlaps, and the overlapping
       path — the same three facts `idle_overlap_advisory` already emits at dispatch time, which is
       what makes this the authoring-time analogue of a shipped mechanism rather than a new claim.
-- [ ] Suppress by construction, each for its own stated reason: a terminal record (nothing to
+      *(completed)*
+- [x] Suppress by construction, each for its own stated reason: a terminal record (nothing to
       batch); a record with an absent or empty `file_scope` (no evidence of overlap — the settled
       posture recorded in the header); the task's own in-batch members. Do NOT suppress on the
       presence of a `dependencies[]` edge: rule 1's territory requirement is unconditional, and an
       edge-based suppression would re-admit exactly the reasoning the observed failure used.
-- [ ] Dedupe per (Run line, absent task) and print one line per pair with the first overlapping
+      *(completed)*
+- [x] Dedupe per (Run line, absent task) and print one line per pair with the first overlapping
       path; full per-path detail only under `--verbose`. Note in a comment that the reserved
       `__WHOLE_TREE__` sentinel is inert against real paths and matches only another declarant of
       the same sentinel — that hit is the intended same-claim detection signal, not a false
-      positive.
-- [ ] Add a one-paragraph comment recording the real observed failure this finding exists for: a
+      positive. *(completed: MEASURED against the live specs/ROADMAP.md, as the Scope Hypothesis
+      below directs — 127 finding-(a) lines across the 11 authored batches, 4-29 per batch,
+      dominated by coarse widely-shared paths: `__WHOLE_TREE__` 16, `plan-format.md` 15,
+      `manifest.json` 6, `verify-deploy.sh` 6, etc. This is the volume the Scope Hypothesis
+      explicitly anticipated and sanctioned; rendering is already at its stated floor and was not
+      tightened further)*
+- [x] Add a one-paragraph comment recording the real observed failure this finding exists for: a
       task was REMOVED from a hand-authored batch because it depended on another task already in
       that batch; the two also shared file territory, which makes batching them mandatory. The
       reasoning was wrong on both counts, and nothing caught it.
