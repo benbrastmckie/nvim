@@ -3304,7 +3304,7 @@
     {
       "project_number": 402,
       "project_name": "conclusion_channels_become_evidence_only",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Conclusion stage Step 4c allocates no task number and creates no task directories",
@@ -3313,13 +3313,19 @@
         391,
         400
       ],
-      "artifacts": [],
-      "next_artifact_number": 1,
+      "artifacts": [
+        {
+          "path": "specs/402_conclusion_channels_become_evidence_only/reports/01_conclusion-channels-evidence-only.md",
+          "type": "report",
+          "summary": "Confirms the two Step 4c omissions; recommends appending classification records (class/citations/severity_max/suggested_channel_hints/channel-judgment/override-rationale) to specs/events.jsonl via events-append.sh rather than issues.jsonl (feedback-loop hazard) or a new file; enumerates every consumer transcribing the current task-creation design (postflight-tool-restrictions.md, orchestrate-state-machine.md, orchestrate-batch-results-template.md, test-orchestrate-conclusion-aggregate.sh cases j/k); notes the deliberate consumer is already filed as task 421; flags the approval-gate-for-b/c question as an open decision for planning."
+        }
+      ],
+      "next_artifact_number": 2,
       "created": "2026-10-14T01:55:47Z",
-      "last_updated": "2026-11-11T21:09:52Z",
+      "last_updated": "2026-11-11T21:19:53Z",
       "effort": "small",
       "priority": null,
-      "session_id": "sess_1794431325_7cf647_402",
+      "session_id": "sess_1794431325_7cf647",
       "file_scope": [
         "agent-system/extensions/core/context/contracts/conclusion-stage.md",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"
