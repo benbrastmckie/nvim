@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Add project-number-inuse.sh to test-orchestrate-predispatch-review.sh",
+  "started_at": "2026-11-11T00:20:00Z",
+  "last_updated": "2026-11-11T00:28:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add require_file pre-flight check with explanatory comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 2, "description": "Add setup_sandbox copy line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"]},
+    {"id": 3, "description": "Run suite standalone and record result", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record outcome via issue-record.sh", "status": "done", "files_touched": ["specs/569_repair_stale_fixture_lib_dependency_lists/issues.jsonl"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

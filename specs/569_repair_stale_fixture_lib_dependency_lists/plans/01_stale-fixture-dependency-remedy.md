@@ -256,7 +256,7 @@ surviving failure is recorded and its roster row narrowed rather than retired.
 
 ---
 
-### Phase 3: Add `project-number-inuse.sh` to `test-orchestrate-predispatch-review.sh` [NOT STARTED]
+### Phase 3: Add `project-number-inuse.sh` to `test-orchestrate-predispatch-review.sh` [COMPLETED]
 
 **Goal**: Complete this suite's dependency declaration, which uses no named array — so both its
 `require_file` pre-flight list and its hard-coded `setup_sandbox()` copy sequence need the new
@@ -264,26 +264,27 @@ library, and the existing per-addition explanatory-comment convention is kept.
 
 **Tasks**:
 
-- [ ] Re-read
+- [x] Re-read
       `agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh`
-      immediately before editing it.
-- [ ] Add `require_file "$CORE_DIR/lib/project-number-inuse.sh"` to the pre-flight list (locator:
+      immediately before editing it. *(completed)*
+- [x] Add `require_file "$CORE_DIR/lib/project-number-inuse.sh"` to the pre-flight list (locator:
       after the `require_file "$CORE_DIR/task-lock.sh"` line at 49). Precede it with a short
       explanatory comment in the same shape as the existing `file-scope-overlap.sh` and
       `task-lock.sh` precedents at lines 43-49 — those comments record *why* each addition became
       necessary, and this suite's convention is to keep that record. The comment must cite the
       durable anchor (`state-write.sh`'s unconditional `source` of this library), never a task
       number: this file lives under `agent-system/extensions/**`, where task-number references are
-      prohibited.
-- [ ] Add `cp "$CORE_DIR/lib/project-number-inuse.sh" "$WORKDIR/.claude/scripts/lib/project-number-inuse.sh"`
+      prohibited. *(completed)*
+- [x] Add `cp "$CORE_DIR/lib/project-number-inuse.sh" "$WORKDIR/.claude/scripts/lib/project-number-inuse.sh"`
       inside `setup_sandbox()`, alongside the existing `common.sh` / `task-lookup-lib.sh` /
       `file-scope-overlap.sh` copies (locator: lines 61-67). This suite's copy source is
       `$CORE_DIR/lib` (the source store), not the deployed tree — confirm
-      `agent-system/extensions/core/scripts/lib/project-number-inuse.sh` exists there.
-- [ ] Run the suite standalone and confirm scenario 10's `--repair` path no longer exits 2 and its
+      `agent-system/extensions/core/scripts/lib/project-number-inuse.sh` exists there. *(completed)*
+- [x] Run the suite standalone and confirm scenario 10's `--repair` path no longer exits 2 and its
       `file_scope` assertion now evaluates (the two current failures are exactly these).
-- [ ] Record the outcome via `issue-record.sh`.
-- [ ] Commit with an explicit single-file list.
+      *(completed: 37 passed, 0 failed)*
+- [x] Record the outcome via `issue-record.sh`. *(completed: win recorded)*
+- [x] Commit with an explicit single-file list. *(completed)*
 
 **Timing**: 0.5 hours
 

@@ -47,6 +47,9 @@ require_file "$CORE_DIR/lib/file-scope-overlap.sh"
 # shells out to task-lock.sh scope-acquire/scope-release, which no earlier scenario in this suite
 # exercised (every prior --repair-free scenario never reaches state-write.sh at all).
 require_file "$CORE_DIR/task-lock.sh"
+# lib/project-number-inuse.sh: state-write.sh unconditionally sources this library -- the
+# sandbox must carry a real copy or the copied state-write.sh aborts on the source builtin.
+require_file "$CORE_DIR/lib/project-number-inuse.sh"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required and is not on PATH" >&2
@@ -64,6 +67,7 @@ setup_sandbox() {
   cp "$CORE_DIR/lib/common.sh" "$WORKDIR/.claude/scripts/lib/common.sh"
   cp "$CORE_DIR/lib/task-lookup-lib.sh" "$WORKDIR/.claude/scripts/lib/task-lookup-lib.sh"
   cp "$CORE_DIR/lib/file-scope-overlap.sh" "$WORKDIR/.claude/scripts/lib/file-scope-overlap.sh"
+  cp "$CORE_DIR/lib/project-number-inuse.sh" "$WORKDIR/.claude/scripts/lib/project-number-inuse.sh"
   chmod +x "$WORKDIR"/.claude/scripts/*.sh
 }
 
