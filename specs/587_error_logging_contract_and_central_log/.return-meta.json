@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794367153_fe56ab_587",
-  "dispatch_seq": 1,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/587_error_logging_contract_and_central_log/reports/01_error-logging-contract.md",
-      "summary": "Settles store consolidation (reuse issues.jsonl, correct error-handling.md's stale errors.json pointer), a new infra/transport-unavailable class, a general occurrence-based collapse rule via the existing tags seam, honest per-class capture-point mechanics (mechanical for sapience-retrieve.sh/sapience-remember.sh, agent-cooperation-dependent for MCP tool failures), the no-task-context fallback to events.jsonl, a push-based central log design, and explicit boundary statements against tasks 477, 484, 519, 543, and 562."
+      "type": "plan",
+      "path": "specs/587_error_logging_contract_and_central_log/plans/01_error-logging-contract-central-log.md",
+      "summary": "7-phase plan (4 dependency waves, 11 hours) correcting the error-store contract, adding one infrastructure/transport-unavailable class, documenting a general occurrence-collapse convention and citation render cap, adding a push-based central log library wired into both shared store writers, and implementing Sapience capture as an ordinary subclass."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794367153_fe56ab_587",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 11,
+    "dependency_waves": [[1], [2, 3, 5, 6], [4], [7]]
+  },
   "memory_candidates": [
     {
-      "content": "In this agent-system, the issue-log's `tags` field (open object, documented in issue-log.md's 'The tags Seam' section) is the designed extension point for adding structured per-entry metadata (e.g. an occurrence count with first_seen/last_seen for collapsing repeated same-class entries) without any schema or script change to issue-record.sh. Reach for this seam before proposing a new field or a new store.",
+      "content": "When authoring a plan in this agent system, source scripts/lib/suite-selection-lib.sh and run suite_selection_select over each phase's Files-to-modify paths before writing any Tier Justification -- plan-format.md requires the cited suite names (or the __FULL_SWEEP__ sentinel) to match that output verbatim. A reusable fact the selector surfaces: ANY extension's manifest.json maps to a ~31-suite structural set (test-deploy-propagation.sh, test-manifest-scripts-sync.sh, test-script-inventory.sh, the gate3/gate8 equivalence suites, ...), and scripts/lib/runtime-file-patterns.sh maps to ~10. So a phase that registers a new script in a manifest, or adds a lock-file class, is honestly a full-tier phase, not a cheap one -- which argues for registering each new file in the same phase that creates it rather than batching registrations into one late phase that would otherwise leave the manifest out of sync with the file tree between phases.",
       "category": "PATTERN",
-      "source_artifact": "specs/587_error_logging_contract_and_central_log/reports/01_error-logging-contract.md",
+      "source_artifact": "specs/587_error_logging_contract_and_central_log/plans/01_error-logging-contract-central-log.md",
       "confidence": 0.85,
-      "suggested_keywords": ["issue-record.sh", "tags seam", "collapse", "issues.jsonl", "occurrence"]
-    },
-    {
-      "content": "orchestrate-conclusion-aggregate.sh's --aggregate already performs group_by(.class) cross-task/cross-entry collapse into one proposal per class with a citations list, and already reads null/omitted resolution as open (reporting implicit_open_count). Before proposing a new aggregation or classification mechanism against a 'signal destroyed by repetition' complaint, read this script directly -- the report-layer grouping frequently already exists; the real cost is usually write volume or an unbounded citations list, not an ungrouped report.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/587_error_logging_contract_and_central_log/reports/01_error-logging-contract.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-conclusion-aggregate.sh", "group_by", "implicit_open_count", "conclusion-stage"]
-    },
-    {
-      "content": "This repo's merged Claude Code settings (settings-hooks.json) carry no wildcard-matcher PostToolUse hook -- the only PostToolUse entry matches Write only, for a specs/state.json validator. There is therefore no mechanical, repo-side way to intercept an arbitrary MCP tool call's failure (e.g. a Sapience 503 surfaced via ~/.sapience/mcp.py, which is vendor-owned and outside the repo). Any error class whose only visibility is an MCP tool-call error in the transcript is agent-cooperation-dependent, not mechanically capturable, absent a new hook (itself usually out of scope under a 'no new hook' cost ceiling).",
-      "category": "INSIGHT",
-      "source_artifact": "specs/587_error_logging_contract_and_central_log/reports/01_error-logging-contract.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["PostToolUse", "mcp.py", "hook", "sapience", "mechanical capture"]
+      "suggested_keywords": ["suite-selection-lib.sh", "verification tier", "tier justification", "manifest.json", "plan authoring"]
     }
   ],
-  "next_steps": "Run /orchestrate 587 to create implementation plan"
+  "next_steps": "Run /orchestrate 587 to execute the plan",
+  "dispatch_seq": 2
 }
