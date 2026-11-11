@@ -1,0 +1,40 @@
+{
+  "phase": 3,
+  "phase_name": "Redeploy and Verify the Preserved Obligations",
+  "started_at": "2026-11-12T00:10:00Z",
+  "last_updated": "2026-11-12T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Verify preserved obligations byte-identical to base commit", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm lake-build-guard.sh and plan-format.md untouched", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm both edits present in deployed tree", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run scoped-discharge gate set per Batch Gate Deferral; run task-reference and record-version lints over edited files", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm file_scope rebuilt; record accepted index-entries.json line_count drift", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.3",
+      "description": "Run timeout 540 bash .claude/scripts/deploy-headless.sh and confirm it exits 0",
+      "type": "altered",
+      "reason": "Deploy landed (RESULT=landed_verify_red) but exit code was 3, not 0, because internal fast-gate verification found two pre-existing findings unrelated to this task's files (specs/state.json next_project_number drift; eager-context-budget ceiling driven by pre-existing uncommitted lean EXTENSION.md/context changes this task never touches).",
+      "annotation": "*(deviation: altered — the deploy landed (RESULT=landed_verify_red) but the invocation itself exited 3, not 0 ...)*"
+    },
+    {
+      "task_id": "3.5",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "This dispatch's .dispatch/11.md carries a Batch Gate Deferral directive for this final phase: the complete gate set is deferred to the once-per-batch stage; the scoped discharge verify-deploy.sh --only-gate 3,4 was run instead and is green.",
+      "annotation": "*(deviation: altered — this dispatch's own .dispatch/11.md carries a Batch Gate Deferral directive ...)*"
+    },
+    {
+      "task_id": "3.6",
+      "description": "Confirm plan-file-scope-harvest.sh rebuilt file_scope without the deleted lean-implementation-hard-agent.md path",
+      "type": "altered",
+      "reason": "index-entries.json line_count drift was auto-repaired by deploy-headless.sh, resolving that half of the task item. The stale lean-implementation-hard-agent.md path was NOT dropped from file_scope; recorded as a non-blocking issue rather than hand-corrected (hand-editing file_scope is prohibited).",
+      "annotation": "*(deviation: altered — index-entries.json line_count drift was auto-repaired by deploy-headless.sh's own line_count auto-repair mechanism ...)*"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -268,38 +268,63 @@ agent-contract lint coverage and does **not** return the `__FULL_SWEEP__` sentin
 
 ---
 
-### Phase 3: Redeploy and Verify the Preserved Obligations [NOT STARTED]
+### Phase 3: Redeploy and Verify the Preserved Obligations [COMPLETED]
 
 **Goal**: The deployed tree carries both edits, the full gate set is green for this task's own
 files, and the detachment / guard / bounded-wait obligations are demonstrably unchanged.
 
 **Tasks**:
-- [ ] Verify the three preserved obligations are byte-identical to their pre-change state by
+- [x] Verify the three preserved obligations are byte-identical to their pre-change state by
       diffing against this task's base commit: `long-builds.md`'s Obligation 1 (detach), Obligation
       2 (guard), "Scoped builds are covered too", and "Completion discipline"; and
       `context/project/lean4/operations/external-process-wait` guidance. Any non-empty diff on
       those files is a defect in Phases 1-2, not an expected result — fix forward before
-      proceeding.
-- [ ] Confirm `lake-build-guard.sh` and `agent-system/extensions/core/context/formats/plan-format.md`
-      are untouched (`git diff --name-only` against the base commit lists neither).
-- [ ] Run `timeout 540 bash .claude/scripts/deploy-headless.sh` to regenerate the deployed
-      `.claude/` tree from the source store, and confirm it exits 0.
-- [ ] Confirm both edits are present in the deployed tree
+      proceeding. *(completed: `git diff` against the base commit on both `long-builds.md` and
+      core's `external-process-wait.md` is empty)*
+- [x] Confirm `lake-build-guard.sh` and `agent-system/extensions/core/context/formats/plan-format.md`
+      are untouched (`git diff --name-only` against the base commit lists neither). *(completed)*
+- [x] Run `timeout 540 bash .claude/scripts/deploy-headless.sh` to regenerate the deployed
+      `.claude/` tree from the source store, and confirm it exits 0. *(deviation: altered — the
+      deploy landed (RESULT=landed_verify_red) but the invocation itself exited 3, not 0: its
+      internal fast-gate verification found two pre-existing, unrelated FAILs (specs/state.json
+      `next_project_number` counter drift; the orchestrator eager-context-budget ceiling, driven
+      by pre-existing uncommitted changes to `agent-system/extensions/lean/EXTENSION.md` and two
+      other lean context files that were already dirty before this dispatch started and that this
+      task never touches). Both findings are demonstrably pre-existing and name no file this task
+      touched; the deploy itself (file placement) succeeded)*
+- [x] Confirm both edits are present in the deployed tree
       (`.claude/context/project/lean4/agents/lean-implementation-flow.md` and
       `.claude/agents/lean-implementation-agent.md`), which proves the source-store edit target was
-      correct and nothing was hand-authored under `.claude/**`.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Distinguish findings
+      correct and nothing was hand-authored under `.claude/**`. *(completed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Distinguish findings
       naming this task's own two files from the tree's standing baseline, per
       `plan-authoring-gate-collisions.md` Condition 2's corollary — a bare "the gate passes" claim
-      conflates the two and is not acceptable here.
-- [ ] Run the two deliverable-content lints explicitly over the two edited files:
+      conflates the two and is not acceptable here. *(deviation: altered — this dispatch's own
+      `.dispatch/11.md` carries a Batch Gate Deferral directive for this exact phase: the complete
+      gate set is deferred to the once-per-batch stage rather than independently invoked here, in
+      favour of the scoped discharge `bash .claude/scripts/verify-deploy.sh --only-gate 3,4`, which
+      is green (PASS -- 3 check(s), 0 failure(s)) for both edited files. The complete gate DID
+      still run once, as an internal side effect of `deploy-headless.sh`'s own fast-gate
+      verification above, and its two FAILs are the same pre-existing, unrelated findings
+      recorded on that task item — neither names either file this task edited)*
+- [x] Run the two deliverable-content lints explicitly over the two edited files:
       `bash .claude/scripts/check-task-references.sh` (no task-number citations outside `specs/**`)
       and the record-version check from `scripts/lib/record-version-patterns.sh`'s consumers (no
-      draft-lineage language).
-- [ ] Confirm `plan-file-scope-harvest.sh` rebuilt `file_scope` from this plan without the deleted
+      draft-lineage language). *(completed: `check-task-references.sh` reports no finding for
+      either file; `check-record-versioning.sh agent-system/extensions/lean` reports 0 BLOCKING
+      findings for either file — one pre-existing, unrelated ADVISORY hit on
+      `lean-implementation-flow.md` line 40, inside the untouched Stage 1.5 section)*
+- [x] Confirm `plan-file-scope-harvest.sh` rebuilt `file_scope` from this plan without the deleted
       `lean-implementation-hard-agent.md` path, and record the accepted `index-entries.json`
       `line_count` drift (remedy: repo-wide `generate-context-line-counts.sh --write`, deferred
-      because task 397 holds that file concurrently).
+      because task 397 holds that file concurrently). *(deviation: altered — `index-entries.json`
+      line_count drift was auto-repaired by `deploy-headless.sh`'s own line_count auto-repair
+      mechanism, not left accepted-and-deferred as the plan anticipated, so no further remedy is
+      needed there. The `lean-implementation-hard-agent.md` path, however, was NOT dropped from
+      `file_scope` — it is still present in `specs/state.json`'s entry for this task alongside
+      `__WHOLE_TREE__` and both edited files. This was not hand-corrected here (hand-editing
+      `file_scope` is prohibited); recorded as a non-blocking issue via `issue-record.sh` for a
+      follow-up to the harvester)*
 
 **Timing**: 35 minutes
 
