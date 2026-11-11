@@ -1,0 +1,55 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy, run the full gate set, and prove the fix end-to-end",
+  "started_at": "2026-11-11T00:00:00Z",
+  "last_updated": "2026-11-11T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Territory check and redeploy via deploy-headless.sh",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Scoped gate discharge per Batch Gate Deferral directive (run-all.sh --only + validate-state.sh)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "End-to-end edge-add proof: 438 <- 500 (real), 421 <- 497 (moot, not attempted)",
+      "status": "done",
+      "files_touched": [
+        "specs/state.json",
+        "specs/TODO.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Check off plan Phase 5 tasks with Reasoned Exclusions record and write implementation summary",
+      "status": "done",
+      "files_touched": [
+        "specs/500_edge_backfill_unreachable_for_not_started/plans/01_edge-only-admission-token.md"
+      ]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "Ran full `bash .claude/scripts/verify-deploy.sh` (no --skip-slow) in the foreground, piped through `tail -60`",
+      "result": "failed",
+      "reason": "The platform auto-backgrounds any foreground Bash call after ~180s regardless of the tool's requested timeout parameter (tried 560000ms and 500000ms, both still auto-backgrounded at 180s). The `| tail -60` pipe also fully buffered output until process exit, so polling the backgrounded task's output file showed 0 lines throughout. Recognized this also contradicted the dispatch's own Batch Gate Deferral directive (final phase should discharge against a scoped narrowing invocation, not the full gate set), so stopped both the full verify-deploy.sh task and a redundant wait-loop task via TaskStop, and switched to the scoped discharge: `run-all.sh --only test-update-task-status.sh,test-orchestrate-suggest-next-batch.sh` plus `validate-state.sh --deep` run directly."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.3",
+      "description": "Run the complete gate set: verify-deploy.sh (no --skip-slow), run-all.sh in full, validate-state.sh",
+      "type": "altered",
+      "reason": "Per the dispatch file's '## Batch Gate Deferral' section, this final full-tier phase discharges against a scoped narrowing invocation instead of independently running the complete gate set, with the full sweep deferred once-per-batch to the end of the /orchestrate cycle.",
+      "annotation": "*(deviation: altered -- see Reasoned Exclusions in the plan's Phase 5 section)*"
+    }
+  ]
+}

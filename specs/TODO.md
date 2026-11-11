@@ -13,7 +13,7 @@ next_project_number: 592
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
-| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588 | 313,391,398,439,458,472,476,486,509,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588 | 313,391,398,439,458,472,476,486,500,509,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -8719,7 +8719,7 @@ grep -rc 'completion notification' agent-system/extensions/*/agents/*.md
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 312, Task 313, Task 401, Task 446, Task 458
+- **Dependencies**: Task 312, Task 313, Task 401, Task 446, Task 458, Task 500
 
 **Description**: CONTEXT. A declared `dependencies[]` edge was filed as a semantic dependency when it was nothing of the kind, and nothing in the authoring path caught it before it cost a full batch run. Measured in the BimodalLogic repository: task 809 declared a dependency on task 734. The edge was refuted on the landed artifacts -- (a) no probe under `specs/evidence/seam-gluing-ray-product/` cross-references the mosaic/`StabSaturated` probe in either direction; (b) the two lines import disjoint `FormalSystem` subtrees (the mosaic probes take the `FormalSystem` root, while 809's inputs resolve to `RaySummary.AnchorLayer`/`LadderModel`); (c) 734's own landed probe header records its predicate as identically true and as deciding nothing about the R2 route; and (d) the paywalled Handbook sections 734 cannot obtain (ch. 11 sections 5.10 "Mosaics" and 5.11 "Monodic fragments") are recorded in the literature-index hazard field itself as the sections the R2 route needs, whereas 809 sits on the R1 ladder line and carries no literature clause at all. Consequence: tasks 809 and 807 were requested in a batch run and never dispatched -- stranded behind an externally-blocked `[HOLD]` whose technical contribution neither of them consumed.
 

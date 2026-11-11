@@ -406,40 +406,63 @@ it from a script comment.
 
 ---
 
-### Phase 5: Redeploy, run the full gate set, and prove the fix end-to-end [NOT STARTED]
+### Phase 5: Redeploy, run the full gate set, and prove the fix end-to-end [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Land the change in the deployed tree, clear the complete gate set, and discharge the
 dispatch's acceptance list on live state.
 
 **Tasks**:
-- [ ] Territory check first: `git log --oneline -5` and `git status --short` to confirm no foreign
+- [x] Territory check first: `git log --oneline -5` and `git status --short` to confirm no foreign
       commit or foreign uncommitted modification has appeared in the core scripts tree. Sibling
       task 589 declares `__WHOLE_TREE__` this same cycle, so if a redeploy is already running
       that this dispatch did not start, STOP and report rather than starting a second one.
-- [ ] Redeploy via the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`
+      *(completed: top 5 commits were all this task's own phase commits; no foreign core-scripts
+      modification observed; no redeploy already running)*
+- [x] Redeploy via the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`
       with the Bash tool timeout raised to 600000. Never hand-patch a deployed file.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`),
+      *(completed: deploy landed; all four touched scripts verified byte-identical between
+      source store and deployed tree post-deploy. deploy-headless.sh's own internal fast-gate
+      check reported RESULT=landed_verify_red solely due to a pre-existing, documented,
+      unrelated gate-24 finding -- see Reasoned Exclusions below)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`),
       `bash .claude/scripts/tests/run-all.sh` in full, and `bash .claude/scripts/validate-state.sh`
       over the live `specs/state.json`. Re-run both suites touched by Phases 2 and 3 from the
       deployed tree (no `CORE_TEST_SUBJECT_MODE` override) to confirm the deployed copy carries
-      the fix.
-- [ ] Acceptance item 5, the realizable half: issue
+      the fix. *(deviation: altered -- discharged against the dispatch's own Batch Gate Deferral
+      directive instead: `run-all.sh --only test-update-task-status.sh,test-orchestrate-suggest-next-batch.sh`
+      from the deployed tree (2 passed, 0 failed) plus `validate-state.sh --deep` run directly
+      (20 passed, 7 warnings, 0 failed) -- see Reasoned Exclusions below for the full discharge
+      record and why the complete `verify-deploy.sh`/`run-all.sh` sweep was deferred to the
+      once-per-batch stage rather than independently run here)*
+- [x] Acceptance item 5, the realizable half: issue
       `bash .claude/scripts/update-task-status.sh preflight 438 edge_only <session_id> --depends-on-add=[500]`,
       first with `--dry-run` to preview the union-merge, then for real. Confirm 438's status is
       still `not_started` afterward and report its resulting `dependencies[]` array verbatim.
       Re-derive both task numbers from `specs/state.json` first (Phase 1's progress file records
-      them) rather than trusting this plan's literals.
-- [ ] Acceptance item 5, the moot half: do NOT issue the 421 edge. Record in the summary that the
+      them) rather than trusting this plan's literals. *(completed: dry-run previewed
+      [312,313,401,446,458] -> [312,313,401,446,458,500]; real call succeeded; 438's status
+      confirmed still `not_started`; final dependencies[] = [312,313,401,446,458,500])*
+- [x] Acceptance item 5, the moot half: do NOT issue the 421 edge. Record in the summary that the
       intended predecessor (497, `promote_telemetry_submodes_to_core`) has completed and archived
       out of `active_projects`; that `--depends-on-add`'s missing-predecessor refusal is scoped to
       `active_projects` and would refuse the call regardless of this fix; and that the
       RELOCATE-FIRST ordering the edge existed to enforce is already satisfied in fact. Report
-      421's unchanged `dependencies[]` as evidence nothing was written.
-- [ ] Confirm `validate-state.sh` passes over the post-edge `specs/state.json` with zero
+      421's unchanged `dependencies[]` as evidence nothing was written. *(completed: 421's
+      dependencies[] confirmed unchanged at [312,402]; 497 confirmed completed/archived)*
+- [x] Confirm `validate-state.sh` passes over the post-edge `specs/state.json` with zero
       failures, and that `specs/TODO.md` regenerated consistently (the write path passes
-      `--regen-todo`).
-- [ ] Walk the dispatch's acceptance list 1-7 explicitly in the summary, each with the command
+      `--regen-todo`). *(completed: post-edge validate-state.sh --deep: 20 passed, 7 warnings, 0
+      failed; TODO.md confirmed stable under a fresh regeneration)*
+- [x] Walk the dispatch's acceptance list 1-7 explicitly in the summary, each with the command
       run and its observed result, citing Phase 1's measured figures rather than this plan's.
+      *(completed: see summary artifact)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|---|---|---|
+| Full `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`) and full `bash .claude/scripts/tests/run-all.sh` | Dispatch file's `## Batch Gate Deferral` section (this is the plan's own final, `**Verification Tier**: full` phase) directs discharge against a scoped narrowing invocation instead, with the full sweep deferred once-per-batch to the end of the `/orchestrate` cycle. | Scoped discharge: `run-all.sh --only test-update-task-status.sh,test-orchestrate-suggest-next-batch.sh` from the deployed tree -- 2 passed, 0 failed, confirming the deployed copy carries the fix for both suites this task's phases touched. |
+| `deploy-headless.sh`'s internal fast-gate check (gate 24, dead-command-recommendation lint) | Reports 2 violations against `agent-system/extensions/memory/context/project/memory/memory-setup.md:93` and `memory-troubleshooting.md:34` (`/ide has no definition file`), both pre-existing and unrelated to any file this task touches (memory extension docs, not core). Documented in `agent-system/extensions/core/scripts/tests/known-failures.txt`'s `test-verify-deploy-context-budget.sh` row with an open, differently-owned remediation question. | `bash agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh --verbose` names exactly these 2 lines; neither is in this task's declared `file_scope`, confirming the finding predates and is independent of this dispatch. |
 
 **Timing**: 1.25 hours
 
