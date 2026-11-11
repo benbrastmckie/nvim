@@ -1,10 +1,44 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md",
+      "summary": "Records that both of this task's named single-assertion failures were already closed by task 589's root-resolution fix: both suites re-measured green from both the deployed and source-store invocation paths (test-deploy-baseline-lib.sh 30/0, test-lint-deploy-caller-wrap.sh 7/0), no source file changed, and the final phase's full-tier gate discharged via the Batch Gate Deferral directive's unmappable-criterion path (validate-artifact.sh PASS)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Confirmed both of this task's named single-assertion suite failures were already closed by task 589's root-resolution fix: re-measured test-deploy-baseline-lib.sh (30 passed/0 failed) and test-lint-deploy-caller-wrap.sh (7 passed/0 failed) green from both the deployed and source-store invocation paths in this dispatch, with zero source-file change, and wrote the closure summary."
+  },
+  "modified_files": [
+    "specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan's final phase declares Verification Tier: full but a dispatch file carries a Batch Gate Deferral directive, and the phase's own touched files are specs/** task-management artifacts only (not source), neither run-all.sh --only nor verify-deploy.sh --only-gate can express the right scoped check. Use the directive's UNMAPPABLE CRITERION path: run the repo-specific check the plan's own Testing & Validation section already names directly (e.g. validate-artifact.sh <path> <type>) as the scoped discharge, and record in the summary/progress that the full gate set is deferred to the batch-level stage, not waived.",
+      "category": "PATTERN",
+      "source_artifact": "specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "unmappable-criterion",
+        "verification-tier-full",
+        "validate-artifact",
+        "closure-confirmation-plan"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794402680_74378a",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 2,
+    "phases_total": 2
   }
 }

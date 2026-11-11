@@ -1,7 +1,7 @@
 # Implementation Plan: Task #573
 
 - **Task**: 573 - Fix two single-assertion suite failures
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1 hour
 - **Dependencies**: Task 589 (test_suite_repo_root_walk_up_depth) -- already completed; its commits `6a0d6a373` and `9bc6a7d18` carry the actual fix
 - **Research Inputs**: specs/573_fix_two_single_assertion_suite_failures/reports/01_assertion-failures-closed-by-589.md
