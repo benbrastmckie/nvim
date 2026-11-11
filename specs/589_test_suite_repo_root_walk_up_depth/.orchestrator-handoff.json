@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 1,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 4,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase plan for the invocation-path-dependent repo-root resolution defect. Planning isolated each of the five named suites' root causes empirically: three need a plain swap to the existing common_test_repo_root helper, test-lint-deploy-caller-wrap.sh needs common_test_ext_root (its EXTENSIONS_DIR widens to the repo root from the deployed path, double-counting every genuine caller via its deploy-tree duplicate), and test-orchestrate-build-aux-dispatch.sh's single failure is SUT-side: orchestrate-build-aux-dispatch.sh's EXT_ROOT glob cannot match from .claude/scripts because * does not match a leading dot, a real deployed-mode production defect. Two adjacent same-class suites outside the task's named five were surfaced and absorbed as a measure-first sweep phase. One win and one scope-boundary issue were recorded as they arose.",
+  "summary": "Migrated the five named test suites plus one adjacent suite to the existing common_test_repo_root/common_test_ext_root helpers, and converted orchestrate-build-aux-dispatch.sh's EXT_ROOT to an invocation-path-independent candidate list, closing the deployed-mode model-resolution defect. All six suites now report identical green tallies from both the source-store and deployed invocation paths. A second, previously-masked defect in test-gate-cache-lib.sh's case11 was found and fixed. Both of task 573's assertions are now closed (evidence recorded, no edit to task 573's own artifacts). The complete gate set was deferred to the batch stage per the dispatch's Batch Gate Deferral directive; gate 8's scoped check confirmed none of this task's suites in its failing-suite roster despite an unresolved, unrelated discrepancy in the gate8 wrapper's own overall exit code.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/589_test_suite_repo_root_walk_up_depth/plans/01_test-root-resolution-remedy.md",
       "summary": "Six phases in three waves, 5.75h: baseline both-path measurement, three helper migrations, the SUT-side EXT_ROOT fix, an adjacent-class sweep, then redeploy plus full-gate both-path confirmation and task-573 evidence."
+    },
+    {
+      "type": "summary",
+      "path": "specs/589_test_suite_repo_root_walk_up_depth/summaries/01_test-root-resolution-remedy-summary.md",
+      "summary": "Implementation summary: all six phases completed, every affected suite green from both invocation paths, task 573's two assertions closed, one unrelated gate8-wrapper discrepancy and two unrelated pre-existing findings recorded for follow-up."
     }
   ]
 }

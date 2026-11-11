@@ -1,10 +1,48 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 4,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/589_test_suite_repo_root_walk_up_depth/summaries/01_test-root-resolution-remedy-summary.md",
+      "summary": "Migrated five named test suites plus one adjacent suite (and one production script) from invocation-path-dependent fixed-depth repo-root walks to the existing common_test_repo_root/common_test_ext_root helpers; fixed a second, independently pre-existing defect uncovered along the way; both of task 573's assertions confirmed closed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed the invocation-path-dependent repo-root resolution in five named test suites, one adjacent suite, and orchestrate-build-aux-dispatch.sh's deployed-mode model resolution, all now confirmed green from both the source-store and deployed invocation paths; a second, previously-masked defect in test-gate-cache-lib.sh's case11 was found and fixed along the way, and both of task 573's assertions are now closed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+    "specs/589_test_suite_repo_root_walk_up_depth/progress/phase-1-baseline.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A shared library function's own source-store-first/deployed-fallback path resolution convention (e.g. gate_cache_libdir_digest in gate-cache-lib.sh: checks agent-system/extensions/core/scripts/lib first, falls back to .claude/scripts/lib only if the source-store dir is absent) can silently defeat a TEST that perturbs a DIFFERENT, invocation-path-dependent directory (e.g. $CORE_DIR/lib, which varies with where the test script itself was invoked from) to probe that same function's sensitivity. In a repository that owns its source store, the SUT always resolves source-store-first regardless of the test's own invocation path, so perturbing the deployed copy from a deployed-path test run has zero effect and the assertion fails for a reason unrelated to its stated intent. This defect is typically MASKED by a coarser, unrelated defect (here: a wrong ROOT producing a fail-open CANNOT_COMPUTE sentinel for every case in the same suite) and only surfaces once that coarser defect is fixed. Remedy: have the test resolve the exact same directory the SUT resolves (mirror its resolution order) before picking a file to perturb, rather than assuming a fixed relationship to the test's own script directory.",
+      "category": "PATTERN",
+      "source_artifact": "specs/589_test_suite_repo_root_walk_up_depth/summaries/01_test-root-resolution-remedy-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["masked-defect", "source-store-first-resolution", "test-perturbation-target", "invocation-path-dependence", "gate-cache-digest"]
+    },
+    {
+      "content": "A wrapper script's own exit-code verdict can diverge from the underlying command it wraps even when every visible argument and environment variable is reproduced byte-for-byte: verify-deploy.sh's gate8_run wraps 'run-all.sh --quiet --jobs auto --fail-on-new' and reports an overall FAIL, while direct reproduction of that exact invocation line (confirmed via multiple attempts, with and without the wrapper's own exported GATE_MUTEX_HELD=1) reliably returns exit 0 with 0 NEW failures. When a gate/CI wrapper's summary verdict contradicts a careful standalone reproduction of its own documented invocation, inspect the WRAPPED COMMAND's own detailed output directly (the specific failing-suite roster, not just the summary line) rather than trusting the wrapper's aggregate exit code alone -- the wrapper may have an independent, unrelated bug in its own exit-code handling.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/589_test_suite_repo_root_walk_up_depth/summaries/01_test-root-resolution-remedy-summary.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["wrapper-exit-code-discrepancy", "gate8", "verify-deploy", "reproduction-first-diagnosis"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794381614_02261f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
