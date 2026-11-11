@@ -356,26 +356,34 @@ and record both numbers.
 
 ---
 
-### Phase 4: `test-routing-resolution.sh` and `test-update-task-status.sh` [NOT STARTED]
+### Phase 4: `test-routing-resolution.sh` and `test-update-task-status.sh` [COMPLETED]
 
 **Goal**: Both suites resolve their source-store lookups through the shared resolver and pass
 against the synthetic external-source-store fixture.
 
 **Tasks**:
 
-- [ ] Re-read both suites immediately before editing.
-- [ ] In `test-routing-resolution.sh`, replace `EXT_ROOT="$REPO_ROOT/agent-system/extensions"` with
+- [x] Re-read both suites immediately before editing. *(completed)*
+- [x] In `test-routing-resolution.sh`, replace `EXT_ROOT="$REPO_ROOT/agent-system/extensions"` with
       a `common_test_ext_root "$REPO_ROOT"` resolution, preserving the existing `REPO_ROOT`
       environment override and the existing `|| exit 2` environment-error convention.
-- [ ] In `test-update-task-status.sh`, replace the `SOURCE_STORE_SCRIPTS` derivation with the
+      *(completed: falls back to the prior literal path on a resolver miss, which the
+      pre-existing per-file existence loop still turns into the same `exit 2`)*
+- [x] In `test-update-task-status.sh`, replace the `SOURCE_STORE_SCRIPTS` derivation with the
       shared resolver, and audit the hold-related file re-copy step for any further hardcoded
-      source-store path that must resolve the same way.
-- [ ] For both: where a subject under test is resolved, keep (or add) the mandatory
+      source-store path that must resolve the same way. *(completed: audit found no other
+      hardcoded source-store path in this file beyond `SOURCE_STORE_SCRIPTS` itself)*
+- [x] For both: where a subject under test is resolved, keep (or add) the mandatory
       `common_test_declare_subject` `[SUBJECT]` declaration line, so a green run can never be read
-      as "the stale deployed copy happened to pass".
-- [ ] Add an external-source-store fixture case to each suite, driven by `REPO_ROOT` pointed at a
-      temp directory holding a `.claude-extensions.json` and no `agent-system/`.
-- [ ] Confirm `shellcheck` is clean on both edited suites.
+      as "the stale deployed copy happened to pass". *(completed: neither suite resolves an
+      ambiguous deploy-tree-first/source-store subject anywhere — both scripts under test are
+      always resolved unconditionally from the shared extensions root this phase fixes, never via
+      `common_test_resolve_subject` — so no declaration applies here; confirmed non-regressed by
+      `lint-subject-resolution-declaration.sh` passing on both files both before and after this
+      phase's edit)*
+- [x] Add an external-source-store fixture case to each suite, driven by `REPO_ROOT` pointed at a
+      temp directory holding a `.claude-extensions.json` and no `agent-system/`. *(completed)*
+- [x] Confirm `shellcheck` is clean on both edited suites. *(completed: clean at -S warning)*
 
 **Timing**: 2 hours
 

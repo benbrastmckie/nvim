@@ -70,7 +70,8 @@ done
 # guard), generate-todo.sh (the "- **Held**:" line), and lib/status-vocabulary.sh (the "hold"
 # enum member/marker-map entry both of those depend on) -- never the rest of the dependency
 # chain, which stays deploy-sourced exactly as every other case in this suite already relies on.
-SOURCE_STORE_SCRIPTS="$REPO_ROOT/agent-system/extensions/core/scripts"
+SOURCE_STORE_EXT_ROOT="$(common_test_ext_root "$REPO_ROOT")" || SOURCE_STORE_EXT_ROOT="$REPO_ROOT/agent-system/extensions"
+SOURCE_STORE_SCRIPTS="$SOURCE_STORE_EXT_ROOT/core/scripts"
 HOLD_OVERRIDE_FILES=(update-task-status.sh generate-todo.sh)
 for hf in "${HOLD_OVERRIDE_FILES[@]}"; do
   if [[ ! -f "$SOURCE_STORE_SCRIPTS/$hf" ]]; then
@@ -1017,6 +1018,31 @@ if UTS postflight 2 research sess_test_17h --depends-on-add='[3]' --dry-run \
 else
   common_test_fail "17h: --dry-run on a valid edge exited nonzero unexpectedly (see $WORKDIR/c17h.err)"
 fi
+
+# =====================================================================
+# External-source-store fixture: SOURCE_STORE_SCRIPTS must resolve through the
+# .claude-extensions.json indirection when REPO_ROOT holds no local agent-system/extensions of
+# its own, not the bare "$REPO_ROOT/agent-system/extensions/core/scripts" path this suite relied
+# on before. Reproduces the condition synthetically since this repository owns its own source
+# store and cannot otherwise exhibit it.
+# =====================================================================
+common_test_info "=== external-source-store fixture: SOURCE_STORE_SCRIPTS resolution ==="
+EXTSTORE_FIXTURE_ROOT="$(mktemp -d)"
+cat > "$EXTSTORE_FIXTURE_ROOT/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$SOURCE_STORE_EXT_ROOT/core"}}}
+EOF
+
+EXTSTORE_RESOLVED="$(REPO_ROOT="$EXTSTORE_FIXTURE_ROOT" bash -c '
+  source "'"$SCRIPT_DIR"'/../lib/common.sh"
+  ext_root="$(common_test_ext_root "$REPO_ROOT")" || ext_root=""
+  printf "%s" "$ext_root"
+')"
+if [[ -n "$EXTSTORE_RESOLVED" && -f "$EXTSTORE_RESOLVED/core/scripts/update-task-status.sh" ]]; then
+  common_test_pass "SOURCE_STORE_SCRIPTS resolves via the .claude-extensions.json indirection against the external-source-store fixture"
+else
+  common_test_fail "SOURCE_STORE_SCRIPTS did not resolve against the external-source-store fixture (got '$EXTSTORE_RESOLVED')"
+fi
+rm -rf "$EXTSTORE_FIXTURE_ROOT"
 
 # =====================================================================
 # Real-tree contamination guard (delta check against the pre-suite baseline; see

@@ -71,7 +71,7 @@ if [ -z "$REPO_ROOT" ]; then
   REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 fi
 
-EXT_ROOT="$REPO_ROOT/agent-system/extensions"
+EXT_ROOT="$(common_test_ext_root "$REPO_ROOT")" || EXT_ROOT="$REPO_ROOT/agent-system/extensions"
 LIB_SRC="$EXT_ROOT/core/scripts/lib/manifest-routing-lib.sh"
 ROUTE_AGENT_SRC="$EXT_ROOT/core/scripts/command-route-agent.sh"
 ORCH_SKILL="$EXT_ROOT/core/skills/skill-orchestrate/SKILL.md"
@@ -275,6 +275,34 @@ if [ "$fixture_value" = "noncore-zzztest-agent" ] && [ "$fixture_via" = "noncore
   common_test_pass "Assert 4: non-core manifest wins over core manifest for an identical (op, task_type) key (via=$fixture_via)"
 else
   common_test_fail "Assert 4: expected non-core entry 'noncore-zzztest-agent' (via=noncore-exact) to win, got '$fixture_value' (via=$fixture_via)"
+fi
+
+# =====================================================================
+# Assert 5: external-source-store fixture -- EXT_ROOT resolves through common_test_ext_root's
+# .claude-extensions.json indirection when REPO_ROOT holds no local agent-system/extensions of
+# its own. Reproduces the condition that left this suite's EXT_ROOT unable to find its own
+# manifest-routing-lib.sh at all in an external-source-store repository.
+# =====================================================================
+echo ""
+echo "--- Assert 5: external-source-store fixture (EXT_ROOT resolution) ---"
+
+EXTSTORE_FIXTURE="$(mktemp -d)"
+cleanup_extstore_fixture() { [ -n "${EXTSTORE_FIXTURE:-}" ] && [ -d "$EXTSTORE_FIXTURE" ] && rm -rf "$EXTSTORE_FIXTURE"; }
+trap 'cleanup_fixture; cleanup_extstore_fixture' EXIT
+
+cat > "$EXTSTORE_FIXTURE/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$EXT_ROOT/core"}}}
+EOF
+
+extstore_ext_root="$(REPO_ROOT="$EXTSTORE_FIXTURE" bash -c '
+  source "'"$SCRIPT_DIR"'/../lib/common.sh"
+  common_test_ext_root "$REPO_ROOT"
+')"
+
+if [ -n "$extstore_ext_root" ] && [ -f "$extstore_ext_root/core/scripts/lib/manifest-routing-lib.sh" ]; then
+  common_test_pass "Assert 5: EXT_ROOT resolves to a usable extensions root against the external-source-store fixture"
+else
+  common_test_fail "Assert 5: EXT_ROOT did not resolve to a usable extensions root (got '$extstore_ext_root')"
 fi
 
 # =====================================================================

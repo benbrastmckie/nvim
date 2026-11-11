@@ -1,0 +1,48 @@
+{
+  "phase": 4,
+  "phase_name": "test-routing-resolution.sh and test-update-task-status.sh",
+  "started_at": "2026-11-10T23:30:00Z",
+  "last_updated": "2026-11-10T23:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "test-routing-resolution.sh: resolve EXT_ROOT through common_test_ext_root, preserving REPO_ROOT override and the exit-2 convention",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]
+    },
+    {
+      "id": 2,
+      "description": "test-routing-resolution.sh: add Assert 5, the external-source-store fixture case",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-routing-resolution.sh"]
+    },
+    {
+      "id": 3,
+      "description": "test-update-task-status.sh: resolve SOURCE_STORE_SCRIPTS through common_test_ext_root; audit for other hardcoded source-store paths",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-update-task-status.sh"]
+    },
+    {
+      "id": 4,
+      "description": "test-update-task-status.sh: add the external-source-store fixture case",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-update-task-status.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Confirm shellcheck clean and no missing subject-resolution declarations on both files",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": [
+    "bash agent-system/extensions/core/scripts/tests/test-routing-resolution.sh: 14 passed, 0 failed (13 pre-existing + new Assert 5).",
+    "bash agent-system/extensions/core/scripts/tests/test-update-task-status.sh: 65 passed, 0 failed (64 pre-existing + 1 new external-source-store fixture assertion).",
+    "shellcheck -S warning clean on both edited files.",
+    "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-backfill-file-scope.sh,test-force-phases.sh,test-postflight-deploy-gate.sh,test-routing-resolution.sh,test-skill-base-lifecycle.sh,test-task-type-detect.sh,test-update-task-status.sh: 6 passed, 1 failed (0 expected, 1 NEW). The one failure, test-postflight-deploy-gate.sh, is a pre-existing member of the ~29-suite deploy/gate/orchestrate-postflight regression cluster this plan's Non-Goals explicitly exclude (already observed failing identically in Phase 1's independent run-all.sh sweep, before any of this phase's edits) -- not a regression from this phase. Both of this phase's own target suites (test-routing-resolution.sh, test-update-task-status.sh) pass.",
+    "lint-subject-resolution-declaration.sh confirmed passing on both edited files -- neither resolves an ambiguous deploy-tree-first/source-store subject, so no [SUBJECT] declaration applies."
+  ]
+}
