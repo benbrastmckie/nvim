@@ -83,27 +83,46 @@ Priority is **fan-out**: how many other open records a record transitively gates
 urgency or effort, it changes with every edge and closure, and it is re-derived, never remembered
 (standing rule 10). Re-derive with `generate-task-order.sh --print`.
 
-Re-derived 2026-11-11 over the 133 open records. **The backlog is broad and shallow**: depth is
-4 waves, the waves run 82 / 31 / 14 / 6, and **82 of 133 records have no open predecessor**. The
-widest gate is `369` at 7 transitive dependents; after it the field flattens at once — 515, 484,
-472, 459, 391 and 534 all sit at 4, and the next ten at 3. **Fan-out no longer discriminates
-between candidates, so it no longer chooses the order.**
+Re-derived 2026-11-11 over the 142 open records. **The backlog is broad and shallow**: depth is
+6 waves, the waves run 83 / 30 / 18 / 9 / 1 / 1, and **83 of 142 records have no open
+predecessor**. The widest gates are `597` at 6 direct dependents and `599` at 5; after them the
+field flattens at once — `515` at 4, then `369`, `479`, `484` and `539` at 3, and everything else
+at 2 or fewer. **Fan-out does not discriminate between candidates, so it does not choose the
+order.**
 
-**Order by objective, and the objective is the verification substrate.** The system's own
-verification is currently lying to it, and every figure in this paragraph was measured on
-2026-11-11. Four records account for most of a red Gate 8, and none of their failures is about
-what the suite tests: `569` is 32 failing assertions across four suites from one missing `source`
-line in each fixture's dependency-copy list; `568` is 25 of 304 assertions from status-name and
-`persisted_status` drift; `589` is five suites that compute repo root by walking up a hardcoded
-segment count, so they resolve outside the repository when invoked from the deployed tree — which
-is exactly how Gate 8 invokes them, and they then fail open with an unrelated stated cause; `573`
-is two single-assertion failures. Until those land, a gate sweep cannot distinguish a real
-finding from substrate noise, which is the cost `572` records as contention that "manufactures
-false findings that then require manual triage". Everything else in the backlog is verified by
-this substrate, so it is repaired first.
+**Order by objective, and the first objective is the verification substrate.** The system's own
+verification has been lying to it, and the substrate repair is now most of the way done. Four
+records accounted for most of a red Gate 8, and none of their failures was about what the suite
+tests. Two have landed: `589` was five suites computing repo root by walking up a hardcoded
+segment count, so they resolved outside the repository when invoked from the deployed tree —
+exactly how Gate 8 invokes them — and then failed open with an unrelated stated cause; that walk
+also hid a real production defect in `orchestrate-build-aux-dispatch.sh`, where model resolution
+silently yielded empty. `500` landed with it, which matters because every run below needs its
+tool. Two remain: `569` is 32 failing assertions across three suites from one missing `source`
+line in each fixture's dependency-copy list — all three fixed and committed, the status write
+alone outstanding — and `573` is two single-assertion failures that `589` has already closed, so
+its plan is a two-phase closure confirmation with an empty source footprint. `568` (25 of 304
+assertions, status-name and `persisted_status` drift) is separate and still open. Until the
+residual lands, a gate sweep still cannot fully distinguish a real finding from substrate noise,
+which is the cost `572` records as contention that "manufactures false findings that then require
+manual triage".
+
+**The second objective is the end of an orchestration itself.** A run currently finishes by
+regenerating this file without clearing terminal cruft from it, and by printing a next-batch
+suggestion that can consist of nothing but two-task collision sequences — measured against a
+138-task ready pool: four `/orchestrate` lines rendered, none of them a joint batch. The cause is
+in `suggest_from_pool()`, which consumes both members of every colliding pair out of the pool
+before the admitted remainder can be offered, and reports success anyway. `602` owns that, plus
+the unwired `--prune` and the unwired `--write-edges`. Grouped with it are the three costs this
+objective's own measurement surfaced: `507` (the completion-deploy gate refusing a postflight
+write and spending a whole extra cycle, which stranded `569` when the next cycle's checkpoint
+deferred instead of recovering), `515` (the foreground-backgrounding ceiling that makes an
+unscoped gate run unpollable), and `600` (a cold-start 503 whose `retry_after` hint is preserved
+at the boundary and then never acted on, so every dispatch in a run loses its memory context).
 
 ```
-/orchestrate 589, 573, 569, 500   # suite-health root causes, plus the edge-backfill tool every run below needs
+/orchestrate 569, 573   # residual of the suite-health run: both carry finished work awaiting a status write
+/orchestrate 369, 391, 402, 532, 602, 600, 507, 515   # the orchestration-conclusion objective; 4 waves, probe-verified at MAX_TASKS
 /orchestrate 585, 572, 591   # the verify-deploy.sh lane, serialized on shared territory
 /orchestrate 568, 476, 586   # Gate 8's red roster, after its root causes have landed
 /orchestrate 505   # whole-tree claimant: runs alone
@@ -116,12 +135,30 @@ this substrate, so it is repaired first.
 
 Why this order:
 
-- **Run 1 needs no new edges and claims no tree.** Its only territory overlap is `589` against
-  `573` (`test-deploy-baseline-lib.sh` and `test-lint-deploy-caller-wrap.sh`), and that edge is
-  already declared; the other five pairs measure clean, and none of the four is on the claimant
-  roster. Dispatch `589` before `585`: no path overlap, but `585` edits
-  `orchestrate-build-dispatch.sh` while `589` repairs `test-orchestrate-build-aux-dispatch.sh`,
-  so landing `585` first moves `589`'s baseline.
+- **Run 1 is a residual, and both its members are further along than their status says.** `569`
+  sits at `[IMPLEMENTING]` with all four phases committed; its completion write was refused by the
+  completion-deploy gate and the next cycle's redeploy checkpoint then hit an unrelated
+  `gate10` 60s timeout and deferred rather than reconciling. `573` sits at `[PLANNED]` with an
+  empty-source-footprint closure plan. Resolve the `gate10` timeout before re-running, or the same
+  checkpoint defers again. Dispatch this before `585`: no path overlap, but `585` edits
+  `orchestrate-build-dispatch.sh` while the suite-health work repairs
+  `test-orchestrate-build-aux-dispatch.sh`, so landing `585` first moves the baseline.
+- **Run 2 is a four-wave chain, not eight parallel records, and it was probe-verified whole.**
+  `orchestrate-cycle-plan.sh --dry-run` over all eight returns 0 blocked. The waves are
+  `532, 600, 507` first, then `515` behind `507`, `391` behind `369`, `402` behind `391`, and
+  `602` last behind both `402` and `532`. Every one of those edges is a real territory collision
+  rather than a guess: `602` shares `conclusion-stage.md` with `402` and `391`, and
+  `roadmap-integration.sh` with `532`; `391` shares
+  `source-store-deploy-boundary-narrative.md` with `369`. The one edge that did not exist was
+  `507` against `515`, which both declare `batch-orchestration-guardrails.md` and both dispatched
+  into the same wave until it was added — `515` now carries it, narrow record before broad.
+  `369` additionally defers on `569`'s whole-tree claim, so run 1 must clear first; that is an
+  ordering constraint the engine resolves by itself, not an exclusion.
+- **Two of run 2's records carry dangling predecessors, and the gate reads them as satisfied.**
+  `402` declares `[391, 400]` and `507` declares `[418, 420]`, but `400`, `418` and `420` exist
+  in neither `state.json` nor the archive — a renumbering left the references behind. The
+  admission probe blocks `402` on `391` alone and admits `507` outright, so these cost nothing
+  today; they are worth clearing so a future reader is not misled about what gates what.
 - **`500` is in run 1 because every later run depends on it.** `update-task-status.sh
   --depends-on-add` carries a status-no-op restriction that makes it unreachable for a
   `not_started` task — which is the status of almost every record needing an edge below. All four
@@ -239,17 +276,17 @@ actually being dispatched, not a backfill across every record a coarse entry hap
 /orchestrate 313,338,369,383,397,410,412,431
 /orchestrate 437,451,452,453,455,456,459,472
 /orchestrate 473,475,477,484,490,502,503,504
-/orchestrate 506,507,510,511,514,515,519,520
-/orchestrate 521,522,523,525,526,528,529,530
-/orchestrate 531,532,533,534,535,536,537,538
-/orchestrate 539,545,546,548,549,550,551,556
-/orchestrate 557,558,559,560,562,563,565,567
-/orchestrate 574,575,597,600,601
+/orchestrate 506,507,510,511,514,519,520,521
+/orchestrate 522,523,525,526,528,529,530,531
+/orchestrate 532,533,534,535,536,537,538,539
+/orchestrate 545,546,548,549,550,551,556,557
+/orchestrate 558,559,560,562,563,565,567,574
+/orchestrate 575,597,600,601
 ```
 
 ## Open work
 
-**Core agent system (48)**
+**Core agent system (49)**
 ```
 421 blocked:402     retarget_distill_meta_as_evidence_consumer
 436 blocked:313,458,459  Add the /orient executive-orientation command with a read-only scout age...
@@ -259,6 +296,7 @@ actually being dispatched, not a backfill across every record a coarse entry hap
 474 blocked:431     Repair the broken relative links in agent-frontmatter-standard.md
 480 blocked:479     Advisory detector for research tasks stranded at RESEARCHED with artifacts bu...
 492 blocked:491     Make backlog-audit corroboration computable and gate the confirm prompt on it
+515 blocked:507     Rebase the bounded-wait guidance on the measured foreground-backgrounding cei...
 517 blocked:455,515 Require a phase commit to regenerate and stage the derived surfaces it stales
 524 blocked:484,501 Rule on a staged-vs-working-tree divergence signal for a pathspec commit...
 527 blocked:369     Assert the deployed hook registration SET matches the merge-source, not only ...
@@ -267,6 +305,7 @@ actually being dispatched, not a backfill across every record a coarse entry hap
 579 blocked:564     Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
+602 blocked:402,532 conclusion_stage_next_batch_proposal_quality
 313 ready           Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
 338 ready           sweep_task_support_file_tracked_or_ignored
 369 ready           Orphan sweep for deployed entries removed from the source store: the deploy a...
@@ -285,7 +324,6 @@ actually being dispatched, not a backfill across every record a coarse entry hap
 503 ready           revise_unavailable_to_dispatched_agent
 505 ready           Make covering-suite selection resolve a non-core extension's source-store scr...
 506 ready           Stop the bounded-waiter hook refusing a write whose prose documents the anti-...
-515 ready           Rebase the bounded-wait guidance on the measured foreground-backgrounding cei...
 519 ready           Infra exempt transport error dispatch deaths
 520 ready           Emit deploy ordering in implement dispatch body
 521 ready           check_n_completeness_net_glob_misses_implement_variant
