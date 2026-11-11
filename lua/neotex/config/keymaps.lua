@@ -150,9 +150,19 @@ function M.setup()
       buf_map(0, "t", "<C-l>", "<Cmd>wincmd l<CR>", "Navigate right")
       buf_map(0, "t", "<C-g>", "<cmd>lua require('opencode').toggle()<CR>", "Toggle Opencode")
     elseif is_sf1 then
-      -- sf1 drives a readline REPL where <C-h> is backspace; leave <C-hjkl>
-      -- unmapped so the application receives them, exactly as the is_aerc
-      -- branch does below.
+      -- sf1 drives a readline REPL on its default emacs keymap (it imports
+      -- readline but binds no keys of its own), so three of the four carry a
+      -- real binding and stay unmapped: <C-j> is accept-line, which SUBMITS
+      -- the line, <C-k> is kill-line, and <C-l> is clear-screen -- the only
+      -- screen clear sf1 has, since it ships no /clear command.
+      --
+      -- <C-h> is the one safe exception. It is readline's
+      -- backward-delete-char, but the Backspace KEY sends 0x7f, which
+      -- readline binds separately, so backspace keeps working; and sf1 sits
+      -- in the right sidebar, making leftward the only navigation direction
+      -- needed to leave it. Each unmapped key above also stays reachable as
+      -- <C-\><key> (see :help terminal-input).
+      buf_map(0, "t", "<C-h>", "<Cmd>wincmd h<CR>", "Navigate left")
     elseif is_aerc then
       -- Leave <C-hjkl> unmapped so aerc receives them for its own navigation
     else

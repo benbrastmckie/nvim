@@ -27,7 +27,9 @@ Configuration for the Lectic plugin (`gleachkr/lectic`) for markdown editing and
 
 ### sapience-plugin.lua
 lazy.nvim virtual plugin spec for sf1, the Sapience terminal chat client. Points `dir` at the
-sibling `sapience/` implementation directory and registers the `:Sf1` toggle command. See
+sibling `sapience/` implementation directory, registers the `:Sf1` toggle command, and supplies
+the module's `on_open` hook, which hides a visible Claude Code or OpenCode window so sf1 takes
+the split rather than sharing the screen with a coding agent. See
 [sapience/](sapience/README.md) for the full module and configuration documentation.
 
 ### opencode.lua
@@ -145,8 +147,9 @@ ai.send_visual_to_claude_with_prompt() -- Visual selection with prompt
 - `<leader>a` - AI tools group
 - `<leader>ac` - AI agent picker (Stage 1: choose tool, then session action)
 - `<leader>al` - Load AI commands/agents picker
-- `<leader>as` - Discord sessions
-- `<leader>af` - Toggle sf1 Sapience chat
+- `<leader>ad` - Discord sessions
+- `<leader>ai` - OpenCode info (send diagnostics as context)
+- `<leader>as` - Toggle sf1 Sapience chat (hides a visible coding agent)
 - `<leader>ay` - Toggle Claude yolo mode (skip permissions)
 
 **OpenCode Commands** (`<leader>ao` submenu):

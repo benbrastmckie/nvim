@@ -18,13 +18,19 @@ local backend = require("neotex.plugins.ai.sapience.terminal")
 --- @field position "bottom"|"right"|"left"|"float" Window placement
 --- @field size number Fraction in (0, 1], meaningful for split positions only
 --- @field project "cwd"|"git"|false|fun():string|nil Project-scoping strategy
+--- @field on_open fun()|nil Called immediately before a hidden window is shown
+--- @field on_close fun()|nil Called immediately after a visible window is hidden
 
 ---@type SapienceConfig
 local config = {
   cmd = "sf1",
-  position = "bottom",
-  size = 0.35,
+  position = "right",
+  -- Matches the Claude Code sidebar's own `split_ratio`, so the two AI
+  -- surfaces occupy the same screen region at the same width.
+  size = 0.40,
   project = "cwd",
+  on_open = nil,
+  on_close = nil,
 }
 
 local VALID_POSITIONS = { bottom = true, right = true, left = true, float = true }
@@ -39,6 +45,12 @@ end
 ---@return boolean
 local function _is_valid_size(v)
   return type(v) == "number" and v > 0 and v <= 1
+end
+
+---@param v any
+---@return boolean
+local function _is_valid_hook(v)
+  return v == nil or type(v) == "function"
 end
 
 ---@param v any
@@ -116,21 +128,61 @@ function M.setup(opts)
     _is_valid_project,
     '"cwd", "git", false, or a function'
   )
+  vim.validate("on_open", config.on_open, _is_valid_hook, "a function or nil")
+  vim.validate("on_close", config.on_close, _is_valid_hook, "a function or nil")
+end
+
+--- Run one of the two lifecycle hooks, if configured. A hook that errors
+--- warns rather than propagating: a misbehaving host-side callback must never
+--- prevent the window itself from opening or closing.
+---@param name "on_open"|"on_close"
+local function _run_hook(name)
+  local hook = config[name]
+  if type(hook) ~= "function" then
+    return
+  end
+  local ok, err = pcall(hook)
+  if not ok then
+    vim.notify("sf1: " .. name .. " hook failed: " .. tostring(err), vim.log.levels.WARN)
+  end
+end
+
+--- Report whether an sf1 window is currently displayed.
+---@return boolean visible
+function M.is_visible()
+  return backend.visible(_command())
 end
 
 --- Open (or re-focus) the sf1 terminal window.
 function M.open()
-  backend.open(_command(), config.position, config.size)
+  local cmd = _command()
+  local was_visible = backend.visible(cmd)
+  if not was_visible then
+    _run_hook("on_open")
+  end
+  backend.show(cmd, config.position, config.size)
 end
 
 --- Close the sf1 terminal window, if one is open.
 function M.close()
-  backend.close(_command())
+  local cmd = _command()
+  local was_visible = backend.visible(cmd)
+  backend.close(cmd)
+  if was_visible then
+    _run_hook("on_close")
+  end
 end
 
 --- Toggle the sf1 terminal window's visibility.
 function M.toggle()
-  backend.open(_command(), config.position, config.size)
+  local cmd = _command()
+  local was_visible = backend.visible(cmd)
+  if was_visible then
+    _run_hook("on_close")
+  else
+    _run_hook("on_open")
+  end
+  backend.open(cmd, config.position, config.size)
 end
 
 --- Change the sf1 window's position, re-placing a live window immediately

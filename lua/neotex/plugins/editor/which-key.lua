@@ -296,12 +296,11 @@ return {
       -- OpenCode AI commands
       -- { "<leader>aa", function() require("opencode").ask() end, desc = "opencode ask", icon = "󰘳", mode = { "n", "v" } },
       -- { "<leader>ab", function() require("opencode").prompt("@buffer") end, desc = "opencode buffer context", icon = "󰈙" },
-      { "<leader>ad", function() require("opencode").prompt("@diagnostics") end, desc = "opencode diagnostics", icon = "󰒓" },
-      { "<leader>af", "<cmd>Sf1<CR>", desc = "sf1 sapience chat", icon = "󰭻" },
-      { "<leader>as", "<cmd>DiscordSessions<CR>", desc = "discord sessions", icon = "󰙯" },
+      { "<leader>ad", "<cmd>DiscordSessions<CR>", desc = "discord sessions", icon = "󰙯" },
+      { "<leader>ai", function() require("opencode").prompt("@diagnostics") end, desc = "opencode info", icon = "󰒓" },
+      { "<leader>as", "<cmd>Sf1<CR>", desc = "sf1 sapience chat", icon = "󰭻" },
       { "<leader>ar", "<cmd>OpenCodeLinkDiscord<CR>", desc = "link discord", icon = "󰙯" },
       -- { "<leader>ah", function() require("opencode").command("session.list") end, desc = "opencode history", icon = "󰆼" },
-      -- { "<leader>ai", function() require("opencode").command("session.new") end, desc = "opencode init session", icon = "󰐕" },
       -- { "<leader>ap", function() require("opencode").prompt("@this") end, desc = "opencode prompt", icon = "󰏪", mode = { "n", "v" } },
 
       -- TTS toggle - project-specific only (DISABLED: 2025-12-09 - User preference)

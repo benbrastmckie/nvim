@@ -125,8 +125,10 @@ All leader-based mappings use `<Space>` as the leader key and are organized into
 | `<C-CR>` | All | Unified AI tool picker |
 | `<leader>al` | Normal | AI commands/agent loader picker |
 | `<leader>al` | Visual | Send selection with prompt |
-| `<leader>af` | Normal | Toggle sf1 Sapience chat |
-| `<leader>as` | Normal | Browse Claude sessions |
+| `<leader>as` | Normal | Toggle sf1 Sapience chat (hides a visible coding agent) |
+| `<C-h>` | Terminal (sf1) | Navigate left out of the sf1 sidebar |
+| `<leader>ad` | Normal | Browse linked Discord sessions |
+| `<leader>ai` | Normal | OpenCode info (send diagnostics as context) |
 | `<leader>at` | Normal | Toggle TTS notifications (project-specific) |
 | `<leader>av` | Normal | View git worktrees |
 | `<leader>aw` | Normal | Create new worktree with Claude session |

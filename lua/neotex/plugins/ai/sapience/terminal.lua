@@ -1,9 +1,9 @@
 -- sf1 Sapience chat -- window backend
 --
 -- All window/split handling for the sf1 terminal lives behind this module's
--- three public functions (`open`, `close`, `find`) plus `reposition`, so the
--- snacks.terminal backend can be swapped for another implementation (e.g. a
--- plain `termopen` split) by editing this file alone.
+-- public functions (`open`, `show`, `close`, `find`, `visible`, `reposition`),
+-- so the snacks.terminal backend can be swapped for another implementation
+-- (e.g. a plain `termopen` split) by editing this file alone.
 --
 -- This file MUST NOT require anything from the neotex namespace. It is
 -- intentionally dependency-free so the containing directory can later be
@@ -59,6 +59,32 @@ function M.open(cmd, position, size)
   return snacks_terminal.toggle(cmd, _win_opts(position, size))
 end
 
+--- Open or re-focus an sf1 terminal window, never hiding a visible one.
+---
+--- Unlike `open` above (which is `snacks.terminal.toggle`), this is the
+--- idempotent form: calling it on an already-visible window re-focuses it.
+---
+--- `snacks.terminal.open` is deliberately NOT used here: it unconditionally
+--- creates a new terminal, so repeated calls would spawn one sf1 process per
+--- call. `get` reuses the existing terminal (keyed on cmd/cwd/env/count1) and
+--- creates one only when none exists; `show()` is itself a no-op on an
+--- already-valid window.
+---@param cmd string The shell command to run (e.g. "sf1 --project foo")
+---@param position "bottom"|"right"|"left"|"float"
+---@param size number Fraction in (0, 1], ignored when position is "float"
+---@return table|nil term The snacks terminal window object, or nil on failure
+function M.show(cmd, position, size)
+  local snacks_terminal = _snacks()
+  if not snacks_terminal then
+    return nil
+  end
+  local term, created = snacks_terminal.get(cmd, _win_opts(position, size))
+  if term and not created then
+    term:show():focus()
+  end
+  return term
+end
+
 --- Find an existing sf1 terminal window without creating one.
 ---@param cmd string The shell command the terminal was opened with
 ---@return table|nil term The snacks terminal window object, or nil if absent
@@ -71,6 +97,24 @@ function M.find(cmd)
   -- which would spawn a terminal from a mere lookup.
   local term = snacks_terminal.get(cmd, { create = false })
   return term
+end
+
+--- Report whether an sf1 terminal is currently displayed in a window.
+---
+--- Distinct from `find`: a hidden terminal still exists (its buffer and job
+--- are alive), so `find` returning non-nil does not mean a window is shown.
+---@param cmd string The shell command the terminal was opened with
+---@return boolean visible
+function M.visible(cmd)
+  local term = M.find(cmd)
+  if not term then
+    return false
+  end
+  local buf = term.buf
+  if not buf or not vim.api.nvim_buf_is_valid(buf) then
+    return false
+  end
+  return #vim.fn.win_findbuf(buf) > 0
 end
 
 --- Close an sf1 terminal window if one exists; a no-op otherwise.
