@@ -1,7 +1,7 @@
 # Implementation Plan: Task #412
 
 - **Task**: 412 - Map core's Verification Tier vocabulary onto Lean build scopes
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: 396 (completed)
 - **Research Inputs**: `specs/412_lean_tier_vocabulary_to_build_scope_mapping/reports/01_tier-vocabulary-build-scope-mapping.md`
