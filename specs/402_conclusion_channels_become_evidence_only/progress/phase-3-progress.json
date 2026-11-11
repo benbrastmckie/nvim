@@ -1,0 +1,51 @@
+{
+  "phase": 3,
+  "phase_name": "Deploy, run the full gate set, and report the net line count",
+  "started_at": "2026-11-11T00:00:30Z",
+  "last_updated": "2026-11-11T00:01:30Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read git status, confirm no foreign modification in this task's own files",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Run deploy-headless.sh; measure net line count; pin case (g) from deployed copy; confirm next_project_number unchanged",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Record measured net line count and gate outcome in the implementation summary",
+      "status": "done",
+      "files_touched": [
+        "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Ran deploy-headless.sh under the Bash tool's default 120000ms timeout",
+      "result": "failed",
+      "reason": "Command exceeded the default foreground timeout and was auto-backgrounded by the harness; recovered via the bounded-build-waiter idiom (nohup + captured PID + kill -0 liveness loop) per bounded-build-waiter.md"
+    },
+    {
+      "approach": "Ran deploy-headless.sh twice more after the waiter idiom was in place",
+      "result": "failed",
+      "reason": "Both runs reproduced the identical gate10 (60s timeout, concurrency-sensitive) and gate20 (pre-existing eager-load baseline) failures; confirmed via a standalone, un-timeout-wrapped run of validate-state.sh --deep that gate10's actual content finding is the pre-existing next_project_number collision (task_number_allocation_staleness_undetected's territory), not a regression introduced by this task"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Run deploy-headless.sh and confirm RESULT=landed_verify_clean",
+      "type": "altered",
+      "reason": "deploy-headless.sh reported RESULT=landed_verify_red on two gates (gate10, gate20), both confirmed pre-existing and unrelated to this task's edits (see plan's Phase 3 Reasoned Exclusions). Closed the phase COMPLETED WITH EXCLUSIONS rather than COMPLETED, per the five-condition admission test.",
+      "annotation": "*(deviation: altered — RESULT=landed_verify_red on two pre-existing, unrelated gates; see Reasoned Exclusions)*"
+    }
+  ]
+}
