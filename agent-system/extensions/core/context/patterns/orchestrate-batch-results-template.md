@@ -195,8 +195,9 @@ succeed" vs. "did the complete gate set, run once for the whole batch, find anyt
 `context/contracts/conclusion-stage.md`. ALWAYS placed last, immediately before `### Next Steps`,
 since Move 5 runs only after Move 4 has fully finalized, including this template's own render.
 Never merged with `### System Defects Detected` above: that section is unconditional and
-engine-written; this one is gated behind three independent per-channel approvals and derived
-from subagent-written `issues.jsonl` evidence via `scripts/orchestrate-conclusion-aggregate.sh`.)
+engine-written; this one derives from subagent-written `issues.jsonl` evidence via
+`scripts/orchestrate-conclusion-aggregate.sh`, and only channel (a) is gated behind an explicit
+approval — channels (b) and (c) record unconditionally.)
 
 **Wins**: {wins_summary} — `kind: "win"` entries from the aggregated issue logs, summarised only,
 never actioned.
@@ -204,11 +205,15 @@ never actioned.
 **Channel (a) — Direct fixes**: {channel_a_outcome} (`approved` / `declined` / `not asked — no
 proposals`). When approved, lists the fix(es) applied with their `{task, entry_id}` citations.
 
-**Channel (b) — Agent-system changes**: {channel_b_outcome}, same three-way vocabulary. When
-approved, names the change request handed to `meta-builder-agent` and the task(s) it created.
+**Channel (b) — Agent-system changes**: {channel_b_outcome} (`recorded — N proposals` /
+`not recorded — no proposals`). When recorded, names each proposal's `class`, `severity_max`, and
+citations now durable in `specs/events.jsonl` (`event_type: "conclusion_proposal_recorded"`),
+awaiting the batched, dedup-aware consumer, `/distill --meta`.
 
-**Channel (c) — Follow-up tasks**: {channel_c_outcome}, same three-way vocabulary. When
-approved, lists each new child task number with its `parent_task` and originating citation.
+**Channel (c) — Follow-up tasks**: {channel_c_outcome} (`recorded — N proposals` /
+`not recorded — no proposals`). When recorded, names each proposal's `class`, `severity_max`, and
+citations now durable in `specs/events.jsonl` (`event_type: "conclusion_proposal_recorded"`),
+awaiting the batched, dedup-aware consumer, `/distill --meta`.
 
 **Unknown-class tally**: {unknown_classes_table} — one row per `class` outside the 15-class seed
 enum, with its cross-task count.

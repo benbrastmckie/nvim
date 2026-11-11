@@ -262,45 +262,45 @@ a reason to revise the estimate silently.
 
 ---
 
-### Phase 2: Sync every downstream transcription of the deleted design [NOT STARTED]
+### Phase 2: Sync every downstream transcription of the deleted design [COMPLETED]
 
 **Goal**: No document still describes channels (b)/(c) as dispatching, creating tasks, or writing
 `specs/state.json`; the output template renders what was recorded and names the command that will
 consume it; and `events-format.md` documents the new `event_type`.
 
 **Tasks**:
-- [ ] Re-read each file immediately before editing.
-- [ ] `context/standards/postflight-tool-restrictions.md`, Allowed Tool Surface table: strike
+- [x] Re-read each file immediately before editing. *(completed)*
+- [x] `context/standards/postflight-tool-restrictions.md`, Allowed Tool Surface table: strike
       channel (b)'s `meta-builder-agent` dispatch from the `Agent` row (leaving channel (a)'s
       implementation-agent dispatch); strike `state-write.sh`, `manage-topics.sh set`, and the
       `GLOBAL_ROOT=...` resolution assignment from the `Bash` row and add `events-append.sh`;
       narrow the `AskUserQuestion` row from "exactly three independent per-channel approval
-      gates" to channel (a)'s single gate (D1).
-- [ ] Same file, Prohibited list: the "No channel executing without its own `--check-approval`
+      gates" to channel (a)'s single gate (D1). *(completed)*
+- [x] Same file, Prohibited list: the "No channel executing without its own `--check-approval`
       pass for that exact channel" bullet must be re-scoped to the channel that executes, without
-      weakening the invariant for channel (a).
-- [ ] Same file, Commit Surface table: replace channel (b)'s "None from the stage itself" row and
+      weakening the invariant for channel (a). *(completed)*
+- [x] Same file, Commit Surface table: replace channel (b)'s "None from the stage itself" row and
       channel (c)'s `specs/state.json` + `specs/TODO.md` + task-directories row with
       `specs/events.jsonl`-only rows (D4). Leave channel (a)'s row and the roadmap row untouched,
-      and update the "Four separately-scoped invocations" lead sentence to match the real count.
-- [ ] `docs/architecture/orchestrate-state-machine.md`, Move 5 section: rewrite the "Three
+      and update the "Four separately-scoped invocations" lead sentence to match the real count. *(completed)*
+- [x] `docs/architecture/orchestrate-state-machine.md`, Move 5 section: rewrite the "Three
       independent gates, no cross-firing" paragraph's channel descriptions — (b) and (c) no longer
       go "via `meta-builder-agent`" or "created as children via `parent_task`" — and keep the
       fail-closed ledger sentence, re-scoped to the channel that fires. Rewrite the "Commit
-      contract, four scopes" paragraph to match the new commit surface.
-- [ ] `context/patterns/orchestrate-batch-results-template.md`, `### Conclusion` block (Required
+      contract, four scopes" paragraph to match the new commit surface. *(completed)*
+- [x] `context/patterns/orchestrate-batch-results-template.md`, `### Conclusion` block (Required
       Change #5): replace `{channel_b_outcome}` and `{channel_c_outcome}`'s "same three-way
       vocabulary ... when approved, names the change request ... / lists each new child task
       number" with a recorded/not-recorded rendering that states the proposal count, names
       `specs/events.jsonl`, and names the command that will consume it (`/distill --meta`).
       Channel (a) keeps its three-way vocabulary. Also fix the block's own lead parenthetical,
-      which currently says the section is "gated behind three independent per-channel approvals".
-- [ ] `context/formats/events-format.md`: add one row to the `event_type` common-values table for
+      which currently says the section is "gated behind three independent per-channel approvals". *(completed)*
+- [x] `context/formats/events-format.md`: add one row to the `event_type` common-values table for
       `conclusion_proposal_recorded` (`milestone`), naming the `detail` fields, placed beside the
-      `push_grant_issued`/`push_grant_consumed` rows it is modelled on.
-- [ ] Confirm, without editing, that `context/formats/issue-log.md` and
+      `push_grant_issued`/`push_grant_consumed` rows it is modelled on. *(completed)*
+- [x] Confirm, without editing, that `context/formats/issue-log.md` and
       `context/contracts/batch-gate-stage.md` need no change: both name the three channels only as
-      classification categories, which survive.
+      classification categories, which survive. *(completed)*
 
 **Timing**: 1 hour
 

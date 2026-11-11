@@ -1529,16 +1529,17 @@ are summarised, never actioned; an entry's `suggested_channel` is a hint the orc
 visibly override. This is a derivation from evidence, not from the orchestrator's own
 recollection of the run.
 
-**Three independent gates, no cross-firing**: each of the three channels — (a) direct fixes,
-(b) agent-system changes via `meta-builder-agent`, (c) follow-up tasks created as children via
-`parent_task` — fires only on its own explicit `AskUserQuestion` approval, recorded in a durable,
-fail-closed per-channel ledger (`--record-approval`/`--check-approval`). No channel may fire on
-another channel's approval, and none may fire without one — mechanically proven, not only
-asserted in prose (see the aggregator's own test suite).
+**One gate, no cross-firing**: only channel (a), direct fixes, executes a consequence, and it
+fires only on its own explicit `AskUserQuestion` approval, recorded in a durable, fail-closed
+per-channel ledger (`--record-approval`/`--check-approval`). No channel may fire on another
+channel's approval, and channel (a) may not fire without its own recorded approval — mechanically
+proven, not only asserted in prose (see the aggregator's own test suite). Channels (b),
+agent-system changes, and (c), follow-up tasks, no longer dispatch anything or create any task;
+each instead records its classified proposals as evidence, unconditionally and without a gate,
+since recording has no consequence to approve.
 
-**Commit contract, four scopes**: channel (a)'s approved fix paths; channel (b) — no stage-level
-commit (its dispatched `meta-builder-agent` commits its own created task(s) itself); channel
-(c)'s `specs/state.json` + `specs/TODO.md` + new task directories; the roadmap update's
+**Commit contract, four scopes**: channel (a)'s approved fix paths; channel (b)'s and channel
+(c)'s recorded proposals, each committing `specs/events.jsonl` alone; the roadmap update's
 `specs/ROADMAP.md` alone. Every invocation goes through `scripts/git-commit-scoped.sh`, never an
 undifferentiated combined commit. Full table:
 `context/standards/postflight-tool-restrictions.md`'s "Conclusion Stage (Move 5) Tool

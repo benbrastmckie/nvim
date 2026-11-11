@@ -119,6 +119,7 @@ contract; consumers may add new values without a schema-breaking revision:
 | `reflection` | `success` (typically) | A completion-time structured reflection payload, nested in `detail`. |
 | `push_grant_issued` | `milestone` | A consent-gated push/destructive-action grant was minted (`hooks/please-grant.sh`); `detail` carries `remote`/`ref`/`sha`/`force`/`mint_source`/`request_text`. |
 | `push_grant_consumed` | `success` | A consent-gated push/destructive-action grant was consumed to authorize one action (`push-grant-lib.sh`'s `pg_grant_consume`); `detail` carries `remote`/`ref`/`sha`/`force`/`mint_source`/`consumer`. |
+| `conclusion_proposal_recorded` | `milestone` | A `/orchestrate` conclusion-stage (Move 5) channel (b) or (c) proposal was classified and recorded as evidence, never dispatched or acted on (`context/contracts/conclusion-stage.md`'s Steps 4b/4c); `detail` carries `channel`/`class`/`citations[]` (`{task, entry_id}`)/`citations_remainder`/`severity_max`/`suggested_channel_hints[]`/`orchestrator_channel`/`override_rationale`. `task` is null (a proposal is frequently cross-task; the real linkage lives in `detail.citations[]`). Consumed later, in batches, by `/distill --meta`. |
 
 **`reflection` producer-status note**: the `reflection` event type above has **no live producer**
 as of the per-task `issues.jsonl` log's introduction -- its one-time writer, the state.json

@@ -144,16 +144,16 @@ executable body.
 | Tool | Scope |
 |------|-------|
 | `Read` | `specs/{NNN}_*/issues.jsonl` for every task this invocation touched (the stage's sole evidence base) |
-| `AskUserQuestion` | Exactly three independent per-channel approval gates, batched into one relay call set, never combined into a single question |
-| `Agent` | Channel (a)'s dispatch of an implementation agent with the approved fix list; channel (b)'s dispatch of `meta-builder-agent` with the approved change request |
-| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `state-write.sh`, `generate-todo.sh`, `roadmap-integration.sh --regenerate`, `git-commit-scoped.sh`, `manage-topics.sh set`, the `GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"` resolution assignment immediately before channel (b)'s dispatch |
+| `AskUserQuestion` | Channel (a)'s single approval gate only — channels (b) and (c) record evidence unconditionally and are never asked about |
+| `Agent` | Channel (a)'s dispatch of an implementation agent with the approved fix list |
+| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `events-append.sh`, `generate-todo.sh`, `roadmap-integration.sh --regenerate`, `git-commit-scoped.sh` |
 | `Edit`/`Write` on source files | Only INSIDE a channel-(a)-dispatched agent's own turn — never in the stage body itself |
 
 ### Prohibited
 
 - No mid-run surfacing of `issues.jsonl` content — this stage is the sole reviewer; the
   capture-only boundary (`context/formats/issue-log.md`) is unconditional elsewhere.
-- No channel executing without its own `--check-approval` pass for that exact channel.
+- No channel (a) execution without its own `--check-approval` pass for that exact channel.
 - No reading `reports/*.md`, `plans/*.md`, `summaries/*.md`, or `handoffs/*.md` — the Context
   Flatness Constraint still binds at this stage exactly as it binds at Move 3; `issues.jsonl` is
   explicitly NOT a member of that excluded set (it is the one artifact this stage is built to
@@ -163,6 +163,8 @@ executable body.
 - No `--prune` on the roadmap generator — only `--regenerate` is in scope (see
   `context/contracts/conclusion-stage.md`'s D3).
 - No editing another task's archived artifacts.
+- No dispatch and no `specs/state.json` write from channels (b) or (c) — both record evidence to
+  `specs/events.jsonl` only.
 
 ### Commit Surface
 
@@ -172,8 +174,8 @@ and NEVER swept into one undifferentiated commit:
 | Commit | In scope to stage | Message action |
 |--------|--------------------|-----------------|
 | Channel (a) fixes | The approved fix list's own paths (whatever the dispatched implementation agent actually touched) | Describes the fix(es) applied |
-| Channel (b) agent-system change | **None from the stage itself.** `meta-builder-agent` commits its own task creation at its own Stage 6 (via the same `git-commit-scoped.sh`) — the conclusion stage's own Bash surface produces no channel-(b) commit | N/A — no stage-level commit for this channel |
-| Channel (c) follow-up tasks | `specs/state.json`, `specs/TODO.md`, and the new child task directories | Records the created follow-up task(s) |
+| Channel (b) proposals recorded | `specs/events.jsonl` only | Records the classified proposals as evidence |
+| Channel (c) proposals recorded | `specs/events.jsonl` only | Records the classified proposals as evidence |
 | Roadmap update | `specs/ROADMAP.md` only | Records the regeneration |
 
 A contended-path refusal (exit 3) from any of these invocations means defer and re-sequence that

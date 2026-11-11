@@ -1,0 +1,50 @@
+{
+  "phase": 2,
+  "phase_name": "Sync every downstream transcription of the deleted design",
+  "started_at": "2026-11-11T00:00:10Z",
+  "last_updated": "2026-11-11T00:00:20Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Update postflight-tool-restrictions.md Move 5 tables",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Update orchestrate-state-machine.md Move 5 section",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Update orchestrate-batch-results-template.md Conclusion block",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Add conclusion_proposal_recorded row to events-format.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/events-format.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Confirm issue-log.md and batch-gate-stage.md need no change (no edit)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
