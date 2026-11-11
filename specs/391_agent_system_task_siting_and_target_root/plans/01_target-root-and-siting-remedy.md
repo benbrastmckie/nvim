@@ -1,7 +1,7 @@
 # Implementation Plan: Task #391
 
 - **Task**: 391 - Agent system task siting and target root
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.75 hours
 - **Dependencies**: 372, 373 (ordering only — both declare `conclusion-stage.md` in their own
   file_scope; this record's substance does not wait on their conclusions)
@@ -144,29 +144,29 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Resolve and thread target_root in conclusion stage Step 4b [NOT STARTED]
+### Phase 1: Resolve and thread target_root in conclusion stage Step 4b [COMPLETED]
 
 **Goal**: Remedy (a). Channel (b)'s dispatch carries a resolved `target_root` and
 `mode_target`, so it can no longer inherit the session's working directory.
 
 **Tasks**:
 
-- [ ] Re-read `context/contracts/conclusion-stage.md` Step 4b (currently lines 284-309) and
-      `skills/skill-meta/SKILL.md` Section 1 (lines 60-85) immediately before editing.
-- [ ] Add a `target_root` resolution block to Step 4b immediately before the dispatch, mirroring
+- [x] Re-read `context/contracts/conclusion-stage.md` Step 4b (currently lines 284-309) and
+      `skills/skill-meta/SKILL.md` Section 1 (lines 60-85) immediately before editing. *(completed)*
+- [x] Add a `target_root` resolution block to Step 4b immediately before the dispatch, mirroring
       `skill-meta` Section 1's formula verbatim: `GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"`.
       Resolve always-global with no `--local` branch, and state in one sentence why channel (b)
       has no local analogue: filing a channel-(b) record into whichever deploy-only repo
       `/orchestrate` happens to be running in is the defect being closed, so local mode is never
-      the right choice at this call site.
-- [ ] Add `"target_root"` and `"mode_target": "global"` to the dispatch body's described fields.
-- [ ] Add the path-qualification imperative to the dispatch body, mirroring `skill-meta`
+      the right choice at this call site. *(completed)*
+- [x] Add `"target_root"` and `"mode_target": "global"` to the dispatch body's described fields. *(completed)*
+- [x] Add the path-qualification imperative to the dispatch body, mirroring `skill-meta`
       Section 4's wording (lines 168-173), so the three dispatch sites read as one maintained
-      pattern rather than three independent re-derivations.
-- [ ] Add a one-line entry to `context/standards/postflight-tool-restrictions.md`'s Conclusion
+      pattern rather than three independent re-derivations. *(completed)*
+- [x] Add a one-line entry to `context/standards/postflight-tool-restrictions.md`'s Conclusion
       Stage `Bash` row (line 149) covering the `GLOBAL_ROOT` resolution, in that table's existing
-      enumeration style.
-- [ ] Confirm no task-number citation and no record-versioning phrasing was introduced.
+      enumeration style. *(completed)*
+- [x] Confirm no task-number citation and no record-versioning phrasing was introduced. *(completed: check-task-references.sh and check-record-versioning.sh both exit 0 on both edited paths)*
 
 **Timing**: 1 hour
 

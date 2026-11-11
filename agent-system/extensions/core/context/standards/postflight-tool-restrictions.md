@@ -146,7 +146,7 @@ executable body.
 | `Read` | `specs/{NNN}_*/issues.jsonl` for every task this invocation touched (the stage's sole evidence base) |
 | `AskUserQuestion` | Exactly three independent per-channel approval gates, batched into one relay call set, never combined into a single question |
 | `Agent` | Channel (a)'s dispatch of an implementation agent with the approved fix list; channel (b)'s dispatch of `meta-builder-agent` with the approved change request |
-| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `state-write.sh`, `generate-todo.sh`, `roadmap-integration.sh --regenerate`, `git-commit-scoped.sh`, `manage-topics.sh set` |
+| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `state-write.sh`, `generate-todo.sh`, `roadmap-integration.sh --regenerate`, `git-commit-scoped.sh`, `manage-topics.sh set`, the `GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"` resolution assignment immediately before channel (b)'s dispatch |
 | `Edit`/`Write` on source files | Only INSIDE a channel-(a)-dispatched agent's own turn — never in the stage body itself |
 
 ### Prohibited

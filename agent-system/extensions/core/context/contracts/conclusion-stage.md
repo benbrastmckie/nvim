@@ -293,15 +293,34 @@ if bash .claude/scripts/orchestrate-conclusion-aggregate.sh --check-approval \
 fi
 ```
 
+Before dispatching, resolve `target_root` the same way `skill-meta` Section 1 does:
+
+```bash
+GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"
+target_root="$GLOBAL_ROOT"
+mode_target="global"
+```
+
+This resolution is always-global, with no `--local` branch: channel (b) has no local analogue,
+because filing an agent-system change request into whichever deploy-only repo `/orchestrate`
+happens to be running in is exactly the defect this resolution closes.
+
 Only when that gate passes: dispatch `meta-builder-agent` with
-`collected_answers.confirmed: true` and the approved change request assembled from that channel's
-proposals and citations. **Restate the anti-bypass constraint in the dispatch body itself**: that
-agent creates TASKS in `specs/`, never implementation, and never edits `.claude/**` or the source
-store directly — this stage hands it a change request and nothing more, exactly as
-`commands/meta.md` and `skills/skill-meta/SKILL.md` already require for every other caller. Note
-in the dispatch body that `meta-builder-agent` cannot call `AskUserQuestion` itself, which is
-precisely why this channel's approval gate lives at the lead level, before dispatch, not inside
-the agent.
+`collected_answers.confirmed: true`, `target_root`, `mode_target: "global"`, and the approved
+change request assembled from that channel's proposals and citations. **Restate the anti-bypass
+constraint in the dispatch body itself**: that agent creates TASKS in `specs/`, never
+implementation, and never edits `.claude/**` or the source store directly — this stage hands it a
+change request and nothing more, exactly as `commands/meta.md` and `skills/skill-meta/SKILL.md`
+already require for every other caller. Note in the dispatch body that `meta-builder-agent` cannot
+call `AskUserQuestion` itself, which is precisely why this channel's approval gate lives at the
+lead level, before dispatch, not inside the agent.
+
+**Required path-qualification imperative in the dispatch body**, mirroring `skill-meta` Section
+4's wording: because Write/Edit tool path resolution is completely independent of shell cwd, the
+dispatch body MUST include an explicit, unambiguous instruction that every task-directory
+Write/Edit path be qualified by `target_root` (or be an absolute path) — never a bare `specs/...`
+relative path. For example: "All task-directory paths (TODO.md, state.json, task dirs) MUST be
+written as `{target_root}/specs/...`, never as a bare `specs/...` relative path."
 
 No stage-level commit follows this dispatch: `meta-builder-agent` commits its own created task(s)
 itself (its own Stage 6, via the same `git-commit-scoped.sh`) — see

@@ -4231,7 +4231,7 @@
     {
       "project_number": 391,
       "project_name": "agent_system_task_siting_and_target_root",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Close the target_root authoring hole that files agent-system tasks into the wrong repository",
@@ -4255,7 +4255,7 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-11T17:51:06Z",
-      "last_updated": "2026-11-11T18:20:45Z",
+      "last_updated": "2026-11-11T18:24:36Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1794413303_b61a83",

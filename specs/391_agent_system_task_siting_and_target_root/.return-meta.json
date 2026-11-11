@@ -1,41 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/391_agent_system_task_siting_and_target_root/plans/01_target-root-and-siting-remedy.md",
-      "summary": "Six-phase plan across four dependency waves closing the channel-(b) target_root hole: remedy (a) at conclusion-stage Step 4b, a revised remedy (b) strengthening the agent's existing fallback into a loud refusal, a skill-meta discharge, a standing task-siting rule, and the file_scope deploy-path convention verdict, followed by redeploy."
-    }
-  ],
-  "next_steps": "Run /orchestrate 391 to execute the plan",
-  "proposed_file_scope": [
-    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
-    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
-    "agent-system/extensions/core/agents/meta-builder-agent.md",
-    "agent-system/extensions/core/skills/skill-meta/SKILL.md",
-    "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
-    "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
-    "agent-system/extensions/core/context/reference/state-management-schema.md",
-    "__WHOLE_TREE__"
-  ],
-  "dispatch_seq": 11,
+  "status": "in_progress",
+  "dispatch_seq": 13,
   "metadata": {
-    "session_id": "sess_1794413303_b61a83_391",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.75,
-    "dependency_waves": 4,
-    "issue_log_contribution": 2
-  },
-  "memory_candidates": [
-    {
-      "content": "When a research report's findings are about a prior record's own staleness, its natural narrative idiom ('already discharged', 'no longer true', 'a gap that has not existed since X') is itself forbidden in any deliverable outside specs/**, where no-record-versioning-in-deliverables.md applies. Planning a doc-correction task therefore needs an explicit translation step: the plan must direct the implementer to state the CURRENT design only and never narrate the correction, and should schedule check-record-versioning.sh per-phase on the edited path rather than deferring it to the final gate, because the violating phrasing is most likely to arrive by copying the report verbatim.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/391_agent_system_task_siting_and_target_root/plans/01_target-root-and-siting-remedy.md",
-      "confidence": 0.72,
-      "suggested_keywords": ["record-versioning", "deliverable-constraint", "doc-correction", "plan-authoring", "research-to-plan"]
-    }
-  ]
+    "session_id": "sess_1794413303_b61a83",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

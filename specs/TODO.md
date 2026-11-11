@@ -136,7 +136,7 @@ next_project_number: 607
 
 ### Agent System
 
-391 [PLANNED] — Close the target\_root authoring hole that files agent-system...
+391 [IMPLEMENTING] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
     └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
@@ -10908,7 +10908,7 @@ index-entries.json; see their DEPENDENCY RATIONALE.
 
 ### 391. Close the target_root authoring hole that files agent-system tasks into the wrong repository
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 369, Task 372, Task 373
