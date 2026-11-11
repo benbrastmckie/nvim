@@ -65951,6 +65951,11 @@
           "path": "specs/569_repair_stale_fixture_lib_dependency_lists/plans/01_stale-fixture-dependency-remedy.md",
           "type": "plan",
           "summary": "4-phase plan (2 waves, 2.75h): add project-number-inuse.sh to three fixture suites' dependency lists, retire three stale known-failures.txt rows, redeploy, and run the full gate set."
+        },
+        {
+          "path": "specs/569_repair_stale_fixture_lib_dependency_lists/summaries/01_stale-fixture-dependency-remedy-summary.md",
+          "type": "summary",
+          "summary": "Before/after tallies for all three suites, roster rows retired, and the deferred lint-test-fixture-dependency-drift.sh follow-up candidate."
         }
       ],
       "audit_verdict": {
@@ -67325,7 +67330,8 @@
         ]
       },
       "session_id": "sess_1794381614_02261f",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Repaired three fixture-based test suites' stale dependency-copy lists (missing project-number-inuse.sh, which state-write.sh unconditionally sources), clearing all 21 prior failures across the three suites, retired their now-stale known-failures.txt rows, and redeployed. Final full-tier phase discharged against the dispatch's Batch Gate Deferral scoped tier (run-all.sh --only) rather than the unscoped full gate set, which is deferred once to the batch stage."
     },
     {
       "project_number": 570,
