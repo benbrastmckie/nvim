@@ -136,8 +136,8 @@ compare across unrelated batches.
 
 ## Consumers
 
-This algorithm has three active callers, at the task, lock-acquisition, and batch-admission
-levels (a fourth, phase-level, caller is retired — see below). As of the shared-library
+This algorithm has four active callers, at the task, lock-acquisition, batch-admission, and
+roadmap-lint levels (a fifth, phase-level, caller is retired — see below). As of the shared-library
 convergence, the lock-acquisition-level and batch-admission-level
 callers no longer carry two independent transcriptions of the algorithm — they SPLICE the ONE
 physical implementation at `.claude/scripts/lib/file-scope-overlap.sh`
@@ -217,12 +217,24 @@ both source or splice the same file.
   Sixth Admission Dimension" section for the full rationale and the rejected zero-code
   alternative, and `docs/architecture/batch-admit-schema.md` for the `whole_tree_claim` verdict
   shape this application produces.
+- **Roadmap-lint-level**: `.claude/scripts/lint/lint-roadmap-batch-proposals.sh` — the
+  authoring-time analogue of the batch-admission-level caller above — checks each hand-authored
+  `/orchestrate` Run line in a repository's `specs/ROADMAP.md` against every OTHER non-terminal
+  task in `specs/state.json`, reporting a task absent from the batch whose declared `file_scope`
+  overlaps an in-batch task (its finding (a)). Its subject is a hand-authored batch PROPOSAL
+  (prose a human typed, never dispatched) rather than a dispatch candidate, and it is purely
+  ADVISORY: unlike every other caller here, its exit code is never affected by what it finds.
+  Splices `$FILE_SCOPE_OVERLAP_JQ_DEFS` into a single `jq -n` program over the whole
+  cross-product, the same shape `orchestrate-batch-admit.sh` uses — not a fifth transcription of
+  the predicate. Invoked from `context/contracts/conclusion-stage.md`'s Step 5, after
+  `specs/ROADMAP.md`'s own regenerate pass.
 
-All four callers reference this document by path; none restates the normalization or overlap
-rule inline. Two of the four (lock-acquisition-level, batch-admission-level) additionally share
-ONE physical predicate implementation rather than independently transcribing it, and both apply
-the predicate a second and third time — via the self-modification and session-registry
-bullets above — against inputs other than another task's declared `file_scope`.
+All five callers reference this document by path; none restates the normalization or overlap
+rule inline. Three of the five (lock-acquisition-level, batch-admission-level,
+roadmap-lint-level) additionally share ONE physical predicate implementation rather than
+independently transcribing it, and the batch-admission-level caller applies the predicate a
+second and third time — via the self-modification and session-registry bullets above — against
+inputs other than another task's declared `file_scope`.
 
 ## Three Contention Inputs
 

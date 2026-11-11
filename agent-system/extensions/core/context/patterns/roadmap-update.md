@@ -121,8 +121,9 @@ hand.
 open gap and is deliberately left unwired. A mode is not wired into a command merely to make
 this contract's caller table symmetric with the conclusion stage's own live call. If a concrete
 operational need for that wiring arises, file it via `/task` or `/spawn` rather than wiring it
-preemptively here. A separate, advisory lint over hand-authored `## Next` batch proposals is
-already planned as dependent work elsewhere.
+preemptively here. A separate, advisory lint over hand-authored `## Next` batch proposals exists
+at `.claude/scripts/lint/lint-roadmap-batch-proposals.sh`, invoked from the conclusion stage's
+Step 5 (see `context/contracts/conclusion-stage.md`) immediately after `--regenerate` runs.
 
 ---
 

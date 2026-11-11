@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Finding (e), the call-site wiring, and the Consumers/forward-reference edits",
+  "started_at": "2026-11-11T23:00:00Z",
+  "last_updated": "2026-11-11T23:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Finding (e): declarative paragraph in roadmap-format.md's Next Grammar section", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 2, "description": "Call site: wire the lint into conclusion-stage.md Step 5, plus the Step 6 note", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]},
+    {"id": 3, "description": "file-footprint-overlap.md: add to Consumers list, correct count sentence", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/file-footprint-overlap.md"], "note": "three->four active callers (plus the retired phase-level caller count); closing summary sentence updated four->five"},
+    {"id": 4, "description": "roadmap-update.md: replace unnamed forward reference with named pointer", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"], "note": "confirmed the stale unnamed sentence was still present before editing, per the plan's own instruction"},
+    {"id": 5, "description": "Add the 603 follow-up note to the lint script header (check if already present)", "status": "done", "files_touched": [], "note": "ALREADY PRESENT from Phase 2's 'FOLLOW-UP RISK' header paragraph, naming the roadmap-as-generated-artifact objective by durable description -- no edit needed"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

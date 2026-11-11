@@ -159,6 +159,13 @@ externally-blocked task may otherwise read `ready` or `blocked:N` against in-rep
   any retained Run line, rendered as additional `/orchestrate` lines chunked at `--max-tasks`
   (default 8, matching `commands/orchestrate.md`'s `MAX_TASKS`) per wave. Header:
   `**Coverage appendix (uncovered tasks)**:`. Omitted entirely when empty.
+- A Run line's `{task_list}` MAY name tasks carrying `dependencies[]` edges among themselves:
+  `/orchestrate` dispatches dependency-aware waves, so an intra-batch edge sequences the two
+  tasks into successive waves rather than disqualifying either one. Whether a dependent joins
+  its predecessor's batch is the author's judgment; a dependency edge is never grounds for
+  REMOVING a task from a batch. See `context/patterns/batch-orchestration-guardrails.md`'s Gate
+  Catalogue, which already classifies an unmet predecessor as an ORDERING CONSTRAINT, cleared
+  automatically once the predecessor reaches a terminal state.
 
 ## Generation
 

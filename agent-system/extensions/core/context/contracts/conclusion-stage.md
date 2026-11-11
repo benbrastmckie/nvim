@@ -357,6 +357,19 @@ bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
   --message "orchestrate conclusion: roadmap regenerate" -- specs/ROADMAP.md
 ```
 
+After the regenerate and its commit, run the advisory batch-proposal lint over the freshly
+regenerated file:
+
+```bash
+bash .claude/scripts/lint/lint-roadmap-batch-proposals.sh
+```
+
+Its output is ADVISORY: the exit code is never acted on, and its findings are surfaced verbatim
+with Step 5's own output. This is explicitly NOT a fourth channel — it derives from
+`specs/ROADMAP.md`, carries no `AskUserQuestion` gate, and the Exactly-One-Channel and
+Hint-Versus-Decision rules above do not apply to it, the same posture Step 7's suggester already
+carries.
+
 ### Step 7 — Suggest next batch
 
 (Numbered 7, positioned here between Step 5 and Step 6 rather than after Step 6, because its
@@ -386,4 +399,6 @@ declined, or not-asked-because-empty) with its citations, channels (b) and (c)'s
 zero-contribution dispatch list (`no_contribution_tasks[]`, cross-referenced with
 `context/contracts/phase-closure.md`'s mandatory-attempt requirement — a listed task either
 genuinely had nothing to record, or skipped the attestation). Render per
-`context/patterns/orchestrate-batch-results-template.md`'s conclusion report block.
+`context/patterns/orchestrate-batch-results-template.md`'s conclusion report block. Step 5's
+advisory batch-proposal-lint findings (if any) appear with Step 5's own output above, not as a
+separate section of this report.

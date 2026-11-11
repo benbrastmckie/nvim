@@ -486,14 +486,14 @@ run together with a direct by-path invocation of the fixture suite this phase cr
 
 ---
 
-### Phase 5: Finding (e), the call-site wiring, and the Consumers/forward-reference edits [NOT STARTED]
+### Phase 5: Finding (e), the call-site wiring, and the Consumers/forward-reference edits [COMPLETED]
 
 **Goal**: The format contract states plainly that an intra-batch dependency edge never disqualifies
 a task from a batch; the lint is invoked from the conclusion stage; and the two documents that
 name this algorithm's callers and this lint's existence point at the real script.
 
 **Tasks**:
-- [ ] Finding (e) — in `context/formats/roadmap-format.md`'s `## Next Grammar` section, add one
+- [x] Finding (e) — in `context/formats/roadmap-format.md`'s `## Next Grammar` section, add one
       short paragraph: a Run line's `{task_list}` MAY name tasks carrying `dependencies[]` edges
       among themselves, because `/orchestrate` dispatches dependency-aware waves, so an intra-batch
       edge sequences the two tasks into successive waves rather than disqualifying either; whether
@@ -503,7 +503,8 @@ name this algorithm's callers and this lint's existence point at the real script
       classifies an unmet predecessor as an ORDERING CONSTRAINT cleared automatically once the
       predecessor reaches a terminal state. This is a pointer plus one statement, never new
       doctrine, and it must not assert the rejected finding (b)'s mandate in prose form.
-- [ ] Call site — in `context/contracts/conclusion-stage.md`'s Step 5, after the existing
+      *(completed)*
+- [x] Call site — in `context/contracts/conclusion-stage.md`'s Step 5, after the existing
       `roadmap-integration.sh --regenerate` invocation and its scoped commit, add the lint
       invocation (`bash .claude/scripts/lint/lint-roadmap-batch-proposals.sh`) with one sentence
       stating that its output is advisory, that its exit code is never acted on, and that it is
@@ -512,21 +513,25 @@ name this algorithm's callers and this lint's existence point at the real script
       apply to it, the same posture Step 7 already carries. Add one line to Step 6 recording that
       the advisory lines appear with Step 5's output rather than as a report section (Decision D4).
       Re-read the file immediately before editing: it has four other declared claimants.
-- [ ] `context/patterns/file-footprint-overlap.md` — add this lint to the `## Consumers` list as a
+      *(completed; verified green against test-orchestrate-conclusion-aggregate.sh)*
+- [x] `context/patterns/file-footprint-overlap.md` — add this lint to the `## Consumers` list as a
       new, named caller, and update the list's own count sentence ("three active callers") to match
       the new total. State the consumption shape precisely: it splices
       `$FILE_SCOPE_OVERLAP_JQ_DEFS` into a single `jq -n` program, like the batch-admission-level
       caller, and its subject is a hand-authored batch proposal rather than a dispatch candidate.
-- [ ] `context/patterns/roadmap-update.md` — its "Live Callers" section currently anticipates this
+      *(completed)*
+- [x] `context/patterns/roadmap-update.md` — its "Live Callers" section currently anticipates this
       lint in prose ("A separate, advisory lint over hand-authored `## Next` batch proposals is
       already planned as dependent work elsewhere") with no path. Replace that forward reference
       with a named pointer to the real script and its conclusion-stage call site. Confirm the
       sentence is still present and still unnamed before editing; if it has already been changed,
       make the pointer consistent with whatever is there rather than restoring the old wording.
-- [ ] Add the 603 follow-up note to the lint script's header: record 603's roadmap-as-generated-artifact
+      *(completed; confirmed the stale sentence was still present and still unnamed before editing)*
+- [x] Add the 603 follow-up note to the lint script's header: record 603's roadmap-as-generated-artifact
       objective will move batch membership out of `## Next` prose into `state.json`, at which point
       this lint's parse layer needs rescoping. Name the objective by its durable description, never
-      by task number (this file is outside `specs/**`).
+      by task number (this file is outside `specs/**`). *(completed: already present from Phase
+      2's "FOLLOW-UP RISK" header paragraph; no edit needed, confirmed by re-reading the script)*
 
 **Timing**: 1.25 hours
 
