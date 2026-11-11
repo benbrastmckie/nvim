@@ -31,7 +31,7 @@ FAILED=0
 
 
 # --- Loud-skip discipline: verify every required script exists before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh lib/source-store-path-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -62,7 +62,7 @@ build_repo() {
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     mkdir -p "$repo/.claude/scripts/$(dirname "$f")"
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/source-store-path-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   cat > "$repo/.gitignore" <<'GITIGNORE_EOF'
@@ -93,6 +93,32 @@ RETURN_META_EOF
   git -C "$repo" commit -q -m "initial"
 
   echo "$repo"
+}
+
+# --- build_source_store_repo <consumer_repo> -- creates a SECOND, genuinely disjoint `git init`
+# repository under TOP_WORKDIR, with an `agent-system/extensions/core/doc.md` file at its own
+# root, and writes a `.claude-extensions.json` into <consumer_repo> naming it as the `core`
+# extension's source_dir -- the disjoint scenario the containment remedy requires, never a
+# coincidental same-repository fixture. Echoes "<source_repo> <relative-path-inside-it>" on
+# stdout for the caller to use when writing a files_touched entry. ---
+build_source_store_repo() {
+  local consumer_repo="$1"
+  local source_repo
+  source_repo="$(mktemp -d -p "$TOP_WORKDIR")"
+
+  mkdir -p "$source_repo/agent-system/extensions/core"
+  git -C "$source_repo" init -q
+  git -C "$source_repo" config user.email "test@example.com"
+  git -C "$source_repo" config user.name "Test Suite"
+  echo "source store doc" > "$source_repo/agent-system/extensions/core/doc.md"
+  git -C "$source_repo" add -A
+  git -C "$source_repo" commit -q -m "seed source store"
+
+  cat > "$consumer_repo/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$source_repo/agent-system/extensions/core"}}}
+EOF
+
+  echo "$source_repo agent-system/extensions/core/doc.md"
 }
 
 # --- write_progress <repo> <phase> <json-objectives-array> -- writes a progress file. ---
@@ -1186,6 +1212,177 @@ if echo "$out28" | grep -q "WARNING.*dropping out-of-scope path '.claude/scripts
   common_test_pass "Case 28: the deployed-tree path is still dropped with the plain warning"
 else
   common_test_fail "Case 28: expected the plain drop warning for .claude/scripts/planted.sh; got out=$out28"
+fi
+
+# =====================================================================
+# Case 29 (disjoint source-store fixture): a files_touched path classified SOURCE_STORE against
+# a genuinely disjoint second repository is dropped from THIS repository's commit with wording
+# naming that repository's root -- never the undeclared-scope wording -- and recorded under the
+# "source store excursion" class, never "scope excursion".
+# =====================================================================
+common_test_info "=== Case 29: disjoint source-store fixture classified and reported distinctly ==="
+
+repo29="$(build_repo)"
+read -r source_repo29 ssp29 < <(build_source_store_repo "$repo29")
+write_progress "$repo29" 1 "[{\"id\":1,\"status\":\"done\",\"files_touched\":[\"src/a.txt\",\"${ssp29}\"]}]"
+echo "mod a" > "$repo29/src/a.txt"
+
+before29=$(git -C "$repo29" rev-list --count HEAD)
+out29="$(run_phase_commit "$repo29" --task 999 --project probe --phase 1 --message "case29" --session sess_29 2>&1)"
+rc29=$?
+after29=$(git -C "$repo29" rev-list --count HEAD)
+show29="$(git -C "$repo29" show --name-only --format= HEAD)"
+
+if [ "$rc29" -eq 0 ] && [ "$after29" -eq $((before29 + 1)) ] && echo "$show29" | grep -qF "src/a.txt" && ! echo "$show29" | grep -qF "doc.md"; then
+  common_test_pass "Case 29: src/a.txt lands; the source-store path does not; exit 0"
+else
+  common_test_fail "Case 29: expected rc=0, HEAD+1, src/a.txt landed, doc.md absent; got rc=$rc29 before=$before29 after=$after29 show='$show29' out=$out29"
+fi
+
+if echo "$out29" | grep -qF "$source_repo29" && echo "$out29" | grep -qF "extension 'core'"; then
+  common_test_pass "Case 29: the warning names the resolved source repository root and the extension"
+else
+  common_test_fail "Case 29: expected the warning to name '$source_repo29' and extension 'core'; got out=$out29"
+fi
+
+if echo "$out29" | grep -qF "not contained in this task's declared file_scope"; then
+  common_test_fail "Case 29: the SOURCE_STORE drop must NEVER use the undeclared-scope wording; got out=$out29"
+else
+  common_test_pass "Case 29: the SOURCE_STORE drop never reads as an undeclared-scope miss"
+fi
+
+if [ -f "$repo29/specs/999_probe/issues.jsonl" ] && grep -q "source store excursion" "$repo29/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 29: recorded under the distinct 'source store excursion' issue class"
+else
+  common_test_fail "Case 29: expected a 'source store excursion' issue record; got $(cat "$repo29/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+if [ -f "$repo29/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo29/specs/999_probe/issues.jsonl"; then
+  common_test_fail "Case 29: must NOT also record under the ordinary 'scope excursion' class; got $(cat "$repo29/specs/999_probe/issues.jsonl" 2>/dev/null)"
+else
+  common_test_pass "Case 29: no ordinary 'scope excursion' record was created for this path"
+fi
+
+meta29="$(cat "$repo29/specs/999_probe/.return-meta.json" 2>/dev/null || echo '{}')"
+if echo "$meta29" | jq -e --arg p "$ssp29" '(.proposed_file_scope // []) | index($p)' >/dev/null 2>&1; then
+  common_test_fail "Case 29: the source-store path must NEVER be deposited into proposed_file_scope; got $meta29"
+else
+  common_test_pass "Case 29: the source-store path was not deposited into proposed_file_scope"
+fi
+
+# =====================================================================
+# Case 30 (genuinely out-of-repository, unclaimed): a files_touched path resolving outside this
+# repository that no extension's source_dir claims is dropped and reported naming the resolved
+# directory, under the same "source store excursion" class.
+# =====================================================================
+common_test_info "=== Case 30: genuinely out-of-repository path, unclaimed by any extension ==="
+
+repo30="$(build_repo)"
+write_progress "$repo30" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","../outside-this-repo-entirely.txt"]}]'
+echo "mod a" > "$repo30/src/a.txt"
+mkdir -p "$(dirname "$repo30")"
+echo "outside" > "$(dirname "$repo30")/outside-this-repo-entirely.txt"
+
+out30="$(run_phase_commit "$repo30" --task 999 --project probe --phase 1 --message "case30" --session sess_30 2>&1)"
+rc30=$?
+show30="$(git -C "$repo30" show --name-only --format= HEAD)"
+
+if [ "$rc30" -eq 0 ] && echo "$show30" | grep -qF "src/a.txt"; then
+  common_test_pass "Case 30: src/a.txt still lands; exit 0"
+else
+  common_test_fail "Case 30: expected rc=0 and src/a.txt landed; got rc=$rc30 show='$show30' out=$out30"
+fi
+
+if echo "$out30" | grep -qF "lies outside this repository" && ! echo "$out30" | grep -qF "not contained in this task's declared file_scope"; then
+  common_test_pass "Case 30: the drop is reported as outside this repository, never as an undeclared-scope miss"
+else
+  common_test_fail "Case 30: expected the out-of-repository wording, never the undeclared-scope wording; got out=$out30"
+fi
+
+rm -f "$(dirname "$repo30")/outside-this-repo-entirely.txt"
+
+# =====================================================================
+# Case 31 (acceptance criterion 3 regression pin): an in-repository path genuinely outside the
+# declared file_scope, run in the SAME dispatch as a disjoint source-store classification (Case
+# 29's fixture extended with one more files_touched entry), still produces TODAY'S EXACT warning
+# text, TODAY'S EXACT "scope excursion" class, and TODAY'S deposit -- unchanged by this phase.
+# =====================================================================
+common_test_info "=== Case 31: acceptance criterion 3 -- in-repository undeclared path is unchanged ==="
+
+repo31="$(build_repo)"
+read -r _ ssp31 < <(build_source_store_repo "$repo31")
+write_progress "$repo31" 1 "[{\"id\":1,\"status\":\"done\",\"files_touched\":[\"src/a.txt\",\"other/outside.txt\",\"${ssp31}\"]}]"
+echo "mod a" > "$repo31/src/a.txt"
+mkdir -p "$repo31/other"
+echo "outside" > "$repo31/other/outside.txt"
+
+out31="$(run_phase_commit "$repo31" --task 999 --project probe --phase 1 --message "case31" --session sess_31 2>&1)"
+show31="$(git -C "$repo31" show --name-only --format= HEAD)"
+
+if echo "$out31" | grep -qF "dropping out-of-scope path 'other/outside.txt' from phase commit — not in task 999's declared file_scope"; then
+  common_test_pass "Case 31: the in-repository undeclared path still produces today's exact warning text"
+else
+  common_test_fail "Case 31: expected today's exact scope-excursion warning for other/outside.txt; got out=$out31"
+fi
+
+if [ -f "$repo31/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo31/specs/999_probe/issues.jsonl" \
+  && grep -q "other/outside.txt" "$repo31/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 31: today's exact 'scope excursion' class and what-happened string are recorded for other/outside.txt"
+else
+  common_test_fail "Case 31: expected the existing scope-excursion issue record for other/outside.txt; got $(cat "$repo31/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+meta31="$(cat "$repo31/specs/999_probe/.return-meta.json" 2>/dev/null || echo '{}')"
+if echo "$meta31" | jq -e '(.proposed_file_scope // []) | index("other/outside.txt")' >/dev/null 2>&1; then
+  common_test_pass "Case 31: other/outside.txt is still deposited into proposed_file_scope, exactly as before this phase"
+else
+  common_test_fail "Case 31: expected other/outside.txt deposited into proposed_file_scope; got $meta31"
+fi
+
+if echo "$show31" | grep -qF "src/a.txt" && ! echo "$show31" | grep -qF "doc.md" && ! echo "$show31" | grep -qF "other/outside.txt"; then
+  common_test_pass "Case 31: src/a.txt lands; the source-store path and the undeclared path both do not"
+else
+  common_test_fail "Case 31: expected only src/a.txt landed; got show='$show31'"
+fi
+
+# =====================================================================
+# Case 32 (inertness in THIS repository): source_store_classify is sourced (the library is
+# present), but the classified repository equals the committing repository's own root -- every
+# agent-system/** path must classify IN_REPO and proceed through the ordinary Containment
+# Self-Check unaffected, never through the new SOURCE_STORE branch.
+# =====================================================================
+common_test_info "=== Case 32: inertness -- source_dir resolves inside the committing repo's own root ==="
+
+repo32="$(build_repo)"
+mkdir -p "$repo32/agent-system/extensions/core"
+echo "owned source store" > "$repo32/agent-system/extensions/core/owned.md"
+cat > "$repo32/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$repo32/agent-system/extensions/core"}}}
+EOF
+cat > "$repo32/specs/state.json" <<'STATE_EOF'
+{"active_projects":[{"project_number":999,"project_name":"probe","file_scope":["src/a.txt","src/b.txt","src/c.txt","agent-system/extensions/core/owned.md"]}]}
+STATE_EOF
+git -C "$repo32" add -A
+git -C "$repo32" commit -q -m "seed owned source store"
+
+write_progress "$repo32" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","agent-system/extensions/core/owned.md"]}]'
+echo "mod a" > "$repo32/src/a.txt"
+echo "mod owned" > "$repo32/agent-system/extensions/core/owned.md"
+
+out32="$(run_phase_commit "$repo32" --task 999 --project probe --phase 1 --message "case32" --session sess_32 2>&1)"
+rc32=$?
+show32="$(git -C "$repo32" show --name-only --format= HEAD)"
+
+if [ "$rc32" -eq 0 ] && echo "$show32" | grep -qF "src/a.txt" && echo "$show32" | grep -qF "agent-system/extensions/core/owned.md"; then
+  common_test_pass "Case 32: inertness holds -- both paths land with no classification drop (the extension's own repository committing its own source store)"
+else
+  common_test_fail "Case 32: expected both src/a.txt and owned.md landed with rc=0; got rc=$rc32 show='$show32' out=$out32"
+fi
+
+if echo "$out32" | grep -qF "source store" || echo "$out32" | grep -qF "lies outside this repository"; then
+  common_test_fail "Case 32: no source-store/out-of-repository classification warning must fire for an owned extension; got out=$out32"
+else
+  common_test_pass "Case 32: no classification warning fired (inertness)"
 fi
 
 # task-ref-ok:end

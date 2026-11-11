@@ -355,7 +355,7 @@ edits are confined to one stage inside each file with no externally visible sign
 
 --- *(completed)*
 
-### Phase 3: Classify and Name the Repository at the Phase-Commit Site [NOT STARTED]
+### Phase 3: Classify and Name the Repository at the Phase-Commit Site [COMPLETED]
 
 **Goal**: The phase-commit path stops reporting "outside this repository" as "not in your declared
 scope". A classified source-store or out-of-repository path is dropped from this repository's commit
@@ -365,44 +365,44 @@ repository's `file_scope`. Today's behaviour and today's exact message for a gen
 in-repository undeclared path are pinned unchanged.
 
 **Tasks**:
-- [ ] Re-read `scripts/git-commit-phase.sh`'s Containment Self-Check block and header immediately
-      before editing.
-- [ ] Source the Phase 1 library beside the existing engine-written-state library, with the same
+- [x] Re-read `scripts/git-commit-phase.sh`'s Containment Self-Check block and header immediately
+      before editing. *(completed)*
+- [x] Source the Phase 1 library beside the existing engine-written-state library, with the same
       guarded, fail-soft `source … 2>/dev/null` posture, so an unavailable library leaves the check
-      exactly as it is today.
-- [ ] Classify each derived `files_touched` entry **before** the containment test runs, mirroring
+      exactly as it is today. *(completed)*
+- [x] Classify each derived `files_touched` entry **before** the containment test runs, mirroring
       the placement rule the downstream gate already documents for its own out-of-repository guard:
-      an out-of-repository path must never be able to reach the scope test.
-- [ ] On a `SOURCE_STORE` verdict: drop the path from this repository's commit; emit a warning
+      an out-of-repository path must never be able to reach the scope test. *(completed)*
+- [x] On a `SOURCE_STORE` verdict: drop the path from this repository's commit; emit a warning
       textually distinct from both existing messages, naming the resolved repository root, the
       extension, and the path's position inside that repository; record it with
       `issue-record.sh --class "source store excursion"` carrying its own `--what-happened` wording,
       so the two cases are separable in the issue log rather than collapsing into one class; and
-      refuse the `proposed_file_scope` deposit for it.
-- [ ] On an `OUT_OF_REPO` verdict with no attributable extension: drop, warn naming the resolved
+      refuse the `proposed_file_scope` deposit for it. *(completed)*
+- [x] On an `OUT_OF_REPO` verdict with no attributable extension: drop, warn naming the resolved
       directory and stating plainly that the path lies outside this repository, record under the same
-      new class, and refuse the deposit.
-- [ ] Extend `propose_file_scope_addition()`'s existing refusal to cover both verdicts, with the
+      new class, and refuse the deposit. *(completed)*
+- [x] Extend `propose_file_scope_addition()`'s existing refusal to cover both verdicts, with the
       same reasoning the deployed-tree refusal already carries: a path outside this repository can
       never become a legitimate `file_scope` member here, so re-seeding it through the postflight
-      union-merge would guarantee an identical drop on every future phase.
-- [ ] Keep the existing `scope excursion` branch — its warning text, its `--what-happened` string,
-      its issue class, and its deposit — byte-for-byte unchanged for an `IN_REPO` verdict.
-- [ ] Keep the post-commit completeness check honest: a classified path is excluded from
+      union-merge would guarantee an identical drop on every future phase. *(completed)*
+- [x] Keep the existing `scope excursion` branch — its warning text, its `--what-happened` string,
+      its issue class, and its deposit — byte-for-byte unchanged for an `IN_REPO` verdict. *(completed)*
+- [x] Keep the post-commit completeness check honest: a classified path is excluded from
       `files_touched` by the same mechanism the containment drop already uses, so the check never
-      asserts cleanliness for a path this repository cannot hold.
-- [ ] Add a header subsection documenting the classification, its placement before the containment
-      test, the distinct message and issue class, the deposit refusal, and the fail-open posture.
-- [ ] Extend `scripts/tests/test-git-commit-phase.sh` with a `build_source_store_repo()` helper that
+      asserts cleanliness for a path this repository cannot hold. *(completed)*
+- [x] Add a header subsection documenting the classification, its placement before the containment
+      test, the distinct message and issue class, the deposit refusal, and the fail-open posture. *(completed)*
+- [x] Extend `scripts/tests/test-git-commit-phase.sh` with a `build_source_store_repo()` helper that
       creates a **second, genuinely disjoint** `git init` repository under the existing workdir and
       writes a `.claude-extensions.json` in the consumer fixture naming it — the disjoint scenario
       the research decisions require, never validated against this repository's own coincidental
-      containment.
-- [ ] Add the acceptance-criterion-3 regression case explicitly: an in-repository path genuinely
+      containment. *(completed)*
+- [x] Add the acceptance-criterion-3 regression case explicitly: an in-repository path genuinely
       outside the declared `file_scope`, with no classification match, still produces today's exact
       warning text, today's exact `scope excursion` class, today's `--what-happened` string, and
-      today's deposit.
-- [ ] Add cases asserting the new wording names the repository, the new class is recorded, the
+      today's deposit. *(completed)*
+- [x] Add cases asserting the new wording names the repository, the new class is recorded, the
       deposit is refused, the commit's exit code is unchanged, and every pre-existing case passes
       unmodified (the existing fixtures carry no `.claude-extensions.json`, so they exercise the
       fail-soft path).
@@ -443,7 +443,7 @@ surveyed callers for.
   `agent-system/extensions/core/`: it MUST behave exactly as before (no classification, no new
   warning), demonstrating the inertness property.
 
----
+--- *(completed)*
 
 ### Phase 4: Commit a Source-Store Path in Its Own Repository [NOT STARTED]
 

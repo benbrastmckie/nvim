@@ -173,6 +173,54 @@
 #
 # Recovery from exit 6 is a follow-up commit of the named paths, never a widened pathspec --
 # matching the Containment Self-Check's own existing recovery guidance.
+#
+# REPOSITORY CLASSIFICATION (ported from a different-repository-containment remedy)
+# -------------------------------------------------------------------------------------
+# A `files_touched` path can be a path this repository cannot hold AT ALL -- either it belongs
+# to a DIFFERENT repository entirely (a genuine out-of-repository path, no extension's source
+# store claims it), or it belongs to an EXTENSION'S SOURCE STORE, resolved via
+# `.claude-extensions.json`'s per-extension `source_dir`, whose enclosing git toplevel differs
+# from this repository's own root. Before this classification existed, both shapes reached the
+# ordinary Containment Self-Check below and were reported with the SAME "not contained in this
+# task's declared file_scope" wording a genuinely in-repository undeclared path gets -- the two
+# causes were indistinguishable from the warning text alone.
+#
+# This classification runs BEFORE the Containment Self-Check below -- the same placement rule
+# git-commit-scoped.sh's own V9 out-of-repository guard already documents for itself: an
+# out-of-repository (or source-store) path must never be able to reach the scope test, because
+# the scope test can only ever answer "declared or not", never "which repository". It sources
+# `scripts/lib/source-store-path-lib.sh` with the same guarded, fail-soft `source … 2>/dev/null`
+# posture the engine-written-state library below already uses -- an unavailable library skips
+# this classification entirely and leaves the Containment Self-Check exactly as it was before
+# this classification existed (today's behavior, byte for byte).
+#
+# Each classified entry is removed from `files_touched` -- and therefore from `stage_paths`, the
+# post-commit completeness check, and the Containment Self-Check's own scope test, all of which
+# consume `files_touched` downstream of this classification -- and reported with wording
+# TEXTUALLY DISTINCT from the Containment Self-Check's own "not contained in this task's declared
+# file_scope" message:
+#   SOURCE_STORE: names the resolved extension, the source repository's toplevel, and the path's
+#     location inside it. Recorded under `issue-record.sh --class "source store excursion"` (a
+#     class distinct from the Containment Self-Check's own "scope excursion"), with its own
+#     `--what-happened` wording so the two causes are separable in the issue log. Phase 4 wires a
+#     fail-open attempt to commit this path in its OWN repository immediately after this script's
+#     own commit returns -- see that phase's own header subsection in this file once added.
+#   OUT_OF_REPO (no extension claims it): names the resolved parent directory and states plainly
+#     that the path lies outside this repository. Recorded under the SAME "source store
+#     excursion" class (both shapes share "this repository cannot hold it at all", distinct from
+#     an ordinary declared-scope miss).
+# Neither verdict's path is ever deposited into `proposed_file_scope`: re-seeding
+# `specs/state.json`'s `file_scope` with a path this repository can never hold would guarantee an
+# identical drop on every future phase. `propose_file_scope_addition()` itself additionally
+# refuses such a path defensively (mirroring its existing deployed-tree refusal), in case a
+# future call site ever reaches it for one.
+#
+# An `IN_REPO` verdict changes nothing: the path proceeds into the existing Containment
+# Self-Check exactly as before this classification existed, including its existing "scope
+# excursion" message, class, `--what-happened` string, and deposit for a genuinely undeclared
+# in-repository path (acceptance-criterion-3 pin). In THIS repository, where the source store
+# sits inside this repository's own root, every `agent-system/**` path classifies `IN_REPO`, so
+# this classification is provably inert here.
 
 set -euo pipefail
 
@@ -180,6 +228,15 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
+
+# Repository classification library (see "REPOSITORY CLASSIFICATION" header subsection above).
+# Sourced early, fail-soft, so it is available to both propose_file_scope_addition()'s defensive
+# refusal and the classification block further down -- an unavailable library leaves every
+# consumer of source_store_classify/source_store_unexpanded_variable behaving exactly as it did
+# before this library existed (both consumers guard with `declare -F` before calling either
+# function).
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/source-store-path-lib.sh" 2>/dev/null || true
 
 usage() {
   echo "Usage: $0 --task N --project SLUG --phase P --message MSG --session SID [--objective ID] [--plan-path PATH]" >&2
@@ -278,6 +335,23 @@ propose_file_scope_addition() {
       ;;
   esac
 
+  # Repository-classification refusal (defense in depth): a path this repository cannot hold at
+  # all -- a different repository entirely, or a different extension's source store -- is never
+  # a legitimate file_scope member here either, for the identical reason the deployed-tree
+  # refusal above exists: re-seeding specs/state.json's file_scope with it would guarantee an
+  # identical drop on every future phase. The classification block below never calls this
+  # function for such a path in the first place (see its own header subsection), so this is a
+  # defensive refusal for any future call site, not the primary enforcement point.
+  if declare -F source_store_classify >/dev/null 2>&1; then
+    _fsa_classify_out="$(source_store_classify "$PROJECT_ROOT" "$path" 2>/dev/null || echo "IN_REPO")"
+    case "${_fsa_classify_out%%$'\t'*}" in
+      SOURCE_STORE|OUT_OF_REPO)
+        warn "refusing to deposit '${path}' into proposed_file_scope: this path is not contained in this repository (classified ${_fsa_classify_out%%$'\t'*}) -- it can never become a legitimate file_scope member here"
+        return 0
+        ;;
+    esac
+  fi
+
   if [ ! -f "$meta_file" ]; then
     warn "skipping proposed_file_scope deposit for '${path}': ${meta_file} not found (skip-if-absent, never create)"
     return 0
@@ -348,6 +422,52 @@ else
 
   if [ "${#files_touched[@]}" -eq 0 ]; then
     warn "no files_touched entries found in ${progress_file}$( [ -n "$objective_id" ] && echo " for objective ${objective_id}" ) -- nothing to derive; completeness check skipped"
+    run_completeness_check=false
+  fi
+fi
+
+# --- Repository Classification (see "REPOSITORY CLASSIFICATION" header subsection). Runs BEFORE
+# the Containment Self-Check below so a source-store or out-of-repository path can never reach
+# the scope test. Fail-soft on an unavailable library (declare -F guard): every files_touched
+# entry is left untouched and the Containment Self-Check below runs exactly as it did before
+# this classification existed. ---
+# source_store_commits: one tab-joined record per SOURCE_STORE-classified path --
+# "<extension><TAB><source_toplevel><TAB><rel_path><TAB><original_path>" -- consumed by Phase 4's
+# wiring (added in a later change) to attempt a fail-open commit in that path's own repository.
+# Declared unconditionally (even when empty) so a caller added later can rely on it existing.
+source_store_commits=()
+if [ "${#files_touched[@]}" -gt 0 ] && declare -F source_store_classify >/dev/null 2>&1; then
+  _rc_kept=()
+  for f in "${files_touched[@]}"; do
+    _rc_out="$(source_store_classify "$PROJECT_ROOT" "$f" 2>/dev/null || echo "IN_REPO")"
+    _rc_verdict="${_rc_out%%$'\t'*}"
+    case "$_rc_verdict" in
+      SOURCE_STORE)
+        IFS=$'\t' read -r _ _rc_ext _rc_toplevel _rc_rel <<< "$_rc_out"
+        warn "dropping '${f}' from this repository's commit — classified as belonging to extension '${_rc_ext}'s source store at ${_rc_toplevel} (path inside that repository: ${_rc_rel:-$f}); it must be committed there, not here"
+        bash "${SCRIPT_DIR}/issue-record.sh" --task "$task_number" --kind issue \
+          --class "source store excursion" --severity minor \
+          --what-happened "git-commit-phase.sh dropped '${f}' from a phase commit pathspec: classified as belonging to extension '${_rc_ext}'s source store at ${_rc_toplevel}, not this repository." \
+          --phase implement \
+          >/dev/null 2>&1 || warn "issue-record.sh call failed (non-fatal)"
+        source_store_commits+=("${_rc_ext}"$'\t'"${_rc_toplevel}"$'\t'"${_rc_rel}"$'\t'"${f}")
+        ;;
+      OUT_OF_REPO)
+        IFS=$'\t' read -r _ _rc_parent <<< "$_rc_out"
+        warn "dropping '${f}' from this repository's commit — this path lies outside this repository (resolves under ${_rc_parent}); no extension's source store claims it, so there is no repository this script can commit it in"
+        bash "${SCRIPT_DIR}/issue-record.sh" --task "$task_number" --kind issue \
+          --class "source store excursion" --severity minor \
+          --what-happened "git-commit-phase.sh dropped '${f}' from a phase commit pathspec: path resolves outside this repository (${_rc_parent}); not a declared-scope issue." \
+          --phase implement \
+          >/dev/null 2>&1 || warn "issue-record.sh call failed (non-fatal)"
+        ;;
+      *)
+        _rc_kept+=("$f")
+        ;;
+    esac
+  done
+  files_touched=("${_rc_kept[@]}")
+  if [ "${#files_touched[@]}" -eq 0 ]; then
     run_completeness_check=false
   fi
 fi
