@@ -1,9 +1,67 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/313_advisory_lint_for_roadmap_batch_proposals/summaries/01_roadmap-batch-proposal-lint-summary.md",
+      "summary": "Full implementation summary: the advisory lint, its test suite, manifest registration, the five documentation/wiring edits, the territory-hygiene state edits, and the scoped Phase 6 gate-deferral discharge."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented scripts/lint/lint-roadmap-batch-proposals.sh (advisory, exit-code-unaffected lint over hand-authored /orchestrate batch proposals in specs/ROADMAP.md, reporting findings (a) territory under-inclusion, (c) MAX_TASKS overflow, (d) terminal/nonexistent cited tasks, (f) unresolvable cited paths), its fixture suite (10/10 PASS), manifest registration, finding (e)'s declarative grammar addition, the conclusion-stage Step 5 call site, and the Consumers/forward-reference documentation updates. All six plan phases completed and deployed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/formats/roadmap-format.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh",
+    "specs/313_advisory_lint_for_roadmap_batch_proposals/summaries/01_roadmap-batch-proposal-lint-summary.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a new bash script sources scripts/lib/file-scope-overlap.sh (or any library ending in a `read -r -d '' VAR <<'HEREDOC'` heredoc assignment) under its own `set -e`, guard the `source`/`.` call with `if ! . \"$file\"; then ...; fi` rather than a bare `source`. The heredoc read always returns exit status 1 at EOF (no literal NUL byte present), and under `set -e` an unguarded source call aborts the whole script right there -- even though the library's own last top-level statement (e.g. a function definition) would otherwise make the source succeed. Running the source as an `if` condition suspends -e checking for its entire execution. Precedent: task-lock.sh and orchestrate-batch-admit.sh already use this guard around this same library.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/313_advisory_lint_for_roadmap_batch_proposals/summaries/01_roadmap-batch-proposal-lint-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "set -e",
+        "source",
+        "heredoc",
+        "read -d",
+        "file-scope-overlap.sh",
+        "bash gotcha"
+      ]
+    },
+    {
+      "content": "A lint that resolves citations (backtick-delimited paths) against ONLY a repo's root will produce heavy false positives in this dual-tree (source-store / deployed `.claude/`) repo structure, because authored prose commonly cites a path relative to the deployed tree (`commands/orchestrate.md`) or relative to a source-store extension directory with the `agent-system/extensions/` prefix dropped but the extension name (`core/`, `lean/`) kept as the citation's own first segment. Resolve against a small ordered list of candidate roots (repo root; repo_root/.claude if present; repo_root/agent-system/extensions if present) rather than a single root, before reporting a citation as unresolved. Also skip any candidate containing whitespace (a shell command or prose list quoted in backticks, not a path) and any candidate using a literal `...` elision marker.",
+      "category": "PATTERN",
+      "source_artifact": "specs/313_advisory_lint_for_roadmap_batch_proposals/summaries/01_roadmap-batch-proposal-lint-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "lint",
+        "path resolution",
+        "false positive",
+        "source-store",
+        "deployed tree",
+        "citation checking"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794431325_7cf647",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

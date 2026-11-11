@@ -1,7 +1,7 @@
 # Implementation Plan: Task #313
 
 - **Task**: 313 - Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.25 hours
 - **Dependencies**: 306 (completed), 328 (completed), 344 (completed), 387 (completed), 401 (completed), 402 (completed)
 - **Research Inputs**: specs/313_advisory_lint_for_roadmap_batch_proposals/reports/01_roadmap-batch-lint-seam-selection.md
