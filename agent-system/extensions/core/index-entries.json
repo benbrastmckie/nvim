@@ -3388,7 +3388,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full source-store/deploy-boundary resolution procedure, unreachable-source-store fallback, worked example, Exceptions, and Enforcement narrative",
-      "line_count": 75,
+      "line_count": 161,
       "keywords": [
         "source-store",
         "deploy-boundary",
