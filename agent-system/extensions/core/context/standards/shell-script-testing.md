@@ -168,6 +168,59 @@ exemptions (a suite with no genuine deployed/source-store duality to declare, or
 `common_test_resolve_subject`/`common_test_resolve_candidate`'s own regression suite exercising
 the functions directly as its subject rather than calling them to resolve one).
 
+## Source-store resolution order for an external source store
+
+A suite or script that resolves the extensions root (the directory holding `core/`, `lean/`,
+and every other per-extension subdirectory) MUST NOT hardcode
+`$REPO_ROOT/agent-system/extensions` with no fallback. That path exists only when the repository
+owns its own source store locally; a repository whose `core` extension source store is resolved
+externally through `.claude-extensions.json` has no local `agent-system/` directory at all, and
+a caller that assumes one fails with a bare environment error regardless of whether the
+condition it actually cares about (a missing or misconfigured extensions root) holds.
+
+**Resolution order**, in priority:
+
+1. `$repo_root/agent-system/extensions` if it is a directory — the common case, where the
+   repository is the source-store owner.
+2. Otherwise, `$repo_root/.claude-extensions.json`'s `.extensions.core.source_dir`, if it names
+   an existing directory — read that directory's PARENT (`source_dir` points at the `core`
+   extension itself, not at the extensions root that contains it).
+3. Otherwise: no silent default. The caller keeps its own loud, non-zero environment-error
+   convention, naming the resolution order it tried.
+
+**`source_dir` is per-extension.** A top-level `jq -r '.source_dir'` against
+`.claude-extensions.json` returns `null` — the key lives under `.extensions.<name>.source_dir`,
+one per extension, never at the document root. A `null` read at the top level must never be
+read as "the key is absent"; it is simply the wrong query path.
+
+**Two semantic cases for the fallback a caller adds on top of this order**, stated once here so
+a new suite does not have to re-derive the distinction:
+
+- A suite verifying content that the deployed tree faithfully mirrors MAY fall back further, to
+  the deployed `.claude/` copy, when neither branch above resolves — the same two-tier
+  deployed/source-store shape the "Explicit deployed/source-store subject resolution" section
+  above already documents.
+- A suite whose entire purpose is comparing the deployed tree against the true pre-deploy source
+  MUST NOT add that fallback: resolving the deployed copy as a stand-in for the source it is
+  checking the deployed copy against is circular, and silently turns a real drift into a
+  false pass.
+
+**No suite may self-declare a skip.** `tests/run-all.sh`'s verdict is binary on `rc == 0` (with
+124 and 137 special-cased as a fired timeout), and its `[SKIP]` outcome is reserved exclusively
+for a non-executable suite file. A suite that tries to signal "environmentally unrunnable,
+skipping with reason" by exiting 0 is counted as a PASS by that contract, not a skip — exactly
+the silent pass this resolution order exists to avoid. The only sound degrade path when the
+resolution order above cannot find a usable root is the caller's own loud, non-zero
+environment-error exit, never a self-declared skip.
+
+**Implementation and precedent** (cited, not restated here): `lib/common.sh`'s
+`common_test_ext_root <repo_root>` is the single implementation of this resolution order, reused
+by every call site that needs it rather than re-derived per caller.
+`lib/deploy-freshness-lib.sh`'s `_deploy_freshness_status_one` is the pre-existing precedent for
+the `.claude-extensions.json` fall-open read itself (the same `jq -r --arg n "$name"
+'.extensions[$n].source_dir // empty'` shape, then a directory-existence check, never hard-
+failing on a miss).
+
 ## Inherited `SHELLOPTS` and the `errexit` trap
 
 The header above declares `set -uo pipefail` with no `-e` — but that does not guarantee `errexit`

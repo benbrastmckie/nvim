@@ -487,33 +487,42 @@ boundary.
 
 ---
 
-### Phase 6: Record the Resolution Order as Guidance [NOT STARTED]
+### Phase 6: Record the Resolution Order as Guidance [COMPLETED]
 
 **Goal**: The sanctioned resolution order is written down where a suite author will meet it before
 hardcoding a bare `$REPO_ROOT/agent-system/extensions/...` path again.
 
 **Tasks**:
 
-- [ ] Add a subsection to `context/standards/shell-script-testing.md` naming the resolution order
+- [x] Add a subsection to `context/standards/shell-script-testing.md` naming the resolution order
       explicitly: repo-root source store, then the `.claude-extensions.json` `source_dir`
       indirection, then the deployed-tree mirror where semantically valid, then a loud error
-      carrying the resolution order it tried.
-- [ ] State the two semantic cases plainly, with the reason for each: a suite verifying content
+      carrying the resolution order it tried. *(completed: new "Source-store resolution order for
+      an external source store" subsection, inserted after the existing "Explicit deployed/
+      source-store subject resolution" section)*
+- [x] State the two semantic cases plainly, with the reason for each: a suite verifying content
       that the deployed tree faithfully mirrors may fall back to the deployed copy; a suite whose
       purpose is comparing the deployed tree against the pre-deploy source must not, because that
-      fallback is circular.
-- [ ] State that `source_dir` is per-extension, so a top-level read returns `null`, and that
-      `null` must not be read as the key being absent.
-- [ ] State that a suite cannot self-declare a skip: `run-all.sh`'s verdict is binary on `rc == 0`
+      fallback is circular. *(completed)*
+- [x] State that `source_dir` is per-extension, so a top-level read returns `null`, and that
+      `null` must not be read as the key being absent. *(completed)*
+- [x] State that a suite cannot self-declare a skip: `run-all.sh`'s verdict is binary on `rc == 0`
       and its `[SKIP]` is reserved for a non-executable suite file, so an "unrunnable, skipping"
       exit of 0 is counted as a pass. The degrade path is therefore a loud non-zero environment
-      error, never a self-declared skip.
-- [ ] Point at `lib/common.sh`'s `common_test_ext_root` as the single implementation and at
+      error, never a self-declared skip. *(completed)*
+- [x] Point at `lib/common.sh`'s `common_test_ext_root` as the single implementation and at
       `lib/deploy-freshness-lib.sh` as the pre-existing precedent for the fall-open read. Do not
-      restate either contract — cite them.
-- [ ] Verify no task-number reference and no record-versioning language entered the file: cite
+      restate either contract — cite them. *(completed)*
+- [x] Verify no task-number reference and no record-versioning language entered the file: cite
       durable anchors only (script names, function names, key names, flag spellings, exit codes,
-      message texts), and state the current design without narrating its own history.
+      message texts), and state the current design without narrating its own history. *(completed:
+      `check-task-references.sh` reports 0 occurrences repo-wide; `check-record-versioning.sh`'s
+      3 repo-wide BLOCKING findings are all in `lua/neotex/plugins/tools/himalaya/docs/**`,
+      unrelated to this file — zero findings against the edited file itself. Also discovered and
+      fixed a mechanical fallout: the edit grew the file past its recorded `index-entries.json`
+      `line_count` (1216 -> 1269), tripping Rule R; repaired via
+      `bash .claude/scripts/generate-context-line-counts.sh --write`, which writes back to the
+      source-store `index-entries.json`, not the deployed copy.)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,34 @@
+{
+  "phase": 6,
+  "phase_name": "Record the Resolution Order as Guidance",
+  "started_at": "2026-11-11T01:00:00Z",
+  "last_updated": "2026-11-11T01:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the source-store resolution-order subsection to shell-script-testing.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Verify no task-number references or record-versioning language, and repair the index-entries.json line_count fallout",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": [
+    "bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim: gate 4 PASS; gate 3 FAIL, but every listed finding is the expected undeployed-source-store-drift signature plus a benign README-staleness WARN -- none against the edited file. Neither gate SKIPped.",
+    "Diff stat for shell-script-testing.md: 53 insertions, 0 deletions -- confirms the change is confined to prose (a pure addition).",
+    "bash .claude/scripts/check-task-references.sh: 0 unexempted occurrences repo-wide.",
+    "bash .claude/scripts/check-record-versioning.sh: 3 BLOCKING findings repo-wide, all in lua/neotex/plugins/tools/himalaya/docs/** (pre-existing, unrelated); zero findings against the edited file.",
+    "Mechanical fallout discovered and fixed: the edit grew shell-script-testing.md from 1216 to 1269 lines, tripping check-extension-docs.sh's Rule R (stale index-entries.json line_count). Repaired via `bash .claude/scripts/generate-context-line-counts.sh --write` (must run from the deployed copy per deploy-root-guard.sh, but writes back to the source-store index-entries.json) -- re-ran check-extension-docs.sh afterward and confirmed the Rule R finding is gone."
+  ]
+}
