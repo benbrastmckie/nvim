@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase implementation plan for the stale fixture dependency-list defect. Re-validated every carried figure live: the three affected suites still fail at 17/12, 10/7 and 35/2, and test-orchestrate-unwind-dispatch.sh is already green at 21/0 and is excluded. Phases 1-3 add project-number-inuse.sh to each suite's own dependency declaration (two one-line array edits, one two-site require_file + setup_sandbox edit) in wave 1; Phase 4 retires the three now-stale known-failures.txt rows, regenerates the deploy tree, and runs the complete gate set. The 'derive lists from source' design question is settled as a lint-time follow-up candidate, not built here.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/569_repair_stale_fixture_lib_dependency_lists/plans/01_stale-fixture-dependency-remedy.md",
+      "summary": "4-phase plan (2 waves, 2.75h): add project-number-inuse.sh to three fixture suites' dependency lists, retire three stale known-failures.txt rows, redeploy, and run the full gate set."
+    }
+  ],
+  "dispatch_seq": 5
+}

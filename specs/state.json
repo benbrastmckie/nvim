@@ -65905,25 +65905,32 @@
     {
       "project_number": 569,
       "project_name": "repair_stale_fixture_lib_dependency_lists",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "Four fixture-based test suites fail because their curated dependency-copy lists are stale: state-write.sh gained 'source ${SCRIPT_DIR}/lib/project-number-inuse.sh' (state-write.sh:214) in commit 918c9a031, and none of the four suites copies that library into its temp fixture. The copied state-write.sh therefore aborts at line 214 with 'No such file or directory', every fixture state.json write fails, and each caller surfaces it as its own generic write-failure exit (update-task-status.sh maps it to exit 2, 'state.json update failed'), which hides the real cause. Affected suites and current standalone results: test-postflight-deploy-gate.sh (17 passed, 12 failed), test-orchestrate-unwind-dispatch.sh (10 passed, 11 failed), test-redeploy-checkpoint-promotion.sh (10 passed, 7 failed), test-orchestrate-predispatch-review.sh (35 passed, 2 failed). Confirmed pre-existing: test-orchestrate-unwind-dispatch.sh fails identically at commit 3b7f13344. Reproduce by neutering a suite's common_test_workdir_init cleanup and reading the preserved per-case .err file, which names the missing library directly. Primary fix: add project-number-inuse.sh to each suite's REQUIRED_LIBS array. Consider also whether these curated per-suite dependency lists should be derived from the subject script's own source lines rather than hand-maintained, since that is the defect class that produced this. NOT the audit-evidence gate in state-write.sh (commit b5b730454, same day): that gate fires only on new active_projects entries, and these fixtures pre-seed active_projects and only transition status.",
       "effort": "small",
       "topic": "agent-system",
       "dependencies": [],
       "file_scope": [
-        "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/scripts/tests/known-failures.txt",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
-        "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh",
-        "agent-system/extensions/core/scripts/tests/test-orchestrate-predispatch-review.sh"
+        "agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh",
+        "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh"
       ],
       "created": "2026-11-09T20:09:51Z",
-      "last_updated": "2026-11-11T07:30:59Z",
+      "last_updated": "2026-11-11T10:10:58Z",
       "artifacts": [
         {
           "path": "specs/569_repair_stale_fixture_lib_dependency_lists/reports/01_stale-fixture-dependency-lists.md",
           "type": "report",
           "summary": "Confirms and reproduces the stale-REQUIRED_LIBS defect; narrows fix scope from the dispatch's 4 named suites to 3 (test-orchestrate-unwind-dispatch.sh is already fixed by an unrelated committed change and now passes 21/21); gives the exact array/line fix for each of the 3 remaining suites; runs a corpus-wide drift scan for the 'derive from source' design question and finds no additional drift."
+        },
+        {
+          "path": "specs/569_repair_stale_fixture_lib_dependency_lists/plans/01_stale-fixture-dependency-remedy.md",
+          "type": "plan",
+          "summary": "4-phase plan (2 waves, 2.75h): add project-number-inuse.sh to three fixture suites' dependency lists, retire three stale known-failures.txt rows, redeploy, and run the full gate set."
         }
       ],
       "audit_verdict": {
@@ -67297,7 +67304,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794381614_02261f_569",
+      "session_id": "sess_1794381614_02261f",
       "next_artifact_number": 2
     },
     {
