@@ -322,7 +322,7 @@ after the edit.
 
 ---
 
-### Phase 4: Retire the Stale Roster Rows, Redeploy, and Run the Complete Gate Set [NOT STARTED]
+### Phase 4: Retire the Stale Roster Rows, Redeploy, and Run the Complete Gate Set [COMPLETED]
 
 **Goal**: Bring `known-failures.txt` back into agreement with observed reality, regenerate the
 deployed tree so the task is completable through the postflight completion-deploy gate, and
@@ -330,36 +330,48 @@ confirm the whole repository is green with no new failure anywhere.
 
 **Tasks**:
 
-- [ ] Re-read `git status --short`; report (do not dismiss, do not fix) any foreign uncommitted
+- [x] Re-read `git status --short`; report (do not dismiss, do not fix) any foreign uncommitted
       modification or foreign commit before touching the roster or regenerating the tree, per the
       dispatch's concurrency note. Task 589 holds a concurrent `__WHOLE_TREE__` claim and five
       other suites in this same directory; task 500 holds `update-task-status.sh` and its suite.
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/known-failures.txt`. It exists and
+      *(completed: foreign uncommitted modifications observed in specs/554, 555, 573, 589 plan
+      files and lean extension docs, consistent with concurrent sibling /orchestrate dispatches
+      this same batch cycle per the Territory note; git log confirmed the three most recent
+      commits are this task's own Phase 1-3 commits; none overlapped this task's own file_scope;
+      recorded via issue-record.sh and proceeded)*
+- [x] Re-read `agent-system/extensions/core/scripts/tests/known-failures.txt`. It exists and
       currently holds one `real-defect|...|needs-owner` row for each of this task's three suites
       (locators: lines 51, 52, 53); match each row by its suite basename, not by line number, in
-      case a concurrent writer has shifted them.
-- [ ] For each of the three suites observed at `0 failed` in Phases 1-3, delete its row. For any
+      case a concurrent writer has shifted them. *(completed)*
+- [x] For each of the three suites observed at `0 failed` in Phases 1-3, delete its row. For any
       suite with a surviving residual failure, instead **rewrite** its `reason` field to describe
       only the residual and leave the row in place — a row is retired only on observed green, never
-      on an expected one.
-- [ ] Regenerate the deployed tree from the source store
+      on an expected one. *(completed: all three rows deleted -- all three suites observed green)*
+- [x] Regenerate the deployed tree from the source store
       (`bash agent-system/extensions/core/scripts/deploy-headless.sh`, or the deployed entry point,
       whichever resolves). This is a whole-tree regeneration, which is why `__WHOLE_TREE__` is
-      declared below.
-- [ ] Confirm the deployed copies carry the edits: `grep -c project-number-inuse` on each of the
+      declared below. *(completed)*
+- [x] Confirm the deployed copies carry the edits: `grep -c project-number-inuse` on each of the
       three suites' deployed counterparts under `.claude/scripts/tests/` returns a non-zero count,
-      and the deployed `known-failures.txt` no longer names them.
-- [ ] Run gate 8 as the registry invokes it:
+      and the deployed `known-failures.txt` no longer names them. *(completed: counts 1, 1, 3
+      respectively; deployed known-failures.txt names none of the three)*
+- [x] Run gate 8 as the registry invokes it:
       `bash .claude/scripts/verify-deploy.sh --only-gate 8 <repo_root>`, and confirm none of the
       three suites appears among its `[FAIL]` lines and that the run reports no NEW failure.
+      *(deviation: altered -- per this dispatch's Batch Gate Deferral directive, this final
+      full-tier phase discharges against the scoped `run-all.sh --only SUITE[,...]` narrowing
+      instead; see Deviations below)*
 - [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh <repo_root>`.
-- [ ] Record in the task's summary artifact: the before/after tally for each of the three suites,
+      *(deviation: deferred to the batch stage per this dispatch's Batch Gate Deferral directive
+      -- the complete gate set runs once for the whole /orchestrate batch, not independently per
+      task; see Deviations below)*
+- [x] Record in the task's summary artifact: the before/after tally for each of the three suites,
       the roster rows retired, and the deferred `lint-test-fixture-dependency-drift.sh` follow-up
       candidate together with the evidence that sizes it (the corpus-wide re-derivation found zero
       drift beyond these three suites, so the detector is a guard against recurrence, not a fix for
-      a live defect).
-- [ ] Record the phase outcome via `issue-record.sh`.
-- [ ] Commit with an explicit file list.
+      a live defect). *(completed)*
+- [x] Record the phase outcome via `issue-record.sh`. *(completed)*
+- [x] Commit with an explicit file list. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -399,16 +411,21 @@ below three and is a legitimate outcome rather than a failure of this phase.
 
 ## Testing & Validation
 
-- [ ] `test-postflight-deploy-gate.sh`: 29 passed, 0 failed (from 17/12).
-- [ ] `test-redeploy-checkpoint-promotion.sh`: 17 passed, 0 failed (from 10/7).
-- [ ] `test-orchestrate-predispatch-review.sh`: 37 passed, 0 failed (from 35/2).
-- [ ] No suite output anywhere contains `lib/project-number-inuse.sh: No such file or directory`.
+- [x] `test-postflight-deploy-gate.sh`: 29 passed, 0 failed (from 17/12). *(confirmed)*
+- [x] `test-redeploy-checkpoint-promotion.sh`: 17 passed, 0 failed (from 10/7). *(confirmed)*
+- [x] `test-orchestrate-predispatch-review.sh`: 37 passed, 0 failed (from 35/2). *(confirmed)*
+- [x] No suite output anywhere contains `lib/project-number-inuse.sh: No such file or directory`.
+      *(confirmed)*
 - [ ] `bash .claude/scripts/verify-deploy.sh <repo_root>` runs green, with gate 8 reporting no NEW
-      failure.
-- [ ] `known-failures.txt` names no suite this task observed at `0 failed`.
-- [ ] `test-orchestrate-unwind-dispatch.sh` remains at 21 passed, 0 failed and is untouched.
-- [ ] No file under `.claude/**` was hand-edited; every change lands in
+      failure. *(deviation: deferred to the batch stage per this dispatch's Batch Gate Deferral
+      directive; discharged instead via the scoped `run-all.sh --only` covering set -- exit 0,
+      0 NEW -- see Phase 4's Deviations)*
+- [x] `known-failures.txt` names no suite this task observed at `0 failed`. *(confirmed)*
+- [x] `test-orchestrate-unwind-dispatch.sh` remains at 21 passed, 0 failed and is untouched.
+      *(confirmed)*
+- [x] No file under `.claude/**` was hand-edited; every change lands in
       `agent-system/extensions/**` and reaches the deployed tree only via regeneration.
+      *(confirmed)*
 
 ## Artifacts & Outputs
 
