@@ -1,5 +1,5 @@
 ---
-next_project_number: 604
+next_project_number: 606
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 604
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,457,458,462,463,474,480,486,492,509,513,515,518,527,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,505,507,528,532,534,535,538,539,548,549,563,597 | core-agent-system, extensions, neovim, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,604 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,457,458,462,463,474,480,486,492,509,513,515,518,527,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603,605 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,505,507,528,532,534,535,538,539,548,549,563,597,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,439,501,508,516,517,547,552,570,571,579,588,592,593 | 313,391,398,431,451,455,458,472,476,486,504,509,515,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,454,481,524,561,577,581,594,602 | 390,402,438,439,479,492,501,547,552,580,593,603 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
@@ -70,6 +70,8 @@ next_project_number: 604
 590 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
 591 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
 601 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
+  └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 515 [NOT STARTED] — Rebase the bounded-wait guidance on the measured...
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the... (see above)
@@ -203,6 +205,207 @@ next_project_number: 604
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 605. Flag an advisory known-failures roster row whose named suite now passes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 604
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+GOAL. scripts/tests/known-failures.txt is an ADVISORY-ONLY baseline roster: run-all.sh reads it to
+annotate a failing suite EXPECTED vs NEW, and a missing or truncated file changes nothing about
+which suites run. That advisory status is exactly why a row that has gone STALE -- its named suite
+now passes -- fails nothing and rots silently. Three such rows existed and were found only because
+a human looked during planning; neither the dispatch description nor the research report had named
+them. Add a check that FLAGS a roster row whose named suite now passes.
+
+=== WHERE THE TWO INPUTS ALREADY MEET ===
+
+run-all.sh already holds both halves at classification time:
+  - KNOWN_FAILURE_CATEGORY, the basename-keyed map built from the roster (~lines 538-547), and
+  - the per-suite pass/fail results it classifies against (~lines 966-988).
+The stale-row check is the INVERSE of the lookup already there: today it asks "is this FAILING
+suite in the roster"; the new check asks "is this ROSTER ROW's suite passing". Prefer that site
+over a new standalone scanner unless there is a stated reason not to -- a separate scanner would
+have to re-run the corpus to learn what run-all.sh already knows.
+
+=== THE LOAD-BEARING DISTINCTION: PASSED vs NOT RUN ===
+
+run-all.sh supports narrowing its suite set. A roster row whose suite was NOT RUN in a given
+invocation must NOT be reported stale -- only a row whose suite RAN and PASSED. Getting this wrong
+turns every narrowed run into a false-positive generator, which is how an advisory report earns
+being ignored or deleted. State the predicate explicitly and cover the narrowed-run case in the
+verification, not just the full-corpus case.
+
+=== ADVISORY STATUS MUST SURVIVE ===
+
+The roster is advisory by deliberate design (see known-failures.txt's own header and run-all.sh's
+--fail-on-new contract). A stale-row report must therefore stay a REPORT, not become a new failure
+mode. Rule explicitly on which it is -- an unconditional warning line, a --fail-on-new-style
+opt-in, or silent-by-default -- and do not let it change the exit status of a run that would
+otherwise be green absent an explicit opt-in.
+
+=== CURRENT ROSTER STATE (verified at task-creation time, so no cleanup is owed) ===
+
+The three stale rows that motivated this are ALREADY REMOVED. known-failures.txt currently carries
+exactly three rows, none naming the repaired suites:
+  test-run-all-parallel.sh|intermittent|...
+  test-gate-cache-equivalence.sh|load-sensitive|...
+  test-verify-deploy-context-budget.sh|real-defect|...
+This task is therefore purely the missing CHECK. Do not spend a phase re-removing rows that are
+already gone, and do not treat those three live rows as stale without actually running them.
+Note the roster header already states the standing policy this check mechanizes: a `needs-owner`
+row "is a known gap, not an accepted steady state".
+
+=== NON-GOALS ===
+- Do NOT make the roster authoritative or non-advisory.
+- Do NOT remove or re-triage the three live rows as part of this work.
+- Do NOT build the fixture dependency-declaration drift lint here; that is the prerequisite task.
+
+=== DEPENDENCY RATIONALE ===
+
+Depends on the fixture-drift-lint task for SERIALIZATION, not semantics -- nothing here needs that
+detector to exist first. Both tasks land guidance in context/standards/shell-script-testing.md, and
+an unordered overlap on a shared file is batched as a sequence rather than excluded, per
+context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default".
+
+=== AUDIT TRAIL (citations backing this proposal) ===
+Raised by /orchestrate's conclusion stage, session sess_1794402680_74378a, channel (b)
+(agent-system change request); approved by the user at the orchestrate-lead level before dispatch.
+- task 569, entry_id iss_1794382676221_Vzf8li -- class "incomplete prior remedy", severity minor:
+  the three stale known-failures.txt rows, named by neither the dispatch description nor the
+  research report, discovered during planning and added as a plan phase. This is the citation that
+  drives this task.
+- task 569, entry_id iss_1794382148686_HUfPaU -- class "stale dispatch description", severity
+  minor: the paired citation, which drives this proposal's sibling fixture-drift-lint task.
+Both citations are from the same task, so there is no cross-task grouping to preserve. Neither
+carried a suggested_channel hint, so no hint override applies.
+
+=== GAP CONFIRMED MECHANICALLY AT TASK-CREATION TIME ===
+run-all.sh's classification loop iterates FAILED_SUITE_NAMES only and asks
+KNOWN_FAILURE_CATEGORY["$base"] per FAILING suite. Nothing anywhere in the script iterates the
+roster itself, and a grep for stale/now-pass/obsolete row handling returns no hit in any
+roster-related code path. The inverse direction is genuinely absent, not merely undocumented.
+
+=== FILE TERRITORY (backlog reconciliation run at task-creation time) ===
+Mechanically corroborated overlaps against the open backlog, from
+scripts/audit-task-proposals.sh. None is a duplicate; each is shared territory to sequence:
+  BOTH scripts/tests/run-all.sh AND scripts/tests/known-failures.txt
+        -- shared with #586 (the standing suite/gate wall-clock cost consumer, whose
+           delete/optimize/DEMOTE remit edits roster rows). This is the strongest mechanical
+           overlap in the corpus for this task: two shared paths. Subjects are disjoint (cost
+           versus row staleness), so this is a sequencing concern, not a merge. Note #586 is a
+           STANDING task, so do not take a dependency on its completion.
+  scripts/tests/run-all.sh                 -- also shared with #476 (declare the red Gate 8
+                                              suites expected, i.e. ADDING roster rows -- the
+                                              opposite direction from this task) and #584.
+  context/standards/shell-script-testing.md -- shared with #511, #523, and this proposal's own
+                                              prerequisite task.
+Every other audit verdict was Pass-2 semantic only (mech=none, no shared paths) and is
+uncorroborated noise -- the scorer's known inflation against verbose corpus records. The closed
+record that built the EXPECTED/NEW machinery this task inverts was checked; the absence of any
+roster-side iteration in today's run-all.sh is the direct evidence that it stopped at the
+failure-side direction.
+
+---
+
+### 604. Lint-time detector for drifted test-fixture dependency declarations, in both the named-array and open-coded shapes
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+GOAL. A test suite under agent-system/extensions/core/scripts/tests/ that copies helper scripts into its sandbox declares WHICH helpers to copy as a curated, hand-maintained list. When the script under test gains a new runtime dependency, nothing updates that list, and the suite fails at runtime with a bare "No such file or directory" whose cause is invisible from the failure text. Build a LINT-TIME detector that reports this drift before a run hits it.
+
+=== THE TWO DECLARATION SHAPES (both must be handled) ===
+
+SHAPE 1 -- named array. Three suites declare one today:
+  scripts/tests/test-postflight-deploy-gate.sh        (REQUIRED_LIBS, line 65)
+  scripts/tests/test-redeploy-checkpoint-promotion.sh
+  scripts/tests/test-orchestrate-unwind-dispatch.sh
+The array is consumed TWICE in each: once by a require_file-style pre-flight existence loop, once
+by the setup_sandbox() copy loop. A detector must not assume a single consumption site.
+
+SHAPE 2 -- open-coded, no named array. scripts/tests/test-orchestrate-predispatch-review.sh
+declares the same information as a parallel pair of per-file pre-flight lines
+(`require_file "$CORE_DIR/lib/<f>"`, lines 41-52) and copy lines
+(`cp "$CORE_DIR/lib/<f>" "$WORKDIR/.claude/scripts/lib/<f>"`, lines 67-70). A detector keyed only
+on the array NAME sees nothing here, which is precisely how this suite's drift survived.
+
+Measured population context at task-creation time: 3 suites declare a named array, 8 use
+require_file, 88 reference scripts/lib/ at all. Establish the detector's suite-selection predicate
+deliberately against those numbers -- do not assume the array-declaring three are the population.
+
+=== WHY LINT-TIME AND NOT DERIVE-AT-RUNTIME (approved direction, evidence-backed) ===
+
+A runtime mechanism deriving the copy list dynamically from the script under test was DELIBERATELY
+DEFERRED as unjustified by the measured drift rate. The evidence: a source-line extraction
+cross-checked every script copied by the curated-list-style fixtures (state-write.sh,
+update-task-status.sh, task-lock.sh, deploy-root-guard.sh, generate-todo.sh,
+generate-task-order.sh, update-plan-status.sh, update-phase-status.sh, validate-state.sh,
+orchestrate-predispatch-review.sh, reconcile-task-status.sh, lib/redeploy-checkpoint-lib.sh)
+against each suite's declared array and found ZERO additional drift beyond the suites already
+repaired. A detector that REPORTS drift is therefore sufficient. Do not re-litigate this into a
+runtime derive without new measured drift to justify it.
+
+=== MEASURED PRIOR REPAIRS (the regression fixture this detector owes) ===
+
+Three suites were repaired by hand, each by appending the same single missing helper,
+lib/project-number-inuse.sh:
+  test-postflight-deploy-gate.sh          17 passed / 12 failed -> 29 / 0
+  test-redeploy-checkpoint-promotion.sh   10 passed /  7 failed -> 17 / 0
+  test-orchestrate-predispatch-review.sh  35 passed /  2 failed -> 37 / 0
+A detector that would not have flagged lib/project-number-inuse.sh as missing from each of those
+three pre-repair declarations is not done. Note the third is the Shape-2 open-coded suite, so this
+fixture exercises both shapes.
+
+=== SITING DECISION (rule explicitly, do not default) ===
+
+This is a NEW lint, not a change to an existing gate's pass/fail semantics. Rule between:
+  (a) joining the verify-deploy.sh gate set via scripts/gate-registry.data -- note each gate
+      carries a declared timeout_s, so a whole-corpus source-parse must fit a stated budget; or
+  (b) standing alone as a utility script registered in docs/reference/utility-scripts-inventory.md
+      per the standalone-script convention recorded there.
+Record the ruling AND its rationale. Do not leave the choice implicit in whichever file was edited.
+
+=== NON-GOALS ===
+- Do NOT change any suite's pass/fail semantics, nor any existing gate's verdict.
+- Do NOT convert the curated lists into a runtime-derived mechanism (see the deferral above).
+- The advisory known-failures.txt roster staleness check is a SEPARATE, dependent task. This task
+  does not touch scripts/tests/run-all.sh or scripts/tests/known-failures.txt.
+
+=== AUDIT TRAIL (citations backing this proposal) ===
+Raised by /orchestrate's conclusion stage, session sess_1794402680_74378a, channel (b)
+(agent-system change request); approved by the user at the orchestrate-lead level before dispatch.
+- task 569, entry_id iss_1794382148686_HUfPaU -- class "stale dispatch description", severity
+  minor: the dispatch description named 4 affected suites and carried a 10-passed/11-failed figure
+  for test-orchestrate-unwind-dispatch.sh which an unrelated same-day commit (db0e0c054) had
+  already fixed to 21/0, so research had to narrow scope to the 3 suites still actually affected.
+- task 569, entry_id iss_1794382676221_Vzf8li -- class "incomplete prior remedy", severity minor:
+  the paired citation, which drives this proposal's sibling roster-staleness task.
+Both citations are from the same task, so there is no cross-task grouping to preserve. Neither
+carried a suggested_channel hint, so no hint override applies.
+
+=== FILE TERRITORY (backlog reconciliation run at task-creation time) ===
+Mechanically corroborated overlaps against the open backlog, from
+scripts/audit-task-proposals.sh. None is a duplicate; each is shared territory to sequence, not a
+reason to skip:
+  scripts/gate-registry.data                     -- shared with #584 and #601 (both register
+                                                    their own new gate); only in play if the
+                                                    siting ruling above lands on route (a).
+  context/standards/shell-script-testing.md       -- shared with #511 and #523, and with this
+                                                    proposal's own sibling roster task.
+Every other audit verdict was Pass-2 semantic only (mech=none, no shared paths) and is
+uncorroborated noise -- the scorer's known inflation against verbose corpus records. The nearest
+closed records were checked individually and none covers this: #569 performed the three hand
+repairs but deliberately built no detector, and #418 made lint-FIXTURE subject resolution explicit
+(source-store vs stale deployed copy), a different axis entirely.
+
+---
 
 ### 603. Roadmap command generated from state
 - **Effort**: large
