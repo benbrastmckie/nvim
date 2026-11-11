@@ -352,7 +352,31 @@ memory_context=""
 if [ "$clean_flag" != "true" ]; then
   memory_arg3=""
   [ "$phase" = "research" ] && memory_arg3="$focus_prompt"
-  memory_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/sapience-retrieve.sh" "$description" "$task_type" "$memory_arg3" 2>/dev/null) || memory_context=""
+  # sapience-retrieve.sh's exit-code split (see its own header): 1 is a BENIGN no-match (no
+  # token, zero hits, ...) and degrades to empty exactly as before; 2 is a GENUINE
+  # transport/HTTP failure, captured non-fatally into this task's issue log below. Capturing
+  # stderr costs one mktemp and no second network call -- the status/body diagnostic is read
+  # from the SAME request sapience-retrieve.sh already makes.
+  _memory_stderr_file="$(mktemp 2>/dev/null)" || _memory_stderr_file=""
+  memory_exit=0
+  if [ -n "$_memory_stderr_file" ]; then
+    memory_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/sapience-retrieve.sh" "$description" "$task_type" "$memory_arg3" 2>"$_memory_stderr_file") || memory_exit=$?
+  else
+    memory_context=$(bash "${SKILL_REPO_ROOT}/.claude/scripts/sapience-retrieve.sh" "$description" "$task_type" "$memory_arg3" 2>/dev/null) || memory_exit=$?
+  fi
+  if [ "$memory_exit" -eq 2 ]; then
+    _memory_stderr=""
+    [ -n "$_memory_stderr_file" ] && _memory_stderr="$(cat "$_memory_stderr_file" 2>/dev/null || true)"
+    bash "${SKILL_REPO_ROOT}/.claude/scripts/issue-record.sh" --task-dir "$TASK_DIR_ABS" \
+      --kind issue --class "infrastructure/transport unavailable" --severity minor \
+      --what-happened "${_memory_stderr:-sapience-retrieve.sh: genuine transport/HTTP failure}" \
+      --phase "$phase" ${dispatch_seq:+--dispatch-seq "$dispatch_seq"} \
+      --resolution worked_around ${session_id:+--session "$session_id"} \
+      >/dev/null 2>&1 || true
+  fi
+  [ -n "$_memory_stderr_file" ] && rm -f "$_memory_stderr_file"
+  [ "$memory_exit" -ne 0 ] && memory_context=""
+  unset _memory_stderr_file _memory_stderr memory_exit
 fi
 
 # ─── Stage 3.5 output 2: lit_context (headless — orchestrator_mode is always true here, so the

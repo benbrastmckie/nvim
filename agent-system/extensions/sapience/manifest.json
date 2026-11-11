@@ -11,7 +11,8 @@
     "rules": [],
     "scripts": [
       "sapience-remember.sh",
-      "sapience-retrieve.sh"
+      "sapience-retrieve.sh",
+      "tests/test-sapience-capture.sh"
     ],
     "hooks": [],
     "data": [],

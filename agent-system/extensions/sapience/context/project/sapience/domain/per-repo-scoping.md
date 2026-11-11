@@ -40,8 +40,15 @@ arbitrary `provenance` string verbatim — this is what `sapience-remember.sh` d
   into. Reuses the existing local-memory script's keyword-extraction stage verbatim (lowercase,
   split on non-alpha, stop-word filter, length > 3, top 10) and its 2000-token budget / 5-entry
   cap, and emits the same `<memory-context>` envelope shape, so no dispatch-side consumer needed
-  to change. Exit 1 with empty stdout on every failure or no-match path (no token, no slug, no
-  keywords, an unreachable host within its `--connect-timeout 3 --max-time 8` bound, zero hits).
+  to change. Exit codes are split: exit 1 with empty stdout on every BENIGN no-match path (no
+  token, no slug, no keywords, zero hits) -- unchanged from before; exit 2 with empty stdout and
+  one stderr diagnostic (the HTTP status and a length-bounded body excerpt) on a GENUINE
+  transport/HTTP failure (a curl transport error, a non-2xx status, or a non-JSON body), read
+  from the same request via `curl --write-out` -- no second network call and no added latency on
+  the success path. `orchestrate-build-dispatch.sh`'s Stage 3.5 `memory_context` block captures
+  this exit code and, only on exit 2, records an `infrastructure/transport unavailable` entry
+  non-fatally via `issue-record.sh` carrying the stderr diagnostic; retrieval still never blocks
+  or retries the dispatch on any exit code.
 - **`sapience-remember.sh --subject S --value V [...]`** — a repo-tagged, `explicit: true` write
   via `POST /ingest-kos`. `explicit: true` is mandatory, not an optional flag: a realistically
   worded note posted without it is silently discarded by the server's noise gate, returning
@@ -114,3 +121,20 @@ cannot carry a repo tag (it has no caller-supplied provenance to tag), so it kee
 untagged KOs that a repo-filtered read never sees, alongside the smaller, repo-tagged population
 this extension's two scripts produce. This is a documented asymmetry, not a defect this design
 attempts to fix.
+
+**An `mcp__sapience__*` tool failure cannot be captured mechanically from this repository, and
+this is an accepted gap, stated plainly rather than implied away.** Only the two scripts above
+(`sapience-retrieve.sh`, called from Stage 3.5; `sapience-remember.sh`, called from postflight
+wrapup) pass through a point this repository controls. Every `mcp__sapience__*` tool call --
+`sapience_search`, `sapience_ask`, `sapience_briefing`, `sapience_outstanding`,
+`sapience_wrapup`, `sapience_handoff`, `sapience_papers`, and an untagged `sapience_remember`
+call made outside the postflight wrapup site -- goes through the vendor-owned MCP client
+(`~/.sapience/mcp.py`), which raises the server's own message as a `RuntimeError` with no
+structured status this repository can intercept: the merged settings carry no wildcard-matcher
+`PostToolUse` hook for MCP tool calls, and nothing in this repository sits between the client and
+the tool-call result. A failure of this kind therefore surfaces only as transcript prose in the
+calling agent's own turn. The only available remedy is agent self-report: when an
+`mcp__sapience__*` call fails, the agent noticing it SHOULD record it via `issue-record.sh` with
+`--class "infrastructure/transport unavailable"` and the tool's own error text as
+`--what-happened` -- but this is explicitly best-effort, not a substitute for mechanical capture,
+and an agent that does not notice or does not record it leaves no trace, exactly as today.

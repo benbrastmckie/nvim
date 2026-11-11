@@ -12,9 +12,19 @@
 # one that works, and the sibling write path (sapience-remember.sh).
 #
 # Exit 0 with the envelope on stdout when at least one matching KO survives the token budget.
-# Exit 1 (empty stdout) on every failure or no-match path: missing args, unresolvable repo slug,
-# no keywords extracted, no token configured, unreachable/slow host, non-JSON response, zero
-# hits, or zero hits surviving the token budget.
+# Exit 1 (empty stdout) on every BENIGN no-match path: missing args, unresolvable repo slug, no
+# keywords extracted, no token configured, zero hits, or zero hits surviving the token budget --
+# none of these indicate a problem worth recording, so retrieval degrades silently exactly as
+# before.
+# Exit 2 (empty stdout, one diagnostic line on stderr) on a GENUINE transport/HTTP failure: a
+# curl transport error (connection refused, timeout, DNS failure, ...), a non-2xx HTTP status,
+# or a non-JSON response body. This is the split a caller needs to distinguish "nothing matched"
+# from "the backend is actually down" -- the stderr line carries the HTTP status (when any) and
+# a length-bounded excerpt of the response body, so a diagnostic such as a 503's own
+# `{"error": "...", "starting": true, ...}` sentence survives rather than being discarded. A 2xx
+# response with a JSON body that merely contains zero hits is NOT this branch -- it stays exit 1,
+# so a benign zero-hit search never floods a caller's log. No second network call and no added
+# latency on the success path: the status is read from the SAME request via `curl --write-out`.
 #
 # Constants:
 #   TOKEN_BUDGET=2000  - Maximum total tokens to include
@@ -106,10 +116,37 @@ encoded_token="$(jq -rn --arg v "$sapience_token" '$v|@uri')"
 
 url="${sapience_host}/v1/search?q=${encoded_q}&source=${encoded_source}&limit=${MAX_ENTRIES}&token=${encoded_token}"
 
-response="$(curl -sS --connect-timeout 3 --max-time 8 -H 'X-Sapience-Client: sapience-retrieve.sh' "$url" 2>/dev/null)" || exit 1
+# --- Single request. --write-out appends the HTTP status as a trailing line (never a second
+# network call), and curl's own -S diagnostic is captured to a scratch file rather than
+# discarded, so the genuine-failure branch below can report it. ---
+curl_stderr_file="$(mktemp 2>/dev/null)" || curl_stderr_file="/dev/null"
+curl_exit=0
+response_raw="$(curl -sS --connect-timeout 3 --max-time 8 -H 'X-Sapience-Client: sapience-retrieve.sh' -w $'\n%{http_code}' "$url" 2>"$curl_stderr_file")" || curl_exit=$?
+curl_stderr=""
+[ "$curl_stderr_file" != "/dev/null" ] && curl_stderr="$(cat "$curl_stderr_file" 2>/dev/null || true)"
+[ "$curl_stderr_file" != "/dev/null" ] && rm -f "$curl_stderr_file"
+
+if [ "$curl_exit" -ne 0 ]; then
+  echo "sapience-retrieve.sh: genuine transport failure (curl exit ${curl_exit}): ${curl_stderr:0:300}" >&2
+  exit 2
+fi
+
+http_status="${response_raw##*$'\n'}"
+response="${response_raw%$'\n'*}"
+
+case "$http_status" in
+  2??)
+    : # proceed to the JSON/hit-extraction path below
+    ;;
+  *)
+    echo "sapience-retrieve.sh: genuine failure -- HTTP ${http_status}: ${response:0:300}" >&2
+    exit 2
+    ;;
+esac
 
 if [ -z "$response" ] || ! echo "$response" | jq -e . >/dev/null 2>&1; then
-  exit 1
+  echo "sapience-retrieve.sh: genuine failure -- non-JSON body (HTTP ${http_status}): ${response:0:300}" >&2
+  exit 2
 fi
 
 # --- Normalize the hit list: a "results" array when present, else the bare top-level array,

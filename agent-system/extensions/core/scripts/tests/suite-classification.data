@@ -179,6 +179,7 @@ test-run-all-selection.sh	integration	invokes:run-all.sh
 test-run-all-shared-fixture.sh	integration	invokes:run-all.sh,deploy-headless.sh
 test-run-task-observers.sh	unit	-
 test-runtime-file-tracking.sh	unit	-
+test-sapience-capture.sh	unit	-
 test-script-inventory.sh	unit	-
 test-skill-base-lifecycle.sh	integration	invokes:deploy-headless.sh
 test-stall-reprompt-wiring.sh	unit	-

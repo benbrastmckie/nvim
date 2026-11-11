@@ -1,0 +1,26 @@
+{
+  "phase": 5,
+  "phase_name": "Sapience capture -- mechanical where possible, honest where not",
+  "started_at": "2026-11-11T03:00:00Z",
+  "last_updated": "2026-11-11T03:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "curl --write-out retains HTTP status in sapience-retrieve.sh", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 2, "description": "Split exit codes: 1 benign, 2 genuine-failure with stderr diagnostic", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 3, "description": "Wire Stage 3.5 memory_context block to capture exit 2 and record non-fatally", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "Verify sapience-remember.sh's existing diagnostics; extend EXTENSION.md wrapup instruction", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 5, "description": "Add best-effort MCP self-report note to EXTENSION.md and per-repo-scoping.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md", "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 6, "description": "Create test-sapience-capture.sh curl-stubbed suite; register in manifest + suite-classification", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh", "agent-system/extensions/sapience/manifest.json", "agent-system/extensions/core/scripts/tests/suite-classification.data"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.extra",
+      "description": "Corrected two stale cross-references in memory/context/project/memory/{distill-usage.md, patterns/distill-revise-submode.md} claiming sapience-retrieve.sh's exit 1 is indistinguishable between a zero-hit result and a transport failure -- now false given this phase's exit-code split.",
+      "type": "altered",
+      "reason": "Directly required by the plan's own Scope Hypothesis instruction to confirm every call site and adapt any that reads the exit code or stderr; these two docs asserted a now-incorrect behavioral claim about the exit code (not merely naming the script), so leaving them would ship a false statement.",
+      "annotation": "*(deviation: altered -- corrected two stale distill docs' exit-code claims)*"
+    }
+  ]
+}

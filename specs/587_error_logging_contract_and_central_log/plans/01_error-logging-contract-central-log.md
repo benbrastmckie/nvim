@@ -464,7 +464,7 @@ moved, record the new figure rather than carrying 34 forward.
 
 ---
 
-### Phase 5: Sapience capture — mechanical where possible, honest where not [NOT STARTED]
+### Phase 5: Sapience capture — mechanical where possible, honest where not [COMPLETED]
 
 **Goal**: `sapience-retrieve.sh` distinguishes a genuine transport/HTTP failure from a benign
 zero-hit search and retains the server's own diagnostic body; its one core caller records an
@@ -473,10 +473,10 @@ be captured mechanically is documented as an accepted gap with an explicitly bes
 self-report note.
 
 **Tasks**:
-- [ ] In `sapience-retrieve.sh`, change the single `curl` invocation to retain the HTTP status
+- [x] In `sapience-retrieve.sh`, change the single `curl` invocation to retain the HTTP status
       alongside the body (`--write-out` with a separator the parser can split on), keeping
       `-sS --connect-timeout 3 --max-time 8` and adding no second request.
-- [ ] Split the script's failure exits: keep the existing exit code for the benign outcomes
+- [x] Split the script's failure exits: keep the existing exit code for the benign outcomes
       (no token configured, zero hits after normalization, empty selection) and introduce one
       distinct non-zero exit code for the genuine-failure branch — curl transport failure, a
       non-2xx HTTP status, or a non-JSON body. On that branch only, emit a one-line diagnostic to
@@ -484,21 +484,21 @@ self-report note.
       carrying `{"error": "...", "starting": true, "retry_after": 15, "db_mb": 0}` is preserved
       rather than discarded). Document the exit-code split and the stderr shape in the script's
       header. Add no network call and no latency on the success path.
-- [ ] In `orchestrate-build-dispatch.sh`'s Stage 3.5 `memory_context` block, capture stderr and
+- [x] In `orchestrate-build-dispatch.sh`'s Stage 3.5 `memory_context` block, capture stderr and
       the exit code from the existing single call, and — only on the genuine-failure exit code —
       call `issue-record.sh` non-fatally with `--class "infrastructure/transport unavailable"`,
       `--severity minor`, `--resolution worked_around`, the retained stderr diagnostic as
       `--what-happened`, and the current `--phase`/`--dispatch-seq`/`--session`. On every other
       exit code, behave exactly as today: `memory_context=""` and nothing recorded. Retrieval must
       still never block or retry the dispatch.
-- [ ] Verify by reading that `sapience-remember.sh` already emits a precise stderr diagnostic and
+- [x] Verify by reading that `sapience-remember.sh` already emits a precise stderr diagnostic and
       a distinct non-zero exit on each of its failure branches (`set_aside`, `gated`,
       `written == 0`, `ok != true`), and leave the script unedited. Instead, extend the postflight
       wrapup instruction in `sapience/EXTENSION.md` so a failed `sapience-remember.sh` call is
       recorded via `issue-record.sh` with the same class and the script's own stderr text as
       `--what-happened`, keeping the existing degrade rule (a failed write never blocks
       postflight) unchanged.
-- [ ] Add a short, explicitly best-effort note to `sapience/EXTENSION.md` and to
+- [x] Add a short, explicitly best-effort note to `sapience/EXTENSION.md` and to
       `context/project/sapience/domain/per-repo-scoping.md` stating the mechanical gap plainly:
       an `mcp__sapience__*` tool failure does not pass through either script, surfaces only as a
       tool-call error in the agent's own turn, and there is no repository-side interception point
@@ -506,7 +506,7 @@ self-report note.
       is vendor-owned and outside this repository). Ask the agent to self-report such a failure
       via `issue-record.sh` with the same class, and say in the note's own text that this is
       best-effort and not a substitute for mechanical capture.
-- [ ] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh` asserting,
+- [x] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh` asserting,
       with `curl` stubbed in the manner `scripts/tests/curl-stub.sh` already establishes: a 503
       body yields the genuine-failure exit code with the body excerpt on stderr; a 200 with an
       empty result set yields the benign exit code with nothing on stderr; a 200 with hits exits
