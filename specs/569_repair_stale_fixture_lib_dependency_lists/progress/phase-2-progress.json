@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Add project-number-inuse.sh to test-redeploy-checkpoint-promotion.sh",
+  "started_at": "2026-11-11T00:10:00Z",
+  "last_updated": "2026-11-11T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append project-number-inuse.sh to REQUIRED_LIBS array", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh"]},
+    {"id": 2, "description": "Run suite standalone and record result", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record outcome via issue-record.sh", "status": "done", "files_touched": ["specs/569_repair_stale_fixture_lib_dependency_lists/issues.jsonl"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -205,23 +205,24 @@ so the covering check is
 
 ---
 
-### Phase 2: Add `project-number-inuse.sh` to `test-redeploy-checkpoint-promotion.sh` [NOT STARTED]
+### Phase 2: Add `project-number-inuse.sh` to `test-redeploy-checkpoint-promotion.sh` [COMPLETED]
 
 **Goal**: Complete this suite's `REQUIRED_LIBS` array — the identical pattern and identical
 single-array double duty as Phase 1 — clearing all 7 current failures.
 
 **Tasks**:
 
-- [ ] Re-read
+- [x] Re-read
       `agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh`
-      immediately before editing it.
-- [ ] Append `project-number-inuse.sh` to the `REQUIRED_LIBS=(...)` array literal (locator: line
+      immediately before editing it. *(completed)*
+- [x] Append `project-number-inuse.sh` to the `REQUIRED_LIBS=(...)` array literal (locator: line
       88; the array literal is byte-identical to Phase 1's). Confirm the existence loop (locator:
       line 89) and the copy loop inside `build_fixture_repo()` (locator: line 121) both iterate
-      this same array.
-- [ ] Run the suite standalone and record its `Results:` line and every remaining `[FAIL]` line.
-- [ ] Record the outcome via `issue-record.sh`.
-- [ ] Commit with an explicit single-file list.
+      this same array. *(completed)*
+- [x] Run the suite standalone and record its `Results:` line and every remaining `[FAIL]` line.
+      *(completed: 17 passed, 0 failed, no FAIL lines remaining)*
+- [x] Record the outcome via `issue-record.sh`. *(completed: win recorded)*
+- [x] Commit with an explicit single-file list. *(completed)*
 
 **Timing**: 0.25 hours
 
