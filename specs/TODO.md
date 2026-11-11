@@ -69,7 +69,7 @@ next_project_number: 588
 575 [NOT STARTED] — Stop the cross-phase ceiling check reading a stop-word as a...
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
-587 [NOT STARTED] — Make error logging coherent -- one store contract, one class...
+587 [RESEARCHED] — Make error logging coherent -- one store contract, one class...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 
@@ -189,10 +189,11 @@ next_project_number: 588
 ## Tasks
 
 ### 587. Make error logging coherent -- one store contract, one class vocabulary, one collapse rule, one central cross-repo promotion path -- with Sapience failures as the motivating subclass and acceptance test
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [587_error_logging_contract_and_central_log/reports/01_error-logging-contract.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
 
