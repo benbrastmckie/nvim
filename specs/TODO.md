@@ -1,5 +1,5 @@
 ---
-next_project_number: 606
+next_project_number: 607
 ---
 
 # TODO
@@ -12,7 +12,7 @@ next_project_number: 606
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 313,338,342,383,391,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,519,520,521,522,523,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,604 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,390,398,402,457,458,462,463,474,480,486,492,509,513,515,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603,605 | 383,391,397,412,431,451,452,455,459,472,476,479,484,491,505,507,528,532,534,535,538,539,548,549,563,597,604 | core-agent-system, extensions, neovim, ... |
+| 2 | 384,390,398,402,457,458,462,463,474,480,486,492,509,513,515,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603,605,606 | 383,391,397,412,431,451,452,455,459,472,476,479,484,491,505,507,528,532,534,535,538,539,548,549,563,597,600,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 399,421,436,438,439,481,501,508,516,517,547,552,570,571,579,588,592,593,602 | 313,390,398,402,431,451,455,458,472,476,486,504,509,515,518,519,542,543,564,599,603 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 454,524,561,577,581,594 | 438,439,479,492,501,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
@@ -90,6 +90,7 @@ next_project_number: 606
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 600 [NOT STARTED] — Honor the Sapience 503 cold-start retry\_after hint with one...
+  └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -203,6 +204,92 @@ next_project_number: 606
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 606. Scope Sapience context injection to the current repository so a session stops receiving other repos' facts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 600
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+GOAL. Scope Sapience's context injection to the current repository, so a session in one repo stops receiving other repos' facts.
+
+=== WHY: MEASURED, NOT INFERRED ===
+
+In one `~/Projects/Logos/Verification` session the Sapience hooks injected five checkable claims about "this repo" and FOUR WERE FALSE, each falsified by direct query:
+
+1. "Task 435's sweep produced a regression in `test-double-loading-check.sh`" -- and it carried a Recommended action. No such task exists: no state entry, no task directory.
+2. "the sanctioned fix is `reconcile-task-status.sh 761`" -- no such task.
+3. "Phase 11.5 is currently a 'wall', preventing progress into Phases 11.6, 11.7, and 12-18" -- `grep -cE 'Phase 1[0-9]' specs/ROADMAP.md` returns 0; that repo's ROADMAP has no Phase numbering at all (it uses Stage 0-5 plus named Tracks).
+4. "Roadmap contains 90 tasks across 10 topics" -- actual: 50 open tasks across 12 topics.
+5. "Tasks for agent-system must be filed locally in `/home/benjamin/Projects/BimodalLogic/specs/`" -- every `source_dir` in that repo's `.claude-extensions.json` resolves under `/home/benjamin/.config/nvim/agent-system/extensions/*`.
+
+The session's own max task number was 290, so items 1 and 2 name numbers from a different repo's numbering space entirely.
+
+TWO AGGRAVATING CIRCUMSTANCES, both load-bearing for how costly a wrong item is:
+- The Phase 11.5 item arrived on the exact user turn whose instruction was "update the roadmap" -- maximum-leverage timing for a false claim about the roadmap's structure.
+- Items are framed as the reader's OWN prior conclusions ("per your own KO", "Your earlier result was"), which LOWERS scrutiny on a wrong one rather than raising it.
+
+=== SCOPING, NOT SUPPRESSION ===
+
+In the SAME session, Sapience's consolidated cross-corpus abstraction -- "a guard, sentinel, or verification checked at only one site, under one flag, or against a stale snapshot, so it passes while the claim it certifies is false" -- named that session's central defect class BEFORE it was fully characterised. Two ROADMAP facts and a correct `state-write.sh --regen-todo` fact were also accurate and useful.
+
+The valuable class is PRECISELY the cross-corpus abstraction that belongs to no single repo. A filter admitting only current-repo-tagged items would therefore discard the best part of the channel. Any proposed mechanism MUST be tested against that abstraction: if the mechanism would have suppressed it, the mechanism is wrong.
+
+=== INJECTION SITES: ALL THREE VENDOR-OWNED, VERIFIED PRESENT IN ~/.claude/settings.json ===
+
+- SessionStart     -> `python3 "$HOME/.sapience/mcp.py" --briefing-text`
+- UserPromptSubmit -> `python3 "$HOME/.sapience/sapience_cli.py" hook prompt`
+- PreToolUse       -> `python3 "$HOME/.sapience/sapience_cli.py" hook tool`
+
+None takes a repository argument. `sapience_cli.py --help` documents only quiet|normal|rich verbosity and visible block|line.
+
+=== NOT A DUPLICATE -- READ THIS BEFORE CLOSING IT AS ONE ===
+
+The archived task `sapience_per_repo_storage_and_injection` (completed 2026-11-10) scoped exactly ONE call site: `orchestrate-build-dispatch.sh`'s Stage 3.5 `memory_context` basename, swapped to `sapience-retrieve.sh`. Its own summary records the two-population asymmetry -- repo-tagged live writes vs. untagged transcript-extraction writes -- as "a deliberate, unfixed design tradeoff, not a defect". The three hook paths above were NEVER in its scope: they reach the PRIMARY session's context, whereas that task's scoped path feeds DISPATCHED SUBAGENT prompts. Different population, different consumer.
+
+The open task `sapience_retrieve_cold_start_retry` is a different concern (503 cold-start retry behaviour), not this one.
+
+=== ROOT CAUSE: TWO INDEPENDENT LEGS, NEITHER SUFFICIENT ALONE ===
+
+Leg 1 -- the untagged population. The only functioning filter is a literal `[repo:<slug>]` tag in a KO's provenance string, filtered on read via `source=` (`project=` and `source_loc` are settled dead ends on this vault). Transcript-extracted KOs carry no such tag, so the LARGEST population is unfilterable by construction.
+
+Leg 2 -- no read-side filter at all. `~/.sapience/config.json`'s `capture.projects` is a 10-entry list, so one vault legitimately holds ten projects' knowledge; the three hook commands apply no filter on read.
+
+Fixing one leg without the other leaves the defect reproducible.
+
+=== CANDIDATE LEVERS -- research chooses among these on merit, and does not assume one ===
+
+a. An undocumented vendor config key or CLI option. CHEAPEST if it exists; `mcp.py` is 137 KB and was NOT read.
+b. An agent-system-owned wrapper filtering vendor stdout before it reaches context. Viable ONLY if the output carries recoverable source attribution -- establish that before costing it.
+c. Retagging or re-extracting the untagged population. Constrained by there being no delete API.
+d. Narrowing the hooks and relying on the already-scoped retrieval path. LIKELY FATAL ALONE: that path feeds only dispatched subagents, so the primary session would lose Sapience context entirely.
+
+=== DESIGN QUESTIONS TO SETTLE RATHER THAN ASSUME ===
+
+- An unattributable item: suppressed, passed through LABELLED with its source project, or passed through only when it makes no repo-specific factual claim?
+- Should items keep being framed as the reader's own prior conclusions?
+
+=== BOUNDARY: WHAT IS AN AGENT EDIT AND WHAT IS AN OWNER ACTION ===
+
+Deliverables resolve through the source store at `/home/benjamin/.config/nvim/agent-system/extensions/sapience/`.
+
+Both `~/.claude/settings.json` and `~/.sapience/**` are OUTSIDE the source store and outside any repo's deploy tree. A change to either is an OWNER ACTION to be stated and handed to the user, NEVER an agent edit. Note also that `mcp.py` SELF-UPDATES DAILY, so a hand-patch there would be overwritten.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. A session in one repository receives no item making a factual claim about another repository -- or receives it labelled with its source project, per the ruling made on the design questions above.
+2. The cross-corpus abstraction class is demonstrably STILL DELIVERED after the change. A fix that silences the channel is a regression, not a fix.
+3. Every injection site is covered AND ENUMERATED BY NAME -- not only the already-fixed dispatch path.
+4. The untagged-population leg (Leg 1) is resolved, or its residual exposure is stated precisely, acknowledging the no-delete-API constraint.
+5. Any owner action is written out as an exact, runnable instruction rather than a description of one.
+
+=== RESEARCH POINTER ===
+
+Start from this task's own `reports/01_seed-cross-repo-injection.md` -- a seed report carrying the full verified evidence, the reproduction commands, and the open questions. It is the research phase's starting point, not a substitute for it.
+
+---
 
 ### 605. Flag an advisory known-failures roster row whose named suite now passes
 - **Status**: [NOT STARTED]
@@ -11424,6 +11511,7 @@ ACCEPTANCE. Deploy succeeds; /reconcile appears in the generated CLAUDE.md Comma
 - **Dependencies**: Task 29, Task 365, Task 435
 - **Research**: [369_orphan_sweep_for_removed_merge_target_entries/reports/01_orphan-sweep-hook-registrations.md]
 - **Plan**: [369_orphan_sweep_for_removed_merge_target_entries/plans/01_orphan-sweep-hook-registrations.md]
+- **Summary**: [369_orphan_sweep_for_removed_merge_target_entries/summaries/01_orphan-sweep-hook-registrations-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/ and lua/neotex/plugins/ai/ (never
 .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md).
