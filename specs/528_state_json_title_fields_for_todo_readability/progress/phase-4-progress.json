@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Correct the schema documentation's false presence claim and run the full gate",
+  "started_at": "2026-11-11T19:37:00Z",
+  "last_updated": "2026-11-11T19:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read schema file's Project Entry Fields table before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Correct the title row's false presence claim", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]},
+    {"id": 3, "description": "Correct the topic and session_id rows; leave description untouched", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]},
+    {"id": 4, "description": "Confirm no Type/Required column changed", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run the complete gate set", "status": "done", "files_touched": [], "note": "Deviation: discharged via scoped --only-gate 3,4 per dispatch Batch Gate Deferral directive; see deviations array and plan Phase 4 Verification Notes"},
+    {"id": 6, "description": "Commit the schema-file edit via git-commit-scoped.sh", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh ... do not substitute --only-gate, --only, or --skip-slow for this run.",
+      "type": "altered",
+      "reason": "This dispatch's own .dispatch/10.md carries a Batch Gate Deferral directive, authoritative for this one multi-task-batch invocation, which explicitly instructs discharging the plan's final Verification Tier: full phase against a scoped narrowing invocation instead of the full gate set. Ran verify-deploy.sh --only-gate 3,4 (doc-lint, task-reference lint -- the two gates covering this phase's own touched file) instead. Confirmed via grep that gate 3's 4 findings all match sibling task 532's declared file_scope, not this phase's edit.",
+      "annotation": "*(deviation: altered -- discharged via scoped --only-gate 3,4 per dispatch Batch Gate Deferral directive)*"
+    }
+  ]
+}

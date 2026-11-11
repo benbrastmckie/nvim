@@ -359,37 +359,70 @@ deleted in this phase's own task list.
 
 ---
 
-### Phase 4: Correct the schema documentation's false presence claim and run the full gate [NOT STARTED]
+### Phase 4: Correct the schema documentation's false presence claim and run the full gate [COMPLETED]
 
 **Goal**: `state-management-schema.md`'s Project Entry Fields table states the real
 optional-field contract for `.title` instead of a presence claim that live data contradicts, and
 the complete gate set passes over the task's whole body of work.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/reference/state-management-schema.md`'s
+- [x] Re-read `agent-system/extensions/core/context/reference/state-management-schema.md`'s
       Project Entry Fields table immediately before editing (the file is in this task's declared
-      `file_scope`; no sibling declares it, but the tree is shared).
-- [ ] Replace the `.title` row's "Documented-optional, confirmed live on all current entries"
+      `file_scope`; no sibling declares it, but the tree is shared). *(completed)*
+- [x] Replace the `.title` row's "Documented-optional, confirmed live on all current entries"
       phrasing with an accurate statement: the field is optional, and the documented fallback
       chain covers a title-less entry — `generate-todo.sh` derives a heading from `project_name`,
       `generate-task-order.sh` falls back `(.title // .description // .project_name)`. The
       replacement must state the contract, not a live count, since any count goes stale the next
-      time a task is created without a title.
-- [ ] Apply the same correction to the `topic` and `session_id` rows, which carry the identical
+      time a task is created without a title. *(completed)*
+- [x] Apply the same correction to the `topic` and `session_id` rows, which carry the identical
       "confirmed live" phrasing and are likewise false: measured during planning, 3 entries lack
       `topic` and 119 lack `session_id`. Leaving two knowingly-false neighbors beside a corrected
       row is worse documentation than correcting all three, and a wording fix is not a schema
       change, so the NON-GOAL holds. Do not touch the `description` row — 0 entries lack it, so
       its claim is true today, though it carries the same brittleness.
-- [ ] Confirm no row's `Type` or `Required` column changed: the edit is confined to the
-      `Description` column of three rows.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path:
+      *(completed: re-measured live at implement time — title 0, topic 3, description 0,
+      session_id 119 missing, matching the planning-time figures exactly; description row left
+      untouched)*
+- [x] Confirm no row's `Type` or `Required` column changed: the edit is confined to the
+      `Description` column of three rows. *(completed: diff confirms only the three Description
+      cells changed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store path:
       `agent-system/extensions/core/scripts/verify-deploy.sh`). The no-argument form is valid here
       because this repository root holds both a deployed `.claude/` tree and the
       `agent-system/extensions` source store. Confirm every gate it aggregates passes; do not
       substitute `--only-gate`, `--only`, or `--skip-slow` for this run.
-- [ ] Commit the schema-file edit via `bash .claude/scripts/git-commit-scoped.sh` with an explicit
-      single-file pathspec.
+      *(deviation: this dispatch's own `.dispatch/10.md` Batch Gate Deferral directive —
+      authoritative for this one multi-task-batch invocation — explicitly overrides this line's
+      "do not substitute --only-gate" instruction, since this phase is the plan's final
+      `Verification Tier: full` phase inside a concurrent multi-task `/orchestrate` batch. Ran
+      `verify-deploy.sh --only-gate 3,4` instead (doc-lint and task-reference lint, the two gates
+      covering this phase's own touched file). See Phase 4 Verification Notes below for the full
+      discharge record and why the full run was correctly deferred rather than run noisily
+      against sibling-dirtied state)*
+- [x] Commit the schema-file edit via `bash .claude/scripts/git-commit-scoped.sh` with an explicit
+      single-file pathspec. *(completed)*
+
+#### Phase 4 Verification Notes
+
+**Scoped gate discharge** (Batch Gate Deferral, per `.dispatch/10.md`): ran
+`bash .claude/scripts/verify-deploy.sh --only-gate 3,4` instead of the full gate set. Gate 4
+(task-reference lint) passed clean. Gate 3 (doc-lint) reported FAIL, but all 4 underlying
+findings — deployed-content-drift on `scripts/roadmap-integration.sh`,
+`scripts/tests/test-roadmap-generation.sh`, and an index-entries.json line-count mismatch for
+`formats/roadmap-format.md` and `patterns/roadmap-update.md` — name paths that exactly match
+sibling task 532's declared `file_scope` from this dispatch's own Territory block, not this
+phase's edited file. `grep -i state-management-schema` against the full `check-extension-docs.sh`
+output returned zero matches, confirming this phase's own edit introduced no doc-lint finding.
+The full gate set is deferred to the batch-level stage per the dispatch directive, never
+forgiven — see `context/formats/plan-format.md`'s "Batch-aware deferral" subsection.
+
+Additionally ran the two specific named checks from this phase's own verification criteria
+directly (both scoped by nature, neither part of the deferred full-gate set):
+`bash .claude/scripts/validate-state.sh` (PASSED WITH WARNINGS, same pre-existing warnings as
+Phase 2) and
+`bash .claude/scripts/validate-artifact.sh specs/528_state_json_title_fields_for_todo_readability/plans/01_state-json-title-fields.md plan`
+(PASS, 0 warnings).
 
 **Timing**: 30 minutes plus the full gate run
 
