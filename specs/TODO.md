@@ -117,7 +117,7 @@ next_project_number: 607
 397 [RESEARCHED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
-412 [RESEARCHING] — Map core verification tiers to Lean build scopes
+412 [RESEARCHED] — Map core verification tiers to Lean build scopes
   └─ 463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
   └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
@@ -9915,10 +9915,11 @@ Every reference below to `/distill --meta`, to the memory extension as the edit 
 ---
 
 ### 412. Map core verification tiers to Lean build scopes
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 396
+- **Research**: [412_lean_tier_vocabulary_to_build_scope_mapping/reports/01_tier-vocabulary-build-scope-mapping.md]
 
 **Description**: Map core's Verification Tier vocabulary onto Lean build scopes in the lean extension, so a non-final lean phase stops declaring a whole-project build without naming what requires it.
 
