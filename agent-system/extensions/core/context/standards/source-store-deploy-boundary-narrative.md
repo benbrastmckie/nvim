@@ -74,6 +74,16 @@ advisory nudge on path *shape*, not a backstop for target-root correctness, and 
 guarantee that the rule is followed. The durable enforcement is this rule file plus the agent
 contracts; the hook is the reminder.
 
+**Task siting is a separate gap this hook cannot close either, for the same reason**: a hook
+firing on a `Write`/`Edit` path has no way to check which repository the *task record* was
+created in — that decision happens at task-creation time, before any source-store write occurs,
+and may happen in a different tool call entirely. `rules/source-store-deploy-boundary.md`'s
+"Task Siting" subsection states the durable rule: a task whose declared edit target is a
+source-store path must be created in the repository whose local filesystem contains that
+`source_dir`. Enforcement of that rule is documentary and agent-contract reinforcement only — no
+blocking hook exists or is planned for it, consistent with this edit-target rule's own recorded
+posture above (an advisory nudge plus agent contracts, never a guarantee).
+
 ## The Deploy Adds and Changes, But Does Not Delete — Except Where a Merge Target Sweeps Orphans
 
 A second, distinct asymmetry sits beside the edit-target boundary above: once a merge-target

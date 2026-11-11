@@ -299,7 +299,7 @@ are run below.
 
 ---
 
-### Phase 4: Add the standing task-siting rule [NOT STARTED]
+### Phase 4: Add the standing task-siting rule [COMPLETED]
 
 **Goal**: Remedy (c). A documented standing rule that a task whose own edit target is the source
 store must be created in the repository that owns that source store — kept clearly distinct from
@@ -307,28 +307,28 @@ the `specs/**` artifact-location exemption.
 
 **Tasks**:
 
-- [ ] Re-read `rules/source-store-deploy-boundary.md` (29 lines, full file) and
+- [x] Re-read `rules/source-store-deploy-boundary.md` (29 lines, full file) and
       `context/standards/source-store-deploy-boundary-narrative.md` Exceptions (lines 52-57) and
-      Known limitation (lines 70-76) immediately before editing.
-- [ ] Add a new, separately titled subsection to `rules/source-store-deploy-boundary.md` — NOT
+      Known limitation (lines 70-76) immediately before editing. *(completed)*
+- [x] Add a new, separately titled subsection to `rules/source-store-deploy-boundary.md` — NOT
       folded into the existing "Path Pattern", which is scoped to `.claude/**` writes — stating
       the siting principle: a task whose declared edit target is a source-store path must be
       created in the repository whose local filesystem contains that `source_dir`, resolvable via
-      `.claude-extensions.json`, never in a deploy-only repo where the path does not exist on disk.
-- [ ] In that same subsection, state the distinction explicitly: a task's own artifacts (reports,
+      `.claude-extensions.json`, never in a deploy-only repo where the path does not exist on disk. *(completed)*
+- [x] In that same subsection, state the distinction explicitly: a task's own artifacts (reports,
       plans, summaries) may legitimately live in whatever repository the run happens from — that
       is a separate matter from where the task record itself is filed when its edit target is the
-      source store.
-- [ ] Leave the narrative's existing `specs/**` Exceptions bullet byte-for-byte unchanged.
-- [ ] Add the matching narrative detail to
+      source store. *(completed)*
+- [x] Leave the narrative's existing `specs/**` Exceptions bullet byte-for-byte unchanged. *(completed)*
+- [x] Add the matching narrative detail to
       `context/standards/source-store-deploy-boundary-narrative.md`, anchored at the Known
       limitation paragraph, which already names this exact gap ("not a backstop for target-root
-      correctness").
-- [ ] State plainly in the narrative that this rule's enforcement is documentary and
+      correctness"). *(completed)*
+- [x] State plainly in the narrative that this rule's enforcement is documentary and
       agent-contract reinforcement only — no blocking hook — consistent with the adjacent
-      edit-target rule's own recorded posture.
-- [ ] Respect the rule file's eager-loading comment: keep the addition short, and do not add a
-      `paths:` frontmatter glob.
+      edit-target rule's own recorded posture. *(completed)*
+- [x] Respect the rule file's eager-loading comment: keep the addition short, and do not add a
+      `paths:` frontmatter glob. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -27,3 +27,22 @@ under it — never hand-author under `.claude/**` directly. For the full
 resolution procedure, the unreachable-source-store fallback, a worked example, the Exceptions
 list, and the Enforcement narrative, see
 `context/standards/source-store-deploy-boundary-narrative.md`.
+
+## Task Siting (Where a Source-Store Task Is Created)
+
+This subsection is distinct from the `Path Pattern` above: that section governs where a WRITE
+lands once a task is already underway; this one governs where the TASK RECORD ITSELF is created
+in the first place. A task whose declared edit target is a source-store path (resolvable via
+`.extensions.<name>.source_dir` in `.claude-extensions.json`, as above) must be created in the
+repository whose local filesystem actually contains that `source_dir` — never in a repository
+where the path does not exist on disk, such as a deploy-only repository that only ever receives
+the regenerated `.claude/**` mirror.
+
+This is a narrower principle than, and does not revoke, the `specs/**` exemption in
+`context/standards/source-store-deploy-boundary-narrative.md`'s Exceptions list: a task's own
+artifacts (reports, plans, summaries) may legitimately live in whatever repository the run
+happens from, because artifact authoring under `specs/**` is unaffected by lifecycle stage or
+edit target. The siting principle in this subsection is a separate, additional constraint on
+where the TASK is filed, applying specifically to a task whose edit target is a source-store
+path — it does not change where that task's own `specs/**` artifacts live once the task is
+correctly sited.

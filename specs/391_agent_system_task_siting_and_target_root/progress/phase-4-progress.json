@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Add the standing task-siting rule",
+  "started_at": "2026-11-11T18:58:00Z",
+  "last_updated": "2026-11-11T19:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read source-store-deploy-boundary.md and narrative Exceptions/Known-limitation sections before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add separately-titled siting subsection to the rule file, distinct from Path Pattern", "status": "done", "files_touched": ["agent-system/extensions/core/rules/source-store-deploy-boundary.md"]},
+    {"id": 3, "description": "Add matching narrative detail at Known limitation anchor, with documentary-enforcement note", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md"]},
+    {"id": 4, "description": "Run phase verification", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "validate-context-budgets.sh exits nonzero on 10 pre-existing, out-of-scope violations (agent token overages on agents not in this task's file_scope; dead context-index entries; a pre-existing double-loading classification). Confirmed pre-existing via a worktree check at commit 2530aa165. The actually-applicable sub-check for this phase's eager-loaded rule-file addition (Tier 1 always-loaded budget) reports Status: OK. Recorded as issue iss_* via issue-record.sh."
+}
