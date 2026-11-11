@@ -36,33 +36,58 @@
       "category": "PATTERN",
       "source_artifact": "specs/555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-ls-files", "extensions-root", "source-store", "repo-root-mismatch", "fixture-testing"]
+      "suggested_keywords": [
+        "git-ls-files",
+        "extensions-root",
+        "source-store",
+        "repo-root-mismatch",
+        "fixture-testing"
+      ]
     },
     {
       "content": "common_test_resolve_subject's mode vocabulary (deployed / source-store / deploy-tree-first) has no 'source-store-first-with-deployed-fallback' order -- only the opposite-direction deploy-tree-first, or single-mode-only deployed/source-store. A test suite that genuinely needs source-store-preferred-with-deployed-fallback (matching the convention that a suite validating a fresh source-store edit must not silently test a stale deployed copy) cannot express that via common_test_resolve_subject and should stay on common_test_resolve_candidate with an explicit two-candidate list in [source-store, deployed] order -- then add a permanent, individually-reasoned exemption to lint-subject-resolution-declaration.sh's EXCLUDED_FILES array (it naively flags any common_test_resolve_candidate call against a literal '.claude/scripts' candidate as an 'unmigrated implicit-order shape') rather than forcing a semantically-wrong migration just to satisfy the lint.",
       "category": "PATTERN",
       "source_artifact": "specs/555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["common_test_resolve_subject", "common_test_resolve_candidate", "subject-resolution-lint", "source-store-first", "exemption"]
+      "suggested_keywords": [
+        "common_test_resolve_subject",
+        "common_test_resolve_candidate",
+        "subject-resolution-lint",
+        "source-store-first",
+        "exemption"
+      ]
     },
     {
       "content": "verify-deploy.sh's gate 3 (doc-lint) and gate 5 (manifest-driven content-hash equality) 'Content differs from source' / 'deployed script content drift' findings are DEPLOY-FRESHNESS checks (deployed .claude/ file content vs. the agent-system/extensions source file content, read directly off disk) -- they are NOT git-commit-status checks. Committing a source-store edit does nothing to clear this finding; only running an actual deploy (<leader>al / deploy-headless.sh) does, and a repo whose plan explicitly forbids initiating a deploy as a Non-Goal will see this finding persist for every source-store-only edit until the next deploy cycle, which is expected and not a regression.",
       "category": "INSIGHT",
       "source_artifact": "specs/555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy", "deploy-freshness", "content-drift", "gate3", "gate5", "undeployed-edit"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "deploy-freshness",
+        "content-drift",
+        "gate3",
+        "gate5",
+        "undeployed-edit"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794343931_696ebd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 8,
     "phases_total": 8
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh",
     "agent-system/extensions/core/index-entries.json"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

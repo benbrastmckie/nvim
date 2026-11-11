@@ -1934,6 +1934,7 @@ surface, and that rationale does not survive into this repository.
 - **Dependencies**: None
 - **Research**: [555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md]
 - **Plan**: [555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md]
+- **Summary**: [555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md]
 
 **Description**: MEASURED during task 846's Phase 5. `run-all.sh` with no filter reported 26 failing suites of 156 (130 passed). Citations, from task 846's `issues.jsonl`: iss_1793736739875_sDC3Vt, iss_1793740991529_beV238.
 
