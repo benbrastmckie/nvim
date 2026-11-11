@@ -193,29 +193,36 @@ written outside the tree, which is not a deliverable and is never committed.
 
 ---
 
-### Phase 2: Apply the titles through state-write.sh and regenerate TODO.md [NOT STARTED]
+### Phase 2: Apply the titles through state-write.sh and regenerate TODO.md [COMPLETED]
 
 **Goal**: Each entry in Phase 1's mapping carries its `.title`, no other field on any entry
 changed, and TODO.md is regenerated from the new state.
 
 **Tasks**:
-- [ ] Confirm `specs/state.json` is still jq-canonical so the write reflows nothing:
+- [x] Confirm `specs/state.json` is still jq-canonical so the write reflows nothing:
       `jq . specs/state.json | diff - specs/state.json` must be empty (it was during planning).
-- [ ] Re-read `specs/state.json` immediately before writing, per the dispatch's concurrency note.
-- [ ] Dry-run the write first: `bash .claude/scripts/state-write.sh '<filter>' --session-id "$SID"
+      *(completed: still canonical at phase-2 time)*
+- [x] Re-read `specs/state.json` immediately before writing, per the dispatch's concurrency note.
+      *(completed)*
+- [x] Dry-run the write first: `bash .claude/scripts/state-write.sh '<filter>' --session-id "$SID"
       --argjson t "$(cat <scratch-mapping>)" --dry-run`, with a filter that sets `.title` only
       where the mapping has a key AND the entry is still title-less. Use the `== ... | not` form
       throughout — never `!=`, which Claude Code issue #1132 mangles to `\!=`:
       `.active_projects |= map(if (($t[(.project_number|tostring)] == null) | not) and ((.title // "") == "") then .title = $t[(.project_number|tostring)] else . end)`
-- [ ] Apply the write live (same invocation without `--dry-run`), then regenerate TODO.md with
+      *(completed: dry-run reported "filter applies cleanly")*
+- [x] Apply the write live (same invocation without `--dry-run`), then regenerate TODO.md with
       `bash .claude/scripts/generate-todo.sh` (or `state-write.sh --regen-todo` in the same call).
-- [ ] Confirm the diff touches only `.title` keys: `git diff --stat specs/state.json` and a
+      *(completed via `state-write.sh ... --regen-todo`)*
+- [x] Confirm the diff touches only `.title` keys: `git diff --stat specs/state.json` and a
       read-through of `git diff specs/state.json` showing added `"title":` lines and nothing else.
-- [ ] Run `bash .claude/scripts/validate-state.sh` and confirm it passes.
-- [ ] Commit `specs/state.json` and `specs/TODO.md` via `bash .claude/scripts/git-commit-scoped.sh`
+      *(completed: 24 added "title": lines, 24 reflow-only comma additions, nothing else)*
+- [x] Run `bash .claude/scripts/validate-state.sh` and confirm it passes. *(completed: PASSED WITH
+      WARNINGS — all warnings pre-existing and unrelated to this change)*
+- [x] Commit `specs/state.json` and `specs/TODO.md` via `bash .claude/scripts/git-commit-scoped.sh`
       with an explicit two-file pathspec — never a directory or glob add, since siblings are live
       in this tree — and confirm the commit succeeds (this is also the live confirmation that the
       engine-written-state Containment splice admits both paths without a `file_scope` entry).
+      *(completed: commit 0bdfe1100 succeeded with the two-file pathspec)*
 
 **Timing**: 45 minutes
 
