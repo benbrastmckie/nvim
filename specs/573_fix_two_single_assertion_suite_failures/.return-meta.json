@@ -1,19 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 7,
+  "status": "planned",
+  "dispatch_seq": 9,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/573_fix_two_single_assertion_suite_failures/reports/01_assertion-failures-closed-by-589.md",
-      "summary": "Re-measurement confirms task 589 already closed both of this task's single-assertion failures (test-deploy-baseline-lib.sh 30/0, test-lint-deploy-caller-wrap.sh 7/0, both invocation paths); no source change remains for this task."
+      "type": "plan",
+      "path": "specs/573_fix_two_single_assertion_suite_failures/plans/01_assertion-closure-confirmation.md",
+      "summary": "Two-phase closure-confirmation plan (no source changes): re-measure both suites green under run-all.sh --only from both invocation paths, then record closure in a summary and discharge the full gate set."
     }
   ],
-  "next_steps": "Run /orchestrate 573 to create implementation plan (expected to be a closure/no-op plan, since task 589 already delivered the fix)",
+  "next_steps": "Run /orchestrate 573 to execute the plan",
   "metadata": {
     "session_id": "sess_1794381614_02261f_573",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 1,
+    "dependency_waves": [[1], [2]]
   },
-  "memory_candidates": [],
-  "findings_count": 1
+  "memory_candidates": []
 }

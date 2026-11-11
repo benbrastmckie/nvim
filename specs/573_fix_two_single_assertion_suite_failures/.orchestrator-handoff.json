@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 9,
+  "phases_completed": 0,
+  "phases_total": 2,
+  "summary": "Created a two-phase closure-confirmation plan for task 573. Re-validation of the description's carried figures found both STALE: live standalone re-runs in this dispatch returned test-deploy-baseline-lib.sh 30 passed/0 failed and test-lint-deploy-caller-wrap.sh 7 passed/0 failed from both the deployed and source-store invocation paths, confirming task 589's root-resolution fix already closed both failures. The plan therefore makes no source change: Phase 1 re-measures both suites under the run-all.sh --only entry point that originally exposed the failures, and Phase 2 records closure in a summary and discharges the full gate set. One issue-log win was recorded (stale carried figures caught at plan time).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/573_fix_two_single_assertion_suite_failures/plans/01_assertion-closure-confirmation.md",
+      "summary": "Two-phase closure-confirmation plan (no source changes): re-measure both suites green under run-all.sh --only from both invocation paths, then record closure and discharge the full gate set."
+    }
+  ]
+}

@@ -171,7 +171,7 @@ next_project_number: 600
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
 569 [IMPLEMENTING] — Four fixture-based test suites fail because their curated...
 572 [NOT STARTED] — Make a declared 'Verification Tier: full' actually honorable...
-573 [PLANNING] — Diagnose and fix one failing assertion in each of two suites,...
+573 [PLANNED] — Diagnose and fix one failing assertion in each of two suites,...
 597 [NOT STARTED] — Make the coupled-generated-surface and longFile-baseline...
   └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically... (see above)
   └─ 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
@@ -1789,11 +1789,12 @@ NON-GOALS: no change to how the budget is computed, clamped, charged, or enforce
 
 ### 573. Fix two single assertion suite failures
 - **Effort**: small
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 589
 - **Research**: [573_fix_two_single_assertion_suite_failures/reports/01_assertion-failures-closed-by-589.md]
+- **Plan**: [573_fix_two_single_assertion_suite_failures/plans/01_assertion-closure-confirmation.md]
 
 **Description**: Diagnose and fix one failing assertion in each of two suites, cause unknown. Standalone results: test-deploy-baseline-lib.sh 29 passed 1 failed; test-lint-deploy-caller-wrap.sh 10 passed 1 failed. These were initially grouped with the stale-fixture-dependency cluster (repair_stale_fixture_lib_dependency_lists), but neither suite uses the REQUIRED_LIBS/REQUIRED_SCRIPTS fixture-copy mechanism at all, so that cause does not apply and these two are uncovered by it. Both failures reproduce standalone and are not contention artifacts. Determine for each whether the assertion or the subject behaviour is wrong before changing either.
 
