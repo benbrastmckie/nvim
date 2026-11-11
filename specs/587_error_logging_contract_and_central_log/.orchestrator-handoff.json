@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phases_completed": 7,
   "phases_total": 7,
-  "summary": "Wrote a 7-phase, 11-hour plan implementing the research report's eight decisions as one general error-logging mechanism: correct rules/error-handling.md to name issue-record.sh (the store actually written) instead of the abandoned errors-append.sh, add one infrastructure/transport-unavailable seed class to issue-log.md and to issue-record.sh's duplicated ISSUE_SEED_CLASSES array, document a general tags.occurrence collapse convention plus a 10-citation render cap at the conclusion stage, and add a new scripts/lib/central-log-lib.sh that pushes error-bearing lines from both shared writers to specs/central-errors.jsonl in the owning repo under flock with a single-generation rotation bound and an owning-repo skip. Sapience is implemented strictly as a subclass: sapience-retrieve.sh gains an exit-code split (genuine HTTP/transport failure vs benign zero-hit) so capture does not flood the log, and the non-capturable MCP-tool class is documented as an accepted gap. Every carried figure in the dispatch description was re-measured and confirmed; all 23 Files-to-modify paths harvest cleanly including the __WHOLE_TREE__ sentinel on the redeploy phase, and validate-artifact.sh passes with 0 warnings.",
+  "summary": "Implemented all 7 plan phases: corrected rules/error-handling.md to name issue-record.sh as the live error-store write path, added a 16th seed class (infrastructure/transport unavailable) to issue-log.md and issue-record.sh, documented a general tags.occurrence collapse convention and a 10-citation render cap, built scripts/lib/central-log-lib.sh (owning-repo resolution, owning-repo skip, promotion filter, flock-guarded bounded append) wired non-fatally into both issue-record.sh and events-append.sh, and implemented Sapience backend-failure capture as an ordinary subclass (sapience-retrieve.sh's exit-code split, Stage 3.5 capture wiring, and an honest best-effort note for the non-mechanically-capturable MCP-tool class). All four acceptance replays passed against the real deployed scripts (Sapience 503 outage, central promotion with owning-repo skip, occurrence collapse, citation render cap); measured per-call promotion overhead ~17ms. A genuine mid-phase regression (unguarded library source crashing fixtures lacking it) was found via the full test corpus and fixed. Phase 7 closed COMPLETED WITH EXCLUSIONS against two confirmed pre-existing, unrelated gate findings (a dead-command-recommendation hit in untouched memory-extension docs, and 5 test suites with a pre-existing repo-root path-depth bug) -- both evidenced via git log and direct reproduction in the plan's own Reasoned Exclusions table.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/587_error_logging_contract_and_central_log/plans/01_error-logging-contract-central-log.md",
-      "summary": "7-phase plan (4 dependency waves, 11 hours) for the error-logging contract correction, the infra-unavailable class, the general collapse rule, the push-based central log, and Sapience as a subclass."
+      "summary": "7-phase plan, all phases now closed (6 COMPLETED, Phase 7 COMPLETED WITH EXCLUSIONS)."
+    },
+    {
+      "type": "summary",
+      "path": "specs/587_error_logging_contract_and_central_log/summaries/01_error-logging-contract-central-log-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, verification, impacts, and follow-ups."
     }
   ]
 }

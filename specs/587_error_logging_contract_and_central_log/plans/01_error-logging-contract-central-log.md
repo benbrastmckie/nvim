@@ -1,7 +1,7 @@
 # Implementation Plan: Task #587
 
 - **Task**: 587 - Error logging contract and central log
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: None (coordinates with, but does not depend on, tasks 477, 484, 519, 543, 562)
 - **Research Inputs**: specs/587_error_logging_contract_and_central_log/reports/01_error-logging-contract.md

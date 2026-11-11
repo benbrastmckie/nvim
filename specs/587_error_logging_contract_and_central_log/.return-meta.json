@@ -1,5 +1,90 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/587_error_logging_contract_and_central_log/summaries/01_error-logging-contract-central-log-summary.md",
+      "summary": "All 7 plan phases implemented: corrected error-handling.md to name issue-record.sh, added a 16th seed class for infrastructure/transport unavailability, documented a general occurrence-collapse convention and a 10-citation render cap, added a push-based central-log library wired into both shared writers, implemented Sapience capture as a subclass with an honest MCP-tool-failure gap note, and closed Phase 7 COMPLETED WITH EXCLUSIONS against two confirmed pre-existing, unrelated gate findings."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Corrected the documented error-store contract to name issue-record.sh (the store actually written), added an infrastructure/transport-unavailable seed class, a general occurrence-collapse convention, a push-based central cross-repo log wired into issue-record.sh and events-append.sh with an owning-repo skip, a 10-citation render cap at the conclusion stage, and Sapience backend-failure capture implemented strictly as a subclass of that general mechanism. All four acceptance replays (Sapience 503 outage, central promotion, occurrence collapse, citation cap) passed against the real deployed scripts; measured promotion overhead ~17ms/call."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/context/formats/issue-log.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/rules/error-handling.md",
+    "agent-system/extensions/core/scripts/events-append.sh",
+    "agent-system/extensions/core/scripts/issue-record.sh",
+    "agent-system/extensions/core/scripts/lib/central-log-lib.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-central-log-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-issue-record.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+    "agent-system/extensions/memory/context/project/memory/distill-usage.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md",
+    "agent-system/extensions/memory/index-entries.json",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh",
+    "specs/.gitignore"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a fixture under test-X.sh copies a production script (e.g. issue-record.sh, events-append.sh) into a synthetic scratch tree, adding a new unconditional `source lib/<newlib>.sh` to that production script breaks EVERY existing fixture that doesn't also copy the new library -- under `set -euo pipefail`, a missing source target aborts the whole script before reaching any guarded call site. The fix is to guard the source call itself with a file-existence check and a no-op function-definition fallback, not to update every existing fixture. This was only caught by running the FULL test corpus (run-all.sh's gate 8), never by a narrower tier-justified suite subset -- a reminder that per-phase suite-subset verification cannot substitute for a full-corpus run before declaring a cross-cutting library change complete.",
+      "category": "PATTERN",
+      "source_artifact": "specs/587_error_logging_contract_and_central_log/summaries/01_error-logging-contract-central-log-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "set -euo pipefail",
+        "source guard",
+        "fixture",
+        "defensive sourcing",
+        "shared library",
+        "test corpus"
+      ]
+    },
+    {
+      "content": "A test suite under scripts/tests/ that computes its own repo root via a hardcoded walk-up depth (e.g. `ROOT=$(cd \"$CORE_DIR/../../../..\" && pwd)`) silently breaks when invoked from a DIFFERENT depth than the one the walk assumed -- specifically, a depth tuned for the source-store path (agent-system/extensions/core/scripts, 4 segments from repo root) resolves to a path OUTSIDE the repository when the same suite runs from its deployed location (.claude/scripts, only 2 segments from repo root), which is exactly how run-all.sh's gate 8 invokes it. Symptom: downstream git/repo-relative computations return their own sentinel/fail-open value (e.g. gate_cache_implementation_digest returning CANNOT_COMPUTE) rather than an obvious error. Diagnostic recipe: echo the computed ROOT value under both invocation paths directly, and/or re-run the suite from its source-store copy -- if it passes there and fails only from the deployed copy, the walk-up depth is the suspect, not the suite's actual logic under test.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/587_error_logging_contract_and_central_log/summaries/01_error-logging-contract-central-log-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "repo root resolution",
+        "deploy-tree-first",
+        "source-store",
+        "path depth",
+        "gate 8",
+        "run-all.sh"
+      ]
+    },
+    {
+      "content": "When a suite's SCRIPT_UNDER_TEST subject resolution is 'deploy-tree-first' (common_test_resolve_subject), a pending source-store edit that has not yet been redeployed will silently cause the suite to exercise the STALE deployed copy, producing a false read (pass or fail) unrelated to the actual edited logic. Before trusting such a result mid-task (before the eventual redeploy phase), temporarily overwrite the deployed copy with the edited source-store file(s), re-run the suite, then restore the deployed copy byte-for-byte (md5sum-confirmed) -- this gets a true read without prematurely redeploying or leaving the deployed tree in an inconsistent interim state. A suite whose resolution mode is 'source-store' instead (not deploy-tree-first) needs no such workaround since it always exercises the edited source directly.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/587_error_logging_contract_and_central_log/summaries/01_error-logging-contract-central-log-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy-tree-first",
+        "common_test_resolve_subject",
+        "temporary overwrite",
+        "pre-redeploy verification",
+        "md5sum restore"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794367153_fe56ab",
     "agent_type": "general-implementation-agent",
@@ -8,7 +93,9 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
