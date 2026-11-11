@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md",
-      "summary": "Six-phase plan adding a shared source-store path classification library, an out-of-repository pre-check and repository-naming notice at the phase-commit site, a single-pathspec second-repository commit step, an authoring-boundary refusal of unexpanded-variable file_scope entries, and the documentation and gate/deploy closure."
-    }
-  ],
-  "next_steps": "Run /orchestrate 554 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 9.5,
-  "dependency_waves": 5,
-  "memory_candidates": [
-    {
-      "content": "A file_scope entry naming a source-store path (agent-system/extensions/<name>/...) is NOT a uniform case across repositories: resolve .claude-extensions.json's per-extension source_dir, then that directory's enclosing git toplevel. When that toplevel equals the repository you are committing in, the path is an ordinary in-repo path and every containment check behaves normally; when it differs, the same literal string names a file this repository cannot hold at all. Any remedy for a source-store containment drop must therefore carry an explicit equality guard and be validated against a genuinely disjoint two-repository fixture, never against the repository that owns the source store, where the defect is invisible by construction.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "source_dir", "containment", "consumer repository", "two-repository fixture", "inertness guard"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794343931_696ebd_554",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1794343931_696ebd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 16
+  "dispatch_seq": 18
 }

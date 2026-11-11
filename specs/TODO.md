@@ -147,8 +147,8 @@ next_project_number: 580
   └─ 576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
-554 [PLANNED] — file\_scope containment drops external source-store paths...
-555 [PLANNED] — Test sweep permanently red where the source store is external
+554 [IMPLEMENTING] — file\_scope containment drops external source-store paths...
+555 [IMPLEMENTING] — Test sweep permanently red where the source store is external
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
@@ -1623,7 +1623,7 @@ surface, and that rationale does not survive into this repository.
 
 ### 555. Test sweep permanently red where the source store is external
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -1663,7 +1663,7 @@ repository before being written.
 
 ### 554. file_scope containment drops external source-store paths from phase commits
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None

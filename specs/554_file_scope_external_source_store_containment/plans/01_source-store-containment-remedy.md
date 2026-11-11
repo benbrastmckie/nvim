@@ -1,7 +1,7 @@
 # Implementation Plan: Task #554
 
 - **Task**: 554 - file_scope external source store containment
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9.5 hours
 - **Dependencies**: None declared
 - **Research Inputs**: specs/554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md
@@ -195,7 +195,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Source-Store Path Classification Library [NOT STARTED]
+### Phase 1: Source-Store Path Classification Library [COMPLETED]
 
 **Goal**: One shared home for the two predicates every later phase consumes — "which repository
 does this path actually belong to, and where inside it" and "is this string an unexpanded shell
@@ -203,61 +203,61 @@ variable" — written so that sourcing it can never abort a caller and so that i
 repository that owns its own source store.
 
 **Tasks**:
-- [ ] Read `scripts/lib/deploy-freshness-lib.sh` in full first; it is the structural model
+- [x] Read `scripts/lib/deploy-freshness-lib.sh` in full first; it is the structural model
       (header stating it is the single home of the algorithm, safe to source, sets no shell options
       a caller inherits, exports named functions, resolves `source_dir` per extension and the
       enclosing repository root via `git rev-parse --show-toplevel`, and reduces every failure mode
-      to a silent non-answer). Mirror that structure; do not invent a second convention.
-- [ ] Create `scripts/lib/source-store-path-lib.sh` exporting `source_store_classify <repo_root>
+      to a silent non-answer). Mirror that structure; do not invent a second convention. *(completed)*
+- [x] Create `scripts/lib/source-store-path-lib.sh` exporting `source_store_classify <repo_root>
       <path>`, printing exactly one line per call: `IN_REPO`; or
       `SOURCE_STORE<TAB><extension><TAB><source_toplevel><TAB><path_relative_to_that_toplevel>`; or
-      `OUT_OF_REPO<TAB><resolved_parent_dir>`.
-- [ ] Implement the repository-containment rule by reusing the measured parent-only predicate from
+      `OUT_OF_REPO<TAB><resolved_parent_dir>`. *(completed)*
+- [x] Implement the repository-containment rule by reusing the measured parent-only predicate from
       `git-commit-scoped.sh`'s V9 block: canonicalize `repo_root`, then resolve
       `dirname -- "$path"` relative to it. An empty result, exactly `..`, or a `../` prefix is the
       out-of-repository verdict. Resolve the **original unresolved** string's parent and never the
       final component, and record in the header that the reason is the measured leaf-symlink case
       (an in-repo symlink whose target lies outside the repository is a legal pathspec that a
-      leaf-resolving predicate would wrongly drop).
-- [ ] Implement the source-store attribution rule. For each extension key in
+      leaf-resolving predicate would wrongly drop). *(completed)*
+- [x] Implement the source-store attribution rule. For each extension key in
       `<repo_root>/.claude-extensions.json`, resolve that extension's own `source_dir`, then that
       directory's enclosing repository root, then `source_rel` = the `source_dir` expressed relative
       to that root. **Guard first**: if the resolved root equals the canonicalized `repo_root`, this
       repository owns that extension's source store, so the extension contributes nothing to
       classification and its paths stay `IN_REPO`. Otherwise attribute a tested path to that
       extension when it equals or is prefixed by `source_rel/` (the relative shape), or when its
-      absolute resolution lies under `source_dir` (the absolute shape).
-- [ ] Make attribution take precedence over the bare containment verdict in both directions: a
+      absolute resolution lies under `source_dir` (the absolute shape). *(completed)*
+- [x] Make attribution take precedence over the bare containment verdict in both directions: a
       relative path the containment rule would call in-repository is still attributed when it
       matches `source_rel/`, and an absolute path the containment rule calls out-of-repository is
       refined to `SOURCE_STORE` when it is attributable. An out-of-repository path no extension can
-      claim stays `OUT_OF_REPO`.
-- [ ] Resolve `source_dir` **per extension only**. Record in the header that a top-level
+      claim stays `OUT_OF_REPO`. *(completed)*
+- [x] Resolve `source_dir` **per extension only**. Record in the header that a top-level
       `.source_dir` lookup returns `null` and that `null` must never be read as the key being
-      absent.
-- [ ] Make every failure mode return `IN_REPO` for every path: a missing or unparseable
+      absent. *(completed)*
+- [x] Make every failure mode return `IN_REPO` for every path: a missing or unparseable
       `.claude-extensions.json`, a missing `jq`, `git`, or `realpath`, an extension entry with no
       `source_dir`, a `source_dir` that does not exist or is not inside a git working tree, or an
       empty resolved toplevel. Record that this reproduces today's behaviour exactly, so a library
-      defect degrades to the pre-existing path rather than to a new one.
-- [ ] Export `source_store_unexpanded_variable <string>`, returning success when the string carries
+      defect degrades to the pre-existing path rather than to a new one. *(completed)*
+- [x] Export `source_store_unexpanded_variable <string>`, returning success when the string carries
       an unexpanded shell-variable shape (a `$` followed by an identifier, or a `${...}` form), so
       the harvester, the artifact validator, and any future consumer share one predicate rather
-      than three drifting regexes.
-- [ ] Create `scripts/tests/test-source-store-path-lib.sh` following the local suite conventions
+      than three drifting regexes. *(completed)*
+- [x] Create `scripts/tests/test-source-store-path-lib.sh` following the local suite conventions
       already used by the phase-commit suite: `pass()`/`fail()`/`info()` helpers, a `mktemp -d`
       workdir with a `trap EXIT` cleanup, and loud-skip discipline for a genuinely missing
-      dependency.
-- [ ] Cover, with real two-repository fixtures built by `git init` under the workdir: the relative
+      dependency. *(completed)*
+- [x] Cover, with real two-repository fixtures built by `git init` under the workdir: the relative
       source-store shape; the absolute source-store shape; a genuinely out-of-repository path no
       extension claims; an ordinary in-repository path; the inertness guard (a fixture whose
       `source_dir` resolves inside the consumer's own root must yield `IN_REPO`); the
       leaf-symlink case (an in-repo symlink pointing outside the repository must yield `IN_REPO`);
       a path *through* a symlinked directory whose target is outside (must yield out-of-repository);
-      and each fail-soft input listed above.
-- [ ] Cover `source_store_unexpanded_variable` over both accepted shapes, over a path containing a
+      and each fail-soft input listed above. *(completed)*
+- [x] Cover `source_store_unexpanded_variable` over both accepted shapes, over a path containing a
       literal `$` that is not a variable reference, and over the reserved slashless sentinel, which
-      must not match.
+      must not match. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -294,7 +294,7 @@ corrected before the commit rather than after.
   `agent-system/extensions/core/manifest.json`: the verdict MUST be `IN_REPO`, demonstrating the
   inertness property that Premise Re-Validation item 1 requires.
 
----
+--- *(completed)*
 
 ### Phase 2: Refuse an Unexpanded-Variable Entry at the Authoring Boundary [NOT STARTED]
 

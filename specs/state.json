@@ -62562,7 +62562,7 @@
     },
     {
       "project_name": "file_scope_external_source_store_containment",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "effort": "medium",
@@ -62584,7 +62584,7 @@
       "next_artifact_number": 2,
       "project_number": 554,
       "created": "2026-11-03T21:35:05Z",
-      "last_updated": "2026-11-10T23:55:47Z",
+      "last_updated": "2026-11-10T23:56:42Z",
       "parent_task": null,
       "file_scope": [
         "__WHOLE_TREE__",
@@ -62619,7 +62619,7 @@
     },
     {
       "project_name": "test_sweep_external_source_store_failures",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "effort": "medium",
@@ -62641,7 +62641,7 @@
       "next_artifact_number": 2,
       "project_number": 555,
       "created": "2026-11-03T21:35:11Z",
-      "last_updated": "2026-11-10T23:56:09Z",
+      "last_updated": "2026-11-10T23:56:58Z",
       "parent_task": null,
       "file_scope": [
         "agent-system/extensions/core/context/standards/shell-script-testing.md",
