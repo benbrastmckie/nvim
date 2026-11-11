@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Make test-lint-deploy-caller-wrap.sh's Scan Root Invocation-Path Independent",
+  "started_at": "2026-11-11T08:00:00Z",
+  "last_updated": "2026-11-11T08:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace line 46 EXTENSIONS_DIR with common_test_ext_root(common_test_repo_root(...)) + guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-deploy-caller-wrap.sh"]},
+    {"id": 2, "description": "Confirm downstream consumers still behave; run suite from source store and verify depth-independence", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

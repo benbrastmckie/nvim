@@ -250,7 +250,7 @@ every downstream use of the resolved root unchanged.
 
 ---
 
-### Phase 3: Make `test-lint-deploy-caller-wrap.sh`'s Scan Root Invocation-Path Independent [NOT STARTED]
+### Phase 3: Make `test-lint-deploy-caller-wrap.sh`'s Scan Root Invocation-Path Independent [COMPLETED]
 
 **Goal**: Stop the lint's file scan from widening to the whole repository (and therefore
 double-counting every genuine caller via its deploy-tree duplicate) when the suite runs from its
@@ -258,23 +258,26 @@ deployed copy.
 
 **Tasks**:
 
-- [ ] Re-read the file immediately before editing.
-- [ ] Replace line 46's `EXTENSIONS_DIR="$(cd "$CORE_DIR/../.." && pwd)"` with a two-step
+- [x] Re-read the file immediately before editing. *(completed)*
+- [x] Replace line 46's `EXTENSIONS_DIR="$(cd "$CORE_DIR/../.." && pwd)"` with a two-step
       resolution using the existing helpers:
       `EXTENSIONS_DIR="$(common_test_ext_root "$(common_test_repo_root "$SCRIPT_DIR")")"`.
       Measured during planning: this yields `<repo>/agent-system/extensions` from both invocation
-      paths.
-- [ ] Add the environment-error guard the helper's contract requires: `common_test_ext_root`
+      paths. *(completed)*
+- [x] Add the environment-error guard the helper's contract requires: `common_test_ext_root`
       returns 1 with empty stdout on a total miss, so an empty or non-directory result must
       produce this suite's existing `exit 2` environment-error shape, never a silent empty scan.
-- [ ] Confirm the three downstream consumers of `$EXTENSIONS_DIR` still behave: the `find` at
+      *(completed)*
+- [x] Confirm the three downstream consumers of `$EXTENSIONS_DIR` still behave: the `find` at
       line 114 and the two `${f#"$EXTENSIONS_DIR"/}` relative-path strips at lines 143 and 167
       (the strips depend on `EXTENSIONS_DIR` being a prefix of every scanned path — still true,
-      and now true from both invocation paths).
-- [ ] Run the suite from the source store and confirm the classification assertion still reports
+      and now true from both invocation paths). *(completed)*
+- [x] Run the suite from the source store and confirm the classification assertion still reports
       exactly `{orchestrate-cycle-plan.sh, command-gate-out.sh}` and `7 passed, 0 failed`.
-- [ ] Verify depth-independence: evaluate the new expression with `$SCRIPT_DIR` bound to the
+      *(completed)*
+- [x] Verify depth-independence: evaluate the new expression with `$SCRIPT_DIR` bound to the
       deployed tests directory and confirm it yields `<repo>/agent-system/extensions`.
+      *(completed)*
 - [ ] Commit the single file with an explicit file list.
 
 **Timing**: 0.75 hours

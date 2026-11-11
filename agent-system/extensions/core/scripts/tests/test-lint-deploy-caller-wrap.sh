@@ -43,7 +43,11 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-EXTENSIONS_DIR="$(cd "$CORE_DIR/../.." && pwd)"
+EXTENSIONS_DIR="$(common_test_ext_root "$(common_test_repo_root "$SCRIPT_DIR")")"
+if [ -z "$EXTENSIONS_DIR" ] || [ ! -d "$EXTENSIONS_DIR" ]; then
+  echo "ERROR: could not resolve agent-system/extensions root from $SCRIPT_DIR" >&2
+  exit 2
+fi
 
 PASSED=0
 FAILED=0
