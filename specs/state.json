@@ -55088,6 +55088,11 @@
           "path": "specs/554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md",
           "type": "plan",
           "summary": "Six-phase plan: classification library, authoring-boundary refusal, phase-commit classification and notice, second-repository commit, documentation, manifest/gate/deploy closure."
+        },
+        {
+          "path": "specs/554_file_scope_external_source_store_containment/summaries/01_source-store-containment-remedy-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all six phases, decisions, plan deviations, verification evidence, and follow-ups."
         }
       ],
       "next_artifact_number": 2,
@@ -55124,7 +55129,8 @@
         "migrated": "2026-11-08"
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
-      "session_id": "sess_1794343931_696ebd"
+      "session_id": "sess_1794343931_696ebd",
+      "completion_summary": "Implemented a shared source-store path classification library (scripts/lib/source-store-path-lib.sh), taught git-commit-phase.sh to classify a files_touched path as SOURCE_STORE/OUT_OF_REPO/IN_REPO before its existing containment test runs and to report the first two under a distinct 'source store excursion' issue class, added a single-pathspec fail-open second-repository commit mechanism (scripts/commit-source-store-path.sh), refused unexpanded-shell-variable file_scope entries at the harvest and plan-validation authoring boundaries, documented the new convention in git-staging-scope.md/plan-format.md/planner-agent.md, and closed with manifest derivation, the complete gate set, and a deploy -- all edits confirmed under agent-system/extensions/core/** and byte-identical in their deployed .claude/ copies."
     },
     {
       "project_name": "test_sweep_external_source_store_failures",

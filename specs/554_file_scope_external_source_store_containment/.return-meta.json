@@ -1,10 +1,73 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/554_file_scope_external_source_store_containment/summaries/01_source-store-containment-remedy-summary.md",
+      "summary": "All six phases implemented: a shared source-store path classification library, an out-of-repository pre-check and repository-naming notice at the phase-commit site, a single-pathspec fail-open second-repository commit mechanism, a shape-based unexpanded-variable refusal at the authoring boundary, matching documentation, and the manifest derivation/full gate/deploy closure. All four acceptance criteria satisfied with test evidence (309 directly-run assertions across 5 suites, all passing)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented a shared source-store path classification library (scripts/lib/source-store-path-lib.sh), taught git-commit-phase.sh to classify a files_touched path as SOURCE_STORE/OUT_OF_REPO/IN_REPO before its existing containment test runs and to report the first two under a distinct 'source store excursion' issue class, added a single-pathspec fail-open second-repository commit mechanism (scripts/commit-source-store-path.sh), refused unexpanded-shell-variable file_scope entries at the harvest and plan-validation authoring boundaries, documented the new convention in git-staging-scope.md/plan-format.md/planner-agent.md, and closed with manifest derivation, the complete gate set, and a deploy -- all edits confirmed under agent-system/extensions/core/** and byte-identical in their deployed .claude/ copies."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/commit-source-store-path.sh",
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/lib/source-store-path-lib.sh",
+    "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh",
+    "agent-system/extensions/core/scripts/tests/test-commit-source-store-path.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh",
+    "agent-system/extensions/core/scripts/tests/test-source-store-path-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh",
+    "agent-system/extensions/core/scripts/validate-artifact.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A SOURCE_STORE classification's path field must be expressed relative to the resolved source repository's TOPLEVEL, never relative to source_dir itself -- this is what makes the emitted path directly usable as a `git add <relpath>` pathspec inside that second repository. Because the universal convention spells a source-store file_scope entry as `agent-system/extensions/<name>/...` (identical to its own on-disk layout relative to its repository root), the relative-shape attribution branch should emit the tested path's own string UNCHANGED rather than stripping a matched prefix; the absolute-shape branch should re-derive the relative-to-toplevel path directly via `realpath --relative-to=<toplevel>`. Any classification library mixing up 'relative to the matched prefix' vs 'relative to the toplevel' will pass unit tests that only check the verdict label, and fail silently downstream at the first real `git add` attempt.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/554_file_scope_external_source_store_containment/summaries/01_source-store-containment-remedy-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "source_store_classify",
+        "source_dir",
+        "realpath --relative-to",
+        "git add pathspec",
+        "second-repository commit"
+      ]
+    },
+    {
+      "content": "Running the complete, unscoped verify-deploy.sh gate set mid-dispatch, while a concurrently-dispatched sibling task is still actively committing or holding the shared specs/.gate-lock mutex (gate 8's run-all.sh), produces failures attributable entirely to the sibling's own in-flight state, not to the dispatching task's own edits. Before concluding a gate failure is a real regression, cross-check: (1) does the failing path/suite appear in a sibling's declared file_scope (visible in the dispatch's Territory block)? (2) does `git log -1 -- <path>` show a commit landing AFTER this dispatch's own last check? (3) does `ps aux | grep run-all` show a live process holding specs/.gate-lock whose --only argument matches a sibling's own test files? All three confirmed independently during one dispatch, resolving what first looked like 5 gate failures down to 2 pre-existing/unrelated ones once the sibling finished.",
+      "category": "PATTERN",
+      "source_artifact": "specs/554_file_scope_external_source_store_containment/summaries/01_source-store-containment-remedy-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "gate-lock contention",
+        "concurrent sibling dispatch",
+        "verify-deploy.sh",
+        "territory",
+        "false-positive gate failure"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794343931_696ebd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
   },
-  "dispatch_seq": 18
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

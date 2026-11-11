@@ -1975,6 +1975,7 @@ repository before being written.
 - **Dependencies**: None
 - **Research**: [554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md]
 - **Plan**: [554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md]
+- **Summary**: [554_file_scope_external_source_store_containment/summaries/01_source-store-containment-remedy-summary.md]
 
 **Description**: OBSERVED 13 times during task 846's implementation. Every `agent-system/extensions/core/**` path was dropped from its phase-commit pathspec by `git-commit-phase.sh`, each reported with the message text `not contained in this task's declared file_scope` (git-commit-phase.sh, the `--what-happened` string at the excursion-report call site). Citations, all from task 846's `issues.jsonl`: iss_1793736794251_k7Q3J8, iss_1793736794311_yUp8Vp, iss_1793737815724_0ZfGnJ, iss_1793737815788_QHk1wn, iss_1793737815847_SJ3yxu, iss_1793737815907_UKDkzX, iss_1793737815965_izbdkL, iss_1793737816029_P1dXET, iss_1793737816087_3YZSsX, iss_1793738678082_9E2Jin, iss_1793738678146_o1Q504, iss_1793741189717_sYrKgg, iss_1793741189826_eDqokf.
 

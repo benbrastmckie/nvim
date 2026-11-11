@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 16,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase implementation plan adopting design options (b) and (c) together: a shared source-store path classification library reusing the measured parent-only out-of-repository predicate, an out-of-repository pre-check plus repository-naming notice and distinct issue class at the phase-commit site, a single-pathspec second-repository commit step that fails open unconditionally, and a shape-based refusal of unexpanded-variable file_scope entries at the harvest/validation boundary. Premise re-validation corrected the description's central claim: in this repository the core source_dir resolves inside this repository's own git root, so the remedy is designed for the general consumer case and carries an explicit inertness guarantee here. The payload-bearing marker from the research report's recommendation 1 is rejected on its own merits in favour of the source-store-relative path form already in universal use.",
+  "summary": "Implemented all six phases: a shared source-store path classification library (scripts/lib/source-store-path-lib.sh), an out-of-repository pre-check and repository-naming notice at the phase-commit site under a new 'source store excursion' issue class, a single-pathspec fail-open-unconditional second-repository commit mechanism (scripts/commit-source-store-path.sh), a shape-based unexpanded-shell-variable refusal at the harvest and plan-validation authoring boundaries, matching documentation in git-staging-scope.md/plan-format.md/planner-agent.md, and manifest derivation plus a deploy. All four acceptance criteria are satisfied with test evidence (309 directly-run assertions across 5 suites, all passing). A bug in the classification library's SOURCE_STORE attribution (wrong relative-path base) was found and fixed during Phase 4's own end-to-end verification. The complete gate set's residual findings are attributed to a concurrently-dispatched sibling task's own in-flight edits/commits and to pre-existing, out-of-scope conditions, both recorded in the issue log.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/554_file_scope_external_source_store_containment/summaries/01_source-store-containment-remedy-summary.md",
+      "summary": "Full implementation summary covering all six phases, decisions, plan deviations, verification evidence, and follow-ups."
+    },
+    {
       "type": "plan",
       "path": "specs/554_file_scope_external_source_store_containment/plans/01_source-store-containment-remedy.md",
-      "summary": "Six-phase plan: classification library, authoring-boundary refusal, phase-commit classification and notice, second-repository commit, documentation, manifest/gate/deploy closure."
+      "summary": "Six-phase plan, all phases marked [COMPLETED] with checklist items annotated."
     }
   ]
 }
