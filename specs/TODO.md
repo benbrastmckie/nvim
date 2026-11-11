@@ -6061,6 +6061,7 @@ repository before being written.
 - **Dependencies**: None
 - **Research**: [528_state_json_title_fields_for_todo_readability/reports/01_title-fields-for-active-projects.md]
 - **Plan**: [528_state_json_title_fields_for_todo_readability/plans/01_state-json-title-fields.md]
+- **Summary**: [528_state_json_title_fields_for_todo_readability/summaries/01_state-json-title-fields-summary.md]
 
 **Description**: Add purpose-written `.title` fields to specs/state.json's active_projects entries so TODO.md stops rendering truncated description prose as task names.
 

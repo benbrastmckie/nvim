@@ -55344,9 +55344,15 @@
           "path": "specs/528_state_json_title_fields_for_todo_readability/plans/01_state-json-title-fields.md",
           "type": "plan",
           "summary": "Four-phase plan: finalize titles, write via state-write.sh, verify both TODO.md surfaces plus the fallback contract, correct the schema doc under the full gate."
+        },
+        {
+          "path": "specs/528_state_json_title_fields_for_todo_readability/summaries/01_state-json-title-fields-summary.md",
+          "type": "summary",
+          "summary": "Wrote .title for 24 title-less active_projects entries, regenerated TODO.md, proved both fallback chains on scratch copies, and corrected the schema doc's false title/topic/session_id presence claims."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added purpose-written .title fields to all 24 title-less specs/state.json entries and regenerated TODO.md so both the per-task headings and the Task Order listing render names instead of truncated description prose; empirically proved both documented fallback chains still work on scratch copies; corrected state-management-schema.md's false 'confirmed live on all current entries' claim for title, topic, and session_id."
     },
     {
       "project_number": 529,

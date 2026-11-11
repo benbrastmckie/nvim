@@ -22,15 +22,27 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/528_state_json_title_fields_for_todo_readability/summaries/01_state-json-title-fields-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["mechanical-screen", "word-boundary", "grep", "banned-prefix", "false-positive"]
+      "suggested_keywords": [
+        "mechanical-screen",
+        "word-boundary",
+        "grep",
+        "banned-prefix",
+        "false-positive"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794423844_64f71e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
