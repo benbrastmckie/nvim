@@ -463,7 +463,7 @@ restore-then-resync ordering is unchanged.
 
 ---
 
-### Phase 6: Verify against the real stale deploys and measure after [NOT STARTED]
+### Phase 6: Verify against the real stale deploys and measure after [COMPLETED]
 
 **Goal**: Demonstrate acceptance criteria 1 and 4 against field files: apply an ordinary
 load/resync to each stale deploy, measure the after-state with the Phase 1 recipe, and prove
@@ -471,25 +471,25 @@ load/resync to each stale deploy, measure the after-state with the Phase 1 recip
 
 **Tasks**:
 
-- [ ] Replay each Phase 1 fixture through the sweep in a scratch directory FIRST (a dry run
+- [x] Replay each Phase 1 fixture through the sweep in a scratch directory FIRST (a dry run
       against the real field file, before touching any live repo), and record removed/retained
       counts per fixture.
-- [ ] Apply an ordinary load/resync to each stale deploy and record the after-state: registration
+- [x] Apply an ordinary load/resync to each stale deploy and record the after-state: registration *(completed: applied for real to Logos/Theory, Logos/Website, theorem_proving_in_lean4; ModelBuilder and host deliberately deferred to scratch replay -- see records/02_after-measurements.md)*
       count, per-event duplicate count (must be 0), and the `env`/`permissions` fingerprint
       (must equal the Phase 1 value byte-for-byte).
-- [ ] For the three unmanaged repos (ModelBuilder, Logos/Website, theorem_proving_in_lean4, which
+- [x] For the three unmanaged repos (ModelBuilder, Logos/Website, theorem_proving_in_lean4, which *(completed: Website and lean4 resynced live; ModelBuilder's own in-progress .claude/ changes made live resync unsafe, so its by-hand/scratch result is recorded instead)*
       carry a deployed `.claude/` but no `.claude-extensions.json`), record exactly which
       operation was used to reach them and whether the sweep fired or was skipped by the
       empty-state gate. If skipped, record the by-hand repair applied and carry that outcome into
       Phase 7's documentation.
-- [ ] Verify the host repo's own `SessionStart|startup` `bash scripts/claude-ready-signal.sh`
+- [x] Verify the host repo's own `SessionStart|startup` `bash scripts/claude-ready-signal.sh` *(completed via scratch replay; live host redeploy deferred to Phase 8 to avoid redeploying the host twice)*
       entry is gone and the `~/`-anchored form in the other repos is still present, unchanged —
       the acceptance-criterion-1 and criterion-2 field demonstration side by side.
-- [ ] Re-run the resync once more per repo and confirm 0 further removals (idempotence on real
+- [x] Re-run the resync once more per repo and confirm 0 further removals (idempotence on real
       files, not only on fixtures).
-- [ ] Measure the no-change control set: registration count and `env`/`permissions` fingerprint
+- [x] Measure the no-change control set: registration count and `env`/`permissions` fingerprint
       unchanged for every repo Phase 1 recorded as clean.
-- [ ] Write `records/02_after-measurements.md` with the before/after table for every affected
+- [x] Write `records/02_after-measurements.md` with the before/after table for every affected
       deploy and the control-set result.
 
 **Timing**: 1.5 hours

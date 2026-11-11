@@ -1,0 +1,55 @@
+{
+  "phase": 6,
+  "phase_name": "Verify against the real stale deploys and measure after",
+  "started_at": "2026-11-11T18:35:00Z",
+  "last_updated": "2026-11-11T19:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Dry-run replay of all 5 Phase 1 fixtures in a scratch directory",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Apply ordinary resync to real deploys and measure after-state",
+      "status": "done",
+      "files_touched": [
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/02_after-measurements.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Idempotence re-run per resynced repo",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Measure no-change control set spot check",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Write records/02_after-measurements.md",
+      "status": "done",
+      "files_touched": [
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/02_after-measurements.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.2/6.3",
+      "description": "Apply an ordinary load/resync to each stale deploy",
+      "type": "altered",
+      "reason": "ModelBuilder's own .claude/ tree showed 98 uncommitted, in-progress, unrelated changes (git-tracked there, unusually) -- a concurrent restructure this dispatch has no visibility into. Applying a live resync on top of an unknown in-progress change set was judged unsafe. Demonstrated via scratch-directory replay of its real Phase 1 fixture instead (12 -> 28, fingerprint-identical, both orphans removed, survivor intact). The host repo's own live redeploy was deferred to Phase 8 (which already redeploys the host for the full gate set) rather than redeploying it twice; its Phase 6 demonstration is likewise a scratch replay of the live file (28 -> 27, fingerprint-identical).",
+      "annotation": "see per-task annotations in Phase 6's checklist"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Logos/Theory, Logos/Website, and theorem_proving_in_lean4 were resynced for real via deploy-headless.sh --skip-verify and measured directly against the live file: all three show correct orphan removal, byte-identical env/permissions fingerprints, zero per-event duplicates, and true no-op idempotence on a second resync. See records/02_after-measurements.md for the full table and the ModelBuilder/host deferral reasoning. Two issue-record.sh entries filed (the ModelBuilder deferral as a minor scope-mismatch issue; the clean first-try end-to-end mechanism success as a win)."
+}
