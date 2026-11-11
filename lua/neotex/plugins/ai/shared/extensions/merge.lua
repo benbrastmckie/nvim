@@ -931,6 +931,50 @@ function M.remove_orphaned_hook_registrations(target_path, valid_set)
   return true, removed_count, removed_entries
 end
 
+--- Restore hook registrations previously removed by `M.remove_orphaned_hook_registrations`,
+--- re-appending each `{event=, matcher=, hook=}` entry back into its matcher block (creating
+--- the event array / matcher block if the whole thing was pruned away). Used ONLY by
+--- `manager.load`'s own failed-load rollback path (Phase 5, init.lua), threaded alongside
+--- `reverse_merge_targets` -- a failed load must leave the target settings file exactly as it
+--- found it, not missing entries the sweep already committed to disk earlier in that same
+--- load attempt.
+--- @param target_path string Path to the settings.json-shaped file to restore into
+--- @param removed_entries table Array of `{event=, matcher=, hook=}`, as returned by
+---   M.remove_orphaned_hook_registrations
+--- @return boolean success
+function M.restore_removed_hook_registrations(target_path, removed_entries)
+  if not removed_entries or #removed_entries == 0 then
+    return true
+  end
+  if vim.fn.filereadable(target_path) ~= 1 then
+    return true
+  end
+
+  local settings = read_json(target_path)
+  if not settings then
+    return false
+  end
+  settings.hooks = settings.hooks or {}
+
+  for _, entry in ipairs(removed_entries) do
+    settings.hooks[entry.event] = settings.hooks[entry.event] or {}
+    local block = nil
+    for _, b in ipairs(settings.hooks[entry.event]) do
+      if b.matcher == entry.matcher then
+        block = b
+        break
+      end
+    end
+    if not block then
+      block = { matcher = entry.matcher, hooks = {} }
+      table.insert(settings.hooks[entry.event], block)
+    end
+    table.insert(block.hooks, entry.hook)
+  end
+
+  return M.write_json(target_path, settings)
+end
+
 --- Generate CLAUDE.md (or equivalent config markdown) as a fully computed artifact.
 --- Starts from a header template, then appends each loaded extension's claudemd source
 --- content in dependency order (core first, then extensions sorted by load order).

@@ -65,13 +65,108 @@ local function read_json(filepath)
   return result
 end
 
+--- Union every hook registration in `settings` (a settings.json-shaped table) into
+--- `valid_set`, keyed via `merge_mod.hook_valid_set_key(event, matcher, identity)`. A hook
+--- whose command is not identity-eligible (`merge_mod.hook_identity` returns nil) is skipped --
+--- it has no business being a valid_set member, since the sweep's own carve-out already lets
+--- it survive unconditionally regardless of valid_set membership.
+--- @param valid_set table Set table, modified in place
+--- @param settings table Settings-shaped table (reads `settings.hooks`, if present)
+local function union_hook_registrations_into_valid_set(valid_set, settings)
+  if not settings or type(settings.hooks) ~= "table" then
+    return
+  end
+  for event, event_array in pairs(settings.hooks) do
+    if type(event_array) == "table" and vim.isarray(event_array) then
+      for _, block in ipairs(event_array) do
+        if type(block) == "table" and type(block.hooks) == "table" then
+          for _, hook in ipairs(block.hooks) do
+            local identity = merge_mod.hook_identity(hook)
+            if identity then
+              valid_set[merge_mod.hook_valid_set_key(event, block.matcher, identity)] = true
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+--- Build the orphan sweep's valid_set for ONE settings merge target (`target`, e.g.
+--- ".claude/settings.json" or ".claude/settings.local.json"), unioning every OTHER currently
+--- loaded extension's declared settings fragment whose OWN merge target is this SAME file,
+--- plus any loaded extension's root-files/<basename-of-target> hooks (the install-once seed
+--- content, which is just as authoritative as a resync-reachable fragment for "did the source
+--- declare this"). `extension_name` (the extension currently being loaded/resynced) is always
+--- excluded, mirroring the index-entry sweep's "valid set excluding self, re-added by the very
+--- next line" pattern -- this is what lets the sweep also collapse a cross-matcher/cross-event
+--- drift in the CURRENTLY LOADING extension's own past registration, not only another
+--- extension's.
+---
+--- FAIL-SAFE: returns `nil, false` (skip the sweep entirely for this load) when ANY loaded
+--- extension's manifest is unreadable or its declared settings-fragment/root-files JSON fails
+--- to parse. An INCOMPLETE valid set must never be swept against -- that would silently treat
+--- a legitimate, currently-undeclared-only-because-unreadable registration as an orphan.
+--- @param target string The settings merge target path (manifest's `merge_targets.settings.target`)
+--- @param extension_name string The extension currently being loaded -- excluded from the union
+--- @param loaded_names table Array of currently-loaded extension names
+--- @param config table Extension system configuration
+--- @return table|nil valid_set, boolean ok
+local function build_hook_valid_set(target, extension_name, loaded_names, config)
+  local valid_set = {}
+  local target_basename = target:match("([^/]+)$")
+
+  for _, ext_name in ipairs(loaded_names) do
+    if ext_name ~= extension_name then
+      local ext = manifest_mod.get_extension(ext_name, config)
+      if not ext or not ext.manifest then
+        return nil, false
+      end
+      local manifest = ext.manifest
+
+      if
+        manifest.merge_targets
+        and manifest.merge_targets.settings
+        and manifest.merge_targets.settings.target == target
+      then
+        local source_path = ext.path .. "/" .. manifest.merge_targets.settings.source
+        local fragment = read_json(source_path)
+        if not fragment then
+          return nil, false
+        end
+        union_hook_registrations_into_valid_set(valid_set, fragment)
+      end
+
+      if manifest.provides and manifest.provides.root_files then
+        for _, rf in ipairs(manifest.provides.root_files) do
+          if rf == target_basename then
+            local root_path = ext.path .. "/root-files/" .. rf
+            if vim.fn.filereadable(root_path) == 1 then
+              local root_settings = read_json(root_path)
+              if not root_settings then
+                return nil, false
+              end
+              union_hook_registrations_into_valid_set(valid_set, root_settings)
+            end
+          end
+        end
+      end
+    end
+  end
+
+  return valid_set, true
+end
+
 --- Process merge targets for an extension
 --- @param ext_manifest table Extension manifest
 --- @param source_dir string Extension source directory
 --- @param project_dir string Target project directory
 --- @param config table Extension system configuration
+--- @param hook_valid_set table|nil Pre-built valid_set for the orphan sweep (see
+---   build_hook_valid_set above), or nil to skip the sweep entirely for this load (either
+---   fail-safe gate fired, or the merge target has no settings fragment at all).
 --- @return table merged_sections Tracking data for unmerge
-local function process_merge_targets(ext_manifest, source_dir, project_dir, config)
+local function process_merge_targets(ext_manifest, source_dir, project_dir, config, hook_valid_set)
   local merged_sections = {}
 
   if not ext_manifest.merge_targets then
@@ -93,7 +188,23 @@ local function process_merge_targets(ext_manifest, source_dir, project_dir, conf
     local source_path = source_dir .. "/" .. mt_config.source
     local target_path = project_dir .. "/" .. mt_config.target
 
+    -- Read the current extension's own fragment BEFORE invoking the sweep (not after): if this
+    -- read fails, the sweep must not run at all, since there would then be no fragment to
+    -- re-merge afterward and the target could be left swept-but-not-replenished. Orphan sweep
+    -- itself is sited immediately before the merge below, inside the same pcall-guarded block
+    -- manager.load already runs the index-entry sweep in. A nil hook_valid_set means a
+    -- fail-safe gate fired upstream (empty loaded-extension list, or an unreadable
+    -- manifest/fragment) -- skip the sweep entirely rather than act on an incomplete set.
     local fragment = read_json(source_path)
+
+    if hook_valid_set and fragment then
+      local sweep_ok, removed_count, removed_entries =
+        merge_mod.remove_orphaned_hook_registrations(target_path, hook_valid_set)
+      if sweep_ok and removed_count > 0 then
+        merged_sections.settings_swept = removed_entries
+      end
+    end
+
     if fragment then
       local success, tracked = merge_mod.merge_settings(target_path, fragment)
       if success then
@@ -616,14 +727,20 @@ function M.create(config)
         table.insert(data_skeleton_files, f)
       end
 
+      -- updated_state/loaded_names are read ONCE here and shared by both the pre-load index
+      -- cleanup below and the hook-registration orphan sweep's valid-set builder (inside
+      -- process_merge_targets, called just below) -- both need "every other loaded
+      -- extension's name", and re-reading state.json twice for the same load would be
+      -- redundant.
+      local updated_state = state_mod.read(project_dir, config)
+      local loaded_names = state_mod.list_loaded(updated_state)
+
       -- Pre-load cleanup: remove stale index entries before appending fresh ones.
       -- Excludes the current extension from valid prefixes so its stale entries
       -- are removed. Fresh entries are then added by process_merge_targets()
       -- and properly tracked for future unload.
       local index_path = target_dir .. "/context/index.json"
       if vim.fn.filereadable(index_path) == 1 then
-        local updated_state = state_mod.read(project_dir, config)
-        local loaded_names = state_mod.list_loaded(updated_state)
         -- Do NOT include the current extension -- its stale entries must be
         -- removed so fresh entries from process_merge_targets() are added
         -- and tracked (append_index_entries deduplicates, so stale entries
@@ -643,8 +760,35 @@ function M.create(config)
         merge_mod.remove_orphaned_index_entries(index_path, valid_prefixes, context_dir)
       end
 
+      -- Hook-registration orphan sweep's valid_set (fail-safe gates: empty loaded-extension
+      -- list, or any loaded extension's manifest/fragment unreadable, both skip the sweep
+      -- entirely for this load -- see build_hook_valid_set's own doc comment).
+      local hook_valid_set = nil
+      if ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
+        -- Every notify below is pcall-guarded: this whole block runs INSIDE manager.load's own
+        -- atomic-rollback pcall, and a benign skip-log must never be mistaken for a load
+        -- failure (e.g. a headless context with no notification UI available).
+        if #loaded_names == 0 then
+          pcall(helpers.notify, string.format(
+            "[%s] hook-registration orphan sweep skipped: no loaded extensions (empty valid set)",
+            extension_name
+          ), "INFO")
+        else
+          local built_set, built_ok =
+            build_hook_valid_set(ext_manifest.merge_targets.settings.target, extension_name, loaded_names, config)
+          if built_ok then
+            hook_valid_set = built_set
+          else
+            pcall(helpers.notify, string.format(
+              "[%s] hook-registration orphan sweep skipped: an unreadable loaded-extension manifest or settings fragment made the valid set incomplete",
+              extension_name
+            ), "INFO")
+          end
+        end
+      end
+
       -- Process merge targets
-      merged_sections = process_merge_targets(ext_manifest, source_dir, project_dir, config)
+      merged_sections = process_merge_targets(ext_manifest, source_dir, project_dir, config, hook_valid_set)
     end)
 
     -- Rollback on failure
@@ -670,6 +814,14 @@ function M.create(config)
       end
       loader_mod.remove_installed_files(rollback_files, rollback_dirs, { project_dir = project_dir })
       reverse_merge_targets(ext_manifest, merged_sections, project_dir, config)
+      -- Restore any hook registrations the orphan sweep removed earlier in this same failed
+      -- load, alongside the merge-target reversal above -- a failed load must leave the
+      -- target settings file exactly as it found it, not missing entries a sweep already
+      -- committed to disk before the failure occurred.
+      if merged_sections.settings_swept and ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
+        local settings_target_path = project_dir .. "/" .. ext_manifest.merge_targets.settings.target
+        merge_mod.restore_removed_hook_registrations(settings_target_path, merged_sections.settings_swept)
+      end
       return false, "Extension load failed: " .. tostring(load_err)
     end
 

@@ -1,0 +1,51 @@
+{
+  "phase": 5,
+  "phase_name": "Call-siting in manager.load",
+  "started_at": "2026-11-11T18:05:00Z",
+  "last_updated": "2026-11-11T18:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add build_hook_valid_set + union_hook_registrations_into_valid_set, excluding self",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]
+    },
+    {
+      "id": 2,
+      "description": "Two fail-safe gates (empty loaded list; unreadable manifest/fragment), logged",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]
+    },
+    {
+      "id": 3,
+      "description": "Sweep call site inside process_merge_targets before the settings merge, reading own fragment first",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]
+    },
+    {
+      "id": 4,
+      "description": "Rollback threading: restore swept entries on load_ok == false via M.restore_removed_hook_registrations",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua", "lua/neotex/plugins/ai/shared/extensions/merge.lua"]
+    },
+    {
+      "id": 5,
+      "description": "Confirm manager.regenerate's restore-then-resync ordering is unchanged",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.3",
+      "description": "Read the current extension's own fragment BEFORE invoking the sweep",
+      "type": "altered",
+      "reason": "Initial implementation invoked the sweep before reading the fragment (matching the plan's literal task list order rather than its own safety rationale). Reordered so the sweep only runs when the fragment read ALSO succeeded, closing a real edge case: an unreadable fragment must never leave the target swept with nothing to re-merge.",
+      "annotation": "(completed: reordered during implementation after re-reading the safety rationale)"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Added a one-off headless smoke test (not committed) exercising the real manager.load call site end-to-end against a scratch project: first-ever core load correctly skips the sweep (empty loaded-extension list), and a resync correctly removes an injected orphan while leaving a hand-written /opt/mytools/ survivor untouched. All three named tests (test-deploy-orphans.sh, test-deploy-verify-overlap.sh, test-mcp-merge-target.sh) green. manager.regenerate's settings_backup.restore-before-resync_all ordering confirmed unchanged (restore at line 1521, resync_all at line 1530)."
+}

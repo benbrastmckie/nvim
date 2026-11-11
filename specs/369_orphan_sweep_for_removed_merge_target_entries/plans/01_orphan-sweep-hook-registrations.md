@@ -400,32 +400,32 @@ behavior change requiring its own note rather than a silent edit.
 
 ---
 
-### Phase 5: Call-siting in manager.load [NOT STARTED]
+### Phase 5: Call-siting in manager.load [COMPLETED]
 
 **Goal**: Wire the sweep into `init.lua`'s per-extension load path exactly where the index-entry
 sweep is sited, with a fail-safe valid-set computation and rollback restoration.
 
 **Tasks**:
 
-- [ ] Add a `valid_set` builder in `init.lua` that unions, for the settings merge target:
+- [x] Add a `valid_set` builder in `init.lua` that unions, for the settings merge target:
       every OTHER currently-loaded extension's declared settings fragment (resolved through
       `manifest_mod.get_extension` and its `merge_targets.settings.source`), plus
       `root-files/settings.json`'s own `hooks` block. Exclude the extension currently being
       loaded, mirroring the index sweep's "excluding self, re-added by the very next line"
       pattern.
-- [ ] Key the set as `(event, matcher, type, normalized_path)` using the Phase 2 identity module
+- [x] Key the set as `(event, matcher, type, normalized_path)` using the Phase 2 identity module
       for the type/path portion, so the merge-time and sweep-time notions cannot drift.
-- [ ] Add the two fail-safe gates, each logged when it fires: skip the sweep entirely if the
+- [x] Add the two fail-safe gates, each logged when it fires: skip the sweep entirely if the
       loaded-extension list is EMPTY (an unmanaged or fresh repo), and skip it entirely if ANY
       loaded extension's manifest or declared fragment cannot be read. An incomplete valid set is
       never swept against.
-- [ ] Read the current extension's own fragment BEFORE invoking the sweep, and site the sweep
+- [x] Read the current extension's own fragment BEFORE invoking the sweep, and site the sweep
       immediately before the `merge_targets.settings` branch of `process_merge_targets`, inside
       the same `pcall`-guarded block the index sweep already runs in.
-- [ ] Thread the sweep's `removed_entries` into the existing `load_ok == false` rollback path so
+- [x] Thread the sweep's `removed_entries` into the existing `load_ok == false` rollback path so
       a failed load restores the swept entries alongside `remove_installed_files` and
       `reverse_merge_targets`.
-- [ ] Confirm the whole-tree sweep conclusion holds for `manager.regenerate`: `settings_backup.restore`
+- [x] Confirm the whole-tree sweep conclusion holds for `manager.regenerate`: `settings_backup.restore`
       still runs BEFORE `resync_all` (that ordering is a deliberate earlier fix and is not to be
       changed), and the sweep now runs inside each `manager.load` of that resync loop, which is
       what makes a wipe/regenerate converge instead of reintroducing staleness.
