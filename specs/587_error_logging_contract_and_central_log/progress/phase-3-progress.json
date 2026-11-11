@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "The central-log push library",
+  "started_at": "2026-11-11T00:00:00Z",
+  "last_updated": "2026-11-11T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create central-log-lib.sh exporting central_log_promote", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/central-log-lib.sh"]},
+    {"id": 2, "description": "Owning-repository resolution via .claude-extensions.json source_dir -> git toplevel", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/central-log-lib.sh"]},
+    {"id": 3, "description": "Owning-repo skip", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/central-log-lib.sh"]},
+    {"id": 4, "description": "Promotion filter (kind==issue / category==blocker)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/central-log-lib.sh"]},
+    {"id": 5, "description": "Envelope build with jq -c -n", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/central-log-lib.sh"]},
+    {"id": 6, "description": "Bounded flock append with single-generation rotation at 20000 lines", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/central-log-lib.sh"]},
+    {"id": 7, "description": "Silent no-op paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/central-log-lib.sh"]},
+    {"id": 8, "description": "Register library in core manifest.json via sync-manifest-scripts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 9, "description": "Add central-errors-lock file-class member to runtime-file-patterns.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh", "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 10, "description": "Regenerate specs/.gitignore managed block with new lock pattern", "status": "done", "files_touched": ["specs/.gitignore"]},
+    {"id": 11, "description": "Create test-central-log-lib.sh fixture-driven unit suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-central-log-lib.sh", "agent-system/extensions/core/manifest.json", "agent-system/extensions/core/scripts/tests/suite-classification.data"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

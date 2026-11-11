@@ -328,52 +328,52 @@ shape.
 
 ---
 
-### Phase 3: The central-log push library [NOT STARTED]
+### Phase 3: The central-log push library [COMPLETED]
 
 **Goal**: a new shared library resolves the owning repository, applies the promotion filter, and
 performs a bounded, `flock`-guarded, silently-failing append — registered in the manifest and
 with its lock file declared as a runtime file class, but not yet wired into any caller.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/central-log-lib.sh` exporting one
+- [x] Create `agent-system/extensions/core/scripts/lib/central-log-lib.sh` exporting one
       function, `central_log_promote <origin_store> <json_line>`, with a header stating it is the
       single home of this algorithm, that it is safe to source, that it sets no shell options a
       caller inherits, and that it returns 0 on every path including every failure path.
-- [ ] Implement owning-repository resolution with no repo enumeration and no registry read: read
+- [x] Implement owning-repository resolution with no repo enumeration and no registry read: read
       each extension's own per-extension `source_dir` from `<repo_root>/.claude-extensions.json`,
       resolve that directory's enclosing git toplevel, and take that toplevel as the owning
       repository. Reuse the attribution and containment rules already documented in
       `scripts/lib/source-store-path-lib.sh`'s header rather than inventing a second procedure;
       source that library if it gives the answer directly. A top-level `.source_dir` lookup
       returns `null` and must never be read as the key being absent.
-- [ ] Implement the owning-repo skip: when the resolved owning toplevel equals the writing
+- [x] Implement the owning-repo skip: when the resolved owning toplevel equals the writing
       repository's own canonicalized root, return 0 having written nothing.
-- [ ] Implement the promotion filter: promote an `issues.jsonl` line only when `kind == "issue"`;
+- [x] Implement the promotion filter: promote an `issues.jsonl` line only when `kind == "issue"`;
       promote an `events.jsonl` line only when `category == "blocker"`; return 0 having written
       nothing otherwise.
-- [ ] Build the envelope with `jq -c -n` (never string concatenation), with the fields Phase 1
+- [x] Build the envelope with `jq -c -n` (never string concatenation), with the fields Phase 1
       specified: `central_id`, `recorded_at`, `origin_repo`, `origin_store`, `entry`.
-- [ ] Implement the bounded append under `flock -x` on `<owning_root>/specs/.central-errors.lock`:
+- [x] Implement the bounded append under `flock -x` on `<owning_root>/specs/.central-errors.lock`:
       inside the lock, if `specs/central-errors.jsonl` already holds 20000 lines or more, rename
       it to `specs/central-errors.jsonl.1` (replacing any prior generation) and start a fresh
       file; then append the one envelope line.
-- [ ] Implement the silent no-op paths, each returning 0 with nothing written and nothing on
+- [x] Implement the silent no-op paths, each returning 0 with nothing written and nothing on
       stdout: `.claude-extensions.json` absent or unparseable; no extension's `source_dir`
       resolving to a git toplevel; `<owning_root>/specs` not an existing directory (never
       `mkdir -p` — an absent directory means the target is not a live owning repo); the lock or
       the append failing for any reason. Never retry, never emit a non-zero return, never write
       to stdout.
-- [ ] Register the new library in `agent-system/extensions/core/manifest.json`'s
+- [x] Register the new library in `agent-system/extensions/core/manifest.json`'s
       `provides.scripts` via `bash .claude/scripts/sync-manifest-scripts.sh --write` (then review
       the diff), never by hand-editing the array.
-- [ ] Add a `central-errors-lock` named member to `scripts/lib/runtime-file-patterns.sh`'s
+- [x] Add a `central-errors-lock` named member to `scripts/lib/runtime-file-patterns.sh`'s
       file-class list, immediately after the existing `issues-lock`/`metrics-lock` members and
       documented in the same shape, contributing the pattern `**/.central-errors.lock`. The
       central log itself is durable, tracked provenance and must NOT be added.
-- [ ] Regenerate the managed block in `specs/.gitignore` via `bash .claude/scripts/init-specs.sh`
+- [x] Regenerate the managed block in `specs/.gitignore` via `bash .claude/scripts/init-specs.sh`
       (or the regeneration entry point that file's own managed-block header names) rather than
       hand-editing the generated pattern list, and confirm the new pattern appears.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-central-log-lib.sh` asserting, over
+- [x] Create `agent-system/extensions/core/scripts/tests/test-central-log-lib.sh` asserting, over
       synthetic repository fixtures under `mktemp -d`: the owning-repo skip; a successful foreign
       -repo promotion producing exactly one well-formed envelope line; the `kind: "win"` and
       non-blocker filters each writing nothing; a missing `<owning>/specs` directory writing

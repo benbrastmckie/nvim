@@ -8,7 +8,7 @@
 # exclusion list: it is a deliberately-tracked directory, never gitignored, and is NOT emitted
 # by runtime_specs_ignore_block() below -- no pattern in that function's output matches it today.
 #
-# Exports one canonical record per class member (24 total) consumed by BOTH mechanical
+# Exports one canonical record per class member (25 total) consumed by BOTH mechanical
 # consumers: the repo-wide lint (scripts/check-runtime-file-tracking.sh, Checks A and B) and the
 # two deploy-harness test fixtures that seed a scratch repo's .gitignore
 # (scripts/tests/test-deploy-orphans.sh, scripts/tests/test-deploy-propagation.sh). Neither
@@ -28,7 +28,7 @@
 # RUNTIME_FILE_IDS -- index i's id, pattern, probe, regex, and dir flag/basename all describe the
 # SAME class member) or call the three accessor functions below.
 
-# ─── Canonical class membership (24 members) ───────────────────────────────────────────────────
+# ─── Canonical class membership (25 members) ───────────────────────────────────────────────────
 # One entry per array, per member, in the exact order the "Consumer Repo Setup" gitignore block
 # emits them: the 11 members already covered before this lib existed, then `.dispatch/` (already
 # gitignored and already probed by the pre-existing Check A, but missing from the pre-existing
@@ -103,6 +103,15 @@
 # nothing pins the evidence directory's name at the `specs/` top level the way `tmp` is pinned.
 # These members were omitted when the evidence tooling landed, which left both lock files
 # reported as untracked in `git status` in the consuming repository.
+#
+# `central-errors-lock` (25th member) is the lock file for `scripts/lib/central-log-lib.sh`'s
+# `central_log_promote` function, guarding the `flock`-serialized append to the repository that
+# owns the source store's `specs/central-errors.jsonl` cross-repo promotion log. Declared
+# immediately after `metrics-lock`, mirroring `errors-lock`'s repo-root-scoped shape exactly (a
+# dedicated `**/.central-errors.lock` file-class member at a FIXED repo-level path, not per-task).
+# `specs/central-errors.jsonl` ITSELF IS DELIBERATELY NOT ignored -- it is durable, freshness-
+# gated provenance, the same class as `issues.jsonl` and `metrics.jsonl`; only its lock file is
+# ephemeral.
 
 declare -a RUNTIME_FILE_IDS=(
   "lock"
@@ -124,6 +133,7 @@ declare -a RUNTIME_FILE_IDS=(
   "decisions-lock"
   "issues-lock"
   "metrics-lock"
+  "central-errors-lock"
   "tmp"
   "deploy-ledger"
   "orchestration"
@@ -152,6 +162,7 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "**/.decisions.lock"
   "**/.issues.lock"
   "**/.metrics.lock"
+  "**/.central-errors.lock"
   "/specs/tmp/"
   "**/.orchestrator-deploy-ledger.json"
   "**/.orchestration/"
@@ -184,6 +195,7 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/000_probe/.decisions.lock"
   "specs/000_probe/.issues.lock"
   "specs/000_probe/.metrics.lock"
+  "specs/.central-errors.lock"
   "specs/tmp/claude-tts-notify.log"
   "specs/.orchestrator-deploy-ledger.json"
   "specs/.orchestration/.orchestrator-multi-state-sess_0000000000_probe.json"
@@ -214,6 +226,7 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '\.decisions\.lock$'
   '\.issues\.lock$'
   '\.metrics\.lock$'
+  '\.central-errors\.lock$'
   '^specs/tmp/'
   '\.orchestrator-deploy-ledger\.json$'
   '/\.orchestration/'
@@ -225,10 +238,10 @@ declare -a RUNTIME_FILE_B_REGEX=(
 # a hit at this index. A "1" member's bare directory basename is given in
 # RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "0" "1" "0" "1" "0" "0"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "0" "0" "1" "0" "1" "0" "0"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "" "tmp" "" ".orchestration" "" ""
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "" "" "tmp" "" ".orchestration" "" ""
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────
@@ -265,7 +278,7 @@ HEADER_EOF
 }
 
 # runtime_specs_ignore_block
-# Emits the same 24-member class as runtime_ignore_block() above, but with every pattern
+# Emits the same 25-member class as runtime_ignore_block() above, but with every pattern
 # rewritten relative to `specs/` instead of the repo root, for a `specs/.gitignore` file (whose
 # patterns are matched relative to the directory the .gitignore file lives in, not the repo
 # root). MECHANICALLY DERIVED from RUNTIME_FILE_PATTERNS -- never a second hand-written literal

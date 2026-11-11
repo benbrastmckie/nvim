@@ -52,6 +52,7 @@ test-assess-repo-health.sh	unit	-
 test-audit-task-proposals.sh	unit	-
 test-backfill-file-scope.sh	integration	invokes:deploy-headless.sh
 test-census-count.sh	unit	-
+test-central-log-lib.sh	unit	-
 test-check-record-versioning.sh	unit	-
 test-check-task-references.sh	integration	invokes:verify-deploy.sh
 test-claude-refresh-matcher.sh	integration	invokes:verify-deploy.sh

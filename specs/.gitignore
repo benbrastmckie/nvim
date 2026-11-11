@@ -27,6 +27,7 @@
 **/.decisions.lock
 **/.issues.lock
 **/.metrics.lock
+**/.central-errors.lock
 /tmp/
 **/.orchestrator-deploy-ledger.json
 **/.orchestration/
