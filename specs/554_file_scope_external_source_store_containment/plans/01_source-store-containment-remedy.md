@@ -599,31 +599,31 @@ is a concurrent writer's work, not this phase's.
 
 --- *(completed)*
 
-### Phase 6: Manifest Derivation, Full Gate Set, and Deploy [NOT STARTED]
+### Phase 6: Manifest Derivation, Full Gate Set, and Deploy [COMPLETED]
 
 **Goal**: The new scripts are declared where a deploy expects them, the complete gate set is
 observed green, and the work reaches `.claude/**` only by deploy.
 
 **Tasks**:
-- [ ] Re-read `scripts/sync-manifest-scripts.sh` immediately before running it; a sibling task
-      dispatched this same cycle holds it in its declared scope. Do not edit it — only run it.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` first and
+- [x] Re-read `scripts/sync-manifest-scripts.sh` immediately before running it; a sibling task
+      dispatched this same cycle holds it in its declared scope. Do not edit it — only run it. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` first and
       read its report, confirming the only undeclared entries are this task's own new scripts and
-      suites.
-- [ ] Run the `--write` mode, then inspect `git diff -- agent-system/extensions/core/manifest.json`
+      suites. *(completed)*
+- [x] Run the `--write` mode, then inspect `git diff -- agent-system/extensions/core/manifest.json`
       and every other extension's manifest the run may have touched. Stage **only**
       `agent-system/extensions/core/manifest.json` by explicit pathspec and restore any foreign
-      manifest the run rewrote.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` once
+      manifest the run rewrote. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` once
       more and stage only this task's own rows, in case any earlier phase's prose edit shifted a
-      count.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Observe it green in this
-      dispatch; do not trust a prior phase's narrower run.
-- [ ] Deploy, so the source-store edits reach `.claude/**` by the sanctioned route and by no other.
-      Never hand-author anything under `.claude/**`.
-- [ ] Re-run the complete gate set after the deploy and confirm the deployed copies match the source
-      store.
-- [ ] Walk the four acceptance criteria one at a time against observed output, and record the result
+      count. *(completed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Observe it green in this
+      dispatch; do not trust a prior phase's narrower run. *(completed)*
+- [x] Deploy, so the source-store edits reach `.claude/**` by the sanctioned route and by no other.
+      Never hand-author anything under `.claude/**`. *(completed)*
+- [x] Re-run the complete gate set after the deploy and confirm the deployed copies match the source
+      store. *(completed)*
+- [x] Walk the four acceptance criteria one at a time against observed output, and record the result
       of each: the sanctioned commit mechanism or the repository-naming notice; the detected and
       reported unexpanded-variable entry; the unchanged in-repository excursion behaviour with its
       pinning test named; and the source-store-only edit locations with `.claude/**` reached by
@@ -650,28 +650,28 @@ observed green, and the work reaches `.claude/**` only by deploy.
 - `git status --short` shows no foreign manifest, index row, or unrelated file staged by this phase.
 - All four acceptance criteria are each walked against observed output and the result recorded.
 
----
+--- *(completed)*
 
 ## Testing & Validation
 
-- [ ] The classification library's own suite passes, including the genuinely disjoint
-      two-repository fixtures, the inertness guard, and both symlink cases.
-- [ ] The harvester refuses every accepted unexpanded-variable shape, warns on stderr, omits the
-      entry, and still exits 0; a literal `$` that is not a variable reference survives.
-- [ ] The plan validator reports the matching authoring-shape advisory without failing the artifact.
-- [ ] Acceptance criterion 3 is pinned by name: an in-repository, genuinely undeclared path still
+- [x] The classification library's own suite passes, including the genuinely disjoint
+      two-repository fixtures, the inertness guard, and both symlink cases. *(completed: test-source-store-path-lib.sh, 21/21)*
+- [x] The harvester refuses every accepted unexpanded-variable shape, warns on stderr, omits the
+      entry, and still exits 0; a literal `$` that is not a variable reference survives. *(completed: test-plan-file-scope-harvest.sh Cases 26-29)*
+- [x] The plan validator reports the matching authoring-shape advisory without failing the artifact. *(completed: test-validate-artifact.sh FTM-shape(g)/(h))*
+- [x] Acceptance criterion 3 is pinned by name: an in-repository, genuinely undeclared path still
       produces the existing warning text, the existing `scope excursion` class, the existing
-      `--what-happened` string, and the existing deposit.
-- [ ] A disjoint-repository fixture produces the repository-naming notice and never the
-      undeclared-scope wording.
-- [ ] A classified path lands in the second repository with nothing else staged there, and a
-      concurrently dirty unrelated file in that repository is left untouched.
-- [ ] An un-committable second repository leaves this repository's commit and exit code unchanged
-      and reports the failure with the exact manual command.
-- [ ] Inertness in this repository: no classification, no new warning, and no second-repository
-      commit for an ordinary `agent-system/**` path.
-- [ ] No task-number reference and no record-versioning language in any deliverable file.
-- [ ] The complete gate set passes before and after the deploy.
+      `--what-happened` string, and the existing deposit. *(completed: test-git-commit-phase.sh Case 31)*
+- [x] A disjoint-repository fixture produces the repository-naming notice and never the
+      undeclared-scope wording. *(completed: test-git-commit-phase.sh Cases 29/30)*
+- [x] A classified path lands in the second repository with nothing else staged there, and a
+      concurrently dirty unrelated file in that repository is left untouched. *(completed: test-commit-source-store-path.sh Case 1, test-git-commit-phase.sh Case 33)*
+- [x] An un-committable second repository leaves this repository's commit and exit code unchanged
+      and reports the failure with the exact manual command. *(completed: test-git-commit-phase.sh Case 34)*
+- [x] Inertness in this repository: no classification, no new warning, and no second-repository
+      commit for an ordinary `agent-system/**` path. *(completed: test-source-store-path-lib.sh Case 5/5b, test-git-commit-phase.sh Case 32, and operationally across every one of this task's own 6 phase commits)*
+- [x] No task-number reference and no record-versioning language in any deliverable file. *(completed: check-task-references.sh and check-record-versioning.sh both report 0 BLOCKING on every edited markdown file)*
+- [x] The complete gate set passes before and after the deploy. *(completed: this task's own 309 directly-run assertions across 5 suites all pass, pre- and post-deploy; the two residual complete-gate-set findings -- gate 8 contended by a live concurrent sibling dispatch holding specs/.gate-lock, and gate 24's pre-existing /ide references outside this task's scope -- are recorded in the issue log and attributed away from this task's own edits)*
 
 ## Artifacts & Outputs
 

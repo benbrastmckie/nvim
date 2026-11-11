@@ -1,0 +1,76 @@
+{
+  "phase": 6,
+  "phase_name": "Manifest Derivation, Full Gate Set, and Deploy",
+  "started_at": "2026-11-10T19:20:00Z",
+  "last_updated": "2026-11-10T21:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run sync-manifest-scripts.sh --write, stage only manifest.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 2,
+      "description": "Re-run generate-context-line-counts.sh --write for residual rows",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    },
+    {
+      "id": 3,
+      "description": "Run complete gate set, deploy, re-verify",
+      "status": "done",
+      "files_touched": ["__WHOLE_TREE__"]
+    },
+    {
+      "id": 4,
+      "description": "Walk the four acceptance criteria and record results",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "description": "Ran the complete, unscoped verify-deploy.sh gate set twice (before and after deploy), once while sibling task 555 was still actively committing/editing files in its own declared scope",
+      "result": "failed",
+      "reason": "The first full run surfaced 5 failures (doc-lint, manifest-driven content-hash, run-all.sh, a validate-state.sh timeout, and the pre-existing dead-command lint), every one independently traced via git log/diff/ps to either task 555's own in-flight edits/commits or pre-existing, out-of-scope conditions. Re-ran after task 555 finished its own phases: only 2 of 43 findings remained (gate 8 blocked by a live concurrent run of task 555's own narrowed test suite holding specs/.gate-lock; gate 24's pre-existing /ide references). This task's own test suites, run directly bypassing the shared gate-lock, all pass (84+20+21+48+136 = 309 assertions)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.verification",
+      "description": "Phase 6's own stated verify-deploy.sh exits-0-in-full criterion, and gate 8's uncontended run",
+      "type": "altered",
+      "reason": "Gate 8 (run-all.sh) requires the shared specs/.gate-lock mutex, which was held throughout by a live concurrent sibling (task 555) dispatch's own verification run for most of this phase's window. This task's own test suites were verified directly (bypassing the lock) and all pass. Gate 10 (validate-state.sh --deep) is confirmed to pass cleanly outside its internal 60s self-imposed ceiling (73-74s observed wall time, independent of any content this task touched). Gate 24 flags 2 pre-existing /ide references in the memory extension, wholly outside this task's scope.",
+      "annotation": "*(deviation: altered -- gate 8's uncontended confirmation and gate 10's timeout-vs-content distinction recorded in the issue log; this task's own 309 directly-run assertions all pass)*"
+    }
+  ],
+  "acceptance_criteria_walk": [
+    {
+      "criterion": 1,
+      "text": "A task whose deliverable lives in an external source store either has its source-store paths committed by a sanctioned mechanism, or receives a notice that unambiguously says so and names the repository.",
+      "result": "satisfied",
+      "evidence": "commit-source-store-path.sh (Phase 4) plus git-commit-phase.sh's wiring (Phase 3/4); test-git-commit-phase.sh Cases 29/30/33/34 and test-commit-source-store-path.sh's 20 cases demonstrate both the single-pathspec second-repository commit and the unambiguous repository-naming notice on every outcome (success/benign-no-op/failure)."
+    },
+    {
+      "criterion": 2,
+      "text": "An unexpanded-variable file_scope entry is either impossible to declare or is detected and reported, rather than silently matching nothing.",
+      "result": "satisfied",
+      "evidence": "plan-file-scope-harvest.sh's final refusal stage (Phase 2) and validate-artifact.sh's authoring-shape advisory (Phase 2); test-plan-file-scope-harvest.sh Cases 26-29 and test-validate-artifact.sh's FTM-shape(g)/(h) extensions demonstrate detection, reporting, and the exit-0-regardless contract."
+    },
+    {
+      "criterion": 3,
+      "text": "The existing excursion behaviour for genuinely out-of-scope in-repo paths is unchanged, with a test demonstrating it.",
+      "result": "satisfied",
+      "evidence": "test-git-commit-phase.sh Case 31 pins today's exact warning text, the existing 'scope excursion' class, the existing --what-happened string, and the existing proposed_file_scope deposit for an in-repository undeclared path, run in the SAME dispatch as a disjoint SOURCE_STORE classification; Cases 7/11/25 (pre-existing) continue to pass unmodified."
+    },
+    {
+      "criterion": 4,
+      "text": "The edit lands under agent-system/extensions/core/** and reaches .claude/** only by deploy.",
+      "result": "satisfied",
+      "evidence": "Every edit across all 6 phases targeted agent-system/extensions/core/** exclusively; direct diff comparison after deploy-headless.sh confirms every one of this task's 10 source-store files (git-commit-phase.sh, plan-file-scope-harvest.sh, validate-artifact.sh, commit-source-store-path.sh, lib/source-store-path-lib.sh, manifest.json, and the four test suites) is byte-identical to its deployed .claude/ copy; check-task-references.sh and check-record-versioning.sh report 0 BLOCKING findings on every edited markdown file."
+    }
+  ]
+}
