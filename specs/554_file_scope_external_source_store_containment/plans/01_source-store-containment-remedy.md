@@ -524,7 +524,7 @@ Verification criteria name explicitly, not a claim of pre-existing suite coverag
 
 --- *(completed)*
 
-### Phase 5: Document the Sanctioned Form and the New Containment Nuance [NOT STARTED]
+### Phase 5: Document the Sanctioned Form and the New Containment Nuance [COMPLETED]
 
 **Goal**: The notation and the mechanism are documented where authors and future readers will look,
 so the new convention does not become a second undocumented one. Both edited context files have
@@ -532,31 +532,31 @@ their derived line-count rows regenerated in the same phase, so the edit does no
 derived surface behind.
 
 **Tasks**:
-- [ ] Confirm each correction target exists before editing it (all four were verified present at
+- [x] Confirm each correction target exists before editing it (all four were verified present at
       authoring time: the staging-scope standard, the plan format, the planner agent definition, and
       the index entries file, with the first two carrying line-count rows). If a target is missing
-      at implementation time, stop and correct the plan rather than creating a replacement file.
-- [ ] Add a section to `context/standards/git-staging-scope.md`, sibling to the existing
+      at implementation time, stop and correct the plan rather than creating a replacement file. *(completed)*
+- [x] Add a section to `context/standards/git-staging-scope.md`, sibling to the existing
       three-containment-sites section and the deployed-tree discussion, documenting: a `file_scope`
       entry whose correct home is a different repository; the classification and its placement
       before the containment test; the distinct message and issue class; the single-pathspec
       second-repository commit and its unconditional fail-open posture; and the named residuals from
       this plan's Non-Goals. Cite durable anchors only — script names, flag spellings, check names,
-      exit codes, key names, message texts.
-- [ ] Update `context/formats/plan-format.md`'s `Files to modify` field definition: the
+      exit codes, key names, message texts. *(completed)*
+- [x] Update `context/formats/plan-format.md`'s `Files to modify` field definition: the
       source-store-relative path form as it is spelled on disk is the sanctioned way to name a
       source-store file; an unexpanded shell variable is never one and is refused at harvest with a
       warning; and the reserved slashless whole-tree sentinel remains the separate mechanism for a
       whole-deployed-tree claim. Keep the harvester's accepted grammar comment and this definition
-      consistent, as that file's own header requires.
-- [ ] Update `agents/planner-agent.md`'s phase-authoring obligations with the matching authoring
+      consistent, as that file's own header requires. *(completed)*
+- [x] Update `agents/planner-agent.md`'s phase-authoring obligations with the matching authoring
       rule, so a planner naming a source-store file has the real notation to reach for rather than
-      inventing shorthand.
-- [ ] Regenerate the derived line-count rows for the two edited context files with
+      inventing shorthand. *(completed)*
+- [x] Regenerate the derived line-count rows for the two edited context files with
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, then
       inspect `git diff -- agent-system/extensions/core/index-entries.json` and stage **only** the
-      rows for the two files this phase edited, restoring any foreign row the run rewrote.
-- [ ] Write no task numbers and no record-versioning language into any of these files: they lie
+      rows for the two files this phase edited, restoring any foreign row the run rewrote. *(completed)*
+- [x] Write no task numbers and no record-versioning language into any of these files: they lie
       outside `specs/**`, so both prohibitions apply. State the current design only, and cite
       filenames, section headings, and verified facts rather than this record's own history.
 
@@ -597,7 +597,7 @@ is a concurrent writer's work, not this phase's.
 - Grep the three markdown targets for a task-number reference and for record-versioning language;
   both must return nothing.
 
----
+--- *(completed)*
 
 ### Phase 6: Manifest Derivation, Full Gate Set, and Deploy [NOT STARTED]
 

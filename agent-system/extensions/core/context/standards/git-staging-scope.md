@@ -502,6 +502,70 @@ whole-task completion commits in `orchestrator-postflight.sh` and
 `orchestrate-cycle-postflight.sh` are a different category entirely — a final, whole-task
 commit, not a per-phase one — and are unaffected by this wrapper by design.
 
+**A different-repository containment nuance: a `file_scope` entry whose correct home is not THIS
+repository at all.** A `files_touched` path can fail containment for a reason none of the three
+sites above distinguishes from an ordinary undeclared-scope miss: the path may belong to a
+DIFFERENT repository entirely, either a genuinely unrelated location, or an extension's own
+SOURCE STORE (`.claude-extensions.json`'s per-extension `source_dir`), whose enclosing git
+toplevel differs from this repository's own root. Before this nuance was recognized, both shapes
+reached site 2's ordinary Containment Self-Check and were reported with the identical "not
+contained in this task's declared file_scope" wording a genuinely in-repository undeclared path
+gets — "commit this in the source store" was indistinguishable from "you did not declare this".
+
+`scripts/lib/source-store-path-lib.sh` resolves this ambiguity with one shared classification,
+`source_store_classify <repo_root> <path>`, consumed at site 2 (`git-commit-phase.sh`) BEFORE its
+own containment test runs — the same placement rule `git-commit-scoped.sh`'s V9 out-of-repository
+guard already follows for itself: an out-of-repository path must never be able to reach a scope
+test, because a scope test can only ever answer "declared or not", never "which repository". Per
+extension, it resolves `source_dir`, that directory's own enclosing git toplevel, and whether the
+tested path is attributable to that extension (by the source-store-relative spelling convention
+already in universal use, or by absolute resolution under `source_dir`); when the resolved
+toplevel equals the committing repository's own canonicalized root, the extension contributes
+nothing and the path's bare in-repository verdict stands unchanged — the INERTNESS property that
+keeps this mechanism a no-op in a repository that owns its own source store. Three verdicts:
+`IN_REPO` (proceeds into the ordinary Containment Self-Check exactly as before this classification
+existed — acceptance-criterion-3 territory: nothing here changes that path's existing treatment);
+`SOURCE_STORE` (classified to a named extension and repository toplevel); `OUT_OF_REPO` (no
+extension claims it).
+
+A `SOURCE_STORE` or `OUT_OF_REPO` verdict is dropped from the committing repository's own commit
+exactly as an ordinary excursion is — never admitted, never staged — but reported under a class
+TEXTUALLY DISTINCT from the ordinary `scope excursion`: `source store excursion`, naming the
+resolved repository root (and, for `SOURCE_STORE`, the extension and the path's location inside
+that repository) rather than reusing the undeclared-scope wording. Neither verdict's path is ever
+deposited into `proposed_file_scope`: a path this repository can never hold would guarantee an
+identical drop on every future phase if re-seeded into `specs/state.json`'s declared scope, so
+`propose_file_scope_addition()` carries its own defensive refusal for both verdicts, mirroring its
+existing deployed-tree refusal.
+
+A `SOURCE_STORE` verdict additionally gets a sanctioned, single-pathspec commit attempt in its own
+repository — `scripts/commit-source-store-path.sh <target_root> <relative_path> <message>
+<session_id>` — invoked immediately after the committing repository's own commit returns, never
+before. This is the SAME single-explicit-pathspec staging discipline this document already
+requires throughout — never a directory, never a glob, never `-A`/`.`/`-am` — applied unchanged to
+the second repository. The script refuses up front, before touching that repository's index, on:
+the target equalling the committing repository's own root (not an out-of-repository case at all);
+a target that is not a git working tree; a detached HEAD; an in-progress merge, rebase,
+cherry-pick, or bisect; an existing `index.lock`; a missing target file; or an empty diff for that
+one path (a benign no-op, not a failure). Every refusal and every genuine commit failure names the
+exact manual recovery command. **This mechanism is FAIL-OPEN UNCONDITIONALLY**: its own exit code
+is captured and reported, never propagated into the committing repository's own commit or exit
+code, and no caller is permitted to treat a non-zero result from it as fatal — the three outcomes
+(committed, benign no-op, not committed) are each recorded via a non-fatal issue-log call, a win
+on equal footing with a failure, and the drop-time notice above is made unconditional and
+outcome-aware by this follow-on attempt rather than replaced by it.
+
+**Named residuals, recorded explicitly rather than chased to parity in one pass.** The whole-task
+completion commit site and `git-commit-scoped.sh`'s own containment gate keep their existing
+behaviour unchanged: the latter's own out-of-repository guard already classifies the absolute
+out-of-repository shape correctly on its own terms, and the former is not on the path any
+observed drop of this kind took. The direct `file_scope`-write route into `specs/state.json` does
+not gain the matching unexpanded-shell-variable-shape refusal this nuance's authoring-boundary
+companion added at the harvest and plan-validation surfaces — every confirmed instance of that
+shape originated at the harvester, not at that write path, and that write path's own test suite
+sits in a separately declared scope. A future task extending the refusal there should re-derive
+the origin rather than assume it still holds.
+
 ## Reference Template (canonical scoped-staging pattern)
 
 This is the canonical, proven scoped-staging pattern — reuse it verbatim rather than

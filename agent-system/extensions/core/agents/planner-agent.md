@@ -260,7 +260,25 @@ Apply task-breakdown.md guidelines:
    - A plan with no whole-tree-regeneration phase declares nothing new here; this obligation is
      additive and changes no other phase's `Files to modify` block.
 
-10. **Check a Scope Hypothesis Against Its Own Phase's Task List**
+10. **Name a Source-Store File by Its Own On-Disk Path, Never a Shell Variable**
+   - When a phase's deliverable lives in an extension's source store
+     (`.claude-extensions.json`'s per-extension `source_dir`), name it in `**Files to modify**:`
+     with the ordinary source-store-relative form already in universal use —
+     `agent-system/extensions/<name>/path/inside/it` — exactly as it is spelled on disk. This
+     needs no new notation: it is already an ordinary in-repo path in the repository that owns
+     the source store, and `scripts/lib/source-store-path-lib.sh` classifies it correctly
+     wherever the source store resolves to a different repository. See
+     `context/formats/plan-format.md`'s "The sanctioned way to name a source-store file" and
+     `context/standards/git-staging-scope.md`'s different-repository containment nuance.
+   - **MUST NOT**: do not stand in for `source_dir`'s own resolved value with a shell variable
+     (`$SD/...`, `${SOURCE_DIR}/...`, or any other `$VAR`/`${VAR}` form). No assignment for such
+     a variable runs anywhere on the commit path, so it harvests verbatim and matches nothing
+     downstream. `scripts/plan-file-scope-harvest.sh`'s final refusal stage drops any such entry
+     with a loud warning, and `scripts/validate-artifact.sh`'s authoring-shape advisory scan
+     flags it earlier still, at plan-acceptance time — but the fix belongs here, at authoring
+     time, not at either downstream refusal.
+
+11. **Check a Scope Hypothesis Against Its Own Phase's Task List**
     - Before writing a phase that carries a `**Scope Hypothesis**:` naming something deliberately
       EXCLUDED, check every task in that same phase against the exclusion.
     - **MUST NOT**: do not write a phase whose task list requires what its own Scope Hypothesis
@@ -268,7 +286,7 @@ Apply task-breakdown.md guidelines:
       self-consistency obligation" subsection for the full mechanism and the implementer's rule
       for the case where the contradiction is found anyway.
 
-11. **Confirm a Correction Target Exists Before Naming It**
+12. **Confirm a Correction Target Exists Before Naming It**
     - When a phase names an existing artifact as the thing to correct, amend, or retire, confirm
       at authoring time that it exists, and state in the task what the implementer does if it
       does not.

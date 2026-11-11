@@ -132,6 +132,26 @@ role as a durable, non-reverting checkpoint.
     whole-tree regeneration declares that honestly with the `` `__WHOLE_TREE__` `` sentinel
     instead — see "Whole-tree-claim declaration rule" below.
 
+    **The sanctioned way to name a source-store file is the path exactly as it is spelled on
+    disk.** A deliverable whose real home is an extension's source store
+    (`.claude-extensions.json`'s per-extension `source_dir`) is named with the ordinary
+    source-store-relative form already in universal use —
+    `agent-system/extensions/<name>/path/inside/it` — never a shell variable standing in for
+    `source_dir`'s own value. This form needs no new notation: it is already an ordinary in-repo
+    path in the repository that owns the source store, and `scripts/lib/source-store-path-lib.sh`
+    classifies it correctly wherever the source store resolves to a different repository (see
+    `context/standards/git-staging-scope.md`'s different-repository containment nuance).
+
+    **An unexpanded shell variable is never a legitimate entry, and is refused at harvest time.**
+    A `$VAR` or `${VAR}` form standing in for a value — no assignment for it runs anywhere on the
+    commit path — matches nothing downstream and is silently useless. `scripts/plan-file-scope-harvest.sh`'s
+    final refusal stage drops any such entry with a loud, non-fatal warning naming the entry and
+    the sanctioned alternative above, alongside its existing deployed-tree refusal (both compose
+    over the same final merged array); `scripts/validate-artifact.sh`'s authoring-shape advisory
+    scan flags the same shape earlier still, at plan-acceptance time, without failing the
+    artifact. Neither refusal is one specific invented token — both are shape-based, so a future
+    invented variable spelling is refused the same way a known one is.
+
     A generator may render every per-phase field, including this one, as its own top-level list
     item (a leading `- ` before the bold label, e.g. `- **Files to modify**:`) rather than a bare
     `**Field:**` line — this document's own compact example template (below, under

@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 1154,
+      "line_count": 1174,
       "keywords": [
         "format",
         "plan",
@@ -3202,7 +3202,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 1030,
+      "line_count": 1094,
       "keywords": [
         "git-staging",
         "commit-scope",
