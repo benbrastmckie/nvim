@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a five-phase implementation plan ruling on the dispatch's open design question in favor of shape (a): one new no-op-only operation:target_status pair, preflight:edge_only, resolving STATE_STATUS to not_started and refused outright without --depends-on-add. Re-verified every carried figure against the live tree: the twelve map_status() arms, both quoted error strings, and all six guarantees are unchanged, but task 328 (and 430, 446, 448) have completed and archived since the description was written, and the 421 edge's intended predecessor 497 has archived out of active_projects, making that edge moot and unaddable regardless of this fix. The plan therefore executes acceptance item 5 as one real edge (438 -> 500) plus a recorded mootness finding for 421. Corrected the research report's token suggestion ('backfill' already carries two other senses in this source store) to the collision-free 'edge_only'.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/500_edge_backfill_unreachable_for_not_started/plans/01_edge-only-admission-token.md",
+      "summary": "Five-phase plan closing the --depends-on-add not_started admission gap via a new no-op-only preflight:edge_only pair, with full guarantee-preservation test coverage, suggester integration, and an end-to-end edge-add proof."
+    }
+  ],
+  "dispatch_seq": 6
+}

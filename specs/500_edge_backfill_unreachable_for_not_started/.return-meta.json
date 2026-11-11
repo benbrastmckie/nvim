@@ -1,36 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/500_edge_backfill_unreachable_for_not_started/reports/01_depends-on-add-not-started-gap.md",
-      "summary": "Confirms --depends-on-add is unreachable for not_started tasks (map_status() has no arm resolving to not_started); recommends shape (a) -- a new no-op-only operation:target_status arm, edge-only-guarded -- over shape (b) (standalone operation) on call-site-count grounds; finds the 421->497 edge from acceptance criterion 5 is now moot because task 497 has completed and archived out of active_projects."
+      "type": "plan",
+      "path": "specs/500_edge_backfill_unreachable_for_not_started/plans/01_edge-only-admission-token.md",
+      "summary": "Five-phase plan closing the --depends-on-add not_started admission gap via a new no-op-only preflight:edge_only operation:target_status pair, with full guarantee-preservation test coverage, suggester integration, and an end-to-end edge-add proof."
     }
   ],
-  "next_steps": "Run /orchestrate 500 to create implementation plan",
-  "memory_candidates": [
-    {
-      "content": "update-task-status.sh's --depends-on-add flag is restricted to calls whose operation:target_status pair resolves to the task's own CURRENT status (a no-op replay), reusing that vehicle rather than inventing a second one for 'just add an edge'. map_status()'s closed case statement has no arm that resolves to not_started, so the flag is structurally unreachable for any not_started task -- the single most common status needing edge backfill. orchestrate-suggest-next-batch.sh's resolve_noop_token()/propose_edge_for_pair() independently anticipate this exact gap today, falling back to a propose-only notice whenever the higher task in a collision pair is not_started.",
-      "category": "PATTERN",
-      "source_artifact": "specs/500_edge_backfill_unreachable_for_not_started/reports/01_depends-on-add-not-started-gap.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["depends-on-add", "update-task-status.sh", "map_status", "status-no-op-restriction", "not_started"]
-    },
-    {
-      "content": "--depends-on-add's missing-predecessor refusal checks active_projects[].project_number only -- a predecessor that has completed and been archived out of active_projects (into specs/archive/state.json) is treated as nonexistent, even though it genuinely existed and finished. An edge-backfill task description written against a task's then-current contending/live predecessor should be re-verified against live state.json at implement time, since a predecessor can complete and archive between research and implement dispatches, making the edge both infeasible (refused) and moot (the ordering risk it would have prevented is already resolved by fact).",
-      "category": "INSIGHT",
-      "source_artifact": "specs/500_edge_backfill_unreachable_for_not_started/reports/01_depends-on-add-not-started-gap.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["depends-on-add", "missing-predecessor", "active_projects", "archive", "state.json"]
-    }
-  ],
+  "next_steps": "Run /orchestrate 500 to execute the plan",
+  "phase_count": 5,
+  "estimated_hours": 4,
+  "dependency_waves": 4,
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1794381614_02261f_500",
-    "agent_type": "general-research-agent",
-    "duration_seconds": 300,
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 7
-  }
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 6
 }

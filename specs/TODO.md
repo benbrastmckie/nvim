@@ -47,7 +47,7 @@ next_project_number: 592
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
-500 [PLANNING] — Dependency-edge backfill is unreachable for a not-started task
+500 [PLANNED] — Dependency-edge backfill is unreachable for a not-started task
 502 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
@@ -6489,11 +6489,12 @@ RELEVANCE TO OUTCOME 3, stated without overstating it: these are SITE 2 drops (g
 ---
 
 ### 500. Dependency-edge backfill is unreachable for a not-started task
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328, Task 430, Task 446, Task 448
 - **Research**: [500_edge_backfill_unreachable_for_not_started/reports/01_depends-on-add-not-started-gap.md]
+- **Plan**: [500_edge_backfill_unreachable_for_not_started/plans/01_edge-only-admission-token.md]
 
 **Description**: `update-task-status.sh --depends-on-add=<json-array>` cannot fire on a task whose status is `not_started` -- which is the single most common status for a task that needs an edge added after the fact. Restore reachability without weakening any of the flag's existing guarantees.
 
