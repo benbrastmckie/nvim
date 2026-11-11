@@ -1,16 +1,66 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md",
+      "summary": "All 8 plan phases complete: a shared source-store/extensions-root resolver threaded through six test suites and two production scripts, each gaining a synthetic external-source-store fixture, a fresh independently-measured sweep, and 6 new known-failures.txt rows restoring run-all.sh --fail-on-new's exit-code discrimination (0 NEW on the final sweep)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Introduced common_test_ext_root (lib/common.sh), a repo-root-source-store-first / .claude-extensions.json-indirection-second resolver, and threaded it through deploy-root-guard.sh's self-correction test plus six shell test suites and two production scripts that previously hardcoded a bare agent-system/extensions path with no fallback. Each fixed call site gained a synthetic external-source-store regression fixture. A fresh sweep confirmed all 6 originally-affected suites pass under both discovery modes; known-failures.txt gained 6 new declared rows for the unrelated, pre-existing residual failures found along the way, restoring run-all.sh --fail-on-new's NEW-vs-EXPECTED discrimination (174 passed, 8 failed -- 8 expected, 0 NEW)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/deploy-root-guard.sh",
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh",
+    "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh",
+    "agent-system/extensions/core/scripts/sync-manifest-scripts.sh",
+    "agent-system/extensions/core/scripts/tests/known-failures.txt",
+    "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh",
+    "agent-system/extensions/core/scripts/tests/test-common-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+    "agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh",
+    "agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh",
+    "agent-system/extensions/core/scripts/tests/test-routing-resolution.sh",
+    "agent-system/extensions/core/scripts/tests/test-update-task-status.sh",
+    "specs/555_test_sweep_external_source_store_failures/records/sweep-measurement.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell helper resolves an 'extensions root' that can live OUTSIDE the calling script's own REPO_ROOT (e.g. via a .claude-extensions.json source_dir indirection to an external source-store repo), every downstream `git -C \"$REPO_ROOT\" ls-files <path-under-the-resolved-root>` call and REPO_ROOT-relative path-stripping computation must be re-targeted at the RESOLVED root's own git worktree, not REPO_ROOT's -- `git -C` with a pathspec outside its own repo silently resolves zero files rather than erroring, so a resolver fix alone can leave every downstream consumer reporting false 'declared but absent' findings. Fix pattern: derive a second variable (e.g. EXT_GIT_ROOT) via `git -C \"$EXT_DIR\" rev-parse --show-toplevel`, falling back to REPO_ROOT when EXT_DIR is not itself inside a git worktree (preserves every existing caller's behavior exactly), and route every git/path computation in the affected loop through it instead of REPO_ROOT.",
+      "category": "PATTERN",
+      "source_artifact": "specs/555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-ls-files", "extensions-root", "source-store", "repo-root-mismatch", "fixture-testing"]
+    },
+    {
+      "content": "common_test_resolve_subject's mode vocabulary (deployed / source-store / deploy-tree-first) has no 'source-store-first-with-deployed-fallback' order -- only the opposite-direction deploy-tree-first, or single-mode-only deployed/source-store. A test suite that genuinely needs source-store-preferred-with-deployed-fallback (matching the convention that a suite validating a fresh source-store edit must not silently test a stale deployed copy) cannot express that via common_test_resolve_subject and should stay on common_test_resolve_candidate with an explicit two-candidate list in [source-store, deployed] order -- then add a permanent, individually-reasoned exemption to lint-subject-resolution-declaration.sh's EXCLUDED_FILES array (it naively flags any common_test_resolve_candidate call against a literal '.claude/scripts' candidate as an 'unmigrated implicit-order shape') rather than forcing a semantically-wrong migration just to satisfy the lint.",
+      "category": "PATTERN",
+      "source_artifact": "specs/555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["common_test_resolve_subject", "common_test_resolve_candidate", "subject-resolution-lint", "source-store-first", "exemption"]
+    },
+    {
+      "content": "verify-deploy.sh's gate 3 (doc-lint) and gate 5 (manifest-driven content-hash equality) 'Content differs from source' / 'deployed script content drift' findings are DEPLOY-FRESHNESS checks (deployed .claude/ file content vs. the agent-system/extensions source file content, read directly off disk) -- they are NOT git-commit-status checks. Committing a source-store edit does nothing to clear this finding; only running an actual deploy (<leader>al / deploy-headless.sh) does, and a repo whose plan explicitly forbids initiating a deploy as a Non-Goal will see this finding persist for every source-store-only edit until the next deploy cycle, which is expected and not a regression.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy", "deploy-freshness", "content-drift", "gate3", "gate5", "undeployed-edit"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794343931_696ebd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 8,
+    "phases_total": 8
   },
-  "dispatch_seq": 19,
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh",
     "agent-system/extensions/core/index-entries.json"

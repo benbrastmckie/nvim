@@ -1,15 +1,24 @@
 {
-  "status": "planned",
-  "dispatch_seq": 17,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "phase": "implement",
+  "phases_completed": 8,
   "phases_total": 8,
-  "summary": "Authored an 8-phase plan to close the external-source-store test-sweep failure class. The plan adopts the research report's option (a): one shared fall-open resolver (common_test_ext_root in lib/common.sh) layered on the existing .claude-extensions.json source_dir indirection, threaded through 6 confirmed suites plus sync-manifest-scripts.sh, lint-dead-command-recommendations.sh, and deploy-root-guard.sh's self-correction acceptance test, with a synthetic external-source-store fixture per call site so the condition is reproducible here. Two phases then re-derive the sweep and reconcile known-failures.txt so run-all.sh --fail-on-new discriminates again. Every Tier Justification was produced by running suite_selection_select, and validate-artifact.sh now passes with 0 warnings.",
+  "summary": "Completed all 8 plan phases: introduced common_test_ext_root, a shared repo-root-source-store-first / .claude-extensions.json-indirection-second resolver, threaded it through deploy-root-guard.sh and six shell test suites plus two production scripts that previously hardcoded a bare agent-system/extensions path, each gaining a synthetic external-source-store fixture. A fresh sweep confirms all 6 originally-affected suites now pass under both discovery modes, and known-failures.txt gained 6 new declared rows restoring run-all.sh --fail-on-new's NEW-vs-EXPECTED exit-code discrimination (174 passed, 8 failed -- 8 expected, 0 NEW).",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/555_test_sweep_external_source_store_failures/summaries/01_external-source-store-resolution-summary.md",
+      "summary": "All 8 plan phases complete: shared source-store/extensions-root resolver, six test suites and two production scripts fixed with synthetic fixtures, fresh sweep, and known-failures.txt reconciliation restoring exit-code discrimination (0 NEW)."
+    },
+    {
       "type": "plan",
       "path": "specs/555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md",
-      "summary": "8-phase plan (5 waves, ~11h) adding a shared source-store resolver and threading it through 6 suites and 3 scripts, then re-deriving the sweep and reconciling the known-failures baseline."
+      "summary": "8-phase plan, all phases marked [COMPLETED]."
     }
-  ]
+  ],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete. Optional non-blocking follow-ups recorded in the summary's Follow-ups section (5 one-topology-only residual suites, the external-consumer confirmation, and test-askuserquestion-rehome.sh's Case 7 grep-boundary gap)."
 }
