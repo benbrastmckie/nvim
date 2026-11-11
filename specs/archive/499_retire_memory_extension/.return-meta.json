@@ -1,0 +1,160 @@
+{
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/499_retire_memory_extension/summaries/01_retarget-distill-submodes-and-cleanup-summary.md",
+      "summary": "Implementation summary: retargeted --revise/--learn onto the hosted Sapience store, deleted six hosted-store-redundant sub-modes, removed two orphaned core scripts, stripped /todo's archive-time harvest, and closed the tagged-write half of the sapience retrieval loop."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When retargeting a consumer that enumerates a local store onto a hosted store that offers only a capped keyword query (no enumeration endpoint), invert the correlation direction: cluster the evidence first, apply a recurrence threshold, then query the store once per surviving cluster -- never add an enumeration read path. This preserves every classification outcome and is strictly cheaper. Mandatory companion: if the query path returns the same signal (non-zero exit, empty stdout) for both a zero-hit result and a transport failure, the consumer must open with a reachability probe against a known-present item, or a network failure silently reclassifies every cluster as a gap.",
+      "category": "PATTERN",
+      "source_artifact": "specs/499_retire_memory_extension/summaries/01_retarget-distill-submodes-and-cleanup-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "hosted-store-migration",
+        "enumeration-to-query",
+        "correlation-inversion",
+        "reachability-probe",
+        "ambiguous-failure-signal"
+      ]
+    },
+    {
+      "content": "A non-destructive, additive-only deploy (this repo's deploy-headless.sh default) never prunes a deployed file whose source was deleted. When a task deletes source files and needs the deployed tree's orphaned copies gone too, don't assume a plain redeploy clears them: either run --wipe (full destructive regenerate, risky with concurrent sibling sessions on the same tree) or apply the documented 'targeted removal of the specific orphan paths' alternative (delete the specific orphaned deployed files plus their ghost index.json rows by hand, then re-run the whole-tree orphan-detection gate to confirm clean).",
+      "category": "PATTERN",
+      "source_artifact": "specs/499_retire_memory_extension/summaries/01_retarget-distill-submodes-and-cleanup-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "deploy-headless",
+        "orphan-detection",
+        "additive-only-deploy",
+        "wipe-alternative",
+        "whole-tree-gate"
+      ]
+    },
+    {
+      "content": "POST /ingest-kos against the live Sapience vault (app.spnc.ai) hung indefinitely (confirmed up to a 270-second curl probe, zero bytes received) for real, coherent note content across 4+ attempts of varying length (~50-700 chars), while short/nonsense content reliably got a fast (~1s) response (gated or written=0). Plain GET requests and reads via sapience-retrieve.sh were unaffected and fast throughout. This looks like a genuine service-side issue specific to real-content writes (possibly a WAF/content-filter or an expensive server-side path that never returns), not a client-side or script defect -- worth checking before relying on any new sapience-remember.sh call site.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/499_retire_memory_extension/summaries/01_retarget-distill-submodes-and-cleanup-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "sapience",
+        "ingest-kos",
+        "write-hang",
+        "external-service-issue",
+        "silent-drop"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794343931_696ebd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phase_count": 7,
+    "estimated_hours": 10.5,
+    "dependency_waves": [
+      [
+        1,
+        2,
+        6
+      ],
+      [
+        3
+      ],
+      [
+        4,
+        5
+      ],
+      [
+        7
+      ]
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
+  },
+  "next_steps": "Task 499 implemented. A follow-up should investigate the POST /ingest-kos write-hang against the live Sapience host before relying on the newly-wired tagged-write call site for a real write.",
+  "dispatch_seq": 13,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/email/index-entries.json",
+    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
+  ],
+  "completion_data": {
+    "completion_summary": "Retargeted /distill's --revise and --learn onto the hosted Sapience knowledge store, deleted the six sub-modes the hosted store already performs server-side, removed the two orphaned core scripts (memory-retrieve.sh, memory-harvest.sh) and ~27 reference files, stripped /todo's archive-time memory harvest, and wired the sapience postflight wrapup to write repo-tagged notes. All 7 plan phases closed; Phase 7 closed COMPLETED WITH EXCLUSIONS with four reasoned, fully-investigated exclusions, none attributable to this task's own deliverable."
+  },
+  "modified_files": [
+    "agent-system/extensions/books/skills/skill-books-implementation/SKILL.md",
+    "agent-system/extensions/books/skills/skill-books-research/SKILL.md",
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/context/meta/meta-guide.md",
+    "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+    "agent-system/extensions/core/context/patterns/skill-lifecycle.md",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+    "agent-system/extensions/core/context/standards/telemetry-guardrails.md",
+    "agent-system/extensions/core/docs/guides/creating-extensions.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/lib/task-reference-patterns.sh",
+    "agent-system/extensions/core/scripts/memory-harvest.sh",
+    "agent-system/extensions/core/scripts/memory-retrieve.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/scripts/sweep-invalidated-claims.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "agent-system/extensions/cslib/skills/skill-cslib-implementation/SKILL.md",
+    "agent-system/extensions/cslib/skills/skill-cslib-research/SKILL.md",
+    "agent-system/extensions/cslib/skills/skill-pr-review-implementation/SKILL.md",
+    "agent-system/extensions/cslib/skills/skill-pr-review-research/SKILL.md",
+    "agent-system/extensions/email/context/project/email/design/email-to-memory-preferences.md",
+    "agent-system/extensions/email/index-entries.json",
+    "agent-system/extensions/email/skills/skill-email-implementation/SKILL.md",
+    "agent-system/extensions/epidemiology/skills/skill-epi-implement/SKILL.md",
+    "agent-system/extensions/epidemiology/skills/skill-epi-research/SKILL.md",
+    "agent-system/extensions/latex/skills/skill-latex-implementation/SKILL.md",
+    "agent-system/extensions/latex/skills/skill-latex-research/SKILL.md",
+    "agent-system/extensions/literature/skills/skill-literature/SKILL.md",
+    "agent-system/extensions/memory/EXTENSION.md",
+    "agent-system/extensions/memory/README.md",
+    "agent-system/extensions/memory/commands/distill.md",
+    "agent-system/extensions/memory/context/project/memory/distill-usage.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-compress-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-learn-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-merge-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-purge-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-refine-submode.md",
+    "agent-system/extensions/memory/context/project/memory/patterns/distill-revise-submode.md",
+    "agent-system/extensions/memory/index-entries.json",
+    "agent-system/extensions/memory/skills/skill-distill/README.md",
+    "agent-system/extensions/memory/skills/skill-distill/SKILL.md",
+    "agent-system/extensions/memory/skills/skill-learn/README.md",
+    "agent-system/extensions/memory/skills/skill-learn/SKILL.md",
+    "agent-system/extensions/nix/skills/skill-nix-implementation/SKILL.md",
+    "agent-system/extensions/nix/skills/skill-nix-research/SKILL.md",
+    "agent-system/extensions/nvim/skills/skill-neovim-implementation/SKILL.md",
+    "agent-system/extensions/nvim/skills/skill-neovim-research/SKILL.md",
+    "agent-system/extensions/python/skills/skill-python-implementation/SKILL.md",
+    "agent-system/extensions/python/skills/skill-python-research/SKILL.md",
+    "agent-system/extensions/rust/skills/skill-rust-implementation/SKILL.md",
+    "agent-system/extensions/rust/skills/skill-rust-research/SKILL.md",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/context/project/sapience/README.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
+    "agent-system/extensions/typst/skills/skill-typst-implementation/SKILL.md",
+    "agent-system/extensions/typst/skills/skill-typst-research/SKILL.md",
+    "agent-system/extensions/web/skills/skill-web-implementation/SKILL.md",
+    "agent-system/extensions/web/skills/skill-web-research/SKILL.md",
+    "agent-system/extensions/z3/skills/skill-z3-implementation/SKILL.md",
+    "agent-system/extensions/z3/skills/skill-z3-research/SKILL.md"
+  ]
+}
