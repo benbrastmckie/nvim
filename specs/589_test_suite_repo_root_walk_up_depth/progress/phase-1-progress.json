@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline Measurement Under Both Invocation Paths",
+  "started_at": "2026-11-11T07:32:06Z",
+  "last_updated": "2026-11-11T07:46:00Z",
+  "objectives": [
+    {"id": 1, "description": "Echo computed root value for each of 7 suites from both invocation paths", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run each of 7 suites from source-store and deployed tests dirs, capture Results line and FAIL lines", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Record deployed-fail/source-pass asymmetry pairing explicitly", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Write measurements to phase-1-baseline.json", "status": "done", "files_touched": ["specs/589_test_suite_repo_root_walk_up_depth/progress/phase-1-baseline.json"]},
+    {"id": 5, "description": "Record Phase 1 result via issue-record.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.note",
+      "description": "test-gate-cache-equivalence.sh source-store tally",
+      "type": "deferred",
+      "reason": "Suite runtime exceeds 15 minutes (18-gate corpus-violation matrix); deployed-path failure already confirmed via a hard environment error (git worktree creation outside the work tree), which is decisive on its own. Source-store tally left running in background and will be finalized in phase-1-baseline.json before Phase 5 acts on it.",
+      "annotation": "*(deviation: deferred — long-running suite, finalized before Phase 5)*"
+    }
+  ]
+}

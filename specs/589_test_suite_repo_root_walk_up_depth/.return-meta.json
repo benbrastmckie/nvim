@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/589_test_suite_repo_root_walk_up_depth/plans/01_test-root-resolution-remedy.md",
-      "summary": "Six-phase plan replacing invocation-path-dependent fixed-depth repo-root computations in five core test suites with the existing common_test_repo_root/common_test_ext_root helpers, plus a deployed-mode EXT_ROOT fix in orchestrate-build-aux-dispatch.sh and a measure-first adjacent-class sweep."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 4,
   "metadata": {
-    "session_id": "sess_1794381614_02261f_589",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.75,
-    "dependency_waves": 3
-  },
-  "memory_candidates": [
-    {
-      "content": "A shell test suite that computes its own repository root by walking up a hardcoded number of path segments is invocation-path dependent whenever the same file is executed from two tree depths (a source store at agent-system/extensions/<ext>/scripts/tests, five levels down, and its deployed copy at .claude/scripts/tests, three levels down). The failure is quiet, not loud: the over-walk resolves to a path outside the repository, and downstream repo-relative helpers return their own fail-open sentinels (CANNOT_COMPUTE and similar) rather than erroring, so the suite reports a NEW failure whose stated cause is unrelated to the real one. Diagnostic: echo the computed root under both paths and run the suite from both; a source-store pass plus a deployed-path failure indicts the walk-up depth, not the logic under test. The same class also hides SUT-side: a production script globbing \"$SCRIPT_DIR/../..\"/*/agents/x.md resolves to the repo root from a deployed location, where * cannot match the leading dot of .claude, so the lookup silently yields empty in production too. Remedy: a git-rev-parse-first resolver with a fixed-depth fallback, as one shared helper, never a per-suite bespoke walk.",
-      "category": "PATTERN",
-      "source_artifact": "specs/589_test_suite_repo_root_walk_up_depth/plans/01_test-root-resolution-remedy.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["repo-root-resolution", "invocation-path-dependence", "deploy-tree", "shell-test-suite", "fail-open-sentinel", "walk-up-depth"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 589 to execute the plan",
-  "dispatch_seq": 1
+    "session_id": "sess_1794381614_02261f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

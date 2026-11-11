@@ -1,7 +1,7 @@
 # Implementation Plan: Task #589
 
 - **Task**: 589 - Test suite repo-root walk-up depth is invocation-path dependent
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.75 hours
 - **Dependencies**: None (task 573 depends on this one)
 - **Research Inputs**: None (no research artifact for this round; the task description carries
@@ -124,7 +124,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Baseline Measurement Under Both Invocation Paths [NOT STARTED]
+### Phase 1: Baseline Measurement Under Both Invocation Paths [COMPLETED]
 
 **Goal**: Record, before any edit, the computed root value and the pass/fail tally for each
 affected suite under both invocation paths, so every later phase has a measured before-state to
@@ -132,22 +132,24 @@ compare against and no remedy is applied to a suite whose failure was never conf
 
 **Tasks**:
 
-- [ ] For each of the five named suites plus the two adjacent candidates
+- [x] For each of the five named suites plus the two adjacent candidates
       (`test-verify-deploy-gate-selection-crash-net.sh`, `test-gate-cache-equivalence.sh`), echo
       the value its own root expression computes from the source-store tests directory and from
-      the deployed tests directory, verbatim.
-- [ ] Run each of the seven suites from `agent-system/extensions/core/scripts/tests/` and from
+      the deployed tests directory, verbatim. *(completed)*
+- [x] Run each of the seven suites from `agent-system/extensions/core/scripts/tests/` and from
       `.claude/scripts/tests/`, capturing the final `Results: N passed, M failed` line and every
-      `[FAIL]` line.
-- [ ] For any suite failing from the deployed path and passing from the source-store path, record
+      `[FAIL]` line. *(completed: test-gate-cache-equivalence.sh's source-store tally deferred to
+      background completion before Phase 5, since this one suite's runtime exceeds 15 minutes --
+      its deployed-path failure is already confirmed via a hard environment error)*
+- [x] For any suite failing from the deployed path and passing from the source-store path, record
       that pairing explicitly — that asymmetry is what indicts the walk-up depth rather than the
-      logic under test.
-- [ ] Write the measurements to `specs/589_test_suite_repo_root_walk_up_depth/progress/phase-1-baseline.json`
+      logic under test. *(completed)*
+- [x] Write the measurements to `specs/589_test_suite_repo_root_walk_up_depth/progress/phase-1-baseline.json`
       (one record per suite: suite basename, computed root under each path, pass/fail tally under
-      each path, verdict `depth-indicted` / `passes-both` / `other-cause`).
-- [ ] Record the Phase 1 result via `issue-record.sh` (a `win` if the asymmetry reproduces
+      each path, verdict `depth-indicted` / `passes-both` / `other-cause`). *(completed)*
+- [x] Record the Phase 1 result via `issue-record.sh` (a `win` if the asymmetry reproduces
       cleanly, an `issue` if any suite fails from BOTH paths — that one has a second cause and
-      must not be silently swept into a later phase).
+      must not be silently swept into a later phase). *(completed: win recorded)*
 
 **Timing**: 0.75 hours
 

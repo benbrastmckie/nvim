@@ -1,0 +1,124 @@
+{
+  "measured_at": "2026-11-11T07:45:00Z",
+  "before_state": [
+    {
+      "suite": "test-deploy-baseline-lib.sh",
+      "root_expr": "CORE_DIR/../../../..",
+      "computed_root": {
+        "source_store": "/home/benjamin/.config/nvim",
+        "deployed": "/home/benjamin"
+      },
+      "tally": {
+        "source_store": "30 passed, 0 failed",
+        "deployed": "29 passed, 1 failed"
+      },
+      "deployed_fail_lines": [
+        "[FAIL] control: a genuinely matching warm-cache entry was expected to skip gate 1 but did not:"
+      ],
+      "verdict": "depth-indicted"
+    },
+    {
+      "suite": "test-gate-cache-lib.sh",
+      "root_expr": "CORE_DIR/../../../..",
+      "computed_root": {
+        "source_store": "/home/benjamin/.config/nvim",
+        "deployed": "/home/benjamin"
+      },
+      "tally": {
+        "source_store": "28 passed, 0 failed",
+        "deployed": "24 passed, 4 failed"
+      },
+      "deployed_fail_lines": [
+        "[FAIL] case9: implementation digest was not deterministic or was a sentinel (i1=CANNOT_COMPUTE i2=CANNOT_COMPUTE)",
+        "[FAIL] case10: registry-row edit did not change the implementation digest",
+        "[FAIL] case11: a scripts/lib/ perturbation did not change the implementation digest",
+        "[FAIL] case15: composite key was not deterministic (k1=CANNOT_COMPUTE k2=CANNOT_COMPUTE)"
+      ],
+      "verdict": "depth-indicted"
+    },
+    {
+      "suite": "test-gate-registry-resolution.sh",
+      "root_expr": "CORE_DIR/../../../..",
+      "computed_root": {
+        "source_store": "/home/benjamin/.config/nvim",
+        "deployed": "/home/benjamin"
+      },
+      "tally": {
+        "source_store": "44 passed, 0 failed",
+        "deployed": "43 passed, 1 failed"
+      },
+      "deployed_fail_lines": [
+        "[FAIL] case32: expected --only-gate 28 to be accepted and select gate 28 (rc=2)"
+      ],
+      "verdict": "depth-indicted"
+    },
+    {
+      "suite": "test-lint-deploy-caller-wrap.sh",
+      "root_expr": "CORE_DIR/../..  (EXTENSIONS_DIR)",
+      "computed_root": {
+        "source_store": "/home/benjamin/.config/nvim/agent-system/extensions",
+        "deployed": "/home/benjamin/.config/nvim"
+      },
+      "tally": {
+        "source_store": "7 passed, 0 failed",
+        "deployed": "10 passed, 1 failed"
+      },
+      "deployed_fail_lines": [
+        "[FAIL] classification: expected exactly {orchestrate-cycle-plan.sh, command-gate-out.sh}, got: command-gate-out.sh (x2 via .claude/ duplicate), orchestrate-cycle-plan.sh (x2 via .claude/ duplicate)"
+      ],
+      "note": "The '[self-test scratch copy] [FAIL] ...' line is an expected assertion artifact present identically in both runs (the self-test deliberately produces a [FAIL]-shaped message); it is not a counted suite failure.",
+      "verdict": "depth-indicted"
+    },
+    {
+      "suite": "test-orchestrate-build-aux-dispatch.sh",
+      "root_expr": "SCRIPT_DIR/../.. (EXT_ROOT, production script, SUT-side not test-side)",
+      "computed_root": {
+        "source_store": "/home/benjamin/.config/nvim/agent-system/extensions",
+        "deployed": "/home/benjamin/.config/nvim"
+      },
+      "tally": {
+        "source_store": "22 passed, 0 failed",
+        "deployed": "21 passed, 1 failed"
+      },
+      "deployed_fail_lines": [
+        "[FAIL] plan-revision's model did not resolve to opus (got: )"
+      ],
+      "verdict": "depth-indicted",
+      "note": "SUT-side defect: EXT_ROOT resolves to the repo root from the deployed script location, and the glob '*/agents/x.md' cannot match .claude's leading dot, so model resolution silently yields empty in production too, not only under test."
+    },
+    {
+      "suite": "test-verify-deploy-gate-selection-crash-net.sh",
+      "root_expr": "CORE_DIR/../../../..",
+      "computed_root": {
+        "source_store": "/home/benjamin/.config/nvim",
+        "deployed": "/home/benjamin"
+      },
+      "tally": {
+        "source_store": "1 passed, 0 failed",
+        "deployed": "1 passed, 0 failed"
+      },
+      "deployed_stderr_noise": [
+        "rsync: [sender] change_dir \"/home/benjamin/agent-system/extensions\" failed: No such file or directory (2)",
+        "cp: cannot stat '/home/benjamin/CLAUDE.md': No such file or directory",
+        "cp: cannot stat '/home/benjamin/.claude-extensions.json': No such file or directory"
+      ],
+      "verdict": "passes-both",
+      "note": "Deployed invocation DOES resolve REPO_ROOT outside the repository (same wrong value as the 4-level-walk suites) and the real-copy fixture setup logs rsync/cp errors trying to source CLAUDE.md/.claude-extensions.json from /home/benjamin, but the suite's single assertion (standalone gate execution) does not depend on those copied files succeeding, so the tally is identical under both paths. Measured, not assumed; per Phase 5's contract this candidate gets no edit."
+    },
+    {
+      "suite": "test-gate-cache-equivalence.sh",
+      "root_expr": "CORE_DIR/../../..",
+      "computed_root": {
+        "source_store": "/home/benjamin/.config/nvim/agent-system",
+        "deployed": "/home/benjamin/.config"
+      },
+      "tally": {
+        "source_store": "PENDING -- suite run time exceeds 15 minutes; still executing in background (PID tracked, no [FAIL] observed through Case G1 of ~15+ cases) at time of this record; will be finalized before Phase 5 closes",
+        "deployed": "ERROR (environment failure, not a normal pass/fail tally): \"ERROR: could not create a git worktree fixture at /tmp/tmp.9jb5dPrijG/fixture\""
+      },
+      "verdict": "depth-indicted (deployed confirmed failing via environment error; source-store tally pending finalization)",
+      "note": "Deployed REPO_ROOT (/home/benjamin/.config) lies outside the git work tree (repo root is /home/benjamin/.config/nvim), so 'git worktree add' fails outright -- this is decisive evidence independent of the slow source-store run completing. Source-store REPO_ROOT (/home/benjamin/.config/nvim/agent-system) is NOT the literal repo root either, but it IS inside the git work tree, so git commands run from it succeed by git's own upward .git discovery; the suite is expected to pass from source store on this basis and will be confirmed before Phase 5 edits (or skips) this file."
+    }
+  ],
+  "asymmetry_summary": "Six of seven measured suites show a clean source-store-pass / deployed-fail asymmetry indicting the fixed-depth walk-up as the cause, independent of the logic under test. One candidate (test-verify-deploy-gate-selection-crash-net.sh) passes both paths despite an objectively wrong resolved root, because its one assertion does not depend on the mis-resolved path; per the plan's Phase 5 contract this is a legitimate passes-both outcome requiring no edit."
+}
