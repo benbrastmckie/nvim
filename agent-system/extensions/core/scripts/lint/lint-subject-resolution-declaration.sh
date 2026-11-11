@@ -169,6 +169,15 @@ EXCLUDED_FILES=(
 # that unrelated statement from the migrated one, hence this permanent allowlist entry. ---
     "agent-system/extensions/core/scripts/tests/test-task-type-detect.sh|permanent: its task-type-detect.sh subject is migrated to common_test_resolve_subject with a declaration; its separate REAL_EXT_ROOT lookup is a single-candidate extensions/-directory resolution, not a deployed/source-store subject pair, and stays on common_test_resolve_candidate by design"
 
+# --- test-askuserquestion-rehome.sh resolves seven reference paths source-store-FIRST, deployed
+# .claude/ mirror as fallback -- matching this file's own pre-existing AGENT_FILES scan
+# precedent (source-store preferred, since the whole point is validating a fresh source-store
+# edit; preferring the deployed copy would silently test stale logic). common_test_resolve_subject's
+# mode vocabulary offers no "source-store-first-with-deployed-fallback" order: "deploy-tree-first"
+# is the opposite preference (deployed first), and the two single-mode-only values ("deployed",
+# "source-store") offer no fallback at all. Stays on common_test_resolve_candidate by design. ---
+    "agent-system/extensions/core/scripts/tests/test-askuserquestion-rehome.sh|permanent: its seven reference-path candidate pairs are source-store-first with a deployed .claude/ fallback, matching this file's own AGENT_FILES scan precedent; common_test_resolve_subject's mode vocabulary has no source-store-first-with-fallback order (only the opposite-direction deploy-tree-first, or a single-mode-only deployed/source-store), so this stays on common_test_resolve_candidate by design"
+
 # --- Group B: local hand-duplicated resolve_candidate() function -- all 12 migrated to the
 # shared explicit helper (common_test_resolve_subject + common_test_declare_subject); no entries
 # remain. ---
