@@ -1,7 +1,7 @@
 # Implementation Plan: Task #412
 
 - **Task**: 412 - Map core's Verification Tier vocabulary onto Lean build scopes
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: 396 (completed)
 - **Research Inputs**: `specs/412_lean_tier_vocabulary_to_build_scope_mapping/reports/01_tier-vocabulary-build-scope-mapping.md`
@@ -125,29 +125,29 @@ Phases within the same wave can execute in parallel; this plan is strictly seque
 
 ---
 
-### Phase 1: Author the Tier-to-Lean-Action Mapping [NOT STARTED]
+### Phase 1: Author the Tier-to-Lean-Action Mapping [COMPLETED]
 
 **Goal**: `lean-implementation-flow.md` contains one new section defining all four core
 Verification Tier values as concrete Lean verification actions, with `full` identified as the
 sole phase-end-gating tier and the standing cross-cutting surface named once.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md`
-      immediately before editing (concurrent siblings are live on this tree this cycle).
-- [ ] Add a new section titled `## Verification Tiers in Lean Terms`, sited directly before
+- [x] Re-read `agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md`
+      immediately before editing (concurrent siblings are live on this tree this cycle). *(completed)*
+- [x] Add a new section titled `## Verification Tiers in Lean Terms`, sited directly before
       `## Stage 4: Execute Proof Development Loop` so Stage 4B/4C can point back at it. Apply the
       section-anchoring rule already stated after Stage 4A's marker code fence: anchor both ends
-      on heading-marker lines and search the end anchor forward from the start line.
-- [ ] Open the section by stating the gating rule the rest of it is conditioned on: for Lean,
+      on heading-marker lines and search the end anchor forward from the start line. *(completed)*
+- [x] Open the section by stating the gating rule the rest of it is conditioned on: for Lean,
       `full` is the only tier that ever discharges a phase's close or commit. The cheaper three
       describe how broadly verification runs *during* a phase — core's own "Non-negotiable
       invariant" framing — and never substitute for the phase-end full build. Cite Stage 4C as the
-      authority for that gate rather than restating its rationale.
-- [ ] Name the standing cross-cutting surface once, in one sentence a lean plan's
+      authority for that gate rather than restating its rationale. *(completed)*
+- [x] Name the standing cross-cutting surface once, in one sentence a lean plan's
       `**Tier Justification**:` line can point at verbatim: *the project-wide Lean declaration
       namespace — any new or renamed declaration can collide with an identically named one
-      anywhere else in the library, invisible to any module-scoped build.*
-- [ ] Write the four-row mapping, each row labelled gating or non-gating inline:
+      anywhere else in the library, invisible to any module-scoped build.* *(completed)*
+- [x] Write the four-row mapping, each row labelled gating or non-gating inline:
       - `prose` (non-gating) — edits confined to comments, docstrings, or prose inside a `.lean`
         or lean-adjacent `.md` file with zero elaboration surface. In-phase check: diff
         read-through per core's own `prose` row.
@@ -162,18 +162,18 @@ sole phase-end-gating tier and the standing cross-cutting surface named once.
       - `full` (the sole gating tier) — the whole-project `lake build`, plus whichever
         `check-module-invariants.sh` checks require a completed build as opposed to a pure
         source-text scan, plus the `.olean`-newer-than-source check per touched module. Cite
-        `long-builds.md`'s "Reading the build's verdict" item 3 by that existing name.
-- [ ] Add a closing note recording the authority for a domain defining its own per-tier actions:
+        `long-builds.md`'s "Reading the build's verdict" item 3 by that existing name. *(completed)*
+- [x] Add a closing note recording the authority for a domain defining its own per-tier actions:
       `suite_selection_select` carries no `.lean` mappings, so core's shell-suite narrowing
       returns `__FULL_SWEEP__` for any Lean-only phase; `plan-format.md`'s "Unmappable criterion"
       paragraph sanctions the implementer running the named check directly and recording that
       direct run as the scoped discharge. State that this mapping introduces no fifth tier and
-      renames no core tier value.
-- [ ] Add a one-line pointer from Stage 4C back to the new section, without moving or rewording
-      any of Stage 4C's existing gating text.
-- [ ] Confirm the section restates no invocation mechanism: no mention of `run_in_background`, no
+      renames no core tier value. *(completed)*
+- [x] Add a one-line pointer from Stage 4C back to the new section, without moving or rewording
+      any of Stage 4C's existing gating text. *(completed)*
+- [x] Confirm the section restates no invocation mechanism: no mention of `run_in_background`, no
       `lake-build-guard.sh` call shape, no bounded-wait idiom — defer to `long-builds.md`'s
-      preference order by reference, as Stage 4C already does.
+      preference order by reference, as Stage 4C already does. *(completed)*
 
 **Timing**: 50 minutes
 

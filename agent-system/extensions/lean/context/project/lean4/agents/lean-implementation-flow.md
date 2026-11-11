@@ -72,6 +72,40 @@ If all phases are `[COMPLETED]`: Task already done, return completed status.
 
 ---
 
+## Verification Tiers in Lean Terms
+
+For Lean, `full` is the only Verification Tier that ever discharges a phase's close or commit —
+see Stage 4C below for the gate itself and its rationale. `prose`, `local`, and `interface`
+describe how broadly verification runs *during* a phase, in line with core's own tiering intent;
+none of the three ever substitutes for the phase-end full build.
+
+The standing cross-cutting surface that justifies `full` at every non-final phase is nameable
+once: *the project-wide Lean declaration namespace — any new or renamed declaration can collide
+with an identically named one anywhere else in the library, invisible to any module-scoped
+build.* A lean plan's `**Tier Justification**:` line for a non-final `full` phase may cite this
+sentence directly rather than re-deriving it.
+
+| Tier | Lean meaning | In-phase check |
+|------|-------------|-----------------|
+| `prose` (non-gating) | Edits confined to comments, docstrings, or prose inside a `.lean` or lean-adjacent `.md` file, with zero elaboration surface. | A diff read-through, per core's own `prose` row. |
+| `local` (non-gating) | A proof or definition confined to one module with no externally visible signature change. | `lean_goal` plus `lean_verify` per step (already mandated at Stage 4B item 5); optionally one scoped `lake build Module.Name` as a fast, explicitly non-gating interim sanity check. |
+| `interface` (non-gating) | A declaration's name, type, arity, or argument order changes, with call sites spanning modules. | A scoped `lake build Module.A Module.B ...` over the changed module plus its enumerated direct dependents — still explicitly non-gating. |
+| `full` (the sole gating tier) | The whole-project build, the only check that sees the project-wide declaration namespace. | The whole-project `lake build` (Stage 4C), plus whichever of `check-module-invariants.sh`'s checks require a completed build rather than a pure source-text scan, plus the `.olean`-newer-than-source check per touched module — `long-builds.md`'s "Reading the build's verdict", strongest item. |
+
+These four checks within `full` are covering checks, not additional tiers: this mapping
+introduces no fifth tier and renames none of core's four values.
+
+A Lean-only phase's verification criteria has no `suite_selection_select` coverage (it carries no
+`.lean` mappings), so core's shell-suite narrowing returns `__FULL_SWEEP__` for it;
+`plan-format.md`'s "Unmappable criterion" paragraph is the sanctioned authority for naming and
+running the concrete check above directly and recording that run as the scoped discharge.
+
+How to invoke any of the builds above — detachment, the build guard, and the bounded-wait
+obligation — is governed entirely by `long-builds.md`'s preference order; this section does not
+restate it.
+
+---
+
 ## Stage 4: Execute Proof Development Loop
 
 For each phase starting from resume point:
@@ -117,6 +151,9 @@ For each proof/theorem in the phase:
 5. **Verify step completion** with `lean_goal` (proof state) and `lean_verify` (axiom/sorry check); do NOT run `lake build` per-step
 
 ### 4C. Verify Phase Completion
+
+See the tier-to-action mapping above (just before Stage 4) for why `full` is the sole tier that
+discharges this step, and for the cheaper tiers' non-gating in-phase role.
 
 - Run a full `lake build` of the whole library through the build guard — never `lake build
   Module.Name` — and read its verdict per

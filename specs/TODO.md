@@ -22,7 +22,7 @@ next_project_number: 607
 
 ### Core Agent System
 
-313 [RESEARCHED] — Advisory lint for hand-authored /orchestrate batch proposals...
+313 [PLANNING] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 338 [NOT STARTED] — Classify every task-support file as tracked or ignored
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
@@ -116,7 +116,7 @@ next_project_number: 607
 
 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
   └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
-412 [PLANNED] — Map core verification tiers to Lean build scopes
+412 [IMPLEMENTING] — Map core verification tiers to Lean build scopes
   └─ 463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
   └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
@@ -9913,7 +9913,7 @@ Every reference below to `/distill --meta`, to the memory extension as the edit 
 ---
 
 ### 412. Map core verification tiers to Lean build scopes
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 396
@@ -11011,7 +11011,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 313. Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md phase blocks
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 306, Task 328, Task 344, Task 387, Task 401, Task 402

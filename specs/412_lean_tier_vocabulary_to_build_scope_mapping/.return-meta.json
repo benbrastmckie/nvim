@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/412_lean_tier_vocabulary_to_build_scope_mapping/plans/01_tier-vocabulary-build-scope-mapping.md",
-      "summary": "Three-phase plan adding a Lean-specific Verification Tier to build-scope mapping to lean-implementation-flow.md, pointing lean-implementation-agent.md at it, and redeploying with full gate verification."
-    }
-  ],
-  "next_steps": "Run /orchestrate 412 to execute the plan",
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794431325_7cf647_412",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 2,
-    "dependency_waves": 3
+    "session_id": "sess_1794431325_7cf647",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [],
-  "dispatch_seq": 7
+  "dispatch_seq": 11
 }
