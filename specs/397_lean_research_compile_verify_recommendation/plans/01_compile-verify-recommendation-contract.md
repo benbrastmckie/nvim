@@ -211,21 +211,21 @@ markdown edit is `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy
 
 ---
 
-### Phase 2: Mirror the clause and the tag convention into the shared research flow [NOT STARTED]
+### Phase 2: Mirror the clause and the tag convention into the shared research flow [COMPLETED]
 
 **Goal**: `lean-research-flow.md` carries a cross-reference to the new clause and the identical
 `[VERIFIED: …]` tag convention in its Stage 5 report skeleton, so the two skeletons do not drift
 again on this extension.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/context/project/lean4/agents/lean-research-flow.md`
-      immediately before editing.
-- [ ] In Stage 4 (Synthesize Findings) or at the head of Stage 5, add a short cross-reference
+- [x] Re-read `agent-system/extensions/lean/context/project/lean4/agents/lean-research-flow.md`
+      immediately before editing. *(completed)*
+- [x] In Stage 4 (Synthesize Findings) or at the head of Stage 5, add a short cross-reference *(completed)*
       paragraph naming the clause and pointing at
       `agents/lean-research-agent.md`'s `### Compile-Verify-Before-Recommend` subsection as the
       authoritative statement of the trigger and the FAIL obligation. Do not restate the full
       FORBIDDEN/REQUIRED lists here — one authoritative copy, one pointer.
-- [ ] Extend the Stage 5 report skeleton's `## Recommendations` block from
+- [x] Extend the Stage 5 report skeleton's `## Recommendations` block from *(completed)*
       `1. {Prioritized recommendations}` to the tagged shape used in Phase 1, keeping the
       prioritized-list numbering this skeleton already uses:
       ```
@@ -234,9 +234,9 @@ again on this extension.
       2. {recommendation} [VERIFIED: FAIL -- <method>; revised to: {revised recommendation}]
       3. {recommendation} [No compiled gate applicable]
       ```
-- [ ] Add the same one-line note that every recommendation carries exactly one of the three tags.
-- [ ] Confirm no task-number reference was introduced into the file.
-- [ ] Record the file's new `wc -l` value for Phase 3.
+- [x] Add the same one-line note that every recommendation carries exactly one of the three tags. *(completed)*
+- [x] Confirm no task-number reference was introduced into the file. *(completed: check-task-references.sh reports 0 occurrences)*
+- [x] Record the file's new `wc -l` value for Phase 3. *(completed: 196)*
 
 **Timing**: 25 minutes
 

@@ -76,6 +76,12 @@ Compile discovered information:
 
 ---
 
+**Compile-Verify-Before-Recommend**: before writing `## Recommendations` below, check each
+recommendation against the trigger and FAIL obligation defined in
+`agents/lean-research-agent.md`'s `### Compile-Verify-Before-Recommend` subsection -- the
+authoritative statement of the trigger and the FAIL obligation. That subsection is not restated
+here; this is the one pointer.
+
 ## Stage 5: Create Research Report
 
 Create directory and write report.
@@ -111,11 +117,15 @@ Create directory and write report.
 - {Required imports, lemmas}
 
 ## Recommendations
-1. {Prioritized recommendations}
+1. {recommendation} [VERIFIED: PASS -- <method>]
+2. {recommendation} [VERIFIED: FAIL -- <method>; revised to: {revised recommendation}]
+3. {recommendation} [No compiled gate applicable]
 
 ## Risks & Mitigations
 - {Potential issues and solutions}
 ```
+
+Every recommendation carries exactly one of the three tags above.
 
 ---
 
