@@ -153,9 +153,10 @@ Terminal buffers send keystrokes straight to the running program, so `<C-'>` car
 terminal-mode mapping that branches on the buffer
 (`lua/neotex/plugins/tools/stt/init.lua`).
 
-**In a Claude Code buffer** the key drives Claude Code's own voice mode. Neovim writes the
-kitty-keyboard encoding of `ctrl+'` (`ESC[39;5u`) to the terminal channel, where Claude Code
-matches its `voice:pushToTalk` binding:
+**In a Claude Code buffer** the key drives Claude Code's own voice mode. `<C-'>` itself never
+crosses the terminal channel; Neovim writes the bytes of whichever keystroke
+`~/.claude/keybindings.json` binds to `voice:pushToTalk`, which Claude Code matches against
+that binding:
 
 1. Tap `<C-'>` to start recording
 2. Speak your prompt
@@ -167,8 +168,16 @@ is released, so Neovim repeats the keypress on a timer to hold the key down itse
 what makes a tap gesture compatible with an editable transcript: Claude Code's own `tap` mode
 submits any transcript of three or more words unconditionally.
 
-Requires `ctrl+'` bound to `voice:pushToTalk` in `~/.claude/keybindings.json`, with
-`voice.mode` set to `hold` and `voice.autoSubmit` false in `~/.claude/settings.json`.
+The bound keystroke must have a control-byte encoding — `ctrl+<letter>` or
+`ctrl+<@ [ \ ] ^ _ ?>`, such as `ctrl+k`. Any other ctrl combination, `ctrl+'` included,
+exists only as a kitty-protocol CSI-u sequence, which a terminal channel carries without any
+guarantee the embedded program matches it against a binding; Neovim refuses such a keystroke
+and names the broken link instead of writing bytes that may be dropped. Terminal-mode
+mappings constrain only the physical key, so `<C-k>` being bound to window navigation places
+no restriction on the wire encoding.
+
+Also requires `voice.mode` set to `hold` and `voice.autoSubmit` false in
+`~/.claude/settings.json`. `:STTHealth` reports every link of the chain.
 
 **In any other buffer** the key drives Vosk:
 

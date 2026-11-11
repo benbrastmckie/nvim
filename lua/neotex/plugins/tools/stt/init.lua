@@ -5,12 +5,20 @@
 --   - parecord (pulseaudio-utils or pipewire-pulse)
 --   - vosk Python package with vosk-model-small-en-us
 --   - ~/.local/bin/vosk-transcribe.py (transcription helper)
---   - Terminal with enhanced keyboard protocol (WezTerm, Kitty) for <C-'> support
+--   - Terminal with enhanced keyboard protocol (WezTerm, Kitty), so that Neovim
+--     itself receives <C-'>: ctrl+punctuation has no legacy terminal encoding
 --
 -- Configuration (optional):
 --   vim.g.stt_model_path = "~/.local/share/vosk/vosk-model-small-en-us"
 --   vim.g.stt_record_timeout = 30  -- max seconds for recording
 --   vim.g.stt_sample_rate = 16000  -- audio sample rate
+--
+-- Claude Code configuration (optional):
+--   vim.g.stt_claude_ptt_key = "ctrl+k"      -- override the keystroke to send,
+--                                            -- instead of reading keybindings.json
+--   vim.g.stt_claude_voice_mode = "hold"     -- mode to request when voice mode is off
+--   vim.g.stt_claude_ptt_style = "virtual_hold"  -- or "passthrough" to forward each event
+--   vim.g.stt_claude_hold_timeout = 120      -- seconds before a virtual hold is capped
 --
 -- Usage:
 --   <leader>vr - Start recording (which-key, if enabled)
@@ -21,6 +29,11 @@
 --                  push-to-talk key. Tap to start recording, tap again to stop;
 --                  the transcript lands in the prompt for editing rather than
 --                  being sent.
+--                  The key Neovim writes is read from ~/.claude/keybindings.json
+--                  -- whichever keystroke is bound to voice:pushToTalk -- so the
+--                  two halves have one source of truth. It must be a keystroke
+--                  with a control-byte encoding (ctrl+<letter>, ctrl+[, and so
+--                  on); :STTHealth names the link that is broken when one is not.
 --                  Claude Code ends a hold-mode recording when key events STOP
 --                  arriving (a 200ms timer re-armed by each event), not when the
 --                  key is released -- which Neovim drops anyway. Neovim therefore
@@ -32,6 +45,7 @@
 --                In all other buffers: toggles Vosk STT recording/transcription
 --
 --   :STTClaudeVoice - send /voice to a Claude Code buffer to enable/disable voice mode
+--   :STTHealth      - check Vosk dependencies and every link of the Claude Code chain
 --
 -- Global state:
 --   vim.g.stt_recording - true when recording, false otherwise (for statusline)
@@ -67,10 +81,133 @@ end
 -- Claude Code integration
 local _session_manager_ok, _session_manager = pcall(require, "neotex.plugins.ai.claude.core.session-manager")
 
--- Kitty keyboard protocol encoding of <C-'> (codepoint 39, modifier 5 = ctrl).
--- Neovim forwards this sequence verbatim into a :terminal buffer, so Claude Code
--- receives it as its own `ctrl+'` binding (voice:pushToTalk in keybindings.json).
-local CLAUDE_PTT_SEQUENCE = "\27[39;5u"
+-- Claude Code's push-to-talk key lives in its own keybindings file, and Neovim
+-- derives the bytes to write from that file rather than carrying a second copy
+-- of the choice. One source of truth means the two halves cannot drift apart.
+local CLAUDE_KEYBINDINGS_FILE = vim.fn.expand("~/.claude/keybindings.json")
+
+-- The action a push-to-talk binding must name for this module to drive it.
+local CLAUDE_PTT_ACTION = "voice:pushToTalk"
+
+-- Used when keybindings.json names no key this module can deliver. ctrl+k is
+-- one byte on the wire (0x0b) and is unbound in Claude Code's defaults.
+local CLAUDE_PTT_FALLBACK_KEY = "ctrl+k"
+
+--- Encode a Claude Code keystroke as the bytes a pty delivers for it.
+---
+--- Only the C0 control range is encodable. A pty carries ctrl+<letter> and
+--- ctrl+<@, [, \, ], ^, _, ?> as a single byte, an encoding every terminal has
+--- produced since ASCII. Every other ctrl combination -- ctrl+' among them --
+--- exists only in the kitty keyboard protocol as a CSI-u sequence, and a
+--- sequence written into a :terminal channel is decoded by whatever the embedded
+--- program's input layer happens to do with it, which is not a contract. So this
+--- function refuses anything it cannot express as a control byte, and the caller
+--- reports the refusal rather than writing bytes that may be silently dropped.
+---
+--- @param keystroke string A keystroke in Claude Code's syntax, e.g. "ctrl+k"
+--- @return string|nil bytes The wire encoding, or nil when there is none
+--- @return string|nil reason Why it cannot be encoded, when bytes is nil
+local function _legacy_ctrl_byte(keystroke)
+  if type(keystroke) ~= "string" then
+    return nil, "not a string"
+  end
+  if keystroke:find("%s") then
+    return nil, "chords cannot be delivered as a single keypress"
+  end
+  local key = keystroke:match("^ctrl%+(.+)$") or keystroke:match("^control%+(.+)$")
+  if not key then
+    return nil, "only ctrl+<key> has a control-byte encoding"
+  end
+  if #key ~= 1 then
+    return nil, "named keys have no control-byte encoding"
+  end
+  local lower = key:lower()
+  if lower:match("%l") then
+    return string.char(lower:byte() - 96), nil
+  end
+  local punctuation = {
+    ["@"] = 0, ["["] = 27, ["\\"] = 28, ["]"] = 29,
+    ["^"] = 30, ["_"] = 31, ["?"] = 127,
+  }
+  local byte = punctuation[key]
+  if byte then
+    return string.char(byte), nil
+  end
+  return nil, string.format("ctrl+%s reaches an application only as a CSI-u sequence", key)
+end
+
+--- Read the keystrokes Claude Code has bound to push-to-talk.
+--- @return table bindings List of { key = string, context = string }
+local function _claude_ptt_bindings()
+  local found = {}
+  local ok, lines = pcall(vim.fn.readfile, CLAUDE_KEYBINDINGS_FILE)
+  if not ok or type(lines) ~= "table" then
+    return found
+  end
+  local decoded_ok, decoded = pcall(vim.json.decode, table.concat(lines, "\n"))
+  if not decoded_ok or type(decoded) ~= "table" or type(decoded.bindings) ~= "table" then
+    return found
+  end
+  for _, group in ipairs(decoded.bindings) do
+    if type(group) == "table" and type(group.bindings) == "table" then
+      for key, action in pairs(group.bindings) do
+        if action == CLAUDE_PTT_ACTION then
+          table.insert(found, { key = key, context = group.context or "?" })
+        end
+      end
+    end
+  end
+  table.sort(found, function(a, b) return a.key < b.key end)
+  return found
+end
+
+--- Resolve the push-to-talk key this module will deliver, preferring a binding
+--- Claude Code actually carries over the fallback.
+--- @return string key The chosen keystroke
+--- @return string source Where it came from, for the health report
+--- @return table rejected Keystrokes found but not encodable: { key, reason }
+local function _resolve_claude_ptt_key()
+  local override = vim.g.stt_claude_ptt_key
+  if type(override) == "string" and override ~= "" then
+    return override, "vim.g.stt_claude_ptt_key", {}
+  end
+  local rejected = {}
+  for _, binding in ipairs(_claude_ptt_bindings()) do
+    local bytes, reason = _legacy_ctrl_byte(binding.key)
+    if bytes then
+      return binding.key, "keybindings.json", rejected
+    end
+    table.insert(rejected, { key = binding.key, reason = reason })
+  end
+  return CLAUDE_PTT_FALLBACK_KEY, "built-in fallback", rejected
+end
+
+-- Resolving re-reads keybindings.json, so the result is cached. A hold repeats
+-- the keypress every 80ms, and the cache keys on everything the resolution
+-- depends on -- the file's mtime AND the override -- so an edit to either takes
+-- effect mid-session rather than waiting for a restart.
+local _ptt_cache = { mtime = nil, override = nil, key = nil, bytes = nil, source = nil }
+
+--- The bytes to write for one push-to-talk keypress.
+--- @return string|nil bytes Wire encoding, or nil when none is available
+--- @return string key The keystroke the bytes encode
+--- @return string source Where that keystroke came from
+local function _claude_ptt_sequence()
+  local mtime = vim.fn.getftime(CLAUDE_KEYBINDINGS_FILE)
+  local override = vim.g.stt_claude_ptt_key
+  if _ptt_cache.mtime ~= mtime or _ptt_cache.override ~= override then
+    local key, source = _resolve_claude_ptt_key()
+    local bytes = _legacy_ctrl_byte(key)
+    _ptt_cache = {
+      mtime = mtime,
+      override = override,
+      key = key,
+      bytes = bytes,
+      source = source,
+    }
+  end
+  return _ptt_cache.bytes, _ptt_cache.key, _ptt_cache.source
+end
 
 -- Claude Code persists voice mode in its own settings file, so Neovim can tell
 -- whether voice mode is currently on and enable it on demand.
@@ -180,8 +317,9 @@ end
 --- Begin holding the key down on a timer until stopped.
 --- @param bufnr number Buffer handle of the Claude Code terminal
 --- @param channel number Terminal job channel
+--- @param sequence string Wire encoding of one push-to-talk keypress
 --- @return boolean ok True when the hold started
-local function _virtual_hold_start(bufnr, channel)
+local function _virtual_hold_start(bufnr, channel, sequence)
   _virtual_hold_stop()
   local timer = uv.new_timer()
   if not timer then
@@ -191,7 +329,7 @@ local function _virtual_hold_start(bufnr, channel)
   _virtual_hold.bufnr = bufnr
   _virtual_hold.started_at = uv.now()
   vim.g.stt_claude_recording = true
-  vim.fn.chansend(channel, CLAUDE_PTT_SEQUENCE)
+  vim.fn.chansend(channel, sequence)
 
   local max_ms = (vim.g.stt_claude_hold_timeout or 120) * 1000
   timer:start(VIRTUAL_HOLD_INTERVAL_MS, VIRTUAL_HOLD_INTERVAL_MS, vim.schedule_wrap(function()
@@ -212,7 +350,7 @@ local function _virtual_hold_start(bufnr, channel)
       _virtual_hold_stop()
       return
     end
-    vim.fn.chansend(ch, CLAUDE_PTT_SEQUENCE)
+    vim.fn.chansend(ch, sequence)
   end))
   return true
 end
@@ -230,6 +368,17 @@ local VOICE_ENABLE_GRACE_MS = 3000
 local function _send_claude_ptt(bufnr)
   local channel = _claude_channel(bufnr)
   if not channel then return false end
+
+  -- Refuse before writing anything. A keystroke with no wire encoding would be
+  -- written as a sequence Claude Code may silently drop, which is the failure
+  -- this check exists to make visible.
+  local sequence, key = _claude_ptt_sequence()
+  if not sequence then
+    notify(string.format(
+      "Claude Code push-to-talk key %s cannot be delivered through a terminal; run :STTHealth",
+      tostring(key)), vim.log.levels.ERROR)
+    return false
+  end
 
   local within_grace = (vim.loop.now() - _voice_enable_sent_at) < VOICE_ENABLE_GRACE_MS
   if not within_grace and _claude_voice_enabled() == false then
@@ -255,12 +404,12 @@ local function _send_claude_ptt(bufnr)
     if _virtual_hold_active() then
       _virtual_hold_stop()
     else
-      _virtual_hold_start(bufnr, channel)
+      _virtual_hold_start(bufnr, channel, sequence)
     end
     return true
   end
 
-  vim.fn.chansend(channel, CLAUDE_PTT_SEQUENCE)
+  vim.fn.chansend(channel, sequence)
   return true
 end
 
@@ -444,6 +593,94 @@ function M.transcribe_and_insert()
   })
 end
 
+--- Describe bytes as a reader can check them against a terminal reference.
+--- @param bytes string
+--- @return string
+local function _describe_bytes(bytes)
+  local parts = {}
+  for i = 1, #bytes do
+    table.insert(parts, string.format("0x%02x", bytes:byte(i)))
+  end
+  return table.concat(parts, " ")
+end
+
+--- Check every link between <C-'> and a Claude Code recording.
+---
+--- The press crosses four boundaries -- Neovim's keymap, the terminal channel,
+--- Claude Code's keybindings file, and its voice settings -- and a break in any
+--- one of them is silent at the key. Each is named here so a report points at
+--- the link that failed instead of at the symptom.
+---
+--- @return table issues Messages for the broken links, empty when the chain holds
+--- @return table notes Informational lines describing the working chain
+function M.claude_health()
+  local issues = {}
+  local notes = {}
+
+  local bindings = _claude_ptt_bindings()
+  if vim.fn.filereadable(CLAUDE_KEYBINDINGS_FILE) ~= 1 then
+    table.insert(issues, CLAUDE_KEYBINDINGS_FILE .. " not found - Claude Code has no "
+      .. CLAUDE_PTT_ACTION .. " binding to drive")
+  elseif #bindings == 0 then
+    table.insert(issues, "no key bound to " .. CLAUDE_PTT_ACTION .. " in "
+      .. CLAUDE_KEYBINDINGS_FILE)
+  end
+
+  local contexts = {}
+  for _, binding in ipairs(bindings) do
+    contexts[binding.context] = true
+    table.insert(notes, string.format("bound: %s -> %s (context %s)",
+      binding.key, CLAUDE_PTT_ACTION, binding.context))
+  end
+  if #bindings > 0 and not contexts["Chat"] and not contexts["Global"] then
+    table.insert(issues, CLAUDE_PTT_ACTION
+      .. " is bound outside the Chat and Global contexts, where the prompt never sees it")
+  end
+
+  local key, source, rejected = _resolve_claude_ptt_key()
+  for _, entry in ipairs(rejected) do
+    table.insert(issues, string.format(
+      "%s is bound to %s but cannot be delivered from Neovim: %s",
+      entry.key, CLAUDE_PTT_ACTION, entry.reason))
+  end
+
+  local bytes, reason = _legacy_ctrl_byte(key)
+  if bytes then
+    table.insert(notes, string.format("sending: %s as %s (from %s)",
+      key, _describe_bytes(bytes), source))
+  else
+    table.insert(issues, string.format("push-to-talk key %s has no terminal encoding: %s",
+      key, tostring(reason)))
+  end
+
+  if vim.fn.filereadable(CLAUDE_SETTINGS_FILE) ~= 1 then
+    table.insert(issues, CLAUDE_SETTINGS_FILE .. " not found - voice mode state is unknown")
+  else
+    local enabled = _claude_voice_enabled()
+    if enabled == false then
+      table.insert(notes, "voice mode is off; the first press sends /voice "
+        .. _claude_voice_mode() .. " to enable it")
+    elseif enabled == nil then
+      table.insert(issues, "voice mode state is unreadable in " .. CLAUDE_SETTINGS_FILE)
+    else
+      table.insert(notes, "voice mode is on")
+    end
+
+    local mode = _claude_active_voice_mode()
+    if mode == nil then
+      table.insert(issues, "voice.mode is unreadable in " .. CLAUDE_SETTINGS_FILE)
+    elseif mode ~= "hold" then
+      table.insert(issues, string.format(
+        "voice.mode is %q; hold is required, since tap submits any transcript of three or more words",
+        mode))
+    else
+      table.insert(notes, "voice.mode is hold, so the transcript lands in the prompt")
+    end
+  end
+
+  return issues, notes
+end
+
 function M.health()
   local config = get_config()
   local issues = {}
@@ -463,6 +700,12 @@ function M.health()
   if vim.fn.isdirectory(config.model_path) ~= 1 then
     table.insert(issues, "Vosk model not found at " .. config.model_path)
   end
+
+  local claude_issues, claude_notes = M.claude_health()
+  for _, note in ipairs(claude_notes) do
+    notify("Claude Code: " .. note, vim.log.levels.INFO)
+  end
+  vim.list_extend(issues, claude_issues)
 
   if #issues == 0 then
     notify("All dependencies satisfied!", vim.log.levels.INFO)

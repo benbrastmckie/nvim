@@ -65,18 +65,37 @@ falling back to a buffer-name match when that module is unavailable.
 ## Claude Code Voice Mode
 
 Claude Code has its own speech-to-text, and in a Claude Code buffer `<C-'>` feeds that
-rather than Vosk. The mapping writes the kitty-keyboard encoding of `ctrl+'`
-(`ESC[39;5u`, codepoint 39 with the ctrl modifier) to the terminal channel, where Claude
-Code matches it against its `voice:pushToTalk` binding.
+rather than Vosk. The mapping writes the push-to-talk key's bytes to the terminal channel,
+where Claude Code matches them against its `voice:pushToTalk` binding.
+
+### The physical key and the wire key are separate
+
+`<C-'>` is the key the user presses; it is handled entirely inside Neovim and never
+crosses the channel. What crosses the channel is whichever keystroke Claude Code has bound
+to `voice:pushToTalk`, written as the bytes a pty would deliver for it.
+
+That keystroke must be one a pty can carry. A terminal encodes `ctrl+<letter>` and
+`ctrl+<@ [ \ ] ^ _ ?>` as a single control byte, an encoding fixed since ASCII. Every other
+ctrl combination — `ctrl+'` among them — exists only as a kitty-protocol CSI-u sequence,
+and whether a CSI-u sequence written into a terminal channel is matched against a binding
+is up to the embedded program's input layer rather than a contract Neovim can rely on. So
+the module refuses a keystroke it cannot encode as a control byte and says which link
+failed, instead of writing bytes that may be silently dropped.
+
+A keystroke mapped in Neovim's terminal mode is no obstacle. `<C-k>` is bound to window
+navigation, which intercepts the *physical* key; `chansend` writes to the pty directly and
+is unaffected.
 
 ### Required Claude Code configuration
 
-`~/.claude/keybindings.json` binds the key:
+`~/.claude/keybindings.json` binds the key. Neovim reads this file to decide what to send,
+so it is the single source of truth for the choice:
 
 ```json
 {
+  "$schema": "https://www.schemastore.org/claude-code-keybindings.json",
   "bindings": [
-    { "context": "Chat", "bindings": { "ctrl+'": "voice:pushToTalk" } }
+    { "context": "Chat", "bindings": { "ctrl+k": "voice:pushToTalk" } }
   ]
 }
 ```
@@ -88,6 +107,10 @@ Code matches it against its `voice:pushToTalk` binding.
   "voice": { "enabled": true, "mode": "hold", "autoSubmit": false }
 }
 ```
+
+`:STTHealth` reports each link of this chain — the bound keystroke and its context, the
+bytes being sent and where that choice came from, and the voice-mode state — and names the
+one that is broken. `vim.g.stt_claude_ptt_key` overrides the keystroke for a session.
 
 `voice.enabled` persists across sessions, so voice mode stays on by default. When it is
 switched off, the first `<C-'>` press sends `/voice <mode>` to turn it back on instead of

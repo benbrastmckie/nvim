@@ -432,7 +432,7 @@ Speech-to-text input using Vosk offline recognition.
 
 **Note**: `<C-'>` is context-aware. In a Claude Code buffer it is forwarded to Claude Code as its own push-to-talk key, driving Claude Code's voice mode. In any other terminal buffer it exits terminal mode temporarily to run Vosk, then resumes after recording stops.
 
-**Claude Code voice mode**: `<C-'>` toggles recording — tap to start, tap to stop — and the transcript is inserted into the prompt for editing rather than sent. Neovim repeats the keypress while recording, which holds Claude Code's hold mode open; that is what keeps the transcript editable, since Claude Code's own `tap` mode submits any transcript of three or more words. Requires `ctrl+'` bound to `voice:pushToTalk` in `~/.claude/keybindings.json`, with `voice.mode` set to `hold` and `voice.autoSubmit` false in `~/.claude/settings.json`. See `lua/neotex/plugins/tools/stt/README.md`.
+**Claude Code voice mode**: `<C-'>` toggles recording — tap to start, tap to stop — and the transcript is inserted into the prompt for editing rather than sent. Neovim repeats the keypress while recording, which holds Claude Code's hold mode open; that is what keeps the transcript editable, since Claude Code's own `tap` mode submits any transcript of three or more words. Neovim handles `<C-'>` itself and writes the bytes of whichever keystroke `~/.claude/keybindings.json` binds to `voice:pushToTalk` — a keystroke with a control-byte encoding such as `ctrl+k`, since `ctrl+'` has none outside the kitty protocol. Requires `voice.mode` set to `hold` and `voice.autoSubmit` false in `~/.claude/settings.json`. `:STTHealth` names any broken link. See `lua/neotex/plugins/tools/stt/README.md`.
 
 ### YANK (`<leader>y`)
 

@@ -250,8 +250,15 @@ require('neotex.plugins.tools.stt').setup({
 ### Claude Code Voice Mode
 
 Claude Code carries its own speech-to-text, and `<C-'>` inside a Claude Code buffer drives
-that rather than Vosk. Neovim writes the kitty-keyboard encoding of `ctrl+'` (`ESC[39;5u`)
-to the terminal channel, where Claude Code matches its `voice:pushToTalk` binding.
+that rather than Vosk. `<C-'>` is handled inside Neovim and never crosses the terminal
+channel; what crosses is whichever keystroke `~/.claude/keybindings.json` binds to
+`voice:pushToTalk`, written as the bytes a pty delivers for it.
+
+That keystroke must have a control-byte encoding — `ctrl+<letter>` or `ctrl+<@ [ \ ] ^ _ ?>`.
+Any other ctrl combination, `ctrl+'` included, exists only as a kitty-protocol CSI-u
+sequence, and whether such a sequence written into a terminal channel is matched against a
+binding depends on the embedded program's input layer rather than on a contract. Neovim
+therefore refuses a keystroke it cannot encode and reports which link failed.
 
 Claude Code reads the release from its 200ms timer expiring rather than from a release
 event, and every key event re-arms that timer. Neovim exploits this to hold the key down on
@@ -267,11 +274,11 @@ Set `vim.g.stt_claude_ptt_style = "passthrough"` to forward each key event inste
 requires holding the key physically. `vim.g.stt_claude_hold_timeout` caps a virtual hold in
 seconds (default 120).
 
-Claude Code configuration:
+Claude Code configuration, which Neovim reads rather than duplicating:
 
 ```json
 // ~/.claude/keybindings.json
-{ "bindings": [ { "context": "Chat", "bindings": { "ctrl+'": "voice:pushToTalk" } } ] }
+{ "bindings": [ { "context": "Chat", "bindings": { "ctrl+k": "voice:pushToTalk" } } ] }
 
 // ~/.claude/settings.json
 { "voice": { "enabled": true, "mode": "hold", "autoSubmit": false } }
@@ -280,8 +287,14 @@ Claude Code configuration:
 `voice.enabled` persists, so voice mode stays on across sessions. When it is off, the first
 `<C-'>` press sends `/voice <mode>` to enable it instead of forwarding a keypress.
 
-A key that is already mapped in terminal mode never reaches Claude Code — `<C-h>`, `<C-j>`,
-`<C-k>` and `<C-l>` are bound to window navigation in `lua/neotex/config/keymaps.lua`.
+`:STTHealth` reports every link of the chain — the bound keystroke and its context, the
+bytes sent and where that choice came from, and the voice-mode state — and names the broken
+one. `vim.g.stt_claude_ptt_key` overrides the keystroke for a session.
+
+Terminal-mode mappings constrain the *physical* key only: `<C-h>`, `<C-j>`, `<C-k>` and
+`<C-l>` are bound to window navigation in `lua/neotex/config/keymaps.lua`, so pressing them
+in a Claude Code buffer moves between windows. `chansend` writes to the pty directly, so
+those mappings place no restriction on which keystroke the wire encoding may name.
 
 ### Configuration Options
 
