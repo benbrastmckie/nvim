@@ -11,7 +11,7 @@ next_project_number: 584
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,582 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583 | 369,383,397,412,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
@@ -67,7 +67,6 @@ next_project_number: 584
 575 [NOT STARTED] — Stop the cross-phase ceiling check reading a stop-word as a...
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
-582 [NOT STARTED] — Author a concise output style in the source store and make it...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 
@@ -292,150 +291,6 @@ this record, or narrow it to the one piece still outstanding -- rather than runn
 - An invalid value is rejected at selection time rather than written and failing at session start.
 - The destructive regenerate path leaves a governed key at the governed value.
 - Existing loader behavior for extensions is unchanged; the extension toggle path is untouched.
-
----
-
-### 582. Author a concise output style in the source store and make it the default outputStyle
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: core-agent-system
-- **Dependencies**: None
-
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json with `jq -r '.extensions.core.source_dir' .claude-extensions.json` (it lives PER-EXTENSION, not as a top-level key) and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh.
-
-=== GOAL ===
-
-Make a concise output style the default for Claude Code sessions in this repository, managed
-entirely from within this repository's agent-system source store -- no global
-~/.claude/settings.json edit, no change to the nvim loader.
-
-=== MEASURED STARTING STATE ===
-
-- `outputStyle` is a plain top-level settings key. It currently reads `"default"` in BOTH the
-  source store (root-files/settings.local.json, around line 57) and the deployed copy
-  (.claude/settings.local.json, around line 81). The deployed file is gitignored and regenerated
-  from the source store, so the source-store file is the only durable edit target.
-- NO output-styles directory exists anywhere: not at project scope (.claude/output-styles/), not
-  in the source store, and not at ~/.claude/output-styles/. Verified by direct inspection.
-- The global ~/.claude/settings.json carries NO outputStyle key at all, so nothing is being
-  overridden globally and nothing global needs to change.
-- The nvim loader at lua/neotex/plugins/ai/claudecode.lua (around line 44) sets
-  `command = "claude --dangerously-skip-permissions"` with no output-style flag. The comment
-  immediately above it (around lines 41-43) records the deliberate convention that such
-  preferences belong in settings.local.json rather than a CLI flag, because a CLI flag bypasses
-  Max-plan context routing. Follow that convention: expect NO Lua change.
-
-CONSEQUENCE, and the reason this is not a one-line value change: "Concise" names nothing today.
-Setting outputStyle to it without authoring the style first points the setting at a missing
-style.
-
-=== RESEARCH PHASE MUST ESTABLISH, before any edit ===
-
-1. The exact set of BUILT-IN output style names and their literal settings values, and whether
-   any built-in already provides concise behavior that makes a custom style unnecessary. If a
-   built-in suffices, the correct outcome may be to select it rather than author anything --
-   that disposition is an acceptable and preferred result, not a failure of this record.
-2. If a custom style is needed: the required file location for PROJECT scope, the file format
-   (markdown with YAML frontmatter, per current Claude Code conventions), the exact required
-   frontmatter fields, and whether the settings value matches the frontmatter `name` or the
-   filename slug. Verify against current documentation rather than assuming.
-3. The precedence order among managed settings, settings.json, and settings.local.json for this
-   key, so the chosen file is the one that actually wins at session start.
-4. What an output style actually replaces or modifies in the prompt, and therefore whether a
-   concise style would conflict with, duplicate, or be overridden by this repository's existing
-   CLAUDE.md output conventions and the agent-system's own response-format instructions. A style
-   that contradicts an existing instruction block is worse than no style.
-
-=== REQUIRED OUTCOMES ===
-
-1. A concise output style is in effect for sessions in this repository, by whichever mechanism
-   research establishes as correct (built-in selection or authored custom style).
-2. If a style file is authored, it lives in the source store and is wired into the deploy so it
-   lands at project scope on regeneration -- never hand-placed under .claude/**, which the next
-   deploy would wipe.
-3. root-files/settings.local.json's outputStyle references it.
-4. The deploy is verified end to end: regenerate, then confirm the deployed settings value and,
-   if applicable, the deployed style file both appear at their expected paths.
-5. If the style file must be registered in an extension manifest to be deployed, that
-   registration is included.
-
-=== NON-GOALS ===
-
-- Any change to ~/.claude/settings.json or to ~/.dotfiles. The explicit intent is that agent
-  system management stays in this repository; a global change would distribute the maintenance
-  burden this record exists to avoid.
-- Any change to the nvim loader's command string, including its existing
-  --dangerously-skip-permissions flag, which is out of scope and must not be touched.
-- Changing the session model selection, which the same settings file governs by the same
-  convention.
-
-=== VERIFICATION ===
-
-- A fresh session launched for this repository reports the intended output style.
-- A full regenerate followed by inspection shows the setting and any style file surviving the
-  deploy rather than being reverted to "default".
-=== RESEARCH LEADS GATHERED 2026-11-11 (read the VERIFIED/UNVERIFIED split literally) ===
-
-VERIFIED by direct inspection of `claude --help` on this machine, 2026-11-11:
-
-- **There is NO `--output-style` CLI flag.** The full long-flag list contains `--output-format`
-  (documented as "only works with --print", i.e. the JSON/stream-json print mode, unrelated to
-  response style) and `--brief` (documented as "Enable SendUserMessage tool for agent-to-user
-  communication", also unrelated). Neither is an output-style selector.
-  CONSEQUENCE: the settings-file route is not merely the preferred approach, it is the ONLY
-  persistent one, and the "expect no Lua change" conclusion above is therefore a verified fact
-  rather than an inference from the loader's comment. Do not spend research time looking for a
-  flag to pass from the loader.
-- A `--setting-sources` flag does exist and may be relevant to how settings files are discovered;
-  check it if the deployed setting does not take effect.
-
-UNVERIFIED LEADS -- these came from a specialist consulted from MEMORY of the documentation, with
-no live doc fetch, and the source explicitly flagged them as needing confirmation. Treat every
-line below as a hypothesis to check against official documentation FIRST, not as a finding:
-
-- Built-in style names may be `default`, `Explanatory`, `Learning`, with no built-in `Concise`.
-  If that holds, research outcome 1 above resolves to "a custom style is required". CONFIRM the
-  list and its exact casing; do not assume it is complete or current.
-- A custom style may be a Markdown file with YAML frontmatter, at `<project>/.claude/output-styles/`
-  for project scope or `~/.claude/output-styles/` for user scope.
-- Frontmatter fields may be `name` (optional, defaulting to the filename), `description` (shown
-  in the picker), and `keep-coding-instructions` (optional). The body may be the instruction text.
-- The `outputStyle` settings value may match the frontmatter `name`, falling back to the filename
-  slug. This mapping is the single most important thing to confirm before authoring the file,
-  because getting it wrong produces a silently-missing style.
-- Settings precedence may run, highest first: managed settings, CLI args, `.claude/settings.local.json`,
-  `.claude/settings.json`, `~/.claude/settings.json`.
-
-=== THE RISK THAT CHANGES THE SHAPE OF THIS TASK ===
-
-The same consultation reported, also unverified, that **a custom output style modifies the SYSTEM
-PROMPT and REPLACES its default coding-focused sections unless `keep-coding-instructions: true`
-is set**, while CLAUDE.md is delivered as user-context content rather than as part of the system
-prompt.
-
-If that is correct it is the most consequential fact about this change, and it is a hazard rather
-than a detail: this repository is an agent system whose every dispatch depends on the default
-coding instructions being present. A concise style authored without `keep-coding-instructions`
-would strip them from every session in this repository, including every subagent dispatch,
-trading a formatting preference for a behavioral regression across the whole lifecycle.
-
-BINDING ON IMPLEMENTATION: confirm this mechanism before authoring anything. If a custom style
-does replace the coding instructions, either set `keep-coding-instructions: true` and author the
-style as a pure additive formatting layer, or reject the custom-style approach and achieve
-concision through the existing CLAUDE.md output conventions instead. Record the verdict and its
-evidence either way -- a silent omission of this flag is the specific failure mode to avoid.
-
-=== DEPLOY-BOUNDARY CORRECTION TO GENERIC ADVICE ===
-
-Generic guidance for this feature says to prefer the committed `.claude/settings.json` over the
-gitignored `.claude/settings.local.json`. THAT DISTINCTION DOES NOT APPLY HERE and must not be
-followed literally: in this repository BOTH deployed files are gitignored, disposable deploy
-artifacts regenerated from the source store, so neither is "the committed one". The durable edit
-target is the source store's `root-files/` directory, which is what regenerates them. Likewise, a
-style file required at `.claude/output-styles/concise.md` must be DEPLOYED there from a
-source-store original and, if necessary, registered in the extension manifest -- hand-placing it
-under `.claude/**` would be wiped by the next regeneration, which is the failure this record's
-opening paragraph already warns about.
 
 ---
 
