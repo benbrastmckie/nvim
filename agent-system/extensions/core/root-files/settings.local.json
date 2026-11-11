@@ -54,6 +54,6 @@
   "enabledMcpjsonServers": [
     "lean-lsp"
   ],
-  "outputStyle": "default",
+  "outputStyle": "Concise",
   "_comment": "Personal project overrides - not committed to git"
 }

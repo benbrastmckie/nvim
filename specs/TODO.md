@@ -187,6 +187,7 @@ next_project_number: 584
 - **Task Type**: neovim
 - **Topic**: neovim
 - **Dependencies**: Task 369, Task 563
+- **Research**: [583_loader_settings_defaults_surface/reports/01_loader-settings-defaults-seed.md]
 
 **Description**: GOAL. Extend the `<leader>al` agent system loader picker so it is the single control surface for
 agent-system-governed session defaults -- not only which extensions are loaded, but the default

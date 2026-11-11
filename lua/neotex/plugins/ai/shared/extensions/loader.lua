@@ -143,6 +143,67 @@ local INSTALL_ONCE_ROOT_FILES = {
 -- -- the "live clobber-on-reload bug" this phase closes requires both halves.
 M.INSTALL_ONCE_ROOT_FILES = INSTALL_ONCE_ROOT_FILES
 
+--- Per-key carve-out from the install-once guard above: these keys are re-asserted from the
+--- source store into an existing install-once root file on every load, while every other key
+--- in that file keeps full install-once protection.
+---
+--- The guard above protects a target file's in-place edits, which is right for a personal
+--- preference and wrong for a value the source store is meant to govern: because the file is
+--- never re-copied once present, editing the template reaches only repos that do not have the
+--- file yet. A key listed here is governed by the template instead, so changing it there and
+--- reloading propagates it everywhere.
+---
+--- Keep this list minimal. Every entry removes a key from the protection the guard exists to
+--- provide, so a key belongs here only when the source store is genuinely its owner.
+local AUTHORITATIVE_ROOT_FILE_KEYS = {
+  ["settings.local.json"] = { "outputStyle" },
+}
+
+M.AUTHORITATIVE_ROOT_FILE_KEYS = AUTHORITATIVE_ROOT_FILE_KEYS
+
+--- Re-assert the declared authoritative keys from a source root file into an existing target.
+---
+--- Reads both as JSON, overwrites only the declared keys, and rewrites the target through
+--- merge.write_json (jq pretty-print) so a hand-editable file stays readable. Every other key
+--- in the target, and any key the template does not define, is left exactly as it was.
+---
+--- Fails soft in every degenerate case (unreadable file, malformed JSON, non-object root): the
+--- install-once skip it replaces is already the conservative outcome, so a reconcile that
+--- cannot run must leave the target untouched rather than risk truncating a settings file.
+---
+--- @param source_path string Source-store root file
+--- @param target_path string Existing deployed root file
+--- @param keys table List of key names the source store governs
+--- @return boolean changed True when the target was rewritten
+local function reconcile_authoritative_keys(source_path, target_path, keys)
+  if vim.fn.filereadable(source_path) ~= 1 or vim.fn.filereadable(target_path) ~= 1 then
+    return false
+  end
+
+  local ok_source, source = pcall(vim.json.decode, table.concat(vim.fn.readfile(source_path), "\n"))
+  local ok_target, target = pcall(vim.json.decode, table.concat(vim.fn.readfile(target_path), "\n"))
+  if not ok_source or not ok_target or type(source) ~= "table" or type(target) ~= "table" then
+    return false
+  end
+
+  local changed = false
+  for _, key in ipairs(keys) do
+    -- A key the template does not define is not governed; absence is not an instruction
+    -- to delete the target's value.
+    if source[key] ~= nil and not vim.deep_equal(target[key], source[key]) then
+      target[key] = source[key]
+      changed = true
+    end
+  end
+
+  if not changed then
+    return false
+  end
+
+  local merge = require("neotex.plugins.ai.shared.extensions.merge")
+  return merge.write_json(target_path, target) and true or false
+end
+
 --- Category descriptor table: the single source of truth for how every `provides.*` category
 --- (plus the two non-`provides`-keyed special cases, `manifest` and `data`) is copied. Collapses
 --- what used to be 11 near-identical `copy_*` functions (symlink guard present in only 2 of 11,
@@ -176,6 +237,12 @@ M.INSTALL_ONCE_ROOT_FILES = INSTALL_ONCE_ROOT_FILES
 ---   install_once           Optional set `{[entry_name] = true}`; an entry present here is
 ---                         skipped (counted, not copied) whenever a target copy already exists.
 ---                         Only `root_files` uses this (`INSTALL_ONCE_ROOT_FILES`).
+---   authoritative_keys     Optional map `{[entry_name] = {"key", ...}}`, meaningful only
+---                         alongside `install_once`. On a skip, those keys are re-asserted
+---                         from the source into the existing target JSON, so the source store
+---                         governs them while the rest of the file stays install-once
+---                         protected. Only `root_files` uses this
+---                         (`AUTHORITATIVE_ROOT_FILE_KEYS`).
 ---   merge_copy_only         True for `data`: an entry already present at the target is skipped
 ---                         rather than overwritten (merge-copy semantics preserving user data).
 ---   target_is_project_root  True for `data`: entries land under `project_dir`, not `target_dir`
@@ -229,6 +296,7 @@ local CATEGORY_DESCRIPTORS = {
   root_files = {
     source_subdir = "root-files", target_subdir = "", list_key = "root_files",
     entry_kind = "file", preserve_perms = "none", install_once = INSTALL_ONCE_ROOT_FILES,
+    authoritative_keys = AUTHORITATIVE_ROOT_FILE_KEYS,
   },
   manifest = {
     single_file = true, self_load_skip = true, preserve_perms = "none",
@@ -474,6 +542,13 @@ function M.copy_category(category, manifest, source_dir, target_dir, protected_p
       local rel_path = target_category_name == "" and entry_name or (target_category_name .. "/" .. entry_name)
 
       if descriptor.install_once and descriptor.install_once[entry_name] and vim.fn.filereadable(target_path) == 1 then
+        -- Still install-once for the file as a whole, but any key the source store declares
+        -- authoritative is re-asserted here, so a template change reaches repos that already
+        -- have the file. Counted as a skip either way: the file was not replaced.
+        local authoritative = descriptor.authoritative_keys and descriptor.authoritative_keys[entry_name]
+        if authoritative then
+          reconcile_authoritative_keys(source_path, target_path, authoritative)
+        end
         skipped_count = skipped_count + 1
       elseif vim.fn.filereadable(source_path) == 1 then
         if descriptor.symlink_guard and vim.fn.getftype(target_path) == "link" then

@@ -85300,7 +85300,14 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "artifacts": [
+        {
+          "type": "report",
+          "path": "specs/583_loader_settings_defaults_surface/reports/01_loader-settings-defaults-seed.md"
+        }
+      ],
+      "next_artifact_number": 2
     }
   ],
   "completed_projects": [],
