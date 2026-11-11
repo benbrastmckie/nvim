@@ -1,5 +1,5 @@
 ---
-next_project_number: 601
+next_project_number: 602
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 601
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591,597,600 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591,597,600,601 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586,598,599 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,391,398,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581,594 | 390,402,438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
@@ -72,6 +72,7 @@ next_project_number: 601
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
 591 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
+601 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
@@ -201,6 +202,34 @@ next_project_number: 601
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 601. Root walkup class closure lint
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 589
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+Close the class of invocation-path-dependent repo-root resolution in test suites with a durable lint, instead of re-sweeping it by hand each time an instance surfaces.
+
+THE SHAPE TO FORBID: a test suite computing its repo root as an unconditional fixed-depth parent walk, e.g. "$CORE_DIR/../../../.." or "$CORE_DIR/../..". Measured: four levels up from agent-system/extensions/core/scripts/tests yields the repository root, but four levels up from the deployed .claude/scripts/tests yields /home/benjamin -- outside the repository entirely. A suite computed that way passes from one invocation path and fails from the other, and the resulting wrong root can also MASK a real failure behind a CANNOT_COMPUTE sentinel rather than surfacing it.
+
+THE CANONICAL REPLACEMENT ALREADY EXISTS: common_test_repo_root (git-first strategy) in scripts/lib/common.sh, already used by roughly 80 core suites, plus common_test_ext_root for the extensions-root case. The remedy that found this class needed no new helper -- only migration. So the lint enforces use of existing, proven machinery; it invents nothing.
+
+WHY A LINT RATHER THAN ANOTHER SWEEP: the remedy named five suites. A bounded measure-first sweep phase found two MORE carrying the identical shape that nobody had named (test-verify-deploy-gate-selection-crash-net.sh at four levels, test-gate-cache-equivalence.sh at three), and one of the five turned out to be a production defect in orchestrate-build-aux-dispatch.sh rather than a test-only one. The class is demonstrably wider than any hand-assembled list, which is the standing argument for mechanical closure. That remedy declared this lint an explicit Non-Goal and follow-up candidate rather than absorbing it.
+
+SCOPE NOTES / OPEN QUESTIONS FOR THE IMPLEMENTER:
+- Discriminate the genuinely-passes-both case before failing it. The sweep confirmed one candidate (test-verify-deploy-gate-selection-crash-net.sh) legitimately passes from both paths despite carrying the shape, and correctly received no edit. A lint that fails it would be a false positive.
+- Decide whether this is a new standalone lint script or an assertion inside an existing one, and whether it registers as its own gate or folds into an existing gate. gate-registry.data is declared in file_scope for that reason; note task 584 also declares that file, so coordinate or serialize rather than colliding.
+- A zero-violation result after the lint lands is a valid completion: the remedy already migrated the known instances, so this task's deliverable is the durable guard, not a fresh batch of fixes.
+
+CHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1794381614_02261f.
+CITATION: {task 589, iss_1794382098954_Zl7lZg}, class "scope boundary".
+
+---
 
 ### 600. Honor the Sapience 503 cold-start retry_after hint with one bounded retry instead of degrading on first contact
 - **Status**: [NOT STARTED]
