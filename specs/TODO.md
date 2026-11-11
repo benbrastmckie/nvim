@@ -22,7 +22,7 @@ next_project_number: 607
 
 ### Core Agent System
 
-313 [PLANNING] — Advisory lint for hand-authored /orchestrate batch proposals...
+313 [PLANNED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 338 [NOT STARTED] — Classify every task-support file as tracked or ignored
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
@@ -11011,11 +11011,12 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 313. Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md phase blocks
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 306, Task 328, Task 344, Task 387, Task 401, Task 402
 - **Research**: [313_advisory_lint_for_roadmap_batch_proposals/reports/01_roadmap-batch-lint-seam-selection.md]
+- **Plan**: [313_advisory_lint_for_roadmap_batch_proposals/plans/01_roadmap-batch-proposal-lint.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). No task numbers in deliverable files outside specs/**.
 

@@ -1,0 +1,10 @@
+[
+  {
+    "question": "Task 603 (not_started, scheduled in the roadmap's own next Run batch) will retire the hand-authored '## Next' prose model this lint is built to parse, replacing it with structured state.json batch entries maintained by a new /roadmap command. Should task 313 proceed to planning/implementation now against the current (still-live) grammar, accepting a likely near-term rescoping once 603 ships, or should it be sequenced to wait on 603 first?",
+    "answer": "Proceed now against the current hand-authored '## Next' grammar, treating a post-603 rescoping as an accepted follow-up cost",
+    "cycle": 1,
+    "timestamp": "2026-11-11T21:20:51Z",
+    "description_fingerprint": "53aca7972bc8d1310e895e655bc442e49f35a2e878ff83a259ef69ea6aa01154",
+    "obligation": "The recommended route discharges the task's stated GOAL (catch an under-inclusive batch at authoring time instead of only at dispatch or never) against the grammar that is actually live today, since 603 has no dependencies[] edge or file_scope overlap with 313 and has not landed; it does not discharge any obligation to future-proof the lint against 603's eventual landing, which is left as a named, foreseeable follow-up rather than solved here."
+  }
+]

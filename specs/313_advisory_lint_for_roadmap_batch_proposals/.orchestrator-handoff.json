@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 313,
+  "phase": "plan",
+  "dispatch_seq": 10,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase implementation plan for the advisory ROADMAP batch-proposal lint, carrying the research report's settled LIVE SEAM 1 call site (conclusion-stage.md Step 5). The plan adds territory hygiene up front (drop the dead commands/review.md scope entry; add serializing dependencies[] edges onto the roadmap-format.md and conclusion-stage.md claimants before those files are edited), builds the script in two phases, then fixtures/manifest, documentation, and a deploy-plus-full-gate close. Re-validated every carried figure against live state and corrected four stale ones; the user's recorded decision to proceed against the live grammar still discharges its stated obligation, so no new user_decision is raised.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/313_advisory_lint_for_roadmap_batch_proposals/plans/01_roadmap-batch-proposal-lint.md",
+      "summary": "Six-phase, 8.25-hour plan for the advisory /orchestrate batch-proposal lint."
+    }
+  ]
+}
