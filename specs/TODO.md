@@ -11,7 +11,7 @@ next_project_number: 584
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,582 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,582 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583 | 369,383,397,412,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
@@ -156,7 +156,6 @@ next_project_number: 584
   └─ 576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
-555 [IMPLEMENTING] — Test sweep permanently red where the source store is external
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
@@ -2043,7 +2042,7 @@ surface, and that rationale does not survive into this repository.
 
 ### 555. Test sweep permanently red where the source store is external
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
