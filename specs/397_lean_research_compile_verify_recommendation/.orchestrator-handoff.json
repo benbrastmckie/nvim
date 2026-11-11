@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase implementation plan adopting the research report's trigger (a) for a new always-on Compile-Verify-Before-Recommend clause in lean-research-agent.md, mirrored into lean-research-flow.md, followed by an index-entries.json line_count correction and a redeploy with the full gate set. Re-validated every carried figure: the dispatch's lean-research-hard-agent.md does not exist and is dropped from file scope; the flow file's declared line_count 186 is currently exact and is invalidated by Phase 2. Measured suite selection for each phase's tier justification, and found generate-context-line-counts.sh --check already failing for an unrelated core-extension mismatch, which the plan explicitly routes around. Plan validates clean against validate-artifact.sh with zero warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/397_lean_research_compile_verify_recommendation/plans/01_compile-verify-recommendation-contract.md",
+      "summary": "4-phase plan adding an always-on compile-verify-before-recommend contract clause and matching report-skeleton evidence tag to the lean research agent and shared research flow, plus index line_count correction and redeploy."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794431325_7cf647_397",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}
