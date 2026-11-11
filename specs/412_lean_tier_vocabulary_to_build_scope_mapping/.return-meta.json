@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794431325_7cf647_412",
-  "dispatch_seq": 4,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/412_lean_tier_vocabulary_to_build_scope_mapping/reports/01_tier-vocabulary-build-scope-mapping.md",
-      "summary": "Confirms task 396 already settled phase-commit gating (full lake build mandatory at every Lean phase-end, not only the final phase); recommends the tier mapping treat full as the sole phase-end-gating tier for Lean while prose/local/interface cover in-phase, non-gating verification density; flags task 412's own file_scope naming a hard-mode agent file deleted on 2026-11-09, and flags the dispatch's 'build-enabled mode' phrase as unverifiable from this source store."
+      "type": "plan",
+      "path": "specs/412_lean_tier_vocabulary_to_build_scope_mapping/plans/01_tier-vocabulary-build-scope-mapping.md",
+      "summary": "Three-phase plan adding a Lean-specific Verification Tier to build-scope mapping to lean-implementation-flow.md, pointing lean-implementation-agent.md at it, and redeploying with full gate verification."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In this agent-system source store, --hard no longer dispatches a separate *-hard-agent.md file (those were deleted 2026-11-09, commit 749c660a4, task 444's hard-mode consolidation). Hard-mode contracts are now injected into the SAME standard agent file at dispatch time. A task's file_scope or description referencing a *-hard-agent.md path for lean/cslib/etc. predates this change and should be corrected rather than targeted.",
-      "category": "PATTERN",
-      "source_artifact": "specs/412_lean_tier_vocabulary_to_build_scope_mapping/reports/01_tier-vocabulary-build-scope-mapping.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["hard-mode", "lean-extension", "file_scope", "agent-consolidation", "stale-reference"]
-    },
-    {
-      "content": "core's suite_selection_select (scripts/lib/suite-selection-lib.sh) has zero mappings for .lean paths, so a Lean-only phase's Tier Justification always resolves to the __FULL_SWEEP__ sentinel under core's generic mechanism even though .lean files do have elaboration surface. plan-format.md's own 'Unmappable criterion' paragraph (Batch-aware deferral section) sanctions a domain extension defining its own concrete covering-check actions in this situation rather than relying on the generic shell-suite narrowing.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/412_lean_tier_vocabulary_to_build_scope_mapping/reports/01_tier-vocabulary-build-scope-mapping.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["verification-tier", "suite-selection", "lean", "tier-justification", "plan-format"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 412 to create implementation plan"
+  "next_steps": "Run /orchestrate 412 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1794431325_7cf647_412",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2,
+    "dependency_waves": 3
+  },
+  "memory_candidates": [],
+  "dispatch_seq": 7
 }

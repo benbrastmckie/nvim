@@ -3055,7 +3055,7 @@
     {
       "project_number": 412,
       "project_name": "lean_tier_vocabulary_to_build_scope_mapping",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "Map core's Verification Tier vocabulary onto Lean build scopes in the lean extension, so a non-final lean phase stops declaring a whole-project build without naming what requires it.\n\nTHE OBSERVED COST (BimodalLogic repo, 2026-10-15, measured from .lake/build-guard.stdout on a full guarded build): four implement dispatches in one batch each ran a full unscoped lake build at every phase boundary. One such build rebuilt 414 of 2848 jobs for 6354s of elaboration; Metalogic was 5649s of that across 306 modules; SubformulaProperty.lean alone was 1103s. Lake is already incremental, so this is not lake rebuilding everything -- it is the whole-project build being invoked repeatedly.\n\nWHAT IS ALREADY IN PLACE, AND MUST BE REUSED RATHER THAN REBUILT. core/context/formats/plan-format.md already defines the entire mechanism this task needs:\n  - **Verification Tier:** (required per phase) one of prose, local, interface, full (L97-98).\n  - **Tier Justification:** (required on every NON-FINAL phase, omitted on the final phase) -- one sentence naming the specific covering check for a tier below full, OR \"the specific cross-cutting surface no cheaper tier covers\" for a non-final full (L103-107, L314).\nSo core already requires a non-final phase to justify choosing full. The gap is not a missing rule. The gap is that the lean extension never says what prose/local/interface/full MEAN in terms of Lean build scope, so lean plans default to full with no meaningful justification and the existing core requirement does no work.\n\nSCOPE. Add to the lean extension a mapping from core's four tiers to concrete Lean verification actions -- for example which tiers are satisfied by lean_goal plus lean_verify, which by `lake build Module.Name` for the modules the phase touched, and which require the whole-project build plus the build-enabled gates. State it once, in the shared flow document both lean implementation agents already reference (context/project/lean4/agents/lean-implementation-flow.md), and have the agent files point at it rather than restating it.\n\nDO NOT DECIDE THE PHASE-COMMIT QUESTION HERE. Whether a phase COMMIT is gated on a full build is owned by the task named in this task's dependencies, which revises three files on exactly that point and carries a measured counterexample: a module-scoped build of Periodic.lean passed while the full library build failed, because a new `dualStructure` clashed with `WeakCanonical.dualStructure` in another module. A scoped build cannot see cross-module name clashes or downstream breakage. This task must ADOPT whatever that task settles, not relitigate it. Hence the dependency edge: run after it, and write the tier mapping to match its conclusion.\n\nTHE POINT THAT SURVIVES EITHER OUTCOME. If that task concludes every non-final lean phase genuinely needs the full build for cross-module clash detection, then that conclusion belongs in the tier mapping ONCE, as the standing cross-cutting surface, rather than being re-justified ad hoc in every lean plan -- and plan authors should then declare full with a pointer to it. If instead some phases can be covered more cheaply, the mapping says which and how. Either way the outcome is that a lean plan's tier declaration carries information instead of being a reflex.\n\nPRESERVE, these are not up for weakening: every lake build stays DETACHED via Bash(run_in_background: true) routed through lake-build-guard.sh, and the bounded-wait obligation in context/project/lean4/operations/external-process-wait and long-builds guidance is unchanged. long-builds.md is explicit that a single module can exceed the foreground cap and that a scoped build is never exempt from either obligation. Also preserve the checks that genuinely need a complete build: check-module-invariants.sh in build-enabled mode and the olean-freshness-for-every-touched-module tier.\n\nNON-GOALS. Do not modify lake-build-guard.sh. Do not modify core/context/formats/plan-format.md -- core already carries the required fields and this task consumes them rather than changing them. Do not decide the phase-commit gating question. Do not touch any deployed .claude/ tree: the source store under agent-system/extensions/ is the edit target and a redeploy follows.\n\nACCEPTANCE. A tier-to-Lean-action mapping stated once in the shared lean flow document, with the two lean implementation agent files pointing at it and not contradicting it; the mapping consistent with whatever the dependency task settled about phase-commit gating; the detachment, guard and bounded-wait obligations verifiably unchanged; no task-number references and no record-versioning language in any file landing under agent-system/.",
       "topic": "lean-extension",
@@ -3063,19 +3063,25 @@
         396
       ],
       "file_scope": [
-        "agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md",
+        "__WHOLE_TREE__",
         "agent-system/extensions/lean/agents/lean-implementation-agent.md",
-        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
+        "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md",
+        "agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md"
       ],
       "created": "2026-10-15T05:18:14Z",
-      "last_updated": "2026-11-11T21:22:31Z",
+      "last_updated": "2026-11-11T21:30:28Z",
       "title": "Map core verification tiers to Lean build scopes",
-      "session_id": "sess_1794431325_7cf647_412",
+      "session_id": "sess_1794431325_7cf647",
       "artifacts": [
         {
           "path": "specs/412_lean_tier_vocabulary_to_build_scope_mapping/reports/01_tier-vocabulary-build-scope-mapping.md",
           "type": "report",
           "summary": "Confirms task 396 already settled phase-commit gating (full lake build mandatory at every Lean phase-end, not only the final phase); recommends the tier mapping treat full as the sole phase-end-gating tier for Lean while prose/local/interface cover in-phase, non-gating verification density; flags task 412's own file_scope naming a hard-mode agent file deleted on 2026-11-09, and flags the dispatch's 'build-enabled mode' phrase as unverifiable from this source store."
+        },
+        {
+          "path": "specs/412_lean_tier_vocabulary_to_build_scope_mapping/plans/01_tier-vocabulary-build-scope-mapping.md",
+          "type": "plan",
+          "summary": "Three-phase plan: author the tier mapping, wire the agent file to it, redeploy and verify preserved obligations."
         }
       ],
       "next_artifact_number": 2

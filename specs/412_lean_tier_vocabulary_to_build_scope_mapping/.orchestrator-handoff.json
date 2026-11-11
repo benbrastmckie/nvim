@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "task_number": 412,
+  "phase": "plan",
+  "dispatch_seq": 7,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a three-phase implementation plan for the Lean tier-to-build-scope mapping. Phase 1 authors a new '## Verification Tiers in Lean Terms' section in lean-implementation-flow.md stating full as the sole phase-end-gating tier for Lean and naming the project-wide declaration namespace as the standing cross-cutting surface; Phase 2 points the one surviving lean-implementation-agent.md at it and runs a contradiction check against five existing gating sites; Phase 3 redeploys and verifies the detachment, guard and bounded-wait obligations are byte-identical. Premise re-validation found two false carried claims in the dispatch description (the detachment mechanism and the count of lean implementation agent files) and recorded both.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/412_lean_tier_vocabulary_to_build_scope_mapping/plans/01_tier-vocabulary-build-scope-mapping.md",
+      "summary": "Three-phase plan: author the tier mapping, wire the agent file to it, redeploy and verify preserved obligations."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794431325_7cf647_412",
+    "agent_type": "planner-agent"
+  }
+}
