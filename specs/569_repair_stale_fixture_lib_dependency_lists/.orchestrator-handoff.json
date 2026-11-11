@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 10,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase implementation plan for the stale fixture dependency-list defect. Re-validated every carried figure live: the three affected suites still fail at 17/12, 10/7 and 35/2, and test-orchestrate-unwind-dispatch.sh is already green at 21/0 and is excluded. Phases 1-3 add project-number-inuse.sh to each suite's own dependency declaration (two one-line array edits, one two-site require_file + setup_sandbox edit) in wave 1; Phase 4 retires the three now-stale known-failures.txt rows, regenerates the deploy tree, and runs the complete gate set. The 'derive lists from source' design question is settled as a lint-time follow-up candidate, not built here.",
+  "summary": "Repaired three fixture-based test suites' stale dependency-copy lists by adding project-number-inuse.sh (which state-write.sh unconditionally sources). All three suites now report 0 failed (from 17/12, 10/7, 35/2), the three now-stale known-failures.txt rows were retired, and the deployed tree was regenerated. The final full-tier phase was discharged against the dispatch's Batch Gate Deferral scoped tier (run-all.sh --only, exit 0, 0 NEW) rather than the unscoped complete gate set, which is deferred once to the batch stage.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/569_repair_stale_fixture_lib_dependency_lists/summaries/01_stale-fixture-dependency-remedy-summary.md",
+      "summary": "Before/after tallies for all three suites, roster rows retired, and the deferred lint-test-fixture-dependency-drift.sh follow-up candidate."
+    },
+    {
       "type": "plan",
       "path": "specs/569_repair_stale_fixture_lib_dependency_lists/plans/01_stale-fixture-dependency-remedy.md",
-      "summary": "4-phase plan (2 waves, 2.75h): add project-number-inuse.sh to three fixture suites' dependency lists, retire three stale known-failures.txt rows, redeploy, and run the full gate set."
+      "summary": "4-phase plan, all phases [COMPLETED], with deviations annotated for the Batch Gate Deferral discharge."
     }
-  ],
-  "dispatch_seq": 5
+  ]
 }
