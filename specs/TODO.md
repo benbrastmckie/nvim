@@ -114,7 +114,7 @@ next_project_number: 607
 
 ### Lean Extension
 
-397 [RESEARCHING] — Require a lean research report's recommended compiled...
+397 [RESEARCHED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
 412 [RESEARCHING] — Map core verification tiers to Lean build scopes
@@ -10305,10 +10305,11 @@ agent-system/extensions/lean/index-entries.json leg was NOT updated.
 
 ### 397. Require a lean research report's recommended compiled artifact to be compile-verified before it is recommended
 - **Effort**: medium
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
+- **Research**: [397_lean_research_compile_verify_recommendation/reports/01_compile-verify-recommendation-contract.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

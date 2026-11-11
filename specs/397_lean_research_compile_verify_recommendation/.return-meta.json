@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "dispatch_seq": 2,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/397_lean_research_compile_verify_recommendation/reports/01_compile-verify-recommendation-contract.md",
+      "summary": "Decides trigger (a) (concrete artifact + existing compiled gate) for a new compile-verify-before-recommending clause in lean-research-agent.md, places it always-on (not hard-mode-only), corrects the dispatch's file scope by removing the nonexistent lean-research-hard-agent.md, and specifies an inline [VERIFIED: PASS/FAIL/No compiled gate applicable] recommendation tag extending both lean-research-agent.md and lean-research-flow.md report skeletons."
+    }
+  ],
+  "next_steps": "Run /orchestrate 397 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1794431325_7cf647_397",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 5
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo's agent-system, --hard no longer resolves a separate <domain>-<phase>-hard-agent.md file for any extension (lean, cslib, books included) -- that agent-level ladder (routing_agents_hard) is retired. --hard dispatches the SAME agent body as standard mode; hard-mode duties are injected as separate contract files via the manifest's hard_contracts.<task_type> array (replace:/additive entries resolved by routing_lookup_flat()), merged into the dispatch prompt by orchestrate-build-dispatch.sh Stage 3.5. A task description or provenance record that names a '<domain>-research-hard-agent.md' or '<domain>-implementation-hard-agent.md' file should be treated as a stale/incorrect assumption until checked against the manifest's hard_contracts block and the filesystem -- it is not a live file pattern in this codebase.",
+      "category": "PATTERN",
+      "source_artifact": "specs/397_lean_research_compile_verify_recommendation/reports/01_compile-verify-recommendation-contract.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["hard-mode", "hard_contracts", "lean4", "routing", "agent-system", "contract-injection"]
+    },
+    {
+      "content": "In this repo's lean extension, lean-research-agent.md's own Stage 1 report skeleton and the shared lean-research-flow.md's Stage 5 report skeleton are two independent copies of the same research-report template, and they have already drifted at least once (lean-research-agent.md carries a '## Tactic Survey Results' evidence table that lean-research-flow.md's parallel template lacks entirely). Any new report-template clause (an evidence section, a required tag) added to one must be mirrored in the other in the same change, or the drift recurs.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/397_lean_research_compile_verify_recommendation/reports/01_compile-verify-recommendation-contract.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["lean-research-agent", "lean-research-flow", "report-template-drift", "index-entries.json"]
+    }
+  ]
+}
