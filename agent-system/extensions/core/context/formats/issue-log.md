@@ -71,6 +71,11 @@ should trigger a call:
 - An unusually smooth or time-saving result — a `kind: "win"` entry — on equal footing with an
   issue. Positive signal currently has no home at all in this codebase; this log gives it one.
 
+A verification replay that exercises `issue-record.sh` itself (for example, an acceptance test
+for this log's own tooling) must write to a scratch task directory it creates for that purpose,
+never to a real task's own `issues.jsonl` — a fixture row left in a live task's log is
+indistinguishable from a genuine finding and gets re-proposed by the conclusion stage.
+
 End-of-dispatch reconstruction is exactly what produces the free prose this log replaces. An
 agent that waits until its final `.return-meta.json` or handoff write to think about what went
 wrong has already lost the detail that recording-in-the-moment would have kept.
