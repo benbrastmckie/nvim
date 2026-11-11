@@ -104,9 +104,9 @@ confirm nothing else moved:
 
 ## Acceptance Criteria Cross-Check
 
-1. **Demonstrated against a real field file**: yes — Logos/Theory, theorem_proving_in_lean4, and
-   Logos/Website were resynced live; host and ModelBuilder were replayed against their verbatim
-   field fixtures.
+1. **Demonstrated against a real field file**: yes — host, Logos/Theory,
+   theorem_proving_in_lean4, and Logos/Website were all resynced live; ModelBuilder was replayed
+   against its verbatim field fixture (see the deferral reasoning above).
 2. **Hand-written survival**: no hand-written custom hook was present in any of the five real
    field files measured here; the dedicated `merge_spec.lua` regression (Phase 4) covers this
    case directly against a synthetic `/opt/mytools/...` command, and every one of the five real
@@ -119,3 +119,35 @@ confirm nothing else moved:
    ModelBuilder).
 5. (Pre-existing specs — Phase 8.)
 6. (Documentation — Phase 7.)
+
+## Phase 8 Closing Confirmations
+
+**Host post-redeploy settings.json** (after the final `deploy-headless.sh` redeploy that also
+regenerated `.claude/` for the complete gate set): registration count 27, 0 per-event
+duplicates, `env`/`permissions` fingerprint
+`bda8ce82960141f4a93a3c24648589c0d0dc2e2a1619c6eee595d82875460629` (byte-identical to the Phase 1
+baseline), and `grep -c claude-ready-signal .claude/settings.json` is 0.
+
+**`suite_selection_select` re-run, closing Phase 3's own Scope Hypothesis**: the Phase 3
+Scope Hypothesis predicted that, after that phase's edits, `hook_identity_cli.lua` would begin
+resolving to a real suite name instead of `__FULL_SWEEP__`, since the extended test suite now
+textually references it. Confirmed directly: `suite_selection_select
+lua/neotex/plugins/ai/shared/extensions/hook_identity_cli.lua` now returns
+`test-lint-hook-registration-paths.sh` (previously `__FULL_SWEEP__`). Per-file selector results
+for every file this task touched:
+
+| File | `suite_selection_select` result |
+|------|----------------------------------|
+| `hook_identity.lua` | `test-lint-hook-registration-paths.sh` |
+| `hook_identity_cli.lua` | `test-lint-hook-registration-paths.sh` |
+| `hook_identity_fixtures.json` | `__FULL_SWEEP__` (never a suite-mappable file shape) |
+| `merge.lua` | `test-mcp-merge-target.sh` |
+| `merge_spec.lua` | `test-deploy-propagation.sh` |
+| `init.lua` | `test-deploy-orphans.sh`, `test-deploy-verify-overlap.sh`, `test-mcp-merge-target.sh` |
+| `lint-hook-registration-paths.sh` | `test-deploy-baseline-lib.sh`, `test-lint-corpus-scan-lib.sh`, `test-lint-hook-registration-paths.sh`, `test-lint-verdict-extraction-anchoring.sh` |
+| `test-lint-hook-registration-paths.sh` | `test-lint-hook-registration-paths.sh`, `test-lint-verdict-extraction-anchoring.sh` |
+| `source-store-deploy-boundary-narrative.md` | `__FULL_SWEEP__` (markdown is never suite-mappable) |
+
+The UNION of all touched files still returns `__FULL_SWEEP__` (the fixture JSON and the markdown
+narrative keep it there), so this does not change which gate tier Phase 8 itself runs at — it is
+recorded here purely as the closing answer Phase 3's own hypothesis asked for.

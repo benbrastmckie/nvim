@@ -1,0 +1,69 @@
+{
+  "phase": 8,
+  "phase_name": "Full gate set, pre-existing specs, and redeploy",
+  "started_at": "2026-11-11T19:40:00Z",
+  "last_updated": "2026-11-11T20:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run pre-existing merge_spec.lua and manifest_spec.lua in full",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Redeploy host .claude/ tree from the source store (bounded-wait idiom)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Scoped gate discharge per Batch Gate Deferral: verify-deploy.sh --only-gate 21,8",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Re-run suite_selection_select over every touched file, close Phase 3 hypothesis",
+      "status": "done",
+      "files_touched": [
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/02_after-measurements.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Confirm host settings.json post-redeploy",
+      "status": "done",
+      "files_touched": [
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/02_after-measurements.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Fix shellcheck SC2088 finding introduced by the new ~/-anchored test case",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Arm a Monitor and let the turn end to await the gate-run notification",
+      "result": "failed",
+      "reason": "The first --only-gate 21,8 attempt was launched via a plain foreground Bash call that the harness auto-backgrounded after ~180s (well under both my own --timeout argument and the Bash tool's stated ceiling); a Monitor armed afterward to watch it reported the underlying process had been terminated (exit 143, the outer `timeout 500` wrapper firing) before gate 8's own run-all.sh finished, under heavy concurrent system load from sibling /orchestrate batch tasks. Re-run directly via nohup + captured PID + a REPEATED bounded kill-0 wait loop (three sequential ~170s polls within the same turn, never ending the turn on an unresolved wait) is what produced the real result."
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "8.3",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "The dispatch file's own Batch Gate Deferral directive names this exact final phase and requires discharging it against a scoped --only-gate invocation instead of the unqualified aggregator, with the full battery run once for the whole /orchestrate batch. Ran --only-gate 21,8 at full depth (no --skip-slow, no suite narrowing within those two gates) rather than the bare aggregator.",
+      "annotation": "see Phase 8's #### Reasoned Exclusions table"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Gate 21 (lint-hook-registration-paths.sh) PASSES cleanly. Gate 8 (tests/run-all.sh) reports FAIL at the verify-deploy.sh wrapper level, but run-all.sh's OWN verdict is '179 passed, 5 failed (5 expected, 0 NEW), 2 skipped, 186 total' -- all five failing suites are pre-existing, independently-tracked EXPECTED failures (test-double-loading-check.sh, test-gate-cache-equivalence.sh [gate10 60s timeout under concurrent load], test-lint-unit-integration-boundary.sh, test-orchestrate-cycle-postflight.sh, test-verify-deploy-context-budget.sh), none touching hook registrations or this task's files; 0 NEW confirms this task caused none of them. test-lint-hook-registration-paths.sh itself (this task's own suite) PASSES in that same run. A shellcheck SC2088 false-positive (two inline disable comments needed on the new ~/-anchored test case) was found and fixed during this phase's own full redeploy-plus-gate pass."
+}

@@ -585,25 +585,25 @@ alongside the `prose` row's diff read-through.
 
 ---
 
-### Phase 8: Full gate set, pre-existing specs, and redeploy [NOT STARTED]
+### Phase 8: Full gate set, pre-existing specs, and redeploy [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Close the task against the complete repository gate set, prove no pre-existing
 extension/merge spec went red, and bring the deployed tree into sync with the source store.
 
 **Tasks**:
 
-- [ ] Run the pre-existing Lua specs in full and treat any newly red case as caused by this task
+- [x] Run the pre-existing Lua specs in full and treat any newly red case as caused by this task
       (acceptance criterion 5): `merge_spec.lua` and `manifest_spec.lua`.
-- [ ] Redeploy this repository's `.claude/` tree from the source store with the bounded-wait
+- [x] Redeploy this repository's `.claude/` tree from the source store with the bounded-wait
       idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout` parameter
       raised to 600000). This also clears the `core` staleness this dispatch's deploy-freshness
       context reported.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Gate 21
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Gate 21 *(completed per Batch Gate Deferral: ran --only-gate 21,8 at full depth rather than the unqualified aggregator -- Gate 21 PASS, Gate 8 FAIL with 5 pre-existing EXPECTED failures and 0 NEW; full aggregator deferred to the batch stage)*
       (`lint-hook-registration-paths.sh`) and Gate 8 (`tests/run-all.sh`) are the two that
       directly observe this task's work; neither may be narrowed here.
-- [ ] Re-run `suite_selection_select` over every file this task touched and record the post-edit
+- [x] Re-run `suite_selection_select` over every file this task touched and record the post-edit
       answer, closing Phase 3's Scope Hypothesis.
-- [ ] Confirm the host repo's own deployed `settings.json` after the redeploy: the orphan gone,
+- [x] Confirm the host repo's own deployed `settings.json` after the redeploy: the orphan gone,
       `env`/`permissions` fingerprint matching the Phase 1 baseline, per-event duplicates 0.
 
 **Timing**: 1 hour
@@ -627,25 +627,32 @@ extension/merge spec went red, and bring the deployed tree into sync with the so
 - The host repo's deployed `settings.json` after redeploy shows the orphan absent, per-event
   duplicates 0, and an `env`/`permissions` fingerprint equal to the Phase 1 baseline.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Unqualified `bash .claude/scripts/verify-deploy.sh` (the complete, un-narrowed aggregator) | This dispatch's own dispatch file carries a `## Batch Gate Deferral` directive naming this exact phase (`**Verification Tier**: full`) and directing it to discharge against the scoped `--only-gate 21,8` invocation instead, with the complete aggregator run once for the whole `/orchestrate` batch rather than once per task. Gates 21 and 8 are run at FULL depth within that scoped invocation (no `--skip-slow`, no suite sub-selection), satisfying this phase's own "neither may be narrowed" constraint on those two gates specifically. | `.dispatch/3.md`'s `## Batch Gate Deferral` section; `context/formats/plan-format.md`'s "Batch-aware deferral" subsection |
+| Gate 8 (`tests/run-all.sh`) showing FAIL inside the scoped run | `run-all.sh` itself reports `179 passed, 5 failed (5 expected, 0 NEW), 2 skipped, 186 total` — all five failing suites (`test-double-loading-check.sh`, `test-gate-cache-equivalence.sh`, `test-lint-unit-integration-boundary.sh`, `test-orchestrate-cycle-postflight.sh`, `test-verify-deploy-context-budget.sh`) are its own pre-existing, independently-tracked EXPECTED-failure baseline, none touching hook registrations, `merge.lua`, the identity module, or the lint this task changed; `0 NEW` is the mechanical confirmation that nothing this task did caused any of them. `verify-deploy.sh`'s gate wrapper treats ANY failing suite (expected or not) as a gate FAIL regardless of the expected-baseline distinction `run-all.sh` itself draws -- a pre-existing wrapper characteristic, not a regression this task introduced. | `/tmp` scratch log of the direct `bash agent-system/extensions/core/scripts/tests/run-all.sh` re-run; `test-lint-hook-registration-paths.sh` (this task's own suite) itself PASSES in that same run |
+
 ---
 
 ## Testing & Validation
 
-- [ ] Conformance corpus asserted identically on both sides of the identity definition, including
+- [x] Conformance corpus asserted identically on both sides of the identity definition, including
       a path outside `hooks/` (acceptance criterion 3).
-- [ ] Dedicated survival regression: a hand-written hook command survives a sweep byte-identical
+- [x] Dedicated survival regression: a hand-written hook command survives a sweep byte-identical
       (acceptance criterion 2).
-- [ ] Dedicated survival regression: a `~/`-anchored command survives a sweep byte-identical.
-- [ ] Undeclared-registration removal demonstrated against the real field file, not a synthetic
+- [x] Dedicated survival regression: a `~/`-anchored command survives a sweep byte-identical.
+- [x] Undeclared-registration removal demonstrated against the real field file, not a synthetic
       fixture (acceptance criterion 1).
-- [ ] Cross-matcher and cross-event removal each covered by their own spec.
-- [ ] `env` and `permissions` byte-identical across a sweep, asserted in specs and measured per
+- [x] Cross-matcher and cross-event removal each covered by their own spec.
+- [x] `env` and `permissions` byte-identical across a sweep, asserted in specs and measured per
       deploy (acceptance criterion 4).
-- [ ] Idempotence: a second sweep removes 0, on fixtures and on real deploys.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh` green.
-- [ ] `merge_spec.lua` and `manifest_spec.lua` green, with no pre-existing case newly red
+- [x] Idempotence: a second sweep removes 0, on fixtures and on real deploys.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh` green.
+- [x] `merge_spec.lua` and `manifest_spec.lua` green, with no pre-existing case newly red
       (acceptance criterion 5).
-- [ ] `bash .claude/scripts/verify-deploy.sh` green across the complete gate set.
+- [ ] `bash .claude/scripts/verify-deploy.sh` green across the complete gate set. *(deviation: deferred to the batch-level invocation per the dispatch's Batch Gate Deferral directive -- this task's own scoped discharge, `--only-gate 21,8` at full depth, is green modulo 5 pre-existing EXPECTED, 0-NEW failures in gate 8's run-all.sh; see Phase 8's Reasoned Exclusions)*
 
 ## Artifacts & Outputs
 
