@@ -125,7 +125,7 @@ next_project_number: 607
 
 ### Orchestrator
 
-402 [PLANNED] — Conclusion stage Step 4c allocates no task number and creates...
+402 [IMPLEMENTING] — Conclusion stage Step 4c allocates no task number and creates...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
@@ -9979,7 +9979,7 @@ NON-GOALS: no change to the fingerprint computation itself (`stat` vs `hash` mod
 
 ### 402. Conclusion stage Step 4c allocates no task number and creates no task directories
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 391, Task 400

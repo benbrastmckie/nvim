@@ -13,15 +13,18 @@ The stage proposes three channels of follow-on work, derived from evidence rathe
 from the orchestrator's own recollection of the run:
 
 - **(a) Direct fixes** to make now, executed by a dispatched implementation agent.
-- **(b) Agent-system changes**, routed to `meta-builder-agent` as a change request.
-- **(c) Follow-up tasks**, created as children of the task whose issue log raised them, via the
-  `parent_task` edge.
+- **(b) Agent-system changes**, recorded as evidence for a later, deliberate consumer — never
+  dispatched or executed by this stage.
+- **(c) Follow-up tasks**, recorded as evidence for the same deliberate consumer — never created
+  as task directories by this stage.
 
-Each channel fires **only** on that channel's own separate, explicit user approval. No channel
-may fire on another channel's approval, and none may fire without one. This invariant is the
-stage's load-bearing acceptance claim and is proven mechanically, not only stated in prose — see
-"The Approval Ledger" below and `scripts/orchestrate-conclusion-aggregate.sh`'s
-`--record-approval` / `--check-approval` pair.
+Only channel (a) executes anything. Channels (b) and (c) append their classified proposals,
+with citations, to the durable evidence store (see "The Executable Stage Body" below) and do
+nothing else — no dispatch, no task creation, no `specs/state.json` write. Channel (a) fires
+**only** on its own separate, explicit user approval, and no channel may fire on another
+channel's approval. This invariant is the stage's load-bearing acceptance claim and is proven
+mechanically, not only stated in prose — see "The Approval Ledger" below and
+`scripts/orchestrate-conclusion-aggregate.sh`'s `--record-approval` / `--check-approval` pair.
 
 This file's companion section, "## The Executable Stage Body" (added once the mechanical half of
 the stage exists), is the verbatim-executed procedure. This half — the derivation contract — is
@@ -232,27 +235,23 @@ truncation. Summarise `wins[]` for the report (never actioned).
 Carry `unknown_classes[]`, `implicit_open_count`, and `no_contribution_tasks[]` into the report
 as-is (Step 6).
 
-### Step 3 — Three independent gates
+### Step 3 — Channel (a)'s gate
 
-For every channel that ended up with at least one classified proposal, ask one `AskUserQuestion`
-per channel, batched into one relay call set (the same batching convention Move 4 already uses
-for its own `pending_ask_user[]` relay — never combined into a single multi-channel question).
-Each question presents that channel's own proposals and their citations only. Record each
-answer independently:
+Only channel (a) executes a consequence, so only channel (a) is gated by an `AskUserQuestion`.
+When channel (a) ended up with at least one classified proposal, ask one `AskUserQuestion`
+presenting its proposals and their citations only, and record the answer:
 
 ```bash
 bash .claude/scripts/orchestrate-conclusion-aggregate.sh --record-approval \
-  --session "$session_id" --channel a --answer yes   # or "no", per that channel's own answer
-bash .claude/scripts/orchestrate-conclusion-aggregate.sh --record-approval \
-  --session "$session_id" --channel b --answer no
-bash .claude/scripts/orchestrate-conclusion-aggregate.sh --record-approval \
-  --session "$session_id" --channel c --answer yes
+  --session "$session_id" --channel a --answer yes   # or "no", per the answer given
 ```
 
-A channel with zero classified proposals is never asked about and is skipped entirely (no
-ledger record, no execution step below). **No channel may fire on another channel's approval,
-and none may fire without one** — this is enforced mechanically by each execution step's own
-`--check-approval` gate below, not only by this prose.
+Channel (a) with zero classified proposals is never asked about and is skipped entirely (no
+ledger record, no Step 4a execution). **No channel may fire on another channel's approval, and
+channel (a) may not fire without its own recorded "yes"** — this is enforced mechanically by
+Step 4a's own `--check-approval` gate, not only by this prose. Channels (b) and (c) record their
+proposals as evidence (Steps 4b/4c below) regardless of any approval state — recording has no
+consequence to gate.
 
 ### Step 4a — Channel (a) execution: direct fixes
 
@@ -281,96 +280,65 @@ bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
 where `channel_a_fix_paths` is exactly the set of paths the dispatched agent actually touched for
 the approved fix list — never a wider pathspec.
 
-### Step 4b — Channel (b) execution: agent-system change
+### Step 4b — Channel (b) recording: agent-system change evidence
 
-Gate:
-
-```bash
-if bash .claude/scripts/orchestrate-conclusion-aggregate.sh --check-approval \
-     --session "$session_id" --channel b; then
-  # proceed with channel (b) below
-  :
-fi
-```
-
-Before dispatching, resolve `target_root` the same way `skill-meta` Section 1 does:
+No gate: recording has no consequence to approve. When channel (b) ended up with at least one
+classified proposal, append one `events-append.sh` line per proposal to the durable evidence
+store, then commit that file alone:
 
 ```bash
-GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"
-target_root="$GLOBAL_ROOT"
-mode_target="global"
-```
+bash .claude/scripts/events-append.sh \
+  --event-type conclusion_proposal_recorded --category milestone --session "$session_id" \
+  --message "conclusion channel (b) proposal: $class" \
+  --detail-json "$(jq -c -n \
+    --arg channel b --arg class "$class" --argjson citations "$citations_json" \
+    --argjson citations_remainder "$citations_remainder" --arg severity_max "$severity_max" \
+    --argjson suggested_channel_hints "$suggested_channel_hints_json" \
+    --arg orchestrator_channel b --arg override_rationale "$override_rationale_or_null" \
+    '{channel: $channel, class: $class, citations: $citations,
+      citations_remainder: $citations_remainder, severity_max: $severity_max,
+      suggested_channel_hints: $suggested_channel_hints, orchestrator_channel: $orchestrator_channel,
+      override_rationale: ($override_rationale | if . == "" then null else . end)}')"
 
-This resolution is always-global, with no `--local` branch: channel (b) has no local analogue,
-because filing an agent-system change request into whichever deploy-only repo `/orchestrate`
-happens to be running in is exactly the defect this resolution closes.
-
-Only when that gate passes: dispatch `meta-builder-agent` with
-`collected_answers.confirmed: true`, `target_root`, `mode_target: "global"`, and the approved
-change request assembled from that channel's proposals and citations. **Restate the anti-bypass
-constraint in the dispatch body itself**: that agent creates TASKS in `specs/`, never
-implementation, and never edits `.claude/**` or the source store directly — this stage hands it a
-change request and nothing more, exactly as `commands/meta.md` and `skills/skill-meta/SKILL.md`
-already require for every other caller. Note in the dispatch body that `meta-builder-agent` cannot
-call `AskUserQuestion` itself, which is precisely why this channel's approval gate lives at the
-lead level, before dispatch, not inside the agent.
-
-**Required path-qualification imperative in the dispatch body**, mirroring `skill-meta` Section
-4's wording: because Write/Edit tool path resolution is completely independent of shell cwd, the
-dispatch body MUST include an explicit, unambiguous instruction that every task-directory
-Write/Edit path be qualified by `target_root` (or be an absolute path) — never a bare `specs/...`
-relative path. For example: "All task-directory paths (TODO.md, state.json, task dirs) MUST be
-written as `{target_root}/specs/...`, never as a bare `specs/...` relative path."
-
-No stage-level commit follows this dispatch: `meta-builder-agent` commits its own created task(s)
-itself (its own Stage 6, via the same `git-commit-scoped.sh`) — see
-`context/standards/postflight-tool-restrictions.md`'s Conclusion Stage commit-surface table,
-channel (b) row.
-
-### Step 4c — Channel (c) execution: follow-up tasks as children
-
-Gate:
-
-```bash
-if bash .claude/scripts/orchestrate-conclusion-aggregate.sh --check-approval \
-     --session "$session_id" --channel c; then
-  # proceed with channel (c) below
-  :
-fi
-```
-
-Only when that gate passes: for each approved follow-up task,
-create it as a CHILD of its originating task, reusing the task-creation pattern already proven in
-`skills/skill-spawn/SKILL.md`'s Stage 11 (`state-write.sh` with `parent_task` set to the
-originating task number and `topic` inherited from the parent), then `manage-topics.sh set`
-(Stage 14a's pattern), then `generate-todo.sh`:
-
-```bash
-bash .claude/scripts/state-write.sh \
-  '.active_projects += [{
-    "project_number": $num, "project_name": $name, "status": "researched",
-    "task_type": $lang, "description": $desc, "effort": $effort,
-    "parent_task": $parent, "topic": $topic, "dependencies": [],
-    "created": $ts, "last_updated": $ts, "artifacts": []
-  }]' \
-  --session-id "$session_id" \
-  --argjson num "$new_task_num" --arg name "$task_slug" --arg desc "$task_desc" \
-  --arg effort "$task_effort" --arg lang "$task_lang" --argjson parent "$originating_task_number" \
-  --arg topic "$parent_topic" --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-
-bash .claude/scripts/manage-topics.sh set "$new_task_num" "$parent_topic" \
-  2>/dev/null || echo "Warning: manage-topics.sh set failed (non-fatal)" >&2
-
-bash .claude/scripts/generate-todo.sh
-```
-
-Commit `specs/state.json`, `specs/TODO.md`, and the new task directories:
-
-```bash
 bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
-  --message "orchestrate conclusion: channel (c) follow-up tasks" \
-  -- specs/state.json specs/TODO.md "${new_task_dir_paths[@]}"
+  --message "orchestrate conclusion: channel (b) proposals recorded" -- specs/events.jsonl
 ```
+
+A channel (b) with zero classified proposals is skipped entirely — no event line, no commit.
+`override_rationale` is non-null only when the orchestrator's channel judgment visibly overrode
+a proposal's `suggested_channel_hints` (the Hint-Versus-Decision Rule above). This evidence is
+consumed later, deliberately and in batches, by `/distill --meta` — never dispatched or acted on
+by this stage itself.
+
+### Step 4c — Channel (c) recording: follow-up-task evidence
+
+No gate: recording has no consequence to approve. When channel (c) ended up with at least one
+classified proposal, append one `events-append.sh` line per proposal, in the same shape as Step
+4b but with `channel: "c"` (no `--channel` flag — the aggregator's ledger channel letter is
+unrelated to this recording call), then commit that file alone:
+
+```bash
+bash .claude/scripts/events-append.sh \
+  --event-type conclusion_proposal_recorded --category milestone --session "$session_id" \
+  --message "conclusion channel (c) proposal: $class" \
+  --detail-json "$(jq -c -n \
+    --arg channel c --arg class "$class" --argjson citations "$citations_json" \
+    --argjson citations_remainder "$citations_remainder" --arg severity_max "$severity_max" \
+    --argjson suggested_channel_hints "$suggested_channel_hints_json" \
+    --arg orchestrator_channel c --arg override_rationale "$override_rationale_or_null" \
+    '{channel: $channel, class: $class, citations: $citations,
+      citations_remainder: $citations_remainder, severity_max: $severity_max,
+      suggested_channel_hints: $suggested_channel_hints, orchestrator_channel: $orchestrator_channel,
+      override_rationale: ($override_rationale | if . == "" then null else . end)}')"
+
+bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
+  --message "orchestrate conclusion: channel (c) proposals recorded" -- specs/events.jsonl
+```
+
+A channel (c) with zero classified proposals is skipped entirely — no event line, no commit. No
+task is created, no task directory is populated, and `specs/state.json` is not written. This
+evidence is consumed later, deliberately and in batches, by `/distill --meta` — never created as
+a child task by this stage itself.
 
 ### Step 5 — Roadmap update
 
@@ -411,8 +379,10 @@ render shape, including the no-suggestible-batch and colliding-pair-sequence cas
 
 ### Step 6 — Report
 
-Emit the conclusion report: the wins summary, each channel's outcome (approved-and-executed,
-declined, or not-asked-because-empty) with its citations, the unknown-class tally, the
+Emit the conclusion report: the wins summary, channel (a)'s outcome (approved-and-executed,
+declined, or not-asked-because-empty) with its citations, channels (b) and (c)'s outcome
+(recorded-to-`specs/events.jsonl` with a proposal count, or not-recorded-because-empty) naming
+`/distill --meta` as the command that will consume it, the unknown-class tally, the
 zero-contribution dispatch list (`no_contribution_tasks[]`, cross-referenced with
 `context/contracts/phase-closure.md`'s mandatory-attempt requirement — a listed task either
 genuinely had nothing to record, or skipped the attestation). Render per

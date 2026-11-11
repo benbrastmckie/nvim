@@ -1,7 +1,7 @@
 # Implementation Plan: Task #402
 
 - **Task**: 402 - Conclusion channels (b) and (c) become evidence-only
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: 391, 400 (both archived/landed — confirmed absent from `specs/state.json`'s `active_projects`)
 - **Research Inputs**: specs/402_conclusion_channels_become_evidence_only/reports/01_conclusion-channels-evidence-only.md
@@ -171,7 +171,7 @@ phase's content depends on the text the previous phase actually wrote.
 
 ---
 
-### Phase 1: Rewrite channels (b) and (c) as evidence-recording, with their tests [NOT STARTED]
+### Phase 1: Rewrite channels (b) and (c) as evidence-recording, with their tests [COMPLETED]
 
 **Goal**: `context/contracts/conclusion-stage.md` describes channels (b) and (c) as recording
 evidence and nothing else, the deleted task-creation and dispatch bodies are gone, and the two
@@ -182,47 +182,47 @@ the *literal text* of Steps 4b/4c; rewriting the contract without them leaves th
 covering suite red, which is not a committable intermediate state.
 
 **Tasks**:
-- [ ] Re-read `context/contracts/conclusion-stage.md` immediately before editing (concurrent
+- [x] Re-read `context/contracts/conclusion-stage.md` immediately before editing (concurrent
       siblings are dispatched this cycle; neither declares this file, but re-read regardless per
-      the territory contract).
-- [ ] Rewrite the Overview's three-channel bullet list: (b) and (c) are described as recording
-      classified proposals as evidence, naming the store; only (a) is described as executing.
-- [ ] Rewrite the Overview's approval paragraph so the "each channel fires only on its own
+      the territory contract). *(completed)*
+- [x] Rewrite the Overview's three-channel bullet list: (b) and (c) are described as recording
+      classified proposals as evidence, naming the store; only (a) is described as executing. *(completed)*
+- [x] Rewrite the Overview's approval paragraph so the "each channel fires only on its own
       approval" invariant is stated as governing execution, and names channel (a) as the only
-      channel that executes — without weakening or deleting the invariant itself.
-- [ ] Rewrite Step 3 from "Three independent gates" to a single channel-(a) gate (D1), keeping
+      channel that executes — without weakening or deleting the invariant itself. *(completed)*
+- [x] Rewrite Step 3 from "Three independent gates" to a single channel-(a) gate (D1), keeping
       the `--record-approval` call shape for channel (a) verbatim and keeping the sentence that
-      states no channel fires on another's approval.
-- [ ] Rewrite Step 4b: delete the `--check-approval --channel b` gate block, the
+      states no channel fires on another's approval. *(completed)*
+- [x] Rewrite Step 4b: delete the `--check-approval --channel b` gate block, the
       `GLOBAL_ROOT`/`target_root`/`mode_target` resolution block, the entire `meta-builder-agent`
       dispatch body, the path-qualification imperative paragraph, and the "no stage-level commit"
       paragraph. Replace with: skip when the channel has zero classified proposals; otherwise one
-      `events-append.sh` call per proposal, plus one narrow `specs/events.jsonl` commit (D4).
-- [ ] Rewrite Step 4c: delete the `--check-approval --channel c` gate block, the entire
+      `events-append.sh` call per proposal, plus one narrow `specs/events.jsonl` commit (D4). *(completed)*
+- [x] Rewrite Step 4c: delete the `--check-approval --channel c` gate block, the entire
       `state-write.sh` / `manage-topics.sh set` / `generate-todo.sh` block (with its unbound
       `$new_task_num`), and the three-path commit block (with its unpopulated
       `new_task_dir_paths`). Replace with the same recording shape as 4b, with `--channel`-free
-      wording and its own narrow `specs/events.jsonl` commit.
-- [ ] Write the `events-append.sh` invocation shape once, with an illustrative `--detail-json`
+      wording and its own narrow `specs/events.jsonl` commit. *(completed)*
+- [x] Write the `events-append.sh` invocation shape once, with an illustrative `--detail-json`
       carrying `channel`, `class`, `citations[]` of `{task, entry_id}`, `citations_remainder`,
       `severity_max`, `suggested_channel_hints[]`, `orchestrator_channel`, and
       `override_rationale` (non-null only on a visible override, per the Hint-Versus-Decision
       Rule). Use `--event-type conclusion_proposal_recorded --category milestone` and omit
-      `--task` (D3).
-- [ ] Update Step 6's report sentence: each channel's outcome is no longer
+      `--task` (D3). *(completed)*
+- [x] Update Step 6's report sentence: each channel's outcome is no longer
       "approved-and-executed / declined / not-asked-because-empty" for (b) and (c); it is
-      recorded-or-not-recorded, with (a) keeping the three-way vocabulary.
-- [ ] Rewrite test case (j) in `scripts/tests/test-orchestrate-conclusion-aggregate.sh`: keep the
+      recorded-or-not-recorded, with (a) keeping the three-way vocabulary. *(completed)*
+- [x] Rewrite test case (j) in `scripts/tests/test-orchestrate-conclusion-aggregate.sh`: keep the
       `meta-builder-agent.md` FORBIDDEN-clause half unchanged, and invert the `conclusion-stage.md`
       half into an explicit ABSENCE check — the contract must no longer contain
-      `collected_answers.confirmed` or a channel-(b) `creates TASKS` dispatch.
-- [ ] Rewrite test case (k): assert Step 4a alone still carries `--check-approval` with
+      `collected_answers.confirmed` or a channel-(b) `creates TASKS` dispatch. *(completed)*
+- [x] Rewrite test case (k): assert Step 4a alone still carries `--check-approval` with
       `--channel a` and no other letter, and assert Steps 4b and 4c reference `events-append.sh`
-      and contain no `--check-approval` at all.
-- [ ] Confirm case (g) (per-channel approval isolation, ACCEPTANCE-CRITICAL) and case (i)
+      and contain no `--check-approval` at all. *(completed)*
+- [x] Confirm case (g) (per-channel approval isolation, ACCEPTANCE-CRITICAL) and case (i)
       (commit-scope fixture) are left unedited — both exercise the script and git-commit
-      mechanics, not the contract's prose, and neither premise becomes false.
-- [ ] Run the covering suites and confirm green before committing.
+      mechanics, not the contract's prose, and neither premise becomes false. *(completed)*
+- [x] Run the covering suites and confirm green before committing. *(completed)*
 
 **Timing**: 1.5 hours
 

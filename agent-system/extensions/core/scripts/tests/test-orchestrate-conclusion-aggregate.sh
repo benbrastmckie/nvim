@@ -375,9 +375,9 @@ SID="sess_test_$$_aggregate"
 
 # =====================================================================================
 # Case (j) [Phase 9, anti-bypass fixture]: meta-builder-agent.md's FORBIDDEN list still names
-# its task-creation-only and no-AskUserQuestion constraints, AND the channel (b) step in
-# conclusion-stage.md restates the task-creation-only constraint and passes
-# collected_answers.confirmed.
+# its task-creation-only and no-AskUserQuestion constraints (unchanged), AND conclusion-stage.md
+# no longer contains the deleted channel-(b) dispatch body: no `collected_answers.confirmed` and
+# no channel-(b) "creates TASKS" dispatch wording anywhere in the file.
 # =====================================================================================
 {
   mb_agent="$REPO_ROOT/agent-system/extensions/core/agents/meta-builder-agent.md"
@@ -391,12 +391,12 @@ SID="sess_test_$$_aggregate"
       && grep -qE 'Call.*AskUserQuestion' "$mb_agent"; then
       mb_ok=true
     fi
-    if grep -qi 'creates TASKS' "$concl" \
-      && grep -q 'collected_answers.confirmed' "$concl"; then
+    if ! grep -qi 'creates TASKS' "$concl" \
+      && ! grep -q 'collected_answers.confirmed' "$concl"; then
       concl_ok=true
     fi
     if [ "$mb_ok" = "true" ] && [ "$concl_ok" = "true" ]; then
-      common_test_pass "(j) anti-bypass: meta-builder-agent.md's FORBIDDEN clauses and conclusion-stage.md's channel (b) restatement both still hold"
+      common_test_pass "(j) anti-bypass: meta-builder-agent.md's FORBIDDEN clauses still hold, and conclusion-stage.md no longer contains the deleted channel-(b) dispatch body"
     else
       common_test_fail "(j) anti-bypass: mb_ok=$mb_ok concl_ok=$concl_ok"
     fi
@@ -404,17 +404,17 @@ SID="sess_test_$$_aggregate"
 }
 
 # =====================================================================================
-# Case (k) [Phase 9, gate-intactness fixture]: the three channels' execution steps in
-# conclusion-stage.md each reference --check-approval with their OWN channel letter and no
-# other's -- the prose half of the invariant case (g) above proves mechanically.
+# Case (k) [Phase 9, gate-intactness fixture]: Step 4a in conclusion-stage.md still references
+# --check-approval with channel a and no other letter (the prose half of the invariant case (g)
+# above proves mechanically), AND Steps 4b/4c reference events-append.sh and contain no
+# --check-approval at all (they record evidence unconditionally, never gated).
 # =====================================================================================
 {
   concl="$REPO_ROOT/agent-system/extensions/core/context/contracts/conclusion-stage.md"
   if [[ ! -f "$concl" ]]; then
     common_test_fail "(k) gate-intactness: $concl not found"
   else
-    # Each step's gate block spans multiple lines (the `--check-approval \` continuation line
-    # and the `--channel X` line are separate) -- check membership across the captured block,
+    # Each step's block spans multiple lines -- check membership across the captured block,
     # never a single-line literal match.
     step_4a=$(awk '/^### Step 4a/{flag=1} /^### Step 4b/{flag=0} flag' "$concl")
     step_4b=$(awk '/^### Step 4b/{flag=1} /^### Step 4c/{flag=0} flag' "$concl")
@@ -426,19 +426,17 @@ SID="sess_test_$$_aggregate"
       && ! echo "$step_4a" | grep -qE -- '--channel (b|c)\b'; then
       a_ok=true
     fi
-    if echo "$step_4b" | grep -q -- "--check-approval" \
-      && echo "$step_4b" | grep -qE -- '--channel b\b' \
-      && ! echo "$step_4b" | grep -qE -- '--channel (a|c)\b'; then
+    if echo "$step_4b" | grep -q -- "events-append.sh" \
+      && ! echo "$step_4b" | grep -q -- "--check-approval"; then
       b_ok=true
     fi
-    if echo "$step_4c" | grep -q -- "--check-approval" \
-      && echo "$step_4c" | grep -qE -- '--channel c\b' \
-      && ! echo "$step_4c" | grep -qE -- '--channel (a|b)\b'; then
+    if echo "$step_4c" | grep -q -- "events-append.sh" \
+      && ! echo "$step_4c" | grep -q -- "--check-approval"; then
       c_ok=true
     fi
 
     if [ "$a_ok" = "true" ] && [ "$b_ok" = "true" ] && [ "$c_ok" = "true" ]; then
-      common_test_pass "(k) gate-intactness: each channel's execution step references --check-approval with its own channel letter only"
+      common_test_pass "(k) gate-intactness: Step 4a references --check-approval with channel a only; Steps 4b/4c reference events-append.sh and contain no --check-approval"
     else
       common_test_fail "(k) gate-intactness: a_ok=$a_ok b_ok=$b_ok c_ok=$c_ok"
     fi
