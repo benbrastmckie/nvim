@@ -73,10 +73,10 @@ under `--auto`). Workflow:
    overlap fallback; a cluster needs 3+ occurrences at the same checkpoint/event_type to cross
    the three-strikes threshold
 5. Run the mandatory reachability probe -- one query known to match an existing `[repo:nvim]`
-   knowledge object -- before any classification. `sapience-retrieve.sh` exits 1 with empty
-   stdout on both a zero-hit result and a transport failure, so without this probe the two are
-   indistinguishable; on probe failure, revise announces the degraded path and classifies
-   nothing as a gap
+   knowledge object -- before any classification. `sapience-retrieve.sh` splits its failure exit
+   code (1 benign no-match, 2 genuine transport/HTTP failure -- see the script's own header),
+   but both are non-zero and the probe treats either as a failure uniformly; on probe failure,
+   revise announces the degraded path and classifies nothing as a gap
 6. Query the hosted store once per surviving cluster via `sapience-retrieve.sh`; classify as
    corroborated / contradicted / gap
 7. Interactive selection via AskUserQuestion -- corroborated clusters are noted only;

@@ -16,10 +16,14 @@ the never-auto-apply rule -- not restated here. Distinct from `--meta`'s own
 
 ## Edge Case Checks
 
-**Reachability probe (mandatory, before any classification).** `sapience-retrieve.sh` exits 1
-with empty stdout on both a zero-hit result and a transport or credential failure -- the two are
-indistinguishable without a prior probe. Before classifying any cluster, run one probe query
-whose keywords are known to match at least one existing `[repo:nvim]`-tagged knowledge object:
+**Reachability probe (mandatory, before any classification).** `sapience-retrieve.sh` now splits
+its failure exit code: 1 for a BENIGN no-match (no token, no keywords, a zero-hit result), 2 for
+a GENUINE transport/HTTP failure (see the script's own header). Both are still non-zero, so the
+probe-failure branch below treats them identically and this submode's behavior is unchanged; a
+caller that wants to distinguish the two explicitly may check for exit code 2 rather than
+treating every non-zero exit as a single undifferentiated case. Before classifying any cluster,
+run one probe query whose keywords are known to match at least one existing `[repo:nvim]`-tagged
+knowledge object:
 
 ```
 1. probe=$(bash .claude/scripts/sapience-retrieve.sh "sapience per-repo scoping" meta 2>/dev/null)
