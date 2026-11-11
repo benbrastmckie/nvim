@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Lint skeleton, layout detection, Run-line parse, and findings (c), (d), (f)",
+  "started_at": "2026-11-11T21:40:00Z",
+  "last_updated": "2026-11-11T21:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create script with header (advisory contract, exit-0 divergence, validator-never-proposer, absent-scope posture, finding-f-whole-file note)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"]},
+    {"id": 2, "description": "Shell contract (set -euo pipefail), CLI parsing, exit codes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"], "note": "set -euo pipefail; discovered and guarded the read -d '' EOF-returns-1 quirk in file-scope-overlap.sh via the same if-condition sourcing idiom task-lock.sh/orchestrate-batch-admit.sh use"},
+    {"id": 3, "description": "Layout sniff (classic/stage/unknown) transcribed from roadmap-format.md prose", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"], "note": "Verified against live corpus (classic) and a hand-built stage fixture"},
+    {"id": 4, "description": "Extract authored batch block, parse Run lines, stop at coverage appendix header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"], "note": "Confirmed: 11 authored lines parsed, 9 generated coverage-appendix lines correctly excluded"},
+    {"id": 5, "description": "Finding (c): batch exceeds MAX_TASKS=8", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"]},
+    {"id": 6, "description": "Finding (d): cited task terminal or nonexistent via task_lookup_entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"], "note": "Live run against specs/ROADMAP.md correctly flagged Run 1's now-completed tasks (369/391/402/528/532/507) -- a real, current transient-staleness signal, not a bug"},
+    {"id": 7, "description": "Finding (f): unresolvable cited path, with both false-positive guards", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"], "note": "Iterated past the two named guards to add multi-root resolution (.claude/, agent-system/extensions/), a whitespace-is-not-a-path guard, and an ellipsis-elision guard after live corpus testing surfaced 40 findings, most false; reduced to 14, of which 2 are a genuine already-known-defect true positive and the rest are a documented residual-noise class (recorded in the script header) outside the two guards the task record names"},
+    {"id": 8, "description": "Render findings grouped by Run line with trailing summary count", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
