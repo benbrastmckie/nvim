@@ -31,7 +31,7 @@ FAILED=0
 
 
 # --- Loud-skip discipline: verify every required script exists before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh lib/source-store-path-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh commit-source-store-path.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh lib/source-store-path-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -1383,6 +1383,89 @@ if echo "$out32" | grep -qF "source store" || echo "$out32" | grep -qF "lies out
   common_test_fail "Case 32: no source-store/out-of-repository classification warning must fire for an owned extension; got out=$out32"
 else
   common_test_pass "Case 32: no classification warning fired (inertness)"
+fi
+
+# =====================================================================
+# Case 33 (Phase 4 end-to-end landing): against the disjoint fixture, the classified path lands
+# in the SECOND repository (not just dropped from this one), and the notice reports the commit
+# with a resulting revision.
+# =====================================================================
+common_test_info "=== Case 33: Phase 4 end-to-end -- the classified path actually lands in the second repository ==="
+
+repo33="$(build_repo)"
+read -r source_repo33 ssp33 < <(build_source_store_repo "$repo33")
+write_progress "$repo33" 1 "[{\"id\":1,\"status\":\"done\",\"files_touched\":[\"src/a.txt\",\"${ssp33}\"]}]"
+echo "mod a" > "$repo33/src/a.txt"
+# Simulate the actual edit this phase is committing: modify doc.md IN THE SOURCE REPOSITORY'S
+# OWN WORKING TREE (not the consumer's) -- a files_touched entry is only genuinely committable
+# in its own repository when that repository's own copy is actually dirty.
+echo "edited by this phase" > "$source_repo33/agent-system/extensions/core/doc.md"
+
+before_src_head33="$(git -C "$source_repo33" rev-parse HEAD)"
+out33="$(run_phase_commit "$repo33" --task 999 --project probe --phase 1 --message "case33" --session sess_33 2>&1)"
+rc33=$?
+after_src_head33="$(git -C "$source_repo33" rev-parse HEAD)"
+
+if [ "$rc33" -eq 0 ] && [ "$after_src_head33" != "$before_src_head33" ]; then
+  common_test_pass "Case 33: the second repository's HEAD advanced -- the classified path actually landed there"
+else
+  common_test_fail "Case 33: expected the second repository's HEAD to advance; before=$before_src_head33 after=$after_src_head33 rc=$rc33 out=$out33"
+fi
+
+landed33="$(git -C "$source_repo33" show --name-only --format= HEAD)"
+if echo "$landed33" | grep -qF "doc.md"; then
+  common_test_pass "Case 33: doc.md is present in the second repository's new commit"
+else
+  common_test_fail "Case 33: expected doc.md in the second repository's new commit; got '$landed33'"
+fi
+
+if echo "$out33" | grep -qF "second-repository commit SUCCEEDED" && echo "$out33" | grep -qF "$after_src_head33"; then
+  common_test_pass "Case 33: the notice reports the commit with the resulting revision"
+else
+  common_test_fail "Case 33: expected a success notice naming revision $after_src_head33; got out=$out33"
+fi
+
+if [ -f "$repo33/specs/999_probe/issues.jsonl" ] && grep -q '"kind":"win"' "$repo33/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 33: the win is recorded in the issue log"
+else
+  common_test_fail "Case 33: expected a kind:win issue record; got $(cat "$repo33/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+# =====================================================================
+# Case 34 (Phase 4 fail-open): the second repository is made un-committable (a planted
+# index.lock) -- THIS repository's commit still succeeds with its own unchanged exit code, and
+# the notice reports the second-repository failure with the manual command.
+# =====================================================================
+common_test_info "=== Case 34: Phase 4 fail-open -- an un-committable second repository never affects this repository's own commit ==="
+
+repo34="$(build_repo)"
+read -r source_repo34 ssp34 < <(build_source_store_repo "$repo34")
+write_progress "$repo34" 1 "[{\"id\":1,\"status\":\"done\",\"files_touched\":[\"src/a.txt\",\"${ssp34}\"]}]"
+echo "mod a" > "$repo34/src/a.txt"
+touch "$source_repo34/.git/index.lock"
+
+before34=$(git -C "$repo34" rev-list --count HEAD)
+out34="$(run_phase_commit "$repo34" --task 999 --project probe --phase 1 --message "case34" --session sess_34 2>&1)"
+rc34=$?
+after34=$(git -C "$repo34" rev-list --count HEAD)
+rm -f "$source_repo34/.git/index.lock"
+
+if [ "$rc34" -eq 0 ] && [ "$after34" -eq $((before34 + 1)) ]; then
+  common_test_pass "Case 34: this repository's own commit still succeeds with its own unchanged exit code"
+else
+  common_test_fail "Case 34: expected rc=0 and HEAD+1 in this repository regardless of the second repository's index.lock; got rc=$rc34 before=$before34 after=$after34 out=$out34"
+fi
+
+if echo "$out34" | grep -qF "second-repository commit FAILED" && echo "$out34" | grep -qF "$source_repo34" && echo "$out34" | grep -qF "Manual recovery"; then
+  common_test_pass "Case 34: the notice reports the second-repository failure with the repository name and the manual recovery command"
+else
+  common_test_fail "Case 34: expected a failure notice naming '$source_repo34' and a manual recovery command; got out=$out34"
+fi
+
+if [ -f "$repo34/specs/999_probe/issues.jsonl" ] && grep -q "source store excursion" "$repo34/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 34: the failure is recorded in the issue log"
+else
+  common_test_fail "Case 34: expected a source-store-excursion issue record for the failed second-repository commit; got $(cat "$repo34/specs/999_probe/issues.jsonl" 2>/dev/null)"
 fi
 
 # task-ref-ok:end

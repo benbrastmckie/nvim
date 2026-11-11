@@ -157,6 +157,26 @@
 # malformed optional input; see context/standards/git-staging-scope.md's settled fail-safe
 # direction.
 #
+# SECOND-REPOSITORY COMMIT (design option (b): the sanctioned route for a SOURCE_STORE path)
+# ----------------------------------------------------------------------------------------------
+# Runs immediately AFTER this script's own `git-commit-scoped.sh` invocation returns, once per
+# `source_store_commits` entry the Repository Classification step above recorded. Invokes
+# `commit-source-store-path.sh <source_toplevel> <rel_path> <message> <session_id>`, captures its
+# exit code and output, and FAILS OPEN UNCONDITIONALLY: the result never propagates into this
+# script's own exit code (0-6, documented below), never retries, and never widens into a second
+# attempt with a different pathspec. Three outcomes, each reported and each recorded
+# (`issue-record.sh`, win or loss alike) -- the Phase 3 drop warning's own repository-naming
+# notice is made unconditional and outcome-aware by these three branches:
+#   exit 0  -- committed. Named with the resulting revision (`kind: win`, severity `none`).
+#   exit 1  -- nothing to commit there (the path may already be landed). Named, not recorded as
+#              an issue (a benign, unremarkable outcome).
+#   other   -- the second-repository commit did NOT happen. Named with the reason
+#              `commit-source-store-path.sh` itself already printed, plus the exact manual
+#              recovery command, and recorded (`kind: issue`, severity `minor`) for visibility.
+# `commit-source-store-path.sh`'s own exit-code vocabulary (0/1/2-9) is DISTINCT from, and never
+# collides with, this script's own (0-6) -- the two are never compared or forwarded to each
+# other, only inspected by this wiring's own three-way case split above.
+#
 # EXIT-CODE MAPPING
 # ------------------
 #   0-5  Passed through verbatim from git-commit-scoped.sh's own exit-code contract (see that
@@ -202,9 +222,10 @@
 #   SOURCE_STORE: names the resolved extension, the source repository's toplevel, and the path's
 #     location inside it. Recorded under `issue-record.sh --class "source store excursion"` (a
 #     class distinct from the Containment Self-Check's own "scope excursion"), with its own
-#     `--what-happened` wording so the two causes are separable in the issue log. Phase 4 wires a
-#     fail-open attempt to commit this path in its OWN repository immediately after this script's
-#     own commit returns -- see that phase's own header subsection in this file once added.
+#     `--what-happened` wording so the two causes are separable in the issue log. A fail-open
+#     attempt to commit this path in its OWN repository runs immediately after this script's own
+#     commit returns, via `commit-source-store-path.sh` -- see the "SECOND-REPOSITORY COMMIT"
+#     subsection below for the wiring's own exit-handling contract.
 #   OUT_OF_REPO (no extension claims it): names the resolved parent directory and states plainly
 #     that the path lies outside this repository. Recorded under the SAME "source store
 #     excursion" class (both shapes share "this repository cannot hold it at all", distinct from
@@ -683,6 +704,49 @@ bash "${SCRIPT_DIR}/git-commit-scoped.sh" \
   -- "${stage_paths[@]}"
 commit_exit=$?
 set -e
+
+# --- Second-repository commit for every SOURCE_STORE-classified path (see "REPOSITORY
+# CLASSIFICATION" header subsection). Invoked once per source_store_commits entry, AFTER this
+# script's own commit above has already returned, so a second-repository failure can never
+# affect this repository's own commit or exit code. FAIL-OPEN UNCONDITIONALLY: the result is
+# captured, never propagated -- this script's own exit-code vocabulary (0-6) is unchanged by
+# this block, matching commit-source-store-path.sh's own documented "no caller may treat a
+# non-zero result as fatal" contract. The Phase 3 drop warning above is made outcome-aware here:
+# it now also states whether the second-repository commit succeeded (naming the resulting
+# revision) or did not (naming why and the exact manual command, already printed by
+# commit-source-store-path.sh itself on stderr). Each outcome is additionally recorded via a
+# non-fatal issue-record.sh call, win or loss alike. ---
+if [ "${#source_store_commits[@]}" -gt 0 ] && [ -x "${SCRIPT_DIR}/commit-source-store-path.sh" ]; then
+  for _ssc_record in "${source_store_commits[@]}"; do
+    IFS=$'\t' read -r _ssc_ext _ssc_toplevel _ssc_rel _ssc_orig <<< "$_ssc_record"
+    set +e
+    _ssc_out="$(bash "${SCRIPT_DIR}/commit-source-store-path.sh" "$_ssc_toplevel" "$_ssc_rel" "$message" "$session_id" 2>&1)"
+    _ssc_rc=$?
+    set -e
+    case "$_ssc_rc" in
+      0)
+        _ssc_sha="$(echo "$_ssc_out" | tail -1)"
+        warn "second-repository commit SUCCEEDED for '${_ssc_orig}' (extension '${_ssc_ext}') in ${_ssc_toplevel} at revision ${_ssc_sha}"
+        bash "${SCRIPT_DIR}/issue-record.sh" --task "$task_number" --kind win \
+          --class "source store excursion" --severity none \
+          --what-happened "commit-source-store-path.sh committed '${_ssc_orig}' in extension '${_ssc_ext}'s source store (${_ssc_toplevel}) at revision ${_ssc_sha}." \
+          --phase implement \
+          >/dev/null 2>&1 || warn "issue-record.sh call failed (non-fatal)"
+        ;;
+      1)
+        warn "second-repository commit for '${_ssc_orig}' (extension '${_ssc_ext}') found nothing to commit in ${_ssc_toplevel} -- it may already be landed there"
+        ;;
+      *)
+        warn "second-repository commit FAILED for '${_ssc_orig}' (extension '${_ssc_ext}') in ${_ssc_toplevel} (exit ${_ssc_rc}) -- it was NOT committed there. Run it by hand: bash '${SCRIPT_DIR}/commit-source-store-path.sh' '${_ssc_toplevel}' '${_ssc_rel}' '<message>' '${session_id}'. Detail: ${_ssc_out}"
+        bash "${SCRIPT_DIR}/issue-record.sh" --task "$task_number" --kind issue \
+          --class "source store excursion" --severity minor \
+          --what-happened "commit-source-store-path.sh did NOT commit '${_ssc_orig}' in extension '${_ssc_ext}'s source store (${_ssc_toplevel}): exit ${_ssc_rc}. Manual follow-up required." \
+          --phase implement \
+          >/dev/null 2>&1 || warn "issue-record.sh call failed (non-fatal)"
+        ;;
+    esac
+  done
+fi
 
 # --- Post-commit completeness check ---
 if $run_completeness_check; then

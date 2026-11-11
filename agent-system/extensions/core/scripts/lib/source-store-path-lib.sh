@@ -190,33 +190,40 @@ source_store_classify() {
       [ -n "$source_rel" ] || continue
 
       # Relative-shape attribution: the tested path (as a string, relative to repo_root) equals
-      # source_rel or is prefixed by "source_rel/".
+      # source_rel or is prefixed by "source_rel/". The emitted fourth field is the path relative
+      # to source_toplevel (the documented contract), which -- precisely because source_rel is
+      # ITSELF already expressed relative to source_toplevel -- is the tested path's own string,
+      # UNCHANGED (never stripped down to a sub-path of source_dir): the universal
+      # "agent-system/extensions/<name>/..." spelling convention is simultaneously valid relative
+      # to the consumer's root (what file_scope declares) and relative to source_toplevel (what
+      # commit-source-store-path.sh needs to `git add` inside the second repository), because the
+      # source repository's own on-disk layout mirrors the same convention at its own root.
       case "$path" in
-        "$source_rel")
-          echo "SOURCE_STORE"$'\t'"$name"$'\t'"$source_toplevel"$'\t'""
-          return 0
-          ;;
-        "$source_rel"/*)
-          echo "SOURCE_STORE"$'\t'"$name"$'\t'"$source_toplevel"$'\t'"${path#"$source_rel"/}"
+        "$source_rel"|"$source_rel"/*)
+          echo "SOURCE_STORE"$'\t'"$name"$'\t'"$source_toplevel"$'\t'"$path"
           return 0
           ;;
       esac
 
-      # Absolute-shape attribution: the tested path's absolute resolution lies under source_dir.
+      # Absolute-shape attribution: the tested path's absolute resolution lies under source_dir
+      # (or equals it). The emitted fourth field is the FULL resolved path (not just its parent)
+      # re-expressed relative to source_toplevel -- the same "relative to source_toplevel"
+      # contract the relative-shape branch above honors, computed directly via realpath here
+      # since there is no original relative string to reuse verbatim.
       if [ -n "$path_abs_dir" ]; then
-        case "$path_abs_dir" in
-          "$source_dir_canon")
-            local base_name
-            base_name="$(basename -- "$path")"
-            echo "SOURCE_STORE"$'\t'"$name"$'\t'"$source_toplevel"$'\t'"$base_name"
-            return 0
-            ;;
-          "$source_dir_canon"/*)
-            local rel_dir rel_full base_name
-            rel_dir="${path_abs_dir#"$source_dir_canon"/}"
-            base_name="$(basename -- "$path")"
-            rel_full="${rel_dir}/${base_name}"
-            echo "SOURCE_STORE"$'\t'"$name"$'\t'"$source_toplevel"$'\t'"$rel_full"
+        local path_abs
+        if [[ "$path" = /* ]]; then
+          path_abs="$path"
+        else
+          path_abs="${repo_root%/}/${path}"
+        fi
+        path_abs="$(_ssp_canon "$path_abs")"
+        case "$path_abs" in
+          "$source_dir_canon"|"$source_dir_canon"/*)
+            local rel_to_toplevel
+            rel_to_toplevel="$(realpath -m --relative-to="$source_toplevel" -- "$path_abs" 2>/dev/null)"
+            [ -n "$rel_to_toplevel" ] || continue
+            echo "SOURCE_STORE"$'\t'"$name"$'\t'"$source_toplevel"$'\t'"$rel_to_toplevel"
             return 0
             ;;
         esac

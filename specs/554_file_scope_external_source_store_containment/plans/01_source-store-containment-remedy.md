@@ -445,7 +445,7 @@ surveyed callers for.
 
 --- *(completed)*
 
-### Phase 4: Commit a Source-Store Path in Its Own Repository [NOT STARTED]
+### Phase 4: Commit a Source-Store Path in Its Own Repository [COMPLETED]
 
 **Goal**: A classified source-store path is committed in its own repository by a sanctioned,
 single-pathspec mechanism, so the deliverable's landing no longer depends on the dispatched agent
@@ -453,37 +453,37 @@ noticing. Every refusal and every failure falls back to the repository-naming no
 plus the exact manual command, and never touches this repository's commit or exit code.
 
 **Tasks**:
-- [ ] Create `scripts/commit-source-store-path.sh` taking the target repository root, the path
-      relative to it, a message, and a session id, and committing exactly that one path there.
-- [ ] Stage with one explicit pathspec and nothing else. Never a directory, never a glob, never
+- [x] Create `scripts/commit-source-store-path.sh` taking the target repository root, the path
+      relative to it, a message, and a session id, and committing exactly that one path there. *(completed)*
+- [x] Stage with one explicit pathspec and nothing else. Never a directory, never a glob, never
       `-A`, never `.`, never `-am` — the same under-stage-never-over-stage direction this
       repository's own staging contract settles, applied unchanged to the second repository. Do not
       run any generator and do not stage any file the script was not handed; a whole-file or
-      directory add there would sweep in a concurrent writer's uncommitted rows.
-- [ ] Refuse up front, before touching the index, on: a target root equal to this repository's root
+      directory add there would sweep in a concurrent writer's uncommitted rows. *(completed)*
+- [x] Refuse up front, before touching the index, on: a target root equal to this repository's root
       (not an out-of-repository case at all); a target that is not a git working tree; a detached
       HEAD; an in-progress merge, rebase, cherry-pick, or bisect; an existing `index.lock`; a
       missing target file; or an empty diff for that one path. Each refusal names the reason and the
-      exact `git -C <root> add -- <relpath>` plus commit commands to run by hand.
-- [ ] Give the script its own documented exit-code vocabulary separating success, each refusal
+      exact `git -C <root> add -- <relpath>` plus commit commands to run by hand. *(completed)*
+- [x] Give the script its own documented exit-code vocabulary separating success, each refusal
       reason, and a genuine commit failure, and document that no caller is permitted to treat a
-      non-zero result as fatal.
-- [ ] Wire it into `scripts/git-commit-phase.sh` after the inner commit returns, invoked once per
+      non-zero result as fatal. *(completed)*
+- [x] Wire it into `scripts/git-commit-phase.sh` after the inner commit returns, invoked once per
       `SOURCE_STORE`-classified path. **Fail open unconditionally**: capture the result, never let
       it propagate, and leave `git-commit-phase.sh`'s own exit-code vocabulary unchanged (no new
       code is added — a new code would be a caller-visible contract change this plan has not
       surveyed callers for, and the outcome is observability, which the warning and the issue row
-      already carry).
-- [ ] Make the Phase 3 notice unconditional and outcome-aware: it fires whether or not the second
+      already carry). *(completed)*
+- [x] Make the Phase 3 notice unconditional and outcome-aware: it fires whether or not the second
       commit succeeded, stating either that the path was committed in the named repository with its
       resulting revision, or that it was NOT committed there, why, and the exact command to run.
       Record the outcome with a non-fatal `issue-record.sh` call either way, so a win is logged on
-      equal footing with a failure.
-- [ ] Create `scripts/tests/test-commit-source-store-path.sh` covering the happy path (the named
+      equal footing with a failure. *(completed)*
+- [x] Create `scripts/tests/test-commit-source-store-path.sh` covering the happy path (the named
       path lands in the second repository, nothing else is staged there, and a concurrently dirty
       unrelated file in that repository is left untouched and uncommitted) and every refusal reason
-      above, each asserting its own exit code and that the manual command appears on stderr.
-- [ ] Extend `scripts/tests/test-git-commit-phase.sh`: against the disjoint fixture from Phase 3,
+      above, each asserting its own exit code and that the manual command appears on stderr. *(completed)*
+- [x] Extend `scripts/tests/test-git-commit-phase.sh`: against the disjoint fixture from Phase 3,
       the classified path lands in the second repository and the notice reports the commit; with the
       second repository made un-committable (planted `index.lock`), this repository's commit still
       succeeds with its own unchanged exit code and the notice reports the failure with the manual
@@ -522,7 +522,7 @@ Verification criteria name explicitly, not a claim of pre-existing suite coverag
 - In this repository, no second-repository commit is ever attempted for an `agent-system/**` path
   (the inertness property again).
 
----
+--- *(completed)*
 
 ### Phase 5: Document the Sanctioned Form and the New Containment Nuance [NOT STARTED]
 

@@ -67,19 +67,21 @@ EOF
 common_test_info "=== Case 1: relative source-store shape ==="
 read -r consumer_root source_root < <(build_disjoint_fixture)
 out1="$(source_store_classify "$consumer_root" "agent-system/extensions/core/manifest.json")"
-if echo "$out1" | grep -qP "^SOURCE_STORE\tcore\t${source_root}\tmanifest\.json$"; then
-  common_test_pass "Case 1: relative shape classified SOURCE_STORE with extension=core, correct toplevel, correct relative path"
+if echo "$out1" | grep -qP "^SOURCE_STORE\tcore\t${source_root}\tagent-system/extensions/core/manifest\.json$"; then
+  common_test_pass "Case 1: relative shape classified SOURCE_STORE with extension=core, correct toplevel, path relative to toplevel unchanged"
 else
   common_test_fail "Case 1: unexpected output: $out1"
 fi
 
 # =====================================================================
-# Case 2: absolute source-store shape is classified SOURCE_STORE identically.
+# Case 2: absolute source-store shape is classified SOURCE_STORE identically -- the emitted path
+# is relative to the resolved source TOPLEVEL (not relative to source_dir), so it is directly
+# usable as a `git add` pathspec inside that second repository.
 # =====================================================================
 common_test_info "=== Case 2: absolute source-store shape ==="
 out2="$(source_store_classify "$consumer_root" "$source_root/agent-system/extensions/core/scripts/lib/foo.sh")"
-if echo "$out2" | grep -qP "^SOURCE_STORE\tcore\t${source_root}\tscripts/lib/foo\.sh$"; then
-  common_test_pass "Case 2: absolute shape classified SOURCE_STORE with the correct relative-inside-toplevel path"
+if echo "$out2" | grep -qP "^SOURCE_STORE\tcore\t${source_root}\tagent-system/extensions/core/scripts/lib/foo\.sh$"; then
+  common_test_pass "Case 2: absolute shape classified SOURCE_STORE with the correct relative-to-toplevel path"
 else
   common_test_fail "Case 2: unexpected output: $out2"
 fi

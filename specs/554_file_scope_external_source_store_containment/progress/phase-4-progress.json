@@ -1,0 +1,41 @@
+{
+  "phase": 4,
+  "phase_name": "Commit a Source-Store Path in Its Own Repository",
+  "started_at": "2026-11-10T17:50:00Z",
+  "last_updated": "2026-11-10T18:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create scripts/commit-source-store-path.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/commit-source-store-path.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Wire into git-commit-phase.sh, fail-open, outcome-aware notice",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Create test-commit-source-store-path.sh and extend test-git-commit-phase.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-commit-source-store-path.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+        "agent-system/extensions/core/scripts/lib/source-store-path-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-source-store-path-lib.sh"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "description": "Initial source_store_classify attribution emitted the path relative to source_dir (stripping the source_rel/ prefix) rather than relative to source_toplevel",
+      "result": "failed",
+      "reason": "The documented contract is path_relative_to_that_toplevel (the repository root), not relative to source_dir; the wrong field made the Phase 4 end-to-end landing test fail with 'file does not exist' because commit-source-store-path.sh received a path one level too short to resolve on disk. Fixed in scripts/lib/source-store-path-lib.sh (part of this phase's own files_touched, since the fix was discovered while verifying Phase 4's end-to-end case) and in test-source-store-path-lib.sh's Case 1/2 assertions."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
