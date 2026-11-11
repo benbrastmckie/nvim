@@ -568,6 +568,98 @@ $case15_out"
 fi
 
 # =====================================================================
+# Case 16 (acceptance criterion 3): agreement on a path OUTSIDE hooks/. Registers a
+# scripts/-shaped (not hooks/-shaped) command in root-files only (a real, existing script, so
+# Check D's existence check does not also fire), and asserts the lint's own reported identity
+# for this registration equals hook_identity.lua's direct output for the SAME command -- the
+# single shared definition, exercised from both call sites.
+# =====================================================================
+common_test_info "=== PASSING (acceptance criterion 3): identity agreement outside hooks/ ==="
+
+CASE16_DIR="$WORKDIR/case16/root-files"
+mkdir -p "$CASE16_DIR"
+CASE16_CMD='bash .claude/scripts/verify-deploy.sh'
+cat > "$CASE16_DIR/settings.json" << EOF
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "case16",
+        "hooks": [
+          { "type": "command", "command": "$CASE16_CMD" }
+        ]
+      }
+    ]
+  }
+}
+EOF
+
+case16_out="$(bash "$LINT_SCRIPT" "$CASE16_DIR/settings.json" 2>&1)"
+case16_lint_identity="$(grep -oE 'identity: [^)]+' <<< "$case16_out" | sed 's/^identity: //')"
+
+HOOK_IDENTITY_CLI_MODULE="$REPO_ROOT/lua/neotex/plugins/ai/shared/extensions/hook_identity_cli.lua"
+case16_module_identity="$(printf 'command\t%s\n' "$CASE16_CMD" | nvim --headless --noplugin -u NONE -l "$HOOK_IDENTITY_CLI_MODULE" 2>/dev/null)"
+
+if [[ -n "$case16_lint_identity" ]] \
+   && [[ "$case16_lint_identity" == "$case16_module_identity" ]] \
+   && [[ "$case16_lint_identity" == "command:scripts/verify-deploy.sh" ]]; then
+  common_test_pass "lint-reported identity for a scripts/-shaped (outside hooks/) registration equals hook_identity.lua's own direct output"
+else
+  common_test_fail "identity agreement outside hooks/ did not hold: lint='$case16_lint_identity' module='$case16_module_identity'
+$case16_out"
+fi
+
+# =====================================================================
+# Case 17 (acceptance criterion 3, ~/-ineligibility on both sides): a ~/-anchored command is
+# identity-ineligible (nil/empty) both through the lint's bridge-based resolution (it passes,
+# per case 11 above) and through hook_identity.lua's own direct output for the same command.
+# =====================================================================
+common_test_info "=== PASSING: ~/-anchored command is identity-ineligible on both sides ==="
+
+CASE17_CMD='bash ~/.config/nvim/scripts/claude-ready-signal.sh 2>/dev/null || echo '"'"'{}'"'"''
+case17_module_identity="$(printf 'command\t%s\n' "$CASE17_CMD" | nvim --headless --noplugin -u NONE -l "$HOOK_IDENTITY_CLI_MODULE" 2>/dev/null)"
+
+if [[ -z "$case17_module_identity" ]]; then
+  common_test_pass "~/-anchored command resolves to no identity via hook_identity.lua directly (matches the lint's own existence-exempt, non-flagging treatment in case 11)"
+else
+  common_test_fail "~/-anchored command unexpectedly resolved to an identity: '$case17_module_identity'"
+fi
+
+# =====================================================================
+# Case 18: a bridge failure (missing/broken bridge file) is FATAL -- a named error and a
+# non-zero exit, never a silent fall-back to a second identity notion. Exercised via
+# HOOK_IDENTITY_CLI_OVERRIDE so the real bridge file is never touched.
+# =====================================================================
+common_test_info "=== FAILING (bridge failure): missing hook identity bridge is fatal, loudly ==="
+
+CASE18_DIR="$WORKDIR/case18/root-files"
+mkdir -p "$CASE18_DIR"
+cat > "$CASE18_DIR/settings.json" << 'EOF'
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/zz-case18.sh" }
+        ]
+      }
+    ]
+  }
+}
+EOF
+
+case18_out="$(HOOK_IDENTITY_CLI_OVERRIDE="$WORKDIR/case18/does-not-exist.lua" bash "$LINT_SCRIPT" "$CASE18_DIR/settings.json" 2>&1)"
+case18_rc=$?
+if [[ $case18_rc -eq 2 ]] \
+   && grep -qi "ERROR.*hook identity bridge" <<< "$case18_out"; then
+  common_test_pass "missing hook identity bridge is a loud, fatal (exit 2) error"
+else
+  common_test_fail "missing hook identity bridge did not fail loudly as expected (rc=$case18_rc):
+$case18_out"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

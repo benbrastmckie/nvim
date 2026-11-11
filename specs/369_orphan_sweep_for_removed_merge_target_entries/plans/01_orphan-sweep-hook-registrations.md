@@ -262,7 +262,7 @@ conformance corpus that each previously-`nil` hand-written command is still `nil
 
 ---
 
-### Phase 3: The lint consumes the same definition [NOT STARTED]
+### Phase 3: The lint consumes the same definition [COMPLETED]
 
 **Goal**: Remove the documented identity divergence by making `lint-hook-registration-paths.sh`
 resolve identities through the Phase 2 module instead of its own `normalize_identity()`, and pin
@@ -270,30 +270,30 @@ the agreement with a test on a path outside `hooks/`.
 
 **Tasks**:
 
-- [ ] Create `lua/neotex/plugins/ai/shared/extensions/hook_identity_cli.lua`: a thin bridge with
+- [x] Create `lua/neotex/plugins/ai/shared/extensions/hook_identity_cli.lua`: a thin bridge with
       no logic of its own that reads `<type>\t<command>` lines on stdin and writes one identity
       per line (empty line for `nil`), in input order, by `dofile`-ing the sibling
       `hook_identity.lua` by absolute path. Runnable as
       `nvim --headless --noplugin -u NONE -l <abs path to hook_identity_cli.lua>`.
-- [ ] Rewrite the lint's `collect_identities` to build its whole registration inventory first,
+- [x] Rewrite the lint's `collect_identities` to build its whole registration inventory first, *(completed: Check D's existing identity-adjacent existence loop was also unified onto the shared module, not left on bash-side normalize_identity, so the grep-count-0 verification criterion holds literally)*
       then resolve every command through ONE bridge invocation, composing the Check C/D key as
       `<identity>|<event>` (the module supplies type and normalized path; event stays the lint's
       own dimension).
-- [ ] Delete the lint's own `normalize_identity()` and replace the D4 header note with a note
+- [x] Delete the lint's own `normalize_identity()` and replace the D4 header note with a note
       recording that identity now has exactly one definition, naming the module path. Leave
       `classify_anchor` untouched and state in the header that anchor SHAPE (Check A) and
       registration IDENTITY are separate questions, only the latter being shared.
-- [ ] Make a bridge failure fatal: a non-zero exit, a missing bridge, or an output line count
+- [x] Make a bridge failure fatal: a non-zero exit, a missing bridge, or an output line count
       that does not match the input line count makes the lint print a named error and exit
       non-zero. Never fall back to a second identity notion. Record the invariant that the
       bridge is only ever needed in a repository that has settings surfaces to scan, which is
       the same repository that holds the module.
-- [ ] Extend `test-lint-hook-registration-paths.sh` with the acceptance-criterion-3 test: a
+- [x] Extend `test-lint-hook-registration-paths.sh` with the acceptance-criterion-3 test: a
       fixture registering a script OUTSIDE `hooks/` (e.g. `scripts/claude-ready-signal.sh`),
       asserting that the lint's resolved identity equals the Phase 2 module's own output for the
       same command, and a case asserting a `~/`-anchored command is identity-ineligible on both
       sides.
-- [ ] Extend the same suite with a bridge-failure case asserting the loud non-zero exit.
+- [x] Extend the same suite with a bridge-failure case asserting the loud non-zero exit.
 
 **Timing**: 1.5 hours
 

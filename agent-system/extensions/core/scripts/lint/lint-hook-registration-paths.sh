@@ -21,7 +21,8 @@
 # -------------------
 #   0 - No violations found in any of the four checks.
 #   1 - One or more violations found (printed as file:line plus the offending text/reason).
-#   2 - Script error (unresolvable project root, missing shared library, unreadable scan path).
+#   2 - Script error (unresolvable project root, missing shared library, unreadable scan path,
+#       or a hook-identity bridge failure -- see D4/D5 and `resolve_identities_via_bridge`).
 #
 # FAIL-CLOSED vs. FAIL-OPEN -- A DELIBERATE POLARITY CONTRAST, NOT AN INCONSISTENCY
 # -----------------------------------------------------------------------------------
@@ -65,17 +66,26 @@
 # the fixture suite's passing case for exactly this shape will go red -- do not widen the scan
 # surface without first re-examining that case.
 #
-# D4 -- This lint's fragment-coverage identity notion (Check C) is DELIBERATELY BROADER than
-# merge.lua's own `hook_identity()`, which recognizes only a `.claude/hooks/NAME.sh`-shaped path.
-# This lint's identity covers ANY invoked script path (so `scripts/NAME.sh` is a first-class
-# identity too, matching the line-118 defect class -- see D5/criterion-11 below). `merge.lua` is
-# outside this lint's file_scope; the divergence is accepted and recorded here, not reconciled.
-# Do NOT port `hook_identity()`'s `hooks/`-anchored pattern into this lint.
+# D4 -- Fragment-coverage identity (Check C) now has EXACTLY ONE DEFINITION, shared with
+# merge.lua's orphan sweep: `lua/neotex/plugins/ai/shared/extensions/hook_identity.lua`
+# (`M.identity(command, hook_type)`). This lint used to carry its OWN, independently broader
+# identity notion (`normalize_identity()`, recognizing any directory-qualified `*.sh` path,
+# versus merge.lua's then-narrower `.claude/hooks/NAME.sh`-only pattern) -- a documented
+# divergence. That divergence is now closed: this lint resolves every identity through the
+# SAME module, via the logic-free CLI bridge `hook_identity_cli.lua` (see
+# `resolve_identities_via_bridge` below), so a reader can no longer find two different answers
+# to "is this the same registration". Note the separate question this does NOT touch: anchor
+# SHAPE (Check A, via `classify_anchor`, untouched) and registration IDENTITY (Check C, via the
+# shared module) are independent axes -- a path can have the wrong anchor shape and still
+# carry a well-defined
+# identity (that's exactly what lets the sweep collapse a stale CWD-relative registration into
+# its `$CLAUDE_PROJECT_DIR`-prefixed replacement).
 #
-# D5 -- Fragment-coverage identity key: (normalized invoked script path, event name, hook type).
-# Normalization strips a leading `"$CLAUDE_PROJECT_DIR"/.claude/`, `.claude/`, or bare `/` anchor
-# and keeps the remaining directory-qualified path exactly as written -- so `scripts/foo.sh` is
-# compared as readily as `hooks/foo.sh`.
+# D5 -- Fragment-coverage identity key: `<identity>|<event>`, where `<identity>` is the shared
+# module's own `"<type>:<normalized_path>"` string (type is therefore already embedded; it is
+# never a separate key component). A command the module returns `nil` for (not identity-eligible
+# -- a `~/`-anchored path, an absolute non-`.claude/` path, or no `*.sh` invocation at all) never
+# enters Check C's inventory at all, exactly mirroring the sweep's own mandatory carve-out.
 #
 # D6 -- `root-files/settings.local.json` is OUT OF SCOPE for every check in this lint (a prior
 # ruling, carried forward unchanged here): a permission matcher matches literal command TEXT
@@ -313,16 +323,9 @@ classify_anchor() {
     fi
 }
 
-# normalize_identity PATH (D5) -- strips one of the recognized anchor prefixes and returns the
-# remaining directory-qualified path, unchanged otherwise (including an unrecognized-anchor
-# violation path, which still needs an identity for Check C/D to compare against).
-normalize_identity() {
-    local p="$1"
-    p="${p#\$CLAUDE_PROJECT_DIR/.claude/}"
-    p="${p#.claude/}"
-    p="${p#/}"
-    printf '%s\n' "$p"
-}
+# Identity resolution for Checks C and D now goes through the single shared module
+# (hook_identity.lua, D4/D5 above) via resolve_identities_via_bridge, defined just above
+# Checks C+D below -- there is no second, bash-side identity-normalization function any more.
 
 # check_exists NORMALIZED_PATH -- true if NORMALIZED_PATH resolves to a real file under some
 # agent-system/extensions/*/ in the source store (hooks are spread across each extension's own
@@ -510,63 +513,141 @@ for file in "${MARKDOWN_FILES[@]}"; do
 done
 
 # ---------------------------------------------------------------------------
-# Checks C + D -- fragment coverage and script existence (jq-based registration inventory)
+# Checks C + D -- fragment coverage and script existence (jq-based registration inventory,
+# identity resolved through the ONE shared module -- D4/D5 above)
 # ---------------------------------------------------------------------------
-declare -A ROOT_IDS
-declare -A FRAG_IDS
 
-collect_identities() {
-    # Usage: collect_identities <array-name> <file...>
-    local -n _target="$1"
+# HOOK_IDENTITY_CLI resolves relative to PROJECT_ROOT (resolve_project_root always finds the
+# repo that physically holds agent-system/extensions -- the only repo this lint meaningfully
+# runs against, since its scan surface is the source store itself, not a deployed target repo).
+# HOOK_IDENTITY_CLI_OVERRIDE lets the test suite point this at a deliberately broken path to
+# exercise the loud bridge-failure case below, without touching the real bridge file.
+HOOK_IDENTITY_CLI="${HOOK_IDENTITY_CLI_OVERRIDE:-$PROJECT_ROOT/lua/neotex/plugins/ai/shared/extensions/hook_identity_cli.lua}"
+
+# resolve_identities_via_bridge INPUT_FILE OUTPUT_FILE -- resolves a batch of hook
+# registrations' identities through hook_identity.lua in ONE nvim subprocess call (never one
+# call per registration), so the lint and the sweep share exactly one identity definition.
+# INPUT_FILE holds "<type>\t<command>" lines, one per registration, in order; OUTPUT_FILE
+# receives one identity line per input line in the same order (empty for a nil/ineligible
+# command). A bridge failure -- missing nvim, missing bridge file, non-zero exit, or an
+# input/output line-count mismatch -- is FATAL (exit 2, named error). Never falls back to a
+# second identity notion.
+resolve_identities_via_bridge() {
+    local input_file="$1"
+    local output_file="$2"
+
+    if ! command -v nvim >/dev/null 2>&1; then
+        echo "ERROR: nvim is required to resolve hook identities via the shared module and is not on PATH" >&2
+        exit 2
+    fi
+    if [[ ! -f "$HOOK_IDENTITY_CLI" ]]; then
+        echo "ERROR: hook identity bridge not found: $HOOK_IDENTITY_CLI" >&2
+        exit 2
+    fi
+
+    if ! nvim --headless --noplugin -u NONE -l "$HOOK_IDENTITY_CLI" <"$input_file" >"$output_file" 2>/dev/null; then
+        echo "ERROR: hook identity bridge ($HOOK_IDENTITY_CLI) exited non-zero" >&2
+        exit 2
+    fi
+
+    local n_in n_out
+    n_in=$(wc -l <"$input_file")
+    n_out=$(wc -l <"$output_file")
+    if [[ "$n_in" -ne "$n_out" ]]; then
+        echo "ERROR: hook identity bridge output line count ($n_out) does not match input line count ($n_in) -- refusing to proceed with a possibly-misaligned identity mapping" >&2
+        exit 2
+    fi
+}
+
+# Build the whole registration inventory first (every row across both groups), then resolve
+# every command's identity through ONE bridge invocation -- never one jq pass plus one bridge
+# call per file, which is what the old per-group collect_identities did with its own, now-removed
+# bash-side normalization helper.
+ALL_GROUP=()
+ALL_FILE=()
+ALL_EVENT=()
+ALL_TYPE=()
+ALL_COMMAND=()
+
+collect_inventory() {
+    # Usage: collect_inventory <root|frag> <file...>
+    local group="$1"
     shift
     local f
     for f in "$@"; do
         [[ -z "$f" || ! -f "$f" ]] && continue
-        local event type command sh_path norm key
+        local event type command
         while IFS=$'\t' read -r event type command; do
             [[ -z "$command" ]] && continue
-            sh_path="$(extract_invoked_script "$command")"
-            [[ -z "$sh_path" ]] && continue
-            # shellcheck disable=SC2088  # Deliberate literal-text match: detecting a config value that is WRITTEN starting with "~/" (never actually tilde-expanded by the hook loader), not requesting shell tilde expansion here.
-            [[ "$sh_path" == "~/"* ]] && continue
-            norm="$(normalize_identity "$sh_path")"
-            key="${norm}|${event}|${type}"
-            _target["$key"]="$f"
+            ALL_GROUP+=("$group")
+            ALL_FILE+=("$f")
+            ALL_EVENT+=("$event")
+            ALL_TYPE+=("$type")
+            ALL_COMMAND+=("$command")
         done < <(jq -r '(.hooks // {}) | to_entries[] | .key as $event | (.value // [])[] | ((.hooks // [])[] // {}) | [$event, (.type // ""), (.command // "")] | @tsv' "$f" 2>/dev/null)
     done
 }
 
-collect_identities ROOT_IDS "${ROOT_FILES_GROUP[@]}"
-collect_identities FRAG_IDS "${FRAGMENT_GROUP[@]}"
+collect_inventory root "${ROOT_FILES_GROUP[@]}"
+collect_inventory frag "${FRAGMENT_GROUP[@]}"
+
+IDENTITY_IN="$(mktemp)"
+IDENTITY_OUT="$(mktemp)"
+trap 'rm -f "$IDENTITY_IN" "$IDENTITY_OUT"' EXIT
+
+for i in "${!ALL_COMMAND[@]}"; do
+    printf '%s\t%s\n' "${ALL_TYPE[$i]}" "${ALL_COMMAND[$i]}" >>"$IDENTITY_IN"
+done
+
+ALL_IDENTITY=()
+if [[ ${#ALL_COMMAND[@]} -gt 0 ]]; then
+    resolve_identities_via_bridge "$IDENTITY_IN" "$IDENTITY_OUT"
+    mapfile -t ALL_IDENTITY <"$IDENTITY_OUT"
+fi
+
+declare -A ROOT_IDS
+declare -A FRAG_IDS
+
+for i in "${!ALL_COMMAND[@]}"; do
+    identity="${ALL_IDENTITY[$i]:-}"
+    [[ -z "$identity" ]] && continue
+    key="${identity}|${ALL_EVENT[$i]}"
+    if [[ "${ALL_GROUP[$i]}" == "root" ]]; then
+        ROOT_IDS["$key"]="${ALL_FILE[$i]}"
+    else
+        FRAG_IDS["$key"]="${ALL_FILE[$i]}"
+    fi
+done
 
 for key in "${!ROOT_IDS[@]}"; do
     if [[ -z "${FRAG_IDS[$key]+x}" ]]; then
-        norm="${key%%|*}"
+        identity="${key%%|*}"
+        norm="${identity#*:}"
         name="${norm##*/}"
         f="${ROOT_IDS[$key]}"
         lineno="$(grep -nF -- "$name" "$f" 2>/dev/null | head -1 | cut -d: -f1)"
-        echo -e "${RED}[VIOLATION]${NC} $f:${lineno:-?}: hook script '$name' (identity: $norm) is registered in root-files/settings.json but is absent from every fragment surface -- add it to agent-system/extensions/core/merge-sources/settings-hooks.json"
+        echo -e "${RED}[VIOLATION]${NC} $f:${lineno:-?}: hook script '$name' (identity: $identity) is registered in root-files/settings.json but is absent from every fragment surface -- add it to agent-system/extensions/core/merge-sources/settings-hooks.json"
         ((VIOLATIONS++)) || true
     fi
 done
 
 # Check D: existence, over every settings surface's full registration inventory (both groups).
-for file in "${SETTINGS_FILES[@]}"; do
-    [[ -z "$file" ]] && continue
-    while IFS=$'\t' read -r event type command; do
-        [[ -z "$command" ]] && continue
-        sh_path="$(extract_invoked_script "$command")"
-        [[ -z "$sh_path" ]] && continue
-        # shellcheck disable=SC2088  # Deliberate literal-text match: detecting a config value that is WRITTEN starting with "~/" (never actually tilde-expanded by the hook loader), not requesting shell tilde expansion here.
-        [[ "$sh_path" == "~/"* ]] && continue
-        norm="$(normalize_identity "$sh_path")"
-        if ! check_exists "$norm"; then
-            name="${norm##*/}"
-            lineno="$(grep -nF -- "$name" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
-            echo -e "${RED}[VIOLATION]${NC} $file:${lineno:-?}: invoked script does not exist anywhere in the source store: $norm"
-            ((VIOLATIONS++)) || true
-        fi
-    done < <(jq -r '(.hooks // {}) | to_entries[] | .key as $event | (.value // [])[] | ((.hooks // [])[] // {}) | [$event, (.type // ""), (.command // "")] | @tsv' "$file" 2>/dev/null)
+# Only identity-eligible rows are checked -- a nil identity (a ~/-anchored path, an absolute
+# non-.claude/ path, or no *.sh invocation at all) is, by the shared module's own definition,
+# not a source-store script invocation this lint has any business resolving an existence
+# verdict for; D2's long-standing ~/-anchor exemption is now one instance of this single rule
+# rather than a special case bolted onto Check D alone.
+for i in "${!ALL_COMMAND[@]}"; do
+    identity="${ALL_IDENTITY[$i]:-}"
+    [[ -z "$identity" ]] && continue
+    norm="${identity#*:}"
+    if ! check_exists "$norm"; then
+        name="${norm##*/}"
+        file="${ALL_FILE[$i]}"
+        lineno="$(grep -nF -- "$name" "$file" 2>/dev/null | head -1 | cut -d: -f1)"
+        echo -e "${RED}[VIOLATION]${NC} $file:${lineno:-?}: invoked script does not exist anywhere in the source store: $norm"
+        ((VIOLATIONS++)) || true
+    fi
 done
 
 # ---------------------------------------------------------------------------

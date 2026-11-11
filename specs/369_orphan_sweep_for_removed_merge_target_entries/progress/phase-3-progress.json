@@ -1,0 +1,57 @@
+{
+  "phase": 3,
+  "phase_name": "The lint consumes the same definition",
+  "started_at": "2026-11-11T17:05:00Z",
+  "last_updated": "2026-11-11T17:35:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create hook_identity_cli.lua logic-free bridge",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/hook_identity_cli.lua"]
+    },
+    {
+      "id": 2,
+      "description": "Rewrite collect_identities (Check C) and Check D's existence loop to resolve through the bridge in one batch call",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Delete normalize_identity(), rewrite D4/D5 header notes",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Make a bridge failure fatal (exit 2, named error, line-count check)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Extend test suite with agreement, ~/-ineligibility, and bridge-failure cases",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Route only Check C (fragment coverage) through the shared module, leave Check D (existence) on its own bash-side normalize_identity",
+      "result": "rejected",
+      "reason": "Phase 3's own verification criterion requires grep -c 'normalize_identity' to be 0 outside the header note -- leaving Check D on a second, independent normalization function would fail that literally. Unified both checks onto the one shared module/bridge instead, accepting the (practically unreachable) behavior change that an absolute non-.claude/, non-~/ path is now also skipped by Check D's existence check, consistent with the carve-out."
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Rewrite collect_identities to resolve through one bridge invocation",
+      "type": "altered",
+      "reason": "Also unified Check D's existence-check loop onto the same shared inventory/bridge resolution, not just Check C's collect_identities, since the plan's own grep-count-0 verification criterion requires the bash-side normalize_identity function to be gone entirely, not merely refactored out of Check C alone.",
+      "annotation": "*(completed: Check D's existing identity-adjacent existence loop was also unified onto the shared module, not left on bash-side normalize_identity, so the grep-count-0 verification criterion holds literally)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Added HOOK_IDENTITY_CLI_OVERRIDE env var (test-only escape hatch) so the bridge-failure test case never has to touch the real bridge file. All 21 test-lint-hook-registration-paths.sh cases green (18 pre-existing + 3 new) and the real lint run against the live source store still reports 0 violations (Settings surfaces checked: 12, Markdown files checked: 960)."
+}
