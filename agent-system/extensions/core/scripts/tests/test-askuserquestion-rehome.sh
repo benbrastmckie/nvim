@@ -32,12 +32,18 @@ REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 PASSED=0
 FAILED=0
 
+# EXT_ROOT: the shared resolver (repo-root source store first, then the .claude-extensions.json
+# core.source_dir indirection for an external-source-store repository), falling back to the
+# prior literal path on a total miss so every existence check below still names the same path it
+# always named.
+EXT_ROOT="$(common_test_ext_root "$REPO_ROOT")" || EXT_ROOT="$REPO_ROOT/agent-system/extensions"
+
 # ---------------------------------------------------------------------------
 # Resolve the agent-file scan root: source-store layout preferred (matches this task's own
 # file_scope exactly: agent-system/extensions/*/agents/**), deployed flat .claude/agents/ as
 # fallback for a tree where only the deploy output is present.
 # ---------------------------------------------------------------------------
-SOURCE_STORE_AGENTS_GLOB="$REPO_ROOT/agent-system/extensions/*/agents/*.md"
+SOURCE_STORE_AGENTS_GLOB="$EXT_ROOT/*/agents/*.md"
 DEPLOYED_AGENTS_GLOB="$REPO_ROOT/.claude/agents/*.md"
 
 shopt -s nullglob
@@ -61,13 +67,31 @@ if [[ ${#AGENT_FILES[@]} -eq 0 ]]; then
 fi
 common_test_info "Scanning ${#AGENT_FILES[@]} agent files ($SCAN_MODE)"
 
-STANDARD_PATH="$REPO_ROOT/agent-system/extensions/core/docs/reference/standards/agent-frontmatter-standard.md"
-TEMPLATE_PATH="$REPO_ROOT/agent-system/extensions/core/docs/templates/agent-template.md"
-LINT_PATH="$REPO_ROOT/agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"
-SKILL_META_PATH="$REPO_ROOT/agent-system/extensions/core/skills/skill-meta/SKILL.md"
-INTERVIEW_PATH="$REPO_ROOT/agent-system/extensions/core/context/workflows/meta-interview.md"
-SKILL_SPAWN_PATH="$REPO_ROOT/agent-system/extensions/core/skills/skill-spawn/SKILL.md"
-SKILL_FIXIT_PATH="$REPO_ROOT/agent-system/extensions/core/skills/skill-fix-it/SKILL.md"
+# Each reference path below is resolved two-tier: the shared resolver's extensions root first
+# (EXT_ROOT, which already falls open to the .claude-extensions.json indirection), then the
+# deployed .claude/ mirror -- the same two-tier shape AGENT_FILES above already uses, so each
+# path is reachable whether this repository owns its own source store or resolves it externally.
+STANDARD_PATH="$(common_test_resolve_candidate "agent-frontmatter-standard.md" \
+  "$EXT_ROOT/core/docs/reference/standards/agent-frontmatter-standard.md" \
+  "$REPO_ROOT/.claude/docs/reference/standards/agent-frontmatter-standard.md")" || exit 2
+TEMPLATE_PATH="$(common_test_resolve_candidate "agent-template.md" \
+  "$EXT_ROOT/core/docs/templates/agent-template.md" \
+  "$REPO_ROOT/.claude/docs/templates/agent-template.md")" || exit 2
+LINT_PATH="$(common_test_resolve_candidate "lint-agent-contracts.sh" \
+  "$EXT_ROOT/core/scripts/lint/lint-agent-contracts.sh" \
+  "$REPO_ROOT/.claude/scripts/lint/lint-agent-contracts.sh")" || exit 2
+SKILL_META_PATH="$(common_test_resolve_candidate "skill-meta/SKILL.md" \
+  "$EXT_ROOT/core/skills/skill-meta/SKILL.md" \
+  "$REPO_ROOT/.claude/skills/skill-meta/SKILL.md")" || exit 2
+INTERVIEW_PATH="$(common_test_resolve_candidate "meta-interview.md" \
+  "$EXT_ROOT/core/context/workflows/meta-interview.md" \
+  "$REPO_ROOT/.claude/context/workflows/meta-interview.md")" || exit 2
+SKILL_SPAWN_PATH="$(common_test_resolve_candidate "skill-spawn/SKILL.md" \
+  "$EXT_ROOT/core/skills/skill-spawn/SKILL.md" \
+  "$REPO_ROOT/.claude/skills/skill-spawn/SKILL.md")" || exit 2
+SKILL_FIXIT_PATH="$(common_test_resolve_candidate "skill-fix-it/SKILL.md" \
+  "$EXT_ROOT/core/skills/skill-fix-it/SKILL.md" \
+  "$REPO_ROOT/.claude/skills/skill-fix-it/SKILL.md")" || exit 2
 
 for req in "$STANDARD_PATH" "$TEMPLATE_PATH" "$LINT_PATH" "$SKILL_META_PATH" "$SKILL_SPAWN_PATH" "$SKILL_FIXIT_PATH"; do
   if [[ ! -f "$req" ]]; then
@@ -143,7 +167,7 @@ fi
 
 # Case 1b: the fixture must pass UNCHANGED against cslib-vet-agent.md, the admitted-form
 # precedent the plan names explicitly.
-CSLIB_VET="$REPO_ROOT/agent-system/extensions/cslib/agents/cslib-vet-agent.md"
+CSLIB_VET="$EXT_ROOT/cslib/agents/cslib-vet-agent.md"
 if [[ -f "$CSLIB_VET" ]]; then
   cslib_result="$(check_file_for_self_instruction "$CSLIB_VET")"
   if [[ -z "$cslib_result" ]]; then
@@ -298,6 +322,26 @@ if [[ -n "$REMOVAL_LAYER_HITS" ]]; then
 else
   common_test_pass "removal layer (dispatch-worktree.sh / task_selected_for_worktree_isolation) stays absent"
 fi
+
+# ===========================================================================
+# Case 8: external-source-store fixture. EXT_ROOT (and therefore every two-tier reference path
+# above) resolves through the .claude-extensions.json indirection when REPO_ROOT holds no local
+# agent-system/extensions of its own.
+# ===========================================================================
+EXTSTORE_FIXTURE_ROOT="$(mktemp -d)"
+cat > "$EXTSTORE_FIXTURE_ROOT/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$EXT_ROOT/core"}}}
+EOF
+EXTSTORE_EXT_ROOT="$(REPO_ROOT="$EXTSTORE_FIXTURE_ROOT" bash -c '
+  source "'"$SCRIPT_DIR"'/../lib/common.sh"
+  common_test_ext_root "$REPO_ROOT"
+')"
+if [[ -n "$EXTSTORE_EXT_ROOT" && -f "$EXTSTORE_EXT_ROOT/core/docs/reference/standards/agent-frontmatter-standard.md" ]]; then
+  common_test_pass "EXT_ROOT resolves via the .claude-extensions.json indirection against the external-source-store fixture"
+else
+  common_test_fail "EXT_ROOT did not resolve against the external-source-store fixture (got '$EXTSTORE_EXT_ROOT')"
+fi
+rm -rf "$EXTSTORE_FIXTURE_ROOT"
 
 # ===========================================================================
 # Summary

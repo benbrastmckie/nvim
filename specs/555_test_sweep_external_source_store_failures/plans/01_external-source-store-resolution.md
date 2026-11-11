@@ -417,29 +417,40 @@ phase.
 
 ---
 
-### Phase 5: `test-askuserquestion-rehome.sh` and `test-deploy-propagation.sh` [NOT STARTED]
+### Phase 5: `test-askuserquestion-rehome.sh` and `test-deploy-propagation.sh` [COMPLETED]
 
 **Goal**: Both suites resolve their source-store lookups correctly in an external-source-store
 repository, each using the resolution strategy its own semantics require.
 
 **Tasks**:
 
-- [ ] Re-read both suites immediately before editing.
-- [ ] In `test-askuserquestion-rehome.sh`, extend `STANDARD_PATH`, `TEMPLATE_PATH`, `LINT_PATH`,
+- [x] Re-read both suites immediately before editing. *(completed)*
+- [x] In `test-askuserquestion-rehome.sh`, extend `STANDARD_PATH`, `TEMPLATE_PATH`, `LINT_PATH`,
       `SKILL_META_PATH`, `INTERVIEW_PATH`, `SKILL_SPAWN_PATH`, and `SKILL_FIXIT_PATH` to use
       `common_test_resolve_candidate` (or `common_test_resolve_subject` with an explicit mode)
       over a candidate list of the resolver-derived source-store path and the deployed `.claude/`
       mirror — the same two-tier shape this file's own `AGENT_FILES` scan already uses. Also route
-      `SOURCE_STORE_AGENTS_GLOB` and `CSLIB_VET` through the resolver.
-- [ ] In `test-deploy-propagation.sh`, resolve `MANIFEST` and `CANARY_SOURCE` through the
+      `SOURCE_STORE_AGENTS_GLOB` and `CSLIB_VET` through the resolver. *(completed: each of the
+      seven paths now uses `common_test_resolve_candidate` over `[EXT_ROOT-derived source-store
+      path, deployed .claude/ mirror]`. Residual, out of scope per this phase's own
+      `agent-system/extensions`-literal grep boundary: Case 7's `grep -rl ... "$REPO_ROOT/
+      agent-system"` whole-tree removal-layer check is not a two-tier reference path at all — it
+      greps `$REPO_ROOT/agent-system` directly, a string this phase's grep instruction does not
+      match, and would silently no-op (pass vacuously) against an external-source-store
+      `REPO_ROOT`. Noted for awareness, not fixed, since it is outside the task list's own
+      enumerated scope.)*
+- [x] In `test-deploy-propagation.sh`, resolve `MANIFEST` and `CANARY_SOURCE` through the
       resolver's `.claude-extensions.json` indirection **only** — never a deployed-tree fallback.
       This suite exists to compare the deployed tree against the true pre-deploy source, so a
       deployed-tree fallback would be circular. State that reason in a comment at the resolution
-      site so a future reader does not "simplify" it into the two-tier form.
-- [ ] Where a subject is resolved, keep (or add) the `common_test_declare_subject` `[SUBJECT]`
-      declaration line.
-- [ ] Add an external-source-store fixture case to each suite.
-- [ ] Confirm `shellcheck` is clean on both edited suites.
+      site so a future reader does not "simplify" it into the two-tier form. *(completed)*
+- [x] Where a subject is resolved, keep (or add) the `common_test_declare_subject` `[SUBJECT]`
+      declaration line. *(completed: no new ambiguous subject resolution was introduced by
+      either edit — `common_test_resolve_candidate` is a plain existence lookup, not the
+      `common_test_resolve_subject` deploy-vs-source-store ambiguity the declaration exists for;
+      `lint-subject-resolution-declaration.sh` confirmed both files still pass)*
+- [x] Add an external-source-store fixture case to each suite. *(completed)*
+- [x] Confirm `shellcheck` is clean on both edited suites. *(completed: clean at -S warning)*
 
 **Timing**: 2 hours
 

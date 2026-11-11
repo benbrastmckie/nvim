@@ -54,7 +54,15 @@ if ! command -v nvim >/dev/null 2>&1; then
   exit 2
 fi
 
-MANIFEST="$REPO_ROOT/agent-system/extensions/core/manifest.json"
+# MANIFEST is resolved through the shared resolver's .claude-extensions.json indirection ONLY --
+# deliberately never a deployed-tree fallback. This harness exists to compare the deployed tree
+# against the true PRE-DEPLOY source; falling back to the deployed manifest would make that
+# comparison circular (the "source" and the thing being checked against it would be the same
+# file). Do not "simplify" this into the two-tier deployed/source-store candidate-list shape
+# used elsewhere in this task -- that shape is correct for a suite verifying content the
+# deployed tree faithfully mirrors, and wrong here.
+EXT_ROOT="$(common_test_ext_root "$REPO_ROOT")" || EXT_ROOT="$REPO_ROOT/agent-system/extensions"
+MANIFEST="$EXT_ROOT/core/manifest.json"
 if [[ ! -f "$MANIFEST" ]]; then
   echo "ERROR: core manifest not found at $MANIFEST" >&2
   exit 2
@@ -87,7 +95,8 @@ git -C "$TARGET" -c user.email="test@test.local" -c user.name="deploy-propagatio
   commit -q --allow-empty -m "scratch init"
 
 CANARY_REL="scripts/lib/phase-heading-patterns.sh"
-CANARY_SOURCE="$REPO_ROOT/agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh"
+# Same source_dir-only resolution and the same anti-circularity reason as MANIFEST above.
+CANARY_SOURCE="$EXT_ROOT/core/scripts/lib/phase-heading-patterns.sh"
 if [[ ! -f "$CANARY_SOURCE" ]]; then
   echo "ERROR: canary source file not found: $CANARY_SOURCE" >&2
   echo "This harness assumes the file exists as a real subdirectory-declared" >&2
@@ -308,6 +317,28 @@ if diff -q "$CANARY_SOURCE" "$CANARY_DEPLOYED" >/dev/null 2>&1; then
 else
   common_test_pass "Assertion D: staled deployed file correctly detected as differing from source"
 fi
+
+# =====================================================================
+# Assertion F: external-source-store fixture. MANIFEST/CANARY_SOURCE's EXT_ROOT resolves through
+# the .claude-extensions.json indirection ONLY when REPO_ROOT holds no local
+# agent-system/extensions of its own -- never a deployed-tree fallback (see the anti-circularity
+# comment at MANIFEST's own resolution site above).
+# =====================================================================
+common_test_info "Assertion F: external-source-store fixture (MANIFEST/CANARY_SOURCE resolution)"
+EXTSTORE_FIXTURE_ROOT="$(mktemp -d)"
+cat > "$EXTSTORE_FIXTURE_ROOT/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$EXT_ROOT/core"}}}
+EOF
+EXTSTORE_EXT_ROOT="$(REPO_ROOT="$EXTSTORE_FIXTURE_ROOT" bash -c '
+  source "'"$SCRIPT_DIR"'/../lib/common.sh"
+  common_test_ext_root "$REPO_ROOT"
+')"
+if [[ -n "$EXTSTORE_EXT_ROOT" && -f "$EXTSTORE_EXT_ROOT/core/manifest.json" ]]; then
+  common_test_pass "Assertion F: MANIFEST resolves via the .claude-extensions.json indirection against the external-source-store fixture"
+else
+  common_test_fail "Assertion F: MANIFEST did not resolve against the external-source-store fixture (got '$EXTSTORE_EXT_ROOT')"
+fi
+rm -rf "$EXTSTORE_FIXTURE_ROOT"
 
 # =====================================================================
 # Summary
