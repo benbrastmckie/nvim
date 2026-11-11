@@ -137,7 +137,7 @@ next_project_number: 607
 
 ### Agent System
 
-391 [PLANNING] — Close the target\_root authoring hole that files agent-system...
+391 [PLANNED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
     └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
@@ -10908,11 +10908,12 @@ index-entries.json; see their DEPENDENCY RATIONALE.
 
 ### 391. Close the target_root authoring hole that files agent-system tasks into the wrong repository
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 369, Task 372, Task 373
 - **Research**: [391_agent_system_task_siting_and_target_root/reports/01_task-siting-and-target-root.md]
+- **Plan**: [391_agent_system_task_siting_and_target_root/plans/01_target-root-and-siting-remedy.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

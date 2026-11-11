@@ -4231,7 +4231,7 @@
     {
       "project_number": 391,
       "project_name": "agent_system_task_siting_and_target_root",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Close the target_root authoring hole that files agent-system tasks into the wrong repository",
@@ -4246,19 +4246,26 @@
           "path": "specs/391_agent_system_task_siting_and_target_root/reports/01_task-siting-and-target-root.md",
           "type": "report",
           "summary": "Confirms conclusion-stage.md Step 4b is the sole broken meta-builder-agent dispatcher of three; finds meta-builder-agent.md's defensive target_root fallback predates both diagnosis dates (stale premise); settles the deploy-path file_scope convention as legitimate; recommends remedy (a) plus a refusal-based strengthening of the existing fallback plus a new standing siting rule distinct from the specs/** artifact-location exemption."
+        },
+        {
+          "path": "specs/391_agent_system_task_siting_and_target_root/plans/01_target-root-and-siting-remedy.md",
+          "type": "plan",
+          "summary": "Six-phase plan closing the channel-(b) target_root hole and settling the cross-repo file_scope convention question."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-11T17:51:06Z",
-      "last_updated": "2026-11-11T18:00:12Z",
+      "last_updated": "2026-11-11T18:20:45Z",
       "effort": "medium",
       "priority": null,
-      "session_id": "sess_1794413303_b61a83_391",
+      "session_id": "sess_1794413303_b61a83",
       "file_scope": [
+        "__WHOLE_TREE__",
         "agent-system/extensions/core/agents/meta-builder-agent.md",
         "agent-system/extensions/core/commands/meta.md",
         "agent-system/extensions/core/context/contracts/conclusion-stage.md",
         "agent-system/extensions/core/context/reference/state-management-schema.md",
+        "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
         "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
         "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
         "agent-system/extensions/core/skills/skill-meta/SKILL.md"

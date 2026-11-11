@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 11,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase implementation plan across four dependency waves. Adopts remedy (a) at conclusion-stage.md Step 4b (the one dispatcher of three that omits target_root, re-confirmed live), a revised remedy (b) that strengthens meta-builder-agent.md's already-present GLOBAL_ROOT fallback into a loud status:blocked refusal rather than adding a resolution step it already has, a skill-meta discharge, and remedy (c) as a standing siting rule kept distinct from the specs/** exemption. Also settles the deploy-path file_scope convention in the schema reference. Validator passes clean in both default and --strict mode; file_scope harvests to seven real paths plus __WHOLE_TREE__.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/391_agent_system_task_siting_and_target_root/plans/01_target-root-and-siting-remedy.md",
+      "summary": "Six-phase plan closing the channel-(b) target_root hole and settling the cross-repo file_scope convention question."
+    }
+  ]
+}
