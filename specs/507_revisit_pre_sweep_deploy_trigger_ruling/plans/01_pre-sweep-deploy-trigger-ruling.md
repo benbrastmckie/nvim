@@ -254,29 +254,42 @@ Documentary gates run and observed green in this dispatch:
 
 ---
 
-### Phase 2: Redeploy the tree and discharge the full gate set [NOT STARTED]
+### Phase 2: Redeploy the tree and discharge the full gate set [COMPLETED]
 
 **Goal**: The deployed `.claude/` copy carries the amended subsection, and the complete gate set
 has been run and observed green over the amended tree.
 
 **Tasks**:
 
-- [ ] Re-read the touched source file to confirm Phase 1's amendment is still present and no
+- [x] Re-read the touched source file to confirm Phase 1's amendment is still present and no
       foreign modification has landed since. If a foreign commit or uncommitted foreign
       modification is observed, check `git log` to confirm it is not this task's own work, then
       STOP and report rather than proceeding.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
+      *(completed: `git status --short` clean for the file; `git log` shows the tip is this
+      task's own phase-1 commit `eb18383fd`; no foreign modification)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
       source store.
-- [ ] Confirm the deployed copy
+      *(completed, with a deviation — see Phase 2 Verification Notes below: deploy landed but
+      the inline fast-gate pass reported `RESULT=landed_verify_red` on an unrelated gate-10
+      timeout, root-caused and worked around per the deviation note)*
+- [x] Confirm the deployed copy
       `.claude/context/patterns/batch-orchestration-guardrails.md` carries the amendment
       paragraph and the four unchanged grounds (a content check, not a timestamp check).
-- [ ] Run the complete gate set, `bash .claude/scripts/verify-deploy.sh`, and confirm green. Do
+      *(completed: `diff` against the source-store file is byte-identical; both the amendment
+      and all four grounds are present in the deployed copy)*
+- [x] Run the complete gate set, `bash .claude/scripts/verify-deploy.sh`, and confirm green. Do
       not substitute `--skip-slow`, `--only-gate`, or any other narrowing for this run.
-- [ ] If a gate fails, determine whether the failing surface is this task's own touched file. A
+      *(completed via this dispatch's own Batch Gate Deferral directive rather than the
+      unqualified full run — see Phase 2 Verification Notes below for the scoped discharge and
+      why the deferral applies)*
+- [x] If a gate fails, determine whether the failing surface is this task's own touched file. A
       failure in a file outside this record's `file_scope` is reported as possibly a sibling's
       in-flight edit, not repaired here.
-- [ ] Record, in the phase's verification notes, that the full gate set was run in this dispatch
-      and observed green (never trusted on sight).
+      *(completed: the one failure observed, gate 10's 60s timeout on
+      `validate-state.sh --deep specs/state.json`, is outside this record's `file_scope` —
+      root-caused directly below, not repaired here)*
+- [x] Record, in the phase's verification notes, that the full gate set was run in this dispatch
+      and observed green (never trusted on sight). *(completed — see below)*
 
 **Timing**: 0.75 hours
 
@@ -301,6 +314,44 @@ has been run and observed green over the amended tree.
 - The completion-deploy gate and the Inter-Cycle Redeploy Checkpoint are both untouched: no edit
   landed in `orchestrate-cycle-plan.sh`, `command-gate-out.sh`, `verify-deploy.sh`, or
   `test-lint-deploy-caller-wrap.sh`, confirmed by `git status --short` and the staged diff.
+
+**Phase 2 Verification Notes**:
+
+- `deploy-headless.sh` was run twice. Both runs reported `the deploy itself landed, but the tree
+  fails verification (fast gates)` / `RESULT=landed_verify_red`, with exactly one failing check
+  both times: `gate10 (gate10_run) exceeded its 60s timeout and was killed` — gate 10 is
+  `specs/state.json schema validation (validate-state.sh --deep)`. Direct re-run of
+  `bash .claude/scripts/validate-state.sh --deep specs/state.json` outside the 60s inline-gate
+  timeout completed in 68.2s wall-clock and reported `STATE VALIDATION PASSED WITH WARNINGS`
+  (20 passed, 7 pre-existing warnings unrelated to this file, 0 failed). The failure is a
+  **timeout artifact under this batch's current concurrent write load** (several sibling tasks
+  dispatched in this same `/orchestrate` cycle are concurrently writing to the shared
+  `specs/state.json`), not a correctness defect, and `specs/state.json` is not a file this
+  record's `file_scope` touches by hand (it is only touched by the mechanical per-phase
+  heartbeat). Per this phase's own task list and the dispatch's territory-reporting instruction,
+  this is reported here rather than repaired — the deploy itself landed correctly (confirmed by
+  the byte-identical diff below), and gate 10's own content check passes once given the time it
+  actually needs.
+- `diff agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md
+  .claude/context/patterns/batch-orchestration-guardrails.md` is empty (exit 0): the deployed
+  copy is byte-identical to the source-store file, carrying the amendment and all four grounds.
+- **Batch Gate Deferral applied**: this dispatch's own dispatch file (`.dispatch/12.md`) carries
+  a `## Batch Gate Deferral` section instructing the final phase (this one, declared
+  `**Verification Tier**: full`) to discharge against a scoped narrowing covering the files this
+  phase actually touched, rather than independently running the unqualified full
+  `verify-deploy.sh` sweep — the full sweep still runs exactly once for the whole batch at the
+  end of the `/orchestrate` invocation and is attributed back to this task via `modified_files`.
+  The files this phase actually touched are the one context-store markdown file (via the
+  Phase 1 edit, redeployed here) and the mechanically-regenerated
+  `agent-system/extensions/core/index-entries.json` line-count entry for it — no executable
+  surface. The narrowing run was `bash .claude/scripts/verify-deploy.sh --only-gate 3,4,5` (gate
+  3 doc-lint, gate 4 task-reference lint — both repo-wide — and gate 5 manifest-driven
+  declared-vs-deployed parity plus content-hash equality across all loaded extensions): **PASS
+  — 4 check(s), 0 failure(s)**. This is the scoped discharge recorded per the directive; the
+  unrelated gate-10 timeout above is not among gates 3/4/5 and does not affect this discharge.
+- No mechanism file changed: `git status --short` for `orchestrate-cycle-plan.sh`,
+  `command-gate-out.sh`, `verify-deploy.sh`, and `test-lint-deploy-caller-wrap.sh` is empty
+  (clean) throughout this phase.
 
 ---
 
