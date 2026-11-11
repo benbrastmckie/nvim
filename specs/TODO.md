@@ -7337,6 +7337,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 - **Dependencies**: Task 418, Task 420
 - **Research**: [507_revisit_pre_sweep_deploy_trigger_ruling/reports/01_pre-sweep-deploy-trigger-readjudication.md]
 - **Plan**: [507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md]
+- **Summary**: [507_revisit_pre_sweep_deploy_trigger_ruling/summaries/01_pre-sweep-deploy-trigger-ruling-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

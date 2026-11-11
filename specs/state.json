@@ -24259,6 +24259,11 @@
           "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md",
           "type": "plan",
           "summary": "Two-phase plan: re-confirm figures and append the dated REAFFIRM amendment, then redeploy and run the full gate set."
+        },
+        {
+          "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/summaries/01_pre-sweep-deploy-trigger-ruling-summary.md",
+          "type": "summary",
+          "summary": "REAFFIRM ruling recorded as a dated amendment on the pre-postflight-sweep deploy trigger subsection, with figures re-derived fresh in this dispatch; tree redeployed and scoped gates observed green."
         }
       ],
       "audit_verdict": {
@@ -25716,7 +25721,8 @@
       },
       "last_updated": "2026-11-11T18:00:33Z",
       "session_id": "sess_1794413303_b61a83",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Re-derived all four recorded grounds for the declined pre-postflight-sweep deploy trigger against the current tree and corpus, reached a REAFFIRM ruling, and appended a dated amendment paragraph to batch-orchestration-guardrails.md's existing subsection (grounds (a)-(d) left byte-for-byte unchanged). Redeployed the tree and discharged Phase 2's full-tier verification via this dispatch's Batch Gate Deferral scoped narrowing (verify-deploy.sh --only-gate 3,4,5), all green."
     },
     {
       "project_number": 508,
