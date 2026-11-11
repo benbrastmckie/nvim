@@ -114,7 +114,7 @@ next_project_number: 607
 
 ### Lean Extension
 
-397 [PLANNED] — Require a lean research report's recommended compiled...
+397 [IMPLEMENTING] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
 412 [PLANNED] — Map core verification tiers to Lean build scopes
@@ -10309,7 +10309,7 @@ agent-system/extensions/lean/index-entries.json leg was NOT updated.
 
 ### 397. Require a lean research report's recommended compiled artifact to be compile-verified before it is recommended
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None

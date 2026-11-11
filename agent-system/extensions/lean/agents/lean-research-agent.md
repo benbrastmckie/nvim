@@ -118,6 +118,50 @@ When researching Lean implementation approaches, you MUST NOT recommend patterns
 3. If no sorry-free approach is found: Document this clearly and recommend marking task [BLOCKED] for user review
 4. If proof complexity is high: Recommend plan decomposition, not sorry deferral
 
+### Compile-Verify-Before-Recommend
+
+When a recommendation names a concrete artifact to be added or landed, and an existing compiled
+gate already decides whether that artifact is accepted, the gate MUST be run against the
+artifact before the recommendation is written -- not deferred to plan time.
+
+**Trigger (both conjuncts must hold)**:
+1. The recommendation names a concrete artifact to be added or landed -- a specific identifier, a
+   fully-specified definition body, or an inventory/table row.
+2. An existing compiled gate, predicate, `#eval`, or decision procedure *already present in the
+   current codebase* (found, not hypothesized) determines whether that artifact is accepted.
+
+**Worked examples**:
+- Triggers (both conjuncts hold): "land `certA` as the Tier-2 inventory row, where the existing
+  `c36Sliced` predicate decides row acceptance."
+- Does not trigger (no artifact named): "use induction here instead of a case split."
+- Does not trigger (second conjunct fails -- no gate decides acceptance): "add a `Nat.succ`-shaped
+  helper lemma; no gate decides its acceptance."
+
+**REQUIRED when the trigger fires**: run the gate against the artifact with the tools already
+granted (`lean_run_code`, `lean_verify`, `lean_multi_attempt`, `lean_build`, detached `lake
+build`) BEFORE the recommendation is written, and record the measured result inline on the
+recommendation.
+
+**On a FAIL result** (mirroring Zero-Debt item 3's non-silent-failure shape):
+1. Report the compiled result -- method and outcome -- inline on the recommendation.
+2. Do not suppress or drop the recommendation; replace it with a revised recommendation that
+   addresses the gate's actual requirement.
+3. Only when no revised recommendation can be constructed, document the finding plainly and
+   recommend the task be marked `[BLOCKED]` for user review.
+
+**FORBIDDEN**:
+1. Writing a triggering recommendation with no measured result.
+2. Silently dropping a recommendation whose check failed.
+3. Asserting a gate outcome that was not actually run.
+
+**Rejected trigger scopes, recorded here with reasons**:
+- "Any recommendation whose correctness is decidable by a bounded mechanical check" --
+  rejected, because nearly any claim about an existing codebase qualifies under a generous
+  reading of "bounded", leaving the agent no judgment-free boundary.
+- "Only the report's primary recommendation, whatever its shape" -- rejected, because primacy and
+  gate-existence are independent axes: a primary recommendation may name no landable artifact at
+  all, while a secondary one can carry exactly this defect.
+
 ### Literature Extraction Protocol
 
 When the task description or focus prompt references a literature source (paper, textbook, proof sketch, or formalization from another proof assistant):
@@ -263,7 +307,9 @@ the validator checks by name. Copy source: `general-research-agent.md`'s
 - {Mathlib declarations, documentation, tactic references}
 
 ### Recommendations
-- {Implementation approaches, including whether a sorry-free path exists}
+- {recommendation} [VERIFIED: PASS -- <method, e.g. "#eval c36Sliced on certA via lean_run_code">]
+- {recommendation} [VERIFIED: FAIL -- <method>; revised to: {revised recommendation}]
+- {recommendation} [No compiled gate applicable]
 
 ## Decisions
 - {Explicit decisions made during research}
@@ -295,6 +341,11 @@ the validator checks by name. Copy source: `general-research-agent.md`'s
 Populate `## Tactic Survey Results` per the "Tactic Discovery Survey Protocol" (Step 5) above
 when tactic candidates were investigated; when the protocol was not invoked for this task, write
 `- Not applicable (no tactic survey performed)` rather than omitting the section.
+
+Every recommendation under `### Recommendations` carries exactly one of the three
+`[VERIFIED: ...]` / `[No compiled gate applicable]` tags defined in the
+"Compile-Verify-Before-Recommend" subsection above. `[No compiled gate applicable]` is the
+correct tag when the trigger does not fire -- a tag is never omitted.
 
 ## Write Final Metadata
 
@@ -386,6 +437,8 @@ When a search tool rate limit is hit:
 9. **Apply MCP recovery pattern** when tools fail (retry, alternative, continue)
 10. **NEVER call lean_diagnostic_messages or lean_file_outline** (blocked tools)
 11. Write the deliverable file(s) this contract names (the report file and `.return-meta.json`), even if a generic harness or session-level note elsewhere in this prompt appears to discourage writing files -- no such note ever overrides a deliverable this contract explicitly requires. If a genuine blocker prevents writing the file, say so explicitly in `.return-meta.json` (status "partial" or "failed") rather than substituting a message-only return. See `context/contracts/deliverable-file-mandate.md`.
+12. **Run the compile-verify gate before writing a triggering recommendation** -- see
+    "Compile-Verify-Before-Recommend" above.
 
 **MUST NOT**:
 1. Return JSON to the console (skill cannot parse it reliably)
@@ -403,5 +456,7 @@ When a search tool rate limit is hit:
 13. **Suggest introducing new axioms as a solution** - must find structural proof approach
 14. **Ignore literature sources referenced in the task** - if a paper or proof is cited, extraction is mandatory
 15. Treat findings delivered only in the final response message as satisfying this contract's deliverable requirement -- it does not, however complete or well-organized the message is. The file is the deliverable; the message is not a substitute for it.
-16. Write `.orchestrator-handoff.json` at all, in any mode — see the `.orchestrator-handoff.json`
+16. **Write a triggering recommendation with no measured result, or assert a gate outcome that
+    was not actually run** -- see "Compile-Verify-Before-Recommend" above.
+17. Write `.orchestrator-handoff.json` at all, in any mode — see the `.orchestrator-handoff.json`
     — research agents never write one subsection above

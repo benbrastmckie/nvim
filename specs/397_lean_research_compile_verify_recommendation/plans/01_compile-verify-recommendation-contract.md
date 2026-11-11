@@ -1,7 +1,7 @@
 # Implementation Plan: Task #397
 
 - **Task**: 397 - lean research compile-verify recommendation contract
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/397_lean_research_compile_verify_recommendation/reports/01_compile-verify-recommendation-contract.md
@@ -114,16 +114,16 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add the Compile-Verify-Before-Recommend clause to the research agent [NOT STARTED]
+### Phase 1: Add the Compile-Verify-Before-Recommend clause to the research agent [COMPLETED]
 
 **Goal**: `lean-research-agent.md` carries the always-on contract clause, its rejected-trigger
 record, its FAIL obligation, the matching Critical Requirements entries, and the `[VERIFIED: …]`
 tag convention in its own Stage 1 report skeleton.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/agents/lean-research-agent.md` immediately before
-      editing (concurrent-sibling territory rule).
-- [ ] Insert a new `### Compile-Verify-Before-Recommend` subsection under
+- [x] Re-read `agent-system/extensions/lean/agents/lean-research-agent.md` immediately before
+      editing (concurrent-sibling territory rule). *(completed)*
+- [x] Insert a new `### Compile-Verify-Before-Recommend` subsection under *(completed)*
       `## Research Constraints for Lean Tasks`, placed immediately after the
       `### Zero-Debt Policy Compliance` subsection and before `### Literature Extraction
       Protocol`, mirroring Zero-Debt's two-list shape. Content to carry:
@@ -154,7 +154,7 @@ tag convention in its own Stage 1 report skeleton.
     no judgment-free boundary; "only the report's primary recommendation, whatever its shape" —
     rejected, because primacy and gate-existence are independent axes: a primary recommendation
     may name no landable artifact at all, while a secondary one can carry exactly this defect.
-- [ ] Extend the same file's Stage 1 report skeleton: under `### Recommendations`, replace the
+- [x] Extend the same file's Stage 1 report skeleton: under `### Recommendations`, replace the *(completed)*
       bare `- {Implementation approaches, including whether a sorry-free path exists}` guidance
       with the tagged shape, keeping the existing sorry-free-path guidance intact:
       ```
@@ -163,15 +163,15 @@ tag convention in its own Stage 1 report skeleton.
       - {recommendation} [VERIFIED: FAIL -- <method>; revised to: {revised recommendation}]
       - {recommendation} [No compiled gate applicable]
       ```
-- [ ] Add a short note immediately after the skeleton code block, in the same style as the
+- [x] Add a short note immediately after the skeleton code block, in the same style as the *(completed)*
       existing "Populate `## Tactic Survey Results` …" note, stating that every recommendation
       carries exactly one of the three tags and that `[No compiled gate applicable]` is the
       correct tag when the trigger does not fire — never an omitted tag.
-- [ ] Add one `MUST DO` item and one `MUST NOT` item to `## Critical Requirements` referencing
+- [x] Add one `MUST DO` item and one `MUST NOT` item to `## Critical Requirements` referencing *(completed)*
       the new subsection by name (MUST DO: run the gate before writing a triggering
       recommendation; MUST NOT: write a triggering recommendation with no measured result or an
       unrun asserted outcome).
-- [ ] Confirm no task-number reference was introduced into the file.
+- [x] Confirm no task-number reference was introduced into the file. *(completed: check-task-references.sh reports 0 occurrences)*
 
 **Timing**: 45 minutes
 
