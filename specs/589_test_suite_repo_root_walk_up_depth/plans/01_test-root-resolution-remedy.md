@@ -304,7 +304,7 @@ deployed copy.
 
 ---
 
-### Phase 4: Fix Deployed-Mode `EXT_ROOT` Resolution in `orchestrate-build-aux-dispatch.sh` [NOT STARTED]
+### Phase 4: Fix Deployed-Mode `EXT_ROOT` Resolution in `orchestrate-build-aux-dispatch.sh` [COMPLETED]
 
 **Goal**: Make the aux-dispatch builder's agent-frontmatter lookup resolve from its deployed
 location as well as from the source store, closing the production defect that makes every aux
@@ -312,10 +312,12 @@ dispatch's `model` field silently empty when the script runs deployed.
 
 **Tasks**:
 
-- [ ] Re-read `orchestrate-build-aux-dispatch.sh` immediately before editing.
-- [ ] Convert the single `EXT_ROOT` string at line 56 into an ordered candidate list consumed by
+- [x] Re-read `orchestrate-build-aux-dispatch.sh` immediately before editing. *(completed)*
+- [x] Convert the single `EXT_ROOT` string at line 56 into an ordered candidate list consumed by
       the glob loop at line 165, **keeping the current source-store candidate first** so the 22
-      cases that pass today are driven by the identical path they are driven by now:
+      cases that pass today are driven by the identical path they are driven by now. *(completed:
+      moved the candidate-list construction to after skill-base.sh is sourced, since the
+      original line-56 placement predates lib/common.sh being in scope)*
       1. `$SCRIPT_DIR/../..` — the existing source-store layout (`.../core/scripts` ->
          `.../extensions`), unchanged and first.
       2. `$(common_test_ext_root "$(common_test_repo_root "$SCRIPT_DIR")")` or an equivalent
@@ -325,28 +327,35 @@ dispatch's `model` field silently empty when the script runs deployed.
       3. `$SCRIPT_DIR/../agents` as a direct, non-globbed candidate — the deployed sibling tree.
          Confirmed present and correct during planning: `.claude/agents/reviser-agent.md` exists
          and declares `model: opus`. This candidate needs no source store to be reachable at all.
-- [ ] Keep the glob semantics intact for candidates 1 and 2 (`"$cand"/*/agents/"${agent}.md"`) and
+- [x] Keep the glob semantics intact for candidates 1 and 2 (`"$cand"/*/agents/"${agent}.md"`) and
       use the direct form for candidate 3 (`"$cand"/"${agent}.md"`); `*` does not match a leading
       dot, which is precisely why the current single expression fails from `.claude/scripts`.
-- [ ] Preserve the documented empty-model contract exactly: a harness built-in such as `fork` has
+      *(completed)*
+- [x] Preserve the documented empty-model contract exactly: a harness built-in such as `fork` has
       no agent file under any candidate and must still resolve to the empty string, never the
-      literal `null`.
-- [ ] If `common_test_*`-named helpers are judged inappropriate for a production (non-test)
+      literal `null`. *(completed: verified directly -- model resolves to empty for "fork")*
+- [x] If `common_test_*`-named helpers are judged inappropriate for a production (non-test)
       script, implement the same two-step resolution inline from `lib/common.sh`'s
       non-test-prefixed primitives rather than adding a new bespoke fixed-depth walk — reusing an
       existing helper is the task's stated preference and a sixth bespoke computation is
       explicitly out of bounds. Record whichever choice is made, and why, via `issue-record.sh`.
-- [ ] Update the now-stale explanatory comment in
+      *(completed: chose to reuse common_test_repo_root/common_test_ext_root directly -- they are
+      already transitively in scope via skill-base.sh's own lib/common.sh load, with no test-only
+      side effects; recorded via issue-record.sh)*
+- [x] Update the now-stale explanatory comment in
       `test-orchestrate-build-aux-dispatch.sh` (lines 62-65), which asserts that `EXT_ROOT`
       resolves to the real `agent-system/extensions/` "regardless of `$SKILL_REPO_ROOT`". That
       claim is true only from the source store; correct it to describe the candidate ordering.
-- [ ] Run `test-orchestrate-build-aux-dispatch.sh` from the source store as a negative control:
+      *(completed)*
+- [x] Run `test-orchestrate-build-aux-dispatch.sh` from the source store as a negative control:
       it must still report `22 passed, 0 failed`. A regression here means candidate 1 stopped
-      being consulted first.
-- [ ] Run the remaining selector-named suites. Note that `test-orchestrate-unwind-dispatch.sh` is
+      being consulted first. *(completed: 22 passed, 0 failed, unchanged)*
+- [x] Run the remaining selector-named suites. Note that `test-orchestrate-unwind-dispatch.sh` is
       in concurrent sibling task 569's declared `file_scope`: if it fails, check `git log` and
       `git status --short` first and report a foreign in-flight edit rather than attributing the
-      failure to this phase or fixing it.
+      failure to this phase or fixing it. *(completed: test-force-phases.sh 36/0,
+      test-orchestrate-context-growth.sh 6/0, test-orchestrate-cycle-plan.sh 420/0,
+      test-orchestrate-unwind-dispatch.sh 21/0 -- all green, no foreign interference observed)*
 - [ ] Commit the two files with an explicit file list.
 
 **Timing**: 1 hour

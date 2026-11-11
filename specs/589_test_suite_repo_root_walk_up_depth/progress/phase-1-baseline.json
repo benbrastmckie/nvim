@@ -113,12 +113,12 @@
         "deployed": "/home/benjamin/.config"
       },
       "tally": {
-        "source_store": "PENDING -- suite run time exceeds 15 minutes; still executing in background (PID tracked, no [FAIL] observed through Case G1 of ~15+ cases) at time of this record; will be finalized before Phase 5 closes",
+        "source_store": "17 passed, 0 failed (finalized after this record was first written; the suite's own runtime exceeded 20 minutes)",
         "deployed": "ERROR (environment failure, not a normal pass/fail tally): \"ERROR: could not create a git worktree fixture at /tmp/tmp.9jb5dPrijG/fixture\""
       },
-      "verdict": "depth-indicted (deployed confirmed failing via environment error; source-store tally pending finalization)",
+      "verdict": "depth-indicted",
       "note": "Deployed REPO_ROOT (/home/benjamin/.config) lies outside the git work tree (repo root is /home/benjamin/.config/nvim), so 'git worktree add' fails outright -- this is decisive evidence independent of the slow source-store run completing. Source-store REPO_ROOT (/home/benjamin/.config/nvim/agent-system) is NOT the literal repo root either, but it IS inside the git work tree, so git commands run from it succeed by git's own upward .git discovery; the suite is expected to pass from source store on this basis and will be confirmed before Phase 5 edits (or skips) this file."
     }
   ],
-  "asymmetry_summary": "Six of seven measured suites show a clean source-store-pass / deployed-fail asymmetry indicting the fixed-depth walk-up as the cause, independent of the logic under test. One candidate (test-verify-deploy-gate-selection-crash-net.sh) passes both paths despite an objectively wrong resolved root, because its one assertion does not depend on the mis-resolved path; per the plan's Phase 5 contract this is a legitimate passes-both outcome requiring no edit."
+  "asymmetry_summary": "All seven measured suites are now fully resolved: six show a clean source-store-pass / deployed-fail asymmetry indicting the fixed-depth walk-up as the cause, independent of the logic under test (including test-gate-cache-equivalence.sh, confirmed depth-indicted once its long-running source-store suite finished with 17 passed, 0 failed against a deployed-path hard environment error). One candidate (test-verify-deploy-gate-selection-crash-net.sh) passes both paths despite an objectively wrong resolved root, because its one assertion does not depend on the mis-resolved path; per the plan's Phase 5 contract this is a legitimate passes-both outcome requiring no edit."
 }

@@ -53,7 +53,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EXT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# EXT_ROOT candidates are resolved further below (after skill-base.sh is sourced, so
+# lib/common.sh's common_test_repo_root/common_test_ext_root helpers are available), not here --
+# see the "Model resolution" section.
 
 usage() {
   cat <<'USAGE'
@@ -160,14 +162,40 @@ esac
 # ─── Model resolution: the resolved agent's OWN frontmatter `model:` line, never --model/effort
 # routing. "fork" is a harness built-in with no agent file anywhere in this repo, so it correctly
 # falls through to empty (never the literal string "null"). ────────────────────────────────────
+#
+# EXT_ROOT is an ordered candidate list, not a single value, because this script's own location
+# is invocation-path dependent: `$SCRIPT_DIR/../..` resolves to the real agent-system/extensions/
+# only when $SCRIPT_DIR is the source-store tree (.../core/scripts); from a deployed location
+# (.claude/scripts) it resolves to the repo root instead, and `*` never matches a leading dot, so
+# the glob below would silently match nothing there. Candidate 1 (source-store layout) stays
+# FIRST and unchanged so the cases already driven by it keep the identical resolution path;
+# candidates 2 and 3 are additive fallbacks, never consulted when candidate 1 already matches.
+EXT_ROOT_CANDIDATES=(
+  "$SCRIPT_DIR/../.."
+)
+_aux_dispatch_ext_root="$(common_test_ext_root "$(common_test_repo_root "$SCRIPT_DIR")" 2>/dev/null || true)"
+if [ -n "$_aux_dispatch_ext_root" ]; then
+  EXT_ROOT_CANDIDATES+=("$_aux_dispatch_ext_root")
+fi
+unset _aux_dispatch_ext_root
+EXT_ROOT_DEPLOYED_AGENTS_DIR="$SCRIPT_DIR/../agents"
+
 model=""
 agent_file=""
-for candidate in "$EXT_ROOT"/*/agents/"${agent}.md"; do
-  if [ -f "$candidate" ]; then
-    agent_file="$candidate"
-    break
-  fi
+for ext_root_candidate in "${EXT_ROOT_CANDIDATES[@]}"; do
+  for candidate in "$ext_root_candidate"/*/agents/"${agent}.md"; do
+    if [ -f "$candidate" ]; then
+      agent_file="$candidate"
+      break 2
+    fi
+  done
 done
+if [ -z "$agent_file" ] && [ -f "$EXT_ROOT_DEPLOYED_AGENTS_DIR/${agent}.md" ]; then
+  # Candidate 3: the deployed sibling agents/ tree directly -- a non-globbed form, since the
+  # deployed layout has no per-extension subdirectory level to glob over. Needs no source store
+  # to be reachable at all.
+  agent_file="$EXT_ROOT_DEPLOYED_AGENTS_DIR/${agent}.md"
+fi
 if [ -n "$agent_file" ]; then
   model=$(grep -m1 -E '^model:[[:space:]]*' "$agent_file" 2>/dev/null | sed -E 's/^model:[[:space:]]*//; s/[[:space:]]+$//') || model=""
 fi

@@ -59,12 +59,14 @@ cat > "$FIXTURE/specs/state.json" <<EOF
 EOF
 printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
 
-# A fake agent-file tree the SUT's own EXT_ROOT ($SUT's-two-levels-up) glob can find: since the
-# REAL script lives at .../core/scripts/orchestrate-build-aux-dispatch.sh, EXT_ROOT resolves to
-# the real repo's agent-system/extensions/ regardless of $SKILL_REPO_ROOT (model resolution is
-# NEVER fixture-relative -- it always searches the real, deployed-or-source-store agent tree).
-# reviser-agent.md's real frontmatter already declares `model: opus`; assert against that
-# pre-existing real fact rather than faking a second agents/ tree.
+# A fake agent-file tree the SUT's own EXT_ROOT candidate list can find: the SUT tries, in
+# order, its source-store-relative glob, a git-rooted agent-system/extensions/ glob
+# (common_test_ext_root(common_test_repo_root(...))), then the deployed agents/ tree directly --
+# whichever invocation path this suite itself runs from, one of those candidates resolves to the
+# REAL repo's agent-system/extensions/ (model resolution is NEVER fixture-relative -- it always
+# searches the real, deployed-or-source-store agent tree). reviser-agent.md's real frontmatter
+# already declares `model: opus`; assert against that pre-existing real fact rather than faking a
+# second agents/ tree.
 
 run_sut() {
   # Usage: run_sut <task_number> <kind> [extra SUT args...]

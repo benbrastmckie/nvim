@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Fix Deployed-Mode EXT_ROOT Resolution in orchestrate-build-aux-dispatch.sh",
+  "started_at": "2026-11-11T08:08:00Z",
+  "last_updated": "2026-11-11T08:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Convert EXT_ROOT to ordered candidate list, placed after skill-base.sh source", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh"]},
+    {"id": 2, "description": "Correct stale EXT_ROOT comment in test-orchestrate-build-aux-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh"]},
+    {"id": 3, "description": "Negative control + remaining selector-named suites", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "EXT_ROOT candidate-list placement",
+      "type": "altered",
+      "reason": "The plan described converting 'the single EXT_ROOT string at line 56' in place, but line 56 runs before skill-base.sh is sourced (line 147), so lib/common.sh's helpers are not yet in scope there. Moved the candidate-list construction to immediately before the model-resolution glob loop (after skill-base.sh is sourced), which is the only point where common_test_repo_root/common_test_ext_root are available. EXT_ROOT is used nowhere between the old line 56 and the new location, so behavior is unaffected.",
+      "annotation": "*(deviation: altered — candidate-list construction relocated to after skill-base.sh sourcing)*"
+    }
+  ]
+}
