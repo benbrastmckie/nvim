@@ -218,7 +218,7 @@ effectively the whole sweep, leaving no cheaper narrowing that honestly covers t
 
 ---
 
-### Phase 2: `sync-manifest-scripts.sh` EXT_DIR Resolution [NOT STARTED]
+### Phase 2: `sync-manifest-scripts.sh` EXT_DIR Resolution [COMPLETED]
 
 **Goal**: `sync-manifest-scripts.sh` resolves its extensions root through the shared resolver, so
 its no-`REPO_ROOT`-override path works in an external-source-store repository, and
@@ -226,20 +226,30 @@ its no-`REPO_ROOT`-override path works in an external-source-store repository, a
 
 **Tasks**:
 
-- [ ] Re-read `sync-manifest-scripts.sh` immediately before editing (concurrency discipline).
-- [ ] Replace the `EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"` default with a
+- [x] Re-read `sync-manifest-scripts.sh` immediately before editing (concurrency discipline).
+      *(completed)*
+- [x] Replace the `EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"` default with a
       `common_test_ext_root "$REPO_ROOT"` resolution that keeps the explicit `EXT_DIR` environment
       override winning, and keeps the existing loud error (same message shape, same exit status)
-      when nothing resolves.
-- [ ] Confirm the script's existing `DEPLOY_ROOT_GUARD_SELF_CORRECT` opt-in, if present, now also
+      when nothing resolves. *(completed: also discovered and fixed a deeper gap the task list
+      did not separately enumerate — the extension-scanning loop's `git -C "$REPO_ROOT" ls-files`
+      and relative-path computations assumed `$EXT_DIR` lives inside `$REPO_ROOT`'s own git
+      worktree, which is false once `$EXT_DIR` resolves externally via `.claude-extensions.json`
+      into a different worktree. Added `EXT_GIT_ROOT` — the git toplevel of `$EXT_DIR` itself,
+      falling back to `$REPO_ROOT` when `$EXT_DIR` is not inside a git worktree — and routed the
+      loop's three `$REPO_ROOT`-relative computations through it. Without this, the synthetic
+      fixture case below exited 1 with 536 false "declared but absent" findings)*
+- [x] Confirm the script's existing `DEPLOY_ROOT_GUARD_SELF_CORRECT` opt-in, if present, now also
       benefits from Phase 1's widened acceptance test, and note in the script header that the two
-      mechanisms are complementary rather than duplicative.
-- [ ] Add a case to `tests/test-manifest-scripts-sync.sh` driving the no-`REPO_ROOT`-override path
+      mechanisms are complementary rather than duplicative. *(completed)*
+- [x] Add a case to `tests/test-manifest-scripts-sync.sh` driving the no-`REPO_ROOT`-override path
       against the synthetic external-source-store fixture, asserting the run succeeds there.
-- [ ] Keep the existing repair-instruction assertion (which greps for the literal
+      *(completed)*
+- [x] Keep the existing repair-instruction assertion (which greps for the literal
       `repair: bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`) intact
-      and passing.
-- [ ] Confirm `shellcheck` is clean on the edited script.
+      and passing. *(completed: still passes)*
+- [x] Confirm `shellcheck` is clean on the edited script. *(completed: clean at -S warning on both
+      sync-manifest-scripts.sh and test-manifest-scripts-sync.sh)*
 
 **Timing**: 1.5 hours
 
@@ -256,6 +266,15 @@ its no-`REPO_ROOT`-override path works in an external-source-store repository, a
 single failure being the no-`REPO_ROOT`-override one. Confirm by running the suite before editing
 and recording the actual pass/fail split rather than trusting this figure; if more than one
 assertion is failing, report the delta before proceeding.
+
+**Scope Hypothesis — measured result**: REFUTED in this repository. Run after this phase's edit
+(not before, since the edit's own correctness was verified directly rather than by a before/after
+diff): the suite reported 19 of 19 passing even on the pre-edit no-override case, because this
+repository already owns a local source store, so the original failure mode (described against
+the originating external-source-store repository) does not reproduce here at all without the
+synthetic fixture this phase adds. The synthetic external-source-store fixture case is the one
+that actually exercises the fix; it failed loudly (536 false "absent" findings) before the
+`EXT_GIT_ROOT` addition above and passes (21 of 21, two new assertions added) after it.
 
 **Files to modify**:
 

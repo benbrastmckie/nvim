@@ -67,12 +67,39 @@ set -euo pipefail
 DEPLOY_ROOT_GUARD_SELF_CORRECT=1
 [[ -n "${REPO_ROOT:-}" ]] || . "$(dirname "${BASH_SOURCE[0]}")/deploy-root-guard.sh" || exit 1
 REPO_ROOT="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
-EXT_DIR="${EXT_DIR:-$REPO_ROOT/agent-system/extensions}"
+
+# EXT_DIR resolution: an explicit EXT_DIR override still wins outright (same
+# REPO_ROOT-bypass-compatible pattern as above). Absent that, resolve through
+# lib/common.sh's common_test_ext_root, which tries REPO_ROOT's own local
+# agent-system/extensions first and falls open to the .claude-extensions.json
+# core.source_dir indirection when REPO_ROOT has no local source store of its own -- the
+# condition that left this script's no-REPO_ROOT-override path unable to find its corpus in an
+# external-source-store repository. DEPLOY_ROOT_GUARD_SELF_CORRECT widening REPO_ROOT (Phase 1)
+# and this EXT_DIR widening are complementary, not duplicative: the former corrects REPO_ROOT
+# itself when invoked from the source-store tree; this one corrects where EXT_DIR looks once
+# REPO_ROOT is already correct but holds no local source store.
+if [[ -z "${EXT_DIR:-}" ]]; then
+  # shellcheck source=lib/common.sh
+  . "$(dirname "${BASH_SOURCE[0]}")/lib/common.sh"
+  EXT_DIR="$(common_test_ext_root "$REPO_ROOT")" || EXT_DIR="$REPO_ROOT/agent-system/extensions"
+fi
 
 if [[ ! -d "$EXT_DIR" ]]; then
   echo "ERROR: $EXT_DIR does not exist" >&2
   exit 1
 fi
+
+# EXT_GIT_ROOT: the git worktree that actually tracks $EXT_DIR's files, used for every
+# `git ls-files`/relative-path computation below instead of assuming $EXT_DIR lives inside
+# $REPO_ROOT's own tree. The two coincide in the common case (this repository is the source-store
+# owner, or a fixture nests EXT_DIR under REPO_ROOT), but NOT when EXT_DIR was resolved through
+# the .claude-extensions.json indirection above into a source store that lives in a different git
+# worktree than $REPO_ROOT entirely -- using $REPO_ROOT there would hand `git ls-files` an
+# absolute pathspec outside its own repository, which resolves no files and misreports every
+# declared entry as absent. Falls back to $REPO_ROOT (today's exact prior behavior) when $EXT_DIR
+# is not itself inside a git worktree.
+EXT_GIT_ROOT="$(cd "$EXT_DIR" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null)"
+EXT_GIT_ROOT="${EXT_GIT_ROOT:-$REPO_ROOT}"
 
 MODE="check"
 case "${1:-}" in
@@ -210,7 +237,7 @@ for ext_path in "$EXT_DIR"/*/; do
   manifest="$ext_path_norm/manifest.json"
   [[ -f "$manifest" ]] || continue
 
-  ext_rel="${ext_path_norm#"$REPO_ROOT"/}"
+  ext_rel="${ext_path_norm#"$EXT_GIT_ROOT"/}"
 
   disk_list="$(mktemp)"
   declared_list="$(mktemp)"
@@ -218,13 +245,13 @@ for ext_path in "$EXT_DIR"/*/; do
   absent_list="$(mktemp)"
 
   while IFS= read -r script_file; do
-    [[ -f "$REPO_ROOT/$script_file" ]] || continue
+    [[ -f "$EXT_GIT_ROOT/$script_file" ]] || continue
     rel_path="${script_file#"$ext_rel"/scripts/}"
     case "$rel_path" in
       deprecated/*) continue ;;
     esac
     printf '%s\n' "$rel_path"
-  done < <(git -C "$REPO_ROOT" ls-files "$ext_path_norm/scripts" | sort) > "$disk_list"
+  done < <(git -C "$EXT_GIT_ROOT" ls-files "$ext_path_norm/scripts" | sort) > "$disk_list"
 
   jq -r '.provides.scripts[]?' "$manifest" | sort > "$declared_list"
 

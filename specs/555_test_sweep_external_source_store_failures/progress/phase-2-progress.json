@@ -1,0 +1,50 @@
+{
+  "phase": 2,
+  "phase_name": "sync-manifest-scripts.sh EXT_DIR Resolution",
+  "started_at": "2026-11-10T22:30:00Z",
+  "last_updated": "2026-11-10T22:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace EXT_DIR's hardcoded default with common_test_ext_root resolution, explicit override still winning",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/sync-manifest-scripts.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Fix the extension-scanning loop's git-root assumption (EXT_GIT_ROOT) so git ls-files targets EXT_DIR's own worktree, not REPO_ROOT's",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/sync-manifest-scripts.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add the synthetic external-source-store fixture case to test-manifest-scripts-sync.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Confirm shellcheck clean and the repair-instruction assertion still passing",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.unlisted",
+      "description": "Extension-scanning loop's git -C \"$REPO_ROOT\" ls-files and relative-path stripping assumed $EXT_DIR lives inside $REPO_ROOT's own git worktree",
+      "type": "altered",
+      "reason": "Not separately enumerated in the plan's task list, but required for the stated Goal to actually hold: without it, the synthetic external-source-store fixture exited 1 with 536 false absent findings because git ls-files against an absolute pathspec outside its own repo resolves nothing. Added EXT_GIT_ROOT (the git toplevel of $EXT_DIR, falling back to $REPO_ROOT) and routed the loop's three REPO_ROOT-relative computations through it.",
+      "annotation": "*(completed: also discovered and fixed a deeper gap...)*"
+    }
+  ],
+  "verification_notes": [
+    "bash agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh: 21 passed, 0 failed (19 pre-existing + 2 new synthetic external-source-store fixture cases).",
+    "The pre-existing no-REPO_ROOT-override case was ALREADY passing (19 of 19) in this repository both before and after this phase's edit, refuting the plan's own Scope Hypothesis (18 of 19) -- this repository owns a local source store, so the original failure mode (observed in the originating external-source-store repository) does not reproduce here without a synthetic fixture. The new fixture case is the one that actually exercises the fix and failed loudly before EXT_GIT_ROOT was added.",
+    "shellcheck -S warning clean on sync-manifest-scripts.sh and test-manifest-scripts-sync.sh.",
+    "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-deploy-root-guard.sh,test-manifest-scripts-sync.sh: 2 passed, 0 failed (0 expected, 0 NEW)."
+  ]
+}

@@ -290,6 +290,33 @@ else
   common_test_fail "check-extension-docs.sh emitted the deploy-path refusal with no override (output: $NOOVERRIDE_DOCS_OUTPUT)"
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# External-source-store, no-EXT_DIR-override invocation contract: REPO_ROOT points at a synthetic
+# repository that holds a resolving .claude-extensions.json and NO local agent-system/ directory
+# at all. sync-manifest-scripts.sh's own EXT_DIR default must resolve through the
+# .claude-extensions.json indirection (common_test_ext_root's second branch) rather than refusing
+# with "<REPO_ROOT>/agent-system/extensions does not exist".
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+EXTSTORE_REPO="$WORKDIR/extstore-repo"
+mkdir -p "$EXTSTORE_REPO"
+( cd "$EXTSTORE_REPO" && git init -q && git config user.email t@t.com && git config user.name t )
+cat > "$EXTSTORE_REPO/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$REPO_ROOT/agent-system/extensions/core"}}}
+EOF
+
+EXTSTORE_SYNC_OUTPUT="$(cd "$EXTSTORE_REPO" && env -u EXT_DIR REPO_ROOT="$EXTSTORE_REPO" bash "$SYNC_SCRIPT" --check 2>&1)"
+EXTSTORE_SYNC_EXIT=$?
+if [[ "$EXTSTORE_SYNC_EXIT" -eq 0 ]]; then
+  common_test_pass "sync-manifest-scripts.sh --check exits 0 against the external-source-store fixture with no EXT_DIR override"
+else
+  common_test_fail "sync-manifest-scripts.sh --check exited $EXTSTORE_SYNC_EXIT against the external-source-store fixture (output: $EXTSTORE_SYNC_OUTPUT)"
+fi
+if ! grep -qF "does not exist" <<< "$EXTSTORE_SYNC_OUTPUT"; then
+  common_test_pass "sync-manifest-scripts.sh resolves EXT_DIR via .claude-extensions.json rather than refusing"
+else
+  common_test_fail "sync-manifest-scripts.sh still reported EXT_DIR missing against the external-source-store fixture (output: $EXTSTORE_SYNC_OUTPUT)"
+fi
+
 echo ""
 echo "====================================="
 echo "Results: $PASSED passed, $FAILED failed"
