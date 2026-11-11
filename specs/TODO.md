@@ -5949,6 +5949,7 @@ surface, and that rationale does not survive into this repository.
 - **Dependencies**: None
 - **Research**: [532_roadmap_integration_regenerate_silent_abort/reports/01_regenerate-silent-abort-research.md]
 - **Plan**: [532_roadmap_integration_regenerate_silent_abort/plans/01_regenerate-outcome-reporting.md]
+- **Summary**: [532_roadmap_integration_regenerate_silent_abort/summaries/01_regenerate-outcome-reporting-summary.md]
 
 **Description**: **`roadmap-integration.sh --regenerate` IS SILENTLY INOPERATIVE ON THIS ROADMAP.** Verified live: `bash .claude/scripts/roadmap-integration.sh --regenerate` exits 1 with ZERO stdout and ZERO stderr and writes nothing, because `specs/ROADMAP.md` carries none of the headings the assembler needs — it is a Stage-based authored document, not the `## Open work` / `## Next` generated layout the script expects. Pick one and land it: either teach the script the Stage-based layout, or decide that `specs/ROADMAP.md` is AUTHORED-ONLY and make `--regenerate` say so LOUDLY (a named error on stderr and a documented exit code) instead of aborting in silence. A silent abort is the worst of the three outcomes because a caller cannot tell it from success. Note that a reference to a roadmap-tooling task circulates in other records without resolving to an existing one; filing this is what makes that reference resolve.
 

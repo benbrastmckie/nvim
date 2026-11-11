@@ -55479,9 +55479,15 @@
           "path": "specs/532_roadmap_integration_regenerate_silent_abort/plans/01_regenerate-outcome-reporting.md",
           "type": "plan",
           "summary": "3-phase plan adding a named, change-aware OUTCOME: stderr line to roadmap-integration.sh's write modes, correcting roadmap-format.md and roadmap-update.md, and redeploying."
+        },
+        {
+          "path": "specs/532_roadmap_integration_regenerate_silent_abort/summaries/01_regenerate-outcome-reporting-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for all 3 phases: OUTCOME: stderr line, corrected caller-contract docs, redeploy and scoped verification."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a named, change-aware OUTCOME: stderr line to roadmap-integration.sh's --regenerate/--prune write modes (write_or_diff + ROADMAP_LAYOUT), added 12 regression test cases (105/105 passing), corrected roadmap-format.md and roadmap-update.md to document the line and the settled classic/stage layout ruling, and redeployed the core extension with all four files confirmed byte-identical source-store vs. deployed."
     },
     {
       "project_number": 533,

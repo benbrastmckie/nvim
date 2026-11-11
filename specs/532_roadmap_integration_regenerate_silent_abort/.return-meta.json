@@ -23,15 +23,28 @@
       "category": "PATTERN",
       "source_artifact": "specs/532_roadmap_integration_regenerate_silent_abort/summaries/01_regenerate-outcome-reporting-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["batch-gate-deferral", "scoped-discharge", "concurrent-siblings", "gate-timeout", "false-positive", "verify-deploy"]
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "scoped-discharge",
+        "concurrent-siblings",
+        "gate-timeout",
+        "false-positive",
+        "verify-deploy"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794423844_64f71e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
