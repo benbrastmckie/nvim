@@ -745,6 +745,8 @@ DUPLICATE CHECK performed at creation time against the open backlog and the arch
   - Archived #496 added per-repo storage and injection to this extension and is the record that created the call path; #499 retargeted the store-coupled distill sub-modes. Both closed, neither covers retry.
 No open record mentions sapience-retrieve.sh, retry_after, or the 503 cold start.
 
+RECURRENCE (observed again, 2026-11-11, session sess_1794402680_74378a): the same cold-start 503 fired 6 more times across a two-task batch, confirming the per-dispatch rate rather than a one-off. One entry_id not already cited above: specs/573_fix_two_single_assertion_suite_failures/issues.jsonl: iss_1794402725593_VjV7gd. The remaining five re-fired against entry_ids this record already cites. No change to the ask, the root cause, or the scope -- recorded so a future reader sees the defect is ongoing, not historical.
+
 ---
 
 ### 599. Give the batch-gate-deferral directive a narrowing form that covers a phase touching only project sources, not the agent-system deploy tree
