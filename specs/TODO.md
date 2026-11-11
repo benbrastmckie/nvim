@@ -1,5 +1,5 @@
 ---
-next_project_number: 602
+next_project_number: 603
 ---
 
 # TODO
@@ -14,7 +14,7 @@ next_project_number: 602
 | 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591,597,600,601 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586,598,599 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,391,398,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,481,524,561,577,581,594 | 390,402,438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
+| 4 | 421,481,524,561,577,581,594,602 | 390,402,438,479,492,501,532,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
 | 6 | 596 | 595 | agent-system |
 
@@ -76,6 +76,7 @@ next_project_number: 602
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
+602 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Extensions
 
@@ -202,6 +203,129 @@ next_project_number: 602
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 602. Conclusion stage next batch proposal quality
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 402, Task 532
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
+
+GOAL. An orchestration must END on something an operator can act on: a cleaned roadmap, one or more SUBSTANTIAL proposed next batches (with options, not a single take-it-or-leave-it line), and the dependency edges actually written so those batches sequence correctly. Today it can end on nothing but a list of two-task collision sequences.
+
+=== DEFECT 1: PAIR SEQUENCES PRE-EMPT THE JOINT BATCH ENTIRELY (measured, not hypothesized) ===
+
+MEASURED LIVE against a 138-task ready pool:
+  /orchestrate lines rendered: 4
+  ... of which joint batches:  0
+  ... of which 2-task "A, then B" collision sequences: 4
+
+ROOT CAUSE, read from the code rather than inferred from the output. In
+scripts/orchestrate-suggest-next-batch.sh, suggest_from_pool() runs a shrink-and-retry loop. Each
+round it probes `remaining`, then runs an "edge-proposing pass" that renders EVERY in_batch
+file_scope_collision pair via propose_edge_for_pair() and appends BOTH members to
+handled_pair_members[]. The next bucketing pass skips every handled member, so a colliding pair is
+consumed out of the pool before the admitted remainder can be offered as a batch. A plain joint
+`/orchestrate a, b, c` line is printed ONLY in the branch requiring `${#dropped_other[@]} -eq 0`
+AND `${#handled_pair_members[@]} -eq 0` -- i.e. only in a round with no collisions and no defers at
+all. And the function returns 0 on `any_sequence_rendered = true` regardless, so rendering nothing
+but pair sequences is reported as success.
+
+In the measured run the first round's 8 selected candidates were exactly 4 collision pairs:
+handled_pair_members consumed all 8, next_remaining emptied, the loop exited, and the function
+returned success having never once reached the joint-batch branch. On a dense backlog this is the
+NORMAL path, not an edge case -- collisions are common, and each one removes two candidates that
+would otherwise have formed the substantial batch.
+
+REQUIRED: a collision pair must be ADDITIVE information alongside a joint-batch proposal, never a
+replacement for it. The two answer different questions ("what should I run next" vs. "these two
+need ordering first") and both belong in the output.
+
+=== DEFECT 2: ONE SUGGESTION, NO OPTIONS ===
+
+Mode A renders at most ONE joint batch and returns immediately from the joint-batch branch. An
+operator wanting a different shape -- a different topic, a smaller set, a territory-mandatory group
+versus a wide independent set -- has nothing to choose from.
+
+REQUIRED: render SEVERAL distinct admissible batch options, each labelled with what makes it
+coherent (shared territory / topic cohesion / graph width -- the three criteria the selection
+doctrine already names) and each carrying its own admission evidence. Decide and record how many
+options is right; more than one, bounded, and each independently probe-verified. Honor the existing
+MAX_PROBE_INVOCATIONS cap -- rendering more options must not become an unbounded probe fan-out, and
+reaching the cap must stay explicitly rendered as it is today.
+
+=== DEFECT 3: PROPOSED EDGES ARE NEVER WRITTEN ON THIS PATH ===
+
+propose_edge_for_pair() prints the exact `update-task-status.sh preflight N edge_only SID
+--depends-on-add=[M]` command but mutates nothing. The script ALREADY HAS a `--write-edges` flag
+that performs the write and then re-probes to show both members flip to `admit` -- but the
+conclusion stage's Step 7 never passes it, so every orchestration ends by handing the operator
+commands to paste by hand.
+
+REQUIRED: let the conclusion stage actually write the approved edges. Note the propose-by-default
+ruling is DELIBERATE (that script's header, Decision 2: never mutate specs/state.json unasked), so
+this must NOT become an unconditional write. The fitting shape is a gated one, consistent with how
+the conclusion stage already gates its three channels: present the edges, take one explicit
+approval, then invoke the existing `--write-edges` path. Do NOT reimplement edge writing -- the
+flag and its re-probe already exist.
+
+=== DEFECT 4: THE ROADMAP IS REGENERATED BUT NEVER CLEARED ===
+
+Step 5 invokes `roadmap-integration.sh --regenerate` only. `--prune` is built and working (it drops
+terminal task lines from ## Open work and terminal ids from ## Next's Run lines, with --dry-run and
+a pruned=N/retained=N metadata comment), but the conclusion stage deliberately excludes it, on the
+recorded ground that it "removes content outright, a stronger unattended action than an idempotent
+regenerate."
+
+REQUIRED: revisit that exclusion and land a ruling. The ground for revisiting is that terminal
+cruft accumulating in the roadmap is exactly what makes the end-of-orchestration report unusable,
+which is the cost the original ruling did not weigh. A `--dry-run` prune presented for approval,
+then applied, would satisfy both the original caution and the need. If the conclusion is to keep the
+exclusion, record that as the outcome with its grounds -- a reasoned no is a valid completion.
+
+=== WHAT THIS TASK IS NOT ===
+
+It is NOT a second copy of the admission predicate. The binding constraint in
+orchestrate-suggest-next-batch.sh's own header (Decision a) stands unchanged: admissibility is
+established ONLY by invoking orchestrate-batch-admit.sh and reading its NDJSON verdicts. Every
+additional option this task renders must be probe-verified the same way. No directory-prefix
+overlap comparison, no forked copy of the shared overlap helpers.
+
+It is also NOT an authoring-time batch VALIDATOR. A separate open record owns an advisory lint over
+hand-authored ROADMAP.md batch blocks and carries a hard constraint that it must never author,
+suggest or rank a batch -- it explicitly defers machine-derived batch SELECTION to the suggester
+this task improves. Read that record before starting so the boundary is preserved in both
+directions: that one validates what a human wrote, this one proposes.
+
+The time-stamped-claim convention (Decision e) stays: every rendered option states it was
+admissible WHEN SUGGESTED and must be re-verified at dispatch.
+
+=== TERRITORY NOTE (read before dispatching) ===
+
+context/contracts/conclusion-stage.md is also declared by three other open records -- one on
+agent-system task siting, one on conclusion-stage filing phrasing, one on null-resolution issue-log
+entries. Their edits are in different sections of that file, so per the guardrails' Rule 1 the
+right disposition is to BATCH them with this task, or serialize them with an explicit edge -- never
+to exclude them. Decide at dispatch time, not here.
+
+=== ACCEPTANCE ===
+- A fixture pool whose selected candidates are all collision pairs renders at least one joint batch
+  line IN ADDITION to the pair sequences. The measured 4-sequences/0-batches case above is
+  reproduced as that fixture and the new behavior is demonstrated against it.
+- Several distinct admissible batch options are rendered, each labelled with its coherence
+  criterion and each carrying its own probe evidence.
+- The MAX_PROBE_INVOCATIONS cap is still honored and still rendered explicitly when reached.
+- No copy of the overlap/admission predicate exists in the new code; every overlap fact still
+  arrives as a field on an orchestrate-batch-admit.sh verdict.
+- Edge writing goes through the existing --write-edges path behind one explicit approval, and a
+  declined approval leaves specs/state.json byte-identical.
+- The roadmap prune ruling is landed either way, with its grounds recorded.
+- A test companion in scripts/tests/ covers each of the four defects above; shellcheck clean per
+  context/standards/shell-strict-mode.md.
+
+---
 
 ### 601. Root walkup class closure lint
 - **Effort**: medium
