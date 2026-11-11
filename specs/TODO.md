@@ -11,8 +11,8 @@ next_project_number: 589
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,574,575,580,585,589,590,591 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,573,576,583,584,586 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,589 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588 | 313,391,398,439,458,472,476,486,509,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
 
@@ -69,6 +69,9 @@ next_project_number: 589
 575 [NOT STARTED] — Stop the cross-phase ceiling check reading a stop-word as a...
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
+589 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
+590 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
+591 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
@@ -165,13 +168,13 @@ next_project_number: 589
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
 569 [NOT STARTED] — Four fixture-based test suites fail because their curated...
 572 [NOT STARTED] — Make a declared 'Verification Tier: full' actually honorable...
-573 [NOT STARTED] — Diagnose and fix one failing assertion in each of two suites,...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
+573 [NOT STARTED] — Diagnose and fix one failing assertion in each of two suites,...
 
 ### Repo Hygiene
 
@@ -187,6 +190,70 @@ next_project_number: 589
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 591. Retire errors json triage surface
+- **Effort**: medium
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 587
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+PROBLEM: specs/errors.json, scripts/errors-append.sh, and the /errors command form a triage surface with its own schema, decoupled from the stores that carry this repository's real error traffic. errors-append.sh's 'append' subcommand -- the write half of what rules/error-handling.md once documented as THE error store -- was mechanically verified to have ZERO production call sites across agents, skills, hooks, commands and scripts in the source store: every remaining reference is a comment, a test fixture, or verify-deploy.sh's own manifest-presence check. The single non-append caller is core/commands/errors.md, which calls 'update' only. Measured alongside: specs/errors.json holds 19 records whose newest timestamp is more than two months old.
+
+The documented contract has since been corrected to name issue-record.sh as the live write path (error-logging contract work, task 587), so nothing now points callers at the abandoned store. Retiring the surface outright was deliberately left open there rather than decided.
+
+SCOPE: decide and execute the retirement question. Settle (1) whether /errors retains any capability that issues.jsonl plus the conclusion stage's own aggregation and three-channel promotion do not already provide -- its triage schema and interactive flow are the candidates worth checking honestly, not assuming; (2) what becomes of the 19 existing records (migrate into an issue log, archive, or discard with the decision recorded); and (3) if retiring, remove the command, the script, its manifest entry, verify-deploy.sh's presence check, and the test fixtures together, so no half-retired surface is left for a future reader to mistake for live. If the decision is to KEEP it, say what it is for and wire at least one real caller -- a store with no writer is the defect, whichever way it is resolved.
+
+TERRITORY NOTE: verify-deploy.sh and core/manifest.json are shared with several open records; batch or serialize against whichever of them is live rather than racing them.
+
+---
+
+### 590. Gate24 ide dead command recommendations
+- **Effort**: small
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 587
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+PROBLEM: verify-deploy.sh gate 24 (lint-dead-command-recommendations.sh) FAILs with two violations, both recommending the command /ide, which has no definition file in this deploy:
+  - agent-system/extensions/memory/context/project/memory/memory-setup.md:93 -- '2. Run `/ide` in Claude Code and select the Obsidian instance'
+  - agent-system/extensions/memory/context/project/memory/memory-troubleshooting.md:34 -- '- Run `/ide` in Claude Code and select the running Obsidian instance from the list'
+
+CONFIRMED PRE-EXISTING: git log on both files shows their last touches long predate the error-logging contract work (task 587) that surfaced this, whose diff contains neither file.
+
+PRIOR SWEEPS LEFT THESE: two closed records already swept this territory -- lint_and_fix_actionable_dead_command_references (task 434) and reword_dead_lifecycle_command_prose_per_class (task 435). Both of these /ide lines survived those sweeps, so establish WHY before fixing: a class the sweeps' own predicate did not reach is a lint gap, not just two stale lines.
+
+SCOPE: resolve both violations. /ide is a built-in Claude Code CLI command, not a command this repository defines -- so the question to settle first is whether gate 24's lint should recognise built-in CLI commands as legitimately undefined-here (a lint fix, benefiting every future built-in reference and plausibly the gap the prior sweeps left) or whether these two doc lines should be reworded to not read as a slash-command recommendation (a docs fix, narrower). Decide with evidence from lint-dead-command-recommendations.sh's own predicate, then implement the chosen fix and confirm gate 24 passes.
+
+---
+
+### 589. Test suite repo root walk up depth
+- **Effort**: medium
+- **Status**: [RESEARCHED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+- **Parent**: Task 587
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+PROBLEM: five test suites under agent-system/extensions/core/scripts/tests/ compute their own repository root by walking up a HARDCODED number of path segments (e.g. ROOT=$(cd "$CORE_DIR/../../../.." && pwd)). That depth is tuned for the source-store path (agent-system/extensions/core/scripts, four segments below the repo root) and resolves to a path OUTSIDE the repository when the SAME suite is invoked from its deployed location (.claude/scripts, two segments below the root) -- which is exactly how run-all.sh's gate 8 invokes it. The failure is quiet: downstream repo-relative computations return their own fail-open sentinel (gate_cache_implementation_digest returning CANNOT_COMPUTE, for instance) rather than an obvious error, so the suite reports a NEW failure whose stated cause is unrelated to the real one.
+
+AFFECTED SUITES (five, each confirmed failing from the deployed invocation and passing from the source-store one): test-deploy-baseline-lib.sh, test-gate-cache-lib.sh, test-gate-registry-resolution.sh, test-lint-deploy-caller-wrap.sh, test-orchestrate-build-aux-dispatch.sh.
+
+CONFIRMED PRE-EXISTING: root-caused during the error-logging contract work (task 587) and verified unrelated to it -- that change's diff touches none of the five suites' root resolution.
+
+SCOPE: replace the hardcoded walk-up in each affected suite with an invocation-path-independent resolution (git rev-parse --show-toplevel, or whichever helper scripts/lib/common.sh already provides -- prefer reusing an existing helper over adding a sixth bespoke computation), then confirm all five pass under BOTH invocation paths: from the source store directly and from run-all.sh's gate 8. Diagnostic recipe for verifying the root cause per suite before editing: echo the computed ROOT value under both invocation paths, and re-run the suite from its source-store copy -- a pass there with a failure only from the deployed copy indicts the walk-up depth, not the logic under test.
+
+RELATIONSHIP TO TASK 573: this task is a mechanical SUPERSET of task 573, which owns one failing assertion each in test-deploy-baseline-lib.sh and test-lint-deploy-caller-wrap.sh with cause recorded as unknown. The walk-up depth IS a candidate cause for both of 573's items, so 573 has been made to depend on this task and must RE-MEASURE its two assertions after this lands rather than assume they survived. If this fix closes either of 573's items outright, record that there.
+
+---
 
 ### 588. Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unless it declares how it gets a true read
 - **Status**: [NOT STARTED]
@@ -950,9 +1017,13 @@ NON-GOALS: no change to how the budget is computed, clamped, charged, or enforce
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 589
 
 **Description**: Diagnose and fix one failing assertion in each of two suites, cause unknown. Standalone results: test-deploy-baseline-lib.sh 29 passed 1 failed; test-lint-deploy-caller-wrap.sh 10 passed 1 failed. These were initially grouped with the stale-fixture-dependency cluster (repair_stale_fixture_lib_dependency_lists), but neither suite uses the REQUIRED_LIBS/REQUIRED_SCRIPTS fixture-copy mechanism at all, so that cause does not apply and these two are uncovered by it. Both failures reproduce standalone and are not contention artifacts. Determine for each whether the assertion or the subject behaviour is wrong before changing either.
+
+--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---
+ROOT-CAUSE CANDIDATE FOUND for test-deploy-baseline-lib.sh, recorded here rather than as a separate record because it is this task's own first item. During the error-logging contract work (task 587), that suite's single failing assertion was observed as 'control: a genuinely matching warm-cache entry was expected to skip gate 1 but did not', with chmod/mtime sandbox artifacts visible in the same output ('chmod: cannot access .../gate1.json: No such file or directory'). Separately root-caused in the same run: this suite is one of five whose repo-root resolution hardcodes a walk-up depth tuned for the source-store path, so it resolves OUTSIDE the repository when run-all.sh's gate 8 invokes it from the deployed tree, and downstream repo-relative computations then return their own fail-open sentinel instead of erroring. test-lint-deploy-caller-wrap.sh -- this task's SECOND item -- is also one of those five.
+So both of this task's items may share a cause this task recorded as unknown, and that cause is owned by task 589 (test_suite_repo_root_walk_up_depth), on which this task now depends. RE-MEASURE both assertions after 589 lands rather than assuming either survived it; if 589 closes one or both outright, record that here and narrow or close this record accordingly. Do not fix either symptom by relaxing a control case.
 
 ---
 
