@@ -1,0 +1,20 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Created a four-phase implementation plan for adding purpose-written .title fields to the 24 title-less specs/state.json active_projects entries. Phases: re-derive and finalize titles, apply via state-write.sh and regenerate TODO.md, confirm rendering plus prove the optional-field fallback on scratch copies, correct the schema doc's false presence claim and run the full gate. Three research findings were corrected at planning time: the dispatch's stale 61-entry/28-number figures, a file_scope recommendation that contradicted engine-written-state-paths-lib.sh's admission bar, and a synthetic-probe route that would have proven nothing because --state does not reach the nested Task Order section.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/528_state_json_title_fields_for_todo_readability/plans/01_state-json-title-fields.md",
+      "summary": "Four-phase plan: finalize titles, write via state-write.sh, verify both TODO.md surfaces plus the fallback contract, correct the schema doc under the full gate."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794413303_b61a83_528",
+    "agent_type": "planner-agent",
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 8
+}

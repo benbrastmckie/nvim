@@ -192,7 +192,7 @@ next_project_number: 607
 
 ### Repo Hygiene
 
-528 [PLANNING] — Add purpose-written title fields to task records so TODO.md...
+528 [PLANNED] — Add purpose-written title fields to task records so TODO.md...
 531 [NOT STARTED] — Narrow whole-directory file\_scope declarations so the...
 
 ### Decidability
@@ -6056,11 +6056,12 @@ repository before being written.
 ---
 
 ### 528. Add purpose-written title fields to task records so TODO.md stops rendering truncated description prose as task names
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: repo-hygiene
 - **Dependencies**: None
 - **Research**: [528_state_json_title_fields_for_todo_readability/reports/01_title-fields-for-active-projects.md]
+- **Plan**: [528_state_json_title_fields_for_todo_readability/plans/01_state-json-title-fields.md]
 
 **Description**: Add purpose-written `.title` fields to specs/state.json's active_projects entries so TODO.md stops rendering truncated description prose as task names.
 
