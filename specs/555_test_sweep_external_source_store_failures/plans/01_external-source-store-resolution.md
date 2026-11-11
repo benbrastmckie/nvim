@@ -1,7 +1,7 @@
 # Implementation Plan: Task #555
 
 - **Task**: 555 - Test sweep external source store failures
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md
@@ -150,7 +150,7 @@ No `roadmap_path` was provided in this dispatch and no ROADMAP consultation was 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Shared Source-Store Resolver and Guard Acceptance Test [NOT STARTED]
+### Phase 1: Shared Source-Store Resolver and Guard Acceptance Test [COMPLETED]
 
 **Goal**: One fall-open resolver for the source-store extensions root exists in `lib/common.sh`
 and is honored by `deploy-root-guard.sh`'s opt-in self-correction acceptance test, so every
@@ -158,11 +158,11 @@ downstream caller resolves through a single mechanism instead of re-deriving one
 
 **Tasks**:
 
-- [ ] Read `lib/deploy-freshness-lib.sh`'s `_deploy_freshness_status_one` for the exact fall-open
+- [x] Read `lib/deploy-freshness-lib.sh`'s `_deploy_freshness_status_one` for the exact fall-open
       read it already performs (`jq -r --arg n "$name" '.extensions[$n].source_dir // empty'`,
       then `[ -d "$source_dir" ]`, echoing a CANNOT-verify sentinel on every miss) and mirror its
-      contract rather than inventing a second one.
-- [ ] Add `common_test_ext_root <repo_root>` to `lib/common.sh`, following that file's existing
+      contract rather than inventing a second one. *(completed)*
+- [x] Add `common_test_ext_root <repo_root>` to `lib/common.sh`, following that file's existing
       conventions exactly: `local`-scoped `_common_`-prefixed internals, every internal unset
       before return, never calls `exit`, and a header paragraph stating the contract. Resolution
       order: (1) `$repo_root/agent-system/extensions` if it is a directory; (2) otherwise, if
@@ -170,22 +170,25 @@ downstream caller resolves through a single mechanism instead of re-deriving one
       names an existing directory, echo that directory's **parent** (the extensions root, since
       `source_dir` points at the `core` extension itself — verify this relationship on the live
       file rather than assuming it); (3) otherwise echo nothing and return non-zero, leaving the
-      caller's own `|| exit 2` convention intact.
-- [ ] Document in that header that a top-level `jq -r '.source_dir'` returns `null` because
+      caller's own `|| exit 2` convention intact. *(completed)*
+- [x] Document in that header that a top-level `jq -r '.source_dir'` returns `null` because
       `source_dir` is per-extension, so a `null` must never be read as the key being absent.
-- [ ] Extend `deploy-root-guard.sh`'s `DEPLOY_ROOT_GUARD_SELF_CORRECT=1` acceptance test with a
+      *(completed)*
+- [x] Extend `deploy-root-guard.sh`'s `DEPLOY_ROOT_GUARD_SELF_CORRECT=1` acceptance test with a
       second accepted alternative: the candidate root holds a `.claude-extensions.json` whose
       `core.source_dir` resolves to an existing directory. Keep it a conjunction — a bare
       unvalidated toplevel is still refused — and leave the refusal message and exit status
-      byte-identical for a candidate satisfying neither alternative.
-- [ ] Extend `tests/test-common-lib.sh` with cases for all three resolver branches, the third
+      byte-identical for a candidate satisfying neither alternative. *(completed)*
+- [x] Extend `tests/test-common-lib.sh` with cases for all three resolver branches, the third
       driven by a synthetic fixture: a temp directory containing a `.claude-extensions.json` that
       points `core.source_dir` at this repository's resolved source store, and **no**
-      `agent-system/` directory.
-- [ ] Extend `tests/test-deploy-root-guard.sh` with: acceptance via the new alternative on that
+      `agent-system/` directory. *(completed)*
+- [x] Extend `tests/test-deploy-root-guard.sh` with: acceptance via the new alternative on that
       same synthetic fixture; and a negative case asserting the unchanged refusal message and
-      exit status when neither alternative holds.
-- [ ] Confirm `shellcheck` is clean on both edited scripts.
+      exit status when neither alternative holds. *(completed: added cases (f) resolving and (g)
+      non-resolving, 14 of 14 assertions pass)*
+- [x] Confirm `shellcheck` is clean on both edited scripts. *(completed: clean at -S warning, this
+      repo's own enforced level)*
 
 **Timing**: 2 hours
 

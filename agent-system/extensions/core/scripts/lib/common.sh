@@ -22,9 +22,9 @@
 # FORBID LOCAL REDEFINITION: a consumer that sources this file MUST NOT define its own copy of
 # any function this library provides (common_repo_root, common_session_id,
 # common_timestamp_iso/_epoch/_date, common_log_error/_warn/_info, common_test_pass/_fail/_info,
-# common_test_repo_root, common_test_resolve_candidate, common_test_resolve_subject,
-# common_test_declare_subject, common_test_workdir_init, common_shared_corpus_available,
-# common_shared_corpus_files).
+# common_test_repo_root, common_test_ext_root, common_test_resolve_candidate,
+# common_test_resolve_subject, common_test_declare_subject, common_test_workdir_init,
+# common_shared_corpus_available, common_shared_corpus_files).
 # A local redefinition silently shadows the shared implementation and defeats the single-source
 # guarantee this library exists to provide. In particular, a test suite that sources this file
 # MUST NOT also define its own `pass()`/`fail()`/`info()` -- call `common_test_pass`/
@@ -283,6 +283,54 @@ common_test_repo_root() {
   echo "$_common_result"
   unset _common_dir _common_levels _common_result
   return 0
+}
+
+# common_test_ext_root <repo_root> -- echoes the resolved extensions root (the directory that
+# directly contains per-extension subdirectories such as `core/`) for <repo_root>, trying two
+# resolution branches in order, and returns 1 with empty stdout if neither resolves. Mirrors
+# lib/deploy-freshness-lib.sh's `_deploy_freshness_status_one` fall-open contract (same jq read,
+# same "a miss is not fatal, the caller decides" posture) rather than inventing a second one:
+#
+#   1. `<repo_root>/agent-system/extensions` if it is a directory -- the common case, where this
+#      repository is the source-store owner.
+#   2. Otherwise, if `<repo_root>/.claude-extensions.json` exists, read `.extensions.core.source_dir`
+#      (NOTE: `source_dir` is PER-EXTENSION -- a top-level `jq -r '.source_dir'` returns `null`,
+#      which must NOT be read as the key being absent; this function reads the per-extension path
+#      `.extensions.core.source_dir` instead). If that path names an existing directory, echo its
+#      PARENT: `source_dir` points at the `core` extension itself, not at the extensions root that
+#      contains it (verified directly against this repository's own `.claude-extensions.json`,
+#      which resolves `.extensions.core.source_dir` to a path whose basename is `core`).
+#
+# Never calls `exit` -- on a total miss this returns 1 with no stdout, leaving the caller's own
+# `|| exit 2` environment-error convention intact, matching every other function in this file.
+common_test_ext_root() {
+  local _common_repo_root="${1:-}"
+  local _common_ext_dir _common_claude_ext_json _common_source_dir
+
+  [ -n "$_common_repo_root" ] || { unset _common_repo_root; return 1; }
+
+  _common_ext_dir="${_common_repo_root}/agent-system/extensions"
+  if [ -d "$_common_ext_dir" ]; then
+    echo "$_common_ext_dir"
+    unset _common_repo_root _common_ext_dir _common_claude_ext_json _common_source_dir
+    return 0
+  fi
+
+  _common_claude_ext_json="${_common_repo_root}/.claude-extensions.json"
+  if [ -f "$_common_claude_ext_json" ]; then
+    _common_source_dir="$(jq -r '.extensions.core.source_dir // empty' "$_common_claude_ext_json" 2>/dev/null)"
+    if [ -n "$_common_source_dir" ] && [ -d "$_common_source_dir" ]; then
+      _common_ext_dir="$(cd "${_common_source_dir}/.." 2>/dev/null && pwd)"
+      if [ -n "$_common_ext_dir" ]; then
+        echo "$_common_ext_dir"
+        unset _common_repo_root _common_ext_dir _common_claude_ext_json _common_source_dir
+        return 0
+      fi
+    fi
+  fi
+
+  unset _common_repo_root _common_ext_dir _common_claude_ext_json _common_source_dir
+  return 1
 }
 
 # common_test_resolve_candidate <desc> <candidate> [<candidate>...] -- echoes the first

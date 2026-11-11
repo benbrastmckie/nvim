@@ -14,6 +14,12 @@
 #   (c) opt-in + a git root containing agent-system/extensions -> REPO_ROOT set, status 0
 #   (d) opt-in + a git root lacking agent-system/extensions -> refusal unchanged
 #   (e) opt-in inside a non-git directory -> refusal unchanged
+#   (f) opt-in + a git root with a `.claude-extensions.json` whose `core.source_dir` resolves to
+#       an existing directory, and no local `agent-system/extensions` -> REPO_ROOT set, status 0
+#   (g) opt-in + a git root with a `.claude-extensions.json` whose `core.source_dir` does NOT
+#       resolve to an existing directory, and no local `agent-system/extensions` -> refusal
+#       unchanged (byte-identical message and exit status; distinct from (d), which has no
+#       `.claude-extensions.json` at all)
 #
 # Exit codes: 0 -- all assertions PASS; 1 -- at least one assertion FAILED; 2 -- environment
 # error (the guard script was not found at any candidate path).
@@ -138,6 +144,58 @@ if grep -qF "$REFUSAL_NEEDLE" <<< "$OUT_E"; then
   common_test_pass "(e) opt-in inside non-git directory: refusal unchanged"
 else
   common_test_fail "(e) opt-in inside non-git directory: refusal message missing (output: $OUT_E)"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# (f) Opt-in + a git root with a resolving `.claude-extensions.json`, no local
+#     agent-system/extensions -> REPO_ROOT set, status 0.
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+EXTJSONROOT_FIXTURE="$WORKDIR/extjsonroot"
+mkdir -p "$EXTJSONROOT_FIXTURE/scripts"
+cp "$GUARD_SCRIPT" "$EXTJSONROOT_FIXTURE/scripts/deploy-root-guard.sh"
+cat > "$EXTJSONROOT_FIXTURE/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$REPO_ROOT/agent-system/extensions/core"}}}
+EOF
+( cd "$EXTJSONROOT_FIXTURE" && git init -q && git config user.email t@t.com && git config user.name t )
+
+OUT_F="$(bash -c 'DEPLOY_ROOT_GUARD_SELF_CORRECT=1; . "$1/scripts/deploy-root-guard.sh" || exit 1; echo "REPO_ROOT=[${REPO_ROOT:-}] OPT_IN=[${DEPLOY_ROOT_GUARD_SELF_CORRECT:-unset}]"; exit 0' _ "$EXTJSONROOT_FIXTURE" 2>&1)"
+RC_F=$?
+if [[ "$RC_F" -eq 0 ]]; then
+  common_test_pass "(f) opt-in + resolving .claude-extensions.json: guard sources with status 0"
+else
+  common_test_fail "(f) opt-in + resolving .claude-extensions.json: expected status 0, got $RC_F (output: $OUT_F)"
+fi
+EXPECTED_F="REPO_ROOT=[$(cd "$EXTJSONROOT_FIXTURE" && pwd)] OPT_IN=[unset]"
+if [[ "$OUT_F" == "$EXPECTED_F" ]]; then
+  common_test_pass "(f) opt-in + resolving .claude-extensions.json: REPO_ROOT set to the git toplevel and opt-in variable unset"
+else
+  common_test_fail "(f) opt-in + resolving .claude-extensions.json: expected '$EXPECTED_F', got '$OUT_F'"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# (g) Opt-in + a git root with a non-resolving `.claude-extensions.json`, no local
+#     agent-system/extensions -> refusal unchanged (distinct from (d): a .claude-extensions.json
+#     IS present here, it just does not resolve).
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+EXTJSONBAD_FIXTURE="$WORKDIR/extjsonbad"
+mkdir -p "$EXTJSONBAD_FIXTURE/scripts"
+cp "$GUARD_SCRIPT" "$EXTJSONBAD_FIXTURE/scripts/deploy-root-guard.sh"
+cat > "$EXTJSONBAD_FIXTURE/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"/nonexistent/path/does-not-exist"}}}
+EOF
+( cd "$EXTJSONBAD_FIXTURE" && git init -q && git config user.email t@t.com && git config user.name t )
+
+OUT_G="$(bash -c 'DEPLOY_ROOT_GUARD_SELF_CORRECT=1; . "$1/scripts/deploy-root-guard.sh" || exit 1; echo "should not print"' _ "$EXTJSONBAD_FIXTURE" 2>&1)"
+RC_G=$?
+if [[ "$RC_G" -eq 1 ]]; then
+  common_test_pass "(g) opt-in + non-resolving .claude-extensions.json: exits 1"
+else
+  common_test_fail "(g) opt-in + non-resolving .claude-extensions.json: expected exit 1, got $RC_G"
+fi
+if grep -qF "$REFUSAL_NEEDLE" <<< "$OUT_G"; then
+  common_test_pass "(g) opt-in + non-resolving .claude-extensions.json: refusal unchanged"
+else
+  common_test_fail "(g) opt-in + non-resolving .claude-extensions.json: refusal message missing (output: $OUT_G)"
 fi
 
 echo ""

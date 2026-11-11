@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md",
-      "summary": "8-phase plan (5 waves, ~11h) adding a shared source-store resolver and threading it through 6 suites and 3 scripts, then re-deriving the sweep and reconciling the known-failures baseline."
-    }
-  ],
-  "next_steps": "Run /orchestrate 555 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "run-all.sh's suite verdict is binary on rc==0 (124/137 special-cased as a fired timeout) and its [SKIP] state is reserved exclusively for a non-executable suite file. A suite therefore CANNOT self-declare 'environmentally unrunnable, skipping with reason': exiting 0 to signal a skip is counted as PASS. Consequence for any design that wants to tolerate a missing environment: the only honest options today are (a) make the suite actually resolve the environment, or (b) declare the failure in tests/known-failures.txt, which is advisory, keys on basename, and is mode-insensitive -- so a row also annotates the suite EXPECTED in repositories where it passes, which makes known-failures.txt the wrong instrument for a failure that is topology-dependent rather than repo-independent. The reusable resolution pattern for the source-store-absent topology is the fall-open read deploy-freshness-lib.sh's _deploy_freshness_status_one already performs: jq -r --arg n \"$name\" '.extensions[$n].source_dir // empty' over .claude-extensions.json, then [ -d \"$source_dir\" ], never hard-failing on a miss. source_dir is per-extension, so a top-level read returns null, which must not be read as the key being absent.",
-      "category": "PATTERN",
-      "source_artifact": "specs/555_test_sweep_external_source_store_failures/plans/01_external-source-store-resolution.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["run-all", "known-failures", "source-store", "claude-extensions", "skip-protocol", "shell-test-suite"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794343931_696ebd_555",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 11,
-    "dependency_waves": [[1], [2, 3, 4, 5], [6], [7], [8]]
+    "session_id": "sess_1794343931_696ebd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 17
+  "dispatch_seq": 19
 }

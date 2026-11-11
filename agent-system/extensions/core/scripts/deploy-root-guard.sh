@@ -16,13 +16,18 @@
 # sourcing this guard is declaring itself eligible to run unmodified from EITHER tree, with no
 # REPO_ROOT override required. On that opt-in, and only when the default structural check above
 # already failed, the guard additionally tries `git -C "$__guard_dir" rev-parse --show-toplevel`
-# and accepts the result as REPO_ROOT ONLY when `agent-system/extensions` exists directly under
-# it -- the same directory an opted-in caller already requires for its own EXT_DIR default. This
+# and accepts the result as REPO_ROOT on EITHER of two alternatives: `agent-system/extensions`
+# exists directly under it (the same directory an opted-in caller already requires for its own
+# EXT_DIR default), OR the candidate holds a `.claude-extensions.json` whose `.extensions.core.
+# source_dir` resolves to an existing directory (the same source-store indirection
+# lib/deploy-freshness-lib.sh's `_deploy_freshness_status_one` already reads, for a repository
+# whose `core` extension source store is external). This is a conjunction gated on the candidate,
+# never a relaxation: a bare unvalidated toplevel is still refused on both alternatives. This
 # acceptance test is why a bare `git rev-parse --show-toplevel` remains the wrong default above:
 # an unvalidated toplevel would mask a genuine invocation error (nested repo, submodule, detached
-# checkout), whereas a candidate gated on the presence of `agent-system/extensions` cannot. A
-# caller that does not opt in, or whose candidate root fails that test, sees today's refusal
-# unchanged -- byte-identical message and exit status.
+# checkout), whereas a candidate gated on either alternative above cannot. A caller that does not
+# opt in, or whose candidate root fails both alternatives, sees today's refusal unchanged --
+# byte-identical message and exit status.
 #
 # Callers MUST use `. "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1` — several callers do not
 # set -e, so the `|| exit 1` is what makes a missing helper fail closed rather than continue. On
@@ -42,6 +47,16 @@ case "${__guard_dir%/*}" in
         # shellcheck disable=SC2034 # consumed by the sourcing caller after this fragment returns, not within this file
         REPO_ROOT="$__guard_candidate"
         __guard_self_corrected=1
+      elif [[ -n "$__guard_candidate" && -f "$__guard_candidate/.claude-extensions.json" ]]; then
+        # NOTE: source_dir is PER-EXTENSION -- a top-level `jq -r '.source_dir'` returns `null`,
+        # which must NOT be read as the key being absent; read `.extensions.core.source_dir`.
+        __guard_source_dir="$(jq -r '.extensions.core.source_dir // empty' "$__guard_candidate/.claude-extensions.json" 2>/dev/null)"
+        if [[ -n "$__guard_source_dir" && -d "$__guard_source_dir" ]]; then
+          # shellcheck disable=SC2034 # consumed by the sourcing caller after this fragment returns, not within this file
+          REPO_ROOT="$__guard_candidate"
+          __guard_self_corrected=1
+        fi
+        unset __guard_source_dir
       fi
       unset __guard_candidate
     fi

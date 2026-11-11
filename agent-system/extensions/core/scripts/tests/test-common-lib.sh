@@ -235,6 +235,49 @@ else
   common_test_fail "common_test_repo_root (non-git fallback): expected '$nongit_expected', got '$nongit_resolved'"
 fi
 
+# ── common_test_ext_root: branch 1, local agent-system/extensions directory ──
+EXTROOT_LOCAL_FIXTURE="$WORKDIR/extroot-local"
+mkdir -p "$EXTROOT_LOCAL_FIXTURE/agent-system/extensions/core"
+extroot_local_resolved=$(common_test_ext_root "$EXTROOT_LOCAL_FIXTURE")
+extroot_local_rc=$?
+extroot_local_expected="$EXTROOT_LOCAL_FIXTURE/agent-system/extensions"
+if [ "$extroot_local_rc" -eq 0 ] && [ "$extroot_local_resolved" = "$extroot_local_expected" ]; then
+  common_test_pass "common_test_ext_root resolves a local agent-system/extensions directory (branch 1)"
+else
+  common_test_fail "common_test_ext_root (branch 1): rc=$extroot_local_rc, expected '$extroot_local_expected', got '$extroot_local_resolved'"
+fi
+
+# ── common_test_ext_root: branch 2, .claude-extensions.json indirection ──────
+# Synthetic external-source-store fixture: a temp directory holding a
+# .claude-extensions.json whose core.source_dir points at THIS repository's own resolved
+# source store, and no local agent-system/ directory -- exactly the condition this
+# function exists to resolve.
+EXTROOT_JSON_FIXTURE="$WORKDIR/extroot-json"
+mkdir -p "$EXTROOT_JSON_FIXTURE"
+REAL_SOURCE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+cat > "$EXTROOT_JSON_FIXTURE/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$REAL_SOURCE_DIR"}}}
+EOF
+extroot_json_resolved=$(common_test_ext_root "$EXTROOT_JSON_FIXTURE")
+extroot_json_rc=$?
+extroot_json_expected="$(cd "$REAL_SOURCE_DIR/.." && pwd)"
+if [ "$extroot_json_rc" -eq 0 ] && [ "$extroot_json_resolved" = "$extroot_json_expected" ]; then
+  common_test_pass "common_test_ext_root resolves the .claude-extensions.json indirection to source_dir's parent (branch 2)"
+else
+  common_test_fail "common_test_ext_root (branch 2): rc=$extroot_json_rc, expected '$extroot_json_expected', got '$extroot_json_resolved'"
+fi
+
+# ── common_test_ext_root: branch 3, neither resolves -> empty output, rc 1 ───
+EXTROOT_MISS_FIXTURE="$WORKDIR/extroot-miss"
+mkdir -p "$EXTROOT_MISS_FIXTURE"
+extroot_miss_resolved=$(common_test_ext_root "$EXTROOT_MISS_FIXTURE")
+extroot_miss_rc=$?
+if [ "$extroot_miss_rc" -eq 1 ] && [ -z "$extroot_miss_resolved" ]; then
+  common_test_pass "common_test_ext_root returns 1 with empty output when neither branch resolves"
+else
+  common_test_fail "common_test_ext_root (branch 3): expected rc=1 and empty output, got rc=$extroot_miss_rc, output='$extroot_miss_resolved'"
+fi
+
 # ── common_test_resolve_candidate: found / not-found polarity ────────────────
 RESOLVE_FIXTURE="$WORKDIR/resolve-fixture"
 mkdir -p "$RESOLVE_FIXTURE"
@@ -481,7 +524,7 @@ else
 fi
 
 # ── Single-definition assertion: each new function has exactly one definition ─
-for fn in common_test_repo_root common_test_resolve_candidate common_test_resolve_subject common_test_declare_subject common_test_workdir_init common_test_fixture_overlay; do
+for fn in common_test_repo_root common_test_ext_root common_test_resolve_candidate common_test_resolve_subject common_test_declare_subject common_test_workdir_init common_test_fixture_overlay; do
   hits=$(grep -rc "^${fn}() {" --include="*.sh" "$SCRIPT_DIR/../lib" 2>/dev/null | awk -F: '{sum+=$2} END {print sum+0}')
   if [ "$hits" -eq 1 ]; then
     common_test_pass "$fn has exactly one definition under scripts/lib/"

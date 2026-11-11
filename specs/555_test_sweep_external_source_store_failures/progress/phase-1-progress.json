@@ -1,0 +1,48 @@
+{
+  "phase": 1,
+  "phase_name": "Shared Source-Store Resolver and Guard Acceptance Test",
+  "started_at": "2026-11-10T21:04:00Z",
+  "last_updated": "2026-11-10T22:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add common_test_ext_root <repo_root> to lib/common.sh with the three-branch fall-open resolution order",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/common.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Extend deploy-root-guard.sh's DEPLOY_ROOT_GUARD_SELF_CORRECT=1 acceptance test with the .claude-extensions.json alternative",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/deploy-root-guard.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Extend tests/test-common-lib.sh with cases for all three resolver branches plus the single-definition assertion",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-common-lib.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Extend tests/test-deploy-root-guard.sh with acceptance via the new alternative and a dedicated negative case",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Confirm shellcheck is clean on both edited scripts",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": [
+    "bash agent-system/extensions/core/scripts/tests/test-common-lib.sh: 69 passed, 0 failed (incl. 3 new common_test_ext_root cases and the extended single-definition loop).",
+    "bash agent-system/extensions/core/scripts/tests/test-deploy-root-guard.sh: 14 passed, 0 failed (incl. new cases (f)/(g) for the .claude-extensions.json acceptance alternative and its dedicated negative case).",
+    "shellcheck -S warning clean on lib/common.sh and deploy-root-guard.sh (this repo's own lint-shellcheck.sh entry point runs at -S warning; the suite's own shellcheck run at default info level flags only a pre-existing, unrelated SC1091 in deploy-root-guard.sh's unrelated redeploy-remedy-lib.sh source line).",
+    "bash agent-system/extensions/core/scripts/verify-deploy.sh (source-store entry point; .claude/scripts/verify-deploy.sh is byte-identical) ran to completion twice: FAIL -- 5 of 43 checks failed on the second (clean) run. Gate 5 (manifest-driven content-hash equality) fails for scripts/deploy-root-guard.sh and scripts/lib/common.sh among its 10 listed differences -- expected and non-blocking: this plan's own Non-Goals forbid initiating a deploy, and 6 of the 10 listed content-drift paths belong to sibling task 554's own declared file_scope (scripts/git-commit-phase.sh, scripts/plan-file-scope-harvest.sh, scripts/validate-artifact.sh, and their three test suites), confirming this is the normal undeployed-source-store-edit signature, not a regression. Gate 3 (doc-lint) fails for the same reason (STRICT_CORE_DEPLOY sees the same undeployed drift plus two sibling-owned 'not in provides.scripts' findings for scripts/lib/source-store-path-lib.sh and its test, also task 554's scope). Gate 8 (run-all.sh) fails because 8 suites are NEW failures, but a dedicated run-all.sh --jobs auto --fail-on-new confirmed by name that all 8 belong to the pre-existing ~29-suite deploy/gate/orchestrate-postflight regression cluster this plan's Non-Goals explicitly excludes (test-double-loading-check.sh, test-gate-out-repair-reporting.sh, test-lint-unit-integration-boundary.sh, test-manifest-scripts-sync.sh [this plan's own Phase 2 target, not yet landed], test-orchestrate-cycle-postflight.sh, test-orchestrate-predispatch-review.sh, test-postflight-deploy-gate.sh, test-redeploy-checkpoint-promotion.sh) -- none of this phase's own files (lib/common.sh, deploy-root-guard.sh) appear among them, and test-common-lib.sh/test-deploy-root-guard.sh both pass. Gate 10 (validate-state.sh --deep) exceeded its own 60s timeout on the first run only and passed on the second; pre-existing load-sensitivity, unrelated to this phase's files. Gate 22 (shellcheck) failed transiently on the first run (concurrent sibling edit mid-scan) and passed clean on the second. Gate 24 (lint-dead-command-recommendations.sh) is this plan's own Phase 3 target, not yet landed.",
+    "Conclusion: this phase's own scope (lib/common.sh, deploy-root-guard.sh and their two test suites) is fully green and introduces zero regressions. The complete gate set is not fully green, but every residual failure is independently attributable to (a) this plan's own later phases not yet landed, (b) the pre-existing out-of-scope regression cluster named in this plan's Non-Goals, (c) sibling task 554's own concurrent uncommitted edits, or (d) the expected undeployed-source-store-edit signature this plan's Non-Goals forbid resolving via a deploy. No failure traces to this phase's edits."
+  ]
+}
