@@ -150,18 +150,18 @@ is the phase's own measurement command, `bash .claude/scripts/tests/run-all.sh -
 
 ---
 
-### Phase 2: Record the closure and discharge the full gate set [NOT STARTED]
+### Phase 2: Record the closure and discharge the full gate set [COMPLETED]
 
 **Goal**: Write this task's durable closure record carrying Phase 1's measured evidence, and run
 the complete gate set so the task closes on an unnarrowed verification run.
 
 **Tasks**:
-- [ ] Write `specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md`, transcribing Phase 1's captured tallies and exit statuses verbatim (both invocation paths), per summary-format.md.
-- [ ] State plainly in that summary that this task changed no source file, and why: the shared root cause (invocation-path-dependent repo-root resolution) and its fix both belong to task 589, whose commits `6a0d6a373` and `9bc6a7d18` carry it; this task's contribution is independent re-verification plus closure.
-- [ ] Record in the summary that the description's carried figures (29/1 and 10/1) are stale, and that `test-lint-deploy-caller-wrap.sh`'s assertion *total* changed from 11 to 7 because 589 removed a double-count rather than flipping one assertion's polarity.
-- [ ] Record the `known-failures.txt` re-check outcome. If a row for either suite has appeared since authoring, report it in the summary and leave the file untouched -- a concurrent sibling holds that file in its declared scope this cycle, so its removal is not this task's edit to make.
-- [ ] Confirm no new follow-up task is warranted, and explicitly do not duplicate task 589's two already-recorded out-of-scope follow-ups (the `verify-deploy.sh` `gate8_run` wrapper exit-code discrepancy; a prospective `lint-test-root-resolution.sh`).
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Attribute any failure against this task's own (empty) source footprint and against `known-failures.txt` before treating it as this task's regression; an out-of-footprint failure is reported, not fixed here.
+- [x] Write `specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md`, transcribing Phase 1's captured tallies and exit statuses verbatim (both invocation paths), per summary-format.md. *(completed)*
+- [x] State plainly in that summary that this task changed no source file, and why: the shared root cause (invocation-path-dependent repo-root resolution) and its fix both belong to task 589, whose commits `6a0d6a373` and `9bc6a7d18` carry it; this task's contribution is independent re-verification plus closure. *(completed)*
+- [x] Record in the summary that the description's carried figures (29/1 and 10/1) are stale, and that `test-lint-deploy-caller-wrap.sh`'s assertion *total* changed from 11 to 7 because 589 removed a double-count rather than flipping one assertion's polarity. *(completed)*
+- [x] Record the `known-failures.txt` re-check outcome. If a row for either suite has appeared since authoring, report it in the summary and leave the file untouched -- a concurrent sibling holds that file in its declared scope this cycle, so its removal is not this task's edit to make. *(completed: neither basename present, file untouched)*
+- [x] Confirm no new follow-up task is warranted, and explicitly do not duplicate task 589's two already-recorded out-of-scope follow-ups (the `verify-deploy.sh` `gate8_run` wrapper exit-code discrepancy; a prospective `lint-test-root-resolution.sh`). *(completed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Attribute any failure against this task's own (empty) source footprint and against `known-failures.txt` before treating it as this task's regression; an out-of-footprint failure is reported, not fixed here. *(deviation: deferred to the batch-level full gate run per the dispatch file's Batch Gate Deferral directive -- scoped discharge via `validate-artifact.sh` PASS recorded instead)*
 
 **Timing**: 30 minutes
 
@@ -190,11 +190,11 @@ rather than a directory or glob.
 
 ## Testing & Validation
 
-- [ ] `bash .claude/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-lint-deploy-caller-wrap.sh` exits 0 with both suites passing.
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-lint-deploy-caller-wrap.sh` exits 0 with identical per-suite tallies.
-- [ ] `bash .claude/scripts/verify-deploy.sh` completes green (full gate set, no gate subset, no `--skip-slow`).
-- [ ] `bash .claude/scripts/validate-artifact.sh specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md summary` passes.
-- [ ] `git status --short` confirms this task's footprint is the summary artifact alone.
+- [x] `bash .claude/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-lint-deploy-caller-wrap.sh` exits 0 with both suites passing. *(completed)*
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-lint-deploy-caller-wrap.sh` exits 0 with identical per-suite tallies. *(completed)*
+- [ ] `bash .claude/scripts/verify-deploy.sh` completes green (full gate set, no gate subset, no `--skip-slow`). *(deviation: deferred to the once-per-invocation batch-level stage per the dispatch file's Batch Gate Deferral directive; scoped discharge via `validate-artifact.sh` PASS recorded instead -- see summary)*
+- [x] `bash .claude/scripts/validate-artifact.sh specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md summary` passes. *(completed: [PASS] summary artifact is valid (0 warning(s)), exit 0)*
+- [x] `git status --short` confirms this task's footprint is the summary artifact alone. *(completed: plan/progress/handoff/summary under this task's own directory only; neither suite file nor known-failures.txt modified)*
 
 ## Artifacts & Outputs
 

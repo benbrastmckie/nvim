@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Record the closure and discharge the full gate set",
+  "started_at": "2026-11-11T13:50:00Z",
+  "last_updated": "2026-11-11T14:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write the closure summary artifact transcribing Phase 1's tallies", "status": "done", "files_touched": ["specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md"]},
+    {"id": 2, "description": "State plainly no source change was made and why (root cause owned by task 589)", "status": "done", "files_touched": ["specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md"]},
+    {"id": 3, "description": "Record stale carried figures and the 11->7 assertion-total explanation", "status": "done", "files_touched": ["specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md"]},
+    {"id": 4, "description": "Record known-failures.txt re-check outcome", "status": "done", "files_touched": ["specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md"], "note": "neither basename present; no edit to known-failures.txt made"},
+    {"id": 5, "description": "Confirm no new follow-up task is warranted", "status": "done", "files_touched": [], "note": "task 589's two recorded out-of-scope follow-ups not duplicated"},
+    {"id": 6, "description": "Run the scoped gate discharge (per Batch Gate Deferral directive)", "status": "done", "files_touched": [], "note": "dispatch file carries a Batch Gate Deferral directive for this final full-tier phase; ran validate-artifact.sh on the summary (unmappable-criterion path, since neither run-all.sh --only nor verify-deploy.sh --only-gate expresses specs/** artifact validation) -- PASS, exit 0. Full verify-deploy.sh gate set deferred to the once-per-invocation batch-level stage per the directive, not independently run here."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.6",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "deferred",
+      "reason": "Dispatch file's Batch Gate Deferral directive names this exact final full-tier phase; discharged instead via the unmappable-criterion scoped check (validate-artifact.sh on the summary), with the full gate set deferred to the once-per-invocation batch-level stage per the directive, not waived.",
+      "annotation": "*(deviation: deferred to the batch-level full gate run per the dispatch file's Batch Gate Deferral directive -- scoped discharge via validate-artifact.sh PASS recorded instead)*"
+    }
+  ]
+}
