@@ -469,6 +469,53 @@ SID="sess_test_$$_aggregate"
   fi
 }
 
+# =====================================================================================
+# Case (m): citation render cap -- a class carrying more than 10 entries renders exactly 10
+# citations plus a remainder marker naming the exact withheld count; group_by(.class) and the
+# null-resolution predicate stay byte-identical (proved indirectly: the class is still grouped
+# into exactly one proposal and the null-resolution entry is still admitted).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  f1="$scratch/specs/001_task_a/issues.jsonl"
+  i=1
+  while [ "$i" -le 13 ]; do
+    write_entry "$f1" issue "scope excursion" minor open null fix_now "scope excursion #$i"
+    i=$((i + 1))
+  done
+  out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1")"
+  prop_count=$(echo "$out" | jq '[.proposals[] | select(.class=="scope excursion")] | length')
+  cite_count=$(echo "$out" | jq '[.proposals[] | select(.class=="scope excursion") | .citations[]] | length')
+  remainder=$(echo "$out" | jq '.proposals[] | select(.class=="scope excursion") | .citations_remainder')
+  if [ "$prop_count" = "1" ] && [ "$cite_count" = "10" ] && [ "$remainder" = "3" ]; then
+    common_test_pass "(m) over-cap: 13 entries render exactly 10 citations plus citations_remainder=3"
+  else
+    common_test_fail "(m) over-cap: prop_count=$prop_count cite_count=$cite_count remainder=$remainder -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (n): under-cap -- a class carrying 10 or fewer entries renders them all with
+# citations_remainder=0 (no marker).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  f1="$scratch/specs/001_task_a/issues.jsonl"
+  i=1
+  while [ "$i" -le 4 ]; do
+    write_entry "$f1" issue "environment" minor open null fix_now "environment issue #$i"
+    i=$((i + 1))
+  done
+  out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1")"
+  cite_count=$(echo "$out" | jq '[.proposals[] | select(.class=="environment") | .citations[]] | length')
+  remainder=$(echo "$out" | jq '.proposals[] | select(.class=="environment") | .citations_remainder')
+  if [ "$cite_count" = "4" ] && [ "$remainder" = "0" ]; then
+    common_test_pass "(n) under-cap: 4 entries all rendered, citations_remainder=0 (no marker)"
+  else
+    common_test_fail "(n) under-cap: cite_count=$cite_count remainder=$remainder -- $out"
+  fi
+}
+
 echo ""
 echo "=== Results: $PASSED passed, $FAILED failed ==="
 if [ "$FAILED" -gt 0 ]; then

@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "phase_name": "Bound the conclusion stage's citation render",
+  "started_at": "2026-11-11T04:00:00Z",
+  "last_updated": "2026-11-11T04:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Cap citations[] at 10 with a citations_remainder field", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 2, "description": "Leave group_by(.class) and the resolution predicate untouched", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Document the cap in conclusion-stage.md beside the filter predicate", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]},
+    {"id": 4, "description": "Extend test-orchestrate-conclusion-aggregate.sh with over-cap/under-cap assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

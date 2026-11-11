@@ -550,7 +550,7 @@ this phase rather than asserting compatibility.
 
 ---
 
-### Phase 6: Bound the conclusion stage's citation render [NOT STARTED]
+### Phase 6: Bound the conclusion stage's citation render [COMPLETED]
 
 **Goal**: the aggregator's per-class proposal renders a bounded citation list with a stated
 remainder count, so a long outage or a high-volume emitter cannot produce an unreadable
@@ -558,17 +558,17 @@ proposal — the read-side half of the general collapse rule, with the existing 
 grouping and null-resolution predicate untouched.
 
 **Tasks**:
-- [ ] In `scripts/orchestrate-conclusion-aggregate.sh`'s `--aggregate` pipeline, cap the rendered
+- [x] In `scripts/orchestrate-conclusion-aggregate.sh`'s `--aggregate` pipeline, cap the rendered
       `citations` list at the first 10 entries and append an explicit remainder marker naming the
       exact number withheld (never a silent truncation). Preserve the full set in the underlying
       data the raw `issues.jsonl` evidence already carries; this is a render bound, not a filter.
-- [ ] Leave `group_by(.class)` and the `(.resolution // "open")` predicate exactly as they are.
+- [x] Leave `group_by(.class)` and the `(.resolution // "open")` predicate exactly as they are.
       Do not fold, case-normalize, or otherwise renormalize any class spelling — that is a
       separate task's ground.
-- [ ] Document the cap in `context/contracts/conclusion-stage.md` beside the existing filter
+- [x] Document the cap in `context/contracts/conclusion-stage.md` beside the existing filter
       predicate: the number, the remainder-marker shape, and the statement that the full evidence
       set remains in the per-task logs.
-- [ ] Extend `scripts/tests/test-orchestrate-conclusion-aggregate.sh` with an assertion that a
+- [x] Extend `scripts/tests/test-orchestrate-conclusion-aggregate.sh` with an assertion that a
       class carrying more than 10 entries renders exactly 10 citations plus a remainder marker
       with the correct count, and that a class with fewer renders them all with no marker.
 

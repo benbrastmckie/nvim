@@ -204,8 +204,20 @@ aggregate_json=$(bash .claude/scripts/orchestrate-conclusion-aggregate.sh --aggr
 ```
 
 Parse `$aggregate_json` for `proposals[]` (each carrying `class`, `citations[] = [{task,
-entry_id}]`, `severity_max`, `suggested_channel_hints[]`), `wins[]`, `unknown_classes[]`,
-`implicit_open_count`, and `no_contribution_tasks[]`.
+entry_id}]`, `citations_remainder` (an integer, `0` when nothing was withheld), `severity_max`,
+`suggested_channel_hints[]`), `wins[]`, `unknown_classes[]`, `implicit_open_count`, and
+`no_contribution_tasks[]`.
+
+**Citation render cap**: `citations[]` renders at most the first 10 entries of a class's full
+candidate set; `citations_remainder` names the exact count withheld (never a silent truncation —
+when 10 or fewer candidates exist, `citations_remainder` is `0` and every one is rendered). This
+is the read-side half of the general occurrence-collapse rule (`context/formats/issue-log.md`'s
+"Occurrence Collapse" subsection is the write-side half): a long outage emitting scores of
+same-class rows, or a single dispatch emitting dozens of same-path rows, produces a readable
+proposal rather than an unbounded list. The full candidate set is never discarded — it remains
+intact in the per-task `issues.jsonl` logs the aggregator itself read from; the cap narrows only
+what this one render shows. A rendered proposal citing a capped class MUST surface the withheld
+count (e.g. "...and 5 more") rather than silently rendering only the first 10.
 
 ### Step 2 — Classify (judgment, the lead's own)
 
@@ -214,7 +226,9 @@ For each entry in `proposals[]`, assign it to exactly one of the three channels 
 exactly-one-channel rule above. When the chosen channel differs from the proposal's
 `suggested_channel_hints`, state the override visibly: name both the hint and the chosen channel
 in that proposal's rendered text. Compose each channel's proposal text with its citations
-(`task` + `entry_id` pairs, never omitted). Summarise `wins[]` for the report (never actioned).
+(`task` + `entry_id` pairs, never omitted), and when `citations_remainder` is nonzero, append
+the exact withheld count to that proposal's own text (e.g. "...and 5 more") — never a silent
+truncation. Summarise `wins[]` for the report (never actioned).
 Carry `unknown_classes[]`, `implicit_open_count`, and `no_contribution_tasks[]` into the report
 as-is (Step 6).
 

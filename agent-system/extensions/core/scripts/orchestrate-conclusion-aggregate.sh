@@ -259,12 +259,17 @@ if [ "$MODE" = "aggregate" ]; then
     | (
         $candidates
         | group_by(.class)
-        | map({
-            class: .[0].class,
-            citations: map({task: .task, entry_id: .entry_id}),
-            severity_max: (map(.severity | sev_rank) | max | sev_label),
-            suggested_channel_hints: (map(.suggested_channel) | map(select(. != null)) | unique)
-          })
+        | map(
+            . as $group
+            | ($group | map({task: .task, entry_id: .entry_id})) as $all_citations
+            | {
+                class: $group[0].class,
+                citations: ($all_citations[0:10]),
+                citations_remainder: (if ($all_citations | length) > 10 then (($all_citations | length) - 10) else 0 end),
+                severity_max: ($group | map(.severity | sev_rank) | max | sev_label),
+                suggested_channel_hints: ($group | map(.suggested_channel) | map(select(. != null)) | unique)
+              }
+          )
       ) as $proposals
     | (
         $entries
