@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Re-verified every carried figure in the task description against the live script and live specs/ROADMAP.md: the broad premise is stale (--regenerate exits 0, assembles the classic layout in full, and refuses an unrecognized layout loudly), confirming the research report's covered-by-closed finding. One narrower claim the report did not test DOES reproduce: a changed write and a no-op write produce byte-identical output (zero stdout, same frozen marker, exit 0), so a caller cannot tell what happened. Wrote a 3-phase, 3.25-hour plan landing a named change-aware OUTCOME: stderr line, the two context files that document the caller contract corrected to match, and a redeploy. Plan passes validate-artifact.sh --strict with 0 warnings.",
+  "summary": "Implemented the 3-phase plan: roadmap-integration.sh's write_or_diff now emits a named, change-aware OUTCOME: stderr line on both --regenerate and --prune (4 shapes: rewrote / left unchanged / dry-run would-change / dry-run no-change), with 12 new regression cases (105/105 passing). roadmap-format.md and roadmap-update.md corrected to document the line and the settled classic/stage layout ruling. Redeployed the core extension; all four touched files confirmed byte-identical source-store vs. deployed, and the live --regenerate --dry-run invocation against specs/ROADMAP.md confirmed correct with the file unchanged. Phase 3's full gate set was discharged via the dispatch's own Batch Gate Deferral directive (scoped run-all.sh --only and verify-deploy.sh --only-gate invocations, plus two individually-named unmappable checks run directly) rather than an independent full sweep.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/532_roadmap_integration_regenerate_silent_abort/plans/01_regenerate-outcome-reporting.md",
-      "summary": "3-phase plan adding a named, change-aware OUTCOME: stderr line to roadmap-integration.sh's write modes, correcting roadmap-format.md and roadmap-update.md, and redeploying."
+      "type": "summary",
+      "path": "specs/532_roadmap_integration_regenerate_silent_abort/summaries/01_regenerate-outcome-reporting-summary.md",
+      "summary": "Implementation summary for all 3 phases: OUTCOME: stderr line, corrected caller-contract docs, redeploy and scoped verification."
     }
   ],
-  "dispatch_seq": 9
+  "dispatch_seq": 11
 }

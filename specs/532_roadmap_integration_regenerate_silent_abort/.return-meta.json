@@ -1,10 +1,37 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/532_roadmap_integration_regenerate_silent_abort/summaries/01_regenerate-outcome-reporting-summary.md",
+      "summary": "All 3 phases completed: roadmap-integration.sh now emits a named, change-aware OUTCOME: stderr line on both write modes; roadmap-format.md and roadmap-update.md corrected; core extension redeployed and verified via scoped Batch Gate Deferral discharge."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a named, change-aware OUTCOME: stderr line to roadmap-integration.sh's --regenerate/--prune write modes (write_or_diff + ROADMAP_LAYOUT), added 12 regression test cases (105/105 passing), corrected roadmap-format.md and roadmap-update.md to document the line and the settled classic/stage layout ruling, and redeployed the core extension with all four files confirmed byte-identical source-store vs. deployed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
+    "agent-system/extensions/core/context/formats/roadmap-format.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a Batch Gate Deferral directive asks you to discharge a redeploy/full-verification phase against a scoped narrowing invocation while siblings are concurrently running their own verify-deploy.sh on the same shared tree, a full unscoped sweep run anyway (for visibility) can show spurious gate timeouts (e.g. a 60s-budgeted gate exceeding its limit) purely from resource contention -- confirmed by re-running that gate's underlying check in isolation (e.g. validate-state.sh --deep directly) and seeing it pass well within budget. Before treating any full-sweep failure as a real regression, check git log/git status on the specific flagged file(s): a finding outside this task's own file_scope with no related commit from this dispatch is very likely pre-existing drift or contention noise, not something this task caused.",
+      "category": "PATTERN",
+      "source_artifact": "specs/532_roadmap_integration_regenerate_silent_abort/summaries/01_regenerate-outcome-reporting-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["batch-gate-deferral", "scoped-discharge", "concurrent-siblings", "gate-timeout", "false-positive", "verify-deploy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794423844_64f71e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
