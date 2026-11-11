@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Test suite, fixtures, and manifest registration",
+  "started_at": "2026-11-11T22:40:00Z",
+  "last_updated": "2026-11-11T22:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-lint-roadmap-batch-proposals.sh following the shared-harness convention (common_test_* helpers, deploy-tree-first resolution)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 2, "description": "Fixture: real observed failure asserts exactly one finding (a)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 3, "description": "Fixture: omitted dependent with no overlap asserts zero findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 4, "description": "Fixture: nine-id Run line asserts finding (c), no trimmed-batch suggestion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 5, "description": "Fixtures: terminal-task and nonexistent-id each assert finding (d) with distinguishable messages", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 6, "description": "Fixture pair for finding (f): unresolvable specs/... citation fires; bare-basename + cross-repo file produces zero findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 7, "description": "Fixture: unknown-layout asserts named note + exit 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 8, "description": "Fixture: stage-layout asserts Run lines are parsed, not skipped", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 9, "description": "Assertion: exit code 0 with findings present", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 10, "description": "Assertion: real-corpus run (no explicit paths) completes and exits 0", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh"]},
+    {"id": 11, "description": "Register both files in manifest.json (provides.scripts and tests array, sorted position)", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"], "note": "test-manifest-scripts-sync.sh reported the new test file as git-untracked-but-on-disk ('absent') before this phase's own commit lands it -- expected pre-commit lag, not a real registration gap; re-verified green after the phase commit"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

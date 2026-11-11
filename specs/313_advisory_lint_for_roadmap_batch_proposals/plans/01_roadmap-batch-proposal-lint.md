@@ -413,40 +413,44 @@ Phase 3 fixtures.
 
 ---
 
-### Phase 4: Test suite, fixtures, and manifest registration [NOT STARTED]
+### Phase 4: Test suite, fixtures, and manifest registration [COMPLETED]
 
 **Goal**: Every finding has a fixture, both required negative cases are pinned, and the script and
 its suite are registered in `manifest.json` like every sibling lint.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh`
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh`
       following the live convention (`test-lint-json-channel-discipline.sh` is the nearest model):
       `source "$SCRIPT_DIR/../lib/common.sh"`, `common_test_repo_root`,
       `common_test_resolve_subject` with `deploy-tree-first`, `common_test_declare_subject`,
       `common_test_workdir_init`, `common_test_pass`/`fail`/`info`, and PASSED/FAILED counters with
       an end-of-run summary. Do not define local `pass()`/`fail()`/`info()` alongside the shared
-      harness — `lint-test-harness-adoption.sh` fails on that shape.
-- [ ] Fixture: the real observed failure — a ROADMAP batch omitting a task whose `file_scope`
-      overlaps an in-batch task — asserts exactly one finding (a).
-- [ ] Fixture: an omitted DEPENDENT with no territory overlap — asserts zero findings.
-- [ ] Fixture: a Run line with nine ids — asserts one finding (c), and asserts the message contains
-      no trimmed-batch suggestion.
-- [ ] Fixtures: a Run line citing a terminal task, and one citing a nonexistent id — assert one
-      finding (d) each, with distinguishable messages.
-- [ ] Fixture pair for finding (f): one file with a genuinely unresolvable `specs/{NNN}_{slug}/...`
+      harness — `lint-test-harness-adoption.sh` fails on that shape. *(completed; verified clean
+      against `lint-test-harness-adoption.sh`)*
+- [x] Fixture: the real observed failure — a ROADMAP batch omitting a task whose `file_scope`
+      overlaps an in-batch task — asserts exactly one finding (a). *(completed)*
+- [x] Fixture: an omitted DEPENDENT with no territory overlap — asserts zero findings.
+      *(completed)*
+- [x] Fixture: a Run line with nine ids — asserts one finding (c), and asserts the message contains
+      no trimmed-batch suggestion. *(completed)*
+- [x] Fixtures: a Run line citing a terminal task, and one citing a nonexistent id — assert one
+      finding (d) each, with distinguishable messages. *(completed)*
+- [x] Fixture pair for finding (f): one file with a genuinely unresolvable `specs/{NNN}_{slug}/...`
       citation (the archival-move defect class) asserts one finding; one file containing BOTH
       false-positive classes — a backticked bare basename, and a path qualified for another
-      repository — asserts zero findings.
-- [ ] Fixture: an `unknown`-layout file — asserts the named note on stderr and exit 0.
-- [ ] Fixture: a `stage`-layout file whose run-order section holds Run lines — asserts the lines
-      are parsed, so the lint does not silently no-op on the non-`classic` shape.
-- [ ] Assertion: with findings present, the exit code is 0. This pins the advisory contract
-      mechanically rather than only in prose.
-- [ ] Assertion: run the lint with no explicit paths against the real repo corpus and assert it
-      completes and exits 0 (the real-corpus case every sibling lint suite carries).
-- [ ] Register both files in `agent-system/extensions/core/manifest.json`, in sorted position:
+      repository — asserts zero findings. *(completed)*
+- [x] Fixture: an `unknown`-layout file — asserts the named note on stderr and exit 0.
+      *(completed)*
+- [x] Fixture: a `stage`-layout file whose run-order section holds Run lines — asserts the lines
+      are parsed, so the lint does not silently no-op on the non-`classic` shape. *(completed)*
+- [x] Assertion: with findings present, the exit code is 0. This pins the advisory contract
+      mechanically rather than only in prose. *(completed)*
+- [x] Assertion: run the lint with no explicit paths against the real repo corpus and assert it
+      completes and exits 0 (the real-corpus case every sibling lint suite carries). *(completed)*
+- [x] Register both files in `agent-system/extensions/core/manifest.json`, in sorted position:
       `"lint/lint-roadmap-batch-proposals.sh"` in `provides.scripts`, and
-      `"tests/test-lint-roadmap-batch-proposals.sh"` in the tests array.
+      `"tests/test-lint-roadmap-batch-proposals.sh"` in the tests array. *(completed; both
+      resolve via `jq -e '.provides.scripts | index(...)'`)*
 
 **Timing**: 2 hours
 
