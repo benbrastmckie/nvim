@@ -1,5 +1,5 @@
 ---
-next_project_number: 600
+next_project_number: 601
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 600
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591,597 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591,597,600 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586,598,599 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,391,398,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581,594 | 390,402,438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
@@ -84,6 +84,7 @@ next_project_number: 600
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
+600 [NOT STARTED] — Honor the Sapience 503 cold-start retry\_after hint with one...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -200,6 +201,66 @@ next_project_number: 600
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 600. Honor the Sapience 503 cold-start retry_after hint with one bounded retry instead of degrading on first contact
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate batch over tasks 500, 569, 573 and 589, session sess_1794381614_02261f. User-approved at the orchestrate-lead level and dispatched to the meta builder for task creation only.
+
+SEVERITY: minor per occurrence, costly in aggregate -- it recurred in EVERY dispatch of that batch, 10 occurrences across all four tasks, which is why it is one grouped record rather than ten.
+
+CITATIONS -- ten entries, all class "infrastructure/transport unavailable", severity minor, suggested_channel null (no hint override involved):
+  specs/589_test_suite_repo_root_walk_up_depth/issues.jsonl:
+    iss_1794381658000_geVDvM, iss_1794382257564_CtlQQq
+  specs/573_fix_two_single_assertion_suite_failures/issues.jsonl:
+    iss_1794392096556_vyWk6z, iss_1794394444801_jIzI4v
+  specs/569_repair_stale_fixture_lib_dependency_lists/issues.jsonl:
+    iss_1794381672357_Hlmg8P, iss_1794382271404_Hpw1kJ, iss_1794394458411_pKH4QI
+  specs/500_edge_backfill_unreachable_for_not_started/issues.jsonl:
+    iss_1794381686365_3agtY9, iss_1794382284997_FY36CU, iss_1794392113146_0CsGmw
+Four of these five entry_ids were re-verified to resolve by direct jq read at creation time; the remainder are transcribed from the dispatch body.
+
+========================================================================
+THE DEFECT, in one sentence: the Sapience retrieval helper discards a machine-readable, server-authored retry hint and degrades on first contact, so every agent dispatched while the vault is cold starts with no <memory-context> at all.
+
+MEASURED: every call in the cited batch failed identically with
+  HTTP 503: {"error": "your Sapience is starting, try again in a minute", "starting": true, "retry_after": 15, "db_mb": 0}
+The body carries BOTH an explicit `retry_after: 15` and a `starting: true` discriminator separating a transient cold start from a genuine server fault. Neither is read.
+
+ROOT CAUSE, re-derived by direct read of the source store at creation time (line numbers move -- re-derive before editing):
+  agent-system/extensions/sapience/scripts/sapience-retrieve.sh issues exactly one request (curl --connect-timeout 3 --max-time 8, status captured via --write-out on that same request, never a second call). Its `case "$http_status"` dispatch has a 2xx arm and a single catch-all `*)` arm; the catch-all prints "genuine failure -- HTTP ${http_status}" with a length-bounded body excerpt and exits 2 immediately. A 503 carrying `starting: true` is therefore classified identically to a 500, a 401 or a 404 -- the script's own header already describes the body excerpt as existing so that "a diagnostic such as a 503's own {"error": "...", "starting": true, ...} sentence survives rather than being discarded", so the information is deliberately preserved at the boundary and then not acted on.
+  The caller is agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh's Stage 3.5 memory_context block: exit 2 is mirrored non-fatally through issue-record.sh with class "infrastructure/transport unavailable" and the dispatch proceeds with an empty memory_context. That fail-open degrade is correct and is NOT the defect.
+
+THE ASK: one bounded retry inside sapience-retrieve.sh, on the narrow cold-start signal only.
+  - Discriminate: retry only when the response is a 503 (or the status set research establishes) AND the body parses as JSON AND carries `starting: true`. Do not retry a 4xx, a non-JSON body, or a curl transport error -- those stay exactly as they are today.
+  - Honor the server's own hint: sleep `retry_after` from the body rather than a hardcoded constant, with a sane clamp for a missing, non-numeric, zero, negative or absurdly large value.
+  - CAP THE TOTAL WAIT. This runs synchronously inside dispatch construction; an uncapped or unbounded-attempt retry converts a silent degrade into a stalled dispatch, which is strictly worse. Establish the cap against the real cost of the surrounding dispatch build and state the chosen numbers and their basis. A single retry is the presumptive shape; more than one needs its budget justified.
+  - KEEP THE EXISTING FAIL-OPEN DEGRADE AS THE TERMINAL BEHAVIOR. After the bounded retry is exhausted the script must still exit 2 with its current diagnostic, and the caller must still record the issue non-fatally and proceed with an empty memory_context.
+
+EXPLICITLY OUT OF SCOPE -- do not drift into these:
+  - The degrade POSTURE itself. Fail-open retrieval is settled and correct; this record does not reopen it.
+  - An unbounded or uncapped retry loop, and any form of background/async retrieval.
+  - The sibling writer agent-system/extensions/sapience/scripts/sapience-remember.sh. Its own non-zero exits are already mirrored through issue-record.sh at its own call site; if research finds the same cold-start hint reaches it, record the finding and propose it separately rather than widening here.
+  - agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh is NOT expected to change. If research establishes that its documented latency expectation or its exit-code commentary must be amended, the plan declares that path explicitly at that point.
+
+VERIFICATION the implementation must carry: a test that drives the cold-start path without a live vault -- a stub/fixture server or an injected response returning 503 + `starting: true` + `retry_after`, asserting (a) exactly one retry is attempted, (b) a success on the retry yields a populated context and exit 0, (c) a second 503 still ends in the unchanged exit-2 degrade, and (d) a 4xx and a non-JSON body are NOT retried. The extension already carries agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh as a precedent for test siting and style.
+
+DOCUMENTATION: .claude/context/project/sapience/domain/per-repo-scoping.md (source: agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md) documents both scripts' contracts and hazards and is where the retry contract and its cap belong once settled.
+
+========================================================================
+DUPLICATE CHECK performed at creation time against the open backlog and the archive, recorded so this is not re-litigated:
+  - #587 (completed) made error logging coherent with Sapience failures as its motivating subclass. It owns how the failure is RECORDED; it does not attempt recovery. Not a duplicate.
+  - #453 (not_started) owns carrying the degraded-retrieval signal into the literature briefing's zero-result case -- a different script, and about signalling degradation rather than avoiding it. Not a duplicate.
+  - #519 (not_started) owns infra-exempting transport-error dispatch deaths from cycle accounting. Adjacent in spirit (both argue a transient transport failure is recoverable rather than terminal) but a different mechanism, a different file set, and no overlap in file_scope. Not a duplicate; no serializing edge is required.
+  - Archived #496 added per-repo storage and injection to this extension and is the record that created the call path; #499 retargeted the store-coupled distill sub-modes. Both closed, neither covers retry.
+No open record mentions sapience-retrieve.sh, retry_after, or the 503 cold start.
+
+---
 
 ### 599. Give the batch-gate-deferral directive a narrowing form that covers a phase touching only project sources, not the agent-system deploy tree
 - **Effort**: medium
