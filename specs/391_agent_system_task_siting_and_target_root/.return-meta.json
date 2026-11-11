@@ -26,28 +26,50 @@
       "category": "INSIGHT",
       "source_artifact": "specs/391_agent_system_task_siting_and_target_root/summaries/01_target-root-and-siting-remedy-summary.md",
       "confidence": 0.78,
-      "suggested_keywords": ["premise-revalidation", "stale-description", "defensive-fallback", "refusal-vs-silent-default", "target-root"]
+      "suggested_keywords": [
+        "premise-revalidation",
+        "stale-description",
+        "defensive-fallback",
+        "refusal-vs-silent-default",
+        "target-root"
+      ]
     },
     {
       "content": "Before concluding that a verify-deploy.sh gate failure (a gate#_run killed at its internal timeout) is a real regression from your own edit, run the underlying check standalone outside the full gate battery. A gate's internal per-check timeout can be marginally tight on a given machine independent of load or edits — validate-state.sh --deep genuinely passed clean when run alone but took just over its gate's 60s budget, explaining an apparently-red deploy result with no connection to the files actually edited. This standalone-reproduction step is cheap evidence for a COMPLETED WITH EXCLUSIONS closure and should be the default diagnostic before assuming a gate failure blocks phase closure.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/391_agent_system_task_siting_and_target_root/summaries/01_target-root-and-siting-remedy-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verify-deploy", "gate-timeout", "standalone-reproduction", "completed-with-exclusions", "deploy-headless"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate-timeout",
+        "standalone-reproduction",
+        "completed-with-exclusions",
+        "deploy-headless"
+      ]
     },
     {
       "content": "deploy-headless.sh internally always calls verify-deploy.sh --skip-slow with no --only-gate passthrough, so its own RESULT=landed_verify_clean/red outcome cannot be narrowed by a caller. When a Batch Gate Deferral directive asks a phase to discharge a 'full' verification tier via scoped narrowing but the phase's own required check is the redeploy step itself, treat 'run deploy-headless.sh directly' (unscoped, since it cannot be scoped) as the UNMAPPABLE CRITERION discharge, and scope everything else (task-reference/record-versioning lints, diff-based propagation checks) to the files the phase actually touched instead.",
       "category": "PATTERN",
       "source_artifact": "specs/391_agent_system_task_siting_and_target_root/summaries/01_target-root-and-siting-remedy-summary.md",
       "confidence": 0.7,
-      "suggested_keywords": ["batch-gate-deferral", "deploy-headless", "unmappable-criterion", "verification-tier", "scoped-verification"]
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "deploy-headless",
+        "unmappable-criterion",
+        "verification-tier",
+        "scoped-verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794413303_b61a83",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }

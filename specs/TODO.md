@@ -11,9 +11,9 @@ next_project_number: 607
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,383,391,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,604 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,390,398,402,439,457,458,462,463,474,480,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603,605,606 | 383,391,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,528,532,534,535,538,539,548,549,563,597,600,604 | core-agent-system, extensions, neovim, ... |
-| 3 | 399,421,436,438,454,481,501,508,547,552,570,571,579,588,592,593,602 | 313,390,398,402,439,451,458,472,476,486,509,518,519,542,543,564,599,603 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 1 | 313,338,342,383,390,397,402,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,604 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,398,421,439,457,458,462,463,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603,605,606 | 383,390,397,402,412,431,451,452,455,459,472,476,479,484,491,504,505,515,528,532,534,535,538,539,548,549,563,597,600,604 | core-agent-system, extensions, neovim, ... |
+| 3 | 399,436,438,454,501,508,547,552,570,571,579,588,592,593,602 | 313,398,402,439,451,458,472,476,486,509,518,519,542,543,564,599,603 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
 | 6 | 596 | 595 | agent-system |
@@ -127,18 +127,17 @@ next_project_number: 607
 
 ### Orchestrator
 
+402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 
 ### Agent System
 
-391 [IMPLEMENTING] — Close the target\_root authoring hole that files agent-system...
-  └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
-    └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
+390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
+  └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
 511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
 512 [PLANNED] — verify-deploy gate 24 reports two findings against lines that...
@@ -10908,12 +10907,13 @@ index-entries.json; see their DEPENDENCY RATIONALE.
 
 ### 391. Close the target_root authoring hole that files agent-system tasks into the wrong repository
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 369, Task 372, Task 373
 - **Research**: [391_agent_system_task_siting_and_target_root/reports/01_task-siting-and-target-root.md]
 - **Plan**: [391_agent_system_task_siting_and_target_root/plans/01_target-root-and-siting-remedy.md]
+- **Summary**: [391_agent_system_task_siting_and_target_root/summaries/01_target-root-and-siting-remedy-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

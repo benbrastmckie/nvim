@@ -4231,7 +4231,7 @@
     {
       "project_number": 391,
       "project_name": "agent_system_task_siting_and_target_root",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "title": "Close the target_root authoring hole that files agent-system tasks into the wrong repository",
@@ -4251,11 +4251,16 @@
           "path": "specs/391_agent_system_task_siting_and_target_root/plans/01_target-root-and-siting-remedy.md",
           "type": "plan",
           "summary": "Six-phase plan closing the channel-(b) target_root hole and settling the cross-repo file_scope convention question."
+        },
+        {
+          "path": "specs/391_agent_system_task_siting_and_target_root/summaries/01_target-root-and-siting-remedy-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all six phases, the WHAT IS OWED discharge mapping, and the Phase 6 Reasoned Exclusions."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-11T17:51:06Z",
-      "last_updated": "2026-11-11T18:24:36Z",
+      "last_updated": "2026-11-11T19:02:25Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1794413303_b61a83",
@@ -4269,7 +4274,8 @@
         "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
         "agent-system/extensions/core/rules/source-store-deploy-boundary.md",
         "agent-system/extensions/core/skills/skill-meta/SKILL.md"
-      ]
+      ],
+      "completion_summary": "Closed the channel-(b) target_root authoring hole (conclusion-stage.md Step 4b now resolves and threads target_root/mode_target), converted meta-builder-agent's silent absent-target_root fallback into a loud status:blocked refusal, discharged skill-meta's stale path-qualification acknowledgment, added a standing task-siting rule distinct from the specs/** artifact-location exemption, and settled the file_scope deploy-path convention question in the schema reference. Redeployed; all six edited files confirmed byte-identical in the deployed tree, with two pre-existing, unrelated gate findings closed as Phase 6 Reasoned Exclusions."
     },
     {
       "project_number": 397,

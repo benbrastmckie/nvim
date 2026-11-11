@@ -1,7 +1,7 @@
 # Implementation Plan: Task #391
 
 - **Task**: 391 - Agent system task siting and target root
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.75 hours
 - **Dependencies**: 372, 373 (ordering only — both declare `conclusion-stage.md` in their own
   file_scope; this record's substance does not wait on their conclusions)
