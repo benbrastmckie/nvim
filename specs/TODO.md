@@ -1,5 +1,5 @@
 ---
-next_project_number: 587
+next_project_number: 588
 ---
 
 # TODO
@@ -11,7 +11,7 @@ next_project_number: 587
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,587 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
@@ -69,6 +69,7 @@ next_project_number: 587
 575 [NOT STARTED] — Stop the cross-phase ceiling check reading a stop-word as a...
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
+587 [NOT STARTED] — Capture Sapience failures where they happen and promote the...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 
@@ -186,6 +187,38 @@ next_project_number: 587
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 587. Capture Sapience failures where they happen and promote the reports to a central cross-repo log in this repository
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+PROBLEM: Sapience backend failures are invisible to every logging surface, in every repo. sapience-retrieve.sh runs `curl -sS` and exits 1 with empty stdout on any failure -- deliberate, so retrieval never blocks a dispatch -- but that also discards the response body, so the server's own diagnostic is thrown away rather than recorded. Measured 2026-11-10: every mcp__sapience__* tool, reads included, returned HTTP 503 from https://app.spnc.ai carrying {"error": "your Sapience is starting, try again in a minute", "starting": true, "retry_after": 15, "db_mb": 0} for roughly 45 minutes. Three probes spaced minutes apart returned byte-identical bodies, so it was stuck rather than warming; db_mb 0 says the engine had no database loaded. The SessionStart briefing had succeeded earlier in the same session, so the backend restarted mid-session. Four sapience_remember calls were lost with no record anywhere. mcp.py raises the server's sentence as a RuntimeError, so the only trace is transcript prose. Sapience is evolving quickly and this class will recur across all repos that use it.
+
+GOAL: capture Sapience failures where they happen, and promote the reports to a central log in this repository (the repo that owns the source store), so one place shows what has been breaking across repos.
+
+RESEARCH MUST SETTLE BEFORE ANY IMPLEMENTATION:
+
+(a) Store choice. Reuse an existing surface; a new store requires explicit justification against the three that exist. Candidates: per-task specs/{NNN}_{slug}/issues.jsonl via issue-record.sh (15-class open enum, severity scale, open `tags` seam, `suggested_channel: agent_system` hint, cross-task aggregation already built in orchestrate-conclusion-aggregate.sh, mandatory per contracts/phase-closure.md); specs/errors.json via errors-append.sh (living mutable records, documented type vocabulary including tool_unavailable and mcp_abort_error, read by /errors); specs/events.jsonl (append-only, already 3.2 MB in this repo). Weigh the issue-log's cross-task aggregation against the fact that it is task-scoped.
+
+(b) The no-task-context case. The observed outage happened in a session with no task directory, which is where issues.jsonl cannot reach. Decide whether such failures are captured at all, and if so where. Do not let this case force a new store if a narrower answer exists.
+
+(c) Capture points, and what is reachable from each. sapience-retrieve.sh and sapience-remember.sh are the two scripts every repo already calls, and they see HTTP status and body directly -- capturing there needs no new network call, only retaining a body the script currently discards. MCP tool failures (the ones observed) do NOT pass through those scripts; they surface through ~/.sapience/mcp.py, which is vendor-owned and outside this repo. Establish honestly what can and cannot be captured mechanically, and do not assume an agent will reliably self-report.
+
+(d) Push vs pull for the central log. A push model has each repo's deployed script append directly to the central log here, needing no repository enumeration. A pull model needs a usable repo registry -- note that ~/.local/share/nvim/neotex-ai/extension-repo-registry.json is currently unusable for enumeration (measured: 313 entries, 311 of them /tmp fixture residue, 2 real repositories) and that making it usable is already its own open task. Prefer the option that does not take on that dependency. Settle concurrent-append safety (flock, as the existing writers do) and what happens when the central repo is absent or unwritable -- failing silently is correct for a logging path, but must be a decision, not an accident.
+
+(e) Deduplication and bounding. An outage emits the same failure repeatedly; three probes produced byte-identical bodies. Without collapsing, the central log grows like events.jsonl has. Decide the collapse key and whether records carry a count with first/last-seen rather than one row per occurrence, plus a size or age bound.
+
+(f) Cost ceiling, stated as a measured budget. The whole point is a light touch. No new hook, no polling, no probe, and no added latency on the retrieval path. Quantify the added cost of the chosen design and state the figure in the plan.
+
+NON-GOALS: do not add a Sapience health probe or any monitoring that initiates its own traffic; do not block or retry a dispatch on Sapience being down (silent degradation stays the contract); do not fix ~/.sapience/mcp.py or anything vendor-owned; do not build a reporting UI or alerting -- a readable central log is the deliverable; do not make the repo registry usable as part of this work.
+
+ORIGIN: surfaced while diagnosing an unrelated Neovim keybinding fault, when four attempts to record the finding to Sapience failed and the finding survived only because it was written into two commit messages (nvim 6d43f32d7, dotfiles 3d8853d).
+
+---
 
 ### 586. Stand up the suite and gate wall-clock cost consumer: delete, optimize, or demote every suite the probe indicts
 - **Status**: [NOT STARTED]
