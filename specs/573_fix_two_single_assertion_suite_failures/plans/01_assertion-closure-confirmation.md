@@ -1,7 +1,7 @@
 # Implementation Plan: Task #573
 
 - **Task**: 573 - Fix two single-assertion suite failures
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1 hour
 - **Dependencies**: Task 589 (test_suite_repo_root_walk_up_depth) -- already completed; its commits `6a0d6a373` and `9bc6a7d18` carry the actual fix
 - **Research Inputs**: specs/573_fix_two_single_assertion_suite_failures/reports/01_assertion-failures-closed-by-589.md
@@ -109,19 +109,19 @@ so no roadmap items are claimed and no roadmap-review/update phases are added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-confirm closure under the originally-failing invocation path [NOT STARTED]
+### Phase 1: Re-confirm closure under the originally-failing invocation path [COMPLETED]
 
 **Goal**: Produce live, in-dispatch evidence that both suites pass under the `run-all.sh` entry
 point -- the path on which the failures originally appeared -- from both the deployed and
 source-store invocation paths, so closure does not rest on bare standalone invocation alone.
 
 **Tasks**:
-- [ ] Re-read both suite files immediately before measuring (`agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh` and `.../test-lint-deploy-caller-wrap.sh`, plus their deployed counterparts) and note whether either differs from its state at this plan's authoring; a sibling task holds whole-tree scope this cycle.
-- [ ] Run `bash .claude/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-lint-deploy-caller-wrap.sh` and capture the per-suite result lines, the roster/tally line, and the exit status verbatim.
-- [ ] Run the source-store twin, `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-lint-deploy-caller-wrap.sh`, and capture the same three things.
-- [ ] Confirm the two runs agree on both suites' tallies. A disagreement between the paths is the exact symptom class task 589 fixed -- if one appears, STOP and report it as a possible regression of 589's fix, do not proceed to Phase 2.
-- [ ] If either suite is non-green in either run, STOP and report. Do not relax, delete, skip, or re-tune any assertion, and do not add a `known-failures.txt` row to paper over it.
-- [ ] Re-check `agent-system/extensions/core/scripts/tests/known-failures.txt` for either suite basename and record the result (expected: absent for both, as at authoring).
+- [x] Re-read both suite files immediately before measuring (`agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh` and `.../test-lint-deploy-caller-wrap.sh`, plus their deployed counterparts) and note whether either differs from its state at this plan's authoring; a sibling task holds whole-tree scope this cycle. *(completed: diff between deployed and source-store copies is empty for both files, no drift)*
+- [x] Run `bash .claude/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-lint-deploy-caller-wrap.sh` and capture the per-suite result lines, the roster/tally line, and the exit status verbatim. *(completed: 2 passed, 0 failed, exit 0; test-deploy-baseline-lib.sh 30 passed/0 failed, test-lint-deploy-caller-wrap.sh 7 passed/0 failed)*
+- [x] Run the source-store twin, `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-lint-deploy-caller-wrap.sh`, and capture the same three things. *(completed: 2 passed, 0 failed, exit 0; test-deploy-baseline-lib.sh 30 passed/0 failed, test-lint-deploy-caller-wrap.sh 7 passed/0 failed, identical to deployed path)*
+- [x] Confirm the two runs agree on both suites' tallies. A disagreement between the paths is the exact symptom class task 589 fixed -- if one appears, STOP and report it as a possible regression of 589's fix, do not proceed to Phase 2. *(completed: both paths agree exactly, 30/0 and 7/0)*
+- [x] If either suite is non-green in either run, STOP and report. Do not relax, delete, skip, or re-tune any assertion, and do not add a `known-failures.txt` row to paper over it. *(completed: both suites fully green, no STOP triggered)*
+- [x] Re-check `agent-system/extensions/core/scripts/tests/known-failures.txt` for either suite basename and record the result (expected: absent for both, as at authoring). *(completed: grep confirms absent for both basenames)*
 
 **Timing**: 20 minutes
 

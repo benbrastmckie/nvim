@@ -65927,7 +65927,7 @@
     {
       "project_number": 569,
       "project_name": "repair_stale_fixture_lib_dependency_lists",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Four fixture-based test suites fail because their curated dependency-copy lists are stale: state-write.sh gained 'source ${SCRIPT_DIR}/lib/project-number-inuse.sh' (state-write.sh:214) in commit 918c9a031, and none of the four suites copies that library into its temp fixture. The copied state-write.sh therefore aborts at line 214 with 'No such file or directory', every fixture state.json write fails, and each caller surfaces it as its own generic write-failure exit (update-task-status.sh maps it to exit 2, 'state.json update failed'), which hides the real cause. Affected suites and current standalone results: test-postflight-deploy-gate.sh (17 passed, 12 failed), test-orchestrate-unwind-dispatch.sh (10 passed, 11 failed), test-redeploy-checkpoint-promotion.sh (10 passed, 7 failed), test-orchestrate-predispatch-review.sh (35 passed, 2 failed). Confirmed pre-existing: test-orchestrate-unwind-dispatch.sh fails identically at commit 3b7f13344. Reproduce by neutering a suite's common_test_workdir_init cleanup and reading the preserved per-case .err file, which names the missing library directly. Primary fix: add project-number-inuse.sh to each suite's REQUIRED_LIBS array. Consider also whether these curated per-suite dependency lists should be derived from the subject script's own source lines rather than hand-maintained, since that is the defect class that produced this. NOT the audit-evidence gate in state-write.sh (commit b5b730454, same day): that gate fires only on new active_projects entries, and these fixtures pre-seed active_projects and only transition status.",
       "effort": "small",
@@ -65942,7 +65942,7 @@
         "agent-system/extensions/core/scripts/tests/test-redeploy-checkpoint-promotion.sh"
       ],
       "created": "2026-11-09T20:09:51Z",
-      "last_updated": "2026-11-11T10:54:06Z",
+      "last_updated": "2026-11-11T13:11:33Z",
       "artifacts": [
         {
           "path": "specs/569_repair_stale_fixture_lib_dependency_lists/reports/01_stale-fixture-dependency-lists.md",
@@ -67331,7 +67331,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794381614_02261f",
+      "session_id": "sess_1794402680_74378a",
       "next_artifact_number": 2,
       "completion_summary": "Repaired three fixture-based test suites' stale dependency-copy lists (missing project-number-inuse.sh, which state-write.sh unconditionally sources), clearing all 21 prior failures across the three suites, retired their now-stale known-failures.txt rows, and redeployed. Final full-tier phase discharged against the dispatch's Batch Gate Deferral scoped tier (run-all.sh --only) rather than the unscoped full gate set, which is deferred once to the batch stage."
     },
@@ -73317,7 +73317,7 @@
     {
       "project_number": 573,
       "project_name": "fix_two_single_assertion_suite_failures",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Diagnose and fix one failing assertion in each of two suites, cause unknown. Standalone results: test-deploy-baseline-lib.sh 29 passed 1 failed; test-lint-deploy-caller-wrap.sh 10 passed 1 failed. These were initially grouped with the stale-fixture-dependency cluster (repair_stale_fixture_lib_dependency_lists), but neither suite uses the REQUIRED_LIBS/REQUIRED_SCRIPTS fixture-copy mechanism at all, so that cause does not apply and these two are uncovered by it. Both failures reproduce standalone and are not contention artifacts. Determine for each whether the assertion or the subject behaviour is wrong before changing either.\n\n--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---\nROOT-CAUSE CANDIDATE FOUND for test-deploy-baseline-lib.sh, recorded here rather than as a separate record because it is this task's own first item. During the error-logging contract work (task 587), that suite's single failing assertion was observed as 'control: a genuinely matching warm-cache entry was expected to skip gate 1 but did not', with chmod/mtime sandbox artifacts visible in the same output ('chmod: cannot access .../gate1.json: No such file or directory'). Separately root-caused in the same run: this suite is one of five whose repo-root resolution hardcodes a walk-up depth tuned for the source-store path, so it resolves OUTSIDE the repository when run-all.sh's gate 8 invokes it from the deployed tree, and downstream repo-relative computations then return their own fail-open sentinel instead of erroring. test-lint-deploy-caller-wrap.sh -- this task's SECOND item -- is also one of those five.\nSo both of this task's items may share a cause this task recorded as unknown, and that cause is owned by task 589 (test_suite_repo_root_walk_up_depth), on which this task now depends. RE-MEASURE both assertions after 589 lands rather than assuming either survived it; if 589 closes one or both outright, record that here and narrow or close this record accordingly. Do not fix either symptom by relaxing a control case.",
       "effort": "small",
@@ -73331,7 +73331,7 @@
         "specs/573_fix_two_single_assertion_suite_failures/summaries/01_assertion-closure-confirmation-summary.md"
       ],
       "created": "2026-11-09T23:38:48Z",
-      "last_updated": "2026-11-11T11:51:51Z",
+      "last_updated": "2026-11-11T13:11:52Z",
       "artifacts": [
         {
           "path": "specs/573_fix_two_single_assertion_suite_failures/reports/01_assertion-failures-closed-by-589.md",
@@ -74386,7 +74386,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794381614_02261f",
+      "session_id": "sess_1794402680_74378a",
       "next_artifact_number": 2
     },
     {

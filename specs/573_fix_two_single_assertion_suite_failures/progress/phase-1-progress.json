@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Re-confirm closure under the originally-failing invocation path",
+  "started_at": "2026-11-11T13:30:00Z",
+  "last_updated": "2026-11-11T13:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read both suite files before measuring; note any drift since plan authoring", "status": "done", "files_touched": [], "note": "diff between deployed (.claude/scripts/tests/) and source-store (agent-system/extensions/core/scripts/tests/) copies is empty for both suites; no drift since plan authoring"},
+    {"id": 2, "description": "Run run-all.sh --only on both suites (deployed path) and capture results", "status": "done", "files_touched": [], "note": "run-all.sh: 2 passed, 0 failed, exit 0; direct suite runs: test-deploy-baseline-lib.sh 30 passed/0 failed, test-lint-deploy-caller-wrap.sh 7 passed/0 failed"},
+    {"id": 3, "description": "Run run-all.sh --only on both suites (source-store path) and capture results", "status": "done", "files_touched": [], "note": "run-all.sh: 2 passed, 0 failed, exit 0; direct suite runs: test-deploy-baseline-lib.sh 30 passed/0 failed, test-lint-deploy-caller-wrap.sh 7 passed/0 failed"},
+    {"id": 4, "description": "Confirm the two runs agree; STOP if disagreement", "status": "done", "files_touched": [], "note": "deployed and source-store tallies identical (30/0 and 7/0 both ways); no disagreement"},
+    {"id": 5, "description": "STOP and report if either suite is non-green; do not relax assertions", "status": "done", "files_touched": [], "note": "both suites fully green in both runs; no STOP condition triggered"},
+    {"id": 6, "description": "Re-check known-failures.txt for either suite basename", "status": "done", "files_touched": [], "note": "grep for both basenames in agent-system/extensions/core/scripts/tests/known-failures.txt returned no match (absent, as expected)"}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

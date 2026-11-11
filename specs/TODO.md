@@ -11,7 +11,7 @@ next_project_number: 604
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591,597,600,601 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,573,574,575,580,585,590,591,597,600,601 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,457,458,462,463,474,480,486,492,509,513,515,518,527,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,505,507,528,532,534,535,538,539,548,549,563,597 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,439,501,508,516,517,547,552,570,571,579,588,592,593 | 313,391,398,431,451,455,458,472,476,486,504,509,515,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,454,481,524,561,577,581,594,602 | 390,402,438,439,479,492,501,547,552,580,593,603 | core-agent-system, agent-system |
@@ -174,9 +174,8 @@ next_project_number: 604
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
-569 [IMPLEMENTING] — Four fixture-based test suites fail because their curated...
 572 [NOT STARTED] — Make a declared 'Verification Tier: full' actually honorable...
-573 [PLANNED] — Diagnose and fix one failing assertion in each of two suites,...
+573 [IMPLEMENTING] — Diagnose and fix one failing assertion in each of two suites,...
 597 [NOT STARTED] — Make the coupled-generated-surface and longFile-baseline...
   └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically... (see above)
   └─ 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
@@ -2134,7 +2133,7 @@ NON-GOALS: no change to how the budget is computed, clamped, charged, or enforce
 
 ### 573. Fix two single assertion suite failures
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 589
@@ -2303,7 +2302,7 @@ This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling h
 
 ### 569. Repair stale fixture lib dependency lists
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
