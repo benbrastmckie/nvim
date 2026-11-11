@@ -84,7 +84,7 @@ Each line is exactly one JSON object with the fields below.
 | `entry_id` | yes | string | Unique, creation-order-sortable ID: `iss_{timestamp_ms}_{random6}`, mirroring `events.jsonl`'s `event_id` and `errors.json`'s `err_{timestamp}` conventions. |
 | `timestamp` | yes | string | ISO 8601 UTC, matching every other timestamp convention in this codebase. |
 | `kind` | yes | string (closed: `issue` \| `win`) | Positive and negative signal share one schema and one file, on equal footing. |
-| `class` | yes | string (open, extensible) | One of the 15 seed classes below, or a new value — see "Extensibility Rule" below. |
+| `class` | yes | string (open, extensible) | One of the 16 seed classes below, or a new value — see "Extensibility Rule" below. |
 | `severity` | yes | string (closed: see "Severity Scale" below) | |
 | `phase` | no (nullable) | string (closed: `research` \| `plan` \| `implement` \| `conclusion` \| `other`) | The lifecycle phase the entry belongs to. |
 | `dispatch_seq` | no (nullable) | integer | The dispatch sequence number this entry belongs to, when known. |
@@ -126,9 +126,10 @@ naturally minutes:
 Record the unit that actually fits the event; do not force a `gate_runs` cost into a fabricated
 minutes estimate.
 
-## Seed Class Enum — The 15-Class Taxonomy
+## Seed Class Enum — The 16-Class Taxonomy
 
-Empirically grounded in 16 completed tasks measured in a prior verification-focused repository.
+Empirically grounded in 16 completed tasks measured in a prior verification-focused repository,
+plus one class added to distinguish infrastructure/transport unavailability from work failure.
 Each class below is a one-line gloss, not a full taxonomy document:
 
 | Class | Gloss |
@@ -148,11 +149,12 @@ Each class below is a one-line gloss, not a full taxonomy document:
 | `orchestration defect` | The orchestrator/loop machinery itself (cycle logic, dispatch building, postflight) misbehaved. |
 | `stale workaround` | A previously-applied workaround was still in place after its root cause was fixed, or outlived its justification. |
 | `cost-forced exclusion or substituted verification` | A verification step was narrowed, skipped, or substituted because the full form was judged too costly, and this was the record of that trade-off. |
+| `infrastructure/transport unavailable` | An external system was genuinely unreachable or self-reported unavailable (an HTTP 503 from a backing service, a transport `ESERVFAIL`, a dead MCP connection). An entry of this class records infrastructure being unavailable, not the task's own work failing. Nothing in cycle accounting reads this field today — cycle-accounting treatment of transport deaths is a separate concern owned elsewhere and deliberately not changed here. |
 
 ### Extensibility Rule
 
 `class` is **deliberately open, not a closed enum**. `scripts/issue-record.sh` accepts any value:
-when the value is outside the 15 seed classes above, the script **warns to stderr and proceeds**
+when the value is outside the 16 seed classes above, the script **warns to stderr and proceeds**
 — it never refuses the call. This is the one deliberate divergence from
 `scripts/system-defect-record.sh`'s closed-enum-refuses-loudly posture; do not "fix" this script
 into a closed enum by analogy to that one. The point of the open enum is that a genuinely new
@@ -169,6 +171,74 @@ inside it. This is the seam an extension's own dimension-tagging scheme uses to 
 extension-specific structured metadata (e.g. a `lean4` extension tagging an entry with the
 Mathlib declaration it concerns) without requiring any change to `issue-record.sh`, this
 document, or the core schema. When absent, treat `tags` as `{}`.
+
+### Occurrence Collapse
+
+A general write-side convention for a caller that has already discovered N occurrences of one
+underlying event **before its first `issue-record.sh` call** for that event: write exactly one
+line carrying `tags.occurrence = {count, first_seen, last_seen}` (`count` an integer, the two
+timestamps ISO 8601 UTC), passed via the existing `--tags-json` flag — for example
+`--tags-json '{"occurrence":{"count":123,"first_seen":"2026-10-03T23:40:00Z","last_seen":"2026-10-03T23:42:23Z"}}'`.
+This needs no schema change and no writer change: `tags` is already open, and `--tags-json` is
+already a general-purpose pass-through. It is available to any caller and to any error class,
+not a Sapience-specific mechanism — the same convention that collapses a run of byte-identical
+Sapience 503 bodies into one entry also collapses a single dispatch's scores of same-class
+"scope excursion" rows into one entry, as long as the caller itself already knows the count
+before its first call.
+
+This is a **write-side** collapse: it reduces how many lines a caller writes for one known-repeated
+event. It is distinct from, and does not duplicate, the **read-side** cross-entry collapse that
+`scripts/orchestrate-conclusion-aggregate.sh`'s `group_by(.class)` pipeline already performs when
+synthesizing the conclusion stage's proposals across every entry already written — that grouping
+happens automatically at read time regardless of whether any individual line used
+`tags.occurrence`. A caller that does not know its own repeat count in advance should simply write
+one line per occurrence and let the read-side grouping do its job.
+
+## The Three-Store Topology
+
+Three stores exist in this codebase for recording failures and lifecycle events, and each has a
+distinct, narrow verdict rather than overlapping freely:
+
+- **`issues.jsonl` via `issue-record.sh`** is the general-purpose capture surface for any failure
+  or win inside a task context. This document is its schema and policy contract.
+- **`events.jsonl` via `events-append.sh`** is the append-only lifecycle store, and is the only one
+  of the three that accepts a null `task` — making it the capture surface for an error that arises
+  when no task directory exists at all. See `context/formats/events-format.md`.
+- **`errors.json` via `errors-append.sh`** is a narrower, decoupled triage surface with its own
+  living-record schema, read by the `/errors` command. It is not the general error-handling write
+  path; see `rules/error-handling.md`'s "Where Errors Are Stored" subsection for the full
+  description of its scope relative to the other two stores.
+
+A reader asking "what has gone wrong" should start from `issues.jsonl` for task-scoped work,
+`events.jsonl` for anything outside a task context, and `errors.json` only for the narrower triage
+case `/errors` serves.
+
+## Central Cross-Repo Log
+
+`issue-record.sh` and `events-append.sh` each promote a subset of what they write to a single
+central, cross-repo log, so one place shows what has been breaking across every repository that
+shares this agent system — without requiring a usable repo registry or any repository
+enumeration.
+
+- **Path**: `specs/central-errors.jsonl`, under the repository that owns the source store (the
+  repository whose `.claude-extensions.json` resolves an extension's `source_dir` to a directory
+  inside that same repository's own git toplevel).
+- **Shape**: one JSON object per line, built with `jq -c -n`, never string concatenation.
+- **Envelope fields**: `central_id` (`cen_{timestamp_ms}_{random6}`), `recorded_at` (ISO 8601
+  UTC), `origin_repo` (the writing repository's absolute root), `origin_store` (`issues.jsonl` or
+  `events.jsonl`), and `entry` (the original store line, verbatim and unmodified).
+- **Promotion filter**: from `issues.jsonl`, only a line with `kind == "issue"` is promoted (a
+  `kind: "win"` is not); from `events.jsonl`, only a line with `category == "blocker"` is
+  promoted. Nothing else is promoted from either store.
+- **Bound**: a single-generation rotation — the file is capped at a stated line count and rotated
+  to one prior generation, never allowed to grow unbounded the way `events.jsonl` has.
+- **Failure posture**: an absent or unwritable target is a silent no-op, by design — the same
+  silent-degradation posture the rest of this logging path already takes. This is a decision, not
+  an accident: a logging path must never become a reason a dispatch fails.
+- **Reading rule**: this log is the cross-repo inbox. An entry written in the repository that owns
+  the source store stays in its own task log and is **not** duplicated into this file (the
+  owning-repo skip) — a reader asking "what has been breaking everywhere" reads this file together
+  with that repository's own task logs, not this file alone.
 
 ## Relation to the Six Existing Issue-Bearing Surfaces
 
@@ -199,7 +269,7 @@ usage to make a schema worth writing without immediately needing a revision.
 
 Because `class` is open, the conclusion stage (`context/contracts/conclusion-stage.md`, deriving
 its three output channels from these logs) is expected to tally entries whose `class` falls
-outside the 15-class seed list above, across tasks, as part of its own synthesis. A class that
+outside the 16-class seed list above, across tasks, as part of its own synthesis. A class that
 recurs often enough across tasks is a candidate for promotion into this document's seed enum in a
 future revision. This tally is explicitly the conclusion stage's job, not this log's own —
 recording here stays CAPTURE ONLY.

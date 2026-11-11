@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/587_error_logging_contract_and_central_log/plans/01_error-logging-contract-central-log.md",
-      "summary": "7-phase plan (4 dependency waves, 11 hours) correcting the error-store contract, adding one infrastructure/transport-unavailable class, documenting a general occurrence-collapse convention and citation render cap, adding a push-based central log library wired into both shared store writers, and implementing Sapience capture as an ordinary subclass."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794367153_fe56ab_587",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 11,
-    "dependency_waves": [[1], [2, 3, 5, 6], [4], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When authoring a plan in this agent system, source scripts/lib/suite-selection-lib.sh and run suite_selection_select over each phase's Files-to-modify paths before writing any Tier Justification -- plan-format.md requires the cited suite names (or the __FULL_SWEEP__ sentinel) to match that output verbatim. A reusable fact the selector surfaces: ANY extension's manifest.json maps to a ~31-suite structural set (test-deploy-propagation.sh, test-manifest-scripts-sync.sh, test-script-inventory.sh, the gate3/gate8 equivalence suites, ...), and scripts/lib/runtime-file-patterns.sh maps to ~10. So a phase that registers a new script in a manifest, or adds a lock-file class, is honestly a full-tier phase, not a cheap one -- which argues for registering each new file in the same phase that creates it rather than batching registrations into one late phase that would otherwise leave the manifest out of sync with the file tree between phases.",
-      "category": "PATTERN",
-      "source_artifact": "specs/587_error_logging_contract_and_central_log/plans/01_error-logging-contract-central-log.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["suite-selection-lib.sh", "verification tier", "tier justification", "manifest.json", "plan authoring"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 587 to execute the plan",
-  "dispatch_seq": 2
+    "session_id": "sess_1794367153_fe56ab",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

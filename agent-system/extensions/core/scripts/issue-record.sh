@@ -14,7 +14,7 @@
 # Single responsibility: append exactly one validated JSON line to
 # ${TASK_DIR}/issues.jsonl, lazily creating the file on first use, guarded by `flock` on
 # ${TASK_DIR}/.issues.lock. See context/formats/issue-log.md for the full field contract,
-# the severity scale's admission tests, the 15-class seed enum, and the CAPTURE ONLY
+# the severity scale's admission tests, the 16-class seed enum, and the CAPTURE ONLY
 # boundary this script's callers must respect (nothing here surfaces, acts on, or proposes
 # anything -- it only appends a line).
 #
@@ -258,13 +258,13 @@ fi
 # --- Validate --class leniently: warn to stderr and proceed when outside the seed enum. The
 #     seed list below is a comment-only convenience copy -- context/formats/issue-log.md is the
 #     authoritative source; keep the two in sync by hand. ---
-# Seed enum (15 classes; context/formats/issue-log.md is authoritative):
+# Seed enum (16 classes; context/formats/issue-log.md is authoritative):
 #   design-record defect or ambiguity | gate collision | missing cheap verification tier |
 #   vacuous or silent pass | tooling bug or gap | resource/OOM including misdiagnosis |
 #   plan scope-hypothesis wrong | planned feature absent |
 #   language or module-system gotcha | environment | cross-task ownership/territory |
 #   stale deploy or source-store boundary | orchestration defect | stale workaround |
-#   cost-forced exclusion or substituted verification
+#   cost-forced exclusion or substituted verification | infrastructure/transport unavailable
 ISSUE_SEED_CLASSES=(
   "design-record defect or ambiguity"
   "gate collision"
@@ -281,6 +281,7 @@ ISSUE_SEED_CLASSES=(
   "orchestration defect"
   "stale workaround"
   "cost-forced exclusion or substituted verification"
+  "infrastructure/transport unavailable"
 )
 class_known="false"
 for seed_class in "${ISSUE_SEED_CLASSES[@]}"; do
@@ -290,7 +291,7 @@ for seed_class in "${ISSUE_SEED_CLASSES[@]}"; do
   fi
 done
 if [ "$class_known" = "false" ]; then
-  echo "warning: --class '$class_arg' is outside the 15-class seed enum (see context/formats/issue-log.md); recording it anyway -- class is deliberately open/extensible" >&2
+  echo "warning: --class '$class_arg' is outside the 16-class seed enum (see context/formats/issue-log.md); recording it anyway -- class is deliberately open/extensible" >&2
 fi
 
 # --- Paths ---

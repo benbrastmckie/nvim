@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Class vocabulary, collapse convention, and store topology",
+  "started_at": "2026-11-10T00:00:00Z",
+  "last_updated": "2026-11-10T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add infrastructure/transport unavailable seed class row+gloss to issue-log.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 2, "description": "Correct 15-class count references throughout issue-log.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 3, "description": "Add Occurrence Collapse subsection under tags seam", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 4, "description": "Add Three-Store Topology section", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 5, "description": "Add Central Cross-Repo Log section", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 6, "description": "Add new class to ISSUE_SEED_CLASSES array and usage-comment copy in issue-record.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

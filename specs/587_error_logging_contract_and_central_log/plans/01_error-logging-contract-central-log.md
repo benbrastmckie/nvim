@@ -1,7 +1,7 @@
 # Implementation Plan: Task #587
 
 - **Task**: 587 - Error logging contract and central log
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 11 hours
 - **Dependencies**: None (coordinates with, but does not depend on, tasks 477, 484, 519, 543, 562)
 - **Research Inputs**: specs/587_error_logging_contract_and_central_log/reports/01_error-logging-contract.md
@@ -192,7 +192,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Class vocabulary, collapse convention, and store topology [NOT STARTED]
+### Phase 1: Class vocabulary, collapse convention, and store topology [COMPLETED]
 
 **Goal**: `context/formats/issue-log.md` becomes the single place that states the three-store
 topology, carries a 16th seed class for infrastructure/transport unavailability, documents the
@@ -201,18 +201,18 @@ log's envelope shape — with `issue-record.sh`'s duplicated seed-class list mov
 pass so the new class does not warn on every use.
 
 **Tasks**:
-- [ ] Add a `infrastructure/transport unavailable` row to `issue-log.md`'s seed class table, with
+- [x] Add a `infrastructure/transport unavailable` row to `issue-log.md`'s seed class table, with
       the gloss: an external system genuinely unreachable or self-reporting unavailable (an HTTP
       503 from a backing service, a transport `ESERVFAIL`, a dead MCP connection). State
       explicitly in the gloss that an entry of this class records infrastructure being
       unavailable, not the task's own work failing, and that nothing in cycle accounting reads
       this field — cycle-accounting treatment of transport deaths is a separate concern owned
       elsewhere and deliberately not changed here.
-- [ ] Update the section heading and prose that currently say "15-Class Taxonomy" / "15 seed
+- [x] Update the section heading and prose that currently say "15-Class Taxonomy" / "15 seed
       classes" so the count matches the table. Audit the whole file for every count reference
       (there are occurrences in the field table's `class` row, the Extensibility Rule, and the
       section heading) and update each.
-- [ ] Add an `### Occurrence Collapse` subsection under `## The `tags` Seam` specifying the
+- [x] Add an `### Occurrence Collapse` subsection under `## The `tags` Seam` specifying the
       general convention: a caller that has already discovered N occurrences of one underlying
       event *before its first `issue-record.sh` call* writes exactly one line carrying
       `tags.occurrence = {count, first_seen, last_seen}` (`count` an integer, the two timestamps
@@ -220,7 +220,7 @@ pass so the new class does not warn on every use.
       writer change, that it is a write-side convention available to any caller and to any error
       class, and that read-time cross-entry collapse is already performed by
       `orchestrate-conclusion-aggregate.sh`'s `group_by(.class)` and is not duplicated here.
-- [ ] Add a `## The Three-Store Topology` section stating the one-line verdict for each store,
+- [x] Add a `## The Three-Store Topology` section stating the one-line verdict for each store,
       mirroring the clarity of the existing "Relation to the Six Existing Issue-Bearing Surfaces"
       table: `issues.jsonl` via `issue-record.sh` is the general-purpose capture surface for any
       failure inside a task context; `events.jsonl` via `events-append.sh` is the append-only
@@ -228,7 +228,7 @@ pass so the new class does not warn on every use.
       capture surface when no task directory exists; `errors.json` via `errors-append.sh` is a
       narrower triage surface read by `/errors`, not the general error-handling write path.
       Cross-reference `rules/error-handling.md` and `context/formats/events-format.md` by name.
-- [ ] Add a `## Central Cross-Repo Log` section specifying the promotion target and its envelope,
+- [x] Add a `## Central Cross-Repo Log` section specifying the promotion target and its envelope,
       which Phase 3 implements against: path `specs/central-errors.jsonl` under the repository
       that owns the source store; one JSON object per line; envelope fields `central_id`
       (`cen_{timestamp_ms}_{random6}`), `recorded_at` (ISO 8601 UTC), `origin_repo` (the writing
@@ -241,7 +241,7 @@ pass so the new class does not warn on every use.
       the owning repository stays in its own task log and is not duplicated here — a reader
       asking "what has been breaking everywhere" reads this file together with this repository's
       own task logs.
-- [ ] Add `"infrastructure/transport unavailable"` to `ISSUE_SEED_CLASSES` in
+- [x] Add `"infrastructure/transport unavailable"` to `ISSUE_SEED_CLASSES` in
       `scripts/issue-record.sh` and to the usage-comment copy of the enum in the same file, so
       the new class does not trip the lenient stderr warning. Change nothing else about the
       script's validation posture — `class` stays an open enum that warns and proceeds.
