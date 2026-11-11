@@ -362,32 +362,32 @@ budget in every session — `validate-context-budgets.sh` is the specific coveri
 
 ---
 
-### Phase 5: Record the file_scope deploy-path convention verdict [NOT STARTED]
+### Phase 5: Record the file_scope deploy-path convention verdict [COMPLETED]
 
 **Goal**: Settle the dual-path `file_scope` question in writing, in the field's authoritative
 schema reference, so the next author is not choosing between two undocumented conventions.
 
 **Tasks**:
 
-- [ ] Re-read `context/reference/state-management-schema.md`'s "File Scope Field" section
-      (lines 375-410) immediately before editing.
-- [ ] Add a subsection recording the verdict: declaring both a source-store path and its deployed
+- [x] Re-read `context/reference/state-management-schema.md`'s "File Scope Field" section
+      (lines 375-410) immediately before editing. *(completed)*
+- [x] Add a subsection recording the verdict: declaring both a source-store path and its deployed
       `.claude/**` mirror is a true statement about what the task's execution touches, because the
       mandated redeploy genuinely rewrites the mirror. It is not an overload of the field's
-      "expects to create or modify" contract.
-- [ ] State the asymmetry explicitly: the repository that owns the source store may declare the
+      "expects to create or modify" contract. *(completed)*
+- [x] State the asymmetry explicitly: the repository that owns the source store may declare the
       source path alone (its own `.claude/**` is disposable and regenerated wholesale, so a
       mirror-versus-mirror collision there carries no information); a deploy-only repository
-      should declare both, because its overlap gate can only see what physically exists on disk.
-- [ ] Record that no second field and no per-entry marker is added, and why: the two readings
+      should declare both, because its overlap gate can only see what physically exists on disk. *(completed)*
+- [x] Record that no second field and no per-entry marker is added, and why: the two readings
       ("edit target" and "declared collision surface") are never in tension, since both paths are
       genuinely touched. Note the revisit condition — a future consumer that actually needs the
-      distinction.
-- [ ] Note that the standing rule from Phase 4 is expected to make the deploy-only-repo case
+      distinction. *(completed)*
+- [x] Note that the standing rule from Phase 4 is expected to make the deploy-only-repo case
       exceptional going forward rather than dissolve the question, so the written answer is still
-      owed for deliberate local runs from a deploy-only repo.
-- [ ] Cross-reference the Phase 4 rule subsection by section heading, not by task number.
-- [ ] Keep the existing "Generated-surface entries are ordinary, not provenance-tagged" paragraph
+      owed for deliberate local runs from a deploy-only repo. *(completed)*
+- [x] Cross-reference the Phase 4 rule subsection by section heading, not by task number. *(completed)*
+- [x] Keep the existing "Generated-surface entries are ordinary, not provenance-tagged" paragraph
       intact — it makes the adjacent point that the schema has no per-entry provenance field, which
       this verdict relies on rather than contradicts.
 
