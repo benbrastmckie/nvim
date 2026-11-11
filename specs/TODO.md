@@ -24,15 +24,15 @@ next_project_number: 607
 
 313 [NOT STARTED] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
-338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+338 [NOT STARTED] — Classify every task-support file as tracked or ignored
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 431 [PLANNED] — Record the gate-enforced verbatim-duplication exclusion class...
-  └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the...
+  └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
-456 [NOT STARTED] — /tag's version-consistency gate is unpassable when a manifest...
+456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
@@ -47,19 +47,19 @@ next_project_number: 607
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
-502 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
-503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
+502 [NOT STARTED] — Require research reports to enumerate generated doc-sync surfaces
+503 [NOT STARTED] — Document /revise's unavailability to a dispatched agent
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
   └─ 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
     └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
   └─ 584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
 515 [NOT STARTED] — Rebase the bounded-wait guidance on the measured...
-  └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the... (see above)
+  └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract (see above)
   └─ 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
-521 [NOT STARTED] — lint-agent-contracts.sh Check N completeness-net glob does...
+521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
@@ -69,17 +69,17 @@ next_project_number: 607
 575 [NOT STARTED] — Stop the cross-phase ceiling check reading a stop-word as a...
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
-590 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
-591 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
-601 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
+591 [RESEARCHED] — Decide the fate of the errors.json triage surface
+601 [NOT STARTED] — Add a lint closing the repo-root walk-up defect class
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
-421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
+421 [NOT STARTED] — Close three gaps in the telemetry --meta evidence consumer
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
-602 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-603 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-  └─ 602 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
+602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
+603 [NOT STARTED] — Make ROADMAP.md a generated artifact rendered from state.json
+  └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality (see above)
 
 ### Extensions
 
@@ -87,7 +87,7 @@ next_project_number: 607
 383 [NOT STARTED] — Add a /reconcile command to the books extension: aggregate...
   └─ 384 [NOT STARTED] — Adjudicate whether a books reconciliation postflight...
 498 [HOLD] — Replace the email preference harvest tally substrate
-522 [NOT STARTED] — Report and summary heading skeletons are nonconformant across...
+522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 600 [NOT STARTED] — Honor the Sapience 503 cold-start retry\_after hint with one...
   └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
@@ -109,8 +109,8 @@ next_project_number: 607
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
-567 [NOT STARTED] — Port git-commit-phase.sh's deployed-tree containment strip...
-568 [NOT STARTED] — Fix test-orchestrate-cycle-postflight.sh, which fails 25 of...
+567 [NOT STARTED] — Port the deployed-tree containment strip into...
+568 [NOT STARTED] — Fix failing assertions in the orchestrate-cycle-postflight suite
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -118,11 +118,11 @@ next_project_number: 607
 397 [NOT STARTED] — Require a lean research report's recommended compiled...
   └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
     └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
-412 [NOT STARTED] — Map core's Verification Tier vocabulary onto Lean build...
+412 [NOT STARTED] — Map core verification tiers to Lean build scopes
   └─ 463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
   └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
-504 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
+504 [NOT STARTED] — Reconcile the Lean Goals-block harvester with its documented...
   └─ 516 [NOT STARTED] — Stop the Lean plan compliance check failing on...
 
 ### Orchestrator
@@ -138,9 +138,9 @@ next_project_number: 607
 
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
-510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
-511 [NOT STARTED] — A plain recursive grep used to enumerate a corpus transiently...
-512 [PLANNED] — verify-deploy gate 24 reports two findings against lines that...
+510 [NOT STARTED] — Fix a missing lib dependency in the predispatch-review test...
+511 [NOT STARTED] — Require git grep, not plain grep, for scope-hypothesis counts
+512 [PLANNED] — Exempt built-in commands from the dead-command-recommendation...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
 532 [IMPLEMENTING] — Rule on whether ROADMAP.md is authored-only and make...
@@ -177,7 +177,7 @@ next_project_number: 607
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
-572 [NOT STARTED] — Make a declared 'Verification Tier: full' actually honorable...
+572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
 597 [NOT STARTED] — Make the coupled-generated-surface and longFile-baseline...
   └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically... (see above)
   └─ 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
@@ -490,7 +490,7 @@ repairs but deliberately built no detector, and #418 made lint-FIXTURE subject r
 
 ---
 
-### 603. Roadmap command generated from state
+### 603. Make ROADMAP.md a generated artifact rendered from state.json
 - **Effort**: large
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -619,7 +619,7 @@ to its owner.
 
 ---
 
-### 602. Conclusion stage next batch proposal quality
+### 602. Improve the conclusion stage's next-batch proposal quality
 - **Effort**: large
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -742,7 +742,7 @@ to exclude them. Decide at dispatch time, not here.
 
 ---
 
-### 601. Root walkup class closure lint
+### 601. Add a lint closing the repo-root walk-up defect class
 - **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -1595,7 +1595,7 @@ repository's own space.
 
 ---
 
-### 591. Retire errors json triage surface
+### 591. Decide the fate of the errors.json triage surface
 - **Effort**: medium
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
@@ -1615,7 +1615,7 @@ TERRITORY NOTE: verify-deploy.sh and core/manifest.json are shared with several 
 
 ---
 
-### 590. Gate24 ide dead command recommendations
+### 590. Resolve the /ide dead-command-recommendation findings
 - **Effort**: small
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
@@ -1637,7 +1637,7 @@ SCOPE: resolve both violations. /ide is a built-in Claude Code CLI command, not 
 
 ---
 
-### 589. Test suite repo root walk up depth
+### 589. Fix the hardcoded repo-root walk-up depth in five test suites
 - **Effort**: medium
 - **Status**: [COMPLETED]
 - **Task Type**: meta
@@ -2418,7 +2418,7 @@ NON-GOALS: no change to how the budget is computed, clamped, charged, or enforce
 
 ---
 
-### 573. Fix two single assertion suite failures
+### 573. Fix two single-assertion test suite failures
 - **Effort**: small
 - **Status**: [COMPLETED]
 - **Task Type**: meta
@@ -2436,7 +2436,7 @@ So both of this task's items may share a cause this task recorded as unknown, an
 
 ---
 
-### 572. Make full gate viable under batch concurrency
+### 572. Make the full verification tier honorable under batch concurrency
 - **Effort**: large
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -2588,7 +2588,7 @@ This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling h
 
 ---
 
-### 569. Repair stale fixture lib dependency lists
+### 569. Fix stale fixture dependency-copy lists across four test suites
 - **Effort**: small
 - **Status**: [COMPLETED]
 - **Task Type**: meta
@@ -2602,7 +2602,7 @@ This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling h
 
 ---
 
-### 568. Repair orchestrate cycle postflight suite
+### 568. Fix failing assertions in the orchestrate-cycle-postflight suite
 - **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -2629,7 +2629,7 @@ specs/360_validate_carried_unverified_names_a_source/issues.jsonl.
 
 ---
 
-### 567. Port containment strip to git commit scoped
+### 567. Port the deployed-tree containment strip into git-commit-scoped.sh
 - **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -6407,7 +6407,7 @@ PRIOR ART -- DISPOSED OF EXPLICITLY AT CREATION TIME, DO NOT REDISCOVER OR RE-LI
 
 ---
 
-### 522. Report summary skeleton conformance across extensions
+### 522. Fix report/summary heading-skeleton conformance across agents
 - **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -6441,7 +6441,7 @@ BACKLOG RECONCILIATION: the audit returned one real mechanical hit, subset-of-op
 
 ---
 
-### 521. Check n completeness net glob misses implement variant
+### 521. Fix the agent glob to match the -implement-agent.md variant
 - **Effort**: low
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -7162,7 +7162,7 @@ task in the consumer repository. Originating entry cited verbatim above; it reco
 
 ---
 
-### 512. Builtin command exemption for dead command lint
+### 512. Exempt built-in commands from the dead-command-recommendation lint
 - **Effort**: medium
 - **Status**: [PLANNED]
 - **Task Type**: meta
@@ -7175,7 +7175,7 @@ task in the consumer repository. Originating entry cited verbatim above; it reco
 
 ---
 
-### 511. Enumeration grep sweeps gitignored venv
+### 511. Require git grep, not plain grep, for scope-hypothesis counts
 - **Effort**: small
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -7187,7 +7187,7 @@ task in the consumer repository. Originating entry cited verbatim above; it reco
 
 ---
 
-### 510. Predispatch review test temp lib incomplete
+### 510. Fix a missing lib dependency in the predispatch-review test fixture
 - **Effort**: small
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -7490,7 +7490,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 
 ---
 
-### 504. Lean goals block harvest contract
+### 504. Reconcile the Lean Goals-block harvester with its documented contract
 - **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -7599,7 +7599,7 @@ change); NO cited entry carries a contrary `suggested_channel` hint -- every one
 
 ---
 
-### 503. Revise unavailable to dispatched agent
+### 503. Document /revise's unavailability to a dispatched agent
 - **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -7698,7 +7698,7 @@ change); NO cited entry carries a contrary `suggested_channel` hint -- every one
 
 ---
 
-### 502. Research phase doc sync companion surface
+### 502. Require research reports to enumerate generated doc-sync surfaces
 - **Effort**: medium
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -9493,7 +9493,7 @@ specs/reviews/review-2026-11-02.md in ~/Projects/BimodalLogic, High Priority Iss
 
 ---
 
-### 456. Tag version gate unpassable for private manifest
+### 456. Exempt private npm/Cargo manifests from /tag's version gate
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -10033,7 +10033,7 @@ rules/plan-compliance.md is added to file_scope: its "Mechanical check" paragrap
 
 ---
 
-### 439. Audit cross extension bounded wait duplication
+### 439. Rule on the propagation model for the bounded-wait agent contract
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -10306,7 +10306,7 @@ INDEX CONTENTION -- NO SERIALIZING EDGE DECLARED, AND WHY. agent-system/extensio
 
 ---
 
-### 421. Retarget distill meta as evidence consumer
+### 421. Close three gaps in the telemetry --meta evidence consumer
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -10398,7 +10398,7 @@ Every reference below to `/distill --meta`, to the memory extension as the edit 
 
 ---
 
-### 412. Lean tier vocabulary to build scope mapping
+### 412. Map core verification tiers to Lean build scopes
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: lean-extension
@@ -11781,7 +11781,7 @@ Seed report: specs/342_refactor_books_context_corpus_role_scoped/reports/01_seed
 
 ---
 
-### 338. Sweep task support file tracked or ignored
+### 338. Classify every task-support file as tracked or ignored
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system

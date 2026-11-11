@@ -3991,7 +3991,8 @@
         "agent-system/extensions/core/commands/tag.md"
       ],
       "created": "2026-10-19T08:20:46Z",
-      "last_updated": "2026-10-19T08:20:46Z"
+      "last_updated": "2026-10-19T08:20:46Z",
+      "title": "Exempt private npm/Cargo manifests from /tag's version gate"
     },
     {
       "project_number": 439,
@@ -4009,7 +4010,8 @@
       "file_scope": [
         "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
         "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"
-      ]
+      ],
+      "title": "Rule on the propagation model for the bounded-wait agent contract"
     },
     {
       "project_number": 412,
@@ -4027,7 +4029,8 @@
         "agent-system/extensions/lean/agents/lean-implementation-hard-agent.md"
       ],
       "created": "2026-10-15T05:18:14Z",
-      "last_updated": "2026-10-15T05:18:14Z"
+      "last_updated": "2026-10-15T05:18:14Z",
+      "title": "Map core verification tiers to Lean build scopes"
     },
     {
       "project_number": 342,
@@ -4084,7 +4087,8 @@
       "last_updated": "2026-10-04T16:26:53Z",
       "dependencies": [
         275
-      ]
+      ],
+      "title": "Classify every task-support file as tracked or ignored"
     },
     {
       "project_number": 313,
@@ -4410,7 +4414,8 @@
       "file_scope": [
         "agent-system/extensions/core/context/patterns/telemetry-meta-submode.md",
         "agent-system/extensions/core/skills/skill-telemetry/SKILL.md"
-      ]
+      ],
+      "title": "Close three gaps in the telemetry --meta evidence consumer"
     },
     {
       "project_number": 431,
@@ -22007,7 +22012,8 @@
       "created": "2026-11-06T06:54:49Z",
       "last_updated": "2026-11-06T06:54:49Z",
       "artifacts": [],
-      "audit_override": "Migration of a mis-sited BimodalLogic record under the migrate-mis-sited-agent-system-task-delta record; ruling performed per its own ahead-of-Phase-1 precedent, grounds recorded in that record's 2026-11-05 amendment. Directed by the repository owner."
+      "audit_override": "Migration of a mis-sited BimodalLogic record under the migrate-mis-sited-agent-system-task-delta record; ruling performed per its own ahead-of-Phase-1 precedent, grounds recorded in that record's 2026-11-05 amendment. Directed by the repository owner.",
+      "title": "Require research reports to enumerate generated doc-sync surfaces"
     },
     {
       "project_number": 503,
@@ -22026,7 +22032,8 @@
       "created": "2026-11-06T06:54:49Z",
       "last_updated": "2026-11-06T06:54:49Z",
       "artifacts": [],
-      "audit_override": "Migration of a mis-sited BimodalLogic record under the migrate-mis-sited-agent-system-task-delta record; ruling performed per its own ahead-of-Phase-1 precedent, grounds recorded in that record's 2026-11-05 amendment. Directed by the repository owner."
+      "audit_override": "Migration of a mis-sited BimodalLogic record under the migrate-mis-sited-agent-system-task-delta record; ruling performed per its own ahead-of-Phase-1 precedent, grounds recorded in that record's 2026-11-05 amendment. Directed by the repository owner.",
+      "title": "Document /revise's unavailability to a dispatched agent"
     },
     {
       "project_number": 504,
@@ -22045,7 +22052,8 @@
       "created": "2026-11-06T06:54:49Z",
       "last_updated": "2026-11-06T06:54:49Z",
       "artifacts": [],
-      "audit_override": "Migration of a mis-sited BimodalLogic record under the migrate-mis-sited-agent-system-task-delta record; ruling performed per its own ahead-of-Phase-1 precedent, grounds recorded in that record's 2026-11-05 amendment. Directed by the repository owner."
+      "audit_override": "Migration of a mis-sited BimodalLogic record under the migrate-mis-sited-agent-system-task-delta record; ruling performed per its own ahead-of-Phase-1 precedent, grounds recorded in that record's 2026-11-05 amendment. Directed by the repository owner.",
+      "title": "Reconcile the Lean Goals-block harvester with its documented contract"
     },
     {
       "project_number": 505,
@@ -30886,7 +30894,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Fix a missing lib dependency in the predispatch-review test fixture"
     },
     {
       "project_number": 511,
@@ -31508,7 +31517,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Require git grep, not plain grep, for scope-hypothesis counts"
     },
     {
       "project_number": 512,
@@ -32742,7 +32752,8 @@
         ]
       },
       "session_id": "sess_1793988163_b25d4a",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "title": "Exempt built-in commands from the dead-command-recommendation lint"
     },
     {
       "project_number": 513,
@@ -48948,7 +48959,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Fix the agent glob to match the -implement-agent.md variant"
     },
     {
       "project_number": 522,
@@ -49705,7 +49717,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Fix report/summary heading-skeleton conformance across agents"
     },
     {
       "project_number": 523,
@@ -64090,7 +64103,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Port the deployed-tree containment strip into git-commit-scoped.sh"
     },
     {
       "project_number": 568,
@@ -66003,7 +66017,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Fix failing assertions in the orchestrate-cycle-postflight suite"
     },
     {
       "project_number": 569,
@@ -67414,7 +67429,8 @@
       },
       "session_id": "sess_1794402680_74378a",
       "next_artifact_number": 2,
-      "completion_summary": "Repaired three fixture-based test suites' stale dependency-copy lists (missing project-number-inuse.sh, which state-write.sh unconditionally sources), clearing all 21 prior failures across the three suites, retired their now-stale known-failures.txt rows, and redeployed. Final full-tier phase discharged against the dispatch's Batch Gate Deferral scoped tier (run-all.sh --only) rather than the unscoped full gate set, which is deferred once to the batch stage."
+      "completion_summary": "Repaired three fixture-based test suites' stale dependency-copy lists (missing project-number-inuse.sh, which state-write.sh unconditionally sources), clearing all 21 prior failures across the three suites, retired their now-stale known-failures.txt rows, and redeployed. Final full-tier phase discharged against the dispatch's Batch Gate Deferral scoped tier (run-all.sh --only) rather than the unscoped full gate set, which is deferred once to the batch stage.",
+      "title": "Fix stale fixture dependency-copy lists across four test suites"
     },
     {
       "project_number": 570,
@@ -73393,7 +73409,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Make the full verification tier honorable under batch concurrency"
     },
     {
       "project_number": 573,
@@ -74474,7 +74491,8 @@
       },
       "session_id": "sess_1794402680_74378a",
       "next_artifact_number": 2,
-      "completion_summary": "Confirmed both of this task's named single-assertion suite failures were already closed by task 589's root-resolution fix: re-measured test-deploy-baseline-lib.sh (30 passed/0 failed) and test-lint-deploy-caller-wrap.sh (7 passed/0 failed) green from both the deployed and source-store invocation paths in this dispatch, with zero source-file change, and wrote the closure summary."
+      "completion_summary": "Confirmed both of this task's named single-assertion suite failures were already closed by task 589's root-resolution fix: re-measured test-deploy-baseline-lib.sh (30 passed/0 failed) and test-lint-deploy-caller-wrap.sh (7 passed/0 failed) green from both the deployed and source-store invocation paths in this dispatch, with zero source-file change, and wrote the closure summary.",
+      "title": "Fix two single-assertion test suite failures"
     },
     {
       "project_number": 574,
@@ -93983,7 +94001,8 @@
         ]
       },
       "session_id": "sess_1794381614_02261f",
-      "completion_summary": "Fixed the invocation-path-dependent repo-root resolution in five named test suites, one adjacent suite, and orchestrate-build-aux-dispatch.sh's deployed-mode model resolution, all now confirmed green from both the source-store and deployed invocation paths; a second, previously-masked defect in test-gate-cache-lib.sh's case11 was found and fixed along the way, and both of task 573's assertions are now closed."
+      "completion_summary": "Fixed the invocation-path-dependent repo-root resolution in five named test suites, one adjacent suite, and orchestrate-build-aux-dispatch.sh's deployed-mode model resolution, all now confirmed green from both the source-store and deployed invocation paths; a second, previously-masked defect in test-gate-cache-lib.sh's case11 was found and fixed along the way, and both of task 573's assertions are now closed.",
+      "title": "Fix the hardcoded repo-root walk-up depth in five test suites"
     },
     {
       "project_number": 590,
@@ -95073,7 +95092,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Resolve the /ide dead-command-recommendation findings"
     },
     {
       "project_number": 591,
@@ -97962,7 +97982,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Decide the fate of the errors.json triage surface"
     },
     {
       "project_number": 592,
@@ -112892,7 +112913,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Add a lint closing the repo-root walk-up defect class"
     },
     {
       "project_number": 602,
@@ -113949,7 +113971,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Improve the conclusion stage's next-batch proposal quality"
     },
     {
       "project_number": 603,
@@ -115963,7 +115986,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Make ROADMAP.md a generated artifact rendered from state.json"
     },
     {
       "project_number": 604,
