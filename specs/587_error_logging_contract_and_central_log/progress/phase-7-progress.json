@@ -1,0 +1,33 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy, run the full gate set, and replay the outage",
+  "started_at": "2026-11-11T04:30:00Z",
+  "last_updated": "2026-11-11T06:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy with the bounded-wait idiom", "status": "done", "files_touched": ["__WHOLE_TREE__"]},
+    {"id": 2, "description": "Run the complete gate set, no --skip-slow, no --only-gate", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Fix eager-load budget regression (trim + reviewed baseline move)", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json", "agent-system/extensions/core/rules/error-handling.md", "agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 4, "description": "Fix test-runtime-file-tracking.sh's hardcoded 24-member count", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"]},
+    {"id": 5, "description": "Fix central-log-lib.sh unguarded source causing fixture crashes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh", "agent-system/extensions/core/scripts/events-append.sh"]},
+    {"id": 6, "description": "Acceptance replay: Sapience 503 retrieval + issues.jsonl capture", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Acceptance replay: central promotion + owning-repo skip", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Acceptance replay: occurrence collapse + citation render cap", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Measure the actual per-call promotion overhead", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Confirm lints green across whole diff", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Write implementation summary", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [
+    {"approach": "Run test-deploy-baseline-lib.sh/test-gate-cache-lib.sh/etc directly from deployed path to diagnose NEW failures", "result": "informative", "reason": "surfaced a pre-existing 4-level repo-root-walk-up bug independent of this task, confirmed via source-store re-run (100% pass) and git log"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.exclusion",
+      "description": "verify-deploy.sh (complete gate set) and run-all.sh (full corpus) are not literally all-green: gate 24's pre-existing /ide finding and 5 pre-existing repo-root-walk-up suites in gate 8 remain red.",
+      "type": "altered",
+      "reason": "Both confirmed pre-existing and unrelated to this task via git log and direct reproduction; closed as COMPLETED WITH EXCLUSIONS with the five-condition admission test satisfied -- see the plan's own Reasoned Exclusions table for Phase 7.",
+      "annotation": "*(deviation: altered -- phase closed with a Reasoned Exclusions record rather than literal all-green)*"
+    }
+  ]
+}

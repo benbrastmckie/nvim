@@ -11,6 +11,8 @@
     ]
   },
   "proposed_file_scope": [
-    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
   ]
 }

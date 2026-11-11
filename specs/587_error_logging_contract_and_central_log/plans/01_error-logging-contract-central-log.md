@@ -592,20 +592,20 @@ grouping and null-resolution predicate untouched.
 
 ---
 
-### Phase 7: Redeploy, run the full gate set, and replay the outage [NOT STARTED]
+### Phase 7: Redeploy, run the full gate set, and replay the outage [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: the source-store changes reach the deployed tree, the complete gate set is green, and
 the acceptance test passes — replaying the measured 503 outage against the finished mechanism
 yields a readable record in both the task log and the central log.
 
 **Tasks**:
-- [ ] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`
+- [x] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`
       with the Bash tool's `timeout` parameter raised to 600000, per
       `context/patterns/external-process-wait.md` Rule 1. This resolves the per-extension staleness
       the dispatch flagged for `core` as well as the changes above.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no `--skip-slow`
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` with no `--skip-slow` *(completed with exclusions: see Reasoned Exclusions below)*
       and no `--only-gate`, and confirm green. A narrowed pass is not evidence here.
-- [ ] Acceptance replay, Sapience retrieval: with `curl` stubbed to return HTTP 503 carrying the
+- [x] Acceptance replay, Sapience retrieval: with `curl` stubbed to return HTTP 503 carrying the
       measured body (`{"error": "your Sapience is starting, try again in a minute", "starting":
       true, "retry_after": 15, "db_mb": 0}`), exercise the deployed
       `.claude/scripts/sapience-retrieve.sh` and confirm the genuine-failure exit code and the
@@ -613,21 +613,36 @@ yields a readable record in both the task log and the central log.
       `infrastructure/transport unavailable` entry to this task's `issues.jsonl` whose
       `what_happened` carries the server's own sentence. Read the resulting line and confirm it is
       readable on its own — the acceptance bar the dispatch set.
-- [ ] Acceptance replay, central promotion: in a synthetic foreign-repo fixture, confirm the same
+- [x] Acceptance replay, central promotion: in a synthetic foreign-repo fixture, confirm the same
       entry produces exactly one well-formed envelope line in this repository's
       `specs/central-errors.jsonl`, and that a same-repo write produces none (the owning-repo
       skip).
-- [ ] Acceptance replay, collapse: confirm a caller passing
+- [x] Acceptance replay, collapse: confirm a caller passing
       `--tags-json '{"occurrence":{"count":N,"first_seen":"...","last_seen":"..."}}'` writes one
       line carrying that object, and that a class with more than 10 entries renders 10 citations
       plus a remainder count at the conclusion stage.
-- [ ] State the measured cost figure in the implementation summary, as the dispatch's (g)
+- [x] State the measured cost figure in the implementation summary, as the dispatch's (g)
       requires: no new hook, no polling, no probe, no added network call, and zero added work on
       the retrieval success path; per promoted error-bearing record, one `jq -c -n` envelope
       build, one line count, and one `flock`-guarded local filesystem append. Measure the actual
       per-call overhead during this phase rather than asserting the estimate.
-- [ ] Confirm the lints the standing note names are green across the whole diff: no task-number
+- [x] Confirm the lints the standing note names are green across the whole diff: no task-number
       reference and no record-versioning phrasing in any file under `agent-system/**`.
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `verify-deploy.sh` gate 24 (`lint-dead-command-recommendations.sh`) FAIL naming `/ide` | Pre-existing, unrelated to this task: the two violations are in `agent-system/extensions/memory/context/project/memory/{memory-setup.md,memory-troubleshooting.md}`, neither touched by this diff | `git log --oneline -3` on both files shows their last touches were unrelated tasks 435/29/863; `git diff` across this task's full commit range shows neither file appears |
+| `tests/run-all.sh` (gate 8) reports 5 suites as NEW failures: `test-deploy-baseline-lib.sh`, `test-gate-cache-lib.sh`, `test-gate-registry-resolution.sh`, `test-lint-deploy-caller-wrap.sh`, `test-orchestrate-build-aux-dispatch.sh` | Pre-existing, unrelated latent bug in each suite's own repo-root path resolution: a hardcoded 4-level walk-up assumes source-store invocation depth and resolves to a path outside the repository when `run-all.sh` invokes the suite from its deployed location instead | Direct reproduction: the walk-up resolves `ROOT=/home/benjamin` (outside the repo) when run from `.claude/scripts/tests/`, versus the correct repo root when run from `agent-system/extensions/core/scripts/tests/`; all 5 suites pass 100% (30/30, 28/28, 44/44, 7/7, 22/22) when invoked from the source-store path instead; `git log` on each file shows its last touch predates this task (tasks 328/416/418/446/554) |
+
+A genuinely NEW regression this same gate-8 run surfaced mid-phase — `issue-record.sh`/
+`events-append.sh` unconditionally sourcing the new `lib/central-log-lib.sh`, crashing any
+fixture lacking it — was fixed inline during this phase (see the commit guarding both scripts'
+source call with a file-existence check) and is NOT part of this exclusion; it is a closed,
+fixed defect, re-verified green across every affected suite (`test-git-commit-phase.sh`,
+`test-guard-git-push.sh`, `test-please-grant.sh`, `test-run-task-observers.sh`,
+`test-subagent-postflight-marker.sh`, `test-runtime-file-tracking.sh`).
 
 **Timing**: 1.5 hours
 
