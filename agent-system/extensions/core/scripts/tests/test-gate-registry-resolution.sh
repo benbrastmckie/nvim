@@ -55,8 +55,12 @@ CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LIB="$CORE_DIR/lib/gate-registry-lib.sh"
 REAL_DATA="$CORE_DIR/gate-registry.data"
 VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
-REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
 COMMON_LIB="$CORE_DIR/lib/common.sh"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
+if [ -z "$REPO_ROOT" ]; then
+  echo "ERROR: could not resolve repository root from $SCRIPT_DIR" >&2
+  exit 2
+fi
 SHELLCHECK_LINT="$CORE_DIR/lint/lint-shellcheck.sh"
 
 if [ ! -f "$LIB" ]; then

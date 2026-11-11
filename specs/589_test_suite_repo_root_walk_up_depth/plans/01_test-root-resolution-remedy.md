@@ -184,7 +184,7 @@ row's diff read-through of the record itself.
 
 ---
 
-### Phase 2: Migrate the Three Repo-Root Walk-Up Suites to `common_test_repo_root` [NOT STARTED]
+### Phase 2: Migrate the Three Repo-Root Walk-Up Suites to `common_test_repo_root` [COMPLETED]
 
 **Goal**: Replace the unconditional four-level `$CORE_DIR/../../../..` root computation in the
 three suites that use it with the existing depth-independent helper, leaving every assertion and
@@ -192,26 +192,33 @@ every downstream use of the resolved root unchanged.
 
 **Tasks**:
 
-- [ ] Re-read each target file immediately before editing it (concurrent-sibling discipline).
-- [ ] In `test-gate-cache-lib.sh`, replace line 72's `ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"`
+- [x] Re-read each target file immediately before editing it (concurrent-sibling discipline). *(completed)*
+- [x] In `test-gate-cache-lib.sh`, replace line 72's `ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"`
       with `ROOT="$(common_test_repo_root "$SCRIPT_DIR")"`. `lib/common.sh` is already sourced at
-      line 24, above this line; confirm that ordering holds after the edit.
-- [ ] In `test-gate-registry-resolution.sh`, replace line 58's
+      line 24, above this line; confirm that ordering holds after the edit. *(completed: sourced
+      at line 56, above the new line 75 use)*
+- [x] In `test-gate-registry-resolution.sh`, replace line 58's
       `REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"` with
-      `REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"`.
-- [ ] In `test-deploy-baseline-lib.sh`, replace line 492's
+      `REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"`. *(completed: lib/common.sh is sourced
+      at line 53, above the use)*
+- [x] In `test-deploy-baseline-lib.sh`, replace line 492's
       `VD_REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"` with
       `VD_REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"`, and amend the three-line comment
       immediately above it (lines 487-491) which currently *states* the four-level relationship
       as the mechanism; it must describe the git-first resolution instead, or it becomes a false
-      comment pointing a future reader back at the defect.
-- [ ] Add a guard in each of the three: if the resolved root is empty, emit the suite's existing
+      comment pointing a future reader back at the defect. *(completed)*
+- [x] Add a guard in each of the three: if the resolved root is empty, emit the suite's existing
       environment-error shape (`echo "ERROR: ..." >&2; exit 2`) rather than proceeding with an
       empty path — `common_test_repo_root` echoes empty on total failure by contract and never
-      exits non-zero.
-- [ ] Verify depth-independence directly: evaluate the new expression with `$SCRIPT_DIR` bound to
+      exits non-zero. *(completed: also lightly corrected the now-stale fixed-depth-walk comment
+      above the test-gate-cache-lib.sh resolution for the same reason, beyond the plan's
+      explicit test-deploy-baseline-lib.sh-only comment-fix instruction)*
+- [x] Verify depth-independence directly: evaluate the new expression with `$SCRIPT_DIR` bound to
       the deployed tests directory and confirm it yields the repository root, not `/home/benjamin`.
-- [ ] Run the three suites from the source store (green = no regression to the logic under test).
+      *(completed: both paths resolve to /home/benjamin/.config/nvim)*
+- [x] Run the three suites from the source store (green = no regression to the logic under test).
+      *(completed: 28 passed/0 failed, 44 passed/0 failed, 30 passed/0 failed -- matching the
+      Phase 1 baseline exactly)*
 - [ ] Commit the three files with an explicit file list (never a directory or glob pathspec).
 
 **Timing**: 1 hour

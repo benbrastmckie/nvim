@@ -64,12 +64,15 @@ common_test_workdir_init
 
 gate_registry_load "$REAL_DATA"
 # gate_cache_implementation_digest/composite_key resolve verify-deploy.sh relative to a ROOT
-# whose agent-system/extensions subtree is checked for source-store mode. CORE_DIR here (this
-# suite's own naming convention, shared with test-gate-registry-resolution.sh) is actually
-# .../agent-system/extensions/core/scripts, so "ROOT" for this suite's purposes is FOUR levels
-# up (scripts -> core -> extensions -> agent-system -> repo root), matching how
-# verify-deploy.sh/gate-registry.data itself is actually invoked.
-ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
+# whose agent-system/extensions subtree is checked for source-store mode. Resolved via
+# common_test_repo_root (git rev-parse --show-toplevel first, fixed-depth fallback only outside
+# a git work tree), so this is correct whether this suite runs from the source store or from its
+# deployed copy -- a fixed-depth walk from CORE_DIR is invocation-path dependent and is not used.
+ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
+if [ -z "$ROOT" ]; then
+  echo "ERROR: could not resolve repository root from $SCRIPT_DIR" >&2
+  exit 2
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # PART 1 -- corpus digest: touch invariance, content-change detection, untracked-file inclusion,

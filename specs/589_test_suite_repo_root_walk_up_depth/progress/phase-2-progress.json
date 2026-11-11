@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Migrate the Three Repo-Root Walk-Up Suites to common_test_repo_root",
+  "started_at": "2026-11-11T07:50:00Z",
+  "last_updated": "2026-11-11T07:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "test-gate-cache-lib.sh: replace line 72 root computation with common_test_repo_root + guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh"]},
+    {"id": 2, "description": "test-gate-registry-resolution.sh: replace line 58 root computation with common_test_repo_root + guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"]},
+    {"id": 3, "description": "test-deploy-baseline-lib.sh: replace line 492 root computation with common_test_repo_root + guard + comment fix", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh"]},
+    {"id": 4, "description": "Verify depth-independence and run three suites from source store", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.comment",
+      "description": "Comment correction scope",
+      "type": "altered",
+      "reason": "The plan explicitly required the stale fixed-depth comment fix only for test-deploy-baseline-lib.sh; also lightly corrected test-gate-cache-lib.sh's analogous stale comment (which described the FOUR-level walk as the mechanism) for the same false-comment reason, since it would otherwise point a future reader back at the removed defect. No corresponding stale comment existed above test-gate-registry-resolution.sh's line.",
+      "annotation": "*(deviation: altered — comment correction also applied to test-gate-cache-lib.sh)*"
+    }
+  ]
+}

@@ -484,12 +484,17 @@ if [ -f "$VERIFY_DEPLOY_REAL" ]; then
     context/schemas/errors-schema.json context/formats/errors-format.md; do
     echo "x" > "$VD_SCRATCH/.claude/$relf"
   done
-  # The real repository root is four levels above CORE_DIR (.../core/scripts ->
-  # .../core -> .../extensions -> .../agent-system -> repo root), symlinked in so the scratch
-  # target's own implementation-digest component resolves against the REAL
-  # verify-deploy.sh/gate-registry.data/scripts/lib, while its CORPUS (the .claude/ tree above)
-  # stays entirely scratch-local and isolated.
-  VD_REPO_ROOT="$(cd "$CORE_DIR/../../../.." && pwd)"
+  # The real repository root is resolved via common_test_repo_root (git rev-parse
+  # --show-toplevel first, fixed-depth fallback only outside a git work tree), so this is
+  # correct whether this suite runs from the source store or from its deployed copy. It is
+  # symlinked in so the scratch target's own implementation-digest component resolves against
+  # the REAL verify-deploy.sh/gate-registry.data/scripts/lib, while its CORPUS (the .claude/
+  # tree above) stays entirely scratch-local and isolated.
+  VD_REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
+  if [ -z "$VD_REPO_ROOT" ]; then
+    echo "ERROR: could not resolve repository root from $SCRIPT_DIR" >&2
+    exit 2
+  fi
   ln -s "$VD_REPO_ROOT/agent-system" "$VD_SCRATCH/agent-system"
   mkdir -p "$VD_SCRATCH/specs/.gate-cache"
 
