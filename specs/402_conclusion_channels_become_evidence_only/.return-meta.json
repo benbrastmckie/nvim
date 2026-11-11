@@ -26,22 +26,40 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "gate-timeout", "resource-contention", "validate-state", "deploy-headless"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate-timeout",
+        "resource-contention",
+        "validate-state",
+        "deploy-headless"
+      ]
     },
     {
       "content": "A local foreground command that plausibly exceeds the harness Bash tool's default 120000ms timeout gets silently auto-backgrounded. Recover with the bounded-build-waiter idiom: detach via nohup + '&', capture pid=$!, then poll liveness in one Bash call with 'while kill -0 \"$pid\"; do sleep N; done' bounded by a large outer timeout parameter (up to 600000ms) and an inner elapsed-time break -- never a raw inner `timeout N cmd` piped through tail, since that SIGTERMs the command at N seconds even though the harness's own foreground ceiling is separate and larger.",
       "category": "PATTERN",
       "source_artifact": "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bounded-build-waiter", "background-task", "timeout", "deploy-headless", "run-all.sh"]
+      "suggested_keywords": [
+        "bounded-build-waiter",
+        "background-task",
+        "timeout",
+        "deploy-headless",
+        "run-all.sh"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794431325_7cf647",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

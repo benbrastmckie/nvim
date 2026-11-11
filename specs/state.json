@@ -3368,7 +3368,8 @@
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
         "specs/402_conclusion_channels_become_evidence_only/summaries/"
-      ]
+      ],
+      "completion_summary": "Rewrote conclusion-stage.md's channels (b)/(c) from meta-builder-agent dispatch / task-creation into unconditional specs/events.jsonl recording via events-append.sh, deleted Step 4c's unreachable task-creation block, and synced all four downstream transcriptions (postflight-tool-restrictions.md, orchestrate-state-machine.md, orchestrate-batch-results-template.md, events-format.md). Deployed and verified from the deployed copy (test-orchestrate-conclusion-aggregate.sh 14/14 including case (g)); net line count -23 (negative, as required); next_project_number confirmed unchanged. deploy-headless.sh's verify step reported RESULT=landed_verify_red on two gates, both confirmed pre-existing and unrelated to this task (documented as Reasoned Exclusions in Phase 3)."
     },
     {
       "project_number": 410,
