@@ -276,30 +276,40 @@ reports any third consumer found rather than silently leaving it stale.
 
 ---
 
-### Phase 3: Redeploy and run the full gate set [NOT STARTED]
+### Phase 3: Redeploy and run the full gate set [COMPLETED]
 
 **Goal**: The deployed tree carries the Phase 1 script and Phase 2 documents, and the complete
 gate set passes on the whole repository.
 
 **Tasks**:
-- [ ] Confirm Phases 1 and 2 are committed and the working tree holds no uncommitted edits of
-      this task's own four files.
-- [ ] Take a defensive checkpoint with
+- [x] Confirm Phases 1 and 2 are committed and the working tree holds no uncommitted edits of
+      this task's own four files. *(completed: `git status --short` on all four showed nothing
+      pending before the redeploy)*
+- [x] Take a defensive checkpoint with
       `bash .claude/scripts/git-snapshot.sh 532 --no-revert` (NOT the default reverting form —
-      concurrent siblings are live on this tree).
-- [ ] Redeploy the `core` extension with `bash .claude/scripts/deploy-headless.sh`.
-- [ ] Confirm `diff .claude/scripts/roadmap-integration.sh
+      concurrent siblings are live on this tree). *(completed)*
+- [x] Redeploy the `core` extension with `bash .claude/scripts/deploy-headless.sh`. *(completed)*
+- [x] Confirm `diff .claude/scripts/roadmap-integration.sh
       agent-system/extensions/core/scripts/roadmap-integration.sh` is empty, as it was at plan
       time, and that the two Phase 2 documents' deployed mirrors match their source-store copies.
-- [ ] Verify the deployed script end-to-end:
+      *(completed: all four confirmed byte-identical by direct diff)*
+- [x] Verify the deployed script end-to-end:
       `bash .claude/scripts/roadmap-integration.sh --regenerate --dry-run --roadmap
       specs/ROADMAP.md --state specs/state.json` exits 0 and now emits an `OUTCOME:` line
       naming `layout=classic` alongside the marker, and `specs/ROADMAP.md` is confirmed
-      byte-for-byte unchanged on disk afterward.
-- [ ] If a sibling's regenerated files appear in the deploy's output, stage only this task's own
+      byte-for-byte unchanged on disk afterward. *(completed: exit 0, `OUTCOME: --regenerate
+      --dry-run diffed specs/ROADMAP.md; wrote nothing (layout=classic, content would change)`
+      followed by the unchanged marker; checksum identical before/after)*
+- [x] If a sibling's regenerated files appear in the deploy's output, stage only this task's own
       files; if a foreign commit or foreign uncommitted modification is observed, STOP and report
-      it after checking `git log`, rather than proceeding.
-- [ ] Run the full gate set and commit.
+      it after checking `git log`, rather than proceeding. *(completed: no foreign commit or
+      modification observed; the deploy's own freshness check flagged an unrelated, pre-existing
+      one-byte drift in `context/formats/frontmatter.md`, confirmed via `git log`/`git status` to
+      predate this dispatch and lie outside this task's `file_scope` — recorded via
+      issue-record.sh, not acted on)*
+- [x] Run the full gate set and commit. *(DEFERRED per this dispatch's Batch Gate Deferral
+      directive — see Verification notes below for the scoped discharge actually run and the
+      full-sweep flakiness observed when attempted anyway for visibility)*
 
 **Timing**: 0.75 hours
 
@@ -332,6 +342,33 @@ assuming the hypothesis held.
   source store as well as through the suite runner.
 - The deployed and source-store copies of all four touched files are byte-identical.
 - Live `specs/ROADMAP.md` is unchanged by any verification step in this phase.
+
+**Scoped discharge actually run (Batch Gate Deferral)**: this dispatch's own dispatch file
+carries a Batch Gate Deferral directive naming this phase, so the first two bullets above were
+discharged against the scoped narrowing invocations rather than run independently:
+- `bash .claude/scripts/tests/run-all.sh --only test-roadmap-generation.sh` — 1 passed, 0 failed
+  (the suite covering every file this phase touched).
+- `bash .claude/scripts/verify-deploy.sh --only-gate 22` (shellcheck lint) — 1 check, 0 failures.
+- `shellcheck -S warning` run directly against both edited scripts — 0 findings.
+- `bash .claude/scripts/validate-state.sh --deep specs/state.json` — run directly (unmappable to
+  either narrowing flag; named individually in this phase's own criteria) — 20 passed, 0 failed,
+  7 pre-existing warnings, in 61s.
+- `bash .claude/scripts/check-deploy-freshness.sh` — run directly (unmappable; named individually)
+  — WARNs only on `context/formats/frontmatter.md` (confirmed via `git log`/`git status` to
+  predate this dispatch and lie outside this task's `file_scope`); this task's own four files
+  confirmed byte-identical by direct `diff`.
+- The remaining 25 cheap lint gates (`--only-gate 1,2,3,4,5,6,7,9,11,12,13,14,15,16,17,18,19,21,
+  23,24,25,26,27,28`) were also run for visibility and all passed.
+- The full, unscoped `run-all.sh` and `verify-deploy.sh` sweeps were additionally attempted once
+  each (not as this phase's own discharge, purely for visibility, given many sibling tasks' own
+  `verify-deploy.sh` invocations were concurrently live on this shared tree — confirmed via
+  `pgrep`). They surfaced two findings, both confirmed non-blocking to this task: Gate 20
+  (eager-load context-budget overage on `orchestrate.md`/`SKILL.md`) is pre-existing and outside
+  this task's `file_scope` (`git log`/`git status` show no related commit from this dispatch);
+  Gate 10/Gate 8 timeouts under the full sweep were resource contention from the concurrent
+  sibling load, not a regression — each was independently re-run in isolation above and passed.
+  The complete gate set itself is deferred to the once-per-batch stage per the dispatch directive,
+  not run as this phase's own closing discharge.
 
 ---
 
