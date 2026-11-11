@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Re-derive the live title-less set and finalize title text",
+  "started_at": "2026-11-11T19:05:00Z",
+  "last_updated": "2026-11-11T19:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive live title-less set", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Diff against plan's 24-number table", "status": "done", "files_touched": [], "note": "Live set matches plan table exactly: 338,412,421,439,456,502,503,504,510,511,512,521,522,567,568,569,572,573,589,590,591,601,602,603"},
+    {"id": 3, "description": "Confirm each drafted title against live description", "status": "done", "files_touched": [], "note": "Spot-checked 338,412,421,439,456,502,503,504,510,511,512,521,522,567,568,569,572,573,589,590,591,601,602,603 descriptions; all draft titles accurately describe the entries"},
+    {"id": 4, "description": "Mechanical constraint screen (length, dates, banned prefixes, task refs)", "status": "done", "files_touched": [], "note": "All 24 pass: under 70 chars, no dates, no banned prefixes (word-boundary check), no task-number references"},
+    {"id": 5, "description": "Write finalized mapping as scratch JSON", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -55295,12 +55295,12 @@
     {
       "project_number": 528,
       "project_name": "state_json_title_fields_for_todo_readability",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Add purpose-written `.title` fields to specs/state.json's active_projects entries so TODO.md stops rendering truncated description prose as task names.\n\nCONTEXT: the entry schema (project_number, project_name, status, task_type, description, topic, dependencies, created, last_updated, file_scope) has no title field populated — all 61 entries lack `.title`. This is NOT a defect. `.title` is an optional field with a documented fallback chain: `generate-todo.sh:188` (\"Title fallback: derive from project_name if title is empty\", `title=\"${project_name//_/ }\"`) and `generate-task-order.sh:192` (\"(.title // .description // .project_name) -- a purpose-written .title is preferred over the top of a long prose .description; .description remains the fallback for title-less tasks, and .project_name is the last resort when both are absent\"). The cost of relying on the fallback is readability: TODO.md currently renders the first ~60 characters of `description`, so entries read like \"720 — RE-SCOPED 2026-10-03: THIS TASK IS THE CITATION RE-POINT...\" and \"709 — STANDING (second re-scope; SUPERSEDES BOTH...\" — truncated status notes rather than names.\n\nSCOPE: (1) write a concise noun-phrase `.title` for each entry in specs/state.json's active_projects, deriving it from `description` and `project_name`; target under 70 characters, no dates, no status prefixes such as RE-SCOPED/STANDING/HARD/CAPSTONE, no task-number references; prioritize the dependency-ready wave-1 set (127, 128, 178, 257, 298, 464, 481, 502, 559, 566, 570, 604, 616, 617, 664, 709, 711, 712, 713, 714, 716, 720, 722, 723, 725, 726, 728) since those are the entries selected from next. (2) Regenerate TODO.md through the existing generator and confirm the titles render in both the grouped-by-topic listing and the dependency-wave table. (3) Verify the fallback path still works for any entry deliberately left title-less, so the optional-field contract is preserved rather than silently becoming mandatory.\n\nNON-GOALS: no schema change (the field is already supported by both generators); no edit to `description`, `project_name`, `topic`, or any other existing field; no change to the generators themselves; no renaming of task directories, whose names derive from `project_name` and must stay stable.\n\nEffort: small-to-medium, mostly editorial judgment rather than code.\n\n=== MIGRATION PROVENANCE (appended on migration; every line above this marker is the record verbatim) ===\nMigrated from the BimodalLogic repository, where this record was #729 (project_name `state_json_title_fields_for_todo_readability`), on 2026-11-08, under the ruling that all meta records live in this repository, following\ncontext/patterns/cross-repo-task-migration.md.\n\nCITATION RESOLVABILITY (procedure step 3): no iss_* ids cited; nothing to re-point.\nFILE SCOPE (procedure step 6, DERIVED): this record declared none, or declared only deployed paths. The scope\nabove was derived from the edit targets its own text names, and each path was verified to exist in this\nrepository before being written.\n",
       "topic": "repo-hygiene",
       "created": "2026-10-04T16:30:22Z",
-      "last_updated": "2026-11-11T17:58:25Z",
+      "last_updated": "2026-11-11T19:04:29Z",
       "dependencies": [],
       "title": "Add purpose-written title fields to task records so TODO.md stops rendering truncated description prose as task names",
       "parent_task": null,
@@ -55320,7 +55320,7 @@
         "migrated": "2026-11-08"
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
-      "session_id": "sess_1794413303_b61a83",
+      "session_id": "sess_1794423844_64f71e",
       "artifacts": [
         {
           "path": "specs/528_state_json_title_fields_for_todo_readability/reports/01_title-fields-for-active-projects.md",
@@ -55422,12 +55422,12 @@
     {
       "project_number": 532,
       "project_name": "roadmap_integration_regenerate_silent_abort",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "**`roadmap-integration.sh --regenerate` IS SILENTLY INOPERATIVE ON THIS ROADMAP.** Verified live: `bash .claude/scripts/roadmap-integration.sh --regenerate` exits 1 with ZERO stdout and ZERO stderr and writes nothing, because `specs/ROADMAP.md` carries none of the headings the assembler needs — it is a Stage-based authored document, not the `## Open work` / `## Next` generated layout the script expects. Pick one and land it: either teach the script the Stage-based layout, or decide that `specs/ROADMAP.md` is AUTHORED-ONLY and make `--regenerate` say so LOUDLY (a named error on stderr and a documented exit code) instead of aborting in silence. A silent abort is the worst of the three outcomes because a caller cannot tell it from success. Note that a reference to a roadmap-tooling task circulates in other records without resolving to an existing one; filing this is what makes that reference resolve.\n\n**SOURCE-STORE BOUNDARY.** `.claude/scripts/roadmap-integration.sh` lives in a deployed, regenerated tree: a hand edit there is wiped by the next deploy. This record's implementation must resolve `source_dir` from `<project-root>/.claude-extensions.json` for the extension that owns the script and edit the source store at the mirroring path, per `.claude/rules/source-store-deploy-boundary.md`, then redeploy. The deployed path is declared in `file_scope` only so the overlap gate can see the collision surface; it is not the edit target.\n\n**BEHAVIOR UPDATE (observed after a `core` redeploy brought `.claude/scripts/roadmap-integration.sh` up to the source store).** The silent-abort premise above no longer reproduces as stated. Live observation on the redeployed script: `bash .claude/scripts/roadmap-integration.sh --regenerate` exits **0**, writes the marker `<!-- roadmap-generation mode=regenerate tasks=52 topics=10 runs=20 pruned=0 retained=9 -->` to **stderr** (91 bytes; still nothing on stdout), and DOES write to `specs/ROADMAP.md` — appending only a `**Coverage appendix (uncovered tasks)**` fenced block with an `/orchestrate` line of tasks absent from the authored Stage sections. It does NOT assemble the `## Open work` / `## Next` layout, and it does not touch the authored Stage prose. So the defect to land is narrower than \"silently inoperative\": the script now half-applies to an authored layout, emitting its only diagnostic on stderr as an HTML comment rather than a named message, and appending generated content into a file whose own header declares it authored-and-not-generated. The authored-only-versus-teach-the-layout decision this record asks for is unchanged and still the thing to settle; what changed is that a caller now gets exit 0 and a partial write instead of a silent exit 1, which is a different failure to describe and a different one to fix. Re-verify against the live script before implementing; the exit-1/zero-output description predates the redeploy.\n\n=== MIGRATION PROVENANCE (appended on migration; every line above this marker is the record verbatim) ===\nMigrated from the BimodalLogic repository, where this record was #752 (project_name `roadmap_integration_regenerate_silent_abort`), on 2026-11-08, under the ruling that all meta records live in this repository, following\ncontext/patterns/cross-repo-task-migration.md.\n\nCITATION RESOLVABILITY (procedure step 3): no iss_* ids cited; nothing to re-point.\nFILE SCOPE (procedure step 6, DERIVED): this record declared none, or declared only deployed paths. The scope\nabove was derived from the edit targets its own text names, and each path was verified to exist in this\nrepository before being written.\n",
       "topic": "agent-system",
       "created": "2026-10-09T21:24:29Z",
-      "last_updated": "2026-11-11T17:58:50Z",
+      "last_updated": "2026-11-11T19:04:45Z",
       "file_scope": [
         "__WHOLE_TREE__",
         "agent-system/extensions/core/context/formats/roadmap-format.md",
@@ -55449,7 +55449,7 @@
         "migrated": "2026-11-08"
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
-      "session_id": "sess_1794413303_b61a83",
+      "session_id": "sess_1794423844_64f71e",
       "artifacts": [
         {
           "path": "specs/532_roadmap_integration_regenerate_silent_abort/reports/01_regenerate-silent-abort-research.md",

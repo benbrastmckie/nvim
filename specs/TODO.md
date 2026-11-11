@@ -143,7 +143,7 @@ next_project_number: 607
 512 [PLANNED] — verify-deploy gate 24 reports two findings against lines that...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
-532 [PLANNED] — Rule on whether ROADMAP.md is authored-only and make...
+532 [IMPLEMENTING] — Rule on whether ROADMAP.md is authored-only and make...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
 534 [NOT STARTED] — postflight writes detail-free blocking issue entry on partial...
   └─ 543 [NOT STARTED] — Tell the re-prompted dispatch to distrust the error count it...
@@ -190,7 +190,7 @@ next_project_number: 607
 
 ### Repo Hygiene
 
-528 [PLANNED] — Add purpose-written title fields to task records so TODO.md...
+528 [IMPLEMENTING] — Add purpose-written title fields to task records so TODO.md...
 531 [NOT STARTED] — Narrow whole-directory file\_scope declarations so the...
 
 ### Decidability
@@ -5943,7 +5943,7 @@ surface, and that rationale does not survive into this repository.
 ---
 
 ### 532. Rule on whether ROADMAP.md is authored-only and make roadmap-integration.sh report its outcome instead of aborting silently
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -6055,7 +6055,7 @@ repository before being written.
 ---
 
 ### 528. Add purpose-written title fields to task records so TODO.md stops rendering truncated description prose as task names
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: repo-hygiene
 - **Dependencies**: None

@@ -1,7 +1,7 @@
 # Implementation Plan: Add purpose-written title fields to task records
 
 - **Task**: 528 - Add purpose-written title fields to task records so TODO.md stops rendering truncated description prose as task names
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/528_state_json_title_fields_for_todo_readability/reports/01_title-fields-for-active-projects.md
@@ -106,27 +106,33 @@ was performed and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-derive the live title-less set and finalize title text [NOT STARTED]
+### Phase 1: Re-derive the live title-less set and finalize title text [COMPLETED]
 
 **Goal**: Produce a confirmed, constraint-screened `project_number -> title` mapping covering
 exactly the entries that are title-less in the live `specs/state.json` at implement time, staged
 as a scratch JSON file for Phase 2 to consume.
 
 **Tasks**:
-- [ ] Re-read `specs/state.json` immediately (territory concurrency: siblings 391, 532, 507 run
+- [x] Re-read `specs/state.json` immediately (territory concurrency: siblings 391, 532, 507 run
       this same cycle) and re-derive the live title-less set:
       `jq -r '.active_projects[] | select((.title // "") == "") | .project_number' specs/state.json`
-- [ ] Diff that set against the 24 numbers in the table below. For any number that gained a
+      *(completed: live set is exactly the 24 numbers below, confirmed via fresh re-read)*
+- [x] Diff that set against the 24 numbers in the table below. For any number that gained a
       `.title` or left `active_projects`, drop it. For any number newly title-less, read its
       `description` and `project_name` and draft a title under the same constraints.
-- [ ] For each entry in the final set, read its live `description` and confirm the drafted title
+      *(completed: live set matches the table exactly, no drops/additions needed)*
+- [x] For each entry in the final set, read its live `description` and confirm the drafted title
       still describes it accurately (the table below is draft text carried from research, not
       pre-approved output).
-- [ ] Screen every finalized title mechanically: length under 70 characters; no four-digit
+      *(completed: all 24 descriptions read and confirmed, including the three MIGRATED entries
+      502/503/504 whose accurate content lies past the boilerplate preamble)*
+- [x] Screen every finalized title mechanically: length under 70 characters; no four-digit
       year or ISO date; no `RE-SCOPED`/`STANDING`/`HARD`/`CAPSTONE`/`SUPERSEDES`/`MIGRATED`
       prefix; no `task N` / `tasks N-M` / `(task N)` reference.
-- [ ] Write the finalized mapping as a flat `{"<number>": "<title>", ...}` JSON object to a
-      scratch file for Phase 2's `--argjson` input, keys as strings.
+      *(completed: all 24 pass; a naive substring grep for "HARD" false-positived on
+      "hardcoded" in entry 589's title, resolved with a word-boundary match)*
+- [x] Write the finalized mapping as a flat `{"<number>": "<title>", ...}` JSON object to a
+      scratch file for Phase 2's `--argjson` input, keys as strings. *(completed)*
 
 Draft titles (carried from research, three reworded during planning to drop a count or an
 identifier that read like a task reference — 521, 568, 590):
