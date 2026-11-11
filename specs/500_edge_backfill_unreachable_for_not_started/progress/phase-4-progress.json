@@ -1,0 +1,42 @@
+{
+  "phase": 4,
+  "phase_name": "Record the token in the one context doc that prescribes the primitive",
+  "started_at": "2026-11-11T00:00:00Z",
+  "last_updated": "2026-11-11T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the edge_only call-shape paragraph to multi-task-operations.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/multi-task-operations.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Resolve the index-entries.json line_count drift the addition caused, scoped to the one touched entry",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {
+      "approach": "Ran generate-context-line-counts.sh --write once to fix the multi-task-operations.md line_count drift",
+      "result": "failed",
+      "reason": "The script also corrected a second, unrelated pre-existing drift (formats/issue-log.md, 275->280) that predates this dispatch and is out of this task's file_scope. Reverted that one hunk with a targeted sed edit so the commit carries only this task's own entry."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Leave index-entries.json untouched unless the addition changes the file's topical summary",
+      "type": "altered",
+      "reason": "The topical summary was left untouched as planned, but the prose addition grew multi-task-operations.md from 684 to 691 lines, tripping Rule R's line_count drift check at Phase 4's own verify-deploy gate-3/4 run. Corrected the one affected entry's line_count field via the sanctioned remedy script, scoped narrowly to avoid bundling in an unrelated pre-existing drift the same script run also touched.",
+      "annotation": "*(deviation: altered -- line_count field corrected for the one touched entry; unrelated pre-existing issue-log.md drift deliberately left alone)*"
+    }
+  ]
+}

@@ -647,6 +647,13 @@ second copy of that doctrine.
 an older, lower-numbered task routinely depends on a newer one. Direction is fixed by the call's
 own argument shape instead, so a future tool author does not need to re-derive this.
 
+**Backfilling an edge onto a task still at `not_started`** uses `preflight <dependent> edge_only
+<session_id> --depends-on-add=[<predecessor>, ...]` instead of the ordinary no-op-replay form
+shown above — `not_started` is the one status no real transition ever resolves to, so
+`edge_only` is a dedicated no-op-only pair for exactly this case, refused outright without
+`--depends-on-add`. See `update-task-status.sh`'s own `--depends-on-add` header-comment section
+for the full guarantee set this call rides on unchanged.
+
 ### Failed Predecessor Handling
 
 A failed task in Wave N causes its **direct dependents** to be skipped in Wave N+1 (and transitively in later waves). Failure does NOT propagate sideways -- other tasks in Wave N that succeeded do NOT become failed.

@@ -361,23 +361,31 @@ automatically, and correct the header comment that now misdescribes the system.
 
 ---
 
-### Phase 4: Record the token in the one context doc that prescribes the primitive [NOT STARTED]
+### Phase 4: Record the token in the one context doc that prescribes the primitive [COMPLETED]
 
 **Goal**: Make the new token discoverable from the doc that already names `--depends-on-add` as
 the default move for backfilling a serializing edge, so a future reader does not have to derive
 it from a script comment.
 
 **Tasks**:
-- [ ] Re-read the `--depends-on-add` passage in
+- [x] Re-read the `--depends-on-add` passage in
       `agent-system/extensions/core/context/patterns/multi-task-operations.md` (confirmed present
       at the "The default move here is to add the serializing edge" paragraph and the
-      "Direction cannot be inferred from task numbering" paragraph that follows it).
-- [ ] Add one or two sentences naming `preflight <n> edge_only <session_id>
+      "Direction cannot be inferred from task numbering" paragraph that follows it). *(completed)*
+- [x] Add one or two sentences naming `preflight <n> edge_only <session_id>
       --depends-on-add=[...]` as the call shape for a task still at `not_started`, and stating
       that it is no-op-only and refused without `--depends-on-add`. Do not restate the six
-      guarantees -- cite the flag's own header as their home.
-- [ ] Leave `index-entries.json` untouched unless the addition changes the file's topical summary
-      (a one-sentence call-shape addition does not).
+      guarantees -- cite the flag's own header as their home. *(completed: one new paragraph
+      added immediately after the "Direction cannot be inferred" paragraph)*
+- [x] Leave `index-entries.json` untouched unless the addition changes the file's topical summary
+      (a one-sentence call-shape addition does not). *(deviation: altered -- the topical summary
+      was left untouched as planned, but the addition grew the file from 684 to 691 lines, which
+      tripped index-entries.json's own line_count drift check (Rule R) at verification time; the
+      line_count field for this one entry was corrected via
+      generate-context-line-counts.sh --write, scoped to only that entry -- a pre-existing,
+      unrelated line_count drift on a different entry (formats/issue-log.md, not touched by this
+      task) that the same script run also wanted to "fix" was deliberately left alone since it
+      predates this dispatch and is out of this task's scope)*
 
 **Timing**: 0.25 hours
 
