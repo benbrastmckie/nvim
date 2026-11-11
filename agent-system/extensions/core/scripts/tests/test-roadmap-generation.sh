@@ -1023,6 +1023,124 @@ else
   common_test_fail "crash reproduction: expected a coverage appendix once ## Next's Run lines are all absent"
 fi
 
+# ─── Case group 6: OUTCOME: stderr line (change-aware outcome reporting) ──────────────────────
+#
+# write_or_diff emits one named OUTCOME: line on both write modes, distinguishing a changed
+# write from a no-op write and a real write from a --dry-run diff -- the residual defect this
+# task lands (the frozen marker's six count fields are byte-identical in all four cases).
+
+scratch11="$(build_scratch)"
+write_state_fixture "$scratch11"
+write_roadmap_fixture "$scratch11"
+
+run_ri "$scratch11" --regenerate >/dev/null 2>"$scratch11/stderr-outcome-1.txt"
+if grep -qE '^OUTCOME: --regenerate rewrote .*/specs/ROADMAP\.md \(layout=classic, content changed\)$' \
+  "$scratch11/stderr-outcome-1.txt"; then
+  common_test_pass "OUTCOME: line reports a changed --regenerate write (layout=classic)"
+else
+  common_test_fail "OUTCOME: line missing/wrong for a changed --regenerate write ($(cat "$scratch11/stderr-outcome-1.txt"))"
+fi
+
+outcome_line_no="$(grep -n '^OUTCOME: ' "$scratch11/stderr-outcome-1.txt" | head -1 | cut -d: -f1)"
+marker_line_no="$(grep -n '^<!-- roadmap-generation ' "$scratch11/stderr-outcome-1.txt" | head -1 | cut -d: -f1)"
+if [[ -n "$outcome_line_no" && -n "$marker_line_no" && "$outcome_line_no" -lt "$marker_line_no" ]]; then
+  common_test_pass "OUTCOME: line precedes the trap-emitted marker on stderr"
+else
+  common_test_fail "OUTCOME: line should precede the marker (outcome=$outcome_line_no marker=$marker_line_no)"
+fi
+
+# Second consecutive run against the now-generated file: no further content change.
+run_ri "$scratch11" --regenerate >/dev/null 2>"$scratch11/stderr-outcome-2.txt"
+if grep -qE '^OUTCOME: --regenerate left .*/specs/ROADMAP\.md unchanged \(layout=classic, no content change\)$' \
+  "$scratch11/stderr-outcome-2.txt"; then
+  common_test_pass "OUTCOME: line reports a no-op --regenerate write (second consecutive run)"
+else
+  common_test_fail "OUTCOME: line missing/wrong for a no-op --regenerate write ($(cat "$scratch11/stderr-outcome-2.txt"))"
+fi
+
+# --dry-run against a file that WOULD change.
+write_roadmap_fixture "$scratch11"
+run_ri "$scratch11" --regenerate --dry-run >/dev/null 2>"$scratch11/stderr-outcome-dry-1.txt"
+if grep -qE '^OUTCOME: --regenerate --dry-run diffed .*/specs/ROADMAP\.md; wrote nothing \(layout=classic, content would change\)$' \
+  "$scratch11/stderr-outcome-dry-1.txt"; then
+  common_test_pass "OUTCOME: line reports a would-change --regenerate --dry-run"
+else
+  common_test_fail "OUTCOME: line missing/wrong for a would-change --dry-run ($(cat "$scratch11/stderr-outcome-dry-1.txt"))"
+fi
+
+# --dry-run against a file already at its generated shape (no-op dry-run).
+run_ri "$scratch11" --regenerate >/dev/null 2>/dev/null
+run_ri "$scratch11" --regenerate --dry-run >/dev/null 2>"$scratch11/stderr-outcome-dry-2.txt"
+if grep -qE '^OUTCOME: --regenerate --dry-run diffed .*/specs/ROADMAP\.md; wrote nothing \(layout=classic, no content change\)$' \
+  "$scratch11/stderr-outcome-dry-2.txt"; then
+  common_test_pass "OUTCOME: line reports a no-change --regenerate --dry-run"
+else
+  common_test_fail "OUTCOME: line missing/wrong for a no-change --dry-run ($(cat "$scratch11/stderr-outcome-dry-2.txt"))"
+fi
+
+# --prune carries its own mode token in the OUTCOME: line.
+scratch12="$(build_scratch)"
+write_state_fixture "$scratch12"
+write_roadmap_fixture "$scratch12"
+run_ri "$scratch12" --prune >/dev/null 2>"$scratch12/stderr-outcome-prune.txt"
+if grep -qE '^OUTCOME: --prune rewrote .*/specs/ROADMAP\.md \(layout=classic, content changed\)$' \
+  "$scratch12/stderr-outcome-prune.txt"; then
+  common_test_pass "OUTCOME: line names the --prune mode token (layout=classic)"
+else
+  common_test_fail "OUTCOME: line missing/wrong for --prune ($(cat "$scratch12/stderr-outcome-prune.txt"))"
+fi
+
+# --regenerate on a stage-layout fixture: OUTCOME: line names layout=stage.
+scratch13="$(build_scratch)"
+write_state_fixture "$scratch13"
+write_stage_vocabulary_fixture "$scratch13"
+run_ri "$scratch13" --regenerate >/dev/null 2>"$scratch13/stderr-outcome-stage.txt"
+if grep -qE '^OUTCOME: --regenerate .*\(layout=stage, ' "$scratch13/stderr-outcome-stage.txt"; then
+  common_test_pass "OUTCOME: line names layout=stage for a stage-layout --regenerate"
+else
+  common_test_fail "OUTCOME: line missing/wrong layout for stage --regenerate ($(cat "$scratch13/stderr-outcome-stage.txt"))"
+fi
+
+# The absent-roadmap supported no-op (scratch4, Case group 3) never reaches write_or_diff --
+# confirm it still emits no OUTCOME: line.
+if grep -q '^OUTCOME: ' "$scratch4/stderr-absent.txt"; then
+  common_test_fail "absent-roadmap no-op should emit no OUTCOME: line ($(cat "$scratch4/stderr-absent.txt"))"
+else
+  common_test_pass "absent-roadmap no-op emits no OUTCOME: line"
+fi
+
+# The unrecognised-layout refusal (scratch5, Case group 4) never reaches write_or_diff --
+# confirm it still emits no OUTCOME: line, on both modes.
+if grep -q '^OUTCOME: ' "$scratch5/stderr-unknown-regen.txt"; then
+  common_test_fail "unknown vocabulary: --regenerate refusal should emit no OUTCOME: line ($(cat "$scratch5/stderr-unknown-regen.txt"))"
+else
+  common_test_pass "unknown vocabulary: --regenerate refusal emits no OUTCOME: line"
+fi
+if grep -q '^OUTCOME: ' "$scratch5/stderr-unknown-prune.txt"; then
+  common_test_fail "unknown vocabulary: --prune refusal should emit no OUTCOME: line ($(cat "$scratch5/stderr-unknown-prune.txt"))"
+else
+  common_test_pass "unknown vocabulary: --prune refusal emits no OUTCOME: line"
+fi
+
+# The frozen six-field marker shape is unaffected by the new OUTCOME: line (retained check,
+# mirroring Case group 2's pre-existing marker assertion, re-run against this group's captures).
+if grep -qE '^<!-- roadmap-generation mode=regenerate tasks=[0-9]+ topics=[0-9]+ runs=[0-9]+ pruned=[0-9]+ retained=[0-9]+ -->$' \
+  "$scratch11/stderr-outcome-1.txt"; then
+  common_test_pass "frozen marker shape unchanged alongside the new OUTCOME: line"
+else
+  common_test_fail "frozen marker shape changed ($(cat "$scratch11/stderr-outcome-1.txt"))"
+fi
+
+# File-level idempotence retained (second-run byte-identical), now re-asserted alongside the
+# OUTCOME: line's own no-op report above.
+cp "$scratch11/specs/ROADMAP.md" "$scratch11/specs/ROADMAP.idempotence-check.md"
+run_ri "$scratch11" --regenerate >/dev/null 2>/dev/null
+if diff -q "$scratch11/specs/ROADMAP.idempotence-check.md" "$scratch11/specs/ROADMAP.md" >/dev/null; then
+  common_test_pass "--regenerate file-level idempotence retained alongside the OUTCOME: line"
+else
+  common_test_fail "--regenerate file-level idempotence broke alongside the OUTCOME: line"
+fi
+
 # ─── Live-tree isolation guard ─────────────────────────────────────────────────────────────
 
 REAL_ROADMAP_SUM_AFTER=""

@@ -104,6 +104,9 @@ MARKER_EMITTED=0
 RUNS_COUNT=0
 PRUNED_COUNT=0
 RETAINED_COUNT=0
+# ROADMAP_LAYOUT -- set by mode_regenerate/mode_prune immediately after detect_layout, so
+# write_or_diff can name the layout in its OUTCOME: line without re-running detect_layout.
+ROADMAP_LAYOUT=""
 
 # emit_marker -- prints the six-field stderr marker exactly once, reading every counter with a
 # 0 default so it is safe to fire before task_count/topic_count/RUNS_COUNT/PRUNED_COUNT/
@@ -535,17 +538,41 @@ _RM_ASSEMBLE_EOF_
 
 # write_or_diff NEW_CONTENT -> --dry-run prints a unified diff and writes nothing; otherwise
 # writes NEW_CONTENT to a staging file and mv's it into place atomically.
+#
+# Also emits one named OUTCOME: line to stderr, alongside (not instead of) the EXIT trap's
+# frozen marker -- this line precedes that marker since it is printed here, before this
+# function returns and the script proceeds to exit. The marker's six count fields are
+# byte-identical between a changed write and a no-op write, so this line is the only
+# discriminator a caller has between "rewrote" and "left unchanged" without diffing the file
+# itself. Content comparison uses `cmp -s` against the staging file already materialized here,
+# not a fresh read -- see roadmap-format.md's Stderr Marker and Failure Diagnostics subsection.
 write_or_diff() {
-  local new_content="$1" tmp
+  local new_content="$1" tmp changed_desc
   if [[ "$DRY_RUN" -eq 1 ]]; then
     tmp="$(mktemp)"
     printf '%s\n' "$new_content" >"$tmp"
+    if cmp -s "$ROADMAP_PATH" "$tmp"; then
+      changed_desc="no content change"
+    else
+      changed_desc="content would change"
+    fi
+    echo "OUTCOME: --${MODE} --dry-run diffed ${ROADMAP_PATH}; wrote nothing (layout=${ROADMAP_LAYOUT}, ${changed_desc})" >&2
     diff -u "$ROADMAP_PATH" "$tmp" || true
     rm -f "$tmp"
   else
     tmp="$(mktemp "$(dirname "$ROADMAP_PATH")/.roadmap-integration.XXXXXX")"
     printf '%s\n' "$new_content" >"$tmp"
+    if [[ -f "$ROADMAP_PATH" ]] && cmp -s "$ROADMAP_PATH" "$tmp"; then
+      changed_desc=""
+    else
+      changed_desc="content changed"
+    fi
     mv "$tmp" "$ROADMAP_PATH"
+    if [[ -n "$changed_desc" ]]; then
+      echo "OUTCOME: --${MODE} rewrote ${ROADMAP_PATH} (layout=${ROADMAP_LAYOUT}, ${changed_desc})" >&2
+    else
+      echo "OUTCOME: --${MODE} left ${ROADMAP_PATH} unchanged (layout=${ROADMAP_LAYOUT}, no content change)" >&2
+    fi
   fi
 }
 
@@ -843,6 +870,7 @@ mode_regenerate() {
 
   local layout
   layout="$(detect_layout "$ROADMAP_PATH")"
+  ROADMAP_LAYOUT="$layout"
   case "$layout" in
     classic) mode_regenerate_classic ;;
     stage) mode_regenerate_stage ;;
@@ -927,6 +955,7 @@ mode_prune() {
 
   local layout
   layout="$(detect_layout "$ROADMAP_PATH")"
+  ROADMAP_LAYOUT="$layout"
   case "$layout" in
     classic) mode_prune_classic ;;
     stage) mode_prune_stage ;;

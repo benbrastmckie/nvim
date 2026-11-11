@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Emit a named, change-aware outcome line from both write modes",
+  "started_at": "2026-11-11T19:04:44Z",
+  "last_updated": "2026-11-11T19:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read roadmap-integration.sh immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Promote layout to a script-level ROADMAP_LAYOUT variable at both write-mode dispatches", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Add cmp -s comparison and four-shape OUTCOME: stderr line in write_or_diff", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "Confirm OUTCOME: line ordering relative to the EXIT-trap marker, asserted in a test", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 5, "description": "Leave absent-roadmap no-op alone; add test asserting no OUTCOME: line there", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 6, "description": "Leave --print untouched; add no outcome line to it", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Add new test case group covering the four OUTCOME shapes, refusal absence, marker invariance, idempotence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 8, "description": "Run test-roadmap-generation.sh and confirm baseline 93 plus new cases pass", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Commit the script and its test file together", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #532
 
 - **Task**: 532 - Rule on whether ROADMAP.md is authored-only and make roadmap-integration.sh report its outcome instead of aborting silently
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/532_roadmap_integration_regenerate_silent_abort/reports/01_regenerate-silent-abort-research.md
@@ -114,45 +114,49 @@ in this plan edits `specs/ROADMAP.md` itself.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Emit a named, change-aware outcome line from both write modes [NOT STARTED]
+### Phase 1: Emit a named, change-aware outcome line from both write modes [COMPLETED]
 
 **Goal**: `--regenerate` and `--prune` each print exactly one named `OUTCOME:` line to stderr
 naming the mode, the layout, the target, and whether content changed — alongside, not instead of,
 the frozen marker.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/roadmap-integration.sh` immediately before
-      editing (concurrent siblings are live on this tree this cycle).
-- [ ] Make the detected layout available to `write_or_diff`. `mode_regenerate`/`mode_prune`
+- [x] Re-read `agent-system/extensions/core/scripts/roadmap-integration.sh` immediately before
+      editing (concurrent siblings are live on this tree this cycle). *(completed)*
+- [x] Make the detected layout available to `write_or_diff`. `mode_regenerate`/`mode_prune`
       already compute `layout` locally at the `case` dispatch (around lines 845 and 929); promote
       it to a script-level variable (e.g. `ROADMAP_LAYOUT`) set at dispatch, so the writer need
-      not re-run `detect_layout`.
-- [ ] In `write_or_diff` (currently lines 538-550), compare the staging file against
+      not re-run `detect_layout`. *(completed)*
+- [x] In `write_or_diff` (currently lines 538-550), compare the staging file against
       `$ROADMAP_PATH` with `cmp -s` before the `mv`/`diff`, and emit one line to stderr. Use
       these four shapes, which mirror the existing `ERROR:` line's uppercase-prefix style:
       - `OUTCOME: --regenerate rewrote {path} (layout=classic, content changed)`
       - `OUTCOME: --regenerate left {path} unchanged (layout=classic, no content change)`
       - `OUTCOME: --regenerate --dry-run diffed {path}; wrote nothing (layout=classic, content would change)`
       - `OUTCOME: --regenerate --dry-run diffed {path}; wrote nothing (layout=classic, no content change)`
-      substituting `--prune` and `layout=stage` as applicable.
-- [ ] Confirm ordering relative to the `EXIT`-trap marker: the `OUTCOME:` line is emitted from
+      substituting `--prune` and `layout=stage` as applicable. *(completed)*
+- [x] Confirm ordering relative to the `EXIT`-trap marker: the `OUTCOME:` line is emitted from
       `write_or_diff`, so it precedes the trap-emitted marker. Assert that order in a test rather
-      than leaving it incidental.
-- [ ] Leave the absent-roadmap supported no-op alone — `mode_prune`'s
+      than leaving it incidental. *(completed)*
+- [x] Leave the absent-roadmap supported no-op alone — `mode_prune`'s
       `NOTE: no roadmap tracked at ...` line returns before `write_or_diff` and already names its
       outcome. Add a test asserting it still does, and that no `OUTCOME:` line is emitted there.
-- [ ] Leave `--print` untouched; add no outcome line to it.
-- [ ] Add test cases to `agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh`
+      *(completed)*
+- [x] Leave `--print` untouched; add no outcome line to it. *(completed: no code path change;
+      `--print` never calls `write_or_diff`)*
+- [x] Add test cases to `agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh`
       in a new case group, following the existing `pass()`/`fail()` harness and per-case isolated
       fixture pattern: changed write emits `content changed`; immediate second run emits
       `no content change`; `--dry-run` emits the `wrote nothing` shape and writes nothing;
       `--prune` emits its own mode token; the `unknown`-layout refusal emits `ERROR:` and **no**
       `OUTCOME:` line; the marker line is still byte-identical to its pre-change shape; the
-      existing byte-identical-second-run idempotence of the file itself still holds.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh` and
-      confirm the pre-existing 93 cases still pass alongside the new ones.
-- [ ] Commit the script and its test file together (this is one green sub-step; the test file is
-      the verification of the script change).
+      existing byte-identical-second-run idempotence of the file itself still holds. *(completed:
+      added 12 new cases, not the 7 hypothesized — see Scope Hypothesis note below)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh` and
+      confirm the pre-existing 93 cases still pass alongside the new ones. *(completed: baseline
+      confirmed at 93 before editing; 105 passed, 0 failed after — 93 + 12 new)*
+- [x] Commit the script and its test file together (this is one green sub-step; the test file is
+      the verification of the script change). *(completed)*
 
 **Timing**: 1.5 hours
 
