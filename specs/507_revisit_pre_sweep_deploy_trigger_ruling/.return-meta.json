@@ -1,15 +1,45 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/summaries/01_pre-sweep-deploy-trigger-ruling-summary.md",
+      "summary": "REAFFIRM ruling recorded as a dated amendment on the pre-postflight-sweep deploy trigger subsection, with figures re-derived fresh in this dispatch (68/397 meta tasks ~17.1%; 62 paired deltas, 60 same-session median 334s; 2 cross-session outliers holding ~92% of total deferral time); tree redeployed and scoped gates (doc-lint, task-reference lint, content-hash parity) observed green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Re-derived all four recorded grounds for the declined pre-postflight-sweep deploy trigger against the current tree and corpus, reached a REAFFIRM ruling, and appended a dated amendment paragraph to batch-orchestration-guardrails.md's existing subsection (grounds (a)-(d) left byte-for-byte unchanged). Redeployed the tree and discharged Phase 2's full-tier verification via this dispatch's Batch Gate Deferral scoped narrowing (verify-deploy.sh --only-gate 3,4,5), all green."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md",
+    "specs/507_revisit_pre_sweep_deploy_trigger_ruling/summaries/01_pre-sweep-deploy-trigger-ruling-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When re-deriving a 'same-session vs. cross-session' wall-clock delta classification from git history for a recurring-gate cost study, do not use an arbitrary time-magnitude threshold as a same-session proxy -- match the commit body's `Session:` trailer exactly between the two paired commits instead. In this corpus the magnitude threshold happened to agree with the session-trailer match, but only coincidentally; the trailer is the actual ground truth and is cheap to extract with `git log --format='%x01%H%x02%ad%x02%s%x02%b%x03'` plus a regex on the body.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/summaries/01_pre-sweep-deploy-trigger-ruling-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["git-log-pairing", "session-trailer", "wall-clock-delta", "same-session-classification", "cost-measurement"]
+    },
+    {
+      "content": "deploy-headless.sh's inline fast-gate pass can fail gate10 (validate-state.sh --deep specs/state.json) on its internal 60s timeout purely from concurrent sibling write load on a shared specs/state.json during a multi-task /orchestrate batch, even though a direct, untimed re-run of the same command passes cleanly in ~68s. Before treating a gate10 timeout as a content regression, re-run the underlying check directly outside the inline timeout to distinguish a load-induced timing artifact from a real failure.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/summaries/01_pre-sweep-deploy-trigger-ruling-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy-headless", "gate10", "validate-state", "timeout-artifact", "batch-concurrency"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794413303_b61a83",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 2,
+    "phases_total": 2
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/index-entries.json"

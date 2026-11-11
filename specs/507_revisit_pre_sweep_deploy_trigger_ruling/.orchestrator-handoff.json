@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 10,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "phases_completed": 2,
   "phases_total": 2,
-  "summary": "Planned the REAFFIRM ruling as a two-phase documentary change. Phase 1 re-derives the frequency and wall-clock figures, then appends a dated amendment note after ground (d) of the 'Pre-Postflight-Sweep Deploy Trigger: Evaluated, Intentionally Not Built' subsection in the source store, leaving all four grounds byte-for-byte intact. Phase 2 redeploys via deploy-headless.sh and discharges the complete verify-deploy.sh gate set. No mechanism change: the completion-deploy gate and the Inter-Cycle Redeploy Checkpoint are explicit non-goals, and the trigger itself is not built.",
+  "summary": "Re-derived all four recorded grounds for the declined pre-postflight-sweep deploy trigger against the current tree and corpus and reached a REAFFIRM ruling, recorded as a dated amendment paragraph appended to batch-orchestration-guardrails.md's existing subsection with grounds (a)-(d) left byte-for-byte unchanged. Re-derived figures showed modest, explained drift from the research report (396->397 denominator; 59->62 paired deltas) with no change to the qualitative conclusion. Redeployed the tree and discharged Phase 2's full-tier verification via this dispatch's Batch Gate Deferral scoped narrowing (verify-deploy.sh --only-gate 3,4,5: doc-lint, task-reference lint, content-hash parity), all green. One non-fatal issue recorded: deploy-headless.sh's inline gate10 timed out twice under this batch's concurrent write load on specs/state.json, confirmed a timing artifact (direct re-run passed in 68.2s), outside this record's file_scope.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/summaries/01_pre-sweep-deploy-trigger-ruling-summary.md",
+      "summary": "REAFFIRM ruling recorded as a dated amendment on the pre-postflight-sweep deploy trigger subsection, with figures re-derived fresh in this dispatch; tree redeployed and scoped gates observed green."
+    },
+    {
       "type": "plan",
       "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md",
-      "summary": "Two-phase plan: re-confirm figures and append the dated REAFFIRM amendment, then redeploy and run the full gate set."
+      "summary": "Two-phase plan, both phases COMPLETED: re-confirm figures and append the dated REAFFIRM amendment, then redeploy and discharge the gate set."
     }
   ]
 }
