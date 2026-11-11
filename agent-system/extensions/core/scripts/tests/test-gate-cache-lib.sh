@@ -221,8 +221,15 @@ fi
 # Case 11: a sourced-library edit changes the implementation digest for a gate whose invoked
 # script sources it (gate 6 invokes lint-agent-contracts.sh, which sources a status-var lib
 # transitively; component 3's bound is "the whole scripts/lib/ directory" -- see the library's
-# own header -- so perturbing ANY file under scripts/lib/ must be detected).
-anylib="$(find "$CORE_DIR/lib" -maxdepth 1 -name '*.sh' 2>/dev/null | head -1)"
+# own header -- so perturbing ANY file under scripts/lib/ must be detected). The perturbed
+# directory must be the SAME one gate_cache_libdir_digest itself resolves (source-store
+# agent-system/extensions/core/scripts/lib first, falling back to the deployed .claude/scripts/lib
+# only when the source-store directory does not exist) -- NOT "$CORE_DIR/lib", which is
+# invocation-path dependent and, in a repository that owns the source store, never matches what
+# the implementation digest actually hashes when this suite runs from its deployed copy.
+libdir_for_digest="$ROOT/agent-system/extensions/core/scripts/lib"
+[ -d "$libdir_for_digest" ] || libdir_for_digest="$ROOT/.claude/scripts/lib"
+anylib="$(find "$libdir_for_digest" -maxdepth 1 -name '*.sh' 2>/dev/null | head -1)"
 if [ -n "$anylib" ] && [ -f "$anylib" ]; then
   lib_backup="$WORKDIR/lib-backup.sh"
   cp "$anylib" "$lib_backup"

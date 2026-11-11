@@ -1,0 +1,49 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy, Confirm Both Invocation Paths, and Record for Task 573",
+  "started_at": "2026-11-11T08:55:00Z",
+  "last_updated": "2026-11-11T09:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git status --short; report foreign changes", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh (whole-tree regen)", "status": "done", "files_touched": ["__WHOLE_TREE__"]},
+    {"id": 3, "description": "Confirm deployed copies carry edits", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run every affected suite from both paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-lib.sh"]},
+    {"id": 5, "description": "Run gate 8 scoped check (Batch Gate Deferral)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Full gate set -- deferred to batch stage", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Compare tallies, append after-state to phase-1-baseline.json", "status": "done", "files_touched": ["specs/589_test_suite_repo_root_walk_up_depth/progress/phase-1-baseline.json"]},
+    {"id": 8, "description": "Record task-573 evidence", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Note deferred class-closure lint candidate", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {
+      "approach": "Treat the first gate8 FAIL as caused by my own concurrent test-gate-cache-equivalence.sh invocation",
+      "result": "failed",
+      "reason": "Re-ran gate8 cleanly (no concurrent interference, verified via process-table checks) and it STILL reported FAIL. Had to dig further: direct byte-for-byte reproduction of gate8_run's own run-all.sh invocation line (with and without GATE_MUTEX_HELD=1) consistently returns exit 0 with the identical EXPECTED-only roster, so the discrepancy is internal to verify-deploy.sh's gate8_run wrapper itself, not caused by concurrent interference or by this task's edits."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.full-gate-set",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh <repo_root>",
+      "type": "deferred",
+      "reason": "This dispatch's own dispatch file carries a Batch Gate Deferral directive for this phase (declared Verification Tier: full): the full gate set is run once for the whole /orchestrate batch rather than independently per task. Discharged this phase's verification against the directive's named scoped narrowing instead (verify-deploy.sh --only-gate 8), plus direct standalone suite runs covering every file this phase touched.",
+      "annotation": "*(deviation: deferred to batch stage per Batch Gate Deferral directive)*"
+    },
+    {
+      "task_id": "6.case11",
+      "description": "test-gate-cache-lib.sh case11 (sourced-library-edit implementation-digest sensitivity)",
+      "type": "altered",
+      "reason": "Not named in the plan's own task list. Fixing the ROOT resolution in Phase 2 unmasked a SECOND, independently pre-existing defect: case11 perturbed $CORE_DIR/lib (invocation-path dependent) to test implementation-digest sensitivity, but gate_cache_implementation_digest's own component-3 resolution (gate_cache_libdir_digest) is source-store-first/deployed-fallback, identical to other resolvers in the same library -- so perturbing the deployed lib copy from the deployed invocation path never touched what the digest actually hashes. Fixed by having the test resolve the SAME directory the SUT resolves before picking a file to perturb. This is squarely within the plan's own stated Goal ('every one of the five named suites passes from both invocation paths') and was required to meet Phase 6's own verification bar, so it was completed rather than deferred, though it required re-running deploy-headless.sh a second time.",
+      "annotation": "*(deviation: altered -- an additional, previously-masked defect in test-gate-cache-lib.sh case11 was found and fixed, beyond the plan's named root-computation edit)*"
+    },
+    {
+      "task_id": "6.gate8-wrapper-discrepancy",
+      "description": "verify-deploy.sh --only-gate 8's own overall exit-code verdict",
+      "type": "deferred",
+      "reason": "Root cause of why gate8_run's own wrapper reports FAIL (exit 1) despite run-all.sh itself (reproduced byte-for-byte, 3 times) reliably returning exit 0 with 0 NEW failures was not isolated given the per-attempt cost (10-20 minutes each). This is a pre-existing discrepancy in verify-deploy.sh's gate8_run function, a file this task did not edit and a mechanism unrelated to repo-root path resolution. Left for a separate task; recorded via issue-record.sh with full reproduction detail.",
+      "annotation": null
+    }
+  ]
+}

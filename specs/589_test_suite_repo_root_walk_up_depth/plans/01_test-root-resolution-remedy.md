@@ -460,7 +460,7 @@ phase, and every task above is written to be executable under that outcome.
 
 ---
 
-### Phase 6: Redeploy, Confirm Both Invocation Paths, and Record for Task 573 [NOT STARTED]
+### Phase 6: Redeploy, Confirm Both Invocation Paths, and Record for Task 573 [COMPLETED]
 
 **Goal**: Regenerate the deployed tree from the source store, then confirm empirically — from the
 deployed copies, as gate 8's runner executes them — that every affected suite passes under both
@@ -469,30 +469,47 @@ assertions.
 
 **Tasks**:
 
-- [ ] Re-read `git status --short`; report (do not dismiss, do not fix) any foreign uncommitted
+- [x] Re-read `git status --short`; report (do not dismiss, do not fix) any foreign uncommitted
       modification or foreign commit before regenerating the tree, per the dispatch's concurrency
-      note.
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the deployed entry
+      note. *(completed: dirty tree observed, entirely attributable to concurrent siblings 500
+      and 569's own in-flight plan-phase artifacts (declared in this dispatch's Territory block)
+      plus pre-existing dirt already present at dispatch start; no unexpected foreign change)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the deployed entry
       point, whichever resolves) to regenerate `.claude/` from the source store. This is a
-      whole-tree regeneration, which is why `__WHOLE_TREE__` is declared below.
-- [ ] Confirm the deployed copies now carry the edits: `grep` each remedied file's deployed
+      whole-tree regeneration, which is why `__WHOLE_TREE__` is declared below. *(completed: run
+      twice -- once after Phases 2-5, once more after this phase's own additional case11 fix;
+      both landed, exit 3 "landed_verify_red" due to a pre-existing unrelated gate-24 lint
+      finding, recorded separately)*
+- [x] Confirm the deployed copies now carry the edits: `grep` each remedied file's deployed
       counterpart for `common_test_repo_root` / `common_test_ext_root` / the candidate list.
-- [ ] Run every affected suite from `.claude/scripts/tests/` and from
+      *(completed)*
+- [x] Run every affected suite from `.claude/scripts/tests/` and from
       `agent-system/extensions/core/scripts/tests/`, and record the `Results:` line for each
-      under each path. Every suite must be green under **both**.
-- [ ] Run gate 8 as the registry invokes it:
+      under each path. Every suite must be green under **both**. *(completed: all seven measured
+      suites green under both paths -- see phase-1-baseline.json's after_state. One additional,
+      independently pre-existing defect was found and fixed in test-gate-cache-lib.sh's case11;
+      see Deviations)*
+- [x] Run gate 8 as the registry invokes it:
       `bash .claude/scripts/verify-deploy.sh --only-gate 8 <repo_root>`, and confirm the five
-      named suites no longer appear in its `[FAIL]` lines.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh <repo_root>`.
-- [ ] Compare the final tallies against `phase-1-baseline.json` and append the after-state to it,
-      so the before/after pairing is one durable record.
-- [ ] Record, in the task's summary artifact and via `issue-record.sh`, whether this change
+      named suites no longer appear in its `[FAIL]` lines. *(completed with a caveat: the gate8
+      wrapper itself reports an overall FAIL, but direct content inspection of run-all.sh's own
+      output -- reproduced byte-for-byte 3 times -- confirms none of this task's six suites
+      appear in the failing-suite roster; the wrapper's own FAIL verdict traces to an unresolved,
+      pre-existing discrepancy unrelated to this task's edits, recorded via issue-record.sh)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh <repo_root>`.
+      *(deviation: deferred to the batch-level stage per this dispatch's Batch Gate Deferral
+      directive, not independently run here -- see Deviations)*
+- [x] Compare the final tallies against `phase-1-baseline.json` and append the after-state to it,
+      so the before/after pairing is one durable record. *(completed)*
+- [x] Record, in the task's summary artifact and via `issue-record.sh`, whether this change
       closes either of task 573's two assertions (one each in `test-deploy-baseline-lib.sh` and
       `test-lint-deploy-caller-wrap.sh`). Name the assertion and the observed result. Task 573
       owns the re-measurement; this task owns the evidence handed to it. Do **not** edit task
-      573's artifacts.
-- [ ] Note the deferred class-closure lint (see Non-Goals) in the summary as a follow-up
+      573's artifacts. *(completed: BOTH of task 573's assertions are now closed -- see summary
+      and the "downstream-task-evidence" issue-record.sh win entry)*
+- [x] Note the deferred class-closure lint (see Non-Goals) in the summary as a follow-up
       candidate, with the observed class membership from Phases 1 and 5 as its evidence.
+      *(completed)*
 - [ ] Commit with an explicit file list.
 
 **Timing**: 1.5 hours
@@ -524,17 +541,26 @@ assertions.
 
 ## Testing & Validation
 
-- [ ] All five named suites green from the source-store invocation path.
-- [ ] All five named suites green from the deployed invocation path (`.claude/scripts/tests/`).
-- [ ] `verify-deploy.sh --only-gate 8` clean of the five named suites.
-- [ ] Complete gate set green.
-- [ ] No fixed-depth, unconditional root computation remains in any edited suite
-      (`grep` for `../../../..` and `CORE_DIR/../..` returns nothing in them).
-- [ ] No file under `.claude/**` was hand-authored; every deployed change arrived via
-      `deploy-headless.sh`.
-- [ ] `fork` still resolves to an empty model string in `orchestrate-build-aux-dispatch.sh`.
-- [ ] No task-number reference and no record-versioning language in any file landing under
-      `agent-system/**`.
+- [x] All five named suites green from the source-store invocation path. *(confirmed: 28/0,
+      44/0, 30/0, 7/0, 22/0)*
+- [x] All five named suites green from the deployed invocation path (`.claude/scripts/tests/`).
+      *(confirmed: 28/0, 44/0, 30/0, 7/0, 22/0 -- identical to source store)*
+- [x] `verify-deploy.sh --only-gate 8` clean of the five named suites. *(confirmed by direct
+      content inspection of run-all.sh's own output: none of the five appear in the failing-suite
+      roster. The gate8 wrapper's own overall exit code is FAIL for an unrelated, pre-existing
+      reason -- see Phase 6 deviations and the issue-record.sh entry)*
+- [ ] Complete gate set green. *(deferred to the batch stage per this dispatch's Batch Gate
+      Deferral directive -- not independently run in this dispatch)*
+- [x] No fixed-depth, unconditional root computation remains in any edited suite
+      (`grep` for `../../../..` and `CORE_DIR/../..` returns nothing in them). *(confirmed)*
+- [x] No file under `.claude/**` was hand-authored; every deployed change arrived via
+      `deploy-headless.sh`. *(confirmed -- every `.claude/**` write in this dispatch went through
+      deploy-headless.sh; the one manual `cp` used as a quick mid-diagnostic probe was
+      immediately superseded by a proper redeploy before this phase closed)*
+- [x] `fork` still resolves to an empty model string in `orchestrate-build-aux-dispatch.sh`.
+      *(confirmed directly)*
+- [x] No task-number reference and no record-versioning language in any file landing under
+      `agent-system/**`. *(confirmed via grep across every edited file)*
 
 ## Artifacts & Outputs
 
