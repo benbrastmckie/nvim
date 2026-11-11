@@ -112,9 +112,11 @@ regenerating this file without clearing terminal cruft from it, and by printing 
 suggestion that can consist of nothing but two-task collision sequences — measured against a
 138-task ready pool: four `/orchestrate` lines rendered, none of them a joint batch. The cause is
 in `suggest_from_pool()`, which consumes both members of every colliding pair out of the pool
-before the admitted remainder can be offered, and reports success anyway. `602` owns that, plus
-the unwired `--prune` and the unwired `--write-edges`. Grouped with it are the three costs this
-objective's own measurement surfaced: `507` (the completion-deploy gate refusing a postflight
+before the admitted remainder can be offered, and reports success anyway.
+`602` owns the suggestion half and the unwired `--write-edges`; `603` owns the deeper half,
+making this file generated from `state.json` so there is no cruft to clear and no prose to
+hand-maintain. Grouped with them are the three costs
+this objective's own measurement surfaced: `507` (the completion-deploy gate refusing a postflight
 write and spending a whole extra cycle, which stranded `569` when the next cycle's checkpoint
 deferred instead of recovering), `515` (the foreground-backgrounding ceiling that makes an
 unscoped gate run unpollable), and `600` (a cold-start 503 whose `retry_after` hint is preserved
@@ -122,7 +124,8 @@ at the boundary and then never acted on, so every dispatch in a run loses its me
 
 ```
 /orchestrate 569, 573   # residual of the suite-health run: both carry finished work awaiting a status write
-/orchestrate 369, 391, 402, 532, 602, 600, 507, 515   # the orchestration-conclusion objective; 4 waves, probe-verified at MAX_TASKS
+/orchestrate 369, 391, 402, 528, 532, 602, 603, 507   # the roadmap-as-generated-artifact objective; 4 waves, probe-verified at MAX_TASKS
+/orchestrate 515, 600   # the two costs this objective measured but could not seat; 515 needs run 2's 507 first
 /orchestrate 585, 572, 591   # the verify-deploy.sh lane, serialized on shared territory
 /orchestrate 568, 476, 586   # Gate 8's red roster, after its root causes have landed
 /orchestrate 505   # whole-tree claimant: runs alone
@@ -143,17 +146,42 @@ Why this order:
   checkpoint defers again. Dispatch this before `585`: no path overlap, but `585` edits
   `orchestrate-build-dispatch.sh` while the suite-health work repairs
   `test-orchestrate-build-aux-dispatch.sh`, so landing `585` first moves the baseline.
+- **Run 2's objective is to stop maintaining this file by hand.** `603` moves the roadmap's
+  judgment — batches, priorities, per-batch descriptions — out of this document's prose and into
+  `state.json` entries, so `ROADMAP.md` becomes wholly generated and `/roadmap [instruction]`
+  maintains the entries behind it. That inversion is what the rest of the run is arranged around.
+  The case for it is measurable on this very file: the fan-out paragraph above carried
+  `133 open records / 4 waves / 82 of 133` against a live state of 142 records and 6 waves, and
+  named `369` as the widest gate when the live graph puts `597` at 6 direct dependents and `369`
+  at 3. A batch's membership and rationale exist as prose here and nowhere else, which is why the
+  drift is invisible until someone re-derives by hand.
 - **Run 2 is a four-wave chain, not eight parallel records, and it was probe-verified whole.**
   `orchestrate-cycle-plan.sh --dry-run` over all eight returns 0 blocked. The waves are
-  `532, 600, 507` first, then `515` behind `507`, `391` behind `369`, `402` behind `391`, and
-  `602` last behind both `402` and `532`. Every one of those edges is a real territory collision
-  rather than a guess: `602` shares `conclusion-stage.md` with `402` and `391`, and
-  `roadmap-integration.sh` with `532`; `391` shares
-  `source-store-deploy-boundary-narrative.md` with `369`. The one edge that did not exist was
+  `528, 532, 507` first, then `391` and `603`, then `402`, then `602` last. Every edge in it is a
+  real territory collision rather than a guess: `602` shares `conclusion-stage.md` with `402` and
+  `391`, and `roadmap-integration.sh` with both `532` and `603`; `603` shares
+  `state-management-schema.md` with `528`; `391` shares
+  `source-store-deploy-boundary-narrative.md` with `369`. Two edges did not exist and were added:
   `507` against `515`, which both declare `batch-orchestration-guardrails.md` and both dispatched
-  into the same wave until it was added — `515` now carries it, narrow record before broad.
-  `369` additionally defers on `569`'s whole-tree claim, so run 1 must clear first; that is an
-  ordering constraint the engine resolves by itself, not an exclusion.
+  into the same wave until it was declared, and `602` behind `603` — see the next bullet for why
+  that direction. `369` additionally defers on `569`'s whole-tree claim, so run 1 must clear
+  first; that is an ordering constraint the engine resolves by itself, not an exclusion.
+- **`602` runs behind `603`, not beside it, because `603` answers one of `602`'s four questions.**
+  `602` proposes wiring `--prune` into the conclusion stage to clear terminal cruft. Under `603`'s
+  model there is no cruft to clear: a file rendered from live state cannot accumulate terminal
+  entries, and `--prune` already reports `pruned=0 retained=141` here. Landing `602` first would
+  wire a pass that `603` then dissolves. `603` also inherits the obligation to migrate this
+  section's rationale bullets into state rather than drop them — they are judgment that took
+  measurement to produce.
+- **Run 3 exists because run 2 is full at `MAX_TASKS`, not because its members are minor.** `515`
+  is the foreground-backgrounding ceiling that makes an unscoped gate run unpollable, and `600` is
+  the cold-start `503` whose `retry_after` hint is preserved at the boundary and then never acted
+  on, so every dispatch in a run loses its memory context. `600` touches only the sapience
+  extension and collides with nothing in either run. **`515` is dispatchable only after run 2**,
+  which completes its predecessor `507`: probed against the state at the time of writing, a bare
+  `/orchestrate 515, 600` blocks `515` with "dependencies[] names non-terminal task(s) 507 that
+  are not in this batch". Run the two in order, or add `507` to this run instead of run 2 — not
+  both.
 - **Two of run 2's records carry dangling predecessors, and the gate reads them as satisfied.**
   `402` declares `[391, 400]` and `507` declares `[418, 420]`, but `400`, `418` and `420` exist
   in neither `state.json` nor the archive — a renumbering left the references behind. The
@@ -273,20 +301,19 @@ discovery scopes, so neither is a defect. The edges worth declaring are the ones
 actually being dispatched, not a backfill across every record a coarse entry happens to touch.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 313,338,369,383,397,410,412,431
-/orchestrate 437,451,452,453,455,456,459,472
-/orchestrate 473,475,477,484,490,502,503,504
-/orchestrate 506,507,510,511,514,519,520,521
-/orchestrate 522,523,525,526,528,529,530,531
-/orchestrate 532,533,534,535,536,537,538,539
-/orchestrate 545,546,548,549,550,551,556,557
-/orchestrate 558,559,560,562,563,565,567,574
-/orchestrate 575,597,600,601
+/orchestrate 313,338,383,397,410,412,431,437
+/orchestrate 451,452,453,455,456,459,472,473
+/orchestrate 475,477,484,490,502,503,504,506
+/orchestrate 510,511,514,519,520,521,522,523
+/orchestrate 525,526,529,530,531,533,534,535
+/orchestrate 536,537,538,539,545,546,548,549
+/orchestrate 550,551,556,557,558,559,560,562
+/orchestrate 563,565,567,574,575,597,601
 ```
 
 ## Open work
 
-**Core agent system (49)**
+**Core agent system (50)**
 ```
 421 blocked:402     retarget_distill_meta_as_evidence_consumer
 436 blocked:313,458,459  Add the /orient executive-orientation command with a read-only scout age...
@@ -305,7 +332,8 @@ actually being dispatched, not a backfill across every record a coarse entry hap
 579 blocked:564     Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
-602 blocked:402,532 conclusion_stage_next_batch_proposal_quality
+602 blocked:402,532,603  conclusion_stage_next_batch_proposal_quality
+603 blocked:528,532 roadmap_command_generated_from_state
 313 ready           Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
 338 ready           sweep_task_support_file_tracked_or_ignored
 369 ready           Orphan sweep for deployed entries removed from the source store: the deploy a...

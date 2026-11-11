@@ -1,5 +1,5 @@
 ---
-next_project_number: 603
+next_project_number: 604
 ---
 
 # TODO
@@ -12,9 +12,9 @@ next_project_number: 603
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591,597,600,601 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,457,458,462,463,474,480,486,492,509,513,515,518,527,540,541,542,543,544,553,564,566,576,583,584,586,598,599 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,505,507,534,535,538,539,548,549,563,597 | core-agent-system, extensions, neovim, ... |
+| 2 | 384,391,398,457,458,462,463,474,480,486,492,509,513,515,518,527,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,505,507,528,532,534,535,538,539,548,549,563,597 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,439,501,508,516,517,547,552,570,571,579,588,592,593 | 313,391,398,431,451,455,458,472,476,486,504,509,515,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,454,481,524,561,577,581,594,602 | 390,402,438,439,479,492,501,532,547,552,580,593 | core-agent-system, agent-system |
+| 4 | 421,454,481,524,561,577,581,594,602 | 390,402,438,439,479,492,501,547,552,580,593,603 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
 | 6 | 596 | 595 | agent-system |
 
@@ -77,6 +77,8 @@ next_project_number: 603
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
 602 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+603 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 602 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
 
 ### Extensions
 
@@ -204,12 +206,141 @@ next_project_number: 603
 
 ## Tasks
 
+### 603. Roadmap command generated from state
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 528, Task 532
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md).
+
+GOAL. Make specs/ROADMAP.md a WHOLLY GENERATED artifact, rendered from roadmap entries that live in specs/state.json, and add a `/roadmap` command -- backed by a skill and a judgment-bearing agent -- that maintains those entries: clearing cruft, revising priorities, revising batches and their descriptions, and revising dependency edges. The command takes an OPTIONAL free-form instruction argument (e.g. `/roadmap "focus the next batch on the lean extension"`); with no argument it performs a full maintenance pass.
+
+=== WHY THIS IS AN INVERSION, NOT AN ADDITION ===
+
+Today the roadmap's judgment lives ONLY in the markdown. context/formats/roadmap-format.md's
+"Authored vs. Generated" table classifies `## Next` as "mixed: generated skeleton + authored-retained
+prose", and the authored half survives a regenerate only because a RETENTION PARSER reads it back
+out of the file it is about to rewrite -- keys `next:run:{i}:rationale`, `next:why-this-order`,
+`task:{N}:description`, `task:{N}:annotation`. There is no batch representation in state.json at
+all: its top-level keys are active_goal, active_projects, active_topics, completed_projects,
+memory_health, next_project_number, repository_health, vault_count, vault_history, version.
+
+So a batch -- its membership, its ordering rationale, its priority relative to other batches --
+exists as prose in a generated file and nowhere else. That is why maintaining the roadmap is
+hand work today, and why the hand work drifts: measured on this file, the fan-out paragraph
+carried "133 open records / 4 waves / 82 of 133" against a live state of 142 records and 6 waves
+(83/30/18/9/1/1), and named `369` as the widest gate when the live graph puts `597` at 6 direct
+dependents and `599` at 5, with `369` down at 3.
+
+MOVING the judgment into state.json is what makes `/roadmap` possible: an agent can revise a
+structured entry and let the renderer do the rest, where today it would have to edit prose inside
+the artifact its own renderer overwrites.
+
+=== WHAT TO BUILD ===
+
+(1) A ROADMAP-ENTRY SCHEMA in specs/state.json. At minimum: ordered batches, each carrying its
+member task ids, a priority, and ONE brief description. Specify it in
+context/reference/state-management-schema.md alongside the existing entry schema. Settle whether
+batches are a new top-level key or an extension of an existing one, and whether per-batch priority
+is an explicit ordinal or derived from member priority -- note `.priority` ALREADY EXISTS as an
+optional per-task field (populated on 14 of 142 records: 1 critical, 3 high, 10 medium, 133 null)
+and NO script consumes it for ordering today, so it is either the right carrier or should be
+retired rather than left as a third unused axis.
+
+(2) A CONCISE TEMPLATE under context/, specifying the rendered shape AND the entry shape, with an
+explicit anti-fluff rule: per-batch descriptions are ONE line stating what the batch accomplishes
+and why those members belong together -- never a paragraph, never a restatement of each member's
+own title. Give the template a hard length bound and a worked example of a compliant and a
+non-compliant description, so "avoid fluff" is checkable rather than aspirational. The existing
+`## Open work` grammar already bounds its task lines at 100 rendered characters; reuse that
+discipline rather than inventing a second convention.
+
+(3) `/roadmap [instruction]` -- command, skill, and agent. The agent is warranted here and should
+not be collapsed to direct execution: revising priorities, composing batch descriptions, and
+judging which dependency edges are missing are judgment calls, unlike the mechanical rendering
+beneath them. Keep the split clean: the AGENT decides, the SCRIPT renders, and nothing in the
+rendering path makes a judgment call. Register the skill in manifest.json with the
+command/skill/agent conventions the extension already uses, and add its rows to the command
+reference and skill-to-agent mapping in the merge source.
+
+(4) EDGE REVISION, reusing what exists. Adding a dependency edge already has a tool:
+`update-task-status.sh preflight <N> edge_only <session> --depends-on-add=[M]`. Do NOT write a
+second edge-writing path. The agent's job is deciding WHICH edges are missing; the write goes
+through that arm.
+
+=== WHAT THIS SUBSUMES, AND WHAT IT MUST NOT BREAK ===
+
+`--prune` LARGELY DISSOLVES under this model: a file rendered from live state cannot accumulate
+terminal cruft, so there is nothing for a prune pass to remove. Measured now: `--prune` reports
+`pruned=0 retained=141` on this repository. The open record that wires `--prune` into the
+orchestration conclusion stage declares `roadmap-integration.sh` too and should be read AFTER this
+lands, not before -- its prune question is answered differently depending on this task's outcome.
+That ordering is why it gains an edge on this record.
+
+THE RETENTION PARSER becomes dead weight once the authored content has a home in state.json. Its
+removal is a NET DELETION and should be taken deliberately, with the authored content MIGRATED
+rather than dropped: the live file's `## Next` rationale bullets and per-task annotations are real
+judgment that took measurement to produce. A migration step that reads the current file once and
+seeds the state.json entries from it is part of this task, not a follow-up.
+
+MUST NOT BREAK: the Destructive-Overwrite Refusal in roadmap-integration.sh is a documented
+PERMANENT property -- it must still refuse to overwrite a file it cannot classify. A fully
+generated file makes the refusal MORE important, not less, because the blast radius of a bad
+render is now the whole document. Equally, `## Goal`, `## Gate state`, `## Checks before and after
+every call`, `## Settled decisions (do not re-litigate)`, `## Standing rules` and `## Unfiled
+observations` are authored-verbatim or measured-by-hand today. Decide explicitly for each whether
+it becomes a state.json entry or stays authored, and record the ruling -- `## Gate state` in
+particular is measured by running checks, not by reading state, so it probably cannot be generated
+at all.
+
+=== BOUNDARY WITH THE AUTHORING-TIME BATCH LINT ===
+
+A separate open record owns an ADVISORY lint over hand-authored ROADMAP.md batch blocks, and
+carries a hard constraint that it must never author, suggest or rank a batch. If batches stop
+being hand-authored, that record's premise changes materially -- its findings would validate
+generated output rather than human input. Do NOT silently edit that record; read it, and report in
+this task's own artifacts whether it is superseded, narrowed, or unaffected, leaving the disposition
+to its owner.
+
+=== OPEN QUESTIONS FOR RESEARCH TO SETTLE ===
+- Does the classic/stage layout duality survive? A fully generated file may collapse it, which
+  would simplify `detect_layout` considerably -- or the two layouts may correspond to two genuine
+  repository conventions that must both still render.
+- Is ROADMAP.md still committed, or does it become a generated artifact like TODO.md? TODO.md is
+  generated from state.json and IS committed, so precedent says commit it; confirm rather than
+  assume, and note that `generate-todo.sh` is the model to follow for the renderer's contract.
+- Does `/roadmap` write state.json directly or go through `state-write.sh`? The latter carries the
+  audit-evidence gate and the session-id convention; a new direct writer would bypass both.
+
+=== ACCEPTANCE ===
+- specs/ROADMAP.md renders wholly from specs/state.json with no retention parser in the path, and a
+  second consecutive render is byte-identical (the idempotence property the current regenerate
+  already holds).
+- The batch/priority/description entry schema is specified in state-management-schema.md and
+  validated by validate-state.sh.
+- The concise template is in context/, carries a hard length bound, and has one compliant and one
+  non-compliant worked example.
+- `/roadmap` with no argument performs a full pass; `/roadmap "<instruction>"` scopes the pass to
+  that instruction. Both are demonstrated against this repository's live roadmap.
+- Edges the agent adds are written through the existing `edge_only` arm; no second edge-writing
+  path exists in the new code.
+- The current file's authored judgment is migrated into state.json entries, not discarded, and the
+  migration is shown to be lossless for the `## Next` rationale bullets.
+- The Destructive-Overwrite Refusal still refuses an unclassifiable file.
+- A per-section ruling exists for every authored-verbatim and measured-by-hand section.
+- Skill, command and agent registered in manifest.json with a test companion; shellcheck clean per
+  context/standards/shell-strict-mode.md.
+
+---
+
 ### 602. Conclusion stage next batch proposal quality
 - **Effort**: large
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 402, Task 532
+- **Dependencies**: Task 402, Task 532, Task 603
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
