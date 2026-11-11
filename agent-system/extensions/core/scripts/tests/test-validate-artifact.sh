@@ -425,11 +425,13 @@ f=$(make_two_phase_ftm_fixture '
 - `scripts/wrapped.sh` - relocate the
   `## Some Heading` reference subsections behind the existing
 - `scripts/commajoin-a.sh`, `scripts/commajoin-b.sh` - as ranked
-- `.claude/scripts/stray.sh` - should be the sentinel instead')
+- `.claude/scripts/stray.sh` - should be the sentinel instead
+- `$SD/manifest.json` - should be spelled on disk instead')
 out=$("$VALIDATE_SRC" "$f" plan 2>&1)
 if echo "$out" | grep -qF "wrapped-continuation line begins with a backtick"; then common_test_pass "FTM-shape(g): wrapped-continuation shape warns"; else common_test_fail "FTM-shape(g) missing wrapped-continuation warning: $out"; fi
 if echo "$out" | grep -qF "joins a second backtick-delimited path with a comma"; then common_test_pass "FTM-shape(g): comma-join shape warns"; else common_test_fail "FTM-shape(g) missing comma-join warning: $out"; fi
 if echo "$out" | grep -qF "a deployed-tree (.claude/**) path is named directly"; then common_test_pass "FTM-shape(g): deployed-tree-path shape warns"; else common_test_fail "FTM-shape(g) missing deployed-tree-path warning: $out"; fi
+if echo "$out" | grep -qF "carries an unexpanded shell-variable shape"; then common_test_pass "FTM-shape(g): unexpanded-variable shape warns"; else common_test_fail "FTM-shape(g) missing unexpanded-variable warning: $out"; fi
 if echo "$out" | grep -qF "[FAIL]"; then common_test_fail "FTM-shape(g): overall [FAIL] in default mode (should be warnings only): $out"; else common_test_pass "FTM-shape(g): overall default-mode outcome is not a hard [FAIL]"; fi
 rc=0; "$VALIDATE_SRC" "$f" plan >/dev/null 2>&1 || rc=$?
 if [[ $rc -eq 0 ]]; then common_test_pass "FTM-shape(g): default-mode exit 0 (warnings alone do not fail the gate)"; else common_test_fail "FTM-shape(g): unexpected non-zero exit in default mode: rc=$rc"; fi
@@ -448,6 +450,7 @@ out=$("$VALIDATE_SRC" "$f" plan 2>&1)
 if echo "$out" | grep -qF "wrapped-continuation line begins with a backtick"; then common_test_fail "FTM-shape(h): false-positive wrapped-continuation warning: $out"; else common_test_pass "FTM-shape(h): no wrapped-continuation warning"; fi
 if echo "$out" | grep -qF "joins a second backtick-delimited path with a comma"; then common_test_fail "FTM-shape(h): false-positive comma-join warning: $out"; else common_test_pass "FTM-shape(h): no comma-join warning"; fi
 if echo "$out" | grep -qF "a deployed-tree (.claude/**) path is named directly"; then common_test_fail "FTM-shape(h): false-positive deployed-tree-path warning: $out"; else common_test_pass "FTM-shape(h): no deployed-tree-path warning"; fi
+if echo "$out" | grep -qF "carries an unexpanded shell-variable shape"; then common_test_fail "FTM-shape(h): false-positive unexpanded-variable warning: $out"; else common_test_pass "FTM-shape(h): no unexpanded-variable warning"; fi
 
 # ─── Cross-phase ceiling consistency (f): contradiction -- estimates sum past the cited
 # ceiling while the plan asserts conformance -- WARNS, default-mode exit stays 0 ─────────────

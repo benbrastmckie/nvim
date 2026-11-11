@@ -50,6 +50,12 @@
 #       survives.
 #   25. A bare `.claude/` entry is refused the same way; refusing every entry in the block still
 #       exits 0 with `[]`.
+#   26. A bare `$VAR` unexpanded-variable entry is refused, named on stderr; a sibling legitimate
+#       path survives.
+#   27. A braced `${VAR}` unexpanded-variable entry is refused the same way.
+#   28. A path containing a literal `$` that is not a variable reference survives unrefused.
+#   29. The deployed-tree refusal and the unexpanded-variable refusal both fire in the same run
+#       with no interference between them.
 #
 # Structural model: pass()/fail()/info() helpers, PASSED/FAILED integer counters, mktemp -d
 # workdir with an EXIT-trap cleanup, exit 0 all-pass / 1 any-fail / 2 environment error.
@@ -642,6 +648,94 @@ if grep -q "refused '.claude/'" "$WORKDIR/case25.err"; then
   common_test_pass "Case 25: stderr names the refused bare entry"
 else
   common_test_fail "Case 25: stderr did not name the refused bare entry: $(cat "$WORKDIR/case25.err")"
+fi
+
+# ── Case 26: a bare $VAR unexpanded-variable entry is refused, named on stderr, and absent from
+# the emitted array; a sibling legitimate path in the same block survives. ──────────────────────
+FIXTURE_26="$WORKDIR/case26.md"
+cat > "$FIXTURE_26" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `agent-system/extensions/core/manifest.json` - a legitimate source-store path
+- `$SD/manifest.json` - unexpanded shell variable, must be refused
+
+**Verification**:
+- ok
+EOF
+OUT_26="$(bash "$HARVESTER" "$FIXTURE_26" 2>"$WORKDIR/case26.err")"
+assert_json_array_eq "$OUT_26" '["agent-system/extensions/core/manifest.json"]' "Case 26 (bare \$VAR entry refused, sibling real path survives)"
+if grep -qF "refused '\$SD/manifest.json'" "$WORKDIR/case26.err"; then
+  common_test_pass "Case 26: stderr names the refused entry"
+else
+  common_test_fail "Case 26: stderr did not name the refused entry: $(cat "$WORKDIR/case26.err")"
+fi
+
+# ── Case 27: a braced \${VAR} unexpanded-variable entry is refused the same way. ────────────────
+FIXTURE_27="$WORKDIR/case27.md"
+cat > "$FIXTURE_27" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `${SD}/scripts/lib/foo.sh` - braced unexpanded shell variable, must be refused
+
+**Verification**:
+- ok
+EOF
+OUT_27="$(bash "$HARVESTER" "$FIXTURE_27" 2>"$WORKDIR/case27.err")"
+EXIT_27=$?
+assert_json_array_eq "$OUT_27" '[]' "Case 27 (braced \${VAR} entry refused, result is empty array)"
+if [[ "$EXIT_27" -eq 0 ]]; then
+  common_test_pass "Case 27: exit code 0 even though the only entry was refused"
+else
+  common_test_fail "Case 27: expected exit 0, got $EXIT_27"
+fi
+if grep -qF 'refused '"'"'${SD}/scripts/lib/foo.sh'"'"'' "$WORKDIR/case27.err"; then
+  common_test_pass "Case 27: stderr names the refused braced entry"
+else
+  common_test_fail "Case 27: stderr did not name the refused braced entry: $(cat "$WORKDIR/case27.err")"
+fi
+
+# ── Case 28: a path containing a literal '$' that is NOT a variable reference survives
+# unrefused. ──────────────────────────────────────────────────────────────────────────────────
+FIXTURE_28="$WORKDIR/case28.md"
+cat > "$FIXTURE_28" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `docs/price$5-report.md` - literal dollar sign, not a variable reference
+
+**Verification**:
+- ok
+EOF
+OUT_28="$(bash "$HARVESTER" "$FIXTURE_28" 2>"$WORKDIR/case28.err")"
+assert_json_array_eq "$OUT_28" '["docs/price$5-report.md"]' "Case 28 (literal \$ survives, not refused)"
+if [[ -s "$WORKDIR/case28.err" ]]; then
+  common_test_fail "Case 28: expected no stderr warning for a literal-\$ path; got: $(cat "$WORKDIR/case28.err")"
+else
+  common_test_pass "Case 28: no stderr warning for a literal-\$ path"
+fi
+
+# ── Case 29: the existing deployed-tree refusal and the new unexpanded-variable refusal both
+# fire in the SAME run, over the SAME merged array, with no interference between them. ──────────
+FIXTURE_29="$WORKDIR/case29.md"
+cat > "$FIXTURE_29" << 'EOF'
+### Phase 1: Example [NOT STARTED]
+
+**Files to modify**:
+- `scripts/real-source-file.sh` - a legitimate source-store path
+- `.claude/scripts/planted.sh` - deployed-tree, must be refused
+- `$SD/manifest.json` - unexpanded shell variable, must be refused
+
+**Verification**:
+- ok
+EOF
+OUT_29="$(bash "$HARVESTER" "$FIXTURE_29" 2>"$WORKDIR/case29.err")"
+assert_json_array_eq "$OUT_29" '["scripts/real-source-file.sh"]' "Case 29 (deployed-tree and unexpanded-variable refusals compose in one run)"
+if grep -q "refused '.claude/scripts/planted.sh'" "$WORKDIR/case29.err" && grep -qF "refused '\$SD/manifest.json'" "$WORKDIR/case29.err"; then
+  common_test_pass "Case 29: stderr names both refused entries"
+else
+  common_test_fail "Case 29: stderr did not name both refused entries: $(cat "$WORKDIR/case29.err")"
 fi
 
 echo ""

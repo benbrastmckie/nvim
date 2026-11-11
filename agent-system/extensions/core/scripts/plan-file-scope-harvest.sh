@@ -106,8 +106,27 @@
 #     respectively), because most `.lean` edits cannot make them stale. `machine-appendix`
 #     regeneration additionally needs a Lean build (`lake env lean --run`), not a line-count
 #     scan -- a cost the implementer of a future Axioms/Derivation-touching task should expect.
+#
+# Unexpanded-variable refusal:
+#   A `file_scope` entry carrying an unexpanded shell-variable shape (a `$` followed by an
+#   identifier, or a `${...}` form -- e.g. `$SD/manifest.json`) is never a legitimate member: no
+#   `SD=`-style assignment runs anywhere on the commit path, so such a string is harvested
+#   verbatim and matches nothing downstream, silently. This is a SHAPE-based refusal (any
+#   unexpanded-variable spelling), not a refusal of one specific invented token, applied over the
+#   same final merged array the deployed-tree refusal above already covers, via the shared
+#   `source_store_unexpanded_variable` predicate (`lib/source-store-path-lib.sh`) rather than a
+#   second, drifting regex. Each refused entry is reported with its own `>&2` warning naming the
+#   sanctioned alternative concretely -- the source-store path exactly as it is spelled on disk
+#   (`agent-system/extensions/<name>/...`), which `source_store_classify` recognizes -- never
+#   signalled through the exit code, mirroring the deployed-tree refusal's own exit-0-regardless
+#   contract. The library is sourced fail-soft (`2>/dev/null`): an unavailable library degrades to
+#   "no unexpanded-variable refusal this run" rather than aborting the harvester.
 
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/source-store-path-lib.sh" 2>/dev/null || true
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: $(basename "$0") <plan-file-path>" >&2
@@ -390,4 +409,26 @@ while IFS= read -r refused; do
   echo "WARNING: plan-file-scope-harvest.sh refused '$refused' from file_scope: a deployed-tree (.claude/**) path is never a legitimate file_scope member (see rules/source-store-deploy-boundary.md). Declare a whole-deployed-tree claim with the \`__WHOLE_TREE__\` sentinel instead." >&2
 done < <(echo "$MERGED" | jq -r --arg re "$DEPLOYED_TREE_RE" '.[] | select(test($re))')
 
-echo "$MERGED" | jq -c --arg re "$DEPLOYED_TREE_RE" '[.[] | select(test($re) | not)]'
+AFTER_DEPLOYED_TREE="$(echo "$MERGED" | jq -c --arg re "$DEPLOYED_TREE_RE" '[.[] | select(test($re) | not)]')"
+
+# Unexpanded-variable refusal (see the header "Unexpanded-variable refusal" subsection above):
+# drop any entry carrying an unexpanded shell-variable shape from the array that already survived
+# the deployed-tree refusal, so both filters compose over one final merged array. A pure
+# structural shape test via the shared source_store_unexpanded_variable predicate -- fail-soft if
+# the library did not source above (declare -F guard), in which case this stage is a no-op and
+# every entry survives unchanged. Never signalled through the exit code, mirroring the
+# deployed-tree refusal's own contract.
+if declare -F source_store_unexpanded_variable >/dev/null 2>&1; then
+  FINAL_ENTRIES=()
+  while IFS= read -r entry; do
+    [[ -z "$entry" ]] && continue
+    if source_store_unexpanded_variable "$entry"; then
+      echo "WARNING: plan-file-scope-harvest.sh refused '$entry' from file_scope: an unexpanded shell-variable-shaped entry is never a legitimate file_scope member (no \$VAR assignment runs on the commit path, so it matches nothing). Write the source-store path as it is actually spelled on disk instead (agent-system/extensions/<name>/...)." >&2
+      continue
+    fi
+    FINAL_ENTRIES+=("$entry")
+  done < <(echo "$AFTER_DEPLOYED_TREE" | jq -r '.[]')
+  printf '%s\n' "${FINAL_ENTRIES[@]+"${FINAL_ENTRIES[@]}"}" | jq -R -s -c 'split("\n") | map(select(length > 0)) | unique'
+else
+  echo "$AFTER_DEPLOYED_TREE"
+fi

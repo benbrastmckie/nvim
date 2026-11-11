@@ -308,6 +308,14 @@ if [ "$artifact_type" = "plan" ]; then
   # shellcheck disable=SC1090
   . "$_phase_lib"
 
+  # --- Shared source-store path library (lazy, fail-soft: only the "plan" branch's Files-to-
+  # modify authoring-shape advisory scan below needs source_store_unexpanded_variable). Unlike
+  # the two libraries above, an unavailable library here degrades to "no unexpanded-variable
+  # advisory this run" rather than a loud exit 5 -- this check is itself advisory-only (never
+  # fails the artifact), so its own dependency failure stays advisory-only too. ---
+  # shellcheck disable=SC1091
+  . "$_validate_script_dir/lib/source-store-path-lib.sh" 2>/dev/null || true
+
   # --- Shared plan-level Status-line grammar library (lazy: only the "plan" branch needs it) ---
   # Same lazy, ${BASH_SOURCE[0]}-relative, exit-5-on-missing idiom as phase-heading-patterns.sh
   # above -- correct in both the source store and the deployed tree. Never falls through to an
@@ -464,7 +472,13 @@ if [ "$artifact_type" = "plan" ]; then
       # (i) a wrapped-continuation entry line whose immediately following line, leading
       # whitespace stripped, itself begins with a backtick; (ii) an entry line carrying a second
       # backtick-delimited path joined by a comma; (iii) an entry naming a deployed-tree path
-      # (`.claude`, `.claude/`, or prefixed `.claude/`) instead of the `__WHOLE_TREE__` sentinel.
+      # (`.claude`, `.claude/`, or prefixed `.claude/`) instead of the `__WHOLE_TREE__` sentinel;
+      # (iv) an entry carrying an unexpanded shell-variable shape (a `$` followed by an
+      # identifier, or a `${...}` form) instead of the source-store path as it is actually
+      # spelled on disk -- the same shape plan-file-scope-harvest.sh's own final refusal stage
+      # refuses at harvest time, surfaced here earlier still, at plan-acceptance time. Uses the
+      # same shared `source_store_unexpanded_variable` predicate (lazily sourced, fail-soft,
+      # above); shape (iv) is skipped entirely when that library did not source.
       # Body-only capture (header line excluded via `next`), stopping at the first blank line or
       # the next bolded field label -- the same block-termination shape the Tier Justification
       # capture just below already uses, so this check introduces no new capture grammar.
@@ -479,6 +493,7 @@ if [ "$artifact_type" = "plan" ]; then
         _ftm_shape_continuation=0
         _ftm_shape_commajoin=0
         _ftm_shape_claude=0
+        _ftm_shape_unexpanded=0
         for ((_ftm_i = 0; _ftm_i < ${#_ftm_lines[@]}; _ftm_i++)); do
           _ftm_line="${_ftm_lines[$_ftm_i]}"
           # Entry-line test (optional leading list marker, same anchoring the header-presence
@@ -488,6 +503,12 @@ if [ "$artifact_type" = "plan" ]; then
             _ftm_entry_path=$(echo "$_ftm_line" | sed -E 's/^[[:space:]]*-[[:space:]]*`([^`]*)`.*/\1/')
             if [[ "$_ftm_entry_path" == ".claude" || "$_ftm_entry_path" == ".claude/" || "$_ftm_entry_path" == .claude/* ]]; then
               _ftm_shape_claude=1
+            fi
+            # Shape (iv): the entry's first backtick-delimited token carries an unexpanded
+            # shell-variable shape. Skipped entirely when the library did not source above.
+            if declare -F source_store_unexpanded_variable >/dev/null 2>&1 \
+               && source_store_unexpanded_variable "$_ftm_entry_path"; then
+              _ftm_shape_unexpanded=1
             fi
             # Shape (ii): a second backtick-delimited path joined by a comma on the same line.
             if echo "$_ftm_line" | grep -qE '`[^`]*`[[:space:]]*,[[:space:]]*`[^`]*`'; then
@@ -513,6 +534,9 @@ if [ "$artifact_type" = "plan" ]; then
         fi
         if [ "$_ftm_shape_claude" -eq 1 ]; then
           log_warn "Phase ${phase_num} Files to modify: a deployed-tree (.claude/**) path is named directly -- it is never a legitimate file_scope member (rules/source-store-deploy-boundary.md); declare a whole-deployed-tree claim with the \`__WHOLE_TREE__\` sentinel instead"
+        fi
+        if [ "$_ftm_shape_unexpanded" -eq 1 ]; then
+          log_warn "Phase ${phase_num} Files to modify: an entry carries an unexpanded shell-variable shape (a \$VAR or \${VAR} form) -- no such variable is ever expanded on the commit path, so it will be refused at harvest time and match nothing; write the source-store path as it is actually spelled on disk instead (agent-system/extensions/<name>/...)"
         fi
       fi
 

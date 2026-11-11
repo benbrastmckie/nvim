@@ -296,33 +296,33 @@ corrected before the commit rather than after.
 
 --- *(completed)*
 
-### Phase 2: Refuse an Unexpanded-Variable Entry at the Authoring Boundary [NOT STARTED]
+### Phase 2: Refuse an Unexpanded-Variable Entry at the Authoring Boundary [COMPLETED]
 
 **Goal**: An unexpanded shell variable can no longer reach `file_scope` silently. It is refused by
 the harvester with a loud, non-fatal warning naming the sanctioned alternative, and flagged earlier
 still by the plan validator's existing authoring-shape advisory scan.
 
 **Tasks**:
-- [ ] Re-read `scripts/plan-file-scope-harvest.sh`'s final refusal stage immediately before editing
-      (a sibling task is dispatched on this same working tree this cycle).
-- [ ] Add the unexpanded-variable refusal to that same final stage, after the merge of the extracted
+- [x] Re-read `scripts/plan-file-scope-harvest.sh`'s final refusal stage immediately before editing
+      (a sibling task is dispatched on this same working tree this cycle). *(completed)*
+- [x] Add the unexpanded-variable refusal to that same final stage, after the merge of the extracted
       and appended arrays and alongside the existing deployed-tree refusal, so both inputs are
       covered by one filter. Mirror the existing refusal exactly: a pure structural test on the
       harvested string, one `>&2` warning per refused entry naming the entry, and no change to the
-      exit code — a plan whose every entry is refused still exits 0 with an empty array.
-- [ ] Word the warning so it names the sanctioned alternative concretely: write the source-store
+      exit code — a plan whose every entry is refused still exits 0 with an empty array. *(completed)*
+- [x] Word the warning so it names the sanctioned alternative concretely: write the source-store
       path as it is actually spelled on disk (`agent-system/extensions/<name>/...`), which the
-      classification library recognizes, rather than a shell variable that nothing expands.
-- [ ] Consume `source_store_unexpanded_variable` from the Phase 1 library rather than open-coding a
-      second regex; keep the existing deployed-tree refusal and its wording untouched.
-- [ ] Add a matching advisory to `scripts/validate-artifact.sh`'s existing `Files to modify`
+      classification library recognizes, rather than a shell variable that nothing expands. *(completed)*
+- [x] Consume `source_store_unexpanded_variable` from the Phase 1 library rather than open-coding a
+      second regex; keep the existing deployed-tree refusal and its wording untouched. *(completed)*
+- [x] Add a matching advisory to `scripts/validate-artifact.sh`'s existing `Files to modify`
       authoring-shape scan, as a sibling of the deployed-tree advisory already emitted there, at the
-      same advisory severity so plan validation reports it without failing.
-- [ ] Extend `scripts/tests/test-plan-file-scope-harvest.sh`: an entry carrying each accepted
+      same advisory severity so plan validation reports it without failing. *(completed)*
+- [x] Extend `scripts/tests/test-plan-file-scope-harvest.sh`: an entry carrying each accepted
       variable shape is refused, named on stderr, and absent from the emitted array; the exit code
       stays 0 even when every entry is refused; a path containing a literal `$` that is not a
-      variable reference survives; the existing deployed-tree refusal cases still pass verbatim.
-- [ ] Extend `scripts/tests/test-validate-artifact.sh` with the matching advisory case, asserting it
+      variable reference survives; the existing deployed-tree refusal cases still pass verbatim. *(completed)*
+- [x] Extend `scripts/tests/test-validate-artifact.sh` with the matching advisory case, asserting it
       warns rather than fails.
 
 **Timing**: 1.5 hours
@@ -353,7 +353,7 @@ edits are confined to one stage inside each file with no externally visible sign
 - The same fixture run through `validate-artifact.sh` reports the advisory and does not fail the
   artifact.
 
----
+--- *(completed)*
 
 ### Phase 3: Classify and Name the Repository at the Phase-Commit Site [NOT STARTED]
 
