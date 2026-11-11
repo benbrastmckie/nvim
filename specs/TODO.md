@@ -130,14 +130,14 @@ next_project_number: 607
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
-507 [RESEARCHED] — Re-adjudicate the declined pre-postflight-sweep deploy...
+507 [PLANNING] — Re-adjudicate the declined pre-postflight-sweep deploy...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 402 [NOT STARTED] — Conclusion stage Step 4c allocates no task number and creates...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 
 ### Agent System
 
-391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
+391 [RESEARCHED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
     └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 510 [NOT STARTED] — test-orchestrate-predispatch-review.sh scenario 10 (the...
@@ -145,7 +145,7 @@ next_project_number: 607
 512 [PLANNED] — verify-deploy gate 24 reports two findings against lines that...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
-532 [RESEARCHED] — Rule on whether ROADMAP.md is authored-only and make...
+532 [PLANNING] — Rule on whether ROADMAP.md is authored-only and make...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
 534 [NOT STARTED] — postflight writes detail-free blocking issue entry on partial...
   └─ 543 [NOT STARTED] — Tell the re-prompted dispatch to distrust the error count it...
@@ -192,7 +192,7 @@ next_project_number: 607
 
 ### Repo Hygiene
 
-528 [RESEARCHED] — Add purpose-written title fields to task records so TODO.md...
+528 [PLANNING] — Add purpose-written title fields to task records so TODO.md...
 531 [NOT STARTED] — Narrow whole-directory file\_scope declarations so the...
 
 ### Decidability
@@ -5945,7 +5945,7 @@ surface, and that rationale does not survive into this repository.
 ---
 
 ### 532. Rule on whether ROADMAP.md is authored-only and make roadmap-integration.sh report its outcome instead of aborting silently
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -6056,7 +6056,7 @@ repository before being written.
 ---
 
 ### 528. Add purpose-written title fields to task records so TODO.md stops rendering truncated description prose as task names
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: repo-hygiene
 - **Dependencies**: None
@@ -7329,7 +7329,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 ---
 
 ### 507. Re-adjudicate the declined pre-postflight-sweep deploy trigger against a measured whole-cycle gate cost
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 418, Task 420
@@ -10905,10 +10905,11 @@ index-entries.json; see their DEPENDENCY RATIONALE.
 
 ### 391. Close the target_root authoring hole that files agent-system tasks into the wrong repository
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 369, Task 372, Task 373
+- **Research**: [391_agent_system_task_siting_and_target_root/reports/01_task-siting-and-target-root.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No
