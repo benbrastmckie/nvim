@@ -11,8 +11,8 @@ next_project_number: 607
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,402,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604,607 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 313,384,399,421,439,457,458,462,463,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,398,402,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
+| 1 | 313,338,342,383,390,398,410,412,421,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604,607 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,463,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,398,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
@@ -22,8 +22,11 @@ next_project_number: 607
 
 ### Core Agent System
 
+313 [RESEARCHED] — Advisory lint for hand-authored /orchestrate batch proposals...
+  └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 338 [NOT STARTED] — Classify every task-support file as tracked or ignored
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
+421 [NOT STARTED] — Close three gaps in the telemetry --meta evidence consumer
 431 [PLANNED] — Record the gate-enforced verbatim-duplication exclusion class...
   └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
@@ -33,7 +36,7 @@ next_project_number: 607
 456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
-    └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
+    └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
@@ -74,9 +77,6 @@ next_project_number: 607
   └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
-313 [RESEARCHED] — Advisory lint for hand-authored /orchestrate batch proposals...
-  └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a... (see above)
-421 [NOT STARTED] — Close three gaps in the telemetry --meta evidence consumer
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
 
@@ -125,7 +125,6 @@ next_project_number: 607
 
 ### Orchestrator
 
-402 [IMPLEMENTING] — Conclusion stage Step 4c allocates no task number and creates...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
@@ -9979,12 +9978,13 @@ NON-GOALS: no change to the fingerprint computation itself (`stat` vs `hash` mod
 
 ### 402. Conclusion stage Step 4c allocates no task number and creates no task directories
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 391, Task 400
 - **Research**: [402_conclusion_channels_become_evidence_only/reports/01_conclusion-channels-evidence-only.md]
 - **Plan**: [402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md]
+- **Summary**: [402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md]
 
 **Description**: Convert the orchestration conclusion stage's channels (b) and (c) from task-CREATING to evidence-CONTRIBUTING, and delete the half-transcribed task-creation path rather than finishing it.
 

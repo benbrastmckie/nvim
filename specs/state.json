@@ -3332,7 +3332,7 @@
     {
       "project_number": 402,
       "project_name": "conclusion_channels_become_evidence_only",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Conclusion stage Step 4c allocates no task number and creates no task directories",
@@ -3351,11 +3351,16 @@
           "path": "specs/402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md",
           "type": "plan",
           "summary": "3-phase plan: rewrite channels (b)/(c) as evidence-recording with their tests, sync four downstream consumers, deploy and report a negative net line count."
+        },
+        {
+          "path": "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: 01_conclusion-channels-evidence-only-summary.md"
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T01:55:47Z",
-      "last_updated": "2026-11-11T21:47:16Z",
+      "last_updated": "2026-11-11T22:59:39Z",
       "effort": "small",
       "priority": null,
       "session_id": "sess_1794431325_7cf647",
