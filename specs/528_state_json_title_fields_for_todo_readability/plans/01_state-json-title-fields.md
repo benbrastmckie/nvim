@@ -260,37 +260,69 @@ Declaring them here would be redundant and would contradict that invariant.
 
 ---
 
-### Phase 3: Confirm rendering in both surfaces and prove the fallback contract [NOT STARTED]
+### Phase 3: Confirm rendering in both surfaces and prove the fallback contract [COMPLETED]
 
 **Goal**: The new titles are confirmed visible in both TODO.md surfaces that render task names,
 and both fallback chains are empirically shown to still serve a title-less entry — without
 leaving any live entry title-less to demonstrate it.
 
 **Tasks**:
-- [ ] Confirm per-task headings: for a sample spanning the mapping (at least 338, 456, 591, 603),
+- [x] Confirm per-task headings: for a sample spanning the mapping (at least 338, 456, 591, 603),
       grep the regenerated `specs/TODO.md` for `### <N>. ` and confirm the heading now reads the
       purpose-written title rather than a `project_name`-derived string.
-- [ ] Confirm the `## Task Order` surface: in the same `specs/TODO.md`, locate the grouped-by-topic
+      *(completed: all four, plus 412, 421, 502-512, 521-522, 567-569, 572-573, 589-603 spot
+      checked, render their new titles)*
+- [x] Confirm the `## Task Order` surface: in the same `specs/TODO.md`, locate the grouped-by-topic
       listing and confirm the previously-truncated entries (338 rendered as
       `338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...` before this task) now render the
       title. This is the surface where the defect actually manifested; the bare numeric dependency
       wave table carries no title or description text and is not a verification target.
-- [ ] Prove the `generate-todo.sh` heading fallback on a scratch state: copy `specs/state.json`
+      *(completed: 338, 412, 421, 439, 456, 502, 503, 504, 510, 511, 512, 521, 522, 567, 568, 572,
+      590, 591, 601, 602, 603 confirmed rendering titles in the grouped-by-topic listing; entries
+      569, 573, 589 are `completed` status, excluded from the non-terminal Task Order listing by
+      design, but confirmed rendering titles in the per-task heading surface instead)*
+- [x] Prove the `generate-todo.sh` heading fallback on a scratch state: copy `specs/state.json`
       to a scratch path, delete `.title` from one entry with `jq 'del(...)'`, then run
       `bash .claude/scripts/generate-todo.sh --state <scratch-state> --dry-run --no-log` and
       confirm that entry's `### N.` heading renders the `project_name`-derived fallback. Read ONLY
       the heading from this output: the `## Task Order` section in it comes from the nested
       `generate-task-order.sh --print` call, which ignores `--state` and reads live
       `specs/state.json`, so that section of this output proves nothing about the scratch state.
-- [ ] Prove the `generate-task-order.sh` description fallback separately, in the only mode that
+      *(completed: see Phase 3 verification notes below for command and observed output)*
+- [x] Prove the `generate-task-order.sh` description fallback separately, in the only mode that
       honors a state override: copy `specs/TODO.md` to a scratch path and run
       `bash .claude/scripts/generate-task-order.sh --update-todo <scratch-todo> <scratch-state>`,
       then confirm the stripped entry falls back to its truncated `.description` in the scratch
       TODO's grouped-by-topic listing. Confirm `specs/TODO.md` itself is unmodified afterwards
       (`git diff --stat` names it only if Phase 2's commit has not yet landed).
-- [ ] Delete the scratch state and TODO copies.
-- [ ] Record both probe commands and their observed outcomes in the phase's verification notes, so
+      *(completed: see Phase 3 verification notes below; `git diff --stat -- specs/TODO.md` was
+      empty, confirming no modification — Phase 2's commit had already landed)*
+- [x] Delete the scratch state and TODO copies. *(completed)*
+- [x] Record both probe commands and their observed outcomes in the phase's verification notes, so
       the optional-field contract has a durable evidence trail rather than an assertion.
+      *(completed, see below)*
+
+#### Phase 3 Verification Notes
+
+Entry 338 was stripped of `.title` on a scratch copy of `specs/state.json` to exercise both
+fallback chains, with neighbor entries (e.g. 412) left intact as controls.
+
+**Probe 1 — `generate-todo.sh` heading fallback**:
+```
+bash .claude/scripts/generate-todo.sh --state <scratch-state.json> --dry-run --no-log
+```
+Observed: entry 338's heading rendered `### 338. Sweep task support file tracked or ignored`
+(derived from `project_name` `sweep_task_support_file_tracked_or_ignored`), while neighbor 412
+kept `### 412. Map core verification tiers to Lean build scopes`.
+
+**Probe 2 — `generate-task-order.sh` description fallback**:
+```
+bash .claude/scripts/generate-task-order.sh --update-todo <scratch-todo.md> <scratch-state.json>
+```
+Observed: entry 338's line in the scratch TODO's grouped-by-topic listing fell back to
+`338 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...` (truncated `.description` prose),
+confirming `(.title // .description // .project_name)` serves the description tier correctly
+when `.title` is absent. Live `specs/TODO.md` was confirmed unmodified afterwards.
 
 **Timing**: 45 minutes
 
