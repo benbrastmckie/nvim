@@ -1,0 +1,34 @@
+{
+  "phase": 2,
+  "phase_name": "Add the preflight:edge_only arm and its full test coverage",
+  "started_at": "2026-11-11T00:00:00Z",
+  "last_updated": "2026-11-11T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add preflight:edge_only arm, target_status validation/usage lines, preflight-only guard, edge-only refusal guard, D4 hint sentence, header docs",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/update-task-status.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add not_started fixture entry and Case 18 cluster (a-g) plus Case 17 regression re-run",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-update-task-status.sh"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {
+      "approach": "Case 18a/18f used predecessor task 2 for the valid acyclic --depends-on-add edge",
+      "result": "failed",
+      "reason": "Entry 1 already depends on entry 4 (added for 18d's cycle fixture), and entry 2 depends on entry 1, so entry 2 transitively depends on entry 4 already; making entry 4 depend on entry 2 closes a real cycle (4->2->1->4), causing a false-seeming test failure that was actually the cycle-refusal code working correctly. Switched to predecessor 3 (no dependents, depends on nothing), which is genuinely acyclic."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -144,16 +144,21 @@ build_multi_task_fixture_repo() {
     chmod +x "$root/.claude/scripts/$hf"
   done
   cp "$SOURCE_STORE_SCRIPTS/lib/status-vocabulary.sh" "$root/.claude/scripts/lib/status-vocabulary.sh"
+  # project_number 1 carries dependencies=[4] (not []) so Case 18's cycle-refusal sub-case has a
+  # real pre-existing reverse edge to close against without disturbing entries 2/3's shape --
+  # entry 1 depending on entry 4 is otherwise inert for every pre-existing Case 17 sub-case,
+  # which only ever asserts dependencies[]-array EQUALITY (before/after), never entry 1's
+  # specific dependency content.
   cat > "$root/specs/state.json" << 'EOF'
 {
-  "next_project_number": 4,
+  "next_project_number": 5,
   "active_projects": [
     {
       "project_number": 1,
       "project_name": "fixture_entry_one",
       "status": "researched",
       "task_type": "general",
-      "dependencies": [],
+      "dependencies": [4],
       "next_artifact_number": 1
     },
     {
@@ -168,6 +173,14 @@ build_multi_task_fixture_repo() {
       "project_number": 3,
       "project_name": "fixture_entry_three",
       "status": "researched",
+      "task_type": "general",
+      "dependencies": [],
+      "next_artifact_number": 1
+    },
+    {
+      "project_number": 4,
+      "project_name": "fixture_entry_four_not_started",
+      "status": "not_started",
       "task_type": "general",
       "dependencies": [],
       "next_artifact_number": 1
@@ -1017,6 +1030,193 @@ if UTS postflight 2 research sess_test_17h --depends-on-add='[3]' --dry-run \
   fi
 else
   common_test_fail "17h: --dry-run on a valid edge exited nonzero unexpectedly (see $WORKDIR/c17h.err)"
+fi
+
+# =====================================================================
+# Case 18: preflight:edge_only -- the not_started --depends-on-add admission gap. Fresh fixture
+# (own FIXTURE_ROOT) so entries 1-3's Case 17 mutations never leak in. Entry 4 is the
+# not_started dependent; entry 1 pre-exists with dependencies=[4] so 18d has a real reverse edge
+# to close a cycle against.
+# =====================================================================
+common_test_info "=== Case 18: preflight:edge_only ==="
+FIXTURE_ROOT="$WORKDIR/case18"
+build_multi_task_fixture_repo "$FIXTURE_ROOT"
+
+# --- 18a: preflight 4 edge_only --depends-on-add=[3] succeeds, merges the edge, leaves status
+# not_started (acceptance 1). Predecessor 3 is chosen deliberately over 2: entry 1 already
+# depends on entry 4, and entry 2 depends on entry 1, so entry 2 transitively depends on entry
+# 4 already -- making entry 4 depend on entry 2 would close a REAL cycle (4->2->1->4), which
+# would make this "valid acyclic add" sub-case indistinguishable from 18d's cycle-refusal
+# sub-case. Entry 3 has no dependents and depends on nothing, so it is genuinely acyclic. ---
+BEFORE_18A_STATUS="$(jq -r '.active_projects[] | select(.project_number == 4) | .status' "$FIXTURE_ROOT/specs/state.json")"
+if UTS preflight 4 edge_only sess_test_18a --depends-on-add='[3]' \
+    >"$WORKDIR/c18a.out" 2>"$WORKDIR/c18a.err"; then
+  d4="$(deps_of 4)"
+  st4="$(jq -r '.active_projects[] | select(.project_number == 4) | .status' "$FIXTURE_ROOT/specs/state.json")"
+  if [[ "$d4" == '[3]' ]]; then
+    common_test_pass "18a: preflight edge_only --depends-on-add merges the edge ([3]) on a not_started task"
+  else
+    common_test_fail "18a: expected dependencies [3] for entry 4, got '$d4' (see $WORKDIR/c18a.err)"
+  fi
+  if [[ "$st4" == "not_started" && "$st4" == "$BEFORE_18A_STATUS" ]]; then
+    common_test_pass "18a: entry 4's status stays 'not_started' after the edge-only call"
+  else
+    common_test_fail "18a: entry 4's status changed (before='$BEFORE_18A_STATUS', after='$st4')"
+  fi
+else
+  common_test_fail "18a: preflight edge_only --depends-on-add on a not_started task exited nonzero (see $WORKDIR/c18a.err)"
+fi
+
+# --- 18b: preflight 4 edge_only WITHOUT --depends-on-add is refused with the new named error,
+# writing nothing ---
+BEFORE_18B="$(all_active)"
+if UTS preflight 4 edge_only sess_test_18b \
+    >"$WORKDIR/c18b.out" 2>"$WORKDIR/c18b.err"; then
+  common_test_fail "18b: preflight edge_only without --depends-on-add unexpectedly exited 0"
+else
+  AFTER_18B="$(all_active)"
+  if [[ "$BEFORE_18B" == "$AFTER_18B" ]]; then
+    common_test_pass "18b: preflight edge_only without --depends-on-add exits nonzero, state unchanged"
+  else
+    common_test_fail "18b: preflight edge_only without --depends-on-add exited nonzero but state.json changed anyway"
+  fi
+  if grep -q "requires --depends-on-add" "$WORKDIR/c18b.err"; then
+    common_test_pass "18b: rejection names the edge_only-requires---depends-on-add restriction"
+  else
+    common_test_fail "18b: rejection does not name the edge_only restriction (see $WORKDIR/c18b.err)"
+  fi
+fi
+
+# --- 18c: postflight 4 edge_only is refused by the preflight-only guard ---
+BEFORE_18C="$(all_active)"
+if UTS postflight 4 edge_only sess_test_18c --depends-on-add='[2]' \
+    >"$WORKDIR/c18c.out" 2>"$WORKDIR/c18c.err"; then
+  common_test_fail "18c: postflight edge_only unexpectedly exited 0"
+else
+  AFTER_18C="$(all_active)"
+  if [[ "$BEFORE_18C" == "$AFTER_18C" ]]; then
+    common_test_pass "18c: postflight edge_only exits nonzero (preflight-only guard), state unchanged"
+  else
+    common_test_fail "18c: postflight edge_only exited nonzero but state.json changed anyway"
+  fi
+  if grep -q "is only valid with operation=preflight" "$WORKDIR/c18c.err"; then
+    common_test_pass "18c: rejection names the preflight-only restriction"
+  else
+    common_test_fail "18c: rejection does not name the preflight-only restriction (see $WORKDIR/c18c.err)"
+  fi
+fi
+
+# --- 18d: a cycle-closing edge onto the not_started entry is refused by the write-time cycle
+# check, on the real path and under --dry-run, with state unchanged (entry 1 already depends on
+# entry 4, so entry 4 depending on entry 1 closes cycle {1,4}) ---
+BEFORE_18D="$(all_active)"
+if UTS preflight 4 edge_only sess_test_18d --depends-on-add='[1]' \
+    >"$WORKDIR/c18d1.out" 2>"$WORKDIR/c18d1.err"; then
+  common_test_fail "18d: cycle-closing preflight edge_only unexpectedly exited 0"
+else
+  AFTER_18D1="$(all_active)"
+  if [[ "$BEFORE_18D" == "$AFTER_18D1" ]]; then
+    common_test_pass "18d: cycle-closing preflight edge_only (real path) exits nonzero, state unchanged"
+  else
+    common_test_fail "18d: cycle-closing preflight edge_only (real path) exited nonzero but state.json changed anyway"
+  fi
+  if grep -q "Dependency cycle detected among project_number(s)" "$WORKDIR/c18d1.err"; then
+    common_test_pass "18d: real-path refusal names the cycle"
+  else
+    common_test_fail "18d: real-path refusal does not name the cycle (see $WORKDIR/c18d1.err)"
+  fi
+fi
+if UTS preflight 4 edge_only sess_test_18d2 --depends-on-add='[1]' --dry-run \
+    >"$WORKDIR/c18d2.out" 2>"$WORKDIR/c18d2.err"; then
+  common_test_fail "18d: cycle-closing preflight edge_only --dry-run unexpectedly exited 0"
+else
+  AFTER_18D2="$(all_active)"
+  if [[ "$BEFORE_18D" == "$AFTER_18D2" ]]; then
+    common_test_pass "18d: cycle-closing preflight edge_only (--dry-run) exits nonzero, state unchanged"
+  else
+    common_test_fail "18d: cycle-closing preflight edge_only (--dry-run) exited nonzero but state.json changed anyway"
+  fi
+  if grep -q "Dependency cycle detected among project_number(s)" "$WORKDIR/c18d2.err"; then
+    common_test_pass "18d: --dry-run refusal also names the cycle"
+  else
+    common_test_fail "18d: --dry-run refusal does not name the cycle (see $WORKDIR/c18d2.err)"
+  fi
+fi
+
+# --- 18e: malformed value, self-edge, missing-predecessor each exit nonzero with state
+# unchanged on the new edge_only path ---
+BEFORE_18E="$(all_active)"
+if UTS preflight 4 edge_only sess_test_18e1 --depends-on-add='["x"]' \
+    >"$WORKDIR/c18e1.out" 2>"$WORKDIR/c18e1.err"; then
+  common_test_fail "18e: malformed --depends-on-add value on edge_only unexpectedly exited 0"
+else
+  AFTER_18E1="$(all_active)"
+  if [[ "$BEFORE_18E" == "$AFTER_18E1" ]]; then
+    common_test_pass "18e: malformed --depends-on-add value on edge_only exits nonzero, state unchanged"
+  else
+    common_test_fail "18e: malformed --depends-on-add value on edge_only exited nonzero but state.json changed anyway"
+  fi
+fi
+if UTS preflight 4 edge_only sess_test_18e2 --depends-on-add='[4]' \
+    >"$WORKDIR/c18e2.out" 2>"$WORKDIR/c18e2.err"; then
+  common_test_fail "18e: self-edge --depends-on-add on edge_only unexpectedly exited 0"
+else
+  AFTER_18E2="$(all_active)"
+  if [[ "$BEFORE_18E" == "$AFTER_18E2" ]]; then
+    common_test_pass "18e: self-edge --depends-on-add on edge_only exits nonzero, state unchanged"
+  else
+    common_test_fail "18e: self-edge --depends-on-add on edge_only exited nonzero but state.json changed anyway"
+  fi
+fi
+if UTS preflight 4 edge_only sess_test_18e3 --depends-on-add='[999]' \
+    >"$WORKDIR/c18e3.out" 2>"$WORKDIR/c18e3.err"; then
+  common_test_fail "18e: nonexistent-predecessor --depends-on-add on edge_only unexpectedly exited 0"
+else
+  AFTER_18E3="$(all_active)"
+  if [[ "$BEFORE_18E" == "$AFTER_18E3" ]]; then
+    common_test_pass "18e: nonexistent-predecessor --depends-on-add on edge_only exits nonzero, state unchanged"
+  else
+    common_test_fail "18e: nonexistent-predecessor --depends-on-add on edge_only exited nonzero but state.json changed anyway"
+  fi
+fi
+
+# --- 18f: a repeated identical edge_only call is a byte-for-byte no-op (idempotence) ---
+AFTER_18A="$(all_active)"
+if UTS preflight 4 edge_only sess_test_18f --depends-on-add='[3]' \
+    >"$WORKDIR/c18f.out" 2>"$WORKDIR/c18f.err"; then
+  AFTER_18F="$(all_active)"
+  if [[ "$AFTER_18A" == "$AFTER_18F" ]]; then
+    common_test_pass "18f: repeated identical preflight edge_only call is a byte-for-byte no-op"
+  else
+    common_test_fail "18f: repeated identical preflight edge_only call changed state.json"
+  fi
+else
+  common_test_fail "18f: repeated identical preflight edge_only call exited nonzero (see $WORKDIR/c18f.err)"
+fi
+
+# --- 18g: edge_only against a NON-not_started task is refused by the pre-existing no-op check
+# (byte-identical message to the pre-change form -- no not_started-only hint sentence) ---
+BEFORE_18G="$(all_active)"
+if UTS preflight 1 edge_only sess_test_18g --depends-on-add='[2]' \
+    >"$WORKDIR/c18g.out" 2>"$WORKDIR/c18g.err"; then
+  common_test_fail "18g: edge_only against a researched (non-not_started) task unexpectedly exited 0"
+else
+  AFTER_18G="$(all_active)"
+  if [[ "$BEFORE_18G" == "$AFTER_18G" ]]; then
+    common_test_pass "18g: edge_only against a non-not_started task exits nonzero, state unchanged"
+  else
+    common_test_fail "18g: edge_only against a non-not_started task exited nonzero but state.json changed anyway"
+  fi
+  if grep -q "CURRENT status (a no-op replay)" "$WORKDIR/c18g.err"; then
+    common_test_pass "18g: rejection names the pre-existing status-no-op requirement"
+  else
+    common_test_fail "18g: rejection does not name the status-no-op requirement (see $WORKDIR/c18g.err)"
+  fi
+  if grep -q "edge_only <session_id>" "$WORKDIR/c18g.err"; then
+    common_test_fail "18g: rejection unexpectedly carries the not_started-only hint sentence for a non-not_started task (see $WORKDIR/c18g.err)"
+  else
+    common_test_pass "18g: rejection does NOT carry the not_started-only hint sentence (message stays byte-identical to the pre-change form for this status)"
+  fi
 fi
 
 # =====================================================================

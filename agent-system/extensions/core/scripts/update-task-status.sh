@@ -13,11 +13,14 @@
 #   operation     - "preflight" or "postflight"
 #   task_number   - Task number (integer)
 #   target_status - "research", "plan", "implement", "pr_ready", "needs_research", "partial",
-#                    "blocked", "hold", or "unhold" (pr_ready is reserved for task_type == "pr"
-#                    unless --allow-pr-ready is passed; needs_research/partial/blocked are
-#                    postflight-only task-level termini -- see map_status() below for the
-#                    preflight rejection; hold/unhold are PREFLIGHT-only -- see map_status()'s own
-#                    comment for why a hold is the deliberate exception to that pattern)
+#                    "blocked", "hold", "unhold", or "edge_only" (pr_ready is reserved for
+#                    task_type == "pr" unless --allow-pr-ready is passed; needs_research/partial/
+#                    blocked are postflight-only task-level termini -- see map_status() below for
+#                    the preflight rejection; hold/unhold are PREFLIGHT-only -- see map_status()'s
+#                    own comment for why a hold is the deliberate exception to that pattern;
+#                    edge_only is PREFLIGHT-only and requires --depends-on-add -- see the
+#                    `--depends-on-add` flag's own header-comment section above for the full
+#                    `not_started` admission-gap rationale)
 #   session_id    - Session identifier string
 #
 # Exit codes:
@@ -179,6 +182,21 @@
 #   usually larger than the one pair just linked -- auto-invoking it here would see only a
 #   two-task slice and could not speak to the batch the caller actually intends to run.
 #
+#   THE `not_started` GAP, AND ITS FIX -- `preflight:edge_only`: the STATUS-NO-OP RESTRICTION
+#   above requires an operation:target_status pair that resolves to the task's own CURRENT
+#   status, but map_status()'s case arms never resolve to `not_started` -- it is the
+#   pre-lifecycle state, so no real transition produces it. That made `--depends-on-add`
+#   structurally unreachable for a `not_started` task, which is the single most common status a
+#   task carries when an edge needs to be backfilled onto it after the fact. `target_status`
+#   value `edge_only`, paired as `preflight:edge_only`, closes this gap: it is a NO-OP-ONLY
+#   pair whose resolved STATE_STATUS is the literal `not_started` -- never a settable lifecycle
+#   target, never reachable via `postflight` (see the existing hold/unhold preflight-only guard,
+#   which this pair joins), and HARD-REFUSED outright unless the SAME call also carries
+#   `--depends-on-add` (mirroring the `preflight:hold` requires `--hold-reason` precedent). It
+#   changes none of the six guarantees documented above: it rides the identical no-op-replay
+#   branch, the identical mandatory write-time cycle refusal, and the identical value/self-edge/
+#   missing-predecessor guards every other `--depends-on-add` call already goes through.
+#
 # Phase-heading grammar: sourced from scripts/lib/phase-heading-patterns.sh, the single anchor
 # for the canonical `### Phase N: {name} [STATUS]` shape, the closed status-marker enum, and
 # non-conforming-heading detection -- see context/formats/plan-format.md's "Canonical
@@ -301,7 +319,7 @@ session_id="${POSITIONAL_ARGS[3]:-}"
 if [[ -z "$operation" || -z "$task_number" || -z "$target_status" || -z "$session_id" ]]; then
   echo "Usage: $0 <operation> <task_number> <target_status> <session_id> [--dry-run] [--allow-pr-ready] [--phase-check=warn|refuse] [--file-scope-add=<json-array>] [--research-questions=<json-array>] [--hold-reason=<string>] [--depends-on-add=<json-array>]" >&2
   echo "  operation:     preflight | postflight" >&2
-  echo "  target_status: research | plan | implement | pr_ready | needs_research | partial | blocked | hold | unhold (pr_ready requires task_type==pr unless --allow-pr-ready; needs_research/partial/blocked are postflight-only; hold/unhold are preflight-only)" >&2
+  echo "  target_status: research | plan | implement | pr_ready | needs_research | partial | blocked | hold | unhold | edge_only (pr_ready requires task_type==pr unless --allow-pr-ready; needs_research/partial/blocked are postflight-only; hold/unhold/edge_only are preflight-only; edge_only is preflight-only and requires --depends-on-add)" >&2
   exit 1
 fi
 
@@ -310,17 +328,20 @@ if [[ "$operation" != "preflight" && "$operation" != "postflight" ]]; then
   exit 1
 fi
 
-if [[ "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" && "$target_status" != "pr_ready" && "$target_status" != "needs_research" && "$target_status" != "partial" && "$target_status" != "blocked" && "$target_status" != "hold" && "$target_status" != "unhold" ]]; then
-  echo "Error: target_status must be 'research', 'plan', 'implement', 'pr_ready', 'needs_research', 'partial', 'blocked', 'hold', or 'unhold', got '$target_status'" >&2
+if [[ "$target_status" != "research" && "$target_status" != "plan" && "$target_status" != "implement" && "$target_status" != "pr_ready" && "$target_status" != "needs_research" && "$target_status" != "partial" && "$target_status" != "blocked" && "$target_status" != "hold" && "$target_status" != "unhold" && "$target_status" != "edge_only" ]]; then
+  echo "Error: target_status must be 'research', 'plan', 'implement', 'pr_ready', 'needs_research', 'partial', 'blocked', 'hold', 'unhold', or 'edge_only', got '$target_status'" >&2
   exit 1
 fi
 
-# hold/unhold are PREFLIGHT-only (Decision 5: a hold is human-initiated, not derived from a
-# dispatch outcome -- see map_status()'s own preflight:hold comment for the full reasoning).
-# Neither is meaningful as a postflight target: there is no dispatch outcome that resolves to
-# "pause this task" or "resume this task", so postflight:hold/postflight:unhold are hard
-# validation errors rather than silently accepted and misinterpreted.
-if [[ ( "$target_status" == "hold" || "$target_status" == "unhold" ) && "$operation" != "preflight" ]]; then
+# hold/unhold/edge_only are PREFLIGHT-only (Decision 5: a hold is human-initiated, not derived
+# from a dispatch outcome -- see map_status()'s own preflight:hold comment for the full
+# reasoning. edge_only joins this guard for the same shape of reason: it is operator/tooling-
+# initiated, never a dispatch outcome -- see the `--depends-on-add` flag's own header-comment
+# section above). None of the three is meaningful as a postflight target: there is no dispatch
+# outcome that resolves to "pause this task", "resume this task", or "backfill an edge without
+# moving this task's lifecycle phase", so postflight:hold/postflight:unhold/postflight:edge_only
+# are hard validation errors rather than silently accepted and misinterpreted.
+if [[ ( "$target_status" == "hold" || "$target_status" == "unhold" || "$target_status" == "edge_only" ) && "$operation" != "preflight" ]]; then
   echo "Error: target_status '$target_status' is only valid with operation=preflight (got operation='$operation')." >&2
   exit 1
 fi
@@ -438,6 +459,17 @@ if [[ -n "$DEPENDS_ON_ADD" ]]; then
   DEPENDS_ON_ADD_LEN=$(echo "$DEPENDS_ON_ADD" | jq 'length')
 fi
 
+# edge_only refusal guard: mirrors the --hold-reason-is-required-on-preflight:hold precedent
+# immediately above. preflight:edge_only exists SOLELY as the --depends-on-add vehicle for a
+# `not_started` task (see that flag's own header-comment section for the full rationale), so a
+# call naming it without DEPENDS_ON_ADD is never a legitimate use -- it is refused outright,
+# with a named error distinct from the pre-existing status-no-op-restriction message below, so
+# the new token can never be read or act as a settable "reset to not_started" lifecycle target.
+if [[ "$operation" == "preflight" && "$target_status" == "edge_only" && "$DEPENDS_ON_ADD_LEN" -eq 0 ]]; then
+  echo "Error: target_status=edge_only requires --depends-on-add=<json-array> on the same call -- edge_only exists solely as the --depends-on-add vehicle for a 'not_started' task and is never a settable lifecycle target on its own." >&2
+  exit 1
+fi
+
 if [[ ! -f "$STATE_FILE" ]]; then
   echo "Error: state.json not found at $STATE_FILE" >&2
   exit 1
@@ -495,6 +527,15 @@ map_status() {
     # ("postflight:needs_research") stays distinct from "preflight:research" so `git blame` and
     # grep self-document which producer wrote the "researching" state.
     postflight:needs_research) STATE_STATUS="researching"; TODO_STATUS="RESEARCHING" ;;
+    # edge_only is NO-OP-ONLY: its resolved STATE_STATUS is the literal "not_started", which
+    # exists solely so --depends-on-add can reach a task that has never left the pre-lifecycle
+    # state (map_status() has no other arm that resolves to "not_started" -- it is not a real
+    # transition target produced by any dispatch outcome). The refusal guard above (search
+    # "edge_only refusal guard") already rejects any call naming this pair without
+    # --depends-on-add, so by the time this arm is reached the call is known to be an edge-only
+    # backfill against a task whose CURRENT status must already be "not_started" for the
+    # status-no-op restriction (checked further below) to accept it.
+    preflight:edge_only) STATE_STATUS="not_started"; TODO_STATUS="NOT STARTED" ;;
     *)
       echo "Error: unknown operation:target_status combination '${op}:${target}'" >&2
       exit 1
@@ -644,7 +685,17 @@ fi
 # a call that would ALSO perform a real status transition is refused rather than silently
 # allowed to ride along).
 if [[ "$DEPENDS_ON_ADD_LEN" -gt 0 && "$state_is_noop" != "true" ]]; then
-  echo "Error: --depends-on-add requires operation:target_status to resolve to task $task_number's CURRENT status (a no-op replay) -- got current='$current_state_status', resolved target='$STATE_STATUS'. Call with the task's own current status (e.g. 'postflight $task_number research <session_id>' if the task is already 'researched') to add the edge without also performing a status transition." >&2
+  _depends_noop_msg="Error: --depends-on-add requires operation:target_status to resolve to task $task_number's CURRENT status (a no-op replay) -- got current='$current_state_status', resolved target='$STATE_STATUS'. Call with the task's own current status (e.g. 'postflight $task_number research <session_id>' if the task is already 'researched') to add the edge without also performing a status transition."
+  # D4: this hint sentence is appended ONLY when the task's CURRENT status is "not_started" --
+  # every other status's refusal message stays byte-identical to its pre-change form. A
+  # `not_started` task has no "own current status" operation:target_status pair to replay
+  # (map_status() has no arm resolving to "not_started"), so the generic "call with the task's
+  # own current status" advice above is actively wrong for exactly this one status; this
+  # sentence names the one call that actually works instead.
+  if [[ "$current_state_status" == "not_started" ]]; then
+    _depends_noop_msg+=" For a 'not_started' task specifically, use 'preflight $task_number edge_only <session_id> --depends-on-add=[...]' instead -- the dedicated no-op-only vehicle for this status."
+  fi
+  echo "$_depends_noop_msg" >&2
   exit 1
 fi
 

@@ -230,38 +230,41 @@ read-only measurements plus a `jq .` parse of the written file discharge.
 
 ---
 
-### Phase 2: Add the `preflight:edge_only` arm and its full test coverage [NOT STARTED]
+### Phase 2: Add the `preflight:edge_only` arm and its full test coverage [COMPLETED]
 
 **Goal**: Make `--depends-on-add` reachable for a `not_started` task through one new no-op-only
 pair that is refused on any non-edge-only call, and cover every dispatch-named guarantee on the
 new path.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/update-task-status.sh` immediately before
-      editing (concurrent siblings are live on this tree).
-- [ ] Add the arm to `map_status()`:
+- [x] Re-read `agent-system/extensions/core/scripts/update-task-status.sh` immediately before
+      editing (concurrent siblings are live on this tree). *(completed)*
+- [x] Add the arm to `map_status()`:
       `preflight:edge_only) STATE_STATUS="not_started"; TODO_STATUS="NOT STARTED" ;;` with a
       comment stating it is no-op-only, exists solely as the `--depends-on-add` vehicle for a
-      pre-lifecycle task, and is refused without that flag.
-- [ ] Add `edge_only` to the `target_status` validation list and to both usage lines (the header
+      pre-lifecycle task, and is refused without that flag. *(completed)*
+- [x] Add `edge_only` to the `target_status` validation list and to both usage lines (the header
       usage comment and the runtime `Usage:` echo), annotated `edge_only is preflight-only and
-      requires --depends-on-add`.
-- [ ] Add `edge_only` to the existing preflight-only guard alongside `hold`/`unhold`, so
-      `postflight edge_only` is a hard validation error.
-- [ ] Add the edge-only refusal guard, placed with the other flag-restriction guards and
+      requires --depends-on-add`. *(completed)*
+- [x] Add `edge_only` to the existing preflight-only guard alongside `hold`/`unhold`, so
+      `postflight edge_only` is a hard validation error. *(completed)*
+- [x] Add the edge-only refusal guard, placed with the other flag-restriction guards and
       mirroring the `preflight:hold` requires `--hold-reason` precedent: when
       `operation:target_status == preflight:edge_only` and `DEPENDS_ON_ADD_LEN == 0`, exit 1 with
-      a named error distinct from the pre-existing no-op-restriction message.
-- [ ] Append the `not_started`-only hint sentence to the status-no-op refusal per D4 (guarded on
+      a named error distinct from the pre-existing no-op-restriction message. *(completed)*
+- [x] Append the `not_started`-only hint sentence to the status-no-op refusal per D4 (guarded on
       `current_state_status == "not_started"`, leaving the message byte-identical for every other
-      status).
-- [ ] Extend the `--depends-on-add` header-comment section to document the new pair, its
+      status). *(completed)*
+- [x] Extend the `--depends-on-add` header-comment section to document the new pair, its
       no-op-only character, and the refusal; state that it changes none of the six guarantees
-      already documented there.
-- [ ] Add a fourth, `not_started` entry to `build_multi_task_fixture_repo()` in
+      already documented there. *(completed)*
+- [x] Add a fourth, `not_started` entry to `build_multi_task_fixture_repo()` in
       `agent-system/extensions/core/scripts/tests/test-update-task-status.sh` (giving a
-      `not_started` dependent plus existing predecessors to point at).
-- [ ] Add a Case 18 cluster to that suite: (a) `preflight <n> edge_only <sid>
+      `not_started` dependent plus existing predecessors to point at). *(completed: entry 1's
+      initial dependencies also changed from [] to [4] so a real reverse edge exists for the
+      Case 18 cycle-refusal sub-case, without disturbing any Case 17 assertion -- see that
+      fixture function's own updated comment)*
+- [x] Add a Case 18 cluster to that suite: (a) `preflight <n> edge_only <sid>
       --depends-on-add=[...]` against the `not_started` entry succeeds, merges the edge, and
       leaves status `not_started`; (b) the same call without `--depends-on-add` is refused with
       the new named error and writes nothing; (c) `postflight <n> edge_only` is refused by the
@@ -270,8 +273,10 @@ new path.
       (e) malformed value, self-edge, and missing-predecessor each exit nonzero with state
       unchanged on this new path; (f) a repeated identical call is a byte-for-byte no-op;
       (g) `edge_only` against a NON-`not_started` task is refused by the pre-existing no-op check.
-- [ ] Re-run the pre-existing Case 17 block unchanged to confirm no regression in the
-      previously-reachable paths (notably 17g, the status-transition refusal).
+      *(completed: all 7 sub-cases, 18a-18g, pass)*
+- [x] Re-run the pre-existing Case 17 block unchanged to confirm no regression in the
+      previously-reachable paths (notably 17g, the status-transition refusal). *(completed: all
+      Case 17 sub-cases still pass, 82 passed / 0 failed overall)*
 
 **Timing**: 1.5 hours
 
