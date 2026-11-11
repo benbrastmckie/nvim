@@ -199,21 +199,21 @@ the specific case: the edges worth declaring are the ones inside the batch actua
 dispatched, not a backfill across every record a coarse entry happens to touch.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 313,338,383,410,431,437,451,452
-/orchestrate 453,455,459,472,475,476,477,479
-/orchestrate 484,490,491,500,502,503,504,505
-/orchestrate 506,507,510,511,512,514,515,519
-/orchestrate 520,521,522,523,525,526,528,529
-/orchestrate 530,531,532,533,534,535,536,537
-/orchestrate 538,539,545,546,548,549,550,551
-/orchestrate 556,557,558,559,560,562,563,565
-/orchestrate 567,568,569,572,573,574,575,580
-/orchestrate 582
+/orchestrate 313,338,369,383,397,410,412,431
+/orchestrate 437,451,452,453,455,456,459,472
+/orchestrate 473,475,476,477,484,490,500,502
+/orchestrate 503,504,505,506,507,510,511,512
+/orchestrate 514,515,519,520,521,522,523,525
+/orchestrate 526,528,529,530,531,532,533,534
+/orchestrate 535,536,537,538,539,545,546,548
+/orchestrate 549,550,551,556,557,558,559,560
+/orchestrate 562,563,565,567,568,569,572,574
+/orchestrate 575,585,589,590,591
 ```
 
 ## Open work
 
-**Core agent system (46)**
+**Core agent system (49)**
 ```
 421 blocked:402     retarget_distill_meta_as_evidence_consumer
 436 blocked:313,458,459  Add the /orient executive-orientation command with a read-only scout age...
@@ -230,6 +230,7 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 566 blocked:452     Document that the validate-state.sh cycle check requires --deep at every call...
 579 blocked:564     Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
+588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
 313 ready           Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md ph...
 338 ready           sweep_task_support_file_tracked_or_ignored
 369 ready           Orphan sweep for deployed entries removed from the source store: the deploy a...
@@ -260,7 +261,9 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 574 ready           Correct the cycle-budget contract to state shared-pool semantics wherever rem...
 575 ready           Stop the cross-phase ceiling check reading a stop-word as a unit and false-po...
 580 ready           Correct the interactive-selection threshold model to AskUserQuestion's real f...
-582 ready           Author a concise output style in the source store and make it the default out...
+589 ready           test_suite_repo_root_walk_up_depth
+590 ready           gate24_ide_dead_command_recommendations
+591 ready           retire_errors_json_triage_surface
 ```
 
 **Extensions (7)**
@@ -278,6 +281,11 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 ```
 437 ready           Repair the Zotero sqlite-reconstruction export path: lost CSL fields and a sh...
 453 ready           Carry the degraded-retrieval signal into the zero-result case, where the brie...
+```
+
+**Neovim (1)**
+```
+583 blocked:369,563 Add a settings-defaults surface to the agent system loader picker
 ```
 
 **File scope lifecycle (8)**
@@ -316,10 +324,8 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 514 ready           Convergence guard blind to zero-dispatch cycles
 ```
 
-**Agent system (46)**
+**Agent system (44)**
 ```
-554 IN FLIGHT       file_scope containment drops external source-store paths from phase commits
-555 IN FLIGHT       Test sweep permanently red where the source store is external
 390 blocked:391     Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
 391 blocked:369     Close the target_root authoring hole that files agent-system tasks into the w...
 438 blocked:313,458 Dependency edges conflate semantic and serialization rationale, and ...
@@ -335,6 +341,7 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 561 blocked:552     Record the load-sized bound and the diagnostic-preserving output capture on t...
 570 blocked:519,543 Stop the stall signal firing on commits it cannot attribute to the dispatch u...
 571 blocked:518     Invalidate an in-flight dispatch whose dispatch_seq has been superseded,...
+573 blocked:589     fix_two_single_assertion_suite_failures
 576 blocked:549     Record the Lean verification-tier gate-naming rule, the Constraints-consumed ...
 577 blocked:547     Make a blocker-triggered aux plan-revision consumable by triage, and stop the...
 510 ready           predispatch_review_test_temp_lib_incomplete
@@ -363,7 +370,6 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 562 ready           conclusion stage drops null-resolution issue-log entries
 569 ready           repair_stale_fixture_lib_dependency_lists
 572 ready           make_full_gate_viable_under_batch_concurrency
-573 ready           fix_two_single_assertion_suite_failures
 ```
 
 **Decidability (1)**
@@ -375,6 +381,13 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 ```
 528 ready           Add purpose-written title fields to task records so TODO.md stops rendering t...
 531 ready           Narrow whole-directory file_scope declarations so the admission overlap gate ...
+```
+
+**Uncategorized (3)**
+```
+584 blocked:505     Wire covering-suite selection into Gate 8 so an extension change runs the aff...
+586 blocked:476     Stand up the suite and gate wall-clock cost consumer: delete, optimize, or de...
+585 ready           Make the batch-gate deferral binding and cache repeat gate runs, so the full ...
 ```
 
 ## Checks before and after every call
