@@ -90852,7 +90852,7 @@
     {
       "project_number": 589,
       "project_name": "test_suite_repo_root_walk_up_depth",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.\n\nPROBLEM: five test suites under agent-system/extensions/core/scripts/tests/ compute their own repository root by walking up a HARDCODED number of path segments (e.g. ROOT=$(cd \"$CORE_DIR/../../../..\" && pwd)). That depth is tuned for the source-store path (agent-system/extensions/core/scripts, four segments below the repo root) and resolves to a path OUTSIDE the repository when the SAME suite is invoked from its deployed location (.claude/scripts, two segments below the root) -- which is exactly how run-all.sh's gate 8 invokes it. The failure is quiet: downstream repo-relative computations return their own fail-open sentinel (gate_cache_implementation_digest returning CANNOT_COMPUTE, for instance) rather than an obvious error, so the suite reports a NEW failure whose stated cause is unrelated to the real one.\n\nAFFECTED SUITES (five, each confirmed failing from the deployed invocation and passing from the source-store one): test-deploy-baseline-lib.sh, test-gate-cache-lib.sh, test-gate-registry-resolution.sh, test-lint-deploy-caller-wrap.sh, test-orchestrate-build-aux-dispatch.sh.\n\nCONFIRMED PRE-EXISTING: root-caused during the error-logging contract work (task 587) and verified unrelated to it -- that change's diff touches none of the five suites' root resolution.\n\nSCOPE: replace the hardcoded walk-up in each affected suite with an invocation-path-independent resolution (git rev-parse --show-toplevel, or whichever helper scripts/lib/common.sh already provides -- prefer reusing an existing helper over adding a sixth bespoke computation), then confirm all five pass under BOTH invocation paths: from the source store directly and from run-all.sh's gate 8. Diagnostic recipe for verifying the root cause per suite before editing: echo the computed ROOT value under both invocation paths, and re-run the suite from its source-store copy -- a pass there with a failure only from the deployed copy indicts the walk-up depth, not the logic under test.\n\nRELATIONSHIP TO TASK 573: this task is a mechanical SUPERSET of task 573, which owns one failing assertion each in test-deploy-baseline-lib.sh and test-lint-deploy-caller-wrap.sh with cause recorded as unknown. The walk-up depth IS a candidate cause for both of 573's items, so 573 has been made to depend on this task and must RE-MEASURE its two assertions after this lands rather than assume they survived. If this fix closes either of 573's items outright, record that there.",
       "effort": "medium",
@@ -90872,12 +90872,17 @@
         "specs/589_test_suite_repo_root_walk_up_depth/progress/phase-1-baseline.json"
       ],
       "created": "2026-11-11T06:30:33Z",
-      "last_updated": "2026-11-11T07:30:45Z",
+      "last_updated": "2026-11-11T10:14:28Z",
       "artifacts": [
         {
           "path": "specs/589_test_suite_repo_root_walk_up_depth/plans/01_test-root-resolution-remedy.md",
           "type": "plan",
           "summary": "Six phases in three waves, 5.75h: baseline both-path measurement, three helper migrations, the SUT-side EXT_ROOT fix, an adjacent-class sweep, then redeploy plus full-gate both-path confirmation and task-573 evidence."
+        },
+        {
+          "path": "specs/589_test_suite_repo_root_walk_up_depth/summaries/01_test-root-resolution-remedy-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: 01_test-root-resolution-remedy-summary.md"
         }
       ],
       "audit_verdict": {
