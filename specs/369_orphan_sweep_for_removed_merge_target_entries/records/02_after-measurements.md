@@ -2,9 +2,21 @@
 
 Measured with the same recipe as `records/01_baseline-measurements.md`, after exercising the
 sweep via an ordinary resync (`bash agent-system/extensions/core/scripts/deploy-headless.sh
---skip-verify TARGET_REPO`) against three of the five named targets, and via a scratch-directory
-replay of the real field fixture for the other two (host and ModelBuilder — see "Deferred to a
-scratch replay" below for why).
+--skip-verify TARGET_REPO`) against four of the five named targets (Logos/Theory, Logos/Website,
+theorem_proving_in_lean4, and — during Phase 7's own verification pass, which required a fresh
+redeploy anyway — the host), and via a scratch-directory replay of the real field fixture for
+the fifth (ModelBuilder — see "Deferred to a scratch replay" below for why).
+
+## Host — Live Redeploy Result
+
+`timeout 540 bash .claude/scripts/deploy-headless.sh --skip-verify` (resynced 9 extensions) was
+run against this repo's own live `.claude/settings.json` directly, superseding the scratch-only
+demonstration this section originally planned (see "Dry-Run Replay" below, which still stands as
+the pre-redeploy prediction): registration count 28 → 27, 0 per-event duplicates, the
+`env`/`permissions` fingerprint byte-identical
+(`bda8ce82960141f4a93a3c24648589c0d0dc2e2a1619c6eee595d82875460629`), and
+`grep -c claude-ready-signal .claude/settings.json` is 0 — the orphan this task's description
+cited by line number is gone from the live file.
 
 ## Dry-Run Replay (scratch directory, real field fixtures, before touching any live repo)
 
@@ -73,16 +85,16 @@ survivor intact) — a faithful field-file demonstration, per the Verify-against
 deploy requirement, just not committed to that repo's own working tree. The owner can apply the
 same `deploy-headless.sh` resync once their own in-progress `.claude/` changes are resolved.
 
-**host (`~/.config/nvim`)**: this repo's own live redeploy is intentionally performed once, in
-Phase 8 (which already redeploys the host as part of closing this task against the full gate
-set), rather than twice. The scratch-directory replay above (28→27, fingerprint-identical,
-orphan removed) is the Phase 6 demonstration for this target; Phase 8's own measurement is the
-live-file confirmation.
+**host (`~/.config/nvim`)**: superseded by the live redeploy result recorded above — the host's
+own live `.claude/settings.json` was in fact redeployed for real during this task (triggered by
+Phase 7's own verification pass needing a fresh redeploy to clear an unrelated doc-lint drift
+finding), so there is no remaining scratch-only gap for this target. Phase 8 confirms this same
+live state against the complete gate set rather than redeploying a second time.
 
 ## No-Change Control Set (spot check)
 
-A sample of the Phase 1 no-change control set was re-measured after the three live resyncs
-above, to confirm nothing else moved:
+A sample of the Phase 1 no-change control set was re-measured after the live resyncs above, to
+confirm nothing else moved:
 
 | Repo | Registration count | Fingerprint | Matches Phase 1 baseline |
 |------|--------------------:|---------------|:---------------------------:|
@@ -102,7 +114,8 @@ above, to confirm nothing else moved:
    SAME carve-out firing on real field data.
 3. (Identity definition — Phase 2/3, not a Phase 6 concern.)
 4. **Before/after measurements**: registration count, zero per-event duplicates, and
-   `env`/`permissions` byte-identical are reported above for all five named targets (three live,
-   two scratch-replayed).
+   `env`/`permissions` byte-identical are reported above for all five named targets (four live —
+   host, Logos/Theory, Logos/Website, theorem_proving_in_lean4 — one scratch-replayed —
+   ModelBuilder).
 5. (Pre-existing specs — Phase 8.)
 6. (Documentation — Phase 7.)

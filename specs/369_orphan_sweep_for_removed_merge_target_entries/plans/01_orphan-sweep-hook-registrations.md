@@ -525,7 +525,7 @@ divergence against the valid set rather than adjusting the sweep to hit a predic
 
 ---
 
-### Phase 7: State the invariant in the boundary narrative [NOT STARTED]
+### Phase 7: State the invariant in the boundary narrative [COMPLETED]
 
 **Goal**: Record the add/change-but-not-delete invariant, the per-merge-target sweep inventory,
 and the by-hand repair for a pre-sweep deploy, in the file that already owns this class of
@@ -533,29 +533,29 @@ statement.
 
 **Tasks**:
 
-- [ ] Add a section to `agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md`
+- [x] Add a section to `agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md`
       stating the invariant: the deploy ADDS and CHANGES merge-target content, and DELETES only
       where a merge target has an explicit orphan sweep. This file already exists and is the
       established home for "what the deploy can and cannot do"; if it has been renamed or removed
       by the time this phase runs, extend the file that `rules/source-store-deploy-boundary.md`
       then points at rather than creating a new standalone file.
-- [ ] Add the per-merge-target sweep inventory: context index entries sweep orphans
+- [x] Add the per-merge-target sweep inventory: context index entries sweep orphans
       (`remove_orphaned_index_entries`); hook registrations in `settings.json` sweep orphans
       (`remove_orphaned_hook_registrations`, this task); `merge_targets.mcp` servers merged
       through the same `merge_settings` path have NO sweep today and are a known uncovered target.
-- [ ] State the carve-out as part of the invariant, not as an implementation detail: a command not
+- [x] State the carve-out as part of the invariant, not as an implementation detail: a command not
       recognizable as a source-store hook invocation — including every `~/`-anchored command — is
       never swept, and identity has exactly one definition, naming the module path.
-- [ ] Record why no loader operation heals a pre-sweep deploy: `settings_backup` snapshots
+- [x] Record why no loader operation heals a pre-sweep deploy: `settings_backup` snapshots
       `settings.json`, `manager.wipe` removes the base dir, and `manager.regenerate` restores the
       snapshot as the MERGE BASE before resyncing — a deliberate earlier fix, not to be reverted —
       so `[Reload All]`, `[Regenerate]` and `deploy-headless.sh --wipe` all preserve staleness.
-- [ ] Record the by-hand repair for a deploy predating the sweep, with its cost stated:
+- [x] Record the by-hand repair for a deploy predating the sweep, with its cost stated:
       `rm .claude/settings.json` then reload works because root-files is install-once and copies
       fresh only when the target is ABSENT, but it discards that repo's local `permissions` and
       `env` customizations; targeted removal of the orphan entries is the lower-cost repair.
       Note explicitly that `deploy-headless.sh --wipe` is NOT a repair.
-- [ ] Carry in the Phase 6 outcome for an unmanaged repo (deployed `.claude/` with no
+- [x] Carry in the Phase 6 outcome for an unmanaged repo (deployed `.claude/` with no
       `.claude-extensions.json`), since that is the case where the empty-state fail-safe means the
       sweep does not fire on its own.
 

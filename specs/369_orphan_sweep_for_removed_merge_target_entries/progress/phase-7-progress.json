@@ -1,0 +1,23 @@
+{
+  "phase": 7,
+  "phase_name": "State the invariant in the boundary narrative",
+  "started_at": "2026-11-11T19:10:00Z",
+  "last_updated": "2026-11-11T19:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add the add/change-but-not-delete invariant, sweep inventory, carve-out, no-loader-operation-heals explanation, and by-hand repair",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
+        "agent-system/extensions/core/index-entries.json",
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/02_after-measurements.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Phase 7's own verification (verify-deploy.sh --skip-slow --only-gate 3,4) initially FAILED: index-entries.json's declared line_count for the edited narrative file was stale (75 vs actual 161), fixed via generate-context-line-counts.sh --write. That same verification pass also needed a fresh host redeploy to clear a deployed-script-content-drift finding for the Phase 2/3 Lua/lint files, which (as a side effect) performed the host's own live Phase 6 demonstration for real (28 -> 27, fingerprint-identical, orphan gone) instead of only a scratch replay -- records/02_after-measurements.md updated to reflect this. Both record-versioning and task-reference lints run clean against the edited file (checked explicitly since several forbidden-token drafts were caught and rewritten during authoring: 'used to', 'no longer', 'withdrawn')."
+}
