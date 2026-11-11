@@ -1,10 +1,47 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md",
+      "summary": "Channels (b)/(c) of the conclusion stage rewritten as evidence-only recording to specs/events.jsonl; net line count -23 across six touched files; Phase 3 closed COMPLETED WITH EXCLUSIONS for two pre-existing, unrelated gate findings."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Rewrote conclusion-stage.md's channels (b)/(c) from meta-builder-agent dispatch / task-creation into unconditional specs/events.jsonl recording via events-append.sh, deleted Step 4c's unreachable task-creation block, and synced all four downstream transcriptions (postflight-tool-restrictions.md, orchestrate-state-machine.md, orchestrate-batch-results-template.md, events-format.md). Deployed and verified from the deployed copy (test-orchestrate-conclusion-aggregate.sh 14/14 including case (g)); net line count -23 (negative, as required); next_project_number confirmed unchanged. deploy-headless.sh's verify step reported RESULT=landed_verify_red on two gates, both confirmed pre-existing and unrelated to this task (documented as Reasoned Exclusions in Phase 3)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+    "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a verify-deploy.sh gate reports a per-gate wrapper TIMEOUT (exit 124) under concurrent-batch load, re-run the SAME underlying check standalone outside the timeout wrapper (e.g. bash .claude/scripts/validate-state.sh --deep specs/state.json) before concluding the task introduced a regression. The standalone run often completes well under the wrapper's timeout and reveals the real (often pre-existing) content finding, letting you distinguish a resource-contention artifact from an actual defect.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy", "gate-timeout", "resource-contention", "validate-state", "deploy-headless"]
+    },
+    {
+      "content": "A local foreground command that plausibly exceeds the harness Bash tool's default 120000ms timeout gets silently auto-backgrounded. Recover with the bounded-build-waiter idiom: detach via nohup + '&', capture pid=$!, then poll liveness in one Bash call with 'while kill -0 \"$pid\"; do sleep N; done' bounded by a large outer timeout parameter (up to 600000ms) and an inner elapsed-time break -- never a raw inner `timeout N cmd` piped through tail, since that SIGTERMs the command at N seconds even though the harness's own foreground ceiling is separate and larger.",
+      "category": "PATTERN",
+      "source_artifact": "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bounded-build-waiter", "background-task", "timeout", "deploy-headless", "run-all.sh"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794431325_7cf647",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

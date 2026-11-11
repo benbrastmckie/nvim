@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Wrote a 3-phase, strictly sequential plan converting conclusion-stage channels (b) and (c) from task-CREATING to evidence-CONTRIBUTING via specs/events.jsonl (event_type conclusion_proposal_recorded, category milestone), deleting Step 4b's meta-builder-agent dispatch and Step 4c's unreachable task-creation block rather than completing them. Phase 1 rewrites conclusion-stage.md and its two asserting test cases together (they are not independently green); Phase 2 syncs four downstream consumer documents; Phase 3 deploys to RESULT=landed_verify_clean, runs the full gate set, and reports the measured net line count. Pinned two decisions research left open: channels (b)/(c) lose their AskUserQuestion gates entirely, and one event line is written per classified proposal. All three carried-figure premises were re-validated against live state and confirmed.",
+  "summary": "Implemented all three phases of the conclusion-channels-evidence-only plan: rewrote conclusion-stage.md's channels (b)/(c) from meta-builder-agent dispatch / task-creation into unconditional specs/events.jsonl recording, deleted Step 4c's unreachable task-creation block, and synced all four downstream transcriptions. Deployed and verified from the deployed copy; test-orchestrate-conclusion-aggregate.sh passes 14/14 including acceptance-critical case (g); net line count -23 (negative, as required); next_project_number confirmed byte-identical to its pre-task value. Phase 3 closed COMPLETED WITH EXCLUSIONS: deploy-headless.sh's verify step reported RESULT=landed_verify_red on two gates (gate10, gate20), both investigated and confirmed pre-existing, cross-task conditions unrelated to this task's six touched files.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md",
       "summary": "3-phase plan: rewrite channels (b)/(c) as evidence-recording with their tests, sync four downstream consumers, deploy and report a negative net line count."
+    },
+    {
+      "type": "summary",
+      "path": "specs/402_conclusion_channels_become_evidence_only/summaries/01_conclusion-channels-evidence-only-summary.md",
+      "summary": "Implementation summary with full verification evidence and Phase 3's Reasoned Exclusions."
     }
   ],
-  "dispatch_seq": 6
+  "dispatch_seq": 9
 }
