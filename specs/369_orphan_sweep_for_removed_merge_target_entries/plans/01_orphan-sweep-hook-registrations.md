@@ -1,7 +1,7 @@
 # Implementation Plan: Task #369
 
 - **Task**: 369 - Orphan sweep for removed merge-target entries (hook registrations)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: None blocking. Task 527 (hook-registration SET lint) consumes the identity
   notion this plan settles and should land after it.

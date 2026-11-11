@@ -1,15 +1,24 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phase": "implement",
+  "phases_completed": 8,
   "phases_total": 8,
-  "summary": "Wrote an 8-phase, 10-hour implementation plan for the hook-registration orphan sweep, extending merge.lua's remove_orphaned_index_entries precedent and its manager.load call-siting rather than inventing a mechanism. The plan settles the two open design questions the research flagged: the single identity definition lives in a new pure-Lua module that merge.lua consumes directly and the hook-path lint consumes through a logic-free bridge (the lint's own normalize_identity is deleted), and cross-EVENT survival is in scope because a valid set keyed (event, matcher, type, normalized_path) sweeps it with the same predicate that handles an undeclared registration. All five live-orphan deploys were re-verified by jq census at plan time, confirming the research field table exactly; regression safety is front-loaded into Phase 1 (baseline measurement plus verbatim field fixtures) and Phase 6 (before/after per repo with env/permissions fingerprints).",
+  "summary": "Closed the hook-registration orphan-sweep gap across all 8 plan phases: one shared identity definition (Lua module consumed directly by merge.lua and, via a logic-free bridge, by the hook-path lint), the sweep function with its mandatory hand-written/~/-anchored carve-out, manager.load call-siting with two fail-safe gates and rollback threading, and live verification against four real deployed repositories (host, Logos/Theory, Logos/Website, theorem_proving_in_lean4) plus a scratch-fixture replay for a fifth (ModelBuilder, deferred due to 98 unrelated uncommitted changes under its own .claude/ tree). Phase 8 closed [COMPLETED WITH EXCLUSIONS]: the full verify-deploy.sh aggregator is deferred to this /orchestrate batch's own run per the dispatch's Batch Gate Deferral directive, and this dispatch's own scoped discharge (--only-gate 21,8 at full depth) shows Gate 21 clean and Gate 8's run-all.sh at 179 passed / 5 failed (all 5 pre-existing, independently-tracked EXPECTED failures, 0 NEW) / 2 skipped / 186 total.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/summaries/01_orphan-sweep-hook-registrations-summary.md",
+      "summary": "Full implementation summary: what changed across 10 files, decisions (the third unstated ineligibility rule, Check D unification, fragment-read-before-sweep reordering, ModelBuilder deferral), plan deviations, verification results, impacts, and follow-ups."
+    },
+    {
       "type": "plan",
       "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/plans/01_orphan-sweep-hook-registrations.md",
-      "summary": "8-phase plan (5 dependency waves, 10h) for the hook-registration orphan sweep: shared identity definition, sweep function, manager.load call-siting with two fail-safe gates, real-deploy before/after measurement, boundary-narrative invariant, full gate set."
+      "summary": "8-phase plan, all phases now [COMPLETED] or [COMPLETED WITH EXCLUSIONS], with per-phase checklist annotations and Phase 8's Reasoned Exclusions table."
     }
-  ]
+  ],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task is fully implemented; no further dispatch needed for this plan. Optional follow-ups (out of this task's scope, recorded in the summary): add an orphan sweep for merge_targets.mcp; ModelBuilder's own live .claude/ resync once its owner resolves their in-progress changes; the wider ~16-repo CWD-relative claude-ready-signal.sh orphan population self-heals on each repo's own next ordinary resync."
 }

@@ -4114,7 +4114,7 @@
     {
       "project_number": 369,
       "project_name": "orphan_sweep_for_removed_merge_target_entries",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Orphan sweep for deployed entries removed from the source store: the deploy adds and changes but cannot delete",
@@ -4153,7 +4153,7 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-07T21:40:00Z",
-      "last_updated": "2026-11-11T16:09:14Z",
+      "last_updated": "2026-11-11T17:43:22Z",
       "effort": null,
       "priority": null,
       "session_id": "sess_1794413303_b61a83"

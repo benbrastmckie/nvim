@@ -1,6 +1,73 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/summaries/01_orphan-sweep-hook-registrations-summary.md",
+      "summary": "Implemented the hook-registration orphan sweep: a single shared identity definition (Lua, consumed by both the merge-time sweep and the lint via a logic-free bridge), the sweep function and its manager.load call-siting with fail-safe gates and rollback threading, verified against five real deployed repos (four resynced live), and the add/change-but-not-delete invariant documented in the boundary narrative."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the hook-registration orphan-sweep gap: added one shared identity definition (merge.lua + the hook-path lint, reconciled via a logic-free bridge), the sweep function with its mandatory hand-written/~/-anchored carve-out, manager.load call-siting with two fail-safe gates and rollback threading, and verified live against four real deployed repositories (host, Logos/Theory, Logos/Website, theorem_proving_in_lean4) plus a scratch-fixture replay for a fifth (ModelBuilder, deferred due to unrelated in-progress local changes). Documented the invariant in the source-store/deploy-boundary narrative."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+    "lua/neotex/plugins/ai/shared/extensions/hook_identity.lua",
+    "lua/neotex/plugins/ai/shared/extensions/hook_identity_cli.lua",
+    "lua/neotex/plugins/ai/shared/extensions/hook_identity_fixtures.json",
+    "lua/neotex/plugins/ai/shared/extensions/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua",
+    "specs/369_orphan_sweep_for_removed_merge_target_entries/records/01_baseline-measurements.md",
+    "specs/369_orphan_sweep_for_removed_merge_target_entries/records/02_after-measurements.md",
+    "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/host-settings.json",
+    "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/lean4-settings.json",
+    "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/logos-theory-settings.json",
+    "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/logos-website-settings.json",
+    "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/modelbuilder-settings.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When broadening a 'script-invocation identity' matcher used to decide whether an automated sweep may delete an entry, an absolute (/-leading) path with no recognized project-relative anchor (e.g. no '.claude/' substring) must be treated as identity-INELIGIBLE even if it technically contains a *.sh invocation -- otherwise a hand-written/custom entry at an arbitrary absolute path becomes sweep-eligible and can be silently deleted by an empty or unrelated valid-set. This was a required-but-unstated third exclusion beyond the two literally specified in the originating plan.",
+      "category": "PATTERN",
+      "source_artifact": "specs/369_orphan_sweep_for_removed_merge_target_entries/summaries/01_orphan-sweep-hook-registrations-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "identity-eligibility",
+        "orphan-sweep",
+        "carve-out",
+        "sweep-safety",
+        "merge-target"
+      ]
+    },
+    {
+      "content": "For a bash test suite that must exercise a 'bridge failure' (a helper binary/script missing or broken) without risking the real file, add a single env-var override at the production script's own resolution site (e.g. HOOK_IDENTITY_CLI_OVERRIDE) defaulting to the real path. This is cheaper and safer than renaming/moving the real file mid-test-run, and keeps the override visible at the exact line the real path is resolved.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/369_orphan_sweep_for_removed_merge_target_entries/summaries/01_orphan-sweep-hook-registrations-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "bash-testing",
+        "bridge-failure",
+        "env-override",
+        "fault-injection"
+      ]
+    },
+    {
+      "content": "A matcher string used as a composite key component (e.g. event+matcher+identity) can itself legitimately contain the chosen field separator (observed: Claude Code hook matchers like 'Bash|Write|Edit' contain literal pipe characters). Use a control character (e.g. '\\1') as the join separator for such composite keys, never a character that can appear in real field data.",
+      "category": "PATTERN",
+      "source_artifact": "specs/369_orphan_sweep_for_removed_merge_target_entries/summaries/01_orphan-sweep-hook-registrations-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "composite-key",
+        "separator-collision",
+        "matcher-string"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794413303_b61a83",
     "agent_type": "general-implementation-agent",
@@ -9,7 +76,9 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 8,
+    "phases_total": 8
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/index-entries.json"
