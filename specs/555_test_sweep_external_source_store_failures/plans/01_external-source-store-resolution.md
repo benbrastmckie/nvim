@@ -638,7 +638,7 @@ Optional external-consumer confirmation task above, recorded as pending operator
 
 ---
 
-### Phase 8: Reconcile the Baseline and Restore Exit-Code Discrimination [NOT STARTED]
+### Phase 8: Reconcile the Baseline and Restore Exit-Code Discrimination [COMPLETED]
 
 **Goal**: Every residual failure is either a genuine finding under an owner anchor or a declared
 `known-failures.txt` row carrying a reason, so `run-all.sh --fail-on-new` once again discriminates
@@ -646,32 +646,43 @@ a new failure from the standing baseline; and the task's full gate set is green.
 
 **Tasks**:
 
-- [ ] Read `records/sweep-measurement.md` from Phase 7. If it does not exist, stop and report —
-      do not re-measure ad hoc and do not proceed on remembered figures.
-- [ ] Read `tests/known-failures.txt`'s own header in full and follow its stated row format
+- [x] Read `records/sweep-measurement.md` from Phase 7. If it does not exist, stop and report —
+      do not re-measure ad hoc and do not proceed on remembered figures. *(completed: exists,
+      read)*
+- [x] Read `tests/known-failures.txt`'s own header in full and follow its stated row format
       (`basename|category|reason|owner`), its four-value category vocabulary
       (`real-defect` / `intermittent` / `load-sensitive` / `wip-transient`), and its advisory-only
       contract — a row never changes which suites run, only whether a failure is annotated
-      EXPECTED or NEW.
-- [ ] Add one row per **repo-independent** residual failure (failing identically in both
+      EXPECTED or NEW. *(completed)*
+- [x] Add one row per **repo-independent** residual failure (failing identically in both
       topologies). Each row's reason must be a durable anchor — the failing case's own message,
       the assertion name, the script and function involved — never a task number, since this file
       lives under `agent-system/extensions/**` where task-number references are prohibited. Use
-      the literal `needs-owner` where no follow-up owner exists.
-- [ ] Do **not** add a row for any suite failing in only one topology: the manifest keys on
+      the literal `needs-owner` where no follow-up owner exists. *(completed: 6 rows added —
+      `test-double-loading-check.sh`, `test-lint-unit-integration-boundary.sh`,
+      `test-orchestrate-cycle-postflight.sh`, `test-orchestrate-predispatch-review.sh`,
+      `test-postflight-deploy-gate.sh`, `test-redeploy-checkpoint-promotion.sh`, each `real-defect`
+      / `needs-owner`, each reason citing the live failing assertion's own message)*
+- [x] Do **not** add a row for any suite failing in only one topology: the manifest keys on
       basename and is mode-insensitive, so such a row would also annotate the suite EXPECTED where
       it passes. Record those by name in the summary as follow-up candidates instead.
-- [ ] Do **not** add a row for any of the 6 confirmed suites. They pass now and must keep passing
-      as a live regression signal.
-- [ ] Re-assess the existing `test-verify-deploy-context-budget.sh` row against Phase 3's recorded
+      *(completed: the 5 deployed-only suites from `records/sweep-measurement.md` were not
+      baselined)*
+- [x] Do **not** add a row for any of the 6 confirmed suites. They pass now and must keep passing
+      as a live regression signal. *(completed: no row added for any of the 6)*
+- [x] Re-assess the existing `test-verify-deploy-context-budget.sh` row against Phase 3's recorded
       gate-24 observation. If gate 24 now reports no finding against its fixture and the suite
       reaches rc 0, remove the row (the row's own text states that is its removal condition);
-      otherwise update its reason to match what is now true and leave it in place.
-- [ ] Re-run the full sweep with `--fail-on-new` and confirm the NEW count is 0 while the EXPECTED
+      otherwise update its reason to match what is now true and leave it in place. *(completed:
+      Phase 3 recorded UNMOVED — the row's text is already accurate and was left unchanged)*
+- [x] Re-run the full sweep with `--fail-on-new` and confirm the NEW count is 0 while the EXPECTED
       count equals the declared baseline. A non-zero NEW count means a residual was neither fixed
       nor declared — report it rather than widening the baseline to make the number go away.
-- [ ] Confirm no suite was silenced: every row added has a reason, and `run-all.sh`'s own roster
-      still shows each declared suite as executed and failing, not skipped.
+      *(completed: 174 passed, 8 failed (8 expected, 0 NEW), 2 skipped, 184 total)*
+- [x] Confirm no suite was silenced: every row added has a reason, and `run-all.sh`'s own roster
+      still shows each declared suite as executed and failing, not skipped. *(completed: all 9
+      declared rows show a `[RUN]` line in the sweep output; every added row has all four fields
+      populated)*
 
 **Timing**: 1.5 hours
 
