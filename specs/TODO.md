@@ -1,5 +1,5 @@
 ---
-next_project_number: 588
+next_project_number: 589
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 588
 |------|-------|------------|--------|
 | 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
-| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588 | 313,391,398,439,458,472,476,486,509,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -71,6 +71,7 @@ next_project_number: 588
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
+588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
 
 ### Extensions
 
@@ -186,6 +187,54 @@ next_project_number: 588
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 588. Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unless it declares how it gets a true read
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 509
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir PER-EXTENSION from <project-root>/.claude-extensions.json at .extensions.<name>.source_dir (a top-level jq -r '.source_dir' returns null and must not be read as the key being absent), edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system change request) of an /orchestrate invocation, session sess_1794367153_fe56ab. Both citing entries were hinted fix_now; the lead overrode that to this channel because the remedy is planning-contract guidance, not a single file edit. User-approved at the lead level and dispatched to the meta builder for task creation only.
+
+SEVERITY: minor per the entries, but authored-in rather than accidental -- both were caught and worked around during implementation, so no damage was done. The defect is that plan authoring has no guidance against writing them.
+
+CITATIONS -- specs/587_error_logging_contract_and_central_log/issues.jsonl (task 587):
+  iss_1794369082643_5NQvbe -- a phase's Verification listed `verify-deploy.sh --skip-slow --only-gate 3,4` as a pass/fail check, while the same plan's standing note deferred redeploy to its final phase. Gate 3's deployed-script-content-drift rule and the index-entries.json line-count check both compare against the DEPLOYED tree, so the criterion read stale content by construction. Worked around by measuring the gate's pre-edit baseline.
+  iss_1794369662047_4YqXde -- a phase's task named `bash .claude/scripts/init-specs.sh` as the entry point for regenerating a managed .gitignore block. That is the DEPLOYED copy, which sources the stale pre-edit library; running it as written would have silently regenerated the block WITHOUT the new pattern, losing the edit entirely. Worked around by sourcing the source store's own edited library instead.
+
+=== THE SUBJECT: A PLAN STEP WHOSE SUBJECT RESOLVES FROM THE DEPLOYED TREE ===
+
+Both entries are one hazard in two guises. A plan step -- a verification criterion OR a task/tooling instruction -- names a subject whose content is resolved from the deployed .claude/** tree, while the same plan defers redeploy to a later phase. Run as written, the step reads or executes stale pre-edit content. The failure is silent in the second guise: a mutating tool resolved from the deployed tree regenerates its output from stale logic and overwrites the very edit the phase just made, with a clean exit status and nothing in the output to say so.
+
+THE ASK: add plan-authoring guidance, and where cheap a mechanical check, stating that a plan step whose subject resolves from the deployed tree MUST either (i) run at or after the plan's redeploy phase, or (ii) declare explicitly how it gets a true read before redeploy. The three mechanisms observed to work, to be named as the permitted set rather than left to invention: a pre-edit baseline measurement with a baseline-relative verdict; sourcing or invoking the source store's own edited copy directly; or a temporary overwrite-then-restore of the deployed copy. A step that declares none of the three, and runs before redeploy, is the thing the guidance forbids.
+
+=== THE TWO ANCHORS TO REUSE RATHER THAN REINVENT (verify both by direct read first) ===
+
+1. `scripts/lib/common.sh`'s `common_test_resolve_subject` already settles this exact distinction with a three-value mode vocabulary -- `deployed` and `source-store` as correctness requirements never overridden by the environment, `deploy-tree-first` as a preference that CORE_TEST_SUBJECT_MODE may override. Its header also records WHY a global flip to source-store-first was rejected: the Inter-Cycle Redeploy Checkpoint's pre/post divergence signal depends on a pre-redeploy run resolving the stale copy. Borrow that vocabulary for the plan rule so an author and a test suite describe the same thing with the same words; do NOT invent a parallel set of terms, and do NOT propose changing the default resolution order.
+2. `context/formats/plan-format.md`'s existing `### Naming a tool's entry point in verification criteria` section is the sibling site. It already requires a criterion to name the repository's sanctioned entry point for a tool rather than a bare binary, and is explicitly advisory-prose-only with no validate-artifact.sh check. The new rule extends the same section's concern from WHICH entry point to WHICH TREE that entry point resolves from, and covers a phase's task instructions, not only its verification criteria -- the second citation was a task step, not a criterion.
+
+=== WHAT IS ALREADY OWNED ELSEWHERE -- DO NOT RE-DECIDE IT ===
+
+redeploy_phase_declaration_and_gate_criterion (DEPENDENCY, filed) owns the first citation's guise completely and independently: its half (ii) is the sibling rule barring a pre-redeploy phase from asserting a deployed-vs-source DRIFT GATE, with the same verify-deploy gate 3 evidence, the same remedy site (plan-format.md plus the planner's own contract), and a WHEN/WHAT/WHERE specification already written out. Read that record, and whatever it actually lands, before planning here; its rule governs the drift-gate case and must not be restated or re-decided under this record.
+
+WHAT REMAINS GENUINELY UNCOVERED, and is this record's whole subject: that record's WHEN clause binds a verification criterion invoking a gate that COMPARES the deployed tree against the source store. The second citation is neither a gate nor a comparison -- it is a MUTATING tool whose code is resolved from the deployed tree, so the stale read is executed rather than reported, and the loss is silent. Generalizing the rule from "a drift gate" to "any step whose subject resolves from the deployed tree", and extending it from verification criteria to task instructions, is what this record owes. State plainly in the deliverable whether the result is one generalized rule superseding the narrower drift-gate clause or two sibling clauses, and why.
+
+Also related, no edge filed: baseline_relative_gate_criteria (as named by the record above) owns the baseline-relative-verdict requirement for a gate with standing pre-existing findings. The pre-edit baseline measurement is one of the three permitted true-read mechanisms here, so cite that rule rather than re-specifying how a baseline-relative verdict is formed.
+
+=== CONSTRAINTS ===
+
+- Do NOT weaken any gate. Gate 3 reported real drift correctly, and init-specs.sh behaved exactly as written; the defect is a plan step that demanded a true read from a stale subject.
+- Do NOT make plan-format.md longer than it has to be. It is already a long standard whose requirements compete for an author's attention. Site the rule as a sibling of the existing entry-point and criterion rules and reuse their framing instead of restating it; a pointer is preferable to a second copy.
+- Any mechanical enforcement is a RULING to make, not an assumption. Decide whether validate-artifact.sh can flag a pre-redeploy step naming a .claude/** subject without false-flagging the legitimate post-redeploy case and without false-flagging a step that correctly declares one of the three true-read mechanisms. An advisory-prose-only outcome is acceptable and must be recorded as the ruling if a check would misfire.
+- The guidance must be placed where plan authors AND the planner agent actually encounter it: whatever lands in plan-format.md must be reachable from agents/planner-agent.md's own contract, not only from the format document.
+
+=== VERIFY ===
+
+The documentary check (the rule present at the sited section, reachable from the planner's contract), plus whatever validate-artifact.sh ruling lands. If a check is built, pin BOTH the flagged case (a pre-redeploy step naming a .claude/** subject with no declared true-read mechanism) and the unflagged cases (the same step at or after the redeploy phase, and a pre-redeploy step that declares one of the three mechanisms) in scripts/tests/test-validate-artifact.sh, extending that suite rather than replacing it.
+
+---
 
 ### 587. Make error logging coherent -- one store contract, one class vocabulary, one collapse rule, one central cross-repo promotion path -- with Sapience failures as the motivating subclass and acceptance test
 - **Status**: [COMPLETED]
@@ -3009,6 +3058,27 @@ not as a correction -- they were declared so the source repository overlap gate 
 surface, and that rationale does not survive into this repository.
 PARENT: source-repository parent #836 did not migrate; recorded as provenance rather than
 as a number resolving to an unrelated record here.
+
+
+=== ADDED EVIDENCE (2026-11-10): THREE MORE DROPS, IN THE CORE REPOSITORY, FROM A SEMANTIC OBLIGATION NO FILE-TYPE RULE CAN DERIVE ===
+
+Source: conclusion stage (channel b) of an /orchestrate invocation, session sess_1794367153_fe56ab, user-approved at the lead level. The originating change request was audited against this backlog at creation time; NO separate record was created, because every direction it named is already owned (ownership map at the end of this block). The evidence is filed here instead.
+
+CITATIONS -- specs/587_error_logging_contract_and_central_log/issues.jsonl, class "scope excursion", three firings in ONE task's implement phase:
+  iss_1794370223132_3sfBaB -- agent-system/extensions/core/context/standards/orchestrator-runtime-files.md dropped from a phase commit pathspec (a runtime-file-pattern doc row the change obliged).
+  iss_1794375709818_V6uFbt -- agent-system/extensions/core/context/config/orchestrator-context-budget.json dropped (an eager-load budget a new context file pushed over threshold).
+  iss_1794375710170_CXRtB9 -- agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh dropped (a suite count the same change invalidated).
+Each was a legitimate, necessary edit, not straying work. Three commits shipped missing files and had to be noticed and recovered by hand.
+
+WHY THIS SHARPENS ITEM 1 EXTENDED RATHER THAN REPEATING IT. The two generated surfaces already recorded under ITEM 1 EXTENDED are derivable from the touched path's TYPE -- a phase touches any .lean file, therefore two named companion surfaces follow, which is why a companion-surface auto-append rule keyed on file type is the plausible remedy there. These three are NOT derivable that way. The obligation is SEMANTIC: adding a context file obliges a budget edit only when it crosses a threshold; changing a pattern set obliges a doc row and a suite-count assertion whose paths share no type relationship with the file that was touched. A type-keyed companion rule cannot reach this class. Weigh that when ruling on the harvest-closure direction: the honest options for this class may be the implementer-duty route or an in-window declaration extension rather than a harvest extension, and saying so explicitly is a legitimate outcome for this record.
+
+DO NOT READ THE LATE WIDENING AS A SECOND MECHANISM DISAGREEING WITH THE DROP. The change request observed that the implement postflight's --file-scope-add widening fired for these same paths at the END of the run, after the drops. Verified in the source store at filing time (re-derive; line numbers move): git-commit-phase.sh's propose_file_scope_addition() deposits a dropped path into the task directory's .return-meta.json proposed_file_scope, and the implement postflight (orchestrator-postflight.sh, and skill-base.sh on the skill path) unions that deposit into state.json's file_scope. That is one designed loop completing, not two mechanisms in conflict. What the evidence does show is that the loop closes too late to save the commit the drop just emptied, and too late for a later phase in the same run.
+
+OWNERSHIP MAP ESTABLISHED AT FILING TIME -- the reason no new record exists:
+- The harvest-closure direction (pre-empt the obliged-path class at harvest time): THIS record, items 1 and 2 plus ITEM 1 EXTENDED. Closed close_the_plan_to_file_scope_reconciliation_gap landed the plan-to-file_scope reconciliation this builds on.
+- The in-dispatch / in-window extension channel: closed feed_undeclared_implement_paths_into_file_scope settled whether and how a dispatch proposes an addition to its own file_scope, and landed the deposit channel described above. Open cycle_postflight_containment_parity owns what a dispatch may legitimately COMMIT in the window before that proposal has merged (its outcome 3, a guarded recovery route), and carries its own added evidence note for these three firings.
+- A consolidated drop record instead of per-path warnings: open collapse_perpath_scope_excursion_issue_rows_into_o.
+- The implementer's duty to regenerate and stage the derived surfaces a phase stales: open stage_regenerated_derived_files_in_phase_commits.
 
 ---
 
@@ -6332,6 +6402,15 @@ Dependency edges are declared rather than racing shared files (context/patterns/
 
 === BACKLOG AUDIT PERFORMED AT CREATION TIME (scripts/audit-task-proposals.sh, full corpus) ===
 The matcher's highest-scoring mechanically-overlapping open records were #486 (semantic 0.69), #494 (0.64), #484 (0.57), #430 (0.51) and #446 (0.50) -- precisely the records read and disclaimed in the scope note above. Ruling rendered by the creating surface, not by the script (which never decides duplication): NOT a duplicate. For #486, #494, #430 and #446 the ONLY mechanically shared path is context/standards/git-staging-scope.md, the standard every containment record necessarily amends; none of the four declares orchestrate-cycle-postflight.sh, the site where the cited drop fired. #494 is the closest in shape and is the mirror image rather than the same work: it carries a member sites 1 and 3 already have to site 2, where this record carries to site 1 what sites 2 and 3 have. Every remaining non-trivial verdict was a territory overlap on git-commit-scoped.sh, its suite, or test-orchestrate-cycle-postflight.sh, and is discharged by a dependency edge above rather than a merge. The matcher additionally emitted 41 scope-blind degradations (corpus records declaring no file_scope, emitted unconditionally per that script's documented noise trade-off) and a long tail of semantic-only verdicts in the 0.40-0.53 band against substantively unrelated records; neither class was treated as a duplication signal.
+
+=== ADDED EVIDENCE (2026-11-10): THREE MORE IN-WINDOW RECOVERIES, AT SITE 2, IN THE CORE REPOSITORY ===
+
+Source: conclusion stage (channel b) of an /orchestrate invocation, session sess_1794367153_fe56ab, user-approved at the lead level. Audited against this backlog at creation time; no separate record was created, because outcome 3 of this record already owns the question. Filed here as evidence that outcome 3's window is paid for repeatedly.
+
+CITATIONS -- specs/587_error_logging_contract_and_central_log/issues.jsonl, class "scope excursion":
+  iss_1794370223132_3sfBaB, iss_1794375709818_V6uFbt, iss_1794375710170_CXRtB9 -- three legitimate, necessary edits (a runtime-file-pattern doc row, an eager-load budget file pushed over threshold, and a suite count the same change invalidated) dropped from three separate phase commits in ONE task's implement phase, each recovered by hand afterwards.
+
+RELEVANCE TO OUTCOME 3, stated without overstating it: these are SITE 2 drops (git-commit-phase.sh), not the site 1 event this record's findings are built on, so they do not bear on outcome 1's predicate-parity question. What they do establish is that the window outcome 3 addresses -- between a correct drop and the postflight merge of the proposed addition -- costs one incomplete commit per occurrence at site 2 as well, three times in one task, and that the only route available for recovering those paths was again a commit outside the containment contract. The deposit channel closed feed_undeclared_implement_paths_into_file_scope landed did fire for all three paths; it simply resolved after the commits it would have saved. Whatever outcome 3 rules must therefore be stated so that site 2's window is covered by it or explicitly excluded from it, not left ambiguous.
 
 ---
 
