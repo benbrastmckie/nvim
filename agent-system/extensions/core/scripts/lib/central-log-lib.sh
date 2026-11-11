@@ -29,11 +29,11 @@
 #
 # THE OWNING REPOSITORY
 # ----------------------
-# This script's own deployed location (`<repo_root>/.claude/scripts/lib/central-log-lib.sh`) is
-# used to resolve the WRITING repository's root via `common_repo_root` (levels=3, the
-# scripts/lib/ depth), exactly as issue-record.sh and events-append.sh resolve their own
-# PROJECT_ROOT -- never a caller-supplied global, so this function's two-argument contract holds
-# regardless of what the caller has or has not already resolved into its own shell.
+# This script's own deployed location (`<repo_root>/.claude/scripts/lib/central-log-lib.sh`)
+# resolves the WRITING repository's root via `common_repo_root` (levels=3, the scripts/lib/
+# depth), exactly as issue-record.sh and events-append.sh resolve their own PROJECT_ROOT --
+# never a caller-supplied global, so this function's two-argument contract holds regardless of
+# what the caller has or has not already resolved into its own shell.
 #
 # The OWNING repository is then resolved from the WRITING repository's own
 # `.claude-extensions.json`: read the first extension entry's own `source_dir` (per-extension
