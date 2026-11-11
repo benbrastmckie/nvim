@@ -254,22 +254,22 @@ by the two authoring-shape lints.
 
 ---
 
-### Phase 3: Discharge skill-meta's stale path-qualification acknowledgment [NOT STARTED]
+### Phase 3: Discharge skill-meta's stale path-qualification acknowledgment [COMPLETED]
 
 **Goal**: `skill-meta/SKILL.md` describes the mechanism that exists rather than pointing at a
 follow-up as though it were still owed.
 
 **Tasks**:
 
-- [ ] Re-read `skills/skill-meta/SKILL.md` lines 168-175 immediately before editing.
-- [ ] Rewrite the closing sentence (lines 174-175) to state that the agent definition enforces its
+- [x] Re-read `skills/skill-meta/SKILL.md` lines 168-175 immediately before editing. *(completed)*
+- [x] Rewrite the closing sentence (lines 174-175) to state that the agent definition enforces its
       own `target_root` requirement independently — refusing when the key is absent, per Phase 2 —
       so the prompt's path-qualification imperative is defense-in-depth rather than the sole
-      mechanism.
-- [ ] Keep the REQUIRED path-qualification imperative itself and its example wording intact; only
-      the trailing durability-gap sentence changes.
-- [ ] Write it with no task-number citation and no draft-history framing: describe what the
-      mechanism now is, not that a gap was closed or by which record.
+      mechanism. *(completed)*
+- [x] Keep the REQUIRED path-qualification imperative itself and its example wording intact; only
+      the trailing durability-gap sentence changes. *(completed)*
+- [x] Write it with no task-number citation and no draft-history framing: describe what the
+      mechanism now is, not that a gap was closed or by which record. *(completed)*
 
 **Timing**: 0.5 hours
 

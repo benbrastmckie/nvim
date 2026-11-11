@@ -171,8 +171,10 @@ sent to `meta-builder-agent` MUST include an explicit, unambiguous instruction t
 task-directory Write/Edit path be qualified by `target_root` (or be an absolute path) — NEVER a
 bare `specs/...` relative path. For example: "All task-directory paths (TODO.md, state.json, task
 dirs) MUST be written as `{target_root}/specs/...`, never as a bare `specs/...` relative path."
-This instruction is carried by the prompt today; a dependent follow-up task makes it durable in the
-agent definition itself (`meta-builder-agent.md`) rather than relying on prompt text alone.
+`meta-builder-agent.md`'s own Stage 1 additionally enforces this requirement independently of the
+prompt: it refuses with `status: "blocked"` whenever the delegation context omits `target_root`
+entirely, and uses an explicitly passed value exactly as given otherwise. The prompt instruction
+above is defense-in-depth alongside that agent-level enforcement, not the sole mechanism.
 
 The subagent will:
 - Load component guides on-demand based on mode
