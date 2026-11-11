@@ -1,31 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/369_orphan_sweep_for_removed_merge_target_entries/plans/01_orphan-sweep-hook-registrations.md",
-      "summary": "8-phase plan (5 dependency waves, 10h) for the hook-registration orphan sweep: one shared identity definition consumed by merge.lua and the hook-path lint, the sweep function, manager.load call-siting with two fail-safe gates, real-deploy before/after measurement, boundary-narrative invariant, and the full gate set."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1794209498_570cdb_369",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 10,
-    "dependency_waves": [[1, 2], [3, 4], [5], [6, 7], [8]]
-  },
-  "task_number": 369,
-  "dispatch_seq": 2,
-  "memory_candidates": [
-    {
-      "content": "When reconciling a notion that two consumers in DIFFERENT LANGUAGES must share in this repo (e.g. merge.lua's hook_identity vs a bash lint's normalize_identity), the workable single-definition shape is: put the normative implementation in the side that cannot shell out (Lua, because merge.lua runs in-editor at extension load time), add a logic-free `nvim --headless --noplugin -u NONE -l` stdin/stdout bridge for the bash side invoked ONCE per run, make a bridge failure fatal rather than a silent fallback to a second notion, and retain a shared JSON fixture corpus as the conformance pin (a test, not the definition). The bridge is only ever needed in a repository that has source-store scan surfaces, which is the same repository that holds the Lua module -- that invariant is what makes the dependency safe.",
-      "category": "PATTERN",
-      "source_artifact": "specs/369_orphan_sweep_for_removed_merge_target_entries/plans/01_orphan-sweep-hook-registrations.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["cross-language single definition", "nvim headless bridge", "hook_identity", "lint reconciliation", "conformance fixture"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 369 to execute the plan"
+    "session_id": "sess_1794413303_b61a83",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

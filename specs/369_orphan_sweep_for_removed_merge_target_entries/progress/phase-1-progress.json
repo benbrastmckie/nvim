@@ -1,0 +1,42 @@
+{
+  "phase": 1,
+  "phase_name": "Baseline measurement and real-deploy fixture capture",
+  "started_at": "2026-11-11T16:15:00Z",
+  "last_updated": "2026-11-11T16:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate deployed repos from the filesystem and record managed/unmanaged",
+      "status": "done",
+      "files_touched": [
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/01_baseline-measurements.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Record the three measurement quantities per repo and capture fixtures",
+      "status": "done",
+      "files_touched": [
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/01_baseline-measurements.md",
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/host-settings.json",
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/modelbuilder-settings.json",
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/logos-website-settings.json",
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/logos-theory-settings.json",
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/lean4-settings.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Write records/01_baseline-measurements.md with enumeration rationale",
+      "status": "done",
+      "files_touched": [
+        "specs/369_orphan_sweep_for_removed_merge_target_entries/records/01_baseline-measurements.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Direct field re-measurement found the dispatch's 'fourteen clean repos' control-set claim does not hold: the CWD-relative claude-ready-signal.sh orphan is present in at least 16 repos, not just the 5 named targets. Recorded in the baseline doc and via issue-record.sh. Mechanism (Phases 2-5) is repo-agnostic and corrects all of them; Phase 6 acceptance criteria are scoped to the 5 named targets as the dispatch specifies."
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #369
 
 - **Task**: 369 - Orphan sweep for removed merge-target entries (hook registrations)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: None blocking. Task 527 (hook-registration SET lint) consumes the identity
   notion this plan settles and should land after it.
@@ -128,7 +128,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Baseline measurement and real-deploy fixture capture [NOT STARTED]
+### Phase 1: Baseline measurement and real-deploy fixture capture [COMPLETED]
 
 **Goal**: Establish the before-state for every deployed repo and capture real stale
 `settings.json` copies as read-only fixtures, so later phases verify against field files rather
@@ -136,21 +136,21 @@ than a fixture reconstructed from memory.
 
 **Tasks**:
 
-- [ ] Enumerate deployed repos from the FILESYSTEM, not the extension repo registry:
+- [x] Enumerate deployed repos from the FILESYSTEM, not the extension repo registry: *(completed: 27 repos found; see records/01_baseline-measurements.md)*
       `find ~/Projects ~/Philosophy ~/.config/nvim ~/.dotfiles ~/Documents ~/Training -maxdepth 5 -type d -name .claude -not -path '*/.local/*' -not -path '/tmp/*'`.
       Record which of them carry a `.claude-extensions.json` (managed) and which do not.
-- [ ] Record, per repo, the three measurement quantities with this recipe (the measurement
+- [x] Record, per repo, the three measurement quantities with this recipe (the measurement
       contract for acceptance criterion 4; no new permanent script is added):
       - registration count: `jq '[(.hooks // {}) | to_entries[] | .value[] | (.hooks // [])[]] | length' .claude/settings.json`
       - per-event duplicate count: `jq -r '(.hooks // {}) | to_entries[] | .key as $e | [.value[] | .matcher as $m | (.hooks//[])[] | "\($e)|\(.type)|\(.command)"] | group_by(.) | map(select(length > 1)) | length' .claude/settings.json`
       - `env`/`permissions` fingerprint: `jq -S '{env, permissions}' .claude/settings.json | sha256sum`
-- [ ] Copy each stale deploy's `.claude/settings.json` verbatim into
+- [x] Copy each stale deploy's `.claude/settings.json` verbatim into
       `specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/` under a
       repo-named filename. These are read-only field inputs for Phases 4 and 6.
-- [ ] Write `records/01_baseline-measurements.md`: one row per repo (path, managed yes/no,
+- [x] Write `records/01_baseline-measurements.md`: one row per repo (path, managed yes/no, *(completed: widened scope note added -- 14-clean-repo premise did not hold)*
       registration count, per-event duplicate count, `env`/`permissions` fingerprint, orphan
       commands observed), plus an explicit no-change control-set list.
-- [ ] Record in the same file that the extension repo registry
+- [x] Record in the same file that the extension repo registry
       (`~/.local/share/nvim/neotex-ai/extension-repo-registry.json`) was rejected as the
       enumeration source, and why.
 
