@@ -209,30 +209,30 @@ suite covers it.
 
 ---
 
-### Phase 2: Point the Implementation Agent at the Mapping [NOT STARTED]
+### Phase 2: Point the Implementation Agent at the Mapping [COMPLETED]
 
 **Goal**: `lean-implementation-agent.md` references the new section as the authority for Lean
 tier meanings, restates none of it, and contradicts none of it.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/agents/lean-implementation-agent.md` immediately
-      before editing.
-- [ ] Add one `Context References` entry for the new section, written in the same shape as the
+- [x] Re-read `agent-system/extensions/lean/agents/lean-implementation-agent.md` immediately
+      before editing. *(completed)*
+- [x] Add one `Context References` entry for the new section, written in the same shape as the
       existing `long-builds.md` entry (`@.claude/context/project/lean4/agents/lean-implementation-flow.md`
       is already the deploy-path form that file's siblings use), describing it as the authority
-      for what each core Verification Tier value means in Lean terms.
-- [ ] Add a single pointer sentence in the Phase Checkpoint Protocol, attached to item 3, saying
+      for what each core Verification Tier value means in Lean terms. *(completed)*
+- [x] Add a single pointer sentence in the Phase Checkpoint Protocol, attached to item 3, saying
       that the tier-to-action mapping lives in the flow document's
       `## Verification Tiers in Lean Terms` section — without restating any tier's actions and
-      without altering item 3's existing full-build gating language.
-- [ ] Run the contradiction check: re-read the new Phase 1 section alongside this agent file's
+      without altering item 3's existing full-build gating language. *(completed)*
+- [x] Run the contradiction check: re-read the new Phase 1 section alongside this agent file's
       Phase Checkpoint Protocol item 3, MUST DO items 7 and 8, and MUST NOT items 3 and 13, and
       confirm each of the five says the same thing the mapping says. Any divergence is resolved in
       favour of the already-landed text (which carries task 396's settlement); the mapping is
-      corrected, never the gating contract.
-- [ ] Confirm no restatement crept in: the agent file gains a reference and a pointer sentence,
+      corrected, never the gating contract. *(completed)*
+- [x] Confirm no restatement crept in: the agent file gains a reference and a pointer sentence,
       not a copy of the four-row table.
-
+ *(completed)*
 **Timing**: 35 minutes
 
 **Depends on**: 1

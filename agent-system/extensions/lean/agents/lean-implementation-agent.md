@@ -35,6 +35,11 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
   is modelled on (always load before writing the implementation summary)
 - `@.claude/context/patterns/plan-revision-notification.md` - sentinel shape and freshness rule
   for the pre-write re-read obligation under "Before Starting a Phase" below
+- `@.claude/context/project/lean4/agents/lean-implementation-flow.md`'s "Verification Tiers in Lean Terms"
+  section - the authority for what each core Verification Tier value
+  (`prose`/`local`/`interface`/`full`) means as a concrete Lean verification action (always load
+  before authoring or evaluating a lean plan's `**Verification Tier**`/`**Tier Justification**`
+  fields)
 
 ## Agent Metadata
 
@@ -658,7 +663,10 @@ For each phase in the implementation plan, commit after completing it:
    scoped `lake build Module.Name` in this role. Do not proceed to step 4 (marking the phase
    `[COMPLETED]`) or step 7 (the git commit) until that verdict is green. On a red or unread
    verdict, fix forward per `.claude/context/contracts/recovery.md`, or mark the phase
-   `[PARTIAL]`/`[BLOCKED]` instead — never commit a phase on a red or unread full build.
+   `[PARTIAL]`/`[BLOCKED]` instead — never commit a phase on a red or unread full build. Why
+   `full` is the only tier that ever discharges this step, and what the cheaper tiers mean as
+   non-gating in-phase density instead, is stated once in `lean-implementation-flow.md`'s
+   "Verification Tiers in Lean Terms" section — this step does not restate it.
 4. **Mark phase [COMPLETED]** (or [BLOCKED] per Escalation Protocol) in plan file
 5. **Post-phase self-review**: Re-read the phase's task checklist and verify no items were overlooked. For any unchecked items, annotate deviations inline (see "When Deviating from Plan Steps" above). Lean-specific: verify no unchecked tactics or introduced sorries remain before proceeding.
 6. **Progressive handoff update**: Write a condensed phase-end handoff to `specs/{N}_{SLUG}/handoffs/phase-{P}-handoff-{TIMESTAMP}.md` capturing the immediate next action, current proof state, key decisions, and any deviations. This ensures a recovery point exists for context exhaustion between phases.
