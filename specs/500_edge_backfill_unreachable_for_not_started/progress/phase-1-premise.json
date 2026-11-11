@@ -1,0 +1,72 @@
+{
+  "phase": 1,
+  "phase_name": "Re-verify the premise and fix the token literal",
+  "started_at": "2026-11-11T00:00:00Z",
+  "last_updated": "2026-11-11T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Resolve the source store and re-measure the live tree",
+      "status": "done",
+      "files_touched": [
+        "specs/500_edge_backfill_unreachable_for_not_started/progress/phase-1-premise.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Plan's Premise Re-Validation table cites 'the union-merge write sites at the no-op write site line ~1112 and the real-write site line ~1171' as evidence for idempotence coverage.",
+      "type": "altered",
+      "reason": "Re-measured: line 1112 is confirmed as the no-op dependencies[] union-merge write (`.dependencies |= ((. // []) + $dep | unique)`). Line 1171, however, is the FILE_SCOPE_ADD union-merge inside the real (non-no-op) write path, not a dependencies[] merge. There is no second dependencies[] merge site at a real-write path, because the status-no-op restriction (line ~641-648) makes a real-transition + --depends-on-add call a hard validation error before the write function is ever reached -- so --depends-on-add's union-merge is reachable ONLY via the no-op branch at line 1112. This is a citation imprecision in the plan's background confirmation table, not a defect in the script and not a blocker for Phase 2 (Phase 2's own task list and verification criteria do not depend on a second dependencies[] write site existing).",
+      "annotation": "*(deviation: altered -- line ~1171 is a FILE_SCOPE_ADD merge in the real-write path, not a second dependencies[] merge site; the dependencies[] union-merge exists only at the no-op site, line 1112, which is the only site --depends-on-add can ever reach)*"
+    }
+  ],
+  "measured": {
+    "source_dir_core": "/home/benjamin/.config/nvim/agent-system/extensions/core",
+    "map_status_arm_count": 12,
+    "map_status_arms": [
+      "preflight:research -> researching",
+      "preflight:plan -> planning",
+      "preflight:implement -> implementing",
+      "postflight:research -> researched",
+      "postflight:plan -> planned",
+      "postflight:implement -> completed",
+      "preflight:pr_ready -> pr_ready",
+      "postflight:pr_ready -> completed",
+      "preflight:hold -> hold",
+      "postflight:partial -> partial",
+      "postflight:blocked -> blocked",
+      "postflight:needs_research -> researching"
+    ],
+    "no_arm_resolves_to_not_started": true,
+    "preflight_unhold_is_dynamic_not_a_13th_arm": true,
+    "target_status_validation_list_count": 9,
+    "target_status_validation_list": ["research", "plan", "implement", "pr_ready", "needs_research", "partial", "blocked", "hold", "unhold"],
+    "target_status_gated_block_count_confirmed": 11,
+    "target_status_gated_block_lines": [354, 370, 382, 393, 557, 578, 590, 773, 846, 1243, 1326],
+    "error_strings_verbatim": {
+      "status_no_op_restriction_line_647": "Error: --depends-on-add requires operation:target_status to resolve to task $task_number's CURRENT status (a no-op replay) -- got current='$current_state_status', resolved target='$STATE_STATUS'. Call with the task's own current status (e.g. 'postflight $task_number research <session_id>' if the task is already 'researched') to add the edge without also performing a status transition.",
+      "write_time_cycle_refusal_fail_closed_guard": "Error: --depends-on-add refused: validate-state.sh not found or not executable at $DEPENDS_VALIDATE_STATE_SCRIPT -- the write-time cycle check is mandatory and fails closed when it cannot run (fail-closed is deliberate here, not a bug).",
+      "cycle_detected_refusal": "Error: --depends-on-add refused -- the candidate edge (task $task_number depends on ${DEPENDS_ON_ADD}) would close a dependency cycle:"
+    },
+    "header_status_no_op_restriction_confirmed_lines": "147-157 (STATUS-NO-OP RESTRICTION paragraph) and 159-171 (MANDATORY WRITE-TIME CYCLE REFUSAL paragraph), confirmed present and substantively unchanged",
+    "edge_only_token_collision_check": {
+      "grep_hits_in_agent_system": [
+        "scripts/tests/test-conflict-predicate.sh:381: unrelated fixture session name 'sess_edge_only'"
+      ],
+      "collision": false,
+      "token_literal_confirmed": "edge_only"
+    },
+    "task_statuses": {
+      "421": {"status": "not_started", "dependencies": [312, 402]},
+      "438": {"status": "not_started", "dependencies": [312, 313, 401, 446, 458]},
+      "500": {"status": "implementing", "dependencies": [328, 430, 446, 448]},
+      "497": {"status": "completed", "archived": true, "location": "specs/archive/state.json completed_projects", "project_name": "promote_telemetry_submodes_to_core"}
+    },
+    "task_328_430_446_448_disposition": "All four confirmed completed/archived (not in active_projects); consistent with plan's Premise Re-Validation table noting 328's prior 'implementing, live writer' concern no longer applies."
+  }
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #500
 
 - **Task**: 500 - edge_backfill_unreachable_for_not_started
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: 328, 430, 446, 448 (all four have completed and archived -- see Prior Plan Reference; 500 is unblocked today)
 - **Research Inputs**: specs/500_edge_backfill_unreachable_for_not_started/reports/01_depends-on-add-not-started-gap.md
@@ -182,26 +182,26 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Re-verify the premise and fix the token literal [NOT STARTED]
+### Phase 1: Re-verify the premise and fix the token literal [COMPLETED]
 
 **Goal**: Discharge the dispatch's acceptance item 7 against the tree as it then stands, before
 any edit, and confirm the chosen literal is still collision-free.
 
 **Tasks**:
-- [ ] Resolve the source store: `jq -r '.extensions.core.source_dir' .claude-extensions.json`.
-- [ ] Count `map_status()`'s case arms directly and confirm no arm resolves to `not_started`.
-- [ ] Confirm the status-no-op refusal message and the write-time-cycle-refusal fail-closed
-      message are still verbatim as quoted in this plan's Premise Re-Validation table.
-- [ ] Confirm the `target_status` validation list and the two usage lines still enumerate exactly
-      `research | plan | implement | pr_ready | needs_research | partial | blocked | hold | unhold`.
-- [ ] Confirm `edge_only` is still unused as a CLI token (`grep -rn 'edge_only' agent-system/`);
+- [x] Resolve the source store: `jq -r '.extensions.core.source_dir' .claude-extensions.json`. *(completed: /home/benjamin/.config/nvim/agent-system/extensions/core)*
+- [x] Count `map_status()`'s case arms directly and confirm no arm resolves to `not_started`. *(completed: exactly 12 arms, none resolves to not_started)*
+- [x] Confirm the status-no-op refusal message and the write-time-cycle-refusal fail-closed
+      message are still verbatim as quoted in this plan's Premise Re-Validation table. *(completed: both byte-identical)*
+- [x] Confirm the `target_status` validation list and the two usage lines still enumerate exactly
+      `research | plan | implement | pr_ready | needs_research | partial | blocked | hold | unhold`. *(completed: 9-value list unchanged)*
+- [x] Confirm `edge_only` is still unused as a CLI token (`grep -rn 'edge_only' agent-system/`);
       if a collision has appeared, pick the next candidate (`depends_only`) and record the
-      substitution in the progress file rather than proceeding with a colliding literal.
-- [ ] Re-read `specs/state.json` for the live status and `dependencies[]` of 421, 438, and 500,
-      and re-confirm 497's archived/completed disposition in `specs/archive/state.json`.
-- [ ] Write the findings to `specs/500_edge_backfill_unreachable_for_not_started/progress/phase-1-premise.json`
+      substitution in the progress file rather than proceeding with a colliding literal. *(completed: no collision; only hit is unrelated fixture name sess_edge_only)*
+- [x] Re-read `specs/state.json` for the live status and `dependencies[]` of 421, 438, and 500,
+      and re-confirm 497's archived/completed disposition in `specs/archive/state.json`. *(completed: 421/438 not_started, 500 implementing, 497 completed+archived)*
+- [x] Write the findings to `specs/500_edge_backfill_unreachable_for_not_started/progress/phase-1-premise.json`
       (one object: `arm_count`, `error_strings_verbatim`, `token_literal`, `task_statuses`,
-      `deviations`), so Phase 5's report cites measured values rather than this plan's.
+      `deviations`), so Phase 5's report cites measured values rather than this plan's. *(completed)*
 
 **Timing**: 0.3 hours
 
