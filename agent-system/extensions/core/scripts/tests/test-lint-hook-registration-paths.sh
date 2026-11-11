@@ -620,8 +620,11 @@ CASE17_CMD='bash ~/.config/nvim/scripts/claude-ready-signal.sh 2>/dev/null || ec
 case17_module_identity="$(printf 'command\t%s\n' "$CASE17_CMD" | nvim --headless --noplugin -u NONE -l "$HOOK_IDENTITY_CLI_MODULE" 2>/dev/null)"
 
 if [[ -z "$case17_module_identity" ]]; then
+  # shellcheck disable=SC2088  # Deliberate literal-text mention of "~/" in a human-readable
+  # message, not a path meant to be tilde-expanded.
   common_test_pass "~/-anchored command resolves to no identity via hook_identity.lua directly (matches the lint's own existence-exempt, non-flagging treatment in case 11)"
 else
+  # shellcheck disable=SC2088  # Same deliberate literal-text mention as above.
   common_test_fail "~/-anchored command unexpectedly resolved to an identity: '$case17_module_identity'"
 fi
 
