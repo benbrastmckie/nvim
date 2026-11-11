@@ -55377,12 +55377,12 @@
     {
       "project_number": 532,
       "project_name": "roadmap_integration_regenerate_silent_abort",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "description": "**`roadmap-integration.sh --regenerate` IS SILENTLY INOPERATIVE ON THIS ROADMAP.** Verified live: `bash .claude/scripts/roadmap-integration.sh --regenerate` exits 1 with ZERO stdout and ZERO stderr and writes nothing, because `specs/ROADMAP.md` carries none of the headings the assembler needs — it is a Stage-based authored document, not the `## Open work` / `## Next` generated layout the script expects. Pick one and land it: either teach the script the Stage-based layout, or decide that `specs/ROADMAP.md` is AUTHORED-ONLY and make `--regenerate` say so LOUDLY (a named error on stderr and a documented exit code) instead of aborting in silence. A silent abort is the worst of the three outcomes because a caller cannot tell it from success. Note that a reference to a roadmap-tooling task circulates in other records without resolving to an existing one; filing this is what makes that reference resolve.\n\n**SOURCE-STORE BOUNDARY.** `.claude/scripts/roadmap-integration.sh` lives in a deployed, regenerated tree: a hand edit there is wiped by the next deploy. This record's implementation must resolve `source_dir` from `<project-root>/.claude-extensions.json` for the extension that owns the script and edit the source store at the mirroring path, per `.claude/rules/source-store-deploy-boundary.md`, then redeploy. The deployed path is declared in `file_scope` only so the overlap gate can see the collision surface; it is not the edit target.\n\n**BEHAVIOR UPDATE (observed after a `core` redeploy brought `.claude/scripts/roadmap-integration.sh` up to the source store).** The silent-abort premise above no longer reproduces as stated. Live observation on the redeployed script: `bash .claude/scripts/roadmap-integration.sh --regenerate` exits **0**, writes the marker `<!-- roadmap-generation mode=regenerate tasks=52 topics=10 runs=20 pruned=0 retained=9 -->` to **stderr** (91 bytes; still nothing on stdout), and DOES write to `specs/ROADMAP.md` — appending only a `**Coverage appendix (uncovered tasks)**` fenced block with an `/orchestrate` line of tasks absent from the authored Stage sections. It does NOT assemble the `## Open work` / `## Next` layout, and it does not touch the authored Stage prose. So the defect to land is narrower than \"silently inoperative\": the script now half-applies to an authored layout, emitting its only diagnostic on stderr as an HTML comment rather than a named message, and appending generated content into a file whose own header declares it authored-and-not-generated. The authored-only-versus-teach-the-layout decision this record asks for is unchanged and still the thing to settle; what changed is that a caller now gets exit 0 and a partial write instead of a silent exit 1, which is a different failure to describe and a different one to fix. Re-verify against the live script before implementing; the exit-1/zero-output description predates the redeploy.\n\n=== MIGRATION PROVENANCE (appended on migration; every line above this marker is the record verbatim) ===\nMigrated from the BimodalLogic repository, where this record was #752 (project_name `roadmap_integration_regenerate_silent_abort`), on 2026-11-08, under the ruling that all meta records live in this repository, following\ncontext/patterns/cross-repo-task-migration.md.\n\nCITATION RESOLVABILITY (procedure step 3): no iss_* ids cited; nothing to re-point.\nFILE SCOPE (procedure step 6, DERIVED): this record declared none, or declared only deployed paths. The scope\nabove was derived from the edit targets its own text names, and each path was verified to exist in this\nrepository before being written.\n",
       "topic": "agent-system",
       "created": "2026-10-09T21:24:29Z",
-      "last_updated": "2026-11-11T16:09:45Z",
+      "last_updated": "2026-11-11T17:45:23Z",
       "file_scope": [
         "agent-system/extensions/core/scripts/roadmap-integration.sh"
       ],
@@ -55400,7 +55400,15 @@
         "migrated": "2026-11-08"
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
-      "session_id": "sess_1794413303_b61a83_532"
+      "session_id": "sess_1794413303_b61a83",
+      "artifacts": [
+        {
+          "path": "specs/532_roadmap_integration_regenerate_silent_abort/reports/01_regenerate-silent-abort-research.md",
+          "type": "report",
+          "summary": "Task 532's described defect (roadmap-integration.sh --regenerate silently aborting/half-applying against a Stage-based ROADMAP.md) is a near-duplicate of already-completed task 371, fully fixed and archived 2026-10-10; live re-verification today confirms --regenerate works correctly against the real classic-layout ROADMAP.md and refuses loudly against an unrecognized layout. Recommends closing task 532 as covered-by-closed (371) with no plan/implement phase needed."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 533,

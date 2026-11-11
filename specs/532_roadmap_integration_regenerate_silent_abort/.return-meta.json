@@ -1,0 +1,18 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794413303_b61a83_532",
+  "dispatch_seq": 5,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/532_roadmap_integration_regenerate_silent_abort/reports/01_regenerate-silent-abort-research.md",
+      "summary": "Task 532's described defect (roadmap-integration.sh --regenerate silently aborting/half-applying against a Stage-based ROADMAP.md) is a near-duplicate of already-completed task 371, fully fixed and archived 2026-10-10; live re-verification today confirms --regenerate works correctly against the real classic-layout ROADMAP.md and refuses loudly against an unrecognized layout. Recommends closing task 532 as covered-by-closed (371) with no plan/implement phase needed."
+    }
+  ],
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 532 to create implementation plan",
+  "notes": "Research recommends against proceeding to plan/implement: the task's premise is already resolved by archived task 371 (specs/archive/371_roadmap_generator_stage_layout_and_silent_abort/), with live reproduction confirming current correct behavior. Recommend the next stage close task 532 as duplicate/covered-by-closed rather than planning new work."
+}
