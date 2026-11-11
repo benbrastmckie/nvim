@@ -489,8 +489,13 @@ TASK_LOCK_SCRIPT="${SCRIPT_DIR}/task-lock.sh"
 #    independently) -- which (operation, target_status) pair, if any, resolves to the task's
 #    CURRENT state.json status as a no-op replay. Prints "operation target_status" and returns
 #    0 when resolvable; returns 1 (nothing printed) when the current status has no resolving
-#    token at all -- which is the real, closed-vocabulary case for "not_started" (and for the
-#    terminal statuses, which never reach here because they are excluded from readiness). ──────
+#    token at all. "not_started" is NO LONGER that case: update-task-status.sh now carries a
+#    dedicated no-op-only `preflight:edge_only` pair for exactly this status (added to close the
+#    admission gap this function's header used to describe as genuine -- see that script's own
+#    `--depends-on-add` header-comment section for the full rationale). The fallback branch
+#    below still exists and still fires for the TERMINAL statuses (which never reach here because
+#    they are excluded from readiness) and for any future status this vocabulary has not yet
+#    mapped -- it is a general safety net, not a "not_started" placeholder any more. ─────────────
 resolve_noop_token() {
   local status_lc
   status_lc="$(echo "${1:-}" | tr '[:upper:]' '[:lower:]')"
@@ -504,6 +509,10 @@ resolve_noop_token() {
     blocked)      echo "postflight blocked" ;;
     pr_ready)     echo "preflight pr_ready" ;;
     hold)         echo "preflight hold" ;;
+    # edge_only is the no-op-only, edge-only vehicle update-task-status.sh added specifically
+    # because no real transition ever resolves to "not_started" -- it is never a settable
+    # lifecycle target, only the --depends-on-add carrier for a pre-lifecycle task.
+    not_started)  echo "preflight edge_only" ;;
     *) return 1 ;;
   esac
 }
@@ -515,11 +524,12 @@ resolve_noop_token() {
 #    function, showing both flip to admit -- never re-checking for cycles itself
 #    (update-task-status.sh already refuses a cycle-introducing edge). A refused write, or a
 #    higher task whose current status has no resolving no-op token (see resolve_noop_token()
-#    above -- the genuine "not_started" gap: update-task-status.sh's map_status() has no
-#    operation:target_status combination that resolves to "not_started", so a task still in
-#    its initial status cannot receive this call today), falls back to propose-only for this
-#    pair LOUDLY -- never silently dropping it from the suggestion. Returns 0 only when the
-#    write happened AND the re-probe confirmed both admit; 1 otherwise (propose-only). ──────────
+#    above), falls back to propose-only for this pair LOUDLY -- never silently dropping it from
+#    the suggestion. "not_started" is no longer the case that forces this fallback: it now has
+#    its own resolving token (`preflight edge_only`) via resolve_noop_token() above, so only a
+#    genuinely unmapped status (or a write refused for some other reason, e.g. a cycle) falls
+#    back here. Returns 0 only when the write happened AND the re-probe confirmed both admit; 1
+#    otherwise (propose-only). ─────────────────────────────────────────────────────────────────
 propose_edge_for_pair() {
   local lower="$1" higher="$2"
   local higher_status token op target display_cmd

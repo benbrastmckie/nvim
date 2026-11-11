@@ -312,27 +312,30 @@ block order around the gate before editing; if any guard turns out to be gated o
 
 ---
 
-### Phase 3: Teach the suggester the new token [NOT STARTED]
+### Phase 3: Teach the suggester the new token [COMPLETED]
 
 **Goal**: Retire the `not_started` propose-only workaround in
 `orchestrate-suggest-next-batch.sh` so a colliding `not_started` pair gets its edge written
 automatically, and correct the header comment that now misdescribes the system.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh`
-      immediately before editing.
-- [ ] Add `not_started) echo "preflight edge_only" ;;` to `resolve_noop_token()`, with a comment
-      naming the no-op-only, edge-only character of that pair.
-- [ ] Update `resolve_noop_token()`'s own header comment, which currently states that
+- [x] Re-read `agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh`
+      immediately before editing. *(completed)*
+- [x] Add `not_started) echo "preflight edge_only" ;;` to `resolve_noop_token()`, with a comment
+      naming the no-op-only, edge-only character of that pair. *(completed)*
+- [x] Update `resolve_noop_token()`'s own header comment, which currently states that
       `not_started` is "the real, closed-vocabulary case for" having no resolving token, and
       `propose_edge_for_pair()`'s header comment, which calls it "the genuine `not_started` gap":
       both now misdescribe the system. Keep the fallback branch itself (it still guards the
       terminal statuses and any future unmapped status) and say so in the revised comment.
-- [ ] Add a case to `agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh`
+      *(completed: both comments rewritten; propose_edge_for_pair()'s comment block was
+      duplicated momentarily during editing and consolidated back to one block)*
+- [x] Add a case to `agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh`
       mirroring the existing case (b) shape, but with both colliding fixture tasks at
       `not_started`: assert the edge is written under `--write-edges`, that both members re-probe
       to `admit`, that `dependencies[]` carries the edge in the scratch `state.json`, and that
-      neither task's status moved off `not_started`.
+      neither task's status moved off `not_started`. *(completed: Case (b-not-started), 3
+      assertions, all pass)*
 
 **Timing**: 0.75 hours
 

@@ -220,6 +220,44 @@ SID="sess_test_$$_suggest"
 }
 
 # =====================================================================================
+# Case (b-not-started): the SAME edge-proposing acceptance shape as case (b), but with BOTH
+# colliding fixture tasks at status "not_started" -- the status update-task-status.sh's
+# map_status() has no real-transition arm for, which used to force resolve_noop_token() to
+# return 1 (no resolving token) and this script to fall back to propose-only. Now that
+# update-task-status.sh carries a dedicated no-op-only `preflight:edge_only` pair for exactly
+# this status, resolve_noop_token() resolves it and the edge gets written under --write-edges
+# exactly as case (b) does for "researched".
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 20 not_started '["agent-system/extensions/core/shared-territory-ns"]' '[]'
+  add_task "$scratch" 21 not_started '["agent-system/extensions/core/shared-territory-ns"]' '[]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID" --write-edges)"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'edge written' \
+    && echo "$out" | grep -q 'task 20: admit' \
+    && echo "$out" | grep -q 'task 21: admit'; then
+    common_test_pass "(b-not-started.1) --write-edges: both not_started members' edge is written and a real re-probe flips both to admit"
+  else
+    common_test_fail "(b-not-started.1) --write-edges: rc=$rc -- $out"
+  fi
+  dep_check=$(jq -c '.active_projects[] | select(.project_number==21) | .dependencies' "$scratch/specs/state.json")
+  if [ "$dep_check" = "[20]" ]; then
+    common_test_pass "(b-not-started.2) --write-edges: the edge was actually written to scratch state.json (task 21 depends on [20])"
+  else
+    common_test_fail "(b-not-started.2) --write-edges: expected task 21 dependencies [20], got $dep_check"
+  fi
+  st20=$(jq -r '.active_projects[] | select(.project_number==20) | .status' "$scratch/specs/state.json")
+  st21=$(jq -r '.active_projects[] | select(.project_number==21) | .status' "$scratch/specs/state.json")
+  if [ "$st20" = "not_started" ] && [ "$st21" = "not_started" ]; then
+    common_test_pass "(b-not-started.3) neither member's status moved off 'not_started' after the edge-only write"
+  else
+    common_test_fail "(b-not-started.3) expected both statuses 'not_started', got 20='$st20' 21='$st21'"
+  fi
+}
+
+# =====================================================================================
 # Case (c): Mode B -- a live queue entry covering the obvious next batch forces the
 # alternatives search to surface a different, disjoint set.
 # =====================================================================================
