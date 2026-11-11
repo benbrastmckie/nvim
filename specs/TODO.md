@@ -126,7 +126,7 @@ next_project_number: 607
 
 ### Orchestrator
 
-402 [PLANNING] — Conclusion stage Step 4c allocates no task number and creates...
+402 [PLANNED] — Conclusion stage Step 4c allocates no task number and creates...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
@@ -9979,11 +9979,12 @@ NON-GOALS: no change to the fingerprint computation itself (`stat` vs `hash` mod
 
 ### 402. Conclusion stage Step 4c allocates no task number and creates no task directories
 - **Effort**: small
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 391, Task 400
 - **Research**: [402_conclusion_channels_become_evidence_only/reports/01_conclusion-channels-evidence-only.md]
+- **Plan**: [402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md]
 
 **Description**: Convert the orchestration conclusion stage's channels (b) and (c) from task-CREATING to evidence-CONTRIBUTING, and delete the half-transcribed task-creation path rather than finishing it.
 

@@ -3320,7 +3320,7 @@
     {
       "project_number": 402,
       "project_name": "conclusion_channels_become_evidence_only",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "topic": "orchestrator",
       "title": "Conclusion stage Step 4c allocates no task number and creates no task directories",
@@ -3334,17 +3334,28 @@
           "path": "specs/402_conclusion_channels_become_evidence_only/reports/01_conclusion-channels-evidence-only.md",
           "type": "report",
           "summary": "Confirms the two Step 4c omissions; recommends appending classification records (class/citations/severity_max/suggested_channel_hints/channel-judgment/override-rationale) to specs/events.jsonl via events-append.sh rather than issues.jsonl (feedback-loop hazard) or a new file; enumerates every consumer transcribing the current task-creation design (postflight-tool-restrictions.md, orchestrate-state-machine.md, orchestrate-batch-results-template.md, test-orchestrate-conclusion-aggregate.sh cases j/k); notes the deliberate consumer is already filed as task 421; flags the approval-gate-for-b/c question as an open decision for planning."
+        },
+        {
+          "path": "specs/402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md",
+          "type": "plan",
+          "summary": "3-phase plan: rewrite channels (b)/(c) as evidence-recording with their tests, sync four downstream consumers, deploy and report a negative net line count."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T01:55:47Z",
-      "last_updated": "2026-11-11T21:22:16Z",
+      "last_updated": "2026-11-11T21:30:06Z",
       "effort": "small",
       "priority": null,
-      "session_id": "sess_1794431325_7cf647_402",
+      "session_id": "sess_1794431325_7cf647",
       "file_scope": [
+        "__WHOLE_TREE__",
         "agent-system/extensions/core/context/contracts/conclusion-stage.md",
-        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"
+        "agent-system/extensions/core/context/formats/events-format.md",
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+        "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+        "specs/402_conclusion_channels_become_evidence_only/summaries/"
       ]
     },
     {

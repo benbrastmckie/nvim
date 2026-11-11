@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a 3-phase, strictly sequential plan converting conclusion-stage channels (b) and (c) from task-CREATING to evidence-CONTRIBUTING via specs/events.jsonl (event_type conclusion_proposal_recorded, category milestone), deleting Step 4b's meta-builder-agent dispatch and Step 4c's unreachable task-creation block rather than completing them. Phase 1 rewrites conclusion-stage.md and its two asserting test cases together (they are not independently green); Phase 2 syncs four downstream consumer documents; Phase 3 deploys to RESULT=landed_verify_clean, runs the full gate set, and reports the measured net line count. Pinned two decisions research left open: channels (b)/(c) lose their AskUserQuestion gates entirely, and one event line is written per classified proposal. All three carried-figure premises were re-validated against live state and confirmed.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md",
+      "summary": "3-phase plan: rewrite channels (b)/(c) as evidence-recording with their tests, sync four downstream consumers, deploy and report a negative net line count."
+    }
+  ],
+  "dispatch_seq": 6
+}
