@@ -424,7 +424,7 @@
     },
     {
       "path": "project/lean4/agents/lean-research-flow.md",
-      "line_count": 186,
+      "line_count": 196,
       "load_when": {
         "agents": [
           "lean-research-agent"

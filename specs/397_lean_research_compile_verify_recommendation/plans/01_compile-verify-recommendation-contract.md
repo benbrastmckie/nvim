@@ -276,29 +276,31 @@ markdown edit is `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy
 
 ---
 
-### Phase 3: Correct the flow file's `line_count` in the lean index entries [NOT STARTED]
+### Phase 3: Correct the flow file's `line_count` in the lean index entries [COMPLETED]
 
 **Goal**: `index-entries.json`'s entry for `project/lean4/agents/lean-research-flow.md` declares
 the re-measured line count, with no other entry in the file touched.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/index-entries.json` immediately before editing —
+- [x] Re-read `agent-system/extensions/lean/index-entries.json` immediately before editing —
       concurrent sibling 412 may have touched the `lean-implementation-flow.md` entry in the same
-      file.
-- [ ] Re-measure:
+      file. *(completed: no sibling edit observed on this entry)*
+- [x] Re-measure:
       `wc -l agent-system/extensions/lean/context/project/lean4/agents/lean-research-flow.md`.
       Use that output, never the `186` figure recorded in this plan or in the research report.
-- [ ] Edit only the `"line_count"` line belonging to the entry whose `"path"` is
+      *(completed: measured 196)*
+- [x] Edit only the `"line_count"` line belonging to the entry whose `"path"` is *(completed)*
       `"project/lean4/agents/lean-research-flow.md"`. That entry exists and currently declares
       `"line_count": 186` (confirmed at authoring time). If the entry is absent at implementation
       time, stop and report rather than inserting a new entry — an absent entry means the index
       changed underneath this plan and the sibling-territory situation must be reassessed.
-- [ ] Do NOT run `bash .claude/scripts/generate-context-line-counts.sh --write`: it rewrites every
+- [x] Do NOT run `bash .claude/scripts/generate-context-line-counts.sh --write`: it rewrites every *(completed: not run)*
       extension's `index-entries.json` and would silently correct an unrelated pre-existing
       mismatch in `core/index-entries.json` (`formats/frontmatter.md`), a file outside this task's
       scope and already modified in the working tree.
-- [ ] Confirm nothing else in the file changed:
+- [x] Confirm nothing else in the file changed:
       `git diff -- agent-system/extensions/lean/index-entries.json` shows exactly one changed line.
+      *(completed: git diff --numstat reported 1 1)*
 
 **Timing**: 15 minutes
 
