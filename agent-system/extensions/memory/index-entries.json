@@ -196,7 +196,7 @@
       "domain": "project",
       "subdomain": "memory",
       "summary": "Complete specification for /distill --revise sub-mode (event-and-OTel-correlated review of hosted knowledge objects: Event Clustering, three-strikes threshold, Hosted-Store Correlation via sapience-retrieve.sh with a mandatory reachability probe, SUPERSEDE/SKIP gate via sapience-remember.sh) -- extracted from skill-distill/SKILL.md per the mode-gated section loading convention",
-      "line_count": 291,
+      "line_count": 295,
       "keywords": [
         "distill",
         "revise-submode",

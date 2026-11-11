@@ -239,7 +239,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Unified events/reflection JSONL store schema: specs/events.jsonl field contract, lazy creation, category enum, and cross-link conventions",
-      "line_count": 301,
+      "line_count": 308,
       "keywords": [
         "events",
         "jsonl",
@@ -2603,7 +2603,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 386,
+      "line_count": 400,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -3226,7 +3226,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 558,
+      "line_count": 560,
       "keywords": [
         "runtime-files",
         "cleanup",
@@ -3788,7 +3788,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Per-task issues.jsonl schema: entry field table, 15-class seed taxonomy, severity scale, CAPTURE-ONLY boundary, and the six relation verdicts against existing issue-bearing surfaces",
-      "line_count": 205,
+      "line_count": 275,
       "keywords": [
         "issues",
         "jsonl",

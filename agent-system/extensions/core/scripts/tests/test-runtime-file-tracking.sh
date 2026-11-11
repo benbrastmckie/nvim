@@ -186,10 +186,10 @@ done
 if [[ "$all_equal" == "true" ]]; then
   common_test_pass "Case 5: all six parallel arrays have $id_count entries (1:1 by construction)"
 fi
-if [[ "$id_count" -eq 24 ]]; then
-  common_test_pass "Case 5: lib carries exactly 24 class members (11 pre-existing + .dispatch/ + 4 gaps + tmp + deploy-ledger + orchestration + decisions-lock + issues-lock + metrics-lock + runs-lock + observations-lock)"
+if [[ "$id_count" -eq 25 ]]; then
+  common_test_pass "Case 5: lib carries exactly 25 class members (11 pre-existing + .dispatch/ + 4 gaps + tmp + deploy-ledger + orchestration + decisions-lock + issues-lock + metrics-lock + runs-lock + observations-lock + central-errors-lock)"
 else
-  common_test_fail "Case 5: expected 24 class members, found $id_count"
+  common_test_fail "Case 5: expected 25 class members, found $id_count"
 fi
 
 # =====================================================================
