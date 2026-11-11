@@ -1,5 +1,5 @@
 ---
-next_project_number: 592
+next_project_number: 597
 ---
 
 # TODO
@@ -11,10 +11,11 @@ next_project_number: 592
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
-| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588 | 313,391,398,439,458,472,476,486,509,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585,590,591,592 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586,593 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
+| 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579,588,594 | 313,391,398,439,458,472,476,486,509,518,519,542,543,564,593 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 4 | 421,481,524,561,577,581,595 | 390,402,438,479,492,501,539,547,552,580,594 | core-agent-system, agent-system |
+| 5 | 596 | 595 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -151,6 +152,8 @@ next_project_number: 592
 539 [NOT STARTED] — State the precedence and snapshot-prerequisite rules for a...
   └─ 540 [NOT STARTED] — Record five measured lean4 facts: the decide-synthesis...
   └─ 544 [NOT STARTED] — Make a fixture-dependent Lean gate statement expressible and...
+  └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans
+    └─ 596 [NOT STARTED] — Separate generator-written files from hand-edited read-only...
 545 [NOT STARTED] — Report a reversed validate-artifact.sh invocation as an...
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 548 [NOT STARTED] — Harvest a plan's declared contingency files into file\_scope,...
@@ -167,12 +170,16 @@ next_project_number: 592
 569 [IMPLEMENTING] — Four fixture-based test suites fail because their curated...
 572 [NOT STARTED] — Make a declared 'Verification Tier: full' actually honorable...
 573 [PLANNING] — Diagnose and fix one failing assertion in each of two suites,...
+592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of...
   └─ 481 [NOT STARTED] — Rule on and migrate the 32-record mis-sited agent-system task...
 391 [NOT STARTED] — Close the target\_root authoring hole that files agent-system...
   └─ 390 [NOT STARTED] — Migrate seven mis-sited agent-system tasks out of... (see above)
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
+593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
+  └─ 594 [NOT STARTED] — Size symmetric-pair phases and iteration obligations separately
+    └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans (see above)
 
 ### Repo Hygiene
 
@@ -188,6 +195,537 @@ next_project_number: 592
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 596. Separate generator-written files from hand-edited read-only scope declarations
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 595
+
+**Description**: Agent-system change request from the /orchestrate conclusion stage (channel b), approved by the user.
+
+ORIGINATING EVIDENCE (issue-log entry; audit the proposal against it before acting):
+- {task 918, iss_1794387273674_2UjfIi}
+
+OBSERVED DEFECT (severity: minor). Two provisions of ONE plan contradicted each other about the
+same file. 918's plan risk table declared
+`FormalSystem/Metalogic/Decidability/RaySummary/README.md` READ-ONLY (a sibling task holds it in
+its `file_scope`), while that same plan's Phase 7 Scope Hypothesis instructed the implementer to
+"add any file they touch that is absent here" -- and `check-module-invariants.sh --emit-inventory`
+rewrites four tracked files, that README among them.
+
+The implementation resolved it by running the regeneration anyway (leaving the INV gate red from
+the task's own new module was the worse outcome) and recorded the tension rather than silently
+picking a side.
+
+ROOT SHAPE OF THE DEFECT. The plan-authoring contract has a single category -- "read-only" --
+covering two materially different things: a file a HUMAN/agent must not hand-edit because another
+task owns it, and a file a GENERATOR rewrites wholesale as a side effect of a gate the plan
+itself requires to be green. The second is not an edit the plan can decline to make; declaring it
+read-only states an obligation the plan cannot keep.
+
+CHANGE REQUEST. Reconcile the contract so a risk table's read-only declaration and a phase's
+generated-file regeneration surface cannot disagree. The suggested shape (not mandated -- assess
+it): require generator-written files to be declared as a DISTINCT category from hand-edited
+read-only ones, so a plan can say "this file will be rewritten by <generator>, not hand-edited,
+and that is expected" without either lying about read-only status or being silently out of scope.
+Whatever shape is chosen must also settle how such a file interacts with the Scope-Hypothesis
+self-consistency obligation and with a sibling task's `file_scope` claim on the same path.
+
+CURRENT STATE TO READ FIRST. plan-format.md already carries a "Files to modify" authoring shape
+with its own enforcement level, a "### Scope-Hypothesis / task-list self-consistency obligation",
+and a "## Risks & Mitigations" section in the skeleton. The fix almost certainly belongs in the
+interaction between those, not in a new top-level section.
+
+EDIT TARGET (source store, NOT the deployed mirror). Per .claude/rules/source-store-deploy-boundary.md,
+`.claude/**` here is a gitignored deploy artifact; source_dir for the `core` extension resolves
+from .claude-extensions.json to /home/benjamin/.config/nvim/agent-system/extensions/core. Edit:
+- /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/plan-format.md
+  (the "Files to modify" enforcement-level subsections, the Scope-Hypothesis self-consistency
+  obligation, and the "## Risks & Mitigations" skeleton entry)
+
+NOTE ON FILE TERRITORY: plan-format.md is shared with the sibling tasks created from this same
+approved batch; this task is last in that serialized chain.
+
+OPEN-RECORD RECONCILIATION -- READ THIS BEFORE PLANNING (backlog audit run at creation time;
+verdict recorded verbatim in this entry's `audit_verdict` field). Verdict `subset-of-open` against
+#912 `coupled_generated_surfaces_in_plan_authoring` [not_started]: this task's entire declared
+file scope (`core/context/formats/plan-format.md`) is a mechanical SUBSET of #912's, and the
+subject is adjacent rather than merely co-located.
+
+#912's Defect A targets the same mechanism from the other side: it asks for "a general,
+repo-agnostic coupled-generated-surface declaration obligation in
+core/context/formats/plan-format.md's 'Files to modify' contract", i.e. that a phase whose edits
+move a quantity a generated artifact derives MUST declare that artifact's path in the SAME phase's
+Files to modify block and schedule its regeneration there. #912 names
+`scripts/check-module-invariants.sh` and the generated README inventory blocks explicitly -- the
+very generator and the very README this task's evidence is about.
+
+RULING, rendered at creation time rather than deferred: this record is filed as a REFINEMENT of
+#912's remedy (i), not as independent work, and carries a hard dependency on #912. #912 establishes
+that a generated surface must be DECLARED; this record adds the distinction #912 does not make --
+that a generator-written file is a DIFFERENT CATEGORY from a hand-edited read-only one, so a risk
+table cannot declare the former read-only without stating an obligation the plan cannot keep. The
+918 evidence is the post-#912-filing recurrence that shows declaration alone is insufficient.
+
+THEREFORE, explicitly admissible outcomes for this record, to be decided in its own research phase
+rather than assumed: (a) if #912's implementation already distinguishes generator-written from
+hand-edited read-only scope when it lands, close this record as covered, naming #912's artifact as
+the discharging evidence -- do NOT re-litigate it; (b) otherwise, implement the distinction here on
+top of #912's landed obligation. Silently duplicating #912's remedy is the one outcome ruled out.
+=== MIGRATION NOTE (filed in this repository, not in the one that generated it) ===
+
+ORIGIN. This record was created by the conclusion stage (channel (b), agent-system changes) of an
+/orchestrate invocation over the ProofChecker repository, user-approved at the lead level and
+dispatched to the meta builder for task creation only. It was first written into that repository's
+task space by mistake and migrated here, because its work targets the shared source store under
+~/.config/nvim/agent-system/** and therefore cannot be performed or committed from the repository
+it was authored in. The description above this note is preserved verbatim from that authoring,
+including every iss_* citation id; only this note was added.
+
+CITATION RESOLVABILITY (how the cross-repo citation requirement was discharged). Every iss_* id
+cited above was confirmed present in the originating repository and nowhere else. Read from inside
+this repository a bare specs/NNN_.../issues.jsonl path resolves to nothing, so the approach chosen
+here is REPO-QUALIFIED ABSOLUTE PATHS. The two issue logs holding every id cited above are:
+  /home/benjamin/Projects/BimodalLogic/specs/917_forward_slack_witnessed_discharge_or_refutation/issues.jsonl
+  /home/benjamin/Projects/BimodalLogic/specs/918_ladder_cell_index_positive_factorization/issues.jsonl
+Each cited id was verified to resolve in one of those two files at migration time. Where the text
+above names a bare task number from the originating repository, read it as a pointer into that
+repository's space, never this one's.
+
+FILE SCOPE. The scope above declares source-store paths only, matching this repository's house
+style. The authoring repository recorded them as absolute ~/.config/nvim/agent-system/** paths;
+they are relativized here because agent-system/** is a real path in this repository's tree, which
+is what this repository's own admission overlap gate runs over. This is a consequence of the move,
+not a correction of an authoring error.
+
+DROPPED DEPENDENCY EDGES, RULED ON EXPLICITLY. The authoring repository gave this record numeric
+dependency edges on two records in ITS space. Those numbers are meaningless in this repository's
+space, so the edges were dropped rather than carried across or silently reinterpreted. Neither
+record has been migrated here yet; both are part of the known mis-sited-agent-system-task delta
+that this repository already tracks. Their durable anchors are the slugs
+coupled_generated_surfaces_in_plan_authoring and batch_gate_deferral_narrowing_for_project_sources.
+Re-point the edge at whichever one is migrated here if it lands before this record is planned;
+until then, read whichever of the two touches this record's own file_scope before planning, so
+nothing plans against a stale reading of a file they will rewrite.
+
+---
+
+### 595. Define Goal Polarity semantics for decision-gate plans
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 594, Task 539
+
+**Description**: Agent-system change request from the /orchestrate conclusion stage (channel b), approved by the user.
+
+ORIGINATING EVIDENCE (issue-log entry; audit the proposal against it before acting):
+- {task 917, iss_1794372876974_DWXNdc}
+
+OBSERVED DEFECT (severity: minor). plan-format.md requires a `## Lean Challenge Statements` block
+whose identifier set equals the plan's Goals, and lean-plan-compliance-check.sh's Final
+Verification Stage spot-check then requires every named identifier to be PRESENT in the resolved
+Lean source roots. A DECISION-GATE plan -- one whose later phases may legitimately close
+`[COMPLETED WITH EXCLUSIONS]` because the gate resolved the other way -- cannot satisfy those
+must-exist semantics. The `refutation` polarity is equally wrong for it: the identifiers are not
+required to be ABSENT either.
+
+917 worked around this by declaring an explicit non-`refutation` Goal Polarity value, which makes
+the spot-check record `compliance_check: "skipped"` with a stated reason. That is the documented
+mixed-polarity escape hatch, used here for a purpose it was not written for.
+
+CHANGE REQUEST. The polarity vocabulary has no `conditional` value. Pick one of two resolutions
+and implement it fully:
+(a) add a `conditional` value with DEFINED check semantics for decision-gate plans (what the
+    spot-check asserts, and what it records, when the gate may foreclose a Goal); or
+(b) document the non-`refutation`-polarity workaround as the SANCTIONED route for decision-gate
+    plans, named as such in plan-format.md, so the next planner does not rediscover it.
+Resolution (b) is cheaper and may well be correct -- do not assume (a) is the answer. Whichever
+is chosen, the existing `refutation` and mixed-polarity semantics must not change behaviour for
+plans already relying on them.
+
+CURRENT STATE TO READ FIRST. plan-format.md's "## Goal Polarity (optional, lean/lean4 plans)"
+section already defines: field-absent default (every identifier must be present), `refutation`
+(every identifier must be absent), and the mixed-polarity ruling (any explicitly declared
+non-`refutation` value records `skipped` with a stated reason). Note the implication: the escape
+hatch already works mechanically -- what is missing is naming it for this case.
+
+EDIT TARGET (source store, NOT the deployed mirror). Per .claude/rules/source-store-deploy-boundary.md,
+`.claude/**` here is a gitignored deploy artifact; source_dir resolves from .claude-extensions.json
+to /home/benjamin/.config/nvim/agent-system/extensions/{core,lean}. Edit:
+- /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/plan-format.md
+  (the "## Goal Polarity (optional, lean/lean4 plans)" section)
+- /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh
+  (only if resolution (a) is chosen)
+- /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh
+
+NOTE ON FILE TERRITORY: plan-format.md and lean-plan-compliance-check.sh are shared with the
+sibling tasks created from this same approved batch; this task is serialized behind the
+symmetric-pair phase-sizing task, which is itself behind the pinned-signature-measurement task.
+
+OPEN-RECORD RECONCILIATION (backlog audit run at creation time; verdict recorded verbatim in this
+entry's `audit_verdict` field). Verdict `overlaps-open` against #912
+`coupled_generated_surfaces_in_plan_authoring` and #914
+`batch_gate_deferral_narrowing_for_project_sources`, both [not_started], 1 shared path each:
+`core/context/formats/plan-format.md`. RULING: not duplicates -- file territory only; neither
+record concerns Goal Polarity. Dependency edges on both are recorded rather than exclusions.
+Separately, the audit's highest-scoring closed match is #785
+`lean_plan_gate_collision_authoring_guidance` (semantic 0.68), which authored the gate-collision
+conditions this plan-format area sits in, and #827 `plan_self_consistency_and_artifact_existence`
+(0.64). Read both before planning and decide explicitly whether the decision-gate polarity case is
+already addressed there; the 917 evidence is a post-closure recurrence, which is why it is filed.
+=== MIGRATION NOTE (filed in this repository, not in the one that generated it) ===
+
+ORIGIN. This record was created by the conclusion stage (channel (b), agent-system changes) of an
+/orchestrate invocation over the ProofChecker repository, user-approved at the lead level and
+dispatched to the meta builder for task creation only. It was first written into that repository's
+task space by mistake and migrated here, because its work targets the shared source store under
+~/.config/nvim/agent-system/** and therefore cannot be performed or committed from the repository
+it was authored in. The description above this note is preserved verbatim from that authoring,
+including every iss_* citation id; only this note was added.
+
+CITATION RESOLVABILITY (how the cross-repo citation requirement was discharged). Every iss_* id
+cited above was confirmed present in the originating repository and nowhere else. Read from inside
+this repository a bare specs/NNN_.../issues.jsonl path resolves to nothing, so the approach chosen
+here is REPO-QUALIFIED ABSOLUTE PATHS. The two issue logs holding every id cited above are:
+  /home/benjamin/Projects/BimodalLogic/specs/917_forward_slack_witnessed_discharge_or_refutation/issues.jsonl
+  /home/benjamin/Projects/BimodalLogic/specs/918_ladder_cell_index_positive_factorization/issues.jsonl
+Each cited id was verified to resolve in one of those two files at migration time. Where the text
+above names a bare task number from the originating repository, read it as a pointer into that
+repository's space, never this one's.
+
+FILE SCOPE. The scope above declares source-store paths only, matching this repository's house
+style. The authoring repository recorded them as absolute ~/.config/nvim/agent-system/** paths;
+they are relativized here because agent-system/** is a real path in this repository's tree, which
+is what this repository's own admission overlap gate runs over. This is a consequence of the move,
+not a correction of an authoring error.
+
+DROPPED DEPENDENCY EDGES, RULED ON EXPLICITLY. The authoring repository gave this record numeric
+dependency edges on two records in ITS space. Those numbers are meaningless in this repository's
+space, so the edges were dropped rather than carried across or silently reinterpreted. Neither
+record has been migrated here yet; both are part of the known mis-sited-agent-system-task delta
+that this repository already tracks. Their durable anchors are the slugs
+coupled_generated_surfaces_in_plan_authoring and batch_gate_deferral_narrowing_for_project_sources.
+Re-point the edge at whichever one is migrated here if it lands before this record is planned;
+until then, read whichever of the two touches this record's own file_scope before planning, so
+nothing plans against a stale reading of a file they will rewrite.
+
+---
+
+### 594. Size symmetric-pair phases and iteration obligations separately
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 593
+
+**Description**: Agent-system change request from the /orchestrate conclusion stage (channel b), approved by the user.
+
+ORIGINATING EVIDENCE (issue-log entry; audit the proposal against it before acting):
+- {task 918, iss_1794387530357_nlDygI}
+
+OBSERVED DEFECT (severity: costly). Phase sizing. 918's Phase 3 budgeted 2.5 hours and an
+estimated +220 lines for "both directions" of the composite splice. The raising primitive's
+ADMISSIBILITY HALF ALONE came to +276 lines -- the single estimate for a symmetric pair was
+already exceeded by one of its two halves.
+
+Two compounding omissions, both invisible in the plan's task list:
+- The raise must be ITERATED to reach an exact multiple of `P + 1`. The only landed iterate
+  carries the pending-forever hypothesis that the task's own regime DENIES -- in two separate
+  places. None of this appeared as a task-list item.
+- The composite's formulation had to be REDESIGNED mid-phase to be iterable at all.
+
+Outcome: three of seven phases landed rather than seven.
+
+CHANGE REQUEST. Add a plan-authoring rule with two clauses:
+(1) A phase claiming "both directions" -- or any symmetric pair, biconditional, or round-trip of
+    a primitive -- must size and schedule EACH DIRECTION SEPARATELY. One budget covering a
+    symmetric pair is not a budget.
+(2) An ITERATION or CLOSURE obligation on a landed primitive (iterate to reach a multiple, take a
+    transitive/reflexive closure, discharge a hypothesis the regime denies) must appear as its
+    OWN NAMED task-list item, not be absorbed into the primitive's phase.
+Make both clauses checkable: state the enforcement level (blocking vs advisory) in the same style
+as plan-format.md's existing enforcement-level subsections, and say what a reviewer or script
+looks for.
+
+CURRENT STATE TO READ FIRST. plan-format.md already carries "## Implementation Phases (format)",
+a "### Counts-are-hypotheses obligation", a "### Cross-phase ceiling consistency obligation", and
+per-obligation "### Enforcement level" subsections -- the new rule should match that established
+shape rather than invent a new one. hard-mode-routing.md separately states phase sizing (H8) as
+"each phase bounded to one agent run (~100-500 lines output)"; the +276-line half inside a
++220-line budget is a direct H8 datapoint, so check whether H8's wording also needs the
+symmetric-pair clause. planner-agent.md is the agent that must actually apply the rule.
+
+EDIT TARGET (source store, NOT the deployed mirror). Per .claude/rules/source-store-deploy-boundary.md,
+`.claude/**` here is a gitignored deploy artifact; source_dir for the `core` extension resolves
+from .claude-extensions.json to /home/benjamin/.config/nvim/agent-system/extensions/core. Edit:
+- /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/plan-format.md
+  ("## Implementation Phases (format)" and its obligation/enforcement-level subsections)
+- /home/benjamin/.config/nvim/agent-system/extensions/core/context/guides/hard-mode-routing.md
+  (the H8 phase-sizing entry)
+- /home/benjamin/.config/nvim/agent-system/extensions/core/agents/planner-agent.md
+
+NOTE ON FILE TERRITORY: plan-format.md is shared with the sibling tasks created from this same
+approved batch; this task is serialized behind the pinned-signature-measurement task.
+
+OPEN-RECORD RECONCILIATION (backlog audit run at creation time; verdict recorded verbatim in this
+entry's `audit_verdict` field). The audit emitted `duplicate-of-open` against #912
+`coupled_generated_surfaces_in_plan_authoring` [not_started] (2 shared paths:
+`core/context/formats/plan-format.md`, `core/agents/planner-agent.md`; semantic score 0.40).
+RULING: NOT a duplicate -- the shared verdict is driven by file territory, not subject. #912's two
+defects are (A) coupled generated surfaces going undeclared in a phase's Files to modify, and (B)
+`linter.style.longFile` acceptance-window semantics. Neither is phase SIZING of a symmetric pair,
+and neither covers an unscheduled iteration/closure obligation. What IS shared is the authoring
+surface: #912 adds a declaration obligation to plan-format.md's "Files to modify" contract and adds
+a lean-context pointer to planner-agent.md. A dependency edge on #912 is recorded rather than an
+exclusion, so this task amends plan-format.md and planner-agent.md after #912's edits land, not
+against a stale reading of them. #914 also carries plan-format.md in its scope; an edge on it is
+recorded for the same reason.
+=== MIGRATION NOTE (filed in this repository, not in the one that generated it) ===
+
+ORIGIN. This record was created by the conclusion stage (channel (b), agent-system changes) of an
+/orchestrate invocation over the ProofChecker repository, user-approved at the lead level and
+dispatched to the meta builder for task creation only. It was first written into that repository's
+task space by mistake and migrated here, because its work targets the shared source store under
+~/.config/nvim/agent-system/** and therefore cannot be performed or committed from the repository
+it was authored in. The description above this note is preserved verbatim from that authoring,
+including every iss_* citation id; only this note was added.
+
+CITATION RESOLVABILITY (how the cross-repo citation requirement was discharged). Every iss_* id
+cited above was confirmed present in the originating repository and nowhere else. Read from inside
+this repository a bare specs/NNN_.../issues.jsonl path resolves to nothing, so the approach chosen
+here is REPO-QUALIFIED ABSOLUTE PATHS. The two issue logs holding every id cited above are:
+  /home/benjamin/Projects/BimodalLogic/specs/917_forward_slack_witnessed_discharge_or_refutation/issues.jsonl
+  /home/benjamin/Projects/BimodalLogic/specs/918_ladder_cell_index_positive_factorization/issues.jsonl
+Each cited id was verified to resolve in one of those two files at migration time. Where the text
+above names a bare task number from the originating repository, read it as a pointer into that
+repository's space, never this one's.
+
+FILE SCOPE. The scope above declares source-store paths only, matching this repository's house
+style. The authoring repository recorded them as absolute ~/.config/nvim/agent-system/** paths;
+they are relativized here because agent-system/** is a real path in this repository's tree, which
+is what this repository's own admission overlap gate runs over. This is a consequence of the move,
+not a correction of an authoring error.
+
+DROPPED DEPENDENCY EDGES, RULED ON EXPLICITLY. The authoring repository gave this record numeric
+dependency edges on two records in ITS space. Those numbers are meaningless in this repository's
+space, so the edges were dropped rather than carried across or silently reinterpreted. Neither
+record has been migrated here yet; both are part of the known mis-sited-agent-system-task delta
+that this repository already tracks. Their durable anchors are the slugs
+coupled_generated_surfaces_in_plan_authoring and batch_gate_deferral_narrowing_for_project_sources.
+Re-point the edge at whichever one is migrated here if it lands before this record is planned;
+until then, read whichever of the two touches this record's own file_scope before planning, so
+nothing plans against a stale reading of a file they will rewrite.
+
+---
+
+### 593. Require pinned Lean Challenge signatures to be measured at plan time
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 451
+
+**Description**: Agent-system change request from the /orchestrate conclusion stage (channel b), approved by the user.
+
+ORIGINATING EVIDENCE (issue-log entries; audit the proposal against these before acting):
+- {task 917, iss_1794374793101_psy7sY}
+- {task 917, iss_1794375246019_OW3KwL}
+
+OBSERVED DEFECT (severity: blocking). Pinned Lean Challenge signatures were authored without
+being measured. 917's Phase 4 pinned statement for `exists_deleted_ladderPath_of_next_region_nxt`
+was unprovable AS PINNED -- incomplete by exactly one hypothesis (`nxtAt g z <= cntAt g z`).
+
+The plan's own Decision 3 had assumed every pin between `z` and the deleted block is undisplaced.
+Their POSITIONS are; but `delCnt` lowers the VALUE of the pin starting the region that contains
+the block, by exactly `l`. The deficit was measured by compiling the proof with and without the
+hypothesis (both variants preserved under that task's evidence/), the phase was marked BLOCKED
+per lean plan-compliance.md's Statement Fidelity rule rather than laundering the extra hypothesis
+under the pinned name, and a mid-task plan revision was required.
+
+THE PRACTICE THAT AVOIDED IT ALREADY EXISTS, VOLUNTARILY. 918's planner then measured all four of
+its pinned arithmetic statements through `lake env lean` BEFORE closing the plan, and deliberately
+left its gate-dependent signatures unpinned -- recording in its own Decisions that an unmeasured
+pin is exactly what forced 917's revision.
+
+CHANGE REQUEST. Promote that voluntary practice into the plan-authoring contract: a pinned
+Challenge signature must EITHER be compiled sorry-free at plan time (evidence recorded) OR be
+explicitly marked unpinned / gate-dependent. Define what "measured" means operationally (what
+command, what evidence, where recorded) and what the compliance checker does with an unmeasured
+pin, so the obligation is checkable rather than aspirational.
+
+CONSTRAINT TO PRESERVE. Statement Fidelity must stay intact: the point is not to permit
+weakening a pinned statement once reality disagrees, it is to make the disagreement surface at
+plan time instead of mid-implementation.
+
+EDIT TARGET (source store, NOT the deployed mirror). Per .claude/rules/source-store-deploy-boundary.md,
+`.claude/**` here is a gitignored deploy artifact; source_dir resolves from .claude-extensions.json
+to /home/benjamin/.config/nvim/agent-system/extensions/{core,lean}. Edit:
+- /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/plan-format.md
+  (the "## Lean Challenge Statements (format, lean/lean4 plans only)" section)
+- /home/benjamin/.config/nvim/agent-system/extensions/lean/rules/plan-compliance.md
+  (the "## Statement Fidelity" section)
+- /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh
+- /home/benjamin/.config/nvim/agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh
+
+NOTE ON FILE TERRITORY: plan-format.md and lean-plan-compliance-check.sh are shared with the
+sibling tasks created from this same approved batch (goal-polarity semantics for decision-gate
+plans; generator-written vs read-only scope; symmetric-pair phase sizing). This task is first in
+that serialized chain; the others depend on it.
+
+OPEN-RECORD RECONCILIATION (backlog audit run at creation time; verdict recorded verbatim in this
+entry's `audit_verdict` field). Verdict `overlaps-open` against #912
+`coupled_generated_surfaces_in_plan_authoring` and #914
+`batch_gate_deferral_narrowing_for_project_sources`, both [not_started], 1 shared path each:
+`core/context/formats/plan-format.md`. RULING: not duplicates -- neither record concerns Lean
+Challenge pin measurement; the shared verdict is file territory only. Dependency edges on both are
+recorded rather than exclusions, so this task amends plan-format.md after their edits land.
+Separately, two CLOSED records sit near this subject and must be decided explicitly rather than
+silently resurrected or silently skipped: #813 `lean_plan_challenge_block_authoring_contract` and
+#824 `fixture_dependent_challenge_statement_pinning` (both surfaced `covered-by-closed`). Read
+both before planning: if either already fixes the measurement obligation, say so and close this
+record against it; the 917 evidence is a post-closure recurrence, which is why it is filed.
+=== MIGRATION NOTE (filed in this repository, not in the one that generated it) ===
+
+ORIGIN. This record was created by the conclusion stage (channel (b), agent-system changes) of an
+/orchestrate invocation over the ProofChecker repository, user-approved at the lead level and
+dispatched to the meta builder for task creation only. It was first written into that repository's
+task space by mistake and migrated here, because its work targets the shared source store under
+~/.config/nvim/agent-system/** and therefore cannot be performed or committed from the repository
+it was authored in. The description above this note is preserved verbatim from that authoring,
+including every iss_* citation id; only this note was added.
+
+CITATION RESOLVABILITY (how the cross-repo citation requirement was discharged). Every iss_* id
+cited above was confirmed present in the originating repository and nowhere else. Read from inside
+this repository a bare specs/NNN_.../issues.jsonl path resolves to nothing, so the approach chosen
+here is REPO-QUALIFIED ABSOLUTE PATHS. The two issue logs holding every id cited above are:
+  /home/benjamin/Projects/BimodalLogic/specs/917_forward_slack_witnessed_discharge_or_refutation/issues.jsonl
+  /home/benjamin/Projects/BimodalLogic/specs/918_ladder_cell_index_positive_factorization/issues.jsonl
+Each cited id was verified to resolve in one of those two files at migration time. Where the text
+above names a bare task number from the originating repository, read it as a pointer into that
+repository's space, never this one's.
+
+FILE SCOPE. The scope above declares source-store paths only, matching this repository's house
+style. The authoring repository recorded them as absolute ~/.config/nvim/agent-system/** paths;
+they are relativized here because agent-system/** is a real path in this repository's tree, which
+is what this repository's own admission overlap gate runs over. This is a consequence of the move,
+not a correction of an authoring error.
+
+DROPPED DEPENDENCY EDGES, RULED ON EXPLICITLY. The authoring repository gave this record numeric
+dependency edges on two records in ITS space. Those numbers are meaningless in this repository's
+space, so the edges were dropped rather than carried across or silently reinterpreted. Neither
+record has been migrated here yet; both are part of the known mis-sited-agent-system-task delta
+that this repository already tracks. Their durable anchors are the slugs
+coupled_generated_surfaces_in_plan_authoring and batch_gate_deferral_narrowing_for_project_sources.
+Re-point the edge at whichever one is migrated here if it lands before this record is planned;
+until then, read whichever of the two touches this record's own file_scope before planning, so
+nothing plans against a stale reading of a file they will rewrite.
+
+---
+
+### 592. Re-verify or timestamp a task recorded starting position at dispatch composition
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Agent-system change request from the /orchestrate conclusion stage (channel b), approved by the user.
+
+ORIGINATING EVIDENCE (issue-log entries; audit the proposal against these before acting):
+- {task 917, iss_1794371652447_TTinEN}
+- {task 918, iss_1794383423202_EAr4Us}
+
+OBSERVED DEFECT (recurs across BOTH tasks in that batch; severity: costly). The dispatch file's
+hand-authored "VERIFIED STARTING POSITION" block carried a task-description snapshot that was
+roughly 38 wired probes out of date in both tasks.
+
+For 918 the consequence was not cosmetic: one of the task's two admissible outcomes -- a
+refutation that the two parameter constraints cannot be jointly met -- had ALREADY been
+foreclosed by compiled code (`paramsOk_params` discharges all four of (K1)-(K4) at exhibited
+parameters), so the task as described could not be executed as written.
+
+For 917 the stale block named three landed depth-0 cell-equality schemas where the tree carried
+five, and asserted that discharging `ForwardSlackWitnessed` would land
+`cellLE_zero_const_of_kappa_eq` -- which it would not, since the reserved schema quantifies over
+all kappa-collisions while every landed inclusion carries the pending-forever gap `n+2 <= c`.
+
+In both cases the receiving agent had to re-derive the current frontier from source before it
+could scope its own task, and discovered the staleness by contradiction rather than being told.
+
+CHANGE REQUEST. Provide a mechanism or convention that, at dispatch-composition time,
+re-verifies the task's recorded starting position -- or, failing that, visibly timestamps it and
+flags it as unverified -- so a research or plan agent is told the snapshot's age up front.
+
+STARTING POINT ALREADY IN THE TREE (verify before designing anything new). The dispatch composer
+already carries a "Premise re-validation block" whose owner ruling is "the composer EMITS, it
+never ADJUDICATES": it lexically extracts numeric/measurement/pass-fail/ratio/hard-claim shapes
+from the current description and emits them, but only when the task directory already holds a
+prior artifact, and it attaches no age or verification status. It also already computes a
+`description_fingerprint` (sha256 of the description) to mark recorded Prior Decisions as
+POTENTIALLY SUPERSEDED. Both mechanisms are plausible carriers for this request; a third,
+independent mechanism is probably the wrong answer. Respect the EMITS-not-ADJUDICATES ruling --
+re-deriving semantic truth of a claim inside the composer was explicitly rejected once already
+(see report-format.md's "Internal consistency" paragraph).
+
+EDIT TARGET (source store, NOT the deployed mirror). Per .claude/rules/source-store-deploy-boundary.md,
+`.claude/**` here is a gitignored deploy artifact; source_dir for the `core` extension resolves
+from .claude-extensions.json to /home/benjamin/.config/nvim/agent-system/extensions/core. Edit:
+- /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh
+- /home/benjamin/.config/nvim/agent-system/extensions/core/context/formats/report-format.md
+  (the "## Carried-Figure Discipline" / "The premise a dispatch acts on" subsection that owns
+  the premise concept)
+- /home/benjamin/.config/nvim/agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh
+  (the composer's existing test suite -- any emission change needs coverage here)
+
+OPEN-RECORD RECONCILIATION (backlog audit run at creation time; verdict recorded verbatim in this
+entry's `audit_verdict` field). Verdict `overlaps-open` against #914
+`batch_gate_deferral_narrowing_for_project_sources` [not_started], 2 shared paths:
+`core/scripts/orchestrate-build-dispatch.sh` and its test suite
+`core/scripts/tests/test-orchestrate-build-dispatch.sh`. #914's subject is different (giving the
+Batch Gate Deferral directive a narrowing form for project-only phases), but it rewrites the same
+composer and the same test file. RULING: not a duplicate -- a file-territory overlap. A dependency
+edge on #914 is recorded rather than an exclusion, so the two land as a sequence; do not plan this
+task against a pre-#914 reading of the composer.
+=== MIGRATION NOTE (filed in this repository, not in the one that generated it) ===
+
+ORIGIN. This record was created by the conclusion stage (channel (b), agent-system changes) of an
+/orchestrate invocation over the ProofChecker repository, user-approved at the lead level and
+dispatched to the meta builder for task creation only. It was first written into that repository's
+task space by mistake and migrated here, because its work targets the shared source store under
+~/.config/nvim/agent-system/** and therefore cannot be performed or committed from the repository
+it was authored in. The description above this note is preserved verbatim from that authoring,
+including every iss_* citation id; only this note was added.
+
+CITATION RESOLVABILITY (how the cross-repo citation requirement was discharged). Every iss_* id
+cited above was confirmed present in the originating repository and nowhere else. Read from inside
+this repository a bare specs/NNN_.../issues.jsonl path resolves to nothing, so the approach chosen
+here is REPO-QUALIFIED ABSOLUTE PATHS. The two issue logs holding every id cited above are:
+  /home/benjamin/Projects/BimodalLogic/specs/917_forward_slack_witnessed_discharge_or_refutation/issues.jsonl
+  /home/benjamin/Projects/BimodalLogic/specs/918_ladder_cell_index_positive_factorization/issues.jsonl
+Each cited id was verified to resolve in one of those two files at migration time. Where the text
+above names a bare task number from the originating repository, read it as a pointer into that
+repository's space, never this one's.
+
+FILE SCOPE. The scope above declares source-store paths only, matching this repository's house
+style. The authoring repository recorded them as absolute ~/.config/nvim/agent-system/** paths;
+they are relativized here because agent-system/** is a real path in this repository's tree, which
+is what this repository's own admission overlap gate runs over. This is a consequence of the move,
+not a correction of an authoring error.
+
+DROPPED DEPENDENCY EDGES, RULED ON EXPLICITLY. The authoring repository gave this record numeric
+dependency edges on two records in ITS space. Those numbers are meaningless in this repository's
+space, so the edges were dropped rather than carried across or silently reinterpreted. Neither
+record has been migrated here yet; both are part of the known mis-sited-agent-system-task delta
+that this repository already tracks. Their durable anchors are the slugs
+coupled_generated_surfaces_in_plan_authoring and batch_gate_deferral_narrowing_for_project_sources.
+Re-point the edge at whichever one is migrated here if it lands before this record is planned;
+until then, read whichever of the two touches this record's own file_scope before planning, so
+nothing plans against a stale reading of a file they will rewrite.
+
+---
 
 ### 591. Retire errors json triage surface
 - **Effort**: medium
