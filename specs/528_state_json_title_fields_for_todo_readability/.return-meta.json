@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794413303_b61a83_528",
+  "dispatch_seq": 4,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/528_state_json_title_fields_for_todo_readability/reports/01_title-fields-for-active-projects.md",
+      "summary": "Re-derives the live title-less entry set (24, not 61) and dependency-ready wave-1 subset (17) against current specs/state.json, confirms both generator fallback chains are correct and locates where the truncated-description rendering actually occurs, flags a file_scope gap and a stale schema-doc claim, and drafts ready-to-use .title text for all 24 entries."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's state.json/TODO.md generators, generate-todo.sh's per-task heading falls back title -> project_name directly, but generate-task-order.sh's Grouped-by-Topic/Task-Order listing falls back title -> description -> project_name (description checked before project_name). A 'TODO.md shows truncated description prose instead of a title' complaint traces to the second generator's listing (embedded into TODO.md's own ## Task Order section), not the per-task heading, which already reads cleanly via project_name fallback.",
+      "category": "PATTERN",
+      "source_artifact": "specs/528_state_json_title_fields_for_todo_readability/reports/01_title-fields-for-active-projects.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["generate-todo.sh", "generate-task-order.sh", "title fallback", "TODO.md rendering", "state.json"]
+    },
+    {
+      "content": "A migrated task's description can carry a project-number 'priority'/'wave' list computed against the origin repo's state.json at authoring time; that list can go stale against BOTH the origin and destination repos by the time the task is dispatched (renumbering, completion, archival). Always re-derive such lists live (e.g. via generate-task-order.sh --print's dependency waves, or a fresh jq query) rather than trusting a dispatch-supplied project-number list, especially for cross-repo-migrated meta records.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/528_state_json_title_fields_for_todo_readability/reports/01_title-fields-for-active-projects.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["cross-repo migration", "stale task list", "dependency wave", "re-derive", "state.json"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 528 to create implementation plan"
+}
