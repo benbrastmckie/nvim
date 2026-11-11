@@ -31,7 +31,7 @@
    - This option connects through Claude Code's native `/ide` integration command, NOT through
      `.mcp.json` -- there is no `.mcp.json`/`~/.claude.json` entry to check here, and there never
      was one that could work (see memory-setup.md's Option 1 section for why)
-   - Run `/ide` in Claude Code and select the running Obsidian instance from the list
+   - Use Claude Code's built-in `/ide` connection command and select the running Obsidian instance from the list
    - Verify the WebSocket port Claude Code connects to matches the Obsidian plugin's settings
 
 **Verification**:

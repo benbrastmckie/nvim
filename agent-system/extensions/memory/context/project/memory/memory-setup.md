@@ -90,7 +90,7 @@ works, and this extension does not currently declare any `merge_targets.mcp` fra
 ### 4. Test the Connection
 
 1. Ensure Obsidian is running with the `.memory/` vault open
-2. Run `/ide` in Claude Code and select the Obsidian instance
+2. Use Claude Code's built-in `/ide` connection command and select the Obsidian instance
 3. Run a memory-augmented research query:
    ```
    /orchestrate N --research --remember
