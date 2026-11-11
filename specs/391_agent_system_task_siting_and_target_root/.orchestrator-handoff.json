@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 11,
-  "phases_completed": 0,
-  "phases_total": 6,
-  "summary": "Wrote a six-phase implementation plan across four dependency waves. Adopts remedy (a) at conclusion-stage.md Step 4b (the one dispatcher of three that omits target_root, re-confirmed live), a revised remedy (b) that strengthens meta-builder-agent.md's already-present GLOBAL_ROOT fallback into a loud status:blocked refusal rather than adding a resolution step it already has, a skill-meta discharge, and remedy (c) as a standing siting rule kept distinct from the specs/** exemption. Also settles the deploy-path file_scope convention in the schema reference. Validator passes clean in both default and --strict mode; file_scope harvests to seven real paths plus __WHOLE_TREE__.",
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "summary": "Completed all six implementation phases closing the orchestrate conclusion stage's channel-(b) target_root authoring hole and settling the file_scope deploy-path convention question. conclusion-stage.md Step 4b now resolves and threads target_root/mode_target; meta-builder-agent.md refuses loudly (status: blocked) on an absent target_root instead of silently defaulting; skill-meta's stale self-acknowledgment is discharged; a standing task-siting rule and the file_scope convention verdict are both recorded in writing. Redeployed; all six edited files confirmed byte-identical in the deployed tree. Phase 6 closed COMPLETED WITH EXCLUSIONS against two confirmed pre-existing, unrelated gate findings (a marginal 60s gate timeout and a repo-wide context-budget overage, neither touching this task's file_scope).",
   "blockers": [],
+  "phases_completed": 6,
+  "phases_total": 6,
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/391_agent_system_task_siting_and_target_root/summaries/01_target-root-and-siting-remedy-summary.md",
+      "summary": "Full implementation summary covering all six phases, the WHAT IS OWED discharge mapping, and the Phase 6 Reasoned Exclusions."
+    },
     {
       "type": "plan",
       "path": "specs/391_agent_system_task_siting_and_target_root/plans/01_target-root-and-siting-remedy.md",
-      "summary": "Six-phase plan closing the channel-(b) target_root hole and settling the cross-repo file_scope convention question."
+      "summary": "Six-phase plan, all phases checked off and closed (5 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
     }
   ]
 }
