@@ -135,7 +135,16 @@ fi
 # --- Paths ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
-source "${SCRIPT_DIR}/lib/central-log-lib.sh"
+# central-log-lib.sh is sourced defensively: a fixture or scratch tree that copies this script
+# without its (newer) library dependency must degrade to a true no-op promotion, never crash --
+# the same silent-no-op posture the library's own central_log_promote already guarantees for
+# every OTHER failure mode (missing binary, unresolvable owning repo, ...). Never `set -e`-fatal
+# on a missing file.
+if [ -f "${SCRIPT_DIR}/lib/central-log-lib.sh" ]; then
+  source "${SCRIPT_DIR}/lib/central-log-lib.sh"
+else
+  central_log_promote() { return 0; }
+fi
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 EVENTS_FILE="$PROJECT_ROOT/specs/events.jsonl"
