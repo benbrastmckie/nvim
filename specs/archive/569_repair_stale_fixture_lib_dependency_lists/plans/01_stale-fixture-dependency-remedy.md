@@ -1,7 +1,7 @@
 # Implementation Plan: Task #569
 
 - **Task**: 569 - Repair stale fixture lib dependency lists
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/569_repair_stale_fixture_lib_dependency_lists/reports/01_stale-fixture-dependency-lists.md

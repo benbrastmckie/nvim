@@ -87,7 +87,5 @@
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh",
     "agent-system/extensions/core/index-entries.json"
-  ],
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  ]
 }

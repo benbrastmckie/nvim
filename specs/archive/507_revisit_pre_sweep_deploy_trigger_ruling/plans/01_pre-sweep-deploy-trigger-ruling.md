@@ -1,7 +1,7 @@
 # Implementation Plan: Task #507
 
 - **Task**: 507 - Re-adjudicate the declined pre-postflight-sweep deploy trigger against a measured whole-cycle gate cost
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: explicit_lint_fixture_test_subject_resolution, warn_plan_size_exceeds_cycle_budget (both declared territory edges on the touched file; both recorded as discharged at research time)
 - **Research Inputs**: specs/507_revisit_pre_sweep_deploy_trigger_ruling/reports/01_pre-sweep-deploy-trigger-readjudication.md

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #554
 
 - **Task**: 554 - file_scope external source store containment
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9.5 hours
 - **Dependencies**: None declared
 - **Research Inputs**: specs/554_file_scope_external_source_store_containment/reports/01_source-store-containment-research.md

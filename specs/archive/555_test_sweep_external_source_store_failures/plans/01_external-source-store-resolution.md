@@ -1,7 +1,7 @@
 # Implementation Plan: Task #555
 
 - **Task**: 555 - Test sweep external source store failures
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/555_test_sweep_external_source_store_failures/reports/01_test-sweep-external-source-store-failures.md

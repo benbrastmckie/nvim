@@ -1,7 +1,7 @@
 # Implementation Plan: Task #589
 
 - **Task**: 589 - Test suite repo-root walk-up depth is invocation-path dependent
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.75 hours
 - **Dependencies**: None (task 573 depends on this one)
 - **Research Inputs**: None (no research artifact for this round; the task description carries

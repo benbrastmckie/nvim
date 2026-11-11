@@ -1,7 +1,7 @@
 # Implementation Plan: Add purpose-written title fields to task records
 
 - **Task**: 528 - Add purpose-written title fields to task records so TODO.md stops rendering truncated description prose as task names
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/528_state_json_title_fields_for_todo_readability/reports/01_title-fields-for-active-projects.md

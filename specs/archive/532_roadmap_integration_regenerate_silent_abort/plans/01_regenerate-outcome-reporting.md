@@ -1,7 +1,7 @@
 # Implementation Plan: Task #532
 
 - **Task**: 532 - Rule on whether ROADMAP.md is authored-only and make roadmap-integration.sh report its outcome instead of aborting silently
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/532_roadmap_integration_regenerate_silent_abort/reports/01_regenerate-silent-abort-research.md
