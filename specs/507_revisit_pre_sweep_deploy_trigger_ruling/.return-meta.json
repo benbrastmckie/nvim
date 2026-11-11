@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794413303_b61a83_507",
-  "dispatch_seq": 6,
-  "findings_count": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/reports/01_pre-sweep-deploy-trigger-readjudication.md",
-      "summary": "Re-derives all four recorded grounds for declining the pre-postflight-sweep deploy trigger against the current tree (unchanged), prices ground (c) with a corpus-wide measurement (68/396 completed meta tasks, 59 git-paired wall-clock deltas), and recommends REAFFIRM with an exact, ready-to-apply dated amendment paragraph for the plan/implement phases."
+      "type": "plan",
+      "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md",
+      "summary": "Two-phase plan applying the REAFFIRM ruling as a dated amendment note to the pre-postflight-sweep deploy trigger subsection, then redeploying and discharging the full gate set."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794413303_b61a83_507",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 2,
+    "estimated_hours": 1.75,
+    "dependency_waves": 2
+  },
   "memory_candidates": [
     {
-      "content": "When pricing a 'cost removed by mechanism X' claim in this codebase, pair the self-reported issues.jsonl class entries with git-commit-message pairing (e.g. 'task N: orchestration paused (cycle C)' / 'task N: complete implementation (post-deploy reconcile)') across `git log --all --format=\"%H|%ad|%s\"`. The two sources corroborate each other and the commit-message pairing gives precise wall-clock deltas the issue log alone does not carry.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/reports/01_pre-sweep-deploy-trigger-readjudication.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrate", "deploy-gate", "cost-measurement", "git-log-pairing", "issues.jsonl"]
-    },
-    {
-      "content": "In this repository's /orchestrate completion-deploy-gate deferral pattern, the large-magnitude outliers in paused-to-reconciled wall-clock deltas are overwhelmingly cross-session resume gaps (a new /orchestrate invocation started much later), not within-session cycle-boundary delays. Any future cost analysis of this gate should separate same-session deltas (typically ~5-6 min median) from cross-session deltas (which can span hours to days) before averaging, since a blended mean is dominated by the latter and misrepresents the mechanism's actual per-cycle cost.",
+      "content": "When authoring a plan phase's Tier Justification for a markdown/prose edit in the agent-system source store, do not assume suite_selection_select returns __FULL_SWEEP__. A guidance document under context/patterns/ can map to real shell suites (e.g. batch-orchestration-guardrails.md maps to test-deploy-baseline-lib.sh, test-deploy-ledger-lib.sh, test-gate-out-self-attribution.sh), because the selector keys on documented subject matter, not on executable surface. The justification's suite names must be run-and-matched against actual selector output; asserting the sentinel for a path the selector maps is treated as exactly as dishonest as a fabricated suite name.",
       "category": "INSIGHT",
-      "source_artifact": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/reports/01_pre-sweep-deploy-trigger-readjudication.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate", "deploy-gate", "cross-session", "cycle-cost", "measurement-pitfall"]
+      "source_artifact": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["verification-tier", "tier-justification", "suite-selection", "prose-edit", "plan-authoring"]
     }
   ],
-  "next_steps": "Run /orchestrate 507 to create implementation plan"
+  "next_steps": "Run /orchestrate 507 to execute the plan",
+  "dispatch_seq": 10
 }

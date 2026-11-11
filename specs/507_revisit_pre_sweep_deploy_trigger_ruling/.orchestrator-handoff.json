@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 10,
+  "phases_completed": 0,
+  "phases_total": 2,
+  "summary": "Planned the REAFFIRM ruling as a two-phase documentary change. Phase 1 re-derives the frequency and wall-clock figures, then appends a dated amendment note after ground (d) of the 'Pre-Postflight-Sweep Deploy Trigger: Evaluated, Intentionally Not Built' subsection in the source store, leaving all four grounds byte-for-byte intact. Phase 2 redeploys via deploy-headless.sh and discharges the complete verify-deploy.sh gate set. No mechanism change: the completion-deploy gate and the Inter-Cycle Redeploy Checkpoint are explicit non-goals, and the trigger itself is not built.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md",
+      "summary": "Two-phase plan: re-confirm figures and append the dated REAFFIRM amendment, then redeploy and run the full gate set."
+    }
+  ]
+}
