@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/569_repair_stale_fixture_lib_dependency_lists/plans/01_stale-fixture-dependency-remedy.md",
-      "summary": "4-phase plan (2 waves, 2.75h): add project-number-inuse.sh to three fixture suites' dependency lists, retire three stale known-failures.txt rows, redeploy, and run the full gate set."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 10,
   "metadata": {
-    "session_id": "sess_1794381614_02261f_569",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 2.75,
-    "dependency_waves": 2
-  },
-  "next_steps": "Run /orchestrate 569 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When a shell test suite in this codebase is repaired, the repair is not complete until agent-system/extensions/core/scripts/tests/known-failures.txt is checked for a row naming that suite. The roster is advisory-only (run-all.sh's --fail-on-new accounting reads it, but a stale row changes nothing and fails nothing), so a fixed suite silently keeps its 'real-defect|...|needs-owner' row forever unless the fixing task retires it. The roster's own header states it is the single source of truth for which suites are known-failing, which makes a stale row actively misleading to the next reader. Retire a row only on an OBSERVED 0-failed tally; where a residual failure survives, narrow the row's reason field to the residual instead of deleting it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/569_repair_stale_fixture_lib_dependency_lists/plans/01_stale-fixture-dependency-remedy.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["known-failures", "test-suite-repair", "run-all", "advisory-roster", "stale-entry"]
-    }
-  ],
-  "dispatch_seq": 5
+    "session_id": "sess_1794381614_02261f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

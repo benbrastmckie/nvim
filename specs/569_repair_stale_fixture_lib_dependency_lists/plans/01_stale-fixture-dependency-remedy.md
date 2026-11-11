@@ -1,7 +1,7 @@
 # Implementation Plan: Task #569
 
 - **Task**: 569 - Repair stale fixture lib dependency lists
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/569_repair_stale_fixture_lib_dependency_lists/reports/01_stale-fixture-dependency-lists.md
@@ -144,30 +144,31 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Add `project-number-inuse.sh` to `test-postflight-deploy-gate.sh` [NOT STARTED]
+### Phase 1: Add `project-number-inuse.sh` to `test-postflight-deploy-gate.sh` [COMPLETED]
 
 **Goal**: Complete this suite's `REQUIRED_LIBS` array so its fixture carries the library
 `state-write.sh` sources, clearing all 12 current failures without touching any assertion.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh`
-      immediately before editing it (concurrent-sibling discipline).
-- [ ] Append `project-number-inuse.sh` to the `REQUIRED_LIBS=(...)` array literal (locator: line
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-postflight-deploy-gate.sh`
+      immediately before editing it (concurrent-sibling discipline). *(completed)*
+- [x] Append `project-number-inuse.sh` to the `REQUIRED_LIBS=(...)` array literal (locator: line
       65; anchor:
       `REQUIRED_LIBS=(common.sh phase-heading-patterns.sh status-vocabulary.sh file-scope-overlap.sh task-lookup-lib.sh)`).
       Confirm the same array drives both the pre-flight existence loop (locator: line 66) and the
       fixture copy loop inside `build_fixture_repo()` (locator: line 93), so this single edit
-      repairs check and copy together — no second edit site exists in this suite.
-- [ ] Confirm the copy source for libraries in this suite is `$DEPLOY_SCRIPTS_SRC/lib`
+      repairs check and copy together — no second edit site exists in this suite. *(completed)*
+- [x] Confirm the copy source for libraries in this suite is `$DEPLOY_SCRIPTS_SRC/lib`
       (`$REPO_ROOT/.claude/scripts/lib`) and that
       `.claude/scripts/lib/project-number-inuse.sh` exists there, so the new copy-loop entry
-      resolves.
-- [ ] Run the suite standalone and record its `Results:` line and every remaining `[FAIL]` line.
-- [ ] Record the outcome via `issue-record.sh` (`win` if the tally reaches 29/0; `issue` with
+      resolves. *(completed)*
+- [x] Run the suite standalone and record its `Results:` line and every remaining `[FAIL]` line.
+      *(completed: 29 passed, 0 failed, no FAIL lines remaining)*
+- [x] Record the outcome via `issue-record.sh` (`win` if the tally reaches 29/0; `issue` with
       severity `costly` if any failure survives — that one has a second cause and must not be
-      swept into Phase 4).
-- [ ] Commit with an explicit single-file list.
+      swept into Phase 4). *(completed: win recorded)*
+- [x] Commit with an explicit single-file list. *(completed)*
 
 **Timing**: 0.5 hours
 
