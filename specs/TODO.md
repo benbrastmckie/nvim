@@ -11,9 +11,9 @@ next_project_number: 607
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,397,402,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604,607 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 313,384,398,421,439,457,458,462,463,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,397,402,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
-| 3 | 399,436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,398,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 1 | 338,342,383,390,398,402,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604,607 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 313,384,399,421,439,457,458,462,463,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,398,402,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
+| 3 | 436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
 | 6 | 596 | 595 | agent-system |
@@ -114,9 +114,8 @@ next_project_number: 607
 
 ### Lean Extension
 
-397 [IMPLEMENTING] — Require a lean research report's recommended compiled...
-  └─ 398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
-    └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
+398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
+  └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
 412 [PLANNED] — Map core verification tiers to Lean build scopes
   └─ 463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
 451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
@@ -10309,12 +10308,13 @@ agent-system/extensions/lean/index-entries.json leg was NOT updated.
 
 ### 397. Require a lean research report's recommended compiled artifact to be compile-verified before it is recommended
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
 - **Research**: [397_lean_research_compile_verify_recommendation/reports/01_compile-verify-recommendation-contract.md]
 - **Plan**: [397_lean_research_compile_verify_recommendation/plans/01_compile-verify-recommendation-contract.md]
+- **Summary**: [397_lean_research_compile_verify_recommendation/summaries/01_compile-verify-recommendation-contract-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

@@ -1,10 +1,46 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/397_lean_research_compile_verify_recommendation/summaries/01_compile-verify-recommendation-contract-summary.md",
+      "summary": "All 4 phases completed: added the always-on Compile-Verify-Before-Recommend contract clause to lean-research-agent.md, mirrored the cross-reference and VERIFIED tag convention into lean-research-flow.md, corrected index-entries.json's line_count, and redeployed with gate verification."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an always-on Compile-Verify-Before-Recommend contract clause and matching [VERIFIED: ...]/[No compiled gate applicable] evidence tags to both lean research report skeletons, corrected index-entries.json's line_count for the flow file, and redeployed; gates 3/4, the five index-entries.json-covering suites, and the lean: line-count census all pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/agents/lean-research-agent.md",
+    "agent-system/extensions/lean/context/project/lean4/agents/lean-research-flow.md",
+    "agent-system/extensions/lean/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "deploy-headless.sh's full regeneration runs generate-context-line-counts.sh --write across every extension's index-entries.json as part of the deploy, which self-heals an unrelated pre-existing line_count mismatch in another extension (observed: core's formats/frontmatter.md 705->706 mismatch, present before a redeploy triggered by an unrelated lean-extension task, was gone after it). A gate-3 doc-lint FAIL seen before a redeploy in this task's own extension should not be assumed to persist after a full deploy-headless.sh run elsewhere in the same session -- re-check rather than carrying the earlier verdict forward.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/397_lean_research_compile_verify_recommendation/summaries/01_compile-verify-recommendation-contract-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "deploy-headless",
+        "generate-context-line-counts",
+        "index-entries.json",
+        "doc-lint",
+        "self-healing"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794431325_7cf647",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }

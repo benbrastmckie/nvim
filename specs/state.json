@@ -3245,7 +3245,7 @@
     {
       "project_number": 397,
       "project_name": "lean_research_compile_verify_recommendation",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "lean-extension",
       "title": "Require a lean research report's recommended compiled artifact to be compile-verified before it is recommended",
@@ -3261,11 +3261,16 @@
           "path": "specs/397_lean_research_compile_verify_recommendation/plans/01_compile-verify-recommendation-contract.md",
           "type": "plan",
           "summary": "4-phase plan adding an always-on compile-verify-before-recommend contract clause and matching report-skeleton evidence tag to the lean research agent and shared research flow, plus index line_count correction and redeploy."
+        },
+        {
+          "path": "specs/397_lean_research_compile_verify_recommendation/summaries/01_compile-verify-recommendation-contract-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the compile-verify-before-recommend contract clause addition."
         }
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T00:15:51Z",
-      "last_updated": "2026-11-11T21:31:04Z",
+      "last_updated": "2026-11-11T21:46:40Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1794431325_7cf647",
@@ -3275,7 +3280,8 @@
         "agent-system/extensions/lean/agents/lean-research-hard-agent.md",
         "agent-system/extensions/lean/context/project/lean4/agents/lean-research-flow.md",
         "agent-system/extensions/lean/index-entries.json"
-      ]
+      ],
+      "completion_summary": "Added an always-on Compile-Verify-Before-Recommend contract clause and matching [VERIFIED: ...]/[No compiled gate applicable] evidence tags to both lean research report skeletons, corrected index-entries.json's line_count for the flow file, and redeployed; gates 3/4, the five index-entries.json-covering suites, and the lean: line-count census all pass."
     },
     {
       "project_number": 398,
