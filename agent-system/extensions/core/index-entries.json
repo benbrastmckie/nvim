@@ -1155,7 +1155,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Multi-task command syntax and parallel processing patterns",
-      "line_count": 684,
+      "line_count": 691,
       "keywords": [
         "patterns",
         "multi-task",
