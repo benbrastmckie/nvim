@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794381614_02261f_569",
+  "dispatch_seq": 2,
+  "task_number": 569,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/569_repair_stale_fixture_lib_dependency_lists/reports/01_stale-fixture-dependency-lists.md",
+      "summary": "Confirms and reproduces the stale-REQUIRED_LIBS defect; narrows fix scope from the dispatch's 4 named suites to 3 (test-orchestrate-unwind-dispatch.sh is already fixed by an unrelated committed change and now passes 21/21); gives the exact array/line fix for each of the 3 remaining suites; runs a corpus-wide drift scan for the 'derive from source' design question and finds no additional drift."
+    }
+  ],
+  "next_steps": "Run /orchestrate 569 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "In this codebase's shell test suites, a fixture that copies state-write.sh (or any script) into a throwaway temp root uses one of two patterns: (1) whole-directory glob copy of lib/*.sh, which is immune to upstream dependency drift, or (2) a hand-maintained REQUIRED_LIBS/REQUIRED_SCRIPTS array that doubles as both the pre-flight existence check and the copy-loop driver. When a subject script gains a new `source \"${SCRIPT_DIR}/lib/X.sh\"` line, every suite using pattern (2) that copies that script must have X.sh added to its array by hand -- a commit that adds the source line and fixes some such suites can still miss others if its own audit of 'suites that copy this script' is incomplete (exactly what happened with 918c9a031, which fixed 5 of 8 affected suites).",
+      "category": "PATTERN",
+      "source_artifact": "specs/569_repair_stale_fixture_lib_dependency_lists/reports/01_stale-fixture-dependency-lists.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test-fixture", "REQUIRED_LIBS", "dependency-drift", "state-write.sh", "shell-testing"]
+    },
+    {
+      "content": "When reproducing a bash 'source: file not found' failure in a test fixture non-destructively, build a minimal scratch copy (SCRIPT_DIR/lib with only the files under test) outside the repo and invoke the real script directly -- captures the exact error line and true exit code (bash set -e on a failed `source` builtin exits 1) without touching any tracked file or risking collision with concurrent sibling tasks editing the same test files.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/569_repair_stale_fixture_lib_dependency_lists/reports/01_stale-fixture-dependency-lists.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["reproduction", "non-destructive", "bash-source", "scratchpad", "fixture-repro"]
+    }
+  ]
+}
