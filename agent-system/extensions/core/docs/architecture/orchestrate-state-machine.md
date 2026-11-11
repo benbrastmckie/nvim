@@ -1534,9 +1534,9 @@ fires only on its own explicit `AskUserQuestion` approval, recorded in a durable
 per-channel ledger (`--record-approval`/`--check-approval`). No channel may fire on another
 channel's approval, and channel (a) may not fire without its own recorded approval — mechanically
 proven, not only asserted in prose (see the aggregator's own test suite). Channels (b),
-agent-system changes, and (c), follow-up tasks, no longer dispatch anything or create any task;
-each instead records its classified proposals as evidence, unconditionally and without a gate,
-since recording has no consequence to approve.
+agent-system changes, and (c), follow-up tasks, dispatch nothing and create no task; each
+instead records its classified proposals as evidence, unconditionally and without a gate, since
+recording has no consequence to approve.
 
 **Commit contract, four scopes**: channel (a)'s approved fix paths; channel (b)'s and channel
 (c)'s recorded proposals, each committing `specs/events.jsonl` alone; the roadmap update's
