@@ -259,6 +259,68 @@ style.
 - A fresh session launched for this repository reports the intended output style.
 - A full regenerate followed by inspection shows the setting and any style file surviving the
   deploy rather than being reverted to "default".
+=== RESEARCH LEADS GATHERED 2026-11-11 (read the VERIFIED/UNVERIFIED split literally) ===
+
+VERIFIED by direct inspection of `claude --help` on this machine, 2026-11-11:
+
+- **There is NO `--output-style` CLI flag.** The full long-flag list contains `--output-format`
+  (documented as "only works with --print", i.e. the JSON/stream-json print mode, unrelated to
+  response style) and `--brief` (documented as "Enable SendUserMessage tool for agent-to-user
+  communication", also unrelated). Neither is an output-style selector.
+  CONSEQUENCE: the settings-file route is not merely the preferred approach, it is the ONLY
+  persistent one, and the "expect no Lua change" conclusion above is therefore a verified fact
+  rather than an inference from the loader's comment. Do not spend research time looking for a
+  flag to pass from the loader.
+- A `--setting-sources` flag does exist and may be relevant to how settings files are discovered;
+  check it if the deployed setting does not take effect.
+
+UNVERIFIED LEADS -- these came from a specialist consulted from MEMORY of the documentation, with
+no live doc fetch, and the source explicitly flagged them as needing confirmation. Treat every
+line below as a hypothesis to check against official documentation FIRST, not as a finding:
+
+- Built-in style names may be `default`, `Explanatory`, `Learning`, with no built-in `Concise`.
+  If that holds, research outcome 1 above resolves to "a custom style is required". CONFIRM the
+  list and its exact casing; do not assume it is complete or current.
+- A custom style may be a Markdown file with YAML frontmatter, at `<project>/.claude/output-styles/`
+  for project scope or `~/.claude/output-styles/` for user scope.
+- Frontmatter fields may be `name` (optional, defaulting to the filename), `description` (shown
+  in the picker), and `keep-coding-instructions` (optional). The body may be the instruction text.
+- The `outputStyle` settings value may match the frontmatter `name`, falling back to the filename
+  slug. This mapping is the single most important thing to confirm before authoring the file,
+  because getting it wrong produces a silently-missing style.
+- Settings precedence may run, highest first: managed settings, CLI args, `.claude/settings.local.json`,
+  `.claude/settings.json`, `~/.claude/settings.json`.
+
+=== THE RISK THAT CHANGES THE SHAPE OF THIS TASK ===
+
+The same consultation reported, also unverified, that **a custom output style modifies the SYSTEM
+PROMPT and REPLACES its default coding-focused sections unless `keep-coding-instructions: true`
+is set**, while CLAUDE.md is delivered as user-context content rather than as part of the system
+prompt.
+
+If that is correct it is the most consequential fact about this change, and it is a hazard rather
+than a detail: this repository is an agent system whose every dispatch depends on the default
+coding instructions being present. A concise style authored without `keep-coding-instructions`
+would strip them from every session in this repository, including every subagent dispatch,
+trading a formatting preference for a behavioral regression across the whole lifecycle.
+
+BINDING ON IMPLEMENTATION: confirm this mechanism before authoring anything. If a custom style
+does replace the coding instructions, either set `keep-coding-instructions: true` and author the
+style as a pure additive formatting layer, or reject the custom-style approach and achieve
+concision through the existing CLAUDE.md output conventions instead. Record the verdict and its
+evidence either way -- a silent omission of this flag is the specific failure mode to avoid.
+
+=== DEPLOY-BOUNDARY CORRECTION TO GENERIC ADVICE ===
+
+Generic guidance for this feature says to prefer the committed `.claude/settings.json` over the
+gitignored `.claude/settings.local.json`. THAT DISTINCTION DOES NOT APPLY HERE and must not be
+followed literally: in this repository BOTH deployed files are gitignored, disposable deploy
+artifacts regenerated from the source store, so neither is "the committed one". The durable edit
+target is the source store's `root-files/` directory, which is what regenerates them. Likewise, a
+style file required at `.claude/output-styles/concise.md` must be DEPLOYED there from a
+source-store original and, if necessary, registered in the extension manifest -- hand-placing it
+under `.claude/**` would be wiped by the next regeneration, which is the failure this record's
+opening paragraph already warns about.
 
 ---
 
