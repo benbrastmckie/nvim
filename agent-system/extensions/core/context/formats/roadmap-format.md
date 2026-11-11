@@ -195,6 +195,12 @@ not a transitional guard pending wider layout support: a vocabulary this script 
 round-trip is never guessed at or silently overwritten with a fixed template, however the
 recognised vocabulary set grows in the future.
 
+**Settled layout ruling**: both recognised vocabularies are taught and round-tripped --
+`classic` (the eight literal `CLASSIC_HEADERS`) and `stage` (a `## Stage N` header plus a fenced
+`/orchestrate` block) -- and an unrecognised vocabulary is refused loudly rather than guessed at,
+per the permanent property above. `specs/ROADMAP.md` in this repository presently classifies as
+`classic`.
+
 ### Stderr Marker and Failure Diagnostics
 
 Every invocation that reaches mode dispatch -- i.e. passes argument validation -- prints one
@@ -213,6 +219,26 @@ ERROR: roadmap-integration.sh failed (mode=M) at line L: exit status N
 The marker's six-field shape is frozen (see Parsing Patterns Summary below); a refusal or a crash
 is diagnosed via this separate `ERROR:` line, never by adding a field to the marker itself.
 
+**`OUTCOME:` line (change-aware outcome reporting)**: the marker's six count fields are
+byte-identical between a write that changed the file and a write that left it unchanged -- a
+caller cannot tell them apart from the marker alone. Both write modes additionally emit one
+named `OUTCOME:` line to stderr from `write_or_diff`, after the layout gate and immediately
+before the marker, in one of four shapes:
+```
+OUTCOME: --regenerate rewrote {path} (layout=classic, content changed)
+OUTCOME: --regenerate left {path} unchanged (layout=classic, no content change)
+OUTCOME: --regenerate --dry-run diffed {path}; wrote nothing (layout=classic, content would change)
+OUTCOME: --regenerate --dry-run diffed {path}; wrote nothing (layout=classic, no content change)
+```
+`--prune` emits the same four shapes with `--prune` substituted for `--regenerate`, and
+`layout=stage` substituted when the file classifies as `stage`. This line never affects the exit
+code. It is the answer to "what happened" that the marker's frozen count fields cannot give; the
+marker still answers "how many" (tasks/topics/runs/pruned/retained). `--print` emits no
+`OUTCOME:` line -- it never reads or writes an existing file, so it has no write outcome to
+report. The absent-roadmap no-op (`NOTE: no roadmap tracked at ...`) and the `unknown`-layout
+refusal (`ERROR: ... refuses to write ...`) both return before `write_or_diff` is reached, so
+neither emits an `OUTCOME:` line either.
+
 ## Parsing Patterns Summary
 
 | Element | Pattern |
@@ -224,6 +250,7 @@ is diagnosed via this separate `ERROR:` line, never by adding a field to the mar
 | Next Run line | `^/orchestrate ([\d, ]+)(\s+(-\S.*?))?(\s{3}# (.+))?$` |
 | Coverage appendix header | `^\*\*Coverage appendix \(uncovered tasks\)\*\*:$` |
 | Stderr marker | `^<!-- roadmap-generation mode=(\S+) tasks=(\d+) topics=(\d+) runs=(\d+) pruned=(\d+) retained=(\d+) -->$` |
+| `OUTCOME:` line | `^OUTCOME: --(regenerate\|prune)( --dry-run diffed \| rewrote \| left )(.+?)(; wrote nothing\| unchanged)? \(layout=(classic\|stage), (content changed\|no content change\|content would change)\)$` |
 
 ## Related
 

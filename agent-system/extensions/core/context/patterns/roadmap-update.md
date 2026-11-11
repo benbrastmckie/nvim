@@ -45,6 +45,8 @@ invokes which, when, and what each promises. The authored-vs-generated split its
 - **`EXT-BLOCKED` never appears** in `--print` output — it has no schema source and this mode
   has no authored-retention input to read it from. This is expected, not a defect.
 - Safe to run any time, including ad hoc from a shell, purely for inspection.
+- **Emits no `OUTCOME:` line** — it never reads or writes an existing `specs/ROADMAP.md`, so it
+  has no write outcome to report.
 
 ### `--regenerate`
 
@@ -62,6 +64,10 @@ invokes which, when, and what each promises. The authored-vs-generated split its
   that does not exist (nothing is read, nothing is written); 1 on a malformed input.
 - **`--dry-run`**: prints a unified diff to stdout and writes nothing — the review-before-write
   path. Run this by hand before trusting an unattended `--regenerate`.
+- **Emits an `OUTCOME:` line to stderr** naming whether the write actually changed the file
+  (or, under `--dry-run`, would have) — see "## Stderr Marker" below for why this is the
+  did-it-change answer the frozen marker cannot give. The absent-`--roadmap` no-op above is
+  exempt: it returns before a write is attempted, so it emits no `OUTCOME:` line.
 
 ### `--prune`
 
@@ -78,6 +84,8 @@ invokes which, when, and what each promises. The authored-vs-generated split its
 - **Exit codes**: same as `--regenerate`, including the same supported-no-op behavior for an
   absent `--roadmap` target.
 - **`--dry-run`**: composes identically to `--regenerate --dry-run`.
+- **Emits an `OUTCOME:` line** identically to `--regenerate` (same four shapes, `--prune`
+  substituted for `--regenerate`), with the same absent-`--roadmap` exemption.
 
 ---
 
@@ -90,8 +98,12 @@ stderr:
 <!-- roadmap-generation mode=M tasks=N topics=T runs=R pruned=P retained=A -->
 ```
 
-A caller that only needs confirmation of what happened (counts, not content) should parse this
-line rather than diffing stdout or the rewritten file.
+This line's six count fields are byte-identical between a write that changed the file and a
+write that left it unchanged — it answers "how many" (tasks/topics/runs/pruned/retained), not
+"did anything change". A caller that needs the latter — did `--regenerate`/`--prune` actually
+rewrite the file, or was this run a no-op — should parse the `OUTCOME:` line below instead of
+diffing stdout or the rewritten file; a caller that only needs the counts still parses this
+marker line as before.
 
 ---
 

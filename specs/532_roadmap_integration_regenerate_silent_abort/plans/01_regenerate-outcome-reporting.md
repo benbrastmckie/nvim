@@ -195,44 +195,48 @@ sibling or an intervening commit moved the suite — report it, do not silently 
 
 ---
 
-### Phase 2: Record the settled ruling and correct the caller contract [NOT STARTED]
+### Phase 2: Record the settled ruling and correct the caller contract [COMPLETED]
 
 **Goal**: The two context files that define this script's contract state the outcome line, its
 parse pattern, and the settled layout ruling — and no longer promise something the marker cannot
 deliver.
 
 **Tasks**:
-- [ ] Re-read both target files immediately before editing.
-- [ ] In `agent-system/extensions/core/context/formats/roadmap-format.md`, extend the
+- [x] Re-read both target files immediately before editing. *(completed)*
+- [x] In `agent-system/extensions/core/context/formats/roadmap-format.md`, extend the
       `### Stderr Marker and Failure Diagnostics` subsection (currently lines 198-215) to document
       the `OUTCOME:` line: when it fires (both write modes, after the layout gate, before the
       marker), its four shapes exactly as implemented in Phase 1, that it never affects the exit
       code, and that it is explicitly the answer to "what happened" that the marker's frozen
       six count fields cannot give. Keep the existing statement that the marker's shape is frozen
       and that diagnostics live on separate named lines — the new line is an instance of that
-      rule, not an exception to it.
-- [ ] Add the `OUTCOME:` line to the same file's `## Parsing Patterns Summary` table, beside the
+      rule, not an exception to it. *(completed)*
+- [x] Add the `OUTCOME:` line to the same file's `## Parsing Patterns Summary` table, beside the
       existing `Stderr marker` row, with a regex matching the shapes Phase 1 actually emitted
-      (read them from the committed script, do not re-derive them from this plan).
-- [ ] In the same file's `### Destructive-Overwrite Refusal (permanent property)` subsection or
+      (read them from the committed script, do not re-derive them from this plan). *(completed:
+      regex verified against 5 real captured stderr lines from a live scratch invocation)*
+- [x] In the same file's `### Destructive-Overwrite Refusal (permanent property)` subsection or
       `## Section Order`, add one short statement recording the settled ruling this record asked
       for: both recognised vocabularies are taught and round-tripped, an unrecognised vocabulary
       is refused loudly and never guessed at, and `specs/ROADMAP.md` presently classifies
       `classic`. State it as the current design on its own merits — no draft-history or
       supersession framing, per `.claude/rules/no-record-versioning-in-deliverables.md`, and no
       task-number citation, per `.claude/rules/no-task-references-in-deliverables.md`.
-- [ ] In `agent-system/extensions/core/context/patterns/roadmap-update.md`, correct the
+      *(completed)*
+- [x] In `agent-system/extensions/core/context/patterns/roadmap-update.md`, correct the
       `## Stderr Marker` section's claim that "a caller that only needs confirmation of what
       happened (counts, not content) should parse this line rather than diffing stdout or the
       rewritten file." The marker's counts are identical between a changed write and a no-op
       write, so point such a caller at the `OUTCOME:` line for the did-it-change question and
-      keep the marker for the counts.
-- [ ] In the same file, add the `OUTCOME:` line to the `### --regenerate` and `### --prune`
-      contract subsections' promises, and note that `--print` emits none.
-- [ ] Cross-check the documented shapes against the committed script's own format strings
+      keep the marker for the counts. *(completed)*
+- [x] In the same file, add the `OUTCOME:` line to the `### --regenerate` and `### --prune`
+      contract subsections' promises, and note that `--print` emits none. *(completed)*
+- [x] Cross-check the documented shapes against the committed script's own format strings
       literally (grep the script for the emitted text and compare), so the docs cannot drift from
-      the implementation at authoring time.
-- [ ] Commit both documentation files.
+      the implementation at authoring time. *(completed: both check-task-references.sh and
+      check-record-versioning.sh pass clean on both files; 4 shapes verified live against a
+      scratch invocation)*
+- [x] Commit both documentation files. *(completed)*
 
 **Timing**: 1 hour
 

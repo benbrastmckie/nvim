@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Record the settled ruling and correct the caller contract",
+  "started_at": "2026-11-11T19:09:50Z",
+  "last_updated": "2026-11-11T19:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read both target files immediately before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Document the OUTCOME: line in roadmap-format.md's Stderr Marker subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 3, "description": "Add OUTCOME: line row to Parsing Patterns Summary table", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 4, "description": "Record the settled layout ruling in roadmap-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 5, "description": "Correct roadmap-update.md's Stderr Marker confirmation-of-what-happened claim", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
+    {"id": 6, "description": "Add OUTCOME: line to --regenerate/--prune contract promises, note --print emits none", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
+    {"id": 7, "description": "Cross-check documented shapes against committed script literally", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Commit both documentation files", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
