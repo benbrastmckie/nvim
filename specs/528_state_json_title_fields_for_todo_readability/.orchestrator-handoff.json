@@ -1,20 +1,16 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Created a four-phase implementation plan for adding purpose-written .title fields to the 24 title-less specs/state.json active_projects entries. Phases: re-derive and finalize titles, apply via state-write.sh and regenerate TODO.md, confirm rendering plus prove the optional-field fallback on scratch copies, correct the schema doc's false presence claim and run the full gate. Three research findings were corrected at planning time: the dispatch's stale 61-entry/28-number figures, a file_scope recommendation that contradicted engine-written-state-paths-lib.sh's admission bar, and a synthetic-probe route that would have proven nothing because --state does not reach the nested Task Order section.",
-  "blockers": [],
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 10,
+  "summary": "Added purpose-written .title fields to all 24 title-less specs/state.json entries and regenerated TODO.md so both the per-task headings and the Task Order listing render names instead of truncated description prose. Empirically proved both documented fallback chains still work on scratch copies, and corrected state-management-schema.md's false 'confirmed live on all current entries' claim for title, topic, and session_id. All 4 plan phases completed and committed.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/528_state_json_title_fields_for_todo_readability/plans/01_state-json-title-fields.md",
-      "summary": "Four-phase plan: finalize titles, write via state-write.sh, verify both TODO.md surfaces plus the fallback contract, correct the schema doc under the full gate."
+      "type": "summary",
+      "path": "specs/528_state_json_title_fields_for_todo_readability/summaries/01_state-json-title-fields-summary.md",
+      "summary": "Wrote .title for 24 title-less active_projects entries, regenerated TODO.md, proved both fallback chains on scratch copies, and corrected the schema doc's false title/topic/session_id presence claims."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1794413303_b61a83_528",
-    "agent_type": "planner-agent",
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 8
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": []
 }

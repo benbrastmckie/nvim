@@ -1,10 +1,36 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 10,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/528_state_json_title_fields_for_todo_readability/summaries/01_state-json-title-fields-summary.md",
+      "summary": "Wrote .title for 24 title-less active_projects entries, regenerated TODO.md, proved both fallback chains on scratch copies, and corrected the schema doc's false title/topic/session_id presence claims."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added purpose-written .title fields to all 24 title-less specs/state.json entries and regenerated TODO.md so both the per-task headings and the Task Order listing render names instead of truncated description prose; empirically proved both documented fallback chains still work on scratch copies; corrected state-management-schema.md's false 'confirmed live on all current entries' claim for title, topic, and session_id."
+  },
+  "modified_files": [
+    "specs/state.json",
+    "specs/TODO.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When mechanically screening generated/drafted text for banned prefix words (e.g. RE-SCOPED, STANDING, HARD, CAPSTONE), a plain substring grep false-positives on ordinary words containing the token as a substring (e.g. 'HARD' inside 'hardcoded'). Use a word-boundary regex (grep -niE '\\b(WORD1|WORD2)\\b') instead of a bare substring match to avoid spurious screen failures.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/528_state_json_title_fields_for_todo_readability/summaries/01_state-json-title-fields-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["mechanical-screen", "word-boundary", "grep", "banned-prefix", "false-positive"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794423844_64f71e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
