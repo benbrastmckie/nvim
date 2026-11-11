@@ -11,9 +11,9 @@ next_project_number: 607
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,383,390,397,402,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,604 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,398,421,439,457,458,462,463,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,603,605,606 | 383,390,397,402,412,431,451,452,455,459,472,476,479,484,491,504,505,515,532,534,535,538,539,548,549,563,597,600,604 | core-agent-system, extensions, neovim, ... |
-| 3 | 399,436,438,454,501,508,547,552,570,571,579,588,592,593,602 | 313,398,402,439,451,458,472,476,486,509,518,519,542,543,564,599,603 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
+| 1 | 313,338,342,383,390,397,402,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,398,421,439,457,458,462,463,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,397,402,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
+| 3 | 399,436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,398,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
 | 6 | 596 | 595 | agent-system |
@@ -72,14 +72,13 @@ next_project_number: 607
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 591 [RESEARCHED] — Decide the fate of the errors.json triage surface
 601 [NOT STARTED] — Add a lint closing the repo-root walk-up defect class
+603 [NOT STARTED] — Make ROADMAP.md a generated artifact rendered from state.json
+  └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 421 [NOT STARTED] — Close three gaps in the telemetry --meta evidence consumer
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
-602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
-603 [NOT STARTED] — Make ROADMAP.md a generated artifact rendered from state.json
-  └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality (see above)
 
 ### Extensions
 
@@ -143,7 +142,6 @@ next_project_number: 607
 512 [PLANNED] — Exempt built-in commands from the dead-command-recommendation...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
-532 [IMPLEMENTING] — Rule on whether ROADMAP.md is authored-only and make...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
 534 [NOT STARTED] — postflight writes detail-free blocking issue entry on partial...
   └─ 543 [NOT STARTED] — Tell the re-prompted dispatch to distrust the error count it...
@@ -5942,7 +5940,7 @@ surface, and that rationale does not survive into this repository.
 ---
 
 ### 532. Rule on whether ROADMAP.md is authored-only and make roadmap-integration.sh report its outcome instead of aborting silently
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
