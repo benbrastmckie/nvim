@@ -77,7 +77,11 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$CORE_DIR/../../.." && pwd)"
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
+if [ -z "$REPO_ROOT" ]; then
+  echo "ERROR: could not resolve repository root from $SCRIPT_DIR" >&2
+  exit 2
+fi
 VERIFY_DEPLOY="$CORE_DIR/verify-deploy.sh"
 REGISTRY_LIB="$CORE_DIR/lib/gate-registry-lib.sh"
 CACHE_LIB="$CORE_DIR/lib/gate-cache-lib.sh"

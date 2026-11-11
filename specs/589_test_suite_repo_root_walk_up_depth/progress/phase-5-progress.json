@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Adjacent Same-Class Sweep",
+  "started_at": "2026-11-11T08:28:00Z",
+  "last_updated": "2026-11-11T08:52:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read Phase 1 verdicts for the two adjacent candidates", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Edit test-gate-cache-equivalence.sh (depth-indicted); no edit for test-verify-deploy-gate-selection-crash-net.sh (passes-both)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"]},
+    {"id": 3, "description": "Run edited suite from source store plus deployed-depth resolution probe", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": {
+    "test-verify-deploy-gate-selection-crash-net.sh": "Recorded passes-both in Phase 1 (source-store 1p/0f, deployed 1p/0f, despite a wrong resolved REPO_ROOT confirmed by rsync/cp stderr noise from the deployed run). Per plan contract: no edit made. Measured and found unaffected.",
+    "test-gate-cache-equivalence.sh": "Edited: REPO_ROOT now resolved via common_test_repo_root with an empty-root guard. Depth-independence confirmed directly (both invocation paths resolve to the real repo root). Source-store re-run after the edit: 17 passed, 0 failed -- identical to the pre-edit Phase 1 baseline tally, confirming no regression to the logic under test."
+  }
+}

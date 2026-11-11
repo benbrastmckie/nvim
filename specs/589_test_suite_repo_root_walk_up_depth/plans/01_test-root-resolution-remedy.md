@@ -393,7 +393,7 @@ single-module `local` check would not cover.
 
 ---
 
-### Phase 5: Adjacent Same-Class Sweep [NOT STARTED]
+### Phase 5: Adjacent Same-Class Sweep [COMPLETED]
 
 **Goal**: Close the sweep over the two suites that carry an identically shaped unconditional
 fixed-depth root computation but were not named in the task's five, so no known-shaped neighbour
@@ -401,24 +401,31 @@ is left unexamined.
 
 **Tasks**:
 
-- [ ] Read Phase 1's `phase-1-baseline.json` records for
+- [x] Read Phase 1's `phase-1-baseline.json` records for
       `test-verify-deploy-gate-selection-crash-net.sh` and `test-gate-cache-equivalence.sh`.
-- [ ] For each one recorded `depth-indicted` (deployed-path failure, source-store pass): re-read
+      *(completed)*
+- [x] For each one recorded `depth-indicted` (deployed-path failure, source-store pass): re-read
       the file, replace its root computation with `common_test_repo_root "$SCRIPT_DIR"` plus the
       empty-root guard, and correct any comment that states the fixed-depth relationship as the
       mechanism. Note the differing depths measured during planning —
       `test-verify-deploy-gate-selection-crash-net.sh:51` walks four levels from `$CORE_DIR`,
       `test-gate-cache-equivalence.sh:80` walks three — so neither is a blind copy of the other's
-      replacement; verify the resolved value, do not assume it.
-- [ ] For each one recorded `passes-both`: make **no edit**, and record in this phase's own notes
-      that it was measured and found unaffected, with the measured values.
-- [ ] For each one recorded `other-cause` (failing from both paths): make no root edit, record an
+      replacement; verify the resolved value, do not assume it. *(completed:
+      test-gate-cache-equivalence.sh was the only one recorded depth-indicted; no stale comment
+      existed above its line 80 to correct)*
+- [x] For each one recorded `passes-both`: make **no edit**, and record in this phase's own notes
+      that it was measured and found unaffected, with the measured values. *(completed:
+      test-verify-deploy-gate-selection-crash-net.sh, no edit)*
+- [x] For each one recorded `other-cause` (failing from both paths): make no root edit, record an
       `issue-record.sh` entry naming the suite and the observed failure, and leave it for a
-      separate task — a second cause must not be silently absorbed here.
-- [ ] Run whichever suites were edited from the source store, plus the deployed-depth resolution
-      probe for each edited expression.
-- [ ] Commit any edited files with an explicit file list; if nothing was edited, make no commit
-      and say so in the phase record.
+      separate task — a second cause must not be silently absorbed here. *(completed: no
+      candidate was recorded other-cause, so no entry was needed)*
+- [x] Run whichever suites were edited from the source store, plus the deployed-depth resolution
+      probe for each edited expression. *(completed: test-gate-cache-equivalence.sh, 17 passed,
+      0 failed, identical to the pre-edit baseline; both invocation paths resolve to the real
+      repo root)*
+- [x] Commit any edited files with an explicit file list; if nothing was edited, make no commit
+      and say so in the phase record. *(one file edited: test-gate-cache-equivalence.sh)*
 
 **Timing**: 0.75 hours
 
