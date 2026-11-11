@@ -1510,6 +1510,29 @@ caller and its attendant re-threading cost more, structurally, than the bounded,
 self-resolving cost it would remove. A later pass re-examining this question should re-derive
 this reasoning rather than re-propose the trigger without it.
 
+**Amended 2026-11-11 — re-adjudicated against a measured whole-cycle gate cost, REAFFIRMED.**
+Grounds (a) and (b) were re-derived against the tree at amendment time and found unchanged:
+Move 2 still issues every dispatch in one message and Move 3 still runs only after all of them
+return; `test-lint-deploy-caller-wrap.sh` still asserts exactly two genuine `deploy-headless.sh`
+callers, and the baseline-relative branches, confirmation/attribution filters,
+`deployed_critical_paths` idempotence guard, and durable `deploy_ledger_decide` ledger ground (b)
+names are all still present and still specific to `orchestrate-cycle-plan.sh`'s call site —
+`command-gate-out.sh` carries no durable ledger at all, so a third call site would need the full
+stack, not a subset. Ground (c) was re-priced against the full
+`"stale deploy or source-store boundary"` class across this repository's `issues.jsonl` corpus
+(every `specs/**/issues.jsonl`, active and archived): 68 of 397 completed `meta` tasks (~17.1%)
+have triggered this exact gate at least once. Of 62 measurable paused-to-reconciled deltas
+(paired by commit message and the commit body's `Session:` trailer across `git log --all`), 60
+resolved within the SAME `/orchestrate` session at a median of 334s (mean 470s, range
+105s-4,136s) — direct support for "largely empty cycle round trip." The remaining 2 deltas
+(28,387s and 287,534s) are cross-session resume gaps between separate `/orchestrate`
+invocations, not cycle-boundary delays within one running session; a Move 2/Move 3 trigger could
+not have closed either, yet they account for roughly 92% of the total measured deferral time in
+this corpus. The verdict stands: the addressable cost this proposal would remove is real but
+modest (median ~5.6 minutes, ~17% of meta tasks), the structural cost of a third caller is
+unchanged, and the dominant share of historically-measured deferral time is a cross-session gap
+orthogonal to this proposal entirely.
+
 ## Absent file_scope Hazard: The Split Admission Posture
 
 An undeclared `file_scope` (missing key, literal `null`, or empty array) was indistinguishable

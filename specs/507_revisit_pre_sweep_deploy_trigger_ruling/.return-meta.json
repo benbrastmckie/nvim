@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md",
-      "summary": "Two-phase plan applying the REAFFIRM ruling as a dated amendment note to the pre-postflight-sweep deploy trigger subsection, then redeploying and discharging the full gate set."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1794413303_b61a83_507",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 2,
-    "estimated_hours": 1.75,
-    "dependency_waves": 2
-  },
-  "memory_candidates": [
-    {
-      "content": "When authoring a plan phase's Tier Justification for a markdown/prose edit in the agent-system source store, do not assume suite_selection_select returns __FULL_SWEEP__. A guidance document under context/patterns/ can map to real shell suites (e.g. batch-orchestration-guardrails.md maps to test-deploy-baseline-lib.sh, test-deploy-ledger-lib.sh, test-gate-out-self-attribution.sh), because the selector keys on documented subject matter, not on executable surface. The justification's suite names must be run-and-matched against actual selector output; asserting the sentinel for a path the selector maps is treated as exactly as dishonest as a fabricated suite name.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["verification-tier", "tier-justification", "suite-selection", "prose-edit", "plan-authoring"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 507 to execute the plan",
-  "dispatch_seq": 10
+    "session_id": "sess_1794413303_b61a83",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

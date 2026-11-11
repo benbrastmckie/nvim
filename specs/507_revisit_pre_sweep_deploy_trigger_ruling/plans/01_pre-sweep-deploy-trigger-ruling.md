@@ -1,7 +1,7 @@
 # Implementation Plan: Task #507
 
 - **Task**: 507 - Re-adjudicate the declined pre-postflight-sweep deploy trigger against a measured whole-cycle gate cost
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: explicit_lint_fixture_test_subject_resolution, warn_plan_size_exceeds_cycle_budget (both declared territory edges on the touched file; both recorded as discharged at research time)
 - **Research Inputs**: specs/507_revisit_pre_sweep_deploy_trigger_ruling/reports/01_pre-sweep-deploy-trigger-readjudication.md
@@ -117,54 +117,72 @@ roadmap phases are included and no roadmap item is claimed.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-confirm the quoted figures and append the dated REAFFIRM amendment [NOT STARTED]
+### Phase 1: Re-confirm the quoted figures and append the dated REAFFIRM amendment [COMPLETED]
 
 **Goal**: The subsection carries an appended, dated amendment note stating the REAFFIRM ruling
 and citing re-confirmed figures with their derivations, with grounds (a)-(d) untouched.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
+- [x] Re-read `agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
       at the subsection "A Pre-Postflight-Sweep Deploy Trigger: Evaluated, Intentionally Not
       Built" (around line 1475 at planning time) and confirm, before editing: the heading is
       present, grounds (a), (b), (c), and (d) are each present, and the closing sentence asking a
       later pass to re-derive the reasoning is present. If the subsection is absent or the
       grounds have been edited since research time, STOP and report rather than reconstructing
       it — the durable record is the carrier of this ruling and must not be guessed at.
-- [ ] Re-derive the frequency figure: query every `issues.jsonl` under `specs/**` and
+      *(completed: heading and all four grounds confirmed present at line 1475, closing sentence
+      intact, before any edit)*
+- [x] Re-derive the frequency figure: query every `issues.jsonl` under `specs/**` and
       `specs/archive/**` for `class == "stale deploy or source-store boundary"` with
       `phase == "implement"` and a completion-deploy-gate refusal in `what_happened`, count
       distinct task numbers, and divide by the completed `meta`-task population from
       `specs/archive/state.json` plus `specs/state.json`. Record the numerator, denominator, and
       percentage actually observed.
-- [ ] Re-derive the wall-clock cost figures: pair `task {N}: orchestration paused (cycle {C})`
+      *(completed: 68 distinct tasks of 397 completed meta tasks (389 archive + 8 active) ≈
+      17.1%, re-derived by direct query)*
+- [x] Re-derive the wall-clock cost figures: pair `task {N}: orchestration paused (cycle {C})`
       against `task {N}: complete implementation (post-deploy reconcile)` by task number across
       `git log --all`, and record the sample count, min, median, mean, and max, plus the count and
       magnitudes of any cross-session outliers.
-- [ ] Compare both re-derived results against the report's figures (68/396 ~17.2%; 59 deltas,
+      *(completed: 62 paired deltas, 60 same-session by `Session:` trailer match (median 334s,
+      mean 470s, range 105s-4,136s), 2 cross-session outliers (28,387s, 287,534s) holding ~92% of
+      total deferral time)*
+- [x] Compare both re-derived results against the report's figures (68/396 ~17.2%; 59 deltas,
       57 same-session, median 336s, mean 415s, range 105s-2,726s; 2 outliers at 28,387s and
       287,534s holding ~94% of total deferral time). State the comparison explicitly in the
       phase's verification notes even when it only confirms them unchanged. Where a figure has
       drifted, the amendment quotes the **re-derived** value, not the report's.
-- [ ] Append the amendment paragraph immediately after the "(d) The verdict." paragraph, using
+      *(completed: see Phase 1 Verification Notes below — denominator 396→397, deltas 59→62,
+      same-session 57→60, mean 415s→470s, outlier share 94%→92%, all drift attributable to 3
+      additional tasks completing between research and this dispatch; conclusion unchanged)*
+- [x] Append the amendment paragraph immediately after the "(d) The verdict." paragraph, using
       the prose in the research report's `## Recommendations` section ("Proposed amendment text")
       as the base, substituting any re-derived figure that differs and setting the date to the
       actual amendment date rather than the report's. Do not edit, reorder, reword, or delete any
       of grounds (a)-(d), and do not add supersession or draft-lineage framing.
-- [ ] Confirm the amendment names the *derivation* of each figure (the issues.jsonl class query;
+      *(completed: amendment appended, dated 2026-11-11, with re-derived figures substituted)*
+- [x] Confirm the amendment names the *derivation* of each figure (the issues.jsonl class query;
       the `git log --all` commit-message pairing) and never a `specs/**` artifact path — a path
       citation would embed a task number in a file under `agent-system/**`.
-- [ ] Run `bash .claude/scripts/check-task-references.sh agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
+      *(completed: amendment cites the issues.jsonl class query and the git log --all
+      commit-message/Session-trailer pairing; no specs/** path or task number appears)*
+- [x] Run `bash .claude/scripts/check-task-references.sh agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
       and confirm exit 0.
-- [ ] Run `bash .claude/scripts/check-record-versioning.sh agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
+      *(completed: exit 0, "0 unexempted task-reference occurrences")*
+- [x] Run `bash .claude/scripts/check-record-versioning.sh agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
       and confirm zero BLOCKING findings. If the dated opener is flagged, reshape it to the
       sanctioned dated-amendment-note form rather than dropping the date or the amendment
       framing.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-deploy-ledger-lib.sh,test-gate-out-self-attribution.sh`
+      *(completed: 0 BLOCKING, 21 pre-existing ADVISORY findings elsewhere in the file; none in
+      the new paragraph; exit 0)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-deploy-baseline-lib.sh,test-deploy-ledger-lib.sh,test-gate-out-self-attribution.sh`
       and confirm green.
-- [ ] Read the staged diff and confirm every changed hunk lies inside the appended prose
+      *(completed: 3 passed, 0 failed, 0 skipped)*
+- [x] Read the staged diff and confirm every changed hunk lies inside the appended prose
       paragraph, with no hunk inside grounds (a)-(d) or anywhere else in the file.
-- [ ] Commit, staging only this one file by explicit path.
+      *(completed: single hunk, lines 1513-1534, entirely inside the new paragraph)*
+- [x] Commit, staging only this one file by explicit path. *(completed)*
 
 **Timing**: 1 hour
 
@@ -202,6 +220,37 @@ executable surface to a guidance document.
   report no blocking findings.
 - The three selected suites pass.
 - Diff read-through shows every changed hunk inside the appended prose only.
+
+**Phase 1 Verification Notes (re-derivation comparison against the research report's figures)**:
+
+| Figure | Report (research time) | Re-derived (this dispatch) | Changed? |
+|---|---|---|---|
+| Frequency numerator/denominator | 68 / 396 | 68 / 397 | Denominator +1 (one more `meta` task completed between research and this dispatch) |
+| Frequency percentage | ~17.2% | ~17.1% | Negligible drift |
+| Paused-to-reconciled deltas (count) | 59 | 62 | +3 (three sibling tasks in this batch — 554, 555, 589 — completed their own reconcile since research time and now pair) |
+| Same-session resolutions | 57 | 60 | +3, same cause |
+| Same-session median | 336s | 334s | Negligible drift |
+| Same-session mean | 415s | 470s | Increased by the 3 newly-paired deltas, still minutes-scale |
+| Same-session range | 105s-2,726s | 105s-4,136s | Widened at the top end; still two orders of magnitude below the cross-session outliers |
+| Cross-session outliers | 28,387s and 287,534s | 28,387s and 287,534s | Unchanged — same two tasks, same magnitudes |
+| Outlier share of total deferral time | ~94% | ~92% | Negligible drift |
+
+All drift is attributable to three additional tasks (554, 555, 589 — co-dispatched siblings in
+this same `/orchestrate` batch) completing their paused-to-reconciled cycle between the research
+pass and this implementation dispatch, not to any methodological discrepancy. Every re-derived
+figure confirms the report's qualitative conclusions unchanged: ~17% gate-trigger frequency,
+minutes-scale median same-session resolution, and a dominant (>90%) share of total measured
+deferral time attributable to two cross-session outliers a Move 2/Move 3 trigger could not
+address. The amendment quotes the re-derived values per this phase's own task list.
+
+Documentary gates run and observed green in this dispatch:
+- `check-task-references.sh` (scoped): exit 0, 0 unexempted occurrences.
+- `check-record-versioning.sh` (scoped): exit 0, 0 BLOCKING (21 pre-existing ADVISORY findings
+  elsewhere in the file, none in the new paragraph).
+- `run-all.sh --only test-deploy-baseline-lib.sh,test-deploy-ledger-lib.sh,test-gate-out-self-attribution.sh`:
+  3 passed, 0 failed, 0 skipped.
+- Staged-diff read-through: one hunk, entirely inside the appended paragraph; grounds (a)-(d)
+  byte-for-byte unchanged.
 
 ---
 

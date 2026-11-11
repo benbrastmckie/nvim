@@ -1,0 +1,98 @@
+{
+  "phase": 1,
+  "phase_name": "Re-confirm the quoted figures and append the dated REAFFIRM amendment",
+  "started_at": "2026-11-11T17:01:00Z",
+  "last_updated": "2026-11-11T17:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-read subsection and confirm grounds (a)-(d) and closing sentence present",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Re-derive frequency figure (gate-refusal class across issues.jsonl vs completed meta tasks)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Re-derive wall-clock cost figures (paused/reconciled commit pairing)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Compare re-derived results against report's figures",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Append amendment paragraph after '(d) The verdict.'",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Confirm amendment names derivation, not specs/** path",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Run check-task-references.sh scoped to file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "Run check-record-versioning.sh scoped to file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md"
+      ]
+    },
+    {
+      "id": 9,
+      "description": "Run run-all.sh --only test-deploy-baseline-lib.sh,test-deploy-ledger-lib.sh,test-gate-out-self-attribution.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md"
+      ]
+    },
+    {
+      "id": 10,
+      "description": "Read staged diff, confirm hunks inside appended paragraph only",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md"
+      ]
+    },
+    {
+      "id": 11,
+      "description": "Commit, staging only this one file",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "specs/507_revisit_pre_sweep_deploy_trigger_ruling/plans/01_pre-sweep-deploy-trigger-ruling.md"
+      ]
+    }
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
