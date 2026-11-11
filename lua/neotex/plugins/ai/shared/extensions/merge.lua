@@ -824,6 +824,113 @@ function M.remove_orphaned_index_entries(index_path, valid_prefixes, context_dir
   return true, removed_count
 end
 
+--- Build the valid_set membership key for a (event, matcher, identity) tuple. Exported so the
+--- caller building the valid set (`init.lua`'s `manager.load`, Phase 5) and this function's own
+--- survival predicate key identically -- using anything other than this one builder on either
+--- side would silently reintroduce the "two different answers to is this the same registration"
+--- problem Phase 2/3 closed for identity itself. A control character (`\1`) is used as the
+--- separator rather than `|`, since a real matcher value legitimately CONTAINS `|`
+--- (`"Bash|Write|Edit"`), which would make a `|`-joined key ambiguous.
+--- @param event string Hook event name (e.g. "PreToolUse")
+--- @param matcher string Matcher string (e.g. "Bash|Write|Edit")
+--- @param identity string The hook's identity, as returned by M.hook_identity / hook_identity.lua
+--- @return string key
+function M.hook_valid_set_key(event, matcher, identity)
+  return tostring(event) .. "\1" .. tostring(matcher) .. "\1" .. tostring(identity)
+end
+
+--- Remove hook registrations from `target_path` (a settings.json-shaped file) that no loaded
+--- extension's fragment or root-files surface still provides -- the orphan sweep for the
+--- `settings` merge target, modeled structurally on `M.remove_orphaned_index_entries` above
+--- (same no-op-on-unreadable, no-write-on-zero-removed, same caller-builds-the-valid-set
+--- shape), extended with the carve-out and placement semantics this task's plan settles.
+---
+--- SURVIVAL PREDICATE (a hook entry is KEPT iff EITHER holds):
+---   1. `M.hook_identity(entry)` is nil -- the carve-out. An identity-ineligible command (a
+---      hand-written custom hook, a `~/`-anchored path, or any command with no recognized
+---      `*.sh` invocation) is NEVER matched, moved, deduped, or swept, unconditionally. This
+---      predicate alone is what makes the single most dangerous possible regression in this
+---      task (deleting a user's own hook) structurally impossible rather than merely unlikely.
+---   2. The tuple `(event, matcher, type, normalized_path)` -- keyed via `M.hook_valid_set_key`
+---      against `M.hook_identity(entry)` -- is present in `valid_set`.
+--- Everything else is an orphan and is removed. This ONE predicate covers all four drift shapes
+--- the task's research identified, with no special-casing needed for any of them:
+---   - an undeclared registration (not in valid_set under ANY matcher/event): removed.
+---   - cross-MATCHER migration (source narrowed/changed the matcher a hook registers under):
+---     the deployed (event, OLD matcher, identity) tuple is absent from valid_set (which only
+---     contains the matcher the SOURCE currently declares), so it is removed -- "the source is
+---     authoritative about WHERE its own hooks register."
+---   - cross-EVENT survival (source moved a hook to a different event entirely): same
+---     mechanism, since event is part of the key.
+---   - a dead-script registration whose declaration is simply gone: absent from valid_set,
+---     removed, regardless of whether the invoked script file still happens to exist on disk
+---     (existence is the lint's Check D question, never this sweep's).
+---
+--- Touches nothing outside the `hooks` key: every other top-level key (`env`, `permissions`,
+--- `mcpServers`, ...) is read and re-written byte-for-byte unchanged (`M.write_json` re-encodes
+--- the whole decoded table, so an untouched key is simply carried through).
+---
+--- @param target_path string Path to the settings.json-shaped file to sweep
+--- @param valid_set table Set of `M.hook_valid_set_key(event, matcher, identity)` -> true
+--- @return boolean success True if the sweep (and any resulting write) succeeded
+--- @return number removed_count Number of hook entries removed
+--- @return table removed_entries Array of `{event=, matcher=, hook=<removed hook object>}`,
+---   for rollback threading (Phase 5) -- mirrors `merge_hook_event_array`'s `hook_items` shape.
+function M.remove_orphaned_hook_registrations(target_path, valid_set)
+  if vim.fn.filereadable(target_path) ~= 1 then
+    return true, 0, {}
+  end
+
+  local settings = read_json(target_path)
+  if not settings or not settings.hooks or type(settings.hooks) ~= "table" then
+    return true, 0, {}
+  end
+
+  local removed_count = 0
+  local removed_entries = {}
+
+  for event, event_array in pairs(settings.hooks) do
+    if is_hook_event_array(event_array) then
+      local new_event_array = {}
+      for _, block in ipairs(event_array) do
+        local new_hooks = {}
+        for _, hook in ipairs(block.hooks) do
+          local identity = hook_identity(hook)
+          local survives = identity == nil
+            or valid_set[M.hook_valid_set_key(event, block.matcher, identity)] ~= nil
+          if survives then
+            table.insert(new_hooks, hook)
+          else
+            removed_count = removed_count + 1
+            table.insert(removed_entries, { event = event, matcher = block.matcher, hook = hook })
+          end
+        end
+        -- Prune an emptied matcher block entirely, rather than leaving {matcher=, hooks={}}.
+        if #new_hooks > 0 then
+          table.insert(new_event_array, { matcher = block.matcher, hooks = new_hooks })
+        end
+      end
+      -- Prune an emptied event array entirely, rather than leaving settings.hooks[event] = {}.
+      if #new_event_array > 0 then
+        settings.hooks[event] = new_event_array
+      else
+        settings.hooks[event] = nil
+      end
+    end
+  end
+
+  if removed_count == 0 then
+    return true, 0, {}
+  end
+
+  local ok = M.write_json(target_path, settings)
+  if not ok then
+    return false, 0, {}
+  end
+
+  return true, removed_count, removed_entries
+end
+
 --- Generate CLAUDE.md (or equivalent config markdown) as a fully computed artifact.
 --- Starts from a header template, then appends each loaded extension's claudemd source
 --- content in dependency order (core first, then extensions sorted by load order).

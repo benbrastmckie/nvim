@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "The sweep function in merge.lua",
+  "started_at": "2026-11-11T17:35:00Z",
+  "last_updated": "2026-11-11T18:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add M.remove_orphaned_hook_registrations plus M.hook_valid_set_key",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]
+    },
+    {
+      "id": 2,
+      "description": "Add 8 merge_spec.lua sweep specs including both survival regressions",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "All 21 merge_spec.lua specs green (13 pre-existing/Phase2 + 8 new Phase 4). The host-fixture sweep test (valid_set built from the REAL core/merge-sources/settings-hooks.json + root-files/settings.json) removes exactly 1 registration -- the claude-ready-signal.sh CWD-relative orphan -- matching the plan's Phase 6 Scope Hypothesis (28 -> 27) exactly. test-deploy-propagation.sh and test-mcp-merge-target.sh both green."
+}

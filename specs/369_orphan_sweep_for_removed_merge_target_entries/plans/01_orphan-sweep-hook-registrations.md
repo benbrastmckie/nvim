@@ -330,7 +330,7 @@ phase's justification still describes the post-edit state.
 
 ---
 
-### Phase 4: The sweep function in merge.lua [NOT STARTED]
+### Phase 4: The sweep function in merge.lua [COMPLETED]
 
 **Goal**: Add `M.remove_orphaned_hook_registrations`, modeled structurally on
 `M.remove_orphaned_index_entries`, with the carve-out and placement semantics decided in this
@@ -338,20 +338,20 @@ plan, and unit specs including the two survival regressions.
 
 **Tasks**:
 
-- [ ] Add `M.remove_orphaned_hook_registrations(target_path, valid_set)` to `merge.lua`,
+- [x] Add `M.remove_orphaned_hook_registrations(target_path, valid_set)` to `merge.lua`,
       returning `(success, removed_count, removed_entries)` and mirroring the index sweep's
       shape: no-op-and-return-true on an unreadable or absent target, no write when
       `removed_count == 0`, `M.write_json` otherwise.
-- [ ] Implement the single survival predicate: a hook entry survives iff
+- [x] Implement the single survival predicate: a hook entry survives iff
       `M.hook_identity(entry)` is `nil` (the carve-out — never matched, moved, deduped or swept),
       OR the tuple `(event, matcher, type, normalized_path)` is present in `valid_set`. This one
       predicate covers all four drift shapes at once: undeclared registration, cross-matcher
       migration, cross-EVENT survival, and a dead-script registration whose declaration is gone.
-- [ ] Touch nothing outside the `hooks` key. `env`, `permissions`, `mcpServers` and every other
+- [x] Touch nothing outside the `hooks` key. `env`, `permissions`, `mcpServers` and every other
       top-level key are read and re-written unchanged.
-- [ ] Prune a matcher block whose `hooks` array became empty, and an event array that became
+- [x] Prune a matcher block whose `hooks` array became empty, and an event array that became
       empty, in the same write.
-- [ ] Add `merge_spec.lua` specs, all against a scratch `settings.json` under `vim.fn.tempname()`:
+- [x] Add `merge_spec.lua` specs, all against a scratch `settings.json` under `vim.fn.tempname()`:
       - removes an undeclared registration (the host repo's CWD-relative
         `bash scripts/claude-ready-signal.sh` under `SessionStart|startup`), taken from the Phase 1
         fixture rather than retyped;

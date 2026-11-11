@@ -487,6 +487,265 @@ describe("shared.extensions.merge hook_identity conformance corpus", function()
   end)
 end)
 
+-- Coverage for M.remove_orphaned_hook_registrations: the orphan sweep for the `settings`
+-- merge target, modeled on M.remove_orphaned_index_entries. Every spec here works against a
+-- scratch settings.json under vim.fn.tempname(), using a valid_set built from the REAL,
+-- on-disk core fragment (merge-sources/settings-hooks.json) plus root-files/settings.json's
+-- own hooks -- the same two surfaces Phase 5's init.lua valid-set builder unions for this
+-- target, and the same real source the Phase 1 fixtures were captured against.
+describe("shared.extensions.merge orphan sweep for hook registrations", function()
+  --- Build a valid_set (M.hook_valid_set_key -> true) from a settings-shaped fixture table,
+  --- exactly as the real valid-set builder would from a loaded extension's own fragment/
+  --- root-files hooks block.
+  local function build_valid_set(...)
+    local valid_set = {}
+    for _, settings in ipairs({ ... }) do
+      for event, event_array in pairs(settings.hooks or {}) do
+        for _, block in ipairs(event_array) do
+          for _, hook in ipairs(block.hooks) do
+            local identity = merge.hook_identity(hook)
+            if identity then
+              valid_set[merge.hook_valid_set_key(event, block.matcher, identity)] = true
+            end
+          end
+        end
+      end
+    end
+    return valid_set
+  end
+
+  local function read_real_fragment()
+    local path = vim.fn.getcwd() .. "/agent-system/extensions/core/merge-sources/settings-hooks.json"
+    return vim.json.decode(table.concat(vim.fn.readfile(path), "\n"))
+  end
+
+  local function read_real_root_files()
+    local path = vim.fn.getcwd() .. "/agent-system/extensions/core/root-files/settings.json"
+    return vim.json.decode(table.concat(vim.fn.readfile(path), "\n"))
+  end
+
+  local function read_host_fixture()
+    local path = vim.fn.getcwd()
+      .. "/specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/host-settings.json"
+    return vim.json.decode(table.concat(vim.fn.readfile(path), "\n"))
+  end
+
+  it(
+    "removes an undeclared registration (the host repo's real CWD-relative "
+      .. "'bash scripts/claude-ready-signal.sh' orphan under SessionStart|startup)",
+    function()
+      local target_path = vim.fn.tempname()
+      local fixture = read_host_fixture()
+      vim.fn.writefile({ vim.json.encode(fixture) }, target_path)
+
+      local valid_set = build_valid_set(read_real_fragment(), read_real_root_files())
+      local ok, removed_count, removed_entries = merge.remove_orphaned_hook_registrations(target_path, valid_set)
+      assert.is_true(ok)
+      assert.equals(1, removed_count)
+      assert.equals("SessionStart", removed_entries[1].event)
+      assert.equals("startup", removed_entries[1].matcher)
+      assert.equals("bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'", removed_entries[1].hook.command)
+
+      local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+      local result_text = vim.json.encode(result)
+      assert.is_nil(result_text:find("claude%-ready%-signal", 1, false))
+      vim.fn.delete(target_path)
+    end
+  )
+
+  it(
+    "NEVER touches a hand-written hook command that invokes no source-store script "
+      .. "(acceptance criterion 2 -- the single most dangerous possible regression)",
+    function()
+      local target_path = vim.fn.tempname()
+      vim.fn.writefile({
+        vim.json.encode({
+          hooks = {
+            Stop = {
+              {
+                matcher = "*",
+                hooks = {
+                  { type = "command", command = "bash /opt/mytools/my-custom-hook.sh --flag value" },
+                },
+              },
+            },
+          },
+        }),
+      }, target_path)
+
+      -- A valid_set that resembles NOTHING in the target -- the worst case for this carve-out.
+      local valid_set = {}
+      local ok, removed_count = merge.remove_orphaned_hook_registrations(target_path, valid_set)
+      assert.is_true(ok)
+      assert.equals(0, removed_count)
+
+      local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+      assert.equals(
+        "bash /opt/mytools/my-custom-hook.sh --flag value",
+        result.hooks.Stop[1].hooks[1].command
+      )
+      vim.fn.delete(target_path)
+    end
+  )
+
+  it("NEVER touches a ~/-anchored script registration (the mandatory carve-out)", function()
+    local target_path = vim.fn.tempname()
+    local command = "bash ~/.config/nvim/scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"
+    vim.fn.writefile({
+      vim.json.encode({
+        hooks = {
+          SessionStart = {
+            { matcher = "startup", hooks = { { type = "command", command = command } } },
+          },
+        },
+      }),
+    }, target_path)
+
+    local valid_set = {} -- empty: the worst case
+    local ok, removed_count = merge.remove_orphaned_hook_registrations(target_path, valid_set)
+    assert.is_true(ok)
+    assert.equals(0, removed_count)
+
+    local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+    assert.equals(command, result.hooks.SessionStart[1].hooks[1].command)
+    vim.fn.delete(target_path)
+  end)
+
+  it(
+    "cross-matcher: removes a hook registered under a matcher the source no longer declares "
+      .. "it under (the widened Notification matcher drift, ModelBuilder/Logos-Website shape)",
+    function()
+      local target_path = vim.fn.tempname()
+      local stale_command = "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+      vim.fn.writefile({
+        vim.json.encode({
+          hooks = {
+            Notification = {
+              {
+                matcher = "permission_prompt|idle_prompt|elicitation_dialog",
+                hooks = { { type = "command", command = stale_command } },
+              },
+            },
+          },
+        }),
+      }, target_path)
+
+      -- Source declares tts-notify.sh only under the NARROWER matcher.
+      local valid_set = build_valid_set({
+        hooks = {
+          Notification = {
+            {
+              matcher = "permission_prompt|elicitation_dialog",
+              hooks = { { type = "command", command = stale_command } },
+            },
+          },
+        },
+      })
+
+      local ok, removed_count = merge.remove_orphaned_hook_registrations(target_path, valid_set)
+      assert.is_true(ok)
+      assert.equals(1, removed_count)
+
+      local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+      assert.is_nil(result.hooks.Notification) -- the only block under this event was pruned
+      vim.fn.delete(target_path)
+    end
+  )
+
+  it(
+    "cross-event: removes a hook registered under an event the source no longer declares it "
+      .. "under (the Logos/Theory validate-no-task-references.sh PostToolUse drift)",
+    function()
+      local target_path = vim.fn.tempname()
+      local stale_command = "bash .claude/hooks/validate-no-task-references.sh 2>/dev/null || echo '{}'"
+      vim.fn.writefile({
+        vim.json.encode({
+          hooks = {
+            PostToolUse = {
+              { matcher = "Write|Edit", hooks = { { type = "command", command = stale_command } } },
+            },
+          },
+        }),
+      }, target_path)
+
+      -- Source declares this hook only under PreToolUse|Write|Edit.
+      local valid_set = build_valid_set({
+        hooks = {
+          PreToolUse = {
+            { matcher = "Write|Edit", hooks = { { type = "command", command = stale_command } } },
+          },
+        },
+      })
+
+      local ok, removed_count = merge.remove_orphaned_hook_registrations(target_path, valid_set)
+      assert.is_true(ok)
+      assert.equals(1, removed_count)
+
+      local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+      assert.is_nil(result.hooks.PostToolUse)
+      vim.fn.delete(target_path)
+    end
+  )
+
+  it("env and permissions sub-objects are byte-identical across a sweep that removes entries", function()
+    local target_path = vim.fn.tempname()
+    local fixture = read_host_fixture()
+    local before_env = vim.json.encode(fixture.env)
+    local before_permissions = vim.json.encode(fixture.permissions)
+    vim.fn.writefile({ vim.json.encode(fixture) }, target_path)
+
+    local valid_set = build_valid_set(read_real_fragment(), read_real_root_files())
+    local ok, removed_count = merge.remove_orphaned_hook_registrations(target_path, valid_set)
+    assert.is_true(ok)
+    assert.is_true(removed_count > 0)
+
+    local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+    assert.equals(before_env, vim.json.encode(result.env))
+    assert.equals(before_permissions, vim.json.encode(result.permissions))
+    vim.fn.delete(target_path)
+  end)
+
+  it("idempotency: a second sweep over the swept result removes 0 and does not rewrite the file", function()
+    local target_path = vim.fn.tempname()
+    local fixture = read_host_fixture()
+    vim.fn.writefile({ vim.json.encode(fixture) }, target_path)
+
+    local valid_set = build_valid_set(read_real_fragment(), read_real_root_files())
+    local ok1, removed_count1 = merge.remove_orphaned_hook_registrations(target_path, valid_set)
+    assert.is_true(ok1)
+    assert.is_true(removed_count1 > 0)
+
+    local mtime_before = vim.fn.getftime(target_path)
+    local ok2, removed_count2 = merge.remove_orphaned_hook_registrations(target_path, valid_set)
+    assert.is_true(ok2)
+    assert.equals(0, removed_count2)
+    assert.equals(mtime_before, vim.fn.getftime(target_path))
+    vim.fn.delete(target_path)
+  end)
+
+  it("prunes an emptied matcher block and an emptied event array in the same write", function()
+    local target_path = vim.fn.tempname()
+    local orphan_command = "bash .claude/hooks/zz-fully-orphaned.sh"
+    vim.fn.writefile({
+      vim.json.encode({
+        hooks = {
+          Stop = {
+            { matcher = "*", hooks = { { type = "command", command = orphan_command } } },
+          },
+        },
+      }),
+    }, target_path)
+
+    local ok, removed_count = merge.remove_orphaned_hook_registrations(target_path, {})
+    assert.is_true(ok)
+    assert.equals(1, removed_count)
+
+    local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
+    assert.is_nil(result.hooks.Stop) -- the whole event array was pruned, not left as {}
+    vim.fn.delete(target_path)
+  end)
+end)
+
 -- Coverage for the merge_targets.mcp mechanism: a project-scoped .mcp.json is merged and
 -- unmerged through the SAME M.merge_settings/M.unmerge_settings primitive the settings path
 -- already uses (see lua/neotex/plugins/ai/shared/extensions/init.lua's `mcp` branches). These
