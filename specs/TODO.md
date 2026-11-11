@@ -1,5 +1,5 @@
 ---
-next_project_number: 583
+next_project_number: 584
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 583
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,582 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,582 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583 | 369,383,397,412,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
 
@@ -86,6 +86,10 @@ next_project_number: 583
 437 [NOT STARTED] — Repair the Zotero sqlite-reconstruction export path: lost CSL...
 453 [NOT STARTED] — Carry the degraded-retrieval signal into the zero-result...
 
+### Neovim
+
+583 [NOT STARTED] — Add a settings-defaults surface to the agent system loader picker
+
 ### File Scope Lifecycle
 
 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
@@ -152,7 +156,6 @@ next_project_number: 583
   └─ 576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
-554 [IMPLEMENTING] — file\_scope containment drops external source-store paths...
 555 [IMPLEMENTING] — Test sweep permanently red where the source store is external
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
@@ -179,6 +182,118 @@ next_project_number: 583
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 583. Add a settings-defaults surface to the agent system loader picker
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: neovim
+- **Dependencies**: Task 369, Task 563
+
+**Description**: GOAL. Extend the `<leader>al` agent system loader picker so it is the single control surface for
+agent-system-governed session defaults -- not only which extensions are loaded, but the default
+model, the output style, and any other settings key where a single correct value exists. The
+source store in this repository stays the authoritative definition; the picker becomes the way to
+read and change it, and a load/resync is what applies it.
+
+INTENT, in the operator's words: keep all agent system maintenance consolidated in this
+repository rather than split between here and a separately-maintained global settings file.
+
+EDIT TARGETS SPAN TWO TREES, and the boundary rule differs between them:
+- `lua/neotex/plugins/ai/**` is ordinary tracked Neovim configuration in this repository. Edit it
+  directly; `rules/source-store-deploy-boundary.md` does NOT apply to it.
+- `agent-system/extensions/core/**` IS the source store. Never hand-author under a deployed
+  `.claude/**` tree, which is a gitignored disposable artifact regenerated from it. Resolve with
+  `jq -r '.extensions.core.source_dir' .claude-extensions.json`. REDEPLOY afterwards.
+
+=== WHAT ALREADY EXISTS (verified; do not rebuild it) ===
+
+The enforcement half of this feature has already landed and is working. A per-key carve-out from
+the install-once guard re-asserts declared keys from the source-store template into an existing
+deployed settings file on every load:
+- `AUTHORITATIVE_ROOT_FILE_KEYS` in `lua/neotex/plugins/ai/shared/extensions/loader.lua`,
+  currently `{["settings.local.json"] = {"outputStyle"}}`.
+- `reconcile_authoritative_keys()` in the same file, wired into the install-once skip branch of
+  `copy_category` and declared on the `root_files` descriptor as `authoritative_keys`.
+- `outputStyle` is `"Concise"` in `agent-system/extensions/core/root-files/settings.local.json`
+  and in all 11 deployed repos that carry the file.
+
+So the mechanism to APPLY a governed default exists. What does not exist is a UI to see or change
+one, and a considered answer to which keys belong under governance.
+
+=== WHAT THIS RECORD OWES ===
+
+1. A picker surface for governed defaults. Model it on the existing special-entry pattern in
+   `display/entries.lua` (`[Reload All]`, `[Regenerate]`, `[Global Update]`: `entry_type =
+   "special"`, an `is_*` flag, a `display` line, and a `detail` block whose first line states
+   destructiveness), with its action wired in `picker/init.lua` beside those entries' handlers.
+   Research owns the shape: one `[Defaults]` entry opening a submenu, one entry per governed key,
+   or a heading-grouped section listing each key with its current value.
+
+2. A decision on where the governed-key list lives. It is currently a hardcoded Lua table. For
+   the picker to present keys with labels, allowed values and help text, that table likely needs
+   to become data -- a manifest block in `agent-system/extensions/core/manifest.json`, or a
+   dedicated source-store file -- so adding a governed key does not require editing Lua. Weigh
+   that against the existing precedent that `INSTALL_ONCE_ROOT_FILES` is also a hardcoded table.
+
+3. Per-key allowed values and validation. `outputStyle` and `model` are closed sets in practice;
+   an invalid value fails silently at session start, which is the failure mode to prevent. Decide
+   whether the picker offers a fixed choice list per key and where that list is declared.
+
+4. A ruling on which keys to govern. This is the load-bearing judgement, because every key added
+   removes protection the install-once guard exists to provide. Evidence is in this record's seed
+   report; the short version:
+   - `model` -- RECOMMENDED. Measured drift: `protocol` pins a stale
+     `claude-opus-4-5-20251101`, two repos have no key, the rest say `opus`.
+   - `enableAllProjectMcpServers` -- RECOMMENDED. Binary policy, absent in one repo.
+   - `enabledMcpjsonServers` -- optional; already uniform, so no drift to repair.
+   - `permissions` -- MUST NOT be governed. Per-repo accumulated approvals range from 1 to 68
+     entries against a 46-entry template; governing it would delete real grants. This is the
+     single most important non-goal in this record.
+
+5. Propagation scope, and its honest limits. `[Reload All]` and `[Regenerate]` are current-repo
+   only; `[Global Update]` iterates the repo registry. A defaults change therefore reaches other
+   repos only on their next load, or through `[Global Update]`. Note the open
+   registry-enumeration record this one declares an edge on: that registry is measured unusable
+   as a deploy-enumeration source, so do not promise reliable cross-repo propagation until it is
+   repaired. State the limitation in the picker's `detail` text rather than implying global reach.
+
+6. Interaction with `manager.wipe`. `[Regenerate]` snapshots and restores `settings.local.json`
+   across the wipe. Confirm a governed key is reconciled rather than restored to its pre-wipe
+   value, or the destructive path will silently undo a defaults change.
+
+=== EXPLICIT NON-GOALS ===
+
+- Governing anything in the user-global `~/.claude/settings.json`. That file is declaratively
+  owned by Home Manager (`~/.dotfiles/config/claude/settings.json`), which force-restores `env`,
+  `hooks`, `model`, `permissions` and `statusLine` on every switch. Writing those keys from this
+  picker would be reverted on the next rebuild, and the keys that genuinely must stay global --
+  process-level `env`, the systemd sleep-inhibitor and Sapience hooks, `statusLine`, `editorMode`
+  -- are out of scope by design, not by omission. See the seed report's layer analysis.
+- Removing the non-enforced global keys' live-editability. `editorMode`, the voice and
+  notification toggles and similar are deliberately left editable via `/config` so interactive
+  changes survive rebuilds; do not move them under source-store governance.
+- Changing `permissions` handling anywhere.
+- Any change to the `--dangerously-skip-permissions` flag in the loader's command string.
+
+=== RELATIONSHIP TO THE OPEN OUTPUT-STYLE RECORD ===
+
+The backlog audit returned `superset-of-open` against the concise-output-style record on the
+shared template path, and that verdict is correct: this record subsumes it. That record's
+concrete deliverable (a concise output style applied by default) has already landed via the
+mechanism described above, and its original research questions about authoring a custom style
+are moot because `Concise` turned out to be a valid built-in. Dispose of it -- abandon it citing
+this record, or narrow it to the one piece still outstanding -- rather than running both.
+
+=== VERIFICATION ===
+
+- Changing a governed key in the source store and invoking the picker's reload applies it to the
+  current repo, with no other key in the target settings file altered.
+- A hand-edited non-governed key in a deployed `settings.local.json` survives the operation.
+- An invalid value is rejected at selection time rather than written and failing at session start.
+- The destructive regenerate path leaves a governed key at the governed value.
+- Existing loader behavior for extensions is unchanged; the extension toggle path is untouched.
+
+---
 
 ### 582. Author a concise output style in the source store and make it the default outputStyle
 - **Status**: [NOT STARTED]
@@ -1969,7 +2084,7 @@ repository before being written.
 
 ### 554. file_scope containment drops external source-store paths from phase commits
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
