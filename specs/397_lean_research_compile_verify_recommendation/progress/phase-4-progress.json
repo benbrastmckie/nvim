@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and run the full gate set",
+  "started_at": "2026-11-11T00:11:00Z",
+  "last_updated": "2026-11-11T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm phases 1-3 committed and tree clean of this task's own uncommitted hunks", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Redeploy via deploy-headless.sh (bounded wait)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Verify deployed copies carry the clause", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Discharge gate verification against the Batch Gate Deferral scoped tier", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Run the complete gate set: bash verify-deploy.sh",
+      "type": "altered",
+      "reason": "Dispatch file's Batch Gate Deferral directive constrains this phase to a scoped tier discharge instead of an independent full-gate run; the full set runs once for the whole batch at the end of the invocation.",
+      "annotation": "*(deviation: deferred to the batch-level stage per the dispatch's Batch Gate Deferral directive -- Phase 4 discharged instead against the scoped tier: gates 3,4 PASS, the 5-suite set PASS, lean: census 0 mismatch. The full gate set runs once for the whole batch at the end of this invocation.)*"
+    }
+  ],
+  "foreign_observations": [
+    "deploy-headless.sh's own inline fast-gate check reported 2 pre-existing FAILs (gate10 validate-state.sh timeout, gate20 eager-load context budget) in files outside this task's file_scope; confirmed via git log not caused by this task's commits; recorded via issue-record.sh, not fixed here."
+  ]
+}

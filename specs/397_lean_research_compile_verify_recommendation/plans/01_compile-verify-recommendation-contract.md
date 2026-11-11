@@ -337,25 +337,25 @@ test-context-reachability.sh,test-deploy-orphans.sh,test-index-entries-schema.sh
 
 ---
 
-### Phase 4: Redeploy and run the full gate set [NOT STARTED]
+### Phase 4: Redeploy and run the full gate set [COMPLETED]
 
 **Goal**: the deployed `.claude/` tree carries the new clause and both tagged skeletons, and the
 complete gate set is observed green over the whole change.
 
 **Tasks**:
-- [ ] Confirm Phases 1-3 are committed and the working tree holds no uncommitted hunks of this
+- [x] Confirm Phases 1-3 are committed and the working tree holds no uncommitted hunks of this
       task's own (siblings' uncommitted changes may legitimately be present — do not revert or
-      absorb them).
-- [ ] Redeploy with a bounded wait:
+      absorb them). *(completed: git status --short shows no uncommitted change to this task's three files)*
+- [x] Redeploy with a bounded wait: *(completed)*
       `timeout 540 bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh`, invoked
       with the Bash tool's `timeout` parameter raised to 600000 per
       `context/patterns/external-process-wait.md` Rule 1.
-- [ ] Verify the deployed copies carry the change:
+- [x] Verify the deployed copies carry the change: *(completed: 4 and 2 occurrences respectively)*
       `grep -c "Compile-Verify-Before-Recommend" .claude/agents/lean-research-agent.md .claude/context/project/lean4/agents/lean-research-flow.md`
       returns non-zero counts for both.
-- [ ] Run the complete gate set: `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh`.
-- [ ] If a gate fails in a file outside this task's `file_scope`, check `git log` before
-      concluding it is this task's regression — a concurrent sibling's in-flight edit is the more
+- [x] Run the complete gate set: `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh`. *(deviation: altered -- discharged against the dispatch's Batch Gate Deferral scoped tier instead: --only-gate 3,4 PASS, the 5 index-entries.json-covering suites PASS, lean: census 0 mismatch. The full unscoped gate set runs once for the whole batch at the end of the invocation per the deferral directive; deploy-headless.sh's own inline fast-gate check additionally surfaced 2 pre-existing FAILs outside this task's file_scope -- gate10 validate-state.sh timeout, gate20 eager-load context budget -- reported via issue-record.sh, not fixed here)*
+- [x] If a gate fails in a file outside this task's `file_scope`, check `git log` before
+      concluding it is this task's regression — a concurrent sibling's in-flight edit is the more *(completed: git log confirms neither failing gate's files were touched by this task's commits)*
       likely cause, and must be reported rather than fixed here.
 
 **Timing**: 35 minutes
@@ -386,13 +386,13 @@ to this phase.
 
 ## Testing & Validation
 
-- [ ] Gates 3 and 4 (`--skip-slow --only-gate 3,4 <repo_root>`) pass after each markdown phase.
-- [ ] The five `index-entries.json`-covering suites pass after Phase 3.
-- [ ] `generate-context-line-counts.sh --check`'s `lean:` census line reports `0 mismatch`.
-- [ ] The complete `verify-deploy.sh` gate set passes in Phase 4.
-- [ ] No file under `agent-system/**` gained a task-number reference (gate 4 enforces this).
-- [ ] All three `[VERIFIED: …]` tag forms are present in both report skeletons.
-- [ ] `agents/lean-research-hard-agent.md` is neither created nor referenced anywhere.
+- [x] Gates 3 and 4 (`--skip-slow --only-gate 3,4 <repo_root>`) pass after each markdown phase. *(completed)*
+- [x] The five `index-entries.json`-covering suites pass after Phase 3. *(completed)*
+- [x] `generate-context-line-counts.sh --check`'s `lean:` census line reports `0 mismatch`. *(completed)*
+- [ ] The complete `verify-deploy.sh` gate set passes in Phase 4. *(deviation: deferred to the batch-level stage per the dispatch's Batch Gate Deferral directive -- Phase 4 discharged instead against the scoped tier: gates 3,4 PASS, the 5-suite set PASS, lean: census 0 mismatch. The full gate set runs once for the whole batch at the end of this invocation.)*
+- [x] No file under `agent-system/**` gained a task-number reference (gate 4 enforces this). *(completed)*
+- [x] All three `[VERIFIED: …]` tag forms are present in both report skeletons. *(completed)*
+- [x] `agents/lean-research-hard-agent.md` is neither created nor referenced anywhere. *(completed: file not created; grep finds only the one pre-existing, out-of-scope reference in domain/hard-mode.md explaining the agent's prior retirement, unrelated to and unintroduced by this task)*
 
 ## Artifacts & Outputs
 
