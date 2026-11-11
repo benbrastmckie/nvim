@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Territory hygiene and premise re-confirmation",
+  "started_at": "2026-11-11T21:30:00Z",
+  "last_updated": "2026-11-11T21:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm live premises (layout classic, Next authored lines above coverage appendix, 603 not_started, 402 completed)", "status": "done", "files_touched": [], "note": "Confirmed: classic layout (all 8 headers present); 11 authored Run lines above coverage appendix at line 297; 603 not_started; 402 completed; 558/562/602 all not_started conclusion-stage.md claimants"},
+    {"id": 2, "description": "Remove stale commands/review.md from 313's file_scope via state-write.sh", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 3, "description": "Add serializing edge 603 depends-on 313", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 4, "description": "Add serializing edges 558,562,602 depends-on 313 (re-derived live set)", "status": "done", "files_touched": ["specs/state.json"], "note": "Re-derived set matched plan's hypothesis exactly: 558,562,602 all not_started conclusion-stage.md claimants"},
+    {"id": 5, "description": "Confirm graph still drains via orchestrate-cycle-plan.sh --dry-run", "status": "done", "files_touched": [], "note": "0 blocked, 0 cycles; stop=none ('this cycle would proceed'). One benign self-contention deferral on __WHOLE_TREE__ against this same session's own sibling task 397 -- expected for concurrent whole-tree-claimant siblings in one batch, not a cycle"}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

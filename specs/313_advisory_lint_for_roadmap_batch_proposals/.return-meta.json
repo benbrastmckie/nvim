@@ -1,31 +1,9 @@
 {
-  "status": "planned",
-  "summary": "Six-phase plan for the advisory ROADMAP batch-proposal lint, built on the research report's settled LIVE SEAM 1 call site. Phase 1 performs territory hygiene (drops the dead commands/review.md entry, adds serializing edges onto the roadmap-format.md and conclusion-stage.md claimants); Phases 2-3 build the script (layout sniff, authored-Run-line parse stopping at the generated coverage appendix, findings c/d/f, then finding a via a single spliced jq program); Phase 4 adds the fixture suite and manifest registration; Phase 5 lands finding (e), the Step 5 call site, and the two documentation pointers; Phase 6 deploys and runs the complete gate set.",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/313_advisory_lint_for_roadmap_batch_proposals/plans/01_roadmap-batch-proposal-lint.md",
-      "summary": "Six-phase, 8.25-hour plan for an advisory lint over hand-authored /orchestrate batch proposals in specs/ROADMAP.md, wired into the /orchestrate conclusion stage."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 8.25,
-  "dependency_waves": [[1], [2], [3], [4, 5], [6]],
-  "memory_candidates": [
-    {
-      "content": "In the agent-system source store, specs/ROADMAP.md's `## Next` fenced block mixes HAND-AUTHORED /orchestrate Run lines with MACHINE-GENERATED ones: everything below the `**Coverage appendix (uncovered tasks)**:` header is rendered by roadmap-integration.sh --regenerate, not typed by anyone. Measured live: 20 /orchestrate lines total, 11 authored above the header, 9 generated below it. Any tool that reads batch proposals as authored intent must stop parsing at that header, or it lints its own generator's output.",
-      "category": "PATTERN",
-      "source_artifact": "specs/313_advisory_lint_for_roadmap_batch_proposals/plans/01_roadmap-batch-proposal-lint.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["ROADMAP.md", "coverage-appendix", "authored-vs-generated", "roadmap-integration.sh", "Next-grammar"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794431325_7cf647_313",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "next_steps": "Run /orchestrate 313 to execute the plan",
-  "dispatch_seq": 10
+    "session_id": "sess_1794431325_7cf647",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

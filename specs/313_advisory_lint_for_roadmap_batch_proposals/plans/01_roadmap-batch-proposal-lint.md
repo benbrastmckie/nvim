@@ -1,7 +1,7 @@
 # Implementation Plan: Task #313
 
 - **Task**: 313 - Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.25 hours
 - **Dependencies**: 306 (completed), 328 (completed), 344 (completed), 387 (completed), 401 (completed), 402 (completed)
 - **Research Inputs**: specs/313_advisory_lint_for_roadmap_batch_proposals/reports/01_roadmap-batch-lint-seam-selection.md
@@ -170,37 +170,43 @@ Results, stated explicitly even where they confirm the description:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Territory hygiene and premise re-confirmation [NOT STARTED]
+### Phase 1: Territory hygiene and premise re-confirmation [COMPLETED]
 
 **Goal**: The task's declared territory matches what this plan will actually touch, and every
 serializing `dependencies[]` edge the plan's later edits require exists before those edits land.
 
 **Tasks**:
-- [ ] Re-confirm the live premises this plan rests on, and state each result explicitly (even when
+- [x] Re-confirm the live premises this plan rests on, and state each result explicitly (even when
       it only confirms): `specs/ROADMAP.md` classifies `classic` (all eight `CLASSIC_HEADERS`
       present); its `## Next` fenced block holds authored `/orchestrate` Run lines above a
       `**Coverage appendix (uncovered tasks)**:` header; record 603 is still `not_started`;
-      record 402 is `completed`.
-- [ ] Remove the stale `agent-system/extensions/core/commands/review.md` entry from this task's
+      record 402 is `completed`. *(completed: all four premises confirmed live — classic layout,
+      11 authored Run lines above the coverage appendix at line 297, 603 not_started, 402 completed)*
+- [x] Remove the stale `agent-system/extensions/core/commands/review.md` entry from this task's
       `file_scope`. `--file-scope-add` is additive-only and can never remove an entry, so use the
       sanctioned mutex-guarded writer directly:
       `bash .claude/scripts/state-write.sh '(.active_projects[] | select(.project_number == 313) | .file_scope) |= map(select(. != "agent-system/extensions/core/commands/review.md"))' --session-id "$session_id"`.
       The file is being removed outright by record 436, which already depends on 313.
-- [ ] Add the serializing edge onto record 603, which owns `context/formats/roadmap-format.md`
+      *(completed)*
+- [x] Add the serializing edge onto record 603, which owns `context/formats/roadmap-format.md`
       (Phase 5 edits it): `bash .claude/scripts/update-task-status.sh preflight 603 edge_only "$session_id" --depends-on-add='[313]'`.
       Direction per that flag's documented rule: the positional number is the task that GAINS the
-      dependency, so 603 gains a dependency on 313 and runs after it.
-- [ ] Re-derive the live set of non-terminal records declaring
+      dependency, so 603 gains a dependency on 313 and runs after it. *(completed)*
+- [x] Re-derive the live set of non-terminal records declaring
       `agent-system/extensions/core/context/contracts/conclusion-stage.md` in their own
       `file_scope`, and add the same `preflight ... edge_only --depends-on-add='[313]'` edge to
       each one still non-terminal and still declaring it. Measured at planning time: 558, 562, 602,
       all `not_started` (402 also declares it but is `completed`, and the 313 -> 402 edge already
       exists). Re-derive rather than trusting this list — the graph moves.
-- [ ] After adding the edges, confirm the graph still drains:
+      *(completed: re-derived set exactly matched the planning-time hypothesis — 558, 562, 602,
+      all still not_started)*
+- [x] After adding the edges, confirm the graph still drains:
       `bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json 313`.
       Each `--depends-on-add` call runs its own mandatory write-time cycle refusal, so a cycle is
       refused at the write rather than discovered here; this check confirms the intended batch
-      still plans.
+      still plans. *(completed: 0 blocked, 0 cycles, stop=none; one benign self-contention
+      deferral against this session's own sibling task 397 on `__WHOLE_TREE__`, expected for
+      concurrent whole-tree-claimant siblings and not a cycle)*
 
 **Timing**: 0.75 hours
 

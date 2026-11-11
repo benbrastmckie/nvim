@@ -11,9 +11,9 @@ next_project_number: 607
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604,607 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
-| 3 | 436,438,454,501,508,547,552,570,571,579,588,592,593 | 313,439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, agent-system |
+| 1 | 313,338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,559,560,563,565,567,568,572,574,575,580,585,590,591,597,600,601,604,607 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,558,562,564,566,576,583,584,586,598,599,603,605,606 | 313,383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,604 | core-agent-system, extensions, neovim, ... |
+| 3 | 436,438,454,501,508,547,552,570,571,579,588,592,593,602 | 313,439,451,458,472,476,486,509,518,519,542,543,564,599,603 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595 | 539,594 | agent-system |
 | 6 | 596 | 595 | agent-system |
@@ -22,8 +22,10 @@ next_project_number: 607
 
 ### Core Agent System
 
-313 [PLANNED] — Advisory lint for hand-authored /orchestrate batch proposals...
+313 [IMPLEMENTING] — Advisory lint for hand-authored /orchestrate batch proposals...
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
+  └─ 603 [NOT STARTED] — Make ROADMAP.md a generated artifact rendered from state.json
+    └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 338 [NOT STARTED] — Classify every task-support file as tracked or ignored
 410 [NOT STARTED] — Close the result-sharing replay hole in lake-build-guard.sh:...
 421 [NOT STARTED] — Close three gaps in the telemetry --meta evidence consumer
@@ -73,8 +75,6 @@ next_project_number: 607
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 591 [RESEARCHED] — Decide the fate of the errors.json triage surface
 601 [NOT STARTED] — Add a lint closing the repo-root walk-up defect class
-603 [NOT STARTED] — Make ROADMAP.md a generated artifact rendered from state.json
-  └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
@@ -168,10 +168,8 @@ next_project_number: 607
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
-558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
-562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
 572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
 597 [NOT STARTED] — Make the coupled-generated-surface and longFile-baseline...
   └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically... (see above)
@@ -182,6 +180,8 @@ next_project_number: 607
         └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans (see above)
 607 [NOT STARTED] — Resolve the gate 20 orchestrator context-budget overage and...
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
+558 [NOT STARTED] — Require task descriptions to request a proposal packet...
+562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
 
 ### Repo Hygiene
@@ -510,7 +510,7 @@ repairs but deliberately built no detector, and #418 made lint-FIXTURE subject r
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 528, Task 532
+- **Dependencies**: Task 313, Task 528, Task 532
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md).
 
@@ -639,7 +639,7 @@ to its owner.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 402, Task 532, Task 603
+- **Dependencies**: Task 313, Task 402, Task 532, Task 603
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
@@ -2695,7 +2695,7 @@ EVIDENCE CITATION: recorded during task 369's plan phase as issue-log entry iss_
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 313
 
 **Description**: Close the contract gap that makes null-resolution issue-log entries invisible to the conclusion stage
 
@@ -3220,7 +3220,7 @@ repository numbering space and is recorded here as provenance.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 313
 
 **Description**: Document the convention that a task description must ask an autonomous dispatch for a PROPOSAL PACKET, never for task FILING, because filing requires a foreground user confirmation no dispatched agent can perform.
 
@@ -11011,7 +11011,7 @@ Already correctly covered, as evidence the mechanism works when a name is in it:
 ---
 
 ### 313. Advisory lint for hand-authored /orchestrate batch proposals in ROADMAP.md phase blocks
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 306, Task 328, Task 344, Task 387, Task 401, Task 402
