@@ -410,11 +410,81 @@ describe("shared.extensions.merge hook identity dedupe", function()
       end
       assert.is_nil(dup_found, "expected no duplicate (event,matcher,hook) triples")
 
-      -- The two documented paired hooks each converge to exactly one entry.
-      assert.equals(1, #result.hooks.PreToolUse[1].hooks)
-      assert.equals(1, #result.hooks.PreToolUse[2].hooks)
+      -- The two documented paired hooks converge into their matcher block without ANY
+      -- duplicate identity -- asserted against the fragment's OWN current hook count per
+      -- matcher (not a frozen literal), since the live fragment has grown new, distinct hooks
+      -- under the same "Bash" matcher since this spec was first written (e.g.
+      -- validate-bounded-waiter.sh, validate-task-creation-audit.sh,
+      -- validate-no-python-state-write.sh) -- those are correctly appended, not duplicates.
+      local function fragment_hook_count(matcher)
+        for _, block in ipairs(fragment.hooks.PreToolUse) do
+          if block.matcher == matcher then
+            return #block.hooks
+          end
+        end
+        return 0
+      end
+      assert.equals(fragment_hook_count("Bash"), #result.hooks.PreToolUse[1].hooks)
+      assert.equals(fragment_hook_count("Bash|Write|Edit"), #result.hooks.PreToolUse[2].hooks)
     end
   )
+end)
+
+-- Table-driven conformance coverage for hook_identity.lua, the single normative identity
+-- definition shared by merge.lua (this module) and the hook-registration-path lint (via
+-- hook_identity_cli.lua). The corpus (hook_identity_fixtures.json) is the shared pin both
+-- consumers are tested against -- it is a test, not the definition; the definition lives in
+-- hook_identity.lua alone (acceptance criterion 3).
+describe("shared.extensions.merge hook_identity conformance corpus", function()
+  local hook_identity = require("neotex.plugins.ai.shared.extensions.hook_identity")
+
+  local function fixtures_path()
+    return vim.fn.getcwd() .. "/lua/neotex/plugins/ai/shared/extensions/hook_identity_fixtures.json"
+  end
+
+  it("resolves every fixture row to its expected identity", function()
+    local lines = vim.fn.readfile(fixtures_path())
+    local corpus = vim.json.decode(table.concat(lines, "\n"))
+    assert.is_true(#corpus.rows > 0)
+
+    local saw_null_tilde = false
+    local saw_null_no_sh = false
+
+    for _, row in ipairs(corpus.rows) do
+      local got = hook_identity.identity(row.command, row.type)
+      -- vim.json.decode renders JSON null as the vim.NIL sentinel, not Lua nil.
+      local expected = row.expected_identity
+      if expected == vim.NIL then
+        expected = nil
+      end
+      assert.equals(expected, got, row.note)
+
+      if expected == nil and row.command:match("^bash ~/") then
+        saw_null_tilde = true
+      end
+      if expected == nil and not row.command:find("%.sh") then
+        saw_null_no_sh = true
+      end
+    end
+
+    assert.is_true(saw_null_tilde, "corpus must contain a null row for a ~/-anchored command")
+    assert.is_true(saw_null_no_sh, "corpus must contain a null row for a command with no *.sh invocation")
+  end)
+
+  it("still collapses the stale/fixed anchor pair of the same hooks/ hook to one identity", function()
+    local stale = hook_identity.identity("bash .claude/hooks/guard-destructive-git.sh", "command")
+    local fixed = hook_identity.identity(
+      'bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/guard-destructive-git.sh',
+      "command"
+    )
+    local absolute = hook_identity.identity(
+      "bash /home/benjamin/.config/nvim/.claude/hooks/guard-destructive-git.sh",
+      "command"
+    )
+    assert.equals("command:hooks/guard-destructive-git.sh", stale)
+    assert.equals(stale, fixed)
+    assert.equals(stale, absolute)
+  end)
 end)
 
 -- Coverage for the merge_targets.mcp mechanism: a project-scoped .mcp.json is merged and

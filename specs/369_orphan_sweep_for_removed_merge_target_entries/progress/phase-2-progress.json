@@ -1,0 +1,45 @@
+{
+  "phase": 2,
+  "phase_name": "One identity definition, consumed by Lua",
+  "started_at": "2026-11-11T16:40:00Z",
+  "last_updated": "2026-11-11T17:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create hook_identity.lua pure-Lua module",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/hook_identity.lua"]
+    },
+    {
+      "id": 2,
+      "description": "Create hook_identity_fixtures.json conformance corpus",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/hook_identity_fixtures.json"]
+    },
+    {
+      "id": 3,
+      "description": "merge.lua hook_identity delegates to the module, exported as M.hook_identity",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]
+    },
+    {
+      "id": 4,
+      "description": "merge_spec.lua conformance specs plus anchor-pair collapse assertion",
+      "status": "done",
+      "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Implement the two mandatory ineligibility rules",
+      "type": "altered",
+      "reason": "A third, unstated ineligibility rule was required: an absolute (/-leading) path containing no .claude/ substring also returns nil. Without it, the fixture example '/opt/mytools/my-custom-hook.sh' (required to be null) would become identity-eligible under the two literally-stated rules alone, which would make the sweep unsafe for a hand-written absolute-path hook -- the single most dangerous regression this task names. Documented at length in hook_identity.lua's doc comment.",
+      "annotation": "*(completed: plus a third, required-but-unstated rule -- an absolute non-.claude/ path is also nil, needed so a hand-written /opt/... hook is never sweep-eligible; see hook_identity.lua's doc comment)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "Found and fixed a pre-existing stale assertion in merge_spec.lua (hardcoded hook-count literal of 1, made stale by later fragment growth under tasks 347/419/312/282/382 adding new Bash-matcher hooks) -- confirmed via code analysis this predates and is independent of this task's identity broadening. Fixed to derive the expected count from the live fragment. All 13 specs green (11 pre-existing + 2 new)."
+}

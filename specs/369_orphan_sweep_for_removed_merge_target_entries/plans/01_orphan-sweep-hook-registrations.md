@@ -189,26 +189,26 @@ any repo may have been reloaded since.
 
 ---
 
-### Phase 2: One identity definition, consumed by Lua [NOT STARTED]
+### Phase 2: One identity definition, consumed by Lua [COMPLETED]
 
 **Goal**: Create the single normative hook-registration identity function and its conformance
 corpus, and make `merge.lua` consume it in place of its own narrower `hook_identity()`.
 
 **Tasks**:
 
-- [ ] Create `lua/neotex/plugins/ai/shared/extensions/hook_identity.lua`: a pure-Lua module with
+- [x] Create `lua/neotex/plugins/ai/shared/extensions/hook_identity.lua`: a pure-Lua module with
       no `vim.*` dependency, exposing `M.identity(command, hook_type)` returning
       `"<type>:<normalized_path>"` or `nil`.
-- [ ] Define normalization so it is a strict superset of today's merge behavior and agrees with
+- [x] Define normalization so it is a strict superset of today's merge behavior and agrees with
       the lint's D5 rule: strip everything up to and including the LAST `.claude/` occurrence
       (so `.claude/hooks/a.sh`, `"$CLAUDE_PROJECT_DIR"/.claude/hooks/a.sh` and
       `/abs/path/.claude/hooks/a.sh` all normalize to `hooks/a.sh`, preserving today's
       stale/fixed collapse), otherwise strip a single leading `/`, and keep the remaining
       directory-qualified path exactly as written (so `scripts/a.sh` is a first-class identity).
-- [ ] Implement the two mandatory ineligibility rules, each returning `nil`: a command written
+- [x] Implement the two mandatory ineligibility rules, each returning `nil`: a command written *(completed: plus a third, required-but-unstated rule -- an absolute non-.claude/ path is also nil, needed so a hand-written /opt/... hook is never sweep-eligible; see hook_identity.lua's doc comment)*
       with a `~/`-anchored script path, and a command containing no `*.sh` invocation at all.
       Find the innermost invoked `*.sh` token so a `bash -c '...'` wrapper is transparent.
-- [ ] Create `lua/neotex/plugins/ai/shared/extensions/hook_identity_fixtures.json`: the single
+- [x] Create `lua/neotex/plugins/ai/shared/extensions/hook_identity_fixtures.json`: the single
       conformance corpus, rows of `{command, type, expected_identity | null, note}`. Seed it with
       every shape found in the field and in the source store: both `claude-ready-signal.sh` forms
       (CWD-relative `scripts/...` -> eligible; `~/`-anchored -> `null`), both anchors of a
@@ -216,12 +216,12 @@ corpus, and make `merge.lua` consume it in place of its own narrower `hook_ident
       `validate-state-sync.sh` registration, a hand-written `/opt/mytools/...` command
       (-> `null` under today's behavior and under the broadened function alike), and an
       `mcpServers`-style `"command": "npx"` value (-> `null`).
-- [ ] Replace `merge.lua`'s local `hook_identity` body with a call into the new module, keep its
+- [x] Replace `merge.lua`'s local `hook_identity` body with a call into the new module, keep its
       existing doc comment's custom-hook carve-out language, and export it as `M.hook_identity`
       so the sweep (Phase 4) and the bridge (Phase 3) share one entry point. `find_hook_match`,
       `normalize_hook_event_array` and `merge_hook_event_array` need no other change — they
       already fall through to `vim.deep_equal` on a `nil` identity, which IS the carve-out.
-- [ ] Add `merge_spec.lua` specs: a table-driven conformance test iterating the fixture corpus,
+- [x] Add `merge_spec.lua` specs: a table-driven conformance test iterating the fixture corpus,
       plus an explicit assertion that the broadened function still collapses the stale/fixed
       anchor pair of the same `hooks/` hook exactly as the existing production-defect specs
       expect.

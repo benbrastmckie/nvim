@@ -1,0 +1,65 @@
+{
+  "_comment": "The single conformance corpus hook_identity.lua and the hook-registration-path lint (via hook_identity_cli.lua) are both pinned against. Every row's expected_identity is the literal M.identity(command, type) return value; null means the command is identity-ineligible (the mandatory carve-out -- never matched, moved, deduped, or swept). See hook_identity.lua's own doc comment for the full eligibility rules this corpus pins.",
+  "rows": [
+    {
+      "command": "bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'",
+      "type": "command",
+      "expected_identity": "command:scripts/claude-ready-signal.sh",
+      "note": "CWD-relative, no .claude/ at all -- the live host-repo orphan instance. Eligible under Rule 2 (plain relative *.sh invocation)."
+    },
+    {
+      "command": "bash ~/.config/nvim/scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'",
+      "type": "command",
+      "expected_identity": null,
+      "note": "The ~/-anchored form of the same script. Must remain nil -- the mandatory carve-out. Live in ModelBuilder, Logos/Website, Logos/Theory."
+    },
+    {
+      "command": "bash .claude/hooks/validate-no-task-references.sh",
+      "type": "command",
+      "expected_identity": "command:hooks/validate-no-task-references.sh",
+      "note": "Bare CWD-relative anchor of a hooks/ hook."
+    },
+    {
+      "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-task-references.sh",
+      "type": "command",
+      "expected_identity": "command:hooks/validate-no-task-references.sh",
+      "note": "$CLAUDE_PROJECT_DIR-prefixed anchor of the SAME hook as the row above -- must collapse to the identical identity (the original production-defect fix merge.lua's hook_identity() already provided, preserved unchanged)."
+    },
+    {
+      "command": "bash /abs/path/.claude/hooks/validate-no-task-references.sh",
+      "type": "command",
+      "expected_identity": "command:hooks/validate-no-task-references.sh",
+      "note": "Absolute-path anchor of the same hooks/ hook -- collapses to the same identity as the two rows above."
+    },
+    {
+      "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'",
+      "type": "command",
+      "expected_identity": "command:hooks/validate-state-sync.sh",
+      "note": "bash -c wrapped registration -- the innermost invoked *.sh token is found regardless of nesting."
+    },
+    {
+      "command": "bash /opt/mytools/my-custom-hook.sh --flag value",
+      "type": "command",
+      "expected_identity": null,
+      "note": "Hand-written custom hook: an absolute path containing no .claude/ substring. Must remain nil under today's (narrow) behavior and under this broadened function alike -- no real source-store script is ever registered this way, so this shape is definitionally a user's own hook. The single most dangerous possible regression in the sweep this module backs would be treating this as eligible."
+    },
+    {
+      "command": "npx",
+      "type": "stdio",
+      "expected_identity": null,
+      "note": "An mcpServers-style command value with no *.sh invocation at all."
+    },
+    {
+      "command": "bash .claude/hooks/wezterm-notify.sh 2>/dev/null || echo '{}'",
+      "type": "command",
+      "expected_identity": "command:hooks/wezterm-notify.sh",
+      "note": "Identity-eligible and source-store-shaped, but undeclared by any fragment under this matcher in the field (ModelBuilder/Logos-Website Stop|* orphan) -- orphanhood is a valid_set question, not an eligibility one."
+    },
+    {
+      "command": "bash .claude/hooks/wezterm-clear-status.sh 2>/dev/null || echo '{}'",
+      "type": "command",
+      "expected_identity": "command:hooks/wezterm-clear-status.sh",
+      "note": "Identity-eligible; the script no longer exists anywhere in the source store (superseded by wezterm-clear-task-number.sh). Field orphan in ModelBuilder/Logos-Website/Logos-Theory."
+    }
+  ]
+}

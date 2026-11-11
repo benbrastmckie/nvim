@@ -4,6 +4,7 @@
 local M = {}
 
 local helpers = require("neotex.plugins.ai.claude.commands.picker.utils.helpers")
+local hook_identity_mod = require("neotex.plugins.ai.shared.extensions.hook_identity")
 
 --- Normalize index entry path by stripping known bad prefixes
 --- Handles three prefix conventions that have appeared in source index-entries.json files:
@@ -202,17 +203,16 @@ local function is_hook_event_array(arr)
   return true
 end
 
---- Resolve a hook's registration IDENTITY: the invoked hook script's basename (`NAME.sh`)
---- paired with the hook's own `type`, for a command recognizable as a `.claude/hooks/NAME.sh`
---- invocation -- whether CWD-relative (`bash .claude/hooks/NAME.sh`, the stale form) or the
---- fixed `$CLAUDE_PROJECT_DIR`-prefixed form (`bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/NAME.sh`),
---- and whether that invocation is bare or nested inside a `bash -c '...'` wrapper (the pattern
---- matches the substring anywhere in `command`, so nesting is transparent to it).
+--- Resolve a hook's registration IDENTITY. Delegates to the single normative definition in
+--- `hook_identity.lua` (see that module's doc comment for the full eligibility rules), shared
+--- with the hook-registration-path lint via `hook_identity_cli.lua`. Exported as `M.hook_identity`
+--- so the orphan sweep (`M.remove_orphaned_hook_registrations`) and the lint's bridge can both
+--- resolve through this one entry point.
 ---
---- Returns nil for any command NOT recognizable in this shape -- a hand-written custom hook
---- (one that does not invoke a `.claude/hooks/*.sh` path at all) MUST NEVER be touched, moved,
---- or deduped by identity; this carve-out is mandatory, not best-effort, and every caller below
---- falls through to exact `vim.deep_equal` comparison whenever this returns nil.
+--- Returns nil for any command not identity-eligible -- a hand-written custom hook, or a
+--- `~/`-anchored one, MUST NEVER be touched, moved, or deduped by identity; this carve-out is
+--- mandatory, not best-effort, and every caller below falls through to exact `vim.deep_equal`
+--- comparison whenever this returns nil.
 ---
 --- WHY this exists: `vim.deep_equal(existing, hook)` on the whole `{type, command}` object is
 --- the defect this function fixes. When a command string changes (e.g. the CWD-relative stale
@@ -224,17 +224,14 @@ end
 --- this registration invokes) is the stable thing across that kind of command-string edit; the
 --- exact command string is not.
 --- @param hook table Hook object (`{type=, command=, [timeout=]}`)
---- @return string|nil identity `"<type>:<NAME.sh>"`, or nil when not identity-eligible
+--- @return string|nil identity `"<type>:<normalized_path>"`, or nil when not identity-eligible
 local function hook_identity(hook)
   if type(hook) ~= "table" or type(hook.command) ~= "string" or type(hook.type) ~= "string" then
     return nil
   end
-  local name = hook.command:match("%.claude/hooks/([%w_%-]+%.sh)")
-  if not name then
-    return nil
-  end
-  return hook.type .. ":" .. name
+  return hook_identity_mod.identity(hook.command, hook.type)
 end
+M.hook_identity = hook_identity
 
 --- Locate `hook` within `hooks` (an array of hook objects): by `hook_identity()` when `hook` is
 --- identity-eligible (see that function's doc for the mandatory custom-hook carve-out), or by
