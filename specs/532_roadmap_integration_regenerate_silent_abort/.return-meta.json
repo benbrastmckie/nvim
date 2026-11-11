@@ -1,18 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794413303_b61a83_532",
-  "dispatch_seq": 5,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/532_roadmap_integration_regenerate_silent_abort/reports/01_regenerate-silent-abort-research.md",
-      "summary": "Task 532's described defect (roadmap-integration.sh --regenerate silently aborting/half-applying against a Stage-based ROADMAP.md) is a near-duplicate of already-completed task 371, fully fixed and archived 2026-10-10; live re-verification today confirms --regenerate works correctly against the real classic-layout ROADMAP.md and refuses loudly against an unrecognized layout. Recommends closing task 532 as covered-by-closed (371) with no plan/implement phase needed."
+      "type": "plan",
+      "path": "specs/532_roadmap_integration_regenerate_silent_abort/plans/01_regenerate-outcome-reporting.md",
+      "summary": "3-phase plan (3.25h) adding a named, change-aware OUTCOME: stderr line to roadmap-integration.sh's two write modes, correcting roadmap-format.md and roadmap-update.md, and redeploying the core extension."
     }
   ],
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 532 to create implementation plan",
-  "notes": "Research recommends against proceeding to plan/implement: the task's premise is already resolved by archived task 371 (specs/archive/371_roadmap_generator_stage_layout_and_silent_abort/), with live reproduction confirming current correct behavior. Recommend the next stage close task 532 as duplicate/covered-by-closed rather than planning new work."
+  "metadata": {
+    "session_id": "sess_1794413303_b61a83_532",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 3.25,
+    "dependency_waves": 3
+  },
+  "memory_candidates": [
+    {
+      "content": "When a research phase recommends closing a task as covered-by-closed because a prior landed fix discharges its premise, re-test the narrowest claim in the record separately before accepting the recommendation. A report that verifies the loud-failure path and the dry-run path can still miss that the SUCCESS path is indistinguishable from a no-op: identical exit code, identical stdout, identical machine marker. The discriminating test is not 'does the happy path work' but 'do two different happy-path outcomes produce different output' -- run the operation twice in a row and diff the two runs' own output, not just the file. Corroborating signal that a residual gap is real rather than invented: an existing contract document already promises the distinguishability the implementation does not deliver.",
+      "category": "PATTERN",
+      "source_artifact": "specs/532_roadmap_integration_regenerate_silent_abort/plans/01_regenerate-outcome-reporting.md",
+      "confidence": 0.82,
+      "suggested_keywords": ["covered-by-closed", "premise-revalidation", "idempotence", "observability", "no-op-indistinguishable", "carried-figure"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 532 to execute the plan",
+  "dispatch_seq": 9
 }

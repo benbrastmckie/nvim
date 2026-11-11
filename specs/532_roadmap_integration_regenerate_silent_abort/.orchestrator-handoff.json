@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Re-verified every carried figure in the task description against the live script and live specs/ROADMAP.md: the broad premise is stale (--regenerate exits 0, assembles the classic layout in full, and refuses an unrecognized layout loudly), confirming the research report's covered-by-closed finding. One narrower claim the report did not test DOES reproduce: a changed write and a no-op write produce byte-identical output (zero stdout, same frozen marker, exit 0), so a caller cannot tell what happened. Wrote a 3-phase, 3.25-hour plan landing a named change-aware OUTCOME: stderr line, the two context files that document the caller contract corrected to match, and a redeploy. Plan passes validate-artifact.sh --strict with 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/532_roadmap_integration_regenerate_silent_abort/plans/01_regenerate-outcome-reporting.md",
+      "summary": "3-phase plan adding a named, change-aware OUTCOME: stderr line to roadmap-integration.sh's write modes, correcting roadmap-format.md and roadmap-update.md, and redeploying."
+    }
+  ],
+  "dispatch_seq": 9
+}
