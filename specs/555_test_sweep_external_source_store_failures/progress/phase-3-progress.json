@@ -1,0 +1,54 @@
+{
+  "phase": 3,
+  "phase_name": "lint-dead-command-recommendations.sh Enumeration Root",
+  "started_at": "2026-11-10T23:00:00Z",
+  "last_updated": "2026-11-10T23:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace PROJECT_ROOT/agent-system/extensions derivations with the shared resolver (acceptance test, DEFAULT_SCAN, collect_commands_from_root), explicit path-argument form unchanged",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Keep the empty-enumeration error loud, naming the resolution order attempted",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add the synthetic external-source-store fixture case to test-lint-dead-command-recommendations.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Re-run test-verify-deploy-context-budget.sh and record whether its gate-24 row has moved",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Confirm shellcheck clean",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "description": "Initial fixture copied whatever LINT_SCRIPT resolved (deploy-tree-first preference)",
+      "result": "failed",
+      "reason": "LINT_SCRIPT preferred the deployed copy, which is stale (this phase's edit was never deployed), so the fixture copy still carried the OLD bare -d resolution logic and the test failed with the pre-fix error message. Fixed by introducing a dedicated LINT_SCRIPT_STORE resolved directly to the source-store path, used only by this fixture."
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": [
+    "bash agent-system/extensions/core/scripts/tests/test-lint-dead-command-recommendations.sh: 15 passed, 0 failed (12 pre-existing + 3 new external-source-store fixture assertions).",
+    "shellcheck -S warning clean on lint-dead-command-recommendations.sh and test-lint-dead-command-recommendations.sh.",
+    "bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-lint-dead-command-recommendations.sh,test-lint-extension-readme-table.sh: 2 passed, 0 failed.",
+    "bash agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh: 14 passed, 1 failed -- UNMOVED. The failure is still the same two FINDING gate24 lines against memory-setup.md/memory-troubleshooting.md's /ide references (a genuine dead-command finding unrelated to source-store topology), not an enumeration-emptiness failure. Recorded for Phase 8 to reconcile against the existing known-failures.txt row; not edited here.",
+    "Direct manual run of the lint against the real corpus (bash agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh --verbose) still reports the same 2 pre-existing violations it reported before this phase's edit -- confirms the resolution-mechanism change altered HOW the root/corpus is found, not WHAT is found."
+  ]
+}

@@ -189,6 +189,48 @@ $(cat "$WORKDIR/readme-out.txt")"
 fi
 
 # =====================================================================
+# External-source-store fixture: a synthetic root holding a .claude-extensions.json whose
+# core.source_dir resolves to THIS repository's own source store, and no local
+# agent-system/extensions directory anywhere in the fixture tree. The lint script (plus its two
+# sibling libraries) is COPIED into the fixture at the same relative depth
+# (<root>/fakestore/scripts/lint/, libs at .../scripts/lib/) it occupies in the real tree, so
+# common_repo_root's own fixed-depth candidate and the upward-walk fallback both land on <root>
+# (which has no agent-system/extensions of its own) rather than on a path this fixture does not
+# control. Exercises the DEFAULT_SCAN / valid-command-enumeration resolution path directly --
+# every other case above passes an explicit path argument and never reaches it. The SOURCE-STORE
+# copy is used deliberately here, regardless of what LINT_SCRIPT above resolved (it prefers
+# deploy-tree-first): this fixture must exercise the logic as it is developed in the source
+# store, never a possibly-stale deployed copy.
+# =====================================================================
+LINT_SCRIPT_STORE="$SCRIPT_DIR/../lint/lint-dead-command-recommendations.sh"
+EXTSTORE_FIXTURE="$WORKDIR/extstore-lint"
+mkdir -p "$EXTSTORE_FIXTURE/fakestore/scripts/lint" "$EXTSTORE_FIXTURE/fakestore/scripts/lib"
+cp "$LINT_SCRIPT_STORE" "$EXTSTORE_FIXTURE/fakestore/scripts/lint/lint-dead-command-recommendations.sh"
+cp "$SCRIPT_DIR/../lib/common.sh" "$SCRIPT_DIR/../lib/lint-corpus-scan-lib.sh" \
+  "$EXTSTORE_FIXTURE/fakestore/scripts/lib/"
+cat > "$EXTSTORE_FIXTURE/.claude-extensions.json" <<EOF
+{"extensions":{"core":{"source_dir":"$REPO_ROOT/agent-system/extensions/core"}}}
+EOF
+
+EXTSTORE_OUTPUT="$(bash "$EXTSTORE_FIXTURE/fakestore/scripts/lint/lint-dead-command-recommendations.sh" 2>&1)"
+EXTSTORE_EXIT=$?
+if [[ "$EXTSTORE_EXIT" -ne 2 ]]; then
+  common_test_pass "lint does not exit 2 (environment error) against the external-source-store fixture"
+else
+  common_test_fail "lint exited 2 (environment error) against the external-source-store fixture (output: $EXTSTORE_OUTPUT)"
+fi
+if grep -qE "^Files checked: [1-9]" <<< "$EXTSTORE_OUTPUT"; then
+  common_test_pass "lint reports a non-empty file enumeration against the external-source-store fixture"
+else
+  common_test_fail "lint did not report a non-empty file enumeration against the external-source-store fixture (output: $EXTSTORE_OUTPUT)"
+fi
+if ! grep -q "valid-command enumeration yielded an empty set" <<< "$EXTSTORE_OUTPUT"; then
+  common_test_pass "lint's valid-command enumeration is non-empty against the external-source-store fixture"
+else
+  common_test_fail "lint reported an empty valid-command enumeration against the external-source-store fixture (output: $EXTSTORE_OUTPUT)"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

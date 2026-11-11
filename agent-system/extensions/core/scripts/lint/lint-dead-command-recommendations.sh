@@ -114,11 +114,15 @@ lint_corpus_scan_parse_flags SCAN_PATHS VERBOSE QUIET -- "$@"
 # lint-task-lookup-adoption.sh so this script runs identically from the source-store copy
 # (agent-system/extensions/core/scripts/lint/) or the deployed copy (.claude/scripts/lint/) --
 # both live in the same repository, and both resolve to the same agent-system/extensions corpus.
+# The acceptance test for each candidate is common_test_ext_root succeeding against it, not a
+# bare `-d "$candidate/agent-system/extensions"` check -- this admits the
+# .claude-extensions.json core.source_dir indirection for a repository whose source store is
+# external, exactly like deploy-root-guard.sh's own widened self-correction acceptance test.
 # ---------------------------------------------------------------------------
 resolve_project_root() {
     local candidate
     candidate="$(common_repo_root "$SCRIPT_DIR" 3)"
-    if [[ -n "$candidate" && -d "$candidate/agent-system/extensions" ]]; then
+    if [[ -n "$candidate" ]] && common_test_ext_root "$candidate" >/dev/null; then
         printf '%s\n' "$candidate"
         return 0
     fi
@@ -128,7 +132,7 @@ resolve_project_root() {
     while [[ $i -lt 8 ]]; do
         dir="$(cd "$dir/.." 2>/dev/null && pwd)" || break
         [[ -z "$dir" || "$dir" == "/" ]] && break
-        if [[ -d "$dir/agent-system/extensions" ]]; then
+        if common_test_ext_root "$dir" >/dev/null; then
             printf '%s\n' "$dir"
             return 0
         fi
@@ -142,9 +146,15 @@ resolve_project_root() {
 PROJECT_ROOT="$(resolve_project_root)"
 
 if [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
-    DEFAULT_SCAN="$PROJECT_ROOT/agent-system/extensions"
-    if [[ ! -d "$DEFAULT_SCAN" ]]; then
-        echo "ERROR: default scan root not found: $DEFAULT_SCAN" >&2
+    # DEFAULT_SCAN: the resolved extensions root, through the SAME shared resolver (repo-root
+    # source store first, then the .claude-extensions.json core.source_dir indirection) -- not a
+    # bare "$PROJECT_ROOT/agent-system/extensions" path, which cannot exist at all once
+    # PROJECT_ROOT itself only resolved via the indirection branch above.
+    DEFAULT_SCAN="$(common_test_ext_root "$PROJECT_ROOT")"
+    if [[ -z "$DEFAULT_SCAN" || ! -d "$DEFAULT_SCAN" ]]; then
+        echo "ERROR: default scan root not found under $PROJECT_ROOT (tried a local" >&2
+        echo "       agent-system/extensions directory, then the .claude-extensions.json" >&2
+        echo "       core.source_dir indirection)" >&2
         echo "       Pass explicit path arguments, or run from a checkout containing the source store." >&2
         exit 2
     fi
@@ -183,9 +193,14 @@ collect_commands_from_root() {
     done
 }
 
-collect_commands_from_root "$PROJECT_ROOT/agent-system/extensions"
+VALID_SET_ROOT="$(common_test_ext_root "$PROJECT_ROOT")"
+if [[ -n "$VALID_SET_ROOT" ]]; then
+    collect_commands_from_root "$VALID_SET_ROOT"
+fi
 if [[ ${#VALID_SET[@]} -eq 0 ]]; then
-    echo "ERROR: valid-command enumeration yielded an empty set under $PROJECT_ROOT/agent-system/extensions" >&2
+    echo "ERROR: valid-command enumeration yielded an empty set under $PROJECT_ROOT" >&2
+    echo "       (tried a local agent-system/extensions directory, then the" >&2
+    echo "       .claude-extensions.json core.source_dir indirection)." >&2
     echo "       This almost always means the project root resolved incorrectly. Pass explicit" >&2
     echo "       path arguments, or run from a checkout containing the agent-system/extensions source store." >&2
     exit 2

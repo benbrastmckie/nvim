@@ -289,7 +289,7 @@ that actually exercises the fix; it failed loudly (536 false "absent" findings) 
 
 ---
 
-### Phase 3: `lint-dead-command-recommendations.sh` Enumeration Root [NOT STARTED]
+### Phase 3: `lint-dead-command-recommendations.sh` Enumeration Root [COMPLETED]
 
 **Goal**: The valid-command enumeration in `lint-dead-command-recommendations.sh` resolves its
 corpus root through the shared resolver, so the lint stops reporting an empty enumeration set in an
@@ -297,21 +297,32 @@ external-source-store repository, and its suite reaches 12 of 12.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/lint/lint-dead-command-recommendations.sh` immediately before editing.
-- [ ] Replace the `PROJECT_ROOT/agent-system/extensions` derivations — the root-detection loop's
+- [x] Re-read `scripts/lint/lint-dead-command-recommendations.sh` immediately before editing.
+      *(completed)*
+- [x] Replace the `PROJECT_ROOT/agent-system/extensions` derivations — the root-detection loop's
       acceptance test, the `DEFAULT_SCAN` default, and the `collect_commands_from_root` call — with
-      the shared resolver, keeping the explicit path-argument form unchanged.
-- [ ] Keep the empty-enumeration error loud and keep it an error: it must still name the root it
+      the shared resolver, keeping the explicit path-argument form unchanged. *(completed:
+      `resolve_project_root`'s acceptance test now calls `common_test_ext_root` instead of a bare
+      `-d` check; `DEFAULT_SCAN` and the enumeration root are both
+      `common_test_ext_root "$PROJECT_ROOT"`)*
+- [x] Keep the empty-enumeration error loud and keep it an error: it must still name the root it
       tried and still exit non-zero. Update its message so it names the resolution order actually
       attempted (repo-root source store, then the `.claude-extensions.json` indirection) instead of
-      a single bare path.
-- [ ] Add a case to `tests/test-lint-dead-command-recommendations.sh` asserting a non-empty
-      enumeration against the synthetic external-source-store fixture.
-- [ ] Re-run `tests/test-verify-deploy-context-budget.sh` and record whether its single remaining
+      a single bare path. *(completed)*
+- [x] Add a case to `tests/test-lint-dead-command-recommendations.sh` asserting a non-empty
+      enumeration against the synthetic external-source-store fixture. *(completed: the fixture
+      copies the SOURCE-STORE lint script, not whatever `LINT_SCRIPT` resolved via its own
+      deploy-tree-first preference, since testing a possibly-stale deployed copy would not
+      exercise this phase's edit at all)*
+- [x] Re-run `tests/test-verify-deploy-context-budget.sh` and record whether its single remaining
       failing case (which turns on gate 24 reporting no findings, per that suite's
       `known-failures.txt` row) has moved. Do **not** edit the row here — report the observation
-      for Phase 8 to reconcile.
-- [ ] Confirm `shellcheck` is clean on the edited script.
+      for Phase 8 to reconcile. *(completed: UNMOVED — still 14 of 15 passing, same 2
+      `FINDING gate24 ... /ide has no definition file` lines against
+      `memory-setup.md`/`memory-troubleshooting.md`, unrelated to this phase's source-store-
+      resolution edit. Phase 8 reconciles as before.)*
+- [x] Confirm `shellcheck` is clean on the edited script. *(completed: clean at -S warning on
+      lint-dead-command-recommendations.sh and test-lint-dead-command-recommendations.sh)*
 
 **Timing**: 1.5 hours
 
