@@ -1,5 +1,5 @@
 ---
-next_project_number: 584
+next_project_number: 587
 ---
 
 # TODO
@@ -11,8 +11,8 @@ next_project_number: 584
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583 | 369,383,397,412,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,585 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576,583,584,586 | 369,383,397,412,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563 | core-agent-system, extensions, neovim, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
 | 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
 
@@ -39,6 +39,7 @@ next_project_number: 584
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
+  └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
@@ -52,6 +53,7 @@ next_project_number: 584
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
   └─ 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
     └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
+  └─ 584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
 515 [NOT STARTED] — Rebase the bounded-wait guidance on the measured...
   └─ 439 [NOT STARTED] — # Proposed task: audit cross-extension duplication of the... (see above)
@@ -179,7 +181,62 @@ next_project_number: 584
 
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
+### Uncategorized
+
+585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
+
 ## Tasks
+
+### 586. Stand up the suite and gate wall-clock cost consumer: delete, optimize, or demote every suite the probe indicts
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: Task 476
+
+**Description**: STANDING CONSUMER for the suite/gate wall-clock cost probes (measure-gate-costs.sh -> gate-cost-model.csv, tests/suite-cost-hints.txt), neither of which has a consumer acting on its output. Filed as ONE standing task per ROADMAP Settled decision 16 (a systemic cost is filed against a probe's output, not as a stream of point defects), which also records that the predecessor probe has had no standing consumer since its own work landed.
+
+MEASURED 2026-11-10, CARRIED-UNVERIFIED, re-derive first: 149 suites, 23.5 min total serial wall time; the top 10 are 78% of that and test-gate-cache-equivalence.sh alone is 38% (543s). gate-cost-model.csv puts gate8 at 662,462ms. 35 of 149 suites re-invoke the full run-all.sh or verify-deploy.sh inside throwaway fixture copies; 1,780 leaked /tmp fixtures totalling 1.1GB were observed, because run-all.sh dispatches suites under 'timeout -k 5 600' and SIGKILL skips the EXIT trap.
+
+NOT A DUPLICATE of the archived systematic script-and-test-corpus-efficiency record, and the backlog audit's 50% semantic match on it is the recall-biased over-inclusion that matcher's own header warns about. That record optimised for CORPUS SIZE (duplication, boilerplate, NET-TEST/NET-MD deletion deltas), not wall clock. Its one runtime-touching phase built a shared deployed-tree fixture and found the eligible consumer set to be exactly ONE suite, explicitly excluding gate-cache-equivalence and the other flag-matrix meta-suites BY CONSTRUCTION on the ground that 'the variance across invocations is what it verifies'. That exclusion is precisely why the expensive suites survived, and this record's objective function (wall clock, with deletion authority) is different.
+
+OWNER RULING: this audit MAY DELETE suites outright, not merely optimize or demote them. Settled discrimination rule for the recursive meta-suite class: DELETE when a verify-deploy gate already asserts the same property against the real tree; KEEP when the fixture reaches a state the real tree cannot be put into (crash nets, stale-lock reclaim, nested invocation, fail-open degradation).
+
+Seed report: specs/586_suite_gate_cost_standing_consumer/reports/01_suite-gate-cost-audit.md
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+---
+
+### 585. Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: None
+
+**Description**: The two-mechanism design is already right and already built; adoption is the gap. Mechanism A (orchestrate-build-dispatch.sh's Batch Gate Deferral) narrows a final implement phase's OBLIGATION but not its BEHAVIOUR -- nothing forbids an additional full sweep and nothing detects one. Observed across one six-task batch: 2 of 5 implement dispatches honoured the scoped tier while 3 ran a full or exploratory gate set anyway, one of them running the full gate set with no flags twice. Measured concurrently: 9 live run-all.sh and 9 live verify-deploy.sh processes against nproc 24. Because the .gate-lock mutex deliberately serialises gate 8 (~11 min), nine batteries queue single-file behind it -- the direct cause of implement-phase wait loops of roughly 70 and 100 minutes in that batch.
+
+SECOND GAP: the gate cache has ZERO adoption in the lifecycle. A repo-wide grep for skip-unchanged across core scripts returns exactly one hit, the flag's own parser; no orchestrate caller passes it, and orchestrate-batch-gate.sh explicitly captures at full depth.
+
+THE REMEDY IS ASYMMETRIC and must not be flattened: Move 4's once-per-invocation run KEEPS full depth, because caching it is a no-op (17 of 28 gates declare @extensions and every implement batch invalidates them) and it is the batch's only unconditional signal. Per-dispatch scoped runs, and any exploratory or repeat sweep, SHOULD default to --skip-unchanged, which is exactly the warm-unchanged case the cache was built for.
+
+Seed report: specs/585_redundant_gate_run_suppression/reports/01_redundant-gate-run-suppression.md
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+---
+
+### 584. Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Dependencies**: Task 505
+
+**Description**: Gate 8 declares input_corpus @extensions (the whole extension tree) in gate-registry.data, so a one-file edit anywhere under agent-system/extensions/** re-runs the entire 149-suite battery. Meanwhile suite-selection-lib.sh already maps touched paths to exactly their covering suites via suite_selection_select, is tested, and is trusted enough that plan Tier Justification lines are validated against its output -- yet grep for suite_selection against verify-deploy.sh returns 0 hits. This is a wiring job against proven machinery, not new invention.
+
+WHY THIS IS THE LARGEST SINGLE LEVER: the existing gate cache cannot help here. 17 of 28 gates declare @extensions as their corpus (3,5,6,7,8,11,12,13,17,18,19,20,21,23,24,26,28), so any implement batch touching one extension file invalidates all 17, gate 8 among them. The cache's headline figure (a warm unchanged run skips 17-20 of 24 gates at near-zero cost) describes an UNCHANGED tree, not the end of an implement batch, where the hit rate for precisely the expensive gates is zero. Narrowing WHAT gate 8 runs is the only lever that reduces its cost in the case that actually occurs.
+
+Seed report: specs/584_gate8_covering_suite_selection/reports/01_gate8-suite-selection.md
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+---
 
 ### 583. Add a settings-defaults surface to the agent system loader picker
 - **Status**: [NOT STARTED]
