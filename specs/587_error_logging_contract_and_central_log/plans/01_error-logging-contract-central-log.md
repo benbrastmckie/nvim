@@ -265,36 +265,36 @@ pass so the new class does not warn on every use.
 
 ---
 
-### Phase 2: Correct the documented error-store contract [NOT STARTED]
+### Phase 2: Correct the documented error-store contract [COMPLETED]
 
 **Goal**: `rules/error-handling.md` stops naming an abandoned store as the error-handling write
 path and names the live one instead, with the no-task-context route stated and
 `errors.json`/`/errors` re-described as a narrower triage surface rather than silently dropped.
 
 **Tasks**:
-- [ ] Rewrite `rules/error-handling.md`'s `### 1. Log the Error` to name
+- [x] Rewrite `rules/error-handling.md`'s `### 1. Log the Error` to name
       `bash .claude/scripts/issue-record.sh` as the mandated capture call for a dispatch-time
       error, with the documented non-fatal invocation form and a pointer to
       `context/formats/issue-log.md` for the field contract, the severity scale's admission
       tests, the seed class enum, and the CAPTURE ONLY boundary.
-- [ ] Add, in the same section, the no-task-context route: when no task directory exists,
+- [x] Add, in the same section, the no-task-context route: when no task directory exists,
       capture via `bash .claude/scripts/events-append.sh --category blocker` with `--task`
       omitted (the field is nullable by design), and state that this is the narrower answer for
       the one case `issue-record.sh` structurally cannot serve — it hard-requires a task
       directory.
-- [ ] Add a short `### Where Errors Are Stored` subsection pointing at `issue-log.md`'s new
+- [x] Add a short `### Where Errors Are Stored` subsection pointing at `issue-log.md`'s new
       Three-Store Topology section rather than restating it, and describing
       `errors.json`/`errors-append.sh`/`/errors` on its own terms: a narrower triage surface with
       its own living-record schema and its own command, decoupled from the general capture path.
       Do not describe it as superseded, retired, or formerly-anything; state what it is.
-- [ ] Map the existing External Errors category list onto the new class vocabulary where they
+- [x] Map the existing External Errors category list onto the new class vocabulary where they
       correspond: note that `tool_unavailable` and `mcp_abort_error` are the
       `infrastructure/transport unavailable` class in the capture store's vocabulary, and that an
       entry of that class is not evidence that the task's work failed.
-- [ ] Add a short note to `context/formats/events-format.md` at its nullable-`task` discussion
+- [x] Add a short note to `context/formats/events-format.md` at its nullable-`task` discussion
       recording that a non-task-scoped error capture is one of the intended uses of that
       nullability, with `category: "blocker"`, cross-referencing `rules/error-handling.md`.
-- [ ] Record, in the `### Where Errors Are Stored` subsection, that whether `errors.json`,
+- [x] Record, in the `### Where Errors Are Stored` subsection, that whether `errors.json`,
       `errors-append.sh`, and `/errors` should be retired outright is an open question left to a
       follow-up — a decision that would delete a command and a schema, deliberately not taken
       here.

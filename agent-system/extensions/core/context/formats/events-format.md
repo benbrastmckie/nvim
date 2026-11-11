@@ -97,6 +97,13 @@ consumers group and filter by:
 | `milestone` | A meaningful checkpoint or phase boundary was reached. |
 | `success` | A goal, phase, or task completed successfully. |
 
+**Non-task-scoped error capture is one of the intended uses of the nullable `task` field above**:
+`issues.jsonl` (`scripts/issue-record.sh`) hard-requires a task directory and structurally
+cannot serve a session with no task directory at all. For that one case, `category: "blocker"`
+with `task` omitted (nullable by design, not a workaround) is the narrower, general-purpose
+capture surface — see `rules/error-handling.md`'s "Log the Error" section for the full
+invocation form.
+
 ## `event_type` Open String -- Common Values
 
 `event_type` is an open, extensible string. The starter/common values below are seeded by this

@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Correct the documented error-store contract",
+  "started_at": "2026-11-11T01:00:00Z",
+  "last_updated": "2026-11-11T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Log the Error to name issue-record.sh", "status": "done", "files_touched": ["agent-system/extensions/core/rules/error-handling.md"]},
+    {"id": 2, "description": "Add no-task-context route via events-append.sh", "status": "done", "files_touched": ["agent-system/extensions/core/rules/error-handling.md"]},
+    {"id": 3, "description": "Add Where Errors Are Stored subsection", "status": "done", "files_touched": ["agent-system/extensions/core/rules/error-handling.md"]},
+    {"id": 4, "description": "Map External Errors categories onto class vocabulary", "status": "done", "files_touched": ["agent-system/extensions/core/rules/error-handling.md"]},
+    {"id": 5, "description": "Add note to events-format.md nullable-task discussion", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/events-format.md"]},
+    {"id": 6, "description": "Record errors.json retirement as open follow-up question", "status": "done", "files_touched": ["agent-system/extensions/core/rules/error-handling.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

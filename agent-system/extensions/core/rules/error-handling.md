@@ -32,11 +32,58 @@ Errors from external systems:
 When an error occurs:
 
 ### 1. Log the Error
-Record the error via `scripts/errors-append.sh append` (builds a schema-valid record, writes it
-under `flock`). Formal schema: `context/schemas/errors-schema.json`; full CLI/field prose
-contract: `context/formats/errors-format.md` (the two must stay in sync). See
-`context/standards/error-recovery-strategies.md` for the full CLI invocation example, the
-seven-field specification, and session-aware error aggregation.
+Record the error via `bash .claude/scripts/issue-record.sh`, the general-purpose capture path
+for a dispatch-time error inside a task context:
+
+```bash
+bash .claude/scripts/issue-record.sh --task-dir "$TASK_DIR" --kind issue \
+  --class "CLASS" --severity blocking|costly|minor|none \
+  --what-happened "What happened" [--phase research|plan|implement|conclusion|other] \
+  [--dispatch-seq N] [--evidence-path PATH] [--resolution fixed_inline|worked_around|open] \
+  >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+```
+
+See `context/formats/issue-log.md` for the full field contract, the severity scale's admission
+tests, the seed class enum (including `infrastructure/transport unavailable`, the class an
+external-system failure belongs to — see "External Errors Mapped Onto the Class Vocabulary"
+below), and the CAPTURE ONLY boundary this call must respect.
+
+**No-task-context route**: `issue-record.sh` hard-requires a task directory and structurally
+cannot serve a session with no task directory at all. When no task directory exists, capture via
+`events-append.sh` instead, with `--task` omitted (nullable by design, not a workaround):
+
+```bash
+bash .claude/scripts/events-append.sh --event-type "error" --category blocker \
+  --session "$session_id" --message "What happened" [--detail-json '{"...":"..."}'] \
+  >/dev/null 2>&1 || echo "Note: event recording failed (non-fatal)" >&2
+```
+
+See `context/formats/events-format.md`'s `category` closed-enum discussion for the full
+nullable-`task` contract this route relies on.
+
+#### Where Errors Are Stored
+
+See `context/formats/issue-log.md`'s "The Three-Store Topology" section for the full three-way
+verdict. In short: `issues.jsonl` (via `issue-record.sh`, above) is the general-purpose capture
+path for task-scoped work; `events.jsonl` (via `events-append.sh`, above) is the append-only
+lifecycle store and the capture path when no task directory exists.
+
+`specs/errors.json` (via `scripts/errors-append.sh`) and the `/errors` command are a narrower,
+decoupled triage surface with their own living-record schema (`context/schemas/errors-schema.json`,
+`context/formats/errors-format.md`) — not the general error-handling write path described above.
+`errors-append.sh` has exactly one caller today, `core/commands/errors.md`, and that caller only
+ever invokes its `update` subcommand (never `append`) to mutate an existing record's fix status.
+Whether `errors.json`, `errors-append.sh`, and `/errors` should be retired outright is an open
+question left to a follow-up — a decision that would delete a command and a schema, deliberately
+not taken here.
+
+#### External Errors Mapped Onto the Class Vocabulary
+
+Two of the External Errors categories above correspond directly to `issues.jsonl`'s
+`infrastructure/transport unavailable` seed class: `tool_unavailable` (an MCP tool not
+responding) and `mcp_abort_error` (an MCP tool aborted or timed out). An entry of that class
+records infrastructure being unavailable, not the task's own work failing — nothing in cycle
+accounting reads it today.
 
 ### 2. Preserve Progress
 - Never lose completed work
