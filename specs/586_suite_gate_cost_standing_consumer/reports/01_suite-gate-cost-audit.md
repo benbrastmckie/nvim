@@ -94,17 +94,45 @@ citing the gate that covers it (for a DELETE) or naming the unreachable-by-gate 
 
 ## Secondary finding: fixture leakage
 
-1,780 leftover `/tmp/tmp.*` directories totalling **1.1 GB**, oldest dated Nov 2 — eight days of
-accumulation. Individual fixtures reach 208 MB (full extension-tree copies).
+1,838 leftover `/tmp/tmp.*` entries totalling **1.1 GB** (856 directories, 982 files), oldest
+dated Nov 2 — eight days of accumulation. Individual fixtures reach 208 MB (full extension-tree
+copies). The leftover files are gate state serialisations (`declare -- CHECKS=...
+FAILURES=... FINDINGS_LIST=()`) and PID files.
 
-Mechanism: the sampled suites do install cleanup traps (`test-gate-cache-equivalence.sh`,
+**This has been cleared once, by hand, on 2026-11-10**: 1,799 entries older than 60 minutes were
+removed after confirming every one was owned by the invoking user and referenced by no live
+process (checked via `/proc/*/cwd` and `/proc/*/fd/*`, not a process-name match), leaving 1.1 MB
+in 39 live entries. A by-hand sweep is not a fix; the two mechanisms below are.
+
+### Leak mechanism 1: SIGKILL skips the EXIT trap
+
+The sampled suites do install cleanup traps (`test-gate-cache-equivalence.sh`,
 `test-run-all-parallel.sh`, `test-deploy-propagation.sh` each have one), but `run-all.sh`
 dispatches each suite under `timeout -k 5 600`. On timeout that sends SIGTERM then **SIGKILL**,
-and SIGKILL does not run an EXIT trap — so every timed-out suite leaks its fixture. `/refresh`
-cleans `~/.claude/` and `specs/` but has no `/tmp/tmp.*` reaper, so nothing ever collects these.
+and SIGKILL does not run an EXIT trap — so every timed-out suite leaks its fixture.
 
-This is a mechanical defect with a definite fix rather than a systemic cost. The research phase
-should rule on whether it belongs in this record or its own.
+### Leak mechanism 2: the read-only shared fixture leaks undeletable
+
+**Discovered while clearing the backlog, and it is the one a naive reaper will fail on.** The
+shared deployed-tree fixture mechanism builds one tree and `chmod -R a-w`s it before lending it
+read-only to consumers, reversing that chmod on exit. When a run dies without reaching its exit
+path, the tree survives **with write permission removed**, so a plain `rm -rf` fails on every
+file inside it with `Permission denied` — including the whole of `deployed/.git/`. Observed
+directly: the first-pass sweep above succeeded on 1,798 entries and failed on the chmod'd one,
+which required `chmod -R u+w` before it would delete.
+
+Consequence for the remedy: **any `/tmp/tmp.*` reaper must restore write permission before
+unlinking**, or it will silently fail on exactly the most expensive leaked fixtures — the
+full-tree copies — while appearing to succeed on everything else. A reaper that only logs its
+own exit code would report success while leaving the bulk of the gigabyte in place.
+
+### Disposition
+
+`/refresh` cleans `~/.claude/` and `specs/` but has no `/tmp/tmp.*` reaper, so nothing ever
+collects these. Both mechanisms are mechanical defects with definite fixes rather than systemic
+cost, so the research phase should rule on whether they belong in this record or their own —
+but they must travel together, since mechanism 2 determines whether a fix for mechanism 1
+actually works.
 
 ## Open questions for research
 
