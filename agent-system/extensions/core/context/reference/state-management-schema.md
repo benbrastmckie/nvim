@@ -120,10 +120,10 @@ real defect, caught by the schema-to-validator drift test in
 | `project_name` | string | Yes | Snake_case slug from title |
 | `status` | string | Yes | Current status (see Status Values) |
 | `task_type` | string | Yes | Task type for routing (see Task Type Values). Bare values (`meta`, `general`) or compound `extension:subtype` (`present:grant`, `founder:deck`) |
-| `title` | string | No | Documented-optional, confirmed live on all current entries. Human-readable task title |
-| `topic` | string | No | Documented-optional, confirmed live on all current entries. Free-text topic label, aggregated into the top-level `active_topics` array. Also a BINDING, dispatch-matching key as of the manifest `observers` block: matched prefix-aware by a loaded extension's declared observer to select a post-task script to run under `/orchestrate` -- see `docs/guides/creating-extensions.md`'s Post-Task Observers section for the full matching contract |
+| `title` | string | No | Documented-optional. Human-readable task title; genuinely absent on some entries, each covered by a documented fallback -- `generate-todo.sh` derives a heading from `project_name`, `generate-task-order.sh` falls back `(.title // .description // .project_name)` |
+| `topic` | string | No | Documented-optional. Free-text topic label, aggregated into the top-level `active_topics` array. Also a BINDING, dispatch-matching key as of the manifest `observers` block: matched prefix-aware by a loaded extension's declared observer to select a post-task script to run under `/orchestrate` -- see `docs/guides/creating-extensions.md`'s Post-Task Observers section for the full matching contract. Genuinely absent on some entries; an absent `topic` renders under the generator's "Uncategorized" bucket rather than failing |
 | `description` | string | No | Documented-optional, confirmed live on all current entries. Full task description |
-| `session_id` | string | No | Documented-optional, confirmed live. Session ID of the most recent status-changing command invocation (`sess_{timestamp}_{random}`) |
+| `session_id` | string | No | Documented-optional. Session ID of the most recent status-changing command invocation (`sess_{timestamp}_{random}`); genuinely absent on many entries, since it is written only as a side effect of a status-changing command, not at task creation |
 | `effort` | string | No | Estimated effort. Zero occurrences in the current active snapshot, but this is a lifecycle-timing artifact, not evidence of disuse -- 276 occurrences in `specs/archive/state.json` (populates once a task completes) |
 | `created` | string | Yes | ISO8601 creation timestamp |
 | `last_updated` | string | Yes | ISO8601 last update timestamp |
