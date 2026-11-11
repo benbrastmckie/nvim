@@ -27,22 +27,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/589_test_suite_repo_root_walk_up_depth/summaries/01_test-root-resolution-remedy-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["masked-defect", "source-store-first-resolution", "test-perturbation-target", "invocation-path-dependence", "gate-cache-digest"]
+      "suggested_keywords": [
+        "masked-defect",
+        "source-store-first-resolution",
+        "test-perturbation-target",
+        "invocation-path-dependence",
+        "gate-cache-digest"
+      ]
     },
     {
       "content": "A wrapper script's own exit-code verdict can diverge from the underlying command it wraps even when every visible argument and environment variable is reproduced byte-for-byte: verify-deploy.sh's gate8_run wraps 'run-all.sh --quiet --jobs auto --fail-on-new' and reports an overall FAIL, while direct reproduction of that exact invocation line (confirmed via multiple attempts, with and without the wrapper's own exported GATE_MUTEX_HELD=1) reliably returns exit 0 with 0 NEW failures. When a gate/CI wrapper's summary verdict contradicts a careful standalone reproduction of its own documented invocation, inspect the WRAPPED COMMAND's own detailed output directly (the specific failing-suite roster, not just the summary line) rather than trusting the wrapper's aggregate exit code alone -- the wrapper may have an independent, unrelated bug in its own exit-code handling.",
       "category": "INSIGHT",
       "source_artifact": "specs/589_test_suite_repo_root_walk_up_depth/summaries/01_test-root-resolution-remedy-summary.md",
       "confidence": 0.6,
-      "suggested_keywords": ["wrapper-exit-code-discrepancy", "gate8", "verify-deploy", "reproduction-first-diagnosis"]
+      "suggested_keywords": [
+        "wrapper-exit-code-discrepancy",
+        "gate8",
+        "verify-deploy",
+        "reproduction-first-diagnosis"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794381614_02261f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

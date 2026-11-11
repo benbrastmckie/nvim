@@ -93841,7 +93841,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794381614_02261f"
+      "session_id": "sess_1794381614_02261f",
+      "completion_summary": "Fixed the invocation-path-dependent repo-root resolution in five named test suites, one adjacent suite, and orchestrate-build-aux-dispatch.sh's deployed-mode model resolution, all now confirmed green from both the source-store and deployed invocation paths; a second, previously-masked defect in test-gate-cache-lib.sh's case11 was found and fixed along the way, and both of task 573's assertions are now closed."
     },
     {
       "project_number": 590,
