@@ -204,27 +204,27 @@ dispatch site appears, fix it in this same phase and record it rather than defer
 
 ---
 
-### Phase 2: Convert the agent's silent target_root fallback to a loud refusal [NOT STARTED]
+### Phase 2: Convert the agent's silent target_root fallback to a loud refusal [COMPLETED]
 
 **Goal**: Remedy (b), in its revised form. An absent `target_root` stops the run visibly instead
 of producing a best-guess that files records somewhere unintended.
 
 **Tasks**:
 
-- [ ] Re-read `agents/meta-builder-agent.md` Stage 1 (currently lines 141-167) immediately before
-      editing.
-- [ ] Replace the absent-key branch's action (currently "resolve ... and note the fallback was
+- [x] Re-read `agents/meta-builder-agent.md` Stage 1 (currently lines 141-167) immediately before
+      editing. *(completed)*
+- [x] Replace the absent-key branch's action (currently "resolve ... and note the fallback was
       used in the run log") with an explicit refusal: stop before any Write/Edit, write
       `.return-meta.json` with `status: "blocked"`, name the missing field and the calling
-      convention the other dispatchers follow, and create nothing.
-- [ ] Preserve unchanged: the `GLOBAL_ROOT`-versus-CWD distinction, the explicit-value-always-wins
+      convention the other dispatchers follow, and create nothing. *(completed)*
+- [x] Preserve unchanged: the `GLOBAL_ROOT`-versus-CWD distinction, the explicit-value-always-wins
       precedence, and the whole Path Qualification Convention block. Only the absent-key branch's
-      action changes.
-- [ ] State the precedence explicitly in the edited text: an explicitly passed `target_root`
+      action changes. *(completed)*
+- [x] State the precedence explicitly in the edited text: an explicitly passed `target_root`
       (global or local) is always used as given, so the refusal fires only on true absence of the
-      key and never on a present-but-local value. `--local` semantics are untouched.
-- [ ] Write the new text as a statement of the current contract, with no narration of what the
-      branch used to do.
+      key and never on a present-but-local value. `--local` semantics are untouched. *(completed)*
+- [x] Write the new text as a statement of the current contract, with no narration of what the
+      branch used to do. *(completed)*
 
 **Timing**: 1 hour
 

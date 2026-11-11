@@ -143,10 +143,19 @@ remainder of this run — every subsequent stage that reads or writes a path qua
 Field names (`mode_target`, `target_root`) match what `skill-meta` emits exactly; do not rename or
 alias them.
 
-**Defensive fallback**: if `target_root` is absent from the delegation context (an older caller or
-malformed input), resolve `TARGET_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"` and note
-the fallback was used in the run log. **CWD must never be the fallback** — CWD-as-default is the
-exact defect this contract exists to eliminate.
+**Absent-key refusal**: if `target_root` is absent from the delegation context (an older caller or
+malformed input), STOP before any Write/Edit tool call. Write `.return-meta.json` with
+`"status": "blocked"`, naming the missing `target_root` field and the calling convention the
+other dispatchers follow (resolve `GLOBAL_ROOT="${CLAUDE_AGENT_GLOBAL_ROOT:-$HOME/.config/nvim}"`,
+or the caller's own repo root in local mode, and pass it as `target_root` in the delegation
+context). Create nothing — no task directory, no `TODO.md`/`state.json` entry. **CWD must never
+be the fallback** — CWD-as-default is the exact defect this contract exists to eliminate, and a
+refusal is strictly preferable to a silent best-guess that mis-files a record.
+
+**Precedence**: an explicitly passed `target_root` — whether `mode_target: "global"` or
+`mode_target: "local"` — is always used exactly as given; the refusal above fires only on true
+absence of the `target_root` key, never on a present-but-local value. `--local` semantics are
+unaffected by this refusal.
 
 **Path Qualification Convention (binding for the rest of this file)**:
 - **Default: absolute, `${TARGET_ROOT}`-qualified paths** for every Write/Edit tool call and every
