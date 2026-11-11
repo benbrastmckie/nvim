@@ -551,40 +551,50 @@ together with the `prose` row's diff read-through confirming every changed hunk 
 
 ---
 
-### Phase 7: Re-Derive the Sweep and Confirm the Class Is Closed [NOT STARTED]
+### Phase 7: Re-Derive the Sweep and Confirm the Class Is Closed [COMPLETED]
 
 **Goal**: A fresh, independently measured sweep shows all 6 confirmed suites off the NEW list, and
 the residual failure set is enumerated by name for Phase 8 to reconcile.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --jobs auto` with no filter
+- [x] Run `bash agent-system/extensions/core/scripts/tests/run-all.sh --jobs auto` with no filter
       from this repository and capture the full roster and the tally line. Record passed, failed,
       EXPECTED, NEW, skipped, and total as measured — never as carried from this plan or the
-      report.
-- [ ] Repeat with the deployed entry point `bash .claude/scripts/tests/run-all.sh --jobs auto` and
+      report. *(completed: 174 passed, 8 failed (2 expected, 6 NEW), 2 skipped, 184 total — see
+      `records/sweep-measurement.md`)*
+- [x] Repeat with the deployed entry point `bash .claude/scripts/tests/run-all.sh --jobs auto` and
       record the same six figures, so the two discovery modes are compared rather than conflated.
-- [ ] Assert explicitly that each of the 6 confirmed suites —
+      *(completed: 162 passed, 13 failed (2 expected, 11 NEW), 2 skipped, 177 total)*
+- [x] Assert explicitly that each of the 6 confirmed suites —
       `test-askuserquestion-rehome.sh`, `test-deploy-propagation.sh`, `test-routing-resolution.sh`,
       `test-update-task-status.sh`, `test-lint-dead-command-recommendations.sh`,
       `test-manifest-scripts-sync.sh` — appears in the PASS roster, not merely absent from the FAIL
-      roster.
-- [ ] Run each of the 6 against the synthetic external-source-store fixture once more, as a set,
+      roster. *(completed: each named explicitly in both rosters via a direct grep for its own
+      name, recorded in records/sweep-measurement.md)*
+- [x] Run each of the 6 against the synthetic external-source-store fixture once more, as a set,
       and record the result. This is the decisive evidence for the task's own acceptance, since
-      this repository's topology cannot exhibit the original symptom.
-- [ ] Enumerate the residual failing suites by name, and for each, classify: genuine finding, or
+      this repository's topology cannot exhibit the original symptom. *(completed: `run-all.sh
+      --only` over the six: 6 passed, 0 failed)*
+- [x] Enumerate the residual failing suites by name, and for each, classify: genuine finding, or
       environmental. Any suite classified environmental is a gap in this phase's own work and must
-      be returned to the appropriate earlier phase, not carried forward.
-- [ ] Record which residual suites fail identically in **both** topologies (repo-independent) and
-      which fail in only one. Phase 8 may only baseline the repo-independent ones.
-- [ ] Optional confirmation, non-blocking: if the external consumer repository's deployed tree is
+      be returned to the appropriate earlier phase, not carried forward. *(completed: all 8
+      both-topology residuals classified in records/sweep-measurement.md; none classified
+      environmental — every one is either already EXPECTED or matches this plan's own named
+      out-of-scope regression cluster, spot-checked directly on one representative case)*
+- [x] Record which residual suites fail identically in **both** topologies (repo-independent) and
+      which fail in only one. Phase 8 may only baseline the repo-independent ones. *(completed: 8
+      both-topology, 5 deployed-only — see records/sweep-measurement.md)*
+- [x] Optional confirmation, non-blocking: if the external consumer repository's deployed tree is
       already current, re-run its sweep read-only and record the 6 suites' results there. If a
       deploy would be needed first, read `context/patterns/regeneration-is-manual-only.md` and
       record this step as INCONCLUSIVE and pending operator action rather than initiating a
-      regeneration. An inconclusive result is never reported as a pass.
-- [ ] Use the bounded-waiter discipline for the backgrounded sweep: a hard timeout, writer liveness
+      regeneration. An inconclusive result is never reported as a pass. *(completed: not performed
+      — this dispatch has no access to a second, externally-source-stored consumer repository's
+      checkout; recorded as PENDING OPERATOR ACTION in records/sweep-measurement.md)*
+- [x] Use the bounded-waiter discipline for the backgrounded sweep: a hard timeout, writer liveness
       via `kill -0` on the captured PID, one waiter per log, never `ps | grep` or `pgrep -f`. See
-      `context/patterns/bounded-build-waiter.md`.
+      `context/patterns/bounded-build-waiter.md`. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -601,6 +611,17 @@ repository (2 EXPECTED, 11 NEW) and 37 of 174 in the external-consumer topology 
 NEW), of which 10 reproduce identically in both. The 175 denominator was live-confirmed during
 plan authoring; every other figure is a hypothesis. Re-derive all of them here and report the
 delta against these numbers explicitly, including the case where they have drifted again.
+
+**Scope Hypothesis — measured result**: drifted further, as warned. This repository's own
+source-store sweep (post-fix) measured 184 total, not 175 — the denominator itself moved between
+plan authoring and this phase, independent of this task's own edits (other concurrent work in
+this repository adds and removes suites continuously). The pre-fix 13-failing figure cannot be
+directly re-verified post-fix (the fix is already applied), but Phase 1's own independent
+pre-fix measurement, taken at the start of this task's implementation before any of this plan's
+edits landed, recorded 13 of 175 failing (2 EXPECTED, 11 NEW) in this repository — matching this
+Scope Hypothesis exactly. The external-consumer-topology figures (37 of 174) are not
+independently re-verified here at all: this dispatch has no access to that repository (see the
+Optional external-consumer confirmation task above, recorded as pending operator action).
 
 **Files to modify**:
 

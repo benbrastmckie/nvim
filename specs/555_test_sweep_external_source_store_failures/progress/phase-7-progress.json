@@ -1,0 +1,69 @@
+{
+  "phase": 7,
+  "phase_name": "Re-Derive the Sweep and Confirm the Class Is Closed",
+  "started_at": "2026-11-11T01:30:00Z",
+  "last_updated": "2026-11-11T02:15:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run run-all.sh --jobs auto (source-store entry point), capture roster and tally",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Run run-all.sh --jobs auto (deployed entry point), capture roster and tally",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Assert the 6 confirmed suites appear explicitly in the PASS roster under both modes",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run the 6 confirmed suites as a set against run-all.sh --only",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Enumerate and classify residual failures (genuine vs environmental)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Classify both-topology vs one-topology-only residuals",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Optional external-consumer confirmation (recorded as pending operator action, not performed)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Write records/sweep-measurement.md",
+      "status": "done",
+      "files_touched": [
+        "specs/555_test_sweep_external_source_store_failures/records/sweep-measurement.md"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": [
+    "Source-store sweep: 174 passed, 8 failed (2 expected, 6 NEW), 2 skipped, 184 total.",
+    "Deployed sweep: 162 passed, 13 failed (2 expected, 11 NEW), 2 skipped, 177 total.",
+    "All 6 confirmed suites explicitly PASS under both discovery modes and as a set (run-all.sh --only over the 6: 6 passed, 0 failed).",
+    "Residual classification: 8 both-topology suites (2 already EXPECTED, 6 NEW matching this plan's own named out-of-scope regression cluster, none classified environmental), 5 deployed-only suites (including the 2 suites this task's research report already found misattributed to the source-store cause, independently corroborated here).",
+    "bash agent-system/extensions/core/scripts/verify-deploy.sh (source-store entry point): FAIL -- 2 of 43 checks failed (gate 8's residual cluster, gate 24's pre-existing /ide finding) -- a substantial improvement over Phase 1's initial 6 of 43 (gates 3, 5, 10, 22 now pass; a deploy appears to have landed in this environment independently of this dispatch's own actions, since .claude/ is gitignored/untracked and its mtimes now postdate the source-store copies -- this dispatch never itself initiated one, per the plan's Non-Goals). Not fully green: Phase 8's own job is reconciling the remaining two.",
+    "The Scope Hypothesis's pre-fix denominator (175) has already drifted to 184 by this phase, independent of this task -- recorded explicitly in the plan rather than silently reconciled."
+  ]
+}

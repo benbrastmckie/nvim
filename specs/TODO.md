@@ -1,5 +1,5 @@
 ---
-next_project_number: 580
+next_project_number: 583
 ---
 
 # TODO
@@ -11,10 +11,10 @@ next_project_number: 580
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 313,338,342,369,383,397,410,412,431,437,451,452,453,455,456,459,472,473,475,476,477,479,484,490,491,498,500,502,503,504,505,506,507,510,511,512,514,515,519,520,521,522,523,525,526,528,529,530,531,532,533,534,535,536,537,538,539,545,546,548,549,550,551,554,555,556,557,558,559,560,562,563,565,567,568,569,572,573,574,575,580,582 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,391,398,439,457,458,462,463,474,480,486,492,509,513,516,517,518,527,540,541,542,543,544,553,564,566,576 | 369,383,397,412,431,451,452,455,459,472,479,484,491,504,505,515,534,535,538,539,548,549 | core-agent-system, extensions, file-scope-lifecycle, ... |
 | 3 | 390,399,402,436,438,454,501,508,547,552,570,571,579 | 313,391,398,439,458,472,476,486,518,519,542,543,564 | core-agent-system, file-scope-lifecycle, lean-extension, ... |
-| 4 | 421,481,524,561,577 | 390,402,501,547,552 | core-agent-system, agent-system |
+| 4 | 421,481,524,561,577,581 | 390,402,438,479,492,501,547,552,580 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -41,9 +41,11 @@ next_project_number: 580
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
+  └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
 490 [NOT STARTED] — Make generate-task-order.sh read active\_goal so the field...
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
+    └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 500 [NOT STARTED] — Dependency-edge backfill is unreachable for a not-started task
 502 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
 503 [NOT STARTED] — MIGRATED FROM BimodalLogic 2026-11-05. This record was filed...
@@ -63,6 +65,9 @@ next_project_number: 580
 565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
 574 [NOT STARTED] — Correct the cycle-budget contract to state shared-pool...
 575 [NOT STARTED] — Stop the cross-phase ceiling check reading a stop-word as a...
+580 [NOT STARTED] — Correct the interactive-selection threshold model to...
+  └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
+582 [NOT STARTED] — Author a concise output style in the source store and make it...
 421 [NOT STARTED] — Retarget the existing /distill --meta sub-mode into the...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 
@@ -174,6 +179,275 @@ next_project_number: 580
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
+
+### 582. Author a concise output style in the source store and make it the default outputStyle
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json with `jq -r '.extensions.core.source_dir' .claude-extensions.json` (it lives PER-EXTENSION, not as a top-level key) and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+=== GOAL ===
+
+Make a concise output style the default for Claude Code sessions in this repository, managed
+entirely from within this repository's agent-system source store -- no global
+~/.claude/settings.json edit, no change to the nvim loader.
+
+=== MEASURED STARTING STATE ===
+
+- `outputStyle` is a plain top-level settings key. It currently reads `"default"` in BOTH the
+  source store (root-files/settings.local.json, around line 57) and the deployed copy
+  (.claude/settings.local.json, around line 81). The deployed file is gitignored and regenerated
+  from the source store, so the source-store file is the only durable edit target.
+- NO output-styles directory exists anywhere: not at project scope (.claude/output-styles/), not
+  in the source store, and not at ~/.claude/output-styles/. Verified by direct inspection.
+- The global ~/.claude/settings.json carries NO outputStyle key at all, so nothing is being
+  overridden globally and nothing global needs to change.
+- The nvim loader at lua/neotex/plugins/ai/claudecode.lua (around line 44) sets
+  `command = "claude --dangerously-skip-permissions"` with no output-style flag. The comment
+  immediately above it (around lines 41-43) records the deliberate convention that such
+  preferences belong in settings.local.json rather than a CLI flag, because a CLI flag bypasses
+  Max-plan context routing. Follow that convention: expect NO Lua change.
+
+CONSEQUENCE, and the reason this is not a one-line value change: "Concise" names nothing today.
+Setting outputStyle to it without authoring the style first points the setting at a missing
+style.
+
+=== RESEARCH PHASE MUST ESTABLISH, before any edit ===
+
+1. The exact set of BUILT-IN output style names and their literal settings values, and whether
+   any built-in already provides concise behavior that makes a custom style unnecessary. If a
+   built-in suffices, the correct outcome may be to select it rather than author anything --
+   that disposition is an acceptable and preferred result, not a failure of this record.
+2. If a custom style is needed: the required file location for PROJECT scope, the file format
+   (markdown with YAML frontmatter, per current Claude Code conventions), the exact required
+   frontmatter fields, and whether the settings value matches the frontmatter `name` or the
+   filename slug. Verify against current documentation rather than assuming.
+3. The precedence order among managed settings, settings.json, and settings.local.json for this
+   key, so the chosen file is the one that actually wins at session start.
+4. What an output style actually replaces or modifies in the prompt, and therefore whether a
+   concise style would conflict with, duplicate, or be overridden by this repository's existing
+   CLAUDE.md output conventions and the agent-system's own response-format instructions. A style
+   that contradicts an existing instruction block is worse than no style.
+
+=== REQUIRED OUTCOMES ===
+
+1. A concise output style is in effect for sessions in this repository, by whichever mechanism
+   research establishes as correct (built-in selection or authored custom style).
+2. If a style file is authored, it lives in the source store and is wired into the deploy so it
+   lands at project scope on regeneration -- never hand-placed under .claude/**, which the next
+   deploy would wipe.
+3. root-files/settings.local.json's outputStyle references it.
+4. The deploy is verified end to end: regenerate, then confirm the deployed settings value and,
+   if applicable, the deployed style file both appear at their expected paths.
+5. If the style file must be registered in an extension manifest to be deployed, that
+   registration is included.
+
+=== NON-GOALS ===
+
+- Any change to ~/.claude/settings.json or to ~/.dotfiles. The explicit intent is that agent
+  system management stays in this repository; a global change would distribute the maintenance
+  burden this record exists to avoid.
+- Any change to the nvim loader's command string, including its existing
+  --dangerously-skip-permissions flag, which is out of scope and must not be touched.
+- Changing the session model selection, which the same settings file governs by the same
+  convention.
+
+=== VERIFICATION ===
+
+- A fresh session launched for this repository reports the intended output style.
+- A full regenerate followed by inspection shows the setting and any style file surviving the
+  deploy rather than being reverted to "default".
+
+---
+
+### 581. Extract one shared AskUserQuestion option renderer and adopt it across all four selection surfaces
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 580, Task 438, Task 479, Task 492
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json with `jq -r '.extensions.core.source_dir' .claude-extensions.json` (it lives PER-EXTENSION, not as a top-level key) and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+=== THE DEFECT: FOUR INCOMPATIBLE RENDERINGS OF ONE DECISION, NO SHARED HELPER ===
+
+MEASURED in the source store. The same operator decision -- "pick which of these items become
+tasks" -- is rendered four different ways, with no shared code or convention:
+
+  1. scripts/tier-selection.sh, tier-1 jq builder (around lines 130-156): label is
+     `"[Group] " + label + " (N issues)"`; description concatenates a severity comma-list
+     ("Critical: 2, High: 1") with a pipe-joined, ellipsis-truncated file dump
+     (" | Files: a.lua, b.lua, c.lua..."). The magnitude already stated in the label is
+     re-expressed in the description, so both fields compete to say the same thing. The
+     document's own guidance ("Avoid redundancy with label", standards/interactive-selection.md)
+     is violated by its own reference implementation.
+
+  2. scripts/tier-selection.sh, tier-3 Python builder (around line 260):
+     `label = description[:60] + ("..." if len(description) > 60 else "")` -- a hard character
+     slice with NO word-boundary check, so labels routinely break mid-word.
+
+  3. scripts/tier-selection.sh, tier-3 description (around lines 266-271):
+     `f"{severity} | {loc} | From: {group_label}"` -- a lowercase severity, a pipe-delimited
+     file:line, and the group label repeated on EVERY option even though the tier-1 selection
+     that produced the list already established it. A constant consumes width that the
+     per-item distinguishing detail then loses to truncation.
+
+  4. skills/skill-fix-it/SKILL.md, Step 7 (around lines 164-169): label is
+     `"{content truncated to 50 chars}"` -- a DIFFERENT truncation width than tier-3's 60 for the
+     same conceptual preview -- and description is a bare `"{file}:{line}"` carrying no severity
+     or tag-type at all.
+
+  5. context/workflows/meta-interview.md (around lines 443-444): custom-grouping option
+     descriptions are the literal placeholders `"Item 1"`, `"Item 2"` -- zero information beyond
+     a position index -- while the label duplicates the task title verbatim.
+
+Net effect: severity is present, lowercase, or absent depending on which command is running;
+locations appear bare, pipe-wrapped, or not at all; and the same item previews at two widths.
+Nothing transfers between flows, so the operator relearns the format at each surface.
+
+ASYMMETRIC INTERACTIVITY, the same class of defect by omission: skills/skill-spawn/SKILL.md
+(around lines 404-419) writes every new_tasks[] entry straight to state via state-write.sh. The
+only AskUserQuestion in the whole spawn flow is topic assignment (around lines 70-73). Of the
+three task-proposal surfaces, one presents no list at all, so spawned follow-ups cannot be
+reviewed or declined before they land.
+
+=== PRECONDITION: SEQUENCED BEHIND THE THRESHOLD-MODEL RECORD ===
+
+Do NOT begin before the interactive-selection threshold-model record lands. AskUserQuestion
+accepts a maximum of 4 options per question, and the standard currently prescribes brackets up
+to 100; the helper specified here must be written against the CORRECTED model (batching or
+narrowing, whichever that record settles) and against its ruling on whether per-item detail
+belongs in `description` or in the tool's `preview` field. Building the helper first would
+hard-code the same wrong assumption into one more place, this time a shared one.
+
+=== REQUIRED OUTCOMES ===
+
+1. ONE option-rendering helper, in a single location, used by every consumer below. Research/plan
+   owns the form -- a shell/jq library under scripts/lib/, a documented convention in
+   standards/interactive-selection.md that each site follows, or both -- and must justify the
+   choice against how the consumers differ (two are shell scripts, three are skill/workflow
+   markdown that an agent renders). A convention that cannot be mechanically enforced should be
+   paired with a lint, or rejected in favor of code.
+
+2. The helper defines, once: one severity vocabulary with consistent casing; one location format;
+   word-boundary truncation at ONE width; a short imperative label; and a single-clause
+   description that does not restate the label.
+
+3. Adopt it at every site: scripts/tier-selection.sh (tier-1 and tier-3),
+   skills/skill-fix-it/SKILL.md (Step 7), context/workflows/meta-interview.md (replacing the
+   "Item N" placeholders with real content), and skills/skill-spawn/SKILL.md.
+
+4. Give skill-spawn a selection step, so all three task-proposal surfaces share one review
+   affordance. Decide whether spawn's proposals route through the same tiered flow or a simpler
+   confirm, and state why.
+
+5. Drop the per-option repetition of the group label; state the group once in the question text.
+
+=== NON-GOALS ===
+
+- The option-count ceiling and the >4 batching/narrowing strategy: owned by the predecessor
+  record. This record consumes that model, it does not re-decide it.
+- The backlog-audit prompt's firing condition and its fold-into-existing remediation: owned by
+  the open corroboration-gated-backlog-prompt record, whose declared file_scope ALREADY includes
+  commands/review.md, context/workflows/meta-interview.md, skills/skill-fix-it/SKILL.md and
+  skills/skill-spawn/SKILL.md. THE OVERLAP WITH THIS RECORD IS REAL on four paths. That record
+  changes WHEN the audit prompt fires and WHAT ACTIONS it offers; this one changes HOW each
+  option is rendered. Serialize the two rather than running them concurrently, and add the
+  dependency edge in whichever direction research settles.
+- Collapsing per-path scope-excursion issue rows (which also edits scripts/issue-grouping.sh,
+  the upstream producer of the fields tier-selection.sh consumes): owned by its own open record.
+  Confirm whether its record-shape change alters the fields this helper reads before editing
+  tier-selection.sh's consumption of them.
+
+=== VERIFICATION ===
+
+- A repo-wide grep finds no second definition of severity rendering, location formatting, or
+  label truncation outside the helper.
+- No label is produced by a bare character slice.
+- Every AskUserQuestion-bearing selection site named above resolves its options through the
+  helper, demonstrated by inspection at each site.
+
+---
+
+### 580. Correct the interactive-selection threshold model to AskUserQuestion's real four-option ceiling
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json with `jq -r '.extensions.core.source_dir' .claude-extensions.json` (it lives PER-EXTENSION, not as a top-level key) and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+=== THE DEFECT: THE STANDARD IS WRITTEN AGAINST A CAPABILITY THE TOOL DOES NOT HAVE ===
+
+MEASURED. context/standards/interactive-selection.md's "Threshold Guidelines" table prescribes
+selection behavior in five brackets -- 1-10 ("Direct selection, no grouping"), 11-20 ("Consider
+topic grouping"), 21-50 ("Add 'Select all' option"), 51-100 ("Require narrowing first"), and
+>100 ("Hard limit, require filter"). The AskUserQuestion tool accepts a MAXIMUM OF 4 OPTIONS per
+question (schema: options minItems 2, maxItems 4).
+
+Consequence: no bracket above 1-10 is representable in a single question, and even the 1-10
+bracket overflows past four items. The 21-50 row's remedy ("Add 'Select all' option") assumes
+the other 20-49 options can coexist alongside it in the same question; they cannot. The >100 row
+labels itself the "Hard limit", encoding a ceiling two orders of magnitude above the real one.
+
+This is the ROOT CAUSE of the cramped, arbitrarily-truncated selection display. Every downstream
+rendering defect (hard character truncation, pipe-crammed descriptions, per-option repetition of
+a constant) is a symptom of consumers trying to fit N items into a surface that holds four. Fix
+the threshold model here FIRST; the shared renderer that repairs the symptoms must be written
+against the corrected model, not the current one.
+
+=== REQUIRED OUTCOMES ===
+
+1. Replace the Threshold Guidelines table and its "Threshold Implementation" pseudocode with a
+   model built on the real 4-option ceiling. At minimum it must define: the <=4 case (one
+   question, no batching), and the >4 case.
+
+2. Settle the >4 strategy -- research/plan owns the verdict, this record does NOT pre-decide it.
+   Candidate shapes to weigh:
+   (a) BATCHED successive questions: chunk the candidate set into groups of <=4 and ask
+       repeatedly, carrying an "N of M" progress indicator so the operator knows the extent;
+   (b) NARROWING FIRST: an explicit filter/triage step that reduces the set to <=4 before any
+       selection question is asked, with the narrowing criterion itself chosen from <=4 options;
+   (c) a hybrid where the first question chooses a narrowing axis and subsequent questions
+       select within it.
+   Whichever is chosen, state how a multiSelect batch's partial selections accumulate across
+   questions, and what happens when the operator abandons mid-batch.
+
+3. Reconcile the existing "Standard Option Labels" table, which lists "Select all" for ">20
+   items" -- that row is premised on the unreachable bracket and must be restated in terms of
+   whatever outcome 2 settles.
+
+4. Audit and correct the document's other capability claims against the real tool schema, not
+   only the threshold table. Specifically confirm or correct: the "Keep under 60 characters"
+   label guidance and "under 100 characters" description guidance (are these the tool's limits,
+   a readability preference, or invented?), and whether the tool's `preview` field -- which
+   renders markdown side-by-side and is NOT mentioned anywhere in the document -- is the correct
+   home for the per-item detail that consumers currently cram into `description`.
+
+5. Enumerate every consumer the corrected model obliges to change, as a handoff list for the
+   renderer work that follows. Known consumers: scripts/tier-selection.sh (tier1/tier2/tier3),
+   skills/skill-fix-it/SKILL.md (Step 7 TODO selection, including its explicit ">20 TODOs" branch
+   which is unreachable as written), context/workflows/meta-interview.md, skills/skill-spawn/SKILL.md,
+   commands/review.md, commands/todo.md, commands/task.md. Do NOT edit them here -- this record
+   owns the standard only.
+
+=== NON-GOALS ===
+
+- The shared option-rendering helper and its adoption across consumers: owned by the sequenced
+  successor record. This record produces the model that record implements against.
+- The backlog-audit prompt's firing condition and its fold-into-existing remediation: owned by
+  the open corroboration-gated-backlog-prompt record. That record changes WHEN the audit prompt
+  fires and WHAT ACTIONS it offers; this one changes HOW MANY options any question may carry.
+  The two touch different properties of the same surface; sequence, do not merge.
+
+=== VERIFICATION ===
+
+- A repo-wide grep finds no surviving prescription of a >4-option single question in the
+  standard or in any document that cites it.
+- The corrected model is stated once, in this document, and not re-derived at a consumer.
+
+---
 
 ### 579. Record the selector's full-path-set aggregation rule in the Tier Justification authoring contract
 - **Status**: [NOT STARTED]
@@ -6129,6 +6403,68 @@ NOT IN SCOPE: the hook hooks/validate-task-creation-audit.sh is correct as writt
 STILL UNFILED, deliberately: the size of the audit_verdict blob persisted into state.json (one task's entry added roughly 970 lines / 97 verdict rows pre-fix). It is downstream of the scorer fix in the same way this task is -- measure the post-fix blob before deciding what is worth persisting, and file it then if it still warrants a task.
 
 SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, never in a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md.
+=== APPENDED OUTCOME 7 -- THE MISSING REMEDIATION ACTION (from the 2026-11-11 objectives review) ===
+
+DETECTION WORKS; THE ACTION DOES NOT EXIST. Separate from this record's firing-condition work,
+the confirmation surface offers no way to ACT on a correct redundancy verdict. Measured in the
+source store: context/workflows/meta-interview.md's Stage 5 renders the verdict into a "Backlog
+Check" table column and states explicitly that every verdict other than `genuinely-new` and
+`overlaps-N` "names its target and is never auto-applied -- the user decides, via 'Revise' or
+'Cancel', before any task is created". The confirm gate immediately below it offers exactly
+three choices:
+
+  - "Yes, create tasks"  -> creates the known duplicate anyway
+  - "Revise"             -> described as "Go back and adjust the task breakdown", i.e. adjust
+                            THIS batch's decomposition, NOT the matched existing record
+  - "Cancel"             -> exits with no action at all, not even a note on the existing task
+
+So on a `duplicate-of-open` or `covered-by-closed` verdict the operator's only options are to
+file a duplicate or to discard the finding entirely. There is no code path anywhere in
+skill-meta, meta-interview.md, or meta-builder-agent.md that revises the matched open record or
+attaches the new findings to it. Correctly detected redundancy is therefore routinely resolved
+by throwing the work away -- which is the opposite of what the detection exists to achieve.
+
+ADDITIONAL REQUIRED OUTCOME:
+
+7. Add a FOLD-INTO-EXISTING action to the confirmation surface, so a redundancy verdict has a
+   remediation and not only a label. Per verdict class it must be able to:
+     (a) `duplicate-of-open` / `subset-of-open` / `narrow-open`: append the new findings to the
+         matched open record as a numbered report artifact under that task's reports/ directory,
+         following context/formats/report-format.md and the unified artifact numbering in
+         rules/artifact-formats.md, and link it via the sanctioned artifact helper rather than a
+         wholesale .artifacts assignment (rules/state-management.md: artifacts are append-only
+         with same-type supersession);
+     (b) `superset-of-open`: route to /revise on the matched record for a scope WIDENING, rather
+         than creating a parallel record;
+     (c) `covered-by-closed`: surface the discharging artifact's path -- which outcome 4 above
+         already requires the verdict to name -- and record the finding against that artifact,
+         NEVER by reopening a terminal record (rules/state-management.md forbids transitions out
+         of completed/abandoned/expanded).
+   Research/plan owns whether this is one option that branches on verdict class or several
+   explicit options, and owns the interaction with the Component 7 pre-authorization question
+   (an /orchestrate dispatch has no foreground operator to choose a fold, and the backlog-audit
+   predicate record already owns that collision -- stay consistent with whatever it settles).
+
+   CONSTRAINT: the fold action must not fire automatically. The existing "never auto-applied"
+   posture is correct and stays; this outcome adds an option the operator can CHOOSE, it does
+   not make folding a default.
+
+8. Retire commands/review.md's Section 5.6.4 "Duplicate Prevention", a `project_name` substring
+   match that sits immediately beside this record's own Section 3.5 full-corpus audit call on
+   the same proposal. It implies a guarantee it does not provide and is strictly weaker than the
+   audit beside it. Deleting it is in scope here because this record already owns
+   commands/review.md and is already consolidating that file's duplicate-detection wiring.
+
+OPTION-COUNT CONSTRAINT, binding on outcome 7's design: AskUserQuestion accepts a MAXIMUM OF 4
+OPTIONS per question. The existing gate already uses three ("Yes, create tasks", "Revise",
+"Cancel"), so a naive addition of per-verdict-class fold options would exceed the ceiling. The
+interactive-selection threshold-model record owns the corrected model for the >4 case; design
+outcome 7's prompt against that model rather than assuming the options list can simply grow.
+
+PATH OVERLAP, for sequencing: the shared-option-renderer record declares
+context/workflows/meta-interview.md, skills/skill-fix-it/SKILL.md and skills/skill-spawn/SKILL.md
+-- three paths this record also declares -- and has recorded a dependency edge on this record so
+the two are serialized rather than run concurrently.
 
 ---
 
