@@ -23,12 +23,27 @@
 # a length-bounded excerpt of the response body, so a diagnostic such as a 503's own
 # `{"error": "...", "starting": true, ...}` sentence survives rather than being discarded. A 2xx
 # response with a JSON body that merely contains zero hits is NOT this branch -- it stays exit 1,
-# so a benign zero-hit search never floods a caller's log. No second network call and no added
-# latency on the success path: the status is read from the SAME request via `curl --write-out`.
+# so a benign zero-hit search never floods a caller's log.
+#
+# One bounded retry on the narrow cold-start signal only: when, and only when, a response is
+# HTTP 503 with a JSON body carrying `.starting == true` (a strict boolean check, never a truthy
+# string), this script sleeps the server's own `retry_after` hint -- clamped into
+# [RETRY_DELAY_MIN, RETRY_DELAY_MAX] with RETRY_DELAY_DEFAULT used when the hint is missing or
+# non-numeric -- and issues exactly one more request. A second 503 (cold-start or otherwise), any
+# 4xx, a non-JSON body, or a curl transport error is never retried and falls through to the same
+# unchanged exit-2 diagnostic. Worst-case added wall clock on the cold-start path is therefore
+# ~36s (8s first `--max-time` + 20s clamp ceiling + 8s second `--max-time`), versus ~8s on every
+# other path; the terminal fail-open degrade (exit 2, caller records non-fatally, proceeds with
+# an empty memory_context) is unchanged in every case. No second network call on the non-retried
+# success or failure paths: the status is read from the SAME request via `curl --write-out`.
 #
 # Constants:
-#   TOKEN_BUDGET=2000  - Maximum total tokens to include
-#   MAX_ENTRIES=5      - Maximum number of entries (also sent as the request's limit=)
+#   TOKEN_BUDGET=2000          - Maximum total tokens to include
+#   MAX_ENTRIES=5              - Maximum number of entries (also sent as the request's limit=)
+#   RETRY_DELAY_DEFAULT=15     - Fallback delay (seconds) when retry_after is missing/non-numeric;
+#                                the measured value this vault reports during cold start
+#   RETRY_DELAY_MIN=1          - Clamp floor for the honored retry_after hint
+#   RETRY_DELAY_MAX=20         - Clamp ceiling for the honored retry_after hint
 #
 # Credential/host precedence mirrors ~/.sapience/mcp.py exactly: SAPIENCE_HOST env, else
 # ~/.sapience/config.json's .host, else the https://app.spnc.ai literal; SAPIENCE_TOKEN env,
@@ -40,6 +55,9 @@ set -euo pipefail
 # --- Constants ---
 TOKEN_BUDGET=2000
 MAX_ENTRIES=5
+RETRY_DELAY_DEFAULT=15
+RETRY_DELAY_MIN=1
+RETRY_DELAY_MAX=20
 
 # --- Arguments ---
 description="${1:-}"
@@ -116,15 +134,22 @@ encoded_token="$(jq -rn --arg v "$sapience_token" '$v|@uri')"
 
 url="${sapience_host}/v1/search?q=${encoded_q}&source=${encoded_source}&limit=${MAX_ENTRIES}&token=${encoded_token}"
 
-# --- Single request. --write-out appends the HTTP status as a trailing line (never a second
-# network call), and curl's own -S diagnostic is captured to a scratch file rather than
-# discarded, so the genuine-failure branch below can report it. ---
-curl_stderr_file="$(mktemp 2>/dev/null)" || curl_stderr_file="/dev/null"
-curl_exit=0
-response_raw="$(curl -sS --connect-timeout 3 --max-time 8 -H 'X-Sapience-Client: sapience-retrieve.sh' -w $'\n%{http_code}' "$url" 2>"$curl_stderr_file")" || curl_exit=$?
-curl_stderr=""
-[ "$curl_stderr_file" != "/dev/null" ] && curl_stderr="$(cat "$curl_stderr_file" 2>/dev/null || true)"
-[ "$curl_stderr_file" != "/dev/null" ] && rm -f "$curl_stderr_file"
+# --- Single request, extracted into a function so the bounded cold-start retry below can
+# invoke it a second time without duplicating the curl call. --write-out appends the HTTP status
+# as a trailing line (never a second network call per invocation), and curl's own -S diagnostic
+# is captured to a scratch file rather than discarded, so the genuine-failure branch can report
+# it. Sets response_raw, curl_exit, curl_stderr. ---
+issue_request() {
+  local stderr_file
+  stderr_file="$(mktemp 2>/dev/null)" || stderr_file="/dev/null"
+  curl_exit=0
+  response_raw="$(curl -sS --connect-timeout 3 --max-time 8 -H 'X-Sapience-Client: sapience-retrieve.sh' -w $'\n%{http_code}' "$url" 2>"$stderr_file")" || curl_exit=$?
+  curl_stderr=""
+  [ "$stderr_file" != "/dev/null" ] && curl_stderr="$(cat "$stderr_file" 2>/dev/null || true)"
+  [ "$stderr_file" != "/dev/null" ] && rm -f "$stderr_file"
+}
+
+issue_request
 
 if [ "$curl_exit" -ne 0 ]; then
   echo "sapience-retrieve.sh: genuine transport failure (curl exit ${curl_exit}): ${curl_stderr:0:300}" >&2
@@ -133,6 +158,39 @@ fi
 
 http_status="${response_raw##*$'\n'}"
 response="${response_raw%$'\n'*}"
+
+# --- Bounded cold-start retry: fires only when this exact response is a 503 whose body parses
+# as JSON with a strict-boolean `.starting == true` -- never a plain 503, a 4xx, a non-JSON
+# body, or a curl transport error (already exited above). Exactly one retry; the second
+# response's transport check and status/body split are re-applied below, then both the
+# no-retry and post-retry paths fall through to the SAME case block. ---
+if [ "$http_status" = "503" ] && [ -n "$response" ] && \
+   echo "$response" | jq -e . >/dev/null 2>&1 && \
+   echo "$response" | jq -e '.starting == true' >/dev/null 2>&1; then
+  retry_after_raw="$(echo "$response" | jq -r '.retry_after // empty' 2>/dev/null)" || retry_after_raw=""
+  if [[ "$retry_after_raw" =~ ^[0-9]+$ ]]; then
+    retry_delay="$retry_after_raw"
+  else
+    retry_delay="$RETRY_DELAY_DEFAULT"
+  fi
+  if [ "$retry_delay" -lt "$RETRY_DELAY_MIN" ]; then
+    retry_delay="$RETRY_DELAY_MIN"
+  elif [ "$retry_delay" -gt "$RETRY_DELAY_MAX" ]; then
+    retry_delay="$RETRY_DELAY_MAX"
+  fi
+
+  echo "sapience-retrieve.sh: cold start (HTTP 503, starting=true) -- retrying once after ${retry_delay}s (server-hinted, clamped to [${RETRY_DELAY_MIN}, ${RETRY_DELAY_MAX}])" >&2
+  sleep "$retry_delay"
+  issue_request
+
+  if [ "$curl_exit" -ne 0 ]; then
+    echo "sapience-retrieve.sh: genuine transport failure (curl exit ${curl_exit}): ${curl_stderr:0:300}" >&2
+    exit 2
+  fi
+
+  http_status="${response_raw##*$'\n'}"
+  response="${response_raw%$'\n'*}"
+fi
 
 case "$http_status" in
   2??)

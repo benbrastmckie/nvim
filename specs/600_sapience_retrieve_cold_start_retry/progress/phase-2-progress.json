@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Implement the bounded cold-start retry in sapience-retrieve.sh",
+  "started_at": "2026-11-12T18:40:00Z",
+  "last_updated": "2026-11-12T18:27:22Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read sapience-retrieve.sh and re-derive current line numbers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add RETRY_DELAY_DEFAULT/MIN/MAX constants", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 3, "description": "Extract request issuance into a reusable function", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 4, "description": "Keep transport-failure branch unretried", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 5, "description": "Evaluate cold-start predicate (503 + JSON + starting==true)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 6, "description": "Clamp delay, sleep, retry once, fall through to same exit-2 site", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 7, "description": "Update header comment block (constants, retry condition)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 8, "description": "Confirm sleep invoked bare (grep check)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

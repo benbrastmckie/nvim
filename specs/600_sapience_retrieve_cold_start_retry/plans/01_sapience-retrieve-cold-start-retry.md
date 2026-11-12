@@ -204,41 +204,41 @@ the file and by observing the suite report the same passed-count before and afte
 
 ---
 
-### Phase 2: Implement the bounded cold-start retry in `sapience-retrieve.sh` [NOT STARTED]
+### Phase 2: Implement the bounded cold-start retry in `sapience-retrieve.sh` [COMPLETED]
 
 **Goal**: Issue exactly one retry when, and only when, the first response is a 503 whose body
 parses as JSON with `.starting == true`, sleeping a clamped `retry_after`, with every other path
 and the terminal degrade unchanged.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/scripts/sapience-retrieve.sh` immediately before
+- [x] Re-read `agent-system/extensions/sapience/scripts/sapience-retrieve.sh` immediately before
       editing and re-derive the current line numbers (the request at ~124, the status `case` at
-      ~137-145).
-- [ ] Add three fixed constants to the existing `# --- Constants ---` block:
+      ~137-145). *(completed)*
+- [x] Add three fixed constants to the existing `# --- Constants ---` block:
       `RETRY_DELAY_DEFAULT=15`, `RETRY_DELAY_MIN=1`, `RETRY_DELAY_MAX=20`, with a short comment
       recording that 15 is the measured `retry_after` value this vault reports during cold start,
-      not an arbitrary default.
-- [ ] Extract the request issuance (the `mktemp` scratch-stderr file, the single `curl` call, the
+      not an arbitrary default. *(completed)*
+- [x] Extract the request issuance (the `mktemp` scratch-stderr file, the single `curl` call, the
       stderr readback and cleanup) into a function that sets `response_raw`, `curl_exit`, and
-      `curl_stderr`, so it can be invoked a second time without duplicating the call.
-- [ ] Keep the `curl_exit -ne 0` transport-failure branch exactly as it is today: immediate
-      `exit 2` with the unchanged diagnostic, never retried.
-- [ ] After the first status/body split, evaluate the cold-start predicate: `http_status` is
+      `curl_stderr`, so it can be invoked a second time without duplicating the call. *(completed)*
+- [x] Keep the `curl_exit -ne 0` transport-failure branch exactly as it is today: immediate
+      `exit 2` with the unchanged diagnostic, never retried. *(completed)*
+- [x] After the first status/body split, evaluate the cold-start predicate: `http_status` is
       `503` AND `$response` is non-empty AND `echo "$response" | jq -e . >/dev/null 2>&1`
-      succeeds AND `echo "$response" | jq -e '.starting == true' >/dev/null 2>&1` succeeds.
-- [ ] When the predicate holds: compute the delay per the clamp rule in Decisions, emit one
+      succeeds AND `echo "$response" | jq -e '.starting == true' >/dev/null 2>&1` succeeds. *(completed)*
+- [x] When the predicate holds: compute the delay per the clamp rule in Decisions, emit one
       short informational line to stderr naming the status, the honored delay, and that this is
       a single bounded retry; call bare `sleep "$delay"`; re-invoke the request function; re-apply
-      the transport-error branch and the status/body split to the second response.
-- [ ] Leave the `case "$http_status" in 2??) ... *) ... exit 2 ;; esac` arm, its diagnostic text,
+      the transport-error branch and the status/body split to the second response. *(completed)*
+- [x] Leave the `case "$http_status" in 2??) ... *) ... exit 2 ;; esac` arm, its diagnostic text,
       and the downstream non-JSON `exit 2` check untouched, and ensure both the no-retry path and
-      the post-retry path fall through to that same single site.
-- [ ] Update the script's header comment block: add the three constants to the `Constants:` list
+      the post-retry path fall through to that same single site. *(completed)*
+- [x] Update the script's header comment block: add the three constants to the `Constants:` list
       and add a sentence stating the retry condition, the clamp, the one-attempt budget, the
       worst-case added wall clock, and that the terminal degrade is unchanged. State the current
-      design only (no "previously"/"no longer" framing).
-- [ ] Confirm `sleep` is invoked bare (`grep -n 'sleep' ` on the file shows no absolute path and
-      no `command sleep`).
+      design only (no "previously"/"no longer" framing). *(completed)*
+- [x] Confirm `sleep` is invoked bare (`grep -n 'sleep' ` on the file shows no absolute path and
+      no `command sleep`). *(completed)*
 
 **Timing**: 1 hour
 
