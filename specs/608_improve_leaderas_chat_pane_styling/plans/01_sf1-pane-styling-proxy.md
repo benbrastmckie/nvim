@@ -1,7 +1,7 @@
 # Implementation Plan: Task #608
 
 - **Task**: 608 - Improve chat pane styling for `<leader>as` to match Claude Code's appearance, with blank lines or divider lines between message parts so they don't run together
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/608_improve_leaderas_chat_pane_styling/reports/01_chat-pane-styling-scope.md

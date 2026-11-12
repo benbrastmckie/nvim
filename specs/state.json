@@ -5,12 +5,12 @@
     {
       "project_number": 608,
       "project_name": "improve_leaderas_chat_pane_styling",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "general",
       "description": "Improve chat pane styling for `<leader>as` to match Claude Code's appearance, with blank lines or divider lines between message parts so they don't run together",
       "topic": "neovim",
       "created": "2026-11-12T00:32:05Z",
-      "last_updated": "2026-11-12T01:00:57Z",
+      "last_updated": "2026-11-12T01:49:37Z",
       "audit_verdict": {
         "proposal": {
           "id": "improve_leaderas_chat_pane_styling",
@@ -449,6 +449,11 @@
           "path": "specs/608_improve_leaderas_chat_pane_styling/plans/01_sf1-pane-styling-proxy.md",
           "type": "plan",
           "summary": "4-phase plan for the sf1 PTY-proxy stream filter, its Lua wiring with fallback, and the full gate."
+        },
+        {
+          "path": "specs/608_improve_leaderas_chat_pane_styling/summaries/01_sf1-pane-styling-proxy-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for the sf1 pty-proxy chat-pane styling task, covering all four phases, decisions, deviations, and verification evidence."
         }
       ],
       "next_artifact_number": 2,
@@ -458,7 +463,8 @@
         "lua/neotex/plugins/ai/sapience/init_spec.lua",
         "lua/neotex/plugins/ai/sapience/sf1_proxy.py",
         "lua/neotex/plugins/ai/sapience/sf1_proxy_test.py"
-      ]
+      ],
+      "completion_summary": "Implemented a pty-proxying sf1_proxy.py wrapper and an init.lua `styling` option that insert visual separators (blank line or dim rule) between <leader>as chat-pane message parts, with a graceful one-shot-warning fallback to today's unstyled sf1 command. All four plan phases closed (Phase 4 with two scoped, evidenced exclusions); 20 automated tests (15 Python, 5 plenary) pass."
     },
     {
       "project_number": 527,

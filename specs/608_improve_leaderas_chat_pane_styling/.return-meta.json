@@ -1,10 +1,74 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/608_improve_leaderas_chat_pane_styling/summaries/01_sf1-pane-styling-proxy-summary.md",
+      "summary": "4-phase implementation of a pty-proxying sf1_proxy.py wrapper plus init.lua styling option, inserting visual separators into the <leader>as chat pane; Phase 4 closed COMPLETED WITH EXCLUSIONS for a live-terminal check and 6 pre-existing, unrelated verify-deploy.sh failures."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented a pty-proxying sf1_proxy.py wrapper and an init.lua `styling` option that insert visual separators (blank line or dim rule) between <leader>as chat-pane message parts, with a graceful one-shot-warning fallback to today's unstyled sf1 command. All four plan phases closed (Phase 4 with two scoped, evidenced exclusions); 20 automated tests (15 Python, 5 plenary) pass."
+  },
+  "modified_files": [
+    "lua/neotex/plugins/ai/sapience/sf1_proxy.py",
+    "lua/neotex/plugins/ai/sapience/sf1_proxy_test.py",
+    "lua/neotex/plugins/ai/sapience/init.lua",
+    "lua/neotex/plugins/ai/sapience/init_spec.lua",
+    "lua/neotex/plugins/ai/sapience/README.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When wrapping an untracked, self-updating vendor terminal CLI with a pty-proxy to add output styling, keep the byte-chunk filter free of real-time buffering except for the ONE marker that genuinely requires look-ahead (e.g. a fixed-grammar prompt string with no trailing newline). Everything else -- a handoff-line marker, a transient status-indicator toggle -- can be detected via small bounded rolling windows that never withhold output, so long streamed content (e.g. a chat answer) is never delayed waiting on a match decision. Also: readline/canonical-mode redraws always return to column 0 via \\r, never \\n, so 'arrived via \\n' vs 'arrived via \\r' is a reliable, cheap discriminator for 'fresh occurrence' vs 'redraw re-emission' of the same marker text -- structurally disqualify \\r-arrivals from matching rather than adding a separate suppression flag.",
+      "category": "PATTERN",
+      "source_artifact": "specs/608_improve_leaderas_chat_pane_styling/summaries/01_sf1-pane-styling-proxy-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "pty-proxy",
+        "stream-filter",
+        "readline-redraw",
+        "bounded-lookahead",
+        "terminal-wrapper"
+      ]
+    },
+    {
+      "content": "When testing a pty-harness subprocess via Python's subprocess.Popen with stdin=PIPE: closing the test's own stdin pipe (as communicate() does) only stops forwarding into the child's pty -- it does NOT deliver EOF to the child's still-open pty slave, exactly like a real terminal. A stub child that calls input() a second time after that will hang forever. Design the stub to exit without waiting on a second read, rather than chasing an EOF-propagation mechanism that would not reflect real interactive usage anyway. Also: always capture the forked grandchild's PID (not just the immediate Popen child) when debugging a hang, since proc.kill() only kills the immediate child and leaves the pty's own forked subprocess orphaned.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/608_improve_leaderas_chat_pane_styling/summaries/01_sf1-pane-styling-proxy-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "pty-testing",
+        "subprocess-eof",
+        "orphaned-process",
+        "stub-child",
+        "python-pty"
+      ]
+    },
+    {
+      "content": "lazy.nvim's VeryLazy event does not fire within a short `nvim --headless -c '...' -c 'qa'` sequence, so a plan verification bullet that runs `:SomeCommand` to check a lazy-loaded plugin's command registration will spuriously fail headless (confirmed as a pre-existing, environment-level timing gap, not a regression) -- and if the command happens to start a real subprocess (e.g. a network-backed CLI), running it for real can hang and leave orphaned processes behind a forced kill. Substitute: `dofile()` the plugin spec directly, call its `config()` function with `pcall`, then check `vim.api.nvim_get_commands({})` for the expected command name -- this exercises the same `nvim_create_user_command` call without depending on lazy.nvim's load timing and without executing the command for real.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/608_improve_leaderas_chat_pane_styling/summaries/01_sf1-pane-styling-proxy-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "lazy.nvim",
+        "headless-testing",
+        "VeryLazy",
+        "command-registration",
+        "neovim-verification"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794444265_6d92a6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
