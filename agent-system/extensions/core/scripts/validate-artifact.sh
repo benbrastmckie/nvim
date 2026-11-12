@@ -365,6 +365,144 @@ if [ "$artifact_type" = "plan" ]; then
   # shellcheck disable=SC1090
   . "$_suite_selection_lib"
 
+  # --- Coupled-generated-surfaces declaration reader (inline, not a scripts/lib/ file). Single
+  # consumer today: this script's own per-phase "Files to modify" loop below. Modelled
+  # structurally on scripts/lib/derived-artifact-probe-lib.sh's `_derived_probe_load_entries_json`
+  # / entry-validation pair -- same repo-declared, fail-open-on-absence posture, same
+  # drop-malformed-entry-with-one-named-warning behaviour -- but reads a DIFFERENT top-level key
+  # (`coupled_generated_surfaces`, not `derived_artifact_probes`) with a differently-shaped
+  # per-entry schema, because this check answers "did the plan author declare this derived
+  # artifact?" at plan-ACCEPTANCE time by comparing declared strings, never "is this artifact
+  # stale now?" by running a command -- the two schemas are deliberately not unified (see
+  # context/standards/repo-level-declarations.md's "Why the two schemas are not unified"
+  # paragraph). Declaration point: `.claude-extensions.json`'s `coupled_generated_surfaces` array
+  # (context/standards/repo-level-declarations.md's "The coupled_generated_surfaces Entry Schema"
+  # section documents the full field contract). Promotion trigger: a SECOND consumer of this
+  # reader is the recorded signal to promote it out of this script and into
+  # scripts/lib/coupled-surface-lib.sh; until then it stays inline, same as every other
+  # single-consumer helper on this page. Fail-open, absolute: no `.claude-extensions.json`, no
+  # `jq`, an absent key, an empty array, or a malformed entry each yield `[]` / zero effect, with
+  # at most one named warning per dropped malformed entry -- never a block, never a crash.
+  #
+  # _cgs_find_repo_root <start_dir> -- walks upward from <start_dir> looking for
+  # .claude-extensions.json. Prints the containing directory on success; prints nothing (and
+  # still returns 0) when none is found before the filesystem root. Never aborts the caller.
+  _cgs_find_repo_root() {
+    local dir
+    dir="$(cd "${1:-.}" 2>/dev/null && pwd)" || return 0
+    while [ -n "$dir" ]; do
+      if [ -f "$dir/.claude-extensions.json" ]; then
+        printf '%s\n' "$dir"
+        return 0
+      fi
+      [ "$dir" = "/" ] && break
+      dir="$(dirname "$dir")"
+    done
+    return 0
+  }
+
+  # _cgs_resolve_repo_root <artifact_path> -- tries the artifact path's own directory first, then
+  # falls back to $(pwd), exactly as the dispatch directive requires. Prints the resolved repo
+  # root, or nothing if neither search finds one (the caller's fail-open reader then sees no
+  # .claude-extensions.json and yields "[]").
+  _cgs_resolve_repo_root() {
+    local artifact_dir="$1" found
+    found="$(_cgs_find_repo_root "$artifact_dir")"
+    if [ -n "$found" ]; then
+      printf '%s\n' "$found"
+      return 0
+    fi
+    _cgs_find_repo_root "$(pwd)"
+  }
+
+  # _cgs_load_entries_json <repo_root> -- prints the raw (unvalidated) `coupled_generated_surfaces`
+  # array from <repo_root>/.claude-extensions.json; prints "[]" for every absence/cannot-parse
+  # case (no repo_root, missing file, missing jq, invalid JSON, absent key, non-array value).
+  # Never signals failure to its caller.
+  _cgs_load_entries_json() {
+    local repo_root="$1" state_file json raw
+    state_file="${repo_root}/.claude-extensions.json"
+    if [ -z "$repo_root" ] || [ ! -f "$state_file" ] || ! command -v jq >/dev/null 2>&1; then
+      echo "[]"
+      return 0
+    fi
+    json="$(cat "$state_file" 2>/dev/null)"
+    if [ -z "$json" ] || ! echo "$json" | jq -e . >/dev/null 2>&1; then
+      echo "[]"
+      return 0
+    fi
+    raw="$(echo "$json" | jq -c '.coupled_generated_surfaces // [] | if (type == "array") then . else [] end' 2>/dev/null)"
+    [ -z "$raw" ] && raw="[]"
+    echo "$raw"
+    return 0
+  }
+
+  # _cgs_entries <repo_root> -- prints a compact JSON array of every VALIDATED
+  # {trigger_glob, generated_paths, commit_blocking, note} entry (trigger_glob non-empty;
+  # generated_paths a non-empty-string array; commit_blocking coerced to boolean, default true
+  # when absent or mistyped; note defaulted to ""). A malformed entry (empty/missing
+  # trigger_glob, or generated_paths absent / not an array of non-empty strings) is DROPPED with
+  # one named WARNING on stderr per dropped entry -- a sibling valid entry still applies. Always
+  # returns 0.
+  _cgs_entries() {
+    # Deliberately NOT a required-argument guard (`${1:?...}`): an empty repo_root is the
+    # ORDINARY fail-open case (no `.claude-extensions.json` found by either search in
+    # `_cgs_resolve_repo_root`, e.g. every isolated test fixture and sandbox root with no repo
+    # marker up to filesystem root) -- `${1:?msg}` treats empty the same as unset and would abort
+    # this script outright under `set -euo pipefail` on that ordinary case. `_cgs_load_entries_json`
+    # below already handles an empty repo_root via its own `[ -z "$repo_root" ]` test and yields
+    # "[]", exactly like every other absence case; this guard must not pre-empt that with a crash.
+    local repo_root="${1:-}"
+    local raw_json count validated
+    raw_json="$(_cgs_load_entries_json "$repo_root")"
+    count="$(echo "$raw_json" | jq 'length' 2>/dev/null)"
+    case "$count" in ''|*[!0-9]*) count=0 ;; esac
+    if [ "$count" -eq 0 ]; then
+      echo "[]"
+      return 0
+    fi
+    validated="[]"
+    local i entry trigger_glob gen_json gen_ok commit_blocking note entry_ok
+    for ((i = 0; i < count; i++)); do
+      entry="$(echo "$raw_json" | jq -c ".[$i]" 2>/dev/null)"
+      [ -z "$entry" ] && entry="null"
+
+      entry_ok=true
+      trigger_glob="$(echo "$entry" | jq -r '.trigger_glob // ""' 2>/dev/null)"
+      gen_json="$(echo "$entry" | jq -c '.generated_paths // null' 2>/dev/null)"
+      commit_blocking="$(echo "$entry" | jq -r 'if (.commit_blocking | type) == "boolean" then .commit_blocking else true end' 2>/dev/null)"
+      note="$(echo "$entry" | jq -r '.note // ""' 2>/dev/null)"
+
+      [ -z "$trigger_glob" ] && entry_ok=false
+
+      gen_ok=false
+      if [ "$entry_ok" = "true" ]; then
+        if echo "$gen_json" | jq -e 'type == "array" and (all(.[]; type == "string" and length > 0))' >/dev/null 2>&1; then
+          gen_ok=true
+        fi
+      fi
+      [ "$gen_ok" != "true" ] && entry_ok=false
+
+      if [ "$entry_ok" = "true" ]; then
+        validated="$(echo "$validated" | jq -c --arg g "$trigger_glob" --argjson gp "$gen_json" --argjson cb "$commit_blocking" --arg n "$note" \
+          '. + [{trigger_glob: $g, generated_paths: $gp, commit_blocking: $cb, note: $n}]' 2>/dev/null)"
+        [ -z "$validated" ] && validated="[]"
+      else
+        echo "WARNING: validate-artifact.sh: dropping malformed coupled_generated_surfaces entry at index ${i} (trigger_glob='${trigger_glob:-<empty>}') -- trigger_glob and generated_paths (non-empty array of non-empty strings) are both required." >&2
+      fi
+    done
+    echo "$validated"
+    return 0
+  }
+
+  # Resolved and read ONCE per run (declarations do not vary per phase), outside the per-phase
+  # loop below, so a repo declaring nothing pays exactly one extra `[ -f ... ]` test for the
+  # whole validation run.
+  _cgs_repo_root="$(_cgs_resolve_repo_root "$(dirname "$artifact_path")")"
+  _cgs_declared_entries="$(_cgs_entries "$_cgs_repo_root")"
+  _cgs_declared_count="$(echo "$_cgs_declared_entries" | jq 'length' 2>/dev/null)"
+  case "$_cgs_declared_count" in ''|*[!0-9]*) _cgs_declared_count=0 ;; esac
+
   # --- Plan-level Status-line grammar check (error level: DEFECT 2 -- the validator previously
   # checked only field PRESENCE via the whole-document grep above, so a hand-typed, bracket-losing
   # value like "- **Status**: COMPLETED" validated as [PASS]. Landed at error, not warn, because a
@@ -488,6 +626,12 @@ if [ "$artifact_type" = "plan" ]; then
         capture && /^[[:space:]]*(-[[:space:]]+)?\*\*[A-Za-z]/ { exit }
         capture { print }
       ')
+      # Reused by the coupled-generated-surfaces check below (reuses this existing capture rather
+      # than adding a second capture grammar, per the plan's own instruction) -- every entry's
+      # first backtick-delimited path, in document order. Reset every phase iteration (never
+      # inside the `if` below) so a phase with no "Files to modify" block never inherits a prior
+      # phase's stale path list.
+      _ftm_paths=()
       if [ -n "$_ftm_block" ]; then
         mapfile -t _ftm_lines <<< "$_ftm_block"
         _ftm_shape_continuation=0
@@ -501,6 +645,7 @@ if [ "$artifact_type" = "plan" ]; then
           if [[ "$_ftm_line" =~ ^[[:space:]]*-[[:space:]]*\` ]]; then
             # Shape (iii): the entry's first backtick-delimited token is a deployed-tree path.
             _ftm_entry_path=$(echo "$_ftm_line" | sed -E 's/^[[:space:]]*-[[:space:]]*`([^`]*)`.*/\1/')
+            _ftm_paths+=("$_ftm_entry_path")
             if [[ "$_ftm_entry_path" == ".claude" || "$_ftm_entry_path" == ".claude/" || "$_ftm_entry_path" == .claude/* ]]; then
               _ftm_shape_claude=1
             fi
@@ -538,6 +683,61 @@ if [ "$artifact_type" = "plan" ]; then
         if [ "$_ftm_shape_unexpanded" -eq 1 ]; then
           log_warn "Phase ${phase_num} Files to modify: an entry carries an unexpanded shell-variable shape (a \$VAR or \${VAR} form) -- no such variable is ever expanded on the commit path, so it will be refused at harvest time and match nothing; write the source-store path as it is actually spelled on disk instead (agent-system/extensions/<name>/...)"
         fi
+      fi
+
+      # --- Coupled generated-surfaces declaration-completeness check (advisory-first; see
+      # plan-format.md's "Coupled-generated-surface declaration obligation" subsection and its
+      # paired "Enforcement level (Coupled generated surfaces)" subsection, plus
+      # context/standards/repo-level-declarations.md's "The coupled_generated_surfaces Entry
+      # Schema" section for the full declaration contract). Reads the repository's own declared
+      # trigger/generated-path pairs (resolved ONCE above, outside this per-phase loop -- they do
+      # not vary per phase) and warns, per declared entry, when at least one of THIS phase's
+      # extracted "Files to modify" paths matches that entry's `trigger_glob` under bash's
+      # `[[ path == glob ]]` matching (where `*` crosses `/`) but at least one of that entry's
+      # `generated_paths` is absent from this phase's own extracted path set. Fail-open and
+      # silent by construction when the repo declares nothing (`_cgs_declared_count` is 0, the
+      # state of every repository today, this one included) or when this phase names no "Files to
+      # modify" paths at all -- no warning, no behaviour change in either case.
+      if [ "$_cgs_declared_count" -gt 0 ] && [ "${#_ftm_paths[@]}" -gt 0 ]; then
+        for ((_cgs_i = 0; _cgs_i < _cgs_declared_count; _cgs_i++)); do
+          _cgs_entry="$(echo "$_cgs_declared_entries" | jq -c ".[$_cgs_i]" 2>/dev/null)"
+          _cgs_trigger="$(echo "$_cgs_entry" | jq -r '.trigger_glob' 2>/dev/null)"
+          _cgs_commit_blocking="$(echo "$_cgs_entry" | jq -r '.commit_blocking' 2>/dev/null)"
+          mapfile -t _cgs_generated_paths < <(echo "$_cgs_entry" | jq -r '.generated_paths[]' 2>/dev/null)
+
+          _cgs_trigger_matched=0
+          for _cgs_path in "${_ftm_paths[@]}"; do
+            # shellcheck disable=SC2053  # Deliberately unquoted: the declared matching semantics
+            # ARE bash's own `[[ path == glob ]]` glob matching (repo-level-declarations.md's
+            # "Matching semantics" paragraph), where `*` crosses `/` -- quoting $_cgs_trigger
+            # here would silently turn every declared glob into a literal-string comparison.
+            if [[ "$_cgs_path" == $_cgs_trigger ]]; then
+              _cgs_trigger_matched=1
+              break
+            fi
+          done
+
+          if [ "$_cgs_trigger_matched" -eq 1 ]; then
+            _cgs_missing=()
+            for _cgs_gp in "${_cgs_generated_paths[@]}"; do
+              _cgs_gp_present=0
+              for _cgs_path in "${_ftm_paths[@]}"; do
+                if [ "$_cgs_path" = "$_cgs_gp" ]; then
+                  _cgs_gp_present=1
+                  break
+                fi
+              done
+              [ "$_cgs_gp_present" -eq 0 ] && _cgs_missing+=("$_cgs_gp")
+            done
+            if [ "${#_cgs_missing[@]}" -gt 0 ]; then
+              _cgs_suffix=""
+              if [ "$_cgs_commit_blocking" = "true" ]; then
+                _cgs_suffix=" -- this surface is commit-blocking, so same-phase regeneration is owed, not merely the declaration"
+              fi
+              log_warn "Phase ${phase_num} Files to modify: matches declared coupled-surface trigger '${_cgs_trigger}' but omits generated path(s) (${_cgs_missing[*]})${_cgs_suffix}"
+            fi
+          fi
+        done
       fi
 
       # --- Tier Justification measurement check (advisory-first; see plan-format.md's

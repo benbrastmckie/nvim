@@ -856,6 +856,129 @@ run_cfd_case "report" "$cfd_coverage_mention"; assert_cfd_silent "CFD-COVERAGE(r
 run_cfd_case "report" "$cfd_corpus_wf"; assert_cfd_silent "CFD-CORPUS(report) well-formed (post-third-token re-check)"
 run_cfd_case "report" "$cfd_corpus_mf"; assert_cfd_empty  "CFD-CORPUS(report) empty designator (post-third-token re-check)"
 
+# ─── Coupled generated-surfaces (CGS) fixture builder: each case gets its OWN isolated
+# subdirectory under $WORKDIR carrying its own .claude-extensions.json, so the check's upward
+# walk from the plan file's own directory finds THAT declaration and never the real
+# repository's (which declares nothing, per the Scope Hypothesis this check's own phase
+# recorded). Phase 1 varies via $2; Phase 2 is a fixed anchor, same shape as
+# make_two_phase_ftm_fixture above. Uses $VALIDATE_SRC (not the deploy-tree-first $VALIDATE),
+# the same precedent the FTM-shape cases (g)/(h) above already establish, since this check
+# lands in the source store ahead of its own redeploy phase. ───────────────────────────────────
+make_cgs_fixture() {
+  local ext_json="$1" phase1_ftm="$2"
+  local dir f
+  dir="$(mktemp -d --tmpdir="$WORKDIR" cgs-XXXXXX)"
+  printf '%s' "$ext_json" > "$dir/.claude-extensions.json"
+  f="$dir/plan.md"
+  cat > "$f" <<EOF
+# Plan
+
+- **Task**: 1 - x
+- **Status**: [IMPLEMENTING]
+- **Effort**: 1h
+- **Dependencies**: none
+- **Research Inputs**: none
+- **Artifacts**: none
+- **Standards**: none
+- **Type**: meta
+
+## Overview
+x
+
+## Goals & Non-Goals
+x
+
+## Risks & Mitigations
+x
+
+## Implementation Phases
+
+### Phase 1: X [NOT STARTED]
+
+**Verification Tier**: prose
+${phase1_ftm}
+
+### Phase 2: Y [NOT STARTED]
+
+**Verification Tier**: prose
+
+**Files to modify**:
+- \`path/to/anchor.ext\`
+
+## Testing & Validation
+x
+
+## Artifacts & Outputs
+x
+
+## Rollback/Contingency
+x
+EOF
+  echo "$f"
+}
+
+# ─── CGS(a): a declared trigger matches this phase's own path, and the entry's generated path
+# is MISSING from the phase's Files-to-modify set -- warns, naming the trigger, the missing
+# path, and (because commit_blocking defaults/declares true) the same-phase-regeneration note. ─
+f=$(make_cgs_fixture \
+  '{"coupled_generated_surfaces": [{"trigger_glob": "src/*.lean", "generated_paths": ["generated/status.typ"], "commit_blocking": true}]}' \
+  '
+**Files to modify**:
+- `src/foo.lean` - edit a docstring')
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "matches declared coupled-surface trigger 'src/*.lean' but omits generated path(s) (generated/status.typ)"; then common_test_pass "CGS(a): matched trigger with missing generated path warns"; else common_test_fail "CGS(a) missing expected warning: $out"; fi
+if echo "$out" | grep -qF "commit-blocking, so same-phase regeneration is owed"; then common_test_pass "CGS(a): commit_blocking=true note included"; else common_test_fail "CGS(a) missing commit-blocking note: $out"; fi
+
+# ─── CGS(b): same declaration, but the generated path IS present in this phase's own
+# Files-to-modify set -- silent (no false positive). ────────────────────────────────────────────
+f=$(make_cgs_fixture \
+  '{"coupled_generated_surfaces": [{"trigger_glob": "src/*.lean", "generated_paths": ["generated/status.typ"], "commit_blocking": true}]}' \
+  '
+**Files to modify**:
+- `src/foo.lean` - edit a docstring
+- `generated/status.typ` - regenerated in this same phase')
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "omits generated path"; then common_test_fail "CGS(b): false-positive warning when generated path is present: $out"; else common_test_pass "CGS(b): no false-positive when generated path is present"; fi
+
+# ─── CGS(c): no coupled_generated_surfaces key at all (fail-open-on-absence) -- silent. ────────
+f=$(make_cgs_fixture '{}' '
+**Files to modify**:
+- `src/foo.lean` - edit a docstring')
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "omits generated path"; then common_test_fail "CGS(c): false-positive warning with no declaration key: $out"; else common_test_pass "CGS(c): no declaration key is silent"; fi
+
+# ─── CGS(d): a malformed entry (empty trigger_glob) is DROPPED with its own named warning,
+# while a sibling VALID entry still applies to this same phase. ─────────────────────────────────
+f=$(make_cgs_fixture \
+  '{"coupled_generated_surfaces": [{"trigger_glob": "", "generated_paths": ["x.gen"]}, {"trigger_glob": "src/*.lean", "generated_paths": ["generated/status.typ"], "commit_blocking": true}]}' \
+  '
+**Files to modify**:
+- `src/foo.lean` - edit a docstring')
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "dropping malformed coupled_generated_surfaces entry at index 0"; then common_test_pass "CGS(d): malformed entry dropped with its own named warning"; else common_test_fail "CGS(d) missing malformed-entry warning: $out"; fi
+if echo "$out" | grep -qF "matches declared coupled-surface trigger 'src/*.lean' but omits generated path(s) (generated/status.typ)"; then common_test_pass "CGS(d): sibling valid entry still applies"; else common_test_fail "CGS(d) sibling valid entry did not apply: $out"; fi
+
+# ─── CGS(e): --strict promotes the warning through the existing total_issues = errors + warnings
+# branch -- no new strictness logic added. ───────────────────────────────────────────────────────
+f=$(make_cgs_fixture \
+  '{"coupled_generated_surfaces": [{"trigger_glob": "src/*.lean", "generated_paths": ["generated/status.typ"], "commit_blocking": true}]}' \
+  '
+**Files to modify**:
+- `src/foo.lean` - edit a docstring')
+rc=0; "$VALIDATE_SRC" "$f" plan >/dev/null 2>&1 || rc=$?
+if [[ $rc -eq 0 ]]; then common_test_pass "CGS(e): default-mode exit 0 (warning alone does not fail the gate)"; else common_test_fail "CGS(e): unexpected non-zero exit in default mode: rc=$rc"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan --strict >/dev/null 2>&1 || rc=$?
+if [[ $rc -ne 0 ]]; then common_test_pass "CGS(e): --strict escalates to a non-zero exit"; else common_test_fail "CGS(e): --strict did not escalate: rc=$rc"; fi
+
+# ─── CGS(f): a phase whose own Files-to-modify paths match NO declared trigger_glob -- silent. ─
+f=$(make_cgs_fixture \
+  '{"coupled_generated_surfaces": [{"trigger_glob": "other/*.foo", "generated_paths": ["generated/status.typ"], "commit_blocking": true}]}' \
+  '
+**Files to modify**:
+- `src/foo.lean` - edit a docstring')
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "omits generated path"; then common_test_fail "CGS(f): false-positive warning when no trigger matches: $out"; else common_test_pass "CGS(f): no trigger match is silent"; fi
+
 echo ""
 common_test_info "Target scripts: $VALIDATE ; $VALIDATE_SRC ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"
 echo "PASSED: $PASSED"

@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Advisory coupled_generated_surfaces Check in validate-artifact.sh",
+  "started_at": "2026-11-12T07:34:03Z",
+  "last_updated": "2026-11-12T07:34:03Z",
+  "objectives": [
+    {"id": 1, "description": "Add inline coupled_generated_surfaces reader and per-phase advisory check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 2, "description": "Add six CGS fixtures to test-validate-artifact.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "required-argument guard (${1:?msg}) for repo_root in _cgs_entries()", "result": "failed", "reason": "crashed validate-artifact.sh outright under set -euo pipefail on the ordinary empty-repo_root fail-open case; fixed to ${1:-}"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
