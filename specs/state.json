@@ -52586,12 +52586,12 @@
     {
       "project_number": 531,
       "project_name": "file_scope_declaration_hygiene_remediation",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "description": "**DECLARATION-HYGIENE REMEDIATION FOR THE ADMISSION GATE.** Two defects make the overlap gate unable to see collisions. (1) Task 177 declares `FormalSystem/Metalogic/Decidability/` as a WHOLE-DIRECTORY `file_scope` entry, overlapping every non-terminal task that touches that subtree — narrow it to the files it actually touches. (2) Of the non-terminal tasks, a large majority (28 of 52 at the time this was detected) declare NO `file_scope` at all — backfill them. `bash .claude/scripts/validate-state.sh specs/state.json` already enumerates both defects as Check 8 (coarse whole-directory-root declarations) and Check 9 (duplicates); the detector exists, the remediation does not. ALSO IN SCOPE if not landed first elsewhere: the recurring mechanism by which `/task --abandon` and `/todo` archival un-track a `WIRED_REPO` gate target (`.claude/context/patterns/task-abandon-mode.md:58-65`), whose detector is a one-line `git ls-files --error-unmatch` beside the `-f` test at `scripts/check-evidence-probes.sh:717-720`. Read the live validator output rather than trusting the counts above; they are a snapshot, not a contract.\n\n=== MIGRATION PROVENANCE (appended on migration; every line above this marker is the record verbatim) ===\nMigrated from the BimodalLogic repository, where this record was #751 (project_name `file_scope_declaration_hygiene_remediation`), on 2026-11-08, under the ruling that all meta records live in this repository, following\ncontext/patterns/cross-repo-task-migration.md.\n\nCITATION RESOLVABILITY (procedure step 3): no iss_* ids cited; nothing to re-point.\nFILE SCOPE (procedure step 6, DERIVED): this record declared none, or declared only deployed paths. The scope\nabove was derived from the edit targets its own text names, and each path was verified to exist in this\nrepository before being written.\n",
       "topic": "repo-hygiene",
       "created": "2026-10-09T21:24:21Z",
-      "last_updated": "2026-11-12T05:06:05Z",
+      "last_updated": "2026-11-12T05:47:14Z",
       "file_scope": [
         "agent-system/extensions/core/scripts/validate-state.sh"
       ],
@@ -52609,7 +52609,15 @@
         "migrated": "2026-11-08"
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
-      "session_id": "sess_1794459760_979d1d_531"
+      "session_id": "sess_1794459760_979d1d",
+      "artifacts": [
+        {
+          "path": "specs/531_file_scope_declaration_hygiene_remediation/reports/01_file-scope-hygiene-remediation.md",
+          "type": "report",
+          "summary": "Re-derives the live file_scope hygiene defect set (Check 8/Check 9) against the stale dispatch snapshot, and gives verified, concrete file_scope narrowing/backfill values for projects 473, 518, 567, 568, and 607; flags the dispatch's second scope item (scripts/check-evidence-probes.sh) as citing a nonexistent file."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 533,

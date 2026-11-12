@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794459760_979d1d_531",
+  "dispatch_seq": 7,
+  "findings_count": 6,
+  "next_steps": "Run /orchestrate 531 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/531_file_scope_declaration_hygiene_remediation/reports/01_file-scope-hygiene-remediation.md",
+      "summary": "Re-derives the live file_scope hygiene defect set (Check 8/Check 9) against the stale dispatch snapshot, and gives verified, concrete file_scope narrowing/backfill values for projects 473, 518, 567, 568, and 607; flags the dispatch's second scope item (scripts/check-evidence-probes.sh) as citing a nonexistent file."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Task 531 research: validate-state.sh's Check 8 (coarse whole-directory file_scope) and Check 9 (duplicates) counts drift fast in this repo -- a dispatch-embedded snapshot (e.g. '28 of 52 missing file_scope') went stale within the same task's lifetime (live count: 3 of 137). Always re-run validate-state.sh live rather than trusting a count carried in task/dispatch prose, even prose written for this exact remediation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/531_file_scope_declaration_hygiene_remediation/reports/01_file-scope-hygiene-remediation.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["file_scope", "validate-state.sh", "Check 8", "Check 9", "stale snapshot"]
+    },
+    {
+      "content": "scripts/check-evidence-probes.sh (cited by context/patterns/task-abandon-mode.md and skills/skill-todo/SKILL.md as the WIRED_REPO un-tracking detector for archived task directories) does not exist anywhere in this repository's working tree or git history. Only prose citations exist; no mechanical detector is wired. Likely a citation carried over from a cross-repo task migration without re-pointing.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/531_file_scope_declaration_hygiene_remediation/reports/01_file-scope-hygiene-remediation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["WIRED_REPO", "check-evidence-probes.sh", "task-abandon-mode", "migration citation", "dead reference"]
+    },
+    {
+      "content": "When narrowing a coarse whole-directory file_scope entry to file-level entries, narrowing does not and should not eliminate real per-file territory overlap with other open tasks -- it only removes the Check 8 WARN that exists specifically to flag overlap caused by declared-but-unused breadth. Verify this distinction (narrowed-but-still-overlapping is a pass, not a new defect) before assuming narrowing must shrink the overlapping-task set.",
+      "category": "PATTERN",
+      "source_artifact": "specs/531_file_scope_declaration_hygiene_remediation/reports/01_file-scope-hygiene-remediation.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["file_scope", "Check 8", "territory overlap", "coarse declaration", "narrowing"]
+    }
+  ]
+}
