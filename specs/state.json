@@ -5,12 +5,12 @@
     {
       "project_number": 608,
       "project_name": "improve_leaderas_chat_pane_styling",
-      "status": "researched",
+      "status": "planned",
       "task_type": "general",
       "description": "Improve chat pane styling for `<leader>as` to match Claude Code's appearance, with blank lines or divider lines between message parts so they don't run together",
       "topic": "neovim",
       "created": "2026-11-12T00:32:05Z",
-      "last_updated": "2026-11-12T00:51:30Z",
+      "last_updated": "2026-11-12T01:00:27Z",
       "audit_verdict": {
         "proposal": {
           "id": "improve_leaderas_chat_pane_styling",
@@ -444,9 +444,21 @@
           "path": "specs/608_improve_leaderas_chat_pane_styling/reports/01_chat-pane-styling-scope.md",
           "type": "report",
           "summary": "Traces <leader>as to the sf1 terminal integration and establishes that no change confined to this repository can durably add the requested message-part dividers, because sf1's rendering lives entirely in an untracked, auto-updating vendor payload (~/.sapience/sf1.py) outside any repo this agent system manages; lays out three concrete paths (disposable vendor hand-edit, a PTY-proxy wrapper owned by this repo, or a reapply-at-activation patch sited in ~/.dotfiles/packages/sapience-flake) with their durability/risk tradeoffs."
+        },
+        {
+          "path": "specs/608_improve_leaderas_chat_pane_styling/plans/01_sf1-pane-styling-proxy.md",
+          "type": "plan",
+          "summary": "4-phase plan for the sf1 PTY-proxy stream filter, its Lua wiring with fallback, and the full gate."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "file_scope": [
+        "lua/neotex/plugins/ai/sapience/README.md",
+        "lua/neotex/plugins/ai/sapience/init.lua",
+        "lua/neotex/plugins/ai/sapience/init_spec.lua",
+        "lua/neotex/plugins/ai/sapience/sf1_proxy.py",
+        "lua/neotex/plugins/ai/sapience/sf1_proxy_test.py"
+      ]
     },
     {
       "project_number": 527,

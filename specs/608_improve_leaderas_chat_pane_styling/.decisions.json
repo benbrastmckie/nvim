@@ -1,0 +1,10 @@
+[
+  {
+    "question": "Task 608 asks to add blank-line/divider styling between message parts in the <leader>as (sf1) chat pane. Research found this cannot be done durably by editing anything inside /home/benjamin/.config/nvim: sf1's rendering lives entirely in ~/.sapience/sf1.py, an untracked vendor payload that a daily auto-update can silently overwrite. Which path should the plan phase pursue?",
+    "answer": "Option B -- Build a PTY-proxying wrapper inside this repo (lua/neotex/plugins/ai/sapience/), invoked in place of the bare \"sf1\" command, that rewrites the output stream to insert blank lines by pattern-matching sf1's known prompt/banner/sources-line text",
+    "cycle": 1,
+    "timestamp": "2026-11-12T00:54:13Z",
+    "description_fingerprint": "d615634480a3c703b6215d19844589c4a03145ee6c73fa8439f8152945b36b01",
+    "obligation": "The chosen option must durably satisfy the task's styling goal without requiring an edit outside /home/benjamin/.config/nvim's own task-management scope (per .claude/rules/source-store-deploy-boundary.md's task-siting rule) and without silently losing the fix to the vendor's daily auto-update cycle documented in ~/.sapience/update.log."
+  }
+]

@@ -97,7 +97,7 @@ next_project_number: 610
 
 ### Neovim
 
-608 [RESEARCHED] — Improve chat pane styling for <leader>as to match Claude...
+608 [PLANNED] — Improve chat pane styling for <leader>as to match Claude...
 583 [NOT STARTED] — Add a settings-defaults surface to the agent system loader picker
 
 ### File Scope Lifecycle
@@ -246,11 +246,12 @@ DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic
 ---
 
 ### 608. Improve leaderas chat pane styling
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: general
 - **Topic**: neovim
 - **Dependencies**: None
 - **Research**: [608_improve_leaderas_chat_pane_styling/reports/01_chat-pane-styling-scope.md]
+- **Plan**: [608_improve_leaderas_chat_pane_styling/plans/01_sf1-pane-styling-proxy.md]
 
 **Description**: Improve chat pane styling for `<leader>as` to match Claude Code's appearance, with blank lines or divider lines between message parts so they don't run together
 

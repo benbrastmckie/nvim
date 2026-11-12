@@ -1,44 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794444265_6d92a6_608",
-  "dispatch_seq": 1,
-  "task_number": 608,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/608_improve_leaderas_chat_pane_styling/reports/01_chat-pane-styling-scope.md",
-      "summary": "Traces <leader>as to the sf1 terminal integration and establishes that no change confined to this repository can durably add the requested message-part dividers, because sf1's rendering lives entirely in an untracked, auto-updating vendor payload (~/.sapience/sf1.py) outside any repo this agent system manages; lays out three concrete paths (disposable vendor hand-edit, a PTY-proxy wrapper owned by this repo, or a reapply-at-activation patch sited in ~/.dotfiles/packages/sapience-flake) with their durability/risk tradeoffs."
+      "type": "plan",
+      "path": "specs/608_improve_leaderas_chat_pane_styling/plans/01_sf1-pane-styling-proxy.md",
+      "summary": "4-phase plan building a PTY-proxying wrapper in lua/neotex/plugins/ai/sapience/ that inserts separators into sf1's output stream, with a validated styling option and graceful fallback to the bare sf1 command."
     }
   ],
+  "next_steps": "Run /orchestrate 608 to execute the plan",
   "memory_candidates": [
     {
-      "content": "In this nvim config repo, every terminal-embedded AI chat integration (sf1/Sapience, Claude Code, OpenCode) follows the same shape: a snacks.terminal window whose Lua code (position/size/visibility only) never touches the running program's output bytes. Any request to restyle message content/spacing inside one of these chat panes cannot be satisfied by editing the nvim config alone -- the fix has to live in the external binary itself or in a PTY-proxying wrapper that intercepts its output stream.",
+      "content": "When a Neovim config owns only a terminal window's placement and the content comes from an untracked, self-updating vendor CLI, a PTY-proxying wrapper (pty.openpty + setsid + TIOCSCTTY + raw-mode stdin forwarding) is the only interposition point that is both durable (versioned in the consuming repo) and non-destructive (never writes to the vendor payload). A shell pipe is NOT a substitute: it turns the child's stdout into a non-tty, disabling color detection and readline line editing. Two non-obvious hazards govern the filter design: (1) GNU readline re-emits the prompt on every line edit, so prompt-pattern matching must count a prompt as fresh only when reached via \\n, never via \\r, with a one-shot latch; (2) a transient \\r\\033[2K status indicator must suppress injection until cleared. The robust design for the question/answer boundary avoids output pattern matching entirely by keying on the input side (the forwarded CR/LF keystroke). Failure mode must be pass-through-on-no-match, so a vendor output change yields 'no dividers' rather than a broken pane.",
       "category": "PATTERN",
-      "source_artifact": "specs/608_improve_leaderas_chat_pane_styling/reports/01_chat-pane-styling-scope.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["sf1", "sapience", "snacks.terminal", "chat-pane-styling", "vendor-payload"]
-    },
-    {
-      "content": "~/.sapience/*.py (including sf1.py, mcp.py, sapience_cli.py etc.) is vendor payload: not a git repo, fetched by curl from app.spnc.ai, and silently overwritten by a daily auto-update (~/.sapience/update.log shows auto-update: updated/current entries roughly once per day, with per-file timestamped backups). ~/.dotfiles/packages/sapience-flake/flake.nix documents this is deliberate (no Nix derivation, because a pinned fetchurl would fight the vendor's own self-updater). Any local hand-edit to these files should be treated as disposable, not durable.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/608_improve_leaderas_chat_pane_styling/reports/01_chat-pane-styling-scope.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["sapience", "sf1", "vendor-payload", "auto-update", "sapience-flake"]
+      "source_artifact": "specs/608_improve_leaderas_chat_pane_styling/plans/01_sf1-pane-styling-proxy.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["pty-proxy", "vendor-payload-interposition", "readline-prompt-redraw", "terminal-stream-filter", "neovim-terminal-styling"]
     }
   ],
-  "user_decision": {
-    "question": "Task 608 asks to add blank-line/divider styling between message parts in the <leader>as (sf1) chat pane. Research found this cannot be done durably by editing anything inside /home/benjamin/.config/nvim: sf1's rendering lives entirely in ~/.sapience/sf1.py, an untracked vendor payload that a daily auto-update can silently overwrite. Which path should the plan phase pursue?",
-    "options": [
-      "Option A -- Hand-edit ~/.sapience/sf1.py directly (3 one-line insertions at known boundaries), accepted as a disposable local patch that may be silently lost on the next vendor auto-update",
-      "Option B -- Build a PTY-proxying wrapper inside this repo (lua/neotex/plugins/ai/sapience/), invoked in place of the bare \"sf1\" command, that rewrites the output stream to insert blank lines by pattern-matching sf1's known prompt/banner/sources-line text",
-      "Option C -- Abandon or redirect this task; file a new task in ~/.dotfiles (the repo that owns the sapience-flake packaging) to reapply the same patch idempotently at every `sapience update`"
-    ],
-    "recommended": "Option B -- Build a PTY-proxying wrapper inside this repo (lua/neotex/plugins/ai/sapience/), invoked in place of the bare \"sf1\" command, that rewrites the output stream to insert blank lines by pattern-matching sf1's known prompt/banner/sources-line text",
-    "blocking": true,
-    "obligation": "The chosen option must durably satisfy the task's styling goal without requiring an edit outside /home/benjamin/.config/nvim's own task-management scope (per .claude/rules/source-store-deploy-boundary.md's task-siting rule) and without silently losing the fix to the vendor's daily auto-update cycle documented in ~/.sapience/update.log."
+  "metadata": {
+    "session_id": "sess_1794444265_6d92a6_608",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 5.5,
+    "dependency_waves": 3
   },
-  "next_steps": "Run /orchestrate 608 to create implementation plan"
+  "dispatch_seq": 2
 }
