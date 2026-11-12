@@ -116476,6 +116476,19 @@
       ],
       "description": "shared option renderer; four declared edges, runs last by construction",
       "rationale": "shared option renderer; four declared edges, runs last by construction\n\n- **`438` is not in any run above.** `581` depends on it, but `438` is itself behind `458`, which\n  is behind `459` — a whole-tree claimant. Either pull that three-deep chain forward deliberately\n  or accept that `581` waits."
+    },
+    {
+      "task_ids": [
+        398,
+        399,
+        451,
+        462,
+        504,
+        516,
+        463
+      ],
+      "description": "Close the lean extension's own strand: three short chains over its context and scripts, after 597",
+      "rationale": "the lean extension's own strand, previously named by no batch; serialized behind 597 on measured overlap\n\n- **No batch named a lean-extension record.** All seven open records under the `lean-extension` topic rendered only in the coverage appendix, which chunks ready tasks eight at a time in task-number order and carries no ordering judgment at all. Four of the seven (`398`, `451`, `463`, `504`) are ready today and the other three sit directly behind them, so the strand is small, self-contained and already fully edged -- it batches cleanly rather than needing to stay in the appendix.\n\n- **Three edged chains plus one independent, and every edge already exists.** `399` behind `398` (both declare `extensions/lean/index-entries.json`); `462` behind `451` (both declare `lean-challenge-snapshot.sh`, its test, and `challenge-snapshot.md`); `516` behind `504` (both declare `lean-plan-compliance-check.sh`, its test, and `plan-format.md`). `463` shares no declared path with any of the other six. No edge is missing here: the batch dispatches as two waves -- `398`, `451`, `463`, `504`, then `399`, `462`, `516` -- on the edges already in the graph, and the member order above groups each chain with its own dependent.\n\n- **It runs last because five of its seven collide with `597`.** Measured against the already-batched records: `398` and `399` share `agent-system/extensions/lean/index-entries.json` with `597`; `451` shares `agent-system/extensions/lean/manifest.json` with `597`; `504` and `516` share `agent-system/extensions/core/context/formats/plan-format.md` with both `597` and `572`. Per decision 7 a cross-batch overlap is advisory, and all five resolve by this batch running after the runs that hold `597` and `572` -- which its array position already does. No member is on the claimant roster, so the batch never contends for the whole-tree lane.\n\n- **The Lean-facing plan-authoring records are deliberately not here.** `539`, `540`, `544`, `549`, `576` and `593` all name Lean, but they are Challenge-block and plan-format authoring work under the `agent-system` topic rather than work on the extension itself; `593` additionally waits on both `451` and `597`, so it follows this batch instead of joining it. `410` and `533` (both on `lake-build-guard.sh`) are build-guard infrastructure on the core side, same reason."
     }
   ],
   "roadmap_notes": {

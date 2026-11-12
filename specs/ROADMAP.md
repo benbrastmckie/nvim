@@ -144,6 +144,7 @@ acted on, so every dispatch in a run loses its memory context).
 /orchestrate 590   # RE-MEASURE FIRST: may already be satisfied in the source store; its file_scope path is also wrong
 /orchestrate 580, 491, 492, 479   # the operator-facing selection surface
 /orchestrate 581   # shared option renderer; four declared edges, runs last by construction
+/orchestrate 398, 399, 451, 462, 504, 516, 463   # Close the lean extension's own strand: three short chains over its context and scripts, after 597
 ```
 
 Why this order:
@@ -263,6 +264,15 @@ Why this order:
   - **`438` is not in any run above.** `581` depends on it, but `438` is itself behind `458`, which
     is behind `459` — a whole-tree claimant. Either pull that three-deep chain forward deliberately
     or accept that `581` waits.
+- the lean extension's own strand, previously named by no batch; serialized behind 597 on measured overlap
+
+  - **No batch named a lean-extension record.** All seven open records under the `lean-extension` topic rendered only in the coverage appendix, which chunks ready tasks eight at a time in task-number order and carries no ordering judgment at all. Four of the seven (`398`, `451`, `463`, `504`) are ready today and the other three sit directly behind them, so the strand is small, self-contained and already fully edged -- it batches cleanly rather than needing to stay in the appendix.
+
+  - **Three edged chains plus one independent, and every edge already exists.** `399` behind `398` (both declare `extensions/lean/index-entries.json`); `462` behind `451` (both declare `lean-challenge-snapshot.sh`, its test, and `challenge-snapshot.md`); `516` behind `504` (both declare `lean-plan-compliance-check.sh`, its test, and `plan-format.md`). `463` shares no declared path with any of the other six. No edge is missing here: the batch dispatches as two waves -- `398`, `451`, `463`, `504`, then `399`, `462`, `516` -- on the edges already in the graph, and the member order above groups each chain with its own dependent.
+
+  - **It runs last because five of its seven collide with `597`.** Measured against the already-batched records: `398` and `399` share `agent-system/extensions/lean/index-entries.json` with `597`; `451` shares `agent-system/extensions/lean/manifest.json` with `597`; `504` and `516` share `agent-system/extensions/core/context/formats/plan-format.md` with both `597` and `572`. Per decision 7 a cross-batch overlap is advisory, and all five resolve by this batch running after the runs that hold `597` and `572` -- which its array position already does. No member is on the claimant roster, so the batch never contends for the whole-tree lane.
+
+  - **The Lean-facing plan-authoring records are deliberately not here.** `539`, `540`, `544`, `549`, `576` and `593` all name Lean, but they are Challenge-block and plan-format authoring work under the `agent-system` topic rather than work on the extension itself; `593` additionally waits on both `451` and `597`, so it follows this batch instead of joining it. `410` and `533` (both on `lake-build-guard.sh`) are build-guard infrastructure on the core side, same reason.
 
 **The `__WHOLE_TREE__` claim is the binding constraint on batch width, not fan-out.** A record
 declaring the sentinel serializes absolutely against every other claimant, in-batch and
@@ -315,15 +325,14 @@ discovery scopes, so neither is a defect. The edges worth declaring are the ones
 actually being dispatched, not a backfill across every record a coarse entry happens to touch.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 338,383,390,398,410,421,431,437
-/orchestrate 451,452,453,455,456,459,463,472
-/orchestrate 473,475,477,484,502,503,504,506
-/orchestrate 510,511,514,519,520,521,522,523
-/orchestrate 525,526,527,529,530,533,534,535
-/orchestrate 536,537,538,539,545,546,548,549
-/orchestrate 550,551,556,557,558,559,560,562
-/orchestrate 563,565,567,574,575,599,606,607
-/orchestrate 610
+/orchestrate 338,383,390,410,421,431,437,452
+/orchestrate 453,455,456,459,472,473,475,477
+/orchestrate 484,502,503,506,510,511,514,519
+/orchestrate 520,521,522,523,525,526,527,529
+/orchestrate 530,533,534,535,536,537,538,539
+/orchestrate 545,546,548,549,550,551,556,557
+/orchestrate 558,559,560,562,563,565,567,574
+/orchestrate 575,599,606,607,610
 ```
 
 ## Open work
