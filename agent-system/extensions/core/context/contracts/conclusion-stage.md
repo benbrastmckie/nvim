@@ -370,25 +370,72 @@ with Step 5's own output. This is explicitly NOT a fourth channel — it derives
 Hint-Versus-Decision rules above do not apply to it, the same posture Step 7's suggester already
 carries.
 
-### Step 7 — Suggest next batch
+### Step 7 — Suggest next batch, and gate the edge write
 
 (Numbered 7, positioned here between Step 5 and Step 6 rather than after Step 6, because its
 output must exist before Step 6's report renders it — the number is this step's stable
 identity across this contract and its callers, not a claim about textual ordering.)
 
-Invoke the next-batch suggester (Mode A). This step is INFORMATIONAL: it carries no
-`AskUserQuestion` approval gate and derives from `specs/state.json`, never `issues.jsonl` — it
-is therefore NOT a fourth channel, and the Exactly-One-Channel and Hint-Versus-Decision rules
-above do not apply to it.
+Invoke the next-batch suggester (Mode A) in its default, non-`--write-edges` form. This step
+is itself still INFORMATIONAL: it derives from `specs/state.json`, never `issues.jsonl`, and is
+therefore NOT a fourth channel — the Exactly-One-Channel and Hint-Versus-Decision rules above
+do not apply to it. The `edges` approval key introduced below is likewise NOT a fourth channel:
+it is an independent, non-channel approval key, gated and read through the exact same
+fail-closed `orchestrate-conclusion-aggregate.sh --record-approval`/`--check-approval`
+mechanism as a channel, under its own `edges` key — so no channel's approval ever satisfies
+`edges`, and an `edges` approval never satisfies any channel's gate.
 
 ```bash
-bash .claude/scripts/orchestrate-suggest-next-batch.sh --next-batch --session-id "$session_id"
+suggest_output=$(bash .claude/scripts/orchestrate-suggest-next-batch.sh --next-batch --session-id "$session_id")
 ```
 
 Its rendered output folds into Step 6's report below (the `**Suggested next batch**:` line in
 the `### Conclusion` block) rather than forming a separate report section — see
 `context/patterns/orchestrate-batch-results-template.md`'s Conclusion block for the exact
-render shape, including the no-suggestible-batch and colliding-pair-sequence cases.
+render shape, including the no-suggestible-batch, colliding-pair-sequence, multi-option, and
+cap-reached cases.
+
+**Edge-write gate.** When `$suggest_output` contains at least one line matching `proposed edge:`
+(i.e. at least one colliding pair was found and an edge was proposed — see
+`orchestrate-suggest-next-batch.sh`'s own `propose_edge_for_pair()`), gate the write behind one
+explicit approval:
+
+1. Ask one `AskUserQuestion` presenting the proposed edge(s) and their ordered-sequence line(s)
+   only (never the joint-batch option lines, which carry no edge to approve), and record the
+   answer under the dedicated `edges` key:
+
+   ```bash
+   bash .claude/scripts/orchestrate-conclusion-aggregate.sh --record-approval \
+     --session "$session_id" --channel edges --answer yes   # or "no", per the answer given
+   ```
+
+2. Gate on that same key:
+
+   ```bash
+   if bash .claude/scripts/orchestrate-conclusion-aggregate.sh --check-approval \
+        --session "$session_id" --channel edges; then
+     # proceed with the write below
+     :
+   fi
+   ```
+
+3. Only when that gate passes, re-invoke the suggester with `--write-edges`, which performs the
+   write and then RE-PROBES the same candidate set through the real admission check, showing
+   both members flip to `admit`:
+
+   ```bash
+   bash .claude/scripts/orchestrate-suggest-next-batch.sh --next-batch --session-id "$session_id" --write-edges
+   ```
+
+   Fold that re-probe evidence into Step 6's report alongside the original suggestion, so the
+   report shows both the proposed edge and its confirmed post-write admission.
+
+A run with ZERO proposed edges is never asked about and skips this gate entirely — no
+`AskUserQuestion`, no ledger record for `edges`, no second invocation — mirroring channel (a)'s
+own zero-proposal posture in Step 3 above. A DECLINED approval leaves `specs/state.json`
+byte-identical: the default (non-`--write-edges`) invocation above never mutates state, and the
+write exists only inside the gated, `--write-edges` second invocation that a declined approval
+never reaches.
 
 ### Step 6 — Report
 

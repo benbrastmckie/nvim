@@ -330,35 +330,35 @@ those two suite names.
 
 ---
 
-### Phase 4: Gate the Edge Write at Step 7 [NOT STARTED]
+### Phase 4: Gate the Edge Write at Step 7 [COMPLETED]
 
 **Goal**: The conclusion stage presents the proposed edges, takes one explicit approval, and only
 then invokes the existing `--write-edges` path; a declined approval mutates nothing.
 
 **Tasks**:
 
-- [ ] Rewrite `conclusion-stage.md`'s Step 7 body as: (1) invoke the suggester in its default,
+- [x] Rewrite `conclusion-stage.md`'s Step 7 body as: (1) invoke the suggester in its default,
       non-`--write-edges` form; (2) when that output contains at least one proposed edge, ask one
       `AskUserQuestion` presenting the proposed edges and their ordered-sequence lines only; (3)
       record the answer via `--record-approval --channel edges`; (4) gate on
       `--check-approval --channel edges`; (5) only when that gate passes, re-invoke the suggester
-      with `--write-edges` and fold its re-probe evidence into the Step 6 report.
-- [ ] State in Step 7 that a zero-proposed-edge run is never asked about and skips the gate
+      with `--write-edges` and fold its re-probe evidence into the Step 6 report. *(completed)*
+- [x] State in Step 7 that a zero-proposed-edge run is never asked about and skips the gate
       entirely (no ledger record, no second invocation), mirroring channel (a)'s
-      zero-proposal posture.
-- [ ] State in Step 7 that a declined approval leaves `specs/state.json` byte-identical, because
+      zero-proposal posture. *(completed)*
+- [x] State in Step 7 that a declined approval leaves `specs/state.json` byte-identical, because
       the default invocation never mutates state and the write lives only in the gated second
-      invocation.
-- [ ] Keep Step 7's existing standing as NOT a fourth channel explicit, and state that the
+      invocation. *(completed)*
+- [x] Keep Step 7's existing standing as NOT a fourth channel explicit, and state that the
       `edges` key is an independent approval key, so no channel fires on it and it fires on no
-      channel's approval.
-- [ ] In `postflight-tool-restrictions.md`'s Move 5 Allowed Tool Surface table: widen the
+      channel's approval. *(completed)*
+- [x] In `postflight-tool-restrictions.md`'s Move 5 Allowed Tool Surface table: widen the
       `AskUserQuestion` row to cover Step 7's edge-write gate alongside channel (a)'s gate, and
       add `orchestrate-suggest-next-batch.sh` (both the default and `--write-edges` forms) and
       `lint/lint-roadmap-batch-proposals.sh` to the `Bash` row, which omits both scripts the
-      stage body already invokes.
-- [ ] Add one Prohibited bullet mirroring channel (a)'s: no edge write without a
-      `--check-approval` pass for the `edges` key specifically.
+      stage body already invokes. *(completed)*
+- [x] Add one Prohibited bullet mirroring channel (a)'s: no edge write without a
+      `--check-approval` pass for the `edges` key specifically. *(completed)*
 
 **Timing**: 1 hour
 

@@ -144,9 +144,9 @@ executable body.
 | Tool | Scope |
 |------|-------|
 | `Read` | `specs/{NNN}_*/issues.jsonl` for every task this invocation touched (the stage's sole evidence base) |
-| `AskUserQuestion` | Channel (a)'s single approval gate only — channels (b) and (c) record evidence unconditionally and are never asked about |
+| `AskUserQuestion` | Channel (a)'s single approval gate, AND Step 7's single `edges` approval gate for the next-batch edge write — two independent gates, each under its own key; channels (b) and (c) record evidence unconditionally and are never asked about |
 | `Agent` | Channel (a)'s dispatch of an implementation agent with the approved fix list |
-| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `events-append.sh`, `generate-todo.sh`, `roadmap-integration.sh --regenerate`, `git-commit-scoped.sh` |
+| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `events-append.sh`, `generate-todo.sh`, `roadmap-integration.sh --regenerate`, `lint/lint-roadmap-batch-proposals.sh`, `orchestrate-suggest-next-batch.sh` (both its default propose-only form and its gated `--write-edges` form), `git-commit-scoped.sh` |
 | `Edit`/`Write` on source files | Only INSIDE a channel-(a)-dispatched agent's own turn — never in the stage body itself |
 
 ### Prohibited
@@ -154,6 +154,10 @@ executable body.
 - No mid-run surfacing of `issues.jsonl` content — this stage is the sole reviewer; the
   capture-only boundary (`context/formats/issue-log.md`) is unconditional elsewhere.
 - No channel (a) execution without its own `--check-approval` pass for that exact channel.
+- No `orchestrate-suggest-next-batch.sh --write-edges` invocation without its own
+  `--check-approval --channel edges` pass — the same posture as channel (a)'s bullet above,
+  under its own independent key (`edges` is not a fourth channel; see
+  `context/contracts/conclusion-stage.md`'s Step 7).
 - No reading `reports/*.md`, `plans/*.md`, `summaries/*.md`, or `handoffs/*.md` — the Context
   Flatness Constraint still binds at this stage exactly as it binds at Move 3; `issues.jsonl` is
   explicitly NOT a member of that excluded set (it is the one artifact this stage is built to
