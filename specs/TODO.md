@@ -42,7 +42,7 @@ next_project_number: 610
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
-490 [RESEARCHED] — Make generate-task-order.sh read active\_goal so the field...
+490 [PLANNING] — Make generate-task-order.sh read active\_goal so the field...
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
@@ -53,7 +53,7 @@ next_project_number: 610
     └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
   └─ 584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
-515 [RESEARCHED] — Rebase the bounded-wait guidance on the measured...
+515 [PLANNING] — Rebase the bounded-wait guidance on the measured...
   └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract (see above)
   └─ 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
@@ -70,8 +70,8 @@ next_project_number: 610
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 591 [RESEARCHED] — Decide the fate of the errors.json triage surface
-601 [RESEARCHED] — Add a lint closing the repo-root walk-up defect class
-603 [RESEARCHED] — Make ROADMAP.md a generated artifact rendered from state.json
+601 [PLANNING] — Add a lint closing the repo-root walk-up defect class
+603 [PLANNED] — Make ROADMAP.md a generated artifact rendered from state.json
   └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
@@ -86,7 +86,7 @@ next_project_number: 610
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-600 [RESEARCHED] — Honor the Sapience 503 cold-start retry\_after hint with one...
+600 [PLANNING] — Honor the Sapience 503 cold-start retry\_after hint with one...
   └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
@@ -172,7 +172,7 @@ next_project_number: 610
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
 572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
-597 [RESEARCHED] — Make the coupled-generated-surface and longFile-baseline...
+597 [PLANNING] — Make the coupled-generated-surface and longFile-baseline...
   └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically... (see above)
   └─ 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
     └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
@@ -185,7 +185,7 @@ next_project_number: 610
 
 ### Repo Hygiene
 
-531 [RESEARCHED] — Narrow whole-directory file\_scope declarations so the...
+531 [PLANNING] — Narrow whole-directory file\_scope declarations so the...
 
 ### Decidability
 
@@ -566,11 +566,12 @@ repairs but deliberately built no detector, and #418 made lint-FIXTURE subject r
 
 ### 603. Make ROADMAP.md a generated artifact rendered from state.json
 - **Effort**: large
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 313, Task 528, Task 532
 - **Research**: [603_roadmap_command_generated_from_state/reports/01_roadmap-generated-artifact-research.md]
+- **Plan**: [603_roadmap_command_generated_from_state/plans/01_roadmap-generated-from-state.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md).
 
@@ -819,7 +820,7 @@ to exclude them. Decide at dispatch time, not here.
 
 ### 601. Add a lint closing the repo-root walk-up defect class
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -847,7 +848,7 @@ CITATION: {task 589, iss_1794382098954_Zl7lZg}, class "scope boundary".
 ---
 
 ### 600. Honor the Sapience 503 cold-start retry_after hint with one bounded retry instead of degrading on first contact
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -1032,7 +1033,7 @@ record's subject," and that ruling stands independently of its status.
 
 ### 597. Make the coupled-generated-surface and longFile-baseline plan-authoring conditions reach the plan author, and correct the longFile acceptance window
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -5762,7 +5763,7 @@ surface, and that rationale does not survive into this repository.
 ---
 
 ### 531. Narrow whole-directory file_scope declarations so the admission overlap gate can see collisions
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: repo-hygiene
 - **Dependencies**: None
@@ -6592,7 +6593,7 @@ DUPLICATE CHECK PERFORMED against the full open backlog and the closed corpus vi
 ---
 
 ### 515. Rebase the bounded-wait guidance on the measured foreground-backgrounding ceiling
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 507
@@ -7805,7 +7806,7 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 
 ### 490. Make generate-task-order.sh read active_goal so the field stops being a dead write
 - **Effort**: small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 328
