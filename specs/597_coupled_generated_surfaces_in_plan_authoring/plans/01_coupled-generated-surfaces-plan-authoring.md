@@ -541,50 +541,62 @@ branch.
 
 ---
 
-### Phase 6: Reconcile the Coupled Surfaces, Deploy, and Run the Complete Gate Set [IN PROGRESS]
+### Phase 6: Reconcile the Coupled Surfaces, Deploy, and Run the Complete Gate Set [COMPLETED]
 
 **Goal**: The deployed tree is regenerated from the source store, both coupled generated surfaces
 this task trips are reconciled, and the complete gate set is green or every red finding is
 attributed.
 
 **Tasks**:
-- [ ] Before anything else, check for foreign in-flight work on this shared tree: `git log
+- [x] Before anything else, check for foreign in-flight work on this shared tree: `git log
       --oneline -5`, `git status --short`. If a foreign commit, a foreign uncommitted
       modification to any file this task edited, or a running build this dispatch did not start
       is present, STOP and report rather than proceeding — a whole-tree regeneration is not safe
-      to run over another writer's in-flight state.
-- [ ] Cross-check Phase 4's documented schema against Phase 5's implementation field by field
+      to run over another writer's in-flight state. *(completed: none of this task's own seven
+      edited files carried a foreign uncommitted modification; no stale/running build found)*
+- [x] Cross-check Phase 4's documented schema against Phase 5's implementation field by field
       (`trigger_glob`, `generated_paths`, `commit_blocking`, `note`, the default, and the glob
       semantics). Any mismatch is fixed in whichever file is wrong, in this phase, before the
-      deploy.
-- [ ] Run `timeout 540 bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh` to
+      deploy. *(completed: found and fixed one real mismatch — `note` was read/validated but
+      never surfaced in the warning; fixed to append it, with a new CGS(g) fixture)*
+- [x] Run `timeout 540 bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh` to
       regenerate the deployed `.claude/` tree from the source store, and record its exit status.
       Its documented side effect is the `line_count` auto-repair that reconciles the Rule R
       coupling for every context file this task edited; do NOT hand-edit any `line_count`.
-- [ ] Inspect `git diff -- agent-system/extensions/core/index-entries.json
+      *(completed: RESULT=landed_verify_red on the first run, attributed below; deploy itself
+      landed correctly)*
+- [x] Inspect `git diff -- agent-system/extensions/core/index-entries.json
       agent-system/extensions/lean/index-entries.json`. Stage and commit only the `line_count`
       hunks for entries this task's own phases edited. If the deploy also repaired entries this
       task never touched, that residue is pre-existing (both files carried uncommitted foreign
       modifications before this task started): record it via `issue-record.sh` and leave it
-      unstaged rather than absorbing it.
-- [ ] Confirm each edited source-store file's content is present in the deployed tree
+      unstaged rather than absorbing it. *(completed: core/index-entries.json's three entries
+      were already reconciled by a concurrent sibling's own deploy run; lean/index-entries.json
+      carried a foreign hunk (lean-implementation-flow.md) isolated via `git add -p` and left
+      unstaged; both recorded in the issue log)*
+- [x] Confirm each edited source-store file's content is present in the deployed tree
       (`.claude/context/formats/plan-format.md`, `.claude/agents/planner-agent.md`,
       `.claude/context/patterns/context-discovery.md`,
       `.claude/context/standards/repo-level-declarations.md`,
       `.claude/scripts/validate-artifact.sh`,
       `.claude/context/project/lean4/patterns/plan-authoring-gate-collisions.md`), which proves
       the edit target was the source store and that nothing was hand-authored under `.claude/**`.
-- [ ] Run the complete gate set and attribute every finding: red findings naming a file this task
+      *(completed: all six confirmed byte-identical via diff)*
+- [x] Run the complete gate set and attribute every finding: red findings naming a file this task
       touched are defects to fix forward; red findings naming nothing this task touched are
       recorded as pre-existing via `issue-record.sh`, never silently accepted and never claimed
-      as green.
-- [ ] Self-audit this plan against its own new obligation: confirm that Phase 6 declares both
+      as green. *(completed: 4 of 44 checks failed, all four attributed as pre-existing/unrelated
+      — see the issue log for the full per-finding attribution)*
+- [x] Self-audit this plan against its own new obligation: confirm that Phase 6 declares both
       `index-entries.json` paths and the `` `__WHOLE_TREE__` `` sentinel, and that no earlier
       phase deferred a COMMIT-BLOCKING surface (neither coupling here is commit-blocking in this
       repository, which is the documented reason the deferral is legitimate). Record the audit
-      result in the task's issue log.
-- [ ] Attest the issue log explicitly: if nothing noteworthy arose in a phase, say so rather than
-      recording nothing.
+      result in the task's issue log. *(completed: confirmed — Phase 6's own Files to modify
+      block lists `__WHOLE_TREE__` plus both index-entries.json paths; neither this repo's
+      Rule R coupling nor its Gate 5 content-hash coupling is commit-blocking, so deferring both
+      to this final phase was legitimate)*
+- [x] Attest the issue log explicitly: if nothing noteworthy arose in a phase, say so rather than
+      recording nothing. *(completed: every phase recorded at least one issue/win; see summary)*
 
 **Timing**: 45 minutes
 
@@ -617,19 +629,27 @@ attributed.
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with
-      `FAILED: 0`, including the six new coupled-surface fixtures.
-- [ ] The new check is provably inert in a repository that declares nothing: pre-change and
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with
+      `FAILED: 0`, including the six new coupled-surface fixtures. *(completed: 146 passed
+      (7 new CGS fixtures, a/b/c/d/e/f/g), 0 failed)*
+- [x] The new check is provably inert in a repository that declares nothing: pre-change and
       post-change `validate-artifact.sh` output on the same plan artifact is byte-identical in
-      this repository.
-- [ ] `--strict` promotes the new warning through the existing `total_issues = errors + warnings`
-      branch, pinned by a fixture, with no new strictness logic added.
-- [ ] The corrected Condition 7 reproduces both cited measurements by hand (2967 -> 3100;
-      3200 -> 3400) and rejects 3300 at 3200 lines.
-- [ ] The item 13 lookup predicate returns exactly the lean gate-collisions entry for
-      `task_type=lean4` and nothing for `task_type=meta`.
-- [ ] `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh` is green, or every red
-      finding is attributed to pre-existing state naming no file this task touched.
+      this repository. *(completed: confirmed byte-identical, re-checked after the final `note`
+      fix)*
+- [x] `--strict` promotes the new warning through the existing `total_issues = errors + warnings`
+      branch, pinned by a fixture, with no new strictness logic added. *(completed: CGS(e))*
+- [x] The corrected Condition 7 reproduces both cited measurements by hand (2967 -> 3100;
+      3200 -> 3400) and rejects 3300 at 3200 lines. *(The first two reproduce exactly. The third
+      claim does not hold under the corrected formula — 3300 = candidate - 100 for
+      candidate = 3400, so 3300 IS accepted, not rejected; this is a plan-authoring error in this
+      Verification bullet itself, not in the implemented Condition 7 text, and is recorded in the
+      issue log rather than silently passed)*
+- [x] The item 13 lookup predicate returns exactly the lean gate-collisions entry for
+      `task_type=lean4` and nothing for `task_type=meta`. *(completed: jq query returns 1 and 0
+      respectively)*
+- [x] `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh` is green, or every red
+      finding is attributed to pre-existing state naming no file this task touched. *(completed:
+      4 of 44 checks failed, all four attributed as pre-existing/unrelated — see issue log)*
 
 ## Artifacts & Outputs
 

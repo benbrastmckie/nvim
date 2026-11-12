@@ -979,6 +979,17 @@ f=$(make_cgs_fixture \
 out=$("$VALIDATE_SRC" "$f" plan 2>&1)
 if echo "$out" | grep -qF "omits generated path"; then common_test_fail "CGS(f): false-positive warning when no trigger matches: $out"; else common_test_pass "CGS(f): no trigger match is silent"; fi
 
+# ─── CGS(g): a declared entry's optional `note` field is diagnostic output only (never
+# interpreted/matched against anything) but IS surfaced verbatim in the warning, mirroring
+# derived_artifact_probes' own `component` field. ───────────────────────────────────────────────
+f=$(make_cgs_fixture \
+  '{"coupled_generated_surfaces": [{"trigger_glob": "src/*.lean", "generated_paths": ["generated/status.typ"], "commit_blocking": true, "note": "see docs/development/LEAN_STYLE_GUIDE.md"}]}' \
+  '
+**Files to modify**:
+- `src/foo.lean` - edit a docstring')
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "note: see docs/development/LEAN_STYLE_GUIDE.md"; then common_test_pass "CGS(g): declared note is surfaced verbatim in the warning"; else common_test_fail "CGS(g) missing note in warning: $out"; fi
+
 echo ""
 common_test_info "Target scripts: $VALIDATE ; $VALIDATE_SRC ; $UPDATE_PLAN_STATUS ; $PLAN_STATUS_LIB"
 echo "PASSED: $PASSED"

@@ -703,6 +703,7 @@ if [ "$artifact_type" = "plan" ]; then
           _cgs_entry="$(echo "$_cgs_declared_entries" | jq -c ".[$_cgs_i]" 2>/dev/null)"
           _cgs_trigger="$(echo "$_cgs_entry" | jq -r '.trigger_glob' 2>/dev/null)"
           _cgs_commit_blocking="$(echo "$_cgs_entry" | jq -r '.commit_blocking' 2>/dev/null)"
+          _cgs_note="$(echo "$_cgs_entry" | jq -r '.note' 2>/dev/null)"
           mapfile -t _cgs_generated_paths < <(echo "$_cgs_entry" | jq -r '.generated_paths[]' 2>/dev/null)
 
           _cgs_trigger_matched=0
@@ -733,6 +734,13 @@ if [ "$artifact_type" = "plan" ]; then
               _cgs_suffix=""
               if [ "$_cgs_commit_blocking" = "true" ]; then
                 _cgs_suffix=" -- this surface is commit-blocking, so same-phase regeneration is owed, not merely the declaration"
+              fi
+              # `note` is diagnostic output only (repo-level-declarations.md's schema section)
+              # and never interpreted/matched against anything -- appended verbatim when present,
+              # exactly as `derived_artifact_probes`' own `component` field is diagnostic-only
+              # and still surfaced in ITS warning lines.
+              if [ -n "$_cgs_note" ]; then
+                _cgs_suffix="${_cgs_suffix} (note: ${_cgs_note})"
               fi
               log_warn "Phase ${phase_num} Files to modify: matches declared coupled-surface trigger '${_cgs_trigger}' but omits generated path(s) (${_cgs_missing[*]})${_cgs_suffix}"
             fi
